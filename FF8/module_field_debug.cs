@@ -61,7 +61,7 @@ namespace FF8
         private static void DrawDebug()
         {
             Memory.graphics.GraphicsDevice.Clear(Color.Black);
-            Memory.SpriteBatchStart();
+            Memory.SpriteBatchStartStencil();
             Memory.spriteBatch.Draw(tex,
                 new Microsoft.Xna.Framework.Rectangle(0, 0, 1280+(width-320), 720+(height-224)),
                 new Microsoft.Xna.Framework.Rectangle(0,0,tex.Width, tex.Height)

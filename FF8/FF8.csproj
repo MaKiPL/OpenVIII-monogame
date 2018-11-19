@@ -54,6 +54,7 @@
     <Compile Include="module_battle_Debug.cs" />
     <Compile Include="module_field_debug.cs" />
     <Compile Include="module_movie_test.cs" />
+    <Compile Include="module_overture_debug.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PseudoBufferedStream.cs" />

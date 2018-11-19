@@ -29,7 +29,7 @@ namespace FF8
         {
             string pt = Memory.FF8DIR + "/../Music/dmusic/";
             Memory.musices = Directory.GetFiles(pt, "*.sgt");
-            PlayMusic();
+            //PlayMusic();
             //FileStream fs = new FileStream(pt, FileMode.Open, FileAccess.Read);
             //BinaryReader br = new BinaryReader(fs);
             //string RIFF = Encoding.ASCII.GetString(br.ReadBytes(4));
@@ -135,6 +135,11 @@ namespace FF8
             path.Dispose();
             cdm.Dispose();
     }
+
+        public static void StopAudio()
+        {
+            cport.StopAll();
+        }
 
         private static List<byte[]> ProcessTrackList(byte[] item2)
         {

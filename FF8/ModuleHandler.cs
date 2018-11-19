@@ -75,6 +75,9 @@ namespace FF8
                 case Memory.MODULE_FIELD_DEBUG:
                     module_field_debug.Update();
                     break;
+                case Memory.MODULE_OVERTURE_DEBUG:
+                    module_overture_debug.Update();
+                    break;
             }
         }
 
@@ -93,6 +96,9 @@ namespace FF8
                     break;
                 case Memory.MODULE_FIELD_DEBUG:
                     module_field_debug.Draw();
+                    break;
+                case Memory.MODULE_OVERTURE_DEBUG:
+                    module_overture_debug.Draw();
                     break;
             }
         }

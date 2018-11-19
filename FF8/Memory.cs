@@ -20,8 +20,10 @@ namespace FF8
 
         internal static int musicIndex = 0;
         public static string[] musices;
-        public static void SpriteBatchStart()
-        => spriteBatch.Begin( SpriteSortMode.BackToFront, null, null,graphics.GraphicsDevice.DepthStencilState); 
+        public static void SpriteBatchStartStencil()
+        => spriteBatch.Begin( SpriteSortMode.BackToFront, null, null,graphics.GraphicsDevice.DepthStencilState);
+        public static void SpriteBatchStartAlpha()
+            => spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
         public static void SpriteBatchEnd()
             =>
             spriteBatch.End();
@@ -29,14 +31,12 @@ namespace FF8
 
 
 
-        public static int module = MODULE_FIELD_DEBUG;
+        public static int module = MODULE_OVERTURE_DEBUG;
 
 
 
         public const string FF8DIR = @"D:\SteamLibrary\steamapps\common\FINAL FANTASY VIII\Data\lang-en\"; //Work
         //public const string FF8DIR = @"D:\Steam\steamapps\common\FINAL FANTASY VIII\Data\lang-en"; //Home
-
-        public static string movieName = "disc02_25h.avi";
 
         #region modules
         public const int MODULE_BATTLE = 3;
@@ -44,6 +44,8 @@ namespace FF8
         public const int MODULE_FIELD_DEBUG = -5;
         public const int MODULE_BATTLE_DEBUG = -3;
         public const int MODULE_MOVIETEST = -9;
+        public const int MODULE_OVERTURE_DEBUG = -12;
+        public const int MODULE_MAINMENU_DEBUG = -13;
         #endregion
 
         #region battleProvider

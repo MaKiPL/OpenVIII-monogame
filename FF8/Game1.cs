@@ -23,8 +23,8 @@ namespace FF8
             Memory.spriteBatch = spriteBatch;
             Memory.content = Content;
 
-            init_debugger_Audio.DEBUG();
-            init_debugger_fields.DEBUG();
+            init_debugger_Audio.DEBUG(); //this initializes the DirectAudio, it's true that it gets loaded AFTER squaresoft logo, but we will do the opposite
+            init_debugger_fields.DEBUG(); //this initializes the field module, it's worth to have this at the beginning
 
             base.Initialize();
         }
@@ -40,6 +40,7 @@ namespace FF8
 
         protected override void Update(GameTime gameTime)
         {
+            Memory.gameTime = gameTime;
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 GracefullyExit();
 
@@ -50,7 +51,6 @@ namespace FF8
 
         protected override void Draw(GameTime gameTime)
         {
-            Memory.gameTime = gameTime;
             ModuleHandler.Draw(gameTime);
             base.Draw(gameTime);
         }

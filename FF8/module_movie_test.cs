@@ -69,7 +69,7 @@ namespace FF8
         private static void FinishedDraw()
         {
             Memory.spriteBatch.GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.Black);
-            Memory.SpriteBatchStart();
+            Memory.SpriteBatchStartStencil();
             Memory.spriteBatch.Draw(lastFrame, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
             Memory.SpriteBatchEnd();
             movieState = STATE_INIT;
@@ -99,7 +99,7 @@ namespace FF8
             Marshal.Copy(bmpdata.Scan0, texBuffer,0, texBuffer.Length);
             frame.UnlockBits(bmpdata);
             frameTex.SetData(texBuffer);
-            Memory.SpriteBatchStart();
+            Memory.SpriteBatchStartStencil();
             Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
             Memory.SpriteBatchEnd();
             lastFrame = frameTex;
