@@ -14,6 +14,7 @@ namespace FF8
         private const string loops = "loop";
 
         private static Texture2D splashTex;
+        private static Texture2D white;
 
         enum OvertureInternalModule
         {
@@ -26,8 +27,8 @@ namespace FF8
         private static double internalTimer = 0.0f;
         private static bool bNames = true; //by default we are starting with names
         private static int splashIndex = 0;
-        private static int splashName = 1;
-        private static int splashLoop = 1;
+        private static int splashName = 13;
+        private static int splashLoop = 13;
 
         private static bool bFadingIn = true; //by default first should fade in, wait, then fire fading out and wait for finish, then loop
         private static bool bWaitingSplash = false;
@@ -67,12 +68,15 @@ namespace FF8
         {
             Memory.musicIndex = 072; //Overture
             init_debugger_Audio.PlayMusic();
+            white = new Texture2D(Memory.graphics.GraphicsDevice, 4, 4, false, SurfaceFormat.Color);
+            byte[] whiteBuffer = new byte[16];
+            for (int i = 0; i < 16; i++)
+                whiteBuffer[i] = 255;
             internalModule++;
         }
 
         internal static void Draw()
         {
-            Memory.graphics.GraphicsDevice.Clear(Color.Black);
             switch(internalModule)
             {
                 case OvertureInternalModule._0InitSound:
@@ -80,9 +84,11 @@ namespace FF8
                 case OvertureInternalModule._1WaitBeforeFirst:
                     break;
                 case OvertureInternalModule._2PlaySequence:
+                    Memory.graphics.GraphicsDevice.Clear(Color.Black);
                     DrawSplash();
                     break; //actually this is our entry point for draw;
                 case OvertureInternalModule._3SequenceFinishedPlayMainMenu:
+                    Memory.graphics.GraphicsDevice.Clear(Color.White);
                     DrawLogo(); //after this ends, jump into main menu module
                     break;
             }
@@ -90,7 +96,22 @@ namespace FF8
 
         private static void DrawLogo()
         {
-            
+            //fade to white
+            Memory.SpriteBatchStartAlpha();
+            Memory.spriteBatch.Draw(splashTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
+                new Microsoft.Xna.Framework.Rectangle(0, 0, splashTex.Width, splashTex.Height)
+                , Color.White * 1);
+            if(bFadingIn)
+                Fade += Memory.gameTime.ElapsedGameTime.Milliseconds / 5000.0f;
+            if (bFadingOut)
+                Fade -= Memory.gameTime.ElapsedGameTime.Milliseconds / 5000.0f;
+            if(Fade < 0.0f)
+            {
+                bFadingIn = false;
+                ReadSplash(true);
+                bFadingOut = true;
+            }
+            Memory.SpriteBatchEnd();
         }
 
         private static void DrawSplash()
@@ -106,11 +127,6 @@ namespace FF8
 
         internal static void SplashUpdate(ref int splashIndex)
         {
-            if (splashName > 0x0f || splashLoop > 0x0f)
-            {
-                init_debugger_Audio.StopAudio();
-                internalModule++;
-            }
             if (Keyboard.GetState().IsKeyDown(Keys.Space))
             {
                 init_debugger_Audio.StopAudio();
@@ -132,6 +148,14 @@ namespace FF8
             }
             if(bFadingOut)
             {
+                if (splashLoop+1 >= 0x0F && splashName >= 0x0F)
+                {
+                    bFadingIn = true;
+                    bFadingOut = false;
+                    Fade = 1.0f;
+                    internalModule++;
+                    return;
+                }
                 Fade -= Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 2f;
                 if(Fade< 0.0f)
                 {
@@ -147,6 +171,7 @@ namespace FF8
                         bNames = bNames ? false : true; //can I simply XOR the bool in C#?
                         splashIndex = 0;
                     }
+
                     ReadSplash();
                 }
             }
@@ -163,7 +188,7 @@ namespace FF8
                 }
                 else
                 {
-                    if (fSplashWait > 6.0f)
+                    if (fSplashWait > 6.5f)
                     {
                         bWaitingSplash = false;
                         bFadingOut = true;
@@ -177,43 +202,51 @@ namespace FF8
 
 
         //Splash is 640x400 16BPP typical TIM with palette of ggg bbbbb a rrrrr gg
-        internal static void ReadSplash()
+        internal static void ReadSplash(bool bLogo = false)
         {
-            string[] lof = aw.GetListOfFiles();
-            string fileName;
-            if(bNames)
-                fileName = lof.Where(x => x.ToLower().Contains($"{names}{splashName.ToString("D2")}")).First();
-            else
-                fileName = lof.Where(x => x.ToLower().Contains($"{loops}{splashLoop.ToString("D2")}")).First();
-
-            byte[] buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_MAIN, fileName);
-            uint uncompSize = BitConverter.ToUInt32(buffer, 0);
-            buffer = LZSS.DecompressAll(buffer, (uint)buffer.Length);
-            int width = 640;
-            int height = 400;
-
-            splashTex = new Texture2D(Memory.graphics.GraphicsDevice, 640, 400, false, SurfaceFormat.Color);
-            byte[] rgbBuffer = new byte[splashTex.Width * splashTex.Height * 4];
-            int innerBufferIndex = 0;
-            for(int i = 0; i<rgbBuffer.Length; i+=4)
+            if (!bLogo)
             {
-                if (innerBufferIndex+1 >= buffer.Length) break;
-                ushort pixel = (ushort)((buffer[innerBufferIndex + 1] << 8) | buffer[innerBufferIndex]);
-                byte red = (byte)((pixel) & 0x1F);
-                byte green = (byte)((pixel >> 5) & 0x1F);
-                byte blue = (byte)((pixel >> 10) & 0x1F);
-                red = (byte)MathHelper.Clamp((red * 8), 0, 255);
-                green = (byte)MathHelper.Clamp((green * 8), 0, 255);
-                blue = (byte)MathHelper.Clamp((blue * 8), 0, 255);
-                rgbBuffer[i] = red;
-                rgbBuffer[i + 1] = green;
-                rgbBuffer[i + 2] = blue;
-                rgbBuffer[i + 3] = (byte)(((pixel >> 7) & 0x1) == 1 ? 255 : 0);
-                innerBufferIndex += 2;
+                if (splashName > 0x0f) return;
+                string[] lof = aw.GetListOfFiles();
+                string fileName;
+                if (bNames)
+                    fileName = lof.Where(x => x.ToLower().Contains($"{names}{splashName.ToString("D2")}")).First();
+                else
+                    fileName = lof.Where(x => x.ToLower().Contains($"{loops}{splashLoop.ToString("D2")}")).First();
+
+                byte[] buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_MAIN, fileName);
+                uint uncompSize = BitConverter.ToUInt32(buffer, 0);
+                buffer = LZSS.DecompressAll(buffer, (uint)buffer.Length);
+                int width = 640;
+                int height = 400;
+
+                splashTex = new Texture2D(Memory.graphics.GraphicsDevice, 640, 400, false, SurfaceFormat.Color);
+                byte[] rgbBuffer = new byte[splashTex.Width * splashTex.Height * 4];
+                int innerBufferIndex = 0;
+                for (int i = 0; i < rgbBuffer.Length; i += 4)
+                {
+                    if (innerBufferIndex + 1 >= buffer.Length) break;
+                    ushort pixel = (ushort)((buffer[innerBufferIndex + 1] << 8) | buffer[innerBufferIndex]);
+                    byte red = (byte)((pixel) & 0x1F);
+                    byte green = (byte)((pixel >> 5) & 0x1F);
+                    byte blue = (byte)((pixel >> 10) & 0x1F);
+                    red = (byte)MathHelper.Clamp((red * 8), 0, 255);
+                    green = (byte)MathHelper.Clamp((green * 8), 0, 255);
+                    blue = (byte)MathHelper.Clamp((blue * 8), 0, 255);
+                    rgbBuffer[i] = red;
+                    rgbBuffer[i + 1] = green;
+                    rgbBuffer[i + 2] = blue;
+                    rgbBuffer[i + 3] = (byte)(((pixel >> 7) & 0x1) == 1 ? 255 : 0);
+                    innerBufferIndex += 2;
+                }
+                splashTex.SetData(rgbBuffer);
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
             }
-            splashTex.SetData(rgbBuffer);
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+            else
+            {
+                
+            }
         }
     }
 }
