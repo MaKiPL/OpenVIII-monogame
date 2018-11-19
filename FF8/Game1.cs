@@ -23,7 +23,7 @@ namespace FF8
             Memory.spriteBatch = spriteBatch;
             Memory.content = Content;
 
-            init_debugger_Audio.DEBUG(); //this initializes the DirectAudio, it's true that it gets loaded AFTER squaresoft logo, but we will do the opposite
+            init_debugger_Audio.DEBUG(); //this initializes the DirectAudio, it's true that it gets loaded AFTER logo, but we will do the opposite
             init_debugger_fields.DEBUG(); //this initializes the field module, it's worth to have this at the beginning
 
             base.Initialize();

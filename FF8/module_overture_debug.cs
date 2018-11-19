@@ -54,7 +54,7 @@ namespace FF8
 
         private static void WaitForFirst()
         {
-            if (internalTimer > 6.0f)
+            if (internalTimer > 5.5f)
             {
                 internalModule++;
                 Console.WriteLine("MODULE_OVERTURE: DEBUG MODULE 2");
