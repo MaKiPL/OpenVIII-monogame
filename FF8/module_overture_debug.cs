@@ -107,7 +107,10 @@ namespace FF8
         internal static void SplashUpdate(ref int splashIndex)
         {
             if (splashName > 0x0f || splashLoop > 0x0f)
+            {
+                init_debugger_Audio.StopAudio();
                 internalModule++;
+            }
             if (Keyboard.GetState().IsKeyDown(Keys.Space))
             {
                 init_debugger_Audio.StopAudio();
