@@ -54,7 +54,7 @@ namespace FF8
 
         private static void WaitForFirst()
         {
-            if (internalTimer > 5.5f)
+            if (internalTimer > 6.0f)
             {
                 internalModule++;
                 Console.WriteLine("MODULE_OVERTURE: DEBUG MODULE 2");
@@ -98,7 +98,7 @@ namespace FF8
             if (splashTex == null)
                 return;
             Memory.SpriteBatchStartAlpha();      
-            Memory.spriteBatch.Draw(splashTex, new Microsoft.Xna.Framework.Rectangle(0, 0, 1280, 720),
+            Memory.spriteBatch.Draw(splashTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
                 new Microsoft.Xna.Framework.Rectangle(0, 0, splashTex.Width, splashTex.Height)
                 , Color.White * Fade);
             Memory.SpriteBatchEnd();
@@ -122,7 +122,7 @@ namespace FF8
                 ReadSplash();
             if(bFadingIn)
             {
-                Fade += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 2.0f;
+                Fade += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 2f;
                 if (Fade > 1.0f)
                 {
                     Fade = 1.0f;
@@ -132,7 +132,7 @@ namespace FF8
             }
             if(bFadingOut)
             {
-                Fade -= Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 2.0f;
+                Fade -= Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 2f;
                 if(Fade< 0.0f)
                 {
                     bFadingIn = true;
@@ -152,11 +152,23 @@ namespace FF8
             }
             if(bWaitingSplash)
             {
-                if (fSplashWait > 3.0f)
+                if (bNames)
                 {
-                    bWaitingSplash = false;
-                    bFadingOut = true;
-                    fSplashWait = 0.0f;
+                    if (fSplashWait > 4.8f)
+                    {
+                        bWaitingSplash = false;
+                        bFadingOut = true;
+                        fSplashWait = 0.0f;
+                    }
+                }
+                else
+                {
+                    if (fSplashWait > 6.0f)
+                    {
+                        bWaitingSplash = false;
+                        bFadingOut = true;
+                        fSplashWait = 0.0f;
+                    }
                 }
                 fSplashWait += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
             }
@@ -200,6 +212,8 @@ namespace FF8
                 innerBufferIndex += 2;
             }
             splashTex.SetData(rgbBuffer);
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
     }
 }
