@@ -88,7 +88,6 @@ namespace FF8
                     DrawSplash();
                     break; //actually this is our entry point for draw;
                 case OvertureInternalModule._3SequenceFinishedPlayMainMenu:
-                    Memory.graphics.GraphicsDevice.Clear(Color.White);
                     DrawLogo(); //after this ends, jump into main menu module
                     break;
             }
@@ -97,21 +96,38 @@ namespace FF8
         private static void DrawLogo()
         {
             //fade to white
+            if (!bWaitingSplash)
+                Memory.graphics.GraphicsDevice.Clear(Color.White);
+            else
+                Memory.graphics.GraphicsDevice.Clear(Color.Black);
             Memory.SpriteBatchStartAlpha();
             Memory.spriteBatch.Draw(splashTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
                 new Microsoft.Xna.Framework.Rectangle(0, 0, splashTex.Width, splashTex.Height)
-                , Color.White * 1);
+                , Color.White * Fade);
             if(bFadingIn)
                 Fade += Memory.gameTime.ElapsedGameTime.Milliseconds / 5000.0f;
             if (bFadingOut)
-                Fade -= Memory.gameTime.ElapsedGameTime.Milliseconds / 5000.0f;
+                Fade -= Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f;
             if(Fade < 0.0f)
             {
-                bFadingIn = false;
+                bFadingIn = true;
                 ReadSplash(true);
+                bFadingOut = false;
+            }
+            if (bFadingIn && Fade > 1.0f && !bWaitingSplash)
+                internalTimer += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
+             if (internalTimer > 5.0f)
+            {
+                bWaitingSplash = true;
                 bFadingOut = true;
             }
             Memory.SpriteBatchEnd();
+            if (bWaitingSplash && Fade < 0.0f)
+            {
+                init_debugger_Audio.StopAudio();
+                Memory.module = Memory.MODULE_MAINMENU_DEBUG;
+            }
+
         }
 
         private static void DrawSplash()
@@ -150,8 +166,10 @@ namespace FF8
             {
                 if (splashLoop+1 >= 0x0F && splashName >= 0x0F)
                 {
-                    bFadingIn = true;
-                    bFadingOut = false;
+                    bFadingIn = false;
+                    bFadingOut = true;
+                    bWaitingSplash = false;
+                    internalTimer = 0.0f;
                     Fade = 1.0f;
                     internalModule++;
                     return;
@@ -236,7 +254,7 @@ namespace FF8
                     rgbBuffer[i] = red;
                     rgbBuffer[i + 1] = green;
                     rgbBuffer[i + 2] = blue;
-                    rgbBuffer[i + 3] = (byte)(((pixel >> 7) & 0x1) == 1 ? 255 : 0);
+                    rgbBuffer[i + 3] = 255;//(byte)(((pixel >> 7) & 0x1) == 1 ? 255 : 0);
                     innerBufferIndex += 2;
                 }
                 splashTex.SetData(rgbBuffer);
