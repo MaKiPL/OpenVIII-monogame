@@ -184,7 +184,7 @@ namespace FF8
             int dataPointer = BitConverter.ToInt32(Tdw, 4);
             TIM2 tim = new TIM2(Tdw, (uint)dataPointer);
             menuFont = new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight);
-            menuFont.SetData(tim.CreateImageBuffer(tim.GetClutColors(8)));
+            menuFont.SetData(tim.CreateImageBuffer(tim.GetClutColors(7)));
         }
 
 
@@ -199,9 +199,22 @@ namespace FF8
                 char deltaChar = (char)(c - 32);
                 int verticalPosition = deltaChar / charCountWidth;
 
+                Rectangle destRect = new Rectangle(realX, 
+                    y, 
+                    (int)(charSize * zoomWidth), 
+                    (int)(charSize * zoomHeight));
+
+                Rectangle sourceRect = new Rectangle((deltaChar - (verticalPosition * charCountWidth)) * charSize, 
+                    verticalPosition * charSize, 
+                    charSize-1, 
+                    charSize-1);
+
+
                 Memory.spriteBatch.Draw(isMenu == 1 ? menuFont : whichFont == 0 ? sysfnt : sysfnt00,
-                    new Rectangle(realX, y, (int)(charSize*zoomWidth), (int)(charSize * zoomHeight)),
-                    new Rectangle((deltaChar - (verticalPosition * charCountWidth)) * charSize, verticalPosition * charSize, charSize, charSize), Color.White);
+                    destRect,
+                    sourceRect,
+                Color.White);
+
                 realX += (int)(charSize*zoomWidth);
                 }
         }

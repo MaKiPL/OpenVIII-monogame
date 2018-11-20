@@ -27,6 +27,7 @@ namespace FF8
             public byte Red;
             public byte Green;
             public byte Blue;
+            public byte Alpha;
         }
 
         private static int bpp = -1;
@@ -137,7 +138,22 @@ namespace FF8
                     colorPixels.Add(new Color() { Red = red, Green = green, Blue = blue });
                 }
             }
-            if (bpp == 4) throw new NotImplementedException();
+            if (bpp == 4)
+            {
+                pbs.Seek(timOffset + 20 + (32 * clut), PseudoBufferedStream.SEEK_BEGIN);
+                for (int i = 0; i < 16; i++)
+                {
+                    ushort clutPixel = pbs.ReadUShort();
+                    byte red = (byte)((clutPixel) & 0x1F);
+                    byte green = (byte)((clutPixel >> 5) & 0x1F);
+                    byte blue = (byte)((clutPixel >> 10) & 0x1F);
+                    byte alpha = (byte)(clutPixel >> 11 & 1);
+                    red = (byte)MathHelper.Clamp((red * bpp*4), 0, 255);
+                    green = (byte)MathHelper.Clamp((green * bpp*4), 0, 255);
+                    blue = (byte)MathHelper.Clamp((blue * bpp*4), 0, 255);
+                    colorPixels.Add(new Color() { Red = red, Green = green, Blue = blue, Alpha=alpha });
+                }
+            }
             if (bpp > 8) throw new Exception("TIM that has bpp mode higher than 8 has no clut data!");
             return colorPixels.ToArray();
         }
@@ -146,19 +162,44 @@ namespace FF8
         {
             pbs.Seek(textureDataPointer, PseudoBufferedStream.SEEK_BEGIN);
             byte[] buffer = new byte[texture.Width * texture.Height * 4]; //ARGB
-            if ((buffer.Length)/4 != pbs.Length - pbs.Tell())
-                throw new Exception("TIM_v2::CreateImageBuffer::TIM texture buffer has size incosistency.");
-            for(int i = 0; i<buffer.Length; i++)
+            if (bpp == 8)
             {
-                byte pixel = pbs.ReadByte();
-                Color ColoredPixel = palette[pixel];
+                if ((buffer.Length) / 4 != pbs.Length - pbs.Tell())
+                    throw new Exception("TIM_v2::CreateImageBuffer::TIM texture buffer has size incosistency.");
+                for (int i = 0; i < buffer.Length; i++)
+                {
+                    byte pixel = pbs.ReadByte();
+                    Color ColoredPixel = palette[pixel];
 
-                buffer[i] = ColoredPixel.Red;
-                buffer[++i] = ColoredPixel.Green;
-                buffer[++i] = ColoredPixel.Blue;
-                buffer[++i] = (byte)((ColoredPixel.Red == 0 && ColoredPixel.Green == 0 && ColoredPixel.Blue == 0) ? 0x00 : 0xFF);
+                    buffer[i] = ColoredPixel.Red;
+                    buffer[++i] = ColoredPixel.Green;
+                    buffer[++i] = ColoredPixel.Blue;
+                    buffer[++i] = (byte)((ColoredPixel.Red == 0 && ColoredPixel.Green == 0 && ColoredPixel.Blue == 0) ? 0x00 : 0xFF);
 
 
+                }
+            }
+            if(bpp==4)
+            {
+                if ((buffer.Length) / 8 != pbs.Length - pbs.Tell())
+                    throw new Exception("TIM_v2::CreateImageBuffer::TIM texture buffer has size incosistency.");
+                for (int i = 0; i < buffer.Length; i++)
+                {
+                    byte pixel = pbs.ReadByte();
+                    //Color ColoredPixel = palette[(pixel >> 4)&0xF];
+                    Color ColoredPixel = palette[pixel&0xf];
+                    buffer[i] = ColoredPixel.Red;
+                    buffer[++i] = ColoredPixel.Green;
+                    buffer[++i] = ColoredPixel.Blue;
+                    buffer[++i] = ColoredPixel.Alpha;
+
+                    ColoredPixel = palette[pixel>>4];
+
+                    buffer[++i] = ColoredPixel.Red;
+                    buffer[++i] = ColoredPixel.Green;
+                    buffer[++i] = ColoredPixel.Blue;
+                    buffer[++i] = ColoredPixel.Alpha;
+                }
             }
             //Then in bs debug where ReadTexture store for all cluts
             //data and then create Texture2D from there. (array of e.g. 15 texture2D)
