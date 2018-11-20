@@ -17,6 +17,10 @@ namespace FF8
         public static ContentManager content;
         public static Font font;
 
+        //original resolution I am working on, therefore if user scales it we need to propertially scale everything
+        public static int PreferredViewportWidth = 1280;
+        public static int PreferredViewportHeight = 720;
+
         public static GameTime gameTime;
 
         internal static int musicIndex = 0;

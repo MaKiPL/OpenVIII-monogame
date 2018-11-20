@@ -198,11 +198,14 @@ namespace FF8
             {
                 char deltaChar = (char)(c - 32);
                 int verticalPosition = deltaChar / charCountWidth;
+                //i.e. 1280 is 100%, 640 is 50% and therefore 2560 is 200% which means multiply by 0.5f or 2.0f
+                float fScaleWidth = (float)Memory.graphics.GraphicsDevice.Viewport.Width / Memory.PreferredViewportWidth;
+                float fScaleHeight = (float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight;
 
                 Rectangle destRect = new Rectangle(realX, 
                     y, 
-                    (int)(charSize * zoomWidth), 
-                    (int)(charSize * zoomHeight));
+                    (int)(charSize * zoomWidth * fScaleWidth), 
+                    (int)(charSize * zoomHeight * fScaleHeight));
 
                 Rectangle sourceRect = new Rectangle((deltaChar - (verticalPosition * charCountWidth)) * charSize, 
                     verticalPosition * charSize, 
@@ -215,7 +218,7 @@ namespace FF8
                     sourceRect,
                 Color.White);
 
-                realX += (int)(charSize*zoomWidth);
+                realX += (int)(charSize*zoomWidth*fScaleWidth);
                 }
         }
 
