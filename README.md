@@ -17,7 +17,7 @@ MODULE OVERTURE
 
 MODULE MAIN MENU
 
-⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0%
+⬛⬛⬜⬜⬜⬜⬜⬜⬜⬜ 20%
 
 MODULE IN-GAME MENU
 
