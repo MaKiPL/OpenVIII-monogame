@@ -13,7 +13,7 @@ Such DEBUG modules are designed to be rewritten into stable version, without tra
 -----------------------------------------------PROGRESS IN-DEV PROTOTYPES--------------------------------------------
 MODULE OVERTURE
 
-⬛⬛⬛⬛⬛⬛⬛⬛⬛⬜ 95% 
+⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛ 100% 
 
 MODULE MAIN MENU
 
