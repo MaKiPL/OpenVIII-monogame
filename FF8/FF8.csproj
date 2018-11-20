@@ -44,6 +44,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="ArchiveWorker.cs" />
+    <Compile Include="Font.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="init_debugger_Audio.cs" />
     <Compile Include="init_debugger_fields.cs" />

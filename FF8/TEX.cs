@@ -58,7 +58,7 @@ namespace FF8
             textureLocator = 0xEC + (int)(texture.PaletteSize * 4) + 4;
         }
 
-        public Texture2D GetTexture()
+        public Texture2D GetTexture(int forcePalette = -1)
         {
             Color[] colors;
             if (texture.PaletteFlag != 0)
@@ -78,10 +78,10 @@ namespace FF8
                 for (int i = 0; i < convertBuffer.Length; i += 4)
                 {
                     byte colorkey = buffer[textureLocator++];
-                    convertBuffer[i] = colors[colorkey].Blue;
-                    convertBuffer[i + 1] = colors[colorkey].Green;
-                    convertBuffer[i + 2] = colors[colorkey].Red;
-                    convertBuffer[i + 3] = colors[colorkey].Alpha;
+                    convertBuffer[i] = colors[forcePalette == -1 ? colorkey : forcePalette].Blue;
+                    convertBuffer[i + 1] = colors[forcePalette == -1 ? colorkey : forcePalette].Green;
+                    convertBuffer[i + 2] = colors[forcePalette == -1 ? colorkey : forcePalette].Red;
+                    convertBuffer[i + 3] = colors[forcePalette == -1 ? colorkey : forcePalette].Alpha;
                 }
                 bmp.SetData(convertBuffer);
                 return bmp;

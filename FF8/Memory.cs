@@ -15,6 +15,7 @@ namespace FF8
         public static GraphicsDeviceManager graphics;
         public static SpriteBatch spriteBatch;
         public static ContentManager content;
+        public static Font font;
 
         public static GameTime gameTime;
 
@@ -32,8 +33,6 @@ namespace FF8
 
 
         public static int module = MODULE_OVERTURE_DEBUG;
-
-
 
         public const string FF8DIR = @"D:\SteamLibrary\steamapps\common\FINAL FANTASY VIII\Data\lang-en\"; //Work
         //public const string FF8DIR = @"D:\Steam\steamapps\common\FINAL FANTASY VIII\Data\lang-en"; //Home

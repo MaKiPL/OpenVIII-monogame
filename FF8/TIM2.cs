@@ -62,7 +62,7 @@ namespace FF8
                 texture.PaletteY = pbs.ReadUShort();
                 pbs.Seek(2, PseudoBufferedStream.SEEK_CURRENT);
                 texture.NumOfCluts = pbs.ReadUShort();
-                byte[] buffer = new byte[texture.NumOfCluts * 32];
+                byte[] buffer = new byte[texture.NumOfCluts * 16];
                 for (int i = 0; i != buffer.Length; i++)
                     buffer[i] = pbs.ReadByte();
                 texture.ClutData = buffer;
