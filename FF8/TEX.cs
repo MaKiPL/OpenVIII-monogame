@@ -60,6 +60,7 @@ namespace FF8
 
         public Texture2D GetTexture(int forcePalette = -1)
         {
+            int localTextureLocator = textureLocator;
             Color[] colors;
             if (texture.PaletteFlag != 0)
             {
@@ -77,7 +78,7 @@ namespace FF8
                 byte[] convertBuffer = new byte[texture.Width * texture.Height * 4];
                 for (int i = 0; i < convertBuffer.Length; i += 4)
                 {
-                    byte colorkey = buffer[textureLocator++];
+                    byte colorkey = buffer[localTextureLocator++];
                     convertBuffer[i] = colors[forcePalette == -1 ? colorkey : (forcePalette * 16) + colorkey].Blue;
                     convertBuffer[i + 1] = colors[forcePalette == -1 ? colorkey : (forcePalette*16) + colorkey].Green;
                     convertBuffer[i + 2] = colors[forcePalette == -1 ? colorkey : (forcePalette * 16) + colorkey].Red;
@@ -89,7 +90,7 @@ namespace FF8
             else
             {
                 Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Bgra5551); //cool, mongame has already BRGA 5551 mode!                
-                bmp.SetData(buffer, textureLocator, buffer.Length - textureLocator);
+                bmp.SetData(buffer, localTextureLocator, buffer.Length - localTextureLocator);
 
                 return bmp;
             }

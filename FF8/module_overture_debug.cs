@@ -53,6 +53,19 @@ namespace FF8
             }
         }
 
+
+        public static void ResetModule()
+        {
+            internalModule = 0;
+            internalTimer = 0.0f;
+            bFadingIn = true;
+            bWaitingSplash = false;
+            fSplashWait = 0.0f;
+            bFadingOut = false;
+            Fade = 0;
+            Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
+            Memory.module = Memory.MODULE_OVERTURE_DEBUG;
+        }
         private static void WaitForFirst()
         {
             if (internalTimer > 6.0f)
@@ -85,8 +98,10 @@ namespace FF8
             switch (internalModule)
             {
                 case OvertureInternalModule._0InitSound:
+                    Memory.graphics.GraphicsDevice.Clear(Color.Black);
                     break;
                 case OvertureInternalModule._1WaitBeforeFirst:
+                    Memory.graphics.GraphicsDevice.Clear(Color.Black);
                     break;
                 case OvertureInternalModule._2PlaySequence:
                     Memory.graphics.GraphicsDevice.Clear(Color.Black);

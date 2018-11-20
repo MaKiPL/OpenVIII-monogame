@@ -231,7 +231,7 @@ namespace FF8
                     if(kvp.Value.Length == 1)
                         if (kvp.Value[0] == n)
                             str += (char)(kvp.Key);
-            return str;
+            return str.Replace("\0", "");
         }
 
         /*
