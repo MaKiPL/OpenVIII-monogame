@@ -77,7 +77,12 @@ namespace FF8
 
         internal static void Draw()
         {
-            switch(internalModule)
+            if (Keyboard.GetState().IsKeyDown(Keys.Space))
+            {
+                init_debugger_Audio.StopAudio();
+                Memory.module = Memory.MODULE_MAINMENU_DEBUG;
+            }
+            switch (internalModule)
             {
                 case OvertureInternalModule._0InitSound:
                     break;
@@ -143,11 +148,6 @@ namespace FF8
 
         internal static void SplashUpdate(ref int splashIndex)
         {
-            if (Keyboard.GetState().IsKeyDown(Keys.Space))
-            {
-                init_debugger_Audio.StopAudio();
-                Memory.module = Memory.MODULE_MAINMENU_DEBUG;
-            }
             if(aw == null)
                 aw = new ArchiveWorker(Memory.Archives.A_MAIN);
             if (splashTex == null)

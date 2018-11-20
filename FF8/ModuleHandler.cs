@@ -11,12 +11,19 @@ namespace FF8
     class ModuleHandler
     {
         private static int module = Memory.module;
+        private static int lastModule = Memory.module;
         static int msDelay = 0;
         static int msDelayLimit = 100;
         static bool bLimitInput = false;
 
         public static void Update(GameTime gameTime)
         {
+            if(lastModule != module)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                lastModule = module;
+            }
             module = Memory.module;
             if (bLimitInput)
                 bLimitInput = (msDelay += gameTime.ElapsedGameTime.Milliseconds) < msDelayLimit;
@@ -78,6 +85,9 @@ namespace FF8
                 case Memory.MODULE_OVERTURE_DEBUG:
                     module_overture_debug.Update();
                     break;
+                case Memory.MODULE_MAINMENU_DEBUG:
+                    module_main_menu_debug.Update();
+                    break;
             }
         }
 
@@ -99,6 +109,9 @@ namespace FF8
                     break;
                 case Memory.MODULE_OVERTURE_DEBUG:
                     module_overture_debug.Draw();
+                    break;
+                case Memory.MODULE_MAINMENU_DEBUG:
+                    module_main_menu_debug.Draw();
                     break;
             }
         }
