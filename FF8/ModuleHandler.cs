@@ -30,41 +30,9 @@ namespace FF8
             else
             {
 #if DEBUG
-                if (Keyboard.GetState().IsKeyDown(Keys.F2))
+                if (Keyboard.GetState().IsKeyDown(Keys.Back))
                 {
-                    Memory.module = Memory.MODULE_BATTLE_DEBUG;
-                    bLimitInput = true;
-                    msDelay = 0;
-                    //if (Memory.bat_sceneID == 006)
-                    //    Memory.bat_sceneID = 000;
-                    //else Memory.bat_sceneID = 006;
-                    Memory.bat_sceneID++;
-                    module_battle_debug.ResetState();
-                }
-                if (Keyboard.GetState().IsKeyDown(Keys.F3))
-                {
-                    bLimitInput = true;
-                    msDelay = 0;
-                    Memory.musicIndex++;
-                    if (Memory.musicIndex >= Memory.musices.Length)
-                        Memory.musicIndex = 0;
-                    init_debugger_Audio.PlayMusic();
-                }
-                if(Keyboard.GetState().IsKeyDown(Keys.F4))
-                {
-                    Memory.module = Memory.MODULE_FIELD_DEBUG;
-                    bLimitInput = true;
-                    msDelay = 0;
-                    Memory.FieldHolder.FieldID++;
-                    module_field_debug.ResetField();
-                }
-                if (Keyboard.GetState().IsKeyDown(Keys.F5))
-                {
-                    Memory.module = Memory.MODULE_FIELD_DEBUG;
-                    bLimitInput = true;
-                    msDelay = 0;
-                    Memory.FieldHolder.FieldID--;
-                    module_field_debug.ResetField();
+                    Memory.module = Memory.MODULE_MAINMENU_DEBUG;
                 }
             }
 #endif

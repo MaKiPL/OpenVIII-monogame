@@ -24,12 +24,16 @@ namespace FF8
 
         private static float[] choiseHeights = new float[] { 0.35f, 0.40f, 0.45f };
 
+        private static int debug_choosedBS = 0;
+
 
         static int msDelay = 0;
         static int msDelayLimit = 100;
         static bool bLimitInput = false;
 
         private static int choosenOption = 0;
+        private static int debug_fieldPointer = 0;
+        private static string debug_choosedField = Memory.FieldHolder.fields[debug_fieldPointer];
 
         internal static void Update()
         {
@@ -84,7 +88,49 @@ namespace FF8
                 State = MainMenuStates.MainLobby;
                 module_overture_debug.ResetModule();
             }
-
+            if (Keyboard.GetState().IsKeyDown(Keys.Left) && !bLimitInput && choosenOption == 3)
+            {
+                bLimitInput = true;
+                msDelay = 0;
+                //play sound;
+                if (debug_choosedBS <= 0) return;
+                debug_choosedBS--;
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.Right) && !bLimitInput && choosenOption == 3)
+            {
+                bLimitInput = true;
+                msDelay = 0;
+                //play sound;
+                if (debug_choosedBS >= 162) return;
+                debug_choosedBS++;
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.Left) && !bLimitInput && choosenOption == 4)
+            {
+                bLimitInput = true;
+                msDelay = 0;
+                //play sound;
+                if (debug_fieldPointer <= 0) return;
+                debug_fieldPointer--;
+                debug_choosedField = Memory.FieldHolder.fields[debug_fieldPointer];
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.Right) && !bLimitInput && choosenOption == 4)
+            {
+                bLimitInput = true;
+                msDelay = 0;
+                //play sound;
+                if (debug_fieldPointer >= Memory.FieldHolder.fields.Length) return;
+                debug_fieldPointer++;
+                debug_choosedField = Memory.FieldHolder.fields[debug_fieldPointer];
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !bLimitInput && choosenOption == 4)
+            {
+                bLimitInput = true;
+                msDelay = 0;
+                //play sound;
+                Memory.FieldHolder.FieldID = (ushort)debug_fieldPointer;
+                module_field_debug.ResetField();
+                Memory.module = Memory.MODULE_FIELD_DEBUG;
+            }
             if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !bLimitInput && choosenOption == 5)
             {
                 bLimitInput = true;
@@ -92,6 +138,15 @@ namespace FF8
                 //play sound;
                 Memory.musicIndex++;
                 init_debugger_Audio.PlayMusic();
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !bLimitInput && choosenOption == 3)
+            {
+                bLimitInput = true;
+                msDelay = 0;
+                //play sound;
+                Memory.bat_sceneID = debug_choosedBS;
+                module_battle_debug.ResetState();
+                Memory.module = Memory.MODULE_BATTLE_DEBUG;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !bLimitInput && choosenOption == 6)
             {
@@ -187,8 +242,8 @@ namespace FF8
             //string cCnCRtn = Font.CipherDirty("OpenVIII debug tools"); //SnclZMMM bc`se \0rmmjq
             Memory.font.RenderBasicText(Font.CipherDirty("Reset Main Menu state".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.05f), 1f, 2f, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty("Play Overture".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.08f), 1f, 2f, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty("Battle map fly".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.11f), 1f, 2f, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty("Field debug render".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.14f), 1f, 2f, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Battle map fly: a0stg{debug_choosedBS.ToString("D3")}".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.11f), 1f, 2f, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Field debug render: {debug_choosedField}".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.14f), 1f, 2f, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty("Play next music".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.17f), 1f, 2f, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty("Play previous music".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.20f), 1f, 2f, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty("Stop music".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.23f), 1f, 2f, 0, 1);
