@@ -27,8 +27,8 @@ namespace FF8
         private static double internalTimer = 0.0f;
         private static bool bNames = true; //by default we are starting with names
         private static int splashIndex = 0;
-        private static int splashName = 13;
-        private static int splashLoop = 13;
+        private static int splashName = 1;
+        private static int splashLoop = 1;
 
         private static bool bFadingIn = true; //by default first should fade in, wait, then fire fading out and wait for finish, then loop
         private static bool bWaitingSplash = false;
@@ -263,7 +263,37 @@ namespace FF8
             }
             else
             {
-                
+                string[] lof = aw.GetListOfFiles();
+                string fileName= lof.Where(x => x.ToLower().Contains($"ff8.lzs")).First();
+
+                byte[] buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_MAIN, fileName);
+                uint uncompSize = BitConverter.ToUInt32(buffer, 0);
+                buffer = LZSS.DecompressAll(buffer, (uint)buffer.Length);
+                int width = 640;
+                int height = 400;
+
+                splashTex = new Texture2D(Memory.graphics.GraphicsDevice, 640, 400, false, SurfaceFormat.Color);
+                byte[] rgbBuffer = new byte[splashTex.Width * splashTex.Height * 4];
+                int innerBufferIndex = 0;
+                for (int i = 0; i < rgbBuffer.Length; i += 4)
+                {
+                    if (innerBufferIndex + 1 >= buffer.Length) break;
+                    ushort pixel = (ushort)((buffer[innerBufferIndex + 1] << 8) | buffer[innerBufferIndex]);
+                    byte red = (byte)((pixel) & 0x1F);
+                    byte green = (byte)((pixel >> 5) & 0x1F);
+                    byte blue = (byte)((pixel >> 10) & 0x1F);
+                    red = (byte)MathHelper.Clamp((red * 8), 0, 255);
+                    green = (byte)MathHelper.Clamp((green * 8), 0, 255);
+                    blue = (byte)MathHelper.Clamp((blue * 8), 0, 255);
+                    rgbBuffer[i] = red;
+                    rgbBuffer[i + 1] = green;
+                    rgbBuffer[i + 2] = blue;
+                    rgbBuffer[i + 3] = 255;//(byte)(((pixel >> 7) & 0x1) == 1 ? 255 : 0);
+                    innerBufferIndex += 2;
+                }
+                splashTex.SetData(rgbBuffer);
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
             }
         }
     }
