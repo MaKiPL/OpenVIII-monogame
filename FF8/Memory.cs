@@ -15,7 +15,11 @@ namespace FF8
         public static GraphicsDeviceManager graphics;
         public static SpriteBatch spriteBatch;
         public static ContentManager content;
+
+
+
         public static Font font;
+        public static Texture2D iconsTex;
 
         //original resolution I am working on, therefore if user scales it we need to propertially scale everything
         public static int PreferredViewportWidth = 1280;

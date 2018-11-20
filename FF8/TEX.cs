@@ -78,10 +78,10 @@ namespace FF8
                 for (int i = 0; i < convertBuffer.Length; i += 4)
                 {
                     byte colorkey = buffer[textureLocator++];
-                    convertBuffer[i] = colors[forcePalette == -1 ? colorkey : forcePalette].Blue;
-                    convertBuffer[i + 1] = colors[forcePalette == -1 ? colorkey : forcePalette].Green;
-                    convertBuffer[i + 2] = colors[forcePalette == -1 ? colorkey : forcePalette].Red;
-                    convertBuffer[i + 3] = colors[forcePalette == -1 ? colorkey : forcePalette].Alpha;
+                    convertBuffer[i] = colors[forcePalette == -1 ? colorkey : (forcePalette * 16) + colorkey].Blue;
+                    convertBuffer[i + 1] = colors[forcePalette == -1 ? colorkey : (forcePalette*16) + colorkey].Green;
+                    convertBuffer[i + 2] = colors[forcePalette == -1 ? colorkey : (forcePalette * 16) + colorkey].Red;
+                    convertBuffer[i + 3] = colors[forcePalette == -1 ? colorkey : (forcePalette * 16) + colorkey].Alpha;
                 }
                 bmp.SetData(convertBuffer);
                 return bmp;

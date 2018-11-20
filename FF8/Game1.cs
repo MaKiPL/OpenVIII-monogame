@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.Linq;
 
 namespace FF8
 {
@@ -26,7 +27,13 @@ namespace FF8
             init_debugger_Audio.DEBUG(); //this initializes the DirectAudio, it's true that it gets loaded AFTER logo, but we will do the opposite
             init_debugger_fields.DEBUG(); //this initializes the field module, it's worth to have this at the beginning
             Memory.font = new Font(); //this initializes the fonts and drawing system- holds fonts in-memory
+            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
 
+            TEX tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU,
+                aw.GetListOfFiles().Where(x => x.ToLower().Contains("icon.tex")).First()));
+            Memory.iconsTex = tex.GetTexture(2);
+
+            
             base.Initialize();
         }
         protected override void LoadContent()

@@ -89,6 +89,8 @@ namespace FF8
             Memory.font.RenderBasicText("RI[ KEQI", (int)(vpWidth *0.42f), (int)(vpHeight * 0.35f),2f,3f,0,1);
             Memory.font.RenderBasicText("Gmlrglsc", (int)(vpWidth * 0.42f), (int)(vpHeight * 0.40f),2f,3f,0,1);
             Memory.font.RenderBasicText("SnclZMMM bc`se rmmjq", (int)(vpWidth * 0.42f), (int)(vpHeight * 0.45f),2f,3f,0,1);
+
+            Memory.spriteBatch.Draw(Memory.iconsTex, new Rectangle(0, 0, 512, 512), Color.White);
             Memory.SpriteBatchEnd();
         }
     }
