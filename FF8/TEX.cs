@@ -53,9 +53,9 @@ namespace FF8
             if (texture.PaletteFlag != 0)
             {
                 texture.paletteData = new byte[texture.PaletteSize * 4];
-                Buffer.BlockCopy(buffer, 0xEC, texture.paletteData, 0, (int)(texture.PaletteSize * 4));
+                Buffer.BlockCopy(buffer, 0xF0, texture.paletteData, 0, (int)(texture.PaletteSize * 4));
             }
-            textureLocator = 0xEC + (int)(texture.PaletteSize == 0 ? 1 : texture.PaletteSize * 4);
+            textureLocator = 0xEC + (int)(texture.PaletteSize * 4) + 4;
         }
 
         public Texture2D GetTexture()
@@ -67,28 +67,28 @@ namespace FF8
                 int k = 0;
                 for (int i = 0; i < texture.paletteData.Length; i += 4)
                 {
-                    colors[k].Alpha = texture.paletteData[i];
-                    colors[k].Red = texture.paletteData[i + 1];
-                    colors[k].Green = texture.paletteData[i + 2];
-                    colors[k].Blue = texture.paletteData[i + 3];
+                    colors[k].Red = texture.paletteData[i];
+                    colors[k].Green = texture.paletteData[i + 1];
+                    colors[k].Blue = texture.paletteData[i + 2];
+                    colors[k].Alpha = texture.paletteData[i + 3];
                     k++;
                 }
-                Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height);
+                Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
                 byte[] convertBuffer = new byte[texture.Width * texture.Height * 4];
-                for (int i = 0; i < buffer.Length; i += 4)
+                for (int i = 0; i < convertBuffer.Length; i += 4)
                 {
                     byte colorkey = buffer[textureLocator++];
-                    convertBuffer[i] = colors[colorkey].Alpha;
-                    convertBuffer[i + 1] = colors[colorkey].Red;
-                    convertBuffer[i + 2] = colors[colorkey].Green;
-                    convertBuffer[i + 3] = colors[colorkey].Blue;
+                    convertBuffer[i] = colors[colorkey].Blue;
+                    convertBuffer[i + 1] = colors[colorkey].Green;
+                    convertBuffer[i + 2] = colors[colorkey].Red;
+                    convertBuffer[i + 3] = colors[colorkey].Alpha;
                 }
                 bmp.SetData(convertBuffer);
                 return bmp;
             }
             else
             {
-                Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Bgra5551); //cool, mongame has already BRGA 5551 mode!
+                Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Bgra5551); //cool, mongame has already BRGA 5551 mode!                
                 bmp.SetData(buffer, textureLocator, buffer.Length - textureLocator);
 
                 return bmp;

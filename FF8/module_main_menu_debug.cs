@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework;
 using System;
 using System.Linq;
 
@@ -60,7 +61,8 @@ namespace FF8
 
         internal static void Draw()
         {
-            switch(State)
+            Memory.graphics.GraphicsDevice.Clear(Color.Black);
+            switch (State)
             {
                 case MainMenuStates.MainLobby:
                     DrawMainLobby();
@@ -73,8 +75,16 @@ namespace FF8
         private static void DrawMainLobby()
         {
             //draw start00+01
+            if (start00 == null || start01 == null)
+                return;
+            if (Fade < 1.0f)
+                Fade += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 3;
+            int vpWidth = Memory.graphics.GraphicsDevice.Viewport.Width;
+            int vpHeight = Memory.graphics.GraphicsDevice.Viewport.Width;
+            float zoom = 0.65f;
             Memory.SpriteBatchStartAlpha();
-            
+            Memory.spriteBatch.Draw(start00, new Rectangle(0, 0, (int)(vpWidth*zoom), (int)(vpHeight*(zoom-0.1f))), null, Color.White * Fade);
+            Memory.spriteBatch.Draw(start01, new Rectangle((int)(vpWidth * zoom), 0, vpWidth/3, (int)(vpHeight * (zoom-0.1f))), Color.White * Fade);
             Memory.SpriteBatchEnd();
         }
     }
