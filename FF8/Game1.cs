@@ -25,6 +25,7 @@ namespace FF8
             Memory.content = Content;
 
             init_debugger_Audio.DEBUG(); //this initializes the DirectAudio, it's true that it gets loaded AFTER logo, but we will do the opposite
+            init_debugger_Audio.DEBUG_SoundAudio(); //this initalizes the WAVE format audio.dat
             init_debugger_fields.DEBUG(); //this initializes the field module, it's worth to have this at the beginning
             Memory.font = new Font(); //this initializes the fonts and drawing system- holds fonts in-memory
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);

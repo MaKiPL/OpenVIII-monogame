@@ -25,6 +25,7 @@ namespace FF8
         private static float[] choiseHeights = new float[] { 0.35f, 0.40f, 0.45f };
 
         private static int debug_choosedBS = 0;
+        private static int debug_choosedAudio = 0;
 
 
         static int msDelay = 0;
@@ -52,28 +53,28 @@ namespace FF8
 
         private static void DebugUpdate()
         {
-            int availableOptions = 7;
+            int availableOptions = 8;
             if (bLimitInput)
                 bLimitInput = (msDelay += Memory.gameTime.ElapsedGameTime.Milliseconds) < msDelayLimit;
             if (Keyboard.GetState().IsKeyDown(Keys.Down) && !bLimitInput)
             {
                 bLimitInput = true;
                 msDelay = 0;
-                //play sound;
+                init_debugger_Audio.PlaySound(0);
                 choosenOption = choosenOption >= availableOptions ? 1 : choosenOption + 1;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.Up) && !bLimitInput)
             {
                 bLimitInput = true;
                 msDelay = 0;
-                //play sound;
+                init_debugger_Audio.PlaySound(0);
                 choosenOption = choosenOption <= 1 ? availableOptions : choosenOption - 1;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !bLimitInput && choosenOption == 1)
             {
                 bLimitInput = true;
                 msDelay = 0;
-                //play sound;
+                init_debugger_Audio.PlaySound(0);
                 choosenOption = 0;
                 Fade = 0.0f;
                 State = MainMenuStates.MainLobby;
@@ -82,7 +83,7 @@ namespace FF8
             {
                 bLimitInput = true;
                 msDelay = 0;
-                //play sound;
+                init_debugger_Audio.PlaySound(0);
                 choosenOption = 0;
                 Fade = 0.0f;
                 State = MainMenuStates.MainLobby;
@@ -92,7 +93,7 @@ namespace FF8
             {
                 bLimitInput = true;
                 msDelay = 0;
-                //play sound;
+                init_debugger_Audio.PlaySound(0);
                 if (debug_choosedBS <= 0) return;
                 debug_choosedBS--;
             }
@@ -100,7 +101,7 @@ namespace FF8
             {
                 bLimitInput = true;
                 msDelay = 0;
-                //play sound;
+                init_debugger_Audio.PlaySound(0);
                 if (debug_choosedBS >= 162) return;
                 debug_choosedBS++;
             }
@@ -108,7 +109,7 @@ namespace FF8
             {
                 bLimitInput = true;
                 msDelay = 0;
-                //play sound;
+                init_debugger_Audio.PlaySound(0);
                 if (debug_fieldPointer <= 0) return;
                 debug_fieldPointer--;
                 debug_choosedField = Memory.FieldHolder.fields[debug_fieldPointer];
@@ -117,7 +118,7 @@ namespace FF8
             {
                 bLimitInput = true;
                 msDelay = 0;
-                //play sound;
+                init_debugger_Audio.PlaySound(0);
                 if (debug_fieldPointer >= Memory.FieldHolder.fields.Length) return;
                 debug_fieldPointer++;
                 debug_choosedField = Memory.FieldHolder.fields[debug_fieldPointer];
@@ -126,7 +127,7 @@ namespace FF8
             {
                 bLimitInput = true;
                 msDelay = 0;
-                //play sound;
+                init_debugger_Audio.PlaySound(0);
                 Memory.FieldHolder.FieldID = (ushort)debug_fieldPointer;
                 module_field_debug.ResetField();
                 Memory.module = Memory.MODULE_FIELD_DEBUG;
@@ -135,7 +136,7 @@ namespace FF8
             {
                 bLimitInput = true;
                 msDelay = 0;
-                //play sound;
+                init_debugger_Audio.PlaySound(0);
                 Memory.musicIndex++;
                 init_debugger_Audio.PlayMusic();
             }
@@ -143,7 +144,7 @@ namespace FF8
             {
                 bLimitInput = true;
                 msDelay = 0;
-                //play sound;
+                init_debugger_Audio.PlaySound(0);
                 Memory.bat_sceneID = debug_choosedBS;
                 module_battle_debug.ResetState();
                 Memory.module = Memory.MODULE_BATTLE_DEBUG;
@@ -152,7 +153,7 @@ namespace FF8
             {
                 bLimitInput = true;
                 msDelay = 0;
-                //play sound;
+                init_debugger_Audio.PlaySound(0);
                 Memory.musicIndex--;
                 init_debugger_Audio.PlayMusic();
             }
@@ -160,8 +161,31 @@ namespace FF8
             {
                 bLimitInput = true;
                 msDelay = 0;
-                //play sound;
+                init_debugger_Audio.PlaySound(0);
                 init_debugger_Audio.StopAudio();
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.Left) && !bLimitInput && choosenOption == 8)
+            {
+                bLimitInput = true;
+                msDelay = 0;
+                init_debugger_Audio.PlaySound(0);
+                if (debug_choosedAudio <= 0) return;
+                    debug_choosedAudio--;
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.Right) && !bLimitInput && choosenOption == 8)
+            {
+                bLimitInput = true;
+                msDelay = 0;
+                init_debugger_Audio.PlaySound(0);
+                if (debug_choosedAudio >= init_debugger_Audio.soundEntriesCount) return;
+                debug_choosedAudio++;
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !bLimitInput && choosenOption == 8)
+            {
+                bLimitInput = true;
+                msDelay = 0;
+                init_debugger_Audio.PlaySound(0);
+                init_debugger_Audio.PlaySound(debug_choosedAudio);
             }
         }
 
@@ -177,21 +201,21 @@ namespace FF8
             {
                 bLimitInput = true;
                 msDelay = 0;
-                //play sound;
+                init_debugger_Audio.PlaySound(0);
                 choosenOption = choosenOption >= 2 ? 0 : choosenOption + 1;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.Up) && !bLimitInput)
             {
                 bLimitInput = true;
                 msDelay = 0;
-                //play sound;
+                init_debugger_Audio.PlaySound(0);
                 choosenOption = choosenOption <= 0 ? 2 : choosenOption - 1;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !bLimitInput && choosenOption == 2)
             {
                 bLimitInput = true;
                 msDelay = 0;
-                //play sound;
+                init_debugger_Audio.PlaySound(0);
                 choosenOption = 1;
                 State = MainMenuStates.DebugScreen;
             }
@@ -247,6 +271,7 @@ namespace FF8
             Memory.font.RenderBasicText(Font.CipherDirty("Play next music".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.17f), 1f, 2f, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty("Play previous music".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.20f), 1f, 2f, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty("Stop music".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.23f), 1f, 2f, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Play audio.dat: {debug_choosedAudio}".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.26f), 1f, 2f, 0, 1);
 
             Memory.spriteBatch.Draw(Memory.iconsTex[2], new Rectangle((int)(vpWidth * 0.05f), (int)(vpHeight * ((choosenOption*0.03f) + 0.02f)+0.05f*100), (int)(24 * 2 * fScaleWidth), (int)(16 * 2 * fScaleWidth)),
                 new Rectangle(232, 0, 23, 15),

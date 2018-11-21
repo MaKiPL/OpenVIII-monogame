@@ -7,6 +7,8 @@ using System.IO;
 using DirectMidi;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using Microsoft.Xna.Framework.Media;
+using Microsoft.Xna.Framework.Audio;
 
 namespace FF8
 {
@@ -20,6 +22,20 @@ namespace FF8
         private static COutputPort outport;
         private static CCollection ccollection;
         private static CInstrument[] instruments;
+
+        private struct SoundEntry
+        {
+            public int Size;
+            public int Offset;
+            public byte[] UNK; //12
+            public byte[] WAVFORMATEX; //18
+            public ushort SamplesPerBlock;
+            public ushort ADPCM;
+            public byte[] ADPCMCoefSets; //28
+        }
+
+        private static SoundEntry[] soundEntries;
+        public static int soundEntriesCount;
 
 
         public const int S_OK = 0x00000000;
@@ -51,6 +67,67 @@ namespace FF8
             //string seqt = Encoding.ASCII.GetString(BitConverter.GetBytes(pbs.ReadUInt()));
         }
 
+        internal static void DEBUG_SoundAudio()
+        {
+            string path = Path.Combine(Memory.FF8DIR, "..\\Sound\\audio.fmt");
+            using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
+            using (BinaryReader br = new BinaryReader(fs))
+            {
+                soundEntries = new SoundEntry[br.ReadUInt32()];
+                fs.Seek(36, SeekOrigin.Current);
+                for (int i = 0; i < soundEntries.Length-1; i++)
+                {
+                    int sz = br.ReadInt32();
+                    if(sz == 0) {
+                        fs.Seek(34, SeekOrigin.Current); continue; }
+
+                    soundEntries[i] = new SoundEntry()
+                    {
+                        Size = sz,
+                        Offset = br.ReadInt32(),
+                        UNK = br.ReadBytes(12),
+                        WAVFORMATEX = br.ReadBytes(18),
+                        SamplesPerBlock = br.ReadUInt16(),
+                        ADPCM = br.ReadUInt16(),
+                        ADPCMCoefSets = br.ReadBytes(28)
+                    };
+                }
+            }
+            soundEntriesCount = soundEntries.Length;
+        }
+
+        internal static void PlaySound(int soundID)
+        {
+            if (soundEntries == null)
+                return;
+            if (soundEntries[soundID].Size == 0) return;
+            using (FileStream fs = new FileStream(Path.Combine(Memory.FF8DIR, "..\\Sound\\audio.dat"), FileMode.Open, FileAccess.Read))
+            using (BinaryReader br = new BinaryReader(fs))
+            {
+                fs.Seek(soundEntries[soundID].Offset, SeekOrigin.Begin);
+                List<byte[]> sfxBufferList = new List<byte[]>();
+                sfxBufferList.Add(Encoding.ASCII.GetBytes("RIFF"));
+                sfxBufferList.Add(BitConverter.GetBytes
+                    (soundEntries[soundID].Size + 36));
+                sfxBufferList.Add(Encoding.ASCII.GetBytes("WAVEfmt "));
+                sfxBufferList.Add(BitConverter.GetBytes
+                    (18 + 0));
+                sfxBufferList.Add(soundEntries[soundID].WAVFORMATEX);
+                sfxBufferList.Add(Encoding.ASCII.GetBytes("data"));
+                sfxBufferList.Add(BitConverter.GetBytes(soundEntries[soundID].Size));
+                sfxBufferList.Add(br.ReadBytes(soundEntries[soundID].Size));
+                byte[] sfxBuffer = sfxBufferList.SelectMany(x => x).ToArray();
+                File.WriteAllBytes("D://dupa.wav", sfxBuffer);
+
+                
+                
+                SoundEffect se = new SoundEffect(sfxBuffer, 22050, AudioChannels.Mono);
+                //sei.Play();
+                se.Play(1.0f, 0.0f, 0.0f);
+                //se.Dispose();
+            }
+        }
+
         internal static void update()
 
         {
@@ -59,6 +136,11 @@ namespace FF8
         //callable test
         unsafe public static void PlayMusic()
         {
+            if (Memory.musicIndex >= Memory.musices.Length)
+            {
+                Memory.musicIndex--;
+                return;
+            }
             string pt = Memory.musices[Memory.musicIndex];
             if (cdm == null)
             {
