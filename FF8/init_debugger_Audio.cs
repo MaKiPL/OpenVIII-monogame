@@ -9,6 +9,8 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Audio;
+using NAudio;
+using NAudio.Wave;
 
 namespace FF8
 {
@@ -32,6 +34,17 @@ namespace FF8
             public ushort SamplesPerBlock;
             public ushort ADPCM;
             public byte[] ADPCMCoefSets; //28
+        }
+
+        private struct WAVEFORMATEX
+            {
+            public ushort wFormatTag;
+            public ushort nChannels;
+            public uint nSamplesPerSec;
+            public uint nAvgBytesPerSec;
+            public ushort nBlockAlign;
+            public ushort wBitsPerSample;
+            public ushort cbSize;
         }
 
         private static SoundEntry[] soundEntries;
@@ -105,31 +118,50 @@ namespace FF8
             using (BinaryReader br = new BinaryReader(fs))
             {
                 fs.Seek(soundEntries[soundID].Offset, SeekOrigin.Begin);
-                List<byte[]> sfxBufferList = new List<byte[]>();
-                sfxBufferList.Add(Encoding.ASCII.GetBytes("RIFF"));
-                sfxBufferList.Add(BitConverter.GetBytes
-                    (soundEntries[soundID].Size + 36));
-                sfxBufferList.Add(Encoding.ASCII.GetBytes("WAVEfmt "));
-                sfxBufferList.Add(BitConverter.GetBytes
-                    (18 + 0));
-                sfxBufferList.Add(soundEntries[soundID].WAVFORMATEX);
-                sfxBufferList.Add(Encoding.ASCII.GetBytes("data"));
-                sfxBufferList.Add(BitConverter.GetBytes(soundEntries[soundID].Size));
-                sfxBufferList.Add(br.ReadBytes(soundEntries[soundID].Size));
-                byte[] sfxBuffer = sfxBufferList.SelectMany(x => x).ToArray();
-                File.WriteAllBytes("D://dupa.wav", sfxBuffer);
+                //List<byte[]> sfxBufferList = new List<byte[]>();
+                //sfxBufferList.Add(Encoding.ASCII.GetBytes("RIFF"));
+                //sfxBufferList.Add(BitConverter.GetBytes
+                //    (soundEntries[soundID].Size + 36));
+                //sfxBufferList.Add(Encoding.ASCII.GetBytes("WAVEfmt "));
+                //sfxBufferList.Add(BitConverter.GetBytes
+                //    (18 + 0));
+                //sfxBufferList.Add(soundEntries[soundID].WAVFORMATEX);
+                //sfxBufferList.Add(Encoding.ASCII.GetBytes("data"));
+                //sfxBufferList.Add(BitConverter.GetBytes(soundEntries[soundID].Size));
+                GCHandle gc = GCHandle.Alloc(soundEntries[soundID].WAVFORMATEX, GCHandleType.Pinned);
+                WAVEFORMATEX format =  (WAVEFORMATEX)Marshal.PtrToStructure(gc.AddrOfPinnedObject(), typeof(WAVEFORMATEX));
+                gc.Free();
+                byte[] rawBuffer = br.ReadBytes(soundEntries[soundID].Size);
+                //sfxBufferList.Add(rawBuffer);
+                //byte[] sfxBuffer = sfxBufferList.SelectMany(x => x).ToArray();
 
-                
-                
-                SoundEffect se = new SoundEffect(sfxBuffer, 22050, AudioChannels.Mono);
+
+                //WaveFileReader rad = new WaveFileReader(new MemoryStream(sfxBuffer));
+                //passing WAVEFORMATEX struct params makes playing all sounds possible
+                RawSourceWaveStream raw = new RawSourceWaveStream(new MemoryStream(rawBuffer), new AdpcmWaveFormat((int)format.nSamplesPerSec, format.nChannels ));
+                var a = WaveFormatConversionStream.CreatePcmStream(raw);
+                WaveOut waveout = new WaveOut();
+                waveout.Init(a);
+                waveout.Play();
+
+
+                //libZPlay.ZPlay zplay = new libZPlay.ZPlay();
+
+                //zplay.OpenFile("D:\\test.wav", libZPlay.TStreamFormat.sfAutodetect);
+                //zplay.StartPlayback();
+                //SoundEffect se = new SoundEffect(sfxBuffer, 22050, AudioChannels.Mono);
                 //sei.Play();
-                se.Play(1.0f, 0.0f, 0.0f);
+                //se.Play(1.0f, 0.0f, 0.0f);
                 //se.Dispose();
             }
         }
 
-        internal static void update()
+        public static void StopSound()
+        {
+            //waveout.Stop();
+        }
 
+        internal static void update()
         {
 
         }
