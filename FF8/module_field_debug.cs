@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
+using System.IO;
 
 namespace FF8
 {
@@ -29,6 +30,21 @@ namespace FF8
             public byte blend1;
             public byte blend2;
         }
+
+        private struct sJSM
+        {
+            public byte cDoorEntity;
+            public byte cWalkmeshEntity;
+            public byte cBackgroundEntity;
+            public byte cOtherEntity;
+            public ushort offsetSecOne;
+            public ushort offsetScriptData;
+            //EntryPointEntity
+            //EntryPointScript
+            public int[] ScriptData;
+        }
+
+        private static sJSM jsm;
 
         private static byte param_ = 0;
         private static byte state_ = 0;
@@ -100,9 +116,101 @@ namespace FF8
             string[] test_ = ArchiveWorker.GetBinaryFileList(fl);
             string mim = test_.Where(x => x.ToLower().Contains(".mim")).First();
             string map = test_.Where(x => x.ToLower().Contains(".map")).First();
+
             byte[] mimb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, mim);
             byte[] mapb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, map);
-            if (mimb == null || mapb == null) return;
+
+            ParseBackground(mimb, mapb);
+
+            //let's start with scripts
+            if (test_.Where(x=>x.ToLower().Contains(".jsm")).Count() > 0)
+                ParseScripts(ArchiveWorker.FileInTwoArchives(fi, fs, fl, test_.Where(x => x.ToLower().Contains(".jsm")).First()));
+
+            //string mch = test_.Where(x => x.ToLower().Contains(".mch")).First();
+            //string one = test_.Where(x => x.ToLower().Contains(".one")).First();
+            //string sym = test_.Where(x => x.ToLower().Contains(".sym")).First();
+            //string msd = test_.Where(x => x.ToLower().Contains(".msd")).First();
+            //string inf = test_.Where(x => x.ToLower().Contains(".inf")).First();
+            //string id = test_.Where(x => x.ToLower().Contains(".id")).First();
+            //string ca = test_.Where(x => x.ToLower().Contains(".ca")).First();
+            //string tdw = test_.Where(x => x.ToLower().Contains(".tdw")).First();
+            //string msk = test_.Where(x => x.ToLower().Contains(".msk")).First();
+            //string rat = test_.Where(x => x.ToLower().Contains(".rat")).First();
+            //string pmd = test_.Where(x => x.ToLower().Contains(".pmd")).First();
+            //string sfx = test_.Where(x => x.ToLower().Contains(".sfx")).First();
+
+            //byte[] mchb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, mch); //Field character models
+            //byte[] oneb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, one); //Field character models container
+            //byte[] symb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, sym); //script names
+            //byte[] msdb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, msd); //dialogs
+            //byte[] infb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, inf); //gateways
+            //byte[] idb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, id); //walkmesh
+            //byte[] cab = ArchiveWorker.FileInTwoArchives(fi, fs, fl, ca); //camera
+            //byte[] tdwb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, tdw); //extra font
+            //byte[] mskb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, msk); //movie cam
+            //byte[] ratb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, rat); //battle on field
+            //byte[] pmdb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, pmd); //particle info
+            //byte[] sfxb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, sfx); //sound effects
+
+
+
+
+            mod++;
+            return;
+        }
+
+        private static void ParseScripts(byte[] jsmb)
+        {
+            jsm = new sJSM();
+            File.WriteAllBytes("D:\\test.jsm", jsmb);
+            using (Stream str = new MemoryStream(jsmb))
+            using (BinaryReader br = new BinaryReader(str))
+            {
+                jsm.cDoorEntity = br.ReadByte();
+                jsm.cWalkmeshEntity = br.ReadByte();
+                jsm.cBackgroundEntity = br.ReadByte();
+                jsm.cOtherEntity = br.ReadByte();
+                jsm.offsetSecOne = br.ReadUInt16();
+                jsm.offsetScriptData = br.ReadUInt16();
+                br.BaseStream.Seek(jsm.offsetScriptData, SeekOrigin.Begin);
+
+
+                List<uint> opcodes = new List<uint>();
+                while(br.BaseStream.Position != br.BaseStream.Length)
+                {
+                    opcodes.Add(br.ReadUInt32());
+                }
+
+                /*
+                 * okay, my notes on JSM:
+                 * so the exec is always Lines first, they tend to always contain 8 IDs like touch touchoff etc
+                 * it begins with setline
+                 * 
+                 * next are doors, yes?
+                 * they are like open, close, on, off
+                 * so you have to test the location of the player and see if he triggers any of this script
+                 * 
+                 * next are other things
+                 * finally an character entity- director. He plays like if we should call some functions or not
+                 * 
+                 * it's like RET(8) makes it never use the code again in a loop of execution
+                 * 
+                 * so it all plays normally, because almost everytime it's RET of the function. All action is triggered by like PUSH or TALK
+                 * 
+                 * Other functions are not normally playing. See bgroom_4. Default code is actually playing the monitor.on functions
+                 * 
+                 * So for sure I'll need to read .SYM, then pair the names with script IDs, then sort by the exec priority and read only the 0 and 1 as default and init scripts
+                 * everything else leave for triggering. Ugh, that's going to be painful
+                 * 
+                 */
+            }
+
+        }
+
+        private static void ParseBackground(byte[] mimb, byte[] mapb)
+        {
+            if (mimb == null || mapb == null)
+                return;
 
             int type1Width = 1664;
 
@@ -151,15 +259,15 @@ namespace FF8
             texOverlap = new Texture2D(Memory.graphics.GraphicsDevice, width, height);
             var MaximumLayer = tiles.Max(x => x.layId);
             var MinimumLayer = tiles.Min(x => x.layId);
-            
+
             List<ushort> BufferDepth = tiles.GroupBy(x => x.z).Select(group => group.First()).Select(x => x.z).ToList();
             BufferDepth.Sort();
-            
-            for (int LayerId = 1; LayerId <= MaximumLayer+1; LayerId++)
+
+            for (int LayerId = 1; LayerId <= MaximumLayer + 1; LayerId++)
             {
                 foreach (Tile tile in tiles)
                 {
-                    if (LayerId != MaximumLayer+1)
+                    if (LayerId != MaximumLayer + 1)
                     {
                         if (tile.layId != LayerId)
                             continue;
@@ -168,8 +276,8 @@ namespace FF8
                     }
                     else
                         if (tile.layId != 0)
-                            continue;
-                    
+                        continue;
+
                     int palettePointer = 4096 + ((tile.pallID) * 512);
                     int sourceImagePointer = 512 * palletes;
 
@@ -286,10 +394,6 @@ namespace FF8
             }
             tex.SetData(finalImage);
             texOverlap.SetData(finalOverlapImage);
-
-
-            mod++;
-            return;
         }
 
         private static void DrawEntities()
