@@ -46,9 +46,26 @@ namespace FF8
                 case MainMenuStates.DebugScreen:
                     DebugUpdate();
                     break;
+                case MainMenuStates.NewGameChoosed:
+                    NewGameUpdate();
+                    break;
                 default:
                     break;
             }
+        }
+
+        private static void NewGameUpdate()
+        {
+            if (Fade > 0.0f)
+                return;
+            /*reverse engineering notes:
+             * 
+             * we should happen to reset wm2field values
+             */
+            Memory.FieldHolder.FieldID = 74; //RE: startup stage ID is hardcoded. Probably we would want to change it for modding
+            //the module changes to 1 now
+            module_field_debug.ResetField();
+            Memory.module = Memory.MODULE_FIELD_DEBUG;
         }
 
         private static void DebugUpdate()
@@ -219,6 +236,13 @@ namespace FF8
                 choosenOption = 1;
                 State = MainMenuStates.DebugScreen;
             }
+            if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !bLimitInput && choosenOption == 0)
+            {
+                bLimitInput = true;
+                msDelay = 0;
+                init_debugger_Audio.PlaySound(28);
+                State = MainMenuStates.NewGameChoosed;
+            }
         }
 
         private static Texture2D GetTexture(int v)
@@ -250,9 +274,18 @@ namespace FF8
                 case MainMenuStates.DebugScreen:
                     DebugScreenLobby();
                     break;
+                case MainMenuStates.NewGameChoosed:
+                    NewGameDraw();
+                    break;
                 default:
                     break;
             }
+        }
+
+        private static void NewGameDraw()
+        {
+            DrawMainLobby();
+            Fade -= Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f/2;
         }
 
         private static void DebugScreenLobby()
@@ -287,7 +320,7 @@ namespace FF8
 
             if (start00 == null || start01 == null)
                 return;
-            if (Fade < 1.0f)
+            if (Fade < 1.0f && State != MainMenuStates.NewGameChoosed)
                 Fade += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 3;
             int vpWidth = Memory.graphics.GraphicsDevice.Viewport.Width;
             int vpHeight = Memory.graphics.GraphicsDevice.Viewport.Width;
@@ -302,7 +335,7 @@ namespace FF8
 
             Memory.spriteBatch.Draw(Memory.iconsTex[2], new Rectangle((int)(vpWidth*0.37f), (int)(vpHeight * choiseHeights[choosenOption]+0.01f), (int)(24*2 * fScaleWidth), (int)(16*2 * fScaleWidth)),
                 new Rectangle(232,0, 23 ,15),
-                Color.White);
+                Color.White * Fade);
             Memory.SpriteBatchEnd();
         }
     }
