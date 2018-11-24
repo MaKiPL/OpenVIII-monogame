@@ -61,6 +61,7 @@ namespace FF8
             /*reverse engineering notes:
              * 
              * we should happen to reset wm2field values
+             * also the basic party of Squall is now set: SG_PARTY_FIELD1 = 0, and other members are 0xFF
              */
             Memory.FieldHolder.FieldID = 74; //RE: startup stage ID is hardcoded. Probably we would want to change it for modding
             //the module changes to 1 now
@@ -329,9 +330,9 @@ namespace FF8
             Memory.spriteBatch.Draw(start00, new Rectangle(0, 0, (int)(vpWidth*zoom), (int)(vpHeight*(zoom-0.1f))), null, Color.White * Fade);
             Memory.spriteBatch.Draw(start01, new Rectangle((int)(vpWidth * zoom), 0, vpWidth/3, (int)(vpHeight * (zoom-0.1f))), Color.White * Fade);
             //string cCnCRtn = Font.CipherDirty("OpenVIII debug tools"); //SnclZMMM bc`se \0rmmjq
-            Memory.font.RenderBasicText("RI[ KEQI", (int)(vpWidth *0.42f), (int)(vpHeight * choiseHeights[0]),2f,3f,0,1);
-            Memory.font.RenderBasicText("Gmlrglsc", (int)(vpWidth * 0.42f), (int)(vpHeight * choiseHeights[1]),2f,3f,0,1);
-            Memory.font.RenderBasicText("SnclZMMM bc`se rmmjq", (int)(vpWidth * 0.42f), (int)(vpHeight * choiseHeights[2]),2f,3f,0,1);
+            Memory.font.RenderBasicText("RI[ KEQI", (int)(vpWidth *0.42f), (int)(vpHeight * choiseHeights[0]),2f,3f,0,1, Fade);
+            Memory.font.RenderBasicText("Gmlrglsc", (int)(vpWidth * 0.42f), (int)(vpHeight * choiseHeights[1]),2f,3f,0, 1, Fade);
+            Memory.font.RenderBasicText("SnclZMMM bc`se rmmjq", (int)(vpWidth * 0.42f), (int)(vpHeight * choiseHeights[2]),2f,3f,0,1, Fade);
 
             Memory.spriteBatch.Draw(Memory.iconsTex[2], new Rectangle((int)(vpWidth*0.37f), (int)(vpHeight * choiseHeights[choosenOption]+0.01f), (int)(24*2 * fScaleWidth), (int)(16*2 * fScaleWidth)),
                 new Rectangle(232,0, 23 ,15),

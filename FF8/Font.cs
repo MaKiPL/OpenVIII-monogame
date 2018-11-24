@@ -188,7 +188,7 @@ namespace FF8
         }
 
 
-        public void RenderBasicText(string buffer, int x, int y, float zoomWidth = 1f, float zoomHeight = 1f, int whichFont = 0, int isMenu = 0)
+        public void RenderBasicText(string buffer, int x, int y, float zoomWidth = 1f, float zoomHeight = 1f, int whichFont = 0, int isMenu = 0, float Fade = 1.0f)
         {
             int realX = x;
             int charCountWidth = whichFont == 0 ? 21 : 10;
@@ -216,7 +216,7 @@ namespace FF8
                 Memory.spriteBatch.Draw(isMenu == 1 ? menuFont : whichFont == 0 ? sysfnt : sysfnt00,
                     destRect,
                     sourceRect,
-                Color.White);
+                Color.White * Fade);
 
                 realX += (int)(charSize*zoomWidth*fScaleWidth);
                 }
