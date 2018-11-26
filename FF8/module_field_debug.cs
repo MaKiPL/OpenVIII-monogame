@@ -45,6 +45,7 @@ namespace FF8
         }
 
         private static List<ScriptEntry> ScriptSystem;
+        private static string[] symbolNames;
 
         private struct EntryPointEntity
         {
@@ -585,10 +586,11 @@ namespace FF8
 
         private static void ParseScripts(byte[] jsmb, byte[] symb)
         {
-            string[] symbolNames = new string[symb.Length / 32];
-            for(int i = 0; i<symbolNames.Length; i++)
-                symbolNames[i] = System.Text.Encoding.ASCII.GetString(symb, i * 32, 32).TrimEnd('\0', '\n', ' ');
-
+            //string[] symbolNames = new string[symb.Length / 32];
+            symbolNames = System.Text.Encoding.ASCII.GetString(symb).Replace(" ", "").Replace("\0", "").Split('\n');
+            //for(int i = 0; i<symbolNames.Length; i++)
+            //    symbolNames[i] = System.Text.Encoding.ASCII.GetString(symb, i * 32, 32).TrimEnd('\0', '\n', ' ');
+            File.WriteAllBytes("D:/symb.test", symb);
             jsm = new sJSM();
             File.WriteAllBytes("D:\\test.jsm", jsmb);
             using (Stream str = new MemoryStream(jsmb))
@@ -600,7 +602,7 @@ namespace FF8
                 jsm.cOtherEntity = br.ReadByte();
                 jsm.offsetSecOne = br.ReadUInt16();
                 jsm.offsetScriptData = br.ReadUInt16();
-                EntryPointEntity[] epe = new EntryPointEntity[jsm.cDoorEntity + jsm.cOtherEntity];
+                EntryPointEntity[] epe = new EntryPointEntity[jsm.cDoorEntity + jsm.cOtherEntity+ jsm.cWalkmeshEntity];
                 for(int i = 0; i<epe.Length; i++)
                 {
                     ushort bb = br.ReadUInt16();
@@ -608,7 +610,7 @@ namespace FF8
                     epe[i].label = (byte)(bb >> 7);
                     epe[i].labelASM = symbolNames[epe[i].label];
                 }
-                int SYMscriptNameStartingPoint = jsm.cDoorEntity + jsm.cOtherEntity;
+                int SYMscriptNameStartingPoint = jsm.cDoorEntity + jsm.cOtherEntity + jsm.cWalkmeshEntity;
                 jsm.EntityEntryPoints = epe;
                 EntryPointScript[] eps = new EntryPointScript[(jsm.offsetScriptData - jsm.offsetSecOne)/2 - 1];
                 for(int i = 0; i<eps.Length; i++)
@@ -627,6 +629,8 @@ namespace FF8
                 int scriptLabelPointer = 0;
                 while (br.BaseStream.Position != br.BaseStream.Length)
                 {
+                    if (br.BaseStream.Position == br.BaseStream.Length)
+                        break; //??
                     uint binaryOpcode = br.ReadUInt32();
                     uint parameter = 0;
                     uint opcode = 0;
@@ -699,10 +703,7 @@ namespace FF8
         {
             if (entityName.Contains("::"))
                 entityName = entityName.Substring(0, entityName.IndexOf(':'));
-                for (int i = 0; i<jsm.EntityEntryPoints.Length; i++)
-                if (jsm.EntityEntryPoints[i].labelASM == entityName)
-                    return i;
-            return -1;
+            return symbolNames.ToList().IndexOf(entityName);
         }
 
         private static void ParseBackground(byte[] mimb, byte[] mapb)

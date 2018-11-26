@@ -33,7 +33,7 @@ namespace FF8
         static bool bLimitInput = false;
 
         private static int choosenOption = 0;
-        private static int debug_fieldPointer = 0;
+        private static int debug_fieldPointer = 90;
         private static string debug_choosedField = Memory.FieldHolder.fields[debug_fieldPointer];
 
         internal static void Update()
