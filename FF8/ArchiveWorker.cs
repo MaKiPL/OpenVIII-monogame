@@ -31,7 +31,7 @@ namespace FF8
 
         public static string[] GetBinaryFileList(byte[] fl)
         {
-            return System.Text.Encoding.UTF8.GetString(fl).Replace("\r", "").Split('\n');
+            return System.Text.Encoding.ASCII.GetString(fl).Replace("\r", "").Replace("\0", "").Split('\n');
         }
 
         public static byte[] GetBinaryFile(string archiveName, string fileName)
@@ -59,9 +59,9 @@ namespace FF8
             flText = flText.Replace(Convert.ToString(0x0d), "");
             int loc = -1;
             string[] files = flText.Split((char)0x0a);
-            for (int i = 0; i != files.Length - 1; i++)
+            for (int i = 0; i != files.Length; i++)
             {
-                string testme = files[i].Substring(0, files[i].Length - 1).ToUpper();
+                string testme = files[i].Substring(0, files[i].Length - 1).ToUpper().TrimEnd('\0');
                 if (testme != a.ToUpper()) continue;
                 loc = i;
                 break;

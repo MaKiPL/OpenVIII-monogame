@@ -39,9 +39,39 @@ namespace FF8
             public byte cOtherEntity;
             public ushort offsetSecOne;
             public ushort offsetScriptData;
-            //EntryPointEntity
-            //EntryPointScript
+            public EntryPointEntity[] EntityEntryPoints;
+            public EntryPointScript[] entryPointScripts;
             public int[] ScriptData;
+        }
+
+        private static List<ScriptEntry> ScriptSystem;
+
+        private struct EntryPointEntity
+        {
+            public byte scriptCount;
+            public byte label;
+            public string labelASM;
+        }
+
+        private struct EntryPointScript
+        {
+            public ushort position;
+            public byte flag;
+        }
+
+        private struct ScriptOpcode
+        {
+            public ushort opcodeBinary;
+            public string opcodeASM;
+            public ushort parameter;
+        }
+
+        private struct ScriptEntry
+        {
+            public ushort Entity;
+            public string ScriptName;
+            public ushort ID;
+            public ScriptOpcode[] Scripts;
         }
 
         private static sJSM jsm;
@@ -51,6 +81,386 @@ namespace FF8
 
         private static int width = 0;
         private static int height = 0;
+
+        private enum JSMopcodes
+        {
+            NOP,
+            CAL,
+            JMP,
+            JPF,
+            GJMP,
+            LBL,
+            RET,
+            PSHN_L,
+            PSHI_L,
+            POPI_L,
+            PSHM_B,
+            POPM_B,
+            PSHM_W,
+            POPM_W,
+            PSHM_L,
+            POPM_L,
+            PSHSM_B,
+            PSHSM_W,
+            PSHSM_L,
+            PSHAC,
+            REQ,
+            REQSW,
+            REQEW,
+            PREQ,
+            PREQSW,
+            PREQEW,
+            UNUSE,
+            DEBUG,
+            HALT,
+            SET,
+            SET3,
+            IDLOCK,
+            IDUNLOCK,
+            EFFECTPLAY2,
+            FOOTSTEP,
+            JUMP,
+            JUMP3,
+            LADDERUP,
+            LADDERDOWN,
+            LADDERUP2,
+            LADDERDOWN2,
+            MAPJUMP,
+            MAPJUMP3,
+            SETMODEL,
+            BASEANIME,
+            ANIME,
+            ANIMEKEEP,
+            CANIME,
+            CANIMEKEEP,
+            RANIME,
+            RANIMEKEEP,
+            RCANIME,
+            RCANIMEKEEP,
+            RANIMELOOP,
+            RCANIMELOOP,
+            LADDERANIME,
+            DISCJUMP,
+            SETLINE,
+            LINEON,
+            LINEOFF,
+            WAIT,
+            MSPEED,
+            MOVE,
+            MOVEA,
+            PMOVEA,
+            CMOVE,
+            FMOVE,
+            PJUMPA,
+            ANIMESYNC,
+            ANIMESTOP,
+            MESW,
+            MES,
+            MESSYNC,
+            MESVAR,
+            ASK,
+            WINSIZE,
+            WINCLOSE,
+            UCON,
+            UCOFF,
+            MOVIE,
+            MOVIESYNC,
+            SETPC,
+            DIR,
+            DIRP,
+            DIRA,
+            PDIRA,
+            SPUREADY,
+            TALKON,
+            TALKOFF,
+            PUSHON,
+            PUSHOFF,
+            ISTOUCH,
+            MAPJUMPO,
+            MAPJUMPON,
+            MAPJUMPOFF,
+            SETMESSPEED,
+            SHOW,
+            HIDE,
+            TALKRADIUS,
+            PUSHRADIUS,
+            AMESW,
+            AMES,
+            GETINFO,
+            THROUGHON,
+            THROUGHOFF,
+            BATTLE,
+            BATTLERESULT,
+            BATTLEON,
+            BATTLEOFF,
+            KEYSCAN,
+            KEYON,
+            AASK,
+            PGETINFO,
+            DSCROLL,
+            LSCROLL,
+            CSCROLL,
+            DSCROLLA,
+            LSCROLLA,
+            CSCROLLA,
+            SCROLLSYNC,
+            RMOVE,
+            RMOVEA,
+            RPMOVEA,
+            RCMOVE,
+            RFMOVE,
+            MOVESYNC,
+            CLEAR,
+            DSCROLLP,
+            LSCROLLP,
+            CSCROLLP,
+            LTURNR,
+            LTURNL,
+            CTURNR,
+            CTURNL,
+            ADDPARTY,
+            SUBPARTY,
+            CHANGEPARTY,
+            REFRESHPARTY,
+            SETPARTY,
+            ISPARTY,
+            ADDMEMBER,
+            SUBMEMBER,
+            ISMEMBER,
+            LTURN,
+            CTURN,
+            PLTURN,
+            PCTURN,
+            JOIN,
+            MESFORCUS,
+            BGANIME,
+            RBGANIME,
+            RBGANIMELOOP,
+            BGANIMESYNC,
+            BGDRAW,
+            BGOFF,
+            BGANIMESPEED,
+            SETTIMER,
+            DISPTIMER,
+            SHADETIMER,
+            SETGETA,
+            SETROOTTRANS,
+            SETVIBRATE,
+            STOPVIBRATE,
+            MOVIEREADY,
+            GETTIMER,
+            FADEIN,
+            FADEOUT,
+            FADESYNC,
+            SHAKE,
+            SHAKEOFF,
+            FADEBLACK,
+            FOLLOWOFF,
+            FOLLOWON,
+            GAMEOVER,
+            ENDING,
+            SHADELEVEL,
+            SHADEFORM,
+            FMOVEA,
+            FMOVEP,
+            SHADESET,
+            MUSICCHANGE,
+            MUSICLOAD,
+            FADENONE,
+            POLYCOLOR,
+            POLYCOLORALL,
+            KILLTIMER,
+            CROSSMUSIC,
+            DUALMUSIC,
+            EFFECTPLAY,
+            EFFECTLOAD,
+            LOADSYNC,
+            MUSICSTOP,
+            MUSICVOL,
+            MUSICVOLTRANS,
+            MUSICVOLFADE,
+            ALLSEVOL,
+            ALLSEVOLTRANS,
+            ALLSEPOS,
+            ALLSEPOSTRANS,
+            SEVOL,
+            SEVOLTRANS,
+            SEPOS,
+            SEPOSTRANS,
+            SETBATTLEMUSIC,
+            BATTLEMODE,
+            SESTOP,
+            BGANIMEFLAG,
+            INITSOUND,
+            BGSHADE,
+            BGSHADESTOP,
+            RBGSHADELOOP,
+            DSCROLL2,
+            LSCROLL2,
+            CSCROLL2,
+            DSCROLLA2,
+            LSCROLLA2,
+            CSCROLLA2,
+            DSCROLLP2,
+            LSCROLLP2,
+            CSCROLLP2,
+            SCROLLSYNC2,
+            SCROLLMODE2,
+            MENUENABLE,
+            MENUDISABLE,
+            FOOTSTEPON,
+            FOOTSTEPOFF,
+            FOOTSTEPOFFALL,
+            FOOTSTEPCUT,
+            PREMAPJUMP,
+            USE,
+            SPLIT,
+            ANIMESPEED,
+            RND,
+            DCOLADD,
+            DCOLSUB,
+            TCOLADD,
+            TCOLSUB,
+            FCOLADD,
+            FCOLSUB,
+            COLSYNC,
+            DOFFSET,
+            LOFFSETS,
+            COFFSETS,
+            LOFFSET,
+            COFFSET,
+            OFFSETSYNC,
+            RUNENABLE,
+            RUNDISABLE,
+            MAPFADEOFF,
+            MAPFADEON,
+            INITTRACE,
+            SETDRESS,
+            GETDRESS,
+            FACEDIR,
+            FACEDIRA,
+            FACEDIRP,
+            FACEDIRLIMIT,
+            FACEDIROFF,
+            SARALYOFF,
+            SARALYON,
+            SARALYDISPOFF,
+            SARALYDISPON,
+            MESMODE,
+            FACEDIRINIT,
+            FACEDIRI,
+            JUNCTION,
+            SETCAMERA,
+            BATTLECUT,
+            FOOTSTEPCOPY,
+            WORLDMAPJUMP,
+            RFACEDIRI,
+            RFACEDIR,
+            RFACEDIRA,
+            RFACEDIRP,
+            RFACEDIROFF,
+            FACEDIRSYNC,
+            COPYINFO,
+            PCOPYINFO,
+            RAMESW,
+            BGSHADEOFF,
+            AXIS,
+            AXISSYNC,
+            MENUNORMAL,
+            MENUPHS,
+            BGCLEAR,
+            GETPARTY,
+            MENUSHOP,
+            DISC,
+            DSCROLL3,
+            LSCROLL3,
+            CSCROLL3,
+            MACCEL,
+            MLIMIT,
+            ADDITEM,
+            SETWITCH,
+            SETODIN,
+            RESETGF,
+            MENUNAME,
+            REST,
+            MOVECANCEL,
+            PMOVECANCEL,
+            ACTORMODE,
+            MENUSAVE,
+            SAVEENABLE,
+            PHSENABLE,
+            HOLD,
+            MOVIECUT,
+            SETPLACE,
+            SETDCAMERA,
+            CHOICEMUSIC,
+            GETCARD,
+            DRAWPOINT,
+            PHSPOWER,
+            KEY,
+            CARDGAME,
+            SETBAR,
+            DISPBAR,
+            KILLBAR,
+            SCROLLRATIO2,
+            WHOAMI,
+            MUSICSTATUS,
+            MUSICREPLAY,
+            DOORLINEOFF,
+            DOORLINEON,
+            MUSICSKIP,
+            DYING,
+            SETHP,
+            GETHP,
+            MOVEFLUSH,
+            MUSICVOLSYNC,
+            PUSHANIME,
+            POPANIME,
+            KEYSCAN2,
+            KEYON2,
+            PARTICLEON,
+            PARTICLEOFF,
+            KEYSIGHNCHANGE,
+            ADDGIL,
+            ADDPASTGIL,
+            ADDSEEDLEVEL,
+            PARTICLESET,
+            SETDRAWPOINT,
+            MENUTIPS,
+            LASTIN,
+            LASTOUT,
+            SEALEDOFF,
+            MENUTUTO,
+            OPENEYES,
+            CLOSEEYES,
+            BLINKEYES,
+            SETCARD,
+            HOWMANYCARD,
+            WHERECARD,
+            ADDMAGIC,
+            SWAP,
+            SETPARTY2,
+            SPUSYNC,
+            BROKEN,
+            UNKNOWN1,
+            UNKNOWN2,
+            UNKNOWN3,
+            UNKNOWN4,
+            UNKNOWN5,
+            UNKNOWN6,
+            UNKNOWN7,
+            UNKNOWN8,
+            UNKNOWN9,
+            UNKNOWN10,
+            UNKNOWN11,
+            UNKNOWN12,
+            UNKNOWN13,
+            UNKNOWN14,
+            UNKNOWN15,
+            UNKNOWN16,
+            PREMAPJUMP2,
+            TUTO
+        }
 
 
         private enum field_mods
@@ -124,11 +534,15 @@ namespace FF8
 
             //let's start with scripts
             if (test_.Where(x=>x.ToLower().Contains(".jsm")).Count() > 0)
-                ParseScripts(ArchiveWorker.FileInTwoArchives(fi, fs, fl, test_.Where(x => x.ToLower().Contains(".jsm")).First()));
+                ParseScripts(ArchiveWorker.FileInTwoArchives(fi, fs, fl, test_.Where(x => x.ToLower().Contains(".jsm")).First())
+                    , ArchiveWorker.FileInTwoArchives(fi, fs, fl, test_.Where(x => x.ToLower().Contains(".sy")).First()));
+
+#if DEBUG
+            OutputAllParsedScripts();
+#endif
 
             //string mch = test_.Where(x => x.ToLower().Contains(".mch")).First();
             //string one = test_.Where(x => x.ToLower().Contains(".one")).First();
-            //string sym = test_.Where(x => x.ToLower().Contains(".sym")).First();
             //string msd = test_.Where(x => x.ToLower().Contains(".msd")).First();
             //string inf = test_.Where(x => x.ToLower().Contains(".inf")).First();
             //string id = test_.Where(x => x.ToLower().Contains(".id")).First();
@@ -141,7 +555,6 @@ namespace FF8
 
             //byte[] mchb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, mch); //Field character models
             //byte[] oneb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, one); //Field character models container
-            //byte[] symb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, sym); //script names
             //byte[] msdb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, msd); //dialogs
             //byte[] infb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, inf); //gateways
             //byte[] idb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, id); //walkmesh
@@ -159,8 +572,23 @@ namespace FF8
             return;
         }
 
-        private static void ParseScripts(byte[] jsmb)
+        private static void OutputAllParsedScripts()
         {
+            foreach(var a in ScriptSystem)
+            {
+                Console.WriteLine($"Entity: {a.Entity}\tName: {a.ScriptName}");
+                int lineNumber = 0;
+                foreach (var b in a.Scripts)
+                    Console.WriteLine($"{lineNumber++}:\t{b.opcodeASM} {b.parameter.ToString()}");
+            }
+        }
+
+        private static void ParseScripts(byte[] jsmb, byte[] symb)
+        {
+            string[] symbolNames = new string[symb.Length / 32];
+            for(int i = 0; i<symbolNames.Length; i++)
+                symbolNames[i] = System.Text.Encoding.ASCII.GetString(symb, i * 32, 32).TrimEnd('\0', '\n', ' ');
+
             jsm = new sJSM();
             File.WriteAllBytes("D:\\test.jsm", jsmb);
             using (Stream str = new MemoryStream(jsmb))
@@ -172,13 +600,74 @@ namespace FF8
                 jsm.cOtherEntity = br.ReadByte();
                 jsm.offsetSecOne = br.ReadUInt16();
                 jsm.offsetScriptData = br.ReadUInt16();
-                br.BaseStream.Seek(jsm.offsetScriptData, SeekOrigin.Begin);
-
-
-                List<uint> opcodes = new List<uint>();
-                while(br.BaseStream.Position != br.BaseStream.Length)
+                EntryPointEntity[] epe = new EntryPointEntity[jsm.cDoorEntity + jsm.cOtherEntity];
+                for(int i = 0; i<epe.Length; i++)
                 {
-                    opcodes.Add(br.ReadUInt32());
+                    ushort bb = br.ReadUInt16();
+                    epe[i].scriptCount = (byte)((bb & 0x7F)+1);
+                    epe[i].label = (byte)(bb >> 7);
+                    epe[i].labelASM = symbolNames[epe[i].label];
+                }
+                int SYMscriptNameStartingPoint = jsm.cDoorEntity + jsm.cOtherEntity;
+                jsm.EntityEntryPoints = epe;
+                EntryPointScript[] eps = new EntryPointScript[(jsm.offsetScriptData - jsm.offsetSecOne)/2 - 1];
+                for(int i = 0; i<eps.Length; i++)
+                {
+                    ushort bb = br.ReadUInt16();
+                    eps[i].position = (ushort)((bb & 0x7FFF) * 4);
+                    eps[i].flag = (byte)(bb >> 15);
+                }
+                ushort eof = br.ReadUInt16();
+                jsm.entryPointScripts = eps;
+
+                //br.BaseStream.Seek(jsm.offsetScriptData, SeekOrigin.Begin);
+
+                ScriptSystem = new List<ScriptEntry>();
+                List<ScriptOpcode> scriptChunk = new List<ScriptOpcode>();
+                int scriptLabelPointer = 0;
+                while (br.BaseStream.Position != br.BaseStream.Length)
+                {
+                    uint binaryOpcode = br.ReadUInt32();
+                    uint parameter = 0;
+                    uint opcode = 0;
+                    if ((binaryOpcode & 0xFFFFFF00) == 0) //when only function
+                    {
+                        opcode = binaryOpcode;
+                        parameter = 0;
+                    }
+                    else
+                    {
+                        opcode = binaryOpcode >> 16;
+                        opcode = (opcode >> 8) | opcode << 8 & 0xFF00;
+                        parameter = binaryOpcode & 0xFFFF;
+                    }
+                    if(opcode == 5 && scriptChunk.Count != 0) //label
+                    {
+                        ScriptSystem.Add(new ScriptEntry() {
+                            Entity = (ushort)FindEntity(symbolNames[SYMscriptNameStartingPoint + scriptLabelPointer]),
+                            ScriptName = symbolNames[SYMscriptNameStartingPoint + scriptLabelPointer++],
+                            ID = scriptChunk[0].parameter,
+                            Scripts = scriptChunk.ToArray() });
+                        scriptChunk.Clear();
+                    }
+
+                    scriptChunk.Add(new ScriptOpcode()
+                    {
+                        parameter = (ushort)parameter,
+                        opcodeBinary = (ushort)opcode,
+                        opcodeASM = Enum.GetName(typeof(JSMopcodes), opcode)
+                    });
+                    if (br.BaseStream.Position == br.BaseStream.Length)
+                    {
+                        ScriptSystem.Add(new ScriptEntry()
+                        {
+                            Entity = (ushort)FindEntity(symbolNames[SYMscriptNameStartingPoint+scriptLabelPointer]),
+                            ScriptName = symbolNames[SYMscriptNameStartingPoint + scriptLabelPointer++],
+                            ID = scriptChunk[0].parameter,
+                            Scripts = scriptChunk.ToArray()
+                        });
+                        break;
+                    }
                 }
 
                 /*
@@ -204,7 +693,16 @@ namespace FF8
                  * 
                  */
             }
+        }
 
+        private static int FindEntity(string entityName)
+        {
+            if (entityName.Contains("::"))
+                entityName = entityName.Substring(0, entityName.IndexOf(':'));
+                for (int i = 0; i<jsm.EntityEntryPoints.Length; i++)
+                if (jsm.EntityEntryPoints[i].labelASM == entityName)
+                    return i;
+            return -1;
         }
 
         private static void ParseBackground(byte[] mimb, byte[] mapb)
