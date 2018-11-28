@@ -10,7 +10,12 @@ Such DEBUG modules are designed to be rewritten into stable version, without tra
 
 -Yes, they are. They are debug just to test the functions and work with reverse engineering, but they should support all functionalities.
 
------------------------------------------------PROGRESS IN-DEV PROTOTYPES--------------------------------------------
+Legend:
+
+NAME OF MODULE
+
+PROGRESS BAR PROGRESS PERCENTAGE  -> WHAT'S REMAINING TO DO
+-------------------------------------PROGRESS IN-DEV PROTOTYPES--------------------------------------------
 MODULE OVERTURE
 
 ⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛ 100% 
