@@ -67,11 +67,12 @@ namespace FF8
             public ushort parameter;
         }
 
-        private struct ScriptEntry
+        private struct ScriptEntry //final struct
         {
             public ushort Entity;
             public string ScriptName;
             public ushort ID;
+            public ushort localID;
             public ScriptOpcode[] Scripts;
         }
 
@@ -602,7 +603,7 @@ namespace FF8
                 jsm.cOtherEntity = br.ReadByte();
                 jsm.offsetSecOne = br.ReadUInt16();
                 jsm.offsetScriptData = br.ReadUInt16();
-                EntryPointEntity[] epe = new EntryPointEntity[jsm.cDoorEntity + jsm.cOtherEntity+ jsm.cWalkmeshEntity];
+                EntryPointEntity[] epe = new EntryPointEntity[jsm.cDoorEntity + jsm.cOtherEntity+ jsm.cWalkmeshEntity+jsm.cBackgroundEntity];
                 for(int i = 0; i<epe.Length; i++)
                 {
                     ushort bb = br.ReadUInt16();
@@ -610,7 +611,7 @@ namespace FF8
                     epe[i].label = (byte)(bb >> 7);
                     epe[i].labelASM = symbolNames[epe[i].label];
                 }
-                int SYMscriptNameStartingPoint = jsm.cDoorEntity + jsm.cOtherEntity + jsm.cWalkmeshEntity;
+                int SYMscriptNameStartingPoint = jsm.cDoorEntity + jsm.cOtherEntity + jsm.cWalkmeshEntity + jsm.cBackgroundEntity;
                 jsm.EntityEntryPoints = epe;
                 EntryPointScript[] eps = new EntryPointScript[(jsm.offsetScriptData - jsm.offsetSecOne)/2 - 1];
                 for(int i = 0; i<eps.Length; i++)
@@ -647,10 +648,13 @@ namespace FF8
                     }
                     if(opcode == 5 && scriptChunk.Count != 0) //label
                     {
+                        ushort entityNumber = (ushort)FindEntity(symbolNames[SYMscriptNameStartingPoint + scriptLabelPointer]);
+                        int locId = ScriptSystem.Where(x => x.Entity == entityNumber).Count();
                         ScriptSystem.Add(new ScriptEntry() {
-                            Entity = (ushort)FindEntity(symbolNames[SYMscriptNameStartingPoint + scriptLabelPointer]),
+                            Entity = entityNumber,
                             ScriptName = symbolNames[SYMscriptNameStartingPoint + scriptLabelPointer++],
                             ID = scriptChunk[0].parameter,
+                            localID = (ushort)locId++,
                             Scripts = scriptChunk.ToArray() });
                         scriptChunk.Clear();
                     }
@@ -663,11 +667,14 @@ namespace FF8
                     });
                     if (br.BaseStream.Position == br.BaseStream.Length)
                     {
+                        ushort entityNumber = (ushort)FindEntity(symbolNames[SYMscriptNameStartingPoint + scriptLabelPointer]);
+                        int locId = ScriptSystem.Where(x => x.Entity == entityNumber).Count();
                         ScriptSystem.Add(new ScriptEntry()
                         {
-                            Entity = (ushort)FindEntity(symbolNames[SYMscriptNameStartingPoint+scriptLabelPointer]),
+                            Entity = entityNumber,
                             ScriptName = symbolNames[SYMscriptNameStartingPoint + scriptLabelPointer++],
                             ID = scriptChunk[0].parameter,
+                            localID = (ushort)locId++,
                             Scripts = scriptChunk.ToArray()
                         });
                         break;
