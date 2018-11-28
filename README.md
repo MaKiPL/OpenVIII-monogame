@@ -15,6 +15,7 @@ Legend:
 NAME OF MODULE
 
 PROGRESS BAR PROGRESS PERCENTAGE  -> WHAT'S REMAINING TO DO
+
 -------------------------------------PROGRESS IN-DEV PROTOTYPES--------------------------------------------
 MODULE OVERTURE
 
