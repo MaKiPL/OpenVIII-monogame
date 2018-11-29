@@ -47,6 +47,8 @@ namespace FF8
         private static List<ScriptEntry> ScriptSystem;
         private static string[] symbolNames;
 
+        private static List<int> Stack;
+
         private struct EntryPointEntity
         {
             public byte scriptCount;
@@ -64,6 +66,7 @@ namespace FF8
         {
             public ushort opcodeBinary;
             public string opcodeASM;
+            public JSMopcodes opcode;
             public ushort parameter;
         }
 
@@ -484,7 +487,11 @@ namespace FF8
         }
 
         public static void ResetField()
-            => mod = field_mods.INIT;
+        {
+            mod = field_mods.INIT;
+            if(ScriptSystem != null)
+                ScriptSystem.Clear();
+        }
 
         private static void DrawDebug()
         {
@@ -503,10 +510,101 @@ namespace FF8
             {
                 case field_mods.INIT:
                     Init();
+                    StartupScript();
                     break;
                 case field_mods.DEBUGRENDER:
                     break; //await events here
             }
+        }
+
+        private static void StartupScript()
+        {
+            var initDefaultCollection = ScriptSystem.Where(x => x.localID == 0 || x.localID == 1).ToList();
+            foreach (var scr in initDefaultCollection)
+                foreach (var opcode in scr.Scripts)
+                    if(ScriptSystem.Count != 0)
+                        ParseOpcode(opcode);
+        }
+
+        private static void ParseOpcode(ScriptOpcode opcode)
+        {
+            int stack1 = 0;
+            int stack2 = 0;
+            int stack3 = 0;
+            switch(opcode.opcode)
+            {
+                case JSMopcodes.LBL: 
+                    return;
+                case JSMopcodes.SETMODEL: //TODO
+                    Console.WriteLine("TODO: ENTITY SUBSYSTEM");
+                    return;
+                case JSMopcodes.PSHN_L:
+                    Stack.Add(opcode.parameter);
+                    return;
+                case JSMopcodes.BASEANIME: //TODO
+                    stack1 = POPstack();
+                    stack2 = POPstack();
+                    Console.WriteLine("TODO: ENTITY SUBSYSTEM; ANIMATION");
+                    return;
+                case JSMopcodes.SETPC: //TODO
+                    stack1 = POPstack();
+                    Console.WriteLine("TODO: PARTY SUBSYSTEM");
+                    return;
+                case JSMopcodes.HIDE: //TODO
+                    Console.WriteLine("TODO: ENTITY SUBSYSTEM");
+                    return;
+                case JSMopcodes.UCOFF: //TODO
+                    Console.WriteLine("TODO: I/O SUBSYSTEM");
+                    return;
+                case JSMopcodes.CLEAR: //TODO
+                    Console.WriteLine("TODO: CLEAR()");
+                    return;
+                case JSMopcodes.POPM_B:
+                    Memory.FieldHolder.FieldMemory[POPstack()] = (byte)opcode.parameter;
+                    return;
+                case JSMopcodes.NOP:
+                    return;
+                case JSMopcodes.POPM_W:
+                    Memory.FieldHolder.FieldMemory[POPstack()] = (ushort)opcode.parameter;
+                    return;
+                case JSMopcodes.BATTLEOFF: //TODO
+                    return;
+                case JSMopcodes.MAPFADEOFF: //TODO
+                    return;
+                case JSMopcodes.ADDMEMBER: //todo
+                    return;
+                case JSMopcodes.ADDPARTY: //todo
+                    return;
+                case JSMopcodes.SETBATTLEMUSIC:
+                    Memory.SetBattleMusic = POPstack();
+                    return;
+                case JSMopcodes.CAL: //todo
+                    stack1 = POPstack();
+                    stack2 = POPstack();
+                    return;
+                case JSMopcodes.MOVIEREADY: //todo
+                    stack1 = POPstack();
+                    stack2 = POPstack();
+                    return;
+                case JSMopcodes.MOVIE: //todo
+                    return;
+                case JSMopcodes.MOVIESYNC: //todo
+                    return;
+                case JSMopcodes.MAPJUMPO: //todo
+                    stack2 = POPstack(); //walkmesh id
+                    stack1 = POPstack(); //field map id
+                    Memory.FieldHolder.FieldID = (ushort)stack1;
+                    module_field_debug.ResetField();
+                    //todo
+                    return;
+            }
+        }
+
+        private static int POPstack()
+        {
+            int stack = Stack.Last();
+            Stack.RemoveAt(Stack.Count()-1);
+            return stack;
         }
 
         private static void Init()
@@ -534,13 +632,17 @@ namespace FF8
 
             ParseBackground(mimb, mapb);
 
+#if DEBUG
+            if (Memory.FieldHolder.FieldID == 180) goto safeDebugpoint; //delete me
+#endif
             //let's start with scripts
             if (test_.Where(x=>x.ToLower().Contains(".jsm")).Count() > 0)
                 ParseScripts(ArchiveWorker.FileInTwoArchives(fi, fs, fl, test_.Where(x => x.ToLower().Contains(".jsm")).First())
                     , ArchiveWorker.FileInTwoArchives(fi, fs, fl, test_.Where(x => x.ToLower().Contains(".sy")).First()));
-
+            Stack = new List<int>();
 #if DEBUG
             OutputAllParsedScripts();
+            
 #endif
 
             //string mch = test_.Where(x => x.ToLower().Contains(".mch")).First();
@@ -569,7 +671,7 @@ namespace FF8
 
 
 
-
+            safeDebugpoint:
             mod++;
             return;
         }
@@ -663,7 +765,9 @@ namespace FF8
                     {
                         parameter = (ushort)parameter,
                         opcodeBinary = (ushort)opcode,
-                        opcodeASM = Enum.GetName(typeof(JSMopcodes), opcode)
+                        opcodeASM = Enum.GetName(typeof(JSMopcodes), opcode),
+                        opcode = (JSMopcodes)opcode
+                        
                     });
                     if (br.BaseStream.Position == br.BaseStream.Length)
                     {

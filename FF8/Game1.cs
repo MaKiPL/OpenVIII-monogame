@@ -35,7 +35,7 @@ namespace FF8
             Memory.iconsTex = new Texture2D[16];
             for(int i = 0; i<16; i++)
                 Memory.iconsTex[i] = tex.GetTexture(i);
-
+            Memory.FieldHolder.FieldMemory = new int[1024];
             
             base.Initialize();
         }

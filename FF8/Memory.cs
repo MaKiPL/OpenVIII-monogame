@@ -57,6 +57,7 @@ namespace FF8
 
         #region battleProvider
         public static int bat_sceneID = 000;
+        public static int SetBattleMusic = 6;
         #endregion
 
         #region AudioData
@@ -451,6 +452,7 @@ namespace FF8
             //public static string[] MapList;
             public static ushort FieldID = 161;
             public static string[] fields;
+            public static int[] FieldMemory;
         }
     }
 }
