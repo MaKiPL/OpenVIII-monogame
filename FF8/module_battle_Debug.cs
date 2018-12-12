@@ -188,6 +188,7 @@ namespace FF8
             Memory.graphics.GraphicsDevice.RasterizerState = rasterizerState;
             Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
             Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             AlphaTestEffect ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice);
             ate.Projection = projectionMatrix;
             ate.View = viewMatrix;
