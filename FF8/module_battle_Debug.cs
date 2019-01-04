@@ -463,7 +463,7 @@ namespace FF8
             Vertex[] vertices = new Vertex[verticesCount];
             for (int i = 0; i < verticesCount; i++)
                 vertices[i] = ReadVertex();
-            if (bSpecial && Memory.battle_encounter == 20)
+            if (bSpecial && Memory.encounters[Memory.battle_encounter].bScenario == 20)
                 return new Model();
             pbs.Seek((pbs.Tell() % 4) + 4, PseudoBufferedStream.SEEK_CURRENT);
             ushort trianglesCount = pbs.ReadUShort();
@@ -588,11 +588,11 @@ namespace FF8
 117,118,119,120,128,129,130,131,132,133,134,139,140,143,146,152,153,154,
 155,156,159,161,162};
 
-            int _5d4 = _x5D4.Count(x => x== Memory.battle_encounter);
-            int _5d8 = _x5D8.Count(x => x == Memory.battle_encounter);
+            int _5d4 = _x5D4.Count(x => x== Memory.encounters[Memory.battle_encounter].bScenario);
+            int _5d8 = _x5D8.Count(x => x == Memory.encounters[Memory.battle_encounter].bScenario);
             if (_5d4 > 0) return 0x5D4;
             if (_5d8 > 0) return 0x5D8;
-            switch (Memory.battle_encounter)
+            switch (Memory.encounters[Memory.battle_encounter].bScenario)
             {
                 case 8:
                 case 48:
