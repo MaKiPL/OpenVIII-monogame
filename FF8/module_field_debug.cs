@@ -533,6 +533,8 @@ namespace FF8
             int stack3 = 0;
             switch(opcode.opcode)
             {
+                case JSMopcodes.NOP:
+                    return;
                 case JSMopcodes.LBL: 
                     return;
                 case JSMopcodes.SETMODEL: //TODO
@@ -561,8 +563,6 @@ namespace FF8
                     return;
                 case JSMopcodes.POPM_B:
                     Memory.FieldHolder.FieldMemory[POPstack()] = (byte)opcode.parameter;
-                    return;
-                case JSMopcodes.NOP:
                     return;
                 case JSMopcodes.POPM_W:
                     Memory.FieldHolder.FieldMemory[POPstack()] = (ushort)opcode.parameter;

@@ -120,7 +120,7 @@ namespace FF8
                 bLimitInput = true;
                 msDelay = 0;
                 init_debugger_Audio.PlaySound(0);
-                if (debug_choosedBS >= 162) return;
+                if (debug_choosedBS >= Memory.encounters.Length) return;
                 debug_choosedBS++;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.Left) && !bLimitInput && choosenOption == 4)
@@ -163,7 +163,7 @@ namespace FF8
                 bLimitInput = true;
                 msDelay = 0;
                 init_debugger_Audio.PlaySound(0);
-                Memory.bat_sceneID = debug_choosedBS;
+                Memory.battle_encounter = debug_choosedBS;
                 module_battle_debug.ResetState();
                 Memory.module = Memory.MODULE_BATTLE_DEBUG;
             }
@@ -300,7 +300,7 @@ namespace FF8
             //string cCnCRtn = Font.CipherDirty("OpenVIII debug tools"); //SnclZMMM bc`se \0rmmjq
             Memory.font.RenderBasicText(Font.CipherDirty("Reset Main Menu state".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.05f), 1f, 2f, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty("Play Overture".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.08f), 1f, 2f, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"Battle map fly: a0stg{debug_choosedBS.ToString("D3")}".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.11f), 1f, 2f, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Battle encounter: {debug_choosedBS.ToString("D4")}".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.11f), 1f, 2f, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Field debug render: {debug_choosedField}".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.14f), 1f, 2f, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty("Play next music".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.17f), 1f, 2f, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty("Play previous music".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.20f), 1f, 2f, 0, 1);

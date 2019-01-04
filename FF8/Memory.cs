@@ -56,8 +56,9 @@ namespace FF8
         #endregion
 
         #region battleProvider
-        public static int bat_sceneID = 000;
+        public static int battle_encounter = 000;
         public static int SetBattleMusic = 6;
+        public static init_debugger_battle.Encounter[] encounters;
         #endregion
 
         #region AudioData

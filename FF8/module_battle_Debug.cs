@@ -360,7 +360,8 @@ namespace FF8
         private static void InitBattle()
         {
             //DEBUG
-            int stage = Memory.bat_sceneID; //take stage ID instead of reading encounter ID
+            init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
+            int stage = enc.bScenario;
             battlename = $"a0stg{stage.ToString("000")}.x";
             Console.WriteLine($"BS_DEBUG: Loading stage {battlename}");
 
@@ -462,7 +463,7 @@ namespace FF8
             Vertex[] vertices = new Vertex[verticesCount];
             for (int i = 0; i < verticesCount; i++)
                 vertices[i] = ReadVertex();
-            if (bSpecial && Memory.bat_sceneID == 20)
+            if (bSpecial && Memory.battle_encounter == 20)
                 return new Model();
             pbs.Seek((pbs.Tell() % 4) + 4, PseudoBufferedStream.SEEK_CURRENT);
             ushort trianglesCount = pbs.ReadUShort();
@@ -587,11 +588,11 @@ namespace FF8
 117,118,119,120,128,129,130,131,132,133,134,139,140,143,146,152,153,154,
 155,156,159,161,162};
 
-            int _5d4 = _x5D4.Count(x => x== Memory.bat_sceneID);
-            int _5d8 = _x5D8.Count(x => x == Memory.bat_sceneID);
+            int _5d4 = _x5D4.Count(x => x== Memory.battle_encounter);
+            int _5d8 = _x5D8.Count(x => x == Memory.battle_encounter);
             if (_5d4 > 0) return 0x5D4;
             if (_5d8 > 0) return 0x5D8;
-            switch (Memory.bat_sceneID)
+            switch (Memory.battle_encounter)
             {
                 case 8:
                 case 48:
