@@ -33,6 +33,8 @@ namespace FF8
 
         public static BasicEffect effect;
 
+        private static BattleCamera battleCamera;
+
         private static string battlename = "a0stg000.x";
         private static byte[] stageBuffer;
 
@@ -49,6 +51,38 @@ namespace FF8
             public bool bQuad;
             public byte clut;
             public byte texPage;
+        }
+
+
+        private struct BattleCamera
+        {
+            public BattleCameraSettings battleCameraSettings;
+            public BattleCameraCollection battleCameraCollection;
+        }
+
+        private struct BattleCameraSettings
+        {
+            public byte[] unk;
+        }
+
+        private struct BattleCameraCollection
+        {
+            public uint cAnimCollectionCount;
+            public uint pCameraEOF;
+            public BattleCameraSet[] battleCameraSet;
+        }
+
+        private struct BattleCameraSet
+        {
+            public uint[] animPointers;
+            public uint globalSetPointer;
+            public CameraAnimation[] cameraAnimation;
+        }
+
+        private struct CameraAnimation
+        {
+            public ushort header;
+
         }
 
         private struct Triangle
@@ -161,7 +195,6 @@ namespace FF8
                     ReadData();
                     break;
                 case BATTLEMODULE_DRAWGEOMETRY:
-                    if (Keyboard.GetState().IsKeyDown(Keys.F1)) Memory.module = Memory.MODULE_MOVIETEST;
                     break;
                 default:
                     break;
@@ -273,17 +306,13 @@ namespace FF8
 
                 }
 
-            //vertices -> set this one to VertexPositionTexture
-            //vertices -> texturecoordinate
-            //floorVerts = new VertexPositionTexture[6];
-
-            //effect -> View = Matrix.CreateLookAt (
-            //cameraPosition, cameraLookAtVector, cameraUpVector);
-
-            //effect.textureenabled=  true;
-            //effect.texture
-
-            //graphicsdevice.drawuserprimitives
+            Memory.SpriteBatchStartAlpha();
+            Memory.font.RenderBasicText(Font.CipherDirty($"Encounter ready at: {Memory.battle_encounter}"), 0, 0,1,1,0,1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Camera: {Memory.encounters[Memory.battle_encounter].bCamera}"), 20, 30, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Enemies: {string.Join(",",Memory.encounters[Memory.battle_encounter].BEnemies.Where(x=> x!=0x00).Select(x=> "0x" + (x-0x10).ToString("X02")).ToArray())}"), 20, 30 * 2, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Levels: {string.Join(",", Memory.encounters[Memory.battle_encounter].bLevels)}"), 20, 30 * 3, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Loaded enemies: {Convert.ToString(Memory.encounters[Memory.battle_encounter].bLoadedEnemy,2)}"), 20, 30 * 4, 1, 1, 0, 1);
+            Memory.SpriteBatchEnd();
         }
 
         private static Tuple<BS_RENDERER_ADD[], VertexPositionTexture[]> getVertexBuffer(Model model)
@@ -359,11 +388,12 @@ namespace FF8
 
         private static void InitBattle()
         {
-            //DEBUG
             init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
             int stage = enc.bScenario;
             battlename = $"a0stg{stage.ToString("000")}.x";
             Console.WriteLine($"BS_DEBUG: Loading stage {battlename}");
+            Console.WriteLine($"BS_DEBUG/ENC: Encounter: {Memory.battle_encounter}\t cEnemies: {enc.bNumOfEnemies}\t Enemies: {string.Join(",", enc.BEnemies.Where(x => x != 0x00).Select(x => $"0x{(x-0x10).ToString("X02")}").ToArray())}");
+
 
             //init renderer
             effect = new BasicEffect(Memory.graphics.GraphicsDevice);
@@ -377,7 +407,6 @@ namespace FF8
                          new Vector3(0f, 1f, 0f));// Y up
             worldMatrix = Matrix.CreateWorld(camTarget, Vector3.
                           Forward, Vector3.Up);
-            //DEBUG- stop here;
             battleModule++;
             return;
         }
@@ -573,7 +602,6 @@ namespace FF8
             TexturePointer = Texture, EOF = EOF}; //EOF = EOF; beauty of language
         }
 
-        //normal way of GetCameraPointer() instead of 163 switches. Why Eidos?
         private static uint GetCameraPointer()
         {
             int[] _x5D4 = {4,5,9,12,13,14,15,21,22,23,24,26,
@@ -640,96 +668,43 @@ namespace FF8
 
         private static void ReadCamera()
         {
-            //sub_509970
+            uint cCameraHeaderSector = pbs.ReadUShort();
+            if (cCameraHeaderSector != 0x2)
+                ; //error handler?
+            uint pCameraSetting = pbs.ReadUShort();
+            uint pCameraAnimationCollection = pbs.ReadUShort();
+            uint sCameraDataSize = pbs.ReadUShort();
 
-            uint eax = bs_cameraPointer;
-            pbs.ReadUShort(); //null
-            ushort cx = pbs.ReadUShort(); //eax+2
-            ushort dx = pbs.ReadUShort(); //eax+4
-            uint camSettingsPointer = cx + eax;
-            uint camAnimPointer = dx + eax;
-            uint cameraSize = pbs.ReadUShort();
-
-            //==========DELETE ME AFTER INVESRTIGATING CAMERA
-            pbs.Seek(-8, PseudoBufferedStream.SEEK_CURRENT);
-            pbs.Seek(bs_cameraPointer + cameraSize, PseudoBufferedStream.SEEK_BEGIN);
-            return;
-            //==========END OF DELETE ME
-
-            //FF8::509898
-            //EAX - monster presentation camera;
-
-
-            //sub_503520
-
-            pbs.Seek(camAnimPointer, PseudoBufferedStream.SEEK_BEGIN);
-            int DebugCameraEAX = 7; //This is relevant to fought monster, which camera animation to use
-            //int v2 = (DebugCameraEAX >> 4) & 0xF; //not sure about this, doesn't make sense as higher AL of camera anim mode is lower than available cameras?????
-            //ushort availableCameras = pbs.ReadUShort();
-            //if (v2 > availableCameras)
-            //    throw new Exception("NOT_EXCEPTION: Cameras is bigger, use fixed camera/ no camera animation");
-            //int v3 = v2 & 7; //maximum 7 cameras;
-            //uint keypointPointer = (uint)(camAnimPointer + (v3 * 2) + 2);
-            //pbs.Seek(keypointPointer, PseudoBufferedStream.SEEK_BEGIN);
-            //ushort v5 = pbs.ReadUShort();
-            //uint anotherPointer = v5 * (uint)2 + keypointPointer;
-
-            DebugCameraEAX &= 0x7;
-            pbs.ReadUShort();
-            pbs.Seek((DebugCameraEAX - 1) * 2, PseudoBufferedStream.SEEK_BEGIN);
-            ushort animationPointer = pbs.ReadUShort();
-            pbs.Seek(animationPointer + camAnimPointer, PseudoBufferedStream.SEEK_BEGIN);
+            //Camera settings parsing?
+            BattleCameraSettings bcs = new BattleCameraSettings() { unk = pbs.ReadBytes(24) };
+            //end of camera settings parsing
 
 
 
-            //another pointer is saved then to edx+10 and used at: sub_5035E0->005035F6
+            pbs.Seek(bs_cameraPointer, 0);
+            pbs.Seek(pCameraAnimationCollection, 1);
+            BattleCameraCollection bcc = new BattleCameraCollection{cAnimCollectionCount = pbs.ReadUShort()};
+            BattleCameraSet[] bcset = new BattleCameraSet[bcc.cAnimCollectionCount];
+            bcc.battleCameraSet = bcset;
+            for (int i = 0; i < bcc.cAnimCollectionCount; i++)
+                bcset[i] = new BattleCameraSet() { globalSetPointer = (uint)(pbs.Tell() + pbs.ReadUShort() - i*2 - 2)};
+            bcc.pCameraEOF = pbs.ReadUShort();
 
+            for(int i = 0; i< bcc.cAnimCollectionCount; i++)
+            {
+                pbs.Seek(bcc.battleCameraSet[i].globalSetPointer, 0);
+                bcc.battleCameraSet[i].animPointers = new uint[8];
+                for (int n = 0; n < bcc.battleCameraSet[i].animPointers.Length; n++)
+                    bcc.battleCameraSet[i].animPointers[n] = (uint)(pbs.Tell() + pbs.ReadUShort()*2 - n*2);
+                bcc.battleCameraSet[i].cameraAnimation = new CameraAnimation[bcc.battleCameraSet[i].animPointers.Length];
+                for (int n=  0; n< bcc.battleCameraSet[i].animPointers.Length; n++)
+                {
+                    pbs.Seek(bcc.battleCameraSet[i].animPointers[n], 0);
+                    bcc.battleCameraSet[i].cameraAnimation[n] = new CameraAnimation() { header = pbs.ReadUShort() };
+                }
+            }
 
-            //pbs.Seek(2, PseudoBufferedStream.SEEK_CURRENT);
-            //int v2 = pbs.ReadInt();
-            //v2 = (v2 >> 4) & 0xF; //?
-
-            //pbs.Seek(camAnimPointer, PseudoBufferedStream.SEEK_BEGIN);
-            //ushort a1 = pbs.ReadUShort();
-            //if(v2 < a1)
-            //{
-            //    int v3 = v2 & 7;
-            //    uint keypointPointer = (uint)(camAnimPointer + (v3 * 2) + 2);
-            //    eax = 0x10000;
-            //    eax &= 0xFFFF;
-
-            //}
-
-
-            //dummy float/ skip camera data
-            ushort cameraConst = pbs.ReadUShort();
-            if (ushortLittleEndian(cameraConst) != 0x0200) throw new Exception($"BS_PARSER: 0x0200 const not found at {pbs.Tell()}");
-            ushort pCameraSetting = pbs.ReadUShort();
-            ushort pCameraAnimation = pbs.ReadUShort();
-            ushort sCameraDataSize = pbs.ReadUShort();
-
-            //debug camera read
-            byte[] cameraSettings = pbs.ReadBytes(24);
-            //char cameraAnimMode = (char)pbs.ReadByte();
-            //byte stopEnemyBeforeAnim = pbs.ReadByte();
-
-            ushort numOfCameras = pbs.ReadUShort();
-
-            ushort relativePointerToCamera = pbs.ReadUShort();
-            ushort relativeEOF = pbs.ReadUShort();
-            ushort padding = pbs.ReadUShort();
-
-            List<byte[]> Animations = new List<byte[]>();
-            //FF8_EN.exe+103534
-            ushort animCount = pbs.ReadUShort();
-            ushort[] pointersTest = new ushort[animCount];
-            for (int i = 0; i < animCount; i++)
-                pointersTest[i] = pbs.ReadUShort();
-
-
-            //DEBUG MODE, skips camera
-            pbs.Seek(-8, PseudoBufferedStream.SEEK_CURRENT);
-            pbs.Seek(sCameraDataSize, PseudoBufferedStream.SEEK_CURRENT);
+            battleCamera = new BattleCamera() { battleCameraCollection = bcc, battleCameraSettings = bcs };
         }
 
         #endregion
