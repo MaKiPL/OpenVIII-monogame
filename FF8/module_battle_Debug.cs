@@ -31,6 +31,11 @@ namespace FF8
         private static Texture2D[] textures;
 
 
+
+
+        
+
+
         public static BasicEffect effect;
 
         private static BattleCamera battleCamera;
@@ -668,6 +673,7 @@ namespace FF8
 
         private static void ReadCamera()
         {
+            Memory.BS_CameraStruct = new Memory.VIII_cameraMemoryStruct(); //In VIII C it's memset here 
             uint cCameraHeaderSector = pbs.ReadUShort();
             if (cCameraHeaderSector != 0x2)
                 ; //error handler?
@@ -705,7 +711,70 @@ namespace FF8
             }
 
             battleCamera = new BattleCamera() { battleCameraCollection = bcc, battleCameraSettings = bcs };
+
+            //DEBUG DELETE ME
+            ReadAnimation(7);
+            //END OF DEBUG
+
+            pbs.Seek(bs_cameraPointer + sCameraDataSize, 0); //debug out
         }
+
+
+        //WIP debug only, used for reverse engineering
+        private static void ReadAnimation(int animId)
+        {
+            Memory.BS_CameraStruct.camAnimId = (byte)animId;
+            if ((animId>>4) >= battleCamera.battleCameraCollection.cAnimCollectionCount)
+                return;
+            var pointer = battleCamera.battleCameraCollection.battleCameraSet[animId >> 4].animPointers[animId&0xF];
+            pbs.Seek(pointer, 0);
+            ushort eax = pbs.ReadUShort();
+            Memory.BS_CameraStruct.mainController = eax; //[esi+2], ax 
+            if (eax == 0xFFFF)
+                return;
+            ushort ebx = eax;
+            eax = (ushort)((eax >> 6) & 3);
+            eax--;
+            if(eax==0)
+            {
+                eax = 0x200;
+                Memory.BS_CameraStruct.thirdWordController = Memory.BS_CameraStruct.secondWordController = eax;
+                goto structFullfiled; //AY LMAO, assembler kicks ass
+            }
+            eax--;
+            if (eax == 0) //I quite dislike the fact that C# can't recognize zero as false
+            {
+                eax = pbs.ReadUShort();
+                Memory.BS_CameraStruct.thirdWordController = Memory.BS_CameraStruct.secondWordController = eax;
+                goto structFullfiled;
+            }
+            eax--;
+            if (eax != 0)
+                goto structFullfiled;
+            Memory.BS_CameraStruct.secondWordController = pbs.ReadUShort(); //esi+4
+            Memory.BS_CameraStruct.thirdWordController = pbs.ReadUShort(); //esi+6 
+
+
+        structFullfiled:
+            eax = ebx;
+            eax = (ushort)((eax >> 8) & 3);
+            switch(eax)
+            {
+                case 0:
+                    break;
+                case 1:
+                    break;
+                case 2:
+                    break;
+                case 3:
+                    break;
+            }
+
+            //default here
+            //there's now some operations to copy next vars
+            //see BS_Camera_ReadAnimation+CC 00103B8C
+        }
+
 
         #endregion
 

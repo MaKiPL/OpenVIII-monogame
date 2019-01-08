@@ -59,6 +59,25 @@ namespace FF8
         public static int battle_encounter = 000;
         public static int SetBattleMusic = 6;
         public static init_debugger_battle.Encounter[] encounters;
+
+        public struct VIII_cameraMemoryStruct
+        {
+            public byte camAnimId; //.data:01D977A8 beginning of struct
+            public byte UNKNOWNpadding; //?
+            public ushort mainController; //so far unknown, probably a controller for animation? .data:01D977AA
+            public ushort secondWordController;
+            public ushort thirdWordController;
+            public byte cameraVar1; //this is later set up after controllers bit-parsing. May be actually camera
+            public byte cameraVar2;
+            public byte cameraVar3;
+            public byte cameraVar4;
+            public byte cameraVar5;
+            public byte cameraVar6;
+            public ushort unknownWord; //.data:01D977B6 unknown, padding? is this struct packed?
+            public uint animationPointer; //.data:01D977B8 always used with animation data + this struct
+        }
+
+        public static VIII_cameraMemoryStruct BS_CameraStruct;
         #endregion
 
         #region AudioData
