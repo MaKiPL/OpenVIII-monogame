@@ -22,11 +22,14 @@ namespace FF8
         private static Vector3 camPosition;
         private static Vector3 camTarget;
         public static BasicEffect effect;
+        public static AlphaTestEffect ate;
         private enum _worldState
         {
             _0init,
             _1debugFly
         }
+
+        private static Texture2D debugTex;
 
 
         private static byte[] wmx;
@@ -58,7 +61,7 @@ namespace FF8
         private struct segHeader
         {
             public uint groupId;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst =16)]
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
             public uint[] blockOffsets;
         }
 
@@ -66,8 +69,8 @@ namespace FF8
         {
             public byte F1, F2, F3, N1, N2, N3, U1, V1, U2, V2, U3, V3, TPage_clut, groundtype, unk1, unk2;
 
-            public byte TPage { get => (byte)((TPage_clut>>4)&0xF0);}
-            public byte Clut { get => (byte)(TPage_clut & 0x0F);}
+            public byte TPage { get => (byte)((TPage_clut >> 4) & 0xF0); }
+            public byte Clut { get => (byte)(TPage_clut & 0x0F); }
             //public byte TPage_clut1 { set => TPage_clut = value; }
         }
 
@@ -75,10 +78,10 @@ namespace FF8
         {
             public short X;
             private short Z;
-            private short Y;
+            public short Y;
             private short W;
 
-            public short Z1 { get => (short)(Z*-1); set => Z = value; }
+            public short Z1 { get => (short)(Z * -1); set => Z = value; }
         }
 
         private struct Normal /*: Vertex we can't inherit struct in C#*/
@@ -95,7 +98,7 @@ namespace FF8
 
         public static void Update()
         {
-            switch(worldState)
+            switch (worldState)
             {
                 case _worldState._0init:
                     InitWorld();
@@ -109,6 +112,7 @@ namespace FF8
         {
             //init renderer
             effect = new BasicEffect(Memory.graphics.GraphicsDevice);
+            effect.EnableDefaultLighting();
             camTarget = new Vector3(0, 0f, 0f);
             camPosition = new Vector3(0f, 50f, -100f);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
@@ -122,7 +126,11 @@ namespace FF8
             Memory.musicIndex = 30;
             init_debugger_Audio.PlayMusic();
 
-
+            debugTex = new Texture2D(Memory.graphics.GraphicsDevice, 16, 16, false, SurfaceFormat.Color);
+            byte[] bufferDebugTex = new byte[16 * 16 * 4];
+            for (int n = 0; n < bufferDebugTex.Length; n++)
+                bufferDebugTex[n] = 0xff;
+            debugTex.SetData(bufferDebugTex);
             ReadWMX();
 
 
@@ -133,41 +141,34 @@ namespace FF8
         private static void ReadWMX()
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_WORLD);
-            string wmxPath =  aw.GetListOfFiles().Where(x=>x.ToLower().Contains("wmx.obj")).Select(x=>x).First();
+            string wmxPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("wmx.obj")).Select(x => x).First();
             wmx = ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, wmxPath);
 
             segments = new Segment[835];
 
             using (MemoryStream ms = new MemoryStream(wmx))
-                using (BinaryReader br = new BinaryReader(ms))
-                    for(int i = 0; i<segments.Length; i++)
-                    {
-                    //segHeader test = new segHeader();
-                    //test.blockOffsets = new uint[16];
-                    //var t = Marshal.SizeOf(typeof(segHeader));
-                    //byte[] test2 = br.ReadBytes(68);
-                    //GCHandle hwnd = GCHandle.Alloc(test2, GCHandleType.Pinned);
-                    //var ttt = Marshal.PtrToStructure<segHeader>(hwnd.AddrOfPinnedObject());
-                    //hwnd.Free();
+            using (BinaryReader br = new BinaryReader(ms))
+                for (int i = 0; i < segments.Length; i++)
+                {
                     ms.Seek(GetSegment(i), SeekOrigin.Begin);
-                    segments[i] = new Segment() { segmentId = i, headerData = MakiExtended.ByteArrayToStructure<segHeader>(br.ReadBytes(68)), block =  new Block[16]};
+                    segments[i] = new Segment() { segmentId = i, headerData = MakiExtended.ByteArrayToStructure<segHeader>(br.ReadBytes(68)), block = new Block[16] };
                     ms.Seek(GetSegment(i), SeekOrigin.Begin);
                     for (int n = 0; n < segments[i].block.Length; n++)
-                        {
+                    {
                         ms.Seek(segments[i].headerData.blockOffsets[n] + GetSegment(i), SeekOrigin.Begin);
                         segments[i].block[n] = new Block() { polyCount = br.ReadByte(), vertCount = br.ReadByte(), normalCount = br.ReadByte(), unkPadd = br.ReadByte() };
                         segments[i].block[n].polygons = new Polygon[segments[i].block[n].polyCount];
                         segments[i].block[n].vertices = new Vertex[segments[i].block[n].vertCount];
                         segments[i].block[n].normals = new Normal[segments[i].block[n].normalCount];
-                        for (int k = 0; k<segments[i].block[n].polyCount; k++)
-                            segments[i].block[n].polygons[k] = MakiExtended.ByteArrayToStructure<Polygon>(br.ReadBytes(16/**segments[i].block[n].polyCount*/));
+                        for (int k = 0; k < segments[i].block[n].polyCount; k++)
+                            segments[i].block[n].polygons[k] = MakiExtended.ByteArrayToStructure<Polygon>(br.ReadBytes(16));
                         for (int k = 0; k < segments[i].block[n].vertCount; k++)
-                            segments[i].block[n].vertices[k] = MakiExtended.ByteArrayToStructure<Vertex>(br.ReadBytes(8 /* *segments[i].block[n].vertCount*/));
+                            segments[i].block[n].vertices[k] = MakiExtended.ByteArrayToStructure<Vertex>(br.ReadBytes(8));
                         for (int k = 0; k < segments[i].block[n].normalCount; k++)
-                            segments[i].block[n].normals[k] = MakiExtended.ByteArrayToStructure<Normal>(br.ReadBytes(8 /** segments[i].block[n].normalCount*/));
+                            segments[i].block[n].normals[k] = MakiExtended.ByteArrayToStructure<Normal>(br.ReadBytes(8));
                         segments[i].block[n].unkPadd2 = br.ReadInt32();
-                        }
                     }
+                }
         }
 
         public static void Draw()
@@ -180,7 +181,7 @@ namespace FF8
             Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
             Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-            AlphaTestEffect ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice);
+            ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice);
             ate.Projection = projectionMatrix;
             ate.View = viewMatrix;
             ate.World = worldMatrix;
@@ -234,7 +235,7 @@ namespace FF8
 
 
 
-            effect.TextureEnabled = true;
+            //effect.TextureEnabled = true;
 
             for (int i = 0; i < 1; i++)
                 DrawSegment(i);
@@ -266,7 +267,7 @@ namespace FF8
             //            }
             //        }
 
-                //}
+            //}
 
             Memory.SpriteBatchStartAlpha();
             Memory.font.RenderBasicText(Font.CipherDirty($"World Map Debug"), 0, 0, 1, 1, 0, 1);
@@ -277,9 +278,36 @@ namespace FF8
             Memory.SpriteBatchEnd();
         }
 
-        private static void DrawSegment(int i)
+        private static void DrawSegment(int _i)
         {
-            Segment seg = segments[i];
+            effect.TextureEnabled = true;
+            Segment seg = segments[_i];
+            int vertIndex = 0;
+            for(int i = 0; i<seg.block.Length; i++)
+            {
+                ate.Texture = debugTex;
+                VertexPositionTexture[] vpc = new VertexPositionTexture[seg.block[i].polygons.Length*3];
+                for(int k=0; k<seg.block[i].polyCount; k+=3)
+                {
+                    vpc[k] = new VertexPositionTexture(
+                        new Vector3(seg.block[i].vertices[seg.block[i].polygons[k].F1].X/100.0f,
+                        seg.block[i].vertices[seg.block[i].polygons[k].F1].Z1 / 100.0f,
+                        seg.block[i].vertices[seg.block[i].polygons[k].F1].Y / 100.0f), new Vector2(0f, 1f));
+                    vpc[k+1] = new VertexPositionTexture(
+                        new Vector3(seg.block[i].vertices[seg.block[i].polygons[k].F2].X/100.0f,
+                        seg.block[i].vertices[seg.block[i].polygons[k].F2].Z1 / 100.0f,
+                        seg.block[i].vertices[seg.block[i].polygons[k].F2].Y / 100.0f), new Vector2(0f, 1f));
+                    vpc[k+2] = new VertexPositionTexture(
+                        new Vector3(seg.block[i].vertices[seg.block[i].polygons[k].F3].X / 100.0f,
+                        seg.block[i].vertices[seg.block[i].polygons[k].F3].Z1 / 100.0f,
+                        seg.block[i].vertices[seg.block[i].polygons[k].F3].Y / 100.0f), new Vector2(0f, 1f));
+                }
+                foreach (var pass in ate.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpc, 0, vpc.Length/3);
+            }
+            }
         }
     }
 }
