@@ -3,7 +3,9 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -31,6 +33,8 @@ namespace FF8
 
         private static int GetSegment(int segID) => segID * 0x9000;
 
+        private static Segment[] segments;
+
         private struct Segment
         {
             public int segmentId;
@@ -50,20 +54,21 @@ namespace FF8
             public int unkPadd2;
         }
 
+        [StructLayout(LayoutKind.Sequential, Size = 68, Pack = 1)]
         private struct segHeader
         {
             public uint groupId;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst =16)]
             public uint[] blockOffsets;
         }
 
         private struct Polygon
         {
-            public byte F1, F2, F3, N1, N2, N3, U1, V1, U2, V2, U3, V3, groundtype, unk1, unk2;
-            private byte TPage_clut;
+            public byte F1, F2, F3, N1, N2, N3, U1, V1, U2, V2, U3, V3, TPage_clut, groundtype, unk1, unk2;
 
             public byte TPage { get => (byte)((TPage_clut>>4)&0xF0);}
             public byte Clut { get => (byte)(TPage_clut & 0x0F);}
-            public byte TPage_clut1 { set => TPage_clut = value; }
+            //public byte TPage_clut1 { set => TPage_clut = value; }
         }
 
         private struct Vertex
@@ -130,6 +135,39 @@ namespace FF8
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_WORLD);
             string wmxPath =  aw.GetListOfFiles().Where(x=>x.ToLower().Contains("wmx.obj")).Select(x=>x).First();
             wmx = ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, wmxPath);
+
+            segments = new Segment[835];
+
+            using (MemoryStream ms = new MemoryStream(wmx))
+                using (BinaryReader br = new BinaryReader(ms))
+                    for(int i = 0; i<segments.Length; i++)
+                    {
+                    //segHeader test = new segHeader();
+                    //test.blockOffsets = new uint[16];
+                    //var t = Marshal.SizeOf(typeof(segHeader));
+                    //byte[] test2 = br.ReadBytes(68);
+                    //GCHandle hwnd = GCHandle.Alloc(test2, GCHandleType.Pinned);
+                    //var ttt = Marshal.PtrToStructure<segHeader>(hwnd.AddrOfPinnedObject());
+                    //hwnd.Free();
+                    ms.Seek(GetSegment(i), SeekOrigin.Begin);
+                    segments[i] = new Segment() { segmentId = i, headerData = MakiExtended.ByteArrayToStructure<segHeader>(br.ReadBytes(68)), block =  new Block[16]};
+                    ms.Seek(GetSegment(i), SeekOrigin.Begin);
+                    for (int n = 0; n < segments[i].block.Length; n++)
+                        {
+                        ms.Seek(segments[i].headerData.blockOffsets[n] + GetSegment(i), SeekOrigin.Begin);
+                        segments[i].block[n] = new Block() { polyCount = br.ReadByte(), vertCount = br.ReadByte(), normalCount = br.ReadByte(), unkPadd = br.ReadByte() };
+                        segments[i].block[n].polygons = new Polygon[segments[i].block[n].polyCount];
+                        segments[i].block[n].vertices = new Vertex[segments[i].block[n].vertCount];
+                        segments[i].block[n].normals = new Normal[segments[i].block[n].normalCount];
+                        for (int k = 0; k<segments[i].block[n].polyCount; k++)
+                            segments[i].block[n].polygons[k] = MakiExtended.ByteArrayToStructure<Polygon>(br.ReadBytes(16/**segments[i].block[n].polyCount*/));
+                        for (int k = 0; k < segments[i].block[n].vertCount; k++)
+                            segments[i].block[n].vertices[k] = MakiExtended.ByteArrayToStructure<Vertex>(br.ReadBytes(8 /* *segments[i].block[n].vertCount*/));
+                        for (int k = 0; k < segments[i].block[n].normalCount; k++)
+                            segments[i].block[n].normals[k] = MakiExtended.ByteArrayToStructure<Normal>(br.ReadBytes(8 /** segments[i].block[n].normalCount*/));
+                        segments[i].block[n].unkPadd2 = br.ReadInt32();
+                        }
+                    }
         }
 
         public static void Draw()
@@ -197,6 +235,10 @@ namespace FF8
 
 
             effect.TextureEnabled = true;
+
+            for (int i = 0; i < 1; i++)
+                DrawSegment(i);
+
             //foreach (var a in modelGroups)
             //    foreach (var b in a.models)
             //    {
@@ -233,6 +275,11 @@ namespace FF8
             //Memory.font.RenderBasicText(Font.CipherDirty($"Levels: {string.Join(",", Memory.encounters[Memory.battle_encounter].bLevels)}"), 20, 30 * 3, 1, 1, 0, 1);
             //Memory.font.RenderBasicText(Font.CipherDirty($"Loaded enemies: {Convert.ToString(Memory.encounters[Memory.battle_encounter].bLoadedEnemy, 2)}"), 20, 30 * 4, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
+        }
+
+        private static void DrawSegment(int i)
+        {
+            Segment seg = segments[i];
         }
     }
 }

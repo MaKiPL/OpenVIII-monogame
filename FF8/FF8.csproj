@@ -52,6 +52,7 @@
     <Compile Include="init_debugger_battle.cs" />
     <Compile Include="init_debugger_fields.cs" />
     <Compile Include="LZSS.cs" />
+    <Compile Include="MakiExtended.cs" />
     <Compile Include="Memory.cs" />
     <Compile Include="ModuleHandler.cs" />
     <Compile Include="module_battle.cs" />
