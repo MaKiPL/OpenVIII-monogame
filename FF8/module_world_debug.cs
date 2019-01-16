@@ -287,20 +287,20 @@ namespace FF8
             {
                 ate.Texture = debugTex;
                 VertexPositionTexture[] vpc = new VertexPositionTexture[seg.block[i].polygons.Length*3];
-                for(int k=0; k<seg.block[i].polyCount; k+=3)
+                for(int k=0; k<seg.block[i].polyCount*3; k+=3)
                 {
                     vpc[k] = new VertexPositionTexture(
-                        new Vector3(seg.block[i].vertices[seg.block[i].polygons[k].F1].X/100.0f,
-                        seg.block[i].vertices[seg.block[i].polygons[k].F1].Z1 / 100.0f,
-                        seg.block[i].vertices[seg.block[i].polygons[k].F1].Y / 100.0f), new Vector2(0f, 1f));
+                        new Vector3(seg.block[i].vertices[seg.block[i].polygons[k/3].F1].X/100.0f,
+                        seg.block[i].vertices[seg.block[i].polygons[k/3].F1].Z1 / 100.0f,
+                        seg.block[i].vertices[seg.block[i].polygons[k/3].F1].Y / 100.0f), new Vector2(0f, 1f));
                     vpc[k+1] = new VertexPositionTexture(
-                        new Vector3(seg.block[i].vertices[seg.block[i].polygons[k].F2].X/100.0f,
-                        seg.block[i].vertices[seg.block[i].polygons[k].F2].Z1 / 100.0f,
-                        seg.block[i].vertices[seg.block[i].polygons[k].F2].Y / 100.0f), new Vector2(0f, 1f));
+                        new Vector3(seg.block[i].vertices[seg.block[i].polygons[k/3].F2].X/100.0f,
+                        seg.block[i].vertices[seg.block[i].polygons[k/3].F2].Z1 / 100.0f,
+                        seg.block[i].vertices[seg.block[i].polygons[k/3].F2].Y / 100.0f), new Vector2(0f, 1f));
                     vpc[k+2] = new VertexPositionTexture(
-                        new Vector3(seg.block[i].vertices[seg.block[i].polygons[k].F3].X / 100.0f,
-                        seg.block[i].vertices[seg.block[i].polygons[k].F3].Z1 / 100.0f,
-                        seg.block[i].vertices[seg.block[i].polygons[k].F3].Y / 100.0f), new Vector2(0f, 1f));
+                        new Vector3(seg.block[i].vertices[seg.block[i].polygons[k/3].F3].X / 100.0f,
+                        seg.block[i].vertices[seg.block[i].polygons[k/3].F3].Z1 / 100.0f,
+                        seg.block[i].vertices[seg.block[i].polygons[k/3].F3].Y / 100.0f), new Vector2(0f, 1f));
                 }
                 foreach (var pass in ate.CurrentTechnique.Passes)
                 {
