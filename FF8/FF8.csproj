@@ -60,6 +60,7 @@
     <Compile Include="module_main_menu_debug.cs" />
     <Compile Include="module_movie_test.cs" />
     <Compile Include="module_overture_debug.cs" />
+    <Compile Include="module_world_debug.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PseudoBufferedStream.cs" />

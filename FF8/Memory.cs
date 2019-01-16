@@ -53,6 +53,7 @@ namespace FF8
         public const int MODULE_MOVIETEST = -9;
         public const int MODULE_OVERTURE_DEBUG = -12;
         public const int MODULE_MAINMENU_DEBUG = -13;
+        public const int MODULE_WORLD_DEBUG = -17;
         #endregion
 
         #region battleProvider

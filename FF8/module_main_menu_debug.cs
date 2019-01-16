@@ -71,7 +71,7 @@ namespace FF8
 
         private static void DebugUpdate()
         {
-            int availableOptions = 8;
+            int availableOptions = 9;
             if (bLimitInput)
                 bLimitInput = (msDelay += Memory.gameTime.ElapsedGameTime.Milliseconds) < msDelayLimit;
             if (Keyboard.GetState().IsKeyDown(Keys.Down) && !bLimitInput)
@@ -205,6 +205,12 @@ namespace FF8
                 init_debugger_Audio.PlaySound(0);
                 init_debugger_Audio.PlaySound(debug_choosedAudio);
             }
+            if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !bLimitInput && choosenOption == 9)
+            {
+                bLimitInput = true;
+                msDelay = 0;
+                Memory.module = Memory.MODULE_WORLD_DEBUG;
+            }
         }
 
         private static void LobbyUpdate()
@@ -306,6 +312,7 @@ namespace FF8
             Memory.font.RenderBasicText(Font.CipherDirty("Play previous music".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.20f), 1f, 2f, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty("Stop music".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.23f), 1f, 2f, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Play audio.dat: {debug_choosedAudio}".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.26f), 1f, 2f, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Jump to World Map"), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.29f), 1f, 2f, 0, 1);
 
             Memory.spriteBatch.Draw(Memory.iconsTex[2], new Rectangle((int)(vpWidth * 0.05f), (int)(vpHeight * ((choosenOption*0.03f) + 0.02f)+0.05f*100), (int)(24 * 2 * fScaleWidth), (int)(16 * 2 * fScaleWidth)),
                 new Rectangle(232, 0, 23, 15),
