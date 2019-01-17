@@ -29,8 +29,7 @@ namespace FF8
             _1debugFly
         }
 
-        private static Texture2D debugTex;
-
+        private static Texture2D[] textures;
 
         private static byte[] wmx;
 
@@ -128,14 +127,6 @@ namespace FF8
             //Memory.musicIndex = 30;
             //init_debugger_Audio.PlayMusic();
 
-            //============DEBUG=========
-            debugTex = new Texture2D(Memory.graphics.GraphicsDevice, 16, 16, false, SurfaceFormat.Color);
-            byte[] bufferDebugTex = new byte[16 * 16 * 4];
-            for (int n = 0; n < bufferDebugTex.Length; n++)
-                bufferDebugTex[n] = 0xff;
-            debugTex.SetData(bufferDebugTex);
-            //END OF DEBUG===========
-
             ReadWMX();
 
 
@@ -147,8 +138,10 @@ namespace FF8
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_WORLD);
             string wmxPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("wmx.obj")).Select(x => x).First();
+            string texlPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("texl.obj")).Select(x => x).First();
             wmx = ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, wmxPath);
-
+            byte[] texl = ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, texlPath);
+            ReadTextures(texl);
             segments = new Segment[835];
 
             using (MemoryStream ms = new MemoryStream(wmx))
@@ -174,6 +167,16 @@ namespace FF8
                         segments[i].block[n].unkPadd2 = br.ReadInt32();
                     }
                 }
+        }
+
+        private static void ReadTextures(byte[] texl)
+        {
+            textures = new Texture2D[20];
+            for(int i = 0; i<20; i++)
+            {
+                int timOffset = i * 0x12800;
+                //TODO
+            }
         }
 
         public static void Draw()
@@ -238,7 +241,7 @@ namespace FF8
             #endregion
 
 
-            for (int i = 780; i < 781; i++)
+            for (int i = 0; i < 128; i++)
                 DrawSegment(i);
 
             Memory.SpriteBatchStartAlpha();
@@ -248,6 +251,18 @@ namespace FF8
 
         private static void DrawSegment(int _i)
         {
+            float baseX, baseY;
+            if(_i> 768) //TODO http://forums.qhimm.com/index.php?topic=16230.msg230004#msg230004 
+            {
+                baseX = 0f; baseY = 0f;
+            }
+            else
+            {
+                baseX = 2048f * (_i % 32);
+                baseY = 2048f * (int)(_i / 32); //explicit int cast
+            }
+
+
             effect.TextureEnabled = true;
             Segment seg = segments[_i];
             float localX = 0;//_i * 2048;
@@ -255,22 +270,28 @@ namespace FF8
             {
                 localX = 2048 * (i % 4);
                 float localZ = -2048 * (i / 4);
-                ate.Texture = debugTex;
+                if(seg.headerData.groupId> 20)
+                {
+                    //TODO;
+                    ate.Texture = null;
+                }
+                else
+                    ate.Texture = textures[seg.headerData.groupId]; //there are two texs, worth looking at other parameters; to reverse! 
                 VertexPositionTexture[] vpc = new VertexPositionTexture[seg.block[i].polygons.Length*3];
                 for(int k=0; k<seg.block[i].polyCount*3; k+=3)
                 {
                     vpc[k] = new VertexPositionTexture(
-                        new Vector3((seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].X + localX) / 100.0f,
+                        new Vector3((seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].X + localX + baseX) / 100.0f,
                         seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].Z1 / 100.0f,
-                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].Y + localZ) / 100.0f), new Vector2(0f, 1f));
+                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].Y + localZ+baseY) / 100.0f), new Vector2(0f, 1f));
                     vpc[k + 1] = new VertexPositionTexture(
-                        new Vector3((seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].X + localX) / 100.0f,
+                        new Vector3((seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].X + localX + baseX) / 100.0f,
                         seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].Z1 / 100.0f,
-                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].Y + localZ) / 100.0f), new Vector2(0f, 1f));
+                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].Y + localZ+baseY) / 100.0f), new Vector2(0f, 1f));
                     vpc[k + 2] = new VertexPositionTexture(
-                        new Vector3((seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].X + localX) / 100.0f,
+                        new Vector3((seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].X + localX + baseX) / 100.0f,
                         seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Z1 / 100.0f,
-                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Y + localZ) / 100.0f), new Vector2(0f, 1f));
+                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Y + localZ+baseY) / 100.0f), new Vector2(0f, 1f));
                 }
                 foreach (var pass in ate.CurrentTechnique.Passes)
                 {
