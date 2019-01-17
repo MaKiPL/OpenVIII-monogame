@@ -123,14 +123,19 @@ namespace FF8
                          new Vector3(0f, 1f, 0f));// Y up
             worldMatrix = Matrix.CreateWorld(camTarget, Vector3.
                           Forward, Vector3.Up);
-            Memory.musicIndex = 30;
-            init_debugger_Audio.PlayMusic();
 
+            //temporarily disabling this, because I'm getting more and more tired of this music playing over and over when debugging
+            //Memory.musicIndex = 30;
+            //init_debugger_Audio.PlayMusic();
+
+            //============DEBUG=========
             debugTex = new Texture2D(Memory.graphics.GraphicsDevice, 16, 16, false, SurfaceFormat.Color);
             byte[] bufferDebugTex = new byte[16 * 16 * 4];
             for (int n = 0; n < bufferDebugTex.Length; n++)
                 bufferDebugTex[n] = 0xff;
             debugTex.SetData(bufferDebugTex);
+            //END OF DEBUG===========
+
             ReadWMX();
 
 
@@ -233,48 +238,11 @@ namespace FF8
             #endregion
 
 
-
-
-            //effect.TextureEnabled = true;
-
-            for (int i = 0; i < 1; i++)
+            for (int i = 780; i < 781; i++)
                 DrawSegment(i);
-
-            //foreach (var a in modelGroups)
-            //    foreach (var b in a.models)
-            //    {
-            //        var vpt = getVertexBuffer(b);
-            //        if (vpt == null) continue;
-            //        int localVertexIndex = 0;
-            //        for (int i = 0; i < vpt.Item1.Length; i++)
-            //        {
-            //            ate.Texture = textures[vpt.Item1[i].clut]; //provide texture per-face
-            //            foreach (var pass in ate.CurrentTechnique.Passes)
-            //            {
-            //                pass.Apply();
-            //                if (vpt.Item1[i].bQuad)
-            //                {
-            //                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-            //                    vertexData: vpt.Item2, vertexOffset: localVertexIndex, primitiveCount: 2);
-            //                    localVertexIndex += 6;
-            //                }
-            //                else
-            //                {
-            //                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-            //                    vertexData: vpt.Item2, vertexOffset: localVertexIndex, primitiveCount: 1);
-            //                    localVertexIndex += 3;
-            //                }
-            //            }
-            //        }
-
-            //}
 
             Memory.SpriteBatchStartAlpha();
             Memory.font.RenderBasicText(Font.CipherDirty($"World Map Debug"), 0, 0, 1, 1, 0, 1);
-            //Memory.font.RenderBasicText(Font.CipherDirty($"Camera: {Memory.encounters[Memory.battle_encounter].bCamera}"), 20, 30, 1, 1, 0, 1);
-            //Memory.font.RenderBasicText(Font.CipherDirty($"Enemies: {string.Join(",", Memory.encounters[Memory.battle_encounter].BEnemies.Where(x => x != 0x00).Select(x => "0x" + (x - 0x10).ToString("X02")).ToArray())}"), 20, 30 * 2, 1, 1, 0, 1);
-            //Memory.font.RenderBasicText(Font.CipherDirty($"Levels: {string.Join(",", Memory.encounters[Memory.battle_encounter].bLevels)}"), 20, 30 * 3, 1, 1, 0, 1);
-            //Memory.font.RenderBasicText(Font.CipherDirty($"Loaded enemies: {Convert.ToString(Memory.encounters[Memory.battle_encounter].bLoadedEnemy, 2)}"), 20, 30 * 4, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
         }
 
@@ -282,25 +250,27 @@ namespace FF8
         {
             effect.TextureEnabled = true;
             Segment seg = segments[_i];
-            int vertIndex = 0;
+            float localX = 0;//_i * 2048;
             for(int i = 0; i<seg.block.Length; i++)
             {
+                localX = 2048 * (i % 4);
+                float localZ = -2048 * (i / 4);
                 ate.Texture = debugTex;
                 VertexPositionTexture[] vpc = new VertexPositionTexture[seg.block[i].polygons.Length*3];
                 for(int k=0; k<seg.block[i].polyCount*3; k+=3)
                 {
                     vpc[k] = new VertexPositionTexture(
-                        new Vector3(seg.block[i].vertices[seg.block[i].polygons[k/3].F1].X/100.0f,
-                        seg.block[i].vertices[seg.block[i].polygons[k/3].F1].Z1 / 100.0f,
-                        seg.block[i].vertices[seg.block[i].polygons[k/3].F1].Y / 100.0f), new Vector2(0f, 1f));
-                    vpc[k+1] = new VertexPositionTexture(
-                        new Vector3(seg.block[i].vertices[seg.block[i].polygons[k/3].F2].X/100.0f,
-                        seg.block[i].vertices[seg.block[i].polygons[k/3].F2].Z1 / 100.0f,
-                        seg.block[i].vertices[seg.block[i].polygons[k/3].F2].Y / 100.0f), new Vector2(0f, 1f));
-                    vpc[k+2] = new VertexPositionTexture(
-                        new Vector3(seg.block[i].vertices[seg.block[i].polygons[k/3].F3].X / 100.0f,
-                        seg.block[i].vertices[seg.block[i].polygons[k/3].F3].Z1 / 100.0f,
-                        seg.block[i].vertices[seg.block[i].polygons[k/3].F3].Y / 100.0f), new Vector2(0f, 1f));
+                        new Vector3((seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].X + localX) / 100.0f,
+                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].Z1 / 100.0f,
+                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].Y + localZ) / 100.0f), new Vector2(0f, 1f));
+                    vpc[k + 1] = new VertexPositionTexture(
+                        new Vector3((seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].X + localX) / 100.0f,
+                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].Z1 / 100.0f,
+                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].Y + localZ) / 100.0f), new Vector2(0f, 1f));
+                    vpc[k + 2] = new VertexPositionTexture(
+                        new Vector3((seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].X + localX) / 100.0f,
+                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Z1 / 100.0f,
+                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Y + localZ) / 100.0f), new Vector2(0f, 1f));
                 }
                 foreach (var pass in ate.CurrentTechnique.Passes)
                 {
