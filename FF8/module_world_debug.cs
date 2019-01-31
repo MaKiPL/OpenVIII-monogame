@@ -30,7 +30,7 @@ namespace FF8
         }
 
         //DEBUG
-        private static int nk = 264;
+        private static int nk = 273;
 
         private static List<Texture2D[]> textures;
         private static List<Texture2D[]> wm38textures;
@@ -71,7 +71,7 @@ namespace FF8
 
         private struct Polygon
         {
-            public byte F1, F2, F3, N1, N2, N3, U1, V1, U2, V2, U3, V3, TPage_clut, groundtype, isWater, unk2;
+            public byte F1, F2, F3, N1, N2, N3, U1, V1, U2, V2, U3, V3, TPage_clut, groundtype, TextureSwitch, unk2;
 
             public byte TPage { get => (byte)((TPage_clut >> 4) & 0x0F); }
             public byte Clut { get => (byte)(TPage_clut & 0x0F); }
@@ -387,14 +387,14 @@ namespace FF8
                         (seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Y + localZ) / 1f + baseY),
                         new Vector2(seg.block[i].polygons[k / 3].U3 / 256.0f, seg.block[i].polygons[k / 3].V3 / 256.0f));
 
-                    if (seg.block[i].polygons[k / 3].isWater >> 6 == 0b1 ||
-                        seg.block[i].polygons[k / 3].isWater >> 6 == 0b11)
+                    if (seg.block[i].polygons[k / 3].TextureSwitch == 0x40 ||
+                        seg.block[i].polygons[k / 3].TextureSwitch == 0xC0)
                     {
                         ate.Texture = wm38textures[16][0];
                     }
-                    else if (seg.block[i].polygons[k / 3].isWater >> 5 == 0b011)
+                    else if (seg.block[i].polygons[k / 3].TextureSwitch == 0x60)
                         ate.Texture = wm39textures[0][0];
-                    else if (seg.block[i].polygons[k / 3].isWater >> 5 == 0b111)
+                    else if (seg.block[i].polygons[k / 3].TextureSwitch == 0xE0)
                         ate.Texture = wm39textures[5][0];
                     else
                         ate.Texture = textures[seg.block[i].polygons[k / 3].TPage][seg.block[i].polygons[k / 3].Clut]; //there are two texs, worth looking at other parameters; to reverse! 
