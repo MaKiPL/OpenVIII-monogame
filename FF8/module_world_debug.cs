@@ -32,7 +32,7 @@ namespace FF8
         //DEBUG
         private static int nk = 0;
 
-        private static Texture2D[] textures;
+        private static List<Texture2D[]> textures;
 
         private static byte[] wmx;
 
@@ -71,7 +71,7 @@ namespace FF8
         {
             public byte F1, F2, F3, N1, N2, N3, U1, V1, U2, V2, U3, V3, TPage_clut, groundtype, unk1, unk2;
 
-            public byte TPage { get => (byte)((TPage_clut >> 4) & 0xF0); }
+            public byte TPage { get => (byte)((TPage_clut >> 4) & 0x0F); }
             public byte Clut { get => (byte)(TPage_clut & 0x0F); }
             //public byte TPage_clut1 { set => TPage_clut = value; }
         }
@@ -176,14 +176,18 @@ namespace FF8
         {
             MemoryStream ms = new MemoryStream(texl);
             BinaryReader br = new BinaryReader(ms);
-            textures = new Texture2D[20];
+            textures = new List<Texture2D[]>(); //20
+
             for(int i = 0; i<20; i++)
             {
                 int timOffset = i * 0x12800;
                 TIM2 tim = new TIM2(texl, (uint)timOffset);
-                textures[i] = new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight, false, SurfaceFormat.Color);
-                textures[i].SetData(tim.CreateImageBuffer(tim.GetClutColors(0), true));
-                //TODO
+                textures.Add(new Texture2D[tim.GetClutCount]);
+                for(int k=0; k<textures[i].Length; k++)
+                {
+                    textures[i][k] = new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight, false, SurfaceFormat.Color);
+                    textures[i][k].SetData(tim.CreateImageBuffer(tim.GetClutColors(k), true));
+                }
             }
 
             br.Close();
@@ -254,8 +258,8 @@ namespace FF8
             #endregion
 
             //334 debug
-            for (int i = 334; i < 335; i++)
-                DrawSegment(i);
+            //for (int i = 333; i < 334; i++)
+            //    DrawSegment(i);
 
             DrawSegment(nk);
 
@@ -317,7 +321,7 @@ namespace FF8
                         ate.Texture = null;
                     }
                     else
-                        ate.Texture = textures[seg.headerData.groupId]; //there are two texs, worth looking at other parameters; to reverse! 
+                        ate.Texture = textures[(int)seg.headerData.groupId][seg.block[i].polygons[k/3].Clut]; //there are two texs, worth looking at other parameters; to reverse! 
 
                     foreach (var pass in ate.CurrentTechnique.Passes)
                     {
