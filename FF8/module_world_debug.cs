@@ -307,9 +307,9 @@ namespace FF8
                 nk++;
 
             //0,1,2,3,4,5,6,7
-            var DEBUG_segGroupHeaders = segments.GroupBy(x=> x.headerData.groupId).Select(h=>h.First().headerData.groupId).ToArray();
-
-            DrawSegment(nk);
+            byte[] aa = (from s in segments from blok in s.block from bk in blok.polygons select bk.TPage).ToArray();
+            byte[] cc = (from s in aa.Distinct() orderby s select s).ToArray();
+             DrawSegment(nk);
             //Console.WriteLine($"DEBUG: nk {nk}\tgpId: {segments[nk].headerData.groupId}");
 
             Memory.SpriteBatchStartAlpha();
@@ -370,7 +370,7 @@ namespace FF8
                         ate.Texture = wm38textures[16][0];
                     }
                     else
-                        ate.Texture = textures[(int)seg.headerData.groupId][seg.block[i].polygons[k/3].Clut]; //there are two texs, worth looking at other parameters; to reverse! 
+                        ate.Texture = textures[seg.block[i].polygons[k/3].TPage][seg.block[i].polygons[k/3].Clut]; //there are two texs, worth looking at other parameters; to reverse! 
 
                     foreach (var pass in ate.CurrentTechnique.Passes)
                     {
