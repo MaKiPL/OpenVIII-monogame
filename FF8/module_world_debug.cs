@@ -29,6 +29,9 @@ namespace FF8
             _1debugFly
         }
 
+        //DEBUG
+        private static int nk = 0;
+
         private static Texture2D[] textures;
 
         private static byte[] wmx;
@@ -117,7 +120,7 @@ namespace FF8
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                                MathHelper.ToRadians(45f),
                                Memory.graphics.GraphicsDevice.DisplayMode.AspectRatio,
-                1f, 1000f);
+                1f, 10000f);
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          new Vector3(0f, 1f, 0f));// Y up
             worldMatrix = Matrix.CreateWorld(camTarget, Vector3.
@@ -171,12 +174,22 @@ namespace FF8
 
         private static void ReadTextures(byte[] texl)
         {
+            MemoryStream ms = new MemoryStream(texl);
+            BinaryReader br = new BinaryReader(ms);
             textures = new Texture2D[20];
             for(int i = 0; i<20; i++)
             {
                 int timOffset = i * 0x12800;
+                TIM2 tim = new TIM2(texl, (uint)timOffset);
+                textures[i] = new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight, false, SurfaceFormat.Color);
+                textures[i].SetData(tim.CreateImageBuffer(tim.GetClutColors(0), true));
                 //TODO
             }
+
+            br.Close();
+            ms.Close();
+            br.Dispose();
+            ms.Dispose();
         }
 
         public static void Draw()
@@ -210,25 +223,25 @@ namespace FF8
 
             if (Keyboard.GetState().IsKeyDown(Keys.W) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y > 0.0f)
             {
-                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees)) * camDistance / 10;
-                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees)) * camDistance / 10;
-                camPosition.Y -= Yshift / 50;
+                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees)) * camDistance / 1;
+                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees)) * camDistance / 1;
+                camPosition.Y -= Yshift / 5;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.S) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y < 0.0f)
             {
-                camPosition.X -= (float)System.Math.Cos(MathHelper.ToRadians(degrees)) * camDistance / 10;
-                camPosition.Z -= (float)System.Math.Sin(MathHelper.ToRadians(degrees)) * camDistance / 10;
-                camPosition.Y += Yshift / 50;
+                camPosition.X -= (float)System.Math.Cos(MathHelper.ToRadians(degrees)) * camDistance / 1;
+                camPosition.Z -= (float)System.Math.Sin(MathHelper.ToRadians(degrees)) * camDistance / 1;
+                camPosition.Y += Yshift / 5;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X < 0.0f)
             {
-                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees - 90)) * camDistance / 10;
-                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees - 90)) * camDistance / 10;
+                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees - 90)) * camDistance / 1;
+                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees - 90)) * camDistance / 1;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X > 0.0f)
             {
-                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees + 90)) * camDistance / 10;
-                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees + 90)) * camDistance / 10;
+                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees + 90)) * camDistance / 1;
+                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees + 90)) * camDistance / 1;
             }
 
             Mouse.SetPosition(200, 200);
@@ -240,12 +253,14 @@ namespace FF8
                          Vector3.Up);
             #endregion
 
-
-            for (int i = 0; i < 128; i++)
+            //334 debug
+            for (int i = 334; i < 335; i++)
                 DrawSegment(i);
 
+            DrawSegment(nk);
+
             Memory.SpriteBatchStartAlpha();
-            Memory.font.RenderBasicText(Font.CipherDirty($"World Map Debug"), 0, 0, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"World Map Debug: nk={nk}"), 0, 0, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
         }
 
@@ -258,8 +273,10 @@ namespace FF8
             }
             else
             {
-                baseX = 2048f * (_i % 32);
-                baseY = 2048f * (int)(_i / 32); //explicit int cast
+                //baseX = (2048f/4) * (_i % 32);
+                //baseY = (2048f/4) * (int)(_i / 32); //explicit int cast
+                baseX = 0f;
+                baseY = 0f;
             }
 
 
@@ -270,34 +287,45 @@ namespace FF8
             {
                 localX = 2048 * (i % 4);
                 float localZ = -2048 * (i / 4);
-                if(seg.headerData.groupId> 20)
-                {
-                    //TODO;
-                    ate.Texture = null;
-                }
-                else
-                    ate.Texture = textures[seg.headerData.groupId]; //there are two texs, worth looking at other parameters; to reverse! 
+
+
+
+
+
                 VertexPositionTexture[] vpc = new VertexPositionTexture[seg.block[i].polygons.Length*3];
                 for(int k=0; k<seg.block[i].polyCount*3; k+=3)
                 {
                     vpc[k] = new VertexPositionTexture(
-                        new Vector3((seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].X + localX + baseX) / 100.0f,
-                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].Z1 / 100.0f,
-                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].Y + localZ+baseY) / 100.0f), new Vector2(0f, 1f));
+                        new Vector3((seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].X + localX) / 1f + baseX,
+                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].Z1 / 1f,
+                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].Y + localZ) / 1f + baseY), 
+                        new Vector2(seg.block[i].polygons[k/3].U1 /256.0f , seg.block[i].polygons[k / 3].V1 / 256.0f));
                     vpc[k + 1] = new VertexPositionTexture(
-                        new Vector3((seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].X + localX + baseX) / 100.0f,
-                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].Z1 / 100.0f,
-                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].Y + localZ+baseY) / 100.0f), new Vector2(0f, 1f));
+                        new Vector3((seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].X + localX) / 1f + baseX,
+                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].Z1 / 1f,
+                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].Y + localZ) / 1f + baseY),
+                        new Vector2(seg.block[i].polygons[k / 3].U2 / 256.0f, seg.block[i].polygons[k / 3].V2 / 256.0f));
                     vpc[k + 2] = new VertexPositionTexture(
-                        new Vector3((seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].X + localX + baseX) / 100.0f,
-                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Z1 / 100.0f,
-                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Y + localZ+baseY) / 100.0f), new Vector2(0f, 1f));
+                        new Vector3((seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].X + localX) / 1f + baseX,
+                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Z1 / 1f,
+                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Y + localZ) / 1f + baseY),
+                        new Vector2(seg.block[i].polygons[k / 3].U3 / 256.0f, seg.block[i].polygons[k / 3].V3 / 256.0f));
+
+                    if (seg.headerData.groupId > 20)
+                    {
+                        //TODO;
+                        ate.Texture = null;
+                    }
+                    else
+                        ate.Texture = textures[seg.headerData.groupId]; //there are two texs, worth looking at other parameters; to reverse! 
+
+                    foreach (var pass in ate.CurrentTechnique.Passes)
+                    {
+                        pass.Apply();
+                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpc, k, 1);
+                    }
                 }
-                foreach (var pass in ate.CurrentTechnique.Passes)
-                {
-                    pass.Apply();
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpc, 0, vpc.Length/3);
-            }
+
             }
         }
     }

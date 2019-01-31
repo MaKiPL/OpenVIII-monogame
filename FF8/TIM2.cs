@@ -158,14 +158,15 @@ namespace FF8
             return colorPixels.ToArray();
         }
 
-        public byte[] CreateImageBuffer(Color[] palette = null)
+        public byte[] CreateImageBuffer(Color[] palette = null, bool bIgnoreSize = false)
         {
             pbs.Seek(textureDataPointer, PseudoBufferedStream.SEEK_BEGIN);
             byte[] buffer = new byte[texture.Width * texture.Height * 4]; //ARGB
             if (bpp == 8)
             {
-                if ((buffer.Length) / 4 != pbs.Length - pbs.Tell())
-                    throw new Exception("TIM_v2::CreateImageBuffer::TIM texture buffer has size incosistency.");
+                if(!bIgnoreSize)
+                    if ((buffer.Length) / 4 != pbs.Length - pbs.Tell())
+                        throw new Exception("TIM_v2::CreateImageBuffer::TIM texture buffer has size incosistency.");
                 for (int i = 0; i < buffer.Length; i++)
                 {
                     byte pixel = pbs.ReadByte();
