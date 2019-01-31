@@ -30,10 +30,11 @@ namespace FF8
         }
 
         //DEBUG
-        private static int nk = 0;
+        private static int nk = 264;
 
         private static List<Texture2D[]> textures;
         private static List<Texture2D[]> wm38textures;
+        private static List<Texture2D[]> wm39textures;
 
         private static byte[] wmx;
 
@@ -188,6 +189,28 @@ namespace FF8
                     sections[i] = br.ReadInt32();
 
                 wm_s38(ms, br, sections, v);
+                wm_s39(ms, br, sections, v);
+            }
+        }
+
+        private static void wm_s39(MemoryStream ms, BinaryReader br, int[] sec, byte[] v)
+        {
+            ms.Seek(sec[39 - 1], SeekOrigin.Begin);
+            List<int> wm39sections = new List<int>();
+            int eof = -1;
+            while ((eof = br.ReadInt32()) != 0)
+                wm39sections.Add(eof);
+            wm39textures = new List<Texture2D[]>();
+
+            for (int i = 0; i < wm39sections.Count; i++)
+            {
+                TIM2 tim = new TIM2(v, (uint)(sec[39 - 1] + wm39sections[i]));
+                wm39textures.Add(new Texture2D[tim.GetClutCount]);
+                for (int k = 0; k < wm39textures[i].Length; k++)
+                {
+                    wm39textures[i][k] = new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight, false, SurfaceFormat.Color);
+                    wm39textures[i][k].SetData(tim.CreateImageBuffer(tim.GetClutColors(k), true));
+                }
             }
         }
 
@@ -307,8 +330,8 @@ namespace FF8
                 nk++;
 
             //0,1,2,3,4,5,6,7
-            byte[] aa = (from s in segments from blok in s.block from bk in blok.polygons select bk.TPage).ToArray();
-            byte[] cc = (from s in aa.Distinct() orderby s select s).ToArray();
+            //byte[] aa = (from s in segments from blok in s.block from bk in blok.polygons select bk.isWater).ToArray();
+            //string[] cc = (from s in aa.Distinct() orderby s select $"{s}:  {Convert.ToString(s, 2).PadLeft(8, '0')}").ToArray();
              DrawSegment(nk);
             //Console.WriteLine($"DEBUG: nk {nk}\tgpId: {segments[nk].headerData.groupId}");
 
@@ -364,14 +387,17 @@ namespace FF8
                         (seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Y + localZ) / 1f + baseY),
                         new Vector2(seg.block[i].polygons[k / 3].U3 / 256.0f, seg.block[i].polygons[k / 3].V3 / 256.0f));
 
-                    if (seg.block[i].polygons[k/3].isWater >> 6 == 0b1 ||
+                    if (seg.block[i].polygons[k / 3].isWater >> 6 == 0b1 ||
                         seg.block[i].polygons[k / 3].isWater >> 6 == 0b11)
                     {
-                        //TODO;
                         ate.Texture = wm38textures[16][0];
                     }
+                    else if (seg.block[i].polygons[k / 3].isWater >> 5 == 0b011)
+                        ate.Texture = wm39textures[0][0];
+                    else if (seg.block[i].polygons[k / 3].isWater >> 5 == 0b111)
+                        ate.Texture = wm39textures[5][0];
                     else
-                        ate.Texture = textures[seg.block[i].polygons[k/3].TPage][seg.block[i].polygons[k/3].Clut]; //there are two texs, worth looking at other parameters; to reverse! 
+                        ate.Texture = textures[seg.block[i].polygons[k / 3].TPage][seg.block[i].polygons[k / 3].Clut]; //there are two texs, worth looking at other parameters; to reverse! 
 
                     foreach (var pass in ate.CurrentTechnique.Passes)
                     {

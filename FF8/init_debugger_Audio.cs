@@ -241,13 +241,20 @@ namespace FF8
 
         public static void KillAudio()
         {
-            cport.StopAll();
-            cport.Dispose();
-            ccollection.Dispose();
-            loader.Dispose();
-            outport.Dispose();
-            path.Dispose();
-            cdm.Dispose();
+            try
+            {
+                cport.StopAll();
+                cport.Dispose();
+                ccollection.Dispose();
+                loader.Dispose();
+                outport.Dispose();
+                path.Dispose();
+                cdm.Dispose();
+            }
+            catch
+            {
+                ;
+            }
     }
 
         public static void StopAudio()
