@@ -14,7 +14,9 @@ namespace FF8
         {
             public ushort PaletteX;
             public ushort PaletteY;
+            public ushort NumOfColours;
             public ushort NumOfCluts;
+            public uint clutSize;
             public byte[] ClutData;
             public ushort ImageOrgX;
             public ushort ImageOrgY;
@@ -58,12 +60,18 @@ namespace FF8
             pbs.Seek(3, PseudoBufferedStream.SEEK_CURRENT);
             if (bpp == 4)
             {
-                pbs.Seek(4, PseudoBufferedStream.SEEK_CURRENT);
+                texture.clutSize = pbs.ReadUInt() - 12;
                 texture.PaletteX = pbs.ReadUShort();
                 texture.PaletteY = pbs.ReadUShort();
-                pbs.Seek(2, PseudoBufferedStream.SEEK_CURRENT);
+                texture.NumOfColours = pbs.ReadUShort();
                 texture.NumOfCluts = pbs.ReadUShort();
-                byte[] buffer = new byte[texture.NumOfCluts * 16];
+                int bppMultiplier = 16;
+                if (texture.NumOfColours != 16 || texture.clutSize != (texture.NumOfCluts*bppMultiplier)) //wmsetus uses 4BPP, but sets 256 colours, but actually is 16, but num of clut is 2* 256/16 WTF?
+                {
+                    texture.NumOfCluts = (ushort)(texture.NumOfColours / 16 * texture.NumOfCluts);
+                    bppMultiplier = 32;
+                }
+                byte[] buffer = new byte[texture.NumOfCluts * bppMultiplier];
                 for (int i = 0; i != buffer.Length; i++)
                     buffer[i] = pbs.ReadByte();
                 texture.ClutData = buffer;
@@ -182,8 +190,9 @@ namespace FF8
             }
             if(bpp==4)
             {
-                if ((buffer.Length) / 8 != pbs.Length - pbs.Tell())
-                    throw new Exception("TIM_v2::CreateImageBuffer::TIM texture buffer has size incosistency.");
+                if(!bIgnoreSize)
+                    if ((buffer.Length) / 8 != pbs.Length - pbs.Tell())
+                        throw new Exception("TIM_v2::CreateImageBuffer::TIM texture buffer has size incosistency.");
                 for (int i = 0; i < buffer.Length; i++)
                 {
                     byte pixel = pbs.ReadByte();

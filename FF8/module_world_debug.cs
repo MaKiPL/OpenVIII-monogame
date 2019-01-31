@@ -33,6 +33,7 @@ namespace FF8
         private static int nk = 0;
 
         private static List<Texture2D[]> textures;
+        private static List<Texture2D[]> wm38textures;
 
         private static byte[] wmx;
 
@@ -142,8 +143,11 @@ namespace FF8
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_WORLD);
             string wmxPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("wmx.obj")).Select(x => x).First();
             string texlPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("texl.obj")).Select(x => x).First();
+            string wmPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("wmsetus.obj")).Select(x => x).First();
             wmx = ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, wmxPath);
             byte[] texl = ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, texlPath);
+            ReadWmSet(ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, wmPath));
+
             ReadTextures(texl);
             segments = new Segment[835];
 
@@ -171,6 +175,44 @@ namespace FF8
                     }
                 }
         }
+
+        #region wmset
+
+        private static void ReadWmSet(byte[] v)
+        {
+            int[] sections = new int[48];
+            using (MemoryStream ms = new MemoryStream(v))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                for (int i = 0; i < sections.Length; i++)
+                    sections[i] = br.ReadInt32();
+
+                wm_s38(ms, br, sections, v);
+            }
+        }
+
+        private static void wm_s38(MemoryStream ms,BinaryReader br, int[] sec, byte[] v)
+        {
+            ms.Seek(sec[38-1], SeekOrigin.Begin);
+            List<int> wm38sections = new List<int>();
+            int eof = -1;
+            while((eof = br.ReadInt32()) != 0)
+                wm38sections.Add(eof);
+            wm38textures = new List<Texture2D[]>();
+
+            for(int i = 0; i<wm38sections.Count; i++)
+            {
+                TIM2 tim = new TIM2(v, (uint)(sec[38 - 1] + wm38sections[i]));
+                wm38textures.Add(new Texture2D[tim.GetClutCount]);
+                for(int k= 0; k<wm38textures[i].Length; k++)
+                {
+                    wm38textures[i][k] = new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight, false, SurfaceFormat.Color);
+                    wm38textures[i][k].SetData(tim.CreateImageBuffer(tim.GetClutColors(k), true));
+                }
+            }
+        }
+
+        #endregion
 
         private static void ReadTextures(byte[] texl)
         {
@@ -261,7 +303,14 @@ namespace FF8
             //for (int i = 333; i < 334; i++)
             //    DrawSegment(i);
 
+            if (Input.GetInputDelayed(Keys.P))
+                nk++;
+
+            //0,1,2,3,4,5,6,7
+            var DEBUG_segGroupHeaders = segments.GroupBy(x=> x.headerData.groupId).Select(h=>h.First().headerData.groupId).ToArray();
+
             DrawSegment(nk);
+            //Console.WriteLine($"DEBUG: nk {nk}\tgpId: {segments[nk].headerData.groupId}");
 
             Memory.SpriteBatchStartAlpha();
             Memory.font.RenderBasicText(Font.CipherDirty($"World Map Debug: nk={nk}"), 0, 0, 1, 1, 0, 1);
@@ -318,7 +367,7 @@ namespace FF8
                     if (seg.headerData.groupId > 20)
                     {
                         //TODO;
-                        ate.Texture = null;
+                        ate.Texture = wm38textures[16][0];
                     }
                     else
                         ate.Texture = textures[(int)seg.headerData.groupId][seg.block[i].polygons[k/3].Clut]; //there are two texs, worth looking at other parameters; to reverse! 

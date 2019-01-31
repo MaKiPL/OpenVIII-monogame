@@ -53,6 +53,7 @@
     <Compile Include="init_debugger_Audio.cs" />
     <Compile Include="init_debugger_battle.cs" />
     <Compile Include="init_debugger_fields.cs" />
+    <Compile Include="Input.cs" />
     <Compile Include="LZSS.cs" />
     <Compile Include="MakiExtended.cs" />
     <Compile Include="Memory.cs" />
