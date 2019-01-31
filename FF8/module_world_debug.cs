@@ -372,17 +372,17 @@ namespace FF8
                 for(int k=0; k<seg.block[i].polyCount*3; k+=3)
                 {
                     vpc[k] = new VertexPositionTexture(
-                        new Vector3((seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].X + localX) / 1f + baseX,
+                        new Vector3(((seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].X + localX) / 1f + baseX) *-1f,
                         seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].Z1 / 1f,
-                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].Y + localZ) / 1f + baseY), 
-                        new Vector2(seg.block[i].polygons[k/3].U1 /256.0f , seg.block[i].polygons[k / 3].V1 / 256.0f));
+                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].Y + localZ) / 1f + baseY),
+                        new Vector2(seg.block[i].polygons[k / 3].U1 / 256.0f, seg.block[i].polygons[k / 3].V1 / 256.0f));
                     vpc[k + 1] = new VertexPositionTexture(
-                        new Vector3((seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].X + localX) / 1f + baseX,
+                        new Vector3(((seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].X + localX) / 1f + baseX)*-1f,
                         seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].Z1 / 1f,
                         (seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].Y + localZ) / 1f + baseY),
                         new Vector2(seg.block[i].polygons[k / 3].U2 / 256.0f, seg.block[i].polygons[k / 3].V2 / 256.0f));
                     vpc[k + 2] = new VertexPositionTexture(
-                        new Vector3((seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].X + localX) / 1f + baseX,
+                        new Vector3(((seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].X + localX) / 1f + baseX)*-1f,
                         seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Z1 / 1f,
                         (seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Y + localZ) / 1f + baseY),
                         new Vector2(seg.block[i].polygons[k / 3].U3 / 256.0f, seg.block[i].polygons[k / 3].V3 / 256.0f));
