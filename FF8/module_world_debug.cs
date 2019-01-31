@@ -70,7 +70,7 @@ namespace FF8
 
         private struct Polygon
         {
-            public byte F1, F2, F3, N1, N2, N3, U1, V1, U2, V2, U3, V3, TPage_clut, groundtype, unk1, unk2;
+            public byte F1, F2, F3, N1, N2, N3, U1, V1, U2, V2, U3, V3, TPage_clut, groundtype, isWater, unk2;
 
             public byte TPage { get => (byte)((TPage_clut >> 4) & 0x0F); }
             public byte Clut { get => (byte)(TPage_clut & 0x0F); }
@@ -364,7 +364,8 @@ namespace FF8
                         (seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Y + localZ) / 1f + baseY),
                         new Vector2(seg.block[i].polygons[k / 3].U3 / 256.0f, seg.block[i].polygons[k / 3].V3 / 256.0f));
 
-                    if (seg.headerData.groupId > 20)
+                    if (seg.block[i].polygons[k/3].isWater >> 6 == 0b1 ||
+                        seg.block[i].polygons[k / 3].isWater >> 6 == 0b11)
                     {
                         //TODO;
                         ate.Texture = wm38textures[16][0];
