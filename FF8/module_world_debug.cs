@@ -30,11 +30,14 @@ namespace FF8
         }
 
         //DEBUG
-        private static int nk = 273;
+        private const float WORLD_SCALE_MODEL = 16f;
 
         private static List<Texture2D[]> textures;
         private static List<Texture2D[]> wm38textures;
         private static List<Texture2D[]> wm39textures;
+        private static float renderDistance = 5000f;
+
+        private static Vector3 distance;
 
         private static byte[] wmx;
 
@@ -118,9 +121,9 @@ namespace FF8
             effect = new BasicEffect(Memory.graphics.GraphicsDevice);
             effect.EnableDefaultLighting();
             camTarget = new Vector3(0, 0f, 0f);
-            camPosition = new Vector3(0f, 50f, -100f);
+            camPosition = new Vector3(50f, 50f, 50f);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
-                               MathHelper.ToRadians(45f),
+                               MathHelper.ToRadians(60),
                                Memory.graphics.GraphicsDevice.DisplayMode.AspectRatio,
                 1f, 10000f);
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
@@ -292,25 +295,25 @@ namespace FF8
 
             if (Keyboard.GetState().IsKeyDown(Keys.W) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y > 0.0f)
             {
-                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees)) * camDistance / 1;
-                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees)) * camDistance / 1;
-                camPosition.Y -= Yshift / 5;
+                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees)) * camDistance * 5 / 1;
+                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees)) * camDistance*5 / 1;
+                camPosition.Y -= Yshift / 2;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.S) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y < 0.0f)
             {
-                camPosition.X -= (float)System.Math.Cos(MathHelper.ToRadians(degrees)) * camDistance / 1;
-                camPosition.Z -= (float)System.Math.Sin(MathHelper.ToRadians(degrees)) * camDistance / 1;
-                camPosition.Y += Yshift / 5;
+                camPosition.X -= (float)System.Math.Cos(MathHelper.ToRadians(degrees)) * camDistance*5 / 1;
+                camPosition.Z -= (float)System.Math.Sin(MathHelper.ToRadians(degrees)) * camDistance * 5 / 1;
+                camPosition.Y += Yshift / 2;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X < 0.0f)
             {
-                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees - 90)) * camDistance / 1;
-                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees - 90)) * camDistance / 1;
+                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees - 90)) * camDistance * 5 / 1;
+                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees - 90)) * camDistance * 5 / 1;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X > 0.0f)
             {
-                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees + 90)) * camDistance / 1;
-                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees + 90)) * camDistance / 1;
+                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees + 90)) * camDistance * 5 / 1;
+                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees + 90)) * camDistance * 5 / 1;
             }
 
             Mouse.SetPosition(200, 200);
@@ -323,21 +326,61 @@ namespace FF8
             #endregion
 
             //334 debug
-            //for (int i = 333; i < 334; i++)
-            //    DrawSegment(i);
+            for (int i = 0; i < 768; i++)
+                DrawSegment(i);
 
             if (Input.GetInputDelayed(Keys.P))
-                nk++;
+                ;
+                //worldScaleModel+=0.10f;
 
             //0,1,2,3,4,5,6,7
             //byte[] aa = (from s in segments from blok in s.block from bk in blok.polygons select bk.isWater).ToArray();
             //string[] cc = (from s in aa.Distinct() orderby s select $"{s}:  {Convert.ToString(s, 2).PadLeft(8, '0')}").ToArray();
-             DrawSegment(nk);
+             //DrawSegment(nk);
             //Console.WriteLine($"DEBUG: nk {nk}\tgpId: {segments[nk].headerData.groupId}");
 
             Memory.SpriteBatchStartAlpha();
-            Memory.font.RenderBasicText(Font.CipherDirty($"World Map Debug: nk={nk}"), 0, 0, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"World Map Debug: nk={WORLD_SCALE_MODEL}"), 0, 0, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"World Map Camera: X={camPosition.X}"), 0, 30, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"World Map Camera: Y={camPosition.Y}"), 0, 30*2, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"World Map Camera: Z={camPosition.Z}"), 0, 30*3, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"DEBUG DISTANCE: ={distance}"), 0, 30 * 4, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
+        }
+
+        //Y is up
+        //BROKEN- I tried numerous of things- I may need to rewrite it from scratch, but some other day- maybe I'll come up with something
+        private static bool bShouldDraw(float baseX, float baseY, int seg)
+        {
+            float localX = 2048 * (seg % 4);
+            float localZ = -2048 * (seg / 4);
+            var verticesCollection = (from s in segments[seg].block from n in s.vertices select n).ToArray();
+            Vector3[] vecVertCollection = verticesCollection.Select(x => new Vector3(
+                ((x.X+localX) / WORLD_SCALE_MODEL +baseX)*-1f, 
+                x.Z1 / WORLD_SCALE_MODEL, 
+                ((x.Y + localZ) / WORLD_SCALE_MODEL)+baseY
+                )).ToArray();
+
+            Vector3 corePosition = new Vector3(
+                vecVertCollection.Select(x => x.X).Min() + (vecVertCollection.Select(x => x.X).Min() - vecVertCollection.Select(x => x.X).Max()),
+                vecVertCollection.Select(x => x.Y).Max() + (vecVertCollection.Select(x => x.Y).Max() - vecVertCollection.Select(x => x.Y).Min()),
+                vecVertCollection.Select(x => x.Z).Max() + (vecVertCollection.Select(x => x.Z).Max() - vecVertCollection.Select(x => x.Z).Min()));
+
+
+
+            //test
+
+            float bb = camPosition.Z - corePosition.Z;
+
+
+            /*Vector3 */
+            //c2 = a2+b2
+            double _a2 = Math.Abs(camPosition.Z - corePosition.Z); //-3100 
+            double _b2 = Math.Abs(camPosition.X - corePosition.X);
+            double _c2 = (double)Math.Sqrt( (double)(Math.Pow(_a2,2) + Math.Pow(_b2,2)));
+
+            //distance = new Vector3(Math.Abs(distance.X), Math.Abs(distance.Y), Math.Abs(distance.Z));
+            return Math.Abs(_c2) < renderDistance;
         }
 
         private static void DrawSegment(int _i)
@@ -349,11 +392,14 @@ namespace FF8
             }
             else
             {
-                //baseX = (2048f/4) * (_i % 32);
-                //baseY = (2048f/4) * (int)(_i / 32); //explicit int cast
-                baseX = 0f;
-                baseY = 0f;
+                baseX = (2048f / 4) * (_i % 32);
+                baseY = -(2048f / 4) * (int)(_i / 32); //explicit int cast
+                //baseX = _i*4f;
+                //baseY = _i*4;
             }
+
+            if (!bShouldDraw(baseX, baseY, _i))
+                return;
 
 
             effect.TextureEnabled = true;
@@ -372,19 +418,19 @@ namespace FF8
                 for(int k=0; k<seg.block[i].polyCount*3; k+=3)
                 {
                     vpc[k] = new VertexPositionTexture(
-                        new Vector3(((seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].X + localX) / 1f + baseX) *-1f,
-                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].Z1 / 1f,
-                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].Y + localZ) / 1f + baseY),
+                        new Vector3(((seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].X + localX) / (WORLD_SCALE_MODEL) + baseX) *-1f,
+                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].Z1 / (WORLD_SCALE_MODEL),
+                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].Y + localZ) / (WORLD_SCALE_MODEL) + baseY),
                         new Vector2(seg.block[i].polygons[k / 3].U1 / 256.0f, seg.block[i].polygons[k / 3].V1 / 256.0f));
                     vpc[k + 1] = new VertexPositionTexture(
-                        new Vector3(((seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].X + localX) / 1f + baseX)*-1f,
-                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].Z1 / 1f,
-                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].Y + localZ) / 1f + baseY),
+                        new Vector3(((seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].X + localX) / (WORLD_SCALE_MODEL) + baseX)*-1f,
+                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].Z1 / (WORLD_SCALE_MODEL),
+                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].Y + localZ) / (WORLD_SCALE_MODEL) + baseY),
                         new Vector2(seg.block[i].polygons[k / 3].U2 / 256.0f, seg.block[i].polygons[k / 3].V2 / 256.0f));
                     vpc[k + 2] = new VertexPositionTexture(
-                        new Vector3(((seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].X + localX) / 1f + baseX)*-1f,
-                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Z1 / 1f,
-                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Y + localZ) / 1f + baseY),
+                        new Vector3(((seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].X + localX) / (WORLD_SCALE_MODEL) + baseX)*-1f,
+                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Z1 / (WORLD_SCALE_MODEL),
+                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Y + localZ) / (WORLD_SCALE_MODEL) + baseY),
                         new Vector2(seg.block[i].polygons[k / 3].U3 / 256.0f, seg.block[i].polygons[k / 3].V3 / 256.0f));
 
                     if (seg.block[i].polygons[k / 3].TextureSwitch == 0x40 ||
