@@ -35,9 +35,11 @@ namespace FF8
         private static List<Texture2D[]> textures;
         private static List<Texture2D[]> wm38textures;
         private static List<Texture2D[]> wm39textures;
-        private static float renderDistance = 5000f;
+        private static int renderDistance = 2;
 
         private static Vector3 distance;
+
+        private static Vector2 segmentPosition;
 
         private static byte[] wmx;
 
@@ -344,7 +346,7 @@ namespace FF8
             Memory.font.RenderBasicText(Font.CipherDirty($"World Map Camera: X={camPosition.X}"), 0, 30, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"World Map Camera: Y={camPosition.Y}"), 0, 30*2, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"World Map Camera: Z={camPosition.Z}"), 0, 30*3, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"DEBUG DISTANCE: ={distance}"), 0, 30 * 4, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Segment Position: ={segmentPosition}"), 0, 30 * 4, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
         }
 
@@ -352,35 +354,31 @@ namespace FF8
         //BROKEN- I tried numerous of things- I may need to rewrite it from scratch, but some other day- maybe I'll come up with something
         private static bool bShouldDraw(float baseX, float baseY, int seg)
         {
-            float localX = 2048 * (seg % 4);
-            float localZ = -2048 * (seg / 4);
-            var verticesCollection = (from s in segments[seg].block from n in s.vertices select n).ToArray();
-            Vector3[] vecVertCollection = verticesCollection.Select(x => new Vector3(
-                ((x.X+localX) / WORLD_SCALE_MODEL +baseX)*-1f, 
-                x.Z1 / WORLD_SCALE_MODEL, 
-                ((x.Y + localZ) / WORLD_SCALE_MODEL)+baseY
-                )).ToArray();
+            segmentPosition = new Vector2((int)(camPosition.X / 512) *-1, (int)(camPosition.Z / 512) * -1);
+            if (segmentPosition.X < 0 || segmentPosition.X > 31 || //camera is out of map
+                segmentPosition.Y < 0 || segmentPosition.Y > 24)
+            {
+                //if (segmentPosition.X < 0 || segmentPosition.X > 31)
+                //    camPosition.X -= 32 * 512;
+                //if (segmentPosition.Y < 0 || segmentPosition.Y > 24)
+                //    camPosition.Y -= 24 * 512;
+                return false;
+            }
 
-            Vector3 corePosition = new Vector3(
-                vecVertCollection.Select(x => x.X).Min() + (vecVertCollection.Select(x => x.X).Min() - vecVertCollection.Select(x => x.X).Max()),
-                vecVertCollection.Select(x => x.Y).Max() + (vecVertCollection.Select(x => x.Y).Max() - vecVertCollection.Select(x => x.Y).Min()),
-                vecVertCollection.Select(x => x.Z).Max() + (vecVertCollection.Select(x => x.Z).Max() - vecVertCollection.Select(x => x.Z).Min()));
-
-
-
-            //test
-
-            float bb = camPosition.Z - corePosition.Z;
+            int ySegment = seg / 32; //2
+            int xSegment = seg- ySegment*32;
+            Vector2 currentSegment = new Vector2(xSegment, ySegment);
 
 
-            /*Vector3 */
-            //c2 = a2+b2
-            double _a2 = Math.Abs(camPosition.Z - corePosition.Z); //-3100 
-            double _b2 = Math.Abs(camPosition.X - corePosition.X);
-            double _c2 = (double)Math.Sqrt( (double)(Math.Pow(_a2,2) + Math.Pow(_b2,2)));
+            //Vector2 topLeft = segmentPosition - new Vector2(renderDistance, renderDistance);
+            //Vector2 bottomRight = segmentPosition + new Vector2(renderDistance, renderDistance);
 
-            //distance = new Vector3(Math.Abs(distance.X), Math.Abs(distance.Y), Math.Abs(distance.Z));
-            return Math.Abs(_c2) < renderDistance;
+            for (int i = 0-renderDistance; i<renderDistance; i++)
+                for(int k = 0-renderDistance; k<renderDistance; k++)
+                    if (segmentPosition + new Vector2(i, k) == currentSegment)
+                        return true;
+
+            return false;
         }
 
         private static void DrawSegment(int _i)
