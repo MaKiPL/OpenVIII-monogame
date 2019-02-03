@@ -37,8 +37,6 @@ namespace FF8
         private static List<Texture2D[]> wm39textures;
         private static int renderDistance = 2;
 
-        private static Vector3 distance;
-
         private static Vector2 segmentPosition;
 
         private static byte[] wmx;
@@ -297,25 +295,25 @@ namespace FF8
 
             if (Keyboard.GetState().IsKeyDown(Keys.W) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y > 0.0f)
             {
-                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees)) * camDistance * 5 / 1;
-                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees)) * camDistance*5 / 1;
-                camPosition.Y -= Yshift / 2;
+                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees)) * camDistance * 5 / 5;
+                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees)) * camDistance*5 / 5;
+                camPosition.Y -= Yshift / 10;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.S) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y < 0.0f)
             {
-                camPosition.X -= (float)System.Math.Cos(MathHelper.ToRadians(degrees)) * camDistance*5 / 1;
-                camPosition.Z -= (float)System.Math.Sin(MathHelper.ToRadians(degrees)) * camDistance * 5 / 1;
-                camPosition.Y += Yshift / 2;
+                camPosition.X -= (float)System.Math.Cos(MathHelper.ToRadians(degrees)) * camDistance*5 / 5;
+                camPosition.Z -= (float)System.Math.Sin(MathHelper.ToRadians(degrees)) * camDistance * 5 / 5;
+                camPosition.Y += Yshift / 10;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X < 0.0f)
             {
-                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees - 90)) * camDistance * 5 / 1;
-                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees - 90)) * camDistance * 5 / 1;
+                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees - 90)) * camDistance * 5 / 5;
+                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees - 90)) * camDistance * 5 / 5;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X > 0.0f)
             {
-                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees + 90)) * camDistance * 5 / 1;
-                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees + 90)) * camDistance * 5 / 1;
+                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees + 90)) * camDistance * 5 / 5;
+                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees + 90)) * camDistance * 5 / 5;
             }
 
             Mouse.SetPosition(200, 200);
@@ -355,15 +353,17 @@ namespace FF8
         private static bool bShouldDraw(float baseX, float baseY, int seg)
         {
             segmentPosition = new Vector2((int)(camPosition.X / 512) *-1, (int)(camPosition.Z / 512) * -1);
-            if (segmentPosition.X < 0 || segmentPosition.X > 31 || //camera is out of map
-                segmentPosition.Y < 0 || segmentPosition.Y > 24)
-            {
-                //if (segmentPosition.X < 0 || segmentPosition.X > 31)
-                //    camPosition.X -= 32 * 512;
-                //if (segmentPosition.Y < 0 || segmentPosition.Y > 24)
-                //    camPosition.Y -= 24 * 512;
-                return false;
-            }
+
+            if (camPosition.X > 0)
+                camPosition.X = 32*512*-1;
+            if (camPosition.X < 32 * 512 * -1)
+                camPosition.X = 0;
+
+            if (camPosition.Z > 0)
+                camPosition.Z = 24 * 512 * -1;
+            if (camPosition.Z < 24 * 512 * -1)
+                camPosition.Z = 0;
+
 
             int ySegment = seg / 32; //2
             int xSegment = seg- ySegment*32;
