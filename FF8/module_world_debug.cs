@@ -35,7 +35,7 @@ namespace FF8
         private static List<Texture2D[]> textures;
         private static List<Texture2D[]> wm38textures;
         private static List<Texture2D[]> wm39textures;
-        private static int renderDistance = 2;
+        private static readonly int renderDistance = 3;
 
         private static Vector2 segmentPosition;
 
@@ -125,7 +125,7 @@ namespace FF8
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                                MathHelper.ToRadians(60),
                                Memory.graphics.GraphicsDevice.DisplayMode.AspectRatio,
-                1f, 10000f);
+                1f, 1000f);
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          new Vector3(0f, 1f, 0f));// Y up
             worldMatrix = Matrix.CreateWorld(camTarget, Vector3.
@@ -191,7 +191,7 @@ namespace FF8
                 for (int i = 0; i < sections.Length; i++)
                     sections[i] = br.ReadInt32();
 
-                wm_s38(ms, br, sections, v);
+                Wm_s38(ms, br, sections, v);
                 wm_s39(ms, br, sections, v);
             }
         }
@@ -217,7 +217,7 @@ namespace FF8
             }
         }
 
-        private static void wm_s38(MemoryStream ms,BinaryReader br, int[] sec, byte[] v)
+        private static void Wm_s38(MemoryStream ms,BinaryReader br, int[] sec, byte[] v)
         {
             ms.Seek(sec[38-1], SeekOrigin.Begin);
             List<int> wm38sections = new List<int>();
@@ -266,18 +266,22 @@ namespace FF8
 
         public static void Draw()
         {
-            Memory.spriteBatch.GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.Black);
+            Memory.spriteBatch.GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.CornflowerBlue);
 
-            RasterizerState rasterizerState = new RasterizerState();
-            rasterizerState.CullMode = CullMode.None;
-            Memory.graphics.GraphicsDevice.RasterizerState = rasterizerState;
-            Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+            Memory.graphics.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
             Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-            ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice);
-            ate.Projection = projectionMatrix;
-            ate.View = viewMatrix;
-            ate.World = worldMatrix;
+            ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
+            {
+                Projection = projectionMatrix,
+                View = viewMatrix,
+                World = worldMatrix,
+                FogEnabled = true,
+                FogColor = Color.CornflowerBlue.ToVector3(),
+                FogStart = 9.75f,
+                FogEnd = 1000.00f
+            };
 
             #region FPScamera
 
@@ -325,32 +329,51 @@ namespace FF8
                          Vector3.Up);
             #endregion
 
+
+            
+
             //334 debug
             for (int i = 0; i < 768; i++)
                 DrawSegment(i);
 
             if (Input.GetInputDelayed(Keys.P))
                 ;
-                //worldScaleModel+=0.10f;
+            //worldScaleModel+=0.10f;
 
             //0,1,2,3,4,5,6,7
             //byte[] aa = (from s in segments from blok in s.block from bk in blok.polygons select bk.isWater).ToArray();
             //string[] cc = (from s in aa.Distinct() orderby s select $"{s}:  {Convert.ToString(s, 2).PadLeft(8, '0')}").ToArray();
-             //DrawSegment(nk);
+            //DrawSegment(nk);
             //Console.WriteLine($"DEBUG: nk {nk}\tgpId: {segments[nk].headerData.groupId}");
+            BlendState bm = new BlendState()
+            {
+                ColorSourceBlend = Blend.SourceColor,
+                ColorDestinationBlend = Blend.DestinationColor,
+                ColorBlendFunction = BlendFunction.Add,
+
+                AlphaSourceBlend = Blend.SourceAlpha,
+                AlphaDestinationBlend = Blend.DestinationAlpha,
+                AlphaBlendFunction = BlendFunction.Add
+            };
+
+            Memory.spriteBatch2.Begin(SpriteSortMode.Immediate, bm);
+            Memory.spriteBatch2.Draw(wm38textures[11][1], new Rectangle((int)(Memory.PreferredViewportWidth * 0.60f), (int)(Memory.PreferredViewportHeight * 0.60f), (int)(Memory.PreferredViewportWidth / 2.8f), (int)(Memory.PreferredViewportHeight / 2.8f)),Color.White*.7f);
+            Memory.spriteBatch2.End();
 
             Memory.SpriteBatchStartAlpha();
             Memory.font.RenderBasicText(Font.CipherDirty($"World Map Debug: nk={WORLD_SCALE_MODEL}"), 0, 0, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"World Map Camera: X={camPosition.X}"), 0, 30, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"World Map Camera: Y={camPosition.Y}"), 0, 30*2, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"World Map Camera: Z={camPosition.Z}"), 0, 30*3, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"World Map Camera: Y={camPosition.Y}"), 0, 30 * 2, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"World Map Camera: Z={camPosition.Z}"), 0, 30 * 3, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Segment Position: ={segmentPosition}"), 0, 30 * 4, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
+
+            
         }
 
         //Y is up
         //BROKEN- I tried numerous of things- I may need to rewrite it from scratch, but some other day- maybe I'll come up with something
-        private static bool bShouldDraw(float baseX, float baseY, int seg)
+        private static bool ShouldDrawSegment(float baseX, float baseY, int seg)
         {
             segmentPosition = new Vector2((int)(camPosition.X / 512) *-1, (int)(camPosition.Z / 512) * -1);
 
@@ -396,7 +419,7 @@ namespace FF8
                 //baseY = _i*4;
             }
 
-            if (!bShouldDraw(baseX, baseY, _i))
+            if (!ShouldDrawSegment(baseX, baseY, _i))
                 return;
 
 

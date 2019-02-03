@@ -30,7 +30,7 @@ namespace FF8
         internal static int musicIndex = 0;
         public static string[] musices;
         public static void SpriteBatchStartStencil()
-        => spriteBatch.Begin( SpriteSortMode.BackToFront, null, null,graphics.GraphicsDevice.DepthStencilState);
+        => spriteBatch.Begin( SpriteSortMode.BackToFront,BlendState.Opaque, null,graphics.GraphicsDevice.DepthStencilState);
         public static void SpriteBatchStartAlpha()
             => spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
         public static void SpriteBatchEnd()
@@ -452,6 +452,7 @@ namespace FF8
             "Continue",
             "DEBUG!"
         };
+        internal static SpriteBatch spriteBatch2;
         #endregion
 
         public static class Archives
