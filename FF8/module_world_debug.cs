@@ -35,7 +35,7 @@ namespace FF8
         private static List<Texture2D[]> textures;
         private static List<Texture2D[]> wm38textures;
         private static List<Texture2D[]> wm39textures;
-        private static readonly int renderDistance = 3;
+        private static readonly int renderDistance = 2;
 
         private static Vector2 segmentPosition;
 
@@ -396,7 +396,7 @@ namespace FF8
             //Vector2 topLeft = segmentPosition - new Vector2(renderDistance, renderDistance);
             //Vector2 bottomRight = segmentPosition + new Vector2(renderDistance, renderDistance);
 
-            for (int i = 0-renderDistance; i<renderDistance; i++)
+            for (int i = -1-renderDistance; i<renderDistance; i++)
                 for(int k = 0-renderDistance; k<renderDistance; k++)
                     if (segmentPosition + new Vector2(i, k) == currentSegment)
                         return true;
