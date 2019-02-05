@@ -44,7 +44,6 @@ namespace FF8
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
             Memory.spriteBatch = spriteBatch;
-            Memory.spriteBatch2 = new SpriteBatch(GraphicsDevice);
         }
 
         protected override void UnloadContent()

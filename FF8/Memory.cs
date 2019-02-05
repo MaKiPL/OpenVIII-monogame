@@ -37,6 +37,28 @@ namespace FF8
             =>
             spriteBatch.End();
 
+        readonly static public BlendState blendState_BasicAdd = new BlendState()
+        {
+            ColorSourceBlend = Blend.SourceColor,
+            ColorDestinationBlend = Blend.DestinationColor,
+            ColorBlendFunction = BlendFunction.Add,
+
+            AlphaSourceBlend = Blend.SourceAlpha,
+            AlphaDestinationBlend = Blend.DestinationAlpha,
+            AlphaBlendFunction = BlendFunction.Add
+        };
+
+        readonly static public BlendState blendState_forceDraw = new BlendState()
+        {
+            ColorSourceBlend = Blend.SourceColor,
+            ColorDestinationBlend = Blend.SourceColor,
+            ColorBlendFunction = BlendFunction.Add,
+
+            AlphaSourceBlend = Blend.SourceAlpha,
+            AlphaDestinationBlend = Blend.DestinationAlpha,
+            AlphaBlendFunction = BlendFunction.Add,
+        };
+
 
 
 
@@ -452,7 +474,6 @@ namespace FF8
             "Continue",
             "DEBUG!"
         };
-        internal static SpriteBatch spriteBatch2;
         #endregion
 
         public static class Archives

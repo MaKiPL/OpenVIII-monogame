@@ -41,6 +41,8 @@ namespace FF8
 
         private static byte[] wmx;
 
+        static float DEBUGshit = 0.0f;
+
         private static int GetSegment(int segID) => segID * 0x9000;
 
         private static Segment[] segments;
@@ -268,6 +270,12 @@ namespace FF8
         {
             Memory.spriteBatch.GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.CornflowerBlue);
 
+            Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
+            Memory.spriteBatch.Draw(wm38textures[10][0], new Rectangle(0, 0, (int)(Memory.PreferredViewportWidth / 2.8f), (int)(Memory.PreferredViewportHeight / 2.8f)), Color.White * .1f);
+            Memory.spriteBatch.End();
+
+
+
             Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
             Memory.graphics.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
             Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
@@ -329,8 +337,9 @@ namespace FF8
                          Vector3.Up);
             #endregion
 
+            if (Keyboard.GetState().IsKeyDown(Keys.P))
+                DEBUGshit += .01f;
 
-            
 
             //334 debug
             for (int i = 0; i < 768; i++)
@@ -345,27 +354,17 @@ namespace FF8
             //string[] cc = (from s in aa.Distinct() orderby s select $"{s}:  {Convert.ToString(s, 2).PadLeft(8, '0')}").ToArray();
             //DrawSegment(nk);
             //Console.WriteLine($"DEBUG: nk {nk}\tgpId: {segments[nk].headerData.groupId}");
-            BlendState bm = new BlendState()
-            {
-                ColorSourceBlend = Blend.SourceColor,
-                ColorDestinationBlend = Blend.DestinationColor,
-                ColorBlendFunction = BlendFunction.Add,
 
-                AlphaSourceBlend = Blend.SourceAlpha,
-                AlphaDestinationBlend = Blend.DestinationAlpha,
-                AlphaBlendFunction = BlendFunction.Add
-            };
-
-            Memory.spriteBatch2.Begin(SpriteSortMode.Immediate, bm);
-            Memory.spriteBatch2.Draw(wm38textures[11][1], new Rectangle((int)(Memory.PreferredViewportWidth * 0.60f), (int)(Memory.PreferredViewportHeight * 0.60f), (int)(Memory.PreferredViewportWidth / 2.8f), (int)(Memory.PreferredViewportHeight / 2.8f)),Color.White*.7f);
-            Memory.spriteBatch2.End();
+            Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, Memory.blendState_BasicAdd);
+            Memory.spriteBatch.Draw(wm38textures[11][1], new Rectangle((int)(Memory.PreferredViewportWidth * 0.60f), (int)(Memory.PreferredViewportHeight * 0.60f), (int)(Memory.PreferredViewportWidth / 2.8f), (int)(Memory.PreferredViewportHeight / 2.8f)),Color.White*.7f);
+            Memory.spriteBatch.End();
 
             Memory.SpriteBatchStartAlpha();
+            Memory.spriteBatch.Draw(wm38textures[24][0], new Rectangle((int)(Memory.PreferredViewportWidth * 0.60f), (int)(Memory.PreferredViewportHeight * 0.60f), (int)(Memory.PreferredViewportWidth / 32.0f), (int)(Memory.PreferredViewportHeight / 32.0f)),null,  Color.White * 1f, degrees * 6.3f / 360f + DEBUGshit , Vector2.Zero, SpriteEffects.None, 1f);
             Memory.font.RenderBasicText(Font.CipherDirty($"World Map Debug: nk={WORLD_SCALE_MODEL}"), 0, 0, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"World Map Camera: X={camPosition.X}"), 0, 30, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"World Map Camera: Y={camPosition.Y}"), 0, 30 * 2, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"World Map Camera: Z={camPosition.Z}"), 0, 30 * 3, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"Segment Position: ={segmentPosition}"), 0, 30 * 4, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"World Map Camera: X={camPosition}"), 0, 30, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Segment Position: ={segmentPosition}"), 0, 30 * 2, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"FPS camera deegress: ={DEBUGshit}"), 0, 30 * 3, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
 
             
