@@ -510,7 +510,7 @@ namespace FF8
             {
                 case field_mods.INIT:
                     Init();
-                    StartupScript();
+                    //StartupScript(); DEBUG
                     break;
                 case field_mods.DEBUGRENDER:
                     break; //await events here
