@@ -14,8 +14,8 @@ namespace FF8
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-            graphics.PreferredBackBufferWidth = 1280;
-            graphics.PreferredBackBufferHeight = 720;
+            graphics.PreferredBackBufferWidth = Memory.PreferredViewportWidth;
+            graphics.PreferredBackBufferHeight = Memory.PreferredViewportHeight;
             this.Window.AllowUserResizing = true;
         }
         protected override void Initialize()
@@ -53,6 +53,11 @@ namespace FF8
         protected override void Update(GameTime gameTime)
         {
             Memory.gameTime = gameTime;
+
+            //it breaks the Font
+            //Memory.PreferredViewportWidth = graphics.GraphicsDevice.Viewport.Width;
+            //Memory.PreferredViewportHeight = graphics.GraphicsDevice.Viewport.Height;
+
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 GracefullyExit();
 

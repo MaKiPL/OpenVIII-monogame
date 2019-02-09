@@ -271,7 +271,7 @@ namespace FF8
             Memory.spriteBatch.GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.CornflowerBlue);
 
             Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
-            Memory.spriteBatch.Draw(wm38textures[10][0], new Rectangle(0, 0, (int)(Memory.PreferredViewportWidth / 2.8f), (int)(Memory.PreferredViewportHeight / 2.8f)), Color.White * .1f);
+            Memory.spriteBatch.Draw(wm38textures[10][0], new Rectangle(0, 0, (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f)), Color.White * .1f);
             Memory.spriteBatch.End();
 
 
@@ -356,23 +356,23 @@ namespace FF8
             //Console.WriteLine($"DEBUG: nk {nk}\tgpId: {segments[nk].headerData.groupId}");
 
             Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, Memory.blendState_BasicAdd);
-            Memory.spriteBatch.Draw(wm38textures[11][1], new Rectangle((int)(Memory.PreferredViewportWidth * 0.60f), (int)(Memory.PreferredViewportHeight * 0.60f), (int)(Memory.PreferredViewportWidth / 2.8f), (int)(Memory.PreferredViewportHeight / 2.8f)),Color.White*.7f);
+            Memory.spriteBatch.Draw(wm38textures[11][1], new Rectangle((int)(Memory.graphics.GraphicsDevice.Viewport.Width * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f)),Color.White*.7f);
             Memory.spriteBatch.End();
 
             //cursor is wm38[24][0] and -16384 is max X, where 12288 is max Y
 
-            float topX = Memory.PreferredViewportWidth * .6f; //6
-            float topY = Memory.PreferredViewportHeight * .6f;
+            float topX = Memory.graphics.GraphicsDevice.Viewport.Width * .6f; //6
+            float topY = Memory.graphics.GraphicsDevice.Viewport.Height * .6f;
 
 
             float bc = Math.Abs(camPosition.X / 16384.0f);
-            topX += (Memory.PreferredViewportWidth / 2.8f * bc);
+            topX += (Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f * bc);
             bc = Math.Abs(camPosition.Z / 12288f);
-            topY += (Memory.PreferredViewportHeight / 2.8f * bc);
+            topY += (Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f * bc);
 
 
             Memory.SpriteBatchStartAlpha();
-            Memory.spriteBatch.Draw(wm38textures[24][0], new Rectangle((int)topX, (int)topY, (int)(Memory.PreferredViewportWidth / 32.0f), (int)(Memory.PreferredViewportHeight / 32.0f)),null,  Color.White * 1f, degrees * 6.3f / 360f + 2.5f , Vector2.Zero, SpriteEffects.None, 1f);
+            Memory.spriteBatch.Draw(wm38textures[24][0], new Rectangle((int)topX, (int)topY, (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 32.0f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 32.0f)),null,  Color.White * 1f, degrees * 6.3f / 360f + 2.5f , Vector2.Zero, SpriteEffects.None, 1f);
             Memory.font.RenderBasicText(Font.CipherDirty($"World Map Debug: nk={WORLD_SCALE_MODEL}"), 0, 0, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"World Map Camera: X={camPosition}"), 0, 30, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Segment Position: ={segmentPosition}"), 0, 30 * 2, 1, 1, 0, 1);
