@@ -35,6 +35,7 @@ namespace FF8
         private static List<Texture2D[]> textures;
         private static List<Texture2D[]> wm38textures;
         private static List<Texture2D[]> wm39textures;
+        private static List<Texture2D[]> charaOneTextures;
         private static readonly int renderDistance = 2;
 
         private static Vector2 segmentPosition;
@@ -137,7 +138,9 @@ namespace FF8
             //Memory.musicIndex = 30;
             //init_debugger_Audio.PlayMusic();
 
+
             ReadWMX();
+
 
 
             worldState++;
@@ -150,11 +153,16 @@ namespace FF8
             string wmxPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("wmx.obj")).Select(x => x).First();
             string texlPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("texl.obj")).Select(x => x).First();
             string wmPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("wmsetus.obj")).Select(x => x).First();
+            string charaOne = aw.GetListOfFiles().Where(x => x.ToLower().Contains("chara.one")).Select(x => x).First();
             wmx = ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, wmxPath);
             byte[] texl = ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, texlPath);
+            byte[] charaOneB = ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, charaOne);
+            ReadCharaOne(charaOneB);
+            charaOneB = null; //GC
             ReadWmSet(ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, wmPath));
 
             ReadTextures(texl);
+            texl = null; //GC
             segments = new Segment[835];
 
             using (MemoryStream ms = new MemoryStream(wmx))
@@ -180,6 +188,33 @@ namespace FF8
                         segments[i].block[n].unkPadd2 = br.ReadInt32();
                     }
                 }
+        }
+
+        private static void ReadCharaOne(byte[] charaOneB)
+        {
+            using (MemoryStream ms = new MemoryStream(charaOneB))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+
+                uint eof = br.ReadUInt32();
+                TIM2 tim;
+                while(ms.CanRead)
+                if (br.ReadUInt32() == 16 && br.ReadUInt32() == 8)
+                {
+                    ms.Seek(-8, SeekOrigin.Current);
+                    tim = new TIM2(charaOneB, (uint)ms.Position);
+                    ms.Seek(tim.GetHeight *tim.GetWidth/2 + 64, SeekOrigin.Current); //i.e. 64*20=1280/2=640 + 64= 704 + eof
+                        if (charaOneTextures == null)
+                            charaOneTextures = new List<Texture2D[]>();
+                        charaOneTextures.Add(new Texture2D[1] { new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight, false, SurfaceFormat.Color) });
+                        charaOneTextures.Last()[0].SetData(tim.CreateImageBuffer(tim.GetClutColors(0), true));
+                }
+                else //is geometry structure
+                    {
+                        ms.Seek(-8, SeekOrigin.Current);
+                        return; //TODO
+                    }
+            }
         }
 
         #region wmset
@@ -382,8 +417,6 @@ namespace FF8
             
         }
 
-        //Y is up
-        //BROKEN- I tried numerous of things- I may need to rewrite it from scratch, but some other day- maybe I'll come up with something
         private static bool ShouldDrawSegment(float baseX, float baseY, int seg)
         {
             segmentPosition = new Vector2((int)(camPosition.X / 512) *-1, (int)(camPosition.Z / 512) * -1);
