@@ -212,6 +212,21 @@ namespace FF8
                 else //is geometry structure
                     {
                         ms.Seek(-8, SeekOrigin.Current);
+                        uint esi10h = BitConverter.ToUInt32(charaOneB, (int)ms.Position + 0x10);
+                        uint esi14h = BitConverter.ToUInt32(charaOneB, (int)ms.Position + 0x14);
+                        uint u45 = BitConverter.ToUInt32(charaOneB, (int)ms.Position + 56) + 2; //+2?
+                        uint v29 = BitConverter.ToUInt32(charaOneB, (int)ms.Position) << 6; //bone section?
+                        uint d250516c = BitConverter.ToUInt32(charaOneB, (int)ms.Position+4) * 8; //unk?
+                        uint v25 = BitConverter.ToUInt32(charaOneB, (int)ms.Position + 8); //unk size?
+
+                        ms.Seek(u45, SeekOrigin.Begin);
+
+                        ushort v8 = br.ReadUInt16();
+                        ushort v9 = br.ReadUInt16();
+
+
+                        
+
                         return; //TODO
                     }
             }
