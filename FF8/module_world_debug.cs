@@ -94,6 +94,14 @@ namespace FF8
             public short Z1 { get => (short)(Z * -1); set => Z = value; }
         }
 
+        private struct Bone
+        {
+            public short X;
+            public short Y;
+            public short Z;
+            public Vector3[] rot;
+        }
+
         private struct Normal /*: Vertex we can't inherit struct in C#*/
         {
             public short X;
@@ -190,6 +198,7 @@ namespace FF8
                 }
         }
 
+        //TODO - so parsing is done
         private static void ReadCharaOne(byte[] charaOneB)
         {
             using (MemoryStream ms = new MemoryStream(charaOneB))
@@ -198,37 +207,54 @@ namespace FF8
 
                 uint eof = br.ReadUInt32();
                 TIM2 tim;
-                while(ms.CanRead)
-                if (br.ReadUInt32() == 16 && br.ReadUInt32() == 8)
-                {
-                    ms.Seek(-8, SeekOrigin.Current);
-                    tim = new TIM2(charaOneB, (uint)ms.Position);
-                    ms.Seek(tim.GetHeight *tim.GetWidth/2 + 64, SeekOrigin.Current); //i.e. 64*20=1280/2=640 + 64= 704 + eof
+                while (ms.CanRead)
+                    if (BitConverter.ToUInt16(charaOneB, (int)ms.Position) == 0)
+                        ms.Seek(2, SeekOrigin.Current);
+                    else if (br.ReadUInt64() == 0x0000000800000010)
+                    {
+                        ms.Seek(-8, SeekOrigin.Current);
+                        tim = new TIM2(charaOneB, (uint)ms.Position);
+                        ms.Seek(tim.GetHeight * tim.GetWidth / 2 + 64, SeekOrigin.Current); //i.e. 64*20=1280/2=640 + 64= 704 + eof
                         if (charaOneTextures == null)
                             charaOneTextures = new List<Texture2D[]>();
                         charaOneTextures.Add(new Texture2D[1] { new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight, false, SurfaceFormat.Color) });
                         charaOneTextures.Last()[0].SetData(tim.CreateImageBuffer(tim.GetClutColors(0), true));
-                }
-                else //is geometry structure
+                    }
+                    else //is geometry structure
                     {
                         ms.Seek(-8, SeekOrigin.Current);
                         uint esi10h = BitConverter.ToUInt32(charaOneB, (int)ms.Position + 0x10);
                         uint esi14h = BitConverter.ToUInt32(charaOneB, (int)ms.Position + 0x14);
-                        uint u45 = BitConverter.ToUInt32(charaOneB, (int)ms.Position + 56) + 2; //+2?
+                        uint u45 = BitConverter.ToUInt32(charaOneB, (int)ms.Position + 56); //+2?
                         uint v29 = BitConverter.ToUInt32(charaOneB, (int)ms.Position) << 6; //bone section?
-                        uint d250516c = BitConverter.ToUInt32(charaOneB, (int)ms.Position+4) * 8; //unk?
+                        uint d250516c = BitConverter.ToUInt32(charaOneB, (int)ms.Position + 4) * 8; //unk?
                         uint v25 = BitConverter.ToUInt32(charaOneB, (int)ms.Position + 8); //unk size?
 
-                        ms.Seek(u45, SeekOrigin.Begin);
+                        ms.Seek(u45, SeekOrigin.Current);
+                        if (ms.Position > ms.Length)
+                            break;
+                        ushort countIs = br.ReadUInt16();
 
-                        ushort v8 = br.ReadUInt16();
-                        ushort v9 = br.ReadUInt16();
+                        ushort cEntries = 0;
+                        while (countIs != 0/*(cEntries = br.ReadUInt16()) != 0*/)
+                        {
+                            cEntries = br.ReadUInt16();
+                            ushort cBones = br.ReadUInt16();
+                            while (cEntries != 0)
+                            {
+                                Bone testBone = new Bone() { X = br.ReadInt16(), Y = br.ReadInt16(), Z = br.ReadInt16() };
+                                Vector3[] myVec = new Vector3[cBones];
+                                for (int i = 0; i < cBones; i++)
+                                    myVec[i] = new Vector3() { X = br.ReadInt16(), Y = br.ReadUInt16(), Z = br.ReadUInt16() };
+                                cEntries--;
+                            }
+                            countIs--;
+                        }
 
 
-                        
 
-                        return; //TODO
                     }
+                return;
             }
         }
 
