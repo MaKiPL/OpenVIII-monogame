@@ -94,14 +94,6 @@ namespace FF8
             public short Z1 { get => (short)(Z * -1); set => Z = value; }
         }
 
-        private struct Bone
-        {
-            public short X;
-            public short Y;
-            public short Z;
-            public Vector3[] rot;
-        }
-
         private struct Normal /*: Vertex we can't inherit struct in C#*/
         {
             public short X;
@@ -208,7 +200,9 @@ namespace FF8
                 uint eof = br.ReadUInt32();
                 TIM2 tim;
                 while (ms.CanRead)
-                    if (BitConverter.ToUInt16(charaOneB, (int)ms.Position) == 0)
+                    if (ms.Position > ms.Length)
+                        return;
+                else if (BitConverter.ToUInt16(charaOneB, (int)ms.Position) == 0)
                         ms.Seek(2, SeekOrigin.Current);
                     else if (br.ReadUInt64() == 0x0000000800000010)
                     {
@@ -223,36 +217,7 @@ namespace FF8
                     else //is geometry structure
                     {
                         ms.Seek(-8, SeekOrigin.Current);
-                        uint esi10h = BitConverter.ToUInt32(charaOneB, (int)ms.Position + 0x10);
-                        uint esi14h = BitConverter.ToUInt32(charaOneB, (int)ms.Position + 0x14);
-                        uint u45 = BitConverter.ToUInt32(charaOneB, (int)ms.Position + 56); //+2?
-                        uint v29 = BitConverter.ToUInt32(charaOneB, (int)ms.Position) << 6; //bone section?
-                        uint d250516c = BitConverter.ToUInt32(charaOneB, (int)ms.Position + 4) * 8; //unk?
-                        uint v25 = BitConverter.ToUInt32(charaOneB, (int)ms.Position + 8); //unk size?
-
-                        ms.Seek(u45, SeekOrigin.Current);
-                        if (ms.Position > ms.Length)
-                            break;
-                        ushort countIs = br.ReadUInt16();
-
-                        ushort cEntries = 0;
-                        while (countIs != 0/*(cEntries = br.ReadUInt16()) != 0*/)
-                        {
-                            cEntries = br.ReadUInt16();
-                            ushort cBones = br.ReadUInt16();
-                            while (cEntries != 0)
-                            {
-                                Bone testBone = new Bone() { X = br.ReadInt16(), Y = br.ReadInt16(), Z = br.ReadInt16() };
-                                Vector3[] myVec = new Vector3[cBones];
-                                for (int i = 0; i < cBones; i++)
-                                    myVec[i] = new Vector3() { X = br.ReadInt16(), Y = br.ReadUInt16(), Z = br.ReadUInt16() };
-                                cEntries--;
-                            }
-                            countIs--;
-                        }
-
-
-
+                        debug_MCH MCH = new debug_MCH(ms, br);
                     }
                 return;
             }
