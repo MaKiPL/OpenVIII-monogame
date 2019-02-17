@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -40,7 +41,37 @@ namespace FF8
             public Vector3[] rot;
         }
 
+        [StructLayout(LayoutKind.Sequential, Size = 64, Pack = 1)]
+        private struct Face
+        {
+            public int bIsQuad;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            public byte[] unk;
+            public short unknown;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
+            public byte[] unk2;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            public short[] verticesA;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            public short[] verticesB;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            public int[] vertColor;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            public TextureMap[] TextureMap;
+            public ushort padding;
+            public ushort texIndex;
+            public ulong padding2;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Size = 2, Pack = 1)]
+        private struct TextureMap
+        {
+            public byte u;
+            public byte v;
+        }
+
         private AnimationKeypoint[] animationKeypoints;
+        private Face[] faces;
 
         public debug_MCH(MemoryStream ms, BinaryReader br)
         {
@@ -65,22 +96,30 @@ namespace FF8
             pAnimation = br.ReadUInt32();
             Unk2 = br.ReadUInt32();
 
-            ReadSkeleton(cSkeletonBones, pBones);
-            ReadGeometry(cVertices, pVertices, cFaces, pFaces, cTris, cQuads);
-            ReadAnimation(pAnimation);
+            ReadSkeleton();
+            ReadGeometry();
+            ReadAnimation();
         }
 
-        private void ReadSkeleton(uint cSkeletonBones, uint pBones)
+        private void ReadSkeleton()
         {
             return;
-            throw new NotImplementedException();
         }
-        private void ReadGeometry(uint cVertices, uint pVertices, uint cFaces, uint pFaces, ushort cTris, ushort cQuads)
+        private void ReadGeometry()
         {
+            ms.Seek(pBase + pAnimation, SeekOrigin.Begin);
+            Vector4[] vertices = new Vector4[cVertices]; 
+            for(int i = 0; i<vertices.Length; i++)
+                vertices[i] = new Vector4(br.ReadInt16(), br.ReadInt16(), br.ReadInt16(), br.ReadInt16());
+
+            ms.Seek(pBase + pFaces, SeekOrigin.Begin);
+            List<Face> face = new List<Face>();
+            for(int i = 0; i<cFaces; i++)
+                face.Add(MakiExtended.ByteArrayToStructure<Face>(br.ReadBytes(64)));
+            faces = face.ToArray();
             return;
-            throw new NotImplementedException();
         }
-        private void ReadAnimation(uint pAnimation)
+        private void ReadAnimation()
         {
             ms.Seek(pBase + pAnimation, SeekOrigin.Begin);
 
