@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -44,7 +45,7 @@ namespace FF8
         [StructLayout(LayoutKind.Sequential, Size = 64, Pack = 1)]
         private struct Face
         {
-            public int bIsQuad;
+            public int polygonType;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
             public byte[] unk;
             public short unknown;
@@ -61,6 +62,8 @@ namespace FF8
             public ushort padding;
             public ushort texIndex;
             public ulong padding2;
+
+            public bool BIsQuad => polygonType == 0x0907012d;
         }
 
         [StructLayout(LayoutKind.Sequential, Size = 2, Pack = 1)]
@@ -72,6 +75,7 @@ namespace FF8
 
         private AnimationKeypoint[] animationKeypoints;
         private Face[] faces;
+        private Vector4[] vertices;
 
         public debug_MCH(MemoryStream ms, BinaryReader br)
         {
@@ -103,12 +107,16 @@ namespace FF8
 
         private void ReadSkeleton()
         {
+            if (ms.Position > ms.Length)
+                return; //error handler
             return;
         }
         private void ReadGeometry()
         {
             ms.Seek(pBase + pAnimation, SeekOrigin.Begin);
-            Vector4[] vertices = new Vector4[cVertices]; 
+            if (ms.Position > ms.Length)
+                return; //error handler
+            vertices = new Vector4[cVertices]; 
             for(int i = 0; i<vertices.Length; i++)
                 vertices[i] = new Vector4(br.ReadInt16(), br.ReadInt16(), br.ReadInt16(), br.ReadInt16());
 
@@ -146,6 +154,37 @@ namespace FF8
             }
             animationKeypoints = animKeypoints.ToArray();
             return;
+        }
+
+        public Tuple<VertexPositionColorTexture[], byte[]> GetVertexPositions()
+        {
+            List<VertexPositionColorTexture> facesVertices = new List<VertexPositionColorTexture>();
+            List<byte> texIndexes = new List<byte>();
+            for(int i = 0; i<faces.Length; i++)
+            {
+                if (!faces[i].BIsQuad) //triangles please
+                {
+                    for (int k = 0; k < 3; k++)
+                    {
+                        Vector3 face = new Vector3(vertices[faces[i].verticesA[k]].X,
+                        vertices[faces[i].verticesA[k]].Y,
+                        vertices[faces[i].verticesA[k]].Z);
+                        Color clr = new Color(faces[i].vertColor[0], faces[i].vertColor[1], faces[i].vertColor[2], faces[i].vertColor[3]);
+                        Vector2 texData = new Vector2(faces[i].TextureMap[k].u/256.0f, faces[i].TextureMap[k].v/256.0f);
+                        facesVertices.Add( new VertexPositionColorTexture(face, clr, texData));
+                        if (faces[i].texIndex > byte.MaxValue)
+                            throw new Exception("Reverse engineering: test texture index? above 255, but datatype is word");
+                        texIndexes.Add((byte)faces[i].texIndex);
+                    }
+                    
+                }
+                else //we may need to actually retriangulate
+                {
+
+                }
+            }
+
+            return new Tuple<VertexPositionColorTexture[], byte[]>(facesVertices.ToArray(), texIndexes.ToArray());
         }
     }
 }
