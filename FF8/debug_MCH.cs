@@ -12,6 +12,8 @@ namespace FF8
 {
     class debug_MCH
     {
+        const float MODEL_SCALE = 1f;
+
         private uint pBase;
         private MemoryStream ms;
         private BinaryReader br;
@@ -63,7 +65,7 @@ namespace FF8
             public ushort texIndex;
             public ulong padding2;
 
-            public bool BIsQuad => polygonType == 0x0907012d;
+            public bool BIsQuad => polygonType == 0x2d010709;
         }
 
         [StructLayout(LayoutKind.Sequential, Size = 2, Pack = 1)]
@@ -113,10 +115,10 @@ namespace FF8
         }
         private void ReadGeometry()
         {
-            ms.Seek(pBase + pAnimation, SeekOrigin.Begin);
-            if (ms.Position > ms.Length)
+            ms.Seek(pBase + pVertices, SeekOrigin.Begin);
+            if (ms.Position > ms.Length || pVertices+ms.Position > ms.Length) //pvert error handler
                 return; //error handler
-            vertices = new Vector4[cVertices]; 
+            vertices = new Vector4[cVertices];
             for(int i = 0; i<vertices.Length; i++)
                 vertices[i] = new Vector4(br.ReadInt16(), br.ReadInt16(), br.ReadInt16(), br.ReadInt16());
 
@@ -156,7 +158,7 @@ namespace FF8
             return;
         }
 
-        public Tuple<VertexPositionColorTexture[], byte[]> GetVertexPositions()
+        public Tuple<VertexPositionColorTexture[], byte[]> GetVertexPositions(int baseX =0, int baseY=0, int baseZ=0)
         {
             List<VertexPositionColorTexture> facesVertices = new List<VertexPositionColorTexture>();
             List<byte> texIndexes = new List<byte>();
@@ -166,21 +168,52 @@ namespace FF8
                 {
                     for (int k = 0; k < 3; k++)
                     {
-                        Vector3 face = new Vector3(vertices[faces[i].verticesA[k]].X,
-                        vertices[faces[i].verticesA[k]].Y,
-                        vertices[faces[i].verticesA[k]].Z);
+                        Vector3 face = new Vector3(vertices[faces[i].verticesA[k]].X / MODEL_SCALE + baseX,
+                        vertices[faces[i].verticesA[k]].Z / MODEL_SCALE * -1f + baseY,
+                        vertices[faces[i].verticesA[k]].Y / MODEL_SCALE + baseZ);
                         Color clr = new Color(faces[i].vertColor[0], faces[i].vertColor[1], faces[i].vertColor[2], faces[i].vertColor[3]);
                         Vector2 texData = new Vector2(faces[i].TextureMap[k].u/256.0f, faces[i].TextureMap[k].v/256.0f);
                         facesVertices.Add( new VertexPositionColorTexture(face, clr, texData));
+                        texIndexes.Add((byte)faces[i].texIndex);
                         if (faces[i].texIndex > byte.MaxValue)
                             throw new Exception("Reverse engineering: test texture index? above 255, but datatype is word");
-                        texIndexes.Add((byte)faces[i].texIndex);
                     }
                     
                 }
                 else //we may need to actually retriangulate
                 {
+                    Vector3 A = new Vector3(vertices[faces[i].verticesA[0]].X / MODEL_SCALE + baseX,
+                    vertices[faces[i].verticesA[0]].Z / MODEL_SCALE * 1f + baseY,
+                    vertices[faces[i].verticesA[0]].Y / MODEL_SCALE + baseZ);
+                    Vector3 B = new Vector3(vertices[faces[i].verticesA[1]].X / MODEL_SCALE + baseX,
+                    vertices[faces[i].verticesA[1]].Z / MODEL_SCALE * 1f + baseY,
+                    vertices[faces[i].verticesA[1]].Y / MODEL_SCALE + baseZ);
+                    Vector3 C = new Vector3(vertices[faces[i].verticesA[2]].X / MODEL_SCALE + baseX,
+                    vertices[faces[i].verticesA[2]].Z / MODEL_SCALE * 1f + baseY,
+                    vertices[faces[i].verticesA[2]].Y / MODEL_SCALE + baseZ);
+                    Vector3 D = new Vector3(vertices[faces[i].verticesA[3]].X / MODEL_SCALE + baseX,
+                    vertices[faces[i].verticesA[3]].Z / MODEL_SCALE * 1f + baseY,
+                    vertices[faces[i].verticesA[3]].Y / MODEL_SCALE + baseZ);
 
+                    Vector2 t1 = new Vector2(faces[i].TextureMap[0].u / 256.0f, faces[i].TextureMap[0].v / 256.0f);
+                    Vector2 t2 = new Vector2(faces[i].TextureMap[1].u / 256.0f, faces[i].TextureMap[1].v / 256.0f);
+                    Vector2 t3 = new Vector2(faces[i].TextureMap[2].u / 256.0f, faces[i].TextureMap[2].v / 256.0f);
+                    Vector2 t4 = new Vector2(faces[i].TextureMap[3].u / 256.0f, faces[i].TextureMap[3].v / 256.0f);
+
+
+                    Color clr = new Color(faces[i].vertColor[0], faces[i].vertColor[1], faces[i].vertColor[2], faces[i].vertColor[3]);
+
+                    facesVertices.Add(new VertexPositionColorTexture(A, clr, t1));
+                    facesVertices.Add(new VertexPositionColorTexture(B, clr, t2));
+                    facesVertices.Add(new VertexPositionColorTexture(D, clr, t4));
+
+                    facesVertices.Add(new VertexPositionColorTexture(A, clr, t1));
+                    facesVertices.Add(new VertexPositionColorTexture(C, clr, t3));
+                    facesVertices.Add(new VertexPositionColorTexture(D, clr, t4));
+
+                    if (faces[i].texIndex > byte.MaxValue)
+                        throw new Exception("Reverse engineering: test texture index? above 255, but datatype is word");
+                    texIndexes.Add((byte)faces[i].texIndex); texIndexes.Add((byte)faces[i].texIndex);
                 }
             }
 

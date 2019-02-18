@@ -40,6 +40,8 @@ namespace FF8
 
         private static Vector2 segmentPosition;
 
+        private static debug_MCH[] mchEntities;
+
         private static byte[] wmx;
 
         static float DEBUGshit = 0.0f;
@@ -193,6 +195,7 @@ namespace FF8
         //TODO - so parsing is done
         private static void ReadCharaOne(byte[] charaOneB)
         {
+            List<debug_MCH> mchs = new List<debug_MCH>();
             using (MemoryStream ms = new MemoryStream(charaOneB))
             using (BinaryReader br = new BinaryReader(ms))
             {
@@ -201,7 +204,7 @@ namespace FF8
                 TIM2 tim;
                 while (ms.CanRead)
                     if (ms.Position > ms.Length)
-                        return;
+                        break;
                 else if (BitConverter.ToUInt16(charaOneB, (int)ms.Position) == 0)
                         ms.Seek(2, SeekOrigin.Current);
                     else if (br.ReadUInt64() == 0x0000000800000010)
@@ -211,16 +214,18 @@ namespace FF8
                         ms.Seek(tim.GetHeight * tim.GetWidth / 2 + 64, SeekOrigin.Current); //i.e. 64*20=1280/2=640 + 64= 704 + eof
                         if (charaOneTextures == null)
                             charaOneTextures = new List<Texture2D[]>();
-                        charaOneTextures.Add(new Texture2D[1] { new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight, false, SurfaceFormat.Color) });
-                        charaOneTextures.Last()[0].SetData(tim.CreateImageBuffer(tim.GetClutColors(0), true));
+                        Texture2D[] _2d = new Texture2D[1] { new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight, false, SurfaceFormat.Color) };
+                        _2d[0].SetData(tim.CreateImageBuffer(tim.GetClutColors(0), true));
+
+                        charaOneTextures.Add(_2d);
                     }
                     else //is geometry structure
                     {
                         ms.Seek(-8, SeekOrigin.Current);
-                        debug_MCH MCH = new debug_MCH(ms, br);
+                        mchs.Add(new debug_MCH(ms, br));
                     }
-                return;
             }
+            mchEntities = mchs.ToArray();
         }
 
         #region wmset
@@ -386,6 +391,17 @@ namespace FF8
             for (int i = 0; i < 768; i++)
                 DrawSegment(i);
 
+            if(true)
+            {
+                var collectionDebug = mchEntities[0].GetVertexPositions(-500,100,-500);
+                ate.Texture = charaOneTextures[1][0];
+                    foreach (var pass in ate.CurrentTechnique.Passes)
+                    {
+                        pass.Apply();
+                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, collectionDebug.Item1, 0, collectionDebug.Item1.Length/3);
+                    }
+            }
+
             if (Input.GetInputDelayed(Keys.P))
                 ;
             //worldScaleModel+=0.10f;
@@ -520,9 +536,9 @@ namespace FF8
                     {
                         pass.Apply();
                         Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpc, k, 1);
+
                     }
                 }
-
             }
         }
     }
