@@ -68,6 +68,17 @@ namespace FF8
             public bool BIsQuad => polygonType == 0x2d010709;
         }
 
+        [StructLayout(LayoutKind.Sequential, Size = 0x40, Pack = 1)]
+        private struct Bone
+        {
+            public ushort parentBone;
+            public ushort unk;
+            public uint unk2;
+            public short size;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst =54)]
+            public byte[] unkBuffer;
+        }
+
         [StructLayout(LayoutKind.Sequential, Size = 2, Pack = 1)]
         private struct TextureMap
         {
@@ -76,6 +87,7 @@ namespace FF8
         }
 
         private AnimationKeypoint[] animationKeypoints;
+        private Bone[] bones;
         private Face[] faces;
         private Vector4[] vertices;
 
@@ -109,8 +121,15 @@ namespace FF8
 
         private void ReadSkeleton()
         {
+            ms.Seek(pBase + pBones, SeekOrigin.Begin);
+
             if (ms.Position > ms.Length)
                 return; //error handler
+
+            bones = new Bone[cSkeletonBones];
+            for (int i = 0; i < cSkeletonBones; i++)
+                bones[i] = MakiExtended.ByteArrayToStructure<Bone>(br.ReadBytes(64));
+
             return;
         }
         private void ReadGeometry()
@@ -147,7 +166,7 @@ namespace FF8
                     AnimationKeypoint keyPoint = new AnimationKeypoint() { X = br.ReadInt16(), Y = br.ReadInt16(), Z = br.ReadInt16() };
                     Vector3[] vetRot = new Vector3[cBones];
                     for (int i = 0; i < cBones; i++)
-                        vetRot[i] = new Vector3() { X = br.ReadInt16(), Y = br.ReadUInt16(), Z = br.ReadUInt16() };
+                        vetRot[i] = new Vector3() { X = br.ReadInt16()/4096.0f, Y = br.ReadUInt16()/4096.0f, Z = br.ReadUInt16()/4096.0f };
                     animationFramesCount--;
                     keyPoint.rot = vetRot;
                     animKeypoints.Add(keyPoint);
