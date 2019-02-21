@@ -36,7 +36,7 @@ namespace FF8
         private static List<Texture2D[]> wm38textures;
         private static List<Texture2D[]> wm39textures;
         private static List<Texture2D[]> charaOneTextures;
-        private static readonly int renderDistance = 2;
+        private static readonly int renderDistance = 4;
 
         private static Vector2 segmentPosition;
 
@@ -433,7 +433,7 @@ namespace FF8
             Memory.font.RenderBasicText(Font.CipherDirty($"World Map Debug: nk={WORLD_SCALE_MODEL}"), 0, 0, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"World Map Camera: X={camPosition}"), 0, 30, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Segment Position: ={segmentPosition}"), 0, 30 * 2, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"FPS camera deegress: ={DEBUGshit}"), 0, 30 * 3, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"FPS camera deegress: ={degrees}"), 0, 30 * 3, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
 
             
@@ -442,6 +442,8 @@ namespace FF8
         private static bool ShouldDrawSegment(float baseX, float baseY, int seg)
         {
             segmentPosition = new Vector2((int)(camPosition.X / 512) *-1, (int)(camPosition.Z / 512) * -1);
+
+            bool bSegmentFine = false;
 
             if (camPosition.X > 0)
                 camPosition.X = 32*512*-1;
@@ -465,9 +467,11 @@ namespace FF8
             for (int i = -1-renderDistance; i<renderDistance; i++)
                 for(int k = 0-renderDistance; k<renderDistance; k++)
                     if (segmentPosition + new Vector2(i, k) == currentSegment)
-                        return true;
+                        bSegmentFine=true;
 
-            return false;
+
+
+            return bSegmentFine;
         }
 
         private static void DrawSegment(int _i)
@@ -520,6 +524,9 @@ namespace FF8
                         (seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Y + localZ) / (WORLD_SCALE_MODEL) + baseY),
                         new Vector2(seg.block[i].polygons[k / 3].U3 / 256.0f, seg.block[i].polygons[k / 3].V3 / 256.0f));
 
+                    if (MakiExtended.Distance3D(camPosition, vpc[k].Position) > 1200.0f)
+                        continue;
+
                     if (seg.block[i].polygons[k / 3].TextureSwitch == 0x40 ||
                         seg.block[i].polygons[k / 3].TextureSwitch == 0xC0)
                     {
@@ -531,6 +538,8 @@ namespace FF8
                         ate.Texture = wm39textures[5][0];
                     else
                         ate.Texture = textures[seg.block[i].polygons[k / 3].TPage][seg.block[i].polygons[k / 3].Clut]; //there are two texs, worth looking at other parameters; to reverse! 
+
+                    
 
                     foreach (var pass in ate.CurrentTechnique.Passes)
                     {

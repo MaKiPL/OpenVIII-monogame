@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -22,5 +23,7 @@ namespace FF8
                 handle.Free();
             }
         }
+
+        public static double Distance3D(Vector3 xo, Vector3 xa) => Vector3.Distance(xo, xa);
     }
 }
