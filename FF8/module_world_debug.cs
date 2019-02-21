@@ -443,8 +443,6 @@ namespace FF8
         {
             segmentPosition = new Vector2((int)(camPosition.X / 512) *-1, (int)(camPosition.Z / 512) * -1);
 
-            bool bSegmentFine = false;
-
             if (camPosition.X > 0)
                 camPosition.X = 32*512*-1;
             if (camPosition.X < 32 * 512 * -1)
@@ -455,23 +453,16 @@ namespace FF8
             if (camPosition.Z < 24 * 512 * -1)
                 camPosition.Z = 0;
 
-
             int ySegment = seg / 32; //2
             int xSegment = seg- ySegment*32;
             Vector2 currentSegment = new Vector2(xSegment, ySegment);
 
-
-            //Vector2 topLeft = segmentPosition - new Vector2(renderDistance, renderDistance);
-            //Vector2 bottomRight = segmentPosition + new Vector2(renderDistance, renderDistance);
-
             for (int i = -1-renderDistance; i<renderDistance; i++)
                 for(int k = 0-renderDistance; k<renderDistance; k++)
                     if (segmentPosition + new Vector2(i, k) == currentSegment)
-                        bSegmentFine=true;
+                        return true;
 
-
-
-            return bSegmentFine;
+            return false;
         }
 
         private static void DrawSegment(int _i)
