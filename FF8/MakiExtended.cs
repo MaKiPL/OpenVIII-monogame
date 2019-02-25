@@ -24,6 +24,24 @@ namespace FF8
             }
         }
 
+        //https://stackoverflow.com/questions/1130698/checking-if-an-object-is-a-number-in-c-sharp
+        public static bool IsNumber(object value) => value is sbyte
+                    || value is byte
+                    || value is short
+                    || value is ushort
+                    || value is int
+                    || value is uint
+                    || value is long
+                    || value is ulong
+                    || value is float
+                    || value is double
+                    || value is decimal;
+
         public static double Distance3D(Vector3 xo, Vector3 xa) => Vector3.Distance(xo, xa);
+
+        public static bool In(int _in, Vector2 range) => /*IsNumber(_in) ?*/
+                _in >= range.X && _in <= range.Y;
+                //: false;
+        public static bool In(int _in, int min, int max) => In(_in, new Vector2(min, max));
     }
 }

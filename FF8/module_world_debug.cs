@@ -126,7 +126,7 @@ namespace FF8
             effect = new BasicEffect(Memory.graphics.GraphicsDevice);
             effect.EnableDefaultLighting();
             camTarget = new Vector3(0, 0f, 0f);
-            camPosition = new Vector3(50f, 50f, 50f);
+            camPosition = new Vector3(-9166f, 112f, -4570f);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                                MathHelper.ToRadians(60),
                                Memory.graphics.GraphicsDevice.DisplayMode.AspectRatio,
@@ -468,20 +468,56 @@ namespace FF8
         private static void DrawSegment(int _i)
         {
             float baseX, baseY;
-            if(_i> 768) //TODO http://forums.qhimm.com/index.php?topic=16230.msg230004#msg230004 
-            {
-                baseX = 0f; baseY = 0f;
-            }
-            else
-            {
-                baseX = (2048f / 4) * (_i % 32);
-                baseY = -(2048f / 4) * (int)(_i / 32); //explicit int cast
-                //baseX = _i*4f;
-                //baseY = _i*4;
-            }
+            //TODO http://forums.qhimm.com/index.php?topic=16230.msg230004#msg230004 
+            baseX = (2048f / 4) * (_i % 32);
+            baseY = -(2048f / 4) * (int)(_i / 32); //explicit int cast
 
-            if (!ShouldDrawSegment(baseX, baseY, _i))
+                        if (!ShouldDrawSegment(baseX, baseY, _i))
                 return;
+
+            #region Interchangable zones
+            //esthar
+            if (MakiExtended.In(_i, 373, 380))
+                _i += 395;
+            if (MakiExtended.In(_i, 405, 412))
+                _i += 371;
+            if (MakiExtended.In(_i, 437, 444))
+                _i += 785-438;
+            if (MakiExtended.In(_i, 469, 476))
+                _i += 793-470;
+            if (MakiExtended.In(_i, 501, 508))
+                _i += 801-502;
+            if (MakiExtended.In(_i, 533, 540))
+                _i += 809-534;
+            if (MakiExtended.In(_i, 565, 572))
+                _i += 817-566;
+
+            //trabia
+            if (MakiExtended.In(_i, 149, 150))
+                _i += 825 - 150;
+
+            //galbadia
+            if (MakiExtended.In(_i, 267, 267))
+                _i = 826;
+
+            ////balamb
+            if (MakiExtended.In(_i, 274, 275))
+                _i += 828 - 275;
+
+            ////base
+            if (MakiExtended.In(_i, 327, 327))
+                _i += 830 - 328;
+
+            ////trabia
+            if (MakiExtended.In(_i, 214, 215))
+                _i += 831 - 215;
+            if (MakiExtended.In(_i, 246, 247))
+                _i += 833 - 247;
+
+            ////prison
+            if (MakiExtended.In(_i, 361, 361))
+                _i += 835 - 362;
+            #endregion
 
 
             effect.TextureEnabled = true;
