@@ -29,6 +29,14 @@ namespace FF8
             _1debugFly
         }
 
+        private enum MiniMapState
+        {
+            noMinimap,
+            planet,
+            rectangle,
+            fullscreen
+        }
+
         //DEBUG
         private const float WORLD_SCALE_MODEL = 16f;
 
@@ -107,6 +115,7 @@ namespace FF8
         }
 
         private static _worldState worldState;
+        private static MiniMapState MapState = MiniMapState.rectangle;
 
         public static void Update()
         {
@@ -383,9 +392,6 @@ namespace FF8
                          Vector3.Up);
             #endregion
 
-            if (Keyboard.GetState().IsKeyDown(Keys.P))
-                DEBUGshit += .01f;
-
 
             //334 debug
             for (int i = 0; i < 768; i++)
@@ -402,18 +408,40 @@ namespace FF8
                     }
             }
 
-            if (Input.GetInputDelayed(Keys.P))
-                ;
-            //worldScaleModel+=0.10f;
+            if (Input.GetInputDelayed(Keys.J))
+                MapState = MapState >= MiniMapState.fullscreen ? MapState = 0 : MapState + 1;
 
-            //0,1,2,3,4,5,6,7
-            //byte[] aa = (from s in segments from blok in s.block from bk in blok.polygons select bk.isWater).ToArray();
-            //string[] cc = (from s in aa.Distinct() orderby s select $"{s}:  {Convert.ToString(s, 2).PadLeft(8, '0')}").ToArray();
-            //DrawSegment(nk);
-            //Console.WriteLine($"DEBUG: nk {nk}\tgpId: {segments[nk].headerData.groupId}");
+            
 
+
+            switch(MapState)
+            {
+                case MiniMapState.noMinimap:
+                    break;
+                case MiniMapState.planet:
+                    break;
+                case MiniMapState.rectangle:
+                    DrawRectangleMiniMap();
+                    break;
+                case MiniMapState.fullscreen:
+                    break;
+            }
+            
+
+            Memory.SpriteBatchStartAlpha();
+            Memory.font.RenderBasicText(Font.CipherDirty($"World map MapState: {MapState}"), 0, 0, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"World Map Camera: X={camPosition}"), 0, 30, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Segment Position: ={segmentPosition}"), 0, 30 * 2, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"FPS camera deegress: ={degrees}"), 0, 30 * 3, 1, 1, 0, 1);
+            Memory.SpriteBatchEnd();
+
+            
+        }
+
+        private static void DrawRectangleMiniMap()
+        {
             Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, Memory.blendState_BasicAdd);
-            Memory.spriteBatch.Draw(wm38textures[11][1], new Rectangle((int)(Memory.graphics.GraphicsDevice.Viewport.Width * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f)),Color.White*.7f);
+            Memory.spriteBatch.Draw(wm38textures[11][1], new Rectangle((int)(Memory.graphics.GraphicsDevice.Viewport.Width * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f)), Color.White * .7f);
             Memory.spriteBatch.End();
 
             //cursor is wm38[24][0] and -16384 is max X, where 12288 is max Y
@@ -427,16 +455,9 @@ namespace FF8
             bc = Math.Abs(camPosition.Z / 12288f);
             topY += (Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f * bc);
 
-
             Memory.SpriteBatchStartAlpha();
-            Memory.spriteBatch.Draw(wm38textures[24][0], new Rectangle((int)topX, (int)topY, (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 32.0f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 32.0f)),null,  Color.White * 1f, degrees * 6.3f / 360f + 2.5f , Vector2.Zero, SpriteEffects.None, 1f);
-            Memory.font.RenderBasicText(Font.CipherDirty($"World Map Debug: nk={WORLD_SCALE_MODEL}"), 0, 0, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"World Map Camera: X={camPosition}"), 0, 30, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"Segment Position: ={segmentPosition}"), 0, 30 * 2, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"FPS camera deegress: ={degrees}"), 0, 30 * 3, 1, 1, 0, 1);
+            Memory.spriteBatch.Draw(wm38textures[24][0], new Rectangle((int)topX, (int)topY, (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 32.0f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 32.0f)), null, Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
             Memory.SpriteBatchEnd();
-
-            
         }
 
         private static bool ShouldDrawSegment(float baseX, float baseY, int seg)
