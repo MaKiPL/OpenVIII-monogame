@@ -16,7 +16,9 @@ NAME OF MODULE
 
 PROGRESS BAR PROGRESS PERCENTAGE  -> WHAT'S REMAINING TO DO
 
--------------------------------------PROGRESS IN-DEV PROTOTYPES--------------------------------------------
+
+## PROGRESS IN-DEV PROTOTYPES
+
 MODULE OVERTURE
 
 ⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛ 100% 
@@ -48,3 +50,33 @@ MODULE FMV
 MODULE WORLD MAP
 
 ⬛⬛⬛⬛⬛⬜⬜⬜⬜⬜ 50%   -> CHARACTER; OBJECT OF INTEREST; WM2FIELD; RAGNAROK/VEHICLES; ENCOUNTERS
+
+
+## Getting started (Windows)
+
+Requirements: MonoGame + Visual Studio
+
+1. Clone whole repository:
+
+`git clone https://github.com/MaKiPL/OpenVIII.git`
+
+2. Download and install **development build** of MonoGame:
+[MonoGame for Visual Studio](http://teamcity.monogame.net/repository/download/MonoGame_PackagingWindows/latest.lastSuccessful/MonoGameSetup.exe?guest=1)
+
+3. Open solution FF8.sln
+
+4. Edit game path (so far you have to type it manually) at `Memory.cs:67`:
+
+`public const string FF8DIR = @"D:\SteamLibrary\steamapps\common\FINAL FANTASY VIII\Data\lang-en\";`
+
+5. That's all. You can proceed with compilation. 
+
+## Getting started (Linux/Mono)
+
+TODO
+
+## Development guidelines
+
+1. Project is in in-dev prototype, therefore you can make new pull requests directly to main branch. 
+
+2. ??
