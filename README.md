@@ -56,20 +56,22 @@ MODULE WORLD MAP
 
 Requirements: MonoGame + Visual Studio
 
-1. Clone whole repository:
+1. Download and install **Visual Studio 2017** (2015 is not supported) and **NET Framework 4.6**
+
+2. Clone whole repository:
 
 `git clone https://github.com/MaKiPL/OpenVIII.git`
 
-2. Download and install **development build** of MonoGame:
+3. Download and install **development build** of MonoGame:
 [MonoGame for Visual Studio](http://teamcity.monogame.net/repository/download/MonoGame_PackagingWindows/latest.lastSuccessful/MonoGameSetup.exe?guest=1)
 
-3. Open solution FF8.sln
+4. Open solution FF8.sln
 
-4. Edit game path (so far you have to type it manually) at `Memory.cs:67`:
+5. Edit game path (so far you have to type it manually) at `Memory.cs:67`:
 
 `public const string FF8DIR = @"D:\SteamLibrary\steamapps\common\FINAL FANTASY VIII\Data\lang-en\";`
 
-5. That's all. You can proceed with compilation. 
+6. That's all. You can proceed with compilation. 
 
 ## Getting started (Linux/Mono)
 
