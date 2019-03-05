@@ -63,9 +63,12 @@ namespace FF8
 
 
         public static int module = MODULE_OVERTURE_DEBUG;
-
+#if _WINDOWS
         public const string FF8DIR = @"D:\SteamLibrary\steamapps\common\FINAL FANTASY VIII\Data\lang-en\"; //Work
         //public const string FF8DIR = @"D:\Steam\steamapps\common\FINAL FANTASY VIII\Data\lang-en"; //Home
+#else
+        public const string FF8DIR = @"/media/griever/Data/SteamLibrary/steamapps/common/FINAL FANTASY VIII/Data/lang-en";
+#endif
 
         #region modules
         public const int MODULE_BATTLE = 3;
@@ -76,9 +79,9 @@ namespace FF8
         public const int MODULE_OVERTURE_DEBUG = -12;
         public const int MODULE_MAINMENU_DEBUG = -13;
         public const int MODULE_WORLD_DEBUG = -17;
-        #endregion
+#endregion
 
-        #region battleProvider
+#region battleProvider
         public static int battle_encounter = 000;
         public static int SetBattleMusic = 6;
         public static init_debugger_battle.Encounter[] encounters;
@@ -101,9 +104,9 @@ namespace FF8
         }
 
         public static VIII_cameraMemoryStruct BS_CameraStruct;
-        #endregion
+#endregion
 
-        #region AudioData
+#region AudioData
         public static Dictionary<UInt16, string> Songs = new Dictionary<UInt16, string>()
         {
             {0, "Lose" },
@@ -205,7 +208,7 @@ namespace FF8
             {96, "Keisho" },
             {97, "Compression" },
         };
-        #endregion
+#endregion
 
         public static Dictionary<byte, string> DrawPointMagic = new Dictionary<byte, string>()
         {
@@ -467,14 +470,14 @@ namespace FF8
             {255, "Scan"}
         };
 
-        #region MainMenuData
+#region MainMenuData
         public static string[] MainMenuLines =
         {
             "NEW GAME",
             "Continue",
             "DEBUG!"
         };
-        #endregion
+#endregion
 
         public static class Archives
         {

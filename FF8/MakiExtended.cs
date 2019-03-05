@@ -39,6 +39,15 @@ namespace FF8
 
         public static double Distance3D(Vector3 xo, Vector3 xa) => Vector3.Distance(xo, xa);
 
+        public static string GetUnixFullPath(string pt)
+        {
+#if _WINDOWS
+            return System.IO.Path.GetFullPath(pt.Replace('/'. '\\');
+#else
+            return System.IO.Path.GetFullPath(pt.Replace("\\", "/"));
+#endif
+        }
+
         public static bool In(int _in, Vector2 range) => /*IsNumber(_in) ?*/
                 _in >= range.X && _in <= range.Y;
                 //: false;

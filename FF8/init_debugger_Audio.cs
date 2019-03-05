@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+#if _WINDOWS
 using DirectMidi;
+#endif
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using Microsoft.Xna.Framework.Media;
@@ -16,6 +18,7 @@ namespace FF8
 {
     static class init_debugger_Audio
     {
+#if _WINDOWS
         private static CDirectMusic cdm;
         private static CDLSLoader loader;
         private static CSegment segment;
@@ -24,6 +27,7 @@ namespace FF8
         private static COutputPort outport;
         private static CCollection ccollection;
         private static CInstrument[] instruments;
+#endif
 
         private struct SoundEntry
         {
@@ -56,7 +60,7 @@ namespace FF8
 
         internal static void DEBUG()
         {
-            string pt = Memory.FF8DIR + "/../Music/dmusic/";
+            string pt = Path.Combine(Memory.FF8DIR , "../Music/dmusic/");
             Memory.musices = Directory.GetFiles(pt, "*.sgt");
             //PlayMusic();
             //FileStream fs = new FileStream(pt, FileMode.Open, FileAccess.Read);
@@ -82,7 +86,7 @@ namespace FF8
 
         internal static void DEBUG_SoundAudio()
         {
-            string path = Path.Combine(Memory.FF8DIR, "..\\Sound\\audio.fmt");
+            string path = Path.GetFullPath(Path.Combine(Memory.FF8DIR, "../Sound/audio.fmt"));
             using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
             using (BinaryReader br = new BinaryReader(fs))
             {
@@ -114,7 +118,9 @@ namespace FF8
             if (soundEntries == null)
                 return;
             if (soundEntries[soundID].Size == 0) return;
-            using (FileStream fs = new FileStream(Path.Combine(Memory.FF8DIR, "..\\Sound\\audio.dat"), FileMode.Open, FileAccess.Read))
+
+
+            using (FileStream fs = new FileStream(MakiExtended.GetUnixFullPath( Path.Combine(Memory.FF8DIR, "..\\Sound\\audio.dat")), FileMode.Open, FileAccess.Read))
             using (BinaryReader br = new BinaryReader(fs))
             {
                 fs.Seek(soundEntries[soundID].Offset, SeekOrigin.Begin);
@@ -138,11 +144,16 @@ namespace FF8
 
                 //WaveFileReader rad = new WaveFileReader(new MemoryStream(sfxBuffer));
                 //passing WAVEFORMATEX struct params makes playing all sounds possible
+#if _WINDOWS
                 RawSourceWaveStream raw = new RawSourceWaveStream(new MemoryStream(rawBuffer), new AdpcmWaveFormat((int)format.nSamplesPerSec, format.nChannels ));
                 var a = WaveFormatConversionStream.CreatePcmStream(raw);
                 WaveOut waveout = new WaveOut();
                 waveout.Init(a);
                 waveout.Play();
+#else
+                SoundEffect se = new SoundEffect(rawBuffer, (int)format.nSamplesPerSec/2, (AudioChannels)format.nChannels);
+                se.Play();
+#endif
 
 
                 //libZPlay.ZPlay zplay = new libZPlay.ZPlay();
@@ -168,6 +179,7 @@ namespace FF8
         //callable test
         unsafe public static void PlayMusic()
         {
+#if _WINDOWS
             if (Memory.musicIndex >= Memory.musices.Length)
             {
                 Memory.musicIndex--;
@@ -235,12 +247,13 @@ namespace FF8
             //GCHandle.Alloc(cport, GCHandleType.Pinned);
             //GCHandle.Alloc(outport, GCHandleType.Pinned);
             //GCHandle.Alloc(infoport, GCHandleType.Pinned);
-
+#endif
             
         }
 
         public static void KillAudio()
         {
+#if _WINDOWS
             try
             {
                 cport.StopAll();
@@ -255,11 +268,14 @@ namespace FF8
             {
                 ;
             }
+#endif
     }
 
         public static void StopAudio()
         {
+#if _WINDOWS
             cport.StopAll();
+#endif
         }
 
         private static List<byte[]> ProcessTrackList(byte[] item2)

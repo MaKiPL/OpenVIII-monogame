@@ -14,31 +14,23 @@ namespace FF8
 
         public ArchiveWorker(string path)
         {
-            _path = path;
+            _path = MakiExtended.GetUnixFullPath(path);
             string root = System.IO.Path.GetDirectoryName(_path);
             string file = System.IO.Path.GetFileNameWithoutExtension(_path);
-            if (!File.Exists($"{root}\\{file}.fi")) throw new Exception($"There is no {file}.fi file!\nExiting...");
-            if (!File.Exists($"{root}\\{file}.fl")) throw new Exception($"There is no {file}.fl file!\nExiting...");
+            string fi = MakiExtended.GetUnixFullPath($"{Path.Combine(root, file)}.fi");
+            string fl = MakiExtended.GetUnixFullPath($"{Path.Combine(root, file)}.fl");
+            if (!File.Exists(fi)) throw new Exception($"There is no {file}.fi file!\nExiting...");
+            if (!File.Exists(fl)) throw new Exception($"There is no {file}.fl file!\nExiting...");
             FileList = ProduceFileLists();
         }
 
-        public static void OpenArchive()
-        {
-            throw new System.Exception("NOT IMPLEMENTED!");
-        }
+        private string[] ProduceFileLists() => File.ReadAllLines(MakiExtended.GetUnixFullPath($"{Path.Combine(System.IO.Path.GetDirectoryName(_path),System.IO.Path.GetFileNameWithoutExtension(_path))}.fl"));
 
-        private string[] ProduceFileLists() => File.ReadAllLines($"{System.IO.Path.GetDirectoryName(_path)}\\{System.IO.Path.GetFileNameWithoutExtension(_path)}.fl");
-
-        public static string[] GetBinaryFileList(byte[] fl)
-        {
-            return System.Text.Encoding.ASCII.GetString(fl).Replace("\r", "").Replace("\0", "").Split('\n');
-        }
+        public static string[] GetBinaryFileList(byte[] fl) => System.Text.Encoding.ASCII.GetString(fl).Replace("\r", "").Replace("\0", "").Split('\n');
 
         public static byte[] GetBinaryFile(string archiveName, string fileName)
         {
-            string a = /*@"C:\ff8\data\eng\" + */ fileName;
-
-            byte[] isComp = GetBin(archiveName, a);
+            byte[] isComp = GetBin(MakiExtended.GetUnixFullPath(archiveName), fileName);
             if (isComp == null)
                 return null;
             return _compressed ? LZSS.DecompressAll(isComp, (uint)isComp.Length, (int)_unpackedFileSize) : isComp;

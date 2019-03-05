@@ -489,7 +489,7 @@ namespace FF8
         public static void ResetField()
         {
             mod = field_mods.INIT;
-            if(ScriptSystem != null)
+            if (ScriptSystem != null)
                 ScriptSystem.Clear();
         }
 
@@ -498,8 +498,8 @@ namespace FF8
             Memory.graphics.GraphicsDevice.Clear(Color.Black);
             Memory.SpriteBatchStartStencil();
             Memory.spriteBatch.Draw(tex,
-                new Microsoft.Xna.Framework.Rectangle(0, 0, 1280+(width-320), 720+(height-224)),
-                new Microsoft.Xna.Framework.Rectangle(0,0,tex.Width, tex.Height)
+                new Microsoft.Xna.Framework.Rectangle(0, 0, 1280 + (width - 320), 720 + (height - 224)),
+                new Microsoft.Xna.Framework.Rectangle(0, 0, tex.Width, tex.Height)
                 , Microsoft.Xna.Framework.Color.White);
             Memory.SpriteBatchEnd();
         }
@@ -522,7 +522,7 @@ namespace FF8
             var initDefaultCollection = ScriptSystem.Where(x => x.localID == 0 || x.localID == 1).ToList();
             foreach (var scr in initDefaultCollection)
                 foreach (var opcode in scr.Scripts)
-                    if(ScriptSystem.Count != 0)
+                    if (ScriptSystem.Count != 0)
                         ParseOpcode(opcode);
         }
 
@@ -531,11 +531,11 @@ namespace FF8
             int stack1 = 0;
             int stack2 = 0;
             int stack3 = 0;
-            switch(opcode.opcode)
+            switch (opcode.opcode)
             {
                 case JSMopcodes.NOP:
                     return;
-                case JSMopcodes.LBL: 
+                case JSMopcodes.LBL:
                     return;
                 case JSMopcodes.SETMODEL: //TODO
                     Console.WriteLine("TODO: ENTITY SUBSYSTEM");
@@ -603,29 +603,29 @@ namespace FF8
         private static int POPstack()
         {
             int stack = Stack.Last();
-            Stack.RemoveAt(Stack.Count()-1);
+            Stack.RemoveAt(Stack.Count() - 1);
             return stack;
         }
 
         private static void Init()
         {
-            ArchiveWorker aw = new ArchiveWorker(Memory.FF8DIR + "field.fs");
+            ArchiveWorker aw = new ArchiveWorker(Path.Combine(Memory.FF8DIR, "field.fs"));
             string[] test = aw.GetListOfFiles();
             if (Memory.FieldHolder.FieldID >= Memory.FieldHolder.fields.Length ||
                 Memory.FieldHolder.FieldID < 0)
                 return;
             var CollectionEntry = test.Where(x => x.ToLower().Contains(Memory.FieldHolder.fields[Memory.FieldHolder.FieldID]));
-            if (CollectionEntry.Count() == 0) return;
+            if (!CollectionEntry.Any()) return;
             string fieldArchive = CollectionEntry.First();
             int fieldLen = fieldArchive.Length - 2;
             fieldArchive = fieldArchive.Substring(0, fieldLen);
-            byte[] fs = ArchiveWorker.GetBinaryFile(Memory.FF8DIR + "field", $"{fieldArchive}fs");
-            byte[] fi = ArchiveWorker.GetBinaryFile(Memory.FF8DIR + "field", $"{fieldArchive}fi");
-            byte[] fl = ArchiveWorker.GetBinaryFile(Memory.FF8DIR + "field", $"{fieldArchive}fl");
+            byte[] fs = ArchiveWorker.GetBinaryFile(Path.Combine(Memory.FF8DIR, "field"), $"{fieldArchive}fs");
+            byte[] fi = ArchiveWorker.GetBinaryFile(Path.Combine(Memory.FF8DIR, "field"), $"{fieldArchive}fi");
+            byte[] fl = ArchiveWorker.GetBinaryFile(Path.Combine(Memory.FF8DIR, "field"), $"{fieldArchive}fl");
             if (fs == null || fi == null || fl == null) return;
             string[] test_ = ArchiveWorker.GetBinaryFileList(fl);
-            string mim = test_.Where(x => x.ToLower().Contains(".mim")).First();
-            string map = test_.Where(x => x.ToLower().Contains(".map")).First();
+            string mim = test_.First(x => x.ToLower().Contains(".mim"));
+            string map = test_.First(x => x.ToLower().Contains(".map"));
 
             byte[] mimb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, mim);
             byte[] mapb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, map);
@@ -636,49 +636,49 @@ namespace FF8
             if (Memory.FieldHolder.FieldID == 180) goto safeDebugpoint; //delete me
 #endif
             //let's start with scripts
-            if (test_.Where(x=>x.ToLower().Contains(".jsm")).Count() > 0)
-                ParseScripts(ArchiveWorker.FileInTwoArchives(fi, fs, fl, test_.Where(x => x.ToLower().Contains(".jsm")).First())
-                    , ArchiveWorker.FileInTwoArchives(fi, fs, fl, test_.Where(x => x.ToLower().Contains(".sy")).First()));
+            if (test_.Any(x => x.ToLower().Contains(".jsm")))
+                ParseScripts(ArchiveWorker.FileInTwoArchives(fi, fs, fl, test_.First(x => x.ToLower().Contains(".jsm")))
+                    , ArchiveWorker.FileInTwoArchives(fi, fs, fl, test_.First(x => x.ToLower().Contains(".sy"))));
             Stack = new List<int>();
 #if DEBUG
             OutputAllParsedScripts();
-            
+
 #endif
 
-            //string mch = test_.Where(x => x.ToLower().Contains(".mch")).First();
-            //string one = test_.Where(x => x.ToLower().Contains(".one")).First();
-            //string msd = test_.Where(x => x.ToLower().Contains(".msd")).First();
-            //string inf = test_.Where(x => x.ToLower().Contains(".inf")).First();
-            //string id = test_.Where(x => x.ToLower().Contains(".id")).First();
-            //string ca = test_.Where(x => x.ToLower().Contains(".ca")).First();
-            //string tdw = test_.Where(x => x.ToLower().Contains(".tdw")).First();
-            //string msk = test_.Where(x => x.ToLower().Contains(".msk")).First();
-            //string rat = test_.Where(x => x.ToLower().Contains(".rat")).First();
-            //string pmd = test_.Where(x => x.ToLower().Contains(".pmd")).First();
-            //string sfx = test_.Where(x => x.ToLower().Contains(".sfx")).First();
+        //string mch = test_.Where(x => x.ToLower().Contains(".mch")).First();
+        //string one = test_.Where(x => x.ToLower().Contains(".one")).First();
+        //string msd = test_.Where(x => x.ToLower().Contains(".msd")).First();
+        //string inf = test_.Where(x => x.ToLower().Contains(".inf")).First();
+        //string id = test_.Where(x => x.ToLower().Contains(".id")).First();
+        //string ca = test_.Where(x => x.ToLower().Contains(".ca")).First();
+        //string tdw = test_.Where(x => x.ToLower().Contains(".tdw")).First();
+        //string msk = test_.Where(x => x.ToLower().Contains(".msk")).First();
+        //string rat = test_.Where(x => x.ToLower().Contains(".rat")).First();
+        //string pmd = test_.Where(x => x.ToLower().Contains(".pmd")).First();
+        //string sfx = test_.Where(x => x.ToLower().Contains(".sfx")).First();
 
-            //byte[] mchb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, mch); //Field character models
-            //byte[] oneb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, one); //Field character models container
-            //byte[] msdb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, msd); //dialogs
-            //byte[] infb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, inf); //gateways
-            //byte[] idb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, id); //walkmesh
-            //byte[] cab = ArchiveWorker.FileInTwoArchives(fi, fs, fl, ca); //camera
-            //byte[] tdwb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, tdw); //extra font
-            //byte[] mskb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, msk); //movie cam
-            //byte[] ratb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, rat); //battle on field
-            //byte[] pmdb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, pmd); //particle info
-            //byte[] sfxb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, sfx); //sound effects
+        //byte[] mchb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, mch); //Field character models
+        //byte[] oneb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, one); //Field character models container
+        //byte[] msdb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, msd); //dialogs
+        //byte[] infb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, inf); //gateways
+        //byte[] idb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, id); //walkmesh
+        //byte[] cab = ArchiveWorker.FileInTwoArchives(fi, fs, fl, ca); //camera
+        //byte[] tdwb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, tdw); //extra font
+        //byte[] mskb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, msk); //movie cam
+        //byte[] ratb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, rat); //battle on field
+        //byte[] pmdb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, pmd); //particle info
+        //byte[] sfxb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, sfx); //sound effects
 
 
 
-            safeDebugpoint:
+        safeDebugpoint:
             mod++;
             return;
         }
 
         private static void OutputAllParsedScripts()
         {
-            foreach(var a in ScriptSystem)
+            foreach (var a in ScriptSystem)
             {
                 Console.WriteLine($"Entity: {a.Entity}\tName: {a.ScriptName}");
                 int lineNumber = 0;
@@ -693,9 +693,9 @@ namespace FF8
             symbolNames = System.Text.Encoding.ASCII.GetString(symb).Replace(" ", "").Replace("\0", "").Split('\n');
             //for(int i = 0; i<symbolNames.Length; i++)
             //    symbolNames[i] = System.Text.Encoding.ASCII.GetString(symb, i * 32, 32).TrimEnd('\0', '\n', ' ');
-            File.WriteAllBytes("D:/symb.test", symb);
+            //File.WriteAllBytes("D:/symb.test", symb);
             jsm = new sJSM();
-            File.WriteAllBytes("D:\\test.jsm", jsmb);
+            //File.WriteAllBytes("D:\\test.jsm", jsmb);
             using (Stream str = new MemoryStream(jsmb))
             using (BinaryReader br = new BinaryReader(str))
             {
@@ -705,18 +705,18 @@ namespace FF8
                 jsm.cOtherEntity = br.ReadByte();
                 jsm.offsetSecOne = br.ReadUInt16();
                 jsm.offsetScriptData = br.ReadUInt16();
-                EntryPointEntity[] epe = new EntryPointEntity[jsm.cDoorEntity + jsm.cOtherEntity+ jsm.cWalkmeshEntity+jsm.cBackgroundEntity];
-                for(int i = 0; i<epe.Length; i++)
+                EntryPointEntity[] epe = new EntryPointEntity[jsm.cDoorEntity + jsm.cOtherEntity + jsm.cWalkmeshEntity + jsm.cBackgroundEntity];
+                for (int i = 0; i < epe.Length; i++)
                 {
                     ushort bb = br.ReadUInt16();
-                    epe[i].scriptCount = (byte)((bb & 0x7F)+1);
+                    epe[i].scriptCount = (byte)((bb & 0x7F) + 1);
                     epe[i].label = (byte)(bb >> 7);
                     epe[i].labelASM = symbolNames[epe[i].label];
                 }
                 int SYMscriptNameStartingPoint = jsm.cDoorEntity + jsm.cOtherEntity + jsm.cWalkmeshEntity + jsm.cBackgroundEntity;
                 jsm.EntityEntryPoints = epe;
-                EntryPointScript[] eps = new EntryPointScript[(jsm.offsetScriptData - jsm.offsetSecOne)/2 - 1];
-                for(int i = 0; i<eps.Length; i++)
+                EntryPointScript[] eps = new EntryPointScript[(jsm.offsetScriptData - jsm.offsetSecOne) / 2 - 1];
+                for (int i = 0; i < eps.Length; i++)
                 {
                     ushort bb = br.ReadUInt16();
                     eps[i].position = (ushort)((bb & 0x7FFF) * 4);
@@ -748,16 +748,18 @@ namespace FF8
                         opcode = (opcode >> 8) | opcode << 8 & 0xFF00;
                         parameter = binaryOpcode & 0xFFFF;
                     }
-                    if(opcode == 5 && scriptChunk.Count != 0) //label
+                    if (opcode == 5 && scriptChunk.Count != 0) //label
                     {
                         ushort entityNumber = (ushort)FindEntity(symbolNames[SYMscriptNameStartingPoint + scriptLabelPointer]);
-                        int locId = ScriptSystem.Where(x => x.Entity == entityNumber).Count();
-                        ScriptSystem.Add(new ScriptEntry() {
+                        int locId = ScriptSystem.Count(x => x.Entity == entityNumber);
+                        ScriptSystem.Add(new ScriptEntry()
+                        {
                             Entity = entityNumber,
                             ScriptName = symbolNames[SYMscriptNameStartingPoint + scriptLabelPointer++],
                             ID = scriptChunk[0].parameter,
                             localID = (ushort)locId++,
-                            Scripts = scriptChunk.ToArray() });
+                            Scripts = scriptChunk.ToArray()
+                        });
                         scriptChunk.Clear();
                     }
 
@@ -767,12 +769,12 @@ namespace FF8
                         opcodeBinary = (ushort)opcode,
                         opcodeASM = Enum.GetName(typeof(JSMopcodes), opcode),
                         opcode = (JSMopcodes)opcode
-                        
+
                     });
                     if (br.BaseStream.Position == br.BaseStream.Length)
                     {
                         ushort entityNumber = (ushort)FindEntity(symbolNames[SYMscriptNameStartingPoint + scriptLabelPointer]);
-                        int locId = ScriptSystem.Where(x => x.Entity == entityNumber).Count();
+                        int locId = ScriptSystem.Count(x => x.Entity == entityNumber);
                         ScriptSystem.Add(new ScriptEntry()
                         {
                             Entity = entityNumber,
