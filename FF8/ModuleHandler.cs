@@ -34,8 +34,9 @@ namespace FF8
                 {
                     Memory.module = Memory.MODULE_MAINMENU_DEBUG;
                 }
-            }
 #endif
+            }
+            
             switch (module)
             {
                 case Memory.MODULE_BATTLE:
