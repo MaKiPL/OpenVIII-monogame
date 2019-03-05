@@ -1,87 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace FF8
 {
-    class PseudoBufferedStream
+    //useless class, to remove sooner or later- currently it's ms+br class, but there's no way to control the 
+    class PseudoBufferedStream : MemoryStream
     {
-        //same as stream naturally but working with pre-loaded byte[] buffer
-        //normally made to have consinstency with original and rising pointer
-        //due to the reason of C# and C+assembler based approach
+        BinaryReader br;
 
-        public const int SEEK_BEGIN = 0;
-        public const int SEEK_CURRENT = 1;
-        public const int SEEK_END = 2;
-        byte[] buffer;
-        int pointer = 0;
-        public PseudoBufferedStream(byte[] buffer)
+        public PseudoBufferedStream(byte[] buffer) : base(buffer)
         {
-            this.buffer = buffer;
+            br = new BinaryReader(this);
         }
 
-        public void Seek(long offset, int mode)
-        {
-            switch(mode)
-            {
-                case SEEK_BEGIN:
-                    pointer = (int)offset;
-                    break;
-                case SEEK_CURRENT:
-                    pointer += (int)offset;
-                    break;
-                case SEEK_END:
-                    pointer = buffer.Length - 1 - (int)offset;
-                    break;
-                default:
-                    break;
-            }
-        }
+        public ushort ReadUShort() => br.ReadUInt16();
 
-        public byte ReadByte() => buffer[pointer++];
+        public byte[] ReadBytes(uint count) => br.ReadBytes((int)count);
 
-        public ushort ReadUShort()
-        {
-            ushort r = BitConverter.ToUInt16(buffer, pointer);
-            pointer += 2; //sizeof ushort
-            return r;
-        }
+        public byte ReadByte()  => br.ReadByte(); //ms readbyte returns int
 
-        public byte[] ReadBytes(uint count)
-        {
-            byte[] buffer = new byte[count];
-            Array.Copy(this.buffer,pointer, buffer,0, count);
-            pointer += (int)count;
-            return buffer;
-        }
+        public short ReadShort() => br.ReadInt16();
 
-        public short ReadShort()
-        {
-            short r = BitConverter.ToInt16(buffer, pointer);
-            pointer += 2; //sizeof ushort
-            return r;
-        }
+        public uint ReadUInt() => br.ReadUInt32();
 
-        public char ReadChar() => (char)ReadByte(); //naturally
-        
-        public uint ReadUInt()
-        {
-            uint r = BitConverter.ToUInt32(buffer, pointer);
-            pointer += 4;
-            return r;
-        }
+        public int ReadInt() => br.ReadInt32();
 
-        public int ReadInt()
-        {
-            int r = BitConverter.ToInt32(buffer, pointer);
-            pointer += 4;
-            return r;
-        }
-
-        public int Length => buffer.Length;
-
-        public int Tell() => pointer;
+        public long Tell() => Position;
     }
 }

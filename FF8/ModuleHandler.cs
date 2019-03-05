@@ -8,17 +8,17 @@ using System.Threading.Tasks;
 
 namespace FF8
 {
-    class ModuleHandler
+    internal static class ModuleHandler
     {
         private static int module = Memory.module;
         private static int lastModule = Memory.module;
-        static int msDelay = 0;
-        static int msDelayLimit = 100;
-        static bool bLimitInput = false;
+        static int msDelay;
+        static readonly int msDelayLimit = 100;
+        static bool bLimitInput;
 
         public static void Update(GameTime gameTime)
         {
-            if(lastModule != module)
+            if (lastModule != module)
             {
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
@@ -36,28 +36,28 @@ namespace FF8
                 }
             }
 #endif
-            switch(module)
+            switch (module)
             {
                 case Memory.MODULE_BATTLE:
                     module_battle.Update();
                     break;
                 case Memory.MODULE_BATTLE_DEBUG:
-                    module_battle_debug.Update();
+                    Module_battle_debug.Update();
                     break;
                 case Memory.MODULE_MOVIETEST:
-                    module_movie_test.Update();
+                    Module_movie_test.Update();
                     break;
                 case Memory.MODULE_FIELD_DEBUG:
-                    module_field_debug.Update();
+                    Module_field_debug.Update();
                     break;
                 case Memory.MODULE_OVERTURE_DEBUG:
-                    module_overture_debug.Update();
+                    Module_overture_debug.Update();
                     break;
                 case Memory.MODULE_MAINMENU_DEBUG:
-                    module_main_menu_debug.Update();
+                    Module_main_menu_debug.Update();
                     break;
                 case Memory.MODULE_WORLD_DEBUG:
-                    module_world_debug.Update();
+                    Module_world_debug.Update();
                     break;
             }
         }
@@ -70,27 +70,27 @@ namespace FF8
                     module_battle.Draw();
                     break;
                 case Memory.MODULE_BATTLE_DEBUG:
-                    module_battle_debug.Draw();
+                    Module_battle_debug.Draw();
                     break;
                 case Memory.MODULE_MOVIETEST:
-                    module_movie_test.Draw();
+                    Module_movie_test.Draw();
                     break;
                 case Memory.MODULE_FIELD_DEBUG:
-                    module_field_debug.Draw();
+                    Module_field_debug.Draw();
                     break;
                 case Memory.MODULE_OVERTURE_DEBUG:
-                    module_overture_debug.Draw();
+                    Module_overture_debug.Draw();
                     break;
                 case Memory.MODULE_MAINMENU_DEBUG:
-                    module_main_menu_debug.Draw();
+                    Module_main_menu_debug.Draw();
                     break;
                 case Memory.MODULE_WORLD_DEBUG:
-                    module_world_debug.Draw();
+                    Module_world_debug.Draw();
                     break;
             }
         }
 
         internal static void ResetBS()
-            => module_battle_debug.ResetState();
+            => Module_battle_debug.ResetState();
     }
 }

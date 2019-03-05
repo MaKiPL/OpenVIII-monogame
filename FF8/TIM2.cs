@@ -36,18 +36,18 @@ namespace FF8
 
         private static Texture texture;
         private static PseudoBufferedStream pbs;
-        private static uint textureDataPointer = 0;
+        private static uint textureDataPointer;
         private static uint timOffset;
 
         public TIM2(byte[] buffer, uint offset = 0)
         {
             pbs = new PseudoBufferedStream(buffer);
             timOffset = offset;
-            pbs.Seek(offset, PseudoBufferedStream.SEEK_BEGIN);
-            pbs.Seek(4, PseudoBufferedStream.SEEK_CURRENT); //clutID
+            pbs.Seek(offset, System.IO.SeekOrigin.Begin);
+            pbs.Seek(4, System.IO.SeekOrigin.Current); //clutID
             byte bppIndicator = pbs.ReadByte();
-            bppIndicator = (byte)(bppIndicator == 0x08 ? 4 : 
-                bppIndicator == 0x09 ? 8 : 
+            bppIndicator = (byte)(bppIndicator == 0x08 ? 4 :
+                bppIndicator == 0x09 ? 8 :
                 bppIndicator == 0x02 ? 16 :
                 bppIndicator == 0x03 ? 24 : 8);
             bpp = bppIndicator;
@@ -55,10 +55,10 @@ namespace FF8
             ReadParameters(bppIndicator);
         }
 
-        private void ReadParameters(byte bpp) //in TIM v1 this was as sbyte, why? xD
+        private void ReadParameters(byte _bpp)
         {
-            pbs.Seek(3, PseudoBufferedStream.SEEK_CURRENT);
-            if (bpp == 4)
+            pbs.Seek(3, System.IO.SeekOrigin.Current);
+            if (_bpp == 4)
             {
                 texture.clutSize = pbs.ReadUInt() - 12;
                 texture.PaletteX = pbs.ReadUShort();
@@ -66,7 +66,7 @@ namespace FF8
                 texture.NumOfColours = pbs.ReadUShort();
                 texture.NumOfCluts = pbs.ReadUShort();
                 int bppMultiplier = 16;
-                if (texture.NumOfColours != 16 || texture.clutSize != (texture.NumOfCluts*bppMultiplier)) //wmsetus uses 4BPP, but sets 256 colours, but actually is 16, but num of clut is 2* 256/16 WTF?
+                if (texture.NumOfColours != 16 || texture.clutSize != (texture.NumOfCluts * bppMultiplier)) //wmsetus uses 4BPP, but sets 256 colours, but actually is 16, but num of clut is 2* 256/16 WTF?
                 {
                     texture.NumOfCluts = (ushort)(texture.NumOfColours / 16 * texture.NumOfCluts);
                     bppMultiplier = 32;
@@ -75,7 +75,7 @@ namespace FF8
                 for (int i = 0; i != buffer.Length; i++)
                     buffer[i] = pbs.ReadByte();
                 texture.ClutData = buffer;
-                pbs.Seek(4, PseudoBufferedStream.SEEK_CURRENT);
+                pbs.Seek(4, System.IO.SeekOrigin.Current);
                 texture.ImageOrgX = pbs.ReadUShort();
                 texture.ImageOrgY = pbs.ReadUShort();
                 texture.Width = (ushort)(pbs.ReadUShort() * 4);
@@ -83,18 +83,18 @@ namespace FF8
                 textureDataPointer = (uint)pbs.Tell();
                 return;
             }
-            if (bpp == 8)
+            if (_bpp == 8)
             {
-                pbs.Seek(4, PseudoBufferedStream.SEEK_CURRENT);
+                pbs.Seek(4, System.IO.SeekOrigin.Current);
                 texture.PaletteX = pbs.ReadUShort();
                 texture.PaletteY = pbs.ReadUShort();
-                pbs.Seek(2, PseudoBufferedStream.SEEK_CURRENT);
+                pbs.Seek(2, System.IO.SeekOrigin.Current);
                 texture.NumOfCluts = pbs.ReadUShort();
                 byte[] buffer = new byte[texture.NumOfCluts * 512];
                 for (int i = 0; i != buffer.Length; i++)
                     buffer[i] = pbs.ReadByte();
                 texture.ClutData = buffer;
-                pbs.Seek(4, PseudoBufferedStream.SEEK_CURRENT);
+                pbs.Seek(4, System.IO.SeekOrigin.Current);
                 texture.ImageOrgX = pbs.ReadUShort();
                 texture.ImageOrgY = pbs.ReadUShort();
                 texture.Width = (ushort)(pbs.ReadUShort() * 2);
@@ -102,9 +102,9 @@ namespace FF8
                 textureDataPointer = (uint)pbs.Tell();
                 return;
             }
-            if (bpp == 16)
+            if (_bpp == 16)
             {
-                pbs.Seek(4, PseudoBufferedStream.SEEK_CURRENT);
+                pbs.Seek(4, System.IO.SeekOrigin.Current);
                 texture.ImageOrgX = pbs.ReadUShort();
                 texture.ImageOrgY = pbs.ReadUShort();
                 texture.Width = pbs.ReadUShort();
@@ -112,8 +112,8 @@ namespace FF8
                 textureDataPointer = (uint)pbs.Tell();
                 return;
             }
-            if (bpp != 24) return;
-            pbs.Seek(4, PseudoBufferedStream.SEEK_CURRENT);
+            if (_bpp != 24) return;
+            pbs.Seek(4, System.IO.SeekOrigin.Current);
             texture.ImageOrgX = pbs.ReadUShort();
             texture.ImageOrgY = pbs.ReadUShort();
             texture.Width = (ushort)(pbs.ReadUShort() / 1.5);
@@ -125,20 +125,15 @@ namespace FF8
         {
             if (clut > texture.NumOfCluts)
                 throw new Exception("TIM_v2::GetClutColors::given clut is bigger than texture number of cluts");
-            //if(bpp != )
             List<Color> colorPixels = new List<Color>();
             if (bpp == 8)
             {
-                pbs.Seek(timOffset + 20 + (512 * clut), PseudoBufferedStream.SEEK_BEGIN);
+                pbs.Seek(timOffset + 20 + (512 * clut), System.IO.SeekOrigin.Begin);
                 for (int i = 0; i < 512 / 2; i++)
                 {
-                    ushort clutPixel =  pbs.ReadUShort();
-                    //byte red = (byte)(clutPixel >> 11);
-                    //byte green = (byte)((clutPixel >> 6) & 0x1F);
-                    //byte blue = (byte)((clutPixel >> 1) & 0x1F);
-                    //byte alpha = (byte)(clutPixel & 0x01);
-                    byte red = (byte)((clutPixel ) & 0x1F);
-                    byte green = (byte)((clutPixel>>5) & 0x1F);
+                    ushort clutPixel = pbs.ReadUShort();
+                    byte red = (byte)((clutPixel) & 0x1F);
+                    byte green = (byte)((clutPixel >> 5) & 0x1F);
                     byte blue = (byte)((clutPixel >> 10) & 0x1F);
                     red = (byte)MathHelper.Clamp((red * bpp), 0, 255);
                     green = (byte)MathHelper.Clamp((green * bpp), 0, 255);
@@ -148,7 +143,7 @@ namespace FF8
             }
             if (bpp == 4)
             {
-                pbs.Seek(timOffset + 20 + (32 * clut), PseudoBufferedStream.SEEK_BEGIN);
+                pbs.Seek(timOffset + 20 + (32 * clut), System.IO.SeekOrigin.Begin);
                 for (int i = 0; i < 16; i++)
                 {
                     ushort clutPixel = pbs.ReadUShort();
@@ -156,10 +151,10 @@ namespace FF8
                     byte green = (byte)((clutPixel >> 5) & 0x1F);
                     byte blue = (byte)((clutPixel >> 10) & 0x1F);
                     byte alpha = (byte)(clutPixel >> 11 & 1);
-                    red = (byte)MathHelper.Clamp((red * bpp*4), 0, 255);
-                    green = (byte)MathHelper.Clamp((green * bpp*4), 0, 255);
-                    blue = (byte)MathHelper.Clamp((blue * bpp*4), 0, 255);
-                    colorPixels.Add(new Color() { Red = red, Green = green, Blue = blue, Alpha=alpha });
+                    red = (byte)MathHelper.Clamp((red * bpp * 4), 0, 255);
+                    green = (byte)MathHelper.Clamp((green * bpp * 4), 0, 255);
+                    blue = (byte)MathHelper.Clamp((blue * bpp * 4), 0, 255);
+                    colorPixels.Add(new Color { Red = red, Green = green, Blue = blue, Alpha = alpha });
                 }
             }
             if (bpp > 8) throw new Exception("TIM that has bpp mode higher than 8 has no clut data!");
@@ -168,11 +163,11 @@ namespace FF8
 
         public byte[] CreateImageBuffer(Color[] palette = null, bool bIgnoreSize = false)
         {
-            pbs.Seek(textureDataPointer, PseudoBufferedStream.SEEK_BEGIN);
+            pbs.Seek(textureDataPointer, System.IO.SeekOrigin.Begin);
             byte[] buffer = new byte[texture.Width * texture.Height * 4]; //ARGB
             if (bpp == 8)
             {
-                if(!bIgnoreSize)
+                if (!bIgnoreSize)
                     if ((buffer.Length) / 4 != pbs.Length - pbs.Tell())
                         throw new Exception("TIM_v2::CreateImageBuffer::TIM texture buffer has size incosistency.");
                 for (int i = 0; i < buffer.Length; i++)
@@ -184,26 +179,23 @@ namespace FF8
                     buffer[++i] = ColoredPixel.Green;
                     buffer[++i] = ColoredPixel.Blue;
                     buffer[++i] = (byte)((ColoredPixel.Red == 0 && ColoredPixel.Green == 0 && ColoredPixel.Blue == 0) ? 0x00 : 0xFF);
-
-
                 }
             }
-            if(bpp==4)
+            if (bpp == 4)
             {
-                if(!bIgnoreSize)
+                if (!bIgnoreSize)
                     if ((buffer.Length) / 8 != pbs.Length - pbs.Tell())
                         throw new Exception("TIM_v2::CreateImageBuffer::TIM texture buffer has size incosistency.");
                 for (int i = 0; i < buffer.Length; i++)
                 {
                     byte pixel = pbs.ReadByte();
-                    //Color ColoredPixel = palette[(pixel >> 4)&0xF];
-                    Color ColoredPixel = palette[pixel&0xf];
+                    Color ColoredPixel = palette[pixel & 0xf];
                     buffer[i] = ColoredPixel.Red;
                     buffer[++i] = ColoredPixel.Green;
                     buffer[++i] = ColoredPixel.Blue;
                     buffer[++i] = ColoredPixel.Alpha;
 
-                    ColoredPixel = palette[pixel>>4];
+                    ColoredPixel = palette[pixel >> 4];
 
                     buffer[++i] = ColoredPixel.Red;
                     buffer[++i] = ColoredPixel.Green;
@@ -221,19 +213,5 @@ namespace FF8
         public int GetWidth => texture.Width;
 
         public int GetHeight => texture.Height;
-
-        private static ushort ushortLittleEndian(ushort ushort_)
-    => (ushort)((ushort_ << 8) | (ushort_ >> 8));
-
-        private static short shortLittleEndian(short ushort_)
-            => (short)((ushort_ << 8) | (ushort_ >> 8));
-
-        private static uint uintLittleEndian(uint uint_)
-            => (uint_ << 24) | ((uint_ << 8) & 0x00FF0000) |
-            ((uint_ >> 8) & 0x0000FF00) | (uint_ >> 24);
-
-        private static int uintLittleEndian(int uint_)
-            => (uint_ << 24) | ((uint_ << 8) & 0x00FF0000) |
-            ((uint_ >> 8) & 0x0000FF00) | (uint_ >> 24);
     }
 }

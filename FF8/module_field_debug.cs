@@ -8,9 +8,9 @@ using System.IO;
 
 namespace FF8
 {
-    internal class module_field_debug
+    internal static class Module_field_debug
     {
-        private static field_mods mod = 0;
+        private static Field_mods mod = 0;
         private static Texture2D tex;
         private static Texture2D texOverlap;
 
@@ -31,7 +31,7 @@ namespace FF8
             public byte blend2;
         }
 
-        private struct sJSM
+        private struct SJSM
         {
             public byte cDoorEntity;
             public byte cWalkmeshEntity;
@@ -79,13 +79,9 @@ namespace FF8
             public ScriptOpcode[] Scripts;
         }
 
-        private static sJSM jsm;
+        private static SJSM jsm;
 
-        private static byte param_ = 0;
-        private static byte state_ = 0;
-
-        private static int width = 0;
-        private static int height = 0;
+        private static int width, height;
 
         private enum JSMopcodes
         {
@@ -468,7 +464,7 @@ namespace FF8
         }
 
 
-        private enum field_mods
+        private enum Field_mods
         {
             INIT,
             DEBUGRENDER
@@ -478,9 +474,9 @@ namespace FF8
         {
             switch (mod)
             {
-                case field_mods.INIT:
+                case Field_mods.INIT:
                     break; //null
-                case field_mods.DEBUGRENDER:
+                case Field_mods.DEBUGRENDER:
                     DrawDebug();
                     break;
             }
@@ -488,7 +484,7 @@ namespace FF8
 
         public static void ResetField()
         {
-            mod = field_mods.INIT;
+            mod = Field_mods.INIT;
             if (ScriptSystem != null)
                 ScriptSystem.Clear();
         }
@@ -508,11 +504,11 @@ namespace FF8
         {
             switch (mod)
             {
-                case field_mods.INIT:
+                case Field_mods.INIT:
                     Init();
                     //StartupScript(); DEBUG
                     break;
-                case field_mods.DEBUGRENDER:
+                case Field_mods.DEBUGRENDER:
                     break; //await events here
             }
         }
@@ -530,7 +526,7 @@ namespace FF8
         {
             int stack1 = 0;
             int stack2 = 0;
-            int stack3 = 0;
+            //int stack3 = 0;
             switch (opcode.opcode)
             {
                 case JSMopcodes.NOP:
@@ -594,7 +590,7 @@ namespace FF8
                     stack2 = POPstack(); //walkmesh id
                     stack1 = POPstack(); //field map id
                     Memory.FieldHolder.FieldID = (ushort)stack1;
-                    module_field_debug.ResetField();
+                    ResetField();
                     //todo
                     return;
             }
@@ -694,7 +690,7 @@ namespace FF8
             //for(int i = 0; i<symbolNames.Length; i++)
             //    symbolNames[i] = System.Text.Encoding.ASCII.GetString(symb, i * 32, 32).TrimEnd('\0', '\n', ' ');
             //File.WriteAllBytes("D:/symb.test", symb);
-            jsm = new sJSM();
+            jsm = new SJSM();
             //File.WriteAllBytes("D:\\test.jsm", jsmb);
             using (Stream str = new MemoryStream(jsmb))
             using (BinaryReader br = new BinaryReader(str))
@@ -833,15 +829,14 @@ namespace FF8
             PseudoBufferedStream pbsmim = new PseudoBufferedStream(mimb);
             while (pbsmap.Tell() + 16 < pbsmap.Length)
             {
-                Tile tile = new Tile();
-                tile.x = pbsmap.ReadShort();
+                Tile tile = new Tile { x = pbsmap.ReadShort() };
                 if (tile.x == 0x7FFF)
                     break;
                 tile.y = pbsmap.ReadShort();
                 tile.z = pbsmap.ReadUShort();// (ushort)(4096 - pbsmap.ReadUShort());
                 byte texIdBuffer = pbsmap.ReadByte();
                 tile.texID = (byte)(texIdBuffer & 0xF);
-                pbsmap.Seek(1, PseudoBufferedStream.SEEK_CURRENT);
+                pbsmap.Seek(1, SeekOrigin.Current);
                 //short testz = pbsmap.ReadShort();
                 //testz = (short)(testz >> 6);
                 //testz &= 0xF;
@@ -951,7 +946,6 @@ namespace FF8
                     }
                     else
                     {
-                        ;
                         //    int startPixel = sourceImagePointer + tile.srcx / 2 + 128 * tile.texID + (type1Width * tile.srcy);
                         //    for (int y = 0; y < 16; y++)
                         //        for (int x = 0; x < 16; x++)

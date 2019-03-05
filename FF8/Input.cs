@@ -9,9 +9,9 @@ namespace FF8
 {
     class Input
     {
-        private static bool bLimitInput = false;
+        private static bool bLimitInput;
         static int msDelay = 0;
-        static int msDelayLimit = 100;
+        static readonly int msDelayLimit = 100;
 
         public static bool GetInputDelayed(Keys key)
         {

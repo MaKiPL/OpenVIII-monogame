@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace FF8
 {
-    class debug_MCH
+    internal class Debug_MCH
     {
         const float MODEL_SCALE = 1f;
 
@@ -91,7 +91,7 @@ namespace FF8
         private Face[] faces;
         private Vector4[] vertices;
 
-        public debug_MCH(MemoryStream ms, BinaryReader br)
+        public Debug_MCH(MemoryStream ms, BinaryReader br)
         {
             this.ms = ms;
             this.br = br;

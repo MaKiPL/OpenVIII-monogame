@@ -39,7 +39,7 @@ namespace FF8
             public ushort ADPCM;
             public byte[] ADPCMCoefSets; //28
         }
-
+#pragma warning disable CS0649
         private struct WAVEFORMATEX
             {
             public ushort wFormatTag;
@@ -50,6 +50,7 @@ namespace FF8
             public ushort wBitsPerSample;
             public ushort cbSize;
         }
+#pragma warning restore CS0649
 
         private static SoundEntry[] soundEntries;
         public static int soundEntriesCount;
@@ -172,7 +173,7 @@ namespace FF8
             //waveout.Stop();
         }
 
-        internal static void update()
+        internal static void Update()
         {
 
         }

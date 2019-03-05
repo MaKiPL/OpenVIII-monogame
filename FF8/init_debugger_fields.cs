@@ -3,13 +3,13 @@ using System.Linq;
 
 namespace FF8
 {
-    internal class init_debugger_fields
+    internal static class Init_debugger_fields
     {
         internal static void DEBUG()
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_FIELD);
             string[] lists = aw.GetListOfFiles();
-            string maplist = lists.Where(x => x.ToLower().Contains("mapdata.fs")).First();
+            string maplist = lists.First(x => x.ToLower().Contains("mapdata.fs"));
             maplist = maplist.Substring(0, maplist.Length - 2);
             byte[] fs = ArchiveWorker.GetBinaryFile(Memory.Archives.A_FIELD, $"{maplist}fs");
             byte[] fl = ArchiveWorker.GetBinaryFile(Memory.Archives.A_FIELD, $"{maplist}fl");

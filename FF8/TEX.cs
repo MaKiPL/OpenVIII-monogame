@@ -10,10 +10,9 @@ namespace FF8
     //I borrowed this from my Rinoa's toolset, but modified to aim for buffer rather than file-work
     class TEX
     {
-        private string path;
         private Texture texture;
         private byte[] buffer;
-        private int textureLocator = 0;
+        private int textureLocator;
 
 
         struct Texture //RawImage after paletteData

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+#pragma warning disable CS0649
 namespace FF8
 {
     class Memory
@@ -84,7 +84,7 @@ namespace FF8
 #region battleProvider
         public static int battle_encounter = 000;
         public static int SetBattleMusic = 6;
-        public static init_debugger_battle.Encounter[] encounters;
+        public static Init_debugger_battle.Encounter[] encounters;
 
         public struct VIII_cameraMemoryStruct
         {
@@ -107,7 +107,7 @@ namespace FF8
 #endregion
 
 #region AudioData
-        public static Dictionary<UInt16, string> Songs = new Dictionary<UInt16, string>()
+        public static Dictionary<ushort, string> Songs = new Dictionary<ushort, string>()
         {
             {0, "Lose" },
             {1, "Win" },

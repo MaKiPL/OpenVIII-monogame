@@ -52,5 +52,19 @@ namespace FF8
                 _in >= range.X && _in <= range.Y;
                 //: false;
         public static bool In(int _in, int min, int max) => In(_in, new Vector2(min, max));
+
+        public static ushort UshortLittleEndian(ushort ushort_)
+    => (ushort)((ushort_ << 8) | (ushort_ >> 8));
+
+        public static short ShortLittleEndian(short ushort_)
+            => (short)((ushort_ << 8) | (ushort_ >> 8));
+
+        public static uint UintLittleEndian(uint uint_)
+            => (uint_ << 24) | ((uint_ << 8) & 0x00FF0000) |
+            ((uint_ >> 8) & 0x0000FF00) | (uint_ >> 24);
+
+        public static int UintLittleEndian(int uint_)
+            => (uint_ << 24) | ((uint_ << 8) & 0x00FF0000) |
+            ((uint_ >> 8) & 0x0000FF00) | (uint_ >> 24);
     }
 }

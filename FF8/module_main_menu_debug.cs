@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace FF8
 {
-    internal class module_main_menu_debug
+    internal static class Module_main_menu_debug
     {
         enum MainMenuStates
         {
@@ -18,27 +18,25 @@ namespace FF8
         }
 
         private static MainMenuStates State = 0;
-        private static float Fade = 0.0f;
+        private static float Fade;
         private static Texture2D start00;
         private static Texture2D start01;
 
-        private static float[] choiseHeights = new float[] { 0.35f, 0.40f, 0.45f };
+        private static readonly float[] choiseHeights = { 0.35f, 0.40f, 0.45f };
 
-        private static int debug_choosedBS = 0;
-        private static int debug_choosedAudio = 0;
+        private static int debug_choosedBS, debug_choosedAudio;
 
 
-        static int msDelay = 0;
-        static int msDelayLimit = 100;
-        static bool bLimitInput = false;
+        static int msDelay;
+        static readonly int msDelayLimit = 100;
+        static bool bLimitInput;
 
-        private static int choosenOption = 0;
-        private static int debug_fieldPointer = 90;
+        private static int choosenOption, debug_fieldPointer = 90;
         private static string debug_choosedField = Memory.FieldHolder.fields[debug_fieldPointer];
 
         internal static void Update()
         {
-            switch(State)
+            switch (State)
             {
                 case MainMenuStates.MainLobby:
                     LobbyUpdate();
@@ -49,8 +47,12 @@ namespace FF8
                 case MainMenuStates.NewGameChoosed:
                     NewGameUpdate();
                     break;
-                default:
+                case MainMenuStates.LoadGameLoading:
                     break;
+                case MainMenuStates.LoadGameScreen:
+                    break;
+                default:
+                    goto case 0;
             }
         }
 
@@ -65,7 +67,7 @@ namespace FF8
              */
             Memory.FieldHolder.FieldID = 74; //RE: startup stage ID is hardcoded. Probably we would want to change it for modding
             //the module changes to 1 now
-            module_field_debug.ResetField();
+            Module_field_debug.ResetField();
             Memory.module = Memory.MODULE_FIELD_DEBUG;
         }
 
@@ -105,7 +107,7 @@ namespace FF8
                 choosenOption = 0;
                 Fade = 0.0f;
                 State = MainMenuStates.MainLobby;
-                module_overture_debug.ResetModule();
+                Module_overture_debug.ResetModule();
             }
             if (Keyboard.GetState().IsKeyDown(Keys.Left) && !bLimitInput && choosenOption == 3)
             {
@@ -147,7 +149,7 @@ namespace FF8
                 msDelay = 0;
                 init_debugger_Audio.PlaySound(0);
                 Memory.FieldHolder.FieldID = (ushort)debug_fieldPointer;
-                module_field_debug.ResetField();
+                Module_field_debug.ResetField();
                 Memory.module = Memory.MODULE_FIELD_DEBUG;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !bLimitInput && choosenOption == 5)
@@ -164,7 +166,7 @@ namespace FF8
                 msDelay = 0;
                 init_debugger_Audio.PlaySound(0);
                 Memory.battle_encounter = debug_choosedBS;
-                module_battle_debug.ResetState();
+                Module_battle_debug.ResetState();
                 Memory.module = Memory.MODULE_BATTLE_DEBUG;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !bLimitInput && choosenOption == 6)
@@ -188,7 +190,7 @@ namespace FF8
                 msDelay = 0;
                 init_debugger_Audio.PlaySound(0);
                 if (debug_choosedAudio <= 0) return;
-                    debug_choosedAudio--;
+                debug_choosedAudio--;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.Right) && !bLimitInput && choosenOption == 8)
             {
@@ -260,10 +262,10 @@ namespace FF8
             switch (v)
             {
                 case 0:
-                    filename = aw.GetListOfFiles().Where(x => x.ToLower().Contains("start00")).First();
+                    filename = aw.GetListOfFiles().First(x => x.ToLower().Contains("start00"));
                     break;
                 case 1:
-                    filename = aw.GetListOfFiles().Where(x => x.ToLower().Contains("start01")).First();
+                    filename = aw.GetListOfFiles().First(x => x.ToLower().Contains("start01"));
                     break;
             }
             tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, filename));
@@ -284,7 +286,9 @@ namespace FF8
                 case MainMenuStates.NewGameChoosed:
                     NewGameDraw();
                     break;
-                default:
+                case MainMenuStates.LoadGameLoading:
+                    break;
+                case MainMenuStates.LoadGameScreen:
                     break;
             }
         }
@@ -292,7 +296,7 @@ namespace FF8
         private static void NewGameDraw()
         {
             DrawMainLobby();
-            Fade -= Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f/2;
+            Fade -= Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f / 2;
         }
 
         private static void DebugScreenLobby()
@@ -301,7 +305,6 @@ namespace FF8
             float fScaleHeight = (float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight;
             int vpWidth = Memory.graphics.GraphicsDevice.Viewport.Width;
             int vpHeight = Memory.graphics.GraphicsDevice.Viewport.Width;
-            float zoom = 0.65f;
             Memory.SpriteBatchStartAlpha();
             //string cCnCRtn = Font.CipherDirty("OpenVIII debug tools"); //SnclZMMM bc`se \0rmmjq
             Memory.font.RenderBasicText(Font.CipherDirty("Reset Main Menu state".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.05f), 1f, 2f, 0, 1);
@@ -314,7 +317,7 @@ namespace FF8
             Memory.font.RenderBasicText(Font.CipherDirty($"Play audio.dat: {debug_choosedAudio}".Replace("\0", "")), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.26f), 1f, 2f, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Jump to World Map"), (int)(vpWidth * 0.10f), (int)(vpHeight * 0.29f), 1f, 2f, 0, 1);
 
-            Memory.spriteBatch.Draw(Memory.iconsTex[2], new Rectangle((int)(vpWidth * 0.05f), (int)(vpHeight * ((choosenOption*0.03f) + 0.02f)+0.05f*100), (int)(24 * 2 * fScaleWidth), (int)(16 * 2 * fScaleWidth)),
+            Memory.spriteBatch.Draw(Memory.iconsTex[2], new Rectangle((int)(vpWidth * 0.05f), (int)(vpHeight * ((choosenOption * 0.03f) + 0.02f) + 0.05f * 100), (int)(24 * 2 * fScaleWidth), (int)(16 * 2 * fScaleWidth)),
                 new Rectangle(232, 0, 23, 15),
                 Color.White);
             Memory.SpriteBatchEnd();
@@ -334,15 +337,15 @@ namespace FF8
             int vpHeight = Memory.graphics.GraphicsDevice.Viewport.Width;
             float zoom = 0.65f;
             Memory.SpriteBatchStartAlpha();
-            Memory.spriteBatch.Draw(start00, new Rectangle(0, 0, (int)(vpWidth*zoom), (int)(vpHeight*(zoom-0.1f))), null, Color.White * Fade);
-            Memory.spriteBatch.Draw(start01, new Rectangle((int)(vpWidth * zoom), 0, vpWidth/3, (int)(vpHeight * (zoom-0.1f))), Color.White * Fade);
+            Memory.spriteBatch.Draw(start00, new Rectangle(0, 0, (int)(vpWidth * zoom), (int)(vpHeight * (zoom - 0.1f))), null, Color.White * Fade);
+            Memory.spriteBatch.Draw(start01, new Rectangle((int)(vpWidth * zoom), 0, vpWidth / 3, (int)(vpHeight * (zoom - 0.1f))), Color.White * Fade);
             //string cCnCRtn = Font.CipherDirty("OpenVIII debug tools"); //SnclZMMM bc`se \0rmmjq
-            Memory.font.RenderBasicText("RI[ KEQI", (int)(vpWidth *0.42f), (int)(vpHeight * choiseHeights[0]),2f,3f,0,1, Fade);
-            Memory.font.RenderBasicText("Gmlrglsc", (int)(vpWidth * 0.42f), (int)(vpHeight * choiseHeights[1]),2f,3f,0, 1, Fade);
-            Memory.font.RenderBasicText("SnclZMMM bc`se rmmjq", (int)(vpWidth * 0.42f), (int)(vpHeight * choiseHeights[2]),2f,3f,0,1, Fade);
+            Memory.font.RenderBasicText("RI[ KEQI", (int)(vpWidth * 0.42f), (int)(vpHeight * choiseHeights[0]), 2f, 3f, 0, 1, Fade);
+            Memory.font.RenderBasicText("Gmlrglsc", (int)(vpWidth * 0.42f), (int)(vpHeight * choiseHeights[1]), 2f, 3f, 0, 1, Fade);
+            Memory.font.RenderBasicText("SnclZMMM bc`se rmmjq", (int)(vpWidth * 0.42f), (int)(vpHeight * choiseHeights[2]), 2f, 3f, 0, 1, Fade);
 
-            Memory.spriteBatch.Draw(Memory.iconsTex[2], new Rectangle((int)(vpWidth*0.37f), (int)(vpHeight * choiseHeights[choosenOption]+0.01f), (int)(24*2 * fScaleWidth), (int)(16*2 * fScaleWidth)),
-                new Rectangle(232,0, 23 ,15),
+            Memory.spriteBatch.Draw(Memory.iconsTex[2], new Rectangle((int)(vpWidth * 0.37f), (int)(vpHeight * choiseHeights[choosenOption] + 0.01f), (int)(24 * 2 * fScaleWidth), (int)(16 * 2 * fScaleWidth)),
+                new Rectangle(232, 0, 23, 15),
                 Color.White * Fade);
             Memory.SpriteBatchEnd();
         }

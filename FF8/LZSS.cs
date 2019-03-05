@@ -22,7 +22,7 @@ namespace FF8
                 bool bDynamic = false;
                 if (size == 0)
                 {
-                    size = 1024 * 1024 * 64; //64MB
+                    size = 0x4000000; //64MB
                     bDynamic = true;
                 }
 

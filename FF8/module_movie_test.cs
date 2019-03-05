@@ -9,14 +9,14 @@ using System.Runtime.InteropServices;
 
 namespace FF8
 {
-    internal class module_movie_test
+    internal static class Module_movie_test
     {
         private const int STATE_INIT = 0;
         private const int STATE_PLAYING = 1;
         private const int STATE_PAUSED = 2;
         private const int STATE_FINISHED = 3;
 
-        private static string movieDir = Path.Combine(Memory.FF8DIR, "../movies");
+        private static readonly string movieDir = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../movies"));
 
         private static VideoFileReader vfr;
 
@@ -27,17 +27,18 @@ namespace FF8
         private static int frameRenderingDelay;
         private static int msElapsed;
 
-        public static int movieState = STATE_INIT;
+        public static int movieState;
         internal static void Update()
         {
-            switch(movieState)
+            switch (movieState)
             {
                 case STATE_INIT:
                     InitMovie();
                     break;
                 case STATE_PLAYING:
                     break;
-
+                default:
+                    break;
             }
         }
 
@@ -46,14 +47,14 @@ namespace FF8
             vfr = new VideoFileReader();
             vfr.Open(movieDir + "/disc02_25h.avi");
             FPS = vfr.FrameRate;
-            frameRenderingDelay = (1000 / FPS)/2; 
+            frameRenderingDelay = (1000 / FPS) / 2;
             //frame = new Bitmap(vfr.Width, vfr.Height);
             movieState++;
         }
 
         internal static void Draw()
         {
-            switch(movieState)
+            switch (movieState)
             {
                 case STATE_PLAYING:
                     PlayingDraw();
@@ -87,7 +88,7 @@ namespace FF8
             msElapsed = 0;
             Memory.spriteBatch.GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.Black);
             frame = vfr.ReadVideoFrame();
-            if(frame == null)
+            if (frame == null)
             {
                 movieState = STATE_FINISHED;
                 return;
@@ -96,7 +97,7 @@ namespace FF8
             Texture2D frameTex = new Texture2D(Memory.spriteBatch.GraphicsDevice, frame.Width, frame.Height, false, SurfaceFormat.Bgra32); //GC will collect frameTex
             BitmapData bmpdata = frame.LockBits(new Rectangle(0, 0, frame.Width, frame.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             byte[] texBuffer = new byte[bmpdata.Width * bmpdata.Height * 4]; //GC here
-            Marshal.Copy(bmpdata.Scan0, texBuffer,0, texBuffer.Length);
+            Marshal.Copy(bmpdata.Scan0, texBuffer, 0, texBuffer.Length);
             frame.UnlockBits(bmpdata);
             frameTex.SetData(texBuffer);
             Memory.SpriteBatchStartStencil();

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace FF8
 {
-    internal class init_debugger_battle
+    internal static class Init_debugger_battle
     {
         public struct Encounter
         {
@@ -51,7 +51,7 @@ namespace FF8
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
             string[] test = aw.GetListOfFiles();
-            string sEncounter = test.Where(x => x.ToLower().Contains("scene.out")).First();
+            string sEncounter = test.First(x => x.ToLower().Contains("scene.out"));
             byte[] sceneOut = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, sEncounter);
             ReadEncounter(sceneOut);
         }

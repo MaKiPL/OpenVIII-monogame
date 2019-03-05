@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace FF8
 {
-    class module_battle_debug
+    class Module_battle_debug
     {
 
         //debug battle mode treats encounterID as scene ID and therefore skips
@@ -18,26 +18,22 @@ namespace FF8
         //after going into state 4 you are free to debug many mechanisms of the battle
         //yet everything remains clearly logic.
 
-        private static uint bs_cameraPointer = 0x00;
-        private static Matrix projectionMatrix;
-        private static Matrix viewMatrix;
-        private static Matrix worldMatrix;
-        private static float degrees = 0;
-        private static float Yshift = 0;
-        private static float camDistance = 10.0f;
-        private static Vector3 camPosition;
-        private static Vector3 camTarget;
+        private static uint bs_cameraPointer;
+        private static Matrix projectionMatrix, viewMatrix, worldMatrix;
+        private static float degrees, Yshift;
+        private static readonly float camDistance = 10.0f;
+        private static Vector3 camPosition, camTarget;
         private static TIM2 textureInterface;
         private static Texture2D[] textures;
 
 
 
 
-        
+
 
 
         public static BasicEffect effect;
-
+        public static AlphaTestEffect ate;
         private static BattleCamera battleCamera;
 
         private static string battlename = "a0stg000.x";
@@ -182,16 +178,15 @@ namespace FF8
 
         private static byte GetClutId(ushort clut)
         {
-            ushort bb = ushortLittleEndian(clut);
-           byte b = (byte)(((bb >> 14) & 0x03) | (bb<<2) & 0x0C);
-            return b;
+            ushort bb = MakiExtended.UshortLittleEndian(clut);
+            return (byte)(((bb >> 14) & 0x03) | (bb << 2) & 0x0C);
         }
 
         public static void ResetState() { battleModule = BATTLEMODULE_INIT; }
 
         public static void Update()
         {
-            switch(battleModule)
+            switch (battleModule)
             {
                 case BATTLEMODULE_INIT:
                     InitBattle();
@@ -201,14 +196,12 @@ namespace FF8
                     break;
                 case BATTLEMODULE_DRAWGEOMETRY:
                     break;
-                default:
-                    break;
             }
         }
 
         public static void Draw()
         {
-            switch(battleModule)
+            switch (battleModule)
             {
                 case BATTLEMODULE_DRAWGEOMETRY:
                     DrawGeometry();
@@ -219,18 +212,13 @@ namespace FF8
 
         private static void DrawGeometry()
         {
-            Memory.spriteBatch.GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.Black);
+            Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
 
-            RasterizerState rasterizerState = new RasterizerState();
-            rasterizerState.CullMode = CullMode.None;
-            Memory.graphics.GraphicsDevice.RasterizerState = rasterizerState;
+            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
             Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
             Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-            AlphaTestEffect ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice);
-            ate.Projection = projectionMatrix;
-            ate.View = viewMatrix;
-            ate.World = worldMatrix;
+            ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
 
             #region FPScamera
 
@@ -248,31 +236,31 @@ namespace FF8
 
             if (Keyboard.GetState().IsKeyDown(Keys.W) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y > 0.0f)
             {
-                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees)) * camDistance / 10;
-                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees)) * camDistance / 10;
+                camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees)) * camDistance / 10;
+                camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees)) * camDistance / 10;
                 camPosition.Y -= Yshift / 50;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.S) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y < 0.0f)
             {
-                camPosition.X -= (float)System.Math.Cos(MathHelper.ToRadians(degrees)) * camDistance / 10;
-                camPosition.Z -= (float)System.Math.Sin(MathHelper.ToRadians(degrees)) * camDistance / 10;
+                camPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees)) * camDistance / 10;
+                camPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees)) * camDistance / 10;
                 camPosition.Y += Yshift / 50;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X < 0.0f)
             {
-                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees - 90)) * camDistance / 10;
-                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees - 90)) * camDistance / 10;
+                camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees - 90)) * camDistance / 10;
+                camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees - 90)) * camDistance / 10;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X > 0.0f)
             {
-                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees + 90)) * camDistance / 10;
-                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees + 90)) * camDistance / 10;
+                camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees + 90)) * camDistance / 10;
+                camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees + 90)) * camDistance / 10;
             }
 
             Mouse.SetPosition(200, 200);
 
-            camTarget.X = camPosition.X + (float)System.Math.Cos(MathHelper.ToRadians(degrees)) * camDistance;
-            camTarget.Z = camPosition.Z + (float)System.Math.Sin(MathHelper.ToRadians(degrees)) * camDistance;
+            camTarget.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(degrees)) * camDistance;
+            camTarget.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(degrees)) * camDistance;
             camTarget.Y = camPosition.Y - Yshift / 5;
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          Vector3.Up);
@@ -285,7 +273,7 @@ namespace FF8
             foreach (var a in modelGroups)
                 foreach (var b in a.models)
                 {
-                    var vpt = getVertexBuffer(b);
+                    var vpt = GetVertexBuffer(b);
                     if (vpt == null) continue;
                     int localVertexIndex = 0;
                     for (int i = 0; i < vpt.Item1.Length; i++)
@@ -294,7 +282,7 @@ namespace FF8
                         foreach (var pass in ate.CurrentTechnique.Passes)
                         {
                             pass.Apply();
-                            if(vpt.Item1[i].bQuad)
+                            if (vpt.Item1[i].bQuad)
                             {
                                 Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
                                 vertexData: vpt.Item2, vertexOffset: localVertexIndex, primitiveCount: 2);
@@ -312,27 +300,27 @@ namespace FF8
                 }
 
             Memory.SpriteBatchStartAlpha();
-            Memory.font.RenderBasicText(Font.CipherDirty($"Encounter ready at: {Memory.battle_encounter}"), 0, 0,1,1,0,1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Encounter ready at: {Memory.battle_encounter}"), 0, 0, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Camera: {Memory.encounters[Memory.battle_encounter].bCamera}"), 20, 30, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"Enemies: {string.Join(",",Memory.encounters[Memory.battle_encounter].BEnemies.Where(x=> x!=0x00).Select(x=> "0x" + (x-0x10).ToString("X02")).ToArray())}"), 20, 30 * 2, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Enemies: {string.Join(",", Memory.encounters[Memory.battle_encounter].BEnemies.Where(x => x != 0x00).Select(x => "0x" + (x - 0x10).ToString("X02")).ToArray())}"), 20, 30 * 2, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Levels: {string.Join(",", Memory.encounters[Memory.battle_encounter].bLevels)}"), 20, 30 * 3, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"Loaded enemies: {Convert.ToString(Memory.encounters[Memory.battle_encounter].bLoadedEnemy,2)}"), 20, 30 * 4, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Loaded enemies: {Convert.ToString(Memory.encounters[Memory.battle_encounter].bLoadedEnemy, 2)}"), 20, 30 * 4, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
         }
 
-        private static Tuple<BS_RENDERER_ADD[], VertexPositionTexture[]> getVertexBuffer(Model model)
+        private static Tuple<BS_RENDERER_ADD[], VertexPositionTexture[]> GetVertexBuffer(Model model)
         {
             //draw model triangles
             //every triangle have three vertices, so...
             List<VertexPositionTexture> vptDynamic = new List<VertexPositionTexture>();
             List<BS_RENDERER_ADD> bs_renderer_supplier = new List<BS_RENDERER_ADD>();
             if (model.vertices == null) return null;
-            for (int i = 0; i<model.triangles.Length; i++)
+            for (int i = 0; i < model.triangles.Length; i++)
             {
                 Vertex A = model.vertices[model.triangles[i].A];
                 Vertex B = model.vertices[model.triangles[i].B];
                 Vertex C = model.vertices[model.triangles[i].C];
-                vptDynamic.Add(new VertexPositionTexture(new Vector3((float)A.X/100, (float)A.Y/100, (float)A.Z / 100),
+                vptDynamic.Add(new VertexPositionTexture(new Vector3((float)A.X / 100, (float)A.Y / 100, (float)A.Z / 100),
                     CalculateUV(model.triangles[i].U2, model.triangles[i].V2, model.triangles[i].TexturePage, textureInterface.GetWidth)));
                 vptDynamic.Add(new VertexPositionTexture(new Vector3((float)B.X / 100, (float)B.Y / 100, (float)B.Z / 100),
                     CalculateUV(model.triangles[i].U3, model.triangles[i].V3, model.triangles[i].TexturePage, textureInterface.GetWidth)));
@@ -345,7 +333,7 @@ namespace FF8
                     texPage = model.triangles[i].TexturePage
                 });
             }
-            for(int i = 0; i<model.quads.Length; i++)
+            for (int i = 0; i < model.quads.Length; i++)
             {
                 //I have to re-trangulate it. Fortunately I had been working on this lately
                 Vertex A = model.vertices[model.quads[i].A]; //1
@@ -378,14 +366,14 @@ namespace FF8
                 });
             }
             return new Tuple<BS_RENDERER_ADD[], VertexPositionTexture[]>
-                (bs_renderer_supplier.ToArray(),vptDynamic.ToArray());
+                (bs_renderer_supplier.ToArray(), vptDynamic.ToArray());
         }
 
         private static Vector2 CalculateUV(byte U, byte V, byte texPage, int texWidth)
         {
             //old code from my wiki page
             //Float U = (float)U_Byte / (float)(TIM_Texture_Width * 2) + ((float)Texture_Page / (TIM_Texture_Width * 2));
-            float fU = (float)U / texWidth + (((float)texPage*128) / texWidth);
+            float fU = (float)U / texWidth + (((float)texPage * 128) / texWidth);
             float fV = V / 256.0f;
             return new Vector2(fU, fV);
 
@@ -393,11 +381,11 @@ namespace FF8
 
         private static void InitBattle()
         {
-            init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
+            Init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
             int stage = enc.bScenario;
             battlename = $"a0stg{stage.ToString("000")}.x";
             Console.WriteLine($"BS_DEBUG: Loading stage {battlename}");
-            Console.WriteLine($"BS_DEBUG/ENC: Encounter: {Memory.battle_encounter}\t cEnemies: {enc.bNumOfEnemies}\t Enemies: {string.Join(",", enc.BEnemies.Where(x => x != 0x00).Select(x => $"0x{(x-0x10).ToString("X02")}").ToArray())}");
+            Console.WriteLine($"BS_DEBUG/ENC: Encounter: {Memory.battle_encounter}\t cEnemies: {enc.bNumOfEnemies}\t Enemies: {string.Join(",", enc.BEnemies.Where(x => x != 0x00).Select(x => $"0x{(x - 0x10).ToString("X02")}").ToArray())}");
 
 
             //init renderer
@@ -413,6 +401,16 @@ namespace FF8
             worldMatrix = Matrix.CreateWorld(camTarget, Vector3.
                           Forward, Vector3.Up);
             battleModule++;
+            RasterizerState rasterizerState = new RasterizerState
+            {
+                CullMode = CullMode.None
+            };
+            ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
+            {
+                Projection = projectionMatrix,
+                View = viewMatrix,
+                World = worldMatrix
+            };
             return;
         }
 
@@ -422,11 +420,11 @@ namespace FF8
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
             string[] test = aw.GetListOfFiles();
-            battlename = test.Where(x => x.ToLower().Contains(battlename)).First();
+            battlename = test.First(x => x.ToLower().Contains(battlename));
             stageBuffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, battlename);
             pbs = new PseudoBufferedStream(stageBuffer);
             bs_cameraPointer = GetCameraPointer();
-            pbs.Seek(bs_cameraPointer, PseudoBufferedStream.SEEK_BEGIN);
+            pbs.Seek(bs_cameraPointer, 0);
             ReadCamera();
             uint sectionCounter = pbs.ReadUInt();
             if (sectionCounter != 6)
@@ -460,7 +458,7 @@ namespace FF8
         {
             textureInterface = new TIM2(stageBuffer, texturePointer);
             textures = new Texture2D[textureInterface.GetClutCount];
-            for(int i = 0; i<textureInterface.GetClutCount; i++)
+            for (int i = 0; i < textureInterface.GetClutCount; i++)
             {
                 byte[] b = textureInterface.CreateImageBuffer(textureInterface.GetClutColors(i));
                 Texture2D tex = new Texture2D(Memory.spriteBatch.GraphicsDevice,
@@ -472,7 +470,7 @@ namespace FF8
 
         private static ModelGroup ReadModelGroup(uint pointer)
         {
-            pbs.Seek(pointer, PseudoBufferedStream.SEEK_BEGIN);
+            pbs.Seek(pointer, System.IO.SeekOrigin.Begin);
             uint modelsCount = pbs.ReadUInt();
             Model[] models = new Model[modelsCount];
             uint[] modelPointers = new uint[modelsCount];
@@ -486,8 +484,8 @@ namespace FF8
         private static Model ReadModel(uint pointer)
         {
             bool bSpecial = false;
-            pbs.Seek(pointer, PseudoBufferedStream.SEEK_BEGIN);
-            uint header = uintLittleEndian(pbs.ReadUInt());
+            pbs.Seek(pointer, System.IO.SeekOrigin.Begin);
+            uint header = MakiExtended.UintLittleEndian(pbs.ReadUInt());
             if (header != 0x01000100)
             {
                 Console.WriteLine("WARNING- THIS STAGE IS DIFFERENT! It has weird object section. INTERESTING, TO REVERSE!");
@@ -499,10 +497,10 @@ namespace FF8
                 vertices[i] = ReadVertex();
             if (bSpecial && Memory.encounters[Memory.battle_encounter].bScenario == 20)
                 return new Model();
-            pbs.Seek((pbs.Tell() % 4) + 4, PseudoBufferedStream.SEEK_CURRENT);
+            pbs.Seek((pbs.Tell() % 4) + 4, System.IO.SeekOrigin.Current);
             ushort trianglesCount = pbs.ReadUShort();
             ushort quadsCount = pbs.ReadUShort();
-            pbs.Seek(4, PseudoBufferedStream.SEEK_CURRENT);
+            pbs.Seek(4, System.IO.SeekOrigin.Current);
             Triangle[] triangles = new Triangle[trianglesCount];
             Quad[] quads = new Quad[quadsCount];
             if (trianglesCount > 0)
@@ -567,16 +565,16 @@ namespace FF8
 
         private static Vertex ReadVertex()
         => new Vertex()
-            {
-                X = pbs.ReadShort(),
-                Y = pbs.ReadShort(),
-                Z = pbs.ReadShort()
-            };
+        {
+            X = pbs.ReadShort(),
+            Y = pbs.ReadShort(),
+            Z = pbs.ReadShort()
+        };
 
 
         private static ObjectsGroup ReadObjectsGroup(uint pointer)
         {
-            pbs.Seek(pointer, PseudoBufferedStream.SEEK_BEGIN);
+            pbs.Seek(pointer, System.IO.SeekOrigin.Begin);
             return new ObjectsGroup()
             {
                 numberOfSections = pbs.ReadUInt(),
@@ -589,7 +587,7 @@ namespace FF8
 
         private static MainGeometrySection ReadObjectGroupPointers()
         {
-            int basePointer = pbs.Tell() - 4;
+            int basePointer = (int)pbs.Tell() - 4;
             uint objectGroup_1 = (uint)basePointer + pbs.ReadUInt();
             uint objectGroup_2 = (uint)basePointer + pbs.ReadUInt();
             uint objectGroup_3 = (uint)basePointer + pbs.ReadUInt();
@@ -598,13 +596,19 @@ namespace FF8
             uint Texture = (uint)basePointer + pbs.ReadUInt();
             uint EOF = (uint)basePointer + pbs.ReadUInt();
             //if (pbs.Length != (pbs.Tell() - 6 * 4) + EOF) 
-            if(EOF != pbs.Length) //I though EOF is relative EOF, not global, lol
-            throw new Exception("BS_PARSER_ERROR_LENGTH: Geometry EOF pointer is other than buffered filesize");
+            if (EOF != pbs.Length) //I though EOF is relative EOF, not global, lol
+                throw new Exception("BS_PARSER_ERROR_LENGTH: Geometry EOF pointer is other than buffered filesize");
 
-            return new MainGeometrySection() {Group1Pointer = objectGroup_1,
-            Group2Pointer = objectGroup_2, Group3Pointer = objectGroup_3,
-            Group4Pointer = objectGroup_4, TextureUNUSEDPointer = TextureUnused,
-            TexturePointer = Texture, EOF = EOF}; //EOF = EOF; beauty of language
+            return new MainGeometrySection()
+            {
+                Group1Pointer = objectGroup_1,
+                Group2Pointer = objectGroup_2,
+                Group3Pointer = objectGroup_3,
+                Group4Pointer = objectGroup_4,
+                TextureUNUSEDPointer = TextureUnused,
+                TexturePointer = Texture,
+                EOF = EOF
+            }; //EOF = EOF; beauty of language
         }
 
         private static uint GetCameraPointer()
@@ -621,7 +625,7 @@ namespace FF8
 117,118,119,120,128,129,130,131,132,133,134,139,140,143,146,152,153,154,
 155,156,159,161,162};
 
-            int _5d4 = _x5D4.Count(x => x== Memory.encounters[Memory.battle_encounter].bScenario);
+            int _5d4 = _x5D4.Count(x => x == Memory.encounters[Memory.battle_encounter].bScenario);
             int _5d8 = _x5D8.Count(x => x == Memory.encounters[Memory.battle_encounter].bScenario);
             if (_5d4 > 0) return 0x5D4;
             if (_5d8 > 0) return 0x5D8;
@@ -688,22 +692,22 @@ namespace FF8
 
 
             pbs.Seek(bs_cameraPointer, 0);
-            pbs.Seek(pCameraAnimationCollection, 1);
-            BattleCameraCollection bcc = new BattleCameraCollection{cAnimCollectionCount = pbs.ReadUShort()};
+            pbs.Seek(pCameraAnimationCollection, System.IO.SeekOrigin.Current);
+            BattleCameraCollection bcc = new BattleCameraCollection { cAnimCollectionCount = pbs.ReadUShort() };
             BattleCameraSet[] bcset = new BattleCameraSet[bcc.cAnimCollectionCount];
             bcc.battleCameraSet = bcset;
             for (int i = 0; i < bcc.cAnimCollectionCount; i++)
-                bcset[i] = new BattleCameraSet() { globalSetPointer = (uint)(pbs.Tell() + pbs.ReadUShort() - i*2 - 2)};
+                bcset[i] = new BattleCameraSet() { globalSetPointer = (uint)(pbs.Tell() + pbs.ReadUShort() - i * 2 - 2) };
             bcc.pCameraEOF = pbs.ReadUShort();
 
-            for(int i = 0; i< bcc.cAnimCollectionCount; i++)
+            for (int i = 0; i < bcc.cAnimCollectionCount; i++)
             {
                 pbs.Seek(bcc.battleCameraSet[i].globalSetPointer, 0);
                 bcc.battleCameraSet[i].animPointers = new uint[8];
                 for (int n = 0; n < bcc.battleCameraSet[i].animPointers.Length; n++)
-                    bcc.battleCameraSet[i].animPointers[n] = (uint)(pbs.Tell() + pbs.ReadUShort()*2 - n*2);
+                    bcc.battleCameraSet[i].animPointers[n] = (uint)(pbs.Tell() + pbs.ReadUShort() * 2 - n * 2);
                 bcc.battleCameraSet[i].cameraAnimation = new CameraAnimation[bcc.battleCameraSet[i].animPointers.Length];
-                for (int n=  0; n< bcc.battleCameraSet[i].animPointers.Length; n++)
+                for (int n = 0; n < bcc.battleCameraSet[i].animPointers.Length; n++)
                 {
                     pbs.Seek(bcc.battleCameraSet[i].animPointers[n], 0);
                     bcc.battleCameraSet[i].cameraAnimation[n] = new CameraAnimation() { header = pbs.ReadUShort() };
@@ -724,9 +728,9 @@ namespace FF8
         private static void ReadAnimation(int animId)
         {
             Memory.BS_CameraStruct.camAnimId = (byte)animId;
-            if ((animId>>4) >= battleCamera.battleCameraCollection.cAnimCollectionCount)
+            if ((animId >> 4) >= battleCamera.battleCameraCollection.cAnimCollectionCount)
                 return;
-            var pointer = battleCamera.battleCameraCollection.battleCameraSet[animId >> 4].animPointers[animId&0xF];
+            var pointer = battleCamera.battleCameraCollection.battleCameraSet[animId >> 4].animPointers[animId & 0xF];
             pbs.Seek(pointer, 0);
             ushort eax = pbs.ReadUShort();
             Memory.BS_CameraStruct.mainController = eax; //[esi+2], ax 
@@ -735,7 +739,7 @@ namespace FF8
             ushort ebx = eax;
             eax = (ushort)((eax >> 6) & 3);
             eax--;
-            if(eax==0)
+            if (eax == 0)
             {
                 eax = 0x200;
                 Memory.BS_CameraStruct.thirdWordController = Memory.BS_CameraStruct.secondWordController = eax;
@@ -758,7 +762,7 @@ namespace FF8
         structFullfiled:
             eax = ebx;
             eax = (ushort)((eax >> 8) & 3);
-            switch(eax)
+            switch (eax)
             {
                 case 0:
                     break;
@@ -777,19 +781,5 @@ namespace FF8
 
 
         #endregion
-
-        private static ushort ushortLittleEndian(ushort ushort_)
-            => (ushort)((ushort_ << 8) | (ushort_ >> 8));
-
-        private static short shortLittleEndian(short ushort_)
-            => (short)((ushort_ << 8) | (ushort_ >> 8));
-
-        private static uint uintLittleEndian(uint uint_)
-            => (uint_ << 24) | ((uint_ << 8) & 0x00FF0000) |
-            ((uint_ >> 8) & 0x0000FF00) | (uint_ >> 24);
-
-        private static int uintLittleEndian(int uint_)
-            => (uint_ << 24) | ((uint_ << 8) & 0x00FF0000) |
-            ((uint_ >> 8) & 0x0000FF00) | (uint_ >> 24);
     }
 }

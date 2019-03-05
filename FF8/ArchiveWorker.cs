@@ -31,9 +31,7 @@ namespace FF8
         public static byte[] GetBinaryFile(string archiveName, string fileName)
         {
             byte[] isComp = GetBin(MakiExtended.GetUnixFullPath(archiveName), fileName);
-            if (isComp == null)
-                return null;
-            return _compressed ? LZSS.DecompressAll(isComp, (uint)isComp.Length, (int)_unpackedFileSize) : isComp;
+            return isComp == null ? null : _compressed ? LZSS.DecompressAll(isComp, (uint)isComp.Length, (int)_unpackedFileSize) : isComp;
         }
         /// <summary>
         /// Give me three archives as bytes uncompressed please!
@@ -59,7 +57,6 @@ namespace FF8
                 break;
             }
             if (loc == -1)
-                if (loc == -1)
                 {
                     Debug.WriteLine("ArchiveWorker: NO SUCH FILE!");
                     return null;

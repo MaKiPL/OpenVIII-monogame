@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace FF8
 {
-    internal class module_overture_debug
+    internal static class Module_overture_debug
     {
         private static OvertureInternalModule internalModule = OvertureInternalModule._0InitSound;
         private static ArchiveWorker aw;
@@ -24,22 +24,17 @@ namespace FF8
             _3SequenceFinishedPlayMainMenu
         }
 
-        private static double internalTimer = 0.0f;
+        private static double internalTimer;
         private static bool bNames = true; //by default we are starting with names
-        private static int splashIndex = 0;
-        private static int splashName = 1;
-        private static int splashLoop = 1;
+        private static int splashIndex, splashName = 1, splashLoop = 1;
 
         private static bool bFadingIn = true; //by default first should fade in, wait, then fire fading out and wait for finish, then loop
-        private static bool bWaitingSplash = false;
-        private static float fSplashWait = 0.0f;
-        private static bool bFadingOut = false;
-
-        private static float Fade = 0;
+        private static bool bWaitingSplash, bFadingOut;
+        private static float fSplashWait, Fade;
 
         internal static void Update()
         {
-            switch(internalModule)
+            switch (internalModule)
             {
                 case OvertureInternalModule._0InitSound:
                     InitSound();
@@ -73,7 +68,7 @@ namespace FF8
                 internalModule++;
                 Console.WriteLine("MODULE_OVERTURE: DEBUG MODULE 2");
             }
-            internalTimer += (double)Memory.gameTime.ElapsedGameTime.Milliseconds/1000.0d;
+            internalTimer += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0d;
 
         }
 
@@ -124,11 +119,11 @@ namespace FF8
             Memory.spriteBatch.Draw(splashTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
                 new Microsoft.Xna.Framework.Rectangle(0, 0, splashTex.Width, splashTex.Height)
                 , Color.White * Fade);
-            if(bFadingIn)
+            if (bFadingIn)
                 Fade += Memory.gameTime.ElapsedGameTime.Milliseconds / 5000.0f;
             if (bFadingOut)
                 Fade -= Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f;
-            if(Fade < 0.0f)
+            if (Fade < 0.0f)
             {
                 bFadingIn = true;
                 ReadSplash(true);
@@ -136,7 +131,7 @@ namespace FF8
             }
             if (bFadingIn && Fade > 1.0f && !bWaitingSplash)
                 internalTimer += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
-             if (internalTimer > 5.0f)
+            if (internalTimer > 5.0f)
             {
                 bWaitingSplash = true;
                 bFadingOut = true;
@@ -154,20 +149,20 @@ namespace FF8
         {
             if (splashTex == null)
                 return;
-            Memory.SpriteBatchStartAlpha();      
+            Memory.SpriteBatchStartAlpha();
             Memory.spriteBatch.Draw(splashTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
                 new Microsoft.Xna.Framework.Rectangle(0, 0, splashTex.Width, splashTex.Height)
                 , Color.White * Fade);
             Memory.SpriteBatchEnd();
         }
 
-        internal static void SplashUpdate(ref int splashIndex)
+        internal static void SplashUpdate(ref int _splashIndex)
         {
-            if(aw == null)
+            if (aw == null)
                 aw = new ArchiveWorker(Memory.Archives.A_MAIN);
             if (splashTex == null)
                 ReadSplash();
-            if(bFadingIn)
+            if (bFadingIn)
             {
                 Fade += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 2f;
                 if (Fade > 1.0f)
@@ -177,9 +172,9 @@ namespace FF8
                     bWaitingSplash = true;
                 }
             }
-            if(bFadingOut)
+            if (bFadingOut)
             {
-                if (splashLoop+1 >= 0x0F && splashName >= 0x0F)
+                if (splashLoop + 1 >= 0x0F && splashName >= 0x0F)
                 {
                     bFadingIn = false;
                     bFadingOut = true;
@@ -190,25 +185,25 @@ namespace FF8
                     return;
                 }
                 Fade -= Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 2f;
-                if(Fade< 0.0f)
+                if (Fade < 0.0f)
                 {
                     bFadingIn = true;
                     bFadingOut = false;
                     Fade = 0.0f;
-                    splashIndex++;
+                    _splashIndex++;
                     if (bNames)
                         splashName++;
                     else splashLoop++;
-                    if(splashIndex > 1)
+                    if (_splashIndex > 1)
                     {
-                        bNames = bNames ? false : true; //can I simply XOR the bool in C#?
-                        splashIndex = 0;
+                        bNames = !bNames;
+                        _splashIndex = 0;
                     }
 
                     ReadSplash();
                 }
             }
-            if(bWaitingSplash)
+            if (bWaitingSplash)
             {
                 if (bNames)
                 {
@@ -230,7 +225,7 @@ namespace FF8
                 }
                 fSplashWait += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
             }
-             //loop 01-14 + name01-14;
+            //loop 01-14 + name01-14;
         }
 
 
@@ -243,15 +238,13 @@ namespace FF8
                 string[] lof = aw.GetListOfFiles();
                 string fileName;
                 if (bNames)
-                    fileName = lof.Where(x => x.ToLower().Contains($"{names}{splashName.ToString("D2")}")).First();
+                    fileName = lof.First(x => x.ToLower().Contains($"{names}{splashName.ToString("D2")}"));
                 else
-                    fileName = lof.Where(x => x.ToLower().Contains($"{loops}{splashLoop.ToString("D2")}")).First();
+                    fileName = lof.First(x => x.ToLower().Contains($"{loops}{splashLoop.ToString("D2")}"));
 
                 byte[] buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_MAIN, fileName);
                 uint uncompSize = BitConverter.ToUInt32(buffer, 0);
                 buffer = LZSS.DecompressAll(buffer, (uint)buffer.Length);
-                int width = 640;
-                int height = 400;
 
                 splashTex = new Texture2D(Memory.graphics.GraphicsDevice, 640, 400, false, SurfaceFormat.Color);
                 byte[] rgbBuffer = new byte[splashTex.Width * splashTex.Height * 4];
@@ -279,13 +272,11 @@ namespace FF8
             else
             {
                 string[] lof = aw.GetListOfFiles();
-                string fileName= lof.Where(x => x.ToLower().Contains($"ff8.lzs")).First();
+                string fileName = lof.First(x => x.ToLower().Contains($"ff8.lzs"));
 
                 byte[] buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_MAIN, fileName);
                 uint uncompSize = BitConverter.ToUInt32(buffer, 0);
                 buffer = LZSS.DecompressAll(buffer, (uint)buffer.Length);
-                int width = 640;
-                int height = 400;
 
                 splashTex = new Texture2D(Memory.graphics.GraphicsDevice, 640, 400, false, SurfaceFormat.Color);
                 byte[] rgbBuffer = new byte[splashTex.Width * splashTex.Height * 4];

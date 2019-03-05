@@ -11,16 +11,12 @@ using System.Threading.Tasks;
 
 namespace FF8
 {
-    class module_world_debug
+    class Module_world_debug
     {
-        private static Matrix projectionMatrix;
-        private static Matrix viewMatrix;
-        private static Matrix worldMatrix;
-        private static float degrees = 0;
-        private static float Yshift = 0;
+        private static Matrix projectionMatrix, viewMatrix, worldMatrix;
+        private static float degrees, Yshift;
         private static float camDistance = 10.0f;
-        private static Vector3 camPosition;
-        private static Vector3 camTarget;
+        private static Vector3 camPosition, camTarget;
         public static BasicEffect effect;
         public static AlphaTestEffect ate;
         private enum _worldState
@@ -48,11 +44,13 @@ namespace FF8
 
         private static Vector2 segmentPosition;
 
-        private static debug_MCH[] mchEntities;
+        private static Debug_MCH[] mchEntities;
 
         private static byte[] wmx;
 
+#if DEBUG
         static float DEBUGshit = 0.0f;
+#endif
 
         private static int GetSegment(int segID) => segID * 0x9000;
 
@@ -61,7 +59,7 @@ namespace FF8
         private struct Segment
         {
             public int segmentId;
-            public segHeader headerData;
+            public SegHeader headerData;
             public Block[] block;
         }
 
@@ -78,7 +76,7 @@ namespace FF8
         }
 
         [StructLayout(LayoutKind.Sequential, Size = 68, Pack = 1)]
-        private struct segHeader
+        private struct SegHeader
         {
             public uint groupId;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
@@ -148,7 +146,16 @@ namespace FF8
             //temporarily disabling this, because I'm getting more and more tired of this music playing over and over when debugging
             //Memory.musicIndex = 30;
             //init_debugger_Audio.PlayMusic();
-
+            ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
+            {
+                Projection = projectionMatrix,
+                View = viewMatrix,
+                World = worldMatrix,
+                FogEnabled = true,
+                FogColor = Color.CornflowerBlue.ToVector3(),
+                FogStart = 9.75f,
+                FogEnd = 1000.00f
+            };
 
             ReadWMX();
 
@@ -181,12 +188,12 @@ namespace FF8
                 for (int i = 0; i < segments.Length; i++)
                 {
                     ms.Seek(GetSegment(i), SeekOrigin.Begin);
-                    segments[i] = new Segment() { segmentId = i, headerData = MakiExtended.ByteArrayToStructure<segHeader>(br.ReadBytes(68)), block = new Block[16] };
+                    segments[i] = new Segment { segmentId = i, headerData = MakiExtended.ByteArrayToStructure<SegHeader>(br.ReadBytes(68)), block = new Block[16] };
                     ms.Seek(GetSegment(i), SeekOrigin.Begin);
                     for (int n = 0; n < segments[i].block.Length; n++)
                     {
                         ms.Seek(segments[i].headerData.blockOffsets[n] + GetSegment(i), SeekOrigin.Begin);
-                        segments[i].block[n] = new Block() { polyCount = br.ReadByte(), vertCount = br.ReadByte(), normalCount = br.ReadByte(), unkPadd = br.ReadByte() };
+                        segments[i].block[n] = new Block { polyCount = br.ReadByte(), vertCount = br.ReadByte(), normalCount = br.ReadByte(), unkPadd = br.ReadByte() };
                         segments[i].block[n].polygons = new Polygon[segments[i].block[n].polyCount];
                         segments[i].block[n].vertices = new Vertex[segments[i].block[n].vertCount];
                         segments[i].block[n].normals = new Normal[segments[i].block[n].normalCount];
@@ -204,7 +211,7 @@ namespace FF8
         //TODO - so parsing is done
         private static void ReadCharaOne(byte[] charaOneB)
         {
-            List<debug_MCH> mchs = new List<debug_MCH>();
+            List<Debug_MCH> mchs = new List<Debug_MCH>();
             using (MemoryStream ms = new MemoryStream(charaOneB))
             using (BinaryReader br = new BinaryReader(ms))
             {
@@ -214,7 +221,7 @@ namespace FF8
                 while (ms.CanRead)
                     if (ms.Position > ms.Length)
                         break;
-                else if (BitConverter.ToUInt16(charaOneB, (int)ms.Position) == 0)
+                    else if (BitConverter.ToUInt16(charaOneB, (int)ms.Position) == 0)
                         ms.Seek(2, SeekOrigin.Current);
                     else if (br.ReadUInt64() == 0x0000000800000010)
                     {
@@ -223,7 +230,7 @@ namespace FF8
                         ms.Seek(tim.GetHeight * tim.GetWidth / 2 + 64, SeekOrigin.Current); //i.e. 64*20=1280/2=640 + 64= 704 + eof
                         if (charaOneTextures == null)
                             charaOneTextures = new List<Texture2D[]>();
-                        Texture2D[] _2d = new Texture2D[1] { new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight, false, SurfaceFormat.Color) };
+                        Texture2D[] _2d = { new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight, false, SurfaceFormat.Color) };
                         _2d[0].SetData(tim.CreateImageBuffer(tim.GetClutColors(0), true));
 
                         charaOneTextures.Add(_2d);
@@ -231,7 +238,7 @@ namespace FF8
                     else //is geometry structure
                     {
                         ms.Seek(-8, SeekOrigin.Current);
-                        mchs.Add(new debug_MCH(ms, br));
+                        mchs.Add(new Debug_MCH(ms, br));
                     }
             }
             mchEntities = mchs.ToArray();
@@ -249,11 +256,11 @@ namespace FF8
                     sections[i] = br.ReadInt32();
 
                 Wm_s38(ms, br, sections, v);
-                wm_s39(ms, br, sections, v);
+                Wm_s39(ms, br, sections, v);
             }
         }
 
-        private static void wm_s39(MemoryStream ms, BinaryReader br, int[] sec, byte[] v)
+        private static void Wm_s39(MemoryStream ms, BinaryReader br, int[] sec, byte[] v)
         {
             ms.Seek(sec[39 - 1], SeekOrigin.Begin);
             List<int> wm39sections = new List<int>();
@@ -274,20 +281,20 @@ namespace FF8
             }
         }
 
-        private static void Wm_s38(MemoryStream ms,BinaryReader br, int[] sec, byte[] v)
+        private static void Wm_s38(MemoryStream ms, BinaryReader br, int[] sec, byte[] v)
         {
-            ms.Seek(sec[38-1], SeekOrigin.Begin);
+            ms.Seek(sec[38 - 1], SeekOrigin.Begin);
             List<int> wm38sections = new List<int>();
             int eof = -1;
-            while((eof = br.ReadInt32()) != 0)
+            while ((eof = br.ReadInt32()) != 0)
                 wm38sections.Add(eof);
             wm38textures = new List<Texture2D[]>();
 
-            for(int i = 0; i<wm38sections.Count; i++)
+            for (int i = 0; i < wm38sections.Count; i++)
             {
                 TIM2 tim = new TIM2(v, (uint)(sec[38 - 1] + wm38sections[i]));
                 wm38textures.Add(new Texture2D[tim.GetClutCount]);
-                for(int k= 0; k<wm38textures[i].Length; k++)
+                for (int k = 0; k < wm38textures[i].Length; k++)
                 {
                     wm38textures[i][k] = new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight, false, SurfaceFormat.Color);
                     wm38textures[i][k].SetData(tim.CreateImageBuffer(tim.GetClutColors(k), true));
@@ -303,12 +310,12 @@ namespace FF8
             BinaryReader br = new BinaryReader(ms);
             textures = new List<Texture2D[]>(); //20
 
-            for(int i = 0; i<20; i++)
+            for (int i = 0; i < 20; i++)
             {
                 int timOffset = i * 0x12800;
                 TIM2 tim = new TIM2(texl, (uint)timOffset);
                 textures.Add(new Texture2D[tim.GetClutCount]);
-                for(int k=0; k<textures[i].Length; k++)
+                for (int k = 0; k < textures[i].Length; k++)
                 {
                     textures[i][k] = new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight, false, SurfaceFormat.Color);
                     textures[i][k].SetData(tim.CreateImageBuffer(tim.GetClutColors(k), true));
@@ -323,7 +330,7 @@ namespace FF8
 
         public static void Draw()
         {
-            Memory.spriteBatch.GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.CornflowerBlue);
+            Memory.spriteBatch.GraphicsDevice.Clear(Color.CornflowerBlue);
 
             Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
             Memory.spriteBatch.Draw(wm38textures[10][0], new Rectangle(0, 0, (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f)), Color.White * .1f);
@@ -335,16 +342,9 @@ namespace FF8
             Memory.graphics.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
             Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-            ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
-            {
-                Projection = projectionMatrix,
-                View = viewMatrix,
-                World = worldMatrix,
-                FogEnabled = true,
-                FogColor = Color.CornflowerBlue.ToVector3(),
-                FogStart = 9.75f,
-                FogEnd = 1000.00f
-            };
+            ate.Projection = projectionMatrix;
+            ate.View = viewMatrix;
+            ate.World = worldMatrix;
 
             #region FPScamera
 
@@ -362,31 +362,31 @@ namespace FF8
 
             if (Keyboard.GetState().IsKeyDown(Keys.W) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y > 0.0f)
             {
-                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees)) * camDistance * 5 / 5;
-                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees)) * camDistance*5 / 5;
+                camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees)) * camDistance * 5 / 5;
+                camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees)) * camDistance * 5 / 5;
                 camPosition.Y -= Yshift / 10;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.S) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y < 0.0f)
             {
-                camPosition.X -= (float)System.Math.Cos(MathHelper.ToRadians(degrees)) * camDistance*5 / 5;
-                camPosition.Z -= (float)System.Math.Sin(MathHelper.ToRadians(degrees)) * camDistance * 5 / 5;
+                camPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees)) * camDistance * 5 / 5;
+                camPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees)) * camDistance * 5 / 5;
                 camPosition.Y += Yshift / 10;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X < 0.0f)
             {
-                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees - 90)) * camDistance * 5 / 5;
-                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees - 90)) * camDistance * 5 / 5;
+                camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees - 90)) * camDistance * 5 / 5;
+                camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees - 90)) * camDistance * 5 / 5;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X > 0.0f)
             {
-                camPosition.X += (float)System.Math.Cos(MathHelper.ToRadians(degrees + 90)) * camDistance * 5 / 5;
-                camPosition.Z += (float)System.Math.Sin(MathHelper.ToRadians(degrees + 90)) * camDistance * 5 / 5;
+                camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees + 90)) * camDistance * 5 / 5;
+                camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees + 90)) * camDistance * 5 / 5;
             }
 
             Mouse.SetPosition(200, 200);
 
-            camTarget.X = camPosition.X + (float)System.Math.Cos(MathHelper.ToRadians(degrees)) * camDistance;
-            camTarget.Z = camPosition.Z + (float)System.Math.Sin(MathHelper.ToRadians(degrees)) * camDistance;
+            camTarget.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(degrees)) * camDistance;
+            camTarget.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(degrees)) * camDistance;
             camTarget.Y = camPosition.Y - Yshift / 5;
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          Vector3.Up);
@@ -397,24 +397,24 @@ namespace FF8
             for (int i = 0; i < 768; i++)
                 DrawSegment(i);
 
-            if(true)
+            if (true)
             {
-                var collectionDebug = mchEntities[0].GetVertexPositions(-500,100,-500);
+                var collectionDebug = mchEntities[0].GetVertexPositions(-500, 100, -500);
                 ate.Texture = charaOneTextures[1][0];
-                    foreach (var pass in ate.CurrentTechnique.Passes)
-                    {
-                        pass.Apply();
-                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, collectionDebug.Item1, 0, collectionDebug.Item1.Length/3);
-                    }
+                foreach (var pass in ate.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, collectionDebug.Item1, 0, collectionDebug.Item1.Length / 3);
+                }
             }
 
             if (Input.GetInputDelayed(Keys.J))
                 MapState = MapState >= MiniMapState.fullscreen ? MapState = 0 : MapState + 1;
 
-            
 
 
-            switch(MapState)
+
+            switch (MapState)
             {
                 case MiniMapState.noMinimap:
                     break;
@@ -426,7 +426,7 @@ namespace FF8
                 case MiniMapState.fullscreen:
                     break;
             }
-            
+
 
             Memory.SpriteBatchStartAlpha();
             Memory.font.RenderBasicText(Font.CipherDirty($"World map MapState: {MapState}"), 0, 0, 1, 1, 0, 1);
@@ -435,7 +435,7 @@ namespace FF8
             Memory.font.RenderBasicText(Font.CipherDirty($"FPS camera deegress: ={degrees}"), 0, 30 * 3, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
 
-            
+
         }
 
         private static void DrawRectangleMiniMap()
@@ -451,9 +451,9 @@ namespace FF8
 
 
             float bc = Math.Abs(camPosition.X / 16384.0f);
-            topX += (Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f * bc);
+            topX += Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f * bc;
             bc = Math.Abs(camPosition.Z / 12288f);
-            topY += (Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f * bc);
+            topY += Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f * bc;
 
             Memory.SpriteBatchStartAlpha();
             Memory.spriteBatch.Draw(wm38textures[24][0], new Rectangle((int)topX, (int)topY, (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 32.0f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 32.0f)), null, Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
@@ -462,10 +462,10 @@ namespace FF8
 
         private static bool ShouldDrawSegment(float baseX, float baseY, int seg)
         {
-            segmentPosition = new Vector2((int)(camPosition.X / 512) *-1, (int)(camPosition.Z / 512) * -1);
+            segmentPosition = new Vector2((int)(camPosition.X / 512) * -1, (int)(camPosition.Z / 512) * -1);
 
             if (camPosition.X > 0)
-                camPosition.X = 32*512*-1;
+                camPosition.X = 32 * 512 * -1;
             if (camPosition.X < 32 * 512 * -1)
                 camPosition.X = 0;
 
@@ -475,11 +475,11 @@ namespace FF8
                 camPosition.Z = 0;
 
             int ySegment = seg / 32; //2
-            int xSegment = seg- ySegment*32;
+            int xSegment = seg - ySegment * 32;
             Vector2 currentSegment = new Vector2(xSegment, ySegment);
 
-            for (int i = -1-renderDistance; i<renderDistance; i++)
-                for(int k = 0-renderDistance; k<renderDistance; k++)
+            for (int i = -1 - renderDistance; i < renderDistance; i++)
+                for (int k = 0 - renderDistance; k < renderDistance; k++)
                     if (segmentPosition + new Vector2(i, k) == currentSegment)
                         return true;
 
@@ -490,10 +490,10 @@ namespace FF8
         {
             float baseX, baseY;
             //TODO http://forums.qhimm.com/index.php?topic=16230.msg230004#msg230004 
-            baseX = (2048f / 4) * (_i % 32);
-            baseY = -(2048f / 4) * (int)(_i / 32); //explicit int cast
+            baseX = 2048f / 4 * (_i % 32);
+            baseY = -(2048f / 4) * (_i / 32); //explicit int cast
 
-                        if (!ShouldDrawSegment(baseX, baseY, _i))
+            if (!ShouldDrawSegment(baseX, baseY, _i))
                 return;
 
             #region Interchangable zones
@@ -503,15 +503,15 @@ namespace FF8
             if (MakiExtended.In(_i, 405, 412))
                 _i += 371;
             if (MakiExtended.In(_i, 437, 444))
-                _i += 785-438;
+                _i += 785 - 438;
             if (MakiExtended.In(_i, 469, 476))
-                _i += 793-470;
+                _i += 793 - 470;
             if (MakiExtended.In(_i, 501, 508))
-                _i += 801-502;
+                _i += 801 - 502;
             if (MakiExtended.In(_i, 533, 540))
-                _i += 809-534;
+                _i += 809 - 534;
             if (MakiExtended.In(_i, 565, 572))
-                _i += 817-566;
+                _i += 817 - 566;
 
             //trabia
             if (MakiExtended.In(_i, 149, 150))
@@ -544,7 +544,7 @@ namespace FF8
             effect.TextureEnabled = true;
             Segment seg = segments[_i];
             float localX = 0;//_i * 2048;
-            for(int i = 0; i<seg.block.Length; i++)
+            for (int i = 0; i < seg.block.Length; i++)
             {
                 localX = 2048 * (i % 4);
                 float localZ = -2048 * (i / 4);
@@ -553,23 +553,23 @@ namespace FF8
 
 
 
-                VertexPositionTexture[] vpc = new VertexPositionTexture[seg.block[i].polygons.Length*3];
-                for(int k=0; k<seg.block[i].polyCount*3; k+=3)
+                VertexPositionTexture[] vpc = new VertexPositionTexture[seg.block[i].polygons.Length * 3];
+                for (int k = 0; k < seg.block[i].polyCount * 3; k += 3)
                 {
                     vpc[k] = new VertexPositionTexture(
-                        new Vector3(((seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].X + localX) / (WORLD_SCALE_MODEL) + baseX) *-1f,
-                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].Z1 / (WORLD_SCALE_MODEL),
-                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].Y + localZ) / (WORLD_SCALE_MODEL) + baseY),
+                        new Vector3(((seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].X + localX) / WORLD_SCALE_MODEL + baseX) * -1f,
+                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].Z1 / WORLD_SCALE_MODEL,
+                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].Y + localZ) / WORLD_SCALE_MODEL + baseY),
                         new Vector2(seg.block[i].polygons[k / 3].U1 / 256.0f, seg.block[i].polygons[k / 3].V1 / 256.0f));
                     vpc[k + 1] = new VertexPositionTexture(
-                        new Vector3(((seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].X + localX) / (WORLD_SCALE_MODEL) + baseX)*-1f,
-                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].Z1 / (WORLD_SCALE_MODEL),
-                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].Y + localZ) / (WORLD_SCALE_MODEL) + baseY),
+                        new Vector3(((seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].X + localX) / WORLD_SCALE_MODEL + baseX) * -1f,
+                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].Z1 / WORLD_SCALE_MODEL,
+                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].Y + localZ) / WORLD_SCALE_MODEL + baseY),
                         new Vector2(seg.block[i].polygons[k / 3].U2 / 256.0f, seg.block[i].polygons[k / 3].V2 / 256.0f));
                     vpc[k + 2] = new VertexPositionTexture(
-                        new Vector3(((seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].X + localX) / (WORLD_SCALE_MODEL) + baseX)*-1f,
-                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Z1 / (WORLD_SCALE_MODEL),
-                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Y + localZ) / (WORLD_SCALE_MODEL) + baseY),
+                        new Vector3(((seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].X + localX) / WORLD_SCALE_MODEL + baseX) * -1f,
+                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Z1 / WORLD_SCALE_MODEL,
+                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Y + localZ) / WORLD_SCALE_MODEL + baseY),
                         new Vector2(seg.block[i].polygons[k / 3].U3 / 256.0f, seg.block[i].polygons[k / 3].V3 / 256.0f));
 
                     if (MakiExtended.Distance3D(camPosition, vpc[k].Position) > 1200.0f)
@@ -587,7 +587,7 @@ namespace FF8
                     else
                         ate.Texture = textures[seg.block[i].polygons[k / 3].TPage][seg.block[i].polygons[k / 3].Clut]; //there are two texs, worth looking at other parameters; to reverse! 
 
-                    
+
 
                     foreach (var pass in ate.CurrentTechnique.Passes)
                     {

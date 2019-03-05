@@ -15,7 +15,7 @@ namespace FF8
         private Texture2D menuFont;
 
         #region CharTable
-        private static Dictionary<byte, string> chartable = new Dictionary<byte, string>
+        private static readonly Dictionary<byte, string> chartable = new Dictionary<byte, string>
         {
             {0x00, "t"},
             {0x02, "\n"},
@@ -167,9 +167,9 @@ namespace FF8
         internal void LoadFonts()
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
-            string sysfntTdwFilepath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("sysfnt.tdw")).First();
-            string sysfntFilepath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("sysfnt.tex")).First();
-            string sysfnt00Filepath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("sysfnt00.tex")).First();
+            string sysfntTdwFilepath = aw.GetListOfFiles().First(x => x.ToLower().Contains("sysfnt.tdw"));
+            string sysfntFilepath = aw.GetListOfFiles().First(x => x.ToLower().Contains("sysfnt.tex"));
+            string sysfnt00Filepath = aw.GetListOfFiles().First(x => x.ToLower().Contains("sysfnt00.tex"));
             TEX tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, sysfntFilepath));
             sysfnt = tex.GetTexture();
             tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, sysfnt00Filepath));
@@ -202,15 +202,15 @@ namespace FF8
                 float fScaleWidth = (float)Memory.graphics.GraphicsDevice.Viewport.Width / Memory.PreferredViewportWidth;
                 float fScaleHeight = (float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight;
 
-                Rectangle destRect = new Rectangle(realX, 
-                    y, 
-                    (int)(charSize * zoomWidth * fScaleWidth), 
+                Rectangle destRect = new Rectangle(realX,
+                    y,
+                    (int)(charSize * zoomWidth * fScaleWidth),
                     (int)(charSize * zoomHeight * fScaleHeight));
 
-                Rectangle sourceRect = new Rectangle((deltaChar - (verticalPosition * charCountWidth)) * charSize, 
-                    verticalPosition * charSize, 
-                    charSize-1, 
-                    charSize-1);
+                Rectangle sourceRect = new Rectangle((deltaChar - (verticalPosition * charCountWidth)) * charSize,
+                    verticalPosition * charSize,
+                    charSize - 1,
+                    charSize - 1);
 
 
                 Memory.spriteBatch.Draw(isMenu == 1 ? menuFont : whichFont == 0 ? sysfnt : sysfnt00,
@@ -218,8 +218,8 @@ namespace FF8
                     sourceRect,
                 Color.White * Fade);
 
-                realX += (int)(charSize*zoomWidth*fScaleWidth);
-                }
+                realX += (int)(charSize * zoomWidth * fScaleWidth);
+            }
         }
 
         //dirty, do not use for anything else than translating for your own purpouses. I'm just lazy
@@ -227,8 +227,8 @@ namespace FF8
         {
             string str = "";
             foreach (char n in s)
-                foreach(KeyValuePair<byte, string> kvp in chartable)
-                    if(kvp.Value.Length == 1)
+                foreach (KeyValuePair<byte, string> kvp in chartable)
+                    if (kvp.Value.Length == 1)
                         if (kvp.Value[0] == n)
                             str += (char)(kvp.Key);
             return str.Replace("\0", "");

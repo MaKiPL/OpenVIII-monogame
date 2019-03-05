@@ -16,7 +16,7 @@ namespace FF8
             Content.RootDirectory = "Content";
             graphics.PreferredBackBufferWidth = Memory.PreferredViewportWidth;
             graphics.PreferredBackBufferHeight = Memory.PreferredViewportHeight;
-            this.Window.AllowUserResizing = true;
+            Window.AllowUserResizing = true;
         }
         protected override void Initialize()
         {
@@ -26,8 +26,8 @@ namespace FF8
 
             init_debugger_Audio.DEBUG(); //this initializes the DirectAudio, it's true that it gets loaded AFTER logo, but we will do the opposite
             init_debugger_Audio.DEBUG_SoundAudio(); //this initalizes the WAVE format audio.dat
-            init_debugger_fields.DEBUG(); //this initializes the field module, it's worth to have this at the beginning
-            init_debugger_battle.DEBUG(); //this initializes the encounters
+            Init_debugger_fields.DEBUG(); //this initializes the field module, it's worth to have this at the beginning
+            Init_debugger_battle.DEBUG(); //this initializes the encounters
             Memory.font = new Font(); //this initializes the fonts and drawing system- holds fonts in-memory
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
 
@@ -70,7 +70,7 @@ namespace FF8
         {
             ModuleHandler.Draw(gameTime);
             base.Draw(gameTime);
-        }
+         }
 
         private void GracefullyExit()
         {
