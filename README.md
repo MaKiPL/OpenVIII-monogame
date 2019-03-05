@@ -73,9 +73,47 @@ Requirements: MonoGame + Visual Studio
 
 6. That's all. You can proceed with compilation. 
 
-## Getting started (Linux/Mono)
+## Getting started (Linux/Mono) [Tested on Ubuntu]
 
-TODO
+1. Make sure your Linux is up to date
+
+`sudo apt-get update`
+
+`sudo apt-get upgrade`
+
+2. Install latest MonoDevelop 
+
+[MonoDevelop for Linux](https://www.monodevelop.com/download/#fndtn-download-lin)
+
+3. Install Mono if needed
+
+`sudo apt-get install Mono`
+
+4. Download MonoGame for Linux
+
+[MonoGame for Linux development build](http://teamcity.monogame.net/repository/download/MonoGame_PackageMacAndLinux/latest.lastSuccessful/Linux/monogame-sdk.run?guest=1)
+
+5. Set chmod +x and run the MonoGame installer as sudo
+
+`chmod +x monogame-sdk.run`
+
+`sudo ./monogame-sdk.run`
+
+6. Clone the repository
+
+`git clone https://github.com/makipl/openviii`
+
+7. Open FF8.sln with MonoDevelop
+
+8. If you encounter missing `Microsoft.XNA...` then please open NuGet package **Edit/Packages/Add Package**:
+
+`MonoGame.Framework.DesktopGL`
+
+`MonoGame.Framework.DesktopGL.Core`
+
+`MonoGame.Framework.OpenGL`
+
+9. That's all. You can now compile the executable. Make sure you type path at `Memory:cs:67`
 
 ## Development guidelines
 
