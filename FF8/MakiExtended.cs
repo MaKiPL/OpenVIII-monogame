@@ -42,11 +42,7 @@ namespace FF8
         public static string GetUnixFullPath(string pt)
         {
 #if _WINDOWS
-<<<<<<< Updated upstream
-            return System.IO.Path.GetFullPath(pt.Replace('/','\\'));
-=======
             return System.IO.Path.GetFullPath(pt.Replace('/', '\\'));
->>>>>>> Stashed changes
 #else
             return System.IO.Path.GetFullPath(pt.Replace("\\", "/"));
 #endif
