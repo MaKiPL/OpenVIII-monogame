@@ -42,7 +42,11 @@ namespace FF8
         public static string GetUnixFullPath(string pt)
         {
 #if _WINDOWS
+<<<<<<< Updated upstream
             return System.IO.Path.GetFullPath(pt.Replace('/','\\'));
+=======
+            return System.IO.Path.GetFullPath(pt.Replace('/', '\\'));
+>>>>>>> Stashed changes
 #else
             return System.IO.Path.GetFullPath(pt.Replace("\\", "/"));
 #endif
@@ -66,5 +70,11 @@ namespace FF8
         public static int UintLittleEndian(int uint_)
             => (uint_ << 24) | ((uint_ << 8) & 0x00FF0000) |
             ((uint_ >> 8) & 0x0000FF00) | (uint_ >> 24);
+
+        public static int ClampOverload(int a, int min, int max)
+            => a < min ? max - Math.Abs(a) : a > max ? a - max : a;
+
+        public static float ClampOverload(float a, float min, float max)
+            => a < min ? max - Math.Abs(a) : a > max ? a - max : a;
     }
 }

@@ -15,7 +15,8 @@ namespace FF8
     {
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
         private static float degrees, Yshift;
-        private static float camDistance = 10.0f;
+        private static readonly float camDistance = 10.0f;
+        private static readonly float renderCamDistance = 1200.0f;
         private static Vector3 camPosition, camTarget;
         public static BasicEffect effect;
         public static AlphaTestEffect ate;
@@ -41,6 +42,7 @@ namespace FF8
         private static List<Texture2D[]> wm39textures;
         private static List<Texture2D[]> charaOneTextures;
         private static readonly int renderDistance = 4;
+        private static readonly float FOV = 60;
 
         private static Vector2 segmentPosition;
 
@@ -48,9 +50,7 @@ namespace FF8
 
         private static byte[] wmx;
 
-#if DEBUG
-        static float DEBUGshit = 0.0f;
-#endif
+        static float DEBUGshit = FOV;
 
         private static int GetSegment(int segID) => segID * 0x9000;
 
@@ -411,6 +411,9 @@ namespace FF8
             if (Input.GetInputDelayed(Keys.J))
                 MapState = MapState >= MiniMapState.fullscreen ? MapState = 0 : MapState + 1;
 
+            if (Input.GetInputDelayed(Keys.F1))
+                ;
+
 
 
 
@@ -433,6 +436,7 @@ namespace FF8
             Memory.font.RenderBasicText(Font.CipherDirty($"World Map Camera: X={camPosition}"), 0, 30, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Segment Position: ={segmentPosition}"), 0, 30 * 2, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"FPS camera deegress: ={degrees}"), 0, 30 * 3, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"var1: ={FOV}"), 0, 30 * 4, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
 
 
@@ -572,7 +576,27 @@ namespace FF8
                         (seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Y + localZ) / WORLD_SCALE_MODEL + baseY),
                         new Vector2(seg.block[i].polygons[k / 3].U3 / 256.0f, seg.block[i].polygons[k / 3].V3 / 256.0f));
 
-                    if (MakiExtended.Distance3D(camPosition, vpc[k].Position) > 1200.0f)
+                    if (MakiExtended.Distance3D(camPosition, vpc[k].Position) > renderCamDistance)
+                        continue;
+
+                    float ax, ay, px, py, d1, d2, d3;
+
+                    px = vpc[k].Position.X;
+                    py = vpc[k].Position.Z;
+                    ax = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(degrees)) * -50f;
+                    ay = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(degrees)) * -50f;
+
+                    Vector3 left=Vector3.Zero,right = Vector3.Zero;
+                    left.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(MakiExtended.ClampOverload(degrees-FOV, 0, 359))) * renderCamDistance*2;
+                    left.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(MakiExtended.ClampOverload(degrees-FOV, 0, 359))) * renderCamDistance*2;
+                    right.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(MakiExtended.ClampOverload(degrees + FOV, 0, 359))) * renderCamDistance*2;
+                    right.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(MakiExtended.ClampOverload(degrees + FOV, 0, 359))) * renderCamDistance*2;
+
+                    d1 = px * (ay - left.Z) + py * (left.X - ax) + (ax * left.Z - ay * left.X);
+                    d2 = px * (left.Z - right.Z) + py * (right.X - left.X) + (left.X * right.Z - left.Z * right.X);
+                    d3 = px * (right.Z - ay) + py * (ax - right.X) + (right.X * ay - right.Z * ax);
+
+                    if ((d1 > 0 || d2 > 0 || d3 > 0) && (d1 < 0 || d2 < 0 || d3 < 0))
                         continue;
 
                     if (seg.block[i].polygons[k / 3].TextureSwitch == 0x40 ||
@@ -593,7 +617,6 @@ namespace FF8
                     {
                         pass.Apply();
                         Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpc, k, 1);
-
                     }
                 }
             }

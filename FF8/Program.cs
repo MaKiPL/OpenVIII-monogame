@@ -2,7 +2,7 @@
 
 namespace FF8
 {
-#if WINDOWS || LINUX
+#if _WINDOWS || LINUX
     /// <summary>
     /// The main class.
     /// </summary>
