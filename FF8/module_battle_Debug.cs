@@ -9,15 +9,6 @@ namespace FF8
 {
     class Module_battle_debug
     {
-
-        //debug battle mode treats encounterID as scene ID and therefore skips
-        //character, mechanism and everything loading just for testing purpouses
-
-        //it proceeds with initiating battle as usual with INIT->READDATA->DrawGeometry
-        //but skips character + music + camera + mechanism + script + encounter loading
-        //after going into state 4 you are free to debug many mechanisms of the battle
-        //yet everything remains clearly logic.
-
         private static uint bs_cameraPointer;
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
         private static float degrees, Yshift;
@@ -451,7 +442,20 @@ namespace FF8
             };
 
             ReadTexture(MainSection.TexturePointer);
+
+            ReadMonster();
+
             battleModule++;
+        }
+
+        private static void ReadMonster()
+        {
+            Init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
+            if (enc.bNumOfEnemies == 0)
+                return;
+            //DEBUG BELOW; I just want to draw any model
+            
+            //END OF DEBUG
         }
 
         private static void ReadTexture(uint texturePointer)
