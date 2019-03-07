@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace FF8
 {
     //upgraded TIM class, because that first one is a trash
-    class TIM2
+    public class TIM2
     {
         public struct Texture
         {

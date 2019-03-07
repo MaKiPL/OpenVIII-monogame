@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace FF8
 {
-    class MakiExtended
+    static class MakiExtended
     {
         //https://stackoverflow.com/a/2887/4509036
         public static T ByteArrayToStructure<T>(byte[] bytes) where T : struct
@@ -23,6 +23,17 @@ namespace FF8
                 handle.Free();
             }
         }
+
+#if DEBUG
+        public static void DumpBuffer(byte[] buffer, string path)
+            => System.IO.File.WriteAllBytes(path, buffer);
+
+        public static void DumpBuffer(System.IO.MemoryStream ms, string path)
+            => System.IO.File.WriteAllBytes(path, ms.GetBuffer());
+
+        public static void DumpBuffer(System.IO.MemoryStream ms)
+            => System.IO.File.WriteAllBytes(GetUnixFullPath(System.IO.Path.Combine(Memory.FF8DIR, "debugUnpack.debug")), ms.GetBuffer());
+#endif
 
         //https://stackoverflow.com/questions/1130698/checking-if-an-object-is-a-number-in-c-sharp
         public static bool IsNumber(object value) => value is sbyte
@@ -50,7 +61,7 @@ namespace FF8
 
         public static bool In(int _in, Vector2 range) => /*IsNumber(_in) ?*/
                 _in >= range.X && _in <= range.Y;
-                //: false;
+        //: false;
         public static bool In(int _in, int min, int max) => In(_in, new Vector2(min, max));
 
         public static ushort UshortLittleEndian(ushort ushort_)

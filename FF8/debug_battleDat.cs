@@ -52,7 +52,7 @@ namespace FF8
         public struct Object
         {
             public ushort cVertices;
-            public Vertex[] vertices;
+            public VerticeData[] verticeData;
             public ushort cTriangles;
             public ushort cQuads;
             public ulong padding;
@@ -60,46 +60,51 @@ namespace FF8
             public Quad[] quads;
         }
 
+        public struct VerticeData
+        {
+            public ushort boneId;
+            public ushort cVertices;
+            public Vertex[] vertices;
+        }
+
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
         public struct Vertex
         {
-            private float x;
-            private float y;
-            private float z;
-            private float w;
+            private short x;
+            private short y;
+            private short z;
 
             public Vector3 GetVector => new Vector3(X, Y, Z);
 
-            public float X { get => x; set => x = value / 2000.0f; }
-            public float Y { get => y; set => y = value / 2000.0f; }
-            public float Z { get => z; set => z = value / 2000.0f; }
-            public float W { get => w; set => w = value / 2000.0f; }
+            public short X { get => (short)(x/2000); set => x = value; }
+            public short Y { get => (short)(y/2000); set => y = value; }
+            public short Z { get => (short)(z/2000); set => z = value; }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack =1, Size =16)]
         public struct Triangle
         {
-            private short A;
-            private short B;
-            private short C;
+            private ushort A;
+            private ushort B;
+            private ushort C;
             public UV vta;
             public UV vtb;
             public ushort texUnk;
             public UV vtc;
             public ushort u;
 
-            public short A1 { get => A; set => A = (short)(value & 0xFFF); }
-            public short B1 { get => B; set => B = (short)(value & 0xFFF); }
-            public short C1 { get => C; set => C = (short)(value & 0xFFF); }
+            public ushort A1 { get => (ushort)(A & 0xFFF); set => A = value; }
+            public ushort B1 { get => (ushort)(B & 0xFFF); set => B = value; }
+            public ushort C1 { get => (ushort)(C & 0xFFF); set => C = value; }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 20)]
         public struct Quad
         {
-            private short A;
-            private short B;
-            private short C;
-            private short D;
+            private ushort A;
+            private ushort B;
+            private ushort C;
+            private ushort D;
             public UV vta;
             public ushort texUnk;
             public UV vtb;
@@ -107,20 +112,20 @@ namespace FF8
             public UV vtc;
             public UV vtd;
 
-            public short A1 { get => A; set => A = (short)(value & 0xFFF); }
-            public short B1 { get => B; set => B = (short)(value & 0xFFF); }
-            public short C1 { get => C; set => C = (short)(value & 0xFFF); }
-            public short D1 { get => D; set => D = (short)(value & 0xFFF); }
+            public ushort A1 { get => (ushort)(A & 0xFFF); set => A = value; }
+            public ushort B1 { get => (ushort)(B & 0xFFF); set => B = value; }
+            public ushort C1 { get => (ushort)(C & 0xFFF); set => C = value; }
+            public ushort D1 { get => (ushort)(D & 0xFFF); set => D = value; }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack =1,Size =2)]
         public struct UV
         {
-            private float U;
-            private float V;
+            private byte U;
+            private byte V;
 
-            public float U1 { get => U; set => U = value / 256.0f; }
-            public float V1 { get => V; set => V = value / 256.0f; }
+            public float U1 { get => U/256.0f; set => U = (byte)value; }
+            public float V1 { get => V/256.0f; set => V = (byte)value; }
         }
 
         public Geometry geometry;
@@ -129,20 +134,47 @@ namespace FF8
         {
             ms.Seek(v, SeekOrigin.Begin);
             geometry = new Geometry { cObjects = br.ReadUInt32() };
+            geometry.pObjects = new uint[geometry.cObjects];
             for (int i = 0; i < geometry.cObjects; i++)
                 geometry.pObjects[i] = br.ReadUInt32();
+            geometry.objects = new Object[geometry.cObjects];
+            for (int i = 0; i < geometry.cObjects; i++)
+                geometry.objects[i] = ReadGeometryObject(ms, br);
+            geometry.cTotalVert = br.ReadUInt32();
+        }
 
+        private Object ReadGeometryObject(MemoryStream ms, BinaryReader br)
+        {
+            Object @object = new Object { cVertices = br.ReadUInt16() };
+            @object.verticeData = new VerticeData[@object.cVertices];
+            for (int n = 0; n < @object.cVertices; n++){
+                @object.verticeData[n].boneId = br.ReadUInt16();
+                @object.verticeData[n].cVertices = br.ReadUInt16();
+                @object.verticeData[n].vertices = new Vertex[@object.verticeData[n].cVertices];
+                for (int i = 0; i < @object.verticeData[n].cVertices; i++)
+                    @object.verticeData[n].vertices[i] = MakiExtended.ByteArrayToStructure<Vertex>(br.ReadBytes(6));}
+            ms.Seek(4-(ms.Position%4), SeekOrigin.Current);
+            @object.cTriangles = br.ReadUInt16();
+            @object.cQuads = br.ReadUInt16();
+            @object.padding = br.ReadUInt64();
+            @object.triangles = new Triangle[@object.cTriangles];
+            @object.quads = new Quad[@object.cQuads];
+            for (int i = 0; i < @object.cTriangles; i++)
+                @object.triangles[i] = MakiExtended.ByteArrayToStructure<Triangle>(br.ReadBytes(16));
+            for (int i = 0; i < @object.cQuads; i++)
+                @object.quads[i] = MakiExtended.ByteArrayToStructure<Quad>(br.ReadBytes(20));
+            return @object;
         }
         #endregion
 
         #region section 3
-        struct AnimHeader
+        public struct AnimHeader
         {
             public uint cAnimations;
             public uint[] pAnimations;
         }
 
-        struct Animation
+        public struct Animation
         {
             public byte cFrames;
         }
@@ -238,13 +270,15 @@ namespace FF8
         #endregion
 
         #region section 11
-        struct Textures
+        public struct Textures
         {
             public uint cTims;
             public uint[] pTims;
             public uint Eof;
             public TIM2[] Tims;
         }
+
+        public Textures textures;
         #endregion
 
         public Debug_battleDat(int monsterId)
@@ -253,10 +287,12 @@ namespace FF8
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
             string path = aw.GetListOfFiles().First(x => x.ToLower().Contains($"c0m{id.ToString("D03")}")); //c0m000.dat
             byte[] buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, path);
+            MakiExtended.DumpBuffer(buffer, "/media/griever/Data/test.dat");
             using (MemoryStream ms = new MemoryStream(buffer))
             using (BinaryReader br = new BinaryReader(ms))
             {
-                datFile = new DatFile { cSections = br.ReadUInt32(), pSections=new uint[datFile.cSections] };
+                datFile = new DatFile { cSections = br.ReadUInt32()};
+                datFile.pSections = new uint[datFile.cSections];
                 for (int i = 0; i < datFile.cSections; i++)
                     datFile.pSections[i] = br.ReadUInt32();
                 datFile.eof = br.ReadUInt32();
