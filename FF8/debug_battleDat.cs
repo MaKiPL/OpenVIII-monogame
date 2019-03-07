@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace FF8
 {
@@ -74,11 +75,11 @@ namespace FF8
             private short y;
             private short z;
 
-            public Vector3 GetVector => new Vector3(X, Y, Z);
+            public Vector3 GetVector => new Vector3(X, -Z, Y);
 
-            public short X { get => (short)(x/2000); set => x = value; }
-            public short Y { get => (short)(y/2000); set => y = value; }
-            public short Z { get => (short)(z/2000); set => z = value; }
+            public short X { get => (short)(x/500); set => x = value; }
+            public short Y { get => (short)(y/500); set => y = value; }
+            public short Z { get => (short)(z/500); set => z = value; }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack =1, Size =16)]
@@ -164,6 +165,24 @@ namespace FF8
             for (int i = 0; i < @object.cQuads; i++)
                 @object.quads[i] = MakiExtended.ByteArrayToStructure<Quad>(br.ReadBytes(20));
             return @object;
+        }
+
+        public VertexPositionTexture[] GetVertexPositions(int objectId, Vector3 position)
+        {
+            //THIS IS DEBUG IN-DEV CLASS
+            Object obj = geometry.objects[objectId];
+            uint totalVerts = (uint)obj.verticeData.Sum(x => x.cVertices);
+            Vector3[] vecTable = new Vector3[totalVerts]; //DEBUG
+            int totalindex = 0;
+            for(int i = 0; i<obj.cVertices; i++)
+                for (int n = 0; n < obj.verticeData[i].cVertices; n++)
+                    vecTable[totalindex++] = obj.verticeData[i].vertices[n].GetVector;
+            VertexPositionTexture[] vpt = new VertexPositionTexture[obj.cTriangles*3];
+            for (int i = 0; i < obj.cTriangles; i++) {
+                vpt[i * 3 + 0] = new VertexPositionTexture(position + vecTable[obj.triangles[i].A1], new Vector2(obj.triangles[i].vta.U1, obj.triangles[i].vta.V1));
+                vpt[i * 3 + 1] = new VertexPositionTexture(position + vecTable[obj.triangles[i].B1], new Vector2(obj.triangles[i].vtb.U1, obj.triangles[i].vtb.V1));
+                vpt[i * 3 + 2] = new VertexPositionTexture(position + vecTable[obj.triangles[i].C1], new Vector2(obj.triangles[i].vtc.U1, obj.triangles[i].vtc.V1)); }
+            return vpt;
         }
         #endregion
 
@@ -287,7 +306,9 @@ namespace FF8
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
             string path = aw.GetListOfFiles().First(x => x.ToLower().Contains($"c0m{id.ToString("D03")}")); //c0m000.dat
             byte[] buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, path);
+#if DEBUG
             MakiExtended.DumpBuffer(buffer, "/media/griever/Data/test.dat");
+#endif
             using (MemoryStream ms = new MemoryStream(buffer))
             using (BinaryReader br = new BinaryReader(ms))
             {

@@ -64,7 +64,7 @@ namespace FF8
 
         public static int module = MODULE_OVERTURE_DEBUG;
 #if _WINDOWS
-        public const string FF8DIR = @"D:\SteamLibrary\steamapps\common\FINAL FANTASY VIII\Data\lang-en\"; //Work
+        public const string FF8DIR = @"D:\SteamLibrary\steamapps\common\FINAL FANTASY VIII\Data\lang-en"; //Work
         //public const string FF8DIR = @"D:\Steam\steamapps\common\FINAL FANTASY VIII\Data\lang-en"; //Home
 #else
         public const string FF8DIR = @"/media/griever/Data/SteamLibrary/steamapps/common/FINAL FANTASY VIII/Data/lang-en";

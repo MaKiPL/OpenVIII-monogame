@@ -161,7 +161,7 @@ namespace FF8
 
         private static ModelGroup[] modelGroups;
 
-
+        private static Debug_battleDat[] monstersData;
 
         private static PseudoBufferedStream pbs;
 
@@ -196,8 +196,36 @@ namespace FF8
             {
                 case BATTLEMODULE_DRAWGEOMETRY:
                     DrawGeometry();
+                    DrawMonsters();
                     break;
 
+            }
+        }
+
+        private static void DrawMonsters()
+        {
+            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+            Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+            ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
+            effect.TextureEnabled = true;
+            var a = monstersData[0].GetVertexPositions(0, new Vector3(0,50,0)); //DEBUG
+            ate.Texture = textures[0]; //provide texture per-face
+            foreach (var pass in ate.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                if (true)
+                {
+                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                    vertexData: a, vertexOffset: 0, primitiveCount: a.Length/3);
+                }
+                else
+                {
+                    //Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                    //vertexData: vpt.Item2, vertexOffset: localVertexIndex, primitiveCount: 1);
+                    //localVertexIndex += 3;
+                }
             }
         }
 
@@ -455,6 +483,7 @@ namespace FF8
                 return;
             //DEBUG BELOW; I just want to draw any model
             Debug_battleDat sampleMonster = new Debug_battleDat(0);
+            monstersData = new Debug_battleDat[] { sampleMonster };
             //END OF DEBUG
         }
 
