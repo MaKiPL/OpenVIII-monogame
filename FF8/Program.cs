@@ -2,7 +2,6 @@
 
 namespace FF8
 {
-#if _WINDOWS || LINUX
     /// <summary>
     /// The main class.
     /// </summary>
@@ -18,5 +17,4 @@ namespace FF8
                 game.Run();
         }
     }
-#endif
 }

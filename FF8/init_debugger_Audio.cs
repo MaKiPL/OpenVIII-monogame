@@ -61,7 +61,7 @@ namespace FF8
 
         internal static void DEBUG()
         {
-            string pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR , "/../Music/dmusic/"));
+            string pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR , "../Music/dmusic/"));
             Memory.musices = Directory.GetFiles(pt, "*.sgt");
             //PlayMusic();
             //FileStream fs = new FileStream(pt, FileMode.Open, FileAccess.Read);
