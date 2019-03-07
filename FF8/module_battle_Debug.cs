@@ -454,7 +454,7 @@ namespace FF8
             if (enc.bNumOfEnemies == 0)
                 return;
             //DEBUG BELOW; I just want to draw any model
-            
+            Debug_battleDat sampleMonster = new Debug_battleDat(0);
             //END OF DEBUG
         }
 
