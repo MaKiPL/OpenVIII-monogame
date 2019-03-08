@@ -211,7 +211,11 @@ namespace FF8
             ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
             effect.TextureEnabled = true;
             var a = monstersData[0].GetVertexPositions(0, new Vector3(0,50,0)); //DEBUG
-            ate.Texture = textures[0]; //provide texture per-face
+            TIM2 tim = monstersData[0].textures.Tims[0]; //debug
+            Texture2D _tex = new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight, false, SurfaceFormat.Color);
+            _tex.SetData(tim.CreateImageBuffer(tim.GetClutColors(0), true));
+            ate.Texture = _tex;
+
             foreach (var pass in ate.CurrentTechnique.Passes)
             {
                 pass.Apply();

@@ -174,14 +174,24 @@ namespace FF8
             uint totalVerts = (uint)obj.verticeData.Sum(x => x.cVertices);
             Vector3[] vecTable = new Vector3[totalVerts]; //DEBUG
             int totalindex = 0;
-            for(int i = 0; i<obj.cVertices; i++)
+            int i;
+            for (i = 0; i<obj.cVertices; i++)
                 for (int n = 0; n < obj.verticeData[i].cVertices; n++)
                     vecTable[totalindex++] = obj.verticeData[i].vertices[n].GetVector;
-            VertexPositionTexture[] vpt = new VertexPositionTexture[obj.cTriangles*3];
-            for (int i = 0; i < obj.cTriangles; i++) {
+            VertexPositionTexture[] vpt = new VertexPositionTexture[obj.cTriangles*3+obj.cQuads*6]; //6 because retriangulation is needed;
+            i = 0;
+            for (; i < obj.cTriangles; i++) {
                 vpt[i * 3 + 0] = new VertexPositionTexture(position + vecTable[obj.triangles[i].A1], new Vector2(obj.triangles[i].vta.U1, obj.triangles[i].vta.V1));
                 vpt[i * 3 + 1] = new VertexPositionTexture(position + vecTable[obj.triangles[i].B1], new Vector2(obj.triangles[i].vtb.U1, obj.triangles[i].vtb.V1));
                 vpt[i * 3 + 2] = new VertexPositionTexture(position + vecTable[obj.triangles[i].C1], new Vector2(obj.triangles[i].vtc.U1, obj.triangles[i].vtc.V1)); }
+            for (int n = 0; n < obj.cQuads; n++) /*quad retriangulation*/ {
+                vpt[i + n * 6 + 0] = new VertexPositionTexture(position + vecTable[obj.quads[n].A1], new Vector2(obj.quads[n].vta.U1, obj.quads[n].vta.V1));
+                vpt[i + n * 6 + 1] = new VertexPositionTexture(position + vecTable[obj.quads[n].B1], new Vector2(obj.quads[n].vtb.U1, obj.quads[n].vtb.V1));
+                vpt[i + n * 6 + 2] = new VertexPositionTexture(position + vecTable[obj.quads[n].D1], new Vector2(obj.quads[n].vtd.U1, obj.quads[n].vtd.V1));
+                vpt[i + n * 6 + 3] = new VertexPositionTexture(position + vecTable[obj.quads[n].A1], new Vector2(obj.quads[n].vta.U1, obj.quads[n].vta.V1));
+                vpt[i + n * 6 + 4] = new VertexPositionTexture(position + vecTable[obj.quads[n].C1], new Vector2(obj.quads[n].vtc.U1, obj.quads[n].vtc.V1));
+                vpt[i + n * 6 + 5] = new VertexPositionTexture(position + vecTable[obj.quads[n].D1], new Vector2(obj.quads[n].vtd.U1, obj.quads[n].vtd.V1));
+                ++i;}
             return vpt;
         }
         #endregion
@@ -300,6 +310,22 @@ namespace FF8
         public Textures textures;
         #endregion
 
+        private void ReadSection11(uint v, MemoryStream ms, BinaryReader br)
+        {
+            ms.Seek(v, SeekOrigin.Begin);
+            textures = new Textures() { cTims = br.ReadUInt32() };
+            textures.pTims = new uint[textures.cTims];
+            for (int i = 0; i < textures.cTims; i++)
+                textures.pTims[i] = br.ReadUInt32();
+            textures.Eof = br.ReadUInt32();
+            textures.Tims = new TIM2[textures.cTims];
+            for(int i = 0; i<textures.cTims; i++)
+            {
+                ms.Seek(v + textures.pTims[i], SeekOrigin.Begin);
+                TIM2 tim = new TIM2(ms.ToArray(), (uint)ms.Position);
+                textures.Tims[i] = tim;
+            }
+        }
         public Debug_battleDat(int monsterId)
         {
             id = monsterId;
@@ -332,10 +358,6 @@ namespace FF8
             }
         }
 
-        private void ReadSection11(uint v, MemoryStream ms, BinaryReader br)
-        {
-            ms.Seek(v, SeekOrigin.Begin);
-        }
 
         private void ReadSection7(uint v, MemoryStream ms, BinaryReader br)
         {
