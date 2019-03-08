@@ -10,6 +10,7 @@ namespace FF8
     public class Debug_battleDat
     {
         int id;
+        byte[] buffer;
 
         public struct DatFile
         {
@@ -304,7 +305,7 @@ namespace FF8
             public uint cTims;
             public uint[] pTims;
             public uint Eof;
-            public TIM2[] Tims;
+            public Texture2D[] textures;
         }
 
         public Textures textures;
@@ -318,12 +319,15 @@ namespace FF8
             for (int i = 0; i < textures.cTims; i++)
                 textures.pTims[i] = br.ReadUInt32();
             textures.Eof = br.ReadUInt32();
-            textures.Tims = new TIM2[textures.cTims];
+            textures.textures = new Texture2D[textures.cTims];
             for(int i = 0; i<textures.cTims; i++)
             {
                 ms.Seek(v + textures.pTims[i], SeekOrigin.Begin);
-                TIM2 tim = new TIM2(ms.ToArray(), (uint)ms.Position);
-                textures.Tims[i] = tim;
+                //TIM2 tm= new TIM2(buffer, (uint)ms.Position); //broken
+                textures.textures[i] = new Texture2D(Memory.graphics.GraphicsDevice, 128/*tm.GetWidth*/, 128/*tm.GetHeight*/, false,
+                SurfaceFormat.Color);
+                //textures.textures[i].SetData(tm.CreateImageBuffer(tm.GetClutColors(0), true)); //??
+                //tm.KillStreams();
             }
         }
         public Debug_battleDat(int monsterId)
@@ -331,7 +335,7 @@ namespace FF8
             id = monsterId;
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
             string path = aw.GetListOfFiles().First(x => x.ToLower().Contains($"c0m{id.ToString("D03")}")); //c0m000.dat
-            byte[] buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, path);
+            buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, path);
 #if DEBUG
             MakiExtended.DumpBuffer(buffer, "/media/griever/Data/test.dat");
 #endif

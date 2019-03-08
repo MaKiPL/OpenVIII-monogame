@@ -55,6 +55,8 @@ namespace FF8
             ReadParameters(bppIndicator);
         }
 
+        public void KillStreams() => pbs.DisposeAll();
+
         private void ReadParameters(byte _bpp)
         {
             pbs.Seek(3, System.IO.SeekOrigin.Current);
