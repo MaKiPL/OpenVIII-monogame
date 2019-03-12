@@ -323,11 +323,11 @@ namespace FF8
             for(int i = 0; i<textures.cTims; i++)
             {
                 ms.Seek(v + textures.pTims[i], SeekOrigin.Begin);
-                //TIM2 tm= new TIM2(buffer, (uint)ms.Position); //broken
-                textures.textures[i] = new Texture2D(Memory.graphics.GraphicsDevice, 128/*tm.GetWidth*/, 128/*tm.GetHeight*/, false,
+                TIM2 tm = new TIM2(buffer, (uint)ms.Position); //broken
+                textures.textures[i] = new Texture2D(Memory.graphics.GraphicsDevice, tm.GetWidth, tm.GetHeight, false,
                 SurfaceFormat.Color);
-                //textures.textures[i].SetData(tm.CreateImageBuffer(tm.GetClutColors(0), true)); //??
-                //tm.KillStreams();
+                textures.textures[i].SetData(tm.CreateImageBuffer(tm.GetClutColors(0), true)); //??
+                tm.KillStreams();
             }
         }
         public Debug_battleDat(int monsterId)

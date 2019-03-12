@@ -32,12 +32,12 @@ namespace FF8
             public byte Alpha;
         }
 
-        private static int bpp = -1;
+        private int bpp = -1;
 
-        private static Texture texture;
-        private static PseudoBufferedStream pbs;
-        private static uint textureDataPointer;
-        private static uint timOffset;
+        private Texture texture;
+        private PseudoBufferedStream pbs;
+        private uint textureDataPointer;
+        private uint timOffset;
 
         public TIM2(byte[] buffer, uint offset = 0)
         {
