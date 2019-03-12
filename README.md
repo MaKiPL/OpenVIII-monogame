@@ -87,7 +87,7 @@ Requirements: MonoGame + Visual Studio
 
 3. Install Mono if needed
 
-`sudo apt-get install Mono`
+`sudo apt-get install Mono-complete Mono-devel`
 
 4. Download MonoGame for Linux
 
