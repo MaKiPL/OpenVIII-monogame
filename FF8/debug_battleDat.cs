@@ -22,20 +22,55 @@ namespace FF8
         public DatFile datFile;
 
         #region section 1
-        //[StructLayout(LayoutKind.Sequential,Pack = 1,Size =]
+        [StructLayout(LayoutKind.Sequential,Pack = 1,Size =16)]
         public struct Skeleton
         {
             public ushort cBones;
-            public byte[] unk;
+            public ushort unk;
+            public ushort unk2;
+            public ushort unk3;
+            private short scaleX;
+            private short scaleY;
+            private short scaleZ;
+            public ushort unk4;
             public Bone[] bones;
+
+            public float ScaleX { get => scaleX / 4096.0f; }
+            public float ScaleY { get => scaleY / 4096.0f; }
+            public float ScaleZ { get => scaleZ / 4096.0f; }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 48)]
         public struct Bone
         {
             public ushort parentId;
-            public ushort boneSize;
+            private short boneSize;
+            private short unk1; //360
+            private short unk2; //360
+            private short unk3; //360
+            private short unk4;
+            private short unk5;
+            private short unk6;
+            [MarshalAs(UnmanagedType.ByValArray,SizeConst = 28 )]
             public byte[] Unk;
+
+            public float Size { get => boneSize / 4096.0f; }
+            public float Unk1 { get => unk1 / 4096.0f * 360.0f; }
+            public float Unk2 { get => unk2 / 4096.0f * 360.0f; }
+            public float Unk3 { get => unk3 / 4096.0f * 360.0f; }
+            public float Unk4 { get => unk4 / 4096.0f; }
+            public float Unk5 { get => unk5 / 4096.0f; }
+            public float Unk6 { get => unk6 / 4096.0f; }
+        }
+
+        private void ReadSection1(uint v, MemoryStream ms, BinaryReader br)
+        {
+            ms.Seek(v, SeekOrigin.Begin);
+            skeleton = MakiExtended.ByteArrayToStructure<Skeleton>(br.ReadBytes(16));
+            skeleton.bones = new Bone[skeleton.cBones];
+            for (int i = 0; i < skeleton.cBones; i++)
+                skeleton.bones[i] = MakiExtended.ByteArrayToStructure<Bone>(br.ReadBytes(48));
+            return;
         }
 
         public Skeleton skeleton;
@@ -336,9 +371,11 @@ namespace FF8
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
             string path = aw.GetListOfFiles().First(x => x.ToLower().Contains($"c0m{id.ToString("D03")}")); //c0m000.dat
             buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, path);
-#if DEBUG
-            MakiExtended.DumpBuffer(buffer, "/media/griever/Data/test.dat");
+
+#if DEBUG || _WINDOWS
+            MakiExtended.DumpBuffer(buffer, "D:/out.dat");
 #endif
+
             using (MemoryStream ms = new MemoryStream(buffer))
             using (BinaryReader br = new BinaryReader(ms))
             {
@@ -348,7 +385,7 @@ namespace FF8
                     datFile.pSections[i] = br.ReadUInt32();
                 datFile.eof = br.ReadUInt32();
 
-                //ReadSection1(datFile.pSections[0]);
+                ReadSection1(datFile.pSections[0],ms,br);
                 ReadSection2(datFile.pSections[1],ms,br);
                 //ReadSection3(datFile.pSections[2]);
                 //ReadSection4(datFile.pSections[3]);

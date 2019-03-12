@@ -1,3 +1,9 @@
 .vs
 FF8/Obj/*
 FF8/Bin/*
+FF8/bin/*
+FF8/obj/*
+FF8/packages/*
+packages/*
+*.exe
+*.pdb
