@@ -237,12 +237,39 @@ namespace FF8
         {
             public uint cAnimations;
             public uint[] pAnimations;
+            public Animation[] animations;
         }
 
         public struct Animation
         {
             public byte cFrames;
         }
+
+        private void ReadSection3(uint v, MemoryStream ms, BinaryReader br)
+        {
+            ms.Seek(v, SeekOrigin.Begin);
+            animHeader = new AnimHeader() {cAnimations = br.ReadUInt32() };
+            animHeader.pAnimations = new uint[animHeader.cAnimations];
+            for (int i = 0; i < animHeader.cAnimations; i++)
+                animHeader.pAnimations[i] = br.ReadUInt32();
+            animHeader.animations = new Animation[animHeader.cAnimations];
+            for (int i = 0; i < animHeader.cAnimations; i++)
+            {
+                ms.Seek(v + animHeader.pAnimations[i], SeekOrigin.Begin);
+                animHeader.animations[i] = new Animation() {cFrames = br.ReadByte() };
+                ExtapathyExtended.BitReader bitReader = new ExtapathyExtended.BitReader(ms);
+                short posTest = bitReader.ReadPositionType(); //test
+                /*Notes:
+                 * so we have e.g. 30 frames, each contains: one position frame and n*rotation, where
+                 * n=bones count. So we first read bits from right mask to see the position index. Then
+                 * every axis is sized by that positionIndex/helper + one bit as padding. Then the bones go the same way.
+                 */
+                bitReader.Close();
+                bitReader.Dispose();
+            }
+            return;
+        }
+        public AnimHeader animHeader;
         #endregion
 
         #region section 7
@@ -331,6 +358,11 @@ namespace FF8
 
         }
 
+        private void ReadSection7(uint v, MemoryStream ms, BinaryReader br)
+        {
+            ms.Seek(v, SeekOrigin.Begin);
+        }
+
         public Information information;
         #endregion
 
@@ -387,7 +419,7 @@ namespace FF8
 
                 ReadSection1(datFile.pSections[0],ms,br);
                 ReadSection2(datFile.pSections[1],ms,br);
-                //ReadSection3(datFile.pSections[2]);
+                ReadSection3(datFile.pSections[2], ms, br);
                 //ReadSection4(datFile.pSections[3]);
                 //ReadSection5(datFile.pSections[4]);
                 //ReadSection6(datFile.pSections[5]);
@@ -400,10 +432,6 @@ namespace FF8
         }
 
 
-        private void ReadSection7(uint v, MemoryStream ms, BinaryReader br)
-        {
-            ms.Seek(v, SeekOrigin.Begin);
-        }
 
 
 
