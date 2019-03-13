@@ -44,6 +44,11 @@ namespace FF8
                 return ReadBits(positionReadHelper[countIndex]);
             }
 
+            //+Maki
+            public byte ReadPositionLength() => (byte)positionReadHelper[ReadBits(2) & 0b11];
+            public byte ReadRotationLength() => (byte)rotationReadHelper[ReadBits(2) & 0b11];
+            //-Maki
+
             public short ReadRotationType()
             {
                 var readRotation = (ReadBits(1) & 1) != 0;
