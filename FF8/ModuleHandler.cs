@@ -12,9 +12,6 @@ namespace FF8
     {
         private static int module = Memory.module;
         private static int lastModule = Memory.module;
-        static int msDelay;
-        static readonly int msDelayLimit = 100;
-        static bool bLimitInput;
 
         public static void Update(GameTime gameTime)
         {
@@ -25,18 +22,15 @@ namespace FF8
                 lastModule = module;
             }
             module = Memory.module;
-            if (bLimitInput)
-                bLimitInput = (msDelay += gameTime.ElapsedGameTime.Milliseconds) < msDelayLimit;
-            else
+
+//#if DEBUG
+            if (Input.Button(Buttons.Back)||Input.Button(Buttons.Cancel))
             {
-#if DEBUG
-                if (Keyboard.GetState().IsKeyDown(Keys.Back))
-                {
-                    Memory.module = Memory.MODULE_MAINMENU_DEBUG;
-                }
-#endif
+                Memory.module = Memory.MODULE_MAINMENU_DEBUG;
             }
-            
+//#endif
+
+
             switch (module)
             {
                 case Memory.MODULE_BATTLE:

@@ -3,6 +3,11 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Linq;
+using NAudio.Wave;
+using NAudio;
+using NAudio.Vorbis;
+using Microsoft.Xna.Framework.Audio;
+using System.IO;
 
 namespace FF8
 {
@@ -71,22 +76,24 @@ namespace FF8
             internalTimer += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0d;
 
         }
-
         private static void InitSound()
         {
-            Memory.musicIndex = 072; //Overture
+            Memory.MusicIndex =  79;//79; //Overture
             init_debugger_Audio.PlayMusic();
+            Memory.MusicIndex = ushort.MaxValue; // reset pos after playing overture; will loop back to start if push next
+
+
             white = new Texture2D(Memory.graphics.GraphicsDevice, 4, 4, false, SurfaceFormat.Color);
             byte[] whiteBuffer = new byte[16];
             for (int i = 0; i < 16; i++)
                 whiteBuffer[i] = 255;
             internalModule++;
         }
-
         internal static void Draw()
         {
-            if (Keyboard.GetState().IsKeyDown(Keys.Space))
+            if (Input.Button(Buttons.Okay)||Input.Button(Buttons.Cancel)||Input.Button(Keys.Space))
             {
+                Input.ResetInputLimit();
                 init_debugger_Audio.StopAudio();
                 Memory.module = Memory.MODULE_MAINMENU_DEBUG;
             }

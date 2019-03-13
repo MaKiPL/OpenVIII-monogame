@@ -707,7 +707,7 @@ namespace FF8
                     ushort bb = br.ReadUInt16();
                     epe[i].scriptCount = (byte)((bb & 0x7F) + 1);
                     epe[i].label = (byte)(bb >> 7);
-                    epe[i].labelASM = symbolNames[epe[i].label];
+                    epe[i].labelASM = symbolNames[epe[i].label]; 
                 }
                 int SYMscriptNameStartingPoint = jsm.cDoorEntity + jsm.cOtherEntity + jsm.cWalkmeshEntity + jsm.cBackgroundEntity;
                 jsm.EntityEntryPoints = epe;

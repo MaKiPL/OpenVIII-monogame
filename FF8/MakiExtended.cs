@@ -49,7 +49,14 @@ namespace FF8
                     || value is decimal;
 
         public static double Distance3D(Vector3 xo, Vector3 xa) => Vector3.Distance(xo, xa);
-
+        public static bool IsLinux
+        {
+            get
+            {
+                int p = (int)Environment.OSVersion.Platform;
+                return (p == 4) || (p == 6) || (p == 128);
+            }
+        }
         public static string GetUnixFullPath(string pt)
         {
 #if _WINDOWS

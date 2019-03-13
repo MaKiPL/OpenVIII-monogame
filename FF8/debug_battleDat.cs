@@ -307,7 +307,7 @@ namespace FF8
             string path = aw.GetListOfFiles().First(x => x.ToLower().Contains($"c0m{id.ToString("D03")}")); //c0m000.dat
             byte[] buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, path);
 #if DEBUG
-            MakiExtended.DumpBuffer(buffer, "/media/griever/Data/test.dat");
+            //MakiExtended.DumpBuffer(buffer, "/media/griever/Data/test.dat");
 #endif
             using (MemoryStream ms = new MemoryStream(buffer))
             using (BinaryReader br = new BinaryReader(ms))

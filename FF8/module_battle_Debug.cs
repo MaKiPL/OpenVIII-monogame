@@ -228,7 +228,64 @@ namespace FF8
                 }
             }
         }
+        public static void FPSCamera()
+        {
+            #region FPScamera
+            float x_shift = 0.0f;
+            float y_shift = 0.0f;
 
+            //speed is effected by the milliseconds between frames. so alittle goes a long way. :P
+            float maxMoveSpeed = 1f;
+            float maxLookSpeed = 0.25f;
+            x_shift = Input.Distance(Buttons.MouseXjoy, maxLookSpeed);
+            y_shift = Input.Distance(Buttons.MouseYjoy, maxLookSpeed);
+            float leftdistX = Math.Abs(Input.Distance(Buttons.LeftStickX, maxMoveSpeed));
+            float leftdistY = Math.Abs(Input.Distance(Buttons.LeftStickY, maxMoveSpeed));
+            x_shift += Input.Distance(Buttons.RightStickX, maxLookSpeed);
+            y_shift += Input.Distance(Buttons.RightStickY, maxLookSpeed);
+            Yshift -= y_shift;
+            degrees = (degrees + (int)x_shift) % 360;
+            Yshift = MathHelper.Clamp(Yshift, -80, 80);
+            if (leftdistY == 0)
+            {
+                leftdistY = Input.Distance(maxMoveSpeed);
+            }
+            if (leftdistX == 0)
+            {
+                leftdistX = Input.Distance(maxMoveSpeed);
+            }
+            if (Input.Button(Buttons.Up))//(Keyboard.GetState().IsKeyDown(Keys.W) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y > 0.0f)
+            {
+                camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees)) * leftdistY / 10;
+                camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees)) * leftdistY / 10;
+                camPosition.Y -= Yshift / 50;
+            }
+            if (Input.Button(Buttons.Down))//(Keyboard.GetState().IsKeyDown(Keys.S) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y < 0.0f)
+            {
+                camPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees)) * leftdistY / 10;
+                camPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees)) * leftdistY / 10;
+                camPosition.Y += Yshift / 50;
+            }
+            if (Input.Button(Buttons.Left))//(Keyboard.GetState().IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X < 0.0f)
+            {
+                camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees - 90)) * leftdistX / 10;
+                camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees - 90)) * leftdistX / 10;
+            }
+            if (Input.Button(Buttons.Right))//(Keyboard.GetState().IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X > 0.0f)
+            {
+                camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees + 90)) * leftdistX / 10;
+                camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees + 90)) * leftdistX / 10;
+            }
+
+            //Input.LockMouse();
+
+            camTarget.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(degrees)) * camDistance;
+            camTarget.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(degrees)) * camDistance;
+            camTarget.Y = camPosition.Y - Yshift / 5;
+            viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
+                         Vector3.Up);
+            #endregion
+        }
         private static void DrawGeometry()
         {
             Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
@@ -239,53 +296,8 @@ namespace FF8
             Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
 
-            #region FPScamera
 
-            float x_shift = Mouse.GetState().X - 200;
-            float y_shift = 200 - Mouse.GetState().Y;
-            x_shift += GamePad.GetState(PlayerIndex.One).ThumbSticks.Right.X * 2f;
-            Yshift -= y_shift;
-            Yshift -= GamePad.GetState(PlayerIndex.One).ThumbSticks.Right.Y * 2f;
-            degrees += (int)x_shift;
-            if (degrees < 0)
-                degrees = 359;
-            if (degrees > 359)
-                degrees = 0;
-            Yshift = MathHelper.Clamp(Yshift, -80, 80);
-
-            if (Keyboard.GetState().IsKeyDown(Keys.W) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y > 0.0f)
-            {
-                camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees)) * camDistance / 10;
-                camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees)) * camDistance / 10;
-                camPosition.Y -= Yshift / 50;
-            }
-            if (Keyboard.GetState().IsKeyDown(Keys.S) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y < 0.0f)
-            {
-                camPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees)) * camDistance / 10;
-                camPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees)) * camDistance / 10;
-                camPosition.Y += Yshift / 50;
-            }
-            if (Keyboard.GetState().IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X < 0.0f)
-            {
-                camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees - 90)) * camDistance / 10;
-                camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees - 90)) * camDistance / 10;
-            }
-            if (Keyboard.GetState().IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X > 0.0f)
-            {
-                camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees + 90)) * camDistance / 10;
-                camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees + 90)) * camDistance / 10;
-            }
-
-            Mouse.SetPosition(200, 200);
-
-            camTarget.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(degrees)) * camDistance;
-            camTarget.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(degrees)) * camDistance;
-            camTarget.Y = camPosition.Y - Yshift / 5;
-            viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
-                         Vector3.Up);
-            #endregion
-
-
+            FPSCamera();
 
 
             effect.TextureEnabled = true;
@@ -712,8 +724,8 @@ namespace FF8
         {
             Memory.BS_CameraStruct = new Memory.VIII_cameraMemoryStruct(); //In VIII C it's memset here 
             uint cCameraHeaderSector = pbs.ReadUShort();
-            if (cCameraHeaderSector != 0x2)
-                ; //error handler?
+            //if (cCameraHeaderSector != 0x2)
+            //    ; //error handler?
             uint pCameraSetting = pbs.ReadUShort();
             uint pCameraAnimationCollection = pbs.ReadUShort();
             uint sCameraDataSize = pbs.ReadUShort();

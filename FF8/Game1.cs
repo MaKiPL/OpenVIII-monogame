@@ -52,15 +52,18 @@ namespace FF8
 
         protected override void Update(GameTime gameTime)
         {
+            
             Memory.gameTime = gameTime;
+            Memory.IsActive = IsActive;
 
             //it breaks the Font
             //Memory.PreferredViewportWidth = graphics.GraphicsDevice.Viewport.Width;
             //Memory.PreferredViewportHeight = graphics.GraphicsDevice.Viewport.Height;
 
-            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
-                GracefullyExit();
+            Input.Update();
 
+            if (Input.Button(Buttons.Exit))
+                GracefullyExit();
 
             ModuleHandler.Update(gameTime);
             base.Update(gameTime);

@@ -27,10 +27,7 @@ namespace FF8
         private static int debug_choosedBS, debug_choosedAudio;
 
 
-        static int msDelay;
-        static readonly int msDelayLimit = 100;
-        static bool bLimitInput;
-
+        
         private static int choosenOption, debug_fieldPointer = 90;
         private static string debug_choosedField = Memory.FieldHolder.fields[debug_fieldPointer];
 
@@ -74,181 +71,163 @@ namespace FF8
         private static void DebugUpdate()
         {
             int availableOptions = 9;
-            if (bLimitInput)
-                bLimitInput = (msDelay += Memory.gameTime.ElapsedGameTime.Milliseconds) < msDelayLimit;
-            if (Keyboard.GetState().IsKeyDown(Keys.Down) && !bLimitInput)
+            //if (bLimitInput)
+            //    bLimitInput = (Input.msDelay += Memory.gameTime.ElapsedGameTime.Milliseconds) < Input.msDelayLimit;
+           
+
+            if (Input.Button(Buttons.Down))
             {
-                bLimitInput = true;
-                msDelay = 0;
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 choosenOption = choosenOption >= availableOptions ? 1 : choosenOption + 1;
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.Up) && !bLimitInput)
+            if (Input.Button(Buttons.Up))
             {
-                bLimitInput = true;
-                msDelay = 0;
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 choosenOption = choosenOption <= 1 ? availableOptions : choosenOption - 1;
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !bLimitInput && choosenOption == 1)
+            if (Input.Button(Buttons.Okay) && choosenOption == 1|| Input.Button(Buttons.Cancel))
             {
-                bLimitInput = true;
-                msDelay = 0;
-                init_debugger_Audio.PlaySound(0);
+                Input.ResetInputLimit();
+                init_debugger_Audio.PlaySound(8);
+                init_debugger_Audio.StopAudio();
                 choosenOption = 0;
                 Fade = 0.0f;
                 State = MainMenuStates.MainLobby;
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !bLimitInput && choosenOption == 2)
+            if (Input.Button(Buttons.Okay) && choosenOption == 2)
             {
-                bLimitInput = true;
-                msDelay = 0;
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 choosenOption = 0;
                 Fade = 0.0f;
                 State = MainMenuStates.MainLobby;
                 Module_overture_debug.ResetModule();
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.Left) && !bLimitInput && choosenOption == 3)
+            if (Input.Button(Buttons.Left) && choosenOption == 3)
             {
-                bLimitInput = true;
-                msDelay = 0;
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 if (debug_choosedBS <= 0) return;
                 debug_choosedBS--;
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.Right) && !bLimitInput && choosenOption == 3)
+            if (Input.Button(Buttons.Right) && choosenOption == 3)
             {
-                bLimitInput = true;
-                msDelay = 0;
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 if (debug_choosedBS >= Memory.encounters.Length) return;
                 debug_choosedBS++;
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.Left) && !bLimitInput && choosenOption == 4)
+            if (Input.Button(Buttons.Left) && choosenOption == 4)
             {
-                bLimitInput = true;
-                msDelay = 0;
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 if (debug_fieldPointer <= 0) return;
                 debug_fieldPointer--;
                 debug_choosedField = Memory.FieldHolder.fields[debug_fieldPointer];
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.Right) && !bLimitInput && choosenOption == 4)
+            if (Input.Button(Buttons.Right) && choosenOption == 4)
             {
-                bLimitInput = true;
-                msDelay = 0;
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 if (debug_fieldPointer >= Memory.FieldHolder.fields.Length) return;
                 debug_fieldPointer++;
                 debug_choosedField = Memory.FieldHolder.fields[debug_fieldPointer];
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !bLimitInput && choosenOption == 4)
+            if (Input.Button(Buttons.Okay) && choosenOption == 4)
             {
-                bLimitInput = true;
-                msDelay = 0;
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 Memory.FieldHolder.FieldID = (ushort)debug_fieldPointer;
                 Module_field_debug.ResetField();
                 Memory.module = Memory.MODULE_FIELD_DEBUG;
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !bLimitInput && choosenOption == 5)
+            if (Input.Button(Buttons.Okay) && choosenOption == 5)
             {
-                bLimitInput = true;
-                msDelay = 0;
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
-                Memory.musicIndex++;
+                Memory.MusicIndex++;
                 init_debugger_Audio.PlayMusic();
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !bLimitInput && choosenOption == 3)
+            if (Input.Button(Buttons.Okay) && choosenOption == 3)
             {
-                bLimitInput = true;
-                msDelay = 0;
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 Memory.battle_encounter = debug_choosedBS;
                 Module_battle_debug.ResetState();
                 Memory.module = Memory.MODULE_BATTLE_DEBUG;
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !bLimitInput && choosenOption == 6)
+            if (Input.Button(Buttons.Okay) && choosenOption == 6)
             {
-                bLimitInput = true;
-                msDelay = 0;
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
-                Memory.musicIndex--;
+                if (Memory.MusicIndex == ushort.MinValue)
+                    Memory.MusicIndex = ushort.MaxValue;
+                else
+                    Memory.MusicIndex--;
                 init_debugger_Audio.PlayMusic();
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !bLimitInput && choosenOption == 7)
+            if (Input.Button(Buttons.Okay) && choosenOption == 7)
             {
-                bLimitInput = true;
-                msDelay = 0;
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 init_debugger_Audio.StopAudio();
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.Left) && !bLimitInput && choosenOption == 8)
+            if (Input.Button(Buttons.Left) && choosenOption == 8)
             {
-                bLimitInput = true;
-                msDelay = 0;
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 if (debug_choosedAudio <= 0) return;
                 debug_choosedAudio--;
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.Right) && !bLimitInput && choosenOption == 8)
+            if (Input.Button(Buttons.Right) && choosenOption == 8)
             {
-                bLimitInput = true;
-                msDelay = 0;
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 if (debug_choosedAudio >= init_debugger_Audio.soundEntriesCount) return;
                 debug_choosedAudio++;
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !bLimitInput && choosenOption == 8)
+            if (Input.Button(Buttons.Okay) && choosenOption == 8)
             {
-                bLimitInput = true;
-                msDelay = 0;
-                init_debugger_Audio.PlaySound(0);
+                Input.ResetInputLimit();
+                //init_debugger_Audio.PlaySound(0);
                 init_debugger_Audio.PlaySound(debug_choosedAudio);
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !bLimitInput && choosenOption == 9)
+            if (Input.Button(Buttons.Okay) && choosenOption == 9)
             {
-                bLimitInput = true;
-                msDelay = 0;
+                Input.ResetInputLimit();
                 Memory.module = Memory.MODULE_WORLD_DEBUG;
             }
         }
-
         private static void LobbyUpdate()
         {
             if (start00 == null)
                 start00 = GetTexture(0);
             if (start01 == null)
                 start01 = GetTexture(1);
-            if (bLimitInput)
-                bLimitInput = (msDelay += Memory.gameTime.ElapsedGameTime.Milliseconds) < msDelayLimit;
-            if (Keyboard.GetState().IsKeyDown(Keys.Down) && !bLimitInput)
+            if (Input.Button(Buttons.Down))
             {
-                bLimitInput = true;
-                msDelay = 0;
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 choosenOption = choosenOption >= 2 ? 0 : choosenOption + 1;
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.Up) && !bLimitInput)
+            if (Input.Button(Buttons.Up))
             {
-                bLimitInput = true;
-                msDelay = 0;
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 choosenOption = choosenOption <= 0 ? 2 : choosenOption - 1;
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !bLimitInput && choosenOption == 2)
+            if (Input.Button(Buttons.Okay) && choosenOption == 2)
             {
-                bLimitInput = true;
-                msDelay = 0;
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 choosenOption = 1;
                 State = MainMenuStates.DebugScreen;
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !bLimitInput && choosenOption == 0)
+            if (Input.Button(Buttons.Okay) && choosenOption == 0)
             {
-                bLimitInput = true;
-                msDelay = 0;
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(28);
                 State = MainMenuStates.NewGameChoosed;
             }
