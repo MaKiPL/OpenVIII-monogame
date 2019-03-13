@@ -17,6 +17,14 @@ namespace FF8
             br = new BinaryReader(this);
         }
 
+        public void DisposeAll()
+        {
+            br.Close();
+            br.Dispose();
+            this.Close();
+            Dispose();
+        }
+
         public ushort ReadUShort() => br.ReadUInt16();
 
         public byte[] ReadBytes(uint count) => br.ReadBytes((int)count);
