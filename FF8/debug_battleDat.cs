@@ -214,10 +214,48 @@ namespace FF8
             return @object;
         }
 
+        public VertexPositionTexture[] GetVertexPositions(int objectId, Vector3 position, int animationId, int animationFrame)
+        {
+            Object obj = geometry.objects[objectId];
+            AnimationFrame frame = animHeader.animations[animationId].animationFrames[animationFrame]; //we got the frame
+            //let's create a vertices buffer now. We will handle it via triangle basis but looking at bones
+            List<VertexPositionTexture> vpt = new List<VertexPositionTexture>();
+            List<Tuple<Vector3, int>> verts = new List<Tuple<Vector3, int>>();  
+
+            int i = 0;
+            foreach (var a in obj.verticeData)
+                foreach (var b in a.vertices)
+                    verts.Add(new Tuple<Vector3, int>(b.GetVector, a.boneId));
+
+            //we now have a collection of basic Vec3D and a variable indicating a boneId.
+
+            for (;i<obj.cTriangles; i++ ) //let's loop through all triangles
+            {
+                //we now know the triangle, let's see which vertices it use
+                Triangle tr = obj.triangles[i];
+                var a = verts[tr.A1].Item1;
+                var b = verts[tr.B1].Item1;
+                var c = verts[tr.C1].Item1;
+                var d = verts[tr.A1].Item2;
+                //we grabbed the vertices, now let's parse the distance:
+                var e = skeleton.bones[d].Size; //it's the size from origin
+                var f = frame.boneRot.Item1[d]; //it's the animation translation for this vertices group (d)
+                //so now we have to rotate and translate the vertices by e and f
+                a = Vector3.Transform(a, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
+                a = Vector3.Transform(a, Matrix.CreateRotationY(MathHelper.ToRadians(f.Y)));
+                a = Vector3.Transform(a, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Z))); 
+                //TODO WIP
+            }
+
+            return null; //DEBUG so it doesn't crash
+            return vpt.ToArray();
+        }
+
         public VertexPositionTexture[] GetVertexPositions(int objectId, Vector3 position)
         {
             //THIS IS DEBUG IN-DEV CLASS
             Object obj = geometry.objects[objectId];
+            GetVertexPositions(objectId, position, 0, 0); //debug;
             return null;
 
             //basically this works like this:
