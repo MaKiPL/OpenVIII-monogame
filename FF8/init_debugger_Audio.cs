@@ -386,8 +386,10 @@ namespace FF8
                     see.Play();
                     return;
                 case ".sgt":
+
                     if (!MakiExtended.IsLinux)
                     {
+#if _WINDOWS                        
                         string pt = Memory.musices[Memory.MusicIndex];
                         if (cdm == null)
                         {
@@ -452,6 +454,7 @@ namespace FF8
                         //GCHandle.Alloc(cport, GCHandleType.Pinned);
                         //GCHandle.Alloc(outport, GCHandleType.Pinned);
                         //GCHandle.Alloc(infoport, GCHandleType.Pinned);
+#endif
                     }
                     return;
             }
@@ -466,6 +469,7 @@ namespace FF8
                 see.Dispose();
                 if (MakiExtended.IsLinux)
                 {
+#if _WINDOWS
                     cport.StopAll();
                     cport.Dispose();
                     ccollection.Dispose();
@@ -473,6 +477,7 @@ namespace FF8
                     outport.Dispose();
                     path.Dispose();
                     cdm.Dispose();
+#endif
                 }
 
             }
@@ -493,12 +498,15 @@ namespace FF8
                 see.Dispose();
             }
             catch { }
+#if _WINDOWS
             try
             {
                 if (!MakiExtended.IsLinux)
+
                     cport.StopAll();
             }
             catch {}
+#endif
         }
 
         private static List<byte[]> ProcessTrackList(byte[] item2)
