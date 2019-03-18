@@ -66,71 +66,76 @@ namespace FF8
 
         internal static void DEBUG()
         {
+            string dmusic_pt = "", RaW_ogg_pt = "", music_pt = "";
             //Roses and Wine V07 moves most of the sgt files to dmusic_backup
             //it leaves a few files behind. I think because RaW doesn't replace everything.
             //ogg files stored in:
-            string RaW_ogg_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../../RaW/GLOBAL/Music"));
+            RaW_ogg_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../../RaW/GLOBAL/Music"));
+            if (!Directory.Exists(RaW_ogg_pt))
+                RaW_ogg_pt = null;
             // From what I gather the OGG files and the sgt files have the same numerical prefix.
             // I might try to add the functionality to the debug screen monday.
-            string dmusic_pt= MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../Music/dmusic_backup/"));
+
+            dmusic_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../Music/dmusic_backup/"));
             if (!Directory.Exists(dmusic_pt))
-                dmusic_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../Music/dmusic/"));
-            string pt = dmusic_pt;
+                dmusic_pt = null;
+
+            music_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../Music/dmusic/"));
+            if (!Directory.Exists(music_pt))
+                music_pt = null;
 
             // goal of dicmusic is to be able to select a track by prefix. 
             // it adds an list of files with the same prefix. so you can later on switch out which one you want.
-
-            Memory.musices = Directory.GetFiles(RaW_ogg_pt, "*.ogg");
-            foreach (string m in Memory.musices)
+            if (RaW_ogg_pt != null)
             {
-                if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
+                Memory.musices = Directory.GetFiles(RaW_ogg_pt, "*.ogg");
+                foreach (string m in Memory.musices)
                 {
-                    if (key == 512) key = 0; //loser.ogg and sgt don't match.
-                    if (!Memory.dicMusic.ContainsKey(key))
-                        Memory.dicMusic.Add(key, new List<string> { m });
-                    else
-                        Memory.dicMusic[key].Add(m);
-                }
+                    if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
+                    {
+                        //mismatched prefix's go here
+                        if (key == 512) key = 0; //loser.ogg and sgt don't match.
+                        if (!Memory.dicMusic.ContainsKey(key))
+                            Memory.dicMusic.Add(key, new List<string> { m });
+                        else
+                            Memory.dicMusic[key].Add(m);
+                    }
 
-            }
-
-            Memory.musices = Directory.GetFiles(pt, "*.sgt");
-
-            foreach (string m in Memory.musices)
-            {
-
-                if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
-                {
-                    if (!Memory.dicMusic.ContainsKey(key))
-                        Memory.dicMusic.Add(key, new List<string> { m });
-                    else
-                        Memory.dicMusic[key].Add(m);
                 }
             }
+            if (dmusic_pt != null)
+            {
+                Memory.musices = Directory.GetFiles(dmusic_pt, "*.sgt");
 
+                foreach (string m in Memory.musices)
+                {
 
+                    if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
+                    {
+                        if (!Memory.dicMusic.ContainsKey(key))
+                            Memory.dicMusic.Add(key, new List<string> { m });
+                        else
+                            Memory.dicMusic[key].Add(m);
+                    }
+                }
+            }
+            if (music_pt != null)
+            {
+                Memory.musices = Directory.GetFiles(music_pt, "*.sgt");
 
-        //PlayMusic();
-        //FileStream fs = new FileStream(pt, FileMode.Open, FileAccess.Read);
-        //BinaryReader br = new BinaryReader(fs);
-        //string RIFF = Encoding.ASCII.GetString(br.ReadBytes(4));
-        //if (RIFF != "RIFF") throw new Exception("NewDirectMusic::NOT RIFF");
-        //uint eof = br.ReadUInt32();
-        //if (fs.Length != eof + 8) throw new Exception("NewDirectMusic::RIFF length/size indicator error");
-        //string dmsg = Encoding.ASCII.GetString(br.ReadBytes(4));
-        //var SegmentHeader = GetSGTSection(br);
-        //var guid = GetSGTSection(br);
-        //var list = GetSGTSection(br);
-        //var vers = GetSGTSection(br);
-        //var list_unfo = GetSGTSection(br);
-        //string UNFO = SGT_ReadUNAM(list_unfo).TrimEnd('\0');
-        //var trackList = GetSGTSection(br);
-        //List<byte[]> Tracks = ProcessTrackList(trackList.Item2);
-        //byte[] sequenceTrack = Tracks[2];
-        //PseudoBufferedStream pbs = new PseudoBufferedStream(sequenceTrack);
-        //pbs.Seek(44, PseudoBufferedStream.SEEK_BEGIN);
-        //string seqt = Encoding.ASCII.GetString(BitConverter.GetBytes(pbs.ReadUInt()));
-    }
+                foreach (string m in Memory.musices)
+                {
+
+                    if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
+                    {
+                        if (!Memory.dicMusic.ContainsKey(key))
+                            Memory.dicMusic.Add(key, new List<string> { m });
+                        else
+                            Memory.dicMusic[key].Add(m);
+                    }
+                }
+            }
+        }
 
         internal static void DEBUG_SoundAudio()
         {
