@@ -82,6 +82,7 @@
     <Compile Include="ArchiveWorker.cs" />
     <Compile Include="debug_MCH.cs" />
     <Compile Include="ExtapathyExtended.cs" />
+    <Compile Include="Ffcc.cs" />
     <Compile Include="Font.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="init_debugger_Audio.cs" />
@@ -117,6 +118,9 @@
     </Reference>
     <Reference Include="DirectMidiNet">
       <HintPath>..\DirectMidiNet.dll</HintPath>
+    </Reference>
+    <Reference Include="FFmpeg.AutoGen, Version=4.1.0.2, Culture=neutral, PublicKeyToken=9b7632533a381715, processorArchitecture=MSIL">
+      <HintPath>..\packages\FFmpeg.AutoGen.4.1.0.2\lib\net45\FFmpeg.AutoGen.dll</HintPath>
     </Reference>
     <Reference Include="NAudio, Version=1.8.5.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\NAudio.1.8.5\lib\net35\NAudio.dll</HintPath>

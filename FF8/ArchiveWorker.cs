@@ -15,18 +15,21 @@ namespace FF8
         public ArchiveWorker(string path)
         {
             _path = MakiExtended.GetUnixFullPath(path);
-            string root = System.IO.Path.GetDirectoryName(_path);
-            string file = System.IO.Path.GetFileNameWithoutExtension(_path);
-            string fi = MakiExtended.GetUnixFullPath($"{Path.Combine(root, file)}.fi");
-            string fl = MakiExtended.GetUnixFullPath($"{Path.Combine(root, file)}.fl");
+            string root = Path.GetDirectoryName(_path);
+            string file = Path.GetFileNameWithoutExtension(_path);
+            string fi = MakiExtended.GetUnixFullPath($"{Path.Combine(root, file)}{Memory.Archives.B_FileIndex}");
+            string fl = MakiExtended.GetUnixFullPath($"{Path.Combine(root, file)}{Memory.Archives.B_FileList}");
             if (!File.Exists(fi)) throw new Exception($"There is no {file}.fi file!\nExiting...");
             if (!File.Exists(fl)) throw new Exception($"There is no {file}.fl file!\nExiting...");
             FileList = ProduceFileLists();
         }
 
-        private string[] ProduceFileLists() => File.ReadAllLines(MakiExtended.GetUnixFullPath($"{Path.Combine(System.IO.Path.GetDirectoryName(_path),System.IO.Path.GetFileNameWithoutExtension(_path))}.fl"));
+        private string[] ProduceFileLists() =>
+            File.ReadAllLines(
+                    $"{Path.Combine(System.IO.Path.GetDirectoryName(_path), System.IO.Path.GetFileNameWithoutExtension(_path))}{Memory.Archives.B_FileList}"
+                    );
 
-        public static string[] GetBinaryFileList(byte[] fl) => System.Text.Encoding.ASCII.GetString(fl).Replace("\r", "").Replace("\0", "").Split('\n');
+        public static string[] GetBinaryFileList(byte[] fl) =>System.Text.Encoding.ASCII.GetString(fl).Replace("\r", "").Replace("\0", "").Split('\n');
 
         public static byte[] GetBinaryFile(string archiveName, string fileName)
         {
@@ -49,7 +52,7 @@ namespace FF8
             flText = flText.Replace(Convert.ToString(0x0d), "");
             int loc = -1;
             string[] files = flText.Split((char)0x0a);
-            for (int i = 0; i != files.Length; i++)
+            for (int i = 0; i != files.Length; i++) //check archive for filename
             {
                 string testme = files[i].Substring(0, files[i].Length - 1).ToUpper().TrimEnd('\0');
                 if (testme != a.ToUpper()) continue;
@@ -57,17 +60,17 @@ namespace FF8
                 break;
             }
             if (loc == -1)
-                {
-                    Debug.WriteLine("ArchiveWorker: NO SUCH FILE!");
-                    return null;
-                    //throw new Exception("ArchiveWorker: No such file!");
-                }
+            {
+                Debug.WriteLine("ArchiveWorker: NO SUCH FILE!");
+                return null;
+                //throw new Exception("ArchiveWorker: No such file!");
+            }
 
 
             uint fsLen = BitConverter.ToUInt32(FI, loc * 12);
             uint fSpos = BitConverter.ToUInt32(FI, (loc * 12) + 4);
             bool compe = BitConverter.ToUInt32(FI, (loc * 12) + 8) != 0;
-
+            
             byte[] file = new byte[fsLen];
 
             Array.Copy(FS, fSpos, file, 0, file.Length);

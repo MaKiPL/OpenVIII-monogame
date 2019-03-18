@@ -30,7 +30,7 @@ namespace FF8
 
         internal static ushort prevmusic = 0;
         private static ushort currmusic = 0;
-        
+        internal static ushort MusicIndex { get { return currmusic; } set { prevmusic = currmusic; currmusic = value; } }
         public static string[] musices;
         public static Dictionary<ushort, List<string>> dicMusic = new Dictionary<ushort, List<string>>(); //ogg and sgt files have same 3 digit prefix.
         public static void SpriteBatchStartStencil()
@@ -67,7 +67,6 @@ namespace FF8
 
 
         public static int module = MODULE_OVERTURE_DEBUG;
-
         static readonly string[] FF8DIR_list = {
             @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY VIII\Data\lang-en",
             "/home/robert/FINAL_FANTASY_VIII/Data/lang-en",
@@ -76,7 +75,8 @@ namespace FF8
             "/media/griever/Data/SteamLibrary/steamapps/common/FINAL FANTASY VIII/Data/lang-en"
         };
         private static string gooddir = "";
-        public static string FF8DIR {
+        public static string FF8DIR
+        {
             get
             {
                 if (gooddir == "")
@@ -92,14 +92,6 @@ namespace FF8
                 return gooddir;
             }
         }
-        //public const string FF8DIR = "/home/robert/FINAL_FANTASY_VIII/Data/lang-en";
-        //public const string FF8DIR = @"D:\SteamLibrary\steamapps\common\FINAL FANTASY VIII\Data\lang-en"; //Work
-        //public const string FF8DIR = @"D:\Steam\steamapps\common\FINAL FANTASY VIII\Data\lang-en"; //Home
-        //if (!Directory.Exists(FF8DIR)) throw new Exception($"There is no {file}.fi file!\nExiting...");
-
-        //public const string FF8DIR = @"/media/griever/Data/SteamLibrary/steamapps/common/FINAL FANTASY VIII/Data/lang-en";
-
-
         #region modules
         public const int MODULE_BATTLE = 3;
         public const int MODULE_FIELD = 5;
@@ -135,182 +127,9 @@ namespace FF8
 
         public static VIII_cameraMemoryStruct BS_CameraStruct;
         #endregion
-        #region MusicData
 
+        #region MusicDataMidi
         public static Dictionary<ushort, string> Songssgt = new Dictionary<ushort, string>()
-        {
-{0,"lose" },
-{1,"win" },
-{4,"run" },
-{5,"battle" },
-{7,"end" },
-{8,"antena" },
-{9,"waiting" },
-{12,"kani" },
-{13,"battle2" },
-{14,"Parade2" },
-{15,"fuan2" },
-{16,"march two" },
-{17,"joriku" },
-{18,"julia" },
-{19,"waltz" },
-{20,"friend" },
-{21,"dangeon" },
-{22,"pianosol" },
-{23,"Parade" },
-{24,"march one" },
-{25,"himitsu" },
-{26,"garden" },
-{27,"fuan" },
-{28,"polka2" },
-{29,"anthem" },
-{35,"m7f5" },
-{36,"majo" },
-{41,"field" },
-{42,"guitar" },
-{43,"concerttap" },
-{46,"resistan" },
-{47,"kaiso" },
-{48,"horizon" },
-{49,"master" },
-{51,"rinoa" },
-{52,"travia" },
-{53,"antena2" },
-{54,"truth" },
-{55,"jail" },
-{56,"gargarde" },
-{57,"timber" },
-{58,"garbadia" },
-{59,"pinch" },
-{60,"scene1" },
-{61,"pub" },
-{62,"bat3" },
-{63,"stage" },
-{64,"choco" },
-{65,"white" },
-{66,"majomv" },
-{67,"musho" },
-{68,"missile" },
-{69,"enzetu" },
-{70,"card" },
-{71,"gomon" },
-{72,"soto" },
-{73,"majobat" },
-{75,"Gar3" },
-{76,"Bossbat2" },
-{77,"lasdun" },
-{78,"gafly" },
-{79,"demo" },
-{80,"spy" },
-{81,"mods" },
-{82,"salt" },
-{83,"alien" },
-{84,"sekichu" },
-{85,"esta" },
-{86,"moonmv" },
-{89,"hikutei" },
-{90,"bossbat1" },
-{91,"rag1" },
-{92,"rag2" },
-{93,"lasboss" },
-{96,"keisho" },
-{97,"ashuku" },
-{99,"oriku2" },
-};
-    public static Dictionary<ushort, string> Songsogg = new Dictionary<ushort, string>()
-        {
-            {0,"Lose" },
-{1,"The Winner" },
-{4,"Never Look Back" },
-{5,"Don't Be Afraid" },
-{7,"Dead End" },
-{8,"Starting Up" },
-{9,"Intruders" },
-{12,"Don't Be Afraid (X-ATM092)" },
-{13,"Force Your Way" },
-{14,"FITHOS LUSEC WECOS VINOSEC (No Intro)" },
-{15,"Unrest" },
-{16,"The Stage is Set" },
-{17,"The Landing" },
-{18,"Love Grows" },
-{19,"Waltz for the Moon" },
-{20,"Ami" },
-{21,"Find Your Way" },
-{22,"Julia" },
-{23,"FITHOS LUSEC WECOS VINOSEC" },
-{24,"SeeD" },
-{25,"Tell Me" },
-{26,"Balamb GARDEN" },
-{27,"Fear" },
-{28,"Dance with the Balamb-Fish" },
-{29,"Cactus Jack" },
-{35,"The Mission" },
-{36,"SUCCESSION OF WITCHES" },
-{41,"Blue Fields" },
-{42,"Breezy" },
-{43,"Concert" },
-{46,"Timber Owls" },
-{47,"Fragments of Memories" },
-{48,"Fisherman's Horizon" },
-{49,"Heresy" },
-{51,"My Mind" },
-{52,"Where I Belong" },
-{53,"Starting Up (Looped)" },
-{54,"Truth" },
-{55,"Trust Me" },
-{56,"Galbadia GARDEN" },
-{57,"Martial Law" },
-{58,"Under Her Control" },
-{59,"Only a Plank Between One and Perdition" },
-{60,"Junction" },
-{61,"Roses and Wine" },
-{62,"The Man with the Machine Gun" },
-{63,"A Sacrifice" },
-{64,"ODEKA ke Chocobo" },
-{65,"Drifting" },
-{66,"Wounded" },
-{67,"Jailed" },
-{68,"Retaliation" },
-{69,"The Oath" },
-{70,"Shuffle or Boogie" },
-{71,"Rivals" },
-{72,"Blue Sky" },
-{73,"Premonition" },
-{75,"Galbadia GARDEN (No Intro)" },
-{76,"Maybe I'm a Lion" },
-{77,"The Castle" },
-{78,"Movin'" },
-{79,"Overture" },
-{80,"The Spy" },
-{81,"Mods de Chocobo" },
-{82,"The Salt Flats" },
-{83,"The Residents" },
-{84,"Lunatic Pandora" },
-{85,"Silence and Motion" },
-{86,"Tears of the Moon" },
-{88,"Tears of the Moon (Alternate)" },
-{89,"Ride On" },
-{90,"The Legendary Beast" },
-{91,"Slide Show Part 1" },
-{92,"Slide Show Part 2" },
-{93,"The Extreme" },
-{96,"The Successor" },
-{97,"Compression of Time" },
-{99,"The Landing (No Intro)" },
-{512,"The Loser" },
-{513,"Eyes on Me" },
-{514,"Irish Jig (Concert)" },
-{515,"Eyes on Me (Concert)" },
-{516,"Movin' (No Intro)" },
-{517,"The Landing (Alternate)" },
-{518,"The Landing (Alternate - No Intro)" },
-{519,"Galbadia GARDEN (Alternate)" },
-
-        };
-        #endregion
-
-        #region AudioData
-        public static Dictionary<ushort, string> Songs = new Dictionary<ushort, string>()
         {
             {0, "Lose" },
             {1, "Win" },
@@ -411,8 +230,101 @@ namespace FF8
             {96, "Keisho" },
             {97, "Compression" },
         };
-#endregion
+        #endregion
+        #region MusicDataOGG
+        public static Dictionary<ushort, string> Songsogg = new Dictionary<ushort, string>()
+        {
+            {0,"Lose" },
+{1,"The Winner" },
+{4,"Never Look Back" },
+{5,"Don't Be Afraid" },
+{7,"Dead End" },
+{8,"Starting Up" },
+{9,"Intruders" },
+{12,"Don't Be Afraid (X-ATM092)" },
+{13,"Force Your Way" },
+{14,"FITHOS LUSEC WECOS VINOSEC (No Intro)" },
+{15,"Unrest" },
+{16,"The Stage is Set" },
+{17,"The Landing" },
+{18,"Love Grows" },
+{19,"Waltz for the Moon" },
+{20,"Ami" },
+{21,"Find Your Way" },
+{22,"Julia" },
+{23,"FITHOS LUSEC WECOS VINOSEC" },
+{24,"SeeD" },
+{25,"Tell Me" },
+{26,"Balamb GARDEN" },
+{27,"Fear" },
+{28,"Dance with the Balamb-Fish" },
+{29,"Cactus Jack" },
+{35,"The Mission" },
+{36,"SUCCESSION OF WITCHES" },
+{41,"Blue Fields" },
+{42,"Breezy" },
+{43,"Concert" },
+{46,"Timber Owls" },
+{47,"Fragments of Memories" },
+{48,"Fisherman's Horizon" },
+{49,"Heresy" },
+{51,"My Mind" },
+{52,"Where I Belong" },
+{53,"Starting Up (Looped)" },
+{54,"Truth" },
+{55,"Trust Me" },
+{56,"Galbadia GARDEN" },
+{57,"Martial Law" },
+{58,"Under Her Control" },
+{59,"Only a Plank Between One and Perdition" },
+{60,"Junction" },
+{61,"Roses and Wine" },
+{62,"The Man with the Machine Gun" },
+{63,"A Sacrifice" },
+{64,"ODEKA ke Chocobo" },
+{65,"Drifting" },
+{66,"Wounded" },
+{67,"Jailed" },
+{68,"Retaliation" },
+{69,"The Oath" },
+{70,"Shuffle or Boogie" },
+{71,"Rivals" },
+{72,"Blue Sky" },
+{73,"Premonition" },
+{75,"Galbadia GARDEN (No Intro)" },
+{76,"Maybe I'm a Lion" },
+{77,"The Castle" },
+{78,"Movin'" },
+{79,"Overture" },
+{80,"The Spy" },
+{81,"Mods de Chocobo" },
+{82,"The Salt Flats" },
+{83,"The Residents" },
+{84,"Lunatic Pandora" },
+{85,"Silence and Motion" },
+{86,"Tears of the Moon" },
+{88,"Tears of the Moon (Alternate)" },
+{89,"Ride On" },
+{90,"The Legendary Beast" },
+{91,"Slide Show Part 1" },
+{92,"Slide Show Part 2" },
+{93,"The Extreme" },
+{96,"The Successor" },
+{97,"Compression of Time" },
+{99,"The Landing (No Intro)" },
+{512,"The Loser" },
+{513,"Eyes on Me" },
+{514,"Irish Jig (Concert)" },
+{515,"Eyes on Me (Concert)" },
+{516,"Movin' (No Intro)" },
+{517,"The Landing (Alternate)" },
+{518,"The Landing (Alternate - No Intro)" },
+{519,"Galbadia GARDEN (Alternate)" },
 
+        };
+        #endregion
+
+        #region  DrawPointMagic
         public static Dictionary<byte, string> DrawPointMagic = new Dictionary<byte, string>()
         {
             {0, "Cure - Balamb Garden courtyard"},
@@ -672,7 +584,7 @@ namespace FF8
             {254, "Ultima"},
             {255, "Scan"}
         };
-
+        #endregion
         #region FF8Vaiables
         /*
         // ref http://wiki.ffrtt.ru/index.php/FF8/Variables
@@ -954,16 +866,16 @@ namespace FF8
             "Continue",
             "OpenVIII debug tools"//"DEBUG!"
         };
-#endregion
+        #endregion
 
         public static class Archives
         {
-            public static string A_BATTLE = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR,"battle"));
-            public static string A_FIELD = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR,"field"));
-            public static string A_MAGIC = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR,"magic"));
-            public static string A_MAIN = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR,"main"));
-            public static string A_MENU = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR,"menu"));
-            public static string A_WORLD = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR,"world"));
+            public static string A_BATTLE = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "battle"));
+            public static string A_FIELD = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "field"));
+            public static string A_MAGIC = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "magic"));
+            public static string A_MAIN = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "main"));
+            public static string A_MENU = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "menu"));
+            public static string A_WORLD = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "world")); 
 
             public const string B_FileList = ".fl";
             public const string B_FileIndex = ".fi";
