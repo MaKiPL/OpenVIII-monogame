@@ -2,10 +2,13 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/.vs/FF8/v15/Server/sqlite3
-FF8/bin/x86/DebugLinux/AForge.dll
-FF8/bin/x86/DebugLinux/AForge.Video.dll
-FF8/bin/x86/DebugLinux/AForge.Video.FFMPEG.dll
-.vs/FF8/v15/.suo
-.vs/FF8/v15/.suo
-FF8/bin/x86/DebugLinux/AForge.xml
+.vs
+FF8/Obj/*
+FF8/Bin/*
+FF8/bin/*
+FF8/obj/*
+FF8/packages/*
+packages/*
+*.exe
+*.pdb 
+AForge.*
