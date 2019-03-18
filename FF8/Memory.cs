@@ -30,7 +30,6 @@ namespace FF8
 
         internal static ushort prevmusic = 0;
         private static ushort currmusic = 0;
-        internal static ushort MusicIndex { get { return currmusic; } set { prevmusic = currmusic; currmusic = value; } }
         
         public static string[] musices;
         public static Dictionary<ushort, List<string>> dicMusic = new Dictionary<ushort, List<string>>(); //ogg and sgt files have same 3 digit prefix.
@@ -953,18 +952,18 @@ namespace FF8
         {
             "NEW GAME",
             "Continue",
-            "DEBUG!"
+            "OpenVIII debug tools"//"DEBUG!"
         };
 #endregion
 
         public static class Archives
         {
-            public static string A_BATTLE = Path.Combine(FF8DIR,"battle");
-            public static string A_FIELD = Path.Combine(FF8DIR,"field");
-            public static string A_MAGIC = Path.Combine(FF8DIR,"magic");
-            public static string A_MAIN = Path.Combine(FF8DIR,"main");
-            public static string A_MENU = Path.Combine(FF8DIR,"menu");
-            public static string A_WORLD = Path.Combine(FF8DIR,"world");
+            public static string A_BATTLE = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR,"battle"));
+            public static string A_FIELD = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR,"field"));
+            public static string A_MAGIC = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR,"magic"));
+            public static string A_MAIN = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR,"main"));
+            public static string A_MENU = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR,"menu"));
+            public static string A_WORLD = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR,"world"));
 
             public const string B_FileList = ".fl";
             public const string B_FileIndex = ".fi";
