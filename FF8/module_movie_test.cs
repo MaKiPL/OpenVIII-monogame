@@ -1,9 +1,6 @@
 ﻿
 using System;
 using System.IO;
-#if _WINDOWS
-using AForge.Video.FFMPEG;
-#endif
 using System.Drawing;
 using Microsoft.Xna.Framework.Graphics;
 using System.Drawing.Imaging;
