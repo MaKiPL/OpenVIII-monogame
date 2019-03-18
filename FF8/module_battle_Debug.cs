@@ -211,6 +211,8 @@ namespace FF8
             ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
             effect.TextureEnabled = true;
             var a = monstersData[0].GetVertexPositions(0, new Vector3(0,50,0)); //DEBUG
+            if (a == null)
+                return;
             ate.Texture = monstersData[0].textures.textures[0];
 
             foreach (var pass in ate.CurrentTechnique.Passes)

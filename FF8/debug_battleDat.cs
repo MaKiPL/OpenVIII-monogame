@@ -36,9 +36,9 @@ namespace FF8
             public ushort unk4;
             public Bone[] bones;
 
-            public float ScaleX { get => scaleX / 4096.0f; }
-            public float ScaleY { get => scaleY / 4096.0f; }
-            public float ScaleZ { get => scaleZ / 4096.0f; }
+            public float ScaleX { get => scaleX / 4096.0f; set => scaleX = (short)value; }
+            public float ScaleY { get => scaleY / 4096.0f; set => scaleY = (short)value; }
+            public float ScaleZ { get => scaleZ / 4096.0f; set => scaleZ = (short)value; }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 48)]
@@ -67,7 +67,21 @@ namespace FF8
         private void ReadSection1(uint v, MemoryStream ms, BinaryReader br)
         {
             ms.Seek(v, SeekOrigin.Begin);
+#if _WINDOWS //looks like Linux Mono doesn't like marshalling structure with LPArray to Bone[]
             skeleton = MakiExtended.ByteArrayToStructure<Skeleton>(br.ReadBytes(16));
+#else
+            skeleton = new Skeleton()
+            {
+                cBones = br.ReadUInt16(),
+                unk = br.ReadUInt16(),
+                unk2 = br.ReadUInt16(),
+                unk3 = br.ReadUInt16(),
+                ScaleX = br.ReadUInt16(),
+                ScaleY = br.ReadUInt16(),
+                ScaleZ = br.ReadUInt16(),
+                unk4 = br.ReadUInt16()
+            };
+#endif
             skeleton.bones = new Bone[skeleton.cBones];
             for (int i = 0; i < skeleton.cBones; i++)
                 skeleton.bones[i] = MakiExtended.ByteArrayToStructure<Bone>(br.ReadBytes(48));
@@ -76,9 +90,9 @@ namespace FF8
 
         public Skeleton skeleton;
 
-        #endregion
+#endregion
 
-        #region section 2
+#region section 2
         public struct Geometry
         {
             public uint cObjects;
@@ -246,9 +260,9 @@ namespace FF8
 
             //return vpt;
         }
-        #endregion
+#endregion
 
-        #region section 3
+#region section 3
         public struct AnimationData
         {
             public uint cAnimations;
@@ -320,9 +334,9 @@ namespace FF8
             }
         }
         public AnimationData animHeader;
-        #endregion
+#endregion
 
-        #region section 7
+#region section 7
         [StructLayout(LayoutKind.Sequential, Pack =1, Size =380)]
         public struct Information
         {
@@ -414,9 +428,9 @@ namespace FF8
         }
 
         public Information information;
-        #endregion
+#endregion
 
-        #region section 11
+#region section 11
         public struct Textures
         {
             public uint cTims;
@@ -426,7 +440,7 @@ namespace FF8
         }
 
         public Textures textures;
-        #endregion
+#endregion
 
         private void ReadSection11(uint v, MemoryStream ms, BinaryReader br)
         {
