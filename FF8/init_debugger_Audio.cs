@@ -345,13 +345,15 @@ namespace FF8
                 ext = Path.GetExtension(Memory.dicMusic[Memory.MusicIndex][0]).ToLower();
             }
 
+            string pt = Memory.dicMusic[Memory.MusicIndex][0];
+
             StopAudio();
 
             switch (ext)
             {
                 case ".ogg":
                     //vorbis wave reader uncompresses the 32 bit float wav data from ogg files
-                    var vorbisStream = new VorbisWaveReader(Memory.dicMusic[Memory.MusicIndex][0]);
+                    var vorbisStream = new VorbisWaveReader(pt);
                     //read fully float reads float[] from vorbis stream and then uses another function to convert to 16 bit pcm
                     byte[] fileStream = ReadFullyFloat(vorbisStream);
                     int loopstart = -1;
@@ -390,7 +392,6 @@ namespace FF8
                     if (!MakiExtended.IsLinux)
                     {
 #if _WINDOWS                        
-                        string pt = Memory.musices[Memory.MusicIndex];
                         if (cdm == null)
                         {
                             cdm = new CDirectMusic();
