@@ -121,7 +121,7 @@ Requirements: MonoGame + Visual Studio
 
 2. ??
 
-PS. for video to work all the ffmpeg dll files need to go in the folder with your executable
+PS. Required FFmpeg dlls.
 avcodec-58.dll
 avdevice-58.dll
 avfilter-7.dll
