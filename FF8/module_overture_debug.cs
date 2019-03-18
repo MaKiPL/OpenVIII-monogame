@@ -13,7 +13,7 @@ namespace FF8
 {
     internal static class Module_overture_debug
     {
-        private static OvertureInternalModule internalModule = OvertureInternalModule._0InitSound;
+        private static OvertureInternalModule internalModule = OvertureInternalModule._4Squaresoft;
         private static ArchiveWorker aw;
         private const string names = "name";
         private const string loops = "loop";
@@ -26,7 +26,8 @@ namespace FF8
             _0InitSound,
             _1WaitBeforeFirst,
             _2PlaySequence,
-            _3SequenceFinishedPlayMainMenu
+            _3SequenceFinishedPlayMainMenu,
+            _4Squaresoft
         }
 
         private static double internalTimer;
@@ -64,7 +65,9 @@ namespace FF8
             bFadingOut = false;
             Fade = 0;
             Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
-            Memory.module = Memory.MODULE_OVERTURE_DEBUG;
+
+            internalModule = OvertureInternalModule._4Squaresoft;
+            Module_movie_test.returnState = Memory.MODULE_OVERTURE_DEBUG;
         }
         private static void WaitForFirst()
         {
@@ -111,6 +114,12 @@ namespace FF8
                     break; //actually this is our entry point for draw;
                 case OvertureInternalModule._3SequenceFinishedPlayMainMenu:
                     DrawLogo(); //after this ends, jump into main menu module
+                    break;
+                case OvertureInternalModule._4Squaresoft:
+                    internalModule = OvertureInternalModule._0InitSound;
+                    Module_movie_test.Index = 103;
+                    Module_movie_test.returnState = Memory.MODULE_OVERTURE_DEBUG;
+                    Memory.module = Memory.MODULE_MOVIETEST;
                     break;
             }
         }
