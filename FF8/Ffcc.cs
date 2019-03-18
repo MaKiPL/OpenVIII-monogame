@@ -90,13 +90,14 @@ namespace FF8
         /// Current media type being processed.
         /// </summary>
         public AVMediaType Media_Type { get; private set; }
-        public enum FfccMode{
+        public enum FfccMode
+        {
             PROCESS_ALL,
             STATE_MACH,
             NOTINIT
         }
         public enum FfccState
-            {
+        {
             INIT,
             WAITING, //enters waiting state to wait for more input.
             READALL,
@@ -104,11 +105,12 @@ namespace FF8
             NULL, // used if you want to sometimes pass a value but not always.
             PACKET,
             READONE,
-            FRAME
+            FRAME,
+            NODLL
         }
         FfccState State { get; set; }
         FfccMode Mode { get; set; }
-        public int FPS { get => (Codec->framerate.den == 0 || Codec->framerate.num == 0 ? 0 : Codec->framerate.num / Codec->framerate.den); }
+        public int FPS { get => (Codec != null ? (Codec->framerate.den == 0 || Codec->framerate.num == 0 ? 0 : Codec->framerate.num / Codec->framerate.den) : 0); }
 
         public Ffcc()
         {
@@ -135,7 +137,7 @@ namespace FF8
             //Parse(); //doesn't seem to work. Or it only works with raw streams.
             //Decode(); //Parse() or Read() runs decode. Decode just tries to read the data in the packets. Default there is nothing there.
         }
-        private int Update(FfccState state = FfccState.NULL,int ret = 0)
+        private int Update(FfccState state = FfccState.NULL, int ret = 0)
         {
             if (Mode == FfccMode.NOTINIT)
                 throw new Exception("Class not Init");
@@ -165,7 +167,7 @@ namespace FF8
                         break;
                 }
             }
-            while (Mode == FfccMode.PROCESS_ALL && ( State != FfccState.DONE || State != FfccState.WAITING));
+            while (Mode == FfccMode.PROCESS_ALL && (State != FfccState.DONE || State != FfccState.WAITING));
             return ret;
         }
         private void ReadAll()
@@ -181,20 +183,29 @@ namespace FF8
         }
         ~Ffcc()
         {
-            fixed (AVFrame** tmp = &_frame)
-                ffmpeg.av_frame_free(tmp);
-            fixed (AVPacket** tmp = &_packet)
-                ffmpeg.av_packet_free(tmp);
-            fixed (SwrContext** tmp = &_swr)
-                ffmpeg.swr_free(tmp);
-            ffmpeg.av_parser_close(Parser);
-            ffmpeg.avcodec_close(Codec);
-            ffmpeg.avformat_free_context(Format);
+            try
+            {
+                fixed (AVFrame** tmp = &_frame)
+                    ffmpeg.av_frame_free(tmp);
+                fixed (AVPacket** tmp = &_packet)
+                    ffmpeg.av_packet_free(tmp);
+                fixed (SwrContext** tmp = &_swr)
+                    ffmpeg.swr_free(tmp);
+                ffmpeg.av_parser_close(Parser);
+                ffmpeg.avcodec_close(Codec);
+                ffmpeg.avformat_free_context(Format);
+            }
+            catch (DllNotFoundException e)
+            {
+                TextWriter errorWriter = Console.Error;
+                errorWriter.WriteLine(e.Message);
+                errorWriter.WriteLine("Clean up failed, maybe FFmpeg DLLs are missing");
+            }
         }
         /// <summary>
         /// Opens filename and assigns FormatContext.
         /// </summary>
-        private void Open()
+        private int Open()
         {
             if (!File_Opened)
             {
@@ -204,7 +215,9 @@ namespace FF8
                 Ret = ffmpeg.avformat_find_stream_info(_format, null);
                 CheckRet();
                 File_Opened = true;
+
             }
+            return (File_Opened) ? 0 : -1;
         }
         /// <summary>
         /// Throws exception if Ret is less than 0
@@ -220,35 +233,46 @@ namespace FF8
         private void Init()
         {
             //default values below here.
-            Ret = 0;
-            _format = ffmpeg.avformat_alloc_context();
-            Swr = ffmpeg.swr_alloc();
-            Parser = null;
-            Codec = null;
-            Stream = null;
-            Packet = ffmpeg.av_packet_alloc();
-            if (Packet == null)
-                throw new Exception("Error allocating the packet\n");
-            //ffmpeg.av_init_packet(Packet);
-            Frame = ffmpeg.av_frame_alloc();
-            if (Frame == null)
-                throw new Exception("Error allocating the frame\n");
-            Stream_index = -1;
-            Channels = 0;
-            Sample_rate = 44100;
-            //ffmpeg.av_register_all(); //should not need this.
-            Open();
-            if (!File_Opened)
-                throw new Exception("No file not open");
-            Get_Stream();
-            FindOpenCodec();
-            Get_Stream();
-            if (Media_Type == AVMediaType.AVMEDIA_TYPE_VIDEO)
-                PrepareSWS();
-            if (Media_Type == AVMediaType.AVMEDIA_TYPE_AUDIO)
-                PrepareResampler();
+            Ret = -1;
+            try
+            {
+                _format = ffmpeg.avformat_alloc_context();
+                Swr = ffmpeg.swr_alloc();
+                Parser = null;
+                Codec = null;
+                Stream = null;
+                Packet = ffmpeg.av_packet_alloc();
+                if (Packet == null)
+                    throw new Exception("Error allocating the packet\n");
+                //ffmpeg.av_init_packet(Packet);
+                Frame = ffmpeg.av_frame_alloc();
+                if (Frame == null)
+                    throw new Exception("Error allocating the frame\n");
+                Stream_index = -1;
+                Channels = 0;
+                Sample_rate = 44100;
+                //ffmpeg.av_register_all(); //should not need this.
 
 
+                if (Open() < 0)
+                    throw new Exception("No file not open");
+
+
+                Get_Stream();
+                FindOpenCodec();
+                Get_Stream();
+                if (Media_Type == AVMediaType.AVMEDIA_TYPE_VIDEO)
+                    PrepareSWS();
+                if (Media_Type == AVMediaType.AVMEDIA_TYPE_AUDIO)
+                    PrepareResampler();
+            }
+            catch (DllNotFoundException e)
+            {
+                State = FfccState.NODLL;
+                TextWriter errorWriter = Console.Error;
+                errorWriter.WriteLine(e.Message);
+                errorWriter.WriteLine("FFCC can't init due to missing ffmpeg dlls");
+            }
         }
         /// <summary>
         /// 
@@ -304,7 +328,7 @@ namespace FF8
                 Codec->width, Codec->height, AVPixelFormat.AV_PIX_FMT_RGBA,
                 ffmpeg.SWS_ACCURATE_RND, null, null, null);
             Ret = ffmpeg.sws_init_context(Sws, null, null);
-            if(Ret < 0)
+            if (Ret < 0)
                 CheckRet();
         }
         /// <summary>
@@ -435,7 +459,7 @@ namespace FF8
             Ret = ffmpeg.av_read_frame(Format, Packet);
             if (Ret == ffmpeg.AVERROR_EOF)
             {
-                return Update(FfccState.DONE,Ret);
+                return Update(FfccState.DONE, Ret);
             }
             else if (Ret < 0)
                 CheckRet();
@@ -448,12 +472,12 @@ namespace FF8
             if (Ret == ffmpeg.AVERROR_EOF) return Update(FfccState.DONE, Ret);
             else
                 CheckRet();
-            return Update(FfccState.FRAME,Ret);
+            return Update(FfccState.FRAME, Ret);
         }
         public int GetFrame()
         {
             Ret = 0;
-            if(Packet->size == 0) return Update(FfccState.READONE);
+            if (Packet->size == 0) return Update(FfccState.READONE);
 
             Ret = ffmpeg.avcodec_receive_frame(Codec, Frame);
             if (Ret == ffmpeg.AVERROR(ffmpeg.EAGAIN))
@@ -461,9 +485,9 @@ namespace FF8
                 return Update(FfccState.READONE);
             else if (Ret == ffmpeg.AVERROR_EOF)
                 // End of file..
-                return Update(FfccState.DONE,Ret);
+                return Update(FfccState.DONE, Ret);
             else CheckRet();
-            return Update(FfccState.WAITING,Ret);
+            return Update(FfccState.WAITING, Ret);
         }
         /// <summary>
         /// Saves each frame to it's own BMP image file.

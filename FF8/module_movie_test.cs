@@ -101,7 +101,17 @@ namespace FF8
 
             ffcc = new Ffcc(movies[Index],AVMediaType.AVMEDIA_TYPE_VIDEO,Ffcc.FfccMode.STATE_MACH);
             FPS = ffcc.FPS;
-            frameRenderingDelay = (1000 / FPS) / 2;
+            try
+            {
+                frameRenderingDelay = (1000 / FPS) / 2;
+            }
+            catch(DivideByZeroException e)
+            {
+                TextWriter errorWriter = Console.Error;
+                errorWriter.WriteLine(e.Message);
+                errorWriter.WriteLine("Can not calc FPS, possibly FFMPEG dlls are missing or an error has occured");
+                movieState = STATE_RETURN;
+            }
 
         }
 
