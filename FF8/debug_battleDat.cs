@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -107,15 +108,11 @@ namespace FF8
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
         public struct Vertex
         {
-            private short x;
-            private short y;
-            private short z;
+            public short x;
+            public short y;
+            public short z;
 
-            public Vector3 GetVector => new Vector3(X, -Z, Y);
-
-            public short X { get => (short)(x/500); set => x = value; }
-            public short Y { get => (short)(y/500); set => y = value; }
-            public short Z { get => (short)(z/500); set => z = value; }
+            public Vector3 GetVector => new Vector3(x/500.0f, -z/500.0f, y/500.0f);
         }
 
         [StructLayout(LayoutKind.Sequential, Pack =1, Size =16)]
@@ -207,28 +204,47 @@ namespace FF8
         {
             //THIS IS DEBUG IN-DEV CLASS
             Object obj = geometry.objects[objectId];
-            uint totalVerts = (uint)obj.verticeData.Sum(x => x.cVertices);
-            Vector3[] vecTable = new Vector3[totalVerts]; //DEBUG
-            int totalindex = 0;
-            int i;
-            for (i = 0; i<obj.cVertices; i++)
-                for (int n = 0; n < obj.verticeData[i].cVertices; n++)
-                    vecTable[totalindex++] = obj.verticeData[i].vertices[n].GetVector;
-            VertexPositionTexture[] vpt = new VertexPositionTexture[obj.cTriangles*3+obj.cQuads*6]; //6 because retriangulation is needed;
-            i = 0;
-            for (; i < obj.cTriangles; i++) {
-                vpt[i * 3 + 0] = new VertexPositionTexture(position + vecTable[obj.triangles[i].A1], new Vector2(obj.triangles[i].vta.U1, obj.triangles[i].vta.V1));
-                vpt[i * 3 + 1] = new VertexPositionTexture(position + vecTable[obj.triangles[i].B1], new Vector2(obj.triangles[i].vtb.U1, obj.triangles[i].vtb.V1));
-                vpt[i * 3 + 2] = new VertexPositionTexture(position + vecTable[obj.triangles[i].C1], new Vector2(obj.triangles[i].vtc.U1, obj.triangles[i].vtc.V1)); }
-            for (int n = 0; n < obj.cQuads; n++) /*quad retriangulation*/ {
-                vpt[i + n * 6 + 0] = new VertexPositionTexture(position + vecTable[obj.quads[n].A1], new Vector2(obj.quads[n].vta.U1, obj.quads[n].vta.V1));
-                vpt[i + n * 6 + 1] = new VertexPositionTexture(position + vecTable[obj.quads[n].B1], new Vector2(obj.quads[n].vtb.U1, obj.quads[n].vtb.V1));
-                vpt[i + n * 6 + 2] = new VertexPositionTexture(position + vecTable[obj.quads[n].D1], new Vector2(obj.quads[n].vtd.U1, obj.quads[n].vtd.V1));
-                vpt[i + n * 6 + 3] = new VertexPositionTexture(position + vecTable[obj.quads[n].A1], new Vector2(obj.quads[n].vta.U1, obj.quads[n].vta.V1));
-                vpt[i + n * 6 + 4] = new VertexPositionTexture(position + vecTable[obj.quads[n].C1], new Vector2(obj.quads[n].vtc.U1, obj.quads[n].vtc.V1));
-                vpt[i + n * 6 + 5] = new VertexPositionTexture(position + vecTable[obj.quads[n].D1], new Vector2(obj.quads[n].vtd.U1, obj.quads[n].vtd.V1));
-                ++i;}
-            return vpt;
+            return null;
+
+            //basically this works like this:
+            //every verticeData has a bone attached to it. Bone size declares the 'distance' between bone and rot (bone 0xFFFF)
+            //every frame actually rotates the bones (and therefore rotates the whole vertice data)
+            //so Maki, you should think of a better algorithm to play animations than just forcing to render everything
+            //triangle by triangle (actually I have to, but it's important to store vertices data along bones to another 
+            //spectrum, so I'll be able to pre-render it. 
+
+            //so-> a collection of vertex data as-is grabbed by triangle grouped by bone. Then translate by animation rotation
+            //and size- voila, that's all
+
+            //MOD: remember to put space for future animation lerp for unlimited FPS smooth motion -> deltaTime calculation?
+
+
+            //Object obj = geometry.objects[objectId];
+            //uint totalVerts = (uint)obj.verticeData.Sum(x => x.cVertices);
+            //Vector3[] vecTable = new Vector3[totalVerts]; //DEBUG
+            //int totalindex = 0;
+            //int i;
+            //for (i = 0; i < obj.cVertices; i++)
+            //    for (int n = 0; n < obj.verticeData[i].cVertices; n++)
+            //        vecTable[totalindex++] = obj.verticeData[i].vertices[n].GetVector;
+            //VertexPositionTexture[] vpt = new VertexPositionTexture[obj.cTriangles*3+obj.cQuads*6]; //6 because retriangulation is needed;
+            //i = 0;
+            //for (; i < obj.cTriangles; i++) {
+            //    vpt[i * 3 + 0] = new VertexPositionTexture(position + vecTable[obj.triangles[i].A1], new Vector2(obj.triangles[i].vta.U1, obj.triangles[i].vta.V1));
+            //    vpt[i * 3 + 1] = new VertexPositionTexture(position + vecTable[obj.triangles[i].B1], new Vector2(obj.triangles[i].vtb.U1, obj.triangles[i].vtb.V1));
+            //    vpt[i * 3 + 2] = new VertexPositionTexture(position + vecTable[obj.triangles[i].C1], new Vector2(obj.triangles[i].vtc.U1, obj.triangles[i].vtc.V1)); }
+            //for (int n = 0; n < obj.cQuads; n++) /*quad retriangulation*/
+            //{
+            //    vpt[i + n * 6 + 0] = new VertexPositionTexture(position + vecTable[obj.quads[n].A1], new Vector2(obj.quads[n].vta.U1, obj.quads[n].vta.V1));
+            //    vpt[i + n * 6 + 1] = new VertexPositionTexture(position + vecTable[obj.quads[n].B1], new Vector2(obj.quads[n].vtb.U1, obj.quads[n].vtb.V1));
+            //    vpt[i + n * 6 + 2] = new VertexPositionTexture(position + vecTable[obj.quads[n].D1], new Vector2(obj.quads[n].vtd.U1, obj.quads[n].vtd.V1));
+            //    vpt[i + n * 6 + 3] = new VertexPositionTexture(position + vecTable[obj.quads[n].A1], new Vector2(obj.quads[n].vta.U1, obj.quads[n].vta.V1));
+            //    vpt[i + n * 6 + 4] = new VertexPositionTexture(position + vecTable[obj.quads[n].C1], new Vector2(obj.quads[n].vtc.U1, obj.quads[n].vtc.V1));
+            //    vpt[i + n * 6 + 5] = new VertexPositionTexture(position + vecTable[obj.quads[n].D1], new Vector2(obj.quads[n].vtd.U1, obj.quads[n].vtd.V1));
+            //    ++i;
+            //}
+
+            //return vpt;
         }
         #endregion
 
