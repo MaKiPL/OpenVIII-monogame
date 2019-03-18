@@ -109,13 +109,37 @@ namespace FF8
         public enum FfccState
         {
             INIT,
-            WAITING, //enters waiting state to wait for more input.
+            /// <summary>
+            /// Waiting for request for next frame
+            /// </summary>
+            WAITING,
+            /// <summary>
+            /// Readall the data
+            /// </summary>
             READALL,
+            /// <summary>
+            /// Done reading file nothing more can be done
+            /// </summary>
             DONE,
-            NULL, // used if you want to sometimes pass a value but not always.
+            /// <summary>
+            /// Don't change state just pass ret value.
+            /// </summary>
+            NULL,
+            /// <summary>
+            /// Get packet of data containing frames
+            /// </summary>
             PACKET,
+            /// <summary>
+            /// Read a packet of data from file
+            /// </summary>
             READONE,
+            /// <summary>
+            /// Get frames from packet4
+            /// </summary>
             FRAME,
+            /// <summary>
+            /// Missing DLLs caused exception
+            /// </summary>
             NODLL
         }
         FfccState State { get; set; }
@@ -151,6 +175,7 @@ namespace FF8
         {
             if (Mode == FfccMode.NOTINIT)
                 throw new Exception("Class not Init");
+            if (state == FfccState.NODLL) return -1;
             if (state != FfccState.NULL) State = state;
             do
             {
@@ -186,7 +211,7 @@ namespace FF8
             {
                 Ret = ffmpeg.av_read_frame(Format, Packet);
                 if (Ret == ffmpeg.AVERROR_EOF) break;
-                else if (Ret < 0)
+                else 
                     CheckRet();
                 Decode();
             }
@@ -234,8 +259,7 @@ namespace FF8
         /// </summary>
         private void CheckRet()
         {
-            if (Ret < 0)
-                throw new Exception($"{Ret} - {AvError(Ret)}");
+            CheckRet();
         }
         /// <summary>
         /// 
@@ -338,7 +362,7 @@ namespace FF8
                 Codec->width, Codec->height, AVPixelFormat.AV_PIX_FMT_RGBA,
                 ffmpeg.SWS_ACCURATE_RND, null, null, null);
             Ret = ffmpeg.sws_init_context(Sws, null, null);
-            if (Ret < 0)
+            
                 CheckRet();
         }
         /// <summary>
@@ -360,8 +384,7 @@ namespace FF8
                 throw new Exception("error: swr_alloc_set_opts()");
             ffmpeg.swr_init(Swr);
             Ret = ffmpeg.swr_is_initialized(Swr);
-            if (Ret < 0)
-                throw new Exception($"{Ret} - {AvError(Ret)}");
+            CheckRet();
         }
         /// <summary>
         /// Converts FFMPEG error codes into a string.
@@ -402,7 +425,6 @@ namespace FF8
         //                        Ret = ffmpeg.av_parser_parse2(Parser, Codec, &Packet->data, &Packet->size,
         //                            t, read, ffmpeg.AV_NOPTS_VALUE, ffmpeg.AV_NOPTS_VALUE, 0);
         //                    }
-        //                    if (Ret < 0)
         //                        CheckRet();
         //                    remain -= Ret;
         //                    read -= Ret;
@@ -471,7 +493,7 @@ namespace FF8
             {
                 return Update(FfccState.DONE, Ret);
             }
-            else if (Ret < 0)
+            else 
                 CheckRet();
             return Update(FfccState.PACKET, Ret);
         }
