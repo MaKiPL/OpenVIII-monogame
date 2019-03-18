@@ -259,10 +259,11 @@ namespace FF8
         /// </summary>
         private void CheckRet()
         {
-            CheckRet();
+            if (Ret < 0)
+                throw new Exception($"{Ret} - {AvError(Ret)}");
         }
         /// <summary>
-        /// 
+        /// Init Class
         /// </summary>
         private void Init()
         {
@@ -307,9 +308,10 @@ namespace FF8
                 errorWriter.WriteLine(e.Message);
                 errorWriter.WriteLine("FFCC can't init due to missing ffmpeg dlls");
             }
+            Ms.Dispose();
         }
         /// <summary>
-        /// 
+        /// Gets the first stream of definded type
         /// </summary>
         private void Get_Stream()
         {
@@ -328,7 +330,7 @@ namespace FF8
             Stream = Format->streams[Stream_index];
         }
         /// <summary>
-        /// 
+        /// Finds the codec for the chosen stream
         /// </summary>
         private void FindOpenCodec()
         {
@@ -453,6 +455,7 @@ namespace FF8
         //        throw (ex);
         //    }
         //}
+        private MemoryStream Ms { get; set; } = new MemoryStream();
         /// <summary>
         /// Decode loop. Will keep grabbing frames of data till an error or end of file.
         /// </summary>
@@ -478,11 +481,41 @@ namespace FF8
                 if (Media_Type == AVMediaType.AVMEDIA_TYPE_VIDEO)
                 {
                     // do something with video here.
-                    BMP_Save();//Frame->data[0], Frame->linesize[0], Frame->width, Frame->height, outfilename);
+                    BMP_Save();
                 }
                 else if (Media_Type == AVMediaType.AVMEDIA_TYPE_AUDIO)
                 {
                     // do something with audio here.
+                    // Adapted from https://libav.org/documentation/doxygen/master/decode_audio_8c-example.html
+                    /* the stream parameters may change at any time, check that they are
+                    * what we expect */
+                    Channels = ffmpeg.av_get_channel_layout_nb_channels(Frame->channel_layout);
+                    if (Channels != 2 ||
+                        Frame->format != (int)AVSampleFormat.AV_SAMPLE_FMT_S16P)
+                    {
+                        throw new Exception("Unsupported frame parameters");
+                    }
+                    /* The decoded data is signed 16-bit planar -- each channel in its own
+                     * buffer. We interleave the two channels manually here, but using
+                     * libavresample is recommended instead. */
+
+                    byte*[] tmp = Frame->data;
+                    for (int i = 0; i < Frame->nb_samples; i++)
+                    {
+                        Ms.WriteByte(tmp[0][i]);
+                        Ms.WriteByte(tmp[1][i]);
+                    }
+                    //data_size = sizeof(*interleave_buf) *2 * frame->nb_samples;
+                    //interleave_buf = av_malloc(data_size);
+                    //if (!interleave_buf)
+                    //    exit(1);
+                    //for (int i = 0; i < Frame->nb_samples; i++)
+                    //{
+                    //    interleave_buf[Channels * i] = ((int16_t*)frame->data[0])[i];
+                    //    interleave_buf[Channels * i + 1] = ((int16_t*)frame->data[1])[i];
+                    //}
+                    //fwrite(interleave_buf, 1, data_size, outfile);
+                    //av_freep(&interleave_buf);
                 }
             }
         }
