@@ -180,6 +180,7 @@ namespace FF8
                         break;
                     case Ditems.Movie:
                         Fade = 0.0f;
+                        MoviePointer = MoviePointer; //makes movieindex in player match the moviepointer, it is set when ever this is.
                         Memory.module = Memory.MODULE_MOVIETEST;
                         Module_movie_test.movieState = 0;
                         break;
