@@ -36,7 +36,7 @@ namespace FF8
         private static string debug_choosedField = Memory.FieldHolder.fields[debug_fieldPointer];
 
         private static int debug_moviePointer = 0;
-        private static string debug_choosedMovie = Path.GetFileNameWithoutExtension(Module_movie_test.movies[debug_moviePointer]);
+        private static string debug_choosedMovie = Path.GetFileNameWithoutExtension(Module_movie_test.Movies[debug_moviePointer]);
         public static int FieldPointer
         {
             get { return debug_fieldPointer; }
@@ -56,13 +56,13 @@ namespace FF8
             get { return debug_moviePointer; }
             set
             {
-                if (value >= Module_movie_test.movies.Count)
+                if (value >= Module_movie_test.Movies.Count)
                     value = 0;
                 else if (value < 0)
-                    value = Module_movie_test.movies.Count-1;
+                    value = Module_movie_test.Movies.Count-1;
                 debug_moviePointer = value;
                 Module_movie_test.Index = value;
-                debug_choosedMovie = Path.GetFileNameWithoutExtension(Module_movie_test.movies[value]);
+                debug_choosedMovie = Path.GetFileNameWithoutExtension(Module_movie_test.Movies[value]);
             }
         }
 
@@ -102,7 +102,7 @@ namespace FF8
             Module_field_debug.ResetField();
 
             Module_movie_test.Index = 30;
-            Module_movie_test.returnState = Memory.MODULE_FIELD_DEBUG;
+            Module_movie_test.ReturnState = Memory.MODULE_FIELD_DEBUG;
             Memory.module = Memory.MODULE_MOVIETEST;
         }
 
@@ -182,7 +182,7 @@ namespace FF8
                         Fade = 0.0f;
                         MoviePointer = MoviePointer; //makes movieindex in player match the moviepointer, it is set when ever this is.
                         Memory.module = Memory.MODULE_MOVIETEST;
-                        Module_movie_test.movieState = 0;
+                        Module_movie_test.MovieState = 0;
                         break;
                     case Ditems.World:
                         Memory.module = Memory.MODULE_WORLD_DEBUG;

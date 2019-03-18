@@ -92,8 +92,18 @@ namespace FF8
         public AVMediaType Media_Type { get; private set; }
         public enum FfccMode
         {
+            /// <summary>
+            /// Processes entire file at once and does something with output
+            /// </summary>
             PROCESS_ALL,
+            /// <summary>
+            /// State machine, functions in this call update to update current state.
+            /// And update decides what to do next.
+            /// </summary>
             STATE_MACH,
+            /// <summary>
+            /// Not Init some error happened that prevented the class from working
+            /// </summary>
             NOTINIT
         }
         public enum FfccState
@@ -167,7 +177,7 @@ namespace FF8
                         break;
                 }
             }
-            while (Mode == FfccMode.PROCESS_ALL && (State != FfccState.DONE || State != FfccState.WAITING));
+            while (!(Mode == FfccMode.PROCESS_ALL || State == FfccState.DONE || State == FfccState.WAITING));
             return ret;
         }
         private void ReadAll()

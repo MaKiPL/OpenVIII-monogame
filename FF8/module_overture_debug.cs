@@ -67,7 +67,7 @@ namespace FF8
             Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
 
             internalModule = OvertureInternalModule._4Squaresoft;
-            Module_movie_test.returnState = Memory.MODULE_OVERTURE_DEBUG;
+            Module_movie_test.ReturnState = Memory.MODULE_OVERTURE_DEBUG;
         }
         private static void WaitForFirst()
         {
@@ -118,7 +118,7 @@ namespace FF8
                 case OvertureInternalModule._4Squaresoft:
                     internalModule = OvertureInternalModule._0InitSound;
                     Module_movie_test.Index = 103;
-                    Module_movie_test.returnState = Memory.MODULE_OVERTURE_DEBUG;
+                    Module_movie_test.ReturnState = Memory.MODULE_OVERTURE_DEBUG;
                     Memory.module = Memory.MODULE_MOVIETEST;
                     break;
             }
