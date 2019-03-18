@@ -249,7 +249,15 @@ namespace FF8
         public struct AnimationFrame
         {
             public Vector3 position;
-            public Vector3[] boneRot;
+            public Tuple<Vector3[], ShortVector[]> boneRot;
+            
+        }
+
+        public struct ShortVector
+        {
+            public short x;
+            public short y;
+            public short z;
         }
 
         private void ReadSection3(uint v, MemoryStream ms, BinaryReader br)
@@ -260,13 +268,13 @@ namespace FF8
             for (int i = 0; i < animHeader.cAnimations; i++)
                 animHeader.pAnimations[i] = br.ReadUInt32();
             animHeader.animations = new Animation[animHeader.cAnimations];
-            for (int i = 0; i < animHeader.cAnimations; i++)
+            for (int i = 0; i < animHeader.cAnimations; i++) //animation
             {
                 ms.Seek(v + animHeader.pAnimations[i], SeekOrigin.Begin);
                 animHeader.animations[i] = new Animation() {cFrames = br.ReadByte() };
                 animHeader.animations[i].animationFrames = new AnimationFrame[animHeader.animations[i].cFrames];
                 ExtapathyExtended.BitReader bitReader = new ExtapathyExtended.BitReader(ms);
-                for(int n = 0; n<animHeader.animations[i].cFrames; n++)
+                for(int n = 0; n<animHeader.animations[i].cFrames; n++) //frames
                 {
                     animHeader.animations[i].animationFrames[n] = new AnimationFrame()
                     {position = new Vector3(
@@ -274,18 +282,24 @@ namespace FF8
                     bitReader.ReadPositionType(),
                     bitReader.ReadPositionType())};
                     bitReader.ReadBits(1); //padding byte;
-                    animHeader.animations[i].animationFrames[n].boneRot = new Vector3[skeleton.cBones];
-                    for(int k = 0; k<skeleton.cBones; k++)
+                    animHeader.animations[i].animationFrames[n].boneRot = new Tuple<Vector3[], ShortVector[]>(new Vector3[skeleton.cBones], new ShortVector[skeleton.cBones]);
+                    for (int k = 0; k < skeleton.cBones; k++) //bones iterator
                         if (n != 0)
-                            animHeader.animations[i].animationFrames[n].boneRot[k] = new Vector3(
-                            (animHeader.animations[i].animationFrames[n - 1].boneRot[k].X + bitReader.ReadRotationType()) * 180f / 2048f,
-                            (animHeader.animations[i].animationFrames[n - 1].boneRot[k].Y + bitReader.ReadRotationType()) * 180f / 2048f,
-                            (animHeader.animations[i].animationFrames[n - 1].boneRot[k].Z + bitReader.ReadRotationType()) * 180f / 2048f);
+                        {
+                            animHeader.animations[i].animationFrames[n].boneRot.Item2[k] = new ShortVector() { x = bitReader.ReadRotationType(), y = bitReader.ReadRotationType(), z = bitReader.ReadRotationType() };
+                            animHeader.animations[i].animationFrames[n].boneRot.Item1[k] = new Vector3(
+                            (animHeader.animations[i].animationFrames[n - 1].boneRot.Item2[k].x + bitReader.ReadRotationType()) * 180f / 2048f,
+                            (animHeader.animations[i].animationFrames[n - 1].boneRot.Item2[k].y + bitReader.ReadRotationType()) * 180f / 2048f,
+                            (animHeader.animations[i].animationFrames[n - 1].boneRot.Item2[k].z + bitReader.ReadRotationType()) * 180f / 2048f);
+                        }
                         else
-                            animHeader.animations[i].animationFrames[n].boneRot[k] = new Vector3(
-                            bitReader.ReadRotationType() * 180f / 2048f,
-                            bitReader.ReadRotationType() * 180f / 2048f,
-                            bitReader.ReadRotationType() * 180f / 2048f);
+                        {
+                            animHeader.animations[i].animationFrames[n].boneRot.Item2[k] = new ShortVector() { x = bitReader.ReadRotationType(), y = bitReader.ReadRotationType(), z = bitReader.ReadRotationType() };
+                            animHeader.animations[i].animationFrames[n].boneRot.Item1[k] = new Vector3(
+                            animHeader.animations[i].animationFrames[n].boneRot.Item2[k].x * 180f / 2048f,
+                            animHeader.animations[i].animationFrames[n].boneRot.Item2[k].y * 180f / 2048f,
+                            animHeader.animations[i].animationFrames[n].boneRot.Item2[k].z * 180f / 2048f);
+                        }
                 }
             }
         }
