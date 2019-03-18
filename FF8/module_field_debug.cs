@@ -502,24 +502,44 @@ namespace FF8
 
         internal static void Update()
         {
+#if DEBUG
+            // lets you move through all the feilds just holding left or right. it will just loop when it runs out.
+            if (Input.Button(Buttons.Left) )
+            {
+                Input.ResetInputLimit();
+                init_debugger_Audio.PlaySound(0);
+                Module_main_menu_debug.FieldPointer--;               
+                ResetField();
+            }
+            if (Input.Button(Buttons.Right) )
+            {
+                Input.ResetInputLimit();
+                init_debugger_Audio.PlaySound(0);
+                Module_main_menu_debug.FieldPointer++;
+                ResetField();
+            }
+#endif
             switch (mod)
             {
                 case Field_mods.INIT:
                     Init();
-                    //StartupScript(); DEBUG
+                    StartupScript();// DEBUG
                     break;
                 case Field_mods.DEBUGRENDER:
                     break; //await events here
             }
         }
-
+ 
         private static void StartupScript()
         {
-            var initDefaultCollection = ScriptSystem.Where(x => x.localID == 0 || x.localID == 1).ToList();
-            foreach (var scr in initDefaultCollection)
-                foreach (var opcode in scr.Scripts)
-                    if (ScriptSystem.Count != 0)
-                        ParseOpcode(opcode);
+            if (ScriptSystem != null)
+            {
+                var initDefaultCollection = ScriptSystem.Where(x => x.localID == 0 || x.localID == 1).ToList();
+                foreach (var scr in initDefaultCollection)
+                    foreach (var opcode in scr.Scripts)
+                        if (ScriptSystem.Count != 0)
+                            ParseOpcode(opcode);
+            }
         }
 
         private static void ParseOpcode(ScriptOpcode opcode)
@@ -540,8 +560,10 @@ namespace FF8
                     Stack.Add(opcode.parameter);
                     return;
                 case JSMopcodes.BASEANIME: //TODO
-                    stack1 = POPstack();
-                    stack2 = POPstack();
+                    if (Stack.Count > 0)
+                        stack1 = POPstack();
+                    if (Stack.Count > 0)
+                        stack2 = POPstack();
                     Console.WriteLine("TODO: ENTITY SUBSYSTEM; ANIMATION");
                     return;
                 case JSMopcodes.SETPC: //TODO
@@ -558,10 +580,16 @@ namespace FF8
                     Console.WriteLine("TODO: CLEAR()");
                     return;
                 case JSMopcodes.POPM_B:
-                    Memory.FieldHolder.FieldMemory[POPstack()] = (byte)opcode.parameter;
+                    if (Stack.Count > 0)
+                        stack1 = POPstack();
+                        if(stack1 < Memory.FieldHolder.FieldMemory.Length) // had one come out of range.
+                            Memory.FieldHolder.FieldMemory[stack1] = (byte)opcode.parameter; //stack was count 0 something wrong here?
                     return;
                 case JSMopcodes.POPM_W:
-                    Memory.FieldHolder.FieldMemory[POPstack()] = (ushort)opcode.parameter;
+                    if (Stack.Count > 0)
+                        stack1 = POPstack();
+                    if (stack1 < Memory.FieldHolder.FieldMemory.Length)
+                            Memory.FieldHolder.FieldMemory[stack1] = (ushort)opcode.parameter;
                     return;
                 case JSMopcodes.BATTLEOFF: //TODO
                     return;
@@ -575,21 +603,30 @@ namespace FF8
                     Memory.SetBattleMusic = POPstack();
                     return;
                 case JSMopcodes.CAL: //todo
-                    stack1 = POPstack();
-                    stack2 = POPstack();
+                    if (Stack.Count > 0)
+                        stack1 = POPstack();
+                    if (Stack.Count > 0)
+                        stack2 = POPstack(); 
                     return;
                 case JSMopcodes.MOVIEREADY: //todo
-                    stack1 = POPstack();
-                    stack2 = POPstack();
+                    if (Stack.Count > 0)
+                        stack1 = POPstack();
+                    if (Stack.Count > 0)
+                        stack2 = POPstack(); 
                     return;
                 case JSMopcodes.MOVIE: //todo
                     return;
                 case JSMopcodes.MOVIESYNC: //todo
                     return;
                 case JSMopcodes.MAPJUMPO: //todo
-                    stack2 = POPstack(); //walkmesh id
-                    stack1 = POPstack(); //field map id
-                    Memory.FieldHolder.FieldID = (ushort)stack1;
+                    if (Stack.Count > 0)
+                        stack2 = POPstack(); //walkmesh id
+
+                    if (Stack.Count > 0)
+                    {
+                        stack1 = POPstack(); //field map id
+                        Memory.FieldHolder.FieldID = (ushort)stack1;
+                    }
                     ResetField();
                     //todo
                     return;
@@ -598,9 +635,13 @@ namespace FF8
 
         private static int POPstack()
         {
-            int stack = Stack.Last();
-            Stack.RemoveAt(Stack.Count() - 1);
-            return stack;
+            if (Stack.Count > 0)
+            {
+                int stack = Stack.Last();
+                Stack.RemoveAt(Stack.Count() - 1);
+                return stack;
+            }
+            return 0; // the stack is empty. maybe something is wrong?
         }
 
         private static void Init()
@@ -620,21 +661,52 @@ namespace FF8
             byte[] fl = ArchiveWorker.GetBinaryFile(Path.Combine(Memory.FF8DIR, "field"), $"{fieldArchive}fl");
             if (fs == null || fi == null || fl == null) return;
             string[] test_ = ArchiveWorker.GetBinaryFileList(fl);
-            string mim = test_.First(x => x.ToLower().Contains(".mim"));
-            string map = test_.First(x => x.ToLower().Contains(".map"));
+            string mim = null;
+            string map = null;
+            try
+            {
+                mim = test_.First(x => x.ToLower().Contains(".mim"));
+            }
+            catch{}
+            try
+            {
+                 map = test_.First(x => x.ToLower().Contains(".map"));
+            }
+            catch{}
 
-            byte[] mimb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, mim);
-            byte[] mapb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, map);
+            if (mim != null && map != null)
+            {
+                byte[] mimb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, mim);
+                byte[] mapb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, map);
 
-            ParseBackground(mimb, mapb);
+                ParseBackground(mimb, mapb);
+            }
 
 #if DEBUG
             if (Memory.FieldHolder.FieldID == 180) goto safeDebugpoint; //delete me
 #endif
             //let's start with scripts
-            if (test_.Any(x => x.ToLower().Contains(".jsm")))
-                ParseScripts(ArchiveWorker.FileInTwoArchives(fi, fs, fl, test_.First(x => x.ToLower().Contains(".jsm")))
-                    , ArchiveWorker.FileInTwoArchives(fi, fs, fl, test_.First(x => x.ToLower().Contains(".sy"))));
+            byte[] jsm = null;
+            byte[] sy = null;
+            string s_jsm = null;
+            string s_sy = null;
+            try
+            {
+                s_jsm = test_.First(x => x.ToLower().Contains(".jsm"));
+            }
+            catch { }
+            try
+            {
+                s_sy = test_.First(x => x.ToLower().Contains(".sy"));
+            }
+            catch { }
+            if (s_jsm != null && s_sy != null)
+            {
+                jsm = ArchiveWorker.FileInTwoArchives(fi, fs, fl, s_jsm);
+                sy = ArchiveWorker.FileInTwoArchives(fi, fs, fl, s_sy);
+
+                ParseScripts(jsm, sy);
+            }
             Stack = new List<int>();
 #if DEBUG
             OutputAllParsedScripts();
@@ -686,6 +758,8 @@ namespace FF8
         private static void ParseScripts(byte[] jsmb, byte[] symb)
         {
             //string[] symbolNames = new string[symb.Length / 32];
+            if(symb == null)
+                    return;
             symbolNames = System.Text.Encoding.ASCII.GetString(symb).Replace(" ", "").Replace("\0", "").Split('\n');
             //for(int i = 0; i<symbolNames.Length; i++)
             //    symbolNames[i] = System.Text.Encoding.ASCII.GetString(symb, i * 32, 32).TrimEnd('\0', '\n', ' ');
@@ -707,7 +781,10 @@ namespace FF8
                     ushort bb = br.ReadUInt16();
                     epe[i].scriptCount = (byte)((bb & 0x7F) + 1);
                     epe[i].label = (byte)(bb >> 7);
-                    epe[i].labelASM = symbolNames[epe[i].label]; 
+                    // was throwing exception
+                    if (symbolNames != null && epe[i].label < symbolNames.Length)
+                        epe[i].labelASM = symbolNames[epe[i].label];
+                    else epe[i].labelASM = "";
                 }
                 int SYMscriptNameStartingPoint = jsm.cDoorEntity + jsm.cOtherEntity + jsm.cWalkmeshEntity + jsm.cBackgroundEntity;
                 jsm.EntityEntryPoints = epe;
@@ -746,12 +823,14 @@ namespace FF8
                     }
                     if (opcode == 5 && scriptChunk.Count != 0) //label
                     {
-                        ushort entityNumber = (ushort)FindEntity(symbolNames[SYMscriptNameStartingPoint + scriptLabelPointer]);
+                        ushort entityNumber =0;
+                        if (symbolNames != null && SYMscriptNameStartingPoint + scriptLabelPointer < symbolNames.Length)
+                            entityNumber = (ushort)FindEntity(symbolNames[SYMscriptNameStartingPoint + scriptLabelPointer]);
                         int locId = ScriptSystem.Count(x => x.Entity == entityNumber);
                         ScriptSystem.Add(new ScriptEntry()
                         {
                             Entity = entityNumber,
-                            ScriptName = symbolNames[SYMscriptNameStartingPoint + scriptLabelPointer++],
+                            ScriptName = (SYMscriptNameStartingPoint + scriptLabelPointer+1 < symbolNames.Length ? symbolNames[SYMscriptNameStartingPoint + scriptLabelPointer++] : ""),
                             ID = scriptChunk[0].parameter,
                             localID = (ushort)locId++,
                             Scripts = scriptChunk.ToArray()
@@ -769,12 +848,14 @@ namespace FF8
                     });
                     if (br.BaseStream.Position == br.BaseStream.Length)
                     {
-                        ushort entityNumber = (ushort)FindEntity(symbolNames[SYMscriptNameStartingPoint + scriptLabelPointer]);
+                        ushort entityNumber = 0;
+                        if (symbolNames != null && SYMscriptNameStartingPoint + scriptLabelPointer < symbolNames.Length)
+                            entityNumber = (ushort)FindEntity(symbolNames[SYMscriptNameStartingPoint + scriptLabelPointer]);
                         int locId = ScriptSystem.Count(x => x.Entity == entityNumber);
                         ScriptSystem.Add(new ScriptEntry()
                         {
                             Entity = entityNumber,
-                            ScriptName = symbolNames[SYMscriptNameStartingPoint + scriptLabelPointer++],
+                            ScriptName = (SYMscriptNameStartingPoint + scriptLabelPointer + 1 < symbolNames.Length ? symbolNames[SYMscriptNameStartingPoint + scriptLabelPointer++]:""),
                             ID = scriptChunk[0].parameter,
                             localID = (ushort)locId++,
                             Scripts = scriptChunk.ToArray()
