@@ -607,6 +607,7 @@ namespace FF8
                     //else
                     //{
                         Channels = ffmpeg.av_get_channel_layout_nb_channels(OutFrame->channel_layout);
+
                     //    //if(ffmpeg.av_sample_fmt_is_planar((AVSampleFormat)Frame->format)>0)
                     //    //{
                     //    //    byte*[] tmp = Frame->data;
@@ -614,13 +615,57 @@ namespace FF8
                     //    //    Ms.WriteByte(tmp[0][i]);
                     //    //}
                     //    // -4*32 sounds good but sound is cut off.
-                    ffmpeg.swr_convert_frame(Swr, OutFrame, Frame);
+
+
+                    //byte* convertedData = null;
+
+                    Ret = ffmpeg.av_samples_alloc(&convertedData,
+                        null,
+                        OutFrame->channels,
+                        Frame->nb_samples,
+                        (AVSampleFormat)OutFrame->format, 0);
                     CheckRet();
-                        byte*[] tmp = OutFrame->data;
-                        for (int i = 0; i < OutFrame->linesize[0]; i++)
-                        {
-                            Ms.WriteByte(tmp[0][i]);
-                        }
+
+                    int outSamples;
+                    byte*[] b = Frame->data;
+                    fixed (byte** t = b)
+                    {
+                        outSamples = ffmpeg.swr_convert(Swr, null, 0, t, Frame->nb_samples);
+                    }
+                    //byte*[] b = Frame->data;
+                    //fixed (byte** t = b)
+                    //{
+                    //    outSamples = ffmpeg.swr_convert(Swr, null, 0,t, Frame->nb_samples);
+                    //}
+                    //do
+                    //{
+                    //    outSamples = ffmpeg.swr_get_out_samples(Swr, 0);
+                    //    //if (outSamples <= Codec->frame_size * Codec->channels)
+                    //    //    break; // see comments, thanks to @dajuric for fixing this
+
+                    //    outSamples = ffmpeg.swr_convert(Swr,
+                    //        &convertedData,
+                    //        outSamples, null, 0);
+
+                    //    for (int i = 0; i < outSamples * 2 * 2; i++)
+                    //    {
+                    //        Ms.WriteByte(convertedData[i]);
+                    //    }
+                    //    //int buffer_size = ffmpeg.av_samples_get_buffer_size(null,
+                    //    //            OutFrame->channels,
+                    //    //            Frame->nb_samples,
+                    //    //            (AVSampleFormat) OutFrame->format,
+                    //    //            0);
+                    //    outSamples = ffmpeg.swr_get_out_samples(Swr, 0);
+                    //}
+                    //while (outSamples > 36);
+                    //ffmpeg.swr_convert_frame(Swr, OutFrame, Frame);
+                    //CheckRet();
+                    //    byte*[] tmp = OutFrame->data;
+                    //    for (int i = 0; i < OutFrame->linesize[0]; i++)
+                    //    {
+                    //        Ms.WriteByte(tmp[0][i]);
+                    //    }
                     //}
 
 
