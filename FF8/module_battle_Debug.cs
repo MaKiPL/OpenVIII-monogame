@@ -215,7 +215,7 @@ namespace FF8
             //if(monstersData[0].textures.textures != null && monstersData[0].textures.textures.Length >0)
             //    ate.Texture = monstersData[0].textures.textures[0];
 
-            if (a == null)
+            if (a == null || a.Length == 0)
                 return;
             ate.Texture = monstersData[0].textures.textures[0];
 

@@ -12,6 +12,7 @@ namespace FF8
     {
         int id;
         byte[] buffer;
+        int debug = 0;
 
         public struct DatFile
         {
@@ -237,17 +238,39 @@ namespace FF8
                 var b = verts[tr.B1].Item1;
                 var c = verts[tr.C1].Item1;
                 var d = verts[tr.A1].Item2;
+                if (Input.GetInputDelayed(Microsoft.Xna.Framework.Input.Keys.F1))
+                {
+                    debug++;
+                }
+                if (d != debug) continue;
                 //we grabbed the vertices, now let's parse the distance:
                 var e = skeleton.bones[d].Size; //it's the size from origin
                 var f = frame.boneRot.Item1[d]; //it's the animation translation for this vertices group (d)
                 //so now we have to rotate and translate the vertices by e and f
-                a = Vector3.Transform(a, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
-                a = Vector3.Transform(a, Matrix.CreateRotationY(MathHelper.ToRadians(f.Y)));
-                a = Vector3.Transform(a, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Z))); 
+                //a = Vector3.Transform(a, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
+                //a = Vector3.Transform(a, Matrix.CreateRotationY(MathHelper.ToRadians(f.Y)));
+                //a = Vector3.Transform(a, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Z)));
+                a = Vector3.Transform(a, Matrix.CreateTranslation(0, e, 0));
+                a = Vector3.Transform(a, Matrix.CreateTranslation(position));
+
+                //b = Vector3.Transform(b, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
+                //b = Vector3.Transform(b, Matrix.CreateRotationY(MathHelper.ToRadians(f.Y)));
+                //b = Vector3.Transform(b, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Z)));
+                b = Vector3.Transform(b, Matrix.CreateTranslation(0, e, 0));
+                b = Vector3.Transform(b, Matrix.CreateTranslation(position));
+
+                //c = Vector3.Transform(c, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
+                //c = Vector3.Transform(c, Matrix.CreateRotationY(MathHelper.ToRadians(f.Y)));
+                //c = Vector3.Transform(c, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Z)));
+                c = Vector3.Transform(c, Matrix.CreateTranslation(0, e, 0));
+                c = Vector3.Transform(c, Matrix.CreateTranslation(position));
+
+                vpt.Add(new VertexPositionTexture(a, new Vector2(tr.vta.U1, tr.vta.V1)));
+                vpt.Add(new VertexPositionTexture(b, new Vector2(tr.vtb.U1, tr.vtb.V1)));
+                vpt.Add(new VertexPositionTexture(c, new Vector2(tr.vtc.U1, tr.vtc.V1)));
                 //TODO WIP
             }
 
-            return null; //DEBUG so it doesn't crash
             return vpt.ToArray();
         }
 
@@ -255,8 +278,15 @@ namespace FF8
         {
             //THIS IS DEBUG IN-DEV CLASS
             Object obj = geometry.objects[objectId];
-            GetVertexPositions(objectId, position, 0, 0); //debug;
-            return null;
+            float fpsVariable = 1000.0f / 15f;
+            frameperFPS += Memory.gameTime.ElapsedGameTime.Milliseconds;
+            if(frameperFPS > fpsVariable)
+            {
+                frameperFPS = 0.0f;
+                frame++;
+            }
+            frame = frame == 14 ? 0 : frame;
+            return GetVertexPositions(objectId, position, 0, frame); //debug;
 
             //basically this works like this:
             //every verticeData has a bone attached to it. Bone size declares the 'distance' between bone and rot (bone 0xFFFF)
@@ -372,6 +402,8 @@ namespace FF8
             }
         }
         public AnimationData animHeader;
+        public int frame;
+        public float frameperFPS = 0.0f;
 #endregion
 
 #region section 7
