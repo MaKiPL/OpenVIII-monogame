@@ -264,6 +264,8 @@ namespace FF8
             }
         }
 
+        
+
         public static void StopSound()
         {
             //waveout.Stop();
@@ -303,6 +305,16 @@ namespace FF8
 
             int read = stream.Read(buffer, 0, buffer.Length);
             return GetSamplesWaveData(buffer, read);
+        }
+        public static byte[] GetSamplesWaveData(byte[] samples, int samplesCount)
+        {
+            float[] f = new float[(samplesCount / sizeof(float))];
+            int i = 0;
+            for (int n = 0; n < samples.Length; n += sizeof(float))
+            {
+                f[i++] = BitConverter.ToSingle(samples, n);
+            }
+            return GetSamplesWaveData(f, samplesCount / sizeof(float));
         }
         public static byte[] GetSamplesWaveData(float[] samples, int samplesCount)
         { // converts 32 bit float samples to 16 bit pcm. I think :P

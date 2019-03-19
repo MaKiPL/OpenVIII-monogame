@@ -1,4 +1,5 @@
 ﻿using FFmpeg.AutoGen;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,7 @@ namespace FF8
         private AVPacket* _packet;
         private SwrContext* _swr;
         private SwsContext* _sws;
+        private AVFrame* _outFrame;
 
         /// <summary>
         /// Most ffmpeg functions return an integer. If the value is less than 0 it is an error usually. Sometimes data is passed and then it will be greater than 0.
@@ -142,9 +144,13 @@ namespace FF8
             /// </summary>
             NODLL
         }
+
+        private MemoryStream Ms { get; set; }
+        public AVFrame* OutFrame { get => _outFrame; private set => _outFrame = value; }
         FfccState State { get; set; }
         FfccMode Mode { get; set; }
         public int FPS { get => (Codec != null ? (Codec->framerate.den == 0 || Codec->framerate.num == 0 ? 0 : Codec->framerate.num / Codec->framerate.den) : 0); }
+        public SoundEffectInstance see { get; private set; }
 
         public Ffcc()
         {
@@ -202,18 +208,41 @@ namespace FF8
                         break;
                 }
             }
-            while (!(Mode == FfccMode.PROCESS_ALL || State == FfccState.DONE || State == FfccState.WAITING));
+            while (!((Mode == FfccMode.PROCESS_ALL && State == FfccState.DONE) || (State == FfccState.DONE || State == FfccState.WAITING)));
             return ret;
         }
         private void ReadAll()
         {
+
+            Ms = new MemoryStream();
             while (true)
             {
                 Ret = ffmpeg.av_read_frame(Format, Packet);
                 if (Ret == ffmpeg.AVERROR_EOF) break;
-                else 
+                else
                     CheckRet();
                 Decode();
+            }
+            if (Ms.Length > 0)
+            {
+                //save buffer
+                //if (Media_Type == AVMediaType.AVMEDIA_TYPE_AUDIO)
+                //{
+                //    byte[] b = new byte[Ms.Length];
+                    
+                //    fixed (byte* inbuffer = Ms.ToArray())
+                //    {
+                //        fixed (byte* outbuffer = b)
+                //        {
+                //            int count = ffmpeg.swr_convert(Swr, &outbuffer, (int)Ms.Length, &inbuffer, (int)Ms.Length);
+
+
+                            SoundEffect se = new SoundEffect(Ms.ToArray(),0,(int)Ms.Length, OutFrame->sample_rate, (AudioChannels)Channels,0,0);
+                            see = se.CreateInstance();
+                            see.Play();
+                    //    }
+                    //}
+                //}
             }
         }
         ~Ffcc()
@@ -221,6 +250,8 @@ namespace FF8
             try
             {
                 fixed (AVFrame** tmp = &_frame)
+                    ffmpeg.av_frame_free(tmp);
+                fixed (AVFrame** tmp = &_outFrame)
                     ffmpeg.av_frame_free(tmp);
                 fixed (AVPacket** tmp = &_packet)
                     ffmpeg.av_packet_free(tmp);
@@ -236,6 +267,30 @@ namespace FF8
                 errorWriter.WriteLine(e.Message);
                 errorWriter.WriteLine("Clean up failed, maybe FFmpeg DLLs are missing");
             }
+            try
+            {
+                Ms.Dispose();
+            }
+            catch (NullReferenceException e)
+            {
+                State = FfccState.NODLL;
+                TextWriter errorWriter = Console.Error;
+                errorWriter.WriteLine(e.Message);
+                errorWriter.WriteLine("FFCC can't init due to missing ffmpeg dlls");
+            }
+            try
+            {
+                if (!see.IsDisposed)
+                    see.Dispose();
+            }
+            catch (NullReferenceException e)
+            {
+                State = FfccState.NODLL;
+                TextWriter errorWriter = Console.Error;
+                errorWriter.WriteLine(e.Message);
+                errorWriter.WriteLine("FFCC can't init due to missing ffmpeg dlls");
+            }
+
         }
         /// <summary>
         /// Opens filename and assigns FormatContext.
@@ -259,8 +314,17 @@ namespace FF8
         /// </summary>
         private void CheckRet()
         {
-            if (Ret < 0)
-                throw new Exception($"{Ret} - {AvError(Ret)}");
+            switch (Ret)
+            {
+                case ffmpeg.AVERROR_OUTPUT_CHANGED:
+                    throw new Exception($"The swr_context output ch_layout, sample_rate, sample_fmt must match outframe! {Ret} - {AvError(Ret)}");
+                case ffmpeg.AVERROR_INPUT_CHANGED:
+                    throw new Exception($"The swr_context input ch_layout, sample_rate, sample_fmt must match inframe! {Ret} - {AvError(Ret)}");
+                default:
+                    if (Ret < 0)
+                        throw new Exception($"{Ret} - {AvError(Ret)}");
+                    return;
+            }
         }
         /// <summary>
         /// Init Class
@@ -272,7 +336,7 @@ namespace FF8
             try
             {
                 _format = ffmpeg.avformat_alloc_context();
-                Swr = ffmpeg.swr_alloc();
+                //Swr = ffmpeg.swr_alloc();
                 Parser = null;
                 Codec = null;
                 Stream = null;
@@ -280,12 +344,16 @@ namespace FF8
                 if (Packet == null)
                     throw new Exception("Error allocating the packet\n");
                 //ffmpeg.av_init_packet(Packet);
+                OutFrame = ffmpeg.av_frame_alloc();
+                if (OutFrame == null)
+                    throw new Exception("Error allocating the frame\n");
                 Frame = ffmpeg.av_frame_alloc();
                 if (Frame == null)
                     throw new Exception("Error allocating the frame\n");
                 Stream_index = -1;
                 Channels = 0;
                 Sample_rate = 44100;
+
                 //ffmpeg.av_register_all(); //should not need this.
 
 
@@ -298,8 +366,10 @@ namespace FF8
                 Get_Stream();
                 if (Media_Type == AVMediaType.AVMEDIA_TYPE_VIDEO)
                     PrepareSWS();
-                if (Media_Type == AVMediaType.AVMEDIA_TYPE_AUDIO)
-                    PrepareResampler();
+                //Moved this to decoder and changed it to prepair the outframe for resampling
+
+                //if (Media_Type == AVMediaType.AVMEDIA_TYPE_AUDIO)
+                //    PrepareResampler();
             }
             catch (DllNotFoundException e)
             {
@@ -308,7 +378,6 @@ namespace FF8
                 errorWriter.WriteLine(e.Message);
                 errorWriter.WriteLine("FFCC can't init due to missing ffmpeg dlls");
             }
-            Ms.Dispose();
         }
         /// <summary>
         /// Gets the first stream of definded type
@@ -339,9 +408,9 @@ namespace FF8
             AVCodec* c = ffmpeg.avcodec_find_decoder(Codec->codec_id);
             if (c == null)
                 throw new Exception("Codec not found");
-            Parser = ffmpeg.av_parser_init((int)c->id);
-            if (Parser == null)
-                throw new Exception("parser not found");
+            //Parser = ffmpeg.av_parser_init((int)c->id);
+            //if (Parser == null)
+            //    throw new Exception("parser not found");
             //Commented due to Stream->codec doing the work for it.
             //Codec = ffmpeg.avcodec_alloc_context3(c);
             //if (Codec == null)
@@ -364,29 +433,46 @@ namespace FF8
                 Codec->width, Codec->height, AVPixelFormat.AV_PIX_FMT_RGBA,
                 ffmpeg.SWS_ACCURATE_RND, null, null, null);
             Ret = ffmpeg.sws_init_context(Sws, null, null);
-            
-                CheckRet();
+
+            CheckRet();
         }
         /// <summary>
         /// PrepareResampler
         /// </summary>
         private void PrepareResampler()
         {
-            // prepare resampler
-            ffmpeg.swr_alloc_set_opts(Swr,
-                3,
-                AVSampleFormat.AV_SAMPLE_FMT_S16,
-                Sample_rate,
-                (long)Codec->channel_layout,
-                Codec->sample_fmt,
-                Codec->sample_rate,
-                0,
-                null);
+            ffmpeg.av_frame_copy_props(OutFrame, Frame);
+            OutFrame->channel_layout = ffmpeg.AV_CH_LAYOUT_STEREO;
+            OutFrame->format = (int)AVSampleFormat.AV_SAMPLE_FMT_S16;
+            OutFrame->sample_rate = 44100;
+            OutFrame->channels = 2;
+            //Swr = ffmpeg.swr_alloc_set_opts(Swr,
+            //    (long)OutFrame->channel_layout,
+            //    (AVSampleFormat)OutFrame->format,
+            //    OutFrame->sample_rate,
+            //    (long)Frame->channel_layout,
+            //    (AVSampleFormat)Frame->format,
+            //    Frame->sample_rate,
+            //    0,
+            //    null);
+            Swr = ffmpeg.swr_alloc();
             if (Swr == null)
-                throw new Exception("error: swr_alloc_set_opts()");
-            ffmpeg.swr_init(Swr);
+                throw new Exception("SWR = Null");
+            Ret = ffmpeg.swr_config_frame(Swr, OutFrame, Frame);
+            CheckRet();
+            Ret = ffmpeg.swr_init(Swr);
+            CheckRet();
             Ret = ffmpeg.swr_is_initialized(Swr);
             CheckRet();
+            //the function I use in decode initializes Swr when it's called. With the correct formatting.
+            //// prepare resampler
+
+
+            //if (Swr == null)
+            //    throw new Exception("error: swr_alloc_set_opts()");
+            //ffmpeg.swr_init(Swr);
+            //Ret = ffmpeg.swr_is_initialized(Swr);
+            //CheckRet();
         }
         /// <summary>
         /// Converts FFMPEG error codes into a string.
@@ -455,7 +541,7 @@ namespace FF8
         //        throw (ex);
         //    }
         //}
-        private MemoryStream Ms { get; set; } = new MemoryStream();
+
         /// <summary>
         /// Decode loop. Will keep grabbing frames of data till an error or end of file.
         /// </summary>
@@ -463,6 +549,9 @@ namespace FF8
         {
 
             Ret = ffmpeg.avcodec_send_packet(Codec, Packet);
+            if (Ret == ffmpeg.AVERROR(ffmpeg.EAGAIN))
+                // The decoder doesn't have enough data to produce a frame
+                return;
             if (Packet->stream_index != Stream_index) return; // wrong stream.
             if (Ret == ffmpeg.AVERROR_EOF) return;
             else
@@ -478,6 +567,7 @@ namespace FF8
                     // End of file..
                     return;
                 else CheckRet();
+
                 if (Media_Type == AVMediaType.AVMEDIA_TYPE_VIDEO)
                 {
                     // do something with video here.
@@ -485,26 +575,56 @@ namespace FF8
                 }
                 else if (Media_Type == AVMediaType.AVMEDIA_TYPE_AUDIO)
                 {
+                    if (Codec->frame_number == 1)
+                        PrepareResampler();
+                    //if (Frame->nb_samples == 0) return;
                     // do something with audio here.
                     // Adapted from https://libav.org/documentation/doxygen/master/decode_audio_8c-example.html
                     /* the stream parameters may change at any time, check that they are
                     * what we expect */
                     Channels = ffmpeg.av_get_channel_layout_nb_channels(Frame->channel_layout);
-                    if (Channels != 2 ||
-                        Frame->format != (int)AVSampleFormat.AV_SAMPLE_FMT_S16P)
-                    {
-                        throw new Exception("Unsupported frame parameters");
-                    }
                     /* The decoded data is signed 16-bit planar -- each channel in its own
                      * buffer. We interleave the two channels manually here, but using
                      * libavresample is recommended instead. */
+                    //if (Channels == 2 && Frame->format == (int)AVSampleFormat.AV_SAMPLE_FMT_S16P)
+                    //{
+                    //    byte*[] tmp = Frame->data;
+                    //    for (int i = 0; i < Frame->linesize[0]; i++)
+                    //    {
+                    //        Ms.WriteByte(tmp[0][i]);
+                    //        Ms.WriteByte(tmp[1][i]);
+                    //    }
+                    //}
+                    //else if (Frame->format == (int)AVSampleFormat.AV_SAMPLE_FMT_S16)
+                    //{
+                    //    byte*[] tmp = Frame->data;
+                    //    for (int i = 0; i < Frame->linesize[0]; i++)
+                    //    {
+                    //        Ms.WriteByte(tmp[0][i]);
+                    //    }
+                    //}
+                    //// must resample
+                    //else
+                    //{
+                        Channels = ffmpeg.av_get_channel_layout_nb_channels(OutFrame->channel_layout);
+                    //    //if(ffmpeg.av_sample_fmt_is_planar((AVSampleFormat)Frame->format)>0)
+                    //    //{
+                    //    //    byte*[] tmp = Frame->data;
+                    //    //    for (int i =0; i < Frame->linesize[0]; i++)
+                    //    //    Ms.WriteByte(tmp[0][i]);
+                    //    //}
+                    //    // -4*32 sounds good but sound is cut off.
+                    ffmpeg.swr_convert_frame(Swr, OutFrame, Frame);
+                    CheckRet();
+                        byte*[] tmp = OutFrame->data;
+                        for (int i = 0; i < OutFrame->linesize[0]; i++)
+                        {
+                            Ms.WriteByte(tmp[0][i]);
+                        }
+                    //}
 
-                    byte*[] tmp = Frame->data;
-                    for (int i = 0; i < Frame->nb_samples; i++)
-                    {
-                        Ms.WriteByte(tmp[0][i]);
-                        Ms.WriteByte(tmp[1][i]);
-                    }
+
+
                     //data_size = sizeof(*interleave_buf) *2 * frame->nb_samples;
                     //interleave_buf = av_malloc(data_size);
                     //if (!interleave_buf)
@@ -526,7 +646,7 @@ namespace FF8
             {
                 return Update(FfccState.DONE, Ret);
             }
-            else 
+            else
                 CheckRet();
             return Update(FfccState.PACKET, Ret);
         }
