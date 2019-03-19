@@ -72,7 +72,8 @@ namespace FF8
             "/home/robert/FINAL_FANTASY_VIII/Data/lang-en",
             @"D:\SteamLibrary\steamapps\common\FINAL FANTASY VIII\Data\lang-en",
             @"D:\Steam\steamapps\common\FINAL FANTASY VIII\Data\lang-en",
-            "/media/griever/Data/SteamLibrary/steamapps/common/FINAL FANTASY VIII/Data/lang-en"
+            "/media/griever/Data/SteamLibrary/steamapps/common/FINAL FANTASY VIII/Data/lang-en",
+            "/home/griever/.PlayOnLinux/wineprefix/Steam/drive_c/Program Files/Steam/steamapps/common/FINAL FANTASY VIII/Data/lang-en"
         };
         private static string gooddir = "";
         public static string FF8DIR

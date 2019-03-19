@@ -506,7 +506,7 @@ namespace FF8
             string path = aw.GetListOfFiles().First(x => x.ToLower().Contains($"c0m{id.ToString("D03")}")); //c0m000.dat
             buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, path);
 
-#if DEBUG || _WINDOWS
+#if DEBUG && _WINDOWS
             MakiExtended.DumpBuffer(buffer, "D:/out.dat");
 #endif
 
