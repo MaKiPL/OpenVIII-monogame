@@ -46,7 +46,7 @@ namespace FF8
         public struct Bone
         {
             public ushort parentId;
-            private short boneSize;
+            public short boneSize;
             private short unk1; //360
             private short unk2; //360
             private short unk3; //360
@@ -56,7 +56,7 @@ namespace FF8
             [MarshalAs(UnmanagedType.ByValArray,SizeConst = 28 )]
             public byte[] Unk;
 
-            public float Size { get => boneSize / 4096.0f; }
+            public float Size { get => boneSize / 2048.0f; }
             public float Unk1 { get => unk1 / 4096.0f * 360.0f; }
             public float Unk2 { get => unk2 / 4096.0f * 360.0f; }
             public float Unk3 { get => unk3 / 4096.0f * 360.0f; }
@@ -127,7 +127,7 @@ namespace FF8
             public short y;
             public short z;
 
-            public Vector3 GetVector => new Vector3(x/500.0f, -z/500.0f, y/500.0f);
+            public Vector3 GetVector => new Vector3(x/512.0f, -z/512.0f, y/512.0f);
         }
 
         [StructLayout(LayoutKind.Sequential, Pack =1, Size =16)]
@@ -170,11 +170,11 @@ namespace FF8
         [StructLayout(LayoutKind.Sequential, Pack =1,Size =2)]
         public struct UV
         {
-            private byte U;
-            private byte V;
+            public byte U;
+            public byte V;
 
-            public float U1 { get => U/256.0f; set => U = (byte)value; }
-            public float V1 { get => V/256.0f; set => V = (byte)value; }
+            public float U1 { get => U/128.0f; set => U = (byte)value; }
+            public float V1 { get => V/128.0f; set => V = (byte)value; }
         }
 
         public Geometry geometry;
@@ -226,9 +226,13 @@ namespace FF8
             int i = 0;
             foreach (var a in obj.verticeData)
                 foreach (var b in a.vertices)
-                    verts.Add(new Tuple<Vector3, int>(b.GetVector, a.boneId));
+                    verts.Add(new Tuple<Vector3, int>(b.GetVector, a.boneId-1));
 
             //we now have a collection of basic Vec3D and a variable indicating a boneId.
+
+            //debug
+            
+            //debug
 
             for (;i<obj.cTriangles; i++ ) //let's loop through all triangles
             {
@@ -238,11 +242,6 @@ namespace FF8
                 var b = verts[tr.B1].Item1;
                 var c = verts[tr.C1].Item1;
                 var d = verts[tr.A1].Item2;
-                if (Input.GetInputDelayed(Microsoft.Xna.Framework.Input.Keys.F1))
-                {
-                    debug++;
-                }
-                if (d != debug) continue;
                 //we grabbed the vertices, now let's parse the distance:
                 var e = skeleton.bones[d].Size; //it's the size from origin
                 var f = frame.boneRot.Item1[d]; //it's the animation translation for this vertices group (d)
@@ -250,24 +249,53 @@ namespace FF8
                 //a = Vector3.Transform(a, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
                 //a = Vector3.Transform(a, Matrix.CreateRotationY(MathHelper.ToRadians(f.Y)));
                 //a = Vector3.Transform(a, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Z)));
-                a = Vector3.Transform(a, Matrix.CreateTranslation(0, e, 0));
+
+                //test - are relative bones to parents?
+                int parentTester = skeleton.bones[d].parentId;
+                    while (parentTester != 0xFFFF)
+                    {
+                        e += skeleton.bones[skeleton.bones[d].parentId].Size;
+                    parentTester = skeleton.bones[parentTester].parentId;
+                    }
+
+                a = Vector3.Transform(a, Matrix.CreateTranslation(0, -e, 0));
                 a = Vector3.Transform(a, Matrix.CreateTranslation(position));
+
+                d = verts[tr.B1].Item2;
+                e = skeleton.bones[d].Size; //it's the size from origin
+                f = frame.boneRot.Item1[d]; //it's the animation translation for this vertices group (d)
 
                 //b = Vector3.Transform(b, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
                 //b = Vector3.Transform(b, Matrix.CreateRotationY(MathHelper.ToRadians(f.Y)));
                 //b = Vector3.Transform(b, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Z)));
-                b = Vector3.Transform(b, Matrix.CreateTranslation(0, e, 0));
+
+                parentTester = skeleton.bones[d].parentId;
+                while (parentTester != 0xFFFF)
+                {
+                    e += skeleton.bones[skeleton.bones[d].parentId].Size;
+                    parentTester = skeleton.bones[parentTester].parentId;
+                }
+
+                b = Vector3.Transform(b, Matrix.CreateTranslation(0, -e, 0));
                 b = Vector3.Transform(b, Matrix.CreateTranslation(position));
 
+                d = verts[tr.C1].Item2;
+                e = skeleton.bones[d].Size; //it's the size from origin
+                f = frame.boneRot.Item1[d]; //it's the animation translation for this vertices group (d)
                 //c = Vector3.Transform(c, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
                 //c = Vector3.Transform(c, Matrix.CreateRotationY(MathHelper.ToRadians(f.Y)));
                 //c = Vector3.Transform(c, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Z)));
-                c = Vector3.Transform(c, Matrix.CreateTranslation(0, e, 0));
+                parentTester = skeleton.bones[d].parentId;
+                while (parentTester != 0xFFFF)
+                {
+                    e += skeleton.bones[skeleton.bones[d].parentId].Size;
+                    parentTester = skeleton.bones[parentTester].parentId;
+                }
+                c = Vector3.Transform(c, Matrix.CreateTranslation(0, -e, 0));
                 c = Vector3.Transform(c, Matrix.CreateTranslation(position));
-
-                vpt.Add(new VertexPositionTexture(a, new Vector2(tr.vta.U1, tr.vta.V1)));
-                vpt.Add(new VertexPositionTexture(b, new Vector2(tr.vtb.U1, tr.vtb.V1)));
-                vpt.Add(new VertexPositionTexture(c, new Vector2(tr.vtc.U1, tr.vtc.V1)));
+                vpt.Add(new VertexPositionTexture(c, new Vector2(tr.vta.U1, tr.vta.V1)));
+                vpt.Add(new VertexPositionTexture(a, new Vector2(tr.vtb.U1, tr.vtb.V1)));
+                vpt.Add(new VertexPositionTexture(b, new Vector2(tr.vtc.U1, tr.vtc.V1)));
                 //TODO WIP
             }
 
