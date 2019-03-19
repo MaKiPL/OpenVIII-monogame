@@ -586,101 +586,137 @@ namespace FF8
                     /* The decoded data is signed 16-bit planar -- each channel in its own
                      * buffer. We interleave the two channels manually here, but using
                      * libavresample is recommended instead. */
-                    //if (Channels == 2 && Frame->format == (int)AVSampleFormat.AV_SAMPLE_FMT_S16P)
-                    //{
-                    //    byte*[] tmp = Frame->data;
-                    //    for (int i = 0; i < Frame->linesize[0]; i++)
-                    //    {
-                    //        Ms.WriteByte(tmp[0][i]);
-                    //        Ms.WriteByte(tmp[1][i]);
-                    //    }
-                    //}
-                    //else if (Frame->format == (int)AVSampleFormat.AV_SAMPLE_FMT_S16)
-                    //{
-                    //    byte*[] tmp = Frame->data;
-                    //    for (int i = 0; i < Frame->linesize[0]; i++)
-                    //    {
-                    //        Ms.WriteByte(tmp[0][i]);
-                    //    }
-                    //}
-                    //// must resample
-                    //else
-                    //{
+                    if (Channels == 2 && Frame->format == (int)AVSampleFormat.AV_SAMPLE_FMT_S16P)
+                    {
+                        byte*[] tmp = Frame->data;
+                        for (int i = 0; i < Frame->linesize[0]; i++)
+                        {
+                            Ms.WriteByte(tmp[0][i]);
+                            Ms.WriteByte(tmp[1][i]);
+                        }
+                    }
+                    else if (Frame->format == (int)AVSampleFormat.AV_SAMPLE_FMT_S16)
+                    {
+                        byte*[] tmp = Frame->data;
+                        for (int i = 0; i < Frame->linesize[0]; i++)
+                        {
+                            Ms.WriteByte(tmp[0][i]);
+                        }
+                    }
+                    // must resample
+                    else
+                    {
                         Channels = ffmpeg.av_get_channel_layout_nb_channels(OutFrame->channel_layout);
 
-                    //    //if(ffmpeg.av_sample_fmt_is_planar((AVSampleFormat)Frame->format)>0)
-                    //    //{
-                    //    //    byte*[] tmp = Frame->data;
-                    //    //    for (int i =0; i < Frame->linesize[0]; i++)
-                    //    //    Ms.WriteByte(tmp[0][i]);
-                    //    //}
-                    //    // -4*32 sounds good but sound is cut off.
+                        //    //if(ffmpeg.av_sample_fmt_is_planar((AVSampleFormat)Frame->format)>0)
+                        //    //{
+                        //    //    byte*[] tmp = Frame->data;
+                        //    //    for (int i =0; i < Frame->linesize[0]; i++)
+                        //    //    Ms.WriteByte(tmp[0][i]);
+                        //    //}
+                        //    // -4*32 sounds good but sound is cut off.
 
 
-                    //byte* convertedData = null;
+                        byte* convertedData = null;
 
-                    Ret = ffmpeg.av_samples_alloc(&convertedData,
-                        null,
-                        OutFrame->channels,
-                        Frame->nb_samples,
-                        (AVSampleFormat)OutFrame->format, 0);
-                    CheckRet();
+                        int size = ffmpeg.av_samples_alloc(&convertedData,
+                            null,
+                            OutFrame->channels,
+                            Frame->nb_samples,
+                            (AVSampleFormat)OutFrame->format, 0);
+                        int outSamples = 0;
 
-                    int outSamples;
-                    byte*[] b = Frame->data;
-                    fixed (byte** t = b)
-                    {
-                        outSamples = ffmpeg.swr_convert(Swr, null, 0, t, Frame->nb_samples);
-                    }
-                    //byte*[] b = Frame->data;
-                    //fixed (byte** t = b)
-                    //{
-                    //    outSamples = ffmpeg.swr_convert(Swr, null, 0,t, Frame->nb_samples);
-                    //}
-                    //do
-                    //{
-                    //    outSamples = ffmpeg.swr_get_out_samples(Swr, 0);
-                    //    //if (outSamples <= Codec->frame_size * Codec->channels)
-                    //    //    break; // see comments, thanks to @dajuric for fixing this
+                        byte*[] b = Frame->data;
+                        fixed (byte** t = b)
+                        {
+                            outSamples = ffmpeg.swr_convert(Swr, null, 0, t, Frame->nb_samples);
+                        }
+                        do
+                        {
+                            outSamples = ffmpeg.swr_get_out_samples(Swr, 0);
+                            fixed (byte** t = b)
+                            {
+                                outSamples = ffmpeg.swr_convert(Swr, &convertedData, size, null, 0);
+                            }
+                            for (int i = 0; i < outSamples * 2 * 2; i++)
+                            {
+                                Ms.WriteByte(convertedData[i]);
+                            }
+                        }
+                        while (outSamples > 0);
 
-                    //    outSamples = ffmpeg.swr_convert(Swr,
-                    //        &convertedData,
-                    //        outSamples, null, 0);
+                        //while (got_samples > 0)
+                        //{
+                        //    int buffer_size =
+                        //        av_samples_get_buffer_size(
+                        //            NULL, out_channels, got_samples, Frame->Format, 1);
 
-                    //    for (int i = 0; i < outSamples * 2 * 2; i++)
-                    //    {
-                    //        Ms.WriteByte(convertedData[i]);
-                    //    }
-                    //    //int buffer_size = ffmpeg.av_samples_get_buffer_size(null,
-                    //    //            OutFrame->channels,
-                    //    //            Frame->nb_samples,
-                    //    //            (AVSampleFormat) OutFrame->format,
-                    //    //            0);
-                    //    outSamples = ffmpeg.swr_get_out_samples(Swr, 0);
-                    //}
-                    //while (outSamples > 36);
-                    //ffmpeg.swr_convert_frame(Swr, OutFrame, Frame);
-                    //CheckRet();
-                    //    byte*[] tmp = OutFrame->data;
-                    //    for (int i = 0; i < OutFrame->linesize[0]; i++)
-                    //    {
-                    //        Ms.WriteByte(tmp[0][i]);
-                    //    }
-                    //}
+                        //    assert(buffer_size <= max_buffer_size);
+
+                        //    // write output buffer to stdout
+                        //    if (write(STDOUT_FILENO, buffer, buffer_size) != buffer_size)
+                        //    {
+                        //        fprintf(stderr, "error: write(stdout)\n");
+                        //        exit(1);
+                        //    }
+
+                        //    // process samples buffered inside swr context
+                        //    got_samples = swr_convert(swr_ctx, &buffer, out_samples, NULL, 0);
+                        //    if (got_samples < 0)
+                        //    {
+                        //        fprintf(stderr, "error: swr_convert()\n");
+                        //        exit(1);
+                        //    }
+                            //byte*[] b = Frame->data;
+                            //fixed (byte** t = b)
+                            //{
+                            //    outSamples = ffmpeg.swr_convert(Swr, null, 0,t, Frame->nb_samples);
+                            //}
+                            //do
+                            //{
+                            //    outSamples = ffmpeg.swr_get_out_samples(Swr, 0);
+                            //    //if (outSamples <= Codec->frame_size * Codec->channels)
+                            //    //    break; // see comments, thanks to @dajuric for fixing this
+
+                            //    outSamples = ffmpeg.swr_convert(Swr,
+                            //        &convertedData,
+                            //        outSamples, null, 0);
+
+                            //    for (int i = 0; i < outSamples * 2 * 2; i++)
+                            //    {
+                            //        Ms.WriteByte(convertedData[i]);
+                            //    }
+                            //    //int buffer_size = ffmpeg.av_samples_get_buffer_size(null,
+                            //    //            OutFrame->channels,
+                            //    //            Frame->nb_samples,
+                            //    //            (AVSampleFormat) OutFrame->format,
+                            //    //            0);
+                            //    outSamples = ffmpeg.swr_get_out_samples(Swr, 0);
+                            //}
+                            //while (outSamples > 36);
+                            //ffmpeg.swr_convert_frame(Swr, OutFrame, Frame);
+                            //CheckRet();
+                            //    byte*[] tmp = OutFrame->data;
+                            //    for (int i = 0; i < OutFrame->linesize[0]; i++)
+                            //    {
+                            //        Ms.WriteByte(tmp[0][i]);
+                            //    }
+                            //}
 
 
 
-                    //data_size = sizeof(*interleave_buf) *2 * frame->nb_samples;
-                    //interleave_buf = av_malloc(data_size);
-                    //if (!interleave_buf)
-                    //    exit(1);
-                    //for (int i = 0; i < Frame->nb_samples; i++)
-                    //{
-                    //    interleave_buf[Channels * i] = ((int16_t*)frame->data[0])[i];
-                    //    interleave_buf[Channels * i + 1] = ((int16_t*)frame->data[1])[i];
-                    //}
-                    //fwrite(interleave_buf, 1, data_size, outfile);
-                    //av_freep(&interleave_buf);
+                            //data_size = sizeof(*interleave_buf) *2 * frame->nb_samples;
+                            //interleave_buf = av_malloc(data_size);
+                            //if (!interleave_buf)
+                            //    exit(1);
+                            //for (int i = 0; i < Frame->nb_samples; i++)
+                            //{
+                            //    interleave_buf[Channels * i] = ((int16_t*)frame->data[0])[i];
+                            //    interleave_buf[Channels * i + 1] = ((int16_t*)frame->data[1])[i];
+                            //}
+                            //fwrite(interleave_buf, 1, data_size, outfile);
+                            //av_freep(&interleave_buf);
+                        }
                 }
             }
         }
