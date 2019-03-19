@@ -220,8 +220,6 @@ namespace FF8
         {
             Object obj = geometry.objects[objectId];
             AnimationFrame frame = animHeader.animations[animationId].animationFrames[animationFrame]; //we got the frame
-            for (int k = 0; k < animHeader.animations[animationId].animationFrames.Length; k++)
-                System.Diagnostics.Debugger.Log(0, "", $"\n{k}|{animHeader.animations[animationId].animationFrames[k].boneRot.Item1[0]}");
             //let's create a vertices buffer now. We will handle it via triangle basis but looking at bones
             List<VertexPositionTexture> vpt = new List<VertexPositionTexture>();
             List<Tuple<Vector3, int>> verts = new List<Tuple<Vector3, int>>();  
@@ -242,10 +240,10 @@ namespace FF8
                 var d = verts[tr.A1].Item2;
                 float e = 0;
                 var f = frame.boneRot.Item1[d];
-                //a = Vector3.Transform(a, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
-                //a = Vector3.Transform(a, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Y)));
-                //a = Vector3.Transform(a, Matrix.CreateRotationY(MathHelper.ToRadians(f.Z)));
-                a = Vector3.Transform(a, Matrix.CreateFromYawPitchRoll(f.X, f.Y, f.Z));
+                a = Vector3.Transform(a, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
+                a = Vector3.Transform(a, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Y)));
+                a = Vector3.Transform(a, Matrix.CreateRotationY(MathHelper.ToRadians(f.Z)));
+                //a = Vector3.Transform(a, Matrix.CreateFromYawPitchRoll(f.X, f.Y, f.Z));
 
                 int parentTester = skeleton.bones[d].parentId;
                     while (parentTester != 0xFFFF && parentTester != 0x00)
@@ -261,10 +259,10 @@ namespace FF8
                 e = 0;
                 f = frame.boneRot.Item1[d]; //it's the animation translation for this vertices group (d)
 
-                b = Vector3.Transform(b, Matrix.CreateFromYawPitchRoll(f.X, f.Y, f.Z));
-                //b = Vector3.Transform(b, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
-                //b = Vector3.Transform(b, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Y)));
-                //b = Vector3.Transform(b, Matrix.CreateRotationY(MathHelper.ToRadians(f.Z)));
+                //b = Vector3.Transform(b, Matrix.CreateFromYawPitchRoll(f.X, f.Y, f.Z));
+                b = Vector3.Transform(b, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
+                b = Vector3.Transform(b, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Y)));
+                b = Vector3.Transform(b, Matrix.CreateRotationY(MathHelper.ToRadians(f.Z)));
 
                 parentTester = skeleton.bones[d].parentId;
                 while (parentTester != 0xFFFF && parentTester != 0x00)
@@ -279,10 +277,10 @@ namespace FF8
                 d = verts[tr.C1].Item2;
                 e = 0;
                 f = frame.boneRot.Item1[d]; //it's the animation translation for this vertices group (d)
-                //c = Vector3.Transform(c, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
-                //c = Vector3.Transform(c, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Y)));
-                //c = Vector3.Transform(c, Matrix.CreateRotationY(MathHelper.ToRadians(f.Z)));
-                c = Vector3.Transform(c, Matrix.CreateFromYawPitchRoll(f.X, f.Y, f.Z));
+                c = Vector3.Transform(c, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
+                c = Vector3.Transform(c, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Y)));
+                c = Vector3.Transform(c, Matrix.CreateRotationY(MathHelper.ToRadians(f.Z)));
+                //c = Vector3.Transform(c, Matrix.CreateFromYawPitchRoll(f.X, f.Y, f.Z));
                 parentTester = skeleton.bones[d].parentId;
                 while (parentTester != 0xFFFF && parentTester != 0x00)
                 {

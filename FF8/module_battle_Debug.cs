@@ -517,7 +517,7 @@ namespace FF8
                 return;
             //DEBUG BELOW; I just want to draw any model
             //monstersData = new Debug_battleDat[1];
-            monstersData = new Debug_battleDat[] { new Debug_battleDat(28), new Debug_battleDat(19), new Debug_battleDat(10), new Debug_battleDat(5) };
+            monstersData = new Debug_battleDat[] { new Debug_battleDat(0),new Debug_battleDat(28), new Debug_battleDat(19), new Debug_battleDat(10), new Debug_battleDat(5) };
             //for (int i = 28; i < monstersData.Length; i++)
             //    monstersData[i] = new Debug_battleDat(i);
             frame = new int[monstersData.Length];
