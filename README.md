@@ -120,3 +120,14 @@ Requirements: MonoGame + Visual Studio
 1. Project is in in-dev prototype, therefore you can make new pull requests directly to main branch. 
 
 2. ??
+
+PS. Required FFmpeg dlls.
+avcodec-58.dll
+avdevice-58.dll
+avfilter-7.dll
+avformat-58.dll
+avutil-56.dll
+postproc-55.dll
+swresample-3.dll
+swscale-5.dll
+

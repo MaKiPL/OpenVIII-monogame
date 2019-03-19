@@ -3,12 +3,17 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Linq;
+using NAudio.Wave;
+using NAudio;
+using NAudio.Vorbis;
+using Microsoft.Xna.Framework.Audio;
+using System.IO;
 
 namespace FF8
 {
     internal static class Module_overture_debug
     {
-        private static OvertureInternalModule internalModule = OvertureInternalModule._0InitSound;
+        private static OvertureInternalModule internalModule = OvertureInternalModule._4Squaresoft;
         private static ArchiveWorker aw;
         private const string names = "name";
         private const string loops = "loop";
@@ -21,7 +26,8 @@ namespace FF8
             _0InitSound,
             _1WaitBeforeFirst,
             _2PlaySequence,
-            _3SequenceFinishedPlayMainMenu
+            _3SequenceFinishedPlayMainMenu,
+            _4Squaresoft
         }
 
         private static double internalTimer;
@@ -59,7 +65,9 @@ namespace FF8
             bFadingOut = false;
             Fade = 0;
             Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
-            Memory.module = Memory.MODULE_OVERTURE_DEBUG;
+
+            internalModule = OvertureInternalModule._4Squaresoft;
+            Module_movie_test.returnState = Memory.MODULE_OVERTURE_DEBUG;
         }
         private static void WaitForFirst()
         {
@@ -71,22 +79,24 @@ namespace FF8
             internalTimer += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0d;
 
         }
-
         private static void InitSound()
         {
-            Memory.musicIndex = 072; //Overture
+            Memory.MusicIndex =  79;//79; //Overture
             init_debugger_Audio.PlayMusic();
+            Memory.MusicIndex = ushort.MaxValue; // reset pos after playing overture; will loop back to start if push next
+
+
             white = new Texture2D(Memory.graphics.GraphicsDevice, 4, 4, false, SurfaceFormat.Color);
             byte[] whiteBuffer = new byte[16];
             for (int i = 0; i < 16; i++)
                 whiteBuffer[i] = 255;
             internalModule++;
         }
-
         internal static void Draw()
         {
-            if (Keyboard.GetState().IsKeyDown(Keys.Space))
+            if (Input.Button(Buttons.Okay)||Input.Button(Buttons.Cancel)||Input.Button(Keys.Space))
             {
+                Input.ResetInputLimit();
                 init_debugger_Audio.StopAudio();
                 Memory.module = Memory.MODULE_MAINMENU_DEBUG;
             }
@@ -104,6 +114,12 @@ namespace FF8
                     break; //actually this is our entry point for draw;
                 case OvertureInternalModule._3SequenceFinishedPlayMainMenu:
                     DrawLogo(); //after this ends, jump into main menu module
+                    break;
+                case OvertureInternalModule._4Squaresoft:
+                    internalModule = OvertureInternalModule._0InitSound;
+                    Module_movie_test.Index = 103;
+                    Module_movie_test.returnState = Memory.MODULE_OVERTURE_DEBUG;
+                    Memory.module = Memory.MODULE_MOVIETEST;
                     break;
             }
         }

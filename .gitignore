@@ -1,3 +1,7 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
 .vs
 FF8/Obj/*
 FF8/Bin/*
@@ -6,4 +10,5 @@ FF8/obj/*
 FF8/packages/*
 packages/*
 *.exe
-*.pdb
+*.pdb 
+AForge.*
