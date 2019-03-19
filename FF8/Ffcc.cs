@@ -151,7 +151,7 @@ namespace FF8
         FfccMode Mode { get; set; }
         public int FPS { get => (Codec != null ? (Codec->framerate.den == 0 || Codec->framerate.num == 0 ? 0 : Codec->framerate.num / Codec->framerate.den) : 0); }
         public SoundEffectInstance see { get; private set; }
-
+        private SoundEffect se { get; set; }
         public Ffcc()
         {
             Mode = FfccMode.NOTINIT;
@@ -214,35 +214,25 @@ namespace FF8
         private void ReadAll()
         {
 
-            Ms = new MemoryStream();
-            while (true)
+            using (Ms = new MemoryStream())
             {
-                Ret = ffmpeg.av_read_frame(Format, Packet);
-                if (Ret == ffmpeg.AVERROR_EOF) break;
-                else
+                while (true)
+                {
+                    Ret = ffmpeg.av_read_frame(Format, Packet);
+                    if (Ret == ffmpeg.AVERROR_EOF)
+                        break;
                     CheckRet();
-                Decode();
-            }
-            if (Ms.Length > 0)
-            {
-                //save buffer
-                //if (Media_Type == AVMediaType.AVMEDIA_TYPE_AUDIO)
-                //{
-                //    byte[] b = new byte[Ms.Length];
+                    Decode();
+                }
+                if (Ms.Length > 0)
+                {
+                    se = new SoundEffect(Ms.ToArray(), 0, (int)Ms.Length, OutFrame->sample_rate, (AudioChannels)Channels, 0, 0);
+                    //se.Duration; Stream->duration;
                     
-                //    fixed (byte* inbuffer = Ms.ToArray())
-                //    {
-                //        fixed (byte* outbuffer = b)
-                //        {
-                //            int count = ffmpeg.swr_convert(Swr, &outbuffer, (int)Ms.Length, &inbuffer, (int)Ms.Length);
-
-
-                            SoundEffect se = new SoundEffect(Ms.ToArray(),0,(int)Ms.Length, OutFrame->sample_rate, (AudioChannels)Channels,0,0);
-                            see = se.CreateInstance();
-                            see.Play();
-                    //    }
-                    //}
-                //}
+                    
+                    see = se.CreateInstance();
+                    see.Play();
+                }
             }
         }
         ~Ffcc()
@@ -273,23 +263,21 @@ namespace FF8
             }
             catch (NullReferenceException e)
             {
-                State = FfccState.NODLL;
                 TextWriter errorWriter = Console.Error;
                 errorWriter.WriteLine(e.Message);
-                errorWriter.WriteLine("FFCC can't init due to missing ffmpeg dlls");
+                errorWriter.WriteLine("memory stream already disposed of");
             }
-            try
-            {
-                if (!see.IsDisposed)
-                    see.Dispose();
-            }
-            catch (NullReferenceException e)
-            {
-                State = FfccState.NODLL;
-                TextWriter errorWriter = Console.Error;
-                errorWriter.WriteLine(e.Message);
-                errorWriter.WriteLine("FFCC can't init due to missing ffmpeg dlls");
-            }
+            //try
+            //{
+            //    if (!see.IsDisposed)
+            //        see.Dispose();
+            //}
+            //catch (NullReferenceException e)
+            //{
+            //    TextWriter errorWriter = Console.Error;
+            //    errorWriter.WriteLine(e.Message);
+            //    errorWriter.WriteLine("sound effect instance is already disposed of");
+            //}
 
         }
         /// <summary>
@@ -477,7 +465,7 @@ namespace FF8
         /// <summary>
         /// Converts FFMPEG error codes into a string.
         /// </summary>
-        private static string AvError(int ret)
+        private string AvError(int ret)
         {
 
             ulong errbuff_size = 256;
@@ -541,7 +529,17 @@ namespace FF8
         //        throw (ex);
         //    }
         //}
-
+        private int WritetoMs(byte * output,int start, int length)
+        {
+            long c_len = Ms.Length;
+            for (int i = start; i < length; i++)
+            {
+                Ms.WriteByte(output[i]);
+            }
+            if (Ms.Length - c_len != length)
+                throw new Exception("not all data wrote");
+            return (int)(Ms.Length - c_len);
+        }
         /// <summary>
         /// Decode loop. Will keep grabbing frames of data till an error or end of file.
         /// </summary>
@@ -608,6 +606,37 @@ namespace FF8
                     {
                         Channels = ffmpeg.av_get_channel_layout_nb_channels(OutFrame->channel_layout);
 
+                        int nb_samples = Frame->nb_samples;
+                        int output_nb_samples = nb_samples;
+                        int nb_channels = ffmpeg.av_get_channel_layout_nb_channels(ffmpeg.AV_CH_LAYOUT_STEREO);
+                        int bytes_per_sample = ffmpeg.av_get_bytes_per_sample(AVSampleFormat.AV_SAMPLE_FMT_S16) * nb_channels;
+                        int bufsize = ffmpeg.av_samples_get_buffer_size(null, nb_channels, nb_samples,
+                                                                 AVSampleFormat.AV_SAMPLE_FMT_S16, 1);
+
+                        byte*[] b = Frame->data;
+                        fixed (byte** input = b)
+                        {
+                            byte* output = null;
+                            ffmpeg.av_samples_alloc(&output, null,
+                                nb_channels,
+                                nb_samples,
+                                (AVSampleFormat)Frame->format, 0);//
+
+                            // Buffer input
+
+                            Ret = ffmpeg.swr_convert(Swr, &output, output_nb_samples / 2, input, nb_samples);
+                            CheckRet();
+                            WritetoMs(output, 0, Ret * bytes_per_sample);
+                            output_nb_samples -= Ret;
+
+                            // Drain buffer
+                            while ((Ret = ffmpeg.swr_convert(Swr, &output, output_nb_samples, null, 0)) > 0)
+                            {
+                                CheckRet();
+                                WritetoMs(output, 0, Ret * bytes_per_sample);
+                                output_nb_samples -= Ret;
+                            }
+                        }
                         //    //if(ffmpeg.av_sample_fmt_is_planar((AVSampleFormat)Frame->format)>0)
                         //    //{
                         //    //    byte*[] tmp = Frame->data;
@@ -617,106 +646,96 @@ namespace FF8
                         //    // -4*32 sounds good but sound is cut off.
 
 
-                        byte* convertedData = null;
+                        //
 
-                        int size = ffmpeg.av_samples_alloc(&convertedData,
-                            null,
-                            OutFrame->channels,
-                            Frame->nb_samples,
-                            (AVSampleFormat)OutFrame->format, 0);
-                        int outSamples = 0;
+                        //int size = ffmpeg.av_samples_alloc(&convertedData,
+                        //    null,
+                        //    OutFrame->channels,
+                        //    Frame->nb_samples,
+                        //    (AVSampleFormat)OutFrame->format, 0);
+                        //int outSamples = 0;
 
-                        byte*[] b = Frame->data;
-                        fixed (byte** t = b)
-                        {
-                            outSamples = ffmpeg.swr_convert(Swr, null, 0, t, Frame->nb_samples);
-                        }
-                        do
-                        {
-                            outSamples = ffmpeg.swr_get_out_samples(Swr, 0);
-                            fixed (byte** t = b)
-                            {
-                                outSamples = ffmpeg.swr_convert(Swr, &convertedData, size, null, 0);
-                            }
-                            for (int i = 0; i < outSamples * 2 * 2; i++)
-                            {
-                                Ms.WriteByte(convertedData[i]);
-                            }
-                        }
-                        while (outSamples > 0);
+                        //byte*[] b = Frame->data;
 
-                        //while (got_samples > 0)
+                        //outSamples = ffmpeg.swr_get_out_samples(Swr, 0);
+                        //fixed (byte** t = b)
+                        //{
+                        //    outSamples = ffmpeg.swr_convert(Swr, &convertedData, Frame->nb_samples, t, Frame->nb_samples);
+                        //}
+                        //while (outSamples > 0)
                         //{
                         //    int buffer_size =
-                        //        av_samples_get_buffer_size(
-                        //            NULL, out_channels, got_samples, Frame->Format, 1);
+                        //        ffmpeg.av_samples_get_buffer_size(null, OutFrame->channels, Frame->nb_samples, AVSampleFormat.AV_SAMPLE_FMT_S16, 1);
 
-                        //    assert(buffer_size <= max_buffer_size);
+                        //    //    assert(buffer_size <= max_buffer_size);
 
-                        //    // write output buffer to stdout
-                        //    if (write(STDOUT_FILENO, buffer, buffer_size) != buffer_size)
+                        //    //    // write output buffer to stdout
+                        //    buffer_size = (outSamples * 2 * 2);
+                        //    for (int i = 0; i < buffer_size; i++) 
                         //    {
-                        //        fprintf(stderr, "error: write(stdout)\n");
-                        //        exit(1);
+                        //        Ms.WriteByte(convertedData[i]);
                         //    }
 
                         //    // process samples buffered inside swr context
-                        //    got_samples = swr_convert(swr_ctx, &buffer, out_samples, NULL, 0);
-                        //    if (got_samples < 0)
+
+                        //    fixed (byte** t = b)
                         //    {
-                        //        fprintf(stderr, "error: swr_convert()\n");
-                        //        exit(1);
+                        //        outSamples = ffmpeg.swr_convert(Swr, &convertedData, Frame->nb_samples, null, 0);
                         //    }
-                            //byte*[] b = Frame->data;
-                            //fixed (byte** t = b)
-                            //{
-                            //    outSamples = ffmpeg.swr_convert(Swr, null, 0,t, Frame->nb_samples);
-                            //}
-                            //do
-                            //{
-                            //    outSamples = ffmpeg.swr_get_out_samples(Swr, 0);
-                            //    //if (outSamples <= Codec->frame_size * Codec->channels)
-                            //    //    break; // see comments, thanks to @dajuric for fixing this
+                        //}
+                        //Ret = outSamples;
+                        //CheckRet();
 
-                            //    outSamples = ffmpeg.swr_convert(Swr,
-                            //        &convertedData,
-                            //        outSamples, null, 0);
+                        //byte*[] b = Frame->data;
+                        //fixed (byte** t = b)
+                        //{
+                        //    outSamples = ffmpeg.swr_convert(Swr, null, 0,t, Frame->nb_samples);
+                        //}
+                        //do
+                        //{
+                        //    outSamples = ffmpeg.swr_get_out_samples(Swr, 0);
+                        //    //if (outSamples <= Codec->frame_size * Codec->channels)
+                        //    //    break; // see comments, thanks to @dajuric for fixing this
 
-                            //    for (int i = 0; i < outSamples * 2 * 2; i++)
-                            //    {
-                            //        Ms.WriteByte(convertedData[i]);
-                            //    }
-                            //    //int buffer_size = ffmpeg.av_samples_get_buffer_size(null,
-                            //    //            OutFrame->channels,
-                            //    //            Frame->nb_samples,
-                            //    //            (AVSampleFormat) OutFrame->format,
-                            //    //            0);
-                            //    outSamples = ffmpeg.swr_get_out_samples(Swr, 0);
-                            //}
-                            //while (outSamples > 36);
-                            //ffmpeg.swr_convert_frame(Swr, OutFrame, Frame);
-                            //CheckRet();
-                            //    byte*[] tmp = OutFrame->data;
-                            //    for (int i = 0; i < OutFrame->linesize[0]; i++)
-                            //    {
-                            //        Ms.WriteByte(tmp[0][i]);
-                            //    }
-                            //}
+                        //    outSamples = ffmpeg.swr_convert(Swr,
+                        //        &convertedData,
+                        //        outSamples, null, 0);
+
+                        //    for (int i = 0; i < outSamples * 2 * 2; i++)
+                        //    {
+                        //        Ms.WriteByte(convertedData[i]);
+                        //    }
+                        //    //int buffer_size = ffmpeg.av_samples_get_buffer_size(null,
+                        //    //            OutFrame->channels,
+                        //    //            Frame->nb_samples,
+                        //    //            (AVSampleFormat) OutFrame->format,
+                        //    //            0);
+                        //    outSamples = ffmpeg.swr_get_out_samples(Swr, 0);
+                        //}
+                        //while (outSamples > 36);
+                        //ffmpeg.swr_convert_frame(Swr, OutFrame, Frame);
+                        //CheckRet();
+                        //    byte*[] tmp = OutFrame->data;
+                        //    for (int i = 0; i < OutFrame->linesize[0]; i++)
+                        //    {
+                        //        Ms.WriteByte(tmp[0][i]);
+                        //    }
+                        //}
 
 
 
-                            //data_size = sizeof(*interleave_buf) *2 * frame->nb_samples;
-                            //interleave_buf = av_malloc(data_size);
-                            //if (!interleave_buf)
-                            //    exit(1);
-                            //for (int i = 0; i < Frame->nb_samples; i++)
-                            //{
-                            //    interleave_buf[Channels * i] = ((int16_t*)frame->data[0])[i];
-                            //    interleave_buf[Channels * i + 1] = ((int16_t*)frame->data[1])[i];
-                            //}
-                            //fwrite(interleave_buf, 1, data_size, outfile);
-                            //av_freep(&interleave_buf);
-                        }
+                        //data_size = sizeof(*interleave_buf) *2 * frame->nb_samples;
+                        //interleave_buf = av_malloc(data_size);
+                        //if (!interleave_buf)
+                        //    exit(1);
+                        //for (int i = 0; i < Frame->nb_samples; i++)
+                        //{
+                        //    interleave_buf[Channels * i] = ((int16_t*)frame->data[0])[i];
+                        //    interleave_buf[Channels * i + 1] = ((int16_t*)frame->data[1])[i];
+                        //}
+                        //fwrite(interleave_buf, 1, data_size, outfile);
+                        //av_freep(&interleave_buf);
+                    }
                 }
             }
         }
@@ -727,8 +746,7 @@ namespace FF8
             {
                 return Update(FfccState.DONE, Ret);
             }
-            else
-                CheckRet();
+            CheckRet();
             return Update(FfccState.PACKET, Ret);
         }
         private int GetPacket()
