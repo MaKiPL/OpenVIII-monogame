@@ -147,6 +147,7 @@ namespace FF8
                         Fade = 0.0f;
                         State = MainMenuStates.MainLobby;
                         Module_overture_debug.ResetModule();
+                        Memory.module = Memory.MODULE_OVERTURE_DEBUG;
                         break;
                     case Ditems.Feild:
                         Module_field_debug.ResetField();

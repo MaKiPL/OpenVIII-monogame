@@ -7,6 +7,7 @@ using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using FFmpeg.AutoGen;
+using Microsoft.Xna.Framework.Input;
 
 namespace FF8
 {
@@ -57,6 +58,13 @@ namespace FF8
 
         internal static void Update()
         {
+            if (Input.Button(Buttons.Okay) || Input.Button(Buttons.Cancel) || Input.Button(Keys.Space))
+            {
+                Input.ResetInputLimit();
+                //init_debugger_Audio.StopAudio();
+                //Memory.module = Memory.MODULE_MAINMENU_DEBUG;
+                MovieState = STATE_RETURN;
+            }
             switch (MovieState)
             {
                 case STATE_INIT:
@@ -96,9 +104,9 @@ namespace FF8
             //vfr.Open(Path.Combine(movieDirs[0] , "disc02_25h.avi"));
             //vfr.Open(Path.Combine(movieDirs[0], "disc00_30h.avi"));
 
-            //Ffccaudio = new Ffcc(@"c:\eyes_on_me.wav", AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
+            Ffccaudio = new Ffcc(@"c:\eyes_on_me.wav", AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
 
-            Ffccaudio = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
+            //Ffccaudio = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
             Ffccvideo = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_VIDEO, Ffcc.FfccMode.STATE_MACH);
             FPS = Ffccvideo.FPS;
             try

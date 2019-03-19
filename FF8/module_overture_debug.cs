@@ -65,7 +65,7 @@ namespace FF8
             bFadingOut = false;
             Fade = 0;
             Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
-
+            Memory.module = Memory.MODULE_OVERTURE_DEBUG;
             internalModule = OvertureInternalModule._4Squaresoft;
             Module_movie_test.ReturnState = Memory.MODULE_OVERTURE_DEBUG;
         }
