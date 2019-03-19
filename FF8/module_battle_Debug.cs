@@ -204,35 +204,42 @@ namespace FF8
 
         private static void DrawMonsters()
         {
+            if (Input.GetInputDelayed(Keys.F1))
+                DEBUG++;
             Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
             Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
             Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
             effect.TextureEnabled = true;
-            var a = monstersData[0].GetVertexPositions(0, new Vector3(0,50,0)); //DEBUG
-
-            //if(monstersData[0].textures.textures != null && monstersData[0].textures.textures.Length >0)
-            //    ate.Texture = monstersData[0].textures.textures[0];
-
-            if (a == null || a.Length == 0)
-                return;
-            ate.Texture = monstersData[0].textures.textures[0];
-
-            
-            foreach (var pass in ate.CurrentTechnique.Passes)
+            float fpsVariable = 1000.0f / 15f;
+            frameperFPS += Memory.gameTime.ElapsedGameTime.Milliseconds;
+            if (frameperFPS > fpsVariable)
             {
-                pass.Apply();
-                if (true)
+                frameperFPS = 0.0f;
+                frame++;
+            }
+            frame = frame == monstersData[0].animHeader.animations[0].cFrames ? 0 : frame;
+            for (int i = 0; i < monstersData[0].geometry.cObjects; i++)
+            {
+                var a = monstersData[0].GetVertexPositions(i, new Vector3(0, 50, 0), frame); //DEBUG
+                if (a == null || a.Length == 0)
+                    return;
+                ate.Texture = monstersData[0].textures.textures[0];
+                foreach (var pass in ate.CurrentTechnique.Passes)
                 {
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                    vertexData: a, vertexOffset: 0, primitiveCount: a.Length/3);
-                }
-                else
-                {
-                    //Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                    //vertexData: vpt.Item2, vertexOffset: localVertexIndex, primitiveCount: 1);
-                    //localVertexIndex += 3;
+                    pass.Apply();
+                    if (true)
+                    {
+                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                        vertexData: a, vertexOffset: 0, primitiveCount: a.Length / 3);
+                    }
+                    else
+                    {
+                        //Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                        //vertexData: vpt.Item2, vertexOffset: localVertexIndex, primitiveCount: 1);
+                        //localVertexIndex += 3;
+                    }
                 }
             }
         }
@@ -496,13 +503,17 @@ namespace FF8
             battleModule++;
         }
 
+        public static int DEBUG = 0;
+        private static float frameperFPS = 0.0f;
+        private static int frame = 0;
+
         private static void ReadMonster()
         {
             Init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
             if (enc.bNumOfEnemies == 0)
                 return;
             //DEBUG BELOW; I just want to draw any model
-            Debug_battleDat sampleMonster = new Debug_battleDat(0);
+            Debug_battleDat sampleMonster = new Debug_battleDat(5);
             monstersData = new Debug_battleDat[] { sampleMonster };
             //END OF DEBUG
         }

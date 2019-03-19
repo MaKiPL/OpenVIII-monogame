@@ -188,12 +188,13 @@ namespace FF8
                 geometry.pObjects[i] = br.ReadUInt32();
             geometry.objects = new Object[geometry.cObjects];
             for (int i = 0; i < geometry.cObjects; i++)
-                geometry.objects[i] = ReadGeometryObject(ms, br);
+                geometry.objects[i] = ReadGeometryObject(v+geometry.pObjects[i], ms, br);
             geometry.cTotalVert = br.ReadUInt32();
         }
 
-        private Object ReadGeometryObject(MemoryStream ms, BinaryReader br)
+        private Object ReadGeometryObject(uint v, MemoryStream ms, BinaryReader br)
         {
+            ms.Seek(v, SeekOrigin.Begin);
             Object @object = new Object { cVertices = br.ReadUInt16() };
             @object.verticeData = new VerticeData[@object.cVertices];
             for (int n = 0; n < @object.cVertices; n++){
@@ -202,7 +203,7 @@ namespace FF8
                 @object.verticeData[n].vertices = new Vertex[@object.verticeData[n].cVertices];
                 for (int i = 0; i < @object.verticeData[n].cVertices; i++)
                     @object.verticeData[n].vertices[i] = MakiExtended.ByteArrayToStructure<Vertex>(br.ReadBytes(6));}
-            ms.Seek(4-(ms.Position%4), SeekOrigin.Current);
+            ms.Seek(4-(ms.Position%4 == 0 ? 4 : ms.Position%4), SeekOrigin.Current);
             @object.cTriangles = br.ReadUInt16();
             @object.cQuads = br.ReadUInt16();
             @object.padding = br.ReadUInt64();
@@ -226,13 +227,9 @@ namespace FF8
             int i = 0;
             foreach (var a in obj.verticeData)
                 foreach (var b in a.vertices)
-                    verts.Add(new Tuple<Vector3, int>(b.GetVector, a.boneId-1));
+                    verts.Add(new Tuple<Vector3, int>(b.GetVector, a.boneId));
 
             //we now have a collection of basic Vec3D and a variable indicating a boneId.
-
-            //debug
-            
-            //debug
 
             for (;i<obj.cTriangles; i++ ) //let's loop through all triangles
             {
@@ -243,55 +240,55 @@ namespace FF8
                 var c = verts[tr.C1].Item1;
                 var d = verts[tr.A1].Item2;
                 //we grabbed the vertices, now let's parse the distance:
-                var e = skeleton.bones[d].Size; //it's the size from origin
+                float e = 0;
                 var f = frame.boneRot.Item1[d]; //it's the animation translation for this vertices group (d)
                 //so now we have to rotate and translate the vertices by e and f
-                //a = Vector3.Transform(a, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
-                //a = Vector3.Transform(a, Matrix.CreateRotationY(MathHelper.ToRadians(f.Y)));
-                //a = Vector3.Transform(a, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Z)));
+                a = Vector3.Transform(a, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
+                a = Vector3.Transform(a, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Y)));
+                a = Vector3.Transform(a, Matrix.CreateRotationY(MathHelper.ToRadians(f.Z)));
 
                 //test - are relative bones to parents?
                 int parentTester = skeleton.bones[d].parentId;
-                    while (parentTester != 0xFFFF)
+                    while (parentTester != 0xFFFF && parentTester != 0x00)
                     {
-                        e += skeleton.bones[skeleton.bones[d].parentId].Size;
+                        e += skeleton.bones[parentTester].Size;
                     parentTester = skeleton.bones[parentTester].parentId;
                     }
 
-                a = Vector3.Transform(a, Matrix.CreateTranslation(0, -e, 0));
+                a = Vector3.Transform(a, Matrix.CreateTranslation(0, -e*4, 0));
                 a = Vector3.Transform(a, Matrix.CreateTranslation(position));
 
                 d = verts[tr.B1].Item2;
-                e = skeleton.bones[d].Size; //it's the size from origin
+                e = 0;
                 f = frame.boneRot.Item1[d]; //it's the animation translation for this vertices group (d)
 
-                //b = Vector3.Transform(b, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
-                //b = Vector3.Transform(b, Matrix.CreateRotationY(MathHelper.ToRadians(f.Y)));
-                //b = Vector3.Transform(b, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Z)));
+                b = Vector3.Transform(b, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
+                b = Vector3.Transform(b, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Y)));
+                b = Vector3.Transform(b, Matrix.CreateRotationY(MathHelper.ToRadians(f.Z)));
 
                 parentTester = skeleton.bones[d].parentId;
-                while (parentTester != 0xFFFF)
+                while (parentTester != 0xFFFF && parentTester != 0x00)
                 {
-                    e += skeleton.bones[skeleton.bones[d].parentId].Size;
+                    e += skeleton.bones[parentTester].Size;
                     parentTester = skeleton.bones[parentTester].parentId;
                 }
 
-                b = Vector3.Transform(b, Matrix.CreateTranslation(0, -e, 0));
+                b = Vector3.Transform(b, Matrix.CreateTranslation(0, -e*4, 0));
                 b = Vector3.Transform(b, Matrix.CreateTranslation(position));
 
                 d = verts[tr.C1].Item2;
-                e = skeleton.bones[d].Size; //it's the size from origin
+                e = 0;
                 f = frame.boneRot.Item1[d]; //it's the animation translation for this vertices group (d)
-                //c = Vector3.Transform(c, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
-                //c = Vector3.Transform(c, Matrix.CreateRotationY(MathHelper.ToRadians(f.Y)));
-                //c = Vector3.Transform(c, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Z)));
+                c = Vector3.Transform(c, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
+                c = Vector3.Transform(c, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Y)));
+                c = Vector3.Transform(c, Matrix.CreateRotationY(MathHelper.ToRadians(f.Z)));
                 parentTester = skeleton.bones[d].parentId;
-                while (parentTester != 0xFFFF)
+                while (parentTester != 0xFFFF && parentTester != 0x00)
                 {
-                    e += skeleton.bones[skeleton.bones[d].parentId].Size;
+                    e += skeleton.bones[parentTester].Size;
                     parentTester = skeleton.bones[parentTester].parentId;
                 }
-                c = Vector3.Transform(c, Matrix.CreateTranslation(0, -e, 0));
+                c = Vector3.Transform(c, Matrix.CreateTranslation(0, -e*4, 0));
                 c = Vector3.Transform(c, Matrix.CreateTranslation(position));
                 vpt.Add(new VertexPositionTexture(c, new Vector2(tr.vta.U1, tr.vta.V1)));
                 vpt.Add(new VertexPositionTexture(a, new Vector2(tr.vtb.U1, tr.vtb.V1)));
@@ -302,18 +299,10 @@ namespace FF8
             return vpt.ToArray();
         }
 
-        public VertexPositionTexture[] GetVertexPositions(int objectId, Vector3 position)
+        public VertexPositionTexture[] GetVertexPositions(int objectId, Vector3 position, int frame)
         {
             //THIS IS DEBUG IN-DEV CLASS
             Object obj = geometry.objects[objectId];
-            float fpsVariable = 1000.0f / 15f;
-            frameperFPS += Memory.gameTime.ElapsedGameTime.Milliseconds;
-            if(frameperFPS > fpsVariable)
-            {
-                frameperFPS = 0.0f;
-                frame++;
-            }
-            frame = frame == 14 ? 0 : frame;
             return GetVertexPositions(objectId, position, 0, frame); //debug;
 
             //basically this works like this:
@@ -566,7 +555,7 @@ namespace FF8
             string path = aw.GetListOfFiles().First(x => x.ToLower().Contains($"c0m{id.ToString("D03")}")); //c0m000.dat
             buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, path);
 
-#if DEBUG && _WINDOWS
+#if _WINDOWS
             MakiExtended.DumpBuffer(buffer, "D:/out.dat");
 #endif
 
