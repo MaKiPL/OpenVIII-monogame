@@ -1,6 +1,7 @@
 ﻿using FFmpeg.AutoGen;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
+using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -70,7 +71,7 @@ namespace FF8
         /// Parser Context
         /// </summary>
         private AVCodecParserContext* Parser { get; set; }
-        
+
         /// <summary>
         /// Codec context, set from stream
         /// </summary>
@@ -169,6 +170,7 @@ namespace FF8
         private SoundEffect se { get; set; }
         public AVCodecContext* OutCodec { get; private set; }
         public AVFormatContext* OutFormat { get; private set; }
+        public string Outfile { get; private set; }
 
         public Ffcc()
         {
@@ -259,7 +261,28 @@ namespace FF8
                     see.Play();
                 }
             }
-
+            else if(File.Exists(Outfile))
+            {
+                ffmpeg.avio_close(OutFormat->pb);
+                //byte[] fb = File.ReadAllBytes(Outfile);
+                //int off = fb.Length % 4;
+                //int off = 4;
+                //se = new SoundEffect(fb, 0, (int)fb.Length - off, SwrFrame->sample_rate, (AudioChannels)Channels, 0, 0);
+                //se = SoundEffect.FromStream(Ms);
+                //see = se.CreateInstance();
+                //see.Play();
+                using (WaveFileReader wr = new WaveFileReader(Outfile))
+                {
+                    //try
+                    //{
+                    //    se = SoundEffect.FromStream(wr);
+                    //    see = se.CreateInstance();
+                    //    see.Play();
+                    //}
+                    //catch
+                    //{ }
+                }
+            }
             Ms.ManualDispose();
         }
         ~Ffcc()
@@ -455,7 +478,7 @@ namespace FF8
 
             CheckRet();
         }
-        private unsafe static AVStream* add_audio_stream(AVFormatContext* oc, AVCodecID codec_id)
+        private unsafe AVStream* add_audio_stream(AVFormatContext* oc, AVCodecID codec_id)
         {
             AVCodecContext* c;
             AVCodec* encoder = ffmpeg.avcodec_find_encoder(codec_id);
@@ -469,9 +492,9 @@ namespace FF8
 
             /* put sample parameters */
             c->bit_rate = 64000;
-            c->sample_rate = 44100;
-            c->channels = 2;
-            c->sample_fmt = encoder->sample_fmts[0];
+            c->sample_rate = Stream->codec->sample_rate;
+            c->channels = Stream->codec->channels;
+            c->sample_fmt = AVSampleFormat.AV_SAMPLE_FMT_S16;//encoder->sample_fmts[0];
             c->channel_layout = ffmpeg.AV_CH_LAYOUT_STEREO;
 
             // some formats want stream headers to be separate
@@ -486,41 +509,117 @@ namespace FF8
         private void PrepareResampler()
         {
             //Resampler
-            ffmpeg.av_frame_copy_props(SwrFrame, Frame);
-            SwrFrame->channel_layout = ffmpeg.AV_CH_LAYOUT_STEREO;
-            SwrFrame->format = (int)AVSampleFormat.AV_SAMPLE_FMT_S16;
-            SwrFrame->sample_rate = Frame->sample_rate;
-            SwrFrame->channels = 2;
-            Swr = ffmpeg.swr_alloc();
-            if (Swr == null)
-                die("SWR = Null");
-            Ret = ffmpeg.swr_config_frame(Swr, SwrFrame, Frame);
-            CheckRet();
-            Ret = ffmpeg.swr_init(Swr);
-            CheckRet();
-            Ret = ffmpeg.swr_is_initialized(Swr);
-            CheckRet();
+            //ffmpeg.av_frame_copy_props(SwrFrame, Frame);
+            //SwrFrame->nb_samples = Codec->frame_size;
+            //SwrFrame->format = (int)Codec->sample_fmt;
+            //SwrFrame->channel_layout = Codec->channel_layout;
+            //SwrFrame->channels = Codec->channels;
+            //SwrFrame->sample_rate = Codec->sample_rate;
+            //SwrFrame->channel_layout = ffmpeg.AV_CH_LAYOUT_STEREO;
+            //SwrFrame->format = (int)AVSampleFormat.AV_SAMPLE_FMT_S16;
+            //SwrFrame->sample_rate = Frame->sample_rate;
+            //SwrFrame->channels = 2;
+            //if (SwrFrame->nb_samples <= 0) SwrFrame->nb_samples = 64;
+            //Swr = ffmpeg.swr_alloc();
+            //if (Swr == null)
+            //    die("SWR = Null");
+            //Ret = ffmpeg.swr_config_frame(Swr, SwrFrame, Frame);
+            //CheckRet();
+            //Ret = ffmpeg.swr_init(Swr);
+            //CheckRet();
+            //Ret = ffmpeg.swr_is_initialized(Swr);
+            //CheckRet();
 
             //Encoder
-            string outfile = "a.wav";
-            AVOutputFormat* fmt = fmt = ffmpeg.av_guess_format(null, outfile, null); //ffmpeg.av_guess_format("s16le", null, null);
+            //string outfile = "a.wav";
+            //AVOutputFormat* fmt = fmt = ffmpeg.av_guess_format(null, outfile, null); //ffmpeg.av_guess_format("s16le", null, null);
+            //if (fmt == null) die("av_guess_format");
+            //OutFormat = ffmpeg.avformat_alloc_context();
+            //OutFormat->oformat = fmt;
+            //out_audioStream = add_audio_stream(OutFormat, fmt->audio_codec);
+            //OutCodec = open_audio(OutFormat, out_audioStream);
+            //out_audioStream->time_base = Stream->time_base;
+            //Ret = ffmpeg.avio_open2(&OutFormat->pb, outfile, ffmpeg.AVIO_FLAG_WRITE, null, null);
+            //CheckRet();
+            //ffmpeg.avformat_write_header(OutFormat, null);
+            //AVCodec* ocodec;
+            //Ret = ffmpeg.av_find_best_stream(OutFormat, AVMediaType.AVMEDIA_TYPE_AUDIO, -1, -1, &ocodec, 0);
+            //CheckRet();
+            //OutCodec = out_audioStream->codec;
+            //OutCodec->time_base.num = 1;
+            //OutCodec->time_base.den = 1000;
+            Outfile = Path.Combine(Path.GetTempPath(),$"{Path.GetFileNameWithoutExtension(File_Name)}.wav");
+            AVOutputFormat* fmt = fmt = ffmpeg.av_guess_format(null, Outfile, null); //ffmpeg.av_guess_format("s16le", null, null);
             if (fmt == null) die("av_guess_format");
             OutFormat = ffmpeg.avformat_alloc_context();
             OutFormat->oformat = fmt;
             out_audioStream = add_audio_stream(OutFormat, fmt->audio_codec);
-            OutCodec = open_audio(OutFormat, out_audioStream);
+            open_audio(OutFormat, out_audioStream);
             out_audioStream->time_base = Stream->time_base;
-            Ret = ffmpeg.avio_open2(&OutFormat->pb, outfile, ffmpeg.AVIO_FLAG_WRITE, null, null);
-            CheckRet();
+            Ret = ffmpeg.avio_open2(&OutFormat->pb, Outfile, ffmpeg.AVIO_FLAG_WRITE, null, null);
+            if (Ret < 0) die("url_fopen");
             ffmpeg.avformat_write_header(OutFormat, null);
             AVCodec* ocodec;
             Ret = ffmpeg.av_find_best_stream(OutFormat, AVMediaType.AVMEDIA_TYPE_AUDIO, -1, -1, &ocodec, 0);
-            CheckRet();
-            //audioCodecContext = out_audioStream->codec;
-            //audioCodecContext->time_base.num = 1;
-            //audioCodecContext->time_base.den = 1000;
+            OutCodec = ffmpeg.avcodec_alloc_context3(ocodec);
+            //OutCodec = out_audioStream->codec;
+            ffmpeg.avcodec_parameters_to_context(OutCodec, out_audioStream->codecpar);
+            Ret = ffmpeg.avcodec_open2(OutCodec, ocodec, null);
+            if (Ret < 0) die("avcodec_open2");
+
+
+            Swr = ffmpeg.swr_alloc();
+            ffmpeg.av_opt_set_channel_layout(Swr, "in_channel_layout", (long)Codec->channel_layout, 0);
+            ffmpeg.av_opt_set_channel_layout(Swr, "out_channel_layout", (long)OutCodec->channel_layout, 0);
+            ffmpeg.av_opt_set_int(Swr, "in_sample_rate", Codec->sample_rate, 0);
+            ffmpeg.av_opt_set_int(Swr, "out_sample_rate", OutCodec->sample_rate, 0);
+            ffmpeg.av_opt_set_sample_fmt(Swr, "in_sample_fmt", Codec->sample_fmt, 0);
+            ffmpeg.av_opt_set_sample_fmt(Swr, "out_sample_fmt", OutCodec->sample_fmt, 0);
+            Ret = ffmpeg.swr_init(Swr);
+            if (Ret < 0) die("swr_init");
+
+            //AVFrame* Frame = ffmpeg.av_frame_alloc();
+            //if (Frame == null)
+            //    die("Could not allocate audio frame");
+
+            Frame->format = (int)Codec->sample_fmt;
+            Frame->channel_layout = Codec->channel_layout;
+            Frame->channels = Codec->channels;
+            Frame->sample_rate = Codec->sample_rate;
+
+            //AVFrame* SwrFrame = ffmpeg.av_frame_alloc();
+            //if (SwrFrame == null) die("Could not allocate audio frame");
+
+            SwrFrame->nb_samples = OutCodec->frame_size;
+            SwrFrame->format = (int)OutCodec->sample_fmt;
+            SwrFrame->channel_layout = OutCodec->channel_layout;
+            SwrFrame->channels = OutCodec->channels;
+            SwrFrame->sample_rate = OutCodec->sample_rate;
+            if (SwrFrame->nb_samples <= 0) SwrFrame->nb_samples = 32; //wave files have a 0 frame_size set I just picked 64 might beable to be bigger.
+            AVPacket inPacket;
+            ffmpeg.av_init_packet(&inPacket);
+            inPacket.data = null;
+            inPacket.size = 0;
         }
-        unsafe private static AVCodecContext* open_audio(AVFormatContext* oc, AVStream* st)
+        //unsafe private static AVCodecContext* open_audio(AVFormatContext* oc, AVStream* st)
+        //{
+        //    AVCodecContext* c = st->codec;
+        //    AVCodec* codec;
+
+        //    /* find the audio encoder */
+        //    codec = ffmpeg.avcodec_find_encoder(c->codec_id);
+        //    if (codec == null) die("avcodec_find_encoder");
+
+        //    /* open it */
+        //    AVDictionary* dict = null;
+        //    ffmpeg.av_dict_set(&dict, "strict", "+experimental", 0);
+        //    ffmpeg.avcodec_alloc_context3(codec);
+        //    ffmpeg.avcodec_parameters_to_context(c, st->codecpar);
+        //    int res = ffmpeg.avcodec_open2(c, codec, &dict);
+        //    if (res < 0) die("avcodec_open");
+        //    return c;
+        //}
+        unsafe private static void open_audio(AVFormatContext* oc, AVStream* st)
         {
             AVCodecContext* c = st->codec;
             AVCodec* codec;
@@ -532,13 +631,9 @@ namespace FF8
             /* open it */
             AVDictionary* dict = null;
             ffmpeg.av_dict_set(&dict, "strict", "+experimental", 0);
-            ffmpeg.avcodec_alloc_context3(codec);
-            ffmpeg.avcodec_parameters_to_context(c, st->codecpar);
             int res = ffmpeg.avcodec_open2(c, codec, &dict);
             if (res < 0) die("avcodec_open");
-            return c;
         }
-
         private static void die(string v)
         {
             throw new Exception(v);
@@ -611,7 +706,7 @@ namespace FF8
         //        throw (ex);
         //    }
         //}
-        private int WritetoMs(byte * output,int start, int length)
+        private int WritetoMs(byte* output, int start, int length)
         {
             long c_len = Ms.Length;
             for (int i = start; i < length; i++)
@@ -692,66 +787,193 @@ namespace FF8
         {
             if (Codec->frame_number == 1)
                 PrepareResampler();
+            int frameFinished = 0;
+            // Convert
+            byte* convertedData = null;
+
+            if (ffmpeg.av_samples_alloc(&convertedData,
+                         null,
+                         OutCodec->channels,
+                         SwrFrame->nb_samples,
+                         OutCodec->sample_fmt, 0) < 0)
+                die("Could not allocate samples");
+            int outSamples = 0;
+            fixed (byte** tmp = (byte*[])Frame->data)
+            {
+                outSamples = ffmpeg.swr_convert(Swr, null, 0,
+                             //&convertedData,
+                             //SwrFrame->nb_samples,
+                             tmp,
+                     Frame->nb_samples);
+            }
+            if (outSamples < 0) die("Could not convert");
+            //int lastOutsamples = 0;
+            for (; ; )
+            {
+                int nb_samples = SwrFrame->nb_samples;
+                outSamples = ffmpeg.swr_get_out_samples(Swr, 0);
+                if ((outSamples < OutCodec->frame_size * OutCodec->channels) || OutCodec->frame_size == 0 && (outSamples < SwrFrame->nb_samples * OutCodec->channels)) break;
+                //if ((outSamples < OutCodec->frame_size * OutCodec->channels) || (OutCodec->frame_size == 0 && (outSamples <= 0 || (outSamples < nb_samples && lastOutsamples == outSamples)))) break; // see comments, thanks to @dajuric for fixing this
+                //lastOutsamples = outSamples;
+                outSamples = ffmpeg.swr_convert(Swr,
+                                         &convertedData,
+                                         nb_samples, null, 0);
+                //if (outSamples != 0) lastOutsamples = 0; //had issue with one file having 36 samples left and stuck in loop. i think was from changing sample rate
+                int buffer_size = ffmpeg.av_samples_get_buffer_size(null,
+                               OutCodec->channels,
+                               nb_samples,
+                               OutCodec->sample_fmt,
+                               0);
+                if (buffer_size < 0) die("Invalid buffer size");
+
+                if (ffmpeg.avcodec_fill_audio_frame(SwrFrame,
+                         OutCodec->channels,
+                         OutCodec->sample_fmt,
+                         convertedData,
+                         buffer_size,
+                         0) < 0)
+                    die("Could not fill frame");
+
+                AVPacket outPacket;
+                ffmpeg.av_init_packet(&outPacket);
+                outPacket.data = null;
+                outPacket.size = 0;
+
+                if (ffmpeg.avcodec_encode_audio2(OutCodec, &outPacket, SwrFrame, &frameFinished) < 0) // old api once i get this working need to update to new api
+                    die("Error encoding audio frame");
+                //if (audioStream->codec->coded_frame != null && audioStream->codec->coded_frame->pts != (int)ffmpeg.AV_NOPTS_VALUE)
+                //    outPacket.pts = ffmpeg.av_rescale_q(audioStream->codec->coded_frame->pts,
+                //        audioStream->codec->time_base, audioStream->codec->time_base);
+
+
+                //outPacket.flags |= ffmpeg.AV_PKT_FLAG_KEY;
+                outPacket.stream_index = out_audioStream->index;
+                //outPacket.data = audio_outbuf;
+                outPacket.dts = Frame->pkt_dts;
+                outPacket.pts = Frame->pkt_pts;
+                ffmpeg.av_packet_rescale_ts(&outPacket, Stream->time_base, out_audioStream->time_base);
+
+                if (frameFinished != 0)
+                {
+
+
+                    if (ffmpeg.av_interleaved_write_frame(OutFormat, &outPacket) != 0)
+                        die("Error while writing audio frame");
+
+                    ffmpeg.av_free_packet(&outPacket);
+                }
+            }
+
+        }
+
+        private void Resample3()//broken
+        {
+            if (Codec->frame_number == 1)
+                PrepareResampler();
             Channels = ffmpeg.av_get_channel_layout_nb_channels(SwrFrame->channel_layout);
             int nb_channels = ffmpeg.av_get_channel_layout_nb_channels(SwrFrame->channel_layout);
             int bytes_per_sample = ffmpeg.av_get_bytes_per_sample(AVSampleFormat.AV_SAMPLE_FMT_S16) * nb_channels;
             bool got_packet = false;
             if ((Ret = ffmpeg.swr_convert_frame(Swr, SwrFrame, Frame)) >= 0)
-                //Encode(SwrFrame, ref got_packet);
+            {
                 WritetoMs(*SwrFrame->extended_data, 0, SwrFrame->nb_samples * bytes_per_sample);
+
+                //Encode(SwrFrame, ref got_packet);
+            }
+            else
+                CheckRet();
+        }
+        private void Resample2() //broken
+        {
+            if (Codec->frame_number == 1)
+                PrepareResampler();
+            int nb_samples = Frame->nb_samples;
+            int output_nb_samples = nb_samples;
+            int nb_channels = ffmpeg.av_get_channel_layout_nb_channels(ffmpeg.AV_CH_LAYOUT_STEREO);
+            int bytes_per_sample = ffmpeg.av_get_bytes_per_sample(AVSampleFormat.AV_SAMPLE_FMT_S16) * nb_channels;
+            int bufsize = ffmpeg.av_samples_get_buffer_size(null, nb_channels, nb_samples,
+                                                     AVSampleFormat.AV_SAMPLE_FMT_S16, 1);
+
+            byte*[] b = Frame->data;
+            fixed (byte** input = b)
+            {
+                byte* output = null;
+                ffmpeg.av_samples_alloc(&output, null,
+                    nb_channels,
+                    nb_samples,
+                    (AVSampleFormat)Frame->format, 0);//
+
+                // Buffer input
+
+                Ret = ffmpeg.swr_convert(Swr, &output, output_nb_samples / 2, input, nb_samples);
+                CheckRet();
+                FillFrame(output, Ret * bytes_per_sample);
+                WritetoMs(output, 0, Ret * bytes_per_sample);
+                bool got_packet = false;
+                //Encode(SwrFrame, ref got_packet);
+                output_nb_samples -= Ret;
+
+                // Drain buffer
+                while ((Ret = ffmpeg.swr_convert(Swr, &output, output_nb_samples, null, 0)) > 0)
+                {
+                    CheckRet();
+                    FillFrame(output, Ret * bytes_per_sample);
+                    WritetoMs(output, 0, Ret * bytes_per_sample);
+                    got_packet = false;
+                    //Encode(SwrFrame, ref got_packet);
+                    output_nb_samples -= Ret;
+                }
+            }
+        }
+        private void FillFrame(byte * convertedData, int buffer_size) // broken
+        {
+
+            Ret = ffmpeg.avcodec_fill_audio_frame(SwrFrame,
+                     OutCodec->channels,
+                     OutCodec->sample_fmt,
+                     convertedData,
+                     buffer_size,
+                     0);
             CheckRet();
         }
         private int Encode(AVFrame* OutFrame, ref bool got_packet)
-        {
+        { 
             AVPacket OutPacket;
             ffmpeg.av_init_packet(&OutPacket);
             OutPacket.data = null;
             OutPacket.size = 0;
-            Ret = Encode(&OutPacket, OutFrame, ref got_packet);
-            if(Ret == 0)
+
+            got_packet = false;
+
+            Ret = ffmpeg.avcodec_send_frame(OutCodec, OutFrame);
+            CheckRet();
+
+            for (; ; )
             {
-                ffmpeg.av_packet_unref(&OutPacket);
-                return Ret;
-            }
+                Ret = ffmpeg.avcodec_receive_packet(OutCodec, &OutPacket);
+                if (Ret == ffmpeg.AVERROR(ffmpeg.EAGAIN))
+                    return 0; //might need to return Ret encase we need to check for eagain?
+                else if (CheckRet() >= 0)
+                    got_packet = true;
+                
 
-            //OutPacket.flags |= ffmpeg.AV_PKT_FLAG_KEY;
-            OutPacket.stream_index = out_audioStream->index;
-            //OutPacket.data = audio_outbuf;
-            OutPacket.dts = OutFrame->pkt_dts;
-            OutPacket.pts = OutFrame->pkt_pts;
-            ffmpeg.av_packet_rescale_ts(&OutPacket, Stream->time_base, out_audioStream->time_base);
+                //OutPacket.flags |= ffmpeg.AV_PKT_FLAG_KEY;
+                //OutPacket.data = audio_outbuf;
+                //OutPacket.dts = OutFrame->pkt_dts;
+                //OutPacket.pts = OutFrame->pkt_pts;
 
-            if (got_packet)
-            {
+                if (got_packet)
+                {
+                    //ffmpeg.av_packet_rescale_ts(&OutPacket, Stream->time_base, out_audioStream->time_base);
 
+                    //OutPacket.stream_index = out_audioStream->index;
 
-                Ret = ffmpeg.av_interleaved_write_frame(OutFormat, &OutPacket);
-                CheckRet();
-                ffmpeg.av_packet_unref(&OutPacket);
+                    Ret = ffmpeg.av_interleaved_write_frame(OutFormat, &OutPacket);
+                    CheckRet();
+                    ffmpeg.av_packet_unref(&OutPacket);
+                }
             }
             return Ret;
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="OutFrame">AVFrame you want encoded, had it a arguement so you could sent Frame or SwrFrame</param>
-        /// <param name="got_packet">true if got packet</param>
-        /// <returns></returns>
-        private int Encode(AVPacket* OutPacket, AVFrame* OutFrame, ref bool got_packet)
-        {
-                got_packet = false;
-
-                Ret = ffmpeg.avcodec_send_frame(OutCodec, OutFrame);
-                CheckRet();
-
-                Ret = ffmpeg.avcodec_receive_packet(OutCodec, OutPacket);
-                if (CheckRet() > 0)
-                    got_packet = true;
-                else if (Ret == ffmpeg.AVERROR(ffmpeg.EAGAIN))
-                    return 0; //might need to return Ret encase we need to check for eagain?
-
-                return Ret;
-            
         }
         private int ReadOne()
         {
