@@ -277,7 +277,7 @@ namespace FF8
         }
         //callable test
 
-        public static byte[] ReadFullyByte(WaveStream stream)
+        public static byte[] ReadFullyByte(Stream stream)
         {
             // following formula goal is to calculate the number of bytes to make buffer. might be wrong.
             long size = stream.Length; // stream.Length should be in bytes. will error later if short.

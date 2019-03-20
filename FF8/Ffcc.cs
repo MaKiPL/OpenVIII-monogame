@@ -555,10 +555,6 @@ namespace FF8
                 }
                 else if (Media_Type == AVMediaType.AVMEDIA_TYPE_AUDIO)
                 {
-                    if (Codec->frame_number == 1)
-                        PrepareResampler();
-                    if (Frame->nb_samples == 0)
-                        return;
                     // do something with audio here.
                     // Adapted from https://libav.org/documentation/doxygen/master/decode_audio_8c-example.html
                     /* the stream parameters may change at any time, check that they are
@@ -587,68 +583,22 @@ namespace FF8
                     // must resample
                     else
                     {
-                        Channels = ffmpeg.av_get_channel_layout_nb_channels(OutFrame->channel_layout);
-                        int nb_channels = ffmpeg.av_get_channel_layout_nb_channels(ffmpeg.AV_CH_LAYOUT_STEREO);
-                        int bytes_per_sample = ffmpeg.av_get_bytes_per_sample(AVSampleFormat.AV_SAMPLE_FMT_S16) * nb_channels;
-
-                        if((Ret = ffmpeg.swr_convert_frame(Swr, OutFrame, Frame))>=0)
-                            WritetoMs(*OutFrame->extended_data, 0, OutFrame->nb_samples * bytes_per_sample);
-                        CheckRet();
-
-                        //Ret = ffmpeg.swr_convert(Swr, OutFrame->extended_data, Ret, null, 0);
-                        //CheckRet();
-
-                        //WritetoMs(*OutFrame->extended_data, 0, Ret * bytes_per_sample); //OutFrame->linesize[0]
-
-                        //Ret = ffmpeg.swr_convert_frame(Swr, OutFrame, null);
-                        //CheckRet();
-
-                        //WritetoMs(OutFrame->data[0], 0, OutFrame->nb_samples * bytes_per_sample);
-
-                        //Ret = ffmpeg.swr_convert_frame(Swr, null, Frame);
-                        /// if it's set to 1 the returned delay is in seconds
-                        /// if it's set to 1000 the returned delay is in milliseconds
-                        /// if it's set to the input sample rate then the returned delay is in input samples
-                        /// if it's set to the output sample rate then the returned delay is in output samples
-                        /// if it's the least common multiple of in_sample_rate and out_sample_rate then an exact rounding-free delay will be returned
-                        //long time_base = 0;
-                        ///// 1 / base units.
-                        //long delay = 0;
-                        //byte* output = null;
-
-                        //if ((delay = ffmpeg.swr_get_delay(Swr,time_base))>0)
-                        //{
-                        //    ffmpeg.av_samples_alloc(&output, null,
-                        //             nb_channels,
-                        //             (int)delay,
-                        //             (AVSampleFormat)Frame->format, 0);
-                        //    // Drain buffer
-                        //    while ((Ret = ffmpeg.swr_convert(Swr, &output, (int)delay, null, 0)) > 0)
-                        //    {
-                        //        CheckRet();
-                        //        WritetoMs(output, 0, Ret * bytes_per_sample);
-                        //        delay -= Ret;
-                        //    }
-                        //}
-                        //else if((Ret = ffmpeg.swr_get_out_samples(Swr,Frame->nb_samples))>0)
-                        //{
-                        //    int outsize = Ret;
-
-                        //    ffmpeg.av_samples_alloc(&output, null,
-                        //             nb_channels,outsize,
-
-                        //             (AVSampleFormat)Frame->format, 0);
-
-                        //    while ((Ret = ffmpeg.swr_convert(Swr, &output, outsize, null, 0)) > 0)
-                        //    {
-                        //        CheckRet();
-                        //        WritetoMs(output, 0, Ret * bytes_per_sample);
-                        //        outsize -= Ret;
-                        //    }
-                        //}
+                        Resample();
                     }
                 }
             }
+        }
+        private void Resample()
+        {
+            if (Codec->frame_number == 1)
+                PrepareResampler();
+            Channels = ffmpeg.av_get_channel_layout_nb_channels(OutFrame->channel_layout);
+            int nb_channels = ffmpeg.av_get_channel_layout_nb_channels(OutFrame->channel_layout);
+            int bytes_per_sample = ffmpeg.av_get_bytes_per_sample(AVSampleFormat.AV_SAMPLE_FMT_S16) * nb_channels;
+
+            if ((Ret = ffmpeg.swr_convert_frame(Swr, OutFrame, Frame)) >= 0)
+                WritetoMs(*OutFrame->extended_data, 0, OutFrame->nb_samples * bytes_per_sample);
+            CheckRet();
         }
         private int ReadOne()
         {

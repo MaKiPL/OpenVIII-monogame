@@ -8,6 +8,8 @@ using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using FFmpeg.AutoGen;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Audio;
+using NAudio.Wave;
 
 namespace FF8
 {
@@ -97,16 +99,24 @@ namespace FF8
 
 
         // The flush packet is a non-null packet with size 0 and data null
-
+        private static SoundEffectInstance see;
         private static void InitMovie()
         {
 
             //vfr.Open(Path.Combine(movieDirs[0] , "disc02_25h.avi"));
             //vfr.Open(Path.Combine(movieDirs[0], "disc00_30h.avi"));
 
-            Ffccaudio = new Ffcc(@"c:\eyes_on_me.wav", AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
+            //Ffccaudio = new Ffcc(@"c:\eyes_on_me.wav", AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
 
-            //Ffccaudio = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
+            Ffccaudio = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
+            //using (FileStream fs =File.OpenRead(@"C:\Users\pcvii\source\repos\ConsoleApp1\ConsoleApp1\bin\Debug\audio.wav"))
+            //{
+            //    SoundEffect se = new SoundEffect(init_debugger_Audio.ReadFullyByte(fs),44100,AudioChannels.Stereo);
+            //    //SoundEffect se = SoundEffect.FromStream(fs);
+            //            see = se.CreateInstance();
+            //            see.Play();
+                    
+            //}
             Ffccvideo = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_VIDEO, Ffcc.FfccMode.STATE_MACH);
             FPS = Ffccvideo.FPS;
             try
