@@ -15,6 +15,17 @@ using System.Threading.Tasks;
 
 namespace FF8
 {
+    public sealed class ManualMemoryStream : MemoryStream
+    {
+        //https://stackoverflow.com/questions/2620851/avoiding-dispose-of-underlying-stream
+        protected override void Dispose(bool disposing)
+        {
+        }
+        public void ManualDispose()
+        {
+            base.Dispose(true);
+        }
+    }
     unsafe class Ffcc
     {
         //code converted to c# from c++
@@ -59,7 +70,7 @@ namespace FF8
         /// Parser Context
         /// </summary>
         private AVCodecParserContext* Parser { get; set; }
-
+        
         /// <summary>
         /// Codec context, set from stream
         /// </summary>
@@ -145,7 +156,7 @@ namespace FF8
             NODLL
         }
 
-        private MemoryStream Ms { get; set; }
+        private ManualMemoryStream Ms { get; set; }
         public AVFrame* OutFrame { get => _outFrame; private set => _outFrame = value; }
         FfccState State { get; set; }
         FfccMode Mode { get; set; }
@@ -214,26 +225,33 @@ namespace FF8
         private void ReadAll()
         {
 
-            using (Ms = new MemoryStream())
+            Ms = new ManualMemoryStream();
+
+            while (true)
             {
-                while (true)
-                {
-                    Ret = ffmpeg.av_read_frame(Format, Packet);
-                    if (Ret == ffmpeg.AVERROR_EOF)
-                        break;
-                    CheckRet();
-                    Decode();
-                }
-                if (Ms.Length > 0)
-                {
-                    se = new SoundEffect(Ms.ToArray(), 0, (int)Ms.Length, OutFrame->sample_rate, (AudioChannels)Channels, 0, 0);
-                    //se.Duration; Stream->duration;
-                    
-                    
-                    see = se.CreateInstance();
-                    see.Play();
-                } 
+                Ret = ffmpeg.av_read_frame(Format, Packet);
+                if (Ret == ffmpeg.AVERROR_EOF)
+                    break;
+                CheckRet();
+                Decode();
             }
+            if (Ms.Length > 0)
+            {
+                try
+                {
+                    // accepts streams with s16le wave files maybe more haven't tested everything.
+                    se = SoundEffect.FromStream(Ms); 
+                }
+                catch (ArgumentException)
+                {
+                    // accepts s16le maybe more haven't tested everything.
+                    se = new SoundEffect(Ms.ToArray(), 0, (int)Ms.Length, OutFrame->sample_rate, (AudioChannels)Channels, 0, 0);
+                }
+                see = se.CreateInstance();
+                see.Play();
+            }
+
+            Ms.ManualDispose();
         }
         ~Ffcc()
         {
@@ -259,7 +277,8 @@ namespace FF8
             }
             try
             {
-                Ms.Dispose();
+                //Ms.Dispose();
+                Ms.ManualDispose();
             }
             catch (NullReferenceException e)
             {
