@@ -41,7 +41,8 @@ namespace FF8
         private AVPacket* _packet;
         private SwrContext* _swr;
         private SwsContext* _sws;
-        private AVFrame* _outFrame;
+        private AVFrame* _swrFrame;
+        private WaveOut wo;
 
         /// <summary>
         /// Most ffmpeg functions return an integer. If the value is less than 0 it is an error usually. Sometimes data is passed and then it will be greater than 0.
@@ -162,7 +163,7 @@ namespace FF8
         }
 
         private ManualMemoryStream Ms { get; set; }
-        public AVFrame* SwrFrame { get => _outFrame; private set => _outFrame = value; }
+        public AVFrame* SwrFrame { get => _swrFrame; private set => _swrFrame = value; }
         FfccState State { get; set; }
         FfccMode Mode { get; set; }
         public int FPS { get => (Codec != null ? (Codec->framerate.den == 0 || Codec->framerate.num == 0 ? 0 : Codec->framerate.num / Codec->framerate.den) : 0); }
@@ -280,7 +281,15 @@ namespace FF8
                     //    see.Play();
                     //}
                     //catch
-                    //{ }
+                    ////{ }
+
+                    //wo = new WaveOut();
+                    //wo.Init(wr);
+                    //wo.Play();
+                    //byte[] fb = init_debugger_Audio.ReadFullyByte(wr);
+                    //se = new SoundEffect(fb, wr.WaveFormat.SampleRate, (AudioChannels)wr.WaveFormat.Channels);
+                    //see = se.CreateInstance();
+                    //see.Play();
                 }
             }
             Ms.ManualDispose();
@@ -291,7 +300,7 @@ namespace FF8
             {
                 fixed (AVFrame** tmp = &_frame)
                     ffmpeg.av_frame_free(tmp);
-                fixed (AVFrame** tmp = &_outFrame)
+                fixed (AVFrame** tmp = &_swrFrame)
                     ffmpeg.av_frame_free(tmp);
                 fixed (AVPacket** tmp = &_packet)
                     ffmpeg.av_packet_free(tmp);
@@ -299,6 +308,8 @@ namespace FF8
                     ffmpeg.swr_free(tmp);
                 ffmpeg.av_parser_close(Parser);
                 ffmpeg.avcodec_close(Codec);
+                ffmpeg.avcodec_close(OutCodec);
+                ffmpeg.avformat_free_context(OutFormat);
                 ffmpeg.avformat_free_context(Format);
             }
             catch (DllNotFoundException e)
@@ -857,8 +868,8 @@ namespace FF8
                 {
 
 
-                    if (ffmpeg.av_interleaved_write_frame(OutFormat, &outPacket) != 0)
-                        die("Error while writing audio frame");
+                    if ((Ret = ffmpeg.av_interleaved_write_frame(OutFormat, &outPacket)) != 0)
+                        CheckRet(); //die("Error while writing audio frame");
 
                     ffmpeg.av_free_packet(&outPacket);
                 }
