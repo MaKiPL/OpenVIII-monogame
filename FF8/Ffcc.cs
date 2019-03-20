@@ -157,7 +157,7 @@ namespace FF8
         }
 
         private ManualMemoryStream Ms { get; set; }
-        public AVFrame* OutFrame { get => _outFrame; private set => _outFrame = value; }
+        public AVFrame* SwrFrame { get => _outFrame; private set => _outFrame = value; }
         FfccState State { get; set; }
         FfccMode Mode { get; set; }
         public int FPS { get => (Codec != null ? (Codec->framerate.den == 0 || Codec->framerate.num == 0 ? 0 : Codec->framerate.num / Codec->framerate.den) : 0); }
@@ -245,7 +245,7 @@ namespace FF8
                 catch (ArgumentException)
                 {
                     // accepts s16le maybe more haven't tested everything.
-                    se = new SoundEffect(Ms.ToArray(), 0, (int)Ms.Length, OutFrame->sample_rate, (AudioChannels)Channels, 0, 0);
+                    se = new SoundEffect(Ms.ToArray(), 0, (int)Ms.Length, SwrFrame->sample_rate, (AudioChannels)Channels, 0, 0);
                 }
                 see = se.CreateInstance();
                 see.Play();
@@ -351,8 +351,8 @@ namespace FF8
                 if (Packet == null)
                     throw new Exception("Error allocating the packet\n");
                 //ffmpeg.av_init_packet(Packet);
-                OutFrame = ffmpeg.av_frame_alloc();
-                if (OutFrame == null)
+                SwrFrame = ffmpeg.av_frame_alloc();
+                if (SwrFrame == null)
                     throw new Exception("Error allocating the frame\n");
                 Frame = ffmpeg.av_frame_alloc();
                 if (Frame == null)
@@ -448,15 +448,15 @@ namespace FF8
         /// </summary>
         private void PrepareResampler()
         {
-            ffmpeg.av_frame_copy_props(OutFrame, Frame);
-            OutFrame->channel_layout = ffmpeg.AV_CH_LAYOUT_STEREO;
-            OutFrame->format = (int)AVSampleFormat.AV_SAMPLE_FMT_S16;
-            OutFrame->sample_rate = Frame->sample_rate;
-            OutFrame->channels = 2;
+            ffmpeg.av_frame_copy_props(SwrFrame, Frame);
+            SwrFrame->channel_layout = ffmpeg.AV_CH_LAYOUT_STEREO;
+            SwrFrame->format = (int)AVSampleFormat.AV_SAMPLE_FMT_S16;
+            SwrFrame->sample_rate = Frame->sample_rate;
+            SwrFrame->channels = 2;
             Swr = ffmpeg.swr_alloc();
             if (Swr == null)
                 throw new Exception("SWR = Null");
-            Ret = ffmpeg.swr_config_frame(Swr, OutFrame, Frame);
+            Ret = ffmpeg.swr_config_frame(Swr, SwrFrame, Frame);
             CheckRet();
             Ret = ffmpeg.swr_init(Swr);
             CheckRet();
@@ -611,12 +611,12 @@ namespace FF8
         {
             if (Codec->frame_number == 1)
                 PrepareResampler();
-            Channels = ffmpeg.av_get_channel_layout_nb_channels(OutFrame->channel_layout);
-            int nb_channels = ffmpeg.av_get_channel_layout_nb_channels(OutFrame->channel_layout);
+            Channels = ffmpeg.av_get_channel_layout_nb_channels(SwrFrame->channel_layout);
+            int nb_channels = ffmpeg.av_get_channel_layout_nb_channels(SwrFrame->channel_layout);
             int bytes_per_sample = ffmpeg.av_get_bytes_per_sample(AVSampleFormat.AV_SAMPLE_FMT_S16) * nb_channels;
 
-            if ((Ret = ffmpeg.swr_convert_frame(Swr, OutFrame, Frame)) >= 0)
-                WritetoMs(*OutFrame->extended_data, 0, OutFrame->nb_samples * bytes_per_sample);
+            if ((Ret = ffmpeg.swr_convert_frame(Swr, SwrFrame, Frame)) >= 0)
+                //WritetoMs(*OutFrame->extended_data, 0, OutFrame->nb_samples * bytes_per_sample);
             CheckRet();
         }
         private int ReadOne()
