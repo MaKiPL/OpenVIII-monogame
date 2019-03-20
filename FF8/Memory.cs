@@ -66,7 +66,7 @@ namespace FF8
 
 
 
-        public static int module = MODULE_BATTLE_DEBUG;
+        public static int module = MODULE_OVERTURE_DEBUG;
         static readonly string[] FF8DIR_list = {
             @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY VIII\Data\lang-en",
             "/home/robert/FINAL_FANTASY_VIII/Data/lang-en",
