@@ -247,15 +247,17 @@ namespace FF8
                 try
                 {
                     // accepts streams with s16le wave files maybe more haven't tested everything.
-                    se = SoundEffect.FromStream(Ms); 
+                    se = SoundEffect.FromStream(Ms);
+                    see = se.CreateInstance();
+                    see.Play();
                 }
                 catch (ArgumentException)
                 {
                     // accepts s16le maybe more haven't tested everything.
                     se = new SoundEffect(Ms.ToArray(), 0, (int)Ms.Length, SwrFrame->sample_rate, (AudioChannels)Channels, 0, 0);
+                    see = se.CreateInstance();
+                    see.Play();
                 }
-                see = se.CreateInstance();
-                see.Play();
             }
 
             Ms.ManualDispose();
@@ -695,8 +697,8 @@ namespace FF8
             int bytes_per_sample = ffmpeg.av_get_bytes_per_sample(AVSampleFormat.AV_SAMPLE_FMT_S16) * nb_channels;
             bool got_packet = false;
             if ((Ret = ffmpeg.swr_convert_frame(Swr, SwrFrame, Frame)) >= 0)
-                Encode(SwrFrame, ref got_packet);
-                //WritetoMs(*OutFrame->extended_data, 0, OutFrame->nb_samples * bytes_per_sample);
+                //Encode(SwrFrame, ref got_packet);
+                WritetoMs(*SwrFrame->extended_data, 0, SwrFrame->nb_samples * bytes_per_sample);
             CheckRet();
         }
         private int Encode(AVFrame* OutFrame, ref bool got_packet)
