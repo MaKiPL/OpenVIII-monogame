@@ -1,15 +1,12 @@
 ﻿
-using System;
-using System.IO;
-using System.Drawing;
-using Microsoft.Xna.Framework.Graphics;
-using System.Drawing.Imaging;
-using System.Runtime.InteropServices;
-using System.Collections.Generic;
 using FFmpeg.AutoGen;
-using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Audio;
-using NAudio.Wave;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 
 namespace FF8
 {
@@ -102,7 +99,7 @@ namespace FF8
 
 
         // The flush packet is a non-null packet with size 0 and data null
-        private static SoundEffectInstance see;
+        private static readonly SoundEffectInstance see;
         private static void InitMovie()
         {
 
@@ -118,12 +115,12 @@ namespace FF8
             //    //SoundEffect se = SoundEffect.FromStream(fs);
             //            see = se.CreateInstance();
             //            see.Play();
-                    
+
             //}
             Ffccvideo = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_VIDEO, Ffcc.FfccMode.STATE_MACH);
             FPS = Ffccvideo.FPS;
-            if(FPS == 0)
-            { 
+            if (FPS == 0)
+            {
                 TextWriter errorWriter = Console.Error;
                 errorWriter.WriteLine("Can not calc FPS, possibly FFMPEG dlls are missing or an error has occured");
                 MovieState = STATE_RETURN;
@@ -164,7 +161,10 @@ namespace FF8
             ClearScreen();
             Memory.SpriteBatchStartStencil();
             if (LastFrame != null)
+            {
                 Memory.spriteBatch.Draw(LastFrame, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
+            }
+
             Memory.SpriteBatchEnd();
             //movieState = STATE_INIT;
             //Memory.module = Memory.MODULE_BATTLE_DEBUG;

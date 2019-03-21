@@ -1,9 +1,9 @@
-﻿using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace FF8
 {
@@ -43,9 +43,14 @@ namespace FF8
             set
             {
                 if (value >= Memory.FieldHolder.fields.Length)
+                {
                     value = 0;
+                }
                 else if (value < 0)
+                {
                     value = Memory.FieldHolder.fields.Length - 1;
+                }
+
                 debug_fieldPointer = value;
                 Memory.FieldHolder.FieldID = (ushort)value;
                 debug_choosedField = Memory.FieldHolder.fields[value];
@@ -57,9 +62,14 @@ namespace FF8
             set
             {
                 if (value >= Module_movie_test.Movies.Count)
+                {
                     value = 0;
+                }
                 else if (value < 0)
-                    value = Module_movie_test.Movies.Count-1;
+                {
+                    value = Module_movie_test.Movies.Count - 1;
+                }
+
                 debug_moviePointer = value;
                 Module_movie_test.Index = value;
                 debug_choosedMovie = Path.GetFileNameWithoutExtension(Module_movie_test.Movies[value]);
@@ -91,12 +101,14 @@ namespace FF8
         private static void NewGameUpdate()
         {
             if (Fade > 0.0f)
+            {
                 return;
+            }
             /*reverse engineering notes:
-             * 
-             * we should happen to reset wm2field values
-             * also the basic party of Squall is now set: SG_PARTY_FIELD1 = 0, and other members are 0xFF
-             */
+* 
+* we should happen to reset wm2field values
+* also the basic party of Squall is now set: SG_PARTY_FIELD1 = 0, and other members are 0xFF
+*/
             FieldPointer = 74; //RE: startup stage ID is hardcoded. Probably we would want to change it for modding
             //the module changes to 1 now
             Module_field_debug.ResetField();
@@ -138,8 +150,11 @@ namespace FF8
             else if (Input.Button(Buttons.Okay))
             {
                 Input.ResetInputLimit();
-                if(Ditems.Sounds!=Dchoose)
+                if (Ditems.Sounds != Dchoose)
+                {
                     init_debugger_Audio.PlaySound(0);
+                }
+
                 switch (Dchoose)
                 {
                     case Ditems.Overture:
@@ -155,17 +170,27 @@ namespace FF8
                         break;
                     case Ditems.MusicNext:
                         if (Memory.MusicIndex >= ushort.MaxValue || Memory.MusicIndex >= Memory.dicMusic.Keys.Max())
+                        {
                             Memory.MusicIndex = 0;
+                        }
                         else
+                        {
                             Memory.MusicIndex++;
+                        }
+
                         init_debugger_Audio.PlayMusic();
                         break;
                     case Ditems.MusicPrev:
 
                         if (Memory.MusicIndex <= ushort.MinValue)
+                        {
                             Memory.MusicIndex = ushort.MaxValue;
+                        }
                         else
+                        {
                             Memory.MusicIndex--;
+                        }
+
                         init_debugger_Audio.PlayMusic();
                         break;
                     case Ditems.Battle:
@@ -198,10 +223,17 @@ namespace FF8
                 {
                     case Ditems.Sounds:
                         if (debug_choosedAudio > 0)
+                        {
                             debug_choosedAudio--;
+                        }
+
                         break;
                     case Ditems.Battle:
-                        if (debug_choosedBS <= 0) return;
+                        if (debug_choosedBS <= 0)
+                        {
+                            return;
+                        }
+
                         debug_choosedBS--;
                         break;
                     case Ditems.Feild:
@@ -220,11 +252,17 @@ namespace FF8
                 {
                     case Ditems.Sounds:
                         if (debug_choosedAudio < init_debugger_Audio.soundEntriesCount)
+                        {
                             debug_choosedAudio++;
+                        }
+
                         break;
                     case Ditems.Battle:
-                        if (debug_choosedBS < Memory.encounters.Length) 
+                        if (debug_choosedBS < Memory.encounters.Length)
+                        {
                             debug_choosedBS++;
+                        }
+
                         break;
 
                     case Ditems.Feild:
@@ -239,9 +277,14 @@ namespace FF8
         private static void LobbyUpdate()
         {
             if (start00 == null)
+            {
                 start00 = GetTexture(0);
+            }
+
             if (start01 == null)
+            {
                 start01 = GetTexture(1);
+            }
 
             if (Input.Button(Buttons.Down))
             {
@@ -341,7 +384,7 @@ namespace FF8
             Sounds,
             World
         }
-        private static Dictionary<Ditems, string> DebugMenu = new Dictionary<Ditems, string>()
+        private static readonly Dictionary<Ditems, string> DebugMenu = new Dictionary<Ditems, string>()
             {
                 { Ditems.Reset, "Reset Main Menu state"},
                 { Ditems.Overture, "Play Overture"},
@@ -394,9 +437,15 @@ namespace FF8
             float fScaleHeight = (float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight;
 
             if (start00 == null || start01 == null)
+            {
                 return;
+            }
+
             if (Fade < 1.0f && State != MainMenuStates.NewGameChoosed)
+            {
                 Fade += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 3;
+            }
+
             int vpWidth = Memory.graphics.GraphicsDevice.Viewport.Width;
             int vpHeight = Memory.graphics.GraphicsDevice.Viewport.Width;
             float zoom = 0.65f;

@@ -3,11 +3,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Linq;
-using NAudio.Wave;
-using NAudio;
-using NAudio.Vorbis;
-using Microsoft.Xna.Framework.Audio;
-using System.IO;
 
 namespace FF8
 {
@@ -81,7 +76,7 @@ namespace FF8
         }
         private static void InitSound()
         {
-            Memory.MusicIndex =  79;//79; //Overture
+            Memory.MusicIndex = 79;//79; //Overture
             init_debugger_Audio.PlayMusic();
             Memory.MusicIndex = ushort.MaxValue; // reset pos after playing overture; will loop back to start if push next
 
@@ -89,12 +84,15 @@ namespace FF8
             white = new Texture2D(Memory.graphics.GraphicsDevice, 4, 4, false, SurfaceFormat.Color);
             byte[] whiteBuffer = new byte[16];
             for (int i = 0; i < 16; i++)
+            {
                 whiteBuffer[i] = 255;
+            }
+
             internalModule++;
         }
         internal static void Draw()
         {
-            if (Input.Button(Buttons.Okay)||Input.Button(Buttons.Cancel)||Input.Button(Keys.Space))
+            if (Input.Button(Buttons.Okay) || Input.Button(Buttons.Cancel) || Input.Button(Keys.Space))
             {
                 Input.ResetInputLimit();
                 init_debugger_Audio.StopAudio();
@@ -128,17 +126,28 @@ namespace FF8
         {
             //fade to white
             if (!bWaitingSplash)
+            {
                 Memory.graphics.GraphicsDevice.Clear(Color.White);
+            }
             else
+            {
                 Memory.graphics.GraphicsDevice.Clear(Color.Black);
+            }
+
             Memory.SpriteBatchStartAlpha();
             Memory.spriteBatch.Draw(splashTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
                 new Microsoft.Xna.Framework.Rectangle(0, 0, splashTex.Width, splashTex.Height)
                 , Color.White * Fade);
             if (bFadingIn)
+            {
                 Fade += Memory.gameTime.ElapsedGameTime.Milliseconds / 5000.0f;
+            }
+
             if (bFadingOut)
+            {
                 Fade -= Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f;
+            }
+
             if (Fade < 0.0f)
             {
                 bFadingIn = true;
@@ -146,7 +155,10 @@ namespace FF8
                 bFadingOut = false;
             }
             if (bFadingIn && Fade > 1.0f && !bWaitingSplash)
+            {
                 internalTimer += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
+            }
+
             if (internalTimer > 5.0f)
             {
                 bWaitingSplash = true;
@@ -164,7 +176,10 @@ namespace FF8
         private static void DrawSplash()
         {
             if (splashTex == null)
+            {
                 return;
+            }
+
             Memory.SpriteBatchStartAlpha();
             Memory.spriteBatch.Draw(splashTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
                 new Microsoft.Xna.Framework.Rectangle(0, 0, splashTex.Width, splashTex.Height)
@@ -175,9 +190,15 @@ namespace FF8
         internal static void SplashUpdate(ref int _splashIndex)
         {
             if (aw == null)
+            {
                 aw = new ArchiveWorker(Memory.Archives.A_MAIN);
+            }
+
             if (splashTex == null)
+            {
                 ReadSplash();
+            }
+
             if (bFadingIn)
             {
                 Fade += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 2f;
@@ -208,8 +229,14 @@ namespace FF8
                     Fade = 0.0f;
                     _splashIndex++;
                     if (bNames)
+                    {
                         splashName++;
-                    else splashLoop++;
+                    }
+                    else
+                    {
+                        splashLoop++;
+                    }
+
                     if (_splashIndex > 1)
                     {
                         bNames = !bNames;
@@ -250,13 +277,21 @@ namespace FF8
         {
             if (!bLogo)
             {
-                if (splashName > 0x0f) return;
+                if (splashName > 0x0f)
+                {
+                    return;
+                }
+
                 string[] lof = aw.GetListOfFiles();
                 string fileName;
                 if (bNames)
+                {
                     fileName = lof.First(x => x.ToLower().Contains($"{names}{splashName.ToString("D2")}"));
+                }
                 else
+                {
                     fileName = lof.First(x => x.ToLower().Contains($"{loops}{splashLoop.ToString("D2")}"));
+                }
 
                 byte[] buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_MAIN, fileName);
                 uint uncompSize = BitConverter.ToUInt32(buffer, 0);
@@ -267,7 +302,11 @@ namespace FF8
                 int innerBufferIndex = 0;
                 for (int i = 0; i < rgbBuffer.Length; i += 4)
                 {
-                    if (innerBufferIndex + 1 >= buffer.Length) break;
+                    if (innerBufferIndex + 1 >= buffer.Length)
+                    {
+                        break;
+                    }
+
                     ushort pixel = (ushort)((buffer[innerBufferIndex + 1] << 8) | buffer[innerBufferIndex]);
                     byte red = (byte)((pixel) & 0x1F);
                     byte green = (byte)((pixel >> 5) & 0x1F);
@@ -299,7 +338,11 @@ namespace FF8
                 int innerBufferIndex = 0;
                 for (int i = 0; i < rgbBuffer.Length; i += 4)
                 {
-                    if (innerBufferIndex + 1 >= buffer.Length) break;
+                    if (innerBufferIndex + 1 >= buffer.Length)
+                    {
+                        break;
+                    }
+
                     ushort pixel = (ushort)((buffer[innerBufferIndex + 1] << 8) | buffer[innerBufferIndex]);
                     byte red = (byte)((pixel) & 0x1F);
                     byte green = (byte)((pixel >> 5) & 0x1F);
