@@ -314,15 +314,18 @@ namespace FF8
             if (File.Exists(Outfile))
             {
                 wr = File.OpenRead(Outfile);
-                Ms = new ManualMemoryStream();
-                wr.CopyTo(Ms);
-                wr.Dispose();
+                if (wr.Length > 0)
+                {
+                    Ms = new ManualMemoryStream();
+                    wr.CopyTo(Ms);
+                    wr.Dispose();
 
-                se = new SoundEffect(Ms.ToArray(), Codec->sample_rate, (AudioChannels)Codec->channels);
-                see = se.CreateInstance();
-                //see.Play();
-                Ms.ManualDispose();
-                return true;
+                    se = new SoundEffect(Ms.ToArray(), Codec->sample_rate, (AudioChannels)Codec->channels);
+                    see = se.CreateInstance();
+                    //see.Play();
+                    Ms.ManualDispose();
+                    return true;
+                }
             }
 
             return false;
@@ -496,7 +499,6 @@ namespace FF8
                         {
                             die("Could not allocate samples");
                         }
-
                         int outSamples = 0;
                         fixed (byte** tmp = (byte*[])Frame->data)
                         {
@@ -532,7 +534,9 @@ namespace FF8
                             {
                                 die("Invalid buffer size");
                             }
-
+                            WritetoMs(convertedData, 0, buffer_size);
+                            continue;
+                            //encode
                             if (ffmpeg.avcodec_fill_audio_frame(SwrFrame,
                                      OutCodec->channels,
                                      OutCodec->sample_fmt,
@@ -542,7 +546,6 @@ namespace FF8
                             {
                                 die("Could not fill frame");
                             }
-
                             AVPacket outPacket;
                             ffmpeg.av_init_packet(&outPacket);
                             outPacket.data = null;
@@ -587,10 +590,10 @@ namespace FF8
         }
         private void ReadAll()
         {
-            if (SoundExistsAndReady())
-            {
-                return;
-            }
+            //if (SoundExistsAndReady())
+            //{
+            //    return;
+            //}
 
             Ms = new ManualMemoryStream();
             ReadAllnew();
@@ -619,7 +622,7 @@ namespace FF8
                 see.Play();
                 //}
             }
-            SoundExistsAndReady();
+            //SoundExistsAndReady();
             Ms.ManualDispose();
         }
         ~Ffcc()
