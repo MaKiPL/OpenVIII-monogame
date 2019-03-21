@@ -1,12 +1,12 @@
 ﻿
-using System;
-using System.IO;
-using System.Drawing;
-using Microsoft.Xna.Framework.Graphics;
-using System.Drawing.Imaging;
-using System.Runtime.InteropServices;
-using System.Collections.Generic;
 using FFmpeg.AutoGen;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 
 namespace FF8
 {
@@ -18,12 +18,16 @@ namespace FF8
         private const int STATE_PAUSED = 3;
         private const int STATE_FINISHED = 4;
         private const int STATE_RETURN = 5;
+        private const int STATE_RESET = 6;
 
         private static readonly string[] movieDirs = {
             MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../movies")), //this folder has most movies
             MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "movies"))}; //this folder has rest of movies
         private static List<string> _movies = new List<string>();
-        public static List<string> movies
+        /// <summary>
+        /// Movie file list
+        /// </summary>
+        public static List<string> Movies
         {
             get
             {
@@ -37,77 +41,120 @@ namespace FF8
                 return _movies;
             }
         }
-        public static int Index = 0;
-        public static int returnState = Memory.MODULE_MAINMENU_DEBUG;
-#if _WINDOWS
-        //private static VideoFileReader vfr;
-#endif
 
-        static Ffcc ffcc;
-        private static Bitmap frame = null;
-        private static Texture2D lastFrame = null;
-        private static int FPS=0;
-        private static int frameRenderingDelay=0;
-        private static int msElapsed;
+        private static Bitmap Frame { get; set; } = null;
+        private static Ffcc Ffccvideo { get; set; } = null;
+        private static Texture2D LastFrame { get; set; } = null;
+        private static Ffcc Ffccaudio { get; set; } = null;
+        public static int ReturnState { get; set; } = Memory.MODULE_MAINMENU_DEBUG;
+        /// <summary>
+        /// Index in movie file list
+        /// </summary>
+        public static int Index { get; set; } = 0;
+        private static int FPS { get; set; } = 0;
+        private static int FrameRenderingDelay { get; set; } = 0;
+        private static int MsElapsed { get; set; } = 0;
+        public static int MovieState { get; set; } = STATE_INIT;
 
-        public static int movieState;
         internal static void Update()
         {
-            switch (movieState)
+            if (Input.Button(Buttons.Okay) || Input.Button(Buttons.Cancel) || Input.Button(Keys.Space))
+            {
+                Input.ResetInputLimit();
+                //init_debugger_Audio.StopAudio();
+                //Memory.module = Memory.MODULE_MAINMENU_DEBUG;
+                MovieState = STATE_RETURN;
+            }
+#if DEBUG
+            // lets you move through all the feilds just holding left or right. it will just loop when it runs out.
+            if (Input.Button(Buttons.Left))
+            {
+                Input.ResetInputLimit();
+                init_debugger_Audio.PlaySound(0);
+                Module_main_menu_debug.MoviePointer--;
+                Reset();
+            }
+            if (Input.Button(Buttons.Right))
+            {
+                Input.ResetInputLimit();
+                init_debugger_Audio.PlaySound(0);
+                Module_main_menu_debug.MoviePointer++;
+                Reset();
+            }
+#endif
+            switch (MovieState)
             {
                 case STATE_INIT:
-                    movieState++;
+                    MovieState++;
                     InitMovie();
                     break;
                 case STATE_CLEAR:
-                    movieState++;
+                    MovieState++;
                     ClearScreen();
                     break;
                 case STATE_PLAYING:
                     PlayingDraw();
+                    if (Ffccaudio != null)
+                        Ffccaudio.PlaySound();
+                    else if(Ffccvideo != null)
+                        Ffccvideo.PlaySound();
                     break;
                 case STATE_PAUSED:
                     break;
                 case STATE_FINISHED:
-                    movieState++;
+                    MovieState++;
                     FinishedDraw();
+                    break;
+                case STATE_RESET:
+                    Reset();
                     break;
                 case STATE_RETURN:
                 default:
-                    Memory.module = returnState;
-                    movieState = STATE_INIT;
-                    lastFrame = null;
-                    frame = null;
-                    returnState = Memory.MODULE_MAINMENU_DEBUG; 
+                    Reset();
+                    Memory.module = ReturnState;
+                    ReturnState = Memory.MODULE_MAINMENU_DEBUG;
                     break;
             }
+        }
+        private static void Reset()
+        {
+            if (Ffccaudio != null)
+                Ffccaudio.StopSound();
+            else if (Ffccvideo != null)
+                Ffccvideo.StopSound();
+            MovieState = STATE_INIT;
+            LastFrame = null;
+            Frame = null;
+            Ffccaudio = null;
+            Ffccvideo = null;
         }
 
 
         // The flush packet is a non-null packet with size 0 and data null
-
         private static void InitMovie()
         {
-#if _WINDOWS
-            //vfr = new VideoFileReader();
-            //vfr.Open(movies[Index]);
-            //FPS = vfr.FrameRate;
-#endif
+
             //vfr.Open(Path.Combine(movieDirs[0] , "disc02_25h.avi"));
             //vfr.Open(Path.Combine(movieDirs[0], "disc00_30h.avi"));
 
-            ffcc = new Ffcc(movies[Index],AVMediaType.AVMEDIA_TYPE_VIDEO,Ffcc.FfccMode.STATE_MACH);
-            FPS = ffcc.FPS;
-            try
-            {
-                frameRenderingDelay = (1000 / FPS) / 2;
-            }
-            catch(DivideByZeroException e)
+            //Ffccaudio = new Ffcc(@"c:\eyes_on_me.wav", AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
+
+            Ffccaudio = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
+            //using (FileStream fs =File.OpenRead(@"C:\Users\pcvii\source\repos\ConsoleApp1\ConsoleApp1\bin\Debug\audio.wav"))
+            //{
+            //    SoundEffect se = new SoundEffect(init_debugger_Audio.ReadFullyByte(fs),44100,AudioChannels.Stereo);
+            //    //SoundEffect se = SoundEffect.FromStream(fs);
+            //            see = se.CreateInstance();
+            //            see.Play();
+
+            //}
+            Ffccvideo = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_VIDEO, Ffcc.FfccMode.STATE_MACH);
+            FPS = Ffccvideo.FPS;
+            if (FPS == 0)
             {
                 TextWriter errorWriter = Console.Error;
-                errorWriter.WriteLine(e.Message);
                 errorWriter.WriteLine("Can not calc FPS, possibly FFMPEG dlls are missing or an error has occured");
-                movieState = STATE_RETURN;
+                MovieState = STATE_RETURN;
             }
 
         }
@@ -116,23 +163,23 @@ namespace FF8
         {
             //switch (movieState)
             //{
-                //case STATE_INIT:
-                //    break;
-                //case STATE_CLEAR:
-                //    ClearScreen();
-                //    movieState++;
-                //    break;
-                //case STATE_PLAYING:
-                //    PlayingDraw();
-                //    break;
-                //case STATE_PAUSED:
-                //    break;
-                //case STATE_FINISHED:
-                //    FinishedDraw();
-                //    break;
-                //default:
-                    //Memory.module = Memory.MODULE_MAINMENU_DEBUG;
-                    //break;
+            //case STATE_INIT:
+            //    break;
+            //case STATE_CLEAR:
+            //    ClearScreen();
+            //    movieState++;
+            //    break;
+            //case STATE_PLAYING:
+            //    PlayingDraw();
+            //    break;
+            //case STATE_PAUSED:
+            //    break;
+            //case STATE_FINISHED:
+            //    FinishedDraw();
+            //    break;
+            //default:
+            //Memory.module = Memory.MODULE_MAINMENU_DEBUG;
+            //break;
 
             //}
         }
@@ -144,8 +191,11 @@ namespace FF8
         {
             ClearScreen();
             Memory.SpriteBatchStartStencil();
-            if(lastFrame != null)
-                Memory.spriteBatch.Draw(lastFrame, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
+            if (LastFrame != null)
+            {
+                Memory.spriteBatch.Draw(LastFrame, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
+            }
+
             Memory.SpriteBatchEnd();
             //movieState = STATE_INIT;
             //Memory.module = Memory.MODULE_BATTLE_DEBUG;
@@ -154,48 +204,32 @@ namespace FF8
         //private static Bitmap Frame { get => frame; set { lastframe = frame; frame = value; } }
         private static void PlayingDraw()
         {
-            Texture2D frameTex = lastFrame;
-            if (lastFrame != null && msElapsed < frameRenderingDelay)
+            Texture2D frameTex = null;
+            if (LastFrame != null && (Ffccvideo.Correct() || Ffccvideo.Ahead()))
             {
-                msElapsed += Memory.gameTime.ElapsedGameTime.Milliseconds;
-                //redraw previous frame or flickering happens.
+                frameTex = LastFrame;
             }
             else
             {
-                msElapsed = 0;
-                //                if (frame != null)
-                //                    frame.Dispose();
-                //#if _WINDOWS
-                //                frame = vfr.ReadVideoFrame();
-                //#endif
+                MsElapsed = 0;
 
-                int ret = ffcc.GetFrame();
+                int ret = Ffccvideo.GetFrame();
                 if (ret < 0)
-                { 
-                    movieState = STATE_FINISHED;
+                {
+                    MovieState = STATE_FINISHED;
                     return;
                 }
-                frameTex = ffcc.FrameToTexture2D();
+                frameTex = Ffccvideo.FrameToTexture2D();
             }
-            //if (frame == null)
-            //{
-            //    movieState = STATE_FINISHED;
-            //    return;
-            //}
-            //Texture2D frameTex = new Texture2D(Memory.spriteBatch.GraphicsDevice, frame.Width, frame.Height, false, SurfaceFormat.Color); //GC will collect frameTex
-            //BitmapData bmpdata = frame.LockBits(new Rectangle(0, 0, frame.Width, frame.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);// System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            //byte[] texBuffer = new byte[bmpdata.Width * bmpdata.Height * 4]; //GC here
-            //Marshal.Copy(bmpdata.Scan0, texBuffer, 0, texBuffer.Length);
-            //frame.UnlockBits(bmpdata);
-            //frameTex.SetData(texBuffer);
-
-            //draw frame;
-            Memory.SpriteBatchStartStencil();
-            Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
-            Memory.SpriteBatchEnd();
-            //backup previous frame. use if new frame unavailble
-            lastFrame = frameTex;
-            
+            if (frameTex != null)
+            {
+                //draw frame;
+                Memory.SpriteBatchStartStencil();
+                Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
+                Memory.SpriteBatchEnd();
+                //backup previous frame. use if new frame unavailble
+                LastFrame = frameTex;
+            }
         }
     }
 }
