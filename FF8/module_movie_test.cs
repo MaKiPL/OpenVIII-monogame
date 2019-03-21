@@ -89,21 +89,18 @@ namespace FF8
                     InitMovie();
                     break;
                 case STATE_CLEAR:
-                    MovieState++;
-                    ClearScreen();
                     break;
                 case STATE_PLAYING:
-                    PlayingDraw();
                     if (Ffccaudio != null)
                         Ffccaudio.PlaySound();
-                    else if(Ffccvideo != null)
+                    else if (Ffccvideo != null)
                         Ffccvideo.PlaySound();
                     break;
                 case STATE_PAUSED:
+                    //todo add a function to pause sound
+                    //pausing the stopwatch will cause the video to pause because it calcs the current frame based on time.
                     break;
                 case STATE_FINISHED:
-                    MovieState++;
-                    FinishedDraw();
                     break;
                 case STATE_RESET:
                     Reset();
@@ -161,25 +158,29 @@ namespace FF8
 
         internal static void Draw()
         {
-            //switch (movieState)
-            //{
-            //case STATE_INIT:
-            //    break;
-            //case STATE_CLEAR:
-            //    ClearScreen();
-            //    movieState++;
-            //    break;
-            //case STATE_PLAYING:
-            //    PlayingDraw();
-            //    break;
-            //case STATE_PAUSED:
-            //    break;
-            //case STATE_FINISHED:
-            //    FinishedDraw();
-            //    break;
-            //default:
-            //Memory.module = Memory.MODULE_MAINMENU_DEBUG;
-            //break;
+            switch (MovieState)
+            {
+                case STATE_INIT:
+                    break;
+                case STATE_CLEAR:
+                    MovieState++;
+                    ClearScreen();
+                    break;
+                case STATE_PLAYING:
+                    PlayingDraw();
+                    break;
+                case STATE_PAUSED:
+                    break;
+                case STATE_FINISHED:
+                    MovieState++;
+                    FinishedDraw();
+                    break;
+                case STATE_RESET:
+                    break;
+                case STATE_RETURN:
+                default:
+                    break;
+            }
 
             //}
         }
