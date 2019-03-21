@@ -42,7 +42,7 @@ namespace FF8
         private SwrContext* _swr;
         private SwsContext* _sws;
         private AVFrame* _swrFrame;
-        private WaveOut wo;
+        private static WaveOut wo;
 
         /// <summary>
         /// Most ffmpeg functions return an integer. If the value is less than 0 it is an error usually. Sometimes data is passed and then it will be greater than 0.
@@ -167,8 +167,8 @@ namespace FF8
         FfccState State { get; set; }
         FfccMode Mode { get; set; }
         public int FPS { get => (Codec != null ? (Codec->framerate.den == 0 || Codec->framerate.num == 0 ? 0 : Codec->framerate.num / Codec->framerate.den) : 0); }
-        public SoundEffectInstance see { get; private set; }
-        private SoundEffect se { get; set; }
+        public static SoundEffectInstance see { get; private set; }
+        private static SoundEffect se { get; set; }
         public AVCodecContext* OutCodec { get; private set; }
         public AVFormatContext* OutFormat { get; private set; }
         public string Outfile { get; private set; }
@@ -232,11 +232,33 @@ namespace FF8
             while (!((Mode == FfccMode.PROCESS_ALL && State == FfccState.DONE) || (State == FfccState.DONE || State == FfccState.WAITING)));
             return ret;
         }
+        static FileStream wr;
+
+        private bool SoundExistsAndPlay()
+        {
+            // I'm not sure how to write this better.
+            Outfile = Path.Combine(Path.GetDirectoryName(Outfile), $"{Path.GetFileNameWithoutExtension(Outfile)}.pcm");
+            //wr = new WaveFileReader(@"C:\eyes_on_me.wav");//Outfile))
+            if (File.Exists(Outfile))
+            {
+                wr = File.OpenRead(Outfile);
+                Ms = new ManualMemoryStream();
+                wr.CopyTo(Ms);
+                wr.Dispose();
+
+                se = new SoundEffect(Ms.ToArray(), 44100, (AudioChannels)2);
+                see = se.CreateInstance();
+                see.Play();
+                Ms.ManualDispose();
+                return true;
+            }
+
+            return false;
+        }
         private void ReadAll()
         {
-
+            if (SoundExistsAndPlay()) return;
             Ms = new ManualMemoryStream();
-
             while (true)
             {
                 Ret = ffmpeg.av_read_frame(Format, Packet);
@@ -247,51 +269,22 @@ namespace FF8
             }
             if (Ms.Length > 0)
             {
-                try
-                {
-                    // accepts streams with s16le wave files maybe more haven't tested everything.
-                    se = SoundEffect.FromStream(Ms);
-                    see = se.CreateInstance();
-                    see.Play();
-                }
-                catch (ArgumentException)
-                {
+                //try
+                //{
+                //    // accepts streams with s16le wave files maybe more haven't tested everything.
+                //    se = SoundEffect.FromStream(Ms);
+                //    see = se.CreateInstance();
+                //    see.Play();
+                //}
+                //catch (ArgumentException)
+                //{
                     // accepts s16le maybe more haven't tested everything.
-                    se = new SoundEffect(Ms.ToArray(), 0, (int)Ms.Length, SwrFrame->sample_rate, (AudioChannels)Channels, 0, 0);
+                    se = new SoundEffect(Ms.ToArray(),SwrFrame->sample_rate, (AudioChannels)Channels);
                     see = se.CreateInstance();
                     see.Play();
-                }
+                //}
             }
-            else if(File.Exists(Outfile))
-            {
-                ffmpeg.avio_close(OutFormat->pb);
-                //byte[] fb = File.ReadAllBytes(Outfile);
-                //int off = fb.Length % 4;
-                //int off = 4;
-                //se = new SoundEffect(fb, 0, (int)fb.Length - off, SwrFrame->sample_rate, (AudioChannels)Channels, 0, 0);
-                //se = SoundEffect.FromStream(Ms);
-                //see = se.CreateInstance();
-                //see.Play();
-                using (WaveFileReader wr = new WaveFileReader(Outfile))
-                {
-                    //try
-                    //{
-                    //    se = SoundEffect.FromStream(wr);
-                    //    see = se.CreateInstance();
-                    //    see.Play();
-                    //}
-                    //catch
-                    ////{ }
-
-                    //wo = new WaveOut();
-                    //wo.Init(wr);
-                    //wo.Play();
-                    //byte[] fb = init_debugger_Audio.ReadFullyByte(wr);
-                    //se = new SoundEffect(fb, wr.WaveFormat.SampleRate, (AudioChannels)wr.WaveFormat.Channels);
-                    //see = se.CreateInstance();
-                    //see.Play();
-                }
-            }
+            SoundExistsAndPlay();
             Ms.ManualDispose();
         }
         ~Ffcc()
@@ -386,6 +379,7 @@ namespace FF8
         {
             //default values below here.
             Ret = -1;
+            Outfile = Path.Combine(Path.GetTempPath(), $"{Path.GetFileNameWithoutExtension(File_Name)}.wav");
             try
             {
                 _format = ffmpeg.avformat_alloc_context();
@@ -559,7 +553,6 @@ namespace FF8
             //OutCodec = out_audioStream->codec;
             //OutCodec->time_base.num = 1;
             //OutCodec->time_base.den = 1000;
-            Outfile = Path.Combine(Path.GetTempPath(),$"{Path.GetFileNameWithoutExtension(File_Name)}.wav");
             AVOutputFormat* fmt = fmt = ffmpeg.av_guess_format(null, Outfile, null); //ffmpeg.av_guess_format("s16le", null, null);
             if (fmt == null) die("av_guess_format");
             OutFormat = ffmpeg.avformat_alloc_context();
