@@ -18,6 +18,7 @@ namespace FF8
         private const int STATE_PAUSED = 3;
         private const int STATE_FINISHED = 4;
         private const int STATE_RETURN = 5;
+        private const int STATE_RESET = 6;
 
         private static readonly string[] movieDirs = {
             MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../movies")), //this folder has most movies
@@ -64,6 +65,23 @@ namespace FF8
                 //Memory.module = Memory.MODULE_MAINMENU_DEBUG;
                 MovieState = STATE_RETURN;
             }
+#if DEBUG
+            // lets you move through all the feilds just holding left or right. it will just loop when it runs out.
+            if (Input.Button(Buttons.Left))
+            {
+                Input.ResetInputLimit();
+                init_debugger_Audio.PlaySound(0);
+                Module_main_menu_debug.MoviePointer--;
+                Reset();
+            }
+            if (Input.Button(Buttons.Right))
+            {
+                Input.ResetInputLimit();
+                init_debugger_Audio.PlaySound(0);
+                Module_main_menu_debug.MoviePointer++;
+                Reset();
+            }
+#endif
             switch (MovieState)
             {
                 case STATE_INIT:
@@ -75,9 +93,11 @@ namespace FF8
                     ClearScreen();
                     break;
                 case STATE_PLAYING:
-
                     PlayingDraw();
-                    Ffcc.PlaySound();
+                    if (Ffccaudio != null)
+                        Ffccaudio.PlaySound();
+                    else if(Ffccvideo != null)
+                        Ffccvideo.PlaySound();
                     break;
                 case STATE_PAUSED:
                     break;
@@ -85,21 +105,32 @@ namespace FF8
                     MovieState++;
                     FinishedDraw();
                     break;
+                case STATE_RESET:
+                    Reset();
+                    break;
                 case STATE_RETURN:
                 default:
-                    Ffcc.StopSound();
+                    Reset();
                     Memory.module = ReturnState;
-                    MovieState = STATE_INIT;
-                    LastFrame = null;
-                    Frame = null;
                     ReturnState = Memory.MODULE_MAINMENU_DEBUG;
                     break;
             }
         }
+        private static void Reset()
+        {
+            if (Ffccaudio != null)
+                Ffccaudio.StopSound();
+            else if (Ffccvideo != null)
+                Ffccvideo.StopSound();
+            MovieState = STATE_INIT;
+            LastFrame = null;
+            Frame = null;
+            Ffccaudio = null;
+            Ffccvideo = null;
+        }
 
 
         // The flush packet is a non-null packet with size 0 and data null
-        private static readonly SoundEffectInstance see;
         private static void InitMovie()
         {
 
