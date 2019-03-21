@@ -78,7 +78,9 @@ namespace FF8
                     ClearScreen();
                     break;
                 case STATE_PLAYING:
+
                     PlayingDraw();
+                    Ffcc.PlaySound();
                     break;
                 case STATE_PAUSED:
                     break;
@@ -88,6 +90,7 @@ namespace FF8
                     break;
                 case STATE_RETURN:
                 default:
+                    Ffcc.StopSound();
                     Memory.module = ReturnState;
                     MovieState = STATE_INIT;
                     LastFrame = null;
@@ -119,14 +122,9 @@ namespace FF8
             //}
             Ffccvideo = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_VIDEO, Ffcc.FfccMode.STATE_MACH);
             FPS = Ffccvideo.FPS;
-            try
-            {
-                FrameRenderingDelay = (1000 / FPS) / 2;
-            }
-            catch (DivideByZeroException e)
-            {
+            if(FPS == 0)
+            { 
                 TextWriter errorWriter = Console.Error;
-                errorWriter.WriteLine(e.Message);
                 errorWriter.WriteLine("Can not calc FPS, possibly FFMPEG dlls are missing or an error has occured");
                 MovieState = STATE_RETURN;
             }
@@ -175,11 +173,10 @@ namespace FF8
         //private static Bitmap Frame { get => frame; set { lastframe = frame; frame = value; } }
         private static void PlayingDraw()
         {
-            Texture2D frameTex = LastFrame;
-            if (LastFrame != null && MsElapsed < FrameRenderingDelay)
+            Texture2D frameTex = null;
+            if (LastFrame != null && (Ffccvideo.Correct() || Ffccvideo.Ahead()))
             {
-                MsElapsed += Memory.gameTime.ElapsedGameTime.Milliseconds;
-                //redraw previous frame or flickering happens.
+                frameTex = LastFrame;
             }
             else
             {
@@ -193,14 +190,15 @@ namespace FF8
                 }
                 frameTex = Ffccvideo.FrameToTexture2D();
             }
-
-            //draw frame;
-            Memory.SpriteBatchStartStencil();
-            Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
-            Memory.SpriteBatchEnd();
-            //backup previous frame. use if new frame unavailble
-            LastFrame = frameTex;
-
+            if (frameTex != null)
+            {
+                //draw frame;
+                Memory.SpriteBatchStartStencil();
+                Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
+                Memory.SpriteBatchEnd();
+                //backup previous frame. use if new frame unavailble
+                LastFrame = frameTex;
+            }
         }
     }
 }

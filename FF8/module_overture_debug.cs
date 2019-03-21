@@ -117,7 +117,7 @@ namespace FF8
                     break;
                 case OvertureInternalModule._4Squaresoft:
                     internalModule = OvertureInternalModule._0InitSound;
-                    Module_movie_test.Index = 0;//103;
+                    Module_movie_test.Index = 103;//103;
                     Module_movie_test.ReturnState = Memory.MODULE_OVERTURE_DEBUG;
                     Memory.module = Memory.MODULE_MOVIETEST;
                     break;

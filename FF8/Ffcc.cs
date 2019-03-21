@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using NAudio.Wave;
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -164,6 +165,7 @@ namespace FF8
         FfccState State { get; set; }
         FfccMode Mode { get; set; }
         public int FPS { get => (Codec != null ? (Codec->framerate.den == 0 || Codec->framerate.num == 0 ? 0 : Codec->framerate.num / Codec->framerate.den) : 0); }
+        public int FrameRenderingDelay { get => (1000 / FPS) / 2; }
         public static SoundEffectInstance see { get; private set; }
         private static SoundEffect se { get; set; }
         public AVCodecContext* OutCodec { get; private set; }
@@ -248,11 +250,66 @@ namespace FF8
             return ret;
         }
         static FileStream wr;
-
-        private bool SoundExistsAndPlay()
+        public static void StopSound()
+        {
+            if (timer.IsRunning)
+            {
+                timer.Stop();
+                timer.Reset();
+                see.Stop();
+            }
+        }
+        public static bool FrameSkip { get; set; } = true; // when getting video frames if behind it goes to next frame.
+        public static void PlaySound() // there are some videos without sound meh.
+        {
+            if (!timer.IsRunning)
+            {
+                timer.Start();
+                see.Play();
+            }
+        }
+        public int ExpectedFrame()
+        {
+            if (timer.IsRunning)
+            {
+                TimeSpan ts = timer.Elapsed;
+                return (int)Math.Round(ts.TotalMilliseconds * ((double)FPS / 1000));
+            }
+            return 0;
+        }
+        public int CurrentFrameNum()
+        {
+            return Codec->frame_number;
+        }
+        public bool Ahead()
+        {
+            if (timer.IsRunning)
+            {
+                return CurrentFrameNum() > ExpectedFrame();
+            }
+            return false;
+        }
+        public bool Behind()
+        {
+            if (timer.IsRunning)
+            {
+                return CurrentFrameNum() < ExpectedFrame();
+            }
+            return false;
+        }
+        public bool Correct()
+        {
+            if (timer.IsRunning)
+            {
+                return CurrentFrameNum() > ExpectedFrame();
+            }
+            return false;
+        }
+        public static Stopwatch timer { get; } = new Stopwatch();
+        private bool SoundExistsAndReady()
         {
             // I'm not sure how to write this better.
-            Outfile = Path.Combine(Path.GetDirectoryName(Outfile), $"{Path.GetFileNameWithoutExtension(Outfile)}.pcm");
+            //Outfile = Path.Combine(Path.GetDirectoryName(Outfile), $"{Path.GetFileNameWithoutExtension(Outfile)}.pcm");
             //wr = new WaveFileReader(@"C:\eyes_on_me.wav");//Outfile))
             if (File.Exists(Outfile))
             {
@@ -261,9 +318,9 @@ namespace FF8
                 wr.CopyTo(Ms);
                 wr.Dispose();
 
-                se = new SoundEffect(Ms.ToArray(), 44100, (AudioChannels)2);
+                se = new SoundEffect(Ms.ToArray(), Codec->sample_rate, (AudioChannels)Codec->channels);
                 see = se.CreateInstance();
-                see.Play();
+                //see.Play();
                 Ms.ManualDispose();
                 return true;
             }
@@ -530,10 +587,10 @@ namespace FF8
         }
         private void ReadAll()
         {
-            //if (SoundExistsAndPlay())
-            //{
-            //    return;
-            //}
+            if (SoundExistsAndReady())
+            {
+                return;
+            }
 
             Ms = new ManualMemoryStream();
             ReadAllnew();
@@ -562,7 +619,7 @@ namespace FF8
                 see.Play();
                 //}
             }
-            SoundExistsAndPlay();
+            SoundExistsAndReady();
             Ms.ManualDispose();
         }
         ~Ffcc()
@@ -1417,7 +1474,7 @@ namespace FF8
             }
 
             Ret = ffmpeg.avcodec_receive_frame(Codec, Frame);
-            if (Ret == ffmpeg.AVERROR(ffmpeg.EAGAIN))
+            if (Ret == ffmpeg.AVERROR(ffmpeg.EAGAIN) || (FrameSkip && Behind()))
             {
                 // The decoder doesn't have enough data to produce a frame
                 return Update(FfccState.READONE);
