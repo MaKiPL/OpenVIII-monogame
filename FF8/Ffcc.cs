@@ -157,7 +157,11 @@ namespace FF8
             /// <summary>
             /// Missing DLLs caused exception
             /// </summary>
-            NODLL
+            NODLL,
+            GETSTREAM,
+            GETCODEC,
+            PREPARE_SWS,
+            READ
         }
 
         private ManualMemoryStream Ms { get; set; }
@@ -220,20 +224,30 @@ namespace FF8
                 switch (State)
                 {
                     case FfccState.INIT:
+                        State = FfccState.GETSTREAM;
                         Init();
-                        if (Mode == FfccMode.PROCESS_ALL)
+                        break;
+                    case FfccState.GETSTREAM:
+                        State = FfccState.GETCODEC;
+                        Get_Stream();
+                        break;
+                    case FfccState.GETCODEC:
+                        State = FfccState.PREPARE_SWS;
+                        FindOpenCodec();
+                        break;
+                    case FfccState.PREPARE_SWS:
+                        State = FfccState.READ;
+                        if (Media_Type == AVMediaType.AVMEDIA_TYPE_VIDEO)
                         {
-                            State = FfccState.READALL;
+                            PrepareSWS();
                         }
-                        else
-                        {
-                            State = FfccState.WAITING;
-                        }
-
+                        break;
+                    case FfccState.READ://Enters waiting state unless we want to process all now.
+                        State = Mode == FfccMode.PROCESS_ALL ? FfccState.READALL : FfccState.WAITING;
                         break;
                     case FfccState.READALL:
-                        ReadAll();
                         State = FfccState.DONE;
+                        ReadAll();
                         break;
                     case FfccState.READONE:
                         return ReadOne();
@@ -256,7 +270,11 @@ namespace FF8
             {
                 timer.Stop();
                 timer.Reset();
-                see.Stop();
+
+                if (!see.IsDisposed)
+                {
+                    see.Stop();
+                }
             }
         }
         public static bool FrameSkip { get; set; } = true; // when getting video frames if behind it goes to next frame.
@@ -265,7 +283,10 @@ namespace FF8
             if (!timer.IsRunning)
             {
                 timer.Start();
-                see.Play();
+                if (!see.IsDisposed)
+                {
+                    see.Play();
+                }
             }
         }
         public int ExpectedFrame()
@@ -606,39 +627,25 @@ namespace FF8
         }
         private void ReadAll()
         {
+            bool skipencoder = true;
             if (SoundExistsAndReady())
             {
                 return;
             }
 
             Ms = new ManualMemoryStream();
-            ReadAllnew();
-            //while (true)
-            //{
-            //    Ret = ffmpeg.av_read_frame(Format, Packet);
-            //    if (Ret == ffmpeg.AVERROR_EOF)
-            //        break;
-            //    CheckRet();
-            //    Decode();
-            //}
+            ReadAllnew(skipencoder);
             if (Ms.Length > 0)
             {
-                //try
-                //{
-                //    // accepts streams with s16le wave files maybe more haven't tested everything.
-                //    se = SoundEffect.FromStream(Ms);
-                //    see = se.CreateInstance();
-                //    see.Play();
-                //}
-                //catch (ArgumentException)
-                //{
                 // accepts s16le maybe more haven't tested everything.
                 se = new SoundEffect(Ms.ToArray(), SwrFrame->sample_rate, (AudioChannels)Channels);
                 see = se.CreateInstance();
-                see.Play();
-                //}
             }
-            //SoundExistsAndReady();
+            if (!skipencoder)
+            {
+                SoundExistsAndReady();
+            }
+
             Ms.ManualDispose();
         }
         ~Ffcc()
@@ -688,17 +695,17 @@ namespace FF8
                 errorWriter.WriteLine(e.Message);
                 errorWriter.WriteLine("memory stream already disposed of");
             }
-            //try
-            //{
-            //    if (!see.IsDisposed)
-            //        see.Dispose();
-            //}
-            //catch (NullReferenceException e)
-            //{
-            //    TextWriter errorWriter = Console.Error;
-            //    errorWriter.WriteLine(e.Message);
-            //    errorWriter.WriteLine("sound effect instance is already disposed of");
-            //}
+            try
+            {
+                if (!see.IsDisposed)
+                    see.Dispose();
+            }
+            catch (NullReferenceException e)
+            {
+                TextWriter errorWriter = Console.Error;
+                errorWriter.WriteLine(e.Message);
+                errorWriter.WriteLine("sound effect instance is already disposed of");
+            }
 
         }
         /// <summary>
@@ -779,28 +786,12 @@ namespace FF8
                 }
 
                 Stream_index = -1;
-                Channels = 0;
-                Sample_rate = 44100;
-
-                //ffmpeg.av_register_all(); //should not need this.
-
 
                 if (Open() < 0)
                 {
                     die("No file not open");
                 }
 
-                Get_Stream();
-                FindOpenCodec();
-                Get_Stream();
-                if (Media_Type == AVMediaType.AVMEDIA_TYPE_VIDEO)
-                {
-                    PrepareSWS();
-                }
-                //Moved this to decoder and changed it to prepair the outframe for resampling
-
-                //if (Media_Type == AVMediaType.AVMEDIA_TYPE_AUDIO)
-                //    PrepareResampler();
             }
             catch (DllNotFoundException e)
             {
@@ -827,10 +818,20 @@ namespace FF8
             }
             if (Stream_index == -1)
             {
-                die($"Could not retrieve {(Media_Type == AVMediaType.AVMEDIA_TYPE_AUDIO ? "audio" : (Media_Type == AVMediaType.AVMEDIA_TYPE_VIDEO ? "video" : "other"))} stream from file \n {File_Name}");
+                if (Media_Type == AVMediaType.AVMEDIA_TYPE_AUDIO)
+                {
+                    State = FfccState.DONE;
+                    Mode = FfccMode.NOTINIT;
+                }
+                else
+                {
+                    die($"Could not retrieve {(Media_Type == AVMediaType.AVMEDIA_TYPE_AUDIO ? "audio" : (Media_Type == AVMediaType.AVMEDIA_TYPE_VIDEO ? "video" : "other"))} stream from file \n {File_Name}");
+                }
             }
-
-            Stream = Format->streams[Stream_index];
+            else
+            {
+                Stream = Format->streams[Stream_index];
+            }
         }
         /// <summary>
         /// Finds the codec for the chosen stream
