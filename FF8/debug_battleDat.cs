@@ -21,7 +21,7 @@ namespace FF8
             public uint eof;
         }
 
-        public DatFile datFile;
+        public DatFile datFile;        
 
         #region section 1
         [StructLayout(LayoutKind.Sequential,Pack = 1,Size =16)]
@@ -262,9 +262,9 @@ namespace FF8
                     parentTester = skeleton.bones[parentTester].parentId;
                     }
 
-                a = Vector3.Transform(a, Matrix.CreateTranslation(0, -e*4, 0));
+                a = Vector3.Transform(a, Matrix.CreateTranslation(0, -e * 4, 0));
                 a = Vector3.Transform(a, Matrix.CreateTranslation(position));
-                a = Vector3.Transform(a, Matrix.CreateTranslation(frame.Position));
+                //a = Vector3.Transform(a, Matrix.CreateTranslation(frame.Position));
 
                 d = verts[tr.B1].Item2;
                 e = 0;
@@ -272,72 +272,7 @@ namespace FF8
 
                 /////////////////////////////////////////////////////
                 b = testRotationTester(b, f.X, f.Y, f.Z);
-                b = Vector3.Transform(b, Matrix.CreateTranslation(frame.Position));
-
-                parentTester = skeleton.bones[d].parentId;
-                while (parentTester != 0xFFFF && parentTester != 0x00)
-                {
-                    e += skeleton.bones[parentTester].Size;
-                    parentTester = skeleton.bones[parentTester].parentId;
-                }
-
-                b = Vector3.Transform(b, Matrix.CreateTranslation(0, -e*4, 0));
-                b = Vector3.Transform(b, Matrix.CreateTranslation(position));
-
-                d = verts[tr.C1].Item2;
-                e = 0;
-                f = frame.boneRot.Item1[d]; //it's the animation translation for this vertices group (d)
-
-                ////////////////////////////////////////////
-                c = testRotationTester(c, f.X, f.Y, f.Z);
-                c = Vector3.Transform(c, Matrix.CreateTranslation(frame.Position));
-
-                parentTester = skeleton.bones[d].parentId;
-                while (parentTester != 0xFFFF && parentTester != 0x00)
-                {
-                    e += skeleton.bones[parentTester].Size;
-                    parentTester = skeleton.bones[parentTester].parentId;
-                }
-                c = Vector3.Transform(c, Matrix.CreateTranslation(0, -e*4, 0));
-                c = Vector3.Transform(c, Matrix.CreateTranslation(position));
-                vpt.Add(new VertexPositionTexture(c, new Vector2(tr.vta.U1, tr.vta.V1)));
-                vpt.Add(new VertexPositionTexture(a, new Vector2(tr.vtb.U1, tr.vtb.V1)));
-                vpt.Add(new VertexPositionTexture(b, new Vector2(tr.vtc.U1, tr.vtc.V1)));
-            }
-            for (i = 0; i < obj.cQuads; i++)
-            {
-                Quad tr = obj.quads[i];
-                var a = verts[tr.A1].Item1;
-                var b = verts[tr.B1].Item1;
-                var c = verts[tr.C1].Item1;
-                var cc = verts[tr.D1].Item1;
-                var d = verts[tr.A1].Item2;
-                float e = 0;
-                var f = frame.boneRot.Item1[d];
-                a = Vector3.Transform(a, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
-                a = Vector3.Transform(a, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Y)));
-                a = Vector3.Transform(a, Matrix.CreateRotationY(MathHelper.ToRadians(f.Z)));
-                //a = Vector3.Transform(a, Matrix.CreateFromYawPitchRoll(f.X, f.Y, f.Z));
-
-                int parentTester = skeleton.bones[d].parentId;
-                while (parentTester != 0xFFFF && parentTester != 0x00)
-                {
-                    e += skeleton.bones[parentTester].Size;
-                    parentTester = skeleton.bones[parentTester].parentId;
-                }
-
-                a = Vector3.Transform(a, Matrix.CreateTranslation(0, -e * 4, 0));
-                a = Vector3.Transform(a, Matrix.CreateTranslation(position));
-                a = Vector3.Transform(a, Matrix.CreateTranslation(frame.Position));
-                /////////////////////////////
-                d = verts[tr.B1].Item2;
-                e = 0;
-                f = frame.boneRot.Item1[d]; //it's the animation translation for this vertices group (d)
-
-                b = Vector3.Transform(b, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
-                b = Vector3.Transform(b, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Y)));
-                b = Vector3.Transform(b, Matrix.CreateRotationY(MathHelper.ToRadians(f.Z)));
-                //b = Vector3.Transform(b, Matrix.CreateFromYawPitchRoll(f.X, f.Y, f.Z));
+                //b = Vector3.Transform(b, Matrix.CreateTranslation(frame.Position));
 
                 parentTester = skeleton.bones[d].parentId;
                 while (parentTester != 0xFFFF && parentTester != 0x00)
@@ -348,15 +283,15 @@ namespace FF8
 
                 b = Vector3.Transform(b, Matrix.CreateTranslation(0, -e * 4, 0));
                 b = Vector3.Transform(b, Matrix.CreateTranslation(position));
-                b = Vector3.Transform(b, Matrix.CreateTranslation(frame.Position));
-                /////////////////////////////
+
                 d = verts[tr.C1].Item2;
                 e = 0;
                 f = frame.boneRot.Item1[d]; //it's the animation translation for this vertices group (d)
-                c = Vector3.Transform(c, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
-                c = Vector3.Transform(c, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Y)));
-                c = Vector3.Transform(c, Matrix.CreateRotationY(MathHelper.ToRadians(f.Z)));
-                //c = Vector3.Transform(c, Matrix.CreateFromYawPitchRoll(f.X, f.Y, f.Z));
+
+                ////////////////////////////////////////////
+                c = testRotationTester(c, f.X, f.Y, f.Z);
+                //c = Vector3.Transform(c, Matrix.CreateTranslation(frame.Position));
+
                 parentTester = skeleton.bones[d].parentId;
                 while (parentTester != 0xFFFF && parentTester != 0x00)
                 {
@@ -365,33 +300,102 @@ namespace FF8
                 }
                 c = Vector3.Transform(c, Matrix.CreateTranslation(0, -e * 4, 0));
                 c = Vector3.Transform(c, Matrix.CreateTranslation(position));
-                c = Vector3.Transform(c, Matrix.CreateTranslation(frame.Position));
-                /////////////////////////////
-                d = verts[tr.D1].Item2;
-                e = 0;
-                f = frame.boneRot.Item1[d]; //it's the animation translation for this vertices group (d)
-                cc = Vector3.Transform(cc, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
-                cc = Vector3.Transform(cc, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Y)));
-                cc = Vector3.Transform(cc, Matrix.CreateRotationY(MathHelper.ToRadians(f.Z)));
-                //cc = Vector3.Transform(cc, Matrix.CreateFromYawPitchRoll(f.X, f.Y, f.Z));
-                parentTester = skeleton.bones[d].parentId;
-                while (parentTester != 0xFFFF && parentTester != 0x00)
-                {
-                    e += skeleton.bones[parentTester].Size;
-                    parentTester = skeleton.bones[parentTester].parentId;
-                }
-                cc = Vector3.Transform(cc, Matrix.CreateTranslation(0, -e * 4, 0));
-                cc = Vector3.Transform(cc, Matrix.CreateTranslation(position));
-                cc = Vector3.Transform(cc, Matrix.CreateTranslation(frame.Position));
 
-                vpt.Add(new VertexPositionTexture(a, new Vector2(tr.vta.U1, tr.vta.V1)));
-                vpt.Add(new VertexPositionTexture(b, new Vector2(tr.vtb.U1, tr.vtb.V1)));
-                vpt.Add(new VertexPositionTexture(cc, new Vector2(tr.vtd.U1, tr.vtd.V1))); //D
 
-                vpt.Add(new VertexPositionTexture(a, new Vector2(tr.vta.U1, tr.vta.V1)));
-                vpt.Add(new VertexPositionTexture(c, new Vector2(tr.vtc.U1, tr.vtc.V1)));
-                vpt.Add(new VertexPositionTexture(cc, new Vector2(tr.vtd.U1, tr.vtd.V1))); //D
+
+
+                vpt.Add(new VertexPositionTexture(c, new Vector2(tr.vta.U1, tr.vta.V1)));
+                vpt.Add(new VertexPositionTexture(a, new Vector2(tr.vtb.U1, tr.vtb.V1)));
+                vpt.Add(new VertexPositionTexture(b, new Vector2(tr.vtc.U1, tr.vtc.V1)));
             }
+            //for (i = 0; i < obj.cQuads; i++)
+            //{
+            //    Quad tr = obj.quads[i];
+            //    var a = verts[tr.A1].Item1;
+            //    var b = verts[tr.B1].Item1;
+            //    var c = verts[tr.C1].Item1;
+            //    var cc = verts[tr.D1].Item1;
+            //    var d = verts[tr.A1].Item2;
+            //    float e = 0;
+            //    var f = frame.boneRot.Item1[d];
+            //    a = Vector3.Transform(a, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
+            //    a = Vector3.Transform(a, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Y)));
+            //    a = Vector3.Transform(a, Matrix.CreateRotationY(MathHelper.ToRadians(f.Z)));
+            //    //a = Vector3.Transform(a, Matrix.CreateFromYawPitchRoll(f.X, f.Y, f.Z));
+
+            //    int parentTester = skeleton.bones[d].parentId;
+            //    while (parentTester != 0xFFFF && parentTester != 0x00)
+            //    {
+            //        e += skeleton.bones[parentTester].Size;
+            //        parentTester = skeleton.bones[parentTester].parentId;
+            //    }
+
+            //    a = Vector3.Transform(a, Matrix.CreateTranslation(0, -e * 4, 0));
+            //    a = Vector3.Transform(a, Matrix.CreateTranslation(position));
+            //    a = Vector3.Transform(a, Matrix.CreateTranslation(frame.Position));
+            //    /////////////////////////////
+            //    d = verts[tr.B1].Item2;
+            //    e = 0;
+            //    f = frame.boneRot.Item1[d]; //it's the animation translation for this vertices group (d)
+
+            //    b = Vector3.Transform(b, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
+            //    b = Vector3.Transform(b, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Y)));
+            //    b = Vector3.Transform(b, Matrix.CreateRotationY(MathHelper.ToRadians(f.Z)));
+            //    //b = Vector3.Transform(b, Matrix.CreateFromYawPitchRoll(f.X, f.Y, f.Z));
+
+            //    parentTester = skeleton.bones[d].parentId;
+            //    while (parentTester != 0xFFFF && parentTester != 0x00)
+            //    {
+            //        e += skeleton.bones[parentTester].Size;
+            //        parentTester = skeleton.bones[parentTester].parentId;
+            //    }
+
+            //    b = Vector3.Transform(b, Matrix.CreateTranslation(0, -e * 4, 0));
+            //    b = Vector3.Transform(b, Matrix.CreateTranslation(position));
+            //    b = Vector3.Transform(b, Matrix.CreateTranslation(frame.Position));
+            //    /////////////////////////////
+            //    d = verts[tr.C1].Item2;
+            //    e = 0;
+            //    f = frame.boneRot.Item1[d]; //it's the animation translation for this vertices group (d)
+            //    c = Vector3.Transform(c, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
+            //    c = Vector3.Transform(c, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Y)));
+            //    c = Vector3.Transform(c, Matrix.CreateRotationY(MathHelper.ToRadians(f.Z)));
+            //    //c = Vector3.Transform(c, Matrix.CreateFromYawPitchRoll(f.X, f.Y, f.Z));
+            //    parentTester = skeleton.bones[d].parentId;
+            //    while (parentTester != 0xFFFF && parentTester != 0x00)
+            //    {
+            //        e += skeleton.bones[parentTester].Size;
+            //        parentTester = skeleton.bones[parentTester].parentId;
+            //    }
+            //    c = Vector3.Transform(c, Matrix.CreateTranslation(0, -e * 4, 0));
+            //    c = Vector3.Transform(c, Matrix.CreateTranslation(position));
+            //    c = Vector3.Transform(c, Matrix.CreateTranslation(frame.Position));
+            //    /////////////////////////////
+            //    d = verts[tr.D1].Item2;
+            //    e = 0;
+            //    f = frame.boneRot.Item1[d]; //it's the animation translation for this vertices group (d)
+            //    cc = Vector3.Transform(cc, Matrix.CreateRotationX(MathHelper.ToRadians(f.X)));
+            //    cc = Vector3.Transform(cc, Matrix.CreateRotationZ(MathHelper.ToRadians(f.Y)));
+            //    cc = Vector3.Transform(cc, Matrix.CreateRotationY(MathHelper.ToRadians(f.Z)));
+            //    //cc = Vector3.Transform(cc, Matrix.CreateFromYawPitchRoll(f.X, f.Y, f.Z));
+            //    parentTester = skeleton.bones[d].parentId;
+            //    while (parentTester != 0xFFFF && parentTester != 0x00)
+            //    {
+            //        e += skeleton.bones[parentTester].Size;
+            //        parentTester = skeleton.bones[parentTester].parentId;
+            //    }
+            //    cc = Vector3.Transform(cc, Matrix.CreateTranslation(0, -e * 4, 0));
+            //    cc = Vector3.Transform(cc, Matrix.CreateTranslation(position));
+            //    cc = Vector3.Transform(cc, Matrix.CreateTranslation(frame.Position));
+
+            //    vpt.Add(new VertexPositionTexture(a, new Vector2(tr.vta.U1, tr.vta.V1)));
+            //    vpt.Add(new VertexPositionTexture(b, new Vector2(tr.vtb.U1, tr.vtb.V1)));
+            //    vpt.Add(new VertexPositionTexture(cc, new Vector2(tr.vtd.U1, tr.vtd.V1))); //D
+
+            //    vpt.Add(new VertexPositionTexture(a, new Vector2(tr.vta.U1, tr.vta.V1)));
+            //    vpt.Add(new VertexPositionTexture(c, new Vector2(tr.vtc.U1, tr.vtc.V1)));
+            //    vpt.Add(new VertexPositionTexture(cc, new Vector2(tr.vtd.U1, tr.vtd.V1))); //D
+            //}
 
 
             return vpt.ToArray();
@@ -479,6 +483,7 @@ namespace FF8
                     var singleBit = bitReader.ReadBits(1); //padding byte;
                     animHeader.animations[i].animationFrames[n].boneRot = new Tuple<Vector3[], ShortVector[]>(new Vector3[skeleton.cBones], new ShortVector[skeleton.cBones]);
                     for (int k = 0; k < skeleton.cBones; k++) //bones iterator
+                    {
                         if (n != 0)
                         {
                             animHeader.animations[i].animationFrames[n].boneRot.Item2[k] = new ShortVector() { x = bitReader.ReadRotationType(), y = bitReader.ReadRotationType(), z = bitReader.ReadRotationType() };
@@ -498,6 +503,68 @@ namespace FF8
                             (animHeader.animations[i].animationFrames[n].boneRot.Item2[k].y * 360f / 4096f),
                             (animHeader.animations[i].animationFrames[n].boneRot.Item2[k].z * 360f / 4096f));
                         }
+                        var rad = animHeader.animations[i].animationFrames[n].boneRot.Item1[k];
+
+                        var v2 = MathHelper.ToRadians(rad.X);
+                        var v4 = MathHelper.ToRadians(rad.Y);
+                        var v6 = MathHelper.ToRadians(rad.Z);
+                        var v2c = Math.Cos(v2);
+                        var v4c = Math.Cos(v4);
+                        var v6c = Math.Cos(v6);
+                        var v2s = Math.Sin(v2);
+                        var v4s = Math.Sin(v4);
+                        var v6s = Math.Sin(v6);
+
+
+                        var basea = 1 * v4c + 0 * 0 + v4s * 0;
+                        var baseb = 1 * 0 + 0 * 1 + 0 * 0;
+                        var basec = 1 * -v4s + 0 * 0 + 0 * v4c;
+
+                        var baseba = 0 * v4c + v2c * 0 + -v2s * v4s;
+                        var basebb = 0 * 0 + v2c * 1 + -v2s * 0;
+                        var basebc = 0 * -v4s + v2c * 0 + -v2s * v4c;
+
+                        var baseca = 0 * v4c + v2s * 0 + v2c * v2s;
+                        var basecb = 0 * 0 + v2s * 1 + v2c * 0;
+                        var basecc = 0 * -v4s + v2s * 0 + v2c * v4c;
+
+                        //now multiply by VectorZ
+
+                        var dd = Matrix.Multiply(Matrix.CreateRotationX(0), Matrix.CreateRotationY(0));
+
+                        Matrix testX = new Matrix(
+                            1, 0, 0, 0,
+                            0, (float)Math.Cos(MathHelper.ToRadians(rad.X)), (float)-Math.Sin(MathHelper.ToRadians(rad.X)), 0,
+                            0, (float)Math.Sin(MathHelper.ToRadians(rad.X)), (float)Math.Cos(MathHelper.ToRadians(rad.X)), 0, 0,0,0,0);
+
+                        Matrix testY = new Matrix(
+                            (float)Math.Cos(MathHelper.ToRadians(rad.Y)), 0, (float)Math.Sin(MathHelper.ToRadians(rad.Y)), 0,
+                            0, 1,0,0,
+                            (float)-Math.Sin(MathHelper.ToRadians(rad.Y)), 0, (float)Math.Cos(MathHelper.ToRadians(rad.Y)), 0, 0, 0, 0, 0);
+
+                        Matrix testZ = new Matrix(
+                            (float)Math.Cos(MathHelper.ToRadians(rad.Z)), (float)-Math.Sin(MathHelper.ToRadians(rad.Z)), 0, 0,
+                            (float)Math.Sin(MathHelper.ToRadians(rad.Z)), (float)Math.Cos(MathHelper.ToRadians(rad.Z)), 0, 0,
+                            0, 0, 1, 0,
+                            0,0,0,0);
+
+                        var MatrixTest = Matrix.Multiply(testX, testY);
+                        //is it correct?
+                        MatrixTest = Matrix.Multiply(testZ, MatrixTest);
+
+
+                        var e= Matrix.CreateRotationX(rad.X);
+                        var f = Matrix.CreateRotationY(rad.Y); var test = f * e;
+                        var g = Matrix.CreateRotationZ(rad.Z);
+
+
+                        //var test =  rad.X + 
+                        var a = Vector3.Transform(rad, Matrix.CreateRotationX(MathHelper.ToRadians(rad.X)));
+                        var b = Vector3.Transform(rad, Matrix.CreateRotationY(MathHelper.ToRadians(rad.Y)));
+                        var c = Vector3.Transform(rad, Matrix.CreateRotationZ(MathHelper.ToRadians(rad.Z)));
+                        //var b = Vector3.Transform(Vector3.Up, Matrix.CreateRotationY(MathHelper.ToRadians(animHeader.animations[i].animationFrames[n].boneRot.Item2[k].y)));
+                        //var c = Vector3.Transform(Vector3.Backward, Matrix.CreateRotationZ(MathHelper.ToRadians(animHeader.animations[i].animationFrames[n].boneRot.Item2[k].z)));
+                    }
                 }
             }
         }
@@ -664,15 +731,15 @@ namespace FF8
                 ReadSection11(datFile.pSections[10],ms,br);
             }
             //DEBUG
-            for (int i = 0; i < 30; i++)
-            {
-                System.Diagnostics.Debugger.Log(0, "", "\n");
-                for (int n = 0; n <= 17; n++)
-                {
-                    var c = animHeader.animations[0].animationFrames[i].boneRot.Item1[n];
-                    System.Diagnostics.Debugger.Log(0, "", $"{c.X}|{c.Y}|{c.Z}|");
-                }
-            }
+            //for (int i = 0; i < 30; i++)
+            //{
+            //    System.Diagnostics.Debugger.Log(0, "", "\n");
+            //    for (int n = 0; n <= 17; n++)
+            //    {
+            //        var c = animHeader.animations[0].animationFrames[i].boneRot.Item1[n];
+            //        System.Diagnostics.Debugger.Log(0, "", $"{c.X}|{c.Y}|{c.Z}|");
+            //    }
+            //}
         }
 
 
