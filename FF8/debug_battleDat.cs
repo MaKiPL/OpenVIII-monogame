@@ -229,6 +229,8 @@ namespace FF8
         public VertexPositionTexture[] GetVertexPositions(int objectId, Vector3 position, int animationId, int animationFrame)
         {
             Object obj = geometry.objects[objectId];
+            if (animationFrame > animHeader.animations[animationId].animationFrames.Length || animationFrame<0)
+                animationFrame = 0;
             AnimationFrame frame = animHeader.animations[animationId].animationFrames[animationFrame]; //we got the frame
             //let's create a vertices buffer now. We will handle it via triangle basis but looking at bones
             List<VertexPositionTexture> vpt = new List<VertexPositionTexture>();
@@ -480,18 +482,21 @@ namespace FF8
                         if (n != 0)
                         {
                             animHeader.animations[i].animationFrames[n].boneRot.Item2[k] = new ShortVector() { x = bitReader.ReadRotationType(), y = bitReader.ReadRotationType(), z = bitReader.ReadRotationType() };
+                            var grabber = animHeader.animations[i].animationFrames[n - 1].boneRot.Item2[k];
+                            var adder = animHeader.animations[i].animationFrames[n].boneRot.Item2[k];
+                            animHeader.animations[i].animationFrames[n].boneRot.Item2[k] = new ShortVector() { x = (short)(grabber.x + adder.x), y = (short)(grabber.y + adder.y), z = (short)(grabber.z + adder.z) };
                             animHeader.animations[i].animationFrames[n].boneRot.Item1[k] = new Vector3(
-                            (animHeader.animations[i].animationFrames[n - 1].boneRot.Item2[k].x + animHeader.animations[i].animationFrames[n].boneRot.Item2[k].x) * 360f / 4096f,
-                            (animHeader.animations[i].animationFrames[n - 1].boneRot.Item2[k].y + animHeader.animations[i].animationFrames[n].boneRot.Item2[k].y) * 360f / 4096f,
-                            (animHeader.animations[i].animationFrames[n - 1].boneRot.Item2[k].z + animHeader.animations[i].animationFrames[n].boneRot.Item2[k].z) * 360f / 4096f);
+                            (animHeader.animations[i].animationFrames[n].boneRot.Item2[k].x) * 360f / 4096f,
+                            (animHeader.animations[i].animationFrames[n].boneRot.Item2[k].y) * 360f / 4096f,
+                            (animHeader.animations[i].animationFrames[n].boneRot.Item2[k].z) * 360f / 4096f);
                         }
                         else
                         {
                             animHeader.animations[i].animationFrames[n].boneRot.Item2[k] = new ShortVector() { x = bitReader.ReadRotationType(), y = bitReader.ReadRotationType(), z = bitReader.ReadRotationType() };
                             animHeader.animations[i].animationFrames[n].boneRot.Item1[k] = new Vector3(
-                            animHeader.animations[i].animationFrames[n].boneRot.Item2[k].x * 360f / 4096f,
-                            animHeader.animations[i].animationFrames[n].boneRot.Item2[k].y * 360f / 4096f,
-                            animHeader.animations[i].animationFrames[n].boneRot.Item2[k].z * 360f / 4096f);
+                            (animHeader.animations[i].animationFrames[n].boneRot.Item2[k].x * 360f / 4096f),
+                            (animHeader.animations[i].animationFrames[n].boneRot.Item2[k].y * 360f / 4096f),
+                            (animHeader.animations[i].animationFrames[n].boneRot.Item2[k].z * 360f / 4096f));
                         }
                 }
             }
@@ -657,6 +662,16 @@ namespace FF8
                 //ReadSection9(datFile.pSections[8]);
                 //ReadSection10(datFile.pSections[9]);
                 ReadSection11(datFile.pSections[10],ms,br);
+            }
+            //DEBUG
+            for (int i = 0; i < 30; i++)
+            {
+                System.Diagnostics.Debugger.Log(0, "", "\n");
+                for (int n = 0; n <= 17; n++)
+                {
+                    var c = animHeader.animations[0].animationFrames[i].boneRot.Item1[n];
+                    System.Diagnostics.Debugger.Log(0, "", $"{c.X}|{c.Y}|{c.Z}|");
+                }
             }
         }
 

@@ -204,8 +204,13 @@ namespace FF8
         }
 
         private static int[] frame;
+        private static int DEBUGframe = 0;
         private static void DrawMonsters()
         {
+            if (Input.GetInputDelayed(Keys.OemTilde))
+                DEBUGframe++;
+            if (Input.GetInputDelayed(Keys.Tab))
+                DEBUGframe--;
             Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
             Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
             Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
@@ -219,7 +224,7 @@ namespace FF8
                 {
                     frameperFPS = 0.0f;
                 for (int x = 0; x < frame.Length; x++)
-                    frame[x]++;
+                    frame[x]=DEBUGframe;
                 }
             for (int n = 0; n < monstersData.Length; n++)
             {
@@ -358,6 +363,7 @@ namespace FF8
             Memory.font.RenderBasicText(Font.CipherDirty($"Enemies: {string.Join(",", Memory.encounters[Memory.battle_encounter].BEnemies.Where(x => x != 0x00).Select(x => "0x" + (x - 0x10).ToString("X02")).ToArray())}"), 20, 30 * 2, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Levels: {string.Join(",", Memory.encounters[Memory.battle_encounter].bLevels)}"), 20, 30 * 3, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Loaded enemies: {Convert.ToString(Memory.encounters[Memory.battle_encounter].bLoadedEnemy, 2)}"), 20, 30 * 4, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Debug frame: {DEBUGframe}"), 20, 30 * 5, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
         }
 
