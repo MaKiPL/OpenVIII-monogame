@@ -206,7 +206,7 @@ namespace FF8
         private static void PlayingDraw()
         {
             Texture2D frameTex = null;
-            if (LastFrame != null && (Ffccvideo.Correct() || Ffccvideo.Ahead()))
+            if (LastFrame != null && (Ffccvideo.CorrectFrame() || Ffccvideo.AheadFrame()))
             {
                 frameTex = LastFrame;
             }
