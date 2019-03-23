@@ -66,7 +66,7 @@ namespace FF8
 
         internal static void DEBUG()
         {
-            string dmusic_pt = "", RaW_ogg_pt = "", music_pt = "";
+            string dmusic_pt = "", RaW_ogg_pt = "", music_pt = "", music_wav_pt = "";
             //Roses and Wine V07 moves most of the sgt files to dmusic_backup
             //it leaves a few files behind. I think because RaW doesn't replace everything.
             //ogg files stored in:
@@ -83,6 +83,10 @@ namespace FF8
             music_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../Music/dmusic/"));
             if (!Directory.Exists(music_pt))
                 music_pt = null;
+
+            music_wav_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../Music/"));
+            if (!Directory.Exists(music_wav_pt))
+                music_wav_pt = null;
 
             // goal of dicmusic is to be able to select a track by prefix. 
             // it adds an list of files with the same prefix. so you can later on switch out which one you want.
@@ -117,6 +121,13 @@ namespace FF8
                         else
                             Memory.dicMusic[key].Add(m);
                     }
+                    else
+                    {
+                        if (!Memory.dicMusic.ContainsKey(999)) //gets any music w/o prefix
+                            Memory.dicMusic.Add(999, new List<string> { m });
+                        else
+                            Memory.dicMusic[999].Add(m);
+                    }
                 }
             }
             if (music_pt != null)
@@ -132,6 +143,36 @@ namespace FF8
                             Memory.dicMusic.Add(key, new List<string> { m });
                         else
                             Memory.dicMusic[key].Add(m);
+                    }
+                    else
+                    {
+                        if (!Memory.dicMusic.ContainsKey(999)) //gets any music w/o prefix
+                            Memory.dicMusic.Add(999, new List<string> { m });
+                        else
+                            Memory.dicMusic[999].Add(m);
+                    }
+                }
+            }
+            if (music_wav_pt != null)
+            {
+                Memory.musices = Directory.GetFiles(music_pt, "*.wav");
+
+                foreach (string m in Memory.musices)
+                {
+
+                    if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
+                    {
+                        if (!Memory.dicMusic.ContainsKey(key))
+                            Memory.dicMusic.Add(key, new List<string> { m });
+                        else
+                            Memory.dicMusic[key].Add(m);
+                    }
+                    else
+                    {
+                        if (!Memory.dicMusic.ContainsKey(999)) //gets any music w/o prefix
+                            Memory.dicMusic.Add(999, new List<string> { m });
+                        else
+                            Memory.dicMusic[999].Add(m);
                     }
                 }
             }
