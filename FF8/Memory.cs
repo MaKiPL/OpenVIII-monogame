@@ -1,16 +1,13 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 #pragma warning disable CS0649
 namespace FF8
 {
-    class Memory
+    internal class Memory
     {
         //monogame
         public static GraphicsDeviceManager graphics;
@@ -28,20 +25,64 @@ namespace FF8
 
         public static GameTime gameTime;
 
-        internal static ushort prevmusic = 0;
+        private static ushort prevmusic = 0;
         private static ushort currmusic = 0;
-        internal static ushort MusicIndex { get { return currmusic; } set { prevmusic = currmusic; currmusic = value; } }
+        internal static ushort MusicIndex
+        {
+            get
+            {
+                while ((prevmusic > currmusic || prevmusic == ushort.MinValue && currmusic == ushort.MaxValue) &&
+                    !dicMusic.ContainsKey(currmusic))
+                {
+
+                    if (dicMusic.Keys.Max() < currmusic)
+                    {
+                        currmusic = dicMusic.Keys.Max();
+                    }
+                    else
+                    {
+                        currmusic--;
+                    }
+                }
+                while (prevmusic < currmusic && !dicMusic.ContainsKey(currmusic))
+                {
+
+                    if (dicMusic.Keys.Max() < currmusic)
+                    {
+                        currmusic = dicMusic.Keys.Min();
+                    }
+                    else
+                    {
+                        currmusic++;
+                    }
+                }
+
+                return currmusic;
+            }
+            set
+            {
+                prevmusic = currmusic;
+                currmusic = value;
+            }
+        }
         public static string[] musices;
         public static Dictionary<ushort, List<string>> dicMusic = new Dictionary<ushort, List<string>>(); //ogg and sgt files have same 3 digit prefix.
         public static void SpriteBatchStartStencil()
-        => spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, null, graphics.GraphicsDevice.DepthStencilState);
-        public static void SpriteBatchStartAlpha()
-            => spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
-        public static void SpriteBatchEnd()
-            =>
-            spriteBatch.End();
+        {
+            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, null, graphics.GraphicsDevice.DepthStencilState);
+        }
 
-        readonly static public BlendState blendState_BasicAdd = new BlendState()
+        public static void SpriteBatchStartAlpha()
+        {
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
+        }
+
+        public static void SpriteBatchEnd()
+        {
+            spriteBatch.End();
+        }
+
+        public static readonly BlendState blendState_BasicAdd = new BlendState()
         {
             ColorSourceBlend = Blend.SourceColor,
             ColorDestinationBlend = Blend.DestinationColor,
@@ -52,7 +93,7 @@ namespace FF8
             AlphaBlendFunction = BlendFunction.Add
         };
 
-        readonly static public BlendState blendState_forceDraw = new BlendState()
+        public static readonly BlendState blendState_forceDraw = new BlendState()
         {
             ColorSourceBlend = Blend.SourceColor,
             ColorDestinationBlend = Blend.SourceColor,
@@ -67,7 +108,7 @@ namespace FF8
 
 
         public static int module = MODULE_OVERTURE_DEBUG;
-        static readonly string[] FF8DIR_list = {
+        private static readonly string[] FF8DIR_list = {
             @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY VIII\Data\lang-en",
             "/home/robert/FINAL_FANTASY_VIII/Data/lang-en",
             @"D:\SteamLibrary\steamapps\common\FINAL FANTASY VIII\Data\lang-en",
@@ -875,7 +916,7 @@ namespace FF8
             public static string A_MAGIC = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "magic"));
             public static string A_MAIN = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "main"));
             public static string A_MENU = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "menu"));
-            public static string A_WORLD = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "world")); 
+            public static string A_WORLD = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "world"));
 
             public const string B_FileList = ".fl";
             public const string B_FileIndex = ".fi";

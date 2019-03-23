@@ -378,26 +378,17 @@ namespace FF8
         }
 
         private static SoundEffectInstance see;
-        unsafe public static void PlayMusic()
+        private static bool musicplaying = false;
+        public static void PlayStopMusic()
+        {
+            if (musicplaying) StopAudio();
+            else PlayMusic();
+        }
+       
+        public static void PlayMusic()
         {
             string ext = "";
-            
-            while ((Memory.prevmusic > Memory.MusicIndex || Memory.prevmusic == ushort.MinValue && Memory.MusicIndex == ushort.MaxValue) && !Memory.dicMusic.ContainsKey(Memory.MusicIndex))
-            {
 
-                if (Memory.dicMusic.Keys.Max() < Memory.MusicIndex)
-                    Memory.MusicIndex = Memory.dicMusic.Keys.Max();
-                else
-                    Memory.MusicIndex--;
-            }
-            while (Memory.prevmusic < Memory.MusicIndex && !Memory.dicMusic.ContainsKey(Memory.MusicIndex))
-            {
-
-                if (Memory.dicMusic.Keys.Max() < Memory.MusicIndex)
-                    Memory.MusicIndex = Memory.dicMusic.Keys.Min();
-                else
-                    Memory.MusicIndex++;
-            }
             if (Memory.dicMusic[Memory.MusicIndex].Count > 0)
             {
                 ext = Path.GetExtension(Memory.dicMusic[Memory.MusicIndex][0]).ToLower();
@@ -444,7 +435,7 @@ namespace FF8
                     see = se.CreateInstance();
                     see.IsLooped = loopstart >= 0;
                     see.Play();
-                    return;
+                    break ;
                 case ".sgt":
 
                     if (!MakiExtended.IsLinux)
@@ -515,9 +506,11 @@ namespace FF8
                         //GCHandle.Alloc(infoport, GCHandleType.Pinned);
 #endif
                     }
-                    return;
+                    break;
             }
 
+
+            musicplaying = true;
         }
 
         public static void KillAudio()
@@ -547,6 +540,7 @@ namespace FF8
 
         public static void StopAudio()
         {
+            musicplaying = false;
             try
             {
                 see.Stop();
@@ -613,7 +607,5 @@ namespace FF8
             byte[] segData = br.ReadBytes((int)vara);
             return new Tuple<string, byte[]>(head, segData);
         }
-
-
     }
 }
