@@ -197,6 +197,8 @@ namespace FF8
             ms.Seek(v, SeekOrigin.Begin);
             Object @object = new Object { cVertices = br.ReadUInt16() };
             @object.verticeData = new VerticeData[@object.cVertices];
+            if (ms.Position + @object.cVertices * 6 >= ms.Length)
+                return @object;
             for (int n = 0; n < @object.cVertices; n++){
                 @object.verticeData[n].boneId = br.ReadUInt16();
                 @object.verticeData[n].cVertices = br.ReadUInt16();
@@ -208,6 +210,8 @@ namespace FF8
             @object.cQuads = br.ReadUInt16();
             @object.padding = br.ReadUInt64();
             @object.triangles = new Triangle[@object.cTriangles];
+            if (@object.cTriangles == 0 && @object.cQuads == 0)
+                return @object;
             @object.quads = new Quad[@object.cQuads];
             for (int i = 0; i < @object.cTriangles; i++)
                 @object.triangles[i] = MakiExtended.ByteArrayToStructure<Triangle>(br.ReadBytes(16));
@@ -218,13 +222,15 @@ namespace FF8
         public float DEBUG = 0.0f;
         public Vector3 testRotationTester(Vector3 a, float x, float y, float z)
         {
-            if (Input.GetInputDelayed(Microsoft.Xna.Framework.Input.Keys.F1))
-                DEBUG += 1f;
+            //if (Input.GetInputDelayed(Microsoft.Xna.Framework.Input.Keys.F1))
+            //    DEBUG += 1f;
             a = Vector3.Transform(a, Matrix.CreateRotationX(MathHelper.ToRadians(x)));
             a = Vector3.Transform(a, Matrix.CreateRotationY(MathHelper.ToRadians(y)));
             a = Vector3.Transform(a, Matrix.CreateRotationZ(MathHelper.ToRadians(z)));
             return a;
         }
+
+        public Vector3 testRotationTester(Vector3 a, Matrix b) => Vector3.Transform(a, b);
 
         public VertexPositionTexture[] GetVertexPositions(int objectId, Vector3 position, int animationId, int animationFrame)
         {
@@ -252,9 +258,18 @@ namespace FF8
                 var d = verts[tr.A1].Item2;
                 float e = 0;
                 var f = frame.boneRot.Item1[d];
-                ///////////////////////////////////////////////////
-                a = testRotationTester(a, f.X, f.Y, f.Z);
 
+                ///////////////////////////////////////////////////
+                a = testRotationTester(a, 180, 0, 0);
+                a = testRotationTester(a, f.X, f.Y, f.Z);
+                while (skeleton.bones[d].parentId != 0xFFFF)
+                {
+                    f = frame.boneRot.Item1[skeleton.bones[d].parentId];
+                    a = testRotationTester(a, f.X, f.Y, f.Z);
+                    d = skeleton.bones[d].parentId;
+                }
+                //a = Vector3.Add(a, f);
+                a = testRotationTester(a, Matrix.CreateRotationX(180));
                 int parentTester = skeleton.bones[d].parentId;
                     while (parentTester != 0xFFFF && parentTester != 0x00)
                     {
@@ -262,16 +277,24 @@ namespace FF8
                     parentTester = skeleton.bones[parentTester].parentId;
                     }
 
-                a = Vector3.Transform(a, Matrix.CreateTranslation(0, -e * 4, 0));
+                a = Vector3.Transform(a, Matrix.CreateTranslation(0, -e * 2, 0));
                 a = Vector3.Transform(a, Matrix.CreateTranslation(position));
                 //a = Vector3.Transform(a, Matrix.CreateTranslation(frame.Position));
 
                 d = verts[tr.B1].Item2;
                 e = 0;
                 f = frame.boneRot.Item1[d]; //it's the animation translation for this vertices group (d)
-
                 /////////////////////////////////////////////////////
+                b = testRotationTester(b, 180, 0, 0);
                 b = testRotationTester(b, f.X, f.Y, f.Z);
+                while(skeleton.bones[d].parentId!=0xFFFF)
+                {
+                    f = frame.boneRot.Item1[skeleton.bones[d].parentId];
+                    b = testRotationTester(b, f.X, f.Y, f.Z);
+                    d = skeleton.bones[d].parentId;
+                }
+                b = testRotationTester(b, Matrix.CreateRotationX(180));
+                //b = Vector3.Add(b, f);
                 //b = Vector3.Transform(b, Matrix.CreateTranslation(frame.Position));
 
                 parentTester = skeleton.bones[d].parentId;
@@ -281,25 +304,35 @@ namespace FF8
                     parentTester = skeleton.bones[parentTester].parentId;
                 }
 
-                b = Vector3.Transform(b, Matrix.CreateTranslation(0, -e * 4, 0));
+                b = Vector3.Transform(b, Matrix.CreateTranslation(0, -e * 2, 0));
                 b = Vector3.Transform(b, Matrix.CreateTranslation(position));
+                
 
                 d = verts[tr.C1].Item2;
                 e = 0;
                 f = frame.boneRot.Item1[d]; //it's the animation translation for this vertices group (d)
 
                 ////////////////////////////////////////////
+                c = testRotationTester(c, 180, 0, 0);
                 c = testRotationTester(c, f.X, f.Y, f.Z);
+                while (skeleton.bones[d].parentId != 0xFFFF)
+                {
+                    f = frame.boneRot.Item1[skeleton.bones[d].parentId];
+                    c = testRotationTester(c, f.X, f.Y, f.Z);
+                    d = skeleton.bones[d].parentId;
+                }
+                //c = Vector3.Add(c, f);
                 //c = Vector3.Transform(c, Matrix.CreateTranslation(frame.Position));
-
+                c = testRotationTester(c, Matrix.CreateRotationX(180));
                 parentTester = skeleton.bones[d].parentId;
                 while (parentTester != 0xFFFF && parentTester != 0x00)
                 {
                     e += skeleton.bones[parentTester].Size;
                     parentTester = skeleton.bones[parentTester].parentId;
                 }
-                c = Vector3.Transform(c, Matrix.CreateTranslation(0, -e * 4, 0));
+                c = Vector3.Transform(c, Matrix.CreateTranslation(0, -e * 2, 0));
                 c = Vector3.Transform(c, Matrix.CreateTranslation(position));
+                
 
 
 
@@ -426,7 +459,7 @@ namespace FF8
         public struct AnimationFrame
         {
             private Vector3 position;
-            public Tuple<Vector3[], ShortVector[]> boneRot;
+            public Tuple<Vector3[], ShortVector[],Matrix[]> boneRot;
 
             public Vector3 Position { get => position; set => position = value; }
         }
@@ -481,7 +514,7 @@ namespace FF8
                     
 
                     var singleBit = bitReader.ReadBits(1); //padding byte;
-                    animHeader.animations[i].animationFrames[n].boneRot = new Tuple<Vector3[], ShortVector[]>(new Vector3[skeleton.cBones], new ShortVector[skeleton.cBones]);
+                    animHeader.animations[i].animationFrames[n].boneRot = new Tuple<Vector3[], ShortVector[], Matrix[]>(new Vector3[skeleton.cBones], new ShortVector[skeleton.cBones], new Matrix[skeleton.cBones]);
                     for (int k = 0; k < skeleton.cBones; k++) //bones iterator
                     {
                         if (n != 0)
@@ -542,21 +575,18 @@ namespace FF8
                             0, 1,0,0,
                             (float)-Math.Sin(MathHelper.ToRadians(rad.Y)), 0, (float)Math.Cos(MathHelper.ToRadians(rad.Y)), 0, 0, 0, 0, 0);
 
+
+                        var MatrixTest = Matrix.Multiply(testX, testY);
+                        MatrixTest = Matrix.Transpose(MatrixTest);
+                        //is it correct?
                         Matrix testZ = new Matrix(
                             (float)Math.Cos(MathHelper.ToRadians(rad.Z)), (float)-Math.Sin(MathHelper.ToRadians(rad.Z)), 0, 0,
                             (float)Math.Sin(MathHelper.ToRadians(rad.Z)), (float)Math.Cos(MathHelper.ToRadians(rad.Z)), 0, 0,
                             0, 0, 1, 0,
                             0,0,0,0);
+                        MatrixTest = Matrix.Multiply(MatrixTest, testZ);
 
-                        var MatrixTest = Matrix.Multiply(testX, testY);
-                        //is it correct?
-                        MatrixTest = Matrix.Multiply(testZ, MatrixTest);
-
-
-                        var e= Matrix.CreateRotationX(rad.X);
-                        var f = Matrix.CreateRotationY(rad.Y); var test = f * e;
-                        var g = Matrix.CreateRotationZ(rad.Z);
-
+                        animHeader.animations[i].animationFrames[n].boneRot.Item3[k] = MatrixTest;
 
                         //var test =  rad.X + 
                         var a = Vector3.Transform(rad, Matrix.CreateRotationX(MathHelper.ToRadians(rad.X)));
@@ -731,15 +761,16 @@ namespace FF8
                 ReadSection11(datFile.pSections[10],ms,br);
             }
             //DEBUG
-            //for (int i = 0; i < 30; i++)
+            //for (int i = 0; i < animHeader.animations[0].animationFrames.Count(); i++)
             //{
             //    System.Diagnostics.Debugger.Log(0, "", "\n");
-            //    for (int n = 0; n <= 17; n++)
+            //    for (int n = 0; n < skeleton.cBones; n++)
             //    {
             //        var c = animHeader.animations[0].animationFrames[i].boneRot.Item1[n];
             //        System.Diagnostics.Debugger.Log(0, "", $"{c.X}|{c.Y}|{c.Z}|");
             //    }
             //}
+            
         }
 
 
