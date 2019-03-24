@@ -323,13 +323,24 @@ namespace FF8
         {
             LoadSoundFromStream(DecodedStream);
         }
+        DynamicSoundEffectInstance dsee44100 = new DynamicSoundEffectInstance(44100, AudioChannels.Stereo);
+        DynamicSoundEffectInstance dsee48000 = new DynamicSoundEffectInstance(48000, AudioChannels.Stereo);
         public void LoadSoundFromStream(MemoryStream decodedStream)
         {
             if (DecodedStream.Length > 0 && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
             {
-                // accepts s16le maybe more haven't tested everything.
-                Sound = new SoundEffect(DecodedStream.ToArray(), ResampleFrame->sample_rate, (AudioChannels)DecodeCodecContext->channels);
-                SoundInstance = Sound.CreateInstance();
+                //    // accepts s16le maybe more haven't tested everything.
+                //    Sound = new SoundEffect(DecodedStream.ToArray(), ResampleFrame->sample_rate, (AudioChannels)DecodeCodecContext->channels);
+                //    SoundInstance = Sound.CreateInstance();
+
+                if (ResampleFrame->sample_rate == 44100)
+                    dsee44100.SubmitBuffer(decodedStream.ToArray());
+                else if (ResampleFrame->sample_rate == 48000)
+                    dsee48000.SubmitBuffer(decodedStream.ToArray());
+
+                dsee44100.Play();
+                dsee48000.Play();
+
             }
         }
         public int ExpectedFrame()
@@ -540,16 +551,16 @@ namespace FF8
                     {
                         break;
                     }
-                    else if (Mode == FfccMode.STATE_MACH)
-                    {
-                        State = FfccState.WAITING;
-                        return;
-                    }
                     //int len = ffmpeg.avcodec_decode_audio4(Codec, Frame, &frameFinished, &Packet);
                     if (MediaType == AVMediaType.AVMEDIA_TYPE_VIDEO)
                     {
+                        if (Mode == FfccMode.STATE_MACH)
+                        {
+                            State = FfccState.WAITING;
+                            return;
+                        }
                         // do something with video here.
-                        if (!skipencode)
+                        else if (!skipencode)
                         {
                             BMP_Save();
                         }
@@ -612,6 +623,11 @@ namespace FF8
                                 {
                                     WritetoMs(convertedData, 0, buffer_size);
                                     continue;
+                                }
+                                if (Mode == FfccMode.STATE_MACH)
+                                {
+                                    State = FfccState.WAITING;
+                                    return;
                                 }
                                 //encode
                                 if (ffmpeg.avcodec_fill_audio_frame(ResampleFrame,
