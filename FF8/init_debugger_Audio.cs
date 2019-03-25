@@ -311,10 +311,9 @@ namespace FF8
         {
             //waveout.Stop();
         }
-
         internal static void Update()
         {
-            if(ffccMusic!=null && ffccMusic.BehindFrame())
+            if(ffccMusic!=null && ffccMusic.LOOPSTART > 0 && ffccMusic.BehindFrame())
                 ffccMusic.GetFrame();
         }
         //callable test

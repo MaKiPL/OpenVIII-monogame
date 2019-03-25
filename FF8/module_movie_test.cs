@@ -50,7 +50,7 @@ namespace FF8
         /// Index in movie file list
         /// </summary>
         public static int Index { get; set; } = 0;
-        private static int FPS { get; set; } = 0;
+        private static double FPS { get; set; } = 0;
         private static int FrameRenderingDelay { get; set; } = 0;
         private static int MsElapsed { get; set; } = 0;
         public static int MovieState { get; set; } = STATE_INIT;
@@ -101,7 +101,7 @@ namespace FF8
                     {
                         Ffccaudio.PlaySound();
                     }
-                    else if (Ffccvideo != null)
+                    if (Ffccvideo != null)
                     {
                         Ffccvideo.PlaySound();
                     }
@@ -130,7 +130,7 @@ namespace FF8
             {
                 Ffccaudio.StopSound();
             }
-            else if (Ffccvideo != null)
+            if (Ffccvideo != null)
             {
                 Ffccvideo.StopSound();
             }

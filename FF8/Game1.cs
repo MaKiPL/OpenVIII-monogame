@@ -64,7 +64,7 @@ namespace FF8
 
             if (Input.Button(Buttons.Exit))
                 GracefullyExit();
-
+            init_debugger_Audio.Update();
             ModuleHandler.Update(gameTime);
             base.Update(gameTime);
         }
