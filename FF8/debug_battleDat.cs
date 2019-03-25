@@ -498,27 +498,28 @@ namespace FF8
                     for(int k = 0; k<skeleton.cBones; k++)
                     {
                         var rad = animHeader.animations[i].animationFrames[n].boneRot.Item1[k];
+                            var MatrixZ = Matrix.Multiply(Matrix.CreateRotationY(MathHelper.ToRadians(-rad.Y)), Matrix.CreateRotationX(MathHelper.ToRadians(rad.X)));
+                        MatrixZ = Matrix.Transpose(MatrixZ);
+                            MatrixZ = Matrix.Multiply(Matrix.CreateRotationZ(MathHelper.ToRadians(-rad.Z)),MatrixZ);
+                        MatrixZ = Matrix.Transpose(MatrixZ);
+                            
+
                         if (skeleton.bones[k].parentId == 0xFFFF)
-                            animHeader.animations[i].animationFrames[n].boneRot.Item3[k] = Matrix.CreateRotationX(MathHelper.ToRadians(rad.X))
-                                * Matrix.CreateRotationY(MathHelper.ToRadians(-rad.Y))
-                                * Matrix.CreateRotationZ(MathHelper.ToRadians(-rad.Z));
+                        {
+                            //180 270 90
+                            var MatrixRoot = new Matrix();
+                            MatrixRoot = Matrix.Multiply(Matrix.CreateRotationY(MathHelper.ToRadians(-270f)), Matrix.CreateRotationX(MathHelper.ToRadians(180f)));
+                            MatrixRoot = Matrix.Multiply(Matrix.CreateRotationZ(MathHelper.ToRadians(90f)), MatrixRoot);
+                            MatrixRoot = Matrix.Transpose(MatrixRoot);
+                            MatrixZ *= MatrixRoot;
+                        }
                         else
                         {
-                            var d = skeleton.bones[k].parentId;
-                            float radX = rad.X, radY = -rad.Y, radZ = -rad.Z;
-                            while (d != 0xFFFF)
-                            {
-
-                                radX += animHeader.animations[i].animationFrames[n].boneRot.Item1[d].X;
-                                radY += -animHeader.animations[i].animationFrames[n].boneRot.Item1[d].Y;
-                                radZ += -animHeader.animations[i].animationFrames[n].boneRot.Item1[d].Z;
-                                d = skeleton.bones[d].parentId;
-                            }
-                            animHeader.animations[i].animationFrames[n].boneRot.Item3[k] =
-                                Matrix.CreateRotationX(MathHelper.ToRadians(radX)) *
-                                Matrix.CreateRotationY(MathHelper.ToRadians(radY)) *
-                                Matrix.CreateRotationZ(MathHelper.ToRadians(radZ));
+                            MatrixZ = Matrix.Multiply(animHeader.animations[i].animationFrames[n].boneRot.Item3[skeleton.bones[k].parentId], MatrixZ);
                         }
+
+                        animHeader.animations[i].animationFrames[n].boneRot.Item3[k] = MatrixZ;
+
                     }
                 }
             }
