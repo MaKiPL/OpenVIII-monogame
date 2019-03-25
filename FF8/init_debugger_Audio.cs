@@ -379,10 +379,12 @@ namespace FF8
 
         private static SoundEffectInstance see;
         private static bool musicplaying = false;
+        private static int lastplayed = -1;
+
         public static void PlayStopMusic()
         {
-            if (musicplaying) StopAudio();
-            else PlayMusic();
+            if (!musicplaying || lastplayed != Memory.MusicIndex) PlayMusic();
+            else StopAudio(); 
         }
        
         public static void PlayMusic()
@@ -511,6 +513,7 @@ namespace FF8
 
 
             musicplaying = true;
+            lastplayed = (int)Memory.MusicIndex;
         }
 
         public static void KillAudio()

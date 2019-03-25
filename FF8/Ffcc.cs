@@ -271,6 +271,10 @@ namespace FF8
                 {
                     SoundInstance.Play();
                 }
+                if (dsee44100 != null && !dsee44100.IsDisposed && AudioEnabled)
+                    dsee44100.Play();
+                if (dsee44100 != null && !dsee44100.IsDisposed && AudioEnabled)
+                    dsee48000.Play();
             }
         }
         public void StopSound()
@@ -284,6 +288,10 @@ namespace FF8
             {
                 SoundInstance.Stop();
             }
+            if (dsee44100 != null && !dsee44100.IsDisposed && AudioEnabled)
+                dsee44100.Stop();
+            if (dsee44100 != null && !dsee44100.IsDisposed && AudioEnabled)
+                dsee48000.Stop();
             if (Sound != null && !Sound.IsDisposed)
             {
                 Sound.Dispose();
@@ -299,7 +307,7 @@ namespace FF8
             // I'm not sure how to write this better.
             //Outfile = Path.Combine(Path.GetDirectoryName(Outfile), $"{Path.GetFileNameWithoutExtension(Outfile)}.pcm");
             //wr = new WaveFileReader(@"C:\eyes_on_me.wav");//Outfile))
-            if (File.Exists(EncodedFileName) && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
+            if (File.Exists(EncodedFileName) && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO && Mode == FfccMode.PROCESS_ALL)
             {
                 using (DecodeFileStream = File.OpenRead(EncodedFileName))
                 {
@@ -338,8 +346,8 @@ namespace FF8
                 else if (ResampleFrame->sample_rate == 48000)
                     dsee48000.SubmitBuffer(decodedStream.ToArray());
 
-                dsee44100.Play();
-                dsee48000.Play();
+                //dsee44100.Play();
+                //dsee48000.Play();
 
             }
         }

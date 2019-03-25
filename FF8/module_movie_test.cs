@@ -1,6 +1,5 @@
 ﻿
 using FFmpeg.AutoGen;
-using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -87,15 +86,26 @@ namespace FF8
                 case STATE_INIT:
                     MovieState++;
                     InitMovie();
+                    Ffccaudio.GetFrame(); // primes the audio buffer with one frame of data
                     break;
                 case STATE_CLEAR:
                     break;
                 case STATE_PLAYING:
-                    Ffccaudio.GetFrame();
+                    if (Ffccaudio.BehindFrame())
+                    {   
+                        // if we are behind the timer get the next frame of audio.
+                        Ffccaudio.GetFrame();
+                    }
+
                     if (Ffccaudio != null)
+                    {
                         Ffccaudio.PlaySound();
+                    }
                     else if (Ffccvideo != null)
+                    {
                         Ffccvideo.PlaySound();
+                    }
+
                     break;
                 case STATE_PAUSED:
                     //todo add a function to pause sound
@@ -117,9 +127,14 @@ namespace FF8
         private static void Reset()
         {
             if (Ffccaudio != null)
+            {
                 Ffccaudio.StopSound();
+            }
             else if (Ffccvideo != null)
+            {
                 Ffccvideo.StopSound();
+            }
+
             MovieState = STATE_INIT;
             LastFrame = null;
             Frame = null;
@@ -207,11 +222,7 @@ namespace FF8
         private static void PlayingDraw()
         {
             Texture2D frameTex = null;
-            if (LastFrame != null && (Ffccvideo.CorrectFrame() || Ffccvideo.AheadFrame()))
-            {
-                frameTex = LastFrame;
-            }
-            else
+            if (LastFrame == null || Ffccvideo.BehindFrame())
             {
                 MsElapsed = 0;
 
@@ -222,6 +233,10 @@ namespace FF8
                     return;
                 }
                 frameTex = Ffccvideo.FrameToTexture2D();
+            }
+            else
+            {
+                frameTex = LastFrame;
             }
             if (frameTex != null)
             {
