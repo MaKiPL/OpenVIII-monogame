@@ -262,11 +262,12 @@ namespace FF8
             while (!((Mode == FfccMode.PROCESS_ALL && State == FfccState.DONE) || (State == FfccState.DONE || State == FfccState.WAITING)));
             return ret;
         }
-        public void PlaySound() // there are some videos without sound meh.
+        public void PlaySound(bool notimer = false) // there are some videos without sound meh.
         {
             if (!timer.IsRunning)
             {
-                timer.Start();
+                if(!notimer)
+                    timer.Start();
                 if (SoundInstance != null && !SoundInstance.IsDisposed && AudioEnabled)
                 {
                     SoundInstance.Play();
@@ -362,11 +363,13 @@ namespace FF8
         }
         public int CurrentFrameNum()
         {
-            return DecodeCodecContext->frame_number;
+            if(DecodeCodecContext != null)
+                return DecodeCodecContext->frame_number;
+            else return -1;
         }
         public bool AheadFrame()
         {
-            if (timer.IsRunning)
+            if (timer.IsRunning && DecoderStreamIndex != -1)
             {
                 return CurrentFrameNum() > ExpectedFrame();
             }
@@ -374,7 +377,7 @@ namespace FF8
         }
         public bool BehindFrame()
         {
-            if (timer.IsRunning)
+            if (timer.IsRunning && DecoderStreamIndex != -1)
             {
                 return CurrentFrameNum() < ExpectedFrame();
             }
@@ -557,6 +560,8 @@ namespace FF8
                     int len = Decode(DecodeCodecContext, DecodeFrame, ref frameFinished, DecodePacket);
                     if (len == ffmpeg.AVERROR_EOF)
                     {
+                        timer.Stop(); // might not be right. I'm just afraid of timers running forever. they could overrun i think.
+                        timer.Reset();
                         break;
                     }
                     //int len = ffmpeg.avcodec_decode_audio4(Codec, Frame, &frameFinished, &Packet);
@@ -857,6 +862,11 @@ namespace FF8
             try
             {
                 _decodeFormatContext = ffmpeg.avformat_alloc_context();
+                if (Open() < 0)
+                {
+                    die("No file not open");
+                }
+
                 //Swr = ffmpeg.swr_alloc();
                 ParserContext = null;
                 DecodeCodecContext = null;
@@ -867,11 +877,7 @@ namespace FF8
                     die("Error allocating the packet\n");
                 }
                 //ffmpeg.av_init_packet(Packet);
-                ResampleFrame = ffmpeg.av_frame_alloc();
-                if (ResampleFrame == null)
-                {
-                    die("Error allocating the frame\n");
-                }
+
 
                 DecodeFrame = ffmpeg.av_frame_alloc();
                 if (DecodeFrame == null)
@@ -881,9 +887,13 @@ namespace FF8
 
                 DecoderStreamIndex = -1;
 
-                if (Open() < 0)
+                if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
                 {
-                    die("No file not open");
+                    ResampleFrame = ffmpeg.av_frame_alloc();
+                    if (ResampleFrame == null)
+                    {
+                        die("Error allocating the frame\n");
+                    }
                 }
 
             }
@@ -1219,7 +1229,9 @@ namespace FF8
         }
         public int GetFrame()
         {
-            return Update(FfccState.READONE);
+            if (DecoderStreamIndex == -1)
+                return -1;
+            else return Update(FfccState.READONE);
         }
         /// <summary>
         /// Saves each frame to it's own BMP image file.

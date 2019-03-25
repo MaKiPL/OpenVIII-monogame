@@ -108,14 +108,6 @@
     <Compile Include="debug_battleDat.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="AForge.Video, Version=2.2.5.0, Culture=neutral, PublicKeyToken=cbfb6e07d173c401, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\AForge.Video.dll</HintPath>
-    </Reference>
-    <Reference Include="AForge.Video.FFMPEG, Version=2.2.5.0, Culture=neutral, PublicKeyToken=03563089b1be05dd, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\AForge.Video.FFMPEG.dll</HintPath>
-    </Reference>
     <Reference Include="DirectMidiNet">
       <HintPath>..\DirectMidiNet.dll</HintPath>
     </Reference>

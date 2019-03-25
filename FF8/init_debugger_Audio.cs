@@ -314,7 +314,8 @@ namespace FF8
 
         internal static void Update()
         {
-
+            if(ffccMusic!=null && ffccMusic.BehindFrame())
+                ffccMusic.GetFrame();
         }
         //callable test
 
@@ -386,7 +387,7 @@ namespace FF8
             if (!musicplaying || lastplayed != Memory.MusicIndex) PlayMusic();
             else StopAudio(); 
         }
-       
+        private static Ffcc ffccMusic = null; // testing using class to play music instead of Naudio / Nvorbis
         public static void PlayMusic()
         {
             string ext = "";
@@ -404,9 +405,10 @@ namespace FF8
             {
                 case ".ogg":
                     //vorbis wave reader uncompresses the 32 bit float wav data from ogg files
+                    ffccMusic = new Ffcc(pt, FFmpeg.AutoGen.AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
                     var vorbisStream = new VorbisWaveReader(pt);
                     //read fully float reads float[] from vorbis stream and then uses another function to convert to 16 bit pcm
-                    byte[] fileStream = ReadFullyFloat(vorbisStream);
+                    //byte[] fileStream = ReadFullyFloat(vorbisStream);
                     int loopstart = -1;
                     int looplen = 0; // 0 length till play till end of song.
                     int loopend = -1;
@@ -429,14 +431,16 @@ namespace FF8
                     }
                     if (loopend > 0)
                         looplen = loopend - loopstart; // end - start = length assuming end is the samplecount point of end of loop and not length.
-                    SoundEffect se;
-                    if (loopstart >= 0)
-                        se = new SoundEffect(fileStream, 0, fileStream.Length, vorbisStream.WaveFormat.SampleRate, (AudioChannels)vorbisStream.WaveFormat.Channels, loopstart, 0);
-                    else
-                        se = new SoundEffect(fileStream, vorbisStream.WaveFormat.SampleRate, (AudioChannels)vorbisStream.WaveFormat.Channels);
-                    see = se.CreateInstance();
-                    see.IsLooped = loopstart >= 0;
-                    see.Play();
+                    //SoundEffect se;
+                    //if (loopstart >= 0)
+                    //    se = new SoundEffect(fileStream, 0, fileStream.Length, vorbisStream.WaveFormat.SampleRate, (AudioChannels)vorbisStream.WaveFormat.Channels, loopstart, 0);
+                    //else
+                    //    se = new SoundEffect(fileStream, vorbisStream.WaveFormat.SampleRate, (AudioChannels)vorbisStream.WaveFormat.Channels);
+                    //see = se.CreateInstance();
+                    //see.IsLooped = loopstart >= 0;
+                    //see.Play();
+                    ffccMusic.GetFrame();
+                    ffccMusic.PlaySound();
                     break ;
                 case ".sgt":
 
@@ -544,6 +548,8 @@ namespace FF8
         public static void StopAudio()
         {
             musicplaying = false;
+            if (ffccMusic != null)
+                ffccMusic.StopSound();
             try
             {
                 see.Stop();
