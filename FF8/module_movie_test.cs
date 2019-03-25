@@ -92,7 +92,7 @@ namespace FF8
                     break;
                 case STATE_PLAYING:
                     if (Ffccaudio.BehindFrame())
-                    {   
+                    {
                         // if we are behind the timer get the next frame of audio.
                         Ffccaudio.GetFrame();
                     }

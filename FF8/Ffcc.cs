@@ -116,6 +116,23 @@ namespace FF8
         private FfccState State { get; set; }
         private FfccMode Mode { get; set; }
         private bool useduration => DecodeCodecContext == null || (DecodeCodecContext->framerate.den == 0 || DecodeCodecContext->framerate.num == 0);
+        private double videoFPS
+        {
+            get
+            {
+                int videostream = ffmpeg.av_find_best_stream(DecodeFormatContext, AVMediaType.AVMEDIA_TYPE_VIDEO, -1, -1, null, 0);
+                if (videostream < 0)
+                {
+                    return 0;
+                }
+                else if (DecodeFormatContext->streams[videostream]->codec->framerate.den > 0)
+                {
+                    return (double)DecodeFormatContext->streams[videostream]->codec->framerate.num / DecodeFormatContext->streams[videostream]->codec->framerate.den;
+                }
+
+                return 0;
+            }
+        }
         /// <summary>
         /// returns Frames per second or if that is 0. it will return the Time_Base ratio.
         /// This is the fundamental unit of time (in seconds) in terms of which frame timestamps are represented.
@@ -126,9 +143,17 @@ namespace FF8
         {
             get
             {
-                if (useduration && DecoderStream != null && DecoderStream->time_base.den != 0)
+                double r;
+                if (useduration)
                 {
-                    return DecoderStream->time_base.num / (double)DecoderStream->time_base.den; // returns the time_base 
+                    if ((r = videoFPS) > 0)
+                    {
+                        return r;
+                    }
+                    else if (DecoderStream != null && DecoderStream->time_base.den != 0)
+                    {
+                        return DecoderStream->time_base.num / (double)DecoderStream->time_base.den; // returns the time_base 
+                    }
                 }
                 else if (DecodeCodecContext != null && DecodeCodecContext->framerate.den != 0)
                 {
@@ -696,8 +721,6 @@ namespace FF8
                     {
 
 
-                        //try
-                        //{
 
                         // do something with audio here.
                         if (frameFinished != 0 && !NoResample())
@@ -741,27 +764,31 @@ namespace FF8
                                   ResampleFrame->nb_samples,
                                   (AVSampleFormat)ResampleFrame->format,
                                   0);
-                                if (skipencode && buffer_size > 0)
+
+
+                                if (!skipencode) //encode
+                                {
+                                    ProcessEncode(ref buffer_size);
+                                }
+                                else // write to buffer
                                 {
                                     WritetoMs(ConvertedData, 0, buffer_size);
-                                    continue;
                                 }
-
-                                ProcessEncode(ref buffer_size);
-                                //encode
                             }
                         }
 
-                        //if (Mode == FfccMode.STATE_MACH)
-                        //{
-                        //    ffmpeg.av_freep(convertedData);
-                        //    AVPacket* pdp = DecodePacket;
-                        //    ffmpeg.av_packet_free(&pdp);
-                        //    State = FfccState.WAITING;
-                        //}
+                        //this doesn't work with audio there needs to be a min number of samples collected
+                        //or the packet needs to be empty of all data before leaving or something; forcing
+                        //the leaving of the loop introduced a buch of audio glitches. when I thought it was
+                        // working it was being skipped by a continue on the line above.
+                        // the only time audio goes into waiting status is when it's waiting for a loop.
+                        // else it runs to done.
 
-                        //if (Mode == FfccMode.STATE_MACH)
-                        //   return;
+                        //if (Mode == FfccMode.STATE_MACH && FPS > 0 && LOOPSTART < 0)
+                        //{
+                        //    State = FfccState.WAITING;
+                        //    return;
+                        //}
                     }
                 }
             }
@@ -1457,7 +1484,7 @@ namespace FF8
                     // TODO: dispose managed state (managed objects).
                 }
 
-                if (ConvertedData != null&& MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
+                if (ConvertedData != null && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
                 {
 
                     Marshal.FreeHGlobal((IntPtr)ConvertedData);
