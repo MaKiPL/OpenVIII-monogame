@@ -949,6 +949,7 @@ namespace FF8
                     die("No file not open");
                 }
 
+                ConvertedData = null;
                 //Swr = ffmpeg.swr_alloc();
                 ParserContext = null;
                 DecodeCodecContext = null;
@@ -1194,22 +1195,26 @@ namespace FF8
             Packet.data = null;
             Packet.size = 0;
 
-
-            ConvertedData = null;
-            if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
-            {
-                fixed(byte** tmp = &_convertedData)
-                    {
-                    if (ffmpeg.av_samples_alloc(tmp,
-                                                 null,
+            int convertedFrameBufferSize = ffmpeg.av_samples_get_buffer_size(null,
                                                  EncoderCodecContext == null ? ResampleFrame->channels : EncoderCodecContext->channels,
                                                  ResampleFrame->nb_samples,
-                                                 EncoderCodecContext == null ? (AVSampleFormat)ResampleFrame->format : EncoderCodecContext->sample_fmt, 0) < 0)
-                    {
-                        die("Could not allocate samples");
-                    }
-                }
-            }
+                                                 EncoderCodecContext == null ? (AVSampleFormat)ResampleFrame->format : EncoderCodecContext->sample_fmt, 0);
+
+            ConvertedData = (byte*)Marshal.AllocHGlobal(convertedFrameBufferSize);
+            //if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
+            //{
+            //    fixed(byte** tmp = &_convertedData)
+            //        {
+            //        if (ffmpeg.av_samples_alloc(tmp,
+            //                                     null,
+            //                                     EncoderCodecContext == null ? ResampleFrame->channels : EncoderCodecContext->channels,
+            //                                     ResampleFrame->nb_samples,
+            //                                     EncoderCodecContext == null ? (AVSampleFormat)ResampleFrame->format : EncoderCodecContext->sample_fmt, 0) < 0)
+            //        {
+            //            die("Could not allocate samples");
+            //        }
+            //    }
+            //}
 
         }
 
@@ -1454,6 +1459,8 @@ namespace FF8
 
                 if (ConvertedData != null&& MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
                 {
+
+                    Marshal.FreeHGlobal((IntPtr)ConvertedData);
                     //av_freep throws exceptions no matter where i put it. I think it's linked to ResampleFrame so when i erase that it goes too?
                     //try
                     //    {
