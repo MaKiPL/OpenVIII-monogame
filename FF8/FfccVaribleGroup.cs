@@ -8,23 +8,23 @@ namespace FF8
     internal class FfccVaribleGroup : IDisposable
     {
         #region Fields
-        public AVFormatContext _format;
-        public AVPacket _packet;
-        unsafe public AVFrame *_frame;
+        public unsafe AVFormatContext* _format;
+        public unsafe AVPacket* _packet;
+        public unsafe AVFrame* _frame;
         #endregion
         #region Properties
         /// <summary>
         /// Format holds alot of file info. File is opened and data about it is stored here.
         /// </summary>
-        public AVFormatContext Format { get => _format; set => _format = value; }
+        unsafe public AVFormatContext* Format { get => _format; set => _format = value; }
         /// <summary>
         /// Packet of data can contain 1 or more frames.
         /// </summary>
-        public AVPacket Packet { get => _packet; set => _packet = value; }
+        public unsafe AVPacket* Packet { get => _packet; set => _packet = value; }
         /// <summary>
         /// Frame holds a chunk of data related to the current stream. 
         /// </summary>
-        unsafe public AVFrame *Frame { get => _frame; set => _frame = value; }
+        public unsafe AVFrame* Frame { get => _frame; set => _frame = value; }
         #endregion
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
@@ -32,7 +32,7 @@ namespace FF8
         {
             Dispose();
         }
-        unsafe protected virtual void Dispose(bool disposing)
+        protected virtual unsafe void Dispose(bool disposing)
         {
             if (!disposedValue)
             {
@@ -40,17 +40,16 @@ namespace FF8
                 {
                     // TODO: dispose managed state (managed objects).
                 }
-                fixed (AVFormatContext* tmp = &_format)
+                fixed (AVFormatContext** tmp = &_format)
                 {
-                    ffmpeg.avformat_close_input(&tmp);
+                    ffmpeg.avformat_close_input(tmp);
                 }
-                fixed (AVPacket* tmp = &_packet)
-                {
-                    ffmpeg.av_packet_unref(tmp);
-                }
-                    ffmpeg.av_frame_unref(Frame);
+
+                ffmpeg.av_packet_unref(Packet);
+                ffmpeg.av_free(Packet);
+                ffmpeg.av_frame_unref(Frame);
                 ffmpeg.av_free(Frame);
-                
+
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                 // TODO: set large fields to null.
 

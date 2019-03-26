@@ -108,15 +108,16 @@ namespace FF8
         {
             get
             {
-                fixed (AVFormatContext* tmp = &Decoder._format)
-                    Return = ffmpeg.av_find_best_stream(tmp, AVMediaType.AVMEDIA_TYPE_VIDEO, -1, -1, null, 0);
-                if (Return <0)
+                    Return = ffmpeg.av_find_best_stream(Decoder.Format, AVMediaType.AVMEDIA_TYPE_VIDEO, -1, -1, null, 0);
+                
+
+                if (Return < 0)
                 {
                     return 0;
                 }
-                else if (Decoder.Format.streams[Return]->codec->framerate.den > 0)
+                else if (Decoder.Format->streams[Return]->codec->framerate.den > 0)
                 {
-                    return (double)Decoder.Format.streams[Return]->codec->framerate.num / Decoder.Format.streams[Return]->codec->framerate.den;
+                    return (double)Decoder.Format->streams[Return]->codec->framerate.num / Decoder.Format->streams[Return]->codec->framerate.den;
                 }
 
                 return 0;
@@ -513,16 +514,14 @@ namespace FF8
                 {
                     do
                     {
-
-                        fixed (AVPacket * tmpPacket = &Decoder._packet)
-                        fixed (AVFormatContext* tmpFrame = &Decoder._format)
-                            Return = ffmpeg.av_read_frame(tmpFrame, tmpPacket);
+                        Return = ffmpeg.av_read_frame(Decoder.Format, Decoder.Packet);
                         if (Return == ffmpeg.AVERROR_EOF)
                         {
                             if (LOOPSTART >= 0)
                             {
-                                fixed (AVFormatContext* tmp = &Decoder._format)
-                                    ffmpeg.avformat_seek_file(tmp, DecoderStreamIndex, LOOPSTART - 1000, LOOPSTART, DecoderStream->duration, 0);
+                                    ffmpeg.avformat_seek_file(Decoder.Format, DecoderStreamIndex, LOOPSTART - 1000, LOOPSTART, DecoderStream->duration, 0);
+                                
+
                                 LOOPED = true; // set after one play to change durration checked.
                                 State = FfccState.WAITING;
                                 if (BehindFrame())
@@ -537,11 +536,10 @@ namespace FF8
                         {
                             CheckReturn();
                         }
-                    } while (Decoder.Packet.stream_index != DecoderStreamIndex);
+                    } while (Decoder.Packet->stream_index != DecoderStreamIndex);
 
 
-                    fixed (AVPacket* tmpPacket = &Decoder._packet)
-                        Return = ffmpeg.avcodec_send_packet(DecodeCodecContext, tmpPacket);
+                    Return = ffmpeg.avcodec_send_packet(DecodeCodecContext, Decoder.Packet);
                     //sent a eof when trying to loop once.
                     //should never get EOF here unless something is wrong.
                     //if (Return == ffmpeg.AVERROR_EOF) 
@@ -555,11 +553,10 @@ namespace FF8
                 }
                 finally
                 {
-                    fixed (AVPacket* tmpPacket = &Decoder._packet)
-                        ffmpeg.av_packet_unref(tmpPacket);
+                    ffmpeg.av_packet_unref(Decoder.Packet);
                 }
 
-                    Return = ffmpeg.avcodec_receive_frame(DecodeCodecContext, Decoder.Frame);
+                Return = ffmpeg.avcodec_receive_frame(DecodeCodecContext, Decoder.Frame);
             } while (Return == ffmpeg.AVERROR(ffmpeg.EAGAIN));
             CheckReturn();
 
@@ -572,7 +569,9 @@ namespace FF8
             avpkt.size = 0;
 
             fixed (AVPacket* tmpPacket = &avpkt)
+            {
                 return ffmpeg.avcodec_send_packet(avctx, tmpPacket);
+            }
         }
         //public static int EncodeNext(AVCodecContext* avctx, AVPacket* avpkt, AVFrame* frame, ref int got_packet_ptr)
         //{
@@ -676,7 +675,7 @@ namespace FF8
                 else if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
                 {
 
-                    Resample(ref _DecodedFrame,skipencode);
+                    Resample(ref _DecodedFrame, skipencode);
                 }
             }
             if (State != FfccState.WAITING)
@@ -689,11 +688,11 @@ namespace FF8
                 //    EncodeFlush(EncoderCodecContext);
                 //}
 
-                DecodeFlush(ref _decodeCodecContext, ref Decoder._packet); //calling this twice was causing issues.
+                DecodeFlush(ref _decodeCodecContext, ref *Decoder.Packet); //calling this twice was causing issues.
             }
 
         }
-        private void Resample(ref AVFrame frame,bool skipencode = true)
+        private void Resample(ref AVFrame frame, bool skipencode = true)
         {
             // do something with audio here.
             if (!NoResample(ref frame))
@@ -838,22 +837,19 @@ namespace FF8
         {
             if (!FileOpened)
             {
-                
-                fixed (AVFormatContext* tmp = &Decoder._format)
-                {
-                    Return = ffmpeg.avformat_open_input(&tmp, DecodedFileName, null, null);
-                }
+                fixed(AVFormatContext** tmp = &Decoder._format)
+                    Return = ffmpeg.avformat_open_input(tmp, DecodedFileName, null, null);
 
                 CheckReturn();
-                fixed (AVFormatContext* tmp = &Decoder._format)
-                    Return = ffmpeg.avformat_find_stream_info(tmp, null);
+                    Return = ffmpeg.avformat_find_stream_info(Decoder.Format, null);
+
                 CheckReturn();
 
                 //this code here will get metadata from formatcontext but the ogg tags aren't there.
                 string val = "", key = "";
                 AVDictionaryEntry* tag = null;
-                //tag = ffmpeg.av_dict_get(_Decoder.Format.metadata, "LOOPSTART", tag, ffmpeg.AV_DICT_IGNORE_SUFFIX);
-                while ((tag = ffmpeg.av_dict_get(Decoder.Format.metadata, "", tag, ffmpeg.AV_DICT_IGNORE_SUFFIX)) != null)
+                //tag = ffmpeg.av_dict_get(_Decoder.Format->metadata, "LOOPSTART", tag, ffmpeg.AV_DICT_IGNORE_SUFFIX);
+                while ((tag = ffmpeg.av_dict_get(Decoder.Format->metadata, "", tag, ffmpeg.AV_DICT_IGNORE_SUFFIX)) != null)
                 {
                     for (int i = 0; tag->value[i] != 0; i++)
                     {
@@ -908,7 +904,7 @@ namespace FF8
             //EncodedFileType = "s16le";
             try
             {
-                Decoder.Format = *ffmpeg.avformat_alloc_context();
+                Decoder.Format = ffmpeg.avformat_alloc_context();
                 if (Open() < 0)
                 {
                     die("No file not open");
@@ -919,7 +915,7 @@ namespace FF8
                 ParserContext = null;
                 DecodeCodecContext = null;
                 DecoderStream = null;
-                Decoder.Packet = *ffmpeg.av_packet_alloc();
+                Decoder.Packet = ffmpeg.av_packet_alloc();
                 Decoder.Frame = ffmpeg.av_frame_alloc();
 
                 DecoderStreamIndex = -1;
@@ -941,9 +937,9 @@ namespace FF8
         {
             DecoderStreamIndex = -1;
             // Find the index of the first audio stream
-            for (int i = 0; i < Decoder.Format.nb_streams; i++)
+            for (int i = 0; i < Decoder.Format->nb_streams; i++)
             {
-                if (Decoder.Format.streams[i]->codec->codec_type == MediaType)
+                if (Decoder.Format->streams[i]->codec->codec_type == MediaType)
                 {
                     DecoderStreamIndex = i;
                     break; // only grab the first stream
@@ -963,12 +959,12 @@ namespace FF8
             }
             else
             {
-                DecoderStream = Decoder.Format.streams[DecoderStreamIndex];
+                DecoderStream = Decoder.Format->streams[DecoderStreamIndex];
 
                 AVDictionary* metadata = DecoderStream->metadata;//this code here will get metadata from formatcontext but the ogg tags aren't there.
                 string val = "", key = "";
                 AVDictionaryEntry* tag = null;
-                //tag = ffmpeg.av_dict_get(_Decoder.Format.metadata, "LOOPSTART", tag, ffmpeg.AV_DICT_IGNORE_SUFFIX);
+                //tag = ffmpeg.av_dict_get(_Decoder.Format->metadata, "LOOPSTART", tag, ffmpeg.AV_DICT_IGNORE_SUFFIX);
                 while ((tag = ffmpeg.av_dict_get(metadata, "", tag, ffmpeg.AV_DICT_IGNORE_SUFFIX)) != null)
                 {
                     for (int i = 0; tag->value[i] != 0; i++)
