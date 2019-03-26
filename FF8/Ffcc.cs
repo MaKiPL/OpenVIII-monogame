@@ -527,6 +527,16 @@ namespace FF8
                         Return = ffmpeg.av_read_frame(DecodeFormatContext, DecodePacket);
                         if (Return == ffmpeg.AVERROR_EOF)
                         {
+                            if (LOOPSTART >= 0)
+                            {
+                                ffmpeg.avformat_seek_file(DecodeFormatContext, DecoderStreamIndex, LOOPSTART - 1000, LOOPSTART, DecoderStream->duration, 0);
+                                LOOPED = true; // set after one play to change durration checked.
+                                State = FfccState.WAITING;
+                                if (BehindFrame())
+                                {
+                                    timer.Restart();
+                                }
+                            }
                             frame = *DecodeFrame;
                             return false;
                         }
@@ -536,7 +546,16 @@ namespace FF8
                         }
                     } while (DecodePacket->stream_index != DecoderStreamIndex);
 
+
                     Return = ffmpeg.avcodec_send_packet(DecodeCodecContext, DecodePacket);
+                    //sent a eof when trying to loop once.
+                    //should never get EOF here unless something is wrong.
+                    //if (Return == ffmpeg.AVERROR_EOF) 
+                    //{
+                    //    frame = *DecodeFrame;
+                    //    return false;
+                    //}
+                    //else
                     CheckReturn();
 
                 }
@@ -663,32 +682,17 @@ namespace FF8
                     Resample(ref _DecodedFrame,skipencode);
                 }
             }
-            if (Return == ffmpeg.AVERROR_EOF && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
+            if (State != FfccState.WAITING)
             {
-                if (LOOPSTART > -1)
-                {
-                    ffmpeg.avformat_seek_file(DecodeFormatContext, DecoderStreamIndex, LOOPSTART - 1000, LOOPSTART, DecoderStream->duration, 0);
-                    LOOPED = true; // set after one play to change durration checked.
-                    State = FfccState.WAITING;
-                    if (BehindFrame())
-                    {
-                        timer.Restart();
-                    }
-                }
-                else
-                {
-
-                    timer.Stop();
-                    timer.Reset();
-                }
+                State = FfccState.DONE;
+                timer.Stop();
+                timer.Reset();
+                //if (!skipencode)
+                //{
+                //    EncodeFlush(EncoderCodecContext);
+                //}
+                DecodeFlush(DecodeCodecContext, DecodePacket);
             }
-
-            State = FfccState.DONE;
-            //if (!skipencode)
-            //{
-            //    EncodeFlush(EncoderCodecContext);
-            //}
-            DecodeFlush(DecodeCodecContext, DecodePacket);
 
         }
         private void Resample(ref AVFrame frame,bool skipencode = true)
