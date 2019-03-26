@@ -83,6 +83,7 @@
     <Compile Include="debug_MCH.cs" />
     <Compile Include="ExtapathyExtended.cs" />
     <Compile Include="Ffcc.cs" />
+    <Compile Include="FfccVaribleGroup.cs" />
     <Compile Include="Font.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="init_debugger_Audio.cs" />
