@@ -303,7 +303,7 @@ namespace FF8
                 //{
                 //try
                 //{
-                if (!Sound.IsDisposed)
+                if (Sound != null && !Sound.IsDisposed)
                 {
                     /// If you don't dispose of sound it will leak memory. You can hold down arrow and watch memory go up.
                     /// Though doing this you can only play one sound at a time with out more varibles.
