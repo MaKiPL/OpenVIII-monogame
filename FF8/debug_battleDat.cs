@@ -220,17 +220,15 @@ namespace FF8
             return @object;
         }
         public float DEBUG = 0.0f;
-        public Vector3 testRotationTester(Vector3 a, float x, float y, float z)
-        {
-            //if (Input.GetInputDelayed(Microsoft.Xna.Framework.Input.Keys.F1))
-            //    DEBUG += 1f;
-            a = Vector3.Transform(a, Matrix.CreateRotationX(MathHelper.ToRadians(x)));
-            a = Vector3.Transform(a, Matrix.CreateRotationY(MathHelper.ToRadians(y)));
-            a = Vector3.Transform(a, Matrix.CreateRotationZ(MathHelper.ToRadians(z)));
-            return a;
-        }
         private void TransformBoneSize(ref Vector3 verticeDataC, int boneId, AnimationFrame frame)
         {
+            //var a = frame.boneRot.Item3[boneId];
+            //Vector3 nw = new Vector3() { X = a.M11 * verticeDataC.X + a.M12 * verticeDataC.Y + a.M13 * verticeDataC.Z,
+            //Y = a.M21 * verticeDataC.X + a.M22 * verticeDataC.Y + a.M23 * verticeDataC.Z,
+            //Z = a.M31 * verticeDataC.X + a.M32 * verticeDataC.Y + a.M33 * verticeDataC.Z
+            //};
+            //verticeDataC = Vector3.Transform(verticeDataC, Matrix.CreateTranslation(new Vector3(a.M41, a.M42, a.M43)));
+            return;
             float boneSizeTranslator = 0f;
             int parentTester = skeleton.bones[boneId].parentId;
             while (parentTester != 0xFFFF && parentTester != 0x00)
