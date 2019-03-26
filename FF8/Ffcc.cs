@@ -509,70 +509,113 @@ namespace FF8
             }
             return false;
         }
-        public static int DecodeNext(AVCodecContext* avctx, AVFrame* frame, ref int got_frame_ptr, AVPacket* avpkt)
+        /// <summary>
+        /// Adapted from example in FFmpeg.Autogen's example
+        /// Decodes current stream;
+        /// </summary>
+        /// <param name="frame">Outputs current frame without</param>
+        /// <returns>True if more data, False if EOF</returns>
+        public bool Decode(out AVFrame frame)
         {
-            int ret = 0;
-            got_frame_ptr = 0;
-            if ((ret = ffmpeg.avcodec_receive_frame(avctx, frame)) == 0)
+            ffmpeg.av_frame_unref(DecodeFrame);
+            do
             {
-                //0 on success, otherwise negative error code
-                got_frame_ptr = 1;
-            }
-            else if (ret == ffmpeg.AVERROR(ffmpeg.EAGAIN))
-            {
-                //AVERROR(EAGAIN): input is not accepted in the current state - user must read output with avcodec_receive_packet()
-                //(once all output is read, the packet should be resent, and the call will not fail with EAGAIN)
-                ret = Decode(avctx, frame, ref got_frame_ptr, avpkt);
-            }
-            else if (ret == ffmpeg.AVERROR_EOF)
-            {
-                die("AVERROR_EOF: the encoder has been flushed, and no new frames can be sent to it");
-            }
-            else if (ret == ffmpeg.AVERROR(ffmpeg.EINVAL))
-            {
-                die("AVERROR(EINVAL): codec not opened, refcounted_frames not set, it is a decoder, or requires flush");
-            }
-            else if (ret == ffmpeg.AVERROR(ffmpeg.ENOMEM))
-            {
-                die("Failed to add packet to internal queue, or similar other errors: legitimate decoding errors");
-            }
-            else
-            {
-                die("unknown");
-            }
-            return ret;
+                try
+                {
+                    do
+                    {
+                        Return = ffmpeg.av_read_frame(DecodeFormatContext, DecodePacket);
+                        if (Return == ffmpeg.AVERROR_EOF)
+                        {
+                            frame = *DecodeFrame;
+                            return false;
+                        }
+                        else
+                        {
+                            CheckReturn();
+                        }
+                    } while (DecodePacket->stream_index != DecoderStreamIndex);
+
+                    Return = ffmpeg.avcodec_send_packet(DecodeCodecContext, DecodePacket);
+                    CheckReturn();
+
+                }
+                finally
+                {
+                    ffmpeg.av_packet_unref(DecodePacket);
+                }
+
+                Return = ffmpeg.avcodec_receive_frame(DecodeCodecContext, DecodeFrame);
+            } while (Return == ffmpeg.AVERROR(ffmpeg.EAGAIN));
+            CheckReturn();
+
+            frame = *DecodeFrame;
+            return true;
         }
-        public static int Decode(AVCodecContext* avctx, AVFrame* frame, ref int got_frame_ptr, AVPacket* avpkt)
-        {
-            int ret = 0;
-            got_frame_ptr = 0;
-            if ((ret = ffmpeg.avcodec_send_packet(avctx, avpkt)) == 0)
-            {
-                //0 on success, otherwise negative error code
-                return DecodeNext(avctx, frame, ref got_frame_ptr, avpkt);
-            }
-            else if (ret == ffmpeg.AVERROR(ffmpeg.EAGAIN))
-            {
-                die("input is not accepted in the current state - user must read output with avcodec_receive_frame()(once all output is read, the packet should be resent, and the call will not fail with EAGAIN");
-            }
-            else if (ret == ffmpeg.AVERROR_EOF)
-            {
-                die("AVERROR_EOF: the decoder has been flushed, and no new packets can be sent to it (also returned if more than 1 flush packet is sent");
-            }
-            else if (ret == ffmpeg.AVERROR(ffmpeg.EINVAL))
-            {
-                die("codec not opened, it is an encoder, or requires flush");
-            }
-            else if (ret == ffmpeg.AVERROR(ffmpeg.ENOMEM))
-            {
-                die("Failed to add packet to internal queue, or similar other errors: legitimate decoding errors");
-            }
-            else
-            {
-                die("unknown");
-            }
-            return ret;//ffmpeg.avcodec_decode_audio4(fileCodecContext, audioFrameDecoded, &frameFinished, &inPacket);
-        }
+        //public static int DecodeNext(AVCodecContext* avctx, AVFrame* frame, ref int got_frame_ptr, AVPacket* avpkt)
+        //{
+        //    int ret = 0;
+        //    got_frame_ptr = 0;
+        //    if ((ret = ffmpeg.avcodec_receive_frame(avctx, frame)) == 0)
+        //    {
+        //        //0 on success, otherwise negative error code
+        //        got_frame_ptr = 1;
+        //    }
+        //    else if (ret == ffmpeg.AVERROR(ffmpeg.EAGAIN))
+        //    {
+        //        //AVERROR(EAGAIN): input is not accepted in the current state - user must read output with avcodec_receive_packet()
+        //        //(once all output is read, the packet should be resent, and the call will not fail with EAGAIN)
+        //        ret = Decode(avctx, frame, ref got_frame_ptr, avpkt);
+        //    }
+        //    else if (ret == ffmpeg.AVERROR_EOF)
+        //    {
+        //        die("AVERROR_EOF: the encoder has been flushed, and no new frames can be sent to it");
+        //    }
+        //    else if (ret == ffmpeg.AVERROR(ffmpeg.EINVAL))
+        //    {
+        //        die("AVERROR(EINVAL): codec not opened, refcounted_frames not set, it is a decoder, or requires flush");
+        //    }
+        //    else if (ret == ffmpeg.AVERROR(ffmpeg.ENOMEM))
+        //    {
+        //        die("Failed to add packet to internal queue, or similar other errors: legitimate decoding errors");
+        //    }
+        //    else
+        //    {
+        //        die("unknown");
+        //    }
+        //    return ret;
+        //}
+        //public static int Decode(AVCodecContext* avctx, AVFrame* frame, ref int got_frame_ptr, AVPacket* avpkt)
+        //{
+        //    int ret = 0;
+        //    got_frame_ptr = 0;
+        //    if ((ret = ffmpeg.avcodec_send_packet(avctx, avpkt)) == 0)
+        //    {
+        //        //0 on success, otherwise negative error code
+        //        return DecodeNext(avctx, frame, ref got_frame_ptr, avpkt);
+        //    }
+        //    else if (ret == ffmpeg.AVERROR(ffmpeg.EAGAIN))
+        //    {
+        //        die("input is not accepted in the current state - user must read output with avcodec_receive_frame()(once all output is read, the packet should be resent, and the call will not fail with EAGAIN");
+        //    }
+        //    else if (ret == ffmpeg.AVERROR_EOF)
+        //    {
+        //        die("AVERROR_EOF: the decoder has been flushed, and no new packets can be sent to it (also returned if more than 1 flush packet is sent");
+        //    }
+        //    else if (ret == ffmpeg.AVERROR(ffmpeg.EINVAL))
+        //    {
+        //        die("codec not opened, it is an encoder, or requires flush");
+        //    }
+        //    else if (ret == ffmpeg.AVERROR(ffmpeg.ENOMEM))
+        //    {
+        //        die("Failed to add packet to internal queue, or similar other errors: legitimate decoding errors");
+        //    }
+        //    else
+        //    {
+        //        die("unknown");
+        //    }
+        //    return ret;//ffmpeg.avcodec_decode_audio4(fileCodecContext, audioFrameDecoded, &frameFinished, &inPacket);
+        //}
         public static int DecodeFlush(AVCodecContext* avctx, AVPacket* avpkt)
         {
             avpkt->data = null;
@@ -655,214 +698,171 @@ namespace FF8
         /// </summary>
         /// <ref>https://stackoverflow.com/questions/32051847/c-ffmpeg-distorted-sound-when-converting-audio?rq=1#_=_</ref>
         /// <param name="skipencode">skip encoding</param>
-        private void ProcessAll(bool skipencode = true)
+        private void Process(bool skipencode = true)
         {
 
             if (CurrentFrameNum() == 0)
             {
                 PrepareResampler(skipencode);
             }
-            int frameFinished = 0;
-
-
-
-            for (; ; )
+            //int frameFinished = 0;
+            while (Decode(out AVFrame _DecodedFrame))
             {
-                //if (Packet.size == 0|| Packet.stream_index != streamId)
-                if (ffmpeg.av_read_frame(DecodeFormatContext, DecodePacket) < 0)
+                if (MediaType == AVMediaType.AVMEDIA_TYPE_VIDEO)
                 {
-                    if (LOOPSTART > -1)
+                    if (Mode == FfccMode.STATE_MACH)
                     {
-                        ffmpeg.avformat_seek_file(DecodeFormatContext, DecoderStreamIndex, LOOPSTART - 1000, LOOPSTART, DecoderStream->duration, 0);
-                        LOOPED = true; // set after one play to change durration checked.
                         State = FfccState.WAITING;
-                        if (BehindFrame())
-                        {
-                            timer.Restart();
-                        }
-
                         return;
-                        //continue;
                     }
-                    break;
+                    // do something with video here.
+                    else if (!skipencode)
+                    {
+                        BMP_Save();
+                    }
                 }
-                FrameSkip = false; // so i can debug code. timer realizes how much time i've been debugging.
-                if (FrameSkip && BehindFrame())
+                else if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
                 {
-                    continue;
+
+                    Resample(ref _DecodedFrame,skipencode);
                 }
-                if (DecodePacket->stream_index == DecoderStreamIndex)
+            }
+            if (Return == ffmpeg.AVERROR_EOF && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
+            {
+                if (LOOPSTART > -1)
                 {
-                    int len = Decode(DecodeCodecContext, DecodeFrame, ref frameFinished, DecodePacket);
-                    if (len == ffmpeg.AVERROR_EOF)
+                    ffmpeg.avformat_seek_file(DecodeFormatContext, DecoderStreamIndex, LOOPSTART - 1000, LOOPSTART, DecoderStream->duration, 0);
+                    LOOPED = true; // set after one play to change durration checked.
+                    State = FfccState.WAITING;
+                    if (BehindFrame())
                     {
-                        if (LOOPSTART < 0)
-                        {
-                            timer.Stop();
-                            timer.Reset();
-                        }
-                        break;
+                        timer.Restart();
                     }
-                    //int len = ffmpeg.avcodec_decode_audio4(Codec, Frame, &frameFinished, &Packet);
-                    if (MediaType == AVMediaType.AVMEDIA_TYPE_VIDEO)
-                    {
-                        if (Mode == FfccMode.STATE_MACH)
-                        {
-                            State = FfccState.WAITING;
-                            return;
-                        }
-                        // do something with video here.
-                        else if (!skipencode)
-                        {
-                            BMP_Save();
-                        }
-                    }
-                    else if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
-                    {
+                }
+                else
+                {
 
-
-
-                        // do something with audio here.
-                        if (frameFinished != 0 && !NoResample())
-                        {
-
-                            // Convert
-
-
-
-
-
-                            int outSamples = 0;
-                            fixed (byte** tmp = (byte*[])DecodeFrame->data)
-                            {
-                                outSamples = ffmpeg.swr_convert(ResampleContext, null, 0,
-                                             //&convertedData,
-                                             //SwrFrame->nb_samples,
-                                             tmp,
-                                     DecodeFrame->nb_samples);
-                            }
-                            if (outSamples < 0)
-                            {
-                                die("Could not convert");
-                            }
-
-                            for (; ; )
-                            {
-                                outSamples = ffmpeg.swr_get_out_samples(ResampleContext, 0);
-                                if ((outSamples < (EncoderCodecContext == null ? 0 : EncoderCodecContext->frame_size) * ResampleFrame->channels) || (EncoderCodecContext == null ? 0 : EncoderCodecContext->frame_size) == 0 && (outSamples < ResampleFrame->nb_samples * ResampleFrame->channels))
-                                {
-                                    break;
-                                }
-                                fixed (byte** tmp = &_convertedData)
-                                {
-                                    outSamples = ffmpeg.swr_convert(ResampleContext,
-                                                             tmp,
-                                                             ResampleFrame->nb_samples, null, 0);
-                                }
-                                int buffer_size = ffmpeg.av_samples_get_buffer_size(null,
-                                  ResampleFrame->channels,
-                                  ResampleFrame->nb_samples,
-                                  (AVSampleFormat)ResampleFrame->format,
-                                  0);
-
-
-                                if (!skipencode) //encode
-                                {
-                                    ProcessEncode(ref buffer_size);
-                                }
-                                else // write to buffer
-                                {
-                                    WritetoMs(ConvertedData, 0, buffer_size);
-                                }
-                            }
-                        }
-
-                        //this doesn't work with audio there needs to be a min number of samples collected
-                        //or the packet needs to be empty of all data before leaving or something; forcing
-                        //the leaving of the loop introduced a buch of audio glitches. when I thought it was
-                        // working it was being skipped by a continue on the line above.
-                        // the only time audio goes into waiting status is when it's waiting for a loop.
-                        // else it runs to done.
-
-                        //if (Mode == FfccMode.STATE_MACH && FPS > 0 && LOOPSTART < 0)
-                        //{
-                        //    State = FfccState.WAITING;
-                        //    return;
-                        //}
-                    }
+                    timer.Stop();
+                    timer.Reset();
                 }
             }
 
             State = FfccState.DONE;
-            if (!skipencode)
-            {
-                EncodeFlush(EncoderCodecContext);
-            }
-
-
+            //if (!skipencode)
+            //{
+            //    EncodeFlush(EncoderCodecContext);
+            //}
             DecodeFlush(DecodeCodecContext, DecodePacket);
-            if (EncoderFormatContext != null && EncoderFormatContext->pb != null)
-            {
-                ffmpeg.avio_close(EncoderFormatContext->pb);
-            }
+
         }
-        private void ProcessEncode(ref int buffer_size)
+        private void Resample(ref AVFrame frame,bool skipencode = true)
         {
-            int frameFinished = 0;
-
-            if (buffer_size < 0)
+            // do something with audio here.
+            if (!NoResample(ref frame))
             {
-                die("Invalid buffer size");
-            }
-            if (ffmpeg.avcodec_fill_audio_frame(ResampleFrame,
-                                         EncoderCodecContext->channels,
-                                         EncoderCodecContext->sample_fmt,
-                                         ConvertedData,
-                                         buffer_size,
-                                         0) < 0)
-            {
-                die("Could not fill frame");
-            }
-            AVPacket outPacket;
-            ffmpeg.av_init_packet(&outPacket);
-            outPacket.data = null;
-            outPacket.size = 0;
-            if (Encode(EncoderCodecContext, &outPacket, ResampleFrame, ref frameFinished) < 0)
-            {
-                die("Error encoding audio frame");
-            }
-
-            //outPacket.flags |= ffmpeg.AV_PKT_FLAG_KEY;
-            outPacket.stream_index = EncoderStream->index;
-            //outPacket.data = audio_outbuf;
-            outPacket.dts = DecodeFrame->pkt_dts;
-            outPacket.pts = DecodeFrame->pkt_pts;
-            ffmpeg.av_packet_rescale_ts(&outPacket, DecoderStream->time_base, EncoderStream->time_base);
-
-            if (frameFinished != 0)
-            {
-
-
-                if (ffmpeg.av_interleaved_write_frame(EncoderFormatContext, &outPacket) != 0)
+                // Convert
+                int outSamples = 0;
+                fixed (byte** tmp = (byte*[])frame.data)
                 {
-                    die("Error while writing audio frame");
+                    outSamples = ffmpeg.swr_convert(ResampleContext, null, 0,
+                                 //&convertedData,
+                                 //SwrFrame->nb_samples,
+                                 tmp,
+                         frame.nb_samples);
+                }
+                if (outSamples < 0)
+                {
+                    die("Could not convert");
                 }
 
-                ffmpeg.av_packet_unref(&outPacket);
+                for (; ; )
+                {
+                    outSamples = ffmpeg.swr_get_out_samples(ResampleContext, 0);
+                    if ((outSamples < (EncoderCodecContext == null ? 0 : EncoderCodecContext->frame_size) * ResampleFrame->channels) || (EncoderCodecContext == null ? 0 : EncoderCodecContext->frame_size) == 0 && (outSamples < ResampleFrame->nb_samples * ResampleFrame->channels))
+                    {
+                        break;
+                    }
+                    fixed (byte** tmp = &_convertedData)
+                    {
+                        outSamples = ffmpeg.swr_convert(ResampleContext,
+                                                 tmp,
+                                                 ResampleFrame->nb_samples, null, 0);
+                    }
+                    int buffer_size = ffmpeg.av_samples_get_buffer_size(null,
+                      ResampleFrame->channels,
+                      ResampleFrame->nb_samples,
+                      (AVSampleFormat)ResampleFrame->format,
+                      0);
+
+
+                    if (!skipencode) //encode
+                    {
+                        //ProcessEncode(ref buffer_size);
+                    }
+                    else // write to buffer
+                    {
+                        WritetoMs(ref _convertedData, 0, ref buffer_size);
+                    }
+                }
             }
         }
+        //private void ProcessEncode(ref int buffer_size)
+        //{
+        //    int frameFinished = 0;
+
+        //    if (buffer_size < 0)
+        //    {
+        //        die("Invalid buffer size");
+        //    }
+        //    if (ffmpeg.avcodec_fill_audio_frame(ResampleFrame,
+        //                                 EncoderCodecContext->channels,
+        //                                 EncoderCodecContext->sample_fmt,
+        //                                 ConvertedData,
+        //                                 buffer_size,
+        //                                 0) < 0)
+        //    {
+        //        die("Could not fill frame");
+        //    }
+        //    AVPacket outPacket;
+        //    ffmpeg.av_init_packet(&outPacket);
+        //    outPacket.data = null;
+        //    outPacket.size = 0;
+        //    if (Encode(EncoderCodecContext, &outPacket, ResampleFrame, ref frameFinished) < 0)
+        //    {
+        //        die("Error encoding audio frame");
+        //    }
+
+        //    //outPacket.flags |= ffmpeg.AV_PKT_FLAG_KEY;
+        //    outPacket.stream_index = EncoderStream->index;
+        //    //outPacket.data = audio_outbuf;
+        //    outPacket.dts = DecodeFrame->pkt_dts;
+        //    outPacket.pts = DecodeFrame->pkt_pts;
+        //    ffmpeg.av_packet_rescale_ts(&outPacket, DecoderStream->time_base, EncoderStream->time_base);
+
+        //    if (frameFinished != 0)
+        //    {
+
+
+        //        if (ffmpeg.av_interleaved_write_frame(EncoderFormatContext, &outPacket) != 0)
+        //        {
+        //            die("Error while writing audio frame");
+        //        }
+
+        //        ffmpeg.av_packet_unref(&outPacket);
+        //    }
+        //}
 
         private void PrepareProcess()
         {
             bool skipencoder = true;
-            if (SoundExistsAndReady())
-            {
-                return;
-            }
+            //if (SoundExistsAndReady())
+            //{
+            //    return;
+            //}
 
             using (DecodedStream = new MemoryStream())
             {
-                ProcessAll(skipencoder);
+                Process(skipencoder);
                 LoadSoundFromStream();
             }
             if (!skipencoder)
@@ -870,7 +870,6 @@ namespace FF8
                 SoundExistsAndReady();
             }
 
-            DecodedStream.Dispose();
         }
         ~Ffcc()
         {
@@ -906,10 +905,10 @@ namespace FF8
                     Return = ffmpeg.avformat_open_input(tmp, DecodedFileName, null, null);
                 }
 
-                CheckRet();
+                CheckReturn();
 
                 Return = ffmpeg.avformat_find_stream_info(_decodeFormatContext, null);
-                CheckRet();
+                CheckReturn();
 
                 //this code here will get metadata from formatcontext but the ogg tags aren't there.
                 string val = "", key = "";
@@ -939,7 +938,7 @@ namespace FF8
         /// <summary>
         /// Throws exception if Ret is less than 0
         /// </summary>
-        private int CheckRet()
+        private int CheckReturn()
         {
             switch (Return)
             {
@@ -1085,7 +1084,7 @@ namespace FF8
             //if (Codec == null)
             //    die("Could not allocate video codec context");
             Return = ffmpeg.avcodec_open2(DecodeCodecContext, DecodeCodec, null);
-            CheckRet();
+            CheckReturn();
             if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
             {
                 if (DecodeCodecContext->channel_layout == 0)
@@ -1108,7 +1107,7 @@ namespace FF8
                 ffmpeg.SWS_ACCURATE_RND, null, null, null);
             Return = ffmpeg.sws_init_context(ScalerContext, null, null);
 
-            CheckRet();
+            CheckReturn();
         }
         private unsafe AVStream* add_audio_stream(AVFormatContext* oc, AVCodecID codec_id)
         {
@@ -1140,37 +1139,37 @@ namespace FF8
 
             return st;
         }
-        private void PrepareEncoder()
-        {
-            AVOutputFormat* fmt = fmt = ffmpeg.av_guess_format("s16le", null, null);
-            if (fmt == null)
-            {
-                die("av_guess_format");
-            }
+        //private void PrepareEncoder()
+        //{
+        //    AVOutputFormat* fmt = fmt = ffmpeg.av_guess_format("s16le", null, null);
+        //    if (fmt == null)
+        //    {
+        //        die("av_guess_format");
+        //    }
 
-            EncoderFormatContext = ffmpeg.avformat_alloc_context();
-            EncoderFormatContext->oformat = fmt;
-            EncoderStream = add_audio_stream(EncoderFormatContext, fmt->audio_codec);
-            open_audio(EncoderFormatContext, EncoderStream);
-            EncoderStream->time_base = DecoderStream->time_base;
-            Return = ffmpeg.avio_open2(&EncoderFormatContext->pb, EncodedFileName, ffmpeg.AVIO_FLAG_WRITE, null, null);
-            if (Return < 0)
-            {
-                die("url_fopen");
-            }
+        //    EncoderFormatContext = ffmpeg.avformat_alloc_context();
+        //    EncoderFormatContext->oformat = fmt;
+        //    EncoderStream = add_audio_stream(EncoderFormatContext, fmt->audio_codec);
+        //    open_audio(EncoderFormatContext, EncoderStream);
+        //    EncoderStream->time_base = DecoderStream->time_base;
+        //    Return = ffmpeg.avio_open2(&EncoderFormatContext->pb, EncodedFileName, ffmpeg.AVIO_FLAG_WRITE, null, null);
+        //    if (Return < 0)
+        //    {
+        //        die("url_fopen");
+        //    }
 
-            ffmpeg.avformat_write_header(EncoderFormatContext, null);
-            AVCodec* ocodec;
-            Return = ffmpeg.av_find_best_stream(EncoderFormatContext, AVMediaType.AVMEDIA_TYPE_AUDIO, -1, -1, &ocodec, 0);
-            EncoderCodecContext = ffmpeg.avcodec_alloc_context3(ocodec);
-            //OutCodec = out_audioStream->codec;
-            ffmpeg.avcodec_parameters_to_context(EncoderCodecContext, EncoderStream->codecpar);
-            Return = ffmpeg.avcodec_open2(EncoderCodecContext, ocodec, null);
-            if (Return < 0)
-            {
-                die("avcodec_open2");
-            }
-        }
+        //    ffmpeg.avformat_write_header(EncoderFormatContext, null);
+        //    AVCodec* ocodec;
+        //    Return = ffmpeg.av_find_best_stream(EncoderFormatContext, AVMediaType.AVMEDIA_TYPE_AUDIO, -1, -1, &ocodec, 0);
+        //    EncoderCodecContext = ffmpeg.avcodec_alloc_context3(ocodec);
+        //    //OutCodec = out_audioStream->codec;
+        //    ffmpeg.avcodec_parameters_to_context(EncoderCodecContext, EncoderStream->codecpar);
+        //    Return = ffmpeg.avcodec_open2(EncoderCodecContext, ocodec, null);
+        //    if (Return < 0)
+        //    {
+        //        die("avcodec_open2");
+        //    }
+        //}
         /// <summary>
         /// PrepareResampler
         /// </summary>
@@ -1181,10 +1180,10 @@ namespace FF8
                 return;
             }
             //Encoder
-            if (!skipencode)
-            {
-                PrepareEncoder();
-            }
+            //if (!skipencode)
+            //{
+            //    PrepareEncoder();
+            //}
             //resampler
 
             ResampleFrame = ffmpeg.av_frame_alloc();
@@ -1341,7 +1340,7 @@ namespace FF8
         //        throw (ex);
         //    }
         //}
-        private int WritetoMs(byte* output, int start, int length)
+        private int WritetoMs(ref byte* output, int start, ref int length)
         {
             long c_len = DecodedStream.Length;
             for (int i = start; i < length; i++)
@@ -1361,7 +1360,7 @@ namespace FF8
         /// <returns>True if decoded raw sample is good
         /// False if incompatable
         /// </returns>
-        private bool NoResample()
+        private bool NoResample(ref AVFrame frame)
         {
             // Adapted from https://libav.org/documentation/doxygen/master/decode_audio_8c-example.html
             /* the stream parameters may change at any time, check that they are
@@ -1369,19 +1368,21 @@ namespace FF8
             /* The decoded data is signed 16-bit planar -- each channel in its own
              * buffer. We interleave the two channels manually here, but using
              * libavresample is recommended instead. */
-            if (DecodeCodecContext->channels == 2 && DecodeFrame->format == (int)AVSampleFormat.AV_SAMPLE_FMT_S16P)//not tested
+            if (DecodeCodecContext->channels == 2 && frame.format == (int)AVSampleFormat.AV_SAMPLE_FMT_S16P)//not tested
             {
-                byte*[] tmp = DecodeFrame->data;
-                for (int i = 0; i < DecodeFrame->linesize[0]; i++)
+                for (int i = 0; i < frame.linesize[0]; i++)
                 {
-                    DecodedStream.WriteByte(tmp[0][i]);
-                    DecodedStream.WriteByte(tmp[1][i]);
+                    DecodedStream.WriteByte(((byte*[])frame.data)[0][i]);
+                    DecodedStream.WriteByte(((byte*[])frame.data)[1][i]);
                 }
                 return true;
             }
-            else if (DecodeFrame->format == (int)AVSampleFormat.AV_SAMPLE_FMT_S16) // played eyes on me wav
+            else if (frame.format == (int)AVSampleFormat.AV_SAMPLE_FMT_S16) // played eyes on me wav
             {
-                WritetoMs(DecodeFrame->data[0], 0, DecodeFrame->linesize[0]);
+                for (int i = 0; i < frame.linesize[0]; i++)
+                {
+                    DecodedStream.WriteByte(((byte*[])frame.data)[0][i]);
+                }
                 return true;
             }
             return false;
