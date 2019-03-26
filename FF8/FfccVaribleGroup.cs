@@ -9,12 +9,22 @@ namespace FF8
     {
         #region Fields
         public AVFormatContext _format;
+        public AVPacket _packet;
+        unsafe public AVFrame *_frame;
         #endregion
         #region Properties
         /// <summary>
         /// Format holds alot of file info. File is opened and data about it is stored here.
         /// </summary>
         public AVFormatContext Format { get => _format; set => _format = value; }
+        /// <summary>
+        /// Packet of data can contain 1 or more frames.
+        /// </summary>
+        public AVPacket Packet { get => _packet; set => _packet = value; }
+        /// <summary>
+        /// Frame holds a chunk of data related to the current stream. 
+        /// </summary>
+        unsafe public AVFrame *Frame { get => _frame; set => _frame = value; }
         #endregion
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
@@ -34,6 +44,13 @@ namespace FF8
                 {
                     ffmpeg.avformat_close_input(&tmp);
                 }
+                fixed (AVPacket* tmp = &_packet)
+                {
+                    ffmpeg.av_packet_unref(tmp);
+                }
+                    ffmpeg.av_frame_unref(Frame);
+                ffmpeg.av_free(Frame);
+                
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                 // TODO: set large fields to null.
 

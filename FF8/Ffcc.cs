@@ -24,8 +24,8 @@ namespace FF8
         /// Method of Format, required for atleast one function.
         /// </summary>
         //public AVFormatContext* _decodeFormatContext; // FormatContext
-        private AVFrame* _decodeFrame;
-        private AVPacket* _decodePacket;
+        //private AVFrame* _Decoder.Frame;
+        //private AVPacket* _Decoder.Packet;
         private SwrContext* _resampleContext;
         private SwsContext* _scalerContext;
         private AVFrame* _resampleFrame;
@@ -40,14 +40,14 @@ namespace FF8
         private int Return { get; set; }
 
 
-        /// <summary>
-        /// Packet of data can contain 1 or more frames.
-        /// </summary>
-        private AVPacket* DecodePacket { get => _decodePacket; set => _decodePacket = value; }
-        /// <summary>
-        /// Frame holds a chunk of data related to the current stream. 
-        /// </summary>
-        private AVFrame* DecodeFrame { get => _decodeFrame; set => _decodeFrame = value; }
+        ///// <summary>
+        ///// Packet of data can contain 1 or more frames.
+        ///// </summary>
+        //private AVPacket* Decoder.Packet { get => _Decoder.Packet; set => _Decoder.Packet = value; }
+        ///// <summary>
+        ///// Frame holds a chunk of data related to the current stream. 
+        ///// </summary>
+        //private AVFrame* Decoder.Frame { get => _Decoder.Frame; set => _Decoder.Frame = value; }
         /// <summary>
         /// Resample Context
         /// </summary>
@@ -506,15 +506,17 @@ namespace FF8
         /// <returns>True if more data, False if EOF</returns>
         public bool Decode(out AVFrame frame)
         {
-            ffmpeg.av_frame_unref(DecodeFrame);
+            ffmpeg.av_frame_unref(Decoder.Frame);
             do
             {
                 try
                 {
                     do
                     {
-                        fixed (AVFormatContext* tmp = &Decoder._format)
-                            Return = ffmpeg.av_read_frame(tmp, DecodePacket);
+
+                        fixed (AVPacket * tmpPacket = &Decoder._packet)
+                        fixed (AVFormatContext* tmpFrame = &Decoder._format)
+                            Return = ffmpeg.av_read_frame(tmpFrame, tmpPacket);
                         if (Return == ffmpeg.AVERROR_EOF)
                         {
                             if (LOOPSTART >= 0)
@@ -528,22 +530,23 @@ namespace FF8
                                     timer.Restart();
                                 }
                             }
-                            frame = *DecodeFrame;
+                            frame = *Decoder.Frame;
                             return false;
                         }
                         else
                         {
                             CheckReturn();
                         }
-                    } while (DecodePacket->stream_index != DecoderStreamIndex);
+                    } while (Decoder.Packet.stream_index != DecoderStreamIndex);
 
 
-                    Return = ffmpeg.avcodec_send_packet(DecodeCodecContext, DecodePacket);
+                    fixed (AVPacket* tmpPacket = &Decoder._packet)
+                        Return = ffmpeg.avcodec_send_packet(DecodeCodecContext, tmpPacket);
                     //sent a eof when trying to loop once.
                     //should never get EOF here unless something is wrong.
                     //if (Return == ffmpeg.AVERROR_EOF) 
                     //{
-                    //    frame = *DecodeFrame;
+                    //    frame = Decoder.Frame;
                     //    return false;
                     //}
                     //else
@@ -552,22 +555,24 @@ namespace FF8
                 }
                 finally
                 {
-                    ffmpeg.av_packet_unref(DecodePacket);
+                    fixed (AVPacket* tmpPacket = &Decoder._packet)
+                        ffmpeg.av_packet_unref(tmpPacket);
                 }
 
-                Return = ffmpeg.avcodec_receive_frame(DecodeCodecContext, DecodeFrame);
+                    Return = ffmpeg.avcodec_receive_frame(DecodeCodecContext, Decoder.Frame);
             } while (Return == ffmpeg.AVERROR(ffmpeg.EAGAIN));
             CheckReturn();
 
-            frame = *DecodeFrame;
+            frame = *Decoder.Frame;
             return true;
         }
-        public static int DecodeFlush(AVCodecContext* avctx, AVPacket* avpkt)
+        public static int DecodeFlush(ref AVCodecContext* avctx, ref AVPacket avpkt)
         {
-            avpkt->data = null;
-            avpkt->size = 0;
-            return ffmpeg.avcodec_send_packet(avctx, avpkt);
-            return 0;
+            avpkt.data = null;
+            avpkt.size = 0;
+
+            fixed (AVPacket* tmpPacket = &avpkt)
+                return ffmpeg.avcodec_send_packet(avctx, tmpPacket);
         }
         //public static int EncodeNext(AVCodecContext* avctx, AVPacket* avpkt, AVFrame* frame, ref int got_packet_ptr)
         //{
@@ -683,7 +688,8 @@ namespace FF8
                 //{
                 //    EncodeFlush(EncoderCodecContext);
                 //}
-                DecodeFlush(DecodeCodecContext, DecodePacket); //calling this twice was causing issues.
+
+                DecodeFlush(ref _decodeCodecContext, ref Decoder._packet); //calling this twice was causing issues.
             }
 
         }
@@ -767,8 +773,8 @@ namespace FF8
         //    //outPacket.flags |= ffmpeg.AV_PKT_FLAG_KEY;
         //    outPacket.stream_index = EncoderStream->index;
         //    //outPacket.data = audio_outbuf;
-        //    outPacket.dts = DecodeFrame->pkt_dts;
-        //    outPacket.pts = DecodeFrame->pkt_pts;
+        //    outPacket.dts = Decoder.Frame.pkt_dts;
+        //    outPacket.pts = Decoder.Frame.pkt_pts;
         //    ffmpeg.av_packet_rescale_ts(&outPacket, DecoderStream->time_base, EncoderStream->time_base);
 
         //    if (frameFinished != 0)
@@ -913,19 +919,8 @@ namespace FF8
                 ParserContext = null;
                 DecodeCodecContext = null;
                 DecoderStream = null;
-                DecodePacket = ffmpeg.av_packet_alloc();
-                if (DecodePacket == null)
-                {
-                    die("Error allocating the packet\n");
-                }
-                //ffmpeg.av_init_packet(Packet);
-
-
-                DecodeFrame = ffmpeg.av_frame_alloc();
-                if (DecodeFrame == null)
-                {
-                    die("Error allocating the frame\n");
-                }
+                Decoder.Packet = *ffmpeg.av_packet_alloc();
+                Decoder.Frame = ffmpeg.av_frame_alloc();
 
                 DecoderStreamIndex = -1;
 
@@ -1138,10 +1133,10 @@ namespace FF8
             {
                 die("swr_init");
             }
-            DecodeFrame->format = (int)DecodeCodecContext->sample_fmt;
-            DecodeFrame->channel_layout = DecodeCodecContext->channel_layout;
-            DecodeFrame->channels = DecodeCodecContext->channels;
-            DecodeFrame->sample_rate = DecodeCodecContext->sample_rate;
+            Decoder.Frame->format = (int)DecodeCodecContext->sample_fmt;
+            Decoder.Frame->channel_layout = DecodeCodecContext->channel_layout;
+            Decoder.Frame->channels = DecodeCodecContext->channels;
+            Decoder.Frame->sample_rate = DecodeCodecContext->sample_rate;
 
             ResampleFrame->nb_samples = EncoderCodecContext == null || EncoderCodecContext->frame_size == 0 ? 32 : EncoderCodecContext->frame_size;
             ResampleFrame->format = EncoderCodecContext == null ? (int)AVSampleFormat.AV_SAMPLE_FMT_S16 : (int)EncoderCodecContext->sample_fmt;
@@ -1365,7 +1360,7 @@ namespace FF8
             int[] srcLinesize = { bitmapData.Stride, 0, 0, 0 };
 
             // convert video frame to the RGB bitmap
-            ffmpeg.sws_scale(ScalerContext, DecodeFrame->data, DecodeFrame->linesize, 0, DecodeCodecContext->height, srcData, srcLinesize);
+            ffmpeg.sws_scale(ScalerContext, Decoder.Frame->data, Decoder.Frame->linesize, 0, DecodeCodecContext->height, srcData, srcLinesize);
 
             bitmap.UnlockBits(bitmapData);
 
@@ -1451,7 +1446,7 @@ namespace FF8
 
                 //if (DecodeCodecContext != null)
                 //{
-                //    DecodeFlush(DecodeCodecContext, DecodePacket); // was causesing exception flushing happens earlier
+                //    DecodeFlush(DecodeCodecContext, Decoder.Packet); // was causesing exception flushing happens earlier
                 //}
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
@@ -1459,14 +1454,14 @@ namespace FF8
                 ffmpeg.av_frame_unref(ResampleFrame);
                 ffmpeg.av_free(ResampleFrame);
 
-                ffmpeg.av_frame_unref(DecodeFrame);
-                ffmpeg.av_free(DecodeFrame);
+                //ffmpeg.av_frame_unref(Decoder.Frame);
+                //ffmpeg.av_free(Decoder.Frame);
 
-                ffmpeg.av_packet_unref(DecodePacket);
-                ffmpeg.av_free(DecodePacket);
+                //ffmpeg.av_packet_unref(Decoder.Packet);
+                //ffmpeg.av_free(Decoder.Packet);
 
 
-                ffmpeg.avcodec_close(DecodeCodecContext);
+                //ffmpeg.avcodec_close(DecodeCodecContext);
                 //ffmpeg.av_free(DecodeCodecContext);
                 ffmpeg.av_free(DecodeCodec);
 
