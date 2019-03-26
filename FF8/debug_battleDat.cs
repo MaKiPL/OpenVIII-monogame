@@ -56,7 +56,7 @@ namespace FF8
             [MarshalAs(UnmanagedType.ByValArray,SizeConst = 28 )]
             public byte[] Unk;
 
-            public float Size { get => boneSize / 2048.0f; }
+            public float Size { get => boneSize / 4096.0f; }
             public float Unk1 { get => unk1 / 4096.0f * 360.0f; }
             public float Unk2 { get => unk2 / 4096.0f * 360.0f; }
             public float Unk3 { get => unk3 / 4096.0f * 360.0f; }
@@ -500,22 +500,29 @@ namespace FF8
                         var rad = animHeader.animations[i].animationFrames[n].boneRot.Item1[k];
                             var MatrixZ = Matrix.Multiply(Matrix.CreateRotationY(MathHelper.ToRadians(-rad.Y)), Matrix.CreateRotationX(MathHelper.ToRadians(rad.X)));
                         MatrixZ = Matrix.Transpose(MatrixZ);
-                            MatrixZ = Matrix.Multiply(Matrix.CreateRotationZ(MathHelper.ToRadians(-rad.Z)),MatrixZ);
+                        MatrixZ = Matrix.Multiply(Matrix.CreateRotationZ(MathHelper.ToRadians(-rad.Z)),MatrixZ);
                         MatrixZ = Matrix.Transpose(MatrixZ);
-                            
+                        //28C92BA7h
+                        //3FFBDE6Dh
 
                         if (skeleton.bones[k].parentId == 0xFFFF)
                         {
                             //180 270 90
                             var MatrixRoot = new Matrix();
                             MatrixRoot = Matrix.Multiply(Matrix.CreateRotationY(MathHelper.ToRadians(-270f)), Matrix.CreateRotationX(MathHelper.ToRadians(180f)));
-                            MatrixRoot = Matrix.Multiply(Matrix.CreateRotationZ(MathHelper.ToRadians(90f)), MatrixRoot);
+                            MatrixRoot = Matrix.Multiply(Matrix.CreateRotationZ(MathHelper.ToRadians(-90f)), MatrixRoot);
                             MatrixRoot = Matrix.Transpose(MatrixRoot);
                             MatrixZ *= MatrixRoot;
+                            MatrixZ.M43 = 2;
                         }
                         else
                         {
-                            MatrixZ = Matrix.Multiply(animHeader.animations[i].animationFrames[n].boneRot.Item3[skeleton.bones[k].parentId], MatrixZ);
+                            var prevBone = animHeader.animations[i].animationFrames[n].boneRot.Item3[skeleton.bones[k].parentId];
+                            MatrixZ = Matrix.Multiply(prevBone, MatrixZ);
+                            MatrixZ.M41 = 0; MatrixZ.M42 = 0; MatrixZ.M44 = 1; MatrixZ.M43 = skeleton.bones[(skeleton.bones[k].parentId)].Size;
+                            MatrixZ.M41 = prevBone.M11 * MatrixZ.M41 + prevBone.M12 * MatrixZ.M42 + prevBone.M13 * MatrixZ.M43 + prevBone.M41;
+                            MatrixZ.M42 = prevBone.M21 * MatrixZ.M41 + prevBone.M22 * MatrixZ.M42 + prevBone.M23 * MatrixZ.M43 + prevBone.M42;
+                            MatrixZ.M43 = prevBone.M31 * MatrixZ.M41 + prevBone.M32 * MatrixZ.M42 + prevBone.M33 * MatrixZ.M43 + prevBone.M43;
                         }
 
                         animHeader.animations[i].animationFrames[n].boneRot.Item3[k] = MatrixZ;
