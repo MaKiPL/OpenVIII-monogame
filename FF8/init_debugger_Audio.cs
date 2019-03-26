@@ -377,7 +377,6 @@ namespace FF8
             return pcm;
         }
 
-        private static SoundEffectInstance see;
         private static bool musicplaying = false;
         private static int lastplayed = -1;
 
@@ -523,8 +522,7 @@ namespace FF8
         {
             try
             {
-                see.Stop();
-                see.Dispose();
+
                 if (MakiExtended.IsLinux)
                 {
 #if _WINDOWS
@@ -549,16 +547,7 @@ namespace FF8
             musicplaying = false;
             if (ffccMusic != null)
                 ffccMusic.StopSound();
-            try
-            {
-                see.Stop();
-            }
-            catch{}
-            try
-            {
-                see.Dispose();
-            }
-            catch { }
+
 #if _WINDOWS
             try
             {
