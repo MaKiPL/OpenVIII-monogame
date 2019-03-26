@@ -25,6 +25,55 @@ namespace FF8
     //        base.Dispose(true);
     //    }
     //}
+    internal class FfccVaribleGroup : IDisposable
+    {
+        #region Fields
+        public AVFormatContext _format;
+        #endregion
+        #region Properties
+        public AVFormatContext Format { get => _format; set => _format = value; }
+        #endregion
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+        ~FfccVaribleGroup()
+        {
+            Dispose();
+        }
+        unsafe protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects).
+                }
+                fixed (AVFormatContext* tmp = &_format)
+                {
+                    ffmpeg.avformat_close_input(&tmp);
+                }
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        // ~FfccVaribleGroup() {
+        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+        //   Dispose(false);
+        // }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
+        }
+        #endregion
+    }
     internal unsafe class Ffcc : IDisposable
     {
         //code converted to c# from c++
@@ -34,7 +83,7 @@ namespace FF8
         /// <summary>
         /// Method of Format, required for atleast one function.
         /// </summary>
-        private AVFormatContext* _decodeFormatContext; // FormatContext
+        //public AVFormatContext* _decodeFormatContext; // FormatContext
         private AVFrame* _decodeFrame;
         private AVPacket* _decodePacket;
         private SwrContext* _resampleContext;
@@ -44,6 +93,7 @@ namespace FF8
         private FileStream _decodeFileStream;
         private AVCodecParserContext* _parserContext;
 
+        private FfccVaribleGroup Decoder { get; set; } = new FfccVaribleGroup();
         /// <summary>
         /// Most ffmpeg functions return an integer. If the value is less than 0 it is an error usually. Sometimes data is passed and then it will be greater than 0.
         /// </summary>
@@ -51,7 +101,9 @@ namespace FF8
         /// <summary>
         /// Format holds alot of file info. File is opened and data about it is stored here.
         /// </summary>
-        private AVFormatContext* DecodeFormatContext { get => _decodeFormatContext; set => _decodeFormatContext = value; }
+        private AVFormatContext* DecodeFormatContext { get {
+                fixed(AVFormatContext * tmp = &Decoder._format)
+                return tmp; } set => Decoder.Format = *value; }
         /// <summary>
         /// Packet of data can contain 1 or more frames.
         /// </summary>
@@ -840,21 +892,22 @@ namespace FF8
         {
             if (!FileOpened)
             {
-                fixed (AVFormatContext** tmp = &_decodeFormatContext)
+                
+                fixed (AVFormatContext* tmp = &Decoder._format)
                 {
-                    Return = ffmpeg.avformat_open_input(tmp, DecodedFileName, null, null);
+                    Return = ffmpeg.avformat_open_input(&tmp, DecodedFileName, null, null);
                 }
 
                 CheckReturn();
 
-                Return = ffmpeg.avformat_find_stream_info(_decodeFormatContext, null);
+                Return = ffmpeg.avformat_find_stream_info(DecodeFormatContext, null);
                 CheckReturn();
 
                 //this code here will get metadata from formatcontext but the ogg tags aren't there.
                 string val = "", key = "";
                 AVDictionaryEntry* tag = null;
                 //tag = ffmpeg.av_dict_get(_decodeFormatContext->metadata, "LOOPSTART", tag, ffmpeg.AV_DICT_IGNORE_SUFFIX);
-                while ((tag = ffmpeg.av_dict_get(_decodeFormatContext->metadata, "", tag, ffmpeg.AV_DICT_IGNORE_SUFFIX)) != null)
+                while ((tag = ffmpeg.av_dict_get(DecodeFormatContext->metadata, "", tag, ffmpeg.AV_DICT_IGNORE_SUFFIX)) != null)
                 {
                     for (int i = 0; tag->value[i] != 0; i++)
                     {
@@ -909,7 +962,7 @@ namespace FF8
             //EncodedFileType = "s16le";
             try
             {
-                _decodeFormatContext = ffmpeg.avformat_alloc_context();
+                DecodeFormatContext = ffmpeg.avformat_alloc_context();
                 if (Open() < 0)
                 {
                     die("No file not open");
@@ -1474,7 +1527,7 @@ namespace FF8
 
 
                 ffmpeg.avcodec_close(DecodeCodecContext);
-                ffmpeg.av_free(DecodeCodecContext);
+                //ffmpeg.av_free(DecodeCodecContext);
                 ffmpeg.av_free(DecodeCodec);
                 AVFormatContext* pFormatContext = DecodeFormatContext;
 
@@ -1487,10 +1540,10 @@ namespace FF8
                 }
                 if (DecodeFormatContext != null)
                 {
-                    fixed (AVFormatContext** inputContext = &_decodeFormatContext)
-                    {
-                        //ffmpeg.avformat_close_input(inputContext); //CTD
-                    }
+                    //fixed (AVFormatContext** inputContext = &DecodeFormatContext)
+                    //{
+                    //    //ffmpeg.avformat_close_input(inputContext); //CTD
+                    //}
 
                     //ffmpeg.avformat_free_context(DecodeFormatContext);
                 }

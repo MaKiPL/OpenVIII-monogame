@@ -404,31 +404,31 @@ namespace FF8
                 case ".ogg":
                     //vorbis wave reader uncompresses the 32 bit float wav data from ogg files
                     ffccMusic = new Ffcc(pt, FFmpeg.AutoGen.AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
-                    var vorbisStream = new VorbisWaveReader(pt);
+                    //var vorbisStream = new VorbisWaveReader(pt);
                     //read fully float reads float[] from vorbis stream and then uses another function to convert to 16 bit pcm
                     //byte[] fileStream = ReadFullyFloat(vorbisStream);
-                    int loopstart = -1;
-                    int looplen = 0; // 0 length till play till end of song.
-                    int loopend = -1;
-                    foreach (var c in vorbisStream.Comments)
-                    {
-                        string[] items = ((string)c).Split('=');
-                        switch (items[0])
-                        {
-                            case "LOOPSTART":
-                                int.TryParse(items[1], out loopstart);
-                                break;
-                            case "LOOPEND":
-                                int.TryParse(items[1], out loopend); // I haven't seen this used yet. if it is then break and make sure works.
-                                break;
-                            case "LOOPLENGTH":
-                                int.TryParse(items[1], out looplen); // I haven't seen this used yet. if it is then break and make sure works
-                                break;
+                    //int loopstart = -1;
+                    //int looplen = 0; // 0 length till play till end of song.
+                    //int loopend = -1;
+                    //foreach (var c in vorbisStream.Comments)
+                    //{
+                    //    string[] items = ((string)c).Split('=');
+                    //    switch (items[0])
+                    //    {
+                    //        case "LOOPSTART":
+                    //            int.TryParse(items[1], out loopstart);
+                    //            break;
+                    //        case "LOOPEND":
+                    //            int.TryParse(items[1], out loopend); // I haven't seen this used yet. if it is then break and make sure works.
+                    //            break;
+                    //        case "LOOPLENGTH":
+                    //            int.TryParse(items[1], out looplen); // I haven't seen this used yet. if it is then break and make sure works
+                    //            break;
                                 
-                        }
-                    }
-                    if (loopend > 0)
-                        looplen = loopend - loopstart; // end - start = length assuming end is the samplecount point of end of loop and not length.
+                    //    }
+                    //}
+                    //if (loopend > 0)
+                    //    looplen = loopend - loopstart; // end - start = length assuming end is the samplecount point of end of loop and not length.
                     //SoundEffect se;
                     //if (loopstart >= 0)
                     //    se = new SoundEffect(fileStream, 0, fileStream.Length, vorbisStream.WaveFormat.SampleRate, (AudioChannels)vorbisStream.WaveFormat.Channels, loopstart, 0);
