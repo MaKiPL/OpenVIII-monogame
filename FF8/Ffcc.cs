@@ -552,51 +552,54 @@ namespace FF8
             frame = *DecodeFrame;
             return true;
         }
-        //public static int DecodeNext(AVCodecContext* avctx, AVFrame* frame, ref int got_frame_ptr, AVPacket* avpkt)
+        public static int DecodeFlush(AVCodecContext* avctx, AVPacket* avpkt)
+        {
+            avpkt->data = null;
+            avpkt->size = 0;
+            return ffmpeg.avcodec_send_packet(avctx, avpkt);
+        }
+        //public static int EncodeNext(AVCodecContext* avctx, AVPacket* avpkt, AVFrame* frame, ref int got_packet_ptr)
         //{
         //    int ret = 0;
-        //    got_frame_ptr = 0;
-        //    if ((ret = ffmpeg.avcodec_receive_frame(avctx, frame)) == 0)
+        //    got_packet_ptr = 0;
+        //    ffmpeg.av_frame_unref(frame);
+        //    if ((ret = ffmpeg.avcodec_receive_packet(avctx, avpkt)) == 0)
         //    {
+        //        got_packet_ptr = 1;
         //        //0 on success, otherwise negative error code
-        //        got_frame_ptr = 1;
         //    }
         //    else if (ret == ffmpeg.AVERROR(ffmpeg.EAGAIN))
         //    {
-        //        //AVERROR(EAGAIN): input is not accepted in the current state - user must read output with avcodec_receive_packet()
-        //        //(once all output is read, the packet should be resent, and the call will not fail with EAGAIN)
-        //        ret = Decode(avctx, frame, ref got_frame_ptr, avpkt);
+        //        //output is not available in the current state - user must try to send input
+        //        return Encode(avctx, avpkt, frame, ref got_packet_ptr);
         //    }
         //    else if (ret == ffmpeg.AVERROR_EOF)
         //    {
-        //        die("AVERROR_EOF: the encoder has been flushed, and no new frames can be sent to it");
+        //        die("AVERROR_EOF: the encoder has been fully flushed, and there will be no more output packets");
         //    }
         //    else if (ret == ffmpeg.AVERROR(ffmpeg.EINVAL))
         //    {
-        //        die("AVERROR(EINVAL): codec not opened, refcounted_frames not set, it is a decoder, or requires flush");
-        //    }
-        //    else if (ret == ffmpeg.AVERROR(ffmpeg.ENOMEM))
-        //    {
-        //        die("Failed to add packet to internal queue, or similar other errors: legitimate decoding errors");
+        //        die("AVERROR(EINVAL) codec not opened, or it is an encoder other errors: legitimate decoding errors");
         //    }
         //    else
         //    {
         //        die("unknown");
         //    }
-        //    return ret;
+        //    return ret;//ffmpeg.avcodec_encode_audio2(OutCodec, &outPacket, SwrFrame, &frameFinished)
         //}
-        //public static int Decode(AVCodecContext* avctx, AVFrame* frame, ref int got_frame_ptr, AVPacket* avpkt)
+        //public static int Encode(AVCodecContext* avctx, AVPacket* avpkt, AVFrame* frame, ref int got_packet_ptr)
         //{
         //    int ret = 0;
-        //    got_frame_ptr = 0;
-        //    if ((ret = ffmpeg.avcodec_send_packet(avctx, avpkt)) == 0)
+        //    got_packet_ptr = 0;
+        //    ffmpeg.av_packet_unref(avpkt);
+        //    if ((ret = ffmpeg.avcodec_send_frame(avctx, frame)) == 0)
         //    {
         //        //0 on success, otherwise negative error code
-        //        return DecodeNext(avctx, frame, ref got_frame_ptr, avpkt);
+        //        return EncodeNext(avctx, avpkt, frame, ref got_packet_ptr);
         //    }
         //    else if (ret == ffmpeg.AVERROR(ffmpeg.EAGAIN))
         //    {
-        //        die("input is not accepted in the current state - user must read output with avcodec_receive_frame()(once all output is read, the packet should be resent, and the call will not fail with EAGAIN");
+        //        die("input is not accepted in the current state - user must read output with avcodec_receive_packet() (once all output is read, the packet should be resent, and the call will not fail with EAGAIN)");
         //    }
         //    else if (ret == ffmpeg.AVERROR_EOF)
         //    {
@@ -604,85 +607,18 @@ namespace FF8
         //    }
         //    else if (ret == ffmpeg.AVERROR(ffmpeg.EINVAL))
         //    {
-        //        die("codec not opened, it is an encoder, or requires flush");
+        //        die("AVERROR(ffmpeg.EINVAL) codec not opened, refcounted_frames not set, it is a decoder, or requires flush");
         //    }
         //    else if (ret == ffmpeg.AVERROR(ffmpeg.ENOMEM))
         //    {
-        //        die("Failed to add packet to internal queue, or similar other errors: legitimate decoding errors");
+        //        die("AVERROR(ENOMEM) failed to add packet to internal queue, or similar other errors: legitimate decoding errors");
         //    }
         //    else
         //    {
         //        die("unknown");
         //    }
-        //    return ret;//ffmpeg.avcodec_decode_audio4(fileCodecContext, audioFrameDecoded, &frameFinished, &inPacket);
+        //    return ret;//ffmpeg.avcodec_encode_audio2(OutCodec, &outPacket, SwrFrame, &frameFinished)
         //}
-        public static int DecodeFlush(AVCodecContext* avctx, AVPacket* avpkt)
-        {
-            avpkt->data = null;
-            avpkt->size = 0;
-            return ffmpeg.avcodec_send_packet(avctx, avpkt);
-        }
-        public static int EncodeNext(AVCodecContext* avctx, AVPacket* avpkt, AVFrame* frame, ref int got_packet_ptr)
-        {
-            int ret = 0;
-            got_packet_ptr = 0;
-            ffmpeg.av_frame_unref(frame);
-            if ((ret = ffmpeg.avcodec_receive_packet(avctx, avpkt)) == 0)
-            {
-                got_packet_ptr = 1;
-                //0 on success, otherwise negative error code
-            }
-            else if (ret == ffmpeg.AVERROR(ffmpeg.EAGAIN))
-            {
-                //output is not available in the current state - user must try to send input
-                return Encode(avctx, avpkt, frame, ref got_packet_ptr);
-            }
-            else if (ret == ffmpeg.AVERROR_EOF)
-            {
-                die("AVERROR_EOF: the encoder has been fully flushed, and there will be no more output packets");
-            }
-            else if (ret == ffmpeg.AVERROR(ffmpeg.EINVAL))
-            {
-                die("AVERROR(EINVAL) codec not opened, or it is an encoder other errors: legitimate decoding errors");
-            }
-            else
-            {
-                die("unknown");
-            }
-            return ret;//ffmpeg.avcodec_encode_audio2(OutCodec, &outPacket, SwrFrame, &frameFinished)
-        }
-        public static int Encode(AVCodecContext* avctx, AVPacket* avpkt, AVFrame* frame, ref int got_packet_ptr)
-        {
-            int ret = 0;
-            got_packet_ptr = 0;
-            ffmpeg.av_packet_unref(avpkt);
-            if ((ret = ffmpeg.avcodec_send_frame(avctx, frame)) == 0)
-            {
-                //0 on success, otherwise negative error code
-                return EncodeNext(avctx, avpkt, frame, ref got_packet_ptr);
-            }
-            else if (ret == ffmpeg.AVERROR(ffmpeg.EAGAIN))
-            {
-                die("input is not accepted in the current state - user must read output with avcodec_receive_packet() (once all output is read, the packet should be resent, and the call will not fail with EAGAIN)");
-            }
-            else if (ret == ffmpeg.AVERROR_EOF)
-            {
-                die("AVERROR_EOF: the decoder has been flushed, and no new packets can be sent to it (also returned if more than 1 flush packet is sent");
-            }
-            else if (ret == ffmpeg.AVERROR(ffmpeg.EINVAL))
-            {
-                die("AVERROR(ffmpeg.EINVAL) codec not opened, refcounted_frames not set, it is a decoder, or requires flush");
-            }
-            else if (ret == ffmpeg.AVERROR(ffmpeg.ENOMEM))
-            {
-                die("AVERROR(ENOMEM) failed to add packet to internal queue, or similar other errors: legitimate decoding errors");
-            }
-            else
-            {
-                die("unknown");
-            }
-            return ret;//ffmpeg.avcodec_encode_audio2(OutCodec, &outPacket, SwrFrame, &frameFinished)
-        }
         public static int EncodeFlush(AVCodecContext* avctx)
         {
             if (avctx != null)
@@ -965,8 +901,8 @@ namespace FF8
         {
             //default values below here.
             Return = -1;
-            EncodedFileName = Path.Combine(Path.GetTempPath(), $"{Path.GetFileNameWithoutExtension(DecodedFileName)}.pcm");
-            EncodedFileType = "s16le";
+            //EncodedFileName = Path.Combine(Path.GetTempPath(), $"{Path.GetFileNameWithoutExtension(DecodedFileName)}.pcm");
+            //EncodedFileType = "s16le";
             try
             {
                 _decodeFormatContext = ffmpeg.avformat_alloc_context();
