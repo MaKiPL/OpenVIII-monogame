@@ -16,13 +16,7 @@ namespace FF8
     internal static class init_debugger_Audio
 #pragma warning restore IDE1006 // Naming Styles
     {
-        public enum AudioState
-        {
-            INIT,
-            ELSE,
-            PLAYINGSOUND
-        }
-        public static AudioState State = AudioState.INIT;
+
 #if _WINDOWS
         private struct Midi
         {
@@ -66,7 +60,11 @@ namespace FF8
         private static bool musicplaying = false;
         private static int lastplayed = -1;
 
-        public static readonly DynamicSoundEffectInstance MusicSound = new DynamicSoundEffectInstance(44100, AudioChannels.Stereo);
+        public static readonly Dictionary<ushort, DynamicSoundEffectInstance> dynamicsound = new Dictionary<ushort, DynamicSoundEffectInstance> {
+            {44100, new DynamicSoundEffectInstance(44100,AudioChannels.Stereo)},
+            {48000, new DynamicSoundEffectInstance(48000,AudioChannels.Stereo)}
+    };
+
 
         public const int S_OK = 0x00000000;
 
@@ -255,61 +253,6 @@ namespace FF8
             }
             soundEntriesCount = soundEntries.Length;
         }
-        public static SoundEffect MovieSound { get; set; }
-        public static SoundEffectInstance MovieSoundInstance { get; set; }
-        private static readonly Dictionary<int, SoundEffect> Sounds = new Dictionary<int, SoundEffect>();
-        private static readonly Dictionary<int, SoundEffectInstance> SoundInstances = new Dictionary<int, SoundEffectInstance>();
-        //internal static void CreateSoundEffects() //524 MB of just uncompessed sound. probably bad idea.
-        //{
-        //    if (soundEntries == null)
-        //    {
-        //        return;
-        //    }
-        //    for (int soundID = 0; soundID < soundEntries.Length; soundID++)
-        //    {
-        //        if (soundEntries[soundID].Size == 0)
-        //        {
-        //            continue;
-        //        }
-        //        using (FileStream fs = new FileStream(Path.Combine(Memory.FF8DIR, "../Sound/audio.dat"), FileMode.Open, FileAccess.Read))
-        //        using (BinaryReader br = new BinaryReader(fs))
-        //        {
-        //            fs.Seek(soundEntries[soundID].Offset, SeekOrigin.Begin);
-
-        //            GCHandle gc = GCHandle.Alloc(soundEntries[soundID].WAVFORMATEX, GCHandleType.Pinned);
-        //            WAVEFORMATEX format = (WAVEFORMATEX)Marshal.PtrToStructure(gc.AddrOfPinnedObject(), typeof(WAVEFORMATEX));
-        //            gc.Free();
-        //            byte[] rawBuffer = br.ReadBytes(soundEntries[soundID].Size);
-
-        //            using (RawSourceWaveStream raw = new RawSourceWaveStream(new MemoryStream(rawBuffer), new AdpcmWaveFormat((int)format.nSamplesPerSec, format.nChannels)))
-        //            {
-        //                byte[] buffer;
-
-
-        //                if (!MakiExtended.IsLinux)
-        //                {
-        //                    using (WaveStream a = WaveFormatConversionStream.CreatePcmStream(raw))
-        //                    {
-        //                        buffer = ReadFullyByte(a);
-        //                    }
-        //                }
-        //                else
-        //                {
-        //                    buffer = ReadFullyByte(raw);
-        //                }
-
-        //                if (buffer != null)
-        //                {
-        //                    Sounds.Add(soundID,new SoundEffect(buffer, raw.WaveFormat.SampleRate, (AudioChannels)raw.WaveFormat.Channels));
-        //                }
-        //                else
-        //                {
-        //                    Sounds.Add(soundID,new SoundEffect(ReadFullyByte(raw), (int)format.nSamplesPerSec / 2, (AudioChannels)format.nChannels));
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
         internal static void PlaySound(int soundID)
         {
             if (soundEntries == null)
@@ -321,17 +264,35 @@ namespace FF8
             {
                 return;
             }
-            State = AudioState.PLAYINGSOUND;
+
             using (FileStream fs = new FileStream(Path.Combine(Memory.FF8DIR, "../Sound/audio.dat"), FileMode.Open, FileAccess.Read))
             using (BinaryReader br = new BinaryReader(fs))
             {
                 fs.Seek(soundEntries[soundID].Offset, SeekOrigin.Begin);
-
+                //List<byte[]> sfxBufferList = new List<byte[]>();
+                //sfxBufferList.Add(Encoding.ASCII.GetBytes("RIFF"));
+                //sfxBufferList.Add(BitConverter.GetBytes
+                //    (soundEntries[soundID].Size + 36));
+                //sfxBufferList.Add(Encoding.ASCII.GetBytes("WAVEfmt "));
+                //sfxBufferList.Add(BitConverter.GetBytes
+                //    (18 + 0));
+                //sfxBufferList.Add(soundEntries[soundID].WAVFORMATEX);
+                //sfxBufferList.Add(Encoding.ASCII.GetBytes("data"));
+                //sfxBufferList.Add(BitConverter.GetBytes(soundEntries[soundID].Size));
                 GCHandle gc = GCHandle.Alloc(soundEntries[soundID].WAVFORMATEX, GCHandleType.Pinned);
                 WAVEFORMATEX format = (WAVEFORMATEX)Marshal.PtrToStructure(gc.AddrOfPinnedObject(), typeof(WAVEFORMATEX));
                 gc.Free();
                 byte[] rawBuffer = br.ReadBytes(soundEntries[soundID].Size);
+                //sfxBufferList.Add(rawBuffer);
+                //byte[] sfxBuffer = sfxBufferList.SelectMany(x => x).ToArray();
 
+
+                //WaveFileReader rad = new WaveFileReader(new MemoryStream(sfxBuffer));
+                //passing WAVEFORMATEX struct params makes playing all sounds possible
+
+                //string strDLLpath = Assembly.GetAssembly().CodeBase.Substring(8);
+                //if (File.Exists("Msacm32.dll"))
+                //try { 
                 using (RawSourceWaveStream raw = new RawSourceWaveStream(new MemoryStream(rawBuffer), new AdpcmWaveFormat((int)format.nSamplesPerSec, format.nChannels)))
                 {
                     byte[] buffer;
@@ -340,101 +301,66 @@ namespace FF8
                     if (!MakiExtended.IsLinux)
                     {
                         using (WaveStream a = WaveFormatConversionStream.CreatePcmStream(raw))
-                        {
                             buffer = ReadFullyByte(a);
-                        }
                     }
                     else
                     {
                         buffer = ReadFullyByte(raw);
                     }
-                    if (Sounds.ContainsKey(soundID) && !Sounds[soundID].IsDisposed)
-                    {
-                        if (SoundInstances.ContainsKey(soundID) && !SoundInstances[soundID].IsDisposed)
-                        {
-                            SoundInstances[soundID].Play();
-                            return;
-                        }
-                        else
-                        {
-                            SoundInstances[soundID] = Sounds[soundID].CreateInstance();
-                        }
-                    }
-                    else if (SoundInstances.ContainsKey(soundID) && !SoundInstances[soundID].IsDisposed)
-                    {
-                        SoundInstances[soundID].Dispose();
-                    }
-
-                    if (Sounds.ContainsKey(soundID))
-                    {
-                        Sounds.Remove(soundID);
-                    }
-
-                    if (SoundInstances.ContainsKey(soundID))
-                    {
-                        SoundInstances.Remove(soundID);
-                    }
-
+                    //{
+                    //try
+                    //{
                     if (buffer != null)
                     {
-
-                        Sounds.Add(soundID, new SoundEffect(buffer, raw.WaveFormat.SampleRate, (AudioChannels)raw.WaveFormat.Channels));
+                        using (SoundEffect se = new SoundEffect(buffer, raw.WaveFormat.SampleRate, (AudioChannels)raw.WaveFormat.Channels))
+                            se.Play();
                     }
                     else
                     {
-                        Sounds.Add(soundID, new SoundEffect(ReadFullyByte(raw), (int)format.nSamplesPerSec / 2, (AudioChannels)format.nChannels));
+                        //number 28 broken
+                        using (SoundEffect se = new SoundEffect(ReadFullyByte(raw), (int)format.nSamplesPerSec / 2, (AudioChannels)format.nChannels))
+                            se.Play();
                     }
-                    SoundInstances.Add(soundID, Sounds[soundID].CreateInstance());
-                    SoundInstances[soundID].Play();
                 }
+                //    }
+                //    catch {
+                //        try
+                //        {
+                //            WaveOut waveout = new WaveOut();
+                //            waveout.Init(a);
+                //            waveout.Play();
+
+                //        }
+                //        catch
+                //        {
+                //            SoundEffect se = new SoundEffect(rawBuffer, (int)format.nSamplesPerSec / 2, (AudioChannels)format.nChannels);
+                //        }
+                //}
+                //SoundEffect se = new SoundEffect(rawBuffer, (int)format.nSamplesPerSec / 2, (AudioChannels)format.nChannels);
+
+                //}
+
+                //                SoundEffect se = new SoundEffect(rawBuffer, (int)format.nSamplesPerSec/2, (AudioChannels)format.nChannels);
+                //              se.Play();
+
+
+
+                //libZPlay.ZPlay zplay = new libZPlay.ZPlay();
+
+                //zplay.OpenFile("D:\\test.wav", libZPlay.TStreamFormat.sfAutodetect);
+                //zplay.StartPlayback();
+                //SoundEffect se = new SoundEffect(sfxBuffer, 22050, AudioChannels.Mono);
+                //sei.Play();
+                //se.Play(1.0f, 0.0f, 0.0f);
+                //se.Dispose();
             }
         }
-
-        private static readonly Stopwatch Timer = new Stopwatch();
         public static void StopSound()
         {
             //waveout.Stop();
         }
         internal static void Update()
         {
-            switch (State)
-            {
-                case AudioState.INIT:
-                    State++;
-                    //CreateSoundEffects();
-                    Update();
-                    break;
-                case AudioState.PLAYINGSOUND:
-                    //if(!Timer.IsRunning)
-                    //    Timer.Start();
-                    //else if(Timer.ElapsedMilliseconds >= 1000)
-                    State++;
-                    break;
-                default:
-                    ////SoundState.Stopped does not trigger after sound played. it triggers early leaving sound cut off if i run this.
-                    ////so I decided to leave the auto dispose off for now. Plan is if it becomes a problem that too many sounds are loaded we can purge them.
-                    //if (SoundInstances.Count > 1)
-                    //{
-                    //    foreach (KeyValuePair<int, SoundEffectInstance> e in SoundInstances)
-                    //    {
-                    //        if (e.Key == 0) // most used sound ever.
-                    //        {
-                    //            continue;
-                    //        }
-
-                    //        if (!e.Value.IsDisposed || e.Value.State == SoundState.Stopped)
-                    //        {
-                    //            //remove sound from memory
-                    //            Sounds[e.Key].Dispose();
-                    //            e.Value.Dispose();
-                    //            //pop old instance off. might not need to.
-                    //            //SoundInstances.Remove(e.Key); //cannot do this in a foreach loop.
-                    //        }
-                    //    }
-                    //}
-
-                    break;
-            }
             if (ffccMusic != null && ffccMusic.LOOPSTART > 0 && ffccMusic.BehindFrame())
             {
                 ffccMusic.GetFrame();
@@ -537,7 +463,7 @@ namespace FF8
                 case ".ogg":
                     ffccMusic = new Ffcc(pt, FFmpeg.AutoGen.AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
                     ffccMusic.GetFrame(); // prime the pump
-                    ffccMusic.StartTimer(); //also starts playing audio because it's hard to tell which stream the audio was sent too.
+                    ffccMusic.StartTimer();
                     break;
                 case ".sgt":
 
@@ -628,11 +554,10 @@ namespace FF8
             {
                 ffccMusic.StopTimer();
             }
-
-            if(!MusicSound.IsDisposed)
-            MusicSound.Stop();
-            if (!MovieSound.IsDisposed && !MovieSoundInstance.IsDisposed)
-                MovieSoundInstance.Stop();
+            foreach (KeyValuePair<ushort, DynamicSoundEffectInstance> entry in dynamicsound)
+            {
+                entry.Value.Stop();
+            }
 
 #if _WINDOWS
             try
@@ -647,12 +572,10 @@ namespace FF8
         }
         public static void KillAudio()
         {
-            if(!MusicSound.IsDisposed)
-            MusicSound.Dispose();
-            if(!MovieSound.IsDisposed)
-            MovieSound.Dispose();
-            if(!MovieSoundInstance.IsDisposed)
-            MovieSoundInstance.Dispose();
+            foreach (KeyValuePair<ushort, DynamicSoundEffectInstance> entry in dynamicsound)
+            {
+                entry.Value.Dispose();
+            }
             try
             {
 

@@ -305,17 +305,8 @@ namespace FF8
                 {
                     timer.Start();
                 }
-                if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO && AudioEnabled && Decoder.StreamIndex == 0)
-                {
-                    init_debugger_Audio.MusicSound.Play();
-                }
-
-                if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO && AudioEnabled && Decoder.StreamIndex == 1)
-                {
-                    init_debugger_Audio.MovieSoundInstance.Play();
-                }
-                //usually audio streams from video are 1 and only music is 0. 
-                //might need to make it smarter if this becomes an issue.
+                if(MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO && AudioEnabled)
+                init_debugger_Audio.dynamicsound[(ushort)ResampleFrame->sample_rate].Play();
 
                 //if (SoundInstance != null && !SoundInstance.IsDisposed && AudioEnabled)
                 //{
@@ -340,20 +331,8 @@ namespace FF8
                 timer.Reset();
             }
 
-            if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO && AudioEnabled && Decoder.StreamIndex == 0 && !init_debugger_Audio.MusicSound.IsDisposed)
-            {
-                init_debugger_Audio.MusicSound.Stop();
-                //init_debugger_Audio.MusicSound.Dispose();
-            }
-            if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO && AudioEnabled && Decoder.StreamIndex == 1 && !init_debugger_Audio.MovieSoundInstance.IsDisposed)
-            {
-                init_debugger_Audio.MovieSoundInstance.Stop();
-                init_debugger_Audio.MovieSoundInstance.Dispose();
-            }
-            if(MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO && AudioEnabled && Decoder.StreamIndex == 1 && !init_debugger_Audio.MovieSound.IsDisposed)
-            {
-                init_debugger_Audio.MovieSound.Dispose();
-            }
+            if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO && AudioEnabled&& !init_debugger_Audio.dynamicsound[(ushort)ResampleFrame->sample_rate].IsDisposed)
+                init_debugger_Audio.dynamicsound[(ushort)ResampleFrame->sample_rate].Stop();
             //if (SoundInstance != null && !SoundInstance.IsDisposed && AudioEnabled)
             //{
             //    SoundInstance.Stop();
@@ -430,15 +409,7 @@ namespace FF8
                 //    // accepts s16le maybe more haven't tested everything.
                 //    Sound = new SoundEffect(DecodedStream.ToArray(), ResampleFrame->sample_rate, (AudioChannels)Decoder.CodecContext->channels);
                 //    SoundInstance = Sound.CreateInstance();
-                if (Decoder.StreamIndex == 0)
-                {
-                    init_debugger_Audio.MusicSound.SubmitBuffer(decodedStream.ToArray());
-                }
-                if (Decoder.StreamIndex == 1)
-                {
-                    init_debugger_Audio.MovieSound = new SoundEffect(DecodedStream.ToArray(), ResampleFrame->sample_rate, (AudioChannels)Decoder.CodecContext->channels);
-                    init_debugger_Audio.MovieSoundInstance = init_debugger_Audio.MovieSound.CreateInstance();
-                }
+                init_debugger_Audio.dynamicsound[(ushort)ResampleFrame->sample_rate].SubmitBuffer(decodedStream.ToArray());
 
                 //if (ResampleFrame->sample_rate == 44100)
                 //{
@@ -1483,7 +1454,7 @@ namespace FF8
 
                 //ffmpeg.avcodec_close(Decoder.CodecContext);
                 ////ffmpeg.av_free(Decoder.CodecContext);
-
+                
 
                 ffmpeg.sws_freeContext(ScalerContext);
                 if (ResampleContext != null)
