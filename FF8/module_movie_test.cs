@@ -99,11 +99,11 @@ namespace FF8
 
                     if (Ffccaudio != null)
                     {
-                        Ffccaudio.PlaySound();
+                        Ffccaudio.StartTimer();
                     }
                     if (Ffccvideo != null)
                     {
-                        Ffccvideo.PlaySound();
+                        Ffccvideo.StartTimer();
                     }
 
                     break;
@@ -128,11 +128,11 @@ namespace FF8
         {
             if (Ffccaudio != null)
             {
-                Ffccaudio.StopSound();
+                Ffccaudio.StopTimer();
             }
             if (Ffccvideo != null)
             {
-                Ffccvideo.StopSound();
+                Ffccvideo.StopTimer();
             }
 
             MovieState = STATE_INIT;

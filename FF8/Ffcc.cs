@@ -29,9 +29,8 @@ namespace FF8
         private SwrContext* _resampleContext;
         private SwsContext* _scalerContext;
         private AVFrame* _resampleFrame;
-        private AVCodecContext* _decodeCodecContext;
         private FileStream _decodeFileStream;
-        private AVCodecParserContext* _parserContext;
+        //private AVCodecParserContext* _parserContext;
 
         private FfccVaribleGroup Decoder { get; set; } = new FfccVaribleGroup();
         /// <summary>
@@ -59,26 +58,18 @@ namespace FF8
         /// <summary>
         /// Parser Context
         /// </summary>
-        private AVCodecParserContext* ParserContext { get => _parserContext; set => _parserContext = value; }
+        //private AVCodecParserContext* ParserContext { get => _parserContext; set => _parserContext = value; }
 
         /// <summary>
         /// Codec context, set from stream
         /// </summary>
-        private AVCodecContext* DecodeCodecContext { get => _decodeCodecContext; set => _decodeCodecContext = value; }
-        public AVCodec* DecodeCodec { get; private set; }
+        //private AVCodecContext* Decoder.CodecContext { get => _Decoder.CodecContext; set => _Decoder.CodecContext = value; }
+        //public AVCodec* Decoder.Codec { get; private set; }
 
         /// <summary>
         /// pointer to stream
         /// </summary>
         private AVStream* EncoderStream { get; set; }
-        /// <summary>
-        /// pointer to stream
-        /// </summary>
-        private AVStream* DecoderStream { get; set; }
-        /// <summary>
-        /// index of stream
-        /// </summary>
-        private int DecoderStreamIndex { get; set; }
         ///// <summary>
         ///// number of channels being exported.
         ///// </summary>
@@ -92,10 +83,6 @@ namespace FF8
         /// </summary>
         public bool FileOpened { get; private set; }
         /// <summary>
-        /// Path and filename of file.
-        /// </summary>
-        public string DecodedFileName { get; private set; }
-        /// <summary>
         /// Current media type being processed.
         /// </summary>
         public AVMediaType MediaType { get; private set; }
@@ -103,13 +90,13 @@ namespace FF8
         public AVFrame* ResampleFrame { get => _resampleFrame; private set => _resampleFrame = value; }
         private FfccState State { get; set; }
         private FfccMode Mode { get; set; }
-        private bool useduration => DecodeCodecContext == null || (DecodeCodecContext->framerate.den == 0 || DecodeCodecContext->framerate.num == 0);
+        private bool useduration => Decoder.CodecContext == null || (Decoder.CodecContext->framerate.den == 0 || Decoder.CodecContext->framerate.num == 0);
         private double videoFPS
         {
             get
             {
-                    Return = ffmpeg.av_find_best_stream(Decoder.Format, AVMediaType.AVMEDIA_TYPE_VIDEO, -1, -1, null, 0);
-                
+                Return = ffmpeg.av_find_best_stream(Decoder.Format, AVMediaType.AVMEDIA_TYPE_VIDEO, -1, -1, null, 0);
+
 
                 if (Return < 0)
                 {
@@ -140,14 +127,14 @@ namespace FF8
                     {
                         return r;
                     }
-                    else if (DecoderStream != null && DecoderStream->time_base.den != 0)
+                    else if (Decoder.Stream != null && Decoder.Stream->time_base.den != 0)
                     {
-                        return DecoderStream->time_base.num / (double)DecoderStream->time_base.den; // returns the time_base 
+                        return Decoder.Stream->time_base.num / (double)Decoder.Stream->time_base.den; // returns the time_base 
                     }
                 }
-                else if (DecodeCodecContext != null && DecodeCodecContext->framerate.den != 0)
+                else if (Decoder.CodecContext != null && Decoder.CodecContext->framerate.den != 0)
                 {
-                    return DecodeCodecContext->framerate.num / (double)DecodeCodecContext->framerate.den;
+                    return Decoder.CodecContext->framerate.num / (double)Decoder.CodecContext->framerate.den;
                 }
 
                 return 0;
@@ -157,9 +144,9 @@ namespace FF8
         /// <summary>
         /// if there is no stream it returns false. only checked when trying to process audio
         /// </summary>
-        private bool AudioEnabled => DecoderStreamIndex >= 0;
-        public SoundEffectInstance SoundInstance { get; private set; }
-        private SoundEffect Sound { get; set; }
+        private bool AudioEnabled => Decoder.StreamIndex >= 0;
+        //public SoundEffectInstance SoundInstance { get; private set; }
+        //private SoundEffect Sound { get; set; }
         public AVCodecContext* EncoderCodecContext { get; private set; }
         public AVFormatContext* EncoderFormatContext { get; private set; }
         public string EncodedFileName { get; private set; }
@@ -240,7 +227,7 @@ namespace FF8
         {
             State = FfccState.INIT;
             Mode = mode;
-            DecodedFileName = filename;
+            Decoder.FileName = filename;
             MediaType = mediatype;
             Update();
             //Parse(); //doesn't seem to work. Or it only works with raw streams.
@@ -309,7 +296,7 @@ namespace FF8
             while (!((Mode == FfccMode.PROCESS_ALL && State == FfccState.DONE) || (State == FfccState.DONE || State == FfccState.WAITING)));
             return ret;
         }
-        public void PlaySound(bool notimer = false) // there are some videos without sound meh.
+        public void StartTimer(bool notimer = false) // there are some videos without sound meh.
         {
 
             if (!timer.IsRunning)
@@ -318,62 +305,67 @@ namespace FF8
                 {
                     timer.Start();
                 }
+                if(MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO && AudioEnabled)
+                init_debugger_Audio.dynamicsound[(ushort)ResampleFrame->sample_rate].Play();
 
-                if (SoundInstance != null && !SoundInstance.IsDisposed && AudioEnabled)
-                {
-                    SoundInstance.Play();
-                }
-                if (dsee44100 != null && !dsee44100.IsDisposed && AudioEnabled)
-                {
-                    dsee44100.Play();
-                }
+                //if (SoundInstance != null && !SoundInstance.IsDisposed && AudioEnabled)
+                //{
+                //    SoundInstance.Play();
+                //}
+                //if (dsee44100 != null && !dsee44100.IsDisposed && AudioEnabled)
+                //{
+                //    dsee44100.Play();
+                //}
 
-                if (dsee44100 != null && !dsee44100.IsDisposed && AudioEnabled)
-                {
-                    dsee48000.Play();
-                }
+                //if (dsee44100 != null && !dsee44100.IsDisposed && AudioEnabled)
+                //{
+                //    dsee48000.Play();
+                //}
             }
         }
-        public void StopSound()
+        public void StopTimer()
         {
             if (timer.IsRunning)
             {
                 timer.Stop();
                 timer.Reset();
             }
-            if (SoundInstance != null && !SoundInstance.IsDisposed && AudioEnabled)
-            {
-                SoundInstance.Stop();
-            }
-            if (dsee44100 != null && !dsee44100.IsDisposed && AudioEnabled)
-            {
-                dsee44100.Stop();
-            }
 
-            if (dsee44100 != null && !dsee44100.IsDisposed && AudioEnabled)
-            {
-                dsee48000.Stop();
-            }
+            if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO && AudioEnabled&& !init_debugger_Audio.dynamicsound[(ushort)ResampleFrame->sample_rate].IsDisposed)
+                init_debugger_Audio.dynamicsound[(ushort)ResampleFrame->sample_rate].Stop();
+            //if (SoundInstance != null && !SoundInstance.IsDisposed && AudioEnabled)
+            //{
+            //    SoundInstance.Stop();
+            //}
+            //if (dsee44100 != null && !dsee44100.IsDisposed && AudioEnabled)
+            //{
+            //    dsee44100.Stop();
+            //}
 
-            if (Sound != null && !Sound.IsDisposed)
-            {
-                Sound.Dispose();
-            }
+            //if (dsee44100 != null && !dsee44100.IsDisposed && AudioEnabled)
+            //{
+            //    dsee48000.Stop();
+            //}
 
-            if (SoundInstance != null && !SoundInstance.IsDisposed)
-            {
-                SoundInstance.Dispose();
-            }
+            //if (Sound != null && !Sound.IsDisposed)
+            //{
+            //    Sound.Dispose();
+            //}
 
-            if (dsee44100 != null && !dsee44100.IsDisposed)
-            {
-                dsee44100.Dispose();
-            }
+            //if (SoundInstance != null && !SoundInstance.IsDisposed)
+            //{
+            //    SoundInstance.Dispose();
+            //}
 
-            if (dsee44100 != null && !dsee44100.IsDisposed)
-            {
-                dsee48000.Dispose();
-            }
+            //if (dsee44100 != null && !dsee44100.IsDisposed)
+            //{
+            //    dsee44100.Dispose();
+            //}
+
+            //if (dsee44100 != null && !dsee44100.IsDisposed)
+            //{
+            //    dsee48000.Dispose();
+            //}
         }
         private bool SoundExistsAndReady()
         {
@@ -405,8 +397,8 @@ namespace FF8
             LoadSoundFromStream(DecodedStream);
         }
 
-        private DynamicSoundEffectInstance dsee44100 = new DynamicSoundEffectInstance(44100, AudioChannels.Stereo);
-        private DynamicSoundEffectInstance dsee48000 = new DynamicSoundEffectInstance(48000, AudioChannels.Stereo);
+        //private DynamicSoundEffectInstance dsee44100 = new DynamicSoundEffectInstance(44100, AudioChannels.Stereo);
+        //private DynamicSoundEffectInstance dsee48000 = new DynamicSoundEffectInstance(48000, AudioChannels.Stereo);
         private int _loopstart = -1;
 
         public int LOOPSTART { get => _loopstart; private set => _loopstart = value; }
@@ -415,17 +407,18 @@ namespace FF8
             if (DecodedStream.Length > 0 && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
             {
                 //    // accepts s16le maybe more haven't tested everything.
-                //    Sound = new SoundEffect(DecodedStream.ToArray(), ResampleFrame->sample_rate, (AudioChannels)DecodeCodecContext->channels);
+                //    Sound = new SoundEffect(DecodedStream.ToArray(), ResampleFrame->sample_rate, (AudioChannels)Decoder.CodecContext->channels);
                 //    SoundInstance = Sound.CreateInstance();
+                init_debugger_Audio.dynamicsound[(ushort)ResampleFrame->sample_rate].SubmitBuffer(decodedStream.ToArray());
 
-                if (ResampleFrame->sample_rate == 44100)
-                {
-                    dsee44100.SubmitBuffer(decodedStream.ToArray());
-                }
-                else if (ResampleFrame->sample_rate == 48000)
-                {
-                    dsee48000.SubmitBuffer(decodedStream.ToArray());
-                }
+                //if (ResampleFrame->sample_rate == 44100)
+                //{
+                //    dsee44100.SubmitBuffer();
+                //}
+                //else if (ResampleFrame->sample_rate == 48000)
+                //{
+                //    dsee48000.SubmitBuffer(decodedStream.ToArray());
+                //}
 
                 //dsee44100.Play();
                 //dsee48000.Play();
@@ -443,9 +436,9 @@ namespace FF8
         }
         public int CurrentFrameNum()
         {
-            if (DecodeCodecContext != null)
+            if (Decoder.CodecContext != null)
             {
-                return DecodeCodecContext->frame_number;
+                return Decoder.CodecContext->frame_number;
             }
             else
             {
@@ -454,7 +447,7 @@ namespace FF8
         }
         public bool AheadFrame()
         {
-            if (timer.IsRunning && DecoderStreamIndex != -1)
+            if (timer.IsRunning && Decoder.StreamIndex != -1)
             {
                 return CurrentFrameNum() > ExpectedFrame();
             }
@@ -467,24 +460,24 @@ namespace FF8
                 if (LOOPSTART >= 0 && LOOPED)
                 {
 
-                    return (DecoderStream->duration - LOOPSTART);
+                    return (Decoder.Stream->duration - LOOPSTART);
                 }
                 else
                 {
-                    return DecoderStream->duration;
+                    return Decoder.Stream->duration;
                 }
             }
         }
         private bool LOOPED = false;
         public bool BehindFrame()
         {
-            if (timer.IsRunning && DecoderStreamIndex != -1)
+            if (timer.IsRunning && Decoder.StreamIndex != -1)
             {
-                if (LOOPSTART >= 0 && FPS < 1 && DecoderStream->duration > 0)
+                if (LOOPSTART >= 0 && FPS < 1 && Decoder.Stream->duration > 0)
                 {
                     long time = timer.ElapsedMilliseconds;
                     int secondsbeforeendoftrack = 2;
-                    return (time / 1000) > (LOOPLENGTH / DecodeCodecContext->sample_rate) - secondsbeforeendoftrack;
+                    return (time / 1000) > (LOOPLENGTH / Decoder.CodecContext->sample_rate) - secondsbeforeendoftrack;
                 }
                 return CurrentFrameNum() < ExpectedFrame();
 
@@ -519,8 +512,8 @@ namespace FF8
                         {
                             if (LOOPSTART >= 0)
                             {
-                                    ffmpeg.avformat_seek_file(Decoder.Format, DecoderStreamIndex, LOOPSTART - 1000, LOOPSTART, DecoderStream->duration, 0);
-                                
+                                ffmpeg.avformat_seek_file(Decoder.Format, Decoder.StreamIndex, LOOPSTART - 1000, LOOPSTART, Decoder.Stream->duration, 0);
+
 
                                 LOOPED = true; // set after one play to change durration checked.
                                 State = FfccState.WAITING;
@@ -536,10 +529,10 @@ namespace FF8
                         {
                             CheckReturn();
                         }
-                    } while (Decoder.Packet->stream_index != DecoderStreamIndex);
+                    } while (Decoder.Packet->stream_index != Decoder.StreamIndex);
 
 
-                    Return = ffmpeg.avcodec_send_packet(DecodeCodecContext, Decoder.Packet);
+                    Return = ffmpeg.avcodec_send_packet(Decoder.CodecContext, Decoder.Packet);
                     //sent a eof when trying to loop once.
                     //should never get EOF here unless something is wrong.
                     //if (Return == ffmpeg.AVERROR_EOF) 
@@ -556,7 +549,7 @@ namespace FF8
                     ffmpeg.av_packet_unref(Decoder.Packet);
                 }
 
-                Return = ffmpeg.avcodec_receive_frame(DecodeCodecContext, Decoder.Frame);
+                Return = ffmpeg.avcodec_receive_frame(Decoder.CodecContext, Decoder.Frame);
             } while (Return == ffmpeg.AVERROR(ffmpeg.EAGAIN));
             CheckReturn();
 
@@ -688,7 +681,7 @@ namespace FF8
                 //    EncodeFlush(EncoderCodecContext);
                 //}
 
-                DecodeFlush(ref _decodeCodecContext, ref *Decoder.Packet); //calling this twice was causing issues.
+                DecodeFlush(ref Decoder._codecContext, ref *Decoder.Packet); //calling this twice was causing issues.
             }
 
         }
@@ -774,7 +767,7 @@ namespace FF8
         //    //outPacket.data = audio_outbuf;
         //    outPacket.dts = Decoder.Frame.pkt_dts;
         //    outPacket.pts = Decoder.Frame.pkt_pts;
-        //    ffmpeg.av_packet_rescale_ts(&outPacket, DecoderStream->time_base, EncoderStream->time_base);
+        //    ffmpeg.av_packet_rescale_ts(&outPacket, Decoder.Stream->time_base, EncoderStream->time_base);
 
         //    if (frameFinished != 0)
         //    {
@@ -837,11 +830,13 @@ namespace FF8
         {
             if (!FileOpened)
             {
-                fixed(AVFormatContext** tmp = &Decoder._format)
-                    Return = ffmpeg.avformat_open_input(tmp, DecodedFileName, null, null);
+                fixed (AVFormatContext** tmp = &Decoder._format)
+                {
+                    Return = ffmpeg.avformat_open_input(tmp, Decoder.FileName, null, null);
+                }
 
                 CheckReturn();
-                    Return = ffmpeg.avformat_find_stream_info(Decoder.Format, null);
+                Return = ffmpeg.avformat_find_stream_info(Decoder.Format, null);
 
                 CheckReturn();
 
@@ -900,11 +895,11 @@ namespace FF8
         {
             //default values below here.
             Return = -1;
-            //EncodedFileName = Path.Combine(Path.GetTempPath(), $"{Path.GetFileNameWithoutExtension(DecodedFileName)}.pcm");
+            //EncodedFileName = Path.Combine(Path.GetTempPath(), $"{Path.GetFileNameWithoutExtension(Decoder.FileName)}.pcm");
             //EncodedFileType = "s16le";
             try
             {
-                Decoder.Format = ffmpeg.avformat_alloc_context();
+                //Decoder.Format = ffmpeg.avformat_alloc_context();
                 if (Open() < 0)
                 {
                     die("No file not open");
@@ -912,13 +907,13 @@ namespace FF8
 
                 ConvertedData = null;
                 //Swr = ffmpeg.swr_alloc();
-                ParserContext = null;
-                DecodeCodecContext = null;
-                DecoderStream = null;
-                Decoder.Packet = ffmpeg.av_packet_alloc();
-                Decoder.Frame = ffmpeg.av_frame_alloc();
+                //ParserContext = null;
+                //Decoder.CodecContext = null;
+                //Decoder.Stream = null;
+                //Decoder.Packet = ffmpeg.av_packet_alloc();
+                //Decoder.Frame = ffmpeg.av_frame_alloc();
 
-                DecoderStreamIndex = -1;
+                //Decoder.StreamIndex = -1;
 
 
             }
@@ -935,17 +930,17 @@ namespace FF8
         /// </summary>
         private void Get_Stream()
         {
-            DecoderStreamIndex = -1;
+            Decoder.StreamIndex = -1;
             // Find the index of the first audio stream
             for (int i = 0; i < Decoder.Format->nb_streams; i++)
             {
                 if (Decoder.Format->streams[i]->codec->codec_type == MediaType)
                 {
-                    DecoderStreamIndex = i;
+                    Decoder.StreamIndex = i;
                     break; // only grab the first stream
                 }
             }
-            if (DecoderStreamIndex == -1)
+            if (Decoder.StreamIndex == -1)
             {
                 if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
                 {
@@ -954,14 +949,14 @@ namespace FF8
                 }
                 else
                 {
-                    die($"Could not retrieve {(MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO ? "audio" : (MediaType == AVMediaType.AVMEDIA_TYPE_VIDEO ? "video" : "other"))} stream from file \n {DecodedFileName}");
+                    die($"Could not retrieve {(MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO ? "audio" : (MediaType == AVMediaType.AVMEDIA_TYPE_VIDEO ? "video" : "other"))} stream from file \n {Decoder.FileName}");
                 }
             }
             else
             {
-                DecoderStream = Decoder.Format->streams[DecoderStreamIndex];
+                Decoder.Stream = Decoder.Format->streams[Decoder.StreamIndex];
 
-                AVDictionary* metadata = DecoderStream->metadata;//this code here will get metadata from formatcontext but the ogg tags aren't there.
+                AVDictionary* metadata = Decoder.Stream->metadata;//this code here will get metadata from formatcontext but the ogg tags aren't there.
                 string val = "", key = "";
                 AVDictionaryEntry* tag = null;
                 //tag = ffmpeg.av_dict_get(_Decoder.Format->metadata, "LOOPSTART", tag, ffmpeg.AV_DICT_IGNORE_SUFFIX);
@@ -994,9 +989,9 @@ namespace FF8
         private void FindOpenCodec()
         {
             // find & open codec
-            DecodeCodecContext = DecoderStream->codec;
-            DecodeCodec = ffmpeg.avcodec_find_decoder(DecodeCodecContext->codec_id);
-            if (DecodeCodec == null)
+            Decoder.CodecContext = Decoder.Stream->codec;
+            Decoder.Codec = ffmpeg.avcodec_find_decoder(Decoder.CodecContext->codec_id);
+            if (Decoder.Codec == null)
             {
                 die("Codec not found");
             }
@@ -1007,13 +1002,13 @@ namespace FF8
             //Codec = ffmpeg.avcodec_alloc_context3(c);
             //if (Codec == null)
             //    die("Could not allocate video codec context");
-            Return = ffmpeg.avcodec_open2(DecodeCodecContext, DecodeCodec, null);
+            Return = ffmpeg.avcodec_open2(Decoder.CodecContext, Decoder.Codec, null);
             CheckReturn();
             if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
             {
-                if (DecodeCodecContext->channel_layout == 0)
+                if (Decoder.CodecContext->channel_layout == 0)
                 {
-                    DecodeCodecContext->channel_layout = ffmpeg.AV_CH_FRONT_LEFT | ffmpeg.AV_CH_FRONT_RIGHT;
+                    Decoder.CodecContext->channel_layout = ffmpeg.AV_CH_FRONT_LEFT | ffmpeg.AV_CH_FRONT_RIGHT;
                 }
             }
         }
@@ -1026,8 +1021,8 @@ namespace FF8
             }
 
             ScalerContext = ffmpeg.sws_getContext(
-                DecodeCodecContext->width, DecodeCodecContext->height, DecodeCodecContext->pix_fmt,
-                DecodeCodecContext->width, DecodeCodecContext->height, AVPixelFormat.AV_PIX_FMT_RGBA,
+                Decoder.CodecContext->width, Decoder.CodecContext->height, Decoder.CodecContext->pix_fmt,
+                Decoder.CodecContext->width, Decoder.CodecContext->height, AVPixelFormat.AV_PIX_FMT_RGBA,
                 ffmpeg.SWS_ACCURATE_RND, null, null, null);
             Return = ffmpeg.sws_init_context(ScalerContext, null, null);
 
@@ -1050,8 +1045,8 @@ namespace FF8
 
             /* put sample parameters */
             c->bit_rate = 64000;
-            c->sample_rate = DecoderStream->codec->sample_rate;
-            c->channels = DecoderStream->codec->channels;
+            c->sample_rate = Decoder.Stream->codec->sample_rate;
+            c->channels = Decoder.Stream->codec->channels;
             c->sample_fmt = AVSampleFormat.AV_SAMPLE_FMT_S16;//encoder->sample_fmts[0];
             c->channel_layout = ffmpeg.AV_CH_LAYOUT_STEREO;
 
@@ -1075,7 +1070,7 @@ namespace FF8
         //    EncoderFormatContext->oformat = fmt;
         //    EncoderStream = add_audio_stream(EncoderFormatContext, fmt->audio_codec);
         //    open_audio(EncoderFormatContext, EncoderStream);
-        //    EncoderStream->time_base = DecoderStream->time_base;
+        //    EncoderStream->time_base = Decoder.Stream->time_base;
         //    Return = ffmpeg.avio_open2(&EncoderFormatContext->pb, EncodedFileName, ffmpeg.AVIO_FLAG_WRITE, null, null);
         //    if (Return < 0)
         //    {
@@ -1116,29 +1111,29 @@ namespace FF8
                 die("Error allocating the frame\n");
             }
             ResampleContext = ffmpeg.swr_alloc();
-            ffmpeg.av_opt_set_channel_layout(ResampleContext, "in_channel_layout", (long)DecodeCodecContext->channel_layout, 0);
-            ffmpeg.av_opt_set_int(ResampleContext, "in_sample_rate", DecodeCodecContext->sample_rate, 0);
-            ffmpeg.av_opt_set_sample_fmt(ResampleContext, "in_sample_fmt", DecodeCodecContext->sample_fmt, 0);
+            ffmpeg.av_opt_set_channel_layout(ResampleContext, "in_channel_layout", (long)Decoder.CodecContext->channel_layout, 0);
+            ffmpeg.av_opt_set_int(ResampleContext, "in_sample_rate", Decoder.CodecContext->sample_rate, 0);
+            ffmpeg.av_opt_set_sample_fmt(ResampleContext, "in_sample_fmt", Decoder.CodecContext->sample_fmt, 0);
 
             ffmpeg.av_opt_set_channel_layout(ResampleContext, "out_channel_layout", EncoderCodecContext == null ? ffmpeg.AV_CH_LAYOUT_STEREO : (long)EncoderCodecContext->channel_layout, 0);
             ffmpeg.av_opt_set_sample_fmt(ResampleContext, "out_sample_fmt", EncoderCodecContext == null ? AVSampleFormat.AV_SAMPLE_FMT_S16 : EncoderCodecContext->sample_fmt, 0);
-            ffmpeg.av_opt_set_int(ResampleContext, "out_sample_rate", EncoderCodecContext == null ? DecodeCodecContext->sample_rate : EncoderCodecContext->sample_rate, 0);
+            ffmpeg.av_opt_set_int(ResampleContext, "out_sample_rate", EncoderCodecContext == null ? Decoder.CodecContext->sample_rate : EncoderCodecContext->sample_rate, 0);
 
             Return = ffmpeg.swr_init(ResampleContext);
             if (Return < 0)
             {
                 die("swr_init");
             }
-            Decoder.Frame->format = (int)DecodeCodecContext->sample_fmt;
-            Decoder.Frame->channel_layout = DecodeCodecContext->channel_layout;
-            Decoder.Frame->channels = DecodeCodecContext->channels;
-            Decoder.Frame->sample_rate = DecodeCodecContext->sample_rate;
+            Decoder.Frame->format = (int)Decoder.CodecContext->sample_fmt;
+            Decoder.Frame->channel_layout = Decoder.CodecContext->channel_layout;
+            Decoder.Frame->channels = Decoder.CodecContext->channels;
+            Decoder.Frame->sample_rate = Decoder.CodecContext->sample_rate;
 
             ResampleFrame->nb_samples = EncoderCodecContext == null || EncoderCodecContext->frame_size == 0 ? 32 : EncoderCodecContext->frame_size;
             ResampleFrame->format = EncoderCodecContext == null ? (int)AVSampleFormat.AV_SAMPLE_FMT_S16 : (int)EncoderCodecContext->sample_fmt;
             ResampleFrame->channel_layout = EncoderCodecContext == null ? ffmpeg.AV_CH_LAYOUT_STEREO : EncoderCodecContext->channel_layout;
             ResampleFrame->channels = EncoderCodecContext == null ? (int)AudioChannels.Stereo : EncoderCodecContext->channels;
-            ResampleFrame->sample_rate = EncoderCodecContext == null ? DecodeCodecContext->sample_rate : EncoderCodecContext->sample_rate;
+            ResampleFrame->sample_rate = EncoderCodecContext == null ? Decoder.CodecContext->sample_rate : EncoderCodecContext->sample_rate;
 
             AVPacket Packet;
             ffmpeg.av_init_packet(&Packet);
@@ -1214,7 +1209,7 @@ namespace FF8
         //{
         //    try
         //    {
-        //        using (FileStream fs = File.OpenRead(DecodedFileName))
+        //        using (FileStream fs = File.OpenRead(Decoder.FileName))
         //        {
         //            int MAX = 4096;
         //            byte[] data = new byte[MAX];
@@ -1292,7 +1287,7 @@ namespace FF8
             /* The decoded data is signed 16-bit planar -- each channel in its own
              * buffer. We interleave the two channels manually here, but using
              * libavresample is recommended instead. */
-            if (DecodeCodecContext->channels == 2 && frame.format == (int)AVSampleFormat.AV_SAMPLE_FMT_S16P)//not tested
+            if (Decoder.CodecContext->channels == 2 && frame.format == (int)AVSampleFormat.AV_SAMPLE_FMT_S16P)//not tested
             {
                 for (int i = 0; i < frame.linesize[0]; i++)
                 {
@@ -1313,7 +1308,7 @@ namespace FF8
         }
         public int GetFrame()
         {
-            if (DecoderStreamIndex == -1)
+            if (Decoder.StreamIndex == -1)
             {
                 return -1;
             }
@@ -1327,7 +1322,7 @@ namespace FF8
         /// </summary>
         private void BMP_Save()
         {
-            string filename = Path.Combine(Path.GetTempPath(), $"{Path.GetFileNameWithoutExtension(DecodedFileName)}_rawframe.{DecodeCodecContext->frame_number}.bmp");
+            string filename = Path.Combine(Path.GetTempPath(), $"{Path.GetFileNameWithoutExtension(Decoder.FileName)}_rawframe.{Decoder.CodecContext->frame_number}.bmp");
             using (FileStream fs = File.OpenWrite(filename))
             {
                 using (Bitmap bitmap = FrameToBMP())
@@ -1343,11 +1338,11 @@ namespace FF8
         /// <returns>Bitmap of frame</returns>
         public Bitmap FrameToBMP()
         {
-            AVPixelFormat v = DecodeCodecContext->pix_fmt;
-            Bitmap bitmap = new Bitmap(DecodeCodecContext->width, DecodeCodecContext->height, PixelFormat.Format32bppArgb);
+            AVPixelFormat v = Decoder.CodecContext->pix_fmt;
+            Bitmap bitmap = new Bitmap(Decoder.CodecContext->width, Decoder.CodecContext->height, PixelFormat.Format32bppArgb);
 
             // lock the bitmap
-            BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, 0, DecodeCodecContext->width, DecodeCodecContext->height),
+            BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, 0, Decoder.CodecContext->width, Decoder.CodecContext->height),
             ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
 
             byte* ptr = (byte*)(bitmapData.Scan0);
@@ -1356,7 +1351,7 @@ namespace FF8
             int[] srcLinesize = { bitmapData.Stride, 0, 0, 0 };
 
             // convert video frame to the RGB bitmap
-            ffmpeg.sws_scale(ScalerContext, Decoder.Frame->data, Decoder.Frame->linesize, 0, DecodeCodecContext->height, srcData, srcLinesize);
+            ffmpeg.sws_scale(ScalerContext, Decoder.Frame->data, Decoder.Frame->linesize, 0, Decoder.CodecContext->height, srcData, srcLinesize);
 
             bitmap.UnlockBits(bitmapData);
 
@@ -1405,7 +1400,7 @@ namespace FF8
                         DecodeFileStream.Dispose();
                     }
 
-                    StopSound();
+                    StopTimer();
                     // TODO: dispose managed state (managed objects).
                 }
 
@@ -1440,9 +1435,9 @@ namespace FF8
                 }
 
 
-                //if (DecodeCodecContext != null)
+                //if (Decoder.CodecContext != null)
                 //{
-                //    DecodeFlush(DecodeCodecContext, Decoder.Packet); // was causesing exception flushing happens earlier
+                //    DecodeFlush(Decoder.CodecContext, Decoder.Packet); // was causesing exception flushing happens earlier
                 //}
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
@@ -1457,9 +1452,9 @@ namespace FF8
                 //ffmpeg.av_free(Decoder.Packet);
 
 
-                //ffmpeg.avcodec_close(DecodeCodecContext);
-                //ffmpeg.av_free(DecodeCodecContext);
-                ffmpeg.av_free(DecodeCodec);
+                //ffmpeg.avcodec_close(Decoder.CodecContext);
+                ////ffmpeg.av_free(Decoder.CodecContext);
+                
 
                 ffmpeg.sws_freeContext(ScalerContext);
                 if (ResampleContext != null)

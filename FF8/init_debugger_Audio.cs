@@ -1,20 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 #if _WINDOWS
 using DirectMidi;
 #endif
 using System.Runtime.InteropServices;
 using System.Diagnostics;
-using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Audio;
-using NAudio;
 using NAudio.Wave;
-using System.Reflection;
-using NAudio.Vorbis;
 
 namespace FF8
 {
@@ -24,14 +18,17 @@ namespace FF8
     {
 
 #if _WINDOWS
-        private static CDirectMusic cdm;
-        private static CDLSLoader loader;
-        private static CSegment segment;
-        private static CAPathPerformance path;
-        public static CPortPerformance cport; //public explicit
-        private static COutputPort outport;
-        private static CCollection ccollection;
-        private static CInstrument[] instruments;
+        private struct Midi
+        {
+            public static CDirectMusic cdm;
+            public static CDLSLoader loader;
+            public static CSegment segment;
+            public static CAPathPerformance path;
+            public static CPortPerformance cport; //public explicit
+            public static COutputPort outport;
+            public static CCollection ccollection;
+            public static CInstrument[] instruments;
+        }
 #endif
 
         private struct SoundEntry
@@ -46,7 +43,7 @@ namespace FF8
         }
 #pragma warning disable CS0649
         private struct WAVEFORMATEX
-            {
+        {
             public ushort wFormatTag;
             public ushort nChannels;
             public uint nSamplesPerSec;
@@ -59,6 +56,14 @@ namespace FF8
 
         private static SoundEntry[] soundEntries;
         public static int soundEntriesCount;
+        private static Ffcc ffccMusic = null; // testing using class to play music instead of Naudio / Nvorbis
+        private static bool musicplaying = false;
+        private static int lastplayed = -1;
+
+        public static readonly Dictionary<ushort, DynamicSoundEffectInstance> dynamicsound = new Dictionary<ushort, DynamicSoundEffectInstance> {
+            {44100, new DynamicSoundEffectInstance(44100,AudioChannels.Stereo)},
+            {48000, new DynamicSoundEffectInstance(48000,AudioChannels.Stereo)}
+    };
 
 
         public const int S_OK = 0x00000000;
@@ -72,21 +77,29 @@ namespace FF8
             //ogg files stored in:
             RaW_ogg_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../../RaW/GLOBAL/Music"));
             if (!Directory.Exists(RaW_ogg_pt))
+            {
                 RaW_ogg_pt = null;
+            }
             // From what I gather the OGG files and the sgt files have the same numerical prefix.
             // I might try to add the functionality to the debug screen monday.
 
             dmusic_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../Music/dmusic_backup/"));
             if (!Directory.Exists(dmusic_pt))
+            {
                 dmusic_pt = null;
+            }
 
             music_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../Music/dmusic/"));
             if (!Directory.Exists(music_pt))
+            {
                 music_pt = null;
+            }
 
             music_wav_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../Music/"));
             if (!Directory.Exists(music_wav_pt))
+            {
                 music_wav_pt = null;
+            }
 
             // goal of dicmusic is to be able to select a track by prefix. 
             // it adds an list of files with the same prefix. so you can later on switch out which one you want.
@@ -98,11 +111,19 @@ namespace FF8
                     if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
                     {
                         //mismatched prefix's go here
-                        if (key == 512) key = 0; //loser.ogg and sgt don't match.
+                        if (key == 512)
+                        {
+                            key = 0; //loser.ogg and sgt don't match.
+                        }
+
                         if (!Memory.dicMusic.ContainsKey(key))
+                        {
                             Memory.dicMusic.Add(key, new List<string> { m });
+                        }
                         else
+                        {
                             Memory.dicMusic[key].Add(m);
+                        }
                     }
 
                 }
@@ -117,16 +138,24 @@ namespace FF8
                     if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
                     {
                         if (!Memory.dicMusic.ContainsKey(key))
+                        {
                             Memory.dicMusic.Add(key, new List<string> { m });
+                        }
                         else
+                        {
                             Memory.dicMusic[key].Add(m);
+                        }
                     }
                     else
                     {
                         if (!Memory.dicMusic.ContainsKey(999)) //gets any music w/o prefix
+                        {
                             Memory.dicMusic.Add(999, new List<string> { m });
+                        }
                         else
+                        {
                             Memory.dicMusic[999].Add(m);
+                        }
                     }
                 }
             }
@@ -140,16 +169,24 @@ namespace FF8
                     if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
                     {
                         if (!Memory.dicMusic.ContainsKey(key))
+                        {
                             Memory.dicMusic.Add(key, new List<string> { m });
+                        }
                         else
+                        {
                             Memory.dicMusic[key].Add(m);
+                        }
                     }
                     else
                     {
                         if (!Memory.dicMusic.ContainsKey(999)) //gets any music w/o prefix
+                        {
                             Memory.dicMusic.Add(999, new List<string> { m });
+                        }
                         else
+                        {
                             Memory.dicMusic[999].Add(m);
+                        }
                     }
                 }
             }
@@ -163,16 +200,24 @@ namespace FF8
                     if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
                     {
                         if (!Memory.dicMusic.ContainsKey(key))
+                        {
                             Memory.dicMusic.Add(key, new List<string> { m });
+                        }
                         else
+                        {
                             Memory.dicMusic[key].Add(m);
+                        }
                     }
                     else
                     {
                         if (!Memory.dicMusic.ContainsKey(999)) //gets any music w/o prefix
+                        {
                             Memory.dicMusic.Add(999, new List<string> { m });
+                        }
                         else
+                        {
                             Memory.dicMusic[999].Add(m);
+                        }
                     }
                 }
             }
@@ -186,11 +231,13 @@ namespace FF8
             {
                 soundEntries = new SoundEntry[br.ReadUInt32()];
                 fs.Seek(36, SeekOrigin.Current);
-                for (int i = 0; i < soundEntries.Length-1; i++)
+                for (int i = 0; i < soundEntries.Length - 1; i++)
                 {
                     int sz = br.ReadInt32();
-                    if(sz == 0) {
-                        fs.Seek(34, SeekOrigin.Current); continue; }
+                    if (sz == 0)
+                    {
+                        fs.Seek(34, SeekOrigin.Current); continue;
+                    }
 
                     soundEntries[i] = new SoundEntry()
                     {
@@ -209,9 +256,14 @@ namespace FF8
         internal static void PlaySound(int soundID)
         {
             if (soundEntries == null)
+            {
                 return;
-            if (soundEntries[soundID].Size == 0) return;
+            }
 
+            if (soundEntries[soundID].Size == 0)
+            {
+                return;
+            }
 
             using (FileStream fs = new FileStream(Path.Combine(Memory.FF8DIR, "../Sound/audio.dat"), FileMode.Open, FileAccess.Read))
             using (BinaryReader br = new BinaryReader(fs))
@@ -241,36 +293,35 @@ namespace FF8
                 //string strDLLpath = Assembly.GetAssembly().CodeBase.Substring(8);
                 //if (File.Exists("Msacm32.dll"))
                 //try { 
-                RawSourceWaveStream raw = new RawSourceWaveStream(new MemoryStream(rawBuffer), new AdpcmWaveFormat((int)format.nSamplesPerSec, format.nChannels));
-                byte[] buffer;
-                if (!MakiExtended.IsLinux)
+                using (RawSourceWaveStream raw = new RawSourceWaveStream(new MemoryStream(rawBuffer), new AdpcmWaveFormat((int)format.nSamplesPerSec, format.nChannels)))
                 {
-                    WaveStream a = WaveFormatConversionStream.CreatePcmStream(raw);
-                    //    WaveOut waveout = new WaveOut();
-                    //    waveout.Init(a);
-                    //    waveout.Play();
-                    //}
-                    //catch
-                    buffer = ReadFullyByte(a);
-                }
-                else
-                {
-                    buffer = ReadFullyByte(raw);
-                }
-                //{
-                //try
-                //{
-                if (buffer != null)
-                {
-                    SoundEffect se = new SoundEffect(buffer, raw.WaveFormat.SampleRate, (AudioChannels)raw.WaveFormat.Channels);
-                    se.Play();
-                }
-                else
-                {
-                    //number 28 broken
-                    SoundEffect se = new SoundEffect(ReadFullyByte(raw), (int)format.nSamplesPerSec / 2, (AudioChannels)format.nChannels);
-                }
+                    byte[] buffer;
 
+
+                    if (!MakiExtended.IsLinux)
+                    {
+                        using (WaveStream a = WaveFormatConversionStream.CreatePcmStream(raw))
+                            buffer = ReadFullyByte(a);
+                    }
+                    else
+                    {
+                        buffer = ReadFullyByte(raw);
+                    }
+                    //{
+                    //try
+                    //{
+                    if (buffer != null)
+                    {
+                        using (SoundEffect se = new SoundEffect(buffer, raw.WaveFormat.SampleRate, (AudioChannels)raw.WaveFormat.Channels))
+                            se.Play();
+                    }
+                    else
+                    {
+                        //number 28 broken
+                        using (SoundEffect se = new SoundEffect(ReadFullyByte(raw), (int)format.nSamplesPerSec / 2, (AudioChannels)format.nChannels))
+                            se.Play();
+                    }
+                }
                 //    }
                 //    catch {
                 //        try
@@ -289,8 +340,8 @@ namespace FF8
 
                 //}
 
-//                SoundEffect se = new SoundEffect(rawBuffer, (int)format.nSamplesPerSec/2, (AudioChannels)format.nChannels);
-  //              se.Play();
+                //                SoundEffect se = new SoundEffect(rawBuffer, (int)format.nSamplesPerSec/2, (AudioChannels)format.nChannels);
+                //              se.Play();
 
 
 
@@ -304,17 +355,16 @@ namespace FF8
                 //se.Dispose();
             }
         }
-
-        
-
         public static void StopSound()
         {
             //waveout.Stop();
         }
         internal static void Update()
         {
-            if(ffccMusic!=null && ffccMusic.LOOPSTART > 0 && ffccMusic.BehindFrame())
+            if (ffccMusic != null && ffccMusic.LOOPSTART > 0 && ffccMusic.BehindFrame())
+            {
                 ffccMusic.GetFrame();
+            }
         }
         //callable test
 
@@ -332,60 +382,69 @@ namespace FF8
             //}
             //while (read == 0 && start < size);
             if (read == 0)
+            {
                 return null;
+            }
+
             if (read < size)
+            {
                 Array.Resize<byte>(ref buffer, read);
+            }
+
             return buffer;
         }
-        public static byte[] ReadFullyFloat(VorbisWaveReader stream)
-        {
-            // following formula goal is to calculate the number of bytes to make buffer. might be wrong.
-            long size = (stream.Length / sizeof(float)) +100; //unsure why but read was > than size so added 100; will error if the size is too small.
+        //public static byte[] ReadFullyFloat(VorbisWaveReader stream)
+        //{
+        //    // following formula goal is to calculate the number of bytes to make buffer. might be wrong.
+        //    long size = (stream.Length / sizeof(float)) +100; //unsure why but read was > than size so added 100; will error if the size is too small.
 
-            float[] buffer = new float[size];
+        //    float[] buffer = new float[size];
 
-            int read = stream.Read(buffer, 0, buffer.Length);
-            return GetSamplesWaveData(buffer, read);
-        }
-        public static byte[] GetSamplesWaveData(byte[] samples, int samplesCount)
-        {
-            float[] f = new float[(samplesCount / sizeof(float))];
-            int i = 0;
-            for (int n = 0; n < samples.Length; n += sizeof(float))
-            {
-                f[i++] = BitConverter.ToSingle(samples, n);
-            }
-            return GetSamplesWaveData(f, samplesCount / sizeof(float));
-        }
-        public static byte[] GetSamplesWaveData(float[] samples, int samplesCount)
-        { // converts 32 bit float samples to 16 bit pcm. I think :P
-            // https://stackoverflow.com/questions/31957211/how-to-convert-an-array-of-int16-sound-samples-to-a-byte-array-to-use-in-monogam/42151979#42151979
-            var pcm = new byte[samplesCount * 2];
-            int sampleIndex = 0,
-                pcmIndex = 0;
+        //    int read = stream.Read(buffer, 0, buffer.Length);
+        //    return GetSamplesWaveData(buffer, read);
+        //}
+        //public static byte[] GetSamplesWaveData(byte[] samples, int samplesCount)
+        //{
+        //    float[] f = new float[(samplesCount / sizeof(float))];
+        //    int i = 0;
+        //    for (int n = 0; n < samples.Length; n += sizeof(float))
+        //    {
+        //        f[i++] = BitConverter.ToSingle(samples, n);
+        //    }
+        //    return GetSamplesWaveData(f, samplesCount / sizeof(float));
+        //}
+        //public static byte[] GetSamplesWaveData(float[] samples, int samplesCount)
+        //{ // converts 32 bit float samples to 16 bit pcm. I think :P
+        //    // https://stackoverflow.com/questions/31957211/how-to-convert-an-array-of-int16-sound-samples-to-a-byte-array-to-use-in-monogam/42151979#42151979
+        //    var pcm = new byte[samplesCount * 2];
+        //    int sampleIndex = 0,
+        //        pcmIndex = 0;
 
-            while (sampleIndex < samplesCount)
-            {
-                var outsample = (short)(samples[sampleIndex] * short.MaxValue);
-                pcm[pcmIndex] = (byte)(outsample & 0xff);
-                pcm[pcmIndex + 1] = (byte)((outsample >> 8) & 0xff);
+        //    while (sampleIndex < samplesCount)
+        //    {
+        //        var outsample = (short)(samples[sampleIndex] * short.MaxValue);
+        //        pcm[pcmIndex] = (byte)(outsample & 0xff);
+        //        pcm[pcmIndex + 1] = (byte)((outsample >> 8) & 0xff);
 
-                sampleIndex++;
-                pcmIndex += 2;
-            }
+        //        sampleIndex++;
+        //        pcmIndex += 2;
+        //    }
 
-            return pcm;
-        }
+        //    return pcm;
+        //}
 
-        private static bool musicplaying = false;
-        private static int lastplayed = -1;
 
         public static void PlayStopMusic()
         {
-            if (!musicplaying || lastplayed != Memory.MusicIndex) PlayMusic();
-            else StopAudio(); 
+            if (!musicplaying || lastplayed != Memory.MusicIndex)
+            {
+                PlayMusic();
+            }
+            else
+            {
+                StopAudio();
+            }
         }
-        private static Ffcc ffccMusic = null; // testing using class to play music instead of Naudio / Nvorbis
         public static void PlayMusic()
         {
             string ext = "";
@@ -402,103 +461,74 @@ namespace FF8
             switch (ext)
             {
                 case ".ogg":
-                    //vorbis wave reader uncompresses the 32 bit float wav data from ogg files
                     ffccMusic = new Ffcc(pt, FFmpeg.AutoGen.AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
-                    //var vorbisStream = new VorbisWaveReader(pt);
-                    //read fully float reads float[] from vorbis stream and then uses another function to convert to 16 bit pcm
-                    //byte[] fileStream = ReadFullyFloat(vorbisStream);
-                    //int loopstart = -1;
-                    //int looplen = 0; // 0 length till play till end of song.
-                    //int loopend = -1;
-                    //foreach (var c in vorbisStream.Comments)
-                    //{
-                    //    string[] items = ((string)c).Split('=');
-                    //    switch (items[0])
-                    //    {
-                    //        case "LOOPSTART":
-                    //            int.TryParse(items[1], out loopstart);
-                    //            break;
-                    //        case "LOOPEND":
-                    //            int.TryParse(items[1], out loopend); // I haven't seen this used yet. if it is then break and make sure works.
-                    //            break;
-                    //        case "LOOPLENGTH":
-                    //            int.TryParse(items[1], out looplen); // I haven't seen this used yet. if it is then break and make sure works
-                    //            break;
-                                
-                    //    }
-                    //}
-                    //if (loopend > 0)
-                    //    looplen = loopend - loopstart; // end - start = length assuming end is the samplecount point of end of loop and not length.
-                    //SoundEffect se;
-                    //if (loopstart >= 0)
-                    //    se = new SoundEffect(fileStream, 0, fileStream.Length, vorbisStream.WaveFormat.SampleRate, (AudioChannels)vorbisStream.WaveFormat.Channels, loopstart, 0);
-                    //else
-                    //    se = new SoundEffect(fileStream, vorbisStream.WaveFormat.SampleRate, (AudioChannels)vorbisStream.WaveFormat.Channels);
-                    //see = se.CreateInstance();
-                    //see.IsLooped = loopstart >= 0;
-                    //see.Play();
-                    ffccMusic.GetFrame();
-                    ffccMusic.PlaySound();
-                    break ;
+                    ffccMusic.GetFrame(); // prime the pump
+                    ffccMusic.StartTimer();
+                    break;
                 case ".sgt":
 
                     if (!MakiExtended.IsLinux)
                     {
-#if _WINDOWS                        
-                        if (cdm == null)
+#if _WINDOWS
+                        if (Midi.cdm == null)
                         {
-                            cdm = new CDirectMusic();
-                            cdm.Initialize();
-                            loader = new CDLSLoader();
-                            loader.Initialize();
-                            loader.LoadSegment(pt, out segment);
-                            ccollection = new CCollection();
+                            Midi.cdm = new CDirectMusic();
+                            Midi.cdm.Initialize();
+                            Midi.loader = new CDLSLoader();
+                            Midi.loader.Initialize();
+                            Midi.loader.LoadSegment(pt, out Midi.segment);
+                            Midi.ccollection = new CCollection();
                             string pathDLS = Path.Combine(Memory.FF8DIR, "../Music/dmusic_backup/FF8.dls");
                             if (!File.Exists(pathDLS))
+                            {
                                 pathDLS = Path.Combine(Memory.FF8DIR, "../Music/dmusic/FF8.dls");
-                            loader.LoadDLS(pathDLS, out ccollection);
+                            }
+
+                            Midi.loader.LoadDLS(pathDLS, out Midi.ccollection);
                             uint dwInstrumentIndex = 0;
-                            while (ccollection.EnumInstrument(++dwInstrumentIndex, out INSTRUMENTINFO iInfo) == S_OK)
+                            while (Midi.ccollection.EnumInstrument(++dwInstrumentIndex, out INSTRUMENTINFO iInfo) == S_OK)
                             {
                                 Debug.WriteLine(iInfo.szInstName);
                             }
-                            instruments = new CInstrument[dwInstrumentIndex];
+                            Midi.instruments = new CInstrument[dwInstrumentIndex];
 
-                            path = new CAPathPerformance();
-                            path.Initialize(cdm, null, null, DMUS_APATH.DYNAMIC_3D, 128);
-                            cport = new CPortPerformance();
-                            cport.Initialize(cdm, null, null);
-                            outport = new COutputPort();
-                            outport.Initialize(cdm);
+                            Midi.path = new CAPathPerformance();
+                            Midi.path.Initialize(Midi.cdm, null, null, DMUS_APATH.DYNAMIC_3D, 128);
+                            Midi.cport = new CPortPerformance();
+                            Midi.cport.Initialize(Midi.cdm, null, null);
+                            Midi.outport = new COutputPort();
+                            Midi.outport.Initialize(Midi.cdm);
 
                             uint dwPortCount = 0;
                             INFOPORT infoport;
                             do
-                                outport.GetPortInfo(++dwPortCount, out infoport);
+                            {
+                                Midi.outport.GetPortInfo(++dwPortCount, out infoport);
+                            }
                             while ((infoport.dwFlags & DMUS_PC.SOFTWARESYNTH) == 0);
 
-                            outport.SetPortParams(0, 0, 0, SET.REVERB | SET.CHORUS, 44100);
-                            outport.ActivatePort(infoport);
+                            Midi.outport.SetPortParams(0, 0, 0, SET.REVERB | SET.CHORUS, 44100);
+                            Midi.outport.ActivatePort(infoport);
 
-                            cport.AddPort(outport, 0, 1);
+                            Midi.cport.AddPort(Midi.outport, 0, 1);
 
                             for (int i = 0; i < dwInstrumentIndex; i++)
                             {
-                                ccollection.GetInstrument(out instruments[i], i);
-                                outport.DownloadInstrument(instruments[i]);
+                                Midi.ccollection.GetInstrument(out Midi.instruments[i], i);
+                                Midi.outport.DownloadInstrument(Midi.instruments[i]);
                             }
-                            segment.Download(cport);
-                            cport.PlaySegment(segment);
+                            Midi.segment.Download(Midi.cport);
+                            Midi.cport.PlaySegment(Midi.segment);
                         }
                         else
                         {
-                            cport.Stop(segment);
-                            segment.Dispose();
+                            Midi.cport.Stop(Midi.segment);
+                            Midi.segment.Dispose();
                             //segment.ConnectToDLS
-                            loader.LoadSegment(pt, out segment);
-                            segment.Download(cport);
-                            cport.PlaySegment(segment);
-                            cdm.Dispose();
+                            Midi.loader.LoadSegment(pt, out Midi.segment);
+                            Midi.segment.Download(Midi.cport);
+                            Midi.cport.PlaySegment(Midi.segment);
+                            Midi.cdm.Dispose();
                         }
 
                         //GCHandle.Alloc(cdm, GCHandleType.Pinned);
@@ -515,24 +545,50 @@ namespace FF8
 
 
             musicplaying = true;
-            lastplayed = (int)Memory.MusicIndex;
+            lastplayed = Memory.MusicIndex;
         }
+        public static void StopAudio()
+        {
+            musicplaying = false;
+            if (ffccMusic != null)
+            {
+                ffccMusic.StopTimer();
+            }
+            foreach (KeyValuePair<ushort, DynamicSoundEffectInstance> entry in dynamicsound)
+            {
+                entry.Value.Stop();
+            }
 
+#if _WINDOWS
+            try
+            {
+                if (!MakiExtended.IsLinux)
+                {
+                    Midi.cport.StopAll();
+                }
+            }
+            catch { }
+#endif
+        }
         public static void KillAudio()
         {
+            foreach (KeyValuePair<ushort, DynamicSoundEffectInstance> entry in dynamicsound)
+            {
+                entry.Value.Dispose();
+            }
             try
             {
 
                 if (MakiExtended.IsLinux)
                 {
 #if _WINDOWS
-                    cport.StopAll();
-                    cport.Dispose();
-                    ccollection.Dispose();
-                    loader.Dispose();
-                    outport.Dispose();
-                    path.Dispose();
-                    cdm.Dispose();
+                    Midi.cport.StopAll();
+                    Midi.cport.Dispose();
+                    Midi.ccollection.Dispose();
+                    Midi.loader.Dispose();
+                    Midi.outport.Dispose();
+                    Midi.path.Dispose();
+                    Midi.cdm.Dispose();
 #endif
                 }
 
@@ -540,23 +596,6 @@ namespace FF8
             catch
             {
             }
-    }
-
-        public static void StopAudio()
-        {
-            musicplaying = false;
-            if (ffccMusic != null)
-                ffccMusic.StopSound();
-
-#if _WINDOWS
-            try
-            {
-                if (!MakiExtended.IsLinux)
-
-                    cport.StopAll();
-            }
-            catch {}
-#endif
         }
 
         private static List<byte[]> ProcessTrackList(byte[] item2)
@@ -573,7 +612,10 @@ namespace FF8
                 byte[] buf = pbs.ReadBytes(vara);
                 Tracks.Add(buf);
                 if (pbs.Tell() == pbs.Length)
+                {
                     break;
+                }
+
                 head = Encoding.ASCII.GetString(BitConverter.GetBytes(pbs.ReadUInt()));
             }
             return Tracks;
