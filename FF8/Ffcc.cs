@@ -108,8 +108,8 @@ namespace FF8
         {
             get
             {
-                    Return = ffmpeg.av_find_best_stream(Decoder.Format, AVMediaType.AVMEDIA_TYPE_VIDEO, -1, -1, null, 0);
-                
+                Return = ffmpeg.av_find_best_stream(Decoder.Format, AVMediaType.AVMEDIA_TYPE_VIDEO, -1, -1, null, 0);
+
 
                 if (Return < 0)
                 {
@@ -519,8 +519,8 @@ namespace FF8
                         {
                             if (LOOPSTART >= 0)
                             {
-                                    ffmpeg.avformat_seek_file(Decoder.Format, DecoderStreamIndex, LOOPSTART - 1000, LOOPSTART, DecoderStream->duration, 0);
-                                
+                                ffmpeg.avformat_seek_file(Decoder.Format, DecoderStreamIndex, LOOPSTART - 1000, LOOPSTART, DecoderStream->duration, 0);
+
 
                                 LOOPED = true; // set after one play to change durration checked.
                                 State = FfccState.WAITING;
@@ -837,11 +837,13 @@ namespace FF8
         {
             if (!FileOpened)
             {
-                fixed(AVFormatContext** tmp = &Decoder._format)
+                fixed (AVFormatContext** tmp = &Decoder._format)
+                {
                     Return = ffmpeg.avformat_open_input(tmp, DecodedFileName, null, null);
+                }
 
                 CheckReturn();
-                    Return = ffmpeg.avformat_find_stream_info(Decoder.Format, null);
+                Return = ffmpeg.avformat_find_stream_info(Decoder.Format, null);
 
                 CheckReturn();
 
@@ -1343,24 +1345,33 @@ namespace FF8
         /// <returns>Bitmap of frame</returns>
         public Bitmap FrameToBMP()
         {
-            AVPixelFormat v = DecodeCodecContext->pix_fmt;
-            Bitmap bitmap = new Bitmap(DecodeCodecContext->width, DecodeCodecContext->height, PixelFormat.Format32bppArgb);
+            Bitmap bitmap=null;
+            BitmapData bitmapData=null; 
+                
+            try
+            {
+                bitmap = new Bitmap(DecodeCodecContext->width, DecodeCodecContext->height, PixelFormat.Format32bppArgb);
+                AVPixelFormat v = DecodeCodecContext->pix_fmt;
 
-            // lock the bitmap
-            BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, 0, DecodeCodecContext->width, DecodeCodecContext->height),
-            ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+                // lock the bitmap
+                bitmapData = bitmap.LockBits(new Rectangle(0, 0, DecodeCodecContext->width, DecodeCodecContext->height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
 
-            byte* ptr = (byte*)(bitmapData.Scan0);
+                byte * ptr = (byte*)(bitmapData.Scan0);
 
-            byte*[] srcData = { ptr, null, null, null };
-            int[] srcLinesize = { bitmapData.Stride, 0, 0, 0 };
+                byte*[] srcData = { ptr, null, null, null };
+                int[] srcLinesize = { bitmapData.Stride, 0, 0, 0 };
 
-            // convert video frame to the RGB bitmap
-            ffmpeg.sws_scale(ScalerContext, Decoder.Frame->data, Decoder.Frame->linesize, 0, DecodeCodecContext->height, srcData, srcLinesize);
+                // convert video frame to the RGB bitmap
+                ffmpeg.sws_scale(ScalerContext, Decoder.Frame->data, Decoder.Frame->linesize, 0, DecodeCodecContext->height, srcData, srcLinesize);
 
-            bitmap.UnlockBits(bitmapData);
 
-            return bitmap;
+                return bitmap;
+            }
+            finally
+            {
+                if(bitmap!=null && bitmapData!=null)
+                bitmap.UnlockBits(bitmapData);
+            }
         }
         /// <summary>
         /// Converts BMP to Texture

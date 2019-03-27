@@ -43,7 +43,7 @@ namespace FF8
 
         private static Bitmap Frame { get; set; } = null;
         private static Ffcc Ffccvideo { get; set; } = null;
-        private static Texture2D LastFrame { get; set; } = null;
+        private static Texture2D frameTex { get; set; } = null;
         private static Ffcc Ffccaudio { get; set; } = null;
         public static int ReturnState { get; set; } = Memory.MODULE_MAINMENU_DEBUG;
         /// <summary>
@@ -136,7 +136,7 @@ namespace FF8
             }
 
             MovieState = STATE_INIT;
-            LastFrame = null;
+            frameTex = null;
             Frame = null;
             Ffccaudio = null;
             Ffccvideo = null;
@@ -208,9 +208,11 @@ namespace FF8
         {
             ClearScreen();
             Memory.SpriteBatchStartStencil();
-            if (LastFrame != null)
+            if (frameTex != null)
             {
-                Memory.spriteBatch.Draw(LastFrame, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
+                Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
+                frameTex.Dispose();
+                frameTex = null;
             }
 
             Memory.SpriteBatchEnd();
@@ -221,8 +223,7 @@ namespace FF8
         //private static Bitmap Frame { get => frame; set { lastframe = frame; frame = value; } }
         private static void PlayingDraw()
         {
-            Texture2D frameTex = null;
-            if (LastFrame == null || Ffccvideo.BehindFrame())
+            if (frameTex == null || Ffccvideo.BehindFrame())
             {
                 MsElapsed = 0;
 
@@ -232,21 +233,17 @@ namespace FF8
                     MovieState = STATE_FINISHED;
                     return;
                 }
+                if (frameTex != null)
+                    frameTex.Dispose();
                 frameTex = Ffccvideo.FrameToTexture2D();
             }
-            else
-            {
-                frameTex = LastFrame;
-            }
-            if (frameTex != null)
-            {
+
                 //draw frame;
                 Memory.SpriteBatchStartStencil();
                 Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
                 Memory.SpriteBatchEnd();
                 //backup previous frame. use if new frame unavailble
-                LastFrame = frameTex;
-            }
+            
         }
     }
 }
