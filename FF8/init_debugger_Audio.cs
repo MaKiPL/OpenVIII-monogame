@@ -589,7 +589,7 @@ namespace FF8
 
         public static void KillAudio()
         {
-            if (!Sound.IsDisposed)
+            if (Sound!=null && !Sound.IsDisposed)
             {
                 Sound.Dispose();
             }
