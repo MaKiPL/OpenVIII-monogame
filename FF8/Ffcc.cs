@@ -30,7 +30,7 @@ namespace FF8
         private SwsContext* _scalerContext;
         private AVFrame* _resampleFrame;
         private AVCodecContext* _decodeCodecContext;
-        private FileStream _decodeFileStream;
+        //private FileStream _decodeFileStream;
         private AVCodecParserContext* _parserContext;
 
         private FfccVaribleGroup Decoder { get; set; } = new FfccVaribleGroup();
@@ -169,7 +169,7 @@ namespace FF8
         /// Stopwatch tracks the time audio has played so video can sync or loops can be looped.
         /// </summary>
         public Stopwatch timer { get; } = new Stopwatch();
-        public FileStream DecodeFileStream { get => _decodeFileStream; set => _decodeFileStream = value; }
+        //public FileStream DecodeFileStream { get => _decodeFileStream; set => _decodeFileStream = value; }
         public enum FfccMode
         {
             /// <summary>
@@ -375,31 +375,31 @@ namespace FF8
                 dsee48000.Dispose();
             }
         }
-        private bool SoundExistsAndReady()
-        {
-            // I'm not sure how to write this better.
-            //Outfile = Path.Combine(Path.GetDirectoryName(Outfile), $"{Path.GetFileNameWithoutExtension(Outfile)}.pcm");
-            //wr = new WaveFileReader(@"C:\eyes_on_me.wav");//Outfile))
-            if (File.Exists(EncodedFileName) && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO && Mode == FfccMode.PROCESS_ALL)
-            {
-                using (DecodeFileStream = File.OpenRead(EncodedFileName))
-                {
-                    if (DecodeFileStream.Length > 0)
-                    {
-                        using (DecodedStream = new MemoryStream())
-                        {
-                            DecodeFileStream.CopyTo(DecodedStream);
+        //private bool SoundExistsAndReady()
+        //{
+        //    // I'm not sure how to write this better.
+        //    //Outfile = Path.Combine(Path.GetDirectoryName(Outfile), $"{Path.GetFileNameWithoutExtension(Outfile)}.pcm");
+        //    //wr = new WaveFileReader(@"C:\eyes_on_me.wav");//Outfile))
+        //    if (File.Exists(EncodedFileName) && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO && Mode == FfccMode.PROCESS_ALL)
+        //    {
+        //        using (DecodeFileStream = File.OpenRead(EncodedFileName))
+        //        {
+        //            if (DecodeFileStream.Length > 0)
+        //            {
+        //                using (DecodedStream = new MemoryStream())
+        //                {
+        //                    DecodeFileStream.CopyTo(DecodedStream);
 
-                            LoadSoundFromStream();
+        //                    LoadSoundFromStream();
 
-                            return true;
-                        }
-                    }
-                }
-            }
+        //                    return true;
+        //                }
+        //            }
+        //        }
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
         private void LoadSoundFromStream()
         {
             LoadSoundFromStream(DecodedStream);
@@ -420,7 +420,7 @@ namespace FF8
 
                 if (ResampleFrame->sample_rate == 44100)
                 {
-                    dsee44100.SubmitBuffer(decodedStream.GetBuffer(),0,(int)decodedStream.Length);
+                    dsee44100.SubmitBuffer(decodedStream.GetBuffer(), 0, (int)decodedStream.Length);
                 }
                 else if (ResampleFrame->sample_rate == 48000)
                 {
@@ -802,10 +802,10 @@ namespace FF8
                 Process(skipencoder);
                 LoadSoundFromStream();
             }
-            if (!skipencoder)
-            {
-                SoundExistsAndReady();
-            }
+            //if (!skipencoder)
+            //{
+            //    SoundExistsAndReady();
+            //}
 
         }
         ~Ffcc()
@@ -1345,9 +1345,9 @@ namespace FF8
         /// <returns>Bitmap of frame</returns>
         public Bitmap FrameToBMP()
         {
-            Bitmap bitmap=null;
-            BitmapData bitmapData=null; 
-                
+            Bitmap bitmap = null;
+            BitmapData bitmapData = null;
+
             try
             {
                 bitmap = new Bitmap(DecodeCodecContext->width, DecodeCodecContext->height, PixelFormat.Format32bppArgb);
@@ -1356,7 +1356,7 @@ namespace FF8
                 // lock the bitmap
                 bitmapData = bitmap.LockBits(new Rectangle(0, 0, DecodeCodecContext->width, DecodeCodecContext->height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
 
-                byte * ptr = (byte*)(bitmapData.Scan0);
+                byte* ptr = (byte*)(bitmapData.Scan0);
 
                 byte*[] srcData = { ptr, null, null, null };
                 int[] srcLinesize = { bitmapData.Stride, 0, 0, 0 };
@@ -1369,8 +1369,10 @@ namespace FF8
             }
             finally
             {
-                if(bitmap!=null && bitmapData!=null)
-                bitmap.UnlockBits(bitmapData);
+                if (bitmap != null && bitmapData != null)
+                {
+                    bitmap.UnlockBits(bitmapData);
+                }
             }
         }
         /// <summary>
@@ -1411,10 +1413,10 @@ namespace FF8
                         DecodedStream.Dispose();
                     }
 
-                    if (DecodeFileStream != null)
-                    {
-                        DecodeFileStream.Dispose();
-                    }
+                    //if (DecodeFileStream != null)
+                    //{
+                    //    DecodeFileStream.Dispose();
+                    //}
 
                     StopSound();
                     // TODO: dispose managed state (managed objects).
