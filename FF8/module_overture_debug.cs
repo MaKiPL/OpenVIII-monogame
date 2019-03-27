@@ -63,6 +63,7 @@ namespace FF8
             Memory.module = Memory.MODULE_OVERTURE_DEBUG;
             internalModule = OvertureInternalModule._4Squaresoft;
             Module_movie_test.ReturnState = Memory.MODULE_OVERTURE_DEBUG;
+            aw = null; // was getting exception when running the overture again as the aw target changed.
         }
         private static void WaitForFirst()
         {

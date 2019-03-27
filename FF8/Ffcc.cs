@@ -32,6 +32,8 @@ namespace FF8
         private AVCodecContext* _decodeCodecContext;
         //private FileStream _decodeFileStream;
         private AVCodecParserContext* _parserContext;
+        private byte* _convertedData = null;
+        private MemoryStream _decodedStream;
 
         private FfccVaribleGroup Decoder { get; set; } = new FfccVaribleGroup();
         /// <summary>
@@ -99,7 +101,7 @@ namespace FF8
         /// Current media type being processed.
         /// </summary>
         public AVMediaType MediaType { get; private set; }
-        private MemoryStream DecodedStream { get; set; }
+        private MemoryStream DecodedStream { get => _decodedStream; set => _decodedStream = value; }
         public AVFrame* ResampleFrame { get => _resampleFrame; private set => _resampleFrame = value; }
         private FfccState State { get; set; }
         private FfccMode Mode { get; set; }
@@ -402,7 +404,7 @@ namespace FF8
         //}
         private void LoadSoundFromStream()
         {
-            LoadSoundFromStream(DecodedStream);
+            LoadSoundFromStream(ref _decodedStream);
         }
 
         private DynamicSoundEffectInstance dsee44100 = new DynamicSoundEffectInstance(44100, AudioChannels.Stereo);
@@ -410,7 +412,7 @@ namespace FF8
         private int _loopstart = -1;
 
         public int LOOPSTART { get => _loopstart; private set => _loopstart = value; }
-        public void LoadSoundFromStream(MemoryStream decodedStream)
+        public void LoadSoundFromStream(ref MemoryStream decodedStream)
         {
             if (DecodedStream.Length > 0 && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
             {
@@ -1400,7 +1402,6 @@ namespace FF8
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
-        private byte* _convertedData = null;
 
         protected virtual void Dispose(bool disposing)
         {
