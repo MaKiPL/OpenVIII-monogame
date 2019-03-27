@@ -496,9 +496,10 @@ namespace FF8
                     for(int k = 0; k<skeleton.cBones; k++)
                     {
                         var rad = animHeader.animations[i].animationFrames[n].boneRot.Item1[k];
-                            var MatrixZ = Matrix.Multiply(Matrix.CreateRotationY(MathHelper.ToRadians(-rad.Y)), Matrix.CreateRotationX(MathHelper.ToRadians(rad.X)));
+                        //var newMatrix = MakiExtended.MatrixMultiply(MakiExtended.GetRotationMatrixY())
+                            var MatrixZ = Matrix.Multiply(Matrix.CreateRotationY(MathHelper.ToRadians(-rad.Y)), Matrix.CreateRotationX(MathHelper.ToRadians(-rad.X)));
                         MatrixZ = Matrix.Transpose(MatrixZ);
-                        MatrixZ = Matrix.Multiply(Matrix.CreateRotationZ(MathHelper.ToRadians(-rad.Z)),MatrixZ);
+                        MatrixZ = Matrix.Multiply(Matrix.CreateRotationZ(MathHelper.ToRadians(rad.Z)),MatrixZ);
                         MatrixZ = Matrix.Transpose(MatrixZ);
                         //28C92BA7h
                         //3FFBDE6Dh
@@ -507,10 +508,9 @@ namespace FF8
                         {
                             //180 270 90
                             var MatrixRoot = new Matrix();
-                            MatrixRoot = Matrix.Multiply(Matrix.CreateRotationY(MathHelper.ToRadians(-270f)), Matrix.CreateRotationX(MathHelper.ToRadians(180f)));
-                            MatrixRoot = Matrix.Multiply(Matrix.CreateRotationZ(MathHelper.ToRadians(-90f)), MatrixRoot);
-                            MatrixRoot = Matrix.Transpose(MatrixRoot);
-                            MatrixZ *= MatrixRoot;
+                            MatrixRoot = Matrix.Transpose(MakiExtended.MatrixMultiply(MakiExtended.GetRotationMatrixY(270f), MakiExtended.GetRotationMatrixX(180f)));
+                            MatrixRoot = MakiExtended.MatrixMultiply(MakiExtended.GetRotationMatrixZ(-90f), Matrix.Transpose(MatrixRoot));
+                            MatrixZ = MakiExtended.MatrixMultiply(Matrix.Transpose(MatrixRoot),MatrixZ );
                             MatrixZ.M43 = 2;
                         }
                         else

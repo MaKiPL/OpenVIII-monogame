@@ -72,6 +72,43 @@ namespace FF8
         //: false;
         public static bool In(int _in, int min, int max) => In(_in, new Vector2(min, max));
 
+        //I don't know why I'm getting different results when using MonoGame's rotation matrix. Like it calculates the values or what?
+        //Tried googling why, but no results. Every points to the method I'm implementing here. If you know the answer, please tell me- Maki
+        public static Matrix GetRotationMatrixX(float angle)
+        => new Matrix(
+            1, 0, 0, 0,
+            0, (float)Math.Cos(Radians(angle)), -(float)Math.Sin(Radians(angle)), 0,
+            0, (float)Math.Sin(Radians(angle)), (float)Math.Cos(Radians(angle)), 0,
+            0, 0, 0, 0);
+
+        public static Matrix GetRotationMatrixY(double angle)
+        => new Matrix(
+            (float)Math.Cos(Radians(angle)), 0, (float)Math.Sin(Radians(angle)), 0,
+            0, 1, 0, 0,
+            -(float)Math.Sin(Radians(angle)), 0, (float)Math.Cos(Radians(angle)), 0,
+            0, 0, 0, 0);
+
+        public static Matrix GetRotationMatrixZ(float angle)
+        => new Matrix(
+            (float)Math.Cos(Radians(angle)), -(float)Math.Sin(Radians(angle)), 0, 0,
+            (float)Math.Sin(Radians(angle)), (float)Math.Cos(Radians(angle)), 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 0);
+
+        public static Matrix MatrixMultiply(Matrix a, Matrix b)
+            => new Matrix(
+                b.M11 * a.M11 + b.M21 * a.M12 + b.M31 * a.M13, b.M11 * a.M21 + b.M21 * a.M22 + b.M31 * a.M23, b.M11 * a.M31 + b.M21 * a.M32 + b.M31 * a.M33, 0,
+                b.M12 * a.M11 + b.M22 * a.M12 + b.M32 * a.M13, b.M12 * a.M21 + b.M22 * a.M22 + b.M32 * a.M23, b.M12 * a.M31 + b.M22 * a.M32 + b.M32 * a.M33, 0,
+                b.M13 * a.M11 + b.M23 * a.M12 + b.M33 * a.M13, b.M13 * a.M21 + b.M23 * a.M22 + b.M33 * a.M23, b.M13 * a.M31 + b.M23 * a.M32 + b.M33 * a.M33, 0,
+                0, 0, 0, 0);
+
+        //This is the first time I had issue with precision. Cosinus from 270o was different for float and double. MathHelper is broken...
+        public static double Radians(double angle) => angle * Math.PI / 180;
+
+        public static double Cos(double angle) => Math.Cos(Radians(angle));
+
+        public static double Sin(double angle) => Math.Sin(Radians(angle));
+
         public static ushort UshortLittleEndian(ushort ushort_)
     => (ushort)((ushort_ << 8) | (ushort_ >> 8));
 
