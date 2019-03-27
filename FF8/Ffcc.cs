@@ -420,11 +420,11 @@ namespace FF8
 
                 if (ResampleFrame->sample_rate == 44100)
                 {
-                    dsee44100.SubmitBuffer(decodedStream.GetBuffer());
+                    dsee44100.SubmitBuffer(decodedStream.GetBuffer(),0,(int)decodedStream.Length);
                 }
                 else if (ResampleFrame->sample_rate == 48000)
                 {
-                    dsee48000.SubmitBuffer(decodedStream.GetBuffer());
+                    dsee48000.SubmitBuffer(decodedStream.GetBuffer(), 0, (int)decodedStream.Length);
                 }
 
                 //dsee44100.Play();
