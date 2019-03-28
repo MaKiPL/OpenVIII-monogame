@@ -160,7 +160,7 @@ namespace FF8
         /// When getting video frames if behind it goes to next frame.
         /// disabled for debugging purposes.
         /// </summary>
-        public bool FrameSkip { get; set; } = true; 
+        public bool FrameSkip { get; set; } = true;
         /// <summary>
         /// Stopwatch tracks the time audio has played so video can sync or loops can be looped.
         /// </summary>
@@ -353,7 +353,7 @@ namespace FF8
                 dsee48000.Dispose();
             }
         }
-       
+
         private void LoadSoundFromStream()
         {
             LoadSoundFromStream(ref _decodedStream);
@@ -381,12 +381,29 @@ namespace FF8
 
             }
         }
+        public void LoadSoundFromStream(ref byte[] buffer, int start, ref int length)
+        {
+
+            if (length > 0 && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
+            {
+                if (ResampleFrame->sample_rate == 44100)
+                {
+                    dsee44100.SubmitBuffer(buffer, 0, length);
+                }
+                else if (ResampleFrame->sample_rate == 48000)
+                {
+                    dsee48000.SubmitBuffer(buffer, 0, length);
+                }
+            }
+        }
         public int ExpectedFrame()
         {
             if (timer.IsRunning)
             {
-                TimeSpan ts = timer.Elapsed;
-                return (int)Math.Round(ts.TotalMilliseconds * (FPS / 1000));
+                if(MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
+                    return (int)Math.Round(timer.ElapsedMilliseconds * ((double)75 / 1000));//FPS * 5
+                else
+                return (int)Math.Round(timer.ElapsedMilliseconds * (FPS / 1000));
             }
             return 0;
         }
@@ -407,7 +424,7 @@ namespace FF8
             {
                 return CurrentFrameNum() > ExpectedFrame();
             }
-            return false;
+            return true;
         }
         private long LOOPLENGTH
         {
@@ -559,6 +576,11 @@ namespace FF8
                 {
 
                     Resample(ref _DecodedFrame, skipencode);
+                    if (Mode == FfccMode.STATE_MACH)
+                    {
+                        State = FfccState.WAITING;
+                        return;
+                    }
                 }
             }
             if (State != FfccState.WAITING)
@@ -591,7 +613,6 @@ namespace FF8
                 {
                     die("Could not convert");
                 }
-
                 for (; ; )
                 {
                     outSamples = ffmpeg.swr_get_out_samples(ResampleContext, 0);
@@ -611,37 +632,23 @@ namespace FF8
                       (AVSampleFormat)ResampleFrame->format,
                       0);
 
+                    // write to buffer
 
-                    if (!skipencode) //encode
-                    {
-                        //ProcessEncode(ref buffer_size);
-                    }
-                    else // write to buffer
-                    {
-                        WritetoMs(ref _convertedData, 0, ref buffer_size);
-                    }
+                    WritetoMs(ref _convertedData, 0, ref buffer_size);
                 }
+
             }
         }
 
         private void PrepareProcess()
         {
             bool skipencoder = true;
-            //if (SoundExistsAndReady())
-            //{
-            //    return;
-            //}
 
             using (DecodedStream = new MemoryStream())
             {
                 Process(skipencoder);
                 LoadSoundFromStream();
             }
-            //if (!skipencoder)
-            //{
-            //    SoundExistsAndReady();
-            //}
-
         }
         ~Ffcc()
         {
@@ -741,7 +748,7 @@ namespace FF8
                 errorWriter.WriteLine("FFCC can't init due to missing ffmpeg dlls");
             }
         }
-   
+
         private void GetTags(ref AVDictionary* metadata)
         {
             string val = "", key = "";
@@ -794,7 +801,10 @@ namespace FF8
             GetTags(ref DecoderStream->metadata);
             Decoder.CodecContext = ffmpeg.avcodec_alloc_context3(Decoder.Codec);
             if (Decoder.CodecContext == null)
+            {
                 die("Could not allocate codec context");
+            }
+
             Return = ffmpeg.avcodec_parameters_to_context(Decoder.CodecContext, DecoderStream->codecpar);
             CheckReturn();
             Return = ffmpeg.avcodec_open2(Decoder.CodecContext, Decoder.Codec, null);
@@ -827,7 +837,7 @@ namespace FF8
             CheckReturn();
         }
 
- 
+
         /// <summary>
         /// PrepareResampler
         /// </summary>
@@ -879,7 +889,7 @@ namespace FF8
             ConvertedData = (byte*)Marshal.AllocHGlobal(convertedFrameBufferSize);
         }
 
-      
+
         /// <summary>
         /// throw new exception
         /// </summary>
@@ -913,17 +923,21 @@ namespace FF8
         /// <returns>bytes wrote</returns>
         private int WritetoMs(ref byte* output, int start, ref int length)
         {
-            long c_len = DecodedStream.Length;
-            for (int i = start; i < length; i++)
-            {
-                DecodedStream.WriteByte(output[i]);
-            }
-            if (DecodedStream.Length - c_len != length)
-            {
-                die("not all data wrote");
-            }
+            byte[] arr = new byte[length];
+            Marshal.Copy((IntPtr)output, arr, 0, length);
+            LoadSoundFromStream(ref arr, start, ref length);
+            //long c_len = DecodedStream.Length;
+            //for (int i = start; i < length; i++)
+            //{
+            //    DecodedStream.WriteByte(output[i]);
+            //}
+            //if (DecodedStream.Length - c_len != length)
+            //{
+            //    die("not all data wrote");
+            //}
 
-            return (int)(DecodedStream.Length - c_len);
+            //return (int)(DecodedStream.Length - c_len);
+            return length;
         }
         /// <summary>
         /// Tests audio against format type to see if can play it

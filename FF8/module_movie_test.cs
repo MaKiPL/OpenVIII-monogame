@@ -92,7 +92,7 @@ namespace FF8
                 case STATE_CLEAR:
                     break;
                 case STATE_PLAYING:
-                    if (Ffccaudio != null && Ffccaudio.BehindFrame())
+                    while (Ffccaudio != null && !Ffccaudio.AheadFrame())
                     {
                         // if we are behind the timer get the next frame of audio.
                         Ffccaudio.GetFrame(); //might not be doing anything
@@ -232,6 +232,7 @@ namespace FF8
                 {
                     frameTex.Dispose();
                     GC.Collect();
+                    GC.WaitForPendingFinalizers();
                 }
 
                 frameTex = Ffccvideo.FrameToTexture2D();
