@@ -621,7 +621,7 @@ namespace FF8
             musicplaying = false;
             if (ffccMusic != null)
             {
-                ffccMusic.StopSound();
+                ffccMusic.Dispose();
             }
 
 #if _WINDOWS

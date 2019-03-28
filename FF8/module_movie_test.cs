@@ -128,11 +128,11 @@ namespace FF8
         {
             if (Ffccaudio != null)
             {
-                Ffccaudio.StopSound();
+                Ffccaudio.Dispose();
             }
             if (Ffccvideo != null)
             {
-                Ffccvideo.StopSound();
+                Ffccvideo.Dispose();
             }
 
             MovieState = STATE_INIT;
