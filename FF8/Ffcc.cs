@@ -605,6 +605,7 @@ namespace FF8
 
                     Resample(ref _DecodedFrame, skipencode);
                     if (Mode == FfccMode.STATE_MACH && !BehindFrame())
+                    //if (Mode == FfccMode.STATE_MACH)
                     {
                         State = FfccState.WAITING;
                         return;
@@ -1053,6 +1054,8 @@ namespace FF8
 
             try
             {
+                int width = Decoder.CodecContext->width;
+                int height = Decoder.CodecContext->height;
                 bitmap = new Bitmap(Decoder.CodecContext->width, Decoder.CodecContext->height, PixelFormat.Format32bppArgb);
                 AVPixelFormat v = Decoder.CodecContext->pix_fmt;
 
@@ -1065,10 +1068,7 @@ namespace FF8
                 int[] srcLinesize = { bitmapData.Stride, 0, 0, 0 };
 
                 // convert video frame to the RGB bitmap
-                ffmpeg.sws_scale(ScalerContext, Decoder.Frame->data, Decoder.Frame->linesize, 0, Decoder.CodecContext->height, srcData, srcLinesize);
-
-
-                return bitmap;
+                ffmpeg.sws_scale(ScalerContext, Decoder.Frame->data, Decoder.Frame->linesize, 0, Decoder.CodecContext->height, srcData, srcLinesize); //sws_scale broken on linux?
             }
             finally
             {
@@ -1077,6 +1077,8 @@ namespace FF8
                     bitmap.UnlockBits(bitmapData);
                 }
             }
+            return bitmap;
+
         }
         /// <summary>
         /// Converts BMP to Texture
@@ -1087,17 +1089,31 @@ namespace FF8
             //Get Bitmap. there might be a way to skip this step.
             using (Bitmap frame = FrameToBMP())
             {
-                //Create Texture
-                Texture2D frameTex = new Texture2D(Memory.spriteBatch.GraphicsDevice, frame.Width, frame.Height, false, SurfaceFormat.Color); //GC will collect frameTex
-                                                                                                                                              //Fill it with the bitmap.
-                BitmapData bmpdata = frame.LockBits(new Rectangle(0, 0, frame.Width, frame.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);// System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                byte[] texBuffer = new byte[bmpdata.Width * bmpdata.Height * 4]; //GC here
-                Marshal.Copy(bmpdata.Scan0, texBuffer, 0, texBuffer.Length);
-                frame.UnlockBits(bmpdata);
-                frameTex.SetData(texBuffer);
+                //string filename = Path.Combine(Path.GetTempPath(), $"{Path.GetFileNameWithoutExtension(DecodedFileName)}_rawframe.{Decoder.CodecContext->frame_number}.bmp");
+
+                //frame.Save(filename);
+                BitmapData bmpdata = null;
+                Texture2D frameTex = null;
+                try
+                {
+                    //Create Texture
+                    frameTex = new Texture2D(Memory.spriteBatch.GraphicsDevice, frame.Width, frame.Height, false, SurfaceFormat.Color); //GC will collect frameTex
+                                                                                                                                                  //Fill it with the bitmap.
+                    bmpdata = frame.LockBits(new Rectangle(0, 0, frame.Width, frame.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);// System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                    byte[] texBuffer = new byte[bmpdata.Width * bmpdata.Height * 4]; //GC here
+                    Marshal.Copy(bmpdata.Scan0, texBuffer, 0, texBuffer.Length);
+
+                    frameTex.SetData(texBuffer);
 
 
+                }
+                finally
+                {
+                    if (bmpdata != null)
+                        frame.UnlockBits(bmpdata);
+                }
                 return frameTex;
+
             }
         }
 

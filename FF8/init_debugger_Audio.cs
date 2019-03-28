@@ -363,7 +363,7 @@ namespace FF8
         }
         internal static void Update()
         {
-            while (ffccMusic != null && !ffccMusic.AheadFrame())
+            if (ffccMusic != null && !ffccMusic.AheadFrame())
             {
                 ffccMusic.GetFrame();
             }

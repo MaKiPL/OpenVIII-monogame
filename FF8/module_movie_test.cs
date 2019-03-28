@@ -41,7 +41,7 @@ namespace FF8
             }
         }
 
-        private static Bitmap Frame { get; set; } = null;
+        //private static Bitmap Frame { get; set; } = null;
         private static Ffcc Ffccvideo { get; set; } = null;
         private static Texture2D frameTex { get; set; } = null;
         private static Ffcc Ffccaudio { get; set; } = null;
@@ -92,7 +92,7 @@ namespace FF8
                 case STATE_CLEAR:
                     break;
                 case STATE_PLAYING:
-                    while (Ffccaudio != null && !Ffccaudio.AheadFrame())
+                    if (Ffccaudio != null && !Ffccaudio.AheadFrame())
                     {
                         // if we are behind the timer get the next frame of audio.
                         Ffccaudio.GetFrame(); //might not be doing anything
@@ -144,11 +144,6 @@ namespace FF8
             }
 
             frameTex = null;
-            if (Frame != null)
-            {
-                Frame.Dispose();
-            }
-            Frame = null;
             GC.Collect();
         }
 
@@ -204,13 +199,14 @@ namespace FF8
         private static void FinishedDraw()
         {
             ClearScreen();
-            Memory.SpriteBatchStartStencil();
+
             if (frameTex != null)
             {
+                //Memory.SpriteBatchStartStencil();
+                Memory.SpriteBatchStartAlpha();
                 Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
+                Memory.SpriteBatchEnd();
             }
-
-            Memory.SpriteBatchEnd();
             //movieState = STATE_INIT;
             //Memory.module = Memory.MODULE_BATTLE_DEBUG;
         }
