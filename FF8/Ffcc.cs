@@ -33,7 +33,14 @@ namespace FF8
         /// Most ffmpeg functions return an integer. If the value is less than 0 it is an error usually. Sometimes data is passed and then it will be greater than 0.
         /// </summary>
         private int Return { get; set; }
-        private int GoalBufferCount { get => 30; }
+        /// <summary>
+        /// If you have sound skipping increase this number and it'll go away.
+        /// might decrease sync or increase memory load
+        /// The goal is to keep the dynamicsoundeffectinterface fed.
+        /// if it plays the audio before you get it more, then you get sound skips.
+        /// </summary>
+        /// <value>The goal buffer count.</value>
+        private int GoalBufferCount { get => 75; } //windows 30 worked well. 75 in linux atleast in my limited vm version
 
         ///// <summary>
         ///// Packet of data can contain 1 or more frames.
@@ -451,7 +458,7 @@ namespace FF8
         //        }
         //    }
         //}
-        private bool LOOPED = false;
+
         public bool BehindFrame()
         {
             if (timer.IsRunning && DecoderStreamIndex != -1)
@@ -509,7 +516,7 @@ namespace FF8
                                 ffmpeg.avformat_seek_file(Decoder.Format, DecoderStreamIndex, LOOPSTART - 1000, LOOPSTART, DecoderStream->duration, 0);
 
 
-                                LOOPED = true; // set after one play to change durration checked.
+
                                 State = FfccState.WAITING;
                                 if (BehindFrame())
                                 {
@@ -597,7 +604,7 @@ namespace FF8
                 {
 
                     Resample(ref _DecodedFrame, skipencode);
-                    if (Mode == FfccMode.STATE_MACH)
+                    if (Mode == FfccMode.STATE_MACH && !BehindFrame())
                     {
                         State = FfccState.WAITING;
                         return;
