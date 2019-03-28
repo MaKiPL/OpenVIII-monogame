@@ -156,11 +156,11 @@ namespace FF8
         /// if there is no stream it returns false. only checked when trying to process audio
         /// </summary>
         private bool AudioEnabled => DecoderStreamIndex >= 0;
-        public AVCodecContext* EncoderCodecContext { get; private set; }
-        public AVFormatContext* EncoderFormatContext { get; private set; }
-        public string EncodedFileName { get; private set; }
-        public string EncodedFileType { get; private set; }
-        public bool FrameSkip { get; set; } = true; // when getting video frames if behind it goes to next frame.
+        /// <summary>
+        /// When getting video frames if behind it goes to next frame.
+        /// disabled for debugging purposes.
+        /// </summary>
+        public bool FrameSkip { get; set; } = true; 
         /// <summary>
         /// Stopwatch tracks the time audio has played so video can sync or loops can be looped.
         /// </summary>
@@ -595,7 +595,7 @@ namespace FF8
                 for (; ; )
                 {
                     outSamples = ffmpeg.swr_get_out_samples(ResampleContext, 0);
-                    if ((outSamples < (EncoderCodecContext == null ? 0 : EncoderCodecContext->frame_size) * ResampleFrame->channels) || (EncoderCodecContext == null ? 0 : EncoderCodecContext->frame_size) == 0 && (outSamples < ResampleFrame->nb_samples * ResampleFrame->channels))
+                    if ((outSamples < (Decoder.CodecContext == null ? 0 : Decoder.CodecContext->frame_size) * ResampleFrame->channels) || (Decoder.CodecContext == null ? 0 : Decoder.CodecContext->frame_size) == 0 && (outSamples < ResampleFrame->nb_samples * ResampleFrame->channels))
                     {
                         break;
                     }
@@ -850,9 +850,9 @@ namespace FF8
             ffmpeg.av_opt_set_int(ResampleContext, "in_sample_rate", Decoder.CodecContext->sample_rate, 0);
             ffmpeg.av_opt_set_sample_fmt(ResampleContext, "in_sample_fmt", Decoder.CodecContext->sample_fmt, 0);
 
-            ffmpeg.av_opt_set_channel_layout(ResampleContext, "out_channel_layout", EncoderCodecContext == null ? ffmpeg.AV_CH_LAYOUT_STEREO : (long)EncoderCodecContext->channel_layout, 0);
-            ffmpeg.av_opt_set_sample_fmt(ResampleContext, "out_sample_fmt", EncoderCodecContext == null ? AVSampleFormat.AV_SAMPLE_FMT_S16 : EncoderCodecContext->sample_fmt, 0);
-            ffmpeg.av_opt_set_int(ResampleContext, "out_sample_rate", EncoderCodecContext == null ? Decoder.CodecContext->sample_rate : EncoderCodecContext->sample_rate, 0);
+            ffmpeg.av_opt_set_channel_layout(ResampleContext, "out_channel_layout", ffmpeg.AV_CH_LAYOUT_STEREO, 0);
+            ffmpeg.av_opt_set_sample_fmt(ResampleContext, "out_sample_fmt", AVSampleFormat.AV_SAMPLE_FMT_S16, 0);
+            ffmpeg.av_opt_set_int(ResampleContext, "out_sample_rate", Decoder.CodecContext->sample_rate, 0);
 
             Return = ffmpeg.swr_init(ResampleContext);
             if (Return < 0)
@@ -864,18 +864,17 @@ namespace FF8
             Decoder.Frame->channels = Decoder.CodecContext->channels;
             Decoder.Frame->sample_rate = Decoder.CodecContext->sample_rate;
 
-            ResampleFrame->nb_samples = EncoderCodecContext == null || EncoderCodecContext->frame_size == 0 ? 32 : EncoderCodecContext->frame_size;
-            ResampleFrame->format = EncoderCodecContext == null ? (int)AVSampleFormat.AV_SAMPLE_FMT_S16 : (int)EncoderCodecContext->sample_fmt;
-            ResampleFrame->channel_layout = EncoderCodecContext == null ? ffmpeg.AV_CH_LAYOUT_STEREO : EncoderCodecContext->channel_layout;
-            ResampleFrame->channels = EncoderCodecContext == null ? (int)AudioChannels.Stereo : EncoderCodecContext->channels;
-            ResampleFrame->sample_rate = EncoderCodecContext == null ? Decoder.CodecContext->sample_rate : EncoderCodecContext->sample_rate;
+            ResampleFrame->nb_samples = 32;
+            ResampleFrame->format = (int)AVSampleFormat.AV_SAMPLE_FMT_S16;
+            ResampleFrame->channel_layout = ffmpeg.AV_CH_LAYOUT_STEREO;
+            ResampleFrame->channels = (int)AudioChannels.Stereo;
+            ResampleFrame->sample_rate = Decoder.CodecContext->sample_rate;
 
 
 
-            int convertedFrameBufferSize = ffmpeg.av_samples_get_buffer_size(null,
-                                                 EncoderCodecContext == null ? ResampleFrame->channels : EncoderCodecContext->channels,
+            int convertedFrameBufferSize = ffmpeg.av_samples_get_buffer_size(null, ResampleFrame->channels,
                                                  ResampleFrame->nb_samples,
-                                                 EncoderCodecContext == null ? (AVSampleFormat)ResampleFrame->format : EncoderCodecContext->sample_fmt, 0);
+                                                 (AVSampleFormat)ResampleFrame->format, 0);
 
             ConvertedData = (byte*)Marshal.AllocHGlobal(convertedFrameBufferSize);
         }
@@ -1071,18 +1070,6 @@ namespace FF8
                 if (ConvertedData != null && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
                 {
                     Marshal.FreeHGlobal((IntPtr)ConvertedData);
-                }
-                if (EncoderFormatContext != null && EncoderFormatContext->pb != null)
-                {
-                    ffmpeg.avio_close(EncoderFormatContext->pb);
-                }
-                if (EncoderCodecContext != null)
-                {
-                    EncodeFlush(EncoderCodecContext);
-                    ffmpeg.avcodec_close(EncoderCodecContext);
-                    ffmpeg.av_write_trailer(EncoderFormatContext);
-                    ffmpeg.avio_close(EncoderFormatContext->pb);
-                    ffmpeg.avformat_free_context(EncoderFormatContext);
                 }
                 ffmpeg.sws_freeContext(ScalerContext);
                 if (ResampleContext != null)

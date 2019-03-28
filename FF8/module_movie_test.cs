@@ -86,17 +86,17 @@ namespace FF8
                 case STATE_INIT:
                     MovieState++;
                     InitMovie();
-                    Ffccaudio.GetFrame(); // primes the audio buffer with one frame of data
+                    if (Ffccaudio != null)
+                        Ffccaudio.GetFrame(); // primes the audio buffer with one frame of data
                     break;
                 case STATE_CLEAR:
                     break;
                 case STATE_PLAYING:
-                    if (Ffccaudio.BehindFrame())
+                    if (Ffccaudio != null && Ffccaudio.BehindFrame())
                     {
                         // if we are behind the timer get the next frame of audio.
-                        Ffccaudio.GetFrame();
+                        Ffccaudio.GetFrame(); //might not be doing anything
                     }
-
                     if (Ffccaudio != null)
                     {
                         Ffccaudio.PlaySound();
@@ -130,16 +130,26 @@ namespace FF8
             {
                 Ffccaudio.Dispose();
             }
+            Ffccaudio = null;
             if (Ffccvideo != null)
             {
                 Ffccvideo.Dispose();
             }
+            Ffccvideo = null;
 
             MovieState = STATE_INIT;
+            if (frameTex != null && !frameTex.IsDisposed)
+            {
+                frameTex.Dispose();
+            }
+
             frameTex = null;
+            if (Frame != null)
+            {
+                Frame.Dispose();
+            }
             Frame = null;
-            Ffccaudio = null;
-            Ffccvideo = null;
+            GC.Collect();
         }
 
 
@@ -147,20 +157,7 @@ namespace FF8
         private static void InitMovie()
         {
 
-            //vfr.Open(Path.Combine(movieDirs[0] , "disc02_25h.avi"));
-            //vfr.Open(Path.Combine(movieDirs[0], "disc00_30h.avi"));
-
-            //Ffccaudio = new Ffcc(@"c:\eyes_on_me.wav", AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
-
             Ffccaudio = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH); //Ffcc.FfccMode.PROCESS_ALL);
-            //using (FileStream fs =File.OpenRead(@"C:\Users\pcvii\source\repos\ConsoleApp1\ConsoleApp1\bin\Debug\audio.wav"))
-            //{
-            //    SoundEffect se = new SoundEffect(init_debugger_Audio.ReadFullyByte(fs),44100,AudioChannels.Stereo);
-            //    //SoundEffect se = SoundEffect.FromStream(fs);
-            //            see = se.CreateInstance();
-            //            see.Play();
-
-            //}
             Ffccvideo = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_VIDEO, Ffcc.FfccMode.STATE_MACH);
             FPS = Ffccvideo.FPS;
             if (FPS == 0)
@@ -211,8 +208,6 @@ namespace FF8
             if (frameTex != null)
             {
                 Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
-                frameTex.Dispose();
-                frameTex = null;
             }
 
             Memory.SpriteBatchEnd();
@@ -234,16 +229,20 @@ namespace FF8
                     return;
                 }
                 if (frameTex != null)
+                {
                     frameTex.Dispose();
+                    GC.Collect();
+                }
+
                 frameTex = Ffccvideo.FrameToTexture2D();
             }
 
-                //draw frame;
-                Memory.SpriteBatchStartStencil();
-                Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
-                Memory.SpriteBatchEnd();
-                //backup previous frame. use if new frame unavailble
-            
+            //draw frame;
+            Memory.SpriteBatchStartStencil();
+            Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
+            Memory.SpriteBatchEnd();
+            //backup previous frame. use if new frame unavailble
+
         }
     }
 }
