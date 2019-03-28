@@ -928,21 +928,27 @@ namespace FF8
         /// <returns>bytes wrote</returns>
         private int WritetoMs(ref byte* output, int start, ref int length)
         {
-            byte[] arr = new byte[length];
-            Marshal.Copy((IntPtr)output, arr, 0, length);
-            LoadSoundFromStream(ref arr, start, ref length);
-            //long c_len = DecodedStream.Length;
-            //for (int i = start; i < length; i++)
-            //{
-            //    DecodedStream.WriteByte(output[i]);
-            //}
-            //if (DecodedStream.Length - c_len != length)
-            //{
-            //    die("not all data wrote");
-            //}
+            if (Mode == FfccMode.STATE_MACH)
+            {
+                byte[] arr = new byte[length];
+                Marshal.Copy((IntPtr)output, arr, 0, length);
+                LoadSoundFromStream(ref arr, start, ref length);
+                return length;
+            }
+            else //memory leaky? seems when i used this method alot of memory wouldn't get disposed
+            {
+                long c_len = DecodedStream.Length;
+                for (int i = start; i < length; i++)
+                {
+                    DecodedStream.WriteByte(output[i]);
+                }
+                if (DecodedStream.Length - c_len != length)
+                {
+                    die("not all data wrote");
+                }
 
-            //return (int)(DecodedStream.Length - c_len);
-            return length;
+                return (int)(DecodedStream.Length - c_len);
+            }
         }
         /// <summary>
         /// Tests audio against format type to see if can play it
@@ -961,18 +967,50 @@ namespace FF8
              * libavresample is recommended instead. */
             if (Decoder.CodecContext->channels == 2 && frame.format == (int)AVSampleFormat.AV_SAMPLE_FMT_S16P)//not tested
             {
-                for (int i = 0; i < frame.linesize[0]; i++)
+                if (Mode == FfccMode.STATE_MACH)
                 {
-                    DecodedStream.WriteByte(((byte*[])frame.data)[0][i]);
-                    DecodedStream.WriteByte(((byte*[])frame.data)[1][i]);
+                    int len = frame.linesize[0]*2;
+                    byte[] arr = new byte[len];
+
+                    int j = 0;
+                    for (int i = 0; i < frame.linesize[0]; i++)
+                    {
+                        arr[j++] = Marshal.ReadByte((IntPtr)(frame.data[0]), i);
+                        arr[j++] = Marshal.ReadByte((IntPtr)(frame.data[1]), i);
+                    }
+
+                    LoadSoundFromStream(ref arr, 0, ref len);
+                }
+                else
+                {
+                    for (int i = 0; i < frame.linesize[0]; i++)
+                    {
+                        DecodedStream.WriteByte(((byte*[])frame.data)[0][i]);
+                        DecodedStream.WriteByte(((byte*[])frame.data)[1][i]);
+                    }
                 }
                 return true;
             }
             else if (frame.format == (int)AVSampleFormat.AV_SAMPLE_FMT_S16) // played eyes on me wav
             {
-                for (int i = 0; i < frame.linesize[0]; i++)
+
+                if (Mode == FfccMode.STATE_MACH)
                 {
-                    DecodedStream.WriteByte(((byte*[])frame.data)[0][i]);
+                    int len = frame.linesize[0];
+                    byte[] arr = new byte[len];
+
+                    for (int i = 0; i < frame.linesize[0]; i++)
+                    {
+                        arr[i] = Marshal.ReadByte((IntPtr)(frame.data[0]), i);
+                    }
+                    LoadSoundFromStream(ref arr, 0, ref len);
+                }
+                else
+                {
+                    for (int i = 0; i < frame.linesize[0]; i++)
+                    {
+                        DecodedStream.WriteByte(((byte*[])frame.data)[0][i]);
+                    }
                 }
                 return true;
             }
