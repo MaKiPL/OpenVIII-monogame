@@ -76,7 +76,7 @@ namespace FF8
                     }
                 }
 
-                ffmpeg.av_free(Codec);
+                //ffmpeg.av_free(Codec); //CTD on linux
                 ffmpeg.av_packet_unref(Packet);
                 ffmpeg.av_free(Packet);
                 ffmpeg.av_frame_unref(Frame);

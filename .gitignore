@@ -12,3 +12,4 @@ packages/*
 *.exe
 *.pdb 
 AForge.*
+FF8/Content/obj/DesktopGL/Content/.mgstats

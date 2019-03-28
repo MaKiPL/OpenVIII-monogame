@@ -673,25 +673,7 @@ namespace FF8
         }
         ~Ffcc()
         {
-#if !_WINDOWS
-            try
-            {
-#endif
             Dispose();
-
-
-
-
-#if !_WINDOWS
-            }
-            catch (DllNotFoundException e)
-            {
-                TextWriter errorWriter = Console.Error;
-                errorWriter.WriteLine(e.Message);
-                errorWriter.WriteLine("Clean up failed, maybe FFmpeg DLLs are missing");
-            }
-#endif
-
         }
         /// <summary>
         /// Opens filename and assigns FormatContext.
@@ -745,8 +727,6 @@ namespace FF8
         {
             //default values below here.
             Return = -1;
-            try
-            {
                 if (Open() < 0)
                 {
                     die("No file not open");
@@ -760,14 +740,7 @@ namespace FF8
                 DecoderStreamIndex = -1;
 
 
-            }
-            catch (DllNotFoundException e)
-            {
-                State = FfccState.NODLL;
-                TextWriter errorWriter = Console.Error;
-                errorWriter.WriteLine(e.Message);
-                errorWriter.WriteLine("FFCC can't init due to missing ffmpeg dlls");
-            }
+
         }
 
         private void GetTags(ref AVDictionary* metadata)
