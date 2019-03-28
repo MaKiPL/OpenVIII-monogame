@@ -33,7 +33,7 @@ namespace FF8
         /// Most ffmpeg functions return an integer. If the value is less than 0 it is an error usually. Sometimes data is passed and then it will be greater than 0.
         /// </summary>
         private int Return { get; set; }
-
+        private int GoalBufferCount { get => 30; }
 
         ///// <summary>
         ///// Packet of data can contain 1 or more frames.
@@ -400,15 +400,15 @@ namespace FF8
         {
             if (timer.IsRunning)
             {
-                if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
-                {
-                    int ret = (int)Math.Round(timer.ElapsedMilliseconds * ((double)75 / 1000));//FPS * 5
-                    if (LOOPED && LOOPSTART >= 0)
-                        ret += (int)(((double)LOOPSTART / Decoder.CodecContext->sample_rate) *((double)75));
-                    return ret;
-                }
-                else
-                    return (int)Math.Round(timer.ElapsedMilliseconds * (FPS / 1000));
+                //if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
+                //{
+                //    //int ret = (int)Math.Round(timer.ElapsedMilliseconds * ((double)75 / 1000));//FPS * 5
+                //    //if (LOOPED && LOOPSTART >= 0)
+                //    //    ret += (int)(((double)LOOPSTART / Decoder.CodecContext->sample_rate) *((double)75));
+                //    return ret;
+                //}
+                //else
+                return (int)Math.Round(timer.ElapsedMilliseconds * (FPS / 1000));
             }
             return 0;
         }
@@ -427,25 +427,30 @@ namespace FF8
         {
             if (timer.IsRunning && DecoderStreamIndex != -1)
             {
+                if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
+                {
+                    return dsee44100.PendingBufferCount > GoalBufferCount;
+                }
+
                 return CurrentFrameNum() > ExpectedFrame();
             }
             return true;
         }
-        private long LOOPLENGTH
-        {
-            get
-            {
-                if (LOOPSTART >= 0 && LOOPED)
-                {
+        //private long LOOPLENGTH
+        //{
+        //    get
+        //    {
+        //        if (LOOPSTART >= 0 && LOOPED)
+        //        {
 
-                    return (DecoderStream->duration - LOOPSTART);
-                }
-                else
-                {
-                    return DecoderStream->duration;
-                }
-            }
-        }
+        //            return (DecoderStream->duration - LOOPSTART);
+        //        }
+        //        else
+        //        {
+        //            return DecoderStream->duration;
+        //        }
+        //    }
+        //}
         private bool LOOPED = false;
         public bool BehindFrame()
         {
@@ -457,6 +462,12 @@ namespace FF8
                 //    int secondsbeforeendoftrack = 2;
                 //    return (time / 1000) > (LOOPLENGTH / Decoder.CodecContext->sample_rate) - secondsbeforeendoftrack;
                 //}
+
+                if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
+                {
+                    return dsee44100.PendingBufferCount < GoalBufferCount;
+                }
+
                 return CurrentFrameNum() < ExpectedFrame();
 
             }
@@ -466,7 +477,12 @@ namespace FF8
         {
             if (timer.IsRunning)
             {
-                return CurrentFrameNum() > ExpectedFrame();
+                if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
+                {
+                    return dsee44100.PendingBufferCount == GoalBufferCount;
+                }
+
+                return CurrentFrameNum() == ExpectedFrame();
             }
             return false;
         }
@@ -969,7 +985,7 @@ namespace FF8
             {
                 if (Mode == FfccMode.STATE_MACH)
                 {
-                    int len = frame.linesize[0]*2;
+                    int len = frame.linesize[0] * 2;
                     byte[] arr = new byte[len];
 
                     int j = 0;
