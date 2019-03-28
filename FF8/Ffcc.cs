@@ -400,10 +400,15 @@ namespace FF8
         {
             if (timer.IsRunning)
             {
-                if(MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
-                    return (int)Math.Round(timer.ElapsedMilliseconds * ((double)75 / 1000));//FPS * 5
+                if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
+                {
+                    int ret = (int)Math.Round(timer.ElapsedMilliseconds * ((double)75 / 1000));//FPS * 5
+                    if (LOOPED && LOOPSTART >= 0)
+                        ret += (int)(((double)LOOPSTART / Decoder.CodecContext->sample_rate) *((double)75));
+                    return ret;
+                }
                 else
-                return (int)Math.Round(timer.ElapsedMilliseconds * (FPS / 1000));
+                    return (int)Math.Round(timer.ElapsedMilliseconds * (FPS / 1000));
             }
             return 0;
         }
@@ -446,12 +451,12 @@ namespace FF8
         {
             if (timer.IsRunning && DecoderStreamIndex != -1)
             {
-                if (LOOPSTART >= 0 && FPS < 1 && DecoderStream->duration > 0)
-                {
-                    long time = timer.ElapsedMilliseconds;
-                    int secondsbeforeendoftrack = 2;
-                    return (time / 1000) > (LOOPLENGTH / Decoder.CodecContext->sample_rate) - secondsbeforeendoftrack;
-                }
+                //if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO && LOOPSTART >= 0 && FPS < 1 && DecoderStream->duration > 0)
+                //{
+                //    long time = timer.ElapsedMilliseconds;
+                //    int secondsbeforeendoftrack = 2;
+                //    return (time / 1000) > (LOOPLENGTH / Decoder.CodecContext->sample_rate) - secondsbeforeendoftrack;
+                //}
                 return CurrentFrameNum() < ExpectedFrame();
 
             }
