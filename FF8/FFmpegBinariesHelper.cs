@@ -10,6 +10,7 @@ namespace FFmpeg.AutoGen.Example
 
         internal static void RegisterFFmpegBinaries()
         {
+            var libraryPath = "";
             switch (Environment.OSVersion.Platform)
             {
                 case PlatformID.Win32NT:
@@ -30,8 +31,11 @@ namespace FFmpeg.AutoGen.Example
                     }
                     break;
                 case PlatformID.Unix:
+                    libraryPath = "/usr/lib/x86_64-linux-gnu";
+                    RegisterLibrariesSearchPath(libraryPath);
+                    break;
                 case PlatformID.MacOSX:
-                    var libraryPath = Environment.GetEnvironmentVariable(LD_LIBRARY_PATH);
+                    libraryPath = Environment.GetEnvironmentVariable(LD_LIBRARY_PATH);
                     RegisterLibrariesSearchPath(libraryPath);
                     break;
             }
