@@ -29,7 +29,9 @@ namespace FF8
 
         public byte[] ReadBytes(uint count) => br.ReadBytes((int)count);
 
+#pragma warning disable 0114
         public byte ReadByte()  => br.ReadByte(); //ms readbyte returns int
+#pragma warning restore 0114
 
         public short ReadShort() => br.ReadInt16();
 

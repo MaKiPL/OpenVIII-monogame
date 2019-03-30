@@ -37,6 +37,7 @@ namespace FF8
 
         private static int debug_moviePointer = 0;
         private static string debug_choosedMovie = Path.GetFileNameWithoutExtension(Module_movie_test.Movies[debug_moviePointer]);
+        private static string debug_choosedMusic = Path.GetFileNameWithoutExtension(Memory.dicMusic[0][0]);
         public static int FieldPointer
         {
             get { return debug_fieldPointer; }
@@ -168,39 +169,18 @@ namespace FF8
                         Module_field_debug.ResetField();
                         Memory.module = Memory.MODULE_FIELD_DEBUG;
                         break;
-                    case Ditems.MusicNext:
-                        if (Memory.MusicIndex >= ushort.MaxValue || Memory.MusicIndex >= Memory.dicMusic.Keys.Max())
-                        {
-                            Memory.MusicIndex = 0;
-                        }
-                        else
-                        {
-                            Memory.MusicIndex++;
-                        }
-
-                        init_debugger_Audio.PlayMusic();
-                        break;
-                    case Ditems.MusicPrev:
-
-                        if (Memory.MusicIndex <= ushort.MinValue)
-                        {
-                            Memory.MusicIndex = ushort.MaxValue;
-                        }
-                        else
-                        {
-                            Memory.MusicIndex--;
-                        }
-
-                        init_debugger_Audio.PlayMusic();
+                    case Ditems.Music:
+                        Module_field_debug.ResetField();
+                        init_debugger_Audio.PlayStopMusic();
                         break;
                     case Ditems.Battle:
                         Memory.battle_encounter = debug_choosedBS;
                         Module_battle_debug.ResetState();
                         Memory.module = Memory.MODULE_BATTLE_DEBUG;
                         break;
-                    case Ditems.MusicStop:
-                        init_debugger_Audio.StopAudio();
-                        break;
+                    //case Ditems.MusicStop:
+                    //    init_debugger_Audio.StopAudio();
+                    //    break;
                     case Ditems.Sounds:
                         init_debugger_Audio.PlaySound(debug_choosedAudio);
                         break;
@@ -242,6 +222,20 @@ namespace FF8
                     case Ditems.Movie:
                         MoviePointer--;
                         break;
+                    case Ditems.Music:
+                    //case Ditems.MusicPrev:
+
+                        if (Memory.MusicIndex <= ushort.MinValue)
+                        {
+                            Memory.MusicIndex = ushort.MaxValue;
+                        }
+                        else
+                        {
+                            Memory.MusicIndex--;
+                        }
+                        debug_choosedMusic = Path.GetFileNameWithoutExtension(Memory.dicMusic[Memory.MusicIndex][0]);
+                        //init_debugger_Audio.PlayMusic();
+                        break;
                 }
             }
             else if (Input.Button(Buttons.Right))
@@ -270,6 +264,19 @@ namespace FF8
                         break;
                     case Ditems.Movie:
                         MoviePointer++;
+                        break;
+                    case Ditems.Music:
+                    //case Ditems.MusicNext:
+                        if (Memory.MusicIndex >= ushort.MaxValue || Memory.MusicIndex >= Memory.dicMusic.Keys.Max())
+                        {
+                            Memory.MusicIndex = 0;
+                        }
+                        else
+                        {
+                            Memory.MusicIndex++;
+                        }
+                        debug_choosedMusic  = Path.GetFileNameWithoutExtension(Memory.dicMusic[Memory.MusicIndex][0]);
+                        //init_debugger_Audio.PlayMusic();
                         break;
                 }
             }
@@ -365,7 +372,7 @@ namespace FF8
             DrawMainLobby();
             Fade -= Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f / 2;
         }
-        enum Mitems
+        enum Mitems //order of the enum needs to be the same as the DebugMenu Dictionary or else it'll get confused.
         {
             New,
             Load,
@@ -378,11 +385,12 @@ namespace FF8
             Battle,
             Feild,
             Movie,
-            MusicNext,
-            MusicPrev,
-            MusicStop,
+            Music,
+            //MusicNext,
+            //MusicPrev,
+            //MusicStop,
             Sounds,
-            World
+            World,
         }
         private static readonly Dictionary<Ditems, string> DebugMenu = new Dictionary<Ditems, string>()
             {
@@ -391,9 +399,10 @@ namespace FF8
                 { Ditems.Battle, "Battle encounter: {0}"},
                 { Ditems.Feild, "Field debug render: {1}"},
                 { Ditems.Movie, "Movie debug render: {2}"},
-                { Ditems.MusicNext,"Play next music"},
-                { Ditems.MusicPrev,"Play previous music"},
-                { Ditems.MusicStop,"Stop music"},
+                { Ditems.Music, "Play/Stop music : {4}"},
+                //{ Ditems.MusicNext,"Play next music"},
+                //{ Ditems.MusicPrev,"Play previous music"},
+                //{ Ditems.MusicStop,"Stop music"},
                 { Ditems.Sounds,"Play audio.dat: {3}"},
                 { Ditems.World,"Jump to World Map"}
             };
@@ -406,6 +415,7 @@ namespace FF8
                 debug_choosedField,
                 debug_choosedMovie,
                 $"{debug_choosedAudio}",
+                $"{debug_choosedMusic}",
             };
             float fScaleWidth = (float)Memory.graphics.GraphicsDevice.Viewport.Width / Memory.PreferredViewportWidth;
             float fScaleHeight = (float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight;
@@ -418,7 +428,7 @@ namespace FF8
 
             foreach (KeyValuePair<Ditems, string> e in DebugMenu)
             {
-                Memory.font.RenderBasicText(Font.CipherDirty(string.Format(e.Value, info[0], info[1], info[2], info[3]).Replace("\0", "")),
+                Memory.font.RenderBasicText(Font.CipherDirty(string.Format(e.Value, info[0], info[1], info[2], info[3],info[4]).Replace("\0", "")),
                     (int)(vpWidth * 0.10f), (int)(vpHeight * 0.05f + vpSpace * item++), 1f, 2f, 0, 1);
             }
             Memory.spriteBatch.Draw(Memory.iconsTex[2], new Rectangle(

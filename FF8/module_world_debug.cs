@@ -91,7 +91,6 @@ namespace FF8
             public byte Clut { get => (byte)(TPage_clut & 0x0F); }
             //public byte TPage_clut1 { set => TPage_clut = value; }
         }
-
         private struct Vertex
         {
             public short X;
@@ -469,8 +468,8 @@ namespace FF8
             if (Input.GetInputDelayed(Keys.J))
                 MapState = MapState >= MiniMapState.fullscreen ? MapState = 0 : MapState + 1;
 
-            if (Input.GetInputDelayed(Keys.F1))
-                ;
+            //if (Input.GetInputDelayed(Keys.F1))
+            //    ;
 
 
 

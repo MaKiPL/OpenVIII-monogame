@@ -20,6 +20,7 @@ namespace FF8
         }
         protected override void Initialize()
         {
+            FFmpeg.AutoGen.Example.FFmpegBinariesHelper.RegisterFFmpegBinaries();
             Memory.graphics = graphics;
             Memory.spriteBatch = spriteBatch;
             Memory.content = Content;
@@ -52,7 +53,7 @@ namespace FF8
 
         protected override void Update(GameTime gameTime)
         {
-            
+
             Memory.gameTime = gameTime;
             Memory.IsActive = IsActive;
 
@@ -64,7 +65,7 @@ namespace FF8
 
             if (Input.Button(Buttons.Exit))
                 GracefullyExit();
-
+            init_debugger_Audio.Update();
             ModuleHandler.Update(gameTime);
             base.Update(gameTime);
         }

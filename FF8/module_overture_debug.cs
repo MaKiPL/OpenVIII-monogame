@@ -13,8 +13,8 @@ namespace FF8
         private const string names = "name";
         private const string loops = "loop";
 
-        private static Texture2D splashTex;
-        private static Texture2D white;
+        private static Texture2D splashTex = null;
+        private static Texture2D white=null;
 
         enum OvertureInternalModule
         {
@@ -63,6 +63,7 @@ namespace FF8
             Memory.module = Memory.MODULE_OVERTURE_DEBUG;
             internalModule = OvertureInternalModule._4Squaresoft;
             Module_movie_test.ReturnState = Memory.MODULE_OVERTURE_DEBUG;
+            aw = null; // was getting exception when running the overture again as the aw target changed.
         }
         private static void WaitForFirst()
         {
@@ -81,6 +82,8 @@ namespace FF8
             Memory.MusicIndex = ushort.MaxValue; // reset pos after playing overture; will loop back to start if push next
 
 
+            if (white != null && !white.IsDisposed)
+                white.Dispose();
             white = new Texture2D(Memory.graphics.GraphicsDevice, 4, 4, false, SurfaceFormat.Color);
             byte[] whiteBuffer = new byte[16];
             for (int i = 0; i < 16; i++)
@@ -97,6 +100,11 @@ namespace FF8
                 Input.ResetInputLimit();
                 init_debugger_Audio.StopAudio();
                 Memory.module = Memory.MODULE_MAINMENU_DEBUG;
+
+                if (splashTex != null && !splashTex.IsDisposed)
+                    splashTex.Dispose();
+                if (white != null && !white.IsDisposed)
+                    white.Dispose();
             }
             switch (internalModule)
             {
@@ -169,6 +177,11 @@ namespace FF8
             {
                 init_debugger_Audio.StopAudio();
                 Memory.module = Memory.MODULE_MAINMENU_DEBUG;
+                if (splashTex != null && !splashTex.IsDisposed)
+                    splashTex.Dispose();
+                if (white != null && !white.IsDisposed)
+                    white.Dispose();
+
             }
 
         }
@@ -297,6 +310,8 @@ namespace FF8
                 uint uncompSize = BitConverter.ToUInt32(buffer, 0);
                 buffer = LZSS.DecompressAll(buffer, (uint)buffer.Length);
 
+                if (splashTex != null && !splashTex.IsDisposed)
+                    splashTex.Dispose();
                 splashTex = new Texture2D(Memory.graphics.GraphicsDevice, 640, 400, false, SurfaceFormat.Color);
                 byte[] rgbBuffer = new byte[splashTex.Width * splashTex.Height * 4];
                 int innerBufferIndex = 0;
@@ -332,7 +347,8 @@ namespace FF8
                 byte[] buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_MAIN, fileName);
                 uint uncompSize = BitConverter.ToUInt32(buffer, 0);
                 buffer = LZSS.DecompressAll(buffer, (uint)buffer.Length);
-
+                if (splashTex != null && !splashTex.IsDisposed)
+                    splashTex.Dispose();
                 splashTex = new Texture2D(Memory.graphics.GraphicsDevice, 640, 400, false, SurfaceFormat.Color);
                 byte[] rgbBuffer = new byte[splashTex.Width * splashTex.Height * 4];
                 int innerBufferIndex = 0;

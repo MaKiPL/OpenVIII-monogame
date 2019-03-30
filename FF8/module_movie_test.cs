@@ -1,6 +1,5 @@
 ﻿
 using FFmpeg.AutoGen;
-using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -42,16 +41,16 @@ namespace FF8
             }
         }
 
-        private static Bitmap Frame { get; set; } = null;
+        //private static Bitmap Frame { get; set; } = null;
         private static Ffcc Ffccvideo { get; set; } = null;
-        private static Texture2D LastFrame { get; set; } = null;
+        private static Texture2D frameTex { get; set; } = null;
         private static Ffcc Ffccaudio { get; set; } = null;
         public static int ReturnState { get; set; } = Memory.MODULE_MAINMENU_DEBUG;
         /// <summary>
         /// Index in movie file list
         /// </summary>
         public static int Index { get; set; } = 0;
-        private static int FPS { get; set; } = 0;
+        private static double FPS { get; set; } = 0;
         private static int FrameRenderingDelay { get; set; } = 0;
         private static int MsElapsed { get; set; } = 0;
         public static int MovieState { get; set; } = STATE_INIT;
@@ -87,23 +86,32 @@ namespace FF8
                 case STATE_INIT:
                     MovieState++;
                     InitMovie();
+                    if (Ffccaudio != null)
+                        Ffccaudio.GetFrame(); // primes the audio buffer with one frame of data
                     break;
                 case STATE_CLEAR:
-                    MovieState++;
-                    ClearScreen();
                     break;
                 case STATE_PLAYING:
-                    PlayingDraw();
+                    if (Ffccaudio != null && !Ffccaudio.AheadFrame())
+                    {
+                        // if we are behind the timer get the next frame of audio.
+                        Ffccaudio.GetFrame(); //might not be doing anything
+                    }
                     if (Ffccaudio != null)
+                    {
                         Ffccaudio.PlaySound();
-                    else if(Ffccvideo != null)
+                    }
+                    if (Ffccvideo != null)
+                    {
                         Ffccvideo.PlaySound();
+                    }
+
                     break;
                 case STATE_PAUSED:
+                    //todo add a function to pause sound
+                    //pausing the stopwatch will cause the video to pause because it calcs the current frame based on time.
                     break;
                 case STATE_FINISHED:
-                    MovieState++;
-                    FinishedDraw();
                     break;
                 case STATE_RESET:
                     Reset();
@@ -119,14 +127,24 @@ namespace FF8
         private static void Reset()
         {
             if (Ffccaudio != null)
-                Ffccaudio.StopSound();
-            else if (Ffccvideo != null)
-                Ffccvideo.StopSound();
-            MovieState = STATE_INIT;
-            LastFrame = null;
-            Frame = null;
+            {
+                Ffccaudio.Dispose();
+            }
             Ffccaudio = null;
+            if (Ffccvideo != null)
+            {
+                Ffccvideo.Dispose();
+            }
             Ffccvideo = null;
+
+            MovieState = STATE_INIT;
+            if (frameTex != null && !frameTex.IsDisposed)
+            {
+                frameTex.Dispose();
+            }
+
+            frameTex = null;
+            GC.Collect();
         }
 
 
@@ -134,20 +152,7 @@ namespace FF8
         private static void InitMovie()
         {
 
-            //vfr.Open(Path.Combine(movieDirs[0] , "disc02_25h.avi"));
-            //vfr.Open(Path.Combine(movieDirs[0], "disc00_30h.avi"));
-
-            //Ffccaudio = new Ffcc(@"c:\eyes_on_me.wav", AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
-
-            Ffccaudio = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
-            //using (FileStream fs =File.OpenRead(@"C:\Users\pcvii\source\repos\ConsoleApp1\ConsoleApp1\bin\Debug\audio.wav"))
-            //{
-            //    SoundEffect se = new SoundEffect(init_debugger_Audio.ReadFullyByte(fs),44100,AudioChannels.Stereo);
-            //    //SoundEffect se = SoundEffect.FromStream(fs);
-            //            see = se.CreateInstance();
-            //            see.Play();
-
-            //}
+            Ffccaudio = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH); //Ffcc.FfccMode.PROCESS_ALL);
             Ffccvideo = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_VIDEO, Ffcc.FfccMode.STATE_MACH);
             FPS = Ffccvideo.FPS;
             if (FPS == 0)
@@ -161,25 +166,29 @@ namespace FF8
 
         internal static void Draw()
         {
-            //switch (movieState)
-            //{
-            //case STATE_INIT:
-            //    break;
-            //case STATE_CLEAR:
-            //    ClearScreen();
-            //    movieState++;
-            //    break;
-            //case STATE_PLAYING:
-            //    PlayingDraw();
-            //    break;
-            //case STATE_PAUSED:
-            //    break;
-            //case STATE_FINISHED:
-            //    FinishedDraw();
-            //    break;
-            //default:
-            //Memory.module = Memory.MODULE_MAINMENU_DEBUG;
-            //break;
+            switch (MovieState)
+            {
+                case STATE_INIT:
+                    break;
+                case STATE_CLEAR:
+                    MovieState++;
+                    ClearScreen();
+                    break;
+                case STATE_PLAYING:
+                    PlayingDraw();
+                    break;
+                case STATE_PAUSED:
+                    break;
+                case STATE_FINISHED:
+                    MovieState++;
+                    FinishedDraw();
+                    break;
+                case STATE_RESET:
+                    break;
+                case STATE_RETURN:
+                default:
+                    break;
+            }
 
             //}
         }
@@ -190,13 +199,14 @@ namespace FF8
         private static void FinishedDraw()
         {
             ClearScreen();
-            Memory.SpriteBatchStartStencil();
-            if (LastFrame != null)
-            {
-                Memory.spriteBatch.Draw(LastFrame, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
-            }
 
-            Memory.SpriteBatchEnd();
+            if (frameTex != null)
+            {
+                //Memory.SpriteBatchStartStencil();
+                Memory.SpriteBatchStartAlpha();
+                Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
+                Memory.SpriteBatchEnd();
+            }
             //movieState = STATE_INIT;
             //Memory.module = Memory.MODULE_BATTLE_DEBUG;
         }
@@ -204,12 +214,7 @@ namespace FF8
         //private static Bitmap Frame { get => frame; set { lastframe = frame; frame = value; } }
         private static void PlayingDraw()
         {
-            Texture2D frameTex = null;
-            if (LastFrame != null && (Ffccvideo.Correct() || Ffccvideo.Ahead()))
-            {
-                frameTex = LastFrame;
-            }
-            else
+            if (frameTex == null || Ffccvideo.BehindFrame())
             {
                 MsElapsed = 0;
 
@@ -219,17 +224,22 @@ namespace FF8
                     MovieState = STATE_FINISHED;
                     return;
                 }
+                if (frameTex != null)
+                {
+                    frameTex.Dispose();
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
+
                 frameTex = Ffccvideo.FrameToTexture2D();
             }
-            if (frameTex != null)
-            {
-                //draw frame;
-                Memory.SpriteBatchStartStencil();
-                Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
-                Memory.SpriteBatchEnd();
-                //backup previous frame. use if new frame unavailble
-                LastFrame = frameTex;
-            }
+
+            //draw frame;
+            Memory.SpriteBatchStartStencil();
+            Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
+            Memory.SpriteBatchEnd();
+            //backup previous frame. use if new frame unavailble
+
         }
     }
 }
