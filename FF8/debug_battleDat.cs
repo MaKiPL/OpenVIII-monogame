@@ -221,33 +221,6 @@ namespace FF8
                 @object.quads[i] = MakiExtended.ByteArrayToStructure<Quad>(br.ReadBytes(20));
             return @object;
         }
-        public float DEBUG = 0.0f;
-        private void TransformBoneSize(ref Vector3 verticeDataC, int boneId, AnimationFrame frame)
-        {
-            var a = frame.boneRot.Item3[boneId];
-            Vector3 nw = new Vector3()
-            {
-                X = a.M41,
-                Y = a.M42,
-                Z = a.M43
-            };
-            //verticeDataC = Vector3.Transform(verticeDataC, Matrix.CreateTranslation(nw));
-            verticeDataC = Vector3.Add(verticeDataC, nw);
-            //verticeDataC = Vector3.Transform(verticeDataC, Matrix.CreateTranslation(new Vector3(a.M41, a.M42, a.M43)));
-            return;
-            float boneSizeTranslator = 0f;
-            int parentTester = skeleton.bones[boneId].parentId;
-            while (parentTester != 0xFFFF && parentTester != 0x00)
-            {
-                boneSizeTranslator += skeleton.bones[parentTester].Size;
-                parentTester = skeleton.bones[parentTester].parentId;
-            }
-            verticeDataC = Vector3.Transform(verticeDataC, Matrix.CreateTranslation(new Vector3(0, -boneSizeTranslator*2, 0)));
-        }
-        private void RotateMatrix(ref Vector3 verticeDataB, int boneId, AnimationFrame frame)
-        {
-            verticeDataB = Vector3.Transform(verticeDataB, frame.boneRot.Item3[boneId]);
-        }
 
         public VertexPositionTexture[] GetVertexPositions(int objectId, Vector3 position, int animationId, int animationFrame)
         {
@@ -388,7 +361,7 @@ namespace FF8
             return new Tuple<Vector3, int>(new Vector3(
                 matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * -tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
                 matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * -tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
-                matrix.M31 * tuple.Item1.X + matrix.M43 + matrix.M32 * -tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y), tuple.Item2);
+                matrix.M31 * tuple.Item1.X + matrix.M42 + matrix.M32 * -tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y), tuple.Item2);
         }
 
         public VertexPositionTexture[] GetVertexPositions(int objectId, Vector3 position, int frame)
@@ -499,7 +472,7 @@ namespace FF8
                     {
                         var rad = animHeader.animations[i].animationFrames[n].boneRot.Item1[k];
                         //var newMatrix = MakiExtended.MatrixMultiply(MakiExtended.GetRotationMatrixY())
-                            var MatrixZ = Matrix.Multiply(Matrix.CreateRotationY(MathHelper.ToRadians(-rad.Y)), Matrix.CreateRotationX(MathHelper.ToRadians(-rad.X)));
+                            var MatrixZ = Matrix.Multiply(Matrix.CreateRotationY(MathHelper.ToRadians(rad.Y)), Matrix.CreateRotationX(MathHelper.ToRadians(rad.X)));
                         MatrixZ = Matrix.Transpose(MatrixZ);
                         MatrixZ = Matrix.Multiply(Matrix.CreateRotationZ(MathHelper.ToRadians(rad.Z)),MatrixZ);
                         MatrixZ = Matrix.Transpose(MatrixZ);
