@@ -14,6 +14,8 @@ namespace FF8
         byte[] buffer;
         int debug = 0;
 
+        private const float V = 512.0f;
+
         public struct DatFile
         {
             public uint cSections;
@@ -37,9 +39,9 @@ namespace FF8
             public ushort unk4;
             public Bone[] bones;
 
-            public float ScaleX { get => scaleX / 4096.0f; set => scaleX = (short)value; }
-            public float ScaleY { get => scaleY / 4096.0f; set => scaleY = (short)value; }
-            public float ScaleZ { get => scaleZ / 4096.0f; set => scaleZ = (short)value; }
+            public float ScaleX { get => scaleX / V; set => scaleX = (short)value; }
+            public float ScaleY { get => scaleY / V; set => scaleY = (short)value; }
+            public float ScaleZ { get => scaleZ / V; set => scaleZ = (short)value; }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 48)]
@@ -56,7 +58,7 @@ namespace FF8
             [MarshalAs(UnmanagedType.ByValArray,SizeConst = 28 )]
             public byte[] Unk;
 
-            public float Size { get => boneSize / 4096.0f; }
+            public float Size { get => boneSize / V; }
             public float Unk1 { get => unk1 / 4096.0f * 360.0f; }
             public float Unk2 { get => unk2 / 4096.0f * 360.0f; }
             public float Unk3 { get => unk3 / 4096.0f * 360.0f; }
@@ -93,7 +95,7 @@ namespace FF8
 
 #endregion
 
-#region section 2
+#region section 2 Geometry
         public struct Geometry
         {
             public uint cObjects;
@@ -127,7 +129,7 @@ namespace FF8
             public short y;
             public short z;
 
-            public Vector3 GetVector => new Vector3(x/512.0f, -z/512.0f, y/512.0f);
+            public Vector3 GetVector => new Vector3(x/ V, -z/V, y/V);
         }
 
         [StructLayout(LayoutKind.Sequential, Pack =1, Size =16)]
@@ -222,11 +224,15 @@ namespace FF8
         public float DEBUG = 0.0f;
         private void TransformBoneSize(ref Vector3 verticeDataC, int boneId, AnimationFrame frame)
         {
-            //var a = frame.boneRot.Item3[boneId];
-            //Vector3 nw = new Vector3() { X = a.M11 * verticeDataC.X + a.M12 * verticeDataC.Y + a.M13 * verticeDataC.Z,
-            //Y = a.M21 * verticeDataC.X + a.M22 * verticeDataC.Y + a.M23 * verticeDataC.Z,
-            //Z = a.M31 * verticeDataC.X + a.M32 * verticeDataC.Y + a.M33 * verticeDataC.Z
-            //};
+            var a = frame.boneRot.Item3[boneId];
+            Vector3 nw = new Vector3()
+            {
+                X = a.M41,
+                Y = a.M42,
+                Z = a.M43
+            };
+            //verticeDataC = Vector3.Transform(verticeDataC, Matrix.CreateTranslation(nw));
+            verticeDataC = Vector3.Add(verticeDataC, nw);
             //verticeDataC = Vector3.Transform(verticeDataC, Matrix.CreateTranslation(new Vector3(a.M41, a.M42, a.M43)));
             return;
             float boneSizeTranslator = 0f;
@@ -240,8 +246,6 @@ namespace FF8
         }
         private void RotateMatrix(ref Vector3 verticeDataB, int boneId, AnimationFrame frame)
         {
-            float xAngle = frame.boneRot.Item1[boneId].X, yAngle = frame.boneRot.Item1[boneId].Y, zAngle = frame.boneRot.Item1[boneId].Z;
-            int localBone = boneId;
             verticeDataB = Vector3.Transform(verticeDataB, frame.boneRot.Item3[boneId]);
         }
 
@@ -257,7 +261,7 @@ namespace FF8
             int i = 0;
             foreach (var a in obj.verticeData)
                 foreach (var b in a.vertices)
-                    verts.Add(new Tuple<Vector3, int>(b.GetVector, a.boneId));
+                    verts.Add(CalculateFrame(new Tuple<Vector3, int>(b.GetVector, a.boneId),frame));
 
             for (;i<obj.cTriangles; i++ )
             {
@@ -266,20 +270,14 @@ namespace FF8
                 ////////////////////=============VERTEX C========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeC = verts[ obj.triangles[i].C1];
                 Vector3 VerticeDataC = VerticeC.Item1;
-                RotateMatrix(ref VerticeDataC, VerticeC.Item2, frame);
-                TransformBoneSize(ref VerticeDataC, VerticeC.Item2, frame);
                 VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateTranslation(position));
                 ////////////////////=============VERTEX A========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeA = verts[obj.triangles[i].A1];
                 Vector3 VerticeDataA = VerticeA.Item1;
-                RotateMatrix(ref VerticeDataA, VerticeA.Item2, frame);
-                TransformBoneSize(ref VerticeDataA, VerticeA.Item2, frame);
                 VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateTranslation(position));
                 ////////////////////=============VERTEX B========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeB = verts[obj.triangles[i].B1];
                 Vector3 VerticeDataB = VerticeB.Item1;
-                RotateMatrix(ref VerticeDataB, VerticeB.Item2, frame);
-                TransformBoneSize(ref VerticeDataB, VerticeB.Item2, frame);
                 VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateTranslation(position));
                 ///
                 ///=/=/=/=/==/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
@@ -287,9 +285,6 @@ namespace FF8
                 vpt.Add(new VertexPositionTexture(VerticeDataC, new Vector2(obj.triangles[i].vta.U1, obj.triangles[i].vta.V1)));
                 vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.triangles[i].vtb.U1, obj.triangles[i].vtb.V1)));
                 vpt.Add(new VertexPositionTexture(VerticeDataB, new Vector2(obj.triangles[i].vtc.U1, obj.triangles[i].vtc.V1)));
-
-
-                
             }
 
 
@@ -384,10 +379,17 @@ namespace FF8
                 vpt.Add(new VertexPositionTexture(cc, new Vector2(tr.vtd.U1, tr.vtd.V1))); //D
             }
 
-
             return vpt.ToArray();
         }
 
+        private Tuple<Vector3, int> CalculateFrame(Tuple<Vector3, int> tuple, AnimationFrame frame)
+        {
+            Matrix matrix = frame.boneRot.Item3[tuple.Item2]; //get's bone matrix
+            return new Tuple<Vector3, int>(new Vector3(
+                matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * -tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
+                matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * -tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
+                matrix.M31 * tuple.Item1.X + matrix.M43 + matrix.M32 * -tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y), tuple.Item2);
+        }
 
         public VertexPositionTexture[] GetVertexPositions(int objectId, Vector3 position, int frame)
         {
@@ -397,7 +399,7 @@ namespace FF8
         }
 #endregion
 
-#region section 3
+#region section 3 Animation
         public struct AnimationData
         {
             public uint cAnimations;
@@ -506,12 +508,7 @@ namespace FF8
 
                         if (skeleton.bones[k].parentId == 0xFFFF)
                         {
-                            //180 270 90
-                            var MatrixRoot = new Matrix();
-                            MatrixRoot = Matrix.Transpose(MakiExtended.MatrixMultiply(MakiExtended.GetRotationMatrixY(270f), MakiExtended.GetRotationMatrixX(180f)));
-                            MatrixRoot = MakiExtended.MatrixMultiply(MakiExtended.GetRotationMatrixZ(-90f), Matrix.Transpose(MatrixRoot));
-                            MatrixZ = MakiExtended.MatrixMultiply(Matrix.Transpose(MatrixRoot),MatrixZ );
-                            MatrixZ.M43 = 2;
+                            ;
                         }
                         else
                         {
@@ -680,8 +677,8 @@ namespace FF8
                 datFile.eof = br.ReadUInt32();
 
                 ReadSection1(datFile.pSections[0],ms,br);
-                ReadSection2(datFile.pSections[1],ms,br);
                 ReadSection3(datFile.pSections[2], ms, br);
+                ReadSection2(datFile.pSections[1],ms,br);
                 //ReadSection4(datFile.pSections[3]);
                 //ReadSection5(datFile.pSections[4]);
                 //ReadSection6(datFile.pSections[5]);
