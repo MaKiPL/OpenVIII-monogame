@@ -38,6 +38,7 @@ namespace FF8
         private const int BATTLEMODULE_DRAWGEOMETRY = 2;
         private const int BATTLEMODULE_CAMERAINTRO = 3;
         private const int BATTLEMODULE_ACTIVE = 4;
+        private const float FPS = 1000.0f / 15f;
 
         private struct BS_RENDERER_ADD
         {
@@ -218,13 +219,13 @@ namespace FF8
             ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
             effect.TextureEnabled = true;
 
-                float fpsVariable = 1000.0f / 15f;
-                frameperFPS += Memory.gameTime.ElapsedGameTime.Milliseconds;
-                if (frameperFPS > fpsVariable)
+            float tick = Memory.gameTime.ElapsedGameTime.Milliseconds;
+                frameperFPS += tick;
+                if (frameperFPS > FPS)
                 {
-                    frameperFPS = 0.0f;
                 for (int x = 0; x < frame.Length; x++)
-                    frame[x]++;
+                    frame[x] += (int)(frameperFPS/FPS);
+                frameperFPS = 0.0f;
                 }
             for (int n = 0; n < monstersData.Length; n++)
             {
@@ -539,7 +540,7 @@ namespace FF8
             if (enc.bNumOfEnemies == 0)
                 return;
             //DEBUG BELOW; I just want to draw any model
-            monstersData = new Debug_battleDat[60];
+            monstersData = new Debug_battleDat[10];
             for (int n = 0; n < monstersData.Length; n++)
                 monstersData[n] = new Debug_battleDat(n);
             frame = new int[monstersData.Length];
