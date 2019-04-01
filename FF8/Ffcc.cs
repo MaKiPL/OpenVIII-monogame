@@ -289,7 +289,11 @@ namespace FF8
                         PrepareScaler();
                         break;
                     case FfccState.READ://Enters waiting state unless we want to process all now.
-                        State = Mode == FfccMode.PROCESS_ALL ? FfccState.READALL : FfccState.WAITING;
+                        State = Mode == FfccMode.PROCESS_ALL ? FfccState.READALL : FfccState.READONE; 
+                        //READONE here makes it grab one video frame and precaches audio to it's limit.
+                        //WAITING here makes it wait till GetFrame() is called.
+                        //READALL just processes the whole audio stream (memoryleaky), not ment for video
+                        //Currently video will just saves all the frames to bmp in temp folder on READALL.
                         break;
                     case FfccState.READALL:
                         State = FfccState.DONE;

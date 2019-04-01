@@ -4,7 +4,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 
 namespace FF8
@@ -86,8 +85,6 @@ namespace FF8
                 case STATE_INIT:
                     MovieState++;
                     InitMovie();
-                    if (Ffccaudio != null)
-                        Ffccaudio.GetFrame(); // primes the audio buffer with one frame of data
                     break;
                 case STATE_CLEAR:
                     break;
@@ -214,12 +211,10 @@ namespace FF8
         //private static Bitmap Frame { get => frame; set { lastframe = frame; frame = value; } }
         private static void PlayingDraw()
         {
-            if (frameTex == null || Ffccvideo.BehindFrame())
-            {
-                MsElapsed = 0;
 
-                int ret = Ffccvideo.GetFrame();
-                if (ret < 0)
+            if (Ffccvideo.BehindFrame())
+            {
+                if (Ffccvideo.GetFrame() < 0)
                 {
                     MovieState = STATE_FINISHED;
                     return;
@@ -229,10 +224,16 @@ namespace FF8
                     frameTex.Dispose();
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
+                    frameTex = null;
                 }
-
+            }
+            if (frameTex == null)
+            {
                 frameTex = Ffccvideo.FrameToTexture2D();
             }
+
+
+
 
             //draw frame;
             Memory.SpriteBatchStartStencil();
