@@ -129,6 +129,7 @@
     <Compile Include="LZSS.cs" />
     <Compile Include="MakiExtended.cs" />
     <Compile Include="Memory.cs" />
+    <Compile Include="MemoryReader.cs" />
     <Compile Include="ModuleHandler.cs" />
     <Compile Include="module_battle.cs" />
     <Compile Include="module_battle_Debug.cs" />
