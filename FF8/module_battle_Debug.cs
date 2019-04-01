@@ -237,7 +237,7 @@ namespace FF8
                 frame[n] = frame[n] == monstersData[n].animHeader.animations[0].cFrames ? 0 : frame[n];
                 for (int i = 0; i < monstersData[n].geometry.cObjects; i++)
                 {
-                    var a = monstersData[n].GetVertexPositions(i, new Vector3(-50+(n%12)*10, 50, (n/12)*10), frame[n]); //DEBUG
+                    var a = monstersData[n].GetVertexPositions(i, new Vector3(-50+(n%12)*10, 50, (n/12)*10), 0, frame[n],frameperFPS/FPS); //DEBUG
                     if (a == null || a.Length == 0)
                         return;
                     ate.Texture = monstersData[n].textures.textures[0];
@@ -540,7 +540,7 @@ namespace FF8
             if (enc.bNumOfEnemies == 0)
                 return;
             //DEBUG BELOW; I just want to draw any model
-            monstersData = new Debug_battleDat[10];
+            monstersData = new Debug_battleDat[32];
             for (int n = 0; n < monstersData.Length; n++)
                 monstersData[n] = new Debug_battleDat(n);
             frame = new int[monstersData.Length];

@@ -222,19 +222,23 @@ namespace FF8
             return @object;
         }
 
-        public VertexPositionTexture[] GetVertexPositions(int objectId, Vector3 position, int animationId, int animationFrame)
+        public VertexPositionTexture[] GetVertexPositions(int objectId, Vector3 position, int animationId, int animationFrame, float step)
         {
             Object obj = geometry.objects[objectId];
             if (animationFrame > animHeader.animations[animationId].animationFrames.Length || animationFrame<0)
                 animationFrame = 0;
             AnimationFrame frame = animHeader.animations[animationId].animationFrames[animationFrame];
+            AnimationFrame nextFrame;
+            if (animationFrame+1 >= animHeader.animations[animationId].animationFrames.Length)
+                nextFrame = animHeader.animations[animationId].animationFrames[0];
+            else nextFrame = animHeader.animations[animationId].animationFrames[animationFrame+1];
             List<VertexPositionTexture> vpt = new List<VertexPositionTexture>();
             List<Tuple<Vector3, int>> verts = new List<Tuple<Vector3, int>>();  
 
             int i = 0;
             foreach (var a in obj.verticeData)
                 foreach (var b in a.vertices)
-                    verts.Add(CalculateFrame(new Tuple<Vector3, int>(b.GetVector, a.boneId),frame));
+                    verts.Add(CalculateFrame(new Tuple<Vector3, int>(b.GetVector, a.boneId),frame,nextFrame, step));
 
             for (;i<obj.cTriangles; i++ )
             {
@@ -296,20 +300,20 @@ namespace FF8
             return vpt.ToArray();
         }
 
-        private Tuple<Vector3, int> CalculateFrame(Tuple<Vector3, int> tuple, AnimationFrame frame)
+        private Tuple<Vector3, int> CalculateFrame(Tuple<Vector3, int> tuple, AnimationFrame frame,AnimationFrame nextFrame, float step)
         {
             Matrix matrix = frame.boneRot.Item3[tuple.Item2]; //get's bone matrix
-            return new Tuple<Vector3, int>(new Vector3(
+            Vector3 rootFramePos = new Vector3(
                 matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * -tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
                 matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * -tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
-                matrix.M31 * tuple.Item1.X + matrix.M43 + matrix.M32 * -tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y), tuple.Item2);
-        }
-
-        public VertexPositionTexture[] GetVertexPositions(int objectId, Vector3 position, int frame)
-        {
-            //THIS IS DEBUG IN-DEV CLASS
-            Object obj = geometry.objects[objectId];
-            return GetVertexPositions(objectId, position, 0, frame); //debug;
+                matrix.M31 * tuple.Item1.X + matrix.M43 + matrix.M32 * -tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
+            matrix = nextFrame.boneRot.Item3[tuple.Item2];
+            Vector3 nextFramePos = new Vector3(
+                matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * -tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
+                matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * -tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
+                matrix.M31 * tuple.Item1.X + matrix.M43 + matrix.M32 * -tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
+            rootFramePos = Vector3.SmoothStep(rootFramePos, nextFramePos, step);
+            return new Tuple<Vector3, int>(rootFramePos, tuple.Item2);
         }
 #endregion
 
