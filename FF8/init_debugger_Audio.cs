@@ -467,7 +467,6 @@ namespace FF8
             {
                 case ".ogg":
                     ffccMusic = new Ffcc(pt, FFmpeg.AutoGen.AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
-                    ffccMusic.GetFrame();
                     ffccMusic.PlaySound();
                     break;
                 case ".sgt":
