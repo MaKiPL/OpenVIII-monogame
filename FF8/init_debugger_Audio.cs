@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
-#if _WINDOWS
+#if _WINDOWS && !_X64
 using DirectMidi;
 #endif
 using System.Runtime.InteropServices;
@@ -18,7 +18,7 @@ namespace FF8
 #pragma warning restore IDE1006 // Naming Styles
     {
 
-#if _WINDOWS
+#if _WINDOWS && !_X64
         private static CDirectMusic cdm;
         private static CDLSLoader loader;
         private static CSegment segment;
@@ -473,7 +473,7 @@ namespace FF8
 
                     if (!MakiExtended.IsLinux)
                     {
-#if _WINDOWS                        
+#if _WINDOWS && !_X64                        
                         if (cdm == null)
                         {
                             cdm = new CDirectMusic();
@@ -564,7 +564,7 @@ namespace FF8
 
                 if (MakiExtended.IsLinux)
                 {
-#if _WINDOWS
+#if _WINDOWS && !_X64
                     cport.StopAll();
                     cport.Dispose();
                     ccollection.Dispose();
@@ -590,7 +590,7 @@ namespace FF8
                 ffccMusic = null;
             }
 
-#if _WINDOWS
+#if _WINDOWS && !_X64
             try
             {
                 if (!MakiExtended.IsLinux)

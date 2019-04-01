@@ -11,6 +11,8 @@ Global
 		Debug|x86 = Debug|x86
 		DebugLinux|x64 = DebugLinux|x64
 		DebugLinux|x86 = DebugLinux|x86
+		DebugWindows|x64 = DebugWindows|x64
+		DebugWindows|x86 = DebugWindows|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
@@ -23,6 +25,10 @@ Global
 		{E23A12F6-73DC-4933-903B-2DC0765ED19B}.DebugLinux|x64.Build.0 = DebugLinux|x64
 		{E23A12F6-73DC-4933-903B-2DC0765ED19B}.DebugLinux|x86.ActiveCfg = DebugLinux|x86
 		{E23A12F6-73DC-4933-903B-2DC0765ED19B}.DebugLinux|x86.Build.0 = DebugLinux|x86
+		{E23A12F6-73DC-4933-903B-2DC0765ED19B}.DebugWindows|x64.ActiveCfg = DebugWindows|x64
+		{E23A12F6-73DC-4933-903B-2DC0765ED19B}.DebugWindows|x64.Build.0 = DebugWindows|x64
+		{E23A12F6-73DC-4933-903B-2DC0765ED19B}.DebugWindows|x86.ActiveCfg = DebugWindows|x86
+		{E23A12F6-73DC-4933-903B-2DC0765ED19B}.DebugWindows|x86.Build.0 = DebugWindows|x86
 		{E23A12F6-73DC-4933-903B-2DC0765ED19B}.Release|x64.ActiveCfg = Release|x64
 		{E23A12F6-73DC-4933-903B-2DC0765ED19B}.Release|x64.Build.0 = Release|x64
 		{E23A12F6-73DC-4933-903B-2DC0765ED19B}.Release|x86.ActiveCfg = Release|x86
