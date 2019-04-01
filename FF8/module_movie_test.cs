@@ -149,8 +149,9 @@ namespace FF8
         private static void InitMovie()
         {
 
-            Ffccaudio = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH); //Ffcc.FfccMode.PROCESS_ALL);
+            Ffccaudio = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
             Ffccvideo = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_VIDEO, Ffcc.FfccMode.STATE_MACH);
+
             FPS = Ffccvideo.FPS;
             if (FPS == 0)
             {
