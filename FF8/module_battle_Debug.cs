@@ -18,8 +18,9 @@ namespace FF8
         private static Texture2D[] textures;
 
 
-
-
+        //skyRotating floats are hardcoded
+        private static readonly ushort[] skyRotators = { 0x4, 0x4, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x0, 0x4, 0x4, 0x0, 0x10, 0x10, 0x0, 0x0, 0x0, 0x0, 0x0, 0x8, 0x2, 0x0, 0x0, 0x8, 0xfffc, 0xfffc, 0x0, 0x0, 0x0, 0x4, 0x0, 0x8, 0x0, 0x4, 0x4, 0x0, 0x4, 0x0, 0x4, 0xfffc, 0x8, 0xfffc, 0xfffc, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x0, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x20, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x8, 0x0, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x8, 0xfffc, 0x4, 0x4, 0x4, 0x4, 0x8, 0x8, 0x4, 0xfffc, 0xfffc, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x4, 0x4, 0x4, 0x4, 0xfffc, 0x0, 0x0, 0x0, 0x0, 0x8, 0x8, 0x0, 0x8, 0xfffc, 0x0, 0x0, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x4, 0x4, 0x4, 0x0, 0x0, 0x8, 0x0, 0x8, 0x8 };
+        static float localRotator = 0.0f;
 
 
 
@@ -202,37 +203,53 @@ namespace FF8
             }
         }
 
+        private static int[] frame;
+        private static int DEBUGframe = 0;
         private static void DrawMonsters()
         {
+            if (Input.GetInputDelayed(Keys.OemTilde))
+                DEBUGframe++;
+            if (Input.GetInputDelayed(Keys.Tab))
+                DEBUGframe--;
             Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
             Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
             Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
             effect.TextureEnabled = true;
-            var a = monstersData[0].GetVertexPositions(0, new Vector3(0,50,0)); //DEBUG
 
-            //if(monstersData[0].textures.textures != null && monstersData[0].textures.textures.Length >0)
-            //    ate.Texture = monstersData[0].textures.textures[0];
-
-            if (a == null)
-                return;
-            ate.Texture = monstersData[0].textures.textures[0];
-
-            
-            foreach (var pass in ate.CurrentTechnique.Passes)
-            {
-                pass.Apply();
-                if (true)
+                float fpsVariable = 1000.0f / 15f;
+                frameperFPS += Memory.gameTime.ElapsedGameTime.Milliseconds;
+                if (frameperFPS > fpsVariable)
                 {
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                    vertexData: a, vertexOffset: 0, primitiveCount: a.Length/3);
+                    frameperFPS = 0.0f;
+                for (int x = 0; x < frame.Length; x++)
+                    frame[x]++;
                 }
-                else
+            for (int n = 0; n < monstersData.Length; n++)
+            {
+                frame[n] = frame[n] == monstersData[n].animHeader.animations[0].cFrames ? 0 : frame[n];
+                for (int i = 0; i < monstersData[n].geometry.cObjects; i++)
                 {
-                    //Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                    //vertexData: vpt.Item2, vertexOffset: localVertexIndex, primitiveCount: 1);
-                    //localVertexIndex += 3;
+                    var a = monstersData[n].GetVertexPositions(i, new Vector3(0+n*50, 50, 0), frame[n]); //DEBUG
+                    if (a == null || a.Length == 0)
+                        return;
+                    ate.Texture = monstersData[n].textures.textures[0];
+                    foreach (var pass in ate.CurrentTechnique.Passes)
+                    {
+                        pass.Apply();
+                        if (true)
+                        {
+                            Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                            vertexData: a, vertexOffset: 0, primitiveCount: a.Length / 3);
+                        }
+                        else
+                        {
+                            //Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                            //vertexData: vpt.Item2, vertexOffset: localVertexIndex, primitiveCount: 1);
+                            //localVertexIndex += 3;
+                        }
+                    }
                 }
             }
         }
@@ -327,10 +344,12 @@ namespace FF8
 
 
             effect.TextureEnabled = true;
-            foreach (var a in modelGroups)
-                foreach (var b in a.models)
+            for(int n = 0; n < modelGroups.Length; n++)
+                foreach (var b in modelGroups[n].models)
                 {
                     var vpt = GetVertexBuffer(b);
+                    if (n == 3 && skyRotators[Memory.encounters[Memory.battle_encounter].bScenario] != 0)
+                        CreateRotation(vpt);
                     if (vpt == null) continue;
                     int localVertexIndex = 0;
                     for (int i = 0; i < vpt.Item1.Length; i++)
@@ -362,7 +381,17 @@ namespace FF8
             Memory.font.RenderBasicText(Font.CipherDirty($"Enemies: {string.Join(",", Memory.encounters[Memory.battle_encounter].BEnemies.Where(x => x != 0x00).Select(x => "0x" + (x - 0x10).ToString("X02")).ToArray())}"), 20, 30 * 2, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Levels: {string.Join(",", Memory.encounters[Memory.battle_encounter].bLevels)}"), 20, 30 * 3, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Loaded enemies: {Convert.ToString(Memory.encounters[Memory.battle_encounter].bLoadedEnemy, 2)}"), 20, 30 * 4, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Debug frame: {DEBUGframe}"), 20, 30 * 5, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
+        }
+
+        private static void CreateRotation(Tuple<BS_RENDERER_ADD[], VertexPositionTexture[]> vpt)
+        {
+            localRotator += (short)skyRotators[Memory.encounters[Memory.battle_encounter].bScenario]/512f;
+            if (localRotator <= 0)
+                return;
+            for (int i = 0; i < vpt.Item2.Length; i++)
+                vpt.Item2[i].Position = Vector3.Transform(vpt.Item2[i].Position, Matrix.CreateRotationY(MathHelper.ToRadians(localRotator/Memory.gameTime.ElapsedGameTime.Milliseconds*20)));
         }
 
         private static Tuple<BS_RENDERER_ADD[], VertexPositionTexture[]> GetVertexBuffer(Model model)
@@ -514,14 +543,20 @@ namespace FF8
             battleModule++;
         }
 
+        public static int DEBUG = 0;
+        private static float frameperFPS = 0.0f;
+
         private static void ReadMonster()
         {
             Init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
             if (enc.bNumOfEnemies == 0)
                 return;
             //DEBUG BELOW; I just want to draw any model
-            Debug_battleDat sampleMonster = new Debug_battleDat(0);
-            monstersData = new Debug_battleDat[] { sampleMonster };
+            //monstersData = new Debug_battleDat[1];
+            monstersData = new Debug_battleDat[] { new Debug_battleDat(0), new Debug_battleDat(139), new Debug_battleDat(19), new Debug_battleDat(10), new Debug_battleDat(5), new Debug_battleDat(125), new Debug_battleDat(113) };
+            //for (int i = 28; i < monstersData.Length; i++)
+            //    monstersData[i] = new Debug_battleDat(i);
+            frame = new int[monstersData.Length];
             //END OF DEBUG
         }
 
