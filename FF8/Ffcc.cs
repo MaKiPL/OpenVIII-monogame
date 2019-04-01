@@ -599,9 +599,9 @@ namespace FF8
                         return;
                     }
                     // do something with video here.
-                    else if (!skipencode)
+                    else if (!skipencode || Mode == FfccMode.PROCESS_ALL)
                     {
-                        BMP_Save();
+                        BMP_Save(ref _DecodedFrame);
                     }
                 }
                 else if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
@@ -1035,12 +1035,12 @@ namespace FF8
         /// <summary>
         /// Saves each frame to it's own BMP image file.
         /// </summary>
-        private void BMP_Save()
+        private void BMP_Save(ref AVFrame frame)
         {
             string filename = Path.Combine(Path.GetTempPath(), $"{Path.GetFileNameWithoutExtension(DecodedFileName)}_rawframe.{Decoder.CodecContext->frame_number}.bmp");
             using (FileStream fs = File.OpenWrite(filename))
             {
-                using (Bitmap bitmap = FrameToBMP())
+                using (Bitmap bitmap = FrameToBMP(ref frame))
                 {
                     bitmap.Save(fs, ImageFormat.Bmp);
                 }
@@ -1052,6 +1052,11 @@ namespace FF8
         /// <remarks>AForge source for refernce this function. was c++.</remarks>
         /// <returns>Bitmap of frame</returns>
         public Bitmap FrameToBMP()
+        {
+            AVFrame frame = *Decoder.Frame;
+            return FrameToBMP(ref frame);
+        }
+        public Bitmap FrameToBMP(ref AVFrame frame)
         {
             Bitmap bitmap = null;
             BitmapData bitmapData = null;
@@ -1072,7 +1077,7 @@ namespace FF8
                 int[] srcLinesize = { bitmapData.Stride, 0, 0, 0 };
 
                 // convert video frame to the RGB bitmap
-                ffmpeg.sws_scale(ScalerContext, Decoder.Frame->data, Decoder.Frame->linesize, 0, Decoder.CodecContext->height, srcData, srcLinesize); //sws_scale broken on linux?
+                ffmpeg.sws_scale(ScalerContext, frame.data, frame.linesize, 0, Decoder.CodecContext->height, srcData, srcLinesize); //sws_scale broken on linux?
             }
             finally
             {
