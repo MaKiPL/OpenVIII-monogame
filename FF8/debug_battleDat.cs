@@ -14,7 +14,7 @@ namespace FF8
         byte[] buffer;
         int debug = 0;
 
-        private const float V = 512.0f;
+        private const float V = 2048.0f;
 
         public struct DatFile
         {
@@ -588,6 +588,11 @@ namespace FF8
                     datFile.pSections[i] = br.ReadUInt32();
                 datFile.eof = br.ReadUInt32();
 
+                if(datFile.pSections.Length != 11)
+                {
+                    //TODO
+                    return;
+                }
                 ReadSection1(datFile.pSections[0],ms,br);
                 ReadSection3(datFile.pSections[2], ms, br);
                 ReadSection2(datFile.pSections[1],ms,br);

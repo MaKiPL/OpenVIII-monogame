@@ -228,10 +228,15 @@ namespace FF8
                 }
             for (int n = 0; n < monstersData.Length; n++)
             {
+                if(monstersData[n].GetId == 127)
+                {
+                    //TODO;
+                    continue;
+                }
                 frame[n] = frame[n] == monstersData[n].animHeader.animations[0].cFrames ? 0 : frame[n];
                 for (int i = 0; i < monstersData[n].geometry.cObjects; i++)
                 {
-                    var a = monstersData[n].GetVertexPositions(i, new Vector3(0+n*50, 50, 0), frame[n]); //DEBUG
+                    var a = monstersData[n].GetVertexPositions(i, new Vector3(-50+(n%12)*10, 50, (n/12)*10), frame[n]); //DEBUG
                     if (a == null || a.Length == 0)
                         return;
                     ate.Texture = monstersData[n].textures.textures[0];
@@ -369,11 +374,11 @@ namespace FF8
 
         private static void CreateRotation(Tuple<BS_RENDERER_ADD[], VertexPositionTexture[]> vpt)
         {
-            localRotator += (short)skyRotators[Memory.encounters[Memory.battle_encounter].bScenario]/512f;
+            localRotator += (short)skyRotators[Memory.encounters[Memory.battle_encounter].bScenario]/4096f * Memory.gameTime.ElapsedGameTime.Milliseconds;
             if (localRotator <= 0)
                 return;
             for (int i = 0; i < vpt.Item2.Length; i++)
-                vpt.Item2[i].Position = Vector3.Transform(vpt.Item2[i].Position, Matrix.CreateRotationY(MathHelper.ToRadians(localRotator/Memory.gameTime.ElapsedGameTime.Milliseconds*20)));
+                vpt.Item2[i].Position = Vector3.Transform(vpt.Item2[i].Position, Matrix.CreateRotationY(MathHelper.ToRadians(localRotator)));
         }
 
         private static Tuple<BS_RENDERER_ADD[], VertexPositionTexture[]> GetVertexBuffer(Model model)
@@ -534,10 +539,9 @@ namespace FF8
             if (enc.bNumOfEnemies == 0)
                 return;
             //DEBUG BELOW; I just want to draw any model
-            //monstersData = new Debug_battleDat[1];
-            monstersData = new Debug_battleDat[] { new Debug_battleDat(0), new Debug_battleDat(139), new Debug_battleDat(19), new Debug_battleDat(10), new Debug_battleDat(5), new Debug_battleDat(125), new Debug_battleDat(113) };
-            //for (int i = 28; i < monstersData.Length; i++)
-            //    monstersData[i] = new Debug_battleDat(i);
+            monstersData = new Debug_battleDat[60];
+            for (int n = 0; n < monstersData.Length; n++)
+                monstersData[n] = new Debug_battleDat(n);
             frame = new int[monstersData.Length];
             //END OF DEBUG
         }
