@@ -249,6 +249,8 @@ namespace FF8
         /// </summary>
         public void Init(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH)
         {
+
+            ffmpeg.av_log_set_level(ffmpeg.AV_LOG_PANIC);
             State = FfccState.INIT;
             Mode = mode;
             DecodedFileName = filename;
@@ -781,6 +783,7 @@ namespace FF8
         }
         public Dictionary<String, String> Metadata { get; private set; } = new Dictionary<string, string>();
         public byte* ConvertedData { get => _convertedData; private set => _convertedData = value; }
+        private AVDictionary* dict = null;
         /// <summary>
         /// Finds the codec for the chosen stream
         /// </summary>
@@ -813,8 +816,13 @@ namespace FF8
 
             Return = ffmpeg.avcodec_parameters_to_context(Decoder.CodecContext, DecoderStream->codecpar);
             CheckReturn();
-            Return = ffmpeg.avcodec_open2(Decoder.CodecContext, Decoder.Codec, null);
-            CheckReturn();
+            fixed (AVDictionary** tmp = &dict)
+            {
+                Return = ffmpeg.av_dict_set(tmp, "strict", "+experimental", 0);
+                CheckReturn();
+                Return = ffmpeg.avcodec_open2(Decoder.CodecContext, Decoder.Codec, tmp);
+                CheckReturn();
+            }
             if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
             {
                 if (Decoder.CodecContext->channel_layout == 0)
@@ -1048,6 +1056,7 @@ namespace FF8
         }
         /// <summary>
         /// Converts raw video frame to correct colorspace
+        /// Does not work in Linux
         /// </summary>
         /// <remarks>AForge source for refernce this function. was c++.</remarks>
         /// <returns>Bitmap of frame</returns>
@@ -1056,6 +1065,12 @@ namespace FF8
             AVFrame frame = *Decoder.Frame;
             return FrameToBMP(ref frame);
         }
+        /// <summary>
+        /// Converts raw video frame to correct colorspace
+        /// Does not work in Linux
+        /// </summary>
+        /// <param name="frame">Frame you want to process</param>
+        /// <returns>Bitmap of frame</returns>
         public Bitmap FrameToBMP(ref AVFrame frame)
         {
             Bitmap bitmap = null;
@@ -1078,6 +1093,7 @@ namespace FF8
 
                 // convert video frame to the RGB bitmap
                 ffmpeg.sws_scale(ScalerContext, frame.data, frame.linesize, 0, Decoder.CodecContext->height, srcData, srcLinesize); //sws_scale broken on linux?
+
             }
             finally
             {
@@ -1090,40 +1106,23 @@ namespace FF8
 
         }
         /// <summary>
-        /// Converts BMP to Texture
+        /// Converts Frame to Texture with correct colorspace
         /// </summary>
         /// <returns>Texture2D</returns>
         public Texture2D FrameToTexture2D()
         {
-            //Get Bitmap. there might be a way to skip this step.
-            using (Bitmap frame = FrameToBMP())
+            Texture2D frameTex = new Texture2D(Memory.spriteBatch.GraphicsDevice, Decoder.CodecContext->width, Decoder.CodecContext->height, false, SurfaceFormat.Color);
+            const int bpp = 4;
+            byte[] texBuffer = new byte[Decoder.CodecContext->width * Decoder.CodecContext->height * bpp]; 
+            fixed (byte* ptr = &texBuffer[0])
             {
-                //string filename = Path.Combine(Path.GetTempPath(), $"{Path.GetFileNameWithoutExtension(DecodedFileName)}_rawframe.{Decoder.CodecContext->frame_number}.bmp");
-
-                //frame.Save(filename);
-                BitmapData bmpdata = null;
-                Texture2D frameTex = null;
-                try
-                {
-                    //Create Texture
-                    frameTex = new Texture2D(Memory.spriteBatch.GraphicsDevice, frame.Width, frame.Height, false, SurfaceFormat.Color); //GC will collect frameTex
-                                                                                                                                                  //Fill it with the bitmap.
-                    bmpdata = frame.LockBits(new Rectangle(0, 0, frame.Width, frame.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);// System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                    byte[] texBuffer = new byte[bmpdata.Width * bmpdata.Height * 4]; //GC here
-                    Marshal.Copy(bmpdata.Scan0, texBuffer, 0, texBuffer.Length);
-
-                    frameTex.SetData(texBuffer);
-
-
-                }
-                finally
-                {
-                    if (bmpdata != null)
-                        frame.UnlockBits(bmpdata);
-                }
-                return frameTex;
-
+                byte*[] srcData = { ptr, null, null, null };
+                int[] srcLinesize = { Decoder.CodecContext->width * bpp, 0, 0, 0 };
+                // convert video frame to the RGB data
+                ffmpeg.sws_scale(ScalerContext, Decoder.Frame->data, Decoder.Frame->linesize, 0, Decoder.CodecContext->height, srcData, srcLinesize);
             }
+            frameTex.SetData(texBuffer);
+            return frameTex;
         }
 
         #region IDisposable Support

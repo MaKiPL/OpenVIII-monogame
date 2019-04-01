@@ -149,12 +149,9 @@ namespace FF8
         private static void InitMovie()
         {
 
-            Ffccaudio = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH); //Ffcc.FfccMode.PROCESS_ALL);
+            Ffccaudio = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
             Ffccvideo = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_VIDEO, Ffcc.FfccMode.STATE_MACH);
-#if !_WINDOWS
-            Ffcc Ffccvideo2 = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_VIDEO, Ffcc.FfccMode.PROCESS_ALL);
-            //testing for linux just exporting all the frames to see if i am getting any progress
-#endif
+
             FPS = Ffccvideo.FPS;
             if (FPS == 0)
             {
