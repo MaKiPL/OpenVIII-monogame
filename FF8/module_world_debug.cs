@@ -326,19 +326,35 @@ namespace FF8
             br.Dispose();
             ms.Dispose();
         }
+        const float defaultmaxMoveSpeed = 1f;
+        const float MoveSpeedChange = 1f;
+        static float maxMoveSpeed = defaultmaxMoveSpeed;
+        const float maxLookSpeed = 0.25f;
         public static void FPSCamera()
-        { //copied from module_battle_debug. Wondering how the two functions could be merged somehow so there isn't duplicate code.
+        {
             #region FPScamera
-            float x_shift = 0.0f;
-            float y_shift = 0.0f;
+            float x_shift = 0.0f, y_shift = 0.0f, leftdistX = 0.0f, leftdistY = 0.0f;
+
+            //speedcontrols
+            //+ to increase
+            //- to decrease
+            //* to reset            
+            if (Input.Button(Keys.OemPlus) || Input.Button(Keys.Add))
+            {
+                maxMoveSpeed += MoveSpeedChange;
+            }
+            if (Input.Button(Keys.OemMinus) || Input.Button(Keys.Subtract))
+            {
+                maxMoveSpeed -= MoveSpeedChange;
+                if (maxMoveSpeed < defaultmaxMoveSpeed) maxMoveSpeed = defaultmaxMoveSpeed;
+            }
+            if (Input.Button(Keys.Multiply)) maxMoveSpeed = defaultmaxMoveSpeed;
 
             //speed is effected by the milliseconds between frames. so alittle goes a long way. :P
-            float maxMoveSpeed = 1f;
-            float maxLookSpeed = 0.25f;
             x_shift = Input.Distance(Buttons.MouseXjoy, maxLookSpeed);
             y_shift = Input.Distance(Buttons.MouseYjoy, maxLookSpeed);
-            float leftdistX = Math.Abs(Input.Distance(Buttons.LeftStickX, maxMoveSpeed));
-            float leftdistY = Math.Abs(Input.Distance(Buttons.LeftStickY, maxMoveSpeed));
+            leftdistX = Math.Abs(Input.Distance(Buttons.LeftStickX, maxMoveSpeed));
+            leftdistY = Math.Abs(Input.Distance(Buttons.LeftStickY, maxMoveSpeed));
             x_shift += Input.Distance(Buttons.RightStickX, maxLookSpeed);
             y_shift += Input.Distance(Buttons.RightStickY, maxLookSpeed);
             Yshift -= y_shift;
@@ -352,6 +368,7 @@ namespace FF8
             {
                 leftdistX = Input.Distance(maxMoveSpeed);
             }
+
             if (Input.Button(Buttons.Up))//(Keyboard.GetState().IsKeyDown(Keys.W) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y > 0.0f)
             {
                 camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees)) * leftdistY / 10;
