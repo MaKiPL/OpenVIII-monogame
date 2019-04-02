@@ -139,7 +139,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="ArchiveWorker.cs" />
-    <Compile Include="Class1.cs" />
     <Compile Include="debug_MCH.cs" />
     <Compile Include="ExtapathyExtended.cs" />
     <Compile Include="Ffcc.cs" />
@@ -162,6 +161,7 @@
     <Compile Include="module_movie_test.cs" />
     <Compile Include="module_overture_debug.cs" />
     <Compile Include="module_world_debug.cs" />
+    <Compile Include="parser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PseudoBufferedStream.cs" />

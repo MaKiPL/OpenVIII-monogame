@@ -286,9 +286,14 @@ namespace FF8
                 //try { 
 
                 //Ffcc ffccSound = new Ffcc(rawBuffer,format);
-                Class1 class1 = new Class1(rawBuffer);
+                //Class1 class1 = new Class1(rawBuffer);
                 //ffccSound.PlaySound();
+                //return;
+                MemoryStream ms = new MemoryStream();
+                Parser parser = new Parser(rawBuffer, ref ms);
+                ms.Dispose();
                 return;
+
                 RawSourceWaveStream raw = new RawSourceWaveStream(new MemoryStream(rawBuffer), new AdpcmWaveFormat((int)format.nSamplesPerSec, format.nChannels));
                 byte[] buffer;
                 if (!MakiExtended.IsLinux)
