@@ -371,8 +371,19 @@ namespace FF8
                 //ms.Dispose();
                 using (FileStream fileStream = File.OpenWrite(Path.Combine(Path.GetTempPath(), $"sound{soundID}.wav")))
                 {
+                    int filesize = Marshal.SizeOf(soundEntries[soundID].WAVFORMATEX) + 4 + rawBuffer.Length + 28+4+8+4;
                     //write header
-                    byte[] header = getBytes(soundEntries[soundID].WAVFORMATEX);//, soundEntries[soundID].SamplesPerBlock, soundEntries[soundID].ADPCM, soundEntries[soundID].ADPCMCoefSets);
+                    byte[] header;
+                    header = Encoding.ASCII.GetBytes("RIFF");
+                    fileStream.Write(header, 0, header.Length);
+                    header = getBytes(filesize);
+                    fileStream.Write(header, 0, header.Length);
+                    header = Encoding.ASCII.GetBytes("WAVEfmt ");
+                    fileStream.Write(header, 0, header.Length);
+                    filesize = Marshal.SizeOf(soundEntries[soundID].WAVFORMATEX) + 28 + 4;
+                    header = getBytes(filesize);
+                    fileStream.Write(header, 0, header.Length);
+                    header = getBytes(soundEntries[soundID].WAVFORMATEX);
                     fileStream.Write(header, 0, header.Length);
                     header = BitConverter.GetBytes(soundEntries[soundID].SamplesPerBlock);
                     fileStream.Write(header, 0, header.Length);
@@ -383,7 +394,10 @@ namespace FF8
                         header = getBytes(item);
                         fileStream.Write(header, 0, header.Length);
                     }
-
+                    header = Encoding.ASCII.GetBytes("data");
+                    fileStream.Write(header, 0, header.Length);
+                    header = BitConverter.GetBytes(rawBuffer.Length);
+                    fileStream.Write(header, 0, header.Length);
                     //write data
                     fileStream.Write(rawBuffer,0,rawBuffer.Length);
                 }
