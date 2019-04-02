@@ -66,21 +66,15 @@ namespace FF8
             }
         }
         public static string[] musices;
-        public static Dictionary<ushort, List<string>> dicMusic = new Dictionary<ushort, List<string>>(); //ogg and sgt files have same 3 digit prefix.
+        public static readonly Dictionary<ushort, List<string>> dicMusic = new Dictionary<ushort, List<string>>(); //ogg and sgt files have same 3 digit prefix.
         public static void SpriteBatchStartStencil()
         {
             spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, null, graphics.GraphicsDevice.DepthStencilState);
         }
 
-        public static void SpriteBatchStartAlpha()
-        {
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
-        }
+        public static void SpriteBatchStartAlpha() => spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
 
-        public static void SpriteBatchEnd()
-        {
-            spriteBatch.End();
-        }
+        public static void SpriteBatchEnd() => spriteBatch.End();
 
         public static readonly BlendState blendState_BasicAdd = new BlendState()
         {

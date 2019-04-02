@@ -35,8 +35,18 @@ namespace FF8
         /// Codec 
         /// </summary>
         public unsafe AVCodec* Codec { get => _codec; set => _codec = value; }
+        /// <summary>
+        /// Set Stream Index typically 0 is video 1 is audio, unless no video then 0 is audio. -1 for no stream of type.
+        /// </summary>
         public int StreamIndex { get; internal set; }
+        /// <summary>
+        /// Current Stream based on index
+        /// </summary>
         public unsafe AVStream* Stream => StreamIndex >= 0 && Format != null ? Format->streams[StreamIndex] : null;//{get; internal set; }
+        /// <summary>
+        /// Type of current Stream.
+        /// </summary>
+        public unsafe AVMediaType Type => Stream != null ? Stream->codec->codec_type : AVMediaType.AVMEDIA_TYPE_UNKNOWN;
         #endregion
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
