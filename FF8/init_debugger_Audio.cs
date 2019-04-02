@@ -40,7 +40,7 @@ namespace FF8
             public byte[] ADPCMCoefSets; //28
         }
 #pragma warning disable CS0649
-        private struct WAVEFORMATEX
+        public struct WAVEFORMATEX
         {
             public ushort wFormatTag;
             public ushort nChannels;

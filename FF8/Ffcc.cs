@@ -244,6 +244,54 @@ namespace FF8
         {
             Init(filename, mediatype, mode);
         }
+        MemoryStream inputStream;
+        byte* inputData;
+        int DataLength;
+        private delegate int aviofunct(void * opaque, byte* buf, int buf_size);
+        struct buffer_data
+        {
+            public byte* ptr;
+            public int size;
+        };
+        static void memcpy(byte * _out, byte* _in, int size)
+        {
+            for(int i = 0; i<size; i++)
+            {
+                _out[i] = _in[i];
+            }
+        }
+        static int FFMIN(int a, int b)
+        {
+            if (b < a)
+                return b;
+            return a;
+        }
+        static int read_packet(void* opaque, byte* buf, int buf_size)
+        {
+            buffer_data*bd = (buffer_data*)opaque;
+            buf_size = FFMIN(buf_size, bd->size);
+                /* copy internal buffer data to buf */
+                memcpy(buf, bd->ptr, buf_size);
+                bd->ptr  += buf_size;
+            bd->size -= buf_size;
+            return buf_size;
+        }
+        /// <summary>
+        /// Opens filename and init class.
+        /// </summary>
+        /// <remarks>based on https://stackoverflow.com/questions/9604633/reading-a-file-located-in-memory-with-libavformat 
+        /// and http://www.ffmpeg.org/doxygen/trunk/doc_2examples_2avio_reading_8c-example.html </remarks>
+        /// <remarks>probably could be wrote better theres alot of hoops to jump threw</remarks>
+        public Ffcc(byte[] data, init_debugger_Audio.WAVEFORMATEX format, string fmt = "adpcm_ms",  AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.PROCESS_ALL)
+        {
+            inputData = (byte*)ffmpeg.av_malloc(8192);
+            fixed (byte* ptr = &data[0])
+            {
+                buffer_data bd = new buffer_data { ptr = ptr, size = data.Length };
+                Decoder.Format->pb = ffmpeg.avio_alloc_context(inputData, 8192, 0, &bd, new avio_alloc_context_read_packet_func { Pointer = Marshal.GetFunctionPointerForDelegate(new aviofunct(read_packet)) }, null, null); 
+            }
+            Init(null, mediatype, mode);
+        }
         /// <summary>
         /// Opens filename and init class.
         /// </summary>
