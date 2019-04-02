@@ -80,8 +80,8 @@ namespace FF8
             /* register all the codecs */
             //ffmpeg.avcodec_register_all();
             pkt = ffmpeg.av_packet_alloc();
-            /* find the MPEG audio decoder */
-            codec = ffmpeg.avcodec_find_decoder(AVCodecID.AV_CODEC_ID_ADPCM_MS);
+            //AV_CODEC_ID_ADPCM_MS
+            codec = ffmpeg.avcodec_find_decoder(AVCodecID.AV_CODEC_ID_ADPCM_IMA_WAV);
             if (codec == null)
             {
                 throw new Exception("Codec not found\n");

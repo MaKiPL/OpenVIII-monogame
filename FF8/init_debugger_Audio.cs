@@ -28,18 +28,31 @@ namespace FF8
         private static CCollection ccollection;
         private static CInstrument[] instruments;
 #endif
+        private static byte[] getBytes(object aux)
+        {
+            int length = Marshal.SizeOf(aux);
+            IntPtr ptr = Marshal.AllocHGlobal(length);
+            byte[] myBuffer = new byte[length];
 
+            Marshal.StructureToPtr(aux, ptr, true);
+            Marshal.Copy(ptr, myBuffer, 0, length);
+            Marshal.FreeHGlobal(ptr);
+
+            return myBuffer;
+        }
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         private struct SoundEntry
         {
             public int Size;
             public int Offset;
-            public byte[] UNK; //12
-            public byte[] WAVFORMATEX; //18
+            //public byte[] UNK; //12
+            public WAVEFORMATEX WAVFORMATEX; //18
             public ushort SamplesPerBlock;
             public ushort ADPCM;
-            public byte[] ADPCMCoefSets; //28
+            public ADPCMCOEFSET[] ADPCMCoefSets; //array should be of [ADPCM] size
         }
 #pragma warning disable CS0649
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         public struct WAVEFORMATEX
         {
             public ushort wFormatTag;
@@ -50,6 +63,56 @@ namespace FF8
             public ushort wBitsPerSample;
             public ushort cbSize;
         }
+        //WAVE Format Header
+
+        static readonly ushort WAVE_FORMAT_ADPCM = (0x0002);
+
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+        struct ADPCMCOEFSET
+        {
+
+           public short iCoef1;
+           public short iCoef2;
+
+        };
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+        struct ADPCMWAVEFORMAT
+        {
+
+            WAVEFORMATEX wfxx;
+            public ushort wSamplesPerBlock;
+            public ushort wNumCoef;
+            ADPCMCOEFSET[] aCoeff;//[wNumCoef];
+
+            public ADPCMWAVEFORMAT(WAVEFORMATEX wfxx, ushort wSamplesPerBlock, ushort wNumCoef, ADPCMCOEFSET[] aCoeff)
+            {
+                this.wfxx = wfxx;
+                this.wSamplesPerBlock = wSamplesPerBlock;
+                this.wNumCoef = wNumCoef;
+                this.aCoeff = aCoeff ?? throw new ArgumentNullException(nameof(aCoeff));
+            }
+        };
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+        struct ADPCMBLOCKHEADER
+        {
+
+            byte[] bPredictor;//[nChannels];
+            int[] iDelta;//[nChannels];
+            int[] iSamp1;//[nChannels];
+            int[] iSamp2;//[nChannels];
+
+            public ADPCMBLOCKHEADER(ushort nChannels)
+            {
+                bPredictor = new byte[nChannels];
+                iDelta = new int[nChannels];
+                iSamp1 = new int[nChannels]; 
+                iSamp2 = new int[nChannels];
+            }
+        };
+
 #pragma warning restore CS0649
 
         private static SoundEntry[] soundEntries;
@@ -229,16 +292,29 @@ namespace FF8
                         fs.Seek(34, SeekOrigin.Current); continue;
                     }
 
-                    soundEntries[i] = new SoundEntry()
+                    soundEntries[i] = new SoundEntry();
+                    soundEntries[i].Size = sz;
+                    soundEntries[i].Offset = br.ReadInt32();
+                    //soundEntries[i].UNK = br.ReadBytes(12);
+                    fs.Seek(12, SeekOrigin.Current);
+                    soundEntries[i].WAVFORMATEX = new WAVEFORMATEX
                     {
-                        Size = sz,
-                        Offset = br.ReadInt32(),
-                        UNK = br.ReadBytes(12),
-                        WAVFORMATEX = br.ReadBytes(18),
-                        SamplesPerBlock = br.ReadUInt16(),
-                        ADPCM = br.ReadUInt16(),
-                        ADPCMCoefSets = br.ReadBytes(28)
+                        wFormatTag = br.ReadUInt16(),//2
+                        nChannels = br.ReadUInt16(),//2
+                        nSamplesPerSec = br.ReadUInt32(),//4
+                        nAvgBytesPerSec = br.ReadUInt32(),//4
+                        nBlockAlign = br.ReadUInt16(),//2
+                        wBitsPerSample = br.ReadUInt16(),//2
+                        cbSize = br.ReadUInt16()//2
                     };
+                    soundEntries[i].SamplesPerBlock = br.ReadUInt16();
+                    soundEntries[i].ADPCM = br.ReadUInt16();
+                    soundEntries[i].ADPCMCoefSets = new ADPCMCOEFSET[soundEntries[i].ADPCM];
+                    for (ushort j = 0; j < soundEntries[i].ADPCM; j++)
+                    {
+                        soundEntries[i].ADPCMCoefSets[j].iCoef1 = br.ReadInt16();
+                        soundEntries[i].ADPCMCoefSets[j].iCoef2 = br.ReadInt16();
+                    }
                 }
             }
             soundEntriesCount = soundEntries.Length;
@@ -270,9 +346,10 @@ namespace FF8
                 //sfxBufferList.Add(soundEntries[soundID].WAVFORMATEX);
                 //sfxBufferList.Add(Encoding.ASCII.GetBytes("data"));
                 //sfxBufferList.Add(BitConverter.GetBytes(soundEntries[soundID].Size));
-                GCHandle gc = GCHandle.Alloc(soundEntries[soundID].WAVFORMATEX, GCHandleType.Pinned);
-                WAVEFORMATEX format = (WAVEFORMATEX)Marshal.PtrToStructure(gc.AddrOfPinnedObject(), typeof(WAVEFORMATEX));
-                gc.Free();
+                //GCHandle gc = GCHandle.Alloc(soundEntries[soundID].WAVFORMATEX, GCHandleType.Pinned);
+                //WAVEFORMATEX format = (WAVEFORMATEX)Marshal.PtrToStructure(gc.AddrOfPinnedObject(), typeof(WAVEFORMATEX));
+                //gc.Free();
+                WAVEFORMATEX format = soundEntries[soundID].WAVFORMATEX;
                 byte[] rawBuffer = br.ReadBytes(soundEntries[soundID].Size);
                 //sfxBufferList.Add(rawBuffer);
                 //byte[] sfxBuffer = sfxBufferList.SelectMany(x => x).ToArray();
@@ -289,12 +366,29 @@ namespace FF8
                 //Class1 class1 = new Class1(rawBuffer);
                 //ffccSound.PlaySound();
                 //return;
-                MemoryStream ms = new MemoryStream();
-                Parser parser = new Parser(rawBuffer, ref ms);
-                ms.Dispose();
-                return;
+                //MemoryStream ms = new MemoryStream();
+                //Parser parser = new Parser(rawBuffer, ref ms);
+                //ms.Dispose();
+                using (FileStream fileStream = File.OpenWrite(Path.Combine(Path.GetTempPath(), $"sound{soundID}.wav")))
+                {
+                    //write header
+                    byte[] header = getBytes(soundEntries[soundID].WAVFORMATEX);//, soundEntries[soundID].SamplesPerBlock, soundEntries[soundID].ADPCM, soundEntries[soundID].ADPCMCoefSets);
+                    fileStream.Write(header, 0, header.Length);
+                    header = BitConverter.GetBytes(soundEntries[soundID].SamplesPerBlock);
+                    fileStream.Write(header, 0, header.Length);
+                    header = BitConverter.GetBytes(soundEntries[soundID].ADPCM);
+                    fileStream.Write(header, 0, header.Length);
+                    foreach (ADPCMCOEFSET item in soundEntries[soundID].ADPCMCoefSets)
+                    {
+                        header = getBytes(item);
+                        fileStream.Write(header, 0, header.Length);
+                    }
 
+                    //write data
+                    fileStream.Write(rawBuffer,0,rawBuffer.Length);
+                }
                 RawSourceWaveStream raw = new RawSourceWaveStream(new MemoryStream(rawBuffer), new AdpcmWaveFormat((int)format.nSamplesPerSec, format.nChannels));
+
                 byte[] buffer;
                 if (!MakiExtended.IsLinux)
                 {
