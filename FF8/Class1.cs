@@ -8,16 +8,20 @@ namespace FF8
     {
         public static unsafe string av_strerror(int error)
         {
-            var bufferSize = 1024;
-            var buffer = stackalloc byte[bufferSize];
+            int bufferSize = 1024;
+            byte* buffer = stackalloc byte[bufferSize];
             ffmpeg.av_strerror(error, buffer, (ulong)bufferSize);
-            var message = Marshal.PtrToStringAnsi((IntPtr)buffer);
+            string message = Marshal.PtrToStringAnsi((IntPtr)buffer);
             return message;
         }
 
         public static int ThrowExceptionIfError(this int error)
         {
-            if (error < 0) throw new ApplicationException(av_strerror(error));
+            if (error < 0)
+            {
+                throw new ApplicationException(av_strerror(error));
+            }
+
             return error;
         }
     }
@@ -68,7 +72,7 @@ namespace FF8
             Run(buffer, buffer_size);
         }
 
-        public bool Decode(out AVFrame frame,ref FfccVaribleGroup Decoder)
+        public static bool Decode(out AVFrame frame, ref FfccVaribleGroup Decoder)
         {
             int Return = 0;
             ffmpeg.av_frame_unref(Decoder.Frame);
@@ -122,10 +126,53 @@ namespace FF8
             frame = *Decoder.Frame;
             return true;
         }
+
+        private static readonly AVMediaType MediaType = AVMediaType.AVMEDIA_TYPE_AUDIO;
+        private void FindOpenCodec(ref FfccVaribleGroup Decoder)
+        {
+            int Return = 0;
+            // find & open codec
+            fixed (AVCodec** tmp = &Decoder._codec)
+            {
+                Return = ffmpeg.av_find_best_stream(Decoder.Format, MediaType, -1, -1, tmp, 0);
+            }
+            if (Return == ffmpeg.AVERROR_STREAM_NOT_FOUND && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
+            {
+                return;
+            }
+            else
+            {
+                Return.ThrowExceptionIfError();
+            }
+
+            Decoder.StreamIndex = Return;
+            //Decoder.Stream = Decoder.Format->streams[Return];
+            //GetTags(ref Decoder.Stream->metadata);
+            Decoder.CodecContext = ffmpeg.avcodec_alloc_context3(Decoder.Codec);
+            if (Decoder.CodecContext == null)
+            {
+                throw new Exception("Could not allocate codec context");
+            }
+
+            Return = ffmpeg.avcodec_parameters_to_context(Decoder.CodecContext, Decoder.Stream->codecpar);
+            Return.ThrowExceptionIfError();
+            AVDictionary* dict;
+            Return = ffmpeg.av_dict_set(&dict, "strict", "+experimental", 0);
+            Return.ThrowExceptionIfError();
+            Return = ffmpeg.avcodec_open2(Decoder.CodecContext, Decoder.Codec, &dict);
+            Return.ThrowExceptionIfError();
+            if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
+            {
+                if (Decoder.CodecContext->channel_layout == 0)
+                {
+                    Decoder.CodecContext->channel_layout = ffmpeg.AV_CH_LAYOUT_STEREO;
+                }
+            }
+        }
         private void Run(byte* buffer, int buffer_size)
         {
             FfccVaribleGroup decoder = new FfccVaribleGroup();
-            //AVFormatContext* decoder._format = null;
+            AVFormatContext* fmt_ctx = null;
             AVIOContext* avio_ctx = null;
             byte* avio_ctx_buffer = null;
             int avio_ctx_buffer_size = 4096;
@@ -155,11 +202,12 @@ namespace FF8
                 size = buffer_size
             };
 
-            //if ((decoder._format = ffmpeg.avformat_alloc_context()) == null)
-            //{
-            //    ret = ffmpeg.AVERROR(ffmpeg.ENOMEM);
-            //    goto end;
-            //}
+            if ((fmt_ctx = ffmpeg.avformat_alloc_context()) == null)
+            {
+                ret = ffmpeg.AVERROR(ffmpeg.ENOMEM);
+                ret.ThrowExceptionIfError();
+                goto end;
+            }
 
             avio_ctx_buffer = (byte*)ffmpeg.av_malloc((ulong)avio_ctx_buffer_size);
             if (avio_ctx_buffer == null)
@@ -172,33 +220,38 @@ namespace FF8
             if (avio_ctx == null)
             {
                 ret = ffmpeg.AVERROR(ffmpeg.ENOMEM);
+                ret.ThrowExceptionIfError();
                 goto end;
             }
-            decoder._format->pb = avio_ctx;
-            fixed (AVFormatContext** tmp = &decoder._format)
-            {
-                ret = ffmpeg.avformat_open_input(tmp, null, null, null);
-            }
-
+            fmt_ctx->pb = avio_ctx;
+            ret = ffmpeg.avformat_open_input(&fmt_ctx, null, null, null);
             if (ret < 0)
             {
-                //private fprintf(stderr, "Could not open input\n");
+                ret.ThrowExceptionIfError();
                 goto end;
             }
 
-            ret = ffmpeg.avformat_find_stream_info(decoder._format, null);
+            ret = ffmpeg.avformat_find_stream_info(fmt_ctx, null);
             if (ret < 0)
             {
-                //private fprintf(stderr, "Could not find stream information\n");
+                ret.ThrowExceptionIfError();
                 goto end;
             }
 
-            ffmpeg.av_dump_format(decoder._format, 0, input_filename, 0);
+            ret = ffmpeg.avformat_find_stream_info(fmt_ctx, null);
+            if (ret < 0)
+            {
+                ret.ThrowExceptionIfError();
+                goto end;
+            }
+
+            ffmpeg.av_dump_format(fmt_ctx, 0, input_filename, 0);
+            FindOpenCodec(ref decoder);
 
             end:
-            //fixed (AVFormatContext** tmp = &decoder._format)
+            //fixed (AVFormatContext** tmp = &fmt_ctx)
             //{
-            //    ffmpeg.avformat_close_input(tmp);
+                ffmpeg.avformat_close_input(&fmt_ctx);
             //}
             /* note: the internal buffer could have changed, and be != avio_ctx_buffer */
             if (avio_ctx != null)
