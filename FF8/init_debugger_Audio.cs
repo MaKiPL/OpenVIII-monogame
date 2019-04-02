@@ -285,7 +285,8 @@ namespace FF8
                 //if (File.Exists("Msacm32.dll"))
                 //try { 
 
-                Class1 ffccSound = new Class1(rawBuffer);
+                //Ffcc ffccSound = new Ffcc(rawBuffer,format);
+                Class1 class1 = new Class1(rawBuffer);
                 //ffccSound.PlaySound();
                 return;
                 RawSourceWaveStream raw = new RawSourceWaveStream(new MemoryStream(rawBuffer), new AdpcmWaveFormat((int)format.nSamplesPerSec, format.nChannels));

@@ -244,39 +244,104 @@ namespace FF8
         {
             Init(filename, mediatype, mode);
         }
-        MemoryStream inputStream;
-        byte* inputData;
-        int DataLength;
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int av_read_function_callback(IntPtr opaque, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2), In, Out] byte[] endData, int bufSize);
-
-        private delegate int aviofunct(void * opaque, byte* buf, int buf_size);
 
 
-
-        /// <summary>
-        /// Opens filename and init class.
-        /// </summary>
-        /// <remarks>based on https://stackoverflow.com/questions/9604633/reading-a-file-located-in-memory-with-libavformat 
-        /// and http://www.ffmpeg.org/doxygen/trunk/doc_2examples_2avio_reading_8c-example.html 
-        /// and https://stackoverflow.com/questions/24758386/intptr-to-callback-function </remarks>
-        /// <remarks>probably could be wrote better theres alot of hoops to jump threw</remarks>
-        public Ffcc(byte[] data, init_debugger_Audio.WAVEFORMATEX format, string fmt = "adpcm_ms",  AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.PROCESS_ALL)
+        private struct buffer_data
         {
-          //  InputData = data;
-            //mReadCallbackFunc = new av_read_function_callback(ReadPacket);
+            public byte* ptr;
+            public int size; //< size left in the buffer
+        };
 
-            inputData = (byte*)Marshal.AllocHGlobal(data.Length);// (byte*)ffmpeg.av_malloc((ulong)data.Length/2);
-            fixed (byte* ptr = data)
+        private static int FFMIN(int a, int b)
+        {
+            return a < b ? a : b;
+        }
+
+        private static int read_packet(void* opaque, byte* buf, int buf_size)
+        {
+            buffer_data* bd = (buffer_data*)opaque;
+            buf_size = FFMIN(buf_size, bd->size);
+
+            if (buf_size <= 0)
             {
-                //buffer_data bd = new buffer_data { ptr = ptr, size = data.Length };
-                //AVIOContext* mAvioContext = ffmpeg.avio_alloc_context(inputData, data.Length, 0, null, new avio_alloc_context_read_packet_func { Pointer = Marshal.GetFunctionPointerForDelegate(mReadCallbackFunc) }, null, null);
-                //AVIOContext* mAvioContext = ffmpeg.avio_alloc_context(inputData, data.Length, 0, &bd, new avio_alloc_context_read_packet_func { Pointer = Marshal.GetFunctionPointerForDelegate(new aviofunct(read_packet)) }, null, null);
-                //Decoder.Format->pb = mAvioContext;
-                Decoder.Format->flags |= ffmpeg.AVFMT_FLAG_CUSTOM_IO;
+                return ffmpeg.AVERROR_EOF;
             }
-            Init("", mediatype, mode);
 
+            //printf("ptr:%p size:%zu\n", bd->ptr, bd->size);
+
+            /* copy internal buffer data to buf */
+
+            memcpy(buf, bd->ptr, buf_size);
+            bd->ptr += buf_size;
+            bd->size -= buf_size;
+
+            return buf_size;
+        }
+
+        private static void memcpy(byte* buf, byte* ptr, int buf_size)
+        {
+            for (int i = 0; i < buf_size; i++)
+            {
+                buf[0] = ptr[0];
+            }
+        }
+        AVIOContext* avio_ctx;
+        byte* avio_ctx_buffer;
+        int avio_ctx_buffer_size;
+        buffer_data bd;
+        public void LoadFromRAM(byte* buffer, int buffer_size)
+        {
+            avio_ctx = null;
+            avio_ctx_buffer = null;
+            avio_ctx_buffer_size = 4096;
+            int ret = 0;
+            bd = new buffer_data
+            {
+                ptr = buffer,
+                size = buffer_size
+            };
+
+
+            avio_ctx_buffer = (byte*)ffmpeg.av_malloc((ulong)avio_ctx_buffer_size);
+            if (avio_ctx_buffer == null)
+            {
+                ret = ffmpeg.AVERROR(ffmpeg.ENOMEM);
+                return;
+            }
+            avio_alloc_context_read_packet rf = new avio_alloc_context_read_packet(read_packet);
+            fixed(buffer_data*tmp = &bd)
+            avio_ctx = ffmpeg.avio_alloc_context(avio_ctx_buffer, avio_ctx_buffer_size, 0, tmp, rf, null, null);
+            if (avio_ctx == null)
+            {
+                ret = ffmpeg.AVERROR(ffmpeg.ENOMEM);
+            }
+            Decoder._format->pb = avio_ctx;
+            Open();
+        }
+        public void LoadFromRAM(byte[] rawBuffer)
+        {
+            fixed (byte* tmp = &rawBuffer[0])
+            {
+                LoadFromRAM(tmp, rawBuffer.Length);
+            }
+        }
+    /// <summary>
+    /// Opens filename and init class.
+    /// </summary>
+    /// <remarks>based on https://stackoverflow.com/questions/9604633/reading-a-file-located-in-memory-with-libavformat 
+    /// and http://www.ffmpeg.org/doxygen/trunk/doc_2examples_2avio_reading_8c-example.html 
+    /// and https://stackoverflow.com/questions/24758386/intptr-to-callback-function </remarks>
+    /// <remarks>probably could be wrote better theres alot of hoops to jump threw</remarks>
+    public Ffcc(byte[] data, init_debugger_Audio.WAVEFORMATEX format, string fmt = "adpcm_ms",  AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.PROCESS_ALL)
+        {
+            IntPtr intPtr = Marshal.AllocHGlobal(data.Length);
+            Marshal.Copy(data, 0, intPtr, data.Length);
+
+            LoadFromRAM((byte*)intPtr, data.Length);
+
+            //LoadFromRAM(data);
+            Init(null, mediatype, mode);
+            
         }
         /// <summary>
         /// Opens filename and init class.
@@ -944,7 +1009,7 @@ namespace FF8
         /// <param name="v">string of message</param>
         private static void die(string v)
         {
-            throw new Exception(v);
+            throw new Exception(v.Trim('\0'));
         }
 
         /// <summary>
@@ -960,7 +1025,7 @@ namespace FF8
                 ffmpeg.av_strerror(ret, ptr, errbuff_size);
             }
 
-            return Encoding.UTF8.GetString(errbuff);
+            return Encoding.UTF8.GetString(errbuff).Trim('\0');
         }
         /// <summary>
         /// Write to Memory Stream.

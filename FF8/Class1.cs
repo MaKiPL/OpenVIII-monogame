@@ -50,6 +50,7 @@ namespace FF8
         }
         private void Run(byte* buffer,int buffer_size)
         {
+            FfccVaribleGroup decoder = new FfccVaribleGroup();
             AVFormatContext* fmt_ctx = null;
             AVIOContext* avio_ctx = null;
             byte* avio_ctx_buffer = null;
