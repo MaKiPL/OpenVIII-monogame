@@ -72,15 +72,15 @@ namespace FF8
         /// <summary>
         /// pointer to stream
         /// </summary>
-        private AVStream* EncoderStream { get; set; }
+        //private AVStream* EncoderStream { get; set; }
         /// <summary>
         /// pointer to stream
         /// </summary>
-        private AVStream* DecoderStream { get; set; }
+        //private AVStream* Decoder.Stream { get; set; }
         /// <summary>
         /// index of stream
         /// </summary>
-        private int DecoderStreamIndex { get; set; }
+        //private int Decoder.StreamIndex { get; set; }
         ///// <summary>
         ///// number of channels being exported.
         ///// </summary>
@@ -145,9 +145,9 @@ namespace FF8
                     {
                         return r;
                     }
-                    else if (DecoderStream != null && DecoderStream->time_base.den != 0)
+                    else if (Decoder.Stream != null && Decoder.Stream->time_base.den != 0)
                     {
-                        return DecoderStream->time_base.num / (double)DecoderStream->time_base.den; // returns the time_base 
+                        return Decoder.Stream->time_base.num / (double)Decoder.Stream->time_base.den; // returns the time_base 
                     }
                 }
                 else if (Decoder.CodecContext != null && Decoder.CodecContext->framerate.den != 0)
@@ -162,7 +162,7 @@ namespace FF8
         /// <summary>
         /// if there is no stream it returns false. only checked when trying to process audio
         /// </summary>
-        private bool AudioEnabled => DecoderStreamIndex >= 0;
+        private bool AudioEnabled => Decoder.StreamIndex >= 0;
         /// <summary>
         /// When getting video frames if behind it goes to next frame.
         /// disabled for debugging purposes.
@@ -227,7 +227,11 @@ namespace FF8
             /// <summary>
             /// Start Reading
             /// </summary>
-            READ
+            READ,
+            /// <summary>
+            /// Prepares Resampler for Audio stream
+            /// </summary>
+            PREPARE_SWR
         }
 
 
@@ -382,8 +386,12 @@ namespace FF8
                         Init();
                         break;
                     case FfccState.GETCODEC:
-                        State = FfccState.PREPARE_SWS;
+                        State = FfccState.PREPARE_SWR;
                         FindOpenCodec();
+                        break;
+                    case FfccState.PREPARE_SWR:
+                        State = FfccState.PREPARE_SWS;
+                        PrepareResampler();
                         break;
                     case FfccState.PREPARE_SWS:
                         State = FfccState.READ;
@@ -537,7 +545,7 @@ namespace FF8
         }
         public bool AheadFrame()
         {
-            if (timer.IsRunning && DecoderStreamIndex != -1)
+            if (timer.IsRunning && Decoder.StreamIndex != -1)
             {
                 if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
                 {
@@ -555,20 +563,20 @@ namespace FF8
         //        if (LOOPSTART >= 0 && LOOPED)
         //        {
 
-        //            return (DecoderStream->duration - LOOPSTART);
+        //            return (Decoder.Stream->duration - LOOPSTART);
         //        }
         //        else
         //        {
-        //            return DecoderStream->duration;
+        //            return Decoder.Stream->duration;
         //        }
         //    }
         //}
 
         public bool BehindFrame()
         {
-            if (timer.IsRunning && DecoderStreamIndex != -1)
+            if (timer.IsRunning && Decoder.StreamIndex != -1)
             {
-                //if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO && LOOPSTART >= 0 && FPS < 1 && DecoderStream->duration > 0)
+                //if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO && LOOPSTART >= 0 && FPS < 1 && Decoder.Stream->duration > 0)
                 //{
                 //    long time = timer.ElapsedMilliseconds;
                 //    int secondsbeforeendoftrack = 2;
@@ -618,7 +626,7 @@ namespace FF8
                         {
                             if (LOOPSTART >= 0)
                             {
-                                ffmpeg.avformat_seek_file(Decoder.Format, DecoderStreamIndex, LOOPSTART - 1000, LOOPSTART, DecoderStream->duration, 0);
+                                ffmpeg.avformat_seek_file(Decoder.Format, Decoder.StreamIndex, LOOPSTART - 1000, LOOPSTART, Decoder.Stream->duration, 0);
 
 
 
@@ -635,7 +643,7 @@ namespace FF8
                         {
                             CheckReturn();
                         }
-                    } while (Decoder.Packet->stream_index != DecoderStreamIndex);
+                    } while (Decoder.Packet->stream_index != Decoder.StreamIndex);
 
 
                     Return = ffmpeg.avcodec_send_packet(Decoder.CodecContext, Decoder.Packet);
@@ -684,11 +692,6 @@ namespace FF8
         /// <param name="skipencode">skip encoding</param>
         private void Process(bool skipencode = true)
         {
-
-            if (CurrentFrameNum() == 0)
-            {
-                PrepareResampler(skipencode);
-            }
             //int frameFinished = 0;
             while (Decode(out AVFrame _DecodedFrame))
             {
@@ -848,9 +851,9 @@ namespace FF8
                 ConvertedData = null;
 
 
-                DecoderStream = null;
+                //Decoder.Stream = null;
 
-                DecoderStreamIndex = -1;
+                //Decoder.StreamIndex = -1;
 
 
 
@@ -904,16 +907,16 @@ namespace FF8
                 CheckReturn();
             }
 
-            DecoderStreamIndex = Return;
-            DecoderStream = Decoder.Format->streams[Return];
-            GetTags(ref DecoderStream->metadata);
+            Decoder.StreamIndex = Return;
+            //Decoder.Stream = Decoder.Format->streams[Return];
+            GetTags(ref Decoder.Stream->metadata);
             Decoder.CodecContext = ffmpeg.avcodec_alloc_context3(Decoder.Codec);
             if (Decoder.CodecContext == null)
             {
                 die("Could not allocate codec context");
             }
 
-            Return = ffmpeg.avcodec_parameters_to_context(Decoder.CodecContext, DecoderStream->codecpar);
+            Return = ffmpeg.avcodec_parameters_to_context(Decoder.CodecContext, Decoder.Stream->codecpar);
             CheckReturn();
             fixed (AVDictionary** tmp = &dict)
             {
@@ -1130,7 +1133,7 @@ namespace FF8
         /// <returns>Returns -1 if missing stream or returns AVERROR or returns 0 if no problem.</returns>
         public int GetFrame()
         {
-            if (DecoderStreamIndex == -1)
+            if (Decoder.StreamIndex == -1)
             {
                 return -1;
             }

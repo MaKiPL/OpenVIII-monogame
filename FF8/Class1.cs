@@ -1,7 +1,26 @@
 ﻿using FFmpeg.AutoGen;
+using System;
+using System.Runtime.InteropServices;
 
 namespace FF8
 {
+    internal static class FFmpegHelper
+    {
+        public static unsafe string av_strerror(int error)
+        {
+            var bufferSize = 1024;
+            var buffer = stackalloc byte[bufferSize];
+            ffmpeg.av_strerror(error, buffer, (ulong)bufferSize);
+            var message = Marshal.PtrToStringAnsi((IntPtr)buffer);
+            return message;
+        }
+
+        public static int ThrowExceptionIfError(this int error)
+        {
+            if (error < 0) throw new ApplicationException(av_strerror(error));
+            return error;
+        }
+    }
     internal unsafe class Class1
     {
         private struct buffer_data
@@ -48,42 +67,99 @@ namespace FF8
         {
             Run(buffer, buffer_size);
         }
-        private void Run(byte* buffer,int buffer_size)
+
+        public bool Decode(out AVFrame frame,ref FfccVaribleGroup Decoder)
+        {
+            int Return = 0;
+            ffmpeg.av_frame_unref(Decoder.Frame);
+            do
+            {
+                try
+                {
+                    do
+                    {
+                        Return = ffmpeg.av_read_frame(Decoder.Format, Decoder.Packet);
+                        if (Return == ffmpeg.AVERROR_EOF)
+                        {
+                            //if (LOOPSTART >= 0)
+                            //{
+                            //    ffmpeg.avformat_seek_file(Decoder.Format, DecoderStreamIndex, LOOPSTART - 1000, LOOPSTART, DecoderStream->duration, 0);
+
+
+
+                            //    State = FfccState.WAITING;
+                            //    if (BehindFrame())
+                            //    {
+                            //        timer.Restart();
+                            //    }
+                            //}
+                            frame = *Decoder.Frame;
+                            return false;
+                        }
+                        else
+                        {
+                            Return.ThrowExceptionIfError();
+                        }
+                    } while (Decoder.Packet->stream_index != Decoder.StreamIndex);
+
+
+                    Return = ffmpeg.avcodec_send_packet(Decoder.CodecContext, Decoder.Packet);
+                    //sent a eof when trying to loop once.
+                    //should never get EOF here unless something is wrong.
+
+                    Return.ThrowExceptionIfError();
+
+                }
+                finally
+                {
+                    ffmpeg.av_packet_unref(Decoder.Packet);
+                }
+
+                Return = ffmpeg.avcodec_receive_frame(Decoder.CodecContext, Decoder.Frame);
+            } while (Return == ffmpeg.AVERROR(ffmpeg.EAGAIN));
+            Return.ThrowExceptionIfError();
+
+            frame = *Decoder.Frame;
+            return true;
+        }
+        private void Run(byte* buffer, int buffer_size)
         {
             FfccVaribleGroup decoder = new FfccVaribleGroup();
-            AVFormatContext* fmt_ctx = null;
+            //AVFormatContext* decoder._format = null;
             AVIOContext* avio_ctx = null;
             byte* avio_ctx_buffer = null;
-            int  avio_ctx_buffer_size = 4096;
+            int avio_ctx_buffer_size = 4096;
             string input_filename = null;
             int ret = 0;
 
-            buffer_data bd = new buffer_data();
+            buffer_data bd = new buffer_data
+            {
 
-            //if (argc != 2) {
-            //    private fprintf(stderr, "usage: %s input_file\n"
-            //            "API example program to show how to read from a custom buffer "
-            //            "accessed through AVIOContext.\n", argv[0]);
-            //    return 1;
-            //}
-            //input_filename = argv;
+                //if (argc != 2) {
+                //    private fprintf(stderr, "usage: %s input_file\n"
+                //            "API example program to show how to read from a custom buffer "
+                //            "accessed through AVIOContext.\n", argv[0]);
+                //    return 1;
+                //}
+                //input_filename = argv;
 
-            /* slurp file content into buffer */
-            //ret = ffmpeg.av_file_map(input_filename, &buffer, &buffer_size, 0, null);
-            //if (ret < 0)
+                /* slurp file content into buffer */
+                //ret = ffmpeg.av_file_map(input_filename, &buffer, &buffer_size, 0, null);
+                //if (ret < 0)
+                //{
+                //    goto end;
+                //}
+
+                /* fill opaque structure used by the AVIOContext read callback */
+                ptr = buffer,
+                size = buffer_size
+            };
+
+            //if ((decoder._format = ffmpeg.avformat_alloc_context()) == null)
             //{
+            //    ret = ffmpeg.AVERROR(ffmpeg.ENOMEM);
             //    goto end;
             //}
-
-            /* fill opaque structure used by the AVIOContext read callback */
-            bd.ptr = buffer;
-            bd.size = buffer_size;
-
-            if ((fmt_ctx = ffmpeg.avformat_alloc_context()) == null)
-            {
-                ret = ffmpeg.AVERROR(ffmpeg.ENOMEM);
-                goto end;
-            }
 
             avio_ctx_buffer = (byte*)ffmpeg.av_malloc((ulong)avio_ctx_buffer_size);
             if (avio_ctx_buffer == null)
@@ -98,26 +174,32 @@ namespace FF8
                 ret = ffmpeg.AVERROR(ffmpeg.ENOMEM);
                 goto end;
             }
-            fmt_ctx->pb = avio_ctx;
+            decoder._format->pb = avio_ctx;
+            fixed (AVFormatContext** tmp = &decoder._format)
+            {
+                ret = ffmpeg.avformat_open_input(tmp, null, null, null);
+            }
 
-            ret = ffmpeg.avformat_open_input(&fmt_ctx, null, null, null);
             if (ret < 0)
             {
                 //private fprintf(stderr, "Could not open input\n");
                 goto end;
             }
 
-            ret = ffmpeg.avformat_find_stream_info(fmt_ctx, null);
+            ret = ffmpeg.avformat_find_stream_info(decoder._format, null);
             if (ret < 0)
             {
                 //private fprintf(stderr, "Could not find stream information\n");
                 goto end;
             }
 
-            ffmpeg.av_dump_format(fmt_ctx, 0, input_filename, 0);
+            ffmpeg.av_dump_format(decoder._format, 0, input_filename, 0);
 
             end:
-            ffmpeg.avformat_close_input(&fmt_ctx);
+            //fixed (AVFormatContext** tmp = &decoder._format)
+            //{
+            //    ffmpeg.avformat_close_input(tmp);
+            //}
             /* note: the internal buffer could have changed, and be != avio_ctx_buffer */
             if (avio_ctx != null)
             {
@@ -126,6 +208,7 @@ namespace FF8
             }
             //ffmpeg.av_file_unmap(buffer, buffer_size);
 
+            decoder.Dispose();
             if (ret < 0)
             {
                 //private fprintf(stderr, "Error occurred: %s\n", av_err2str(ret));
@@ -137,7 +220,7 @@ namespace FF8
 
         public Class1(byte[] rawBuffer)
         {
-            fixed(byte* tmp = &rawBuffer[0])
+            fixed (byte* tmp = &rawBuffer[0])
             {
                 Run(tmp, rawBuffer.Length);
             }
