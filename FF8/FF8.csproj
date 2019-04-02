@@ -139,6 +139,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="ArchiveWorker.cs" />
+    <Compile Include="Class1.cs" />
     <Compile Include="debug_MCH.cs" />
     <Compile Include="ExtapathyExtended.cs" />
     <Compile Include="Ffcc.cs" />

@@ -284,6 +284,10 @@ namespace FF8
                 //string strDLLpath = Assembly.GetAssembly().CodeBase.Substring(8);
                 //if (File.Exists("Msacm32.dll"))
                 //try { 
+
+                Class1 ffccSound = new Class1(rawBuffer);
+                //ffccSound.PlaySound();
+                return;
                 RawSourceWaveStream raw = new RawSourceWaveStream(new MemoryStream(rawBuffer), new AdpcmWaveFormat((int)format.nSamplesPerSec, format.nChannels));
                 byte[] buffer;
                 if (!MakiExtended.IsLinux)
