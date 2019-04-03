@@ -260,6 +260,7 @@ namespace FF8
             }
         }
 
+        //I messed around here as figuring out how things worked probably didn't need to mess with this.
         internal static void DEBUG_SoundAudio()
         {
             string path = Path.Combine(Memory.FF8DIR, "../Sound/audio.fmt");
@@ -692,6 +693,14 @@ namespace FF8
             //{
             //    Sound.Dispose();
             //}
+            for (int i = 0; i < MaxSoundChannels; i++)
+            {
+                if (SoundChannels[i] != null)
+                {
+                    SoundChannels[i].Dispose();
+                    SoundChannels[i] = null;
+                }
+            }
 
             try
             {
