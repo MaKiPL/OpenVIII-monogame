@@ -417,21 +417,26 @@ namespace FF8
                     for(int k = 0; k<skeleton.cBones; k++)
                     {
                         var rad = animHeader.animations[i].animationFrames[n].boneRot.Item1[k];
-                        Matrix xRot = MakiExtended.GetRotationMatrixX(-rad.X);
+                        Matrix xRot = MakiExtended.GetRotationMatrixX(rad.X);
                         Matrix yRot = MakiExtended.GetRotationMatrixY(-rad.Y);
-                        Matrix zRot = MakiExtended.GetRotationMatrixZ(-rad.Z);
-                        var MatrixZ = MakiExtended.MatrixMultiply(yRot, xRot);
-                        MatrixZ = MakiExtended.MatrixMultiply(zRot, MatrixZ);
+                        Matrix zRot = MakiExtended.GetRotationMatrixZ(rad.Z);
+                        var MatrixZ = MakiExtended.MatrixMultiply(xRot, zRot);
+                        MatrixZ = MakiExtended.MatrixMultiply(MatrixZ, yRot);
 
                         if (skeleton.bones[k].parentId == 0xFFFF)
                         {
-                            ;
+                            //I reintroduced old code for testing
+                            //var MatrixRoot = new Matrix();
+                            //MatrixRoot = MakiExtended.MatrixMultiply(MakiExtended.GetRotationMatrixY(270f), MakiExtended.GetRotationMatrixX(180f));
+                            //MatrixRoot = MakiExtended.MatrixMultiply(MakiExtended.GetRotationMatrixZ(90f), MatrixRoot);
+                            //MatrixZ = MakiExtended.MatrixMultiply(MatrixZ, MatrixRoot);
+                            //MatrixZ.M43 = 2;
                         }
                         else
                         {
                             var prevBone = animHeader.animations[i].animationFrames[n].boneRot.Item3[skeleton.bones[k].parentId];
                             MatrixZ = Matrix.Multiply(prevBone, MatrixZ);
-                            MatrixZ.M41 = 0; MatrixZ.M42 = 0; MatrixZ.M44 = 1; MatrixZ.M43 = skeleton.bones[(skeleton.bones[k].parentId)].Size;
+                            MatrixZ.M41 = 0; MatrixZ.M42 = 0; MatrixZ.M44 = 1; MatrixZ.M43 = skeleton.bones[skeleton.bones[k].parentId].Size;
                             MatrixZ.M41 = prevBone.M11 * MatrixZ.M41 + prevBone.M12 * MatrixZ.M42 + prevBone.M13 * MatrixZ.M43 + prevBone.M41;
                             MatrixZ.M42 = prevBone.M21 * MatrixZ.M41 + prevBone.M22 * MatrixZ.M42 + prevBone.M23 * MatrixZ.M43 + prevBone.M42;
                             MatrixZ.M43 = prevBone.M31 * MatrixZ.M41 + prevBone.M32 * MatrixZ.M42 + prevBone.M33 * MatrixZ.M43 + prevBone.M43;
