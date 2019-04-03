@@ -11,6 +11,7 @@ namespace FF8
     public class Debug_battleDat
     {
         int id;
+        readonly EntityType entityType;
         byte[] buffer;
         int debug = 0;
 
@@ -447,7 +448,7 @@ namespace FF8
         public float frameperFPS = 0.0f;
 #endregion
 
-#region section 7
+#region section 7 Information
         [StructLayout(LayoutKind.Sequential, Pack =1, Size =380)]
         public struct Information
         {
@@ -541,7 +542,7 @@ namespace FF8
         public Information information;
 #endregion
 
-#region section 11
+#region section 11 Textures
         public struct Textures
         {
             public uint cTims;
@@ -572,11 +573,32 @@ namespace FF8
                 tm.KillStreams();
             }
         }
-        public Debug_battleDat(int monsterId)
+
+        public enum EntityType
         {
-            id = monsterId;
+            Monster,
+            Character,
+            Weapon
+        };
+        
+        /// <summary>
+        /// Creates new instance of DAT class that provides every sections parsed into structs and helper functions for renderer
+        /// </summary>
+        /// <param name="fileId">This number is used in c0m(fileId) or d(fileId)cXYZ</param>
+        /// <param name="entityType">Supply Monster, character or weapon (0,1,2)</param>
+        /// <param name="additionalFileId">Used only in character or weapon to supply for d(fileId)[c/w](additionalFileId)</param>
+        public Debug_battleDat(int fileId, EntityType entityType, int additionalFileId = -1)
+        {
+            id = fileId;
+
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
-            string path = aw.GetListOfFiles().First(x => x.ToLower().Contains($"c0m{id.ToString("D03")}")); //c0m000.dat
+            string fileName = entityType == EntityType.Monster ? $"c0m{id.ToString("D03")}" :
+                entityType == EntityType.Character ? $"d{fileId}c{additionalFileId.ToString("D03")}" :
+                entityType == EntityType.Weapon ? $"d{fileId}w{additionalFileId.ToString("D03")}" : string.Empty;
+            this.entityType = entityType;
+            if (string.IsNullOrEmpty(fileName))
+                return;
+            string path = aw.GetListOfFiles().First(x => x.ToLower().Contains(fileName));
             buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, path);
 
 #if _WINDOWS
@@ -591,35 +613,36 @@ namespace FF8
                 for (int i = 0; i < datFile.cSections; i++)
                     datFile.pSections[i] = br.ReadUInt32();
                 datFile.eof = br.ReadUInt32();
-
-                if(datFile.pSections.Length != 11)
+                switch (this.entityType)
                 {
-                    //TODO
-                    return;
+                    case EntityType.Monster:
+                        if (id == 127) return;
+                        ReadSection1(datFile.pSections[0], ms, br);
+                        ReadSection3(datFile.pSections[2], ms, br);
+                        ReadSection2(datFile.pSections[1], ms, br);
+                        //ReadSection4(datFile.pSections[3]);
+                        //ReadSection5(datFile.pSections[4]);
+                        //ReadSection6(datFile.pSections[5]);
+                        ReadSection7(datFile.pSections[6], ms, br);
+                        //ReadSection8(datFile.pSections[7]);
+                        //ReadSection9(datFile.pSections[8]);
+                        //ReadSection10(datFile.pSections[9]);
+                        ReadSection11(datFile.pSections[10], ms, br);
+                        break;
+                    case EntityType.Character:
+                        ReadSection1(datFile.pSections[0], ms, br);
+                        ReadSection3(datFile.pSections[2], ms, br);
+                        ReadSection2(datFile.pSections[1], ms, br);
+                        ReadSection11(datFile.pSections[5], ms, br);
+                        break;
+                    case EntityType.Weapon:
+                        ReadSection1(datFile.pSections[0], ms, br);
+                        ReadSection3(datFile.pSections[2], ms, br);
+                        ReadSection2(datFile.pSections[1], ms, br);
+                        ReadSection11(datFile.pSections[6], ms, br);
+                        break;
                 }
-                ReadSection1(datFile.pSections[0],ms,br);
-                ReadSection3(datFile.pSections[2], ms, br);
-                ReadSection2(datFile.pSections[1],ms,br);
-                //ReadSection4(datFile.pSections[3]);
-                //ReadSection5(datFile.pSections[4]);
-                //ReadSection6(datFile.pSections[5]);
-                ReadSection7(datFile.pSections[6],ms,br);
-                //ReadSection8(datFile.pSections[7]);
-                //ReadSection9(datFile.pSections[8]);
-                //ReadSection10(datFile.pSections[9]);
-                ReadSection11(datFile.pSections[10],ms,br);
             }
-            //DEBUG
-            //for (int i = 0; i < animHeader.animations[0].animationFrames.Count(); i++)
-            //{
-            //    System.Diagnostics.Debugger.Log(0, "", "\n");
-            //    for (int n = 0; n < skeleton.cBones; n++)
-            //    {
-            //        var c = animHeader.animations[0].animationFrames[i].boneRot.Item3[n];
-            //        System.Diagnostics.Debugger.Log(0, "", $"{c.X}|{c.Y}|{c.Z}|");
-            //    }
-            //}
-
         }
 
 
