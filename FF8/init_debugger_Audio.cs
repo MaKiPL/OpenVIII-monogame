@@ -7,7 +7,6 @@ using DirectMidi;
 #endif
 using System.Runtime.InteropServices;
 using System.Diagnostics;
-using Microsoft.Xna.Framework.Audio;
 using NAudio.Vorbis;
 using FFmpeg.AutoGen;
 
@@ -40,6 +39,7 @@ namespace FF8
 
             return myBuffer;
         }
+        //I messed around here as figuring out how things worked probably didn't need to mess with this.
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         private struct SoundEntry
         {
@@ -52,6 +52,7 @@ namespace FF8
             public ADPCMCOEFSET[] ADPCMCoefSets; //array should be of [ADPCM] size
         }
 #pragma warning disable CS0649
+
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         public struct WAVEFORMATEX
         {
@@ -79,23 +80,29 @@ namespace FF8
 
 
         public const int S_OK = 0x00000000;
-
-        public static Ffcc[] SoundQueue { get; } = new Ffcc[10];
-        public static int SoundQueuePosition
+        public const int MaxSoundChannels = 10;
+        /// <summary>
+        /// This is for short lived sound effects.
+        /// The Larger the array is the more sounds can be played at once.
+        /// If you want sounds to loop of have volume you'll need to have a SoundEffectInstance added to ffcc,
+        /// and have those sounds be played like music where they loop in the background till stop.
+        /// </summary>
+        public static Ffcc[] SoundChannels { get; } = new Ffcc[MaxSoundChannels];
+        public static int CurrentSoundChannel
         {
-            get => s_soundQueuePosition;
+            get => _currentSoundChannel;
             set
             {
-                if (value >= SoundQueue.Length)
+                if (value >= MaxSoundChannels)
                 {
                     value = 0;
                 }
                 else if (value < 0)
                 {
-                    value = SoundQueue.Length - 1;
+                    value = MaxSoundChannels - 1;
                 }
 
-                s_soundQueuePosition = value;
+                _currentSoundChannel = value;
             }
         }
 
@@ -385,27 +392,27 @@ namespace FF8
                         fileStream.Write(header, 0, header.Length);
                         //write data
                         fileStream.Write(rawBuffer, 0, rawBuffer.Length);
-                        
-                        if (SoundQueue[SoundQueuePosition] != null)
+
+                        if (SoundChannels[CurrentSoundChannel] != null)
                         {
-                            SoundQueue[SoundQueuePosition].Dispose();
+                            SoundChannels[CurrentSoundChannel].Dispose();
                         }
 
-                        SoundQueue[SoundQueuePosition] = new Ffcc(fileStream.GetBuffer(), (int)fileStream.Length, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
-                        SoundQueue[SoundQueuePosition++].PlaySound();
+                        SoundChannels[CurrentSoundChannel] = new Ffcc(fileStream.GetBuffer(), (int)fileStream.Length, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
+                        SoundChannels[CurrentSoundChannel++].PlaySound();
 
                     }
                 }
                 return;
-                if (SoundQueue[SoundQueuePosition] != null)
+                if (SoundChannels[CurrentSoundChannel] != null)
                 {
-                    SoundQueue[SoundQueuePosition].Dispose();
+                    SoundChannels[CurrentSoundChannel].Dispose();
                 }
 
-                SoundQueue[SoundQueuePosition] = new Ffcc(path, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
-                SoundQueue[SoundQueuePosition++].PlaySound();
+                SoundChannels[CurrentSoundChannel] = new Ffcc(path, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
+                SoundChannels[CurrentSoundChannel++].PlaySound();
 
-                
+
                 //RawSourceWaveStream raw = new RawSourceWaveStream(new MemoryStream(rawBuffer), new AdpcmWaveFormat((int)format.nSamplesPerSec, format.nChannels));
 
                 //byte[] buffer;
@@ -574,7 +581,7 @@ namespace FF8
             }
         }
         private static Ffcc ffccMusic = null; // testing using class to play music instead of Naudio / Nvorbis
-        private static int s_soundQueuePosition;
+        private static int _currentSoundChannel;
 
         public static void PlayMusic()
         {
