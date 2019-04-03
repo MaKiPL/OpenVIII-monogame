@@ -824,47 +824,41 @@ namespace FF8
         }
         private void Resample(ref AVFrame frame, bool skipencode = true)
         {
-            // do something with audio here.
-            if (!SkipResample(ref frame))
+            // Convert
+            int outSamples = 0;
+            fixed (byte** tmp = (byte*[])frame.data)
             {
-                // Convert
-                int outSamples = 0;
-                fixed (byte** tmp = (byte*[])frame.data)
+                outSamples = ffmpeg.swr_convert(ResampleContext, null, 0,
+                                //&convertedData,
+                                //SwrFrame->nb_samples,
+                                tmp,
+                        frame.nb_samples);
+            }
+            if (outSamples < 0)
+            {
+                die("Could not convert");
+            }
+            for (; ; )
+            {
+                outSamples = ffmpeg.swr_get_out_samples(ResampleContext, 0);
+                if ((outSamples < (Decoder.CodecContext == null ? 0 : Decoder.CodecContext->frame_size) * ResampleFrame->channels) || (Decoder.CodecContext == null ? 0 : Decoder.CodecContext->frame_size) == 0 && (outSamples < ResampleFrame->nb_samples * ResampleFrame->channels))
                 {
-                    outSamples = ffmpeg.swr_convert(ResampleContext, null, 0,
-                                 //&convertedData,
-                                 //SwrFrame->nb_samples,
-                                 tmp,
-                         frame.nb_samples);
+                    break;
                 }
-                if (outSamples < 0)
+                fixed (byte** tmp = &_convertedData)
                 {
-                    die("Could not convert");
+                    outSamples = ffmpeg.swr_convert(ResampleContext,
+                                                tmp,
+                                                ResampleFrame->nb_samples, null, 0);
                 }
-                for (; ; )
-                {
-                    outSamples = ffmpeg.swr_get_out_samples(ResampleContext, 0);
-                    if ((outSamples < (Decoder.CodecContext == null ? 0 : Decoder.CodecContext->frame_size) * ResampleFrame->channels) || (Decoder.CodecContext == null ? 0 : Decoder.CodecContext->frame_size) == 0 && (outSamples < ResampleFrame->nb_samples * ResampleFrame->channels))
-                    {
-                        break;
-                    }
-                    fixed (byte** tmp = &_convertedData)
-                    {
-                        outSamples = ffmpeg.swr_convert(ResampleContext,
-                                                 tmp,
-                                                 ResampleFrame->nb_samples, null, 0);
-                    }
-                    int buffer_size = ffmpeg.av_samples_get_buffer_size(null,
-                      ResampleFrame->channels,
-                      ResampleFrame->nb_samples,
-                      (AVSampleFormat)ResampleFrame->format,
-                      0);
+                int buffer_size = ffmpeg.av_samples_get_buffer_size(null,
+                    ResampleFrame->channels,
+                    ResampleFrame->nb_samples,
+                    (AVSampleFormat)ResampleFrame->format,
+                    0);
 
-                    // write to buffer
-
-                    WritetoMs(ref _convertedData, 0, ref buffer_size);
-                }
-
+                // write to buffer
+                WritetoMs(ref _convertedData, 0, ref buffer_size);
             }
         }
 
@@ -1162,73 +1156,6 @@ namespace FF8
 
                 return (int)(DecodedStream.Length - c_len);
             }
-        }
-        /// <summary>
-        /// Tests audio against format type to see if can play it
-        /// without resampling.
-        /// </summary>
-        /// <returns>True if decoded sample is good
-        /// False if incompatable
-        /// </returns>
-        private bool SkipResample(ref AVFrame frame)
-        {
-            return false; // skipping this because it was introducing noise when doing soundeffects.
-            // Adapted from https://libav.org/documentation/doxygen/master/decode_audio_8c-example.html
-            /* the stream parameters may change at any time, check that they are
-            * what we expect */
-            /* The decoded data is signed 16-bit planar -- each channel in its own
-             * buffer. We interleave the two channels manually here, but using
-             * libavresample is recommended instead. */
-            if (Decoder.CodecContext->channels == 2 && frame.format == (int)AVSampleFormat.AV_SAMPLE_FMT_S16P)//not tested
-            {
-                if (Mode == FfccMode.STATE_MACH)
-                {
-                    int len = frame.linesize[0] * 2;
-                    byte[] arr = new byte[len];
-
-                    int j = 0;
-                    for (int i = 0; i < frame.linesize[0]; i++)
-                    {
-                        arr[j++] = Marshal.ReadByte((IntPtr)(frame.data[0]), i);
-                        arr[j++] = Marshal.ReadByte((IntPtr)(frame.data[1]), i);
-                    }
-
-                    LoadSoundFromStream(ref arr, 0, ref len);
-                }
-                else
-                {
-                    for (int i = 0; i < frame.linesize[0]; i++)
-                    {
-                        DecodedStream.WriteByte(((byte*[])frame.data)[0][i]);
-                        DecodedStream.WriteByte(((byte*[])frame.data)[1][i]);
-                    }
-                }
-                return true;
-            }
-            else if (frame.format == (int)AVSampleFormat.AV_SAMPLE_FMT_S16) // played eyes on me wav
-            {
-
-                if (Mode == FfccMode.STATE_MACH)
-                {
-                    int len = frame.linesize[0];
-                    byte[] arr = new byte[len];
-
-                    for (int i = 0; i < frame.linesize[0]; i++)
-                    {
-                        arr[i] = Marshal.ReadByte((IntPtr)(frame.data[0]), i);
-                    }
-                    LoadSoundFromStream(ref arr, 0, ref len);
-                }
-                else
-                {
-                    for (int i = 0; i < frame.linesize[0]; i++)
-                    {
-                        DecodedStream.WriteByte(((byte*[])frame.data)[0][i]);
-                    }
-                }
-                return true;
-            }
-            return false;
         }
         /// <summary>
         /// Attempts to get atleast one frame. Video gets 1. Audio gets the whole file.
