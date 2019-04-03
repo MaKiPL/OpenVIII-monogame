@@ -225,7 +225,7 @@ namespace FF8
 
             for (int n = 0; n < charactersData.Length; n++)
             {
-                frame[n] = frame[n] == charactersData[n].character.animHeader.animations[0].cFrames ? 0 : frame[n];
+                frame[n+monstersData.Length] = frame[n+monstersData.Length] == charactersData[n].character.animHeader.animations[0].cFrames ? 0 : frame[n];
                 for (int i = 0; i < charactersData[n].character.geometry.cObjects; i++)
                 {
                     var a = charactersData[n].character.GetVertexPositions(i, new Vector3(-20 + n * 10, 10, 0),0, frame[n], frameperFPS / FPS); //DEBUG
@@ -242,7 +242,7 @@ namespace FF8
             }
             for (int n = 0; n < charactersData.Length; n++)
             {
-                frame[n] = frame[n] == charactersData[n].weapon.animHeader.animations[0].cFrames ? 0 : frame[n];
+                frame[n + monstersData.Length] = frame[n + monstersData.Length] == charactersData[n].weapon.animHeader.animations[0].cFrames ? 0 : frame[n];
                 for (int i = 0; i < charactersData[n].weapon.geometry.cObjects; i++)
                 {
                     var a = charactersData[n].weapon.GetVertexPositions(i, new Vector3(-20+n*10,10, 0),0, frame[n], frameperFPS / FPS); //DEBUG
@@ -593,6 +593,9 @@ namespace FF8
             ReadCharacters();
             ReadMonster();
 
+            //for frames indexes monsters are first, then after n monsters characters appear with weapons
+            frame = new int[monstersData.Length + charactersData.Length];
+
             battleModule++;
         }
 
@@ -613,7 +616,6 @@ namespace FF8
                 character = new Debug_battleDat(2, Debug_battleDat.EntityType.Character, 6),
                 weapon = new Debug_battleDat(2, Debug_battleDat.EntityType.Weapon, 13)
             };
-
         }
 
         private static void ReadMonster()
@@ -622,10 +624,10 @@ namespace FF8
             if (enc.bNumOfEnemies == 0)
                 return;
             //DEBUG BELOW; I just want to draw any model
-            monstersData = new Debug_battleDat[32];
-            for (int n = 0; n < monstersData.Length; n++)
-                monstersData[n] = new Debug_battleDat(n, Debug_battleDat.EntityType.Monster);
-            frame = new int[monstersData.Length];
+            monstersData = new Debug_battleDat[1];
+            monstersData[0] = new Debug_battleDat(26, Debug_battleDat.EntityType.Monster);
+            //for (int n = 26; n <= monstersData.Length; n++)
+            //    monstersData[n] = new Debug_battleDat(n, Debug_battleDat.EntityType.Monster);
             //END OF DEBUG
         }
 
