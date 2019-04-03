@@ -244,9 +244,9 @@ namespace FF8
         /// <summary>
         /// Opens filename and init class.
         /// </summary>
-        public Ffcc(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH)
+        public Ffcc(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH, int loopstart = -1)
         {
-            Init(filename, mediatype, mode);
+            Init(filename, mediatype, mode, loopstart);
         }
 
 
@@ -289,7 +289,7 @@ namespace FF8
         public void LoadFromRAM(IntPtr buffer, int buffer_size)
         {
             avio_ctx = null;
-            avio_ctx_buffer = null;
+
             avio_ctx_buffer_size = 4096;
             int ret = 0;
             bd = new buffer_data
@@ -299,6 +299,7 @@ namespace FF8
             };
 
 
+            //avio_ctx_buffer = (byte*)Marshal.AllocHGlobal(avio_ctx_buffer_size);
             avio_ctx_buffer = (byte*)ffmpeg.av_malloc((ulong)avio_ctx_buffer_size);
             if (avio_ctx_buffer == null)
             {
@@ -318,12 +319,13 @@ namespace FF8
             Decoder._format->pb = avio_ctx;
             Open();
         }
-        public void LoadFromRAM(byte[] rawBuffer)
+
+        private IntPtr intPtr;
+        public void LoadFromRAM(byte[] data, int length)
         {
-            fixed (byte* tmp = &rawBuffer[0])
-            {
-                LoadFromRAM((IntPtr)tmp, rawBuffer.Length);
-            }
+            intPtr = Marshal.AllocHGlobal(length);
+            Marshal.Copy(data, 0, intPtr, length);
+            LoadFromRAM(intPtr, length);
         }
         /// <summary>
         /// Opens filename and init class.
@@ -332,22 +334,23 @@ namespace FF8
         /// and http://www.ffmpeg.org/doxygen/trunk/doc_2examples_2avio_reading_8c-example.html 
         /// and https://stackoverflow.com/questions/24758386/intptr-to-callback-function </remarks>
         /// <remarks>probably could be wrote better theres alot of hoops to jump threw</remarks>
-        public Ffcc(byte[] data, int length, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.PROCESS_ALL)
+        public Ffcc(byte[] data, int length, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.PROCESS_ALL, int loopstart = -1)
         {
-            IntPtr intPtr = Marshal.AllocHGlobal(length);
-            Marshal.Copy(data, 0, intPtr, length);
-
-            LoadFromRAM(intPtr, length);
+            LoadFromRAM(data, length);
 
             //LoadFromRAM(data);
-            Init(null, mediatype, mode);
+            Init(null, mediatype, mode, loopstart);
 
         }
         /// <summary>
         /// Opens filename and init class.
         /// </summary>
-        public void Init(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH)
+        public void Init(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH, int loopstart = -1)
         {
+            if (loopstart >= 0)
+            {
+                LOOPSTART = loopstart;
+            }
 
             ffmpeg.av_log_set_level(ffmpeg.AV_LOG_PANIC);
             State = FfccState.INIT;
@@ -487,8 +490,10 @@ namespace FF8
             if (DecodedStream.Length > 0 && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
             {
                 //    // accepts s16le maybe more haven't tested everything.
-                if(soundEffect == null)
-                    soundEffect = new SoundEffect(decodedStream.GetBuffer(), 0, (int)decodedStream.Length, ResampleFrame->sample_rate, (AudioChannels)ResampleFrame->channels,0,0);
+                if (soundEffect == null)
+                {
+                    soundEffect = new SoundEffect(decodedStream.GetBuffer(), 0, (int)decodedStream.Length, ResampleFrame->sample_rate, (AudioChannels)ResampleFrame->channels, 0, 0);
+                }
                 //if (ResampleFrame->sample_rate == 44100)
                 //{
                 //    if (dsee44100 == null)
@@ -520,12 +525,12 @@ namespace FF8
 
             if (length > 0 && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
             {
-                    if (dynamicSound == null)
-                    {
-                        dynamicSound = new DynamicSoundEffectInstance(ResampleFrame->sample_rate, (AudioChannels)ResampleFrame->channels);
-                    }
+                if (dynamicSound == null)
+                {
+                    dynamicSound = new DynamicSoundEffectInstance(ResampleFrame->sample_rate, (AudioChannels)ResampleFrame->channels);
+                }
 
-                    dynamicSound.SubmitBuffer(buffer, 0, length);
+                dynamicSound.SubmitBuffer(buffer, 0, length);
             }
         }
         public int ExpectedFrame()
@@ -562,7 +567,7 @@ namespace FF8
                 if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
                 {
                     if (dynamicSound != null)
-                    { 
+                    {
                         return dynamicSound.PendingBufferCount > GoalBufferCount;
                     }
                     else
@@ -585,7 +590,7 @@ namespace FF8
             {
                 if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
                 {
-                    if (dynamicSound!=null)
+                    if (dynamicSound != null)
                     {
                         return dynamicSound.PendingBufferCount < GoalBufferCount;
                     }
@@ -1260,7 +1265,7 @@ namespace FF8
             return frameTex;
         }
 
-#region IDisposable Support
+        #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
@@ -1272,6 +1277,9 @@ namespace FF8
                     // TODO: dispose managed state (managed objects).
                 }
 
+                //if (avio_ctx_buffer != null)
+                //    ffmpeg.av_freep(avio_ctx_buffer); //throws exception
+
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                 // TODO: set large fields to null.
                 if (DecodedStream != null)
@@ -1279,9 +1287,13 @@ namespace FF8
                     DecodedStream.Dispose();
                 }
                 StopSound();
-                if (ConvertedData != null && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
+                if (ConvertedData != null)
                 {
                     Marshal.FreeHGlobal((IntPtr)ConvertedData);
+                }
+                if (intPtr != null)
+                {
+                    Marshal.FreeHGlobal(intPtr);
                 }
                 ffmpeg.sws_freeContext(ScalerContext);
                 if (ResampleContext != null)
@@ -1292,6 +1304,12 @@ namespace FF8
                 }
                 ffmpeg.av_frame_unref(ResampleFrame);
                 ffmpeg.av_free(ResampleFrame);
+                if (avio_ctx != null)
+                {
+                    //ffmpeg.avio_close(avio_ctx); //CTD
+                    ffmpeg.av_free(avio_ctx);
+                }
+
                 disposedValue = true;
                 GC.Collect(); // donno if this really does much. was trying to make sure the memory i'm watching is what is really there.
             }
@@ -1311,6 +1329,6 @@ namespace FF8
             // TODO: uncomment the following line if the finalizer is overridden above.
             // GC.SuppressFinalize(this);
         }
-#endregion
+        #endregion
     }
 }
