@@ -252,7 +252,7 @@ namespace FF8
 
         private struct buffer_data
         {
-            public byte* ptr;
+            public IntPtr ptr;
             public int size; //< size left in the buffer
         };
 
@@ -274,27 +274,19 @@ namespace FF8
             //printf("ptr:%p size:%zu\n", bd->ptr, bd->size);
 
             /* copy internal buffer data to buf */
-
-            memcpy(buf, bd->ptr, buf_size);
+            Buffer.MemoryCopy((void*)bd->ptr, (void*)buf, buf_size, buf_size);
             bd->ptr += buf_size;
             bd->size -= buf_size;
 
             return buf_size;
         }
 
-        private static void memcpy(byte* buf, byte* ptr, int buf_size)
-        {
-            for (int i = 0; i < buf_size; i++)
-            {
-                buf[0] = ptr[0];
-            }
-        }
 
         private AVIOContext* avio_ctx;
         private byte* avio_ctx_buffer;
         private int avio_ctx_buffer_size;
         private buffer_data bd;
-        public void LoadFromRAM(byte* buffer, int buffer_size)
+        public void LoadFromRAM(IntPtr buffer, int buffer_size)
         {
             avio_ctx = null;
             avio_ctx_buffer = null;
@@ -330,7 +322,7 @@ namespace FF8
         {
             fixed (byte* tmp = &rawBuffer[0])
             {
-                LoadFromRAM(tmp, rawBuffer.Length);
+                LoadFromRAM((IntPtr)tmp, rawBuffer.Length);
             }
         }
         /// <summary>
@@ -345,7 +337,7 @@ namespace FF8
             IntPtr intPtr = Marshal.AllocHGlobal(length);
             Marshal.Copy(data, 0, intPtr, length);
 
-            LoadFromRAM((byte*)intPtr, length);
+            LoadFromRAM(intPtr, length);
 
             //LoadFromRAM(data);
             Init(null, mediatype, mode);

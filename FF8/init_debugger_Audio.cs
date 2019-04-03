@@ -317,7 +317,7 @@ namespace FF8
             {
 
                 string path = Path.Combine(Path.GetTempPath(), $"sound{soundID}.wav");
-                if (!File.Exists(path))
+                if (true)//!File.Exists(path))
                 {
                     fs.Seek(soundEntries[soundID].Offset, SeekOrigin.Begin);
                     //List<byte[]> sfxBufferList = new List<byte[]>();
@@ -353,10 +353,10 @@ namespace FF8
                     //MemoryStream ms = new MemoryStream();
                     //Parser parser = new Parser(rawBuffer, ref ms);
                     //ms.Dispose();
-                    using (FileStream fileStream = File.OpenWrite(path))
-                    //using (MemoryStream fileStream = new MemoryStream())
+                    //using (FileStream fileStream = File.OpenWrite(path))
+                    using (MemoryStream fileStream = new MemoryStream())
                     {
-                        int filesize = Marshal.SizeOf(soundEntries[soundID].WAVFORMATEX) + rawBuffer.Length + 60 - 8;
+                        int filesize = Marshal.SizeOf(soundEntries[soundID].WAVFORMATEX) + rawBuffer.Length + 52; //size of file in bytes -8
                         //write header
                         byte[] header;
                         header = Encoding.ASCII.GetBytes("RIFF");
@@ -365,7 +365,7 @@ namespace FF8
                         fileStream.Write(header, 0, header.Length);
                         header = Encoding.ASCII.GetBytes("WAVEfmt ");
                         fileStream.Write(header, 0, header.Length);
-                        filesize = Marshal.SizeOf(soundEntries[soundID].WAVFORMATEX) + 28 + 4;
+                        filesize = Marshal.SizeOf(soundEntries[soundID].WAVFORMATEX) + 32; //size of header
                         header = getBytes(filesize);
                         fileStream.Write(header, 0, header.Length);
                         header = getBytes(soundEntries[soundID].WAVFORMATEX);
@@ -381,14 +381,22 @@ namespace FF8
                         }
                         header = Encoding.ASCII.GetBytes("data");
                         fileStream.Write(header, 0, header.Length);
-                        header = BitConverter.GetBytes(rawBuffer.Length);
+                        header = BitConverter.GetBytes(rawBuffer.Length); //size of data
                         fileStream.Write(header, 0, header.Length);
                         //write data
                         fileStream.Write(rawBuffer, 0, rawBuffer.Length);
-                        //Ffcc ffccSound = new Ffcc(fileStream.GetBuffer(), (int)fileStream.Length, AVMediaType.AVMEDIA_TYPE_AUDIO,Ffcc.FfccMode.PROCESS_ALL);
+                        
+                        if (SoundQueue[SoundQueuePosition] != null)
+                        {
+                            SoundQueue[SoundQueuePosition].Dispose();
+                        }
+
+                        SoundQueue[SoundQueuePosition] = new Ffcc(fileStream.GetBuffer(), (int)fileStream.Length, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
+                        SoundQueue[SoundQueuePosition++].PlaySound();
 
                     }
                 }
+                return;
                 if (SoundQueue[SoundQueuePosition] != null)
                 {
                     SoundQueue[SoundQueuePosition].Dispose();
@@ -397,7 +405,7 @@ namespace FF8
                 SoundQueue[SoundQueuePosition] = new Ffcc(path, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
                 SoundQueue[SoundQueuePosition++].PlaySound();
 
-                return;
+                
                 //RawSourceWaveStream raw = new RawSourceWaveStream(new MemoryStream(rawBuffer), new AdpcmWaveFormat((int)format.nSamplesPerSec, format.nChannels));
 
                 //byte[] buffer;
