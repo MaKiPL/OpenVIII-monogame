@@ -1247,9 +1247,11 @@ namespace FF8
         }
         /// <summary>
         /// Saves each frame to it's own BMP image file.
+        /// does not work in linux
         /// </summary>
         private void BMP_Save(ref AVFrame frame)
         {
+#if _WINDOWS
             string filename = Path.Combine(Path.GetTempPath(), $"{Path.GetFileNameWithoutExtension(DecodedFileName)}_rawframe.{Decoder.CodecContext->frame_number}.bmp");
             using (FileStream fs = File.OpenWrite(filename))
             {
@@ -1258,6 +1260,7 @@ namespace FF8
                     bitmap.Save(fs, ImageFormat.Bmp);
                 }
             }
+#endif
         }
         /// <summary>
         /// Converts raw video frame to correct colorspace
@@ -1267,8 +1270,13 @@ namespace FF8
         /// <returns>Bitmap of frame</returns>
         public Bitmap FrameToBMP()
         {
+
+#if _WINDOWS
             AVFrame frame = *Decoder.Frame;
             return FrameToBMP(ref frame);
+#else
+            return null;
+#endif
         }
         /// <summary>
         /// Converts raw video frame to correct colorspace
@@ -1278,6 +1286,7 @@ namespace FF8
         /// <returns>Bitmap of frame</returns>
         public Bitmap FrameToBMP(ref AVFrame frame)
         {
+#if _WINDOWS
             Bitmap bitmap = null;
             BitmapData bitmapData = null;
 
@@ -1308,7 +1317,9 @@ namespace FF8
                 }
             }
             return bitmap;
-
+#else
+            return null;
+#endif
         }
         /// <summary>
         /// Converts Frame to Texture with correct colorspace
@@ -1330,7 +1341,7 @@ namespace FF8
             return frameTex;
         }
 
-        #region IDisposable Support
+#region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
@@ -1381,6 +1392,6 @@ namespace FF8
             // TODO: uncomment the following line if the finalizer is overridden above.
             // GC.SuppressFinalize(this);
         }
-        #endregion
+#endregion
     }
 }
