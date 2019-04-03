@@ -10,6 +10,7 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework.Audio;
 using NAudio.Wave;
 using NAudio.Vorbis;
+using FFmpeg.AutoGen;
 
 namespace FF8
 {
@@ -320,6 +321,7 @@ namespace FF8
             soundEntriesCount = soundEntries.Length;
         }
         private static SoundEffect Sound;
+        private static Ffcc ffccSND;
         internal static void PlaySound(int soundID)
         {
             if (soundEntries == null)
@@ -369,38 +371,51 @@ namespace FF8
                 //MemoryStream ms = new MemoryStream();
                 //Parser parser = new Parser(rawBuffer, ref ms);
                 //ms.Dispose();
-                using (FileStream fileStream = File.OpenWrite(Path.Combine(Path.GetTempPath(), $"sound{soundID}.wav")))
+                string path = Path.Combine(Path.GetTempPath(), $"sound{soundID}.wav");
+                if (!File.Exists(path))
                 {
-                    int filesize = Marshal.SizeOf(soundEntries[soundID].WAVFORMATEX) + 4 + rawBuffer.Length + 28+4+8+4;
-                    //write header
-                    byte[] header;
-                    header = Encoding.ASCII.GetBytes("RIFF");
-                    fileStream.Write(header, 0, header.Length);
-                    header = getBytes(filesize);
-                    fileStream.Write(header, 0, header.Length);
-                    header = Encoding.ASCII.GetBytes("WAVEfmt ");
-                    fileStream.Write(header, 0, header.Length);
-                    filesize = Marshal.SizeOf(soundEntries[soundID].WAVFORMATEX) + 28 + 4;
-                    header = getBytes(filesize);
-                    fileStream.Write(header, 0, header.Length);
-                    header = getBytes(soundEntries[soundID].WAVFORMATEX);
-                    fileStream.Write(header, 0, header.Length);
-                    header = BitConverter.GetBytes(soundEntries[soundID].SamplesPerBlock);
-                    fileStream.Write(header, 0, header.Length);
-                    header = BitConverter.GetBytes(soundEntries[soundID].ADPCM);
-                    fileStream.Write(header, 0, header.Length);
-                    foreach (ADPCMCOEFSET item in soundEntries[soundID].ADPCMCoefSets)
+                    using (FileStream fileStream = File.OpenWrite(path))
+                    //using (MemoryStream fileStream = new MemoryStream())
                     {
-                        header = getBytes(item);
+                        int filesize = Marshal.SizeOf(soundEntries[soundID].WAVFORMATEX) + rawBuffer.Length + 60 - 8;
+                        //write header
+                        byte[] header;
+                        header = Encoding.ASCII.GetBytes("RIFF");
                         fileStream.Write(header, 0, header.Length);
+                        header = getBytes(filesize);
+                        fileStream.Write(header, 0, header.Length);
+                        header = Encoding.ASCII.GetBytes("WAVEfmt ");
+                        fileStream.Write(header, 0, header.Length);
+                        filesize = Marshal.SizeOf(soundEntries[soundID].WAVFORMATEX) + 28 + 4;
+                        header = getBytes(filesize);
+                        fileStream.Write(header, 0, header.Length);
+                        header = getBytes(soundEntries[soundID].WAVFORMATEX);
+                        fileStream.Write(header, 0, header.Length);
+                        header = BitConverter.GetBytes(soundEntries[soundID].SamplesPerBlock);
+                        fileStream.Write(header, 0, header.Length);
+                        header = BitConverter.GetBytes(soundEntries[soundID].ADPCM);
+                        fileStream.Write(header, 0, header.Length);
+                        foreach (ADPCMCOEFSET item in soundEntries[soundID].ADPCMCoefSets)
+                        {
+                            header = getBytes(item);
+                            fileStream.Write(header, 0, header.Length);
+                        }
+                        header = Encoding.ASCII.GetBytes("data");
+                        fileStream.Write(header, 0, header.Length);
+                        header = BitConverter.GetBytes(rawBuffer.Length);
+                        fileStream.Write(header, 0, header.Length);
+                        //write data
+                        fileStream.Write(rawBuffer, 0, rawBuffer.Length);
+                        //Ffcc ffccSound = new Ffcc(fileStream.GetBuffer(), (int)fileStream.Length, AVMediaType.AVMEDIA_TYPE_AUDIO,Ffcc.FfccMode.PROCESS_ALL);
+
                     }
-                    header = Encoding.ASCII.GetBytes("data");
-                    fileStream.Write(header, 0, header.Length);
-                    header = BitConverter.GetBytes(rawBuffer.Length);
-                    fileStream.Write(header, 0, header.Length);
-                    //write data
-                    fileStream.Write(rawBuffer,0,rawBuffer.Length);
                 }
+                if(ffccSND!=null)
+                    ffccSND.Dispose();
+                ffccSND = new Ffcc(path,AVMediaType.AVMEDIA_TYPE_AUDIO,Ffcc.FfccMode.PROCESS_ALL);
+                ffccSND.PlaySound();
+               
+                return;
                 RawSourceWaveStream raw = new RawSourceWaveStream(new MemoryStream(rawBuffer), new AdpcmWaveFormat((int)format.nSamplesPerSec, format.nChannels));
 
                 byte[] buffer;
@@ -484,6 +499,10 @@ namespace FF8
             if (ffccMusic != null && !ffccMusic.AheadFrame())
             {
                 ffccMusic.GetFrame();
+            }
+            if (ffccSND != null && !ffccSND.AheadFrame())
+            {
+                ffccSND.GetFrame();
             }
         }
         //callable test
@@ -584,7 +603,8 @@ namespace FF8
             switch (ext)
             {
                 case ".ogg":
-                    ffccMusic = new Ffcc(pt, FFmpeg.AutoGen.AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
+                    //ffccMusic = new Ffcc(@"c:\eyes_on_me.wav", AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
+                    ffccMusic = new Ffcc(pt, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
                     ffccMusic.PlaySound();
                     break;
                 case ".sgt":

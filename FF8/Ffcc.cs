@@ -40,7 +40,7 @@ namespace FF8
         /// if it plays the audio before you get it more, then you get sound skips.
         /// </summary>
         /// <value>The goal buffer count.</value>
-        private int GoalBufferCount { get => 75; } //windows 30 worked well. 75 in linux atleast in my limited vm version
+        private int GoalBufferCount => 75;  //windows 30 worked well. 75 in linux atleast in my limited vm version
 
         ///// <summary>
         ///// Packet of data can contain 1 or more frames.
@@ -289,10 +289,11 @@ namespace FF8
                 buf[0] = ptr[0];
             }
         }
-        AVIOContext* avio_ctx;
-        byte* avio_ctx_buffer;
-        int avio_ctx_buffer_size;
-        buffer_data bd;
+
+        private AVIOContext* avio_ctx;
+        private byte* avio_ctx_buffer;
+        private int avio_ctx_buffer_size;
+        private buffer_data bd;
         public void LoadFromRAM(byte* buffer, int buffer_size)
         {
             avio_ctx = null;
@@ -313,8 +314,11 @@ namespace FF8
                 return;
             }
             avio_alloc_context_read_packet rf = new avio_alloc_context_read_packet(read_packet);
-            fixed(buffer_data*tmp = &bd)
-            avio_ctx = ffmpeg.avio_alloc_context(avio_ctx_buffer, avio_ctx_buffer_size, 0, tmp, rf, null, null);
+            fixed (buffer_data* tmp = &bd)
+            {
+                avio_ctx = ffmpeg.avio_alloc_context(avio_ctx_buffer, avio_ctx_buffer_size, 0, tmp, rf, null, null);
+            }
+
             if (avio_ctx == null)
             {
                 ret = ffmpeg.AVERROR(ffmpeg.ENOMEM);
@@ -329,23 +333,23 @@ namespace FF8
                 LoadFromRAM(tmp, rawBuffer.Length);
             }
         }
-    /// <summary>
-    /// Opens filename and init class.
-    /// </summary>
-    /// <remarks>based on https://stackoverflow.com/questions/9604633/reading-a-file-located-in-memory-with-libavformat 
-    /// and http://www.ffmpeg.org/doxygen/trunk/doc_2examples_2avio_reading_8c-example.html 
-    /// and https://stackoverflow.com/questions/24758386/intptr-to-callback-function </remarks>
-    /// <remarks>probably could be wrote better theres alot of hoops to jump threw</remarks>
-    public Ffcc(byte[] data, init_debugger_Audio.WAVEFORMATEX format, string fmt = "adpcm_ms",  AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.PROCESS_ALL)
+        /// <summary>
+        /// Opens filename and init class.
+        /// </summary>
+        /// <remarks>based on https://stackoverflow.com/questions/9604633/reading-a-file-located-in-memory-with-libavformat 
+        /// and http://www.ffmpeg.org/doxygen/trunk/doc_2examples_2avio_reading_8c-example.html 
+        /// and https://stackoverflow.com/questions/24758386/intptr-to-callback-function </remarks>
+        /// <remarks>probably could be wrote better theres alot of hoops to jump threw</remarks>
+        public Ffcc(byte[] data, int length, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.PROCESS_ALL)
         {
-            IntPtr intPtr = Marshal.AllocHGlobal(data.Length);
-            Marshal.Copy(data, 0, intPtr, data.Length);
+            IntPtr intPtr = Marshal.AllocHGlobal(length);
+            Marshal.Copy(data, 0, intPtr, length);
 
-            LoadFromRAM((byte*)intPtr, data.Length);
+            LoadFromRAM((byte*)intPtr, length);
 
             //LoadFromRAM(data);
             Init(null, mediatype, mode);
-            
+
         }
         /// <summary>
         /// Opens filename and init class.
@@ -387,7 +391,7 @@ namespace FF8
                         break;
                     case FfccState.GETCODEC:
                         State = FfccState.PREPARE_SWR;
-                        FindOpenCodec();
+                        PrepareCodec();
                         break;
                     case FfccState.PREPARE_SWR:
                         State = FfccState.PREPARE_SWS;
@@ -398,7 +402,7 @@ namespace FF8
                         PrepareScaler();
                         break;
                     case FfccState.READ://Enters waiting state unless we want to process all now.
-                        State = Mode == FfccMode.PROCESS_ALL ? FfccState.READALL : FfccState.READONE; 
+                        State = Mode == FfccMode.PROCESS_ALL ? FfccState.READALL : FfccState.READONE;
                         //READONE here makes it grab one video frame and precaches audio to it's limit.
                         //WAITING here makes it wait till GetFrame() is called.
                         //READALL just processes the whole audio stream (memoryleaky), not ment for video
@@ -429,21 +433,23 @@ namespace FF8
         }
         public void PlaySound(bool notimer = false) // there are some videos without sound meh.
         {
-
-            if (!timer.IsRunning)
+            if (Decoder.StreamIndex > -1)
             {
-                if (!notimer)
+                if (!timer.IsRunning)
                 {
-                    timer.Start();
+                    if (!notimer && Mode == FfccMode.STATE_MACH)
+                    {
+                        timer.Start();
+                    }
                 }
-                if (dsee44100 != null && !dsee44100.IsDisposed && AudioEnabled)
+                if (dynamicSound != null && !dynamicSound.IsDisposed && AudioEnabled)
                 {
-                    dsee44100.Play();
+                    dynamicSound.Play();
                 }
 
-                if (dsee44100 != null && !dsee44100.IsDisposed && AudioEnabled)
+                if (soundEffect != null && !soundEffect.IsDisposed && AudioEnabled)
                 {
-                    dsee48000.Play();
+                    soundEffect.Play();
                 }
             }
         }
@@ -454,23 +460,23 @@ namespace FF8
                 timer.Stop();
                 timer.Reset();
             }
-            if (dsee44100 != null && !dsee44100.IsDisposed && AudioEnabled)
+            if (dynamicSound != null && !dynamicSound.IsDisposed)
             {
-                dsee44100.Stop();
-            }
+                if (AudioEnabled)
+                {
+                    dynamicSound.Stop();
+                }
 
-            if (dsee44100 != null && !dsee44100.IsDisposed && AudioEnabled)
-            {
-                dsee48000.Stop();
+                dynamicSound.Dispose();
             }
-            if (dsee44100 != null && !dsee44100.IsDisposed)
+            if (soundEffect != null && !soundEffect.IsDisposed)
             {
-                dsee44100.Dispose();
-            }
+                //if (AudioEnabled)
+                //{
+                //    soundEffect.Stop();
+                //}
 
-            if (dsee44100 != null && !dsee44100.IsDisposed)
-            {
-                dsee48000.Dispose();
+                soundEffect.Dispose();
             }
         }
 
@@ -479,8 +485,8 @@ namespace FF8
             LoadSoundFromStream(ref _decodedStream);
         }
 
-        private DynamicSoundEffectInstance dsee44100 = new DynamicSoundEffectInstance(44100, AudioChannels.Stereo);
-        private DynamicSoundEffectInstance dsee48000 = new DynamicSoundEffectInstance(48000, AudioChannels.Stereo);
+        private DynamicSoundEffectInstance dynamicSound;
+        private SoundEffect soundEffect;
         private int _loopstart = -1;
 
         public int LOOPSTART { get => _loopstart; private set => _loopstart = value; }
@@ -489,31 +495,45 @@ namespace FF8
             if (DecodedStream.Length > 0 && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
             {
                 //    // accepts s16le maybe more haven't tested everything.
+                if(soundEffect == null)
+                    soundEffect = new SoundEffect(decodedStream.GetBuffer(), 0, (int)decodedStream.Length, ResampleFrame->sample_rate, (AudioChannels)ResampleFrame->channels,0,0);
+                //if (ResampleFrame->sample_rate == 44100)
+                //{
+                //    if (dsee44100 == null)
+                //    {
 
-                if (ResampleFrame->sample_rate == 44100)
-                {
-                    dsee44100.SubmitBuffer(decodedStream.GetBuffer(), 0, (int)decodedStream.Length);
-                }
-                else if (ResampleFrame->sample_rate == 48000)
-                {
-                    dsee48000.SubmitBuffer(decodedStream.GetBuffer(), 0, (int)decodedStream.Length);
-                }
+                //        dsee44100 = new DynamicSoundEffectInstance(44100, (AudioChannels)ResampleFrame->channels);
+                //    }
 
+                //    dsee44100.SubmitBuffer(decodedStream.GetBuffer(), 0, (int)decodedStream.Length);
+                //}
+                //else if (ResampleFrame->sample_rate == 48000)
+                //{
+                //    if (dsee48000 == null)
+                //    {
+                //        dsee48000 = new DynamicSoundEffectInstance(48000, (AudioChannels)ResampleFrame->channels);
+                //    }
+
+                //    dsee48000.SubmitBuffer(decodedStream.GetBuffer(), 0, (int)decodedStream.Length);
+                //}
+                //else
+                //{
+                //    die($"{Decoder.CodecContext->sample_rate} is currently unsupported");
+                //}
             }
         }
         public void LoadSoundFromStream(ref byte[] buffer, int start, ref int length)
         {
 
+
             if (length > 0 && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
             {
-                if (ResampleFrame->sample_rate == 44100)
-                {
-                    dsee44100.SubmitBuffer(buffer, 0, length);
-                }
-                else if (ResampleFrame->sample_rate == 48000)
-                {
-                    dsee48000.SubmitBuffer(buffer, 0, length);
-                }
+                    if (dynamicSound == null)
+                    {
+                        dynamicSound = new DynamicSoundEffectInstance(ResampleFrame->sample_rate, (AudioChannels)ResampleFrame->channels);
+                    }
+
+                    dynamicSound.SubmitBuffer(buffer, 0, length);
             }
         }
         public int ExpectedFrame()
@@ -545,66 +565,129 @@ namespace FF8
         }
         public bool AheadFrame()
         {
-            if (timer.IsRunning && Decoder.StreamIndex != -1)
+            if (Decoder.StreamIndex != -1 && Mode == FfccMode.STATE_MACH)
             {
                 if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
                 {
-                    return dsee44100.PendingBufferCount > GoalBufferCount;
+                    if (dynamicSound != null)
+                    { 
+                        return dynamicSound.PendingBufferCount > GoalBufferCount;
+                    }
+                    else
+                    {
+                        die($"{Decoder.CodecContext->sample_rate} is currently unsupported");
+                    }
                 }
+                else if (timer.IsRunning)
+                {
 
-                return CurrentFrameNum() > ExpectedFrame();
+
+                    return CurrentFrameNum() > ExpectedFrame();
+                }
             }
             return true;
         }
-        //private long LOOPLENGTH
-        //{
-        //    get
-        //    {
-        //        if (LOOPSTART >= 0 && LOOPED)
-        //        {
-
-        //            return (Decoder.Stream->duration - LOOPSTART);
-        //        }
-        //        else
-        //        {
-        //            return Decoder.Stream->duration;
-        //        }
-        //    }
-        //}
-
         public bool BehindFrame()
         {
-            if (timer.IsRunning && Decoder.StreamIndex != -1)
+            if (Decoder.StreamIndex != -1 && Mode == FfccMode.STATE_MACH)
             {
-                //if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO && LOOPSTART >= 0 && FPS < 1 && Decoder.Stream->duration > 0)
-                //{
-                //    long time = timer.ElapsedMilliseconds;
-                //    int secondsbeforeendoftrack = 2;
-                //    return (time / 1000) > (LOOPLENGTH / Decoder.CodecContext->sample_rate) - secondsbeforeendoftrack;
-                //}
-
                 if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
                 {
-                    return dsee44100.PendingBufferCount < GoalBufferCount;
+                    if (dynamicSound!=null)
+                    {
+                        return dynamicSound.PendingBufferCount < GoalBufferCount;
+                    }
+                    else
+                    {
+                        die($"{Decoder.CodecContext->sample_rate} is currently unsupported");
+                    }
                 }
-
-                return CurrentFrameNum() < ExpectedFrame();
-
+                else if (timer.IsRunning)
+                {
+                    return CurrentFrameNum() < ExpectedFrame();
+                }
             }
             return false;
         }
         public bool CorrectFrame()
         {
-            if (timer.IsRunning)
+            if (Decoder.StreamIndex != -1 && Mode == FfccMode.STATE_MACH)
             {
                 if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
                 {
-                    return dsee44100.PendingBufferCount == GoalBufferCount;
+                    if (dynamicSound != null)
+                    {
+                        return dynamicSound.PendingBufferCount == GoalBufferCount;
+                    }
+                    else
+                    {
+                        die($"{Decoder.CodecContext->sample_rate} is currently unsupported");
+                    }
                 }
-
-                return CurrentFrameNum() == ExpectedFrame();
+                else if (timer.IsRunning)
+                {
+                    return CurrentFrameNum() == ExpectedFrame();
+                }
             }
             return false;
+        }
+        public void checkLoop()
+        {
+            if (LOOPSTART >= 0)
+            {
+                ffmpeg.avformat_seek_file(Decoder.Format, Decoder.StreamIndex, LOOPSTART - 1000, LOOPSTART, Decoder.Stream->duration, 0);
+
+
+
+                State = FfccState.WAITING;
+                if (BehindFrame())
+                {
+                    timer.Restart();
+                }
+            }
+        }
+        public bool Decode(out AVFrame frame)
+        {
+            Return = ffmpeg.avcodec_receive_frame(Decoder.CodecContext, Decoder.Frame);
+            if (Return == ffmpeg.AVERROR(ffmpeg.EAGAIN))
+            {
+                do
+                {
+                    do
+                    {
+                        Return = ffmpeg.av_read_frame(Decoder.Format, Decoder.Packet);
+                        if (Return == ffmpeg.AVERROR_EOF)
+                        {
+                            checkLoop();
+                            frame = *Decoder.Frame;
+                            return false;
+                        }
+                        else
+                        {
+                            CheckReturn();
+                        }
+                    }
+                    while (Decoder.Packet->stream_index != Decoder.StreamIndex);
+                    Return = ffmpeg.avcodec_send_packet(Decoder.CodecContext, Decoder.Packet);
+                    CheckReturn();
+                    Return = ffmpeg.avcodec_receive_frame(Decoder.CodecContext, Decoder.Frame);
+                }
+                while (Return == ffmpeg.AVERROR(ffmpeg.EAGAIN));
+                CheckReturn();
+            }
+            else if (Return == ffmpeg.AVERROR_EOF)
+            {
+                checkLoop();
+                frame = *Decoder.Frame;
+                return false;
+            }
+            else
+            {
+                CheckReturn();
+            }
+
+            frame = *Decoder.Frame;
+            return true;
         }
         /// <summary>
         /// Adapted from example in FFmpeg.Autogen's example
@@ -612,7 +695,7 @@ namespace FF8
         /// </summary>
         /// <param name="frame">Outputs current frame without</param>
         /// <returns>True if more data, False if EOF</returns>
-        public bool Decode(out AVFrame frame)
+        public bool _Decode(out AVFrame frame) // this works for streams with 1 frame per packet.
         {
             ffmpeg.av_frame_unref(Decoder.Frame);
             do
@@ -649,7 +732,14 @@ namespace FF8
                     Return = ffmpeg.avcodec_send_packet(Decoder.CodecContext, Decoder.Packet);
                     //sent a eof when trying to loop once.
                     //should never get EOF here unless something is wrong.
-
+                    //if(Return == ffmpeg.AVERROR(ffmpeg.EAGAIN)) // there is still frames left in packet can't get a new packet.
+                    //{
+                    //    //Return = ffmpeg.avcodec_receive_frame(Decoder.CodecContext, Decoder.Frame);
+                    //    //CheckReturn();
+                    //    //frame = *Decoder.Frame;
+                    //    //return true;
+                    //}
+                    //else
                     CheckReturn();
 
                 }
@@ -734,7 +824,7 @@ namespace FF8
         private void Resample(ref AVFrame frame, bool skipencode = true)
         {
             // do something with audio here.
-            if (!NoResample(ref frame))
+            if (!SkipResample(ref frame))
             {
                 // Convert
                 int outSamples = 0;
@@ -843,17 +933,17 @@ namespace FF8
         {
             //default values below here.
             Return = -1;
-                if (Open() < 0)
-                {
-                    die("No file not open");
-                }
+            if (Open() < 0)
+            {
+                die("No file not open");
+            }
 
-                ConvertedData = null;
+            ConvertedData = null;
 
 
-                //Decoder.Stream = null;
+            //Decoder.Stream = null;
 
-                //Decoder.StreamIndex = -1;
+            //Decoder.StreamIndex = -1;
 
 
 
@@ -885,11 +975,11 @@ namespace FF8
         }
         public Dictionary<String, String> Metadata { get; private set; } = new Dictionary<string, string>();
         public byte* ConvertedData { get => _convertedData; private set => _convertedData = value; }
-        private AVDictionary* dict = null;
+        private readonly AVDictionary* dict = null;
         /// <summary>
         /// Finds the codec for the chosen stream
         /// </summary>
-        private void FindOpenCodec()
+        private void PrepareCodec()
         {
             // find & open codec
             fixed (AVCodec** tmp = &Decoder._codec)
@@ -929,7 +1019,18 @@ namespace FF8
             {
                 if (Decoder.CodecContext->channel_layout == 0)
                 {
-                    Decoder.CodecContext->channel_layout = ffmpeg.AV_CH_LAYOUT_STEREO;
+                    if (Decoder.CodecContext->channels == 2)
+                    {
+                        Decoder.CodecContext->channel_layout = ffmpeg.AV_CH_LAYOUT_STEREO;
+                    }
+                    else if (Decoder.CodecContext->channels == 1)
+                    {
+                        Decoder.CodecContext->channel_layout = ffmpeg.AV_CH_LAYOUT_MONO;
+                    }
+                    else
+                    {
+                        die("must set custom channel layout, is not stereo or mono");
+                    }
                 }
             }
         }
@@ -976,7 +1077,7 @@ namespace FF8
             ffmpeg.av_opt_set_int(ResampleContext, "in_sample_rate", Decoder.CodecContext->sample_rate, 0);
             ffmpeg.av_opt_set_sample_fmt(ResampleContext, "in_sample_fmt", Decoder.CodecContext->sample_fmt, 0);
 
-            ffmpeg.av_opt_set_channel_layout(ResampleContext, "out_channel_layout", ffmpeg.AV_CH_LAYOUT_STEREO, 0);
+            ffmpeg.av_opt_set_channel_layout(ResampleContext, "out_channel_layout", (long)Decoder.CodecContext->channel_layout, 0);
             ffmpeg.av_opt_set_sample_fmt(ResampleContext, "out_sample_fmt", AVSampleFormat.AV_SAMPLE_FMT_S16, 0);
             ffmpeg.av_opt_set_int(ResampleContext, "out_sample_rate", Decoder.CodecContext->sample_rate, 0);
 
@@ -992,8 +1093,8 @@ namespace FF8
 
             ResampleFrame->nb_samples = 32;
             ResampleFrame->format = (int)AVSampleFormat.AV_SAMPLE_FMT_S16;
-            ResampleFrame->channel_layout = ffmpeg.AV_CH_LAYOUT_STEREO;
-            ResampleFrame->channels = (int)AudioChannels.Stereo;
+            ResampleFrame->channel_layout = Decoder.CodecContext->channel_layout;
+            ResampleFrame->channels = Decoder.CodecContext->channels;
             ResampleFrame->sample_rate = Decoder.CodecContext->sample_rate;
 
 
@@ -1068,8 +1169,9 @@ namespace FF8
         /// <returns>True if decoded sample is good
         /// False if incompatable
         /// </returns>
-        private bool NoResample(ref AVFrame frame)
+        private bool SkipResample(ref AVFrame frame)
         {
+            return false; // skipping this because it was introducing noise when doing soundeffects.
             // Adapted from https://libav.org/documentation/doxygen/master/decode_audio_8c-example.html
             /* the stream parameters may change at any time, check that they are
             * what we expect */
@@ -1215,7 +1317,7 @@ namespace FF8
         {
             Texture2D frameTex = new Texture2D(Memory.spriteBatch.GraphicsDevice, Decoder.CodecContext->width, Decoder.CodecContext->height, false, SurfaceFormat.Color);
             const int bpp = 4;
-            byte[] texBuffer = new byte[Decoder.CodecContext->width * Decoder.CodecContext->height * bpp]; 
+            byte[] texBuffer = new byte[Decoder.CodecContext->width * Decoder.CodecContext->height * bpp];
             fixed (byte* ptr = &texBuffer[0])
             {
                 byte*[] srcData = { ptr, null, null, null };
