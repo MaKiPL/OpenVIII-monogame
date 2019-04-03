@@ -324,7 +324,7 @@ namespace FF8
             using (BinaryReader br = new BinaryReader(fs))
             {
 
-                string path = Path.Combine(Path.GetTempPath(), $"sound{soundID}.wav");
+                //string path = Path.Combine(Path.GetTempPath(), $"sound{soundID}.wav");
                 if (true)//!File.Exists(path))
                 {
                     fs.Seek(soundEntries[soundID].Offset, SeekOrigin.Begin);
@@ -404,14 +404,14 @@ namespace FF8
 
                     }
                 }
-                return;
-                if (SoundChannels[CurrentSoundChannel] != null)
-                {
-                    SoundChannels[CurrentSoundChannel].Dispose();
-                }
+                //return;
+                //if (SoundChannels[CurrentSoundChannel] != null)
+                //{
+                //    SoundChannels[CurrentSoundChannel].Dispose();
+                //}
 
-                SoundChannels[CurrentSoundChannel] = new Ffcc(path, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
-                SoundChannels[CurrentSoundChannel++].PlaySound();
+                //SoundChannels[CurrentSoundChannel] = new Ffcc(path, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
+                //SoundChannels[CurrentSoundChannel++].PlaySound();
 
 
                 //RawSourceWaveStream raw = new RawSourceWaveStream(new MemoryStream(rawBuffer), new AdpcmWaveFormat((int)format.nSamplesPerSec, format.nChannels));
