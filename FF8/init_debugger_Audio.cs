@@ -64,55 +64,54 @@ namespace FF8
             public ushort wBitsPerSample;
             public ushort cbSize;
         }
+
         //WAVE Format Header
 
-        static readonly ushort WAVE_FORMAT_ADPCM = (0x0002);
+        private static readonly ushort WAVE_FORMAT_ADPCM = (0x0002);
 
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
-        struct ADPCMCOEFSET
+        private struct ADPCMCOEFSET
         {
 
-           public short iCoef1;
-           public short iCoef2;
+            public short iCoef1;
+            public short iCoef2;
 
         };
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
-        struct ADPCMWAVEFORMAT
-        {
+        //[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+        //private struct ADPCMWAVEFORMAT
+        //{
+        //    private WAVEFORMATEX wfxx;
+        //    public ushort wSamplesPerBlock;
+        //    public ushort wNumCoef;
+        //    private readonly ADPCMCOEFSET[] aCoeff;//[wNumCoef];
 
-            WAVEFORMATEX wfxx;
-            public ushort wSamplesPerBlock;
-            public ushort wNumCoef;
-            ADPCMCOEFSET[] aCoeff;//[wNumCoef];
+        //    public ADPCMWAVEFORMAT(WAVEFORMATEX wfxx, ushort wSamplesPerBlock, ushort wNumCoef, ADPCMCOEFSET[] aCoeff)
+        //    {
+        //        this.wfxx = wfxx;
+        //        this.wSamplesPerBlock = wSamplesPerBlock;
+        //        this.wNumCoef = wNumCoef;
+        //        this.aCoeff = aCoeff ?? throw new ArgumentNullException(nameof(aCoeff));
+        //    }
+        //};
 
-            public ADPCMWAVEFORMAT(WAVEFORMATEX wfxx, ushort wSamplesPerBlock, ushort wNumCoef, ADPCMCOEFSET[] aCoeff)
-            {
-                this.wfxx = wfxx;
-                this.wSamplesPerBlock = wSamplesPerBlock;
-                this.wNumCoef = wNumCoef;
-                this.aCoeff = aCoeff ?? throw new ArgumentNullException(nameof(aCoeff));
-            }
-        };
+        //[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+        //private struct ADPCMBLOCKHEADER
+        //{
+        //    private byte[] bPredictor;//[nChannels];
+        //    private int[] iDelta;//[nChannels];
+        //    private int[] iSamp1;//[nChannels];
+        //    private int[] iSamp2;//[nChannels];
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
-        struct ADPCMBLOCKHEADER
-        {
-
-            byte[] bPredictor;//[nChannels];
-            int[] iDelta;//[nChannels];
-            int[] iSamp1;//[nChannels];
-            int[] iSamp2;//[nChannels];
-
-            public ADPCMBLOCKHEADER(ushort nChannels)
-            {
-                bPredictor = new byte[nChannels];
-                iDelta = new int[nChannels];
-                iSamp1 = new int[nChannels]; 
-                iSamp2 = new int[nChannels];
-            }
-        };
+        //    public ADPCMBLOCKHEADER(ushort nChannels)
+        //    {
+        //        bPredictor = new byte[nChannels];
+        //        iDelta = new int[nChannels];
+        //        iSamp1 = new int[nChannels];
+        //        iSamp2 = new int[nChannels];
+        //    }
+        //};
 
 #pragma warning restore CS0649
 
@@ -293,9 +292,11 @@ namespace FF8
                         fs.Seek(34, SeekOrigin.Current); continue;
                     }
 
-                    soundEntries[i] = new SoundEntry();
-                    soundEntries[i].Size = sz;
-                    soundEntries[i].Offset = br.ReadInt32();
+                    soundEntries[i] = new SoundEntry
+                    {
+                        Size = sz,
+                        Offset = br.ReadInt32()
+                    };
                     //soundEntries[i].UNK = br.ReadBytes(12);
                     fs.Seek(12, SeekOrigin.Current);
                     soundEntries[i].WAVFORMATEX = new WAVEFORMATEX
@@ -337,43 +338,44 @@ namespace FF8
             using (FileStream fs = File.OpenRead(Path.Combine(Memory.FF8DIR, "../Sound/audio.dat")))
             using (BinaryReader br = new BinaryReader(fs))
             {
-                fs.Seek(soundEntries[soundID].Offset, SeekOrigin.Begin);
-                //List<byte[]> sfxBufferList = new List<byte[]>();
-                //sfxBufferList.Add(Encoding.ASCII.GetBytes("RIFF"));
-                //sfxBufferList.Add(BitConverter.GetBytes
-                //    (soundEntries[soundID].Size + 36));
-                //sfxBufferList.Add(Encoding.ASCII.GetBytes("WAVEfmt "));
-                //sfxBufferList.Add(BitConverter.GetBytes
-                //    (18 + 0));
-                //sfxBufferList.Add(soundEntries[soundID].WAVFORMATEX);
-                //sfxBufferList.Add(Encoding.ASCII.GetBytes("data"));
-                //sfxBufferList.Add(BitConverter.GetBytes(soundEntries[soundID].Size));
-                //GCHandle gc = GCHandle.Alloc(soundEntries[soundID].WAVFORMATEX, GCHandleType.Pinned);
-                //WAVEFORMATEX format = (WAVEFORMATEX)Marshal.PtrToStructure(gc.AddrOfPinnedObject(), typeof(WAVEFORMATEX));
-                //gc.Free();
-                WAVEFORMATEX format = soundEntries[soundID].WAVFORMATEX;
-                byte[] rawBuffer = br.ReadBytes(soundEntries[soundID].Size);
-                //sfxBufferList.Add(rawBuffer);
-                //byte[] sfxBuffer = sfxBufferList.SelectMany(x => x).ToArray();
 
-
-                //WaveFileReader rad = new WaveFileReader(new MemoryStream(sfxBuffer));
-                //passing WAVEFORMATEX struct params makes playing all sounds possible
-
-                //string strDLLpath = Assembly.GetAssembly().CodeBase.Substring(8);
-                //if (File.Exists("Msacm32.dll"))
-                //try { 
-
-                //Ffcc ffccSound = new Ffcc(rawBuffer,format);
-                //Class1 class1 = new Class1(rawBuffer);
-                //ffccSound.PlaySound();
-                //return;
-                //MemoryStream ms = new MemoryStream();
-                //Parser parser = new Parser(rawBuffer, ref ms);
-                //ms.Dispose();
                 string path = Path.Combine(Path.GetTempPath(), $"sound{soundID}.wav");
                 if (!File.Exists(path))
                 {
+                    fs.Seek(soundEntries[soundID].Offset, SeekOrigin.Begin);
+                    //List<byte[]> sfxBufferList = new List<byte[]>();
+                    //sfxBufferList.Add(Encoding.ASCII.GetBytes("RIFF"));
+                    //sfxBufferList.Add(BitConverter.GetBytes
+                    //    (soundEntries[soundID].Size + 36));
+                    //sfxBufferList.Add(Encoding.ASCII.GetBytes("WAVEfmt "));
+                    //sfxBufferList.Add(BitConverter.GetBytes
+                    //    (18 + 0));
+                    //sfxBufferList.Add(soundEntries[soundID].WAVFORMATEX);
+                    //sfxBufferList.Add(Encoding.ASCII.GetBytes("data"));
+                    //sfxBufferList.Add(BitConverter.GetBytes(soundEntries[soundID].Size));
+                    //GCHandle gc = GCHandle.Alloc(soundEntries[soundID].WAVFORMATEX, GCHandleType.Pinned);
+                    //WAVEFORMATEX format = (WAVEFORMATEX)Marshal.PtrToStructure(gc.AddrOfPinnedObject(), typeof(WAVEFORMATEX));
+                    //gc.Free();
+                    WAVEFORMATEX format = soundEntries[soundID].WAVFORMATEX;
+                    byte[] rawBuffer = br.ReadBytes(soundEntries[soundID].Size);
+                    //sfxBufferList.Add(rawBuffer);
+                    //byte[] sfxBuffer = sfxBufferList.SelectMany(x => x).ToArray();
+
+
+                    //WaveFileReader rad = new WaveFileReader(new MemoryStream(sfxBuffer));
+                    //passing WAVEFORMATEX struct params makes playing all sounds possible
+
+                    //string strDLLpath = Assembly.GetAssembly().CodeBase.Substring(8);
+                    //if (File.Exists("Msacm32.dll"))
+                    //try { 
+
+                    //Ffcc ffccSound = new Ffcc(rawBuffer,format);
+                    //Class1 class1 = new Class1(rawBuffer);
+                    //ffccSound.PlaySound();
+                    //return;
+                    //MemoryStream ms = new MemoryStream();
+                    //Parser parser = new Parser(rawBuffer, ref ms);
+                    //ms.Dispose();
                     using (FileStream fileStream = File.OpenWrite(path))
                     //using (MemoryStream fileStream = new MemoryStream())
                     {
@@ -410,81 +412,84 @@ namespace FF8
 
                     }
                 }
-                if(ffccSND!=null)
+                if (ffccSND != null)
+                {
                     ffccSND.Dispose();
-                ffccSND = new Ffcc(path,AVMediaType.AVMEDIA_TYPE_AUDIO,Ffcc.FfccMode.PROCESS_ALL);
+                }
+
+                ffccSND = new Ffcc(path, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
                 ffccSND.PlaySound();
-               
+
                 return;
-                RawSourceWaveStream raw = new RawSourceWaveStream(new MemoryStream(rawBuffer), new AdpcmWaveFormat((int)format.nSamplesPerSec, format.nChannels));
+                //RawSourceWaveStream raw = new RawSourceWaveStream(new MemoryStream(rawBuffer), new AdpcmWaveFormat((int)format.nSamplesPerSec, format.nChannels));
 
-                byte[] buffer;
-                if (!MakiExtended.IsLinux)
-                {
-                    WaveStream a = WaveFormatConversionStream.CreatePcmStream(raw);
-                    //    WaveOut waveout = new WaveOut();
-                    //    waveout.Init(a);
-                    //    waveout.Play();
-                    //}
-                    //catch
-                    buffer = ReadFullyByte(a);
-                }
-                else
-                {
-                    buffer = ReadFullyByte(raw);
-                }
+                //byte[] buffer;
+                //if (!MakiExtended.IsLinux)
                 //{
-                //try
-                //{
-                if (Sound != null && !Sound.IsDisposed)
-                {
-                    /// If you don't dispose of sound it will leak memory. You can hold down arrow and watch memory go up.
-                    /// Though doing this you can only play one sound at a time with out more varibles.
-                    Sound.Dispose();
-                }
-
-                if (buffer != null)
-                {
-                    Sound = new SoundEffect(buffer, raw.WaveFormat.SampleRate, (AudioChannels)raw.WaveFormat.Channels);
-                }
-                else
-                {
-                    //number 28 broken
-                    Sound = new SoundEffect(ReadFullyByte(raw), (int)format.nSamplesPerSec / 2, (AudioChannels)format.nChannels);
-                }
-                Sound.Play();
-
-                //    }
-                //    catch {
-                //        try
-                //        {
-                //            WaveOut waveout = new WaveOut();
-                //            waveout.Init(a);
-                //            waveout.Play();
-
-                //        }
-                //        catch
-                //        {
-                //            SoundEffect se = new SoundEffect(rawBuffer, (int)format.nSamplesPerSec / 2, (AudioChannels)format.nChannels);
-                //        }
+                //    WaveStream a = WaveFormatConversionStream.CreatePcmStream(raw);
+                //    //    WaveOut waveout = new WaveOut();
+                //    //    waveout.Init(a);
+                //    //    waveout.Play();
+                //    //}
+                //    //catch
+                //    buffer = ReadFullyByte(a);
                 //}
-                //SoundEffect se = new SoundEffect(rawBuffer, (int)format.nSamplesPerSec / 2, (AudioChannels)format.nChannels);
-
+                //else
+                //{
+                //    buffer = ReadFullyByte(raw);
+                //}
+                ////{
+                ////try
+                ////{
+                //if (Sound != null && !Sound.IsDisposed)
+                //{
+                //    /// If you don't dispose of sound it will leak memory. You can hold down arrow and watch memory go up.
+                //    /// Though doing this you can only play one sound at a time with out more varibles.
+                //    Sound.Dispose();
                 //}
 
-                //                SoundEffect se = new SoundEffect(rawBuffer, (int)format.nSamplesPerSec/2, (AudioChannels)format.nChannels);
-                //              se.Play();
+                //if (buffer != null)
+                //{
+                //    Sound = new SoundEffect(buffer, raw.WaveFormat.SampleRate, (AudioChannels)raw.WaveFormat.Channels);
+                //}
+                //else
+                //{
+                //    //number 28 broken
+                //    Sound = new SoundEffect(ReadFullyByte(raw), (int)format.nSamplesPerSec / 2, (AudioChannels)format.nChannels);
+                //}
+                //Sound.Play();
+
+                ////    }
+                ////    catch {
+                ////        try
+                ////        {
+                ////            WaveOut waveout = new WaveOut();
+                ////            waveout.Init(a);
+                ////            waveout.Play();
+
+                ////        }
+                ////        catch
+                ////        {
+                ////            SoundEffect se = new SoundEffect(rawBuffer, (int)format.nSamplesPerSec / 2, (AudioChannels)format.nChannels);
+                ////        }
+                ////}
+                ////SoundEffect se = new SoundEffect(rawBuffer, (int)format.nSamplesPerSec / 2, (AudioChannels)format.nChannels);
+
+                ////}
+
+                ////                SoundEffect se = new SoundEffect(rawBuffer, (int)format.nSamplesPerSec/2, (AudioChannels)format.nChannels);
+                ////              se.Play();
 
 
 
-                //libZPlay.ZPlay zplay = new libZPlay.ZPlay();
+                ////libZPlay.ZPlay zplay = new libZPlay.ZPlay();
 
-                //zplay.OpenFile("D:\\test.wav", libZPlay.TStreamFormat.sfAutodetect);
-                //zplay.StartPlayback();
-                //SoundEffect se = new SoundEffect(sfxBuffer, 22050, AudioChannels.Mono);
-                //sei.Play();
-                //se.Play(1.0f, 0.0f, 0.0f);
-                //se.Dispose();
+                ////zplay.OpenFile("D:\\test.wav", libZPlay.TStreamFormat.sfAutodetect);
+                ////zplay.StartPlayback();
+                ////SoundEffect se = new SoundEffect(sfxBuffer, 22050, AudioChannels.Mono);
+                ////sei.Play();
+                ////se.Play(1.0f, 0.0f, 0.0f);
+                ////se.Dispose();
             }
         }
 
@@ -496,13 +501,10 @@ namespace FF8
         }
         internal static void Update()
         {
+            //checks to see if music buffer is running low and getframe triggers a refill.
             if (ffccMusic != null && !ffccMusic.AheadFrame())
             {
                 ffccMusic.GetFrame();
-            }
-            if (ffccSND != null && !ffccSND.AheadFrame())
-            {
-                ffccSND.GetFrame();
             }
         }
         //callable test
@@ -692,7 +694,7 @@ namespace FF8
 
         public static void KillAudio()
         {
-            if (Sound!=null && !Sound.IsDisposed)
+            if (Sound != null && !Sound.IsDisposed)
             {
                 Sound.Dispose();
             }

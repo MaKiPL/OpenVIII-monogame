@@ -637,8 +637,6 @@ namespace FF8
             {
                 ffmpeg.avformat_seek_file(Decoder.Format, Decoder.StreamIndex, LOOPSTART - 1000, LOOPSTART, Decoder.Stream->duration, 0);
 
-
-
                 State = FfccState.WAITING;
                 if (BehindFrame())
                 {
@@ -655,12 +653,11 @@ namespace FF8
                 {
                     do
                     {
+                        ffmpeg.av_packet_unref(Decoder.Packet);
                         Return = ffmpeg.av_read_frame(Decoder.Format, Decoder.Packet);
                         if (Return == ffmpeg.AVERROR_EOF)
                         {
-                            checkLoop();
-                            frame = *Decoder.Frame;
-                            return false;
+                            goto EOF;
                         }
                         else
                         {
@@ -669,6 +666,7 @@ namespace FF8
                     }
                     while (Decoder.Packet->stream_index != Decoder.StreamIndex);
                     Return = ffmpeg.avcodec_send_packet(Decoder.CodecContext, Decoder.Packet);
+                    ffmpeg.av_packet_unref(Decoder.Packet);
                     CheckReturn();
                     Return = ffmpeg.avcodec_receive_frame(Decoder.CodecContext, Decoder.Frame);
                 }
@@ -677,9 +675,7 @@ namespace FF8
             }
             else if (Return == ffmpeg.AVERROR_EOF)
             {
-                checkLoop();
-                frame = *Decoder.Frame;
-                return false;
+                goto EOF;
             }
             else
             {
@@ -688,73 +684,78 @@ namespace FF8
 
             frame = *Decoder.Frame;
             return true;
-        }
-        /// <summary>
-        /// Adapted from example in FFmpeg.Autogen's example
-        /// Decodes current stream;
-        /// </summary>
-        /// <param name="frame">Outputs current frame without</param>
-        /// <returns>True if more data, False if EOF</returns>
-        public bool _Decode(out AVFrame frame) // this works for streams with 1 frame per packet.
-        {
-            ffmpeg.av_frame_unref(Decoder.Frame);
-            do
-            {
-                try
-                {
-                    do
-                    {
-                        Return = ffmpeg.av_read_frame(Decoder.Format, Decoder.Packet);
-                        if (Return == ffmpeg.AVERROR_EOF)
-                        {
-                            if (LOOPSTART >= 0)
-                            {
-                                ffmpeg.avformat_seek_file(Decoder.Format, Decoder.StreamIndex, LOOPSTART - 1000, LOOPSTART, Decoder.Stream->duration, 0);
 
-
-
-                                State = FfccState.WAITING;
-                                if (BehindFrame())
-                                {
-                                    timer.Restart();
-                                }
-                            }
-                            frame = *Decoder.Frame;
-                            return false;
-                        }
-                        else
-                        {
-                            CheckReturn();
-                        }
-                    } while (Decoder.Packet->stream_index != Decoder.StreamIndex);
-
-
-                    Return = ffmpeg.avcodec_send_packet(Decoder.CodecContext, Decoder.Packet);
-                    //sent a eof when trying to loop once.
-                    //should never get EOF here unless something is wrong.
-                    //if(Return == ffmpeg.AVERROR(ffmpeg.EAGAIN)) // there is still frames left in packet can't get a new packet.
-                    //{
-                    //    //Return = ffmpeg.avcodec_receive_frame(Decoder.CodecContext, Decoder.Frame);
-                    //    //CheckReturn();
-                    //    //frame = *Decoder.Frame;
-                    //    //return true;
-                    //}
-                    //else
-                    CheckReturn();
-
-                }
-                finally
-                {
-                    ffmpeg.av_packet_unref(Decoder.Packet);
-                }
-
-                Return = ffmpeg.avcodec_receive_frame(Decoder.CodecContext, Decoder.Frame);
-            } while (Return == ffmpeg.AVERROR(ffmpeg.EAGAIN));
-            CheckReturn();
-
+            EOF:
+            checkLoop();
             frame = *Decoder.Frame;
-            return true;
+            return false;
         }
+        ///// <summary>
+        ///// Adapted from example in FFmpeg.Autogen's example
+        ///// Decodes current stream;
+        ///// </summary>
+        ///// <param name="frame">Outputs current frame without</param>
+        ///// <returns>True if more data, False if EOF</returns>
+        //public bool _Decode(out AVFrame frame) // this works for streams with 1 frame per packet. adpcm sounds use more than 1 frame
+        //{
+        //    ffmpeg.av_frame_unref(Decoder.Frame);
+        //    do
+        //    {
+        //        try
+        //        {
+        //            do
+        //            {
+        //                Return = ffmpeg.av_read_frame(Decoder.Format, Decoder.Packet);
+        //                if (Return == ffmpeg.AVERROR_EOF)
+        //                {
+        //                    if (LOOPSTART >= 0)
+        //                    {
+        //                        ffmpeg.avformat_seek_file(Decoder.Format, Decoder.StreamIndex, LOOPSTART - 1000, LOOPSTART, Decoder.Stream->duration, 0);
+
+
+
+        //                        State = FfccState.WAITING;
+        //                        if (BehindFrame())
+        //                        {
+        //                            timer.Restart();
+        //                        }
+        //                    }
+        //                    frame = *Decoder.Frame;
+        //                    return false;
+        //                }
+        //                else
+        //                {
+        //                    CheckReturn();
+        //                }
+        //            } while (Decoder.Packet->stream_index != Decoder.StreamIndex);
+
+
+        //            Return = ffmpeg.avcodec_send_packet(Decoder.CodecContext, Decoder.Packet);
+        //            //sent a eof when trying to loop once.
+        //            //should never get EOF here unless something is wrong.
+        //            if(Return == ffmpeg.AVERROR(ffmpeg.EAGAIN)) // there is still frames left in packet can't get a new packet.
+        //            {
+        //            //    //Return = ffmpeg.avcodec_receive_frame(Decoder.CodecContext, Decoder.Frame);
+        //            //    //CheckReturn();
+        //            //    //frame = *Decoder.Frame;
+        //            //    //return true;
+        //            }
+        //            else
+        //            CheckReturn();
+
+        //        }
+        //        finally
+        //        {
+        //            ffmpeg.av_packet_unref(Decoder.Packet);
+        //        }
+
+        //        Return = ffmpeg.avcodec_receive_frame(Decoder.CodecContext, Decoder.Frame);
+        //    } while (Return == ffmpeg.AVERROR(ffmpeg.EAGAIN));
+        //    CheckReturn();
+
+        //    frame = *Decoder.Frame;
+        //    return true;
+        //}
         public static int DecodeFlush(ref AVCodecContext* avctx, ref AVPacket avpkt)
         {
             avpkt.data = null;
