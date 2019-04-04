@@ -129,6 +129,7 @@ namespace FF8
         /// If true by the end of Update() will skip the next Draw()
         /// </summary>
         public static bool SuppressDraw { get; internal set; }
+        public static bool IsMouseVisible { get; internal set; } = false;
         #region modules
         public const int MODULE_BATTLE = 3;
         public const int MODULE_FIELD = 5;

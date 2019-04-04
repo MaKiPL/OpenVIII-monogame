@@ -38,7 +38,7 @@ namespace FF8
             for (int i = 0; i < 16; i++)
                 Memory.iconsTex[i] = tex.GetTexture(i);
             Memory.FieldHolder.FieldMemory = new int[1024];
-
+            
             base.Initialize();
         }
         protected override void LoadContent()
@@ -73,6 +73,8 @@ namespace FF8
                 SuppressDraw();
                 Memory.SuppressDraw = false;
             }
+
+            IsMouseVisible = Memory.IsMouseVisible;
 
         }
 
