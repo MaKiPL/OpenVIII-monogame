@@ -188,6 +188,11 @@ namespace FF8
                     ReadData();
                     break;
                 case BATTLEMODULE_DRAWGEOMETRY:
+                    if (Input.GetInputDelayed(Keys.OemTilde))
+                        DEBUGframe++;
+                    if (Input.GetInputDelayed(Keys.Tab))
+                        DEBUGframe--;
+                    FPSCamera();
                     break;
             }
         }
@@ -208,10 +213,6 @@ namespace FF8
         private static int DEBUGframe = 0;
         private static void DrawMonsters()
         {
-            if (Input.GetInputDelayed(Keys.OemTilde))
-                DEBUGframe++;
-            if (Input.GetInputDelayed(Keys.Tab))
-                DEBUGframe--;
             Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
             Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
             Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
@@ -303,24 +304,24 @@ namespace FF8
                 leftdistX = Input.Distance(maxMoveSpeed);
             }
 
-            if (Input.Button(Buttons.Up))//(Keyboard.GetState().IsKeyDown(Keys.W) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y > 0.0f)
+            if (Input.Button(Buttons.Up))
             {
                 camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees)) * leftdistY / 10;
                 camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees)) * leftdistY / 10;
                 camPosition.Y -= Yshift / 50;
             }
-            if (Input.Button(Buttons.Down))//(Keyboard.GetState().IsKeyDown(Keys.S) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y < 0.0f)
+            if (Input.Button(Buttons.Down))
             {
                 camPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees)) * leftdistY / 10;
                 camPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees)) * leftdistY / 10;
                 camPosition.Y += Yshift / 50;
             }
-            if (Input.Button(Buttons.Left))//(Keyboard.GetState().IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X < 0.0f)
+            if (Input.Button(Buttons.Left))
             {
                 camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees - 90)) * leftdistX / 10;
                 camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees - 90)) * leftdistX / 10;
             }
-            if (Input.Button(Buttons.Right))//(Keyboard.GetState().IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X > 0.0f)
+            if (Input.Button(Buttons.Right))
             {
                 camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees + 90)) * leftdistX / 10;
                 camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees + 90)) * leftdistX / 10;
@@ -346,7 +347,6 @@ namespace FF8
             ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
 
 
-            FPSCamera();
 
 
             effect.TextureEnabled = true;
@@ -473,6 +473,9 @@ namespace FF8
 
         private static void InitBattle()
         {
+            Input.OverrideLockMouse=true;
+            Input.CurrentMode = Input.MouseLockMode.Center;
+
             Init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
             int stage = enc.bScenario;
             battlename = $"a0stg{stage.ToString("000")}.x";

@@ -27,6 +27,7 @@ namespace FF8
             if (Input.Button(Buttons.Back)||Input.Button(Buttons.Cancel))
             {
                 Memory.module = Memory.MODULE_MAINMENU_DEBUG;
+                Module_main_menu_debug.Fade = 0.0f;
             }
 //#endif
 

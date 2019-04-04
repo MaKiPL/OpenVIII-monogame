@@ -1,17 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FF8
 {
-    public enum Buttons { Up, Down, Left, Right, Okay, Cancel, Exit, Switch, Menu, Back, Start, X, Y, B, A, L1, L2, L3, R1, R2, R3, Select, LeftStickX, LeftStickY, RightStickX, RightStickY, MouseX, MouseY, MouseXjoy, MouseYjoy, MouseLeft, MouseMiddle, MouseRight, Mouse4, Mouse5, MouseWheelup, MouseWheeldown}
+    public enum Buttons { Up, Down, Left, Right, Okay, Cancel, Exit, Switch, Menu, Back, Start, X, Y, B, A, L1, L2, L3, R1, R2, R3, Select, LeftStickX, LeftStickY, RightStickX, RightStickY, MouseX, MouseY, MouseXjoy, MouseYjoy, MouseLeft, MouseMiddle, MouseRight, Mouse4, Mouse5, MouseWheelup, MouseWheeldown }
 
-    class Input
+    internal class Input
     {
         //store current input states;
         private static GamePadState m_gp_state = new GamePadState();
@@ -28,8 +22,8 @@ namespace FF8
 
         private static bool bLimitInput;
         private static int msDelay = 0;
-        static readonly int msDelayLimit = 100;
-        
+        private static readonly int msDelayLimit = 100;
+
 
         public static bool GetInputDelayed(Keys key)
         {
@@ -53,19 +47,21 @@ namespace FF8
         private static void CheckInputLimit()
         {
             if (bLimitInput)
+            {
                 bLimitInput = (msDelay += Memory.gameTime.ElapsedGameTime.Milliseconds) < msDelayLimit;
+            }
         }
         public static void ResetInputLimit()
         {
             msDelay = 0;
             bLimitInput = true;
         }
-        private static bool IsPressed(Keys k,bool dblinput = false)
+        private static bool IsPressed(Keys k, bool dblinput = false)
         {
             //This function checks if the key on KB is pressed
             //if dblinput is false it makes sure the key wasn't pressed last time.
             bool boolRT = CurrentKBState.IsKeyDown(k);
-            if(!dblinput)
+            if (!dblinput)
             {
                 boolRT = boolRT && LastKBState.IsKeyUp(k);
             }
@@ -82,7 +78,7 @@ namespace FF8
             //This function checks if the button on controller is pressed
             //if dblinput is false it makes sure the button wasn't pressed last time.
             bool boolRT = false;
-            
+
             if (CurrentGPState.IsConnected)
             {
                 switch (b)
@@ -143,38 +139,41 @@ namespace FF8
                         break;
                 }
                 if (Memory.IsActive)
+                {
                     switch (b)
                     {
                         case Buttons.MouseXjoy:
-                    case Buttons.MouseYjoy:
-                        boolRT = Analog(b) != 0.0f;
-                        break;
-                    case Buttons.MouseX:
-                    case Buttons.MouseY:
-                        boolRT = Analog(b) != Analog(b, true);
-                        break;
-                    case Buttons.MouseLeft:
-                        boolRT = CurrentMState.LeftButton == ButtonState.Pressed;
-                        break;
-                    case Buttons.MouseMiddle:
-                        boolRT = CurrentMState.MiddleButton == ButtonState.Pressed;
-                        break;
-                    case Buttons.MouseRight:
-                        boolRT = CurrentMState.RightButton == ButtonState.Pressed;
-                        break;
-                    case Buttons.Mouse4:
-                        boolRT = CurrentMState.XButton1 == ButtonState.Pressed;
-                        break;
-                    case Buttons.Mouse5:
-                        boolRT = CurrentMState.XButton2 == ButtonState.Pressed;
-                        break;
-                    case Buttons.MouseWheelup:
-                        boolRT = CurrentMState.ScrollWheelValue > LastMState.ScrollWheelValue;
-                        break;
-                    case Buttons.MouseWheeldown:
-                        boolRT = CurrentMState.ScrollWheelValue < LastMState.ScrollWheelValue;
-                        break;
+                        case Buttons.MouseYjoy:
+                            boolRT = Analog(b) != 0.0f;
+                            break;
+                        case Buttons.MouseX:
+                        case Buttons.MouseY:
+                            boolRT = Analog(b) != Analog(b, true);
+                            break;
+                        case Buttons.MouseLeft:
+                            boolRT = CurrentMState.LeftButton == ButtonState.Pressed;
+                            break;
+                        case Buttons.MouseMiddle:
+                            boolRT = CurrentMState.MiddleButton == ButtonState.Pressed;
+                            break;
+                        case Buttons.MouseRight:
+                            boolRT = CurrentMState.RightButton == ButtonState.Pressed;
+                            break;
+                        case Buttons.Mouse4:
+                            boolRT = CurrentMState.XButton1 == ButtonState.Pressed;
+                            break;
+                        case Buttons.Mouse5:
+                            boolRT = CurrentMState.XButton2 == ButtonState.Pressed;
+                            break;
+                        case Buttons.MouseWheelup:
+                            boolRT = CurrentMState.ScrollWheelValue > LastMState.ScrollWheelValue;
+                            break;
+                        case Buttons.MouseWheeldown:
+                            boolRT = CurrentMState.ScrollWheelValue < LastMState.ScrollWheelValue;
+                            break;
+                    }
                 }
+
                 if (!dblinput && boolRT)
                 {
                     switch (b)
@@ -235,32 +234,38 @@ namespace FF8
                             break;
                     }
                     if (Memory.IsActive)
+                    {
                         switch (b)
                         {
-                        case Buttons.MouseXjoy:
-                        case Buttons.MouseYjoy:
-                            boolRT = Analog(b, true) == 0.0f;
-                            break;
-                        case Buttons.MouseLeft:
-                            boolRT = LastMState.LeftButton == ButtonState.Released;
-                            break;
-                        case Buttons.MouseMiddle:
-                            boolRT = LastMState.MiddleButton == ButtonState.Released;
-                            break;
-                        case Buttons.MouseRight:
-                            boolRT = LastMState.RightButton == ButtonState.Released;
-                            break;
-                        case Buttons.Mouse4:
-                            boolRT = LastMState.XButton1 == ButtonState.Released;
-                            break;
-                        case Buttons.Mouse5:
-                            boolRT = LastMState.XButton2 == ButtonState.Released;
-                            break;
+                            case Buttons.MouseXjoy:
+                            case Buttons.MouseYjoy:
+                                boolRT = Analog(b, true) == 0.0f;
+                                break;
+                            case Buttons.MouseLeft:
+                                boolRT = LastMState.LeftButton == ButtonState.Released;
+                                break;
+                            case Buttons.MouseMiddle:
+                                boolRT = LastMState.MiddleButton == ButtonState.Released;
+                                break;
+                            case Buttons.MouseRight:
+                                boolRT = LastMState.RightButton == ButtonState.Released;
+                                break;
+                            case Buttons.Mouse4:
+                                boolRT = LastMState.XButton1 == ButtonState.Released;
+                                break;
+                            case Buttons.Mouse5:
+                                boolRT = LastMState.XButton2 == ButtonState.Released;
+                                break;
+                        }
                     }
                 }
-                else boolRT = boolRT && !bLimitInput;
+                else
+                {
+                    boolRT = boolRT && !bLimitInput;
+                }
             }
-            if (boolRT) {
+            if (boolRT)
+            {
             }
             return boolRT;
         }
@@ -270,12 +275,12 @@ namespace FF8
             // for non analog controls
             return speed * Memory.gameTime.ElapsedGameTime.Milliseconds;
         }
-        public static float Distance(Buttons b, float speed,bool last = false)
+        public static float Distance(Buttons b, float speed, bool last = false)
         {
             // (speed * stickvalue) * time = distance
             // idea is you get the distance traveled per ms value
             // the speed being the max speed. your sticks value being the throttle.
-            return (speed * Analog(b,last)) * Memory.gameTime.ElapsedGameTime.Milliseconds;
+            return (speed * Analog(b, last)) * Memory.gameTime.ElapsedGameTime.Milliseconds;
         }
         public static float Analog(Buttons b, bool last = false)
         {
@@ -299,19 +304,21 @@ namespace FF8
                     case Buttons.R2:
                         return LastGPState.Triggers.Right;
                 }
-                if(Memory.IsActive)
-                switch(b)
-                { 
-                    case Buttons.MouseX:
-                        return LastMState.X;
-                    case Buttons.MouseY:
-                        return LastMState.Y;
-                    case Buttons.MouseXjoy:
-                        tmp = (LastMState.X - Memory.graphics.GraphicsDevice.Viewport.Bounds.Width / 2) / (50f);
-                        return MathHelper.Clamp(tmp, -1f, 1f);
-                    case Buttons.MouseYjoy:
-                        tmp = (Memory.graphics.GraphicsDevice.Viewport.Bounds.Height / 2 - LastMState.Y) / (50f);
-                        return MathHelper.Clamp(tmp, -1f, 1f);
+                if (Memory.IsActive)
+                {
+                    switch (b)
+                    {
+                        case Buttons.MouseX:
+                            return LastMState.X;
+                        case Buttons.MouseY:
+                            return LastMState.Y;
+                        case Buttons.MouseXjoy:
+                            tmp = (LastMState.X - Memory.graphics.GraphicsDevice.Viewport.Bounds.Width / 2) / (50f);
+                            return MathHelper.Clamp(tmp, -1f, 1f);
+                        case Buttons.MouseYjoy:
+                            tmp = (Memory.graphics.GraphicsDevice.Viewport.Bounds.Height / 2 - LastMState.Y) / (50f);
+                            return MathHelper.Clamp(tmp, -1f, 1f);
+                    }
                 }
             }
             else
@@ -331,44 +338,50 @@ namespace FF8
                     case Buttons.R2:
                         return CurrentGPState.Triggers.Right;
                 }
-                if(Memory.IsActive)
-                switch(b)
-                { 
-                    case Buttons.MouseX:
-                        return LastMState.X;
-                    case Buttons.MouseY:
-                        return LastMState.Y;
-                    case Buttons.MouseXjoy:
-                        tmp = (CurrentMState.X -Memory.graphics.GraphicsDevice.Viewport.Bounds.Width / 2) / (50f);
-                        return MathHelper.Clamp(tmp,-1f,1f);
-                    case Buttons.MouseYjoy:
-                        tmp = (Memory.graphics.GraphicsDevice.Viewport.Bounds.Height / 2 - CurrentMState.Y) / (50f);
-                        return MathHelper.Clamp(tmp, -1f, 1f);
+                if (Memory.IsActive)
+                {
+                    switch (b)
+                    {
+                        case Buttons.MouseX:
+                            return LastMState.X;
+                        case Buttons.MouseY:
+                            return LastMState.Y;
+                        case Buttons.MouseXjoy:
+                            tmp = (CurrentMState.X - Memory.graphics.GraphicsDevice.Viewport.Bounds.Width / 2) / (50f);
+                            return MathHelper.Clamp(tmp, -1f, 1f);
+                        case Buttons.MouseYjoy:
+                            tmp = (Memory.graphics.GraphicsDevice.Viewport.Bounds.Height / 2 - CurrentMState.Y) / (50f);
+                            return MathHelper.Clamp(tmp, -1f, 1f);
+                    }
                 }
             }
             return 0.0f;
         }
-        private static bool lockMouse = true;
-        public static bool ToggleLockMouse()
+        public static MouseLockMode CurrentMode;
+
+        public static bool OverrideLockMouse { get; set; } = false;
+
+        public enum MouseLockMode
         {
-            // true = center lock; false = clamp to viewport;
-            return lockMouse = !lockMouse;
+            Center,
+            Screen
         }
         public static void LockMouse()
         {
-            if (Memory.IsActive) // check for focus to allow for tabbing out with out taking over mouse.
+            if (Memory.IsActive && OverrideLockMouse) // check for focus to allow for tabbing out with out taking over mouse.
             {
-                if (lockMouse) //center mouse in screen after grabbing state, release mouse if alt tabbed out.
+                if (CurrentMode == MouseLockMode.Center) //center mouse in screen after grabbing state, release mouse if alt tabbed out.
+                {
                     Mouse.SetPosition(Memory.graphics.GraphicsDevice.Viewport.Bounds.Width / 2, Memory.graphics.GraphicsDevice.Viewport.Bounds.Height / 2);
-                else //alt lock that clamps to viewport every frame. would be useful if using mouse to navigate menus and stuff.
+                }
+                else if (CurrentMode == MouseLockMode.Screen) //alt lock that clamps to viewport every frame. would be useful if using mouse to navigate menus and stuff.
+                {
                     //there is a better way to clamp as if you move mouse fast enough it will escape for a short time.
                     Mouse.SetPosition(
                         MathHelper.Clamp(CurrentMState.X, 0, Memory.graphics.GraphicsDevice.Viewport.Bounds.Width),
                         MathHelper.Clamp(CurrentMState.Y, 0, Memory.graphics.GraphicsDevice.Viewport.Bounds.Height));
-                
+                }
             }
-
-            
         }
         public static bool Button(Keys k, bool dblinput = false)
         {
@@ -382,13 +395,13 @@ namespace FF8
             switch (b)
             {
                 case Buttons.Up:
-                    return (IsPressed(Keys.Up,true) || IsPressed(Buttons.MouseWheelup) || IsPressed(Keys.W, true) || (CurrentGPState.IsConnected && (IsPressed(b,true) || Analog(Buttons.LeftStickY) > 0.0f))) && !bLimitInput;
+                    return (IsPressed(Keys.Up, true) || IsPressed(Buttons.MouseWheelup) || IsPressed(Keys.W, true) || (CurrentGPState.IsConnected && (IsPressed(b, true) || Analog(Buttons.LeftStickY) > 0.0f))) && !bLimitInput;
                 case Buttons.Down:
-                    return (IsPressed(Keys.Down,true) || IsPressed(Buttons.MouseWheeldown) || IsPressed(Keys.S, true) || (CurrentGPState.IsConnected && (IsPressed(b,true) || Analog(Buttons.LeftStickY) < 0.0f))) && !bLimitInput;
+                    return (IsPressed(Keys.Down, true) || IsPressed(Buttons.MouseWheeldown) || IsPressed(Keys.S, true) || (CurrentGPState.IsConnected && (IsPressed(b, true) || Analog(Buttons.LeftStickY) < 0.0f))) && !bLimitInput;
                 case Buttons.Left:
-                    return (IsPressed(Keys.Left,true) || IsPressed(Keys.A, true) || (CurrentGPState.IsConnected && (IsPressed(b,true) || Analog(Buttons.LeftStickX) < 0.0f))) && !bLimitInput;
+                    return (IsPressed(Keys.Left, true) || IsPressed(Keys.A, true) || (CurrentGPState.IsConnected && (IsPressed(b, true) || Analog(Buttons.LeftStickX) < 0.0f))) && !bLimitInput;
                 case Buttons.Right:
-                    return (IsPressed(Keys.Right,true) || IsPressed(Keys.D, true) || (CurrentGPState.IsConnected && (IsPressed(b,true) || Analog(Buttons.LeftStickX) > 0.0f))) && !bLimitInput;
+                    return (IsPressed(Keys.Right, true) || IsPressed(Keys.D, true) || (CurrentGPState.IsConnected && (IsPressed(b, true) || Analog(Buttons.LeftStickX) > 0.0f))) && !bLimitInput;
                 case Buttons.Okay:
                     return IsPressed(Keys.Enter, dblinput) || IsPressed(Buttons.B, dblinput) || IsPressed(Buttons.MouseLeft);
                 case Buttons.Cancel:

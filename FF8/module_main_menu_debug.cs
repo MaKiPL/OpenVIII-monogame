@@ -43,7 +43,7 @@ namespace FF8
         private static string debug_choosedMusic = Path.GetFileNameWithoutExtension(Memory.dicMusic[0][0]);
         private static int debug_fieldPointer = 90;
         private static int debug_moviePointer = 0;
-        private static float Fade;
+        public static float Fade;
         private static float fScaleHeight;
         private static float fScaleWidth;
         private static Texture2D start00;
@@ -480,6 +480,7 @@ namespace FF8
             Module_movie_test.Index = 30;
             Module_movie_test.ReturnState = Memory.MODULE_FIELD_DEBUG;
             Memory.module = Memory.MODULE_MOVIETEST;
+            State = MainMenuStates.MainLobby;
         }
 
         /// <summary>
