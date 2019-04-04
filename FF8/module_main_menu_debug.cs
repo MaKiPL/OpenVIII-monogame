@@ -245,7 +245,6 @@ namespace FF8
             {
                 Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
-                //Mchoose = Mchoose >= (Mitems)Enum.GetValues(typeof(Mitems)).Cast<int>().Max() ? 0 : Mchoose + 1;
                 Mchoose++;
                 ret = true;
             }
@@ -254,7 +253,6 @@ namespace FF8
                 Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 Mchoose--;
-                //Mchoose = Mchoose <= 0 ? (Mitems)Enum.GetValues(typeof(Mitems)).Cast<int>().Max() : Mchoose - 1;
                 ret = true;
             }
             if (Input.Button(Buttons.Okay))
