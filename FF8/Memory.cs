@@ -67,10 +67,7 @@ namespace FF8
         }
         public static string[] musices;
         public static readonly Dictionary<ushort, List<string>> dicMusic = new Dictionary<ushort, List<string>>(); //ogg and sgt files have same 3 digit prefix.
-        public static void SpriteBatchStartStencil()
-        {
-            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, null, graphics.GraphicsDevice.DepthStencilState);
-        }
+        public static void SpriteBatchStartStencil() => spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, null, graphics.GraphicsDevice.DepthStencilState);
 
         public static void SpriteBatchStartAlpha() => spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
 
@@ -128,6 +125,10 @@ namespace FF8
                 return gooddir;
             }
         }
+        /// <summary>
+        /// If true by the end of Update() will skip the next Draw()
+        /// </summary>
+        public static bool SuppressDraw { get; internal set; }
         #region modules
         public const int MODULE_BATTLE = 3;
         public const int MODULE_FIELD = 5;
@@ -894,14 +895,6 @@ namespace FF8
             byte byteAbove1023; //[Above 1023]Temporary variables used pretty much everywhere.
         }
 */
-        #endregion
-        #region MainMenuData
-        public static string[] MainMenuLines =
-        {
-            "NEW GAME",
-            "Continue",
-            "OpenVIII debug tools"//"DEBUG!"
-        };
         #endregion
 
         public static class Archives

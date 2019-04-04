@@ -400,7 +400,7 @@ namespace FF8
                         }
 
                         SoundChannels[CurrentSoundChannel] = new Ffcc(fileStream.GetBuffer(), (int)fileStream.Length, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
-                        SoundChannels[CurrentSoundChannel++].PlaySound();
+                        SoundChannels[CurrentSoundChannel++].Play();
 
                     }
                 }
@@ -481,7 +481,7 @@ namespace FF8
                 ////zplay.StartPlayback();
                 ////SoundEffect se = new SoundEffect(sfxBuffer, 22050, AudioChannels.Mono);
                 ////sei.Play();
-                ////se.Play(1.0f, 0.0f, 0.0f);
+                ////ffccMusic.SoundEffect.Play(1.0f, 0.0f, 0.0f);
                 ////se.Dispose();
             }
         }
@@ -495,9 +495,9 @@ namespace FF8
         internal static void Update()
         {
             //checks to see if music buffer is running low and getframe triggers a refill.
-            if (ffccMusic != null && !ffccMusic.AheadFrame())
+            if (ffccMusic != null && !ffccMusic.Ahead)
             {
-                ffccMusic.GetFrame();
+                ffccMusic.Next();
             }
         }
         //callable test
@@ -602,7 +602,7 @@ namespace FF8
                 case ".ogg":
                     //ffccMusic = new Ffcc(@"c:\eyes_on_me.wav", AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
                     ffccMusic = new Ffcc(pt, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
-                    ffccMusic.PlaySound();
+                    ffccMusic.Play(.5f);
                     break;
                 case ".sgt":
 
@@ -695,7 +695,7 @@ namespace FF8
             //}
             for (int i = 0; i < MaxSoundChannels; i++)
             {
-                if (SoundChannels[i] != null)
+                if (SoundChannels[i] != null && !SoundChannels[i].isDisposed)
                 {
                     SoundChannels[i].Dispose();
                     SoundChannels[i] = null;

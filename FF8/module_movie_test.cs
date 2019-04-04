@@ -12,11 +12,12 @@ namespace FF8
     {
         private const int STATE_INIT = 0;
         private const int STATE_CLEAR = 1;
-        private const int STATE_PLAYING = 2;
-        private const int STATE_PAUSED = 3;
-        private const int STATE_FINISHED = 4;
-        private const int STATE_RETURN = 5;
-        private const int STATE_RESET = 6;
+        private const int STATE_STARTPLAY = 2;
+        private const int STATE_PLAYING = 3;
+        private const int STATE_PAUSED = 4;
+        private const int STATE_FINISHED = 5;
+        private const int STATE_RETURN = 6;
+        private const int STATE_RESET = 7;
 
         private static readonly string[] movieDirs = {
             MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../movies")), //this folder has most movies
@@ -88,21 +89,47 @@ namespace FF8
                     break;
                 case STATE_CLEAR:
                     break;
-                case STATE_PLAYING:
-                    if (Ffccaudio != null && !Ffccaudio.AheadFrame())
-                    {
-                        // if we are behind the timer get the next frame of audio.
-                        Ffccaudio.GetFrame(); //might not be doing anything
-                    }
+                case STATE_STARTPLAY:
+                    MovieState++;
                     if (Ffccaudio != null)
                     {
-                        Ffccaudio.PlaySound();
+                        Ffccaudio.Play();
                     }
                     if (Ffccvideo != null)
                     {
-                        Ffccvideo.PlaySound();
+                        Ffccvideo.Play();
                     }
-
+                    break;
+                case STATE_PLAYING:
+                    if (Ffccaudio != null && !Ffccaudio.Ahead)
+                    {
+                        // if we are behind the timer get the next frame of audio.
+                        Ffccaudio.Next();
+                    }
+                    if (Ffccvideo.Behind)
+                    {
+                        if (Ffccvideo.Next() < 0)
+                        {
+                            MovieState = STATE_FINISHED;
+                            Memory.SuppressDraw = true;
+                            break;
+                        }
+                        else if (frameTex != null)
+                        {
+                            frameTex.Dispose();
+                            GC.Collect();
+                            GC.WaitForPendingFinalizers();
+                            frameTex = null;
+                        }
+                    }
+                    else
+                    {
+                        Memory.SuppressDraw = true;
+                    }
+                    if (frameTex == null)
+                    {
+                        frameTex = Ffccvideo.Texture2D();
+                    }
                     break;
                 case STATE_PAUSED:
                     //todo add a function to pause sound
@@ -172,6 +199,7 @@ namespace FF8
                     MovieState++;
                     ClearScreen();
                     break;
+                case STATE_STARTPLAY:                    
                 case STATE_PLAYING:
                     PlayingDraw();
                     break;
@@ -187,8 +215,6 @@ namespace FF8
                 default:
                     break;
             }
-
-            //}
         }
         private static void ClearScreen()
         {
@@ -200,8 +226,7 @@ namespace FF8
 
             if (frameTex != null)
             {
-                //Memory.SpriteBatchStartStencil();
-                Memory.SpriteBatchStartAlpha();
+                Memory.SpriteBatchStartStencil();
                 Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
                 Memory.SpriteBatchEnd();
             }
@@ -212,36 +237,15 @@ namespace FF8
         //private static Bitmap Frame { get => frame; set { lastframe = frame; frame = value; } }
         private static void PlayingDraw()
         {
-
-            if (Ffccvideo.BehindFrame())
-            {
-                if (Ffccvideo.GetFrame() < 0)
-                {
-                    MovieState = STATE_FINISHED;
-                    return;
-                }
-                if (frameTex != null)
-                {
-                    frameTex.Dispose();
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                    frameTex = null;
-                }
-            }
             if (frameTex == null)
             {
-                frameTex = Ffccvideo.FrameToTexture2D();
+                return;
             }
-
-
-
-
             //draw frame;
             Memory.SpriteBatchStartStencil();
             Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
             Memory.SpriteBatchEnd();
-            //backup previous frame. use if new frame unavailble
-
+            
         }
     }
 }

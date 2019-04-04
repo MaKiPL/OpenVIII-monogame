@@ -9,8 +9,74 @@ namespace FF8
 {
     internal static class Module_main_menu_debug
     {
-        enum MainMenuStates
+        #region Fields
+
+        /// <summary>
+        /// Strings for the debug menu
+        /// </summary>
+        private static readonly Dictionary<Ditems, string> strDebugLobby = new Dictionary<Ditems, string>()
         {
+            { Ditems.Reset, "Reset Main Menu state"},
+            { Ditems.Overture, "Play Overture"},
+            { Ditems.Battle, "Battle encounter: {0}"},
+            { Ditems.Feild, "Field debug render: {0}"},
+            { Ditems.Movie, "Movie debug render: {0}"},
+            { Ditems.Music, "Play/Stop music : {0}"},
+            { Ditems.Sounds, "Play audio.dat: {0}"},
+            { Ditems.World, "Jump to World Map"}
+        };
+
+        /// <summary>
+        /// Strings for the main menu
+        /// </summary>
+        private static readonly Dictionary<Mitems, string> strMainLobby = new Dictionary<Mitems, string>()
+        {
+            { Mitems.New, "NEW GAME" },
+            { Mitems.Load, "Continue" },
+            { Mitems.Debug, "OpenVIII debug tools" }
+        };
+
+        private static Ditems s_dchoose;
+        private static int debug_choosedBS, debug_choosedAudio;
+        private static string debug_choosedField = Memory.FieldHolder.fields[debug_fieldPointer];
+        private static string debug_choosedMovie = Path.GetFileNameWithoutExtension(Module_movie_test.Movies[debug_moviePointer]);
+        private static string debug_choosedMusic = Path.GetFileNameWithoutExtension(Memory.dicMusic[0][0]);
+        private static int debug_fieldPointer = 90;
+        private static int debug_moviePointer = 0;
+        private static float Fade;
+        private static float fScaleHeight;
+        private static float fScaleWidth;
+        private static Texture2D start00;
+        private static Texture2D start01;
+        private static MainMenuStates State = 0;
+        private static int vpHeight;
+        private static int vpWidth;
+        private static Mitems s_mchoose;
+
+        #endregion Fields
+
+        #region Enums
+        /// <summary>
+        /// Identifiers and Ordering of debug menu items
+        /// </summary>
+        private enum Ditems
+        {
+            Reset,
+            Overture,
+            Battle,
+            Feild,
+            Movie,
+            Music,
+            Sounds,
+            World
+        }
+
+        /// <summary>
+        /// What state the menus are in.
+        /// </summary>
+        private enum MainMenuStates
+        {
+            Init,
             MainLobby,
             NewGameChoosed,
             LoadGameLoading,
@@ -18,29 +84,65 @@ namespace FF8
             DebugScreen
         }
 
-        private static MainMenuStates State = 0;
-        private static float Fade;
-        private static Texture2D start00;
-        private static Texture2D start01;
+        /// <summary>
+        /// Identifiers and Ordering of main menu items
+        /// </summary>
+        private enum Mitems
+        {
+            New,
+            Load,
+            Debug
+        }
 
-        private static readonly float[] choiseHeights = { 0.35f, 0.40f, 0.45f };
+        #endregion Enums
 
-        private static int debug_choosedBS, debug_choosedAudio;
+        #region Properties
 
+        /// <summary>
+        /// Current choice on main menu
+        /// </summary>
+        private static Mitems Mchoose
+        {
+            get => s_mchoose;
+            set
+            {
+                if (value > s_mchoose && value > (Mitems)Enum.GetValues(typeof(Mitems)).Cast<int>().Max())
+                {
+                    value = 0;
+                }
+                else if (value < s_mchoose && s_mchoose <= 0)
+                {
+                    value = (Mitems)Enum.GetValues(typeof(Mitems)).Cast<int>().Max();
+                }
+                s_mchoose = value;
+            }
+        }
 
+        /// <summary>
+        /// Current choice on debug menu
+        /// </summary>
+        private static Ditems Dchoose
+        {
+            get => s_dchoose; set
+            {
+                if (value > s_dchoose && value > (Ditems)Enum.GetValues(typeof(Ditems)).Cast<int>().Max())
+                {
+                    value = 0;
+                }
+                else if (value < s_dchoose && s_dchoose <= 0)
+                {
+                    value = (Ditems)Enum.GetValues(typeof(Ditems)).Cast<int>().Max();
+                }
+                s_dchoose = value;
+            }
+        }
 
-        private static int debug_fieldPointer = 90, availableOptions = 9;
-        private static Mitems Mchoose;
-        private static Ditems Dchoose;
-
-        private static string debug_choosedField = Memory.FieldHolder.fields[debug_fieldPointer];
-
-        private static int debug_moviePointer = 0;
-        private static string debug_choosedMovie = Path.GetFileNameWithoutExtension(Module_movie_test.Movies[debug_moviePointer]);
-        private static string debug_choosedMusic = Path.GetFileNameWithoutExtension(Memory.dicMusic[0][0]);
+        /// <summary>
+        /// Currently selected Field
+        /// </summary>
         public static int FieldPointer
         {
-            get { return debug_fieldPointer; }
+            get => debug_fieldPointer;
             set
             {
                 if (value >= Memory.FieldHolder.fields.Length)
@@ -57,9 +159,13 @@ namespace FF8
                 debug_choosedField = Memory.FieldHolder.fields[value];
             }
         }
+
+        /// <summary>
+        /// Currently selected Movie
+        /// </summary>
         public static int MoviePointer
         {
-            get { return debug_moviePointer; }
+            get => debug_moviePointer;
             set
             {
                 if (value >= Module_movie_test.Movies.Count)
@@ -77,233 +183,79 @@ namespace FF8
             }
         }
 
+        #endregion Properties
+
+        #region Methods
+
+        /// <summary>
+        /// Triggers functions depending on state
+        /// </summary>
         internal static void Update()
         {
             switch (State)
             {
+                case MainMenuStates.Init:
+                    State++;
+                    Init();
+                    break;
+
                 case MainMenuStates.MainLobby:
-                    LobbyUpdate();
+                    if (!UpdateMainLobby() && (Fade >= 1f || Fade < 0))
+                    {
+                        Memory.SuppressDraw = true;
+                    }
+
                     break;
+
                 case MainMenuStates.DebugScreen:
-                    DebugUpdate();
+                    if (!UpdateDebugLobby() && (Fade >= 1f || Fade < 0))
+                    {
+                        Memory.SuppressDraw = true;
+                    }
+
                     break;
+
                 case MainMenuStates.NewGameChoosed:
-                    NewGameUpdate();
+                    UpdateNewGame();
                     break;
+
                 case MainMenuStates.LoadGameLoading:
                     break;
+
                 case MainMenuStates.LoadGameScreen:
                     break;
+
                 default:
                     goto case 0;
             }
-        }
-
-        private static void NewGameUpdate()
-        {
-            if (Fade > 0.0f)
+            if (Fade < 1.0f && State != MainMenuStates.NewGameChoosed)
             {
-                return;
+                Fade += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 3;
             }
-            /*reverse engineering notes:
-* 
-* we should happen to reset wm2field values
-* also the basic party of Squall is now set: SG_PARTY_FIELD1 = 0, and other members are 0xFF
-*/
-            FieldPointer = 74; //RE: startup stage ID is hardcoded. Probably we would want to change it for modding
-            //the module changes to 1 now
-            Module_field_debug.ResetField();
-
-            Module_movie_test.Index = 30;
-            Module_movie_test.ReturnState = Memory.MODULE_FIELD_DEBUG;
-            Memory.module = Memory.MODULE_MOVIETEST;
         }
 
-        private static void DebugUpdate()
+        /// <summary>
+        /// Update Main Lobby
+        /// </summary>
+        /// <returns>true on change</returns>
+        private static bool UpdateMainLobby()
         {
-
-            //if (bLimitInput)
-            //    bLimitInput = (Input.msDelay += Memory.gameTime.ElapsedGameTime.Milliseconds) < Input.msDelayLimit;
-
-
+            bool ret = false;
             if (Input.Button(Buttons.Down))
             {
                 Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
-                Dchoose = Dchoose >= (Ditems)Enum.GetValues(typeof(Ditems)).Cast<int>().Max() ? 0 : Dchoose + 1;
+                //Mchoose = Mchoose >= (Mitems)Enum.GetValues(typeof(Mitems)).Cast<int>().Max() ? 0 : Mchoose + 1;
+                Mchoose++;
+                ret = true;
             }
             if (Input.Button(Buttons.Up))
             {
                 Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
-                Dchoose = Dchoose <= 0 ? (Ditems)Enum.GetValues(typeof(Ditems)).Cast<int>().Max() : Dchoose - 1;
-            }
-            if (Input.Button(Buttons.Okay) && Dchoose == Ditems.Reset || Input.Button(Buttons.Cancel))
-            {
-                Input.ResetInputLimit();
-                init_debugger_Audio.PlaySound(8);
-                init_debugger_Audio.StopAudio();
-                Dchoose = 0;
-                Fade = 0.0f;
-                State = MainMenuStates.MainLobby;
-
-            }
-            else if (Input.Button(Buttons.Okay))
-            {
-                Input.ResetInputLimit();
-                if (Ditems.Sounds != Dchoose)
-                {
-                    init_debugger_Audio.PlaySound(0);
-                }
-
-                switch (Dchoose)
-                {
-                    case Ditems.Overture:
-                        Dchoose = 0;
-                        Fade = 0.0f;
-                        State = MainMenuStates.MainLobby;
-                        Module_overture_debug.ResetModule();
-                        Memory.module = Memory.MODULE_OVERTURE_DEBUG;
-                        break;
-                    case Ditems.Feild:
-                        Module_field_debug.ResetField();
-                        Memory.module = Memory.MODULE_FIELD_DEBUG;
-                        break;
-                    case Ditems.Music:
-                        Module_field_debug.ResetField();
-                        init_debugger_Audio.PlayStopMusic();
-                        break;
-                    case Ditems.Battle:
-                        Memory.battle_encounter = debug_choosedBS;
-                        Module_battle_debug.ResetState();
-                        Memory.module = Memory.MODULE_BATTLE_DEBUG;
-                        break;
-                    //case Ditems.MusicStop:
-                    //    init_debugger_Audio.StopAudio();
-                    //    break;
-                    case Ditems.Sounds:
-                        init_debugger_Audio.PlaySound(debug_choosedAudio);
-                        break;
-                    case Ditems.Movie:
-                        Fade = 0.0f;
-                        MoviePointer = MoviePointer; //makes movieindex in player match the moviepointer, it is set when ever this is.
-                        Memory.module = Memory.MODULE_MOVIETEST;
-                        Module_movie_test.MovieState = 0;
-                        break;
-                    case Ditems.World:
-                        Memory.module = Memory.MODULE_WORLD_DEBUG;
-                        break;
-                }
-            }
-            else if (Input.Button(Buttons.Left))
-            {
-                Input.ResetInputLimit();
-                init_debugger_Audio.PlaySound(0);
-                switch (Dchoose)
-                {
-                    case Ditems.Sounds:
-                        if (debug_choosedAudio > 0)
-                        {
-                            debug_choosedAudio--;
-                        }
-
-                        break;
-                    case Ditems.Battle:
-                        if (debug_choosedBS <= 0)
-                        {
-                            return;
-                        }
-
-                        debug_choosedBS--;
-                        break;
-                    case Ditems.Feild:
-                        FieldPointer--;
-                        break;
-                    case Ditems.Movie:
-                        MoviePointer--;
-                        break;
-                    case Ditems.Music:
-                    //case Ditems.MusicPrev:
-
-                        if (Memory.MusicIndex <= ushort.MinValue)
-                        {
-                            Memory.MusicIndex = ushort.MaxValue;
-                        }
-                        else
-                        {
-                            Memory.MusicIndex--;
-                        }
-                        debug_choosedMusic = Path.GetFileNameWithoutExtension(Memory.dicMusic[Memory.MusicIndex][0]);
-                        //init_debugger_Audio.PlayMusic();
-                        break;
-                }
-            }
-            else if (Input.Button(Buttons.Right))
-            {
-                Input.ResetInputLimit();
-                init_debugger_Audio.PlaySound(0);
-                switch (Dchoose)
-                {
-                    case Ditems.Sounds:
-                        if (debug_choosedAudio < init_debugger_Audio.soundEntriesCount)
-                        {
-                            debug_choosedAudio++;
-                        }
-
-                        break;
-                    case Ditems.Battle:
-                        if (debug_choosedBS < Memory.encounters.Length)
-                        {
-                            debug_choosedBS++;
-                        }
-
-                        break;
-
-                    case Ditems.Feild:
-                        FieldPointer++;
-                        break;
-                    case Ditems.Movie:
-                        MoviePointer++;
-                        break;
-                    case Ditems.Music:
-                    //case Ditems.MusicNext:
-                        if (Memory.MusicIndex >= ushort.MaxValue || Memory.MusicIndex >= Memory.dicMusic.Keys.Max())
-                        {
-                            Memory.MusicIndex = 0;
-                        }
-                        else
-                        {
-                            Memory.MusicIndex++;
-                        }
-                        debug_choosedMusic  = Path.GetFileNameWithoutExtension(Memory.dicMusic[Memory.MusicIndex][0]);
-                        //init_debugger_Audio.PlayMusic();
-                        break;
-                }
-            }
-        }
-        private static void LobbyUpdate()
-        {
-            if (start00 == null)
-            {
-                start00 = GetTexture(0);
-            }
-
-            if (start01 == null)
-            {
-                start01 = GetTexture(1);
-            }
-
-            if (Input.Button(Buttons.Down))
-            {
-                Input.ResetInputLimit();
-                init_debugger_Audio.PlaySound(0);
-                Mchoose = Mchoose >= (Mitems)Enum.GetValues(typeof(Mitems)).Cast<int>().Max() ? 0 : Mchoose + 1;
-            }
-            if (Input.Button(Buttons.Up))
-            {
-                Input.ResetInputLimit();
-                init_debugger_Audio.PlaySound(0);
-                Mchoose = Mchoose <= 0 ? (Mitems)Enum.GetValues(typeof(Mitems)).Cast<int>().Max() : Mchoose - 1;
+                Mchoose--;
+                //Mchoose = Mchoose <= 0 ? (Mitems)Enum.GetValues(typeof(Mitems)).Cast<int>().Max() : Mchoose - 1;
+                ret = true;
             }
             if (Input.Button(Buttons.Okay))
             {
@@ -323,11 +275,236 @@ namespace FF8
                         Mchoose = 0;
                         Dchoose = 0;
                         State = MainMenuStates.DebugScreen;
+                        Fade = 0.0f;
+                        break;
+                }
+                ret = true;
+            }
+            return ret;
+        }
+
+        /// <summary>
+        /// Update Debug Menu
+        /// </summary>
+        /// <returns>true on change</returns>
+        private static bool UpdateDebugLobby()
+        {
+            bool ret = false;
+            if (Input.Button(Buttons.Down))
+            {
+                Input.ResetInputLimit();
+                init_debugger_Audio.PlaySound(0);
+                Dchoose++;
+                ret = true;
+            }
+            if (Input.Button(Buttons.Up))
+            {
+                Input.ResetInputLimit();
+                init_debugger_Audio.PlaySound(0);
+                Dchoose--;
+                ret = true;
+            }
+            if (Input.Button(Buttons.Okay) && Dchoose == Ditems.Reset || Input.Button(Buttons.Cancel))
+            {
+                Input.ResetInputLimit();
+                init_debugger_Audio.PlaySound(8);
+                init_debugger_Audio.StopAudio();
+                Dchoose = 0;
+                Fade = 0.0f;
+                State = MainMenuStates.MainLobby;
+                ret = true;
+            }
+            else if (Input.Button(Buttons.Okay))
+            {
+                ret = true;
+                Input.ResetInputLimit();
+                if (Ditems.Sounds != Dchoose)
+                {
+                    init_debugger_Audio.PlaySound(0);
+                }
+
+                switch (Dchoose)
+                {
+                    case Ditems.Overture:
+                        Dchoose = 0;
+                        Fade = 0.0f;
+                        State = MainMenuStates.MainLobby;
+                        Module_overture_debug.ResetModule();
+                        Memory.module = Memory.MODULE_OVERTURE_DEBUG;
+                        break;
+
+                    case Ditems.Feild:
+                        Module_field_debug.ResetField();
+                        Memory.module = Memory.MODULE_FIELD_DEBUG;
+                        break;
+
+                    case Ditems.Music:
+                        Module_field_debug.ResetField();
+                        init_debugger_Audio.PlayStopMusic();
+                        break;
+
+                    case Ditems.Battle:
+                        Memory.battle_encounter = debug_choosedBS;
+                        Module_battle_debug.ResetState();
+                        Memory.module = Memory.MODULE_BATTLE_DEBUG;
+                        break;
+
+                    case Ditems.Sounds:
+                        init_debugger_Audio.PlaySound(debug_choosedAudio);
+                        break;
+
+                    case Ditems.Movie:
+                        Fade = 0.0f;
+                        MoviePointer = MoviePointer; //makes movieindex in player match the moviepointer, it is set when ever this is.
+                        Memory.module = Memory.MODULE_MOVIETEST;
+                        Module_movie_test.MovieState = 0;
+                        break;
+
+                    case Ditems.World:
+                        Memory.module = Memory.MODULE_WORLD_DEBUG;
                         break;
                 }
             }
+            else if (Input.Button(Buttons.Left))
+            {
+                ret = true;
+                Input.ResetInputLimit();
+                init_debugger_Audio.PlaySound(0);
+                switch (Dchoose)
+                {
+                    case Ditems.Sounds:
+                        if (debug_choosedAudio > 0)
+                        {
+                            debug_choosedAudio--;
+                        }
+
+                        break;
+
+                    case Ditems.Battle:
+                        if (debug_choosedBS <= 0)
+                        {
+                            return false;
+                        }
+
+                        debug_choosedBS--;
+                        break;
+
+                    case Ditems.Feild:
+                        FieldPointer--;
+                        break;
+
+                    case Ditems.Movie:
+                        MoviePointer--;
+                        break;
+
+                    case Ditems.Music:
+
+                        if (Memory.MusicIndex <= ushort.MinValue)
+                        {
+                            Memory.MusicIndex = ushort.MaxValue;
+                        }
+                        else
+                        {
+                            Memory.MusicIndex--;
+                        }
+                        debug_choosedMusic = Path.GetFileNameWithoutExtension(Memory.dicMusic[Memory.MusicIndex][0]);
+                        break;
+                }
+            }
+            else if (Input.Button(Buttons.Right))
+            {
+                ret = true;
+                Input.ResetInputLimit();
+                init_debugger_Audio.PlaySound(0);
+                switch (Dchoose)
+                {
+                    case Ditems.Sounds:
+                        if (debug_choosedAudio < init_debugger_Audio.soundEntriesCount)
+                        {
+                            debug_choosedAudio++;
+                        }
+
+                        break;
+
+                    case Ditems.Battle:
+                        if (debug_choosedBS < Memory.encounters.Length)
+                        {
+                            debug_choosedBS++;
+                        }
+
+                        break;
+
+                    case Ditems.Feild:
+                        FieldPointer++;
+                        break;
+
+                    case Ditems.Movie:
+                        MoviePointer++;
+                        break;
+
+                    case Ditems.Music:
+                        //case Ditems.MusicNext:
+                        if (Memory.MusicIndex >= ushort.MaxValue || Memory.MusicIndex >= Memory.dicMusic.Keys.Max())
+                        {
+                            Memory.MusicIndex = 0;
+                        }
+                        else
+                        {
+                            Memory.MusicIndex++;
+                        }
+                        debug_choosedMusic = Path.GetFileNameWithoutExtension(Memory.dicMusic[Memory.MusicIndex][0]);
+                        //init_debugger_Audio.PlayMusic();
+                        break;
+                }
+            }
+            return ret;
         }
 
+        /// <summary>
+        /// Waits for fade to end then triggers new game.
+        /// </summary>
+        private static void UpdateNewGame()
+        {
+            if (Fade > 0.0f)
+            {
+                Fade -= Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f / 2;
+                return;
+            }
+            /*reverse engineering notes:
+            *
+            * we should happen to reset wm2field values
+            * also the basic party of Squall is now set: SG_PARTY_FIELD1 = 0, and other members are 0xFF
+            */
+            FieldPointer = 74; //RE: startup stage ID is hardcoded. Probably we would want to change it for modding
+            //the module changes to 1 now
+            Module_field_debug.ResetField();
+
+            Module_movie_test.Index = 30;
+            Module_movie_test.ReturnState = Memory.MODULE_FIELD_DEBUG;
+            Memory.module = Memory.MODULE_MOVIETEST;
+        }
+
+        /// <summary>
+        /// Init
+        /// </summary>
+        private static void Init()
+        {
+            if (start00 == null)
+            {
+                start00 = GetTexture(0);
+            }
+
+            if (start01 == null)
+            {
+                start01 = GetTexture(1);
+            }
+        }
+
+        /// <summary>
+        /// Get reqeusted texture from Menu archive.
+        /// </summary>
+        /// <param name="v">0 or 1</param>
+        /// <returns>Requested Texture</returns>
         private static Texture2D GetTexture(int v)
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
@@ -338,6 +515,7 @@ namespace FF8
                 case 0:
                     filename = aw.GetListOfFiles().First(x => x.ToLower().Contains("start00"));
                     break;
+
                 case 1:
                     filename = aw.GetListOfFiles().First(x => x.ToLower().Contains("start01"));
                     break;
@@ -346,135 +524,115 @@ namespace FF8
             return tex.GetTexture();
         }
 
+        /// <summary>
+        /// Trigger required draw function.
+        /// </summary>
         internal static void Draw()
         {
             Memory.graphics.GraphicsDevice.Clear(Color.Black);
+            fScaleWidth = (float)Memory.graphics.GraphicsDevice.Viewport.Width / Memory.PreferredViewportWidth;
+            fScaleHeight = (float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight;
+            vpWidth = Memory.graphics.GraphicsDevice.Viewport.Width;
+            vpHeight = Memory.graphics.GraphicsDevice.Viewport.Width;
+
             switch (State)
             {
+                case MainMenuStates.Init:
                 case MainMenuStates.MainLobby:
                     DrawMainLobby();
                     break;
+
                 case MainMenuStates.DebugScreen:
-                    DebugScreenLobby();
+                    DrawDebugLobby();
                     break;
+
                 case MainMenuStates.NewGameChoosed:
-                    NewGameDraw();
+                    DrawMainLobby();
                     break;
+
                 case MainMenuStates.LoadGameLoading:
                     break;
+
                 case MainMenuStates.LoadGameScreen:
                     break;
             }
         }
 
-        private static void NewGameDraw()
-        {
-            DrawMainLobby();
-            Fade -= Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f / 2;
-        }
-        enum Mitems //order of the enum needs to be the same as the DebugMenu Dictionary or else it'll get confused.
-        {
-            New,
-            Load,
-            Debug
-        }
-        enum Ditems
-        {
-            Reset,
-            Overture,
-            Battle,
-            Feild,
-            Movie,
-            Music,
-            //MusicNext,
-            //MusicPrev,
-            //MusicStop,
-            Sounds,
-            World,
-        }
-        private static readonly Dictionary<Ditems, string> DebugMenu = new Dictionary<Ditems, string>()
-            {
-                { Ditems.Reset, "Reset Main Menu state"},
-                { Ditems.Overture, "Play Overture"},
-                { Ditems.Battle, "Battle encounter: {0}"},
-                { Ditems.Feild, "Field debug render: {1}"},
-                { Ditems.Movie, "Movie debug render: {2}"},
-                { Ditems.Music, "Play/Stop music : {4}"},
-                //{ Ditems.MusicNext,"Play next music"},
-                //{ Ditems.MusicPrev,"Play previous music"},
-                //{ Ditems.MusicStop,"Stop music"},
-                { Ditems.Sounds,"Play audio.dat: {3}"},
-                { Ditems.World,"Jump to World Map"}
-            };
-
-        private static void DebugScreenLobby()
-        {
-            string[] info = new string[] //fills in {0} threw {3}
-            {
-                debug_choosedBS.ToString("D4"),
-                debug_choosedField,
-                debug_choosedMovie,
-                $"{debug_choosedAudio}",
-                $"{debug_choosedMusic}",
-            };
-            float fScaleWidth = (float)Memory.graphics.GraphicsDevice.Viewport.Width / Memory.PreferredViewportWidth;
-            float fScaleHeight = (float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight;
-            int vpWidth = Memory.graphics.GraphicsDevice.Viewport.Width;
-            int vpHeight = Memory.graphics.GraphicsDevice.Viewport.Width;
-            Memory.SpriteBatchStartAlpha();
-            //string cCnCRtn = Font.CipherDirty("OpenVIII debug tools"); //SnclZMMM bc`se \0rmmjq
-            float vpSpace = vpHeight * 0.03f;
-            float item = 0;
-
-            foreach (KeyValuePair<Ditems, string> e in DebugMenu)
-            {
-                Memory.font.RenderBasicText(Font.CipherDirty(string.Format(e.Value, info[0], info[1], info[2], info[3],info[4]).Replace("\0", "")),
-                    (int)(vpWidth * 0.10f), (int)(vpHeight * 0.05f + vpSpace * item++), 1f, 2f, 0, 1);
-            }
-            Memory.spriteBatch.Draw(Memory.iconsTex[2], new Rectangle(
-                (int)(vpWidth * 0.05f), (int)(vpHeight * 0.05f + vpSpace * ((float)Dchoose)),
-                (int)(24 * 2 * fScaleWidth), (int)(16 * 2 * fScaleWidth)),
-                new Rectangle(232, 0, 23, 15), Color.White);
-            availableOptions = (int)item;
-            Memory.SpriteBatchEnd();
-
-        }
-
+        /// <summary>
+        /// Draw Main menu
+        /// </summary>
         private static void DrawMainLobby()
         {
-            //draw start00+01
-            float fScaleWidth = (float)Memory.graphics.GraphicsDevice.Viewport.Width / Memory.PreferredViewportWidth;
-            float fScaleHeight = (float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight;
-
-            if (start00 == null || start01 == null)
-            {
-                return;
-            }
-
-            if (Fade < 1.0f && State != MainMenuStates.NewGameChoosed)
-            {
-                Fade += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 3;
-            }
-
-            int vpWidth = Memory.graphics.GraphicsDevice.Viewport.Width;
-            int vpHeight = Memory.graphics.GraphicsDevice.Viewport.Width;
             float zoom = 0.65f;
             Memory.SpriteBatchStartAlpha();
             Memory.spriteBatch.Draw(start00, new Rectangle(0, 0, (int)(vpWidth * zoom), (int)(vpHeight * (zoom - 0.1f))), null, Color.White * Fade);
             Memory.spriteBatch.Draw(start01, new Rectangle((int)(vpWidth * zoom), 0, vpWidth / 3, (int)(vpHeight * (zoom - 0.1f))), Color.White * Fade);
-            //string cCnCRtn = Font.CipherDirty("OpenVIII debug tools"); //SnclZMMM bc`se \0rmmjq
-
-            //Memory.font.RenderBasicText("RI[ KEQI", (int)(vpWidth * 0.42f), (int)(vpHeight * choiseHeights[0]), 2f, 3f, 0, 1, Fade);
-            Memory.font.RenderBasicText(Font.CipherDirty(Memory.MainMenuLines[0]), (int)(vpWidth * 0.42f), (int)(vpHeight * choiseHeights[0]), 2f, 3f, 0, 1, Fade);
-            //Memory.font.RenderBasicText("Gmlrglsc", (int)(vpWidth * 0.42f), (int)(vpHeight * choiseHeights[1]), 2f, 3f, 0, 1, Fade);
-            Memory.font.RenderBasicText(Font.CipherDirty(Memory.MainMenuLines[1]), (int)(vpWidth * 0.42f), (int)(vpHeight * choiseHeights[1]), 2f, 3f, 0, 1, Fade);
-            //Memory.font.RenderBasicText("SnclZMMM bc`se rmmjq", (int)(vpWidth * 0.42f), (int)(vpHeight * choiseHeights[2]), 2f, 3f, 0, 1, Fade);
-            Memory.font.RenderBasicText(Font.CipherDirty(Memory.MainMenuLines[2]), (int)(vpWidth * 0.42f), (int)(vpHeight * choiseHeights[2]), 2f, 3f, 0, 1, Fade);
-
-            Memory.spriteBatch.Draw(Memory.iconsTex[2], new Rectangle((int)(vpWidth * 0.37f), (int)(vpHeight * choiseHeights[(int)Mchoose] + 0.01f), (int)(24 * 2 * fScaleWidth), (int)(16 * 2 * fScaleWidth)),
-                new Rectangle(232, 0, 23, 15),
-                Color.White * Fade);
+            float vpSpace = vpHeight * 0.05f;
+            float item = 0;
+            foreach (Mitems i in (Mitems[])Enum.GetValues(typeof(Mitems)))
+            {
+                Memory.font.RenderBasicText(Font.CipherDirty(strMainLobby[i]).Replace("\0", ""),
+                    (int)(vpWidth * 0.42f), (int)(vpHeight * 0.35f + vpSpace * item++), 2f, 3f, 0, 1, Fade);
+            }
+            Memory.spriteBatch.Draw(Memory.iconsTex[2], new Rectangle(
+                (int)(vpWidth * 0.37f),
+                (int)(vpHeight * 0.35f + vpSpace * (float)Mchoose),
+                (int)(24 * 2 * fScaleWidth),
+                (int)(16 * 2 * fScaleWidth)),
+                new Rectangle(232, 0, 23, 15), Color.White * Fade);
             Memory.SpriteBatchEnd();
         }
+
+        /// <summary>
+        /// Draw Debug Menu
+        /// </summary>
+        private static void DrawDebugLobby()
+        {
+            Memory.SpriteBatchStartAlpha();
+            float vpSpace = vpHeight * 0.03f;
+            float item = 0;
+
+            //foreach (KeyValuePair<Ditems, string> e in DebugMenu)
+            foreach (Ditems i in (Ditems[])Enum.GetValues(typeof(Ditems)))
+            {
+                Memory.font.RenderBasicText(Font.CipherDirty(string.Format(strDebugLobby[i], InfoDebugLobby(i)).Replace("\0", "")),
+                    (int)(vpWidth * 0.10f), (int)(vpHeight * 0.05f + vpSpace * item++), 1f, 2f, 0, 1, Fade);
+            }
+            Memory.spriteBatch.Draw(Memory.iconsTex[2], new Rectangle(
+                (int)(vpWidth * 0.05f),
+                (int)(vpHeight * 0.05f + vpSpace * ((float)Dchoose)),
+                (int)(24 * 2 * fScaleWidth), (int)(16 * 2 * fScaleWidth)),
+                new Rectangle(232, 0, 23, 15), Color.White * Fade);
+            Memory.SpriteBatchEnd();
+        }
+
+        /// <summary>
+        /// Dynamic info for Ditem that is read at draw time.
+        /// </summary>
+        /// <param name="i">Ditem being drawn</param>
+        /// <returns>Dynamic info for Ditem</returns>
+        private static string InfoDebugLobby(Ditems i)
+        {
+            switch (i)
+            {
+                case Ditems.Battle:
+                    return debug_choosedBS.ToString("D4");
+
+                case Ditems.Feild:
+                    return debug_choosedField;
+
+                case Ditems.Movie:
+                    return debug_choosedMovie;
+
+                case Ditems.Sounds:
+                    return $"{debug_choosedAudio}";
+
+                case Ditems.Music:
+                    return $"{debug_choosedMusic}";
+            };
+            return "";
+        }
+
+        #endregion Methods
     }
 }
