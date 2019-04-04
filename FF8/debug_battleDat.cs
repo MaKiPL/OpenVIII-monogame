@@ -40,9 +40,9 @@ namespace FF8
             public ushort unk4;
             public Bone[] bones;
 
-            public float ScaleX { get => scaleX / V; set => scaleX = (short)value; }
-            public float ScaleY { get => scaleY / V; set => scaleY = (short)value; }
-            public float ScaleZ { get => scaleZ / V; set => scaleZ = (short)value; }
+            public float ScaleX { get => scaleX; set => scaleX = (short)value; }
+            public float ScaleY { get => scaleY; set => scaleY = (short)value; }
+            public float ScaleZ { get => scaleZ; set => scaleZ = (short)value; }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 48)]
@@ -363,9 +363,9 @@ namespace FF8
                 ExtapathyExtended.BitReader bitReader = new ExtapathyExtended.BitReader(ms);
                 for(int n = 0; n<animHeader.animations[i].cFrames; n++) //frames
                 {
-                    float x = -bitReader.ReadPositionType() *0.10f;
-                    float y = -bitReader.ReadPositionType() * 0.10f;
-                    float z = -bitReader.ReadPositionType() * 0.10f;
+                    float x = bitReader.ReadPositionType();
+                    float y = bitReader.ReadPositionType();
+                    float z = bitReader.ReadPositionType();
                     //short x_ = (short)x;
                     //short y_ = (short)y;
                     //short z_ = (short)z;
@@ -373,9 +373,9 @@ namespace FF8
                         animHeader.animations[i].animationFrames[n] = new AnimationFrame()
                         {
                             Position = new Vector3(
-                        x,
-                        y,
-                        z)
+                        x*15f,
+                        y*15f,
+                        z*15f)
                         };
                     else
                         animHeader.animations[i].animationFrames[n] = new AnimationFrame()
