@@ -68,6 +68,12 @@ namespace FF8
             init_debugger_Audio.Update();
             ModuleHandler.Update(gameTime);
             base.Update(gameTime);
+            if (Memory.SuppressDraw)
+            {
+                SuppressDraw();
+                Memory.SuppressDraw = false;
+            }
+
         }
 
         protected override void Draw(GameTime gameTime)

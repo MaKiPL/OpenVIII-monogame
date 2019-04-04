@@ -35,12 +35,24 @@ namespace FF8
 
         internal static void Update()
         {
+            if (Input.Button(Buttons.Okay) || Input.Button(Buttons.Cancel) || Input.Button(Keys.Space))
+            {
+                Input.ResetInputLimit();
+                init_debugger_Audio.StopAudio();
+                Memory.module = Memory.MODULE_MAINMENU_DEBUG;
+
+                if (splashTex != null && !splashTex.IsDisposed)
+                    splashTex.Dispose();
+                if (white != null && !white.IsDisposed)
+                    white.Dispose();
+            }
             switch (internalModule)
             {
                 case OvertureInternalModule._0InitSound:
                     InitSound();
                     break;
                 case OvertureInternalModule._1WaitBeforeFirst:
+                    Memory.SuppressDraw = true;
                     WaitForFirst();
                     break;
                 case OvertureInternalModule._2PlaySequence:
@@ -95,22 +107,9 @@ namespace FF8
         }
         internal static void Draw()
         {
-            if (Input.Button(Buttons.Okay) || Input.Button(Buttons.Cancel) || Input.Button(Keys.Space))
-            {
-                Input.ResetInputLimit();
-                init_debugger_Audio.StopAudio();
-                Memory.module = Memory.MODULE_MAINMENU_DEBUG;
-
-                if (splashTex != null && !splashTex.IsDisposed)
-                    splashTex.Dispose();
-                if (white != null && !white.IsDisposed)
-                    white.Dispose();
-            }
             switch (internalModule)
             {
                 case OvertureInternalModule._0InitSound:
-                    Memory.graphics.GraphicsDevice.Clear(Color.Black);
-                    break;
                 case OvertureInternalModule._1WaitBeforeFirst:
                     Memory.graphics.GraphicsDevice.Clear(Color.Black);
                     break;
@@ -279,6 +278,7 @@ namespace FF8
                         fSplashWait = 0.0f;
                     }
                 }
+                Memory.SuppressDraw = true;
                 fSplashWait += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
             }
             //loop 01-14 + name01-14;
