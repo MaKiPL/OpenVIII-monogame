@@ -164,6 +164,12 @@ namespace FF8
         private static ModelGroup[] modelGroups;
 
         private static Debug_battleDat[] monstersData;
+        private static CharacterData[] charactersData;
+
+        private struct CharacterData
+        {
+            public Debug_battleDat character, weapon;
+        };
 
         private static PseudoBufferedStream pbs;
 
@@ -199,8 +205,57 @@ namespace FF8
                 case BATTLEMODULE_DRAWGEOMETRY:
                     DrawGeometry();
                     DrawMonsters();
+                    DrawCharactersWeapons();
                     break;
 
+            }
+        }
+
+        /// <summary>
+        /// Method to render characters and weapons for them
+        /// </summary>
+        private static void DrawCharactersWeapons()
+        {
+            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+            Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+            ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
+            effect.TextureEnabled = true;
+
+            for (int n = 0; n < charactersData.Length; n++)
+            {
+                frame[n+monstersData.Length] = frame[n+monstersData.Length] == charactersData[n].character.animHeader.animations[0].cFrames ? 0 : frame[n];
+                for (int i = 0; i < charactersData[n].character.geometry.cObjects; i++)
+                {
+                    var a = charactersData[n].character.GetVertexPositions(i, new Vector3(-20 + n * 10, 10, 0),0, frame[n], frameperFPS / FPS); //DEBUG
+                    if (a == null || a.Length == 0)
+                        return;
+                    ate.Texture = charactersData[n].character.textures.textures[0];
+                    foreach (var pass in ate.CurrentTechnique.Passes)
+                    {
+                        pass.Apply();
+                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                        vertexData: a, vertexOffset: 0, primitiveCount: a.Length / 3);
+                    }
+                }
+            }
+            for (int n = 0; n < charactersData.Length; n++)
+            {
+                frame[n + monstersData.Length] = frame[n + monstersData.Length] == charactersData[n].weapon.animHeader.animations[0].cFrames ? 0 : frame[n];
+                for (int i = 0; i < charactersData[n].weapon.geometry.cObjects; i++)
+                {
+                    var a = charactersData[n].weapon.GetVertexPositions(i, new Vector3(-20+n*10,10, 0),0, frame[n], frameperFPS / FPS); //DEBUG
+                    if (a == null || a.Length == 0)
+                        return;
+                    ate.Texture = charactersData[n].weapon.textures.textures[0];
+                    foreach (var pass in ate.CurrentTechnique.Passes)
+                    {
+                        pass.Apply();
+                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                        vertexData: a, vertexOffset: 0, primitiveCount: a.Length / 3);
+                    }
+                }
             }
         }
 
@@ -244,17 +299,8 @@ namespace FF8
                     foreach (var pass in ate.CurrentTechnique.Passes)
                     {
                         pass.Apply();
-                        if (true)
-                        {
-                            Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                            vertexData: a, vertexOffset: 0, primitiveCount: a.Length / 3);
-                        }
-                        else
-                        {
-                            //Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                            //vertexData: vpt.Item2, vertexOffset: localVertexIndex, primitiveCount: 1);
-                            //localVertexIndex += 3;
-                        }
+                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                        vertexData: a, vertexOffset: 0, primitiveCount: a.Length / 3);
                     }
                 }
             }
@@ -544,7 +590,11 @@ namespace FF8
 
             ReadTexture(MainSection.TexturePointer);
 
+            ReadCharacters();
             ReadMonster();
+
+            //for frames indexes monsters are first, then after n monsters characters appear with weapons
+            frame = new int[monstersData.Length + charactersData.Length];
 
             battleModule++;
         }
@@ -552,16 +602,32 @@ namespace FF8
         public static int DEBUG = 0;
         private static float frameperFPS = 0.0f;
 
+        private static void ReadCharacters()
+        {
+            //DEBUG - party provider here
+            charactersData = new CharacterData[2];
+            charactersData[0] = new CharacterData
+            {
+                character = new Debug_battleDat(0, Debug_battleDat.EntityType.Character, 0),
+                weapon = new Debug_battleDat(0, Debug_battleDat.EntityType.Weapon, 0)
+            };
+            charactersData[1] = new CharacterData
+            {
+                character = new Debug_battleDat(2, Debug_battleDat.EntityType.Character, 6),
+                weapon = new Debug_battleDat(2, Debug_battleDat.EntityType.Weapon, 13)
+            };
+        }
+
         private static void ReadMonster()
         {
             Init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
             if (enc.bNumOfEnemies == 0)
                 return;
             //DEBUG BELOW; I just want to draw any model
-            monstersData = new Debug_battleDat[32];
-            for (int n = 0; n < monstersData.Length; n++)
-                monstersData[n] = new Debug_battleDat(n);
-            frame = new int[monstersData.Length];
+            monstersData = new Debug_battleDat[1];
+            monstersData[0] = new Debug_battleDat(26, Debug_battleDat.EntityType.Monster);
+            //for (int n = 26; n <= monstersData.Length; n++)
+            //    monstersData[n] = new Debug_battleDat(n, Debug_battleDat.EntityType.Monster);
             //END OF DEBUG
         }
 
@@ -774,9 +840,9 @@ namespace FF8
                 case 136:
                     return 0x5fc;
                 case 137:
-                    return 0xFDC; //That one is really giant, what is it? //It's a witch stage, worth to see at MIPS
+                    return 0xFDC; 
                 case 142:
-                    return 0x183C; //That one won! xD //It's a final battle
+                    return 0x183C;
                 case 147:
                     return 0xa0c;
                 case 157:
@@ -788,7 +854,7 @@ namespace FF8
 
         private static void ReadCamera()
         {
-            Memory.BS_CameraStruct = new Memory.VIII_cameraMemoryStruct(); //In VIII C it's memset here 
+            Memory.BS_CameraStruct = new Memory.VIII_cameraMemoryStruct();
             uint cCameraHeaderSector = pbs.ReadUShort();
             //if (cCameraHeaderSector != 0x2)
             //    ; //error handler?
@@ -854,10 +920,10 @@ namespace FF8
             {
                 eax = 0x200;
                 Memory.BS_CameraStruct.thirdWordController = Memory.BS_CameraStruct.secondWordController = eax;
-                goto structFullfiled; //AY LMAO, assembler kicks ass
+                goto structFullfiled; 
             }
             eax--;
-            if (eax == 0) //I quite dislike the fact that C# can't recognize zero as false
+            if (eax == 0)
             {
                 eax = pbs.ReadUShort();
                 Memory.BS_CameraStruct.thirdWordController = Memory.BS_CameraStruct.secondWordController = eax;

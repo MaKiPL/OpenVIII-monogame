@@ -11,6 +11,7 @@ namespace FF8
     public class Debug_battleDat
     {
         int id;
+        readonly EntityType entityType;
         byte[] buffer;
         int debug = 0;
 
@@ -39,9 +40,9 @@ namespace FF8
             public ushort unk4;
             public Bone[] bones;
 
-            public float ScaleX { get => scaleX / V; set => scaleX = (short)value; }
-            public float ScaleY { get => scaleY / V; set => scaleY = (short)value; }
-            public float ScaleZ { get => scaleZ / V; set => scaleZ = (short)value; }
+            public float ScaleX { get => scaleX; set => scaleX = (short)value; }
+            public float ScaleY { get => scaleY; set => scaleY = (short)value; }
+            public float ScaleZ { get => scaleZ; set => scaleZ = (short)value; }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 48)]
@@ -362,9 +363,9 @@ namespace FF8
                 ExtapathyExtended.BitReader bitReader = new ExtapathyExtended.BitReader(ms);
                 for(int n = 0; n<animHeader.animations[i].cFrames; n++) //frames
                 {
-                    float x = -bitReader.ReadPositionType() *0.10f;
-                    float y = -bitReader.ReadPositionType() * 0.10f;
-                    float z = -bitReader.ReadPositionType() * 0.10f;
+                    float x = bitReader.ReadPositionType();
+                    float y = bitReader.ReadPositionType();
+                    float z = bitReader.ReadPositionType();
                     //short x_ = (short)x;
                     //short y_ = (short)y;
                     //short z_ = (short)z;
@@ -372,9 +373,9 @@ namespace FF8
                         animHeader.animations[i].animationFrames[n] = new AnimationFrame()
                         {
                             Position = new Vector3(
-                        x,
-                        y,
-                        z)
+                        x*15f,
+                        y*15f,
+                        z*15f)
                         };
                     else
                         animHeader.animations[i].animationFrames[n] = new AnimationFrame()
@@ -416,21 +417,26 @@ namespace FF8
                     for(int k = 0; k<skeleton.cBones; k++)
                     {
                         var rad = animHeader.animations[i].animationFrames[n].boneRot.Item1[k];
-                        Matrix xRot = MakiExtended.GetRotationMatrixX(-rad.X);
+                        Matrix xRot = MakiExtended.GetRotationMatrixX(rad.X);
                         Matrix yRot = MakiExtended.GetRotationMatrixY(-rad.Y);
-                        Matrix zRot = MakiExtended.GetRotationMatrixZ(-rad.Z);
-                        var MatrixZ = MakiExtended.MatrixMultiply(yRot, xRot);
-                        MatrixZ = MakiExtended.MatrixMultiply(zRot, MatrixZ);
+                        Matrix zRot = MakiExtended.GetRotationMatrixZ(rad.Z);
+                        var MatrixZ = MakiExtended.MatrixMultiply(xRot, zRot);
+                        MatrixZ = MakiExtended.MatrixMultiply(MatrixZ, yRot);
 
                         if (skeleton.bones[k].parentId == 0xFFFF)
                         {
-                            ;
+                            //I reintroduced old code for testing
+                            //var MatrixRoot = new Matrix();
+                            //MatrixRoot = MakiExtended.MatrixMultiply(MakiExtended.GetRotationMatrixY(270f), MakiExtended.GetRotationMatrixX(180f));
+                            //MatrixRoot = MakiExtended.MatrixMultiply(MakiExtended.GetRotationMatrixZ(90f), MatrixRoot);
+                            //MatrixZ = MakiExtended.MatrixMultiply(MatrixZ, MatrixRoot);
+                            //MatrixZ.M43 = 2;
                         }
                         else
                         {
                             var prevBone = animHeader.animations[i].animationFrames[n].boneRot.Item3[skeleton.bones[k].parentId];
                             MatrixZ = Matrix.Multiply(prevBone, MatrixZ);
-                            MatrixZ.M41 = 0; MatrixZ.M42 = 0; MatrixZ.M44 = 1; MatrixZ.M43 = skeleton.bones[(skeleton.bones[k].parentId)].Size;
+                            MatrixZ.M41 = 0; MatrixZ.M42 = 0; MatrixZ.M44 = 1; MatrixZ.M43 = skeleton.bones[skeleton.bones[k].parentId].Size;
                             MatrixZ.M41 = prevBone.M11 * MatrixZ.M41 + prevBone.M12 * MatrixZ.M42 + prevBone.M13 * MatrixZ.M43 + prevBone.M41;
                             MatrixZ.M42 = prevBone.M21 * MatrixZ.M41 + prevBone.M22 * MatrixZ.M42 + prevBone.M23 * MatrixZ.M43 + prevBone.M42;
                             MatrixZ.M43 = prevBone.M31 * MatrixZ.M41 + prevBone.M32 * MatrixZ.M42 + prevBone.M33 * MatrixZ.M43 + prevBone.M43;
@@ -447,7 +453,7 @@ namespace FF8
         public float frameperFPS = 0.0f;
 #endregion
 
-#region section 7
+#region section 7 Information
         [StructLayout(LayoutKind.Sequential, Pack =1, Size =380)]
         public struct Information
         {
@@ -541,7 +547,7 @@ namespace FF8
         public Information information;
 #endregion
 
-#region section 11
+#region section 11 Textures
         public struct Textures
         {
             public uint cTims;
@@ -572,11 +578,32 @@ namespace FF8
                 tm.KillStreams();
             }
         }
-        public Debug_battleDat(int monsterId)
+
+        public enum EntityType
         {
-            id = monsterId;
+            Monster,
+            Character,
+            Weapon
+        };
+        
+        /// <summary>
+        /// Creates new instance of DAT class that provides every sections parsed into structs and helper functions for renderer
+        /// </summary>
+        /// <param name="fileId">This number is used in c0m(fileId) or d(fileId)cXYZ</param>
+        /// <param name="entityType">Supply Monster, character or weapon (0,1,2)</param>
+        /// <param name="additionalFileId">Used only in character or weapon to supply for d(fileId)[c/w](additionalFileId)</param>
+        public Debug_battleDat(int fileId, EntityType entityType, int additionalFileId = -1)
+        {
+            id = fileId;
+
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
-            string path = aw.GetListOfFiles().First(x => x.ToLower().Contains($"c0m{id.ToString("D03")}")); //c0m000.dat
+            string fileName = entityType == EntityType.Monster ? $"c0m{id.ToString("D03")}" :
+                entityType == EntityType.Character ? $"d{fileId}c{additionalFileId.ToString("D03")}" :
+                entityType == EntityType.Weapon ? $"d{fileId}w{additionalFileId.ToString("D03")}" : string.Empty;
+            this.entityType = entityType;
+            if (string.IsNullOrEmpty(fileName))
+                return;
+            string path = aw.GetListOfFiles().First(x => x.ToLower().Contains(fileName));
             buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, path);
 
 #if _WINDOWS
@@ -591,35 +618,36 @@ namespace FF8
                 for (int i = 0; i < datFile.cSections; i++)
                     datFile.pSections[i] = br.ReadUInt32();
                 datFile.eof = br.ReadUInt32();
-
-                if(datFile.pSections.Length != 11)
+                switch (this.entityType)
                 {
-                    //TODO
-                    return;
+                    case EntityType.Monster:
+                        if (id == 127) return;
+                        ReadSection1(datFile.pSections[0], ms, br);
+                        ReadSection3(datFile.pSections[2], ms, br);
+                        ReadSection2(datFile.pSections[1], ms, br);
+                        //ReadSection4(datFile.pSections[3]);
+                        //ReadSection5(datFile.pSections[4]);
+                        //ReadSection6(datFile.pSections[5]);
+                        ReadSection7(datFile.pSections[6], ms, br);
+                        //ReadSection8(datFile.pSections[7]);
+                        //ReadSection9(datFile.pSections[8]);
+                        //ReadSection10(datFile.pSections[9]);
+                        ReadSection11(datFile.pSections[10], ms, br);
+                        break;
+                    case EntityType.Character:
+                        ReadSection1(datFile.pSections[0], ms, br);
+                        ReadSection3(datFile.pSections[2], ms, br);
+                        ReadSection2(datFile.pSections[1], ms, br);
+                        ReadSection11(datFile.pSections[5], ms, br);
+                        break;
+                    case EntityType.Weapon:
+                        ReadSection1(datFile.pSections[0], ms, br);
+                        ReadSection3(datFile.pSections[2], ms, br);
+                        ReadSection2(datFile.pSections[1], ms, br);
+                        ReadSection11(datFile.pSections[6], ms, br);
+                        break;
                 }
-                ReadSection1(datFile.pSections[0],ms,br);
-                ReadSection3(datFile.pSections[2], ms, br);
-                ReadSection2(datFile.pSections[1],ms,br);
-                //ReadSection4(datFile.pSections[3]);
-                //ReadSection5(datFile.pSections[4]);
-                //ReadSection6(datFile.pSections[5]);
-                ReadSection7(datFile.pSections[6],ms,br);
-                //ReadSection8(datFile.pSections[7]);
-                //ReadSection9(datFile.pSections[8]);
-                //ReadSection10(datFile.pSections[9]);
-                ReadSection11(datFile.pSections[10],ms,br);
             }
-            //DEBUG
-            //for (int i = 0; i < animHeader.animations[0].animationFrames.Count(); i++)
-            //{
-            //    System.Diagnostics.Debugger.Log(0, "", "\n");
-            //    for (int n = 0; n < skeleton.cBones; n++)
-            //    {
-            //        var c = animHeader.animations[0].animationFrames[i].boneRot.Item3[n];
-            //        System.Diagnostics.Debugger.Log(0, "", $"{c.X}|{c.Y}|{c.Z}|");
-            //    }
-            //}
-
         }
 
 
