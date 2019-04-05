@@ -188,8 +188,9 @@ namespace FF8
         }
 
 
-        public void RenderBasicText(string buffer, int x, int y, float zoomWidth = 1f, float zoomHeight = 1f, int whichFont = 0, int isMenu = 0, float Fade = 1.0f)
+        public Rectangle RenderBasicText(string buffer, int x, int y, float zoomWidth = 1f, float zoomHeight = 1f, int whichFont = 0, int isMenu = 0, float Fade = 1.0f)
         {
+            Rectangle ret = new Rectangle(x, y, 0, 0);
             int realX = x;
             int charCountWidth = whichFont == 0 ? 21 : 10;
             int charSize = whichFont == 0 ? 12 : 24;
@@ -219,7 +220,10 @@ namespace FF8
                 Color.White * Fade);
 
                 realX += (int)(charSize * zoomWidth * fScaleWidth);
+                ret.Height = destRect.Height;
             }
+            ret.Width = realX-ret.X;
+            return ret;
         }
 
         //dirty, do not use for anything else than translating for your own purpouses. I'm just lazy

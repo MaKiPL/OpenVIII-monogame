@@ -391,12 +391,7 @@
         /// State ffcc is in.
         /// </summary>
         private FfccState State { get; set; }
-
-        /// <summary>
-        /// returns false if fps is 0.
-        /// </summary>
-        private bool useduration => Decoder.CodecContext == null || (Decoder.CodecContext->framerate.den == 0 || Decoder.CodecContext->framerate.num == 0);
-
+        
         #endregion Properties
 
         #region Methods
@@ -683,7 +678,7 @@
         /// <param name="buf">outgoing data</param>
         /// <param name="buf_size">outgoing buffer size</param>
         /// <returns>Total bytes read, or EOF</returns>
-        private static int read_packet(void* opaque, byte* buf, int buf_size)
+        private static int Read_packet(void* opaque, byte* buf, int buf_size)
         {
             Buffer_data* bd = (Buffer_data*)opaque;
             buf_size = FFMIN(buf_size, bd->size);
@@ -809,7 +804,7 @@
                 ret = ffmpeg.AVERROR(ffmpeg.ENOMEM);
                 return;
             }
-            avio_alloc_context_read_packet rf = new avio_alloc_context_read_packet(read_packet);
+            avio_alloc_context_read_packet rf = new avio_alloc_context_read_packet(Read_packet);
             fixed (Buffer_data* tmp = &_bufferData)
             {
                 _avio_ctx = ffmpeg.avio_alloc_context(_avio_ctx_buffer, _avio_ctx_buffer_size, 0, tmp, rf, null, null);
@@ -1138,7 +1133,7 @@
             {
                 outSamples = ffmpeg.swr_get_out_samples(ResampleContext, 0);
                 // 32 was nb_samples but if too big would just not decode anything
-                if ((outSamples < (Decoder.CodecContext == null ? 0 : Decoder.CodecContext->frame_size) * ResampleFrame->channels) || (Decoder.CodecContext == null ? 0 : Decoder.CodecContext->frame_size) == 0 && (outSamples < 32 * ResampleFrame->channels))
+                if (outSamples < 32 * ResampleFrame->channels)
                 {
                     break;
                 }

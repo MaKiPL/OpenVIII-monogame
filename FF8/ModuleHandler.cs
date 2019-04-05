@@ -23,10 +23,13 @@ namespace FF8
             }
             module = Memory.module;
 
+
 //#if DEBUG
             if (Input.Button(Buttons.Back)||Input.Button(Buttons.Cancel))
             {
                 Memory.module = Memory.MODULE_MAINMENU_DEBUG;
+                Input.OverrideLockMouse = false;
+                Input.CurrentMode = Input.MouseLockMode.Screen;
             }
 //#endif
 

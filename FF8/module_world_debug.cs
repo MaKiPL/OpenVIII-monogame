@@ -122,12 +122,15 @@ namespace FF8
                     InitWorld();
                     break;
                 case _worldState._1debugFly:
+                    FPSCamera();
                     break;
             }
         }
 
         private static void InitWorld()
         {
+            Input.OverrideLockMouse = true;
+            Input.CurrentMode = Input.MouseLockMode.Center;
             //init renderer
             effect = new BasicEffect(Memory.graphics.GraphicsDevice);
             effect.EnableDefaultLighting();
@@ -391,9 +394,7 @@ namespace FF8
                 camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees + 90)) * leftdistX / 10;
                 camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees + 90)) * leftdistX / 10;
             }
-
-            //Input.LockMouse();
-
+            
             camTarget.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(degrees)) * camDistance;
             camTarget.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(degrees)) * camDistance;
             camTarget.Y = camPosition.Y - Yshift / 5;
@@ -419,53 +420,6 @@ namespace FF8
             ate.Projection = projectionMatrix;
             ate.View = viewMatrix;
             ate.World = worldMatrix;
-
-            #region FPScamera
-            FPSCamera();
-            //float x_shift = Mouse.GetState().X - 200;
-            //float y_shift = 200 - Mouse.GetState().Y;
-            //x_shift += GamePad.GetState(PlayerIndex.One).ThumbSticks.Right.X * 2f;
-            //Yshift -= y_shift;
-            //Yshift -= GamePad.GetState(PlayerIndex.One).ThumbSticks.Right.Y * 2f;
-            //degrees += (int)x_shift;
-            //if (degrees < 0)
-            //    degrees = 359;
-            //if (degrees > 359)
-            //    degrees = 0;
-            //Yshift = MathHelper.Clamp(Yshift, -80, 80);
-
-            //if (Keyboard.GetState().IsKeyDown(Keys.W) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y > 0.0f)
-            //{
-            //    camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees)) * camDistance * 5 / 5;
-            //    camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees)) * camDistance * 5 / 5;
-            //    camPosition.Y -= Yshift / 10;
-            //}
-            //if (Keyboard.GetState().IsKeyDown(Keys.S) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y < 0.0f)
-            //{
-            //    camPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees)) * camDistance * 5 / 5;
-            //    camPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees)) * camDistance * 5 / 5;
-            //    camPosition.Y += Yshift / 10;
-            //}
-            //if (Keyboard.GetState().IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X < 0.0f)
-            //{
-            //    camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees - 90)) * camDistance * 5 / 5;
-            //    camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees - 90)) * camDistance * 5 / 5;
-            //}
-            //if (Keyboard.GetState().IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X > 0.0f)
-            //{
-            //    camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees + 90)) * camDistance * 5 / 5;
-            //    camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees + 90)) * camDistance * 5 / 5;
-            //}
-
-            //Mouse.SetPosition(200, 200);
-
-            //camTarget.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(degrees)) * camDistance;
-            //camTarget.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(degrees)) * camDistance;
-            //camTarget.Y = camPosition.Y - Yshift / 5;
-            //viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
-            //             Vector3.Up);
-            #endregion
-
 
             //334 debug
             for (int i = 0; i < 768; i++)
