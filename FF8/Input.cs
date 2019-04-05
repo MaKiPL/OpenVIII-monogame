@@ -383,6 +383,7 @@ namespace FF8
                 }
             }
         }
+        public static Point MouseLocation { get => new Point(CurrentMState.X, CurrentMState.Y); }
         public static bool Button(Keys k, bool dblinput = false)
         {
             return IsPressed(k, dblinput); // fail over to IsPressed
