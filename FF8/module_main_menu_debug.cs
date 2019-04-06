@@ -19,7 +19,7 @@ namespace FF8
             { Ditems.Reset, new Item{Text="Reset Main Menu state" } },
             { Ditems.Overture, new Item{Text="Play Overture"} },
             { Ditems.Battle, new Item{Text="Battle encounter: {0}"} },
-            { Ditems.Feild, new Item{Text="Field debug render: {0}"} },
+            { Ditems.Field, new Item{Text="Field debug render: {0}"} },
             { Ditems.Movie, new Item{Text="Movie debug render: {0}"} },
             { Ditems.Music, new Item{Text="Play/Stop music : {0}"} },
             { Ditems.Sounds, new Item{Text="Play audio.dat: {0}"} },
@@ -66,7 +66,7 @@ namespace FF8
             Reset,
             Overture,
             Battle,
-            Feild,
+            Field,
             Movie,
             Music,
             Sounds,
@@ -455,7 +455,7 @@ namespace FF8
                     debug_choosedBS--;
                     break;
 
-                case Ditems.Feild:
+                case Ditems.Field:
                     FieldPointer--;
                     break;
 
@@ -504,7 +504,7 @@ namespace FF8
                     init_debugger_Audio.PlayStopMusic();
                     break;
 
-                case Ditems.Feild:
+                case Ditems.Field:
                     Fade = 0.0f;
                     Module_field_debug.ResetField();
                     Memory.module = Memory.MODULE_FIELD_DEBUG;
@@ -575,7 +575,7 @@ namespace FF8
 
                     break;
 
-                case Ditems.Feild:
+                case Ditems.Field:
                     FieldPointer++;
                     break;
 
@@ -705,7 +705,7 @@ namespace FF8
                 case Ditems.Battle:
                     return debug_choosedBS.ToString("D4");
 
-                case Ditems.Feild:
+                case Ditems.Field:
                     return debug_choosedField;
 
                 case Ditems.Movie:
