@@ -35,7 +35,8 @@
         private byte* _avio_ctx_buffer;
         private int _avio_ctx_buffer_size;
         private Buffer_data _bufferData;
-        private byte* _convertedData;
+        private byte[] _convertedData;
+        //private byte* _convertedData;
         private MemoryStream _decodedMemoryStream;
         private bool _frameSkip = true;
         private IntPtr _intPtr;
@@ -315,7 +316,8 @@
         /// </summary>
         private bool AudioEnabled => Decoder.StreamIndex >= 0;
 
-        private byte* ConvertedData { get => _convertedData; set => _convertedData = value; }
+        //private byte* ConvertedData { get => _convertedData; set => _convertedData = value; }
+        private byte[] ConvertedData { get => _convertedData; set => _convertedData = value; }
 
         /// <summary>
         /// Current frame number
@@ -621,7 +623,7 @@
                 Stop();
                 if (ConvertedData != null)
                 {
-                    Marshal.FreeHGlobal((IntPtr)ConvertedData);
+                    //Marshal.FreeHGlobal((IntPtr)ConvertedData);
                 }
                 if (_intPtr != null)
                 {
@@ -1046,7 +1048,8 @@
                                                  ResampleFrame->nb_samples,
                                                  (AVSampleFormat)ResampleFrame->format, 0);
 
-            ConvertedData = (byte*)Marshal.AllocHGlobal(convertedFrameBufferSize);
+            //ConvertedData = (byte*)Marshal.AllocHGlobal(convertedFrameBufferSize);
+            ConvertedData = new byte[convertedFrameBufferSize];
         }
 
         /// <summary>
@@ -1137,11 +1140,10 @@
                 {
                     break;
                 }
-                fixed (byte** tmp = &_convertedData)
+                //fixed (byte** tmp = &_convertedData)
+                fixed (byte* tmp = &_convertedData[0])
                 {
-                    outSamples = ffmpeg.swr_convert(ResampleContext,
-                                                tmp,
-                                                ResampleFrame->nb_samples, null, 0);
+                        outSamples = ffmpeg.swr_convert(ResampleContext, &tmp, ResampleFrame->nb_samples, null, 0);
                 }
                 int buffer_size = ffmpeg.av_samples_get_buffer_size(null,
                     ResampleFrame->channels,
@@ -1237,7 +1239,18 @@
             while (!((Mode == FfccMode.PROCESS_ALL && State == FfccState.DONE) || (State == FfccState.DONE || State == FfccState.WAITING)));
             return ret;
         }
-
+        private int WritetoMs(ref byte[] output, int start,ref int length)
+        {
+            if (Mode == FfccMode.STATE_MACH)
+            {
+                LoadSoundFromStream(ref output, start, ref length);
+            }
+            else
+            {
+                DecodedMemoryStream.Write(output,start,length);
+            }
+            return length - start;
+        }
         /// <summary>
         /// Write to Memory Stream.
         /// </summary>
