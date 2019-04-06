@@ -22,7 +22,7 @@ namespace FF8
                     String installLocation = (String)registryKey.GetValue(SteamGamePathTag);
                     String dataPath = Path.Combine(installLocation, "Data", "lang-en");
                     if (Directory.Exists(dataPath))
-                        return new GameLocation(installLocation);
+                        return new GameLocation(dataPath);
                 }
             }
 

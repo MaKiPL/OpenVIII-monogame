@@ -173,6 +173,10 @@
     <Compile Include="PseudoBufferedStream.cs" />
     <Compile Include="Sources\Environment\Game\Location\HardcodedGameLocationProvider.cs" />
     <Compile Include="Sources\Exceptions\ExceptionList.cs" />
+    <Compile Include="Sources\MonoGame\Hooks\IMonoGameHook.cs" />
+    <Compile Include="Sources\MonoGame\Hooks\MonoGameHooks.cs" />
+    <Compile Include="Sources\MonoGame\Hooks\OpenALWindowsHook.cs" />
+    <Compile Include="Sources\NetFramework\TypeExtensionMethods.cs" />
     <Compile Include="TEX.cs" />
     <Compile Include="TIM2.cs" />
     <Compile Include="debug_battleDat.cs" />

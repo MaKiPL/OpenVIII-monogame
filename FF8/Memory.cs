@@ -100,7 +100,7 @@ namespace FF8
 
         public static int module = MODULE_OVERTURE_DEBUG;
         
-        public static string FF8DIR => GameLocation.Current.Path;
+        public static string FF8DIR => GameLocation.Current.DataPath;
 
         /// <summary>
         /// If true by the end of Update() will skip the next Draw()
