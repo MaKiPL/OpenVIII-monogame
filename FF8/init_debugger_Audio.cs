@@ -43,13 +43,34 @@ namespace FF8
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         private struct SoundEntry
         {
-            public int Size;
-            public int Offset;
+            public UInt32 Size;
+            public UInt32 Offset;
+            private UInt32 output_TotalSize => Size+70; // Total bytes of file -8 because for some reason 8 bytes don't count
+            private  const UInt32 output_HeaderSize = 50; //Total bytes of Header
+            private  UInt32 output_DataSize => Size; //Total bytes of Data Section
             //public byte[] UNK; //12
-            public WAVEFORMATEX WAVFORMATEX; //18
-            public ushort SamplesPerBlock;
-            public ushort ADPCM;
-            public ADPCMCOEFSET[] ADPCMCoefSets; //array should be of [ADPCM] size
+            //public WAVEFORMATEX WAVFORMATEX; //18 header starts here
+            //public ushort SamplesPerBlock; //2
+            //public ushort ADPCM; //2
+            //public ADPCMCOEFSET[] ADPCMCoefSets; //array should be of [ADPCM] size //7*4 = 28
+            public byte[] HeaderData;
+            public void fillHeader(BinaryReader br)
+            {
+                if (HeaderData == null)
+                {
+                    HeaderData = new byte[output_HeaderSize + 28];
+                    using (MemoryStream ms = new MemoryStream(HeaderData))
+                    {
+                        ms.Write(Encoding.ASCII.GetBytes("RIFF"),0,4);
+                        ms.Write(getBytes(output_TotalSize), 0, 4);
+                        ms.Write(Encoding.ASCII.GetBytes("WAVEfmt "), 0, 8);
+                        ms.Write(getBytes(output_HeaderSize), 0, 4);
+                        ms.Write(br.ReadBytes((int)output_HeaderSize), 0, (int)output_HeaderSize);
+                        ms.Write(Encoding.ASCII.GetBytes("data"), 0, 4);
+                        ms.Write(getBytes(output_DataSize), 0, 4);
+                    }
+                }
+            }
         }
 #pragma warning disable CS0649
 
@@ -271,7 +292,7 @@ namespace FF8
                 fs.Seek(36, SeekOrigin.Current);
                 for (int i = 0; i < soundEntries.Length - 1; i++)
                 {
-                    int sz = br.ReadInt32();
+                    UInt32 sz = br.ReadUInt32();
                     if (sz == 0)
                     {
                         fs.Seek(34, SeekOrigin.Current); continue;
@@ -280,28 +301,29 @@ namespace FF8
                     soundEntries[i] = new SoundEntry
                     {
                         Size = sz,
-                        Offset = br.ReadInt32()
+                        Offset = br.ReadUInt32()
                     };
                     //soundEntries[i].UNK = br.ReadBytes(12);
                     fs.Seek(12, SeekOrigin.Current);
-                    soundEntries[i].WAVFORMATEX = new WAVEFORMATEX
-                    {
-                        wFormatTag = br.ReadUInt16(),//2
-                        nChannels = br.ReadUInt16(),//2
-                        nSamplesPerSec = br.ReadUInt32(),//4
-                        nAvgBytesPerSec = br.ReadUInt32(),//4
-                        nBlockAlign = br.ReadUInt16(),//2
-                        wBitsPerSample = br.ReadUInt16(),//2
-                        cbSize = br.ReadUInt16()//2
-                    };
-                    soundEntries[i].SamplesPerBlock = br.ReadUInt16();
-                    soundEntries[i].ADPCM = br.ReadUInt16();
-                    soundEntries[i].ADPCMCoefSets = new ADPCMCOEFSET[soundEntries[i].ADPCM];
-                    for (ushort j = 0; j < soundEntries[i].ADPCM; j++)
-                    {
-                        soundEntries[i].ADPCMCoefSets[j].iCoef1 = br.ReadInt16();
-                        soundEntries[i].ADPCMCoefSets[j].iCoef2 = br.ReadInt16();
-                    }
+                    //soundEntries[i].WAVFORMATEX = new WAVEFORMATEX
+                    //{
+                    //    wFormatTag = br.ReadUInt16(),//2
+                    //    nChannels = br.ReadUInt16(),//2
+                    //    nSamplesPerSec = br.ReadUInt32(),//4
+                    //    nAvgBytesPerSec = br.ReadUInt32(),//4
+                    //    nBlockAlign = br.ReadUInt16(),//2
+                    //    wBitsPerSample = br.ReadUInt16(),//2
+                    //    cbSize = br.ReadUInt16()//2
+                    //};
+                    //soundEntries[i].SamplesPerBlock = br.ReadUInt16();
+                    //soundEntries[i].ADPCM = br.ReadUInt16();
+                    //soundEntries[i].ADPCMCoefSets = new ADPCMCOEFSET[soundEntries[i].ADPCM];
+                    //for (ushort j = 0; j < soundEntries[i].ADPCM; j++)
+                    //{
+                    //    soundEntries[i].ADPCMCoefSets[j].iCoef1 = br.ReadInt16();
+                    //    soundEntries[i].ADPCMCoefSets[j].iCoef2 = br.ReadInt16();
+                    //}
+                    soundEntries[i].fillHeader(br);
                 }
             }
             soundEntriesCount = soundEntries.Length;
@@ -341,8 +363,8 @@ namespace FF8
                     //GCHandle gc = GCHandle.Alloc(soundEntries[soundID].WAVFORMATEX, GCHandleType.Pinned);
                     //WAVEFORMATEX format = (WAVEFORMATEX)Marshal.PtrToStructure(gc.AddrOfPinnedObject(), typeof(WAVEFORMATEX));
                     //gc.Free();
-                    WAVEFORMATEX format = soundEntries[soundID].WAVFORMATEX;
-                    byte[] rawBuffer = br.ReadBytes(soundEntries[soundID].Size);
+                    //WAVEFORMATEX format = soundEntries[soundID].WAVFORMATEX;
+                    byte[] rawBuffer = br.ReadBytes((int)soundEntries[soundID].Size);
                     //sfxBufferList.Add(rawBuffer);
                     //byte[] sfxBuffer = sfxBufferList.SelectMany(x => x).ToArray();
 
@@ -364,34 +386,36 @@ namespace FF8
                     //using (FileStream fileStream = File.OpenWrite(path))
                     using (MemoryStream fileStream = new MemoryStream())
                     {
-                        int filesize = Marshal.SizeOf(soundEntries[soundID].WAVFORMATEX) + rawBuffer.Length + 52; //size of file in bytes -8
-                        //write header
-                        byte[] header;
-                        header = Encoding.ASCII.GetBytes("RIFF");
-                        fileStream.Write(header, 0, header.Length);
-                        header = getBytes(filesize);
-                        fileStream.Write(header, 0, header.Length);
-                        header = Encoding.ASCII.GetBytes("WAVEfmt ");
-                        fileStream.Write(header, 0, header.Length);
-                        filesize = Marshal.SizeOf(soundEntries[soundID].WAVFORMATEX) + 32; //size of header
-                        header = getBytes(filesize);
-                        fileStream.Write(header, 0, header.Length);
-                        header = getBytes(soundEntries[soundID].WAVFORMATEX);
-                        fileStream.Write(header, 0, header.Length);
-                        header = BitConverter.GetBytes(soundEntries[soundID].SamplesPerBlock);
-                        fileStream.Write(header, 0, header.Length);
-                        header = BitConverter.GetBytes(soundEntries[soundID].ADPCM);
-                        fileStream.Write(header, 0, header.Length);
-                        foreach (ADPCMCOEFSET item in soundEntries[soundID].ADPCMCoefSets)
-                        {
-                            header = getBytes(item);
-                            fileStream.Write(header, 0, header.Length);
-                        }
-                        header = Encoding.ASCII.GetBytes("data");
-                        fileStream.Write(header, 0, header.Length);
-                        header = BitConverter.GetBytes(rawBuffer.Length); //size of data
-                        fileStream.Write(header, 0, header.Length);
+                        ////int filesize = Marshal.SizeOf(soundEntries[soundID].WAVFORMATEX) + rawBuffer.Length + 52; //size of file in bytes -8
+                        //int filesize = rawBuffer.Length + 70;
+                        ////write header
+                        //byte[] header;
+                        //header = Encoding.ASCII.GetBytes("RIFF");
+                        //fileStream.Write(header, 0, header.Length);
+                        //header = getBytes(filesize);
+                        //fileStream.Write(header, 0, header.Length);
+                        //header = Encoding.ASCII.GetBytes("WAVEfmt ");
+                        //fileStream.Write(header, 0, header.Length);
+                        //filesize = Marshal.SizeOf(soundEntries[soundID].WAVFORMATEX) + 32; //size of header
+                        //header = getBytes(filesize);
+                        //fileStream.Write(header, 0, header.Length);
+                        //header = getBytes(soundEntries[soundID].WAVFORMATEX);
+                        //fileStream.Write(header, 0, header.Length);
+                        //header = BitConverter.GetBytes(soundEntries[soundID].SamplesPerBlock);
+                        //fileStream.Write(header, 0, header.Length);
+                        //header = BitConverter.GetBytes(soundEntries[soundID].ADPCM);
+                        //fileStream.Write(header, 0, header.Length);
+                        //foreach (ADPCMCOEFSET item in soundEntries[soundID].ADPCMCoefSets)
+                        //{
+                        //    header = getBytes(item);
+                        //    fileStream.Write(header, 0, header.Length);
+                        //}
+                        //header = Encoding.ASCII.GetBytes("data");
+                        //fileStream.Write(header, 0, header.Length);
+                        //header = BitConverter.GetBytes(rawBuffer.Length); //size of data
+                        //fileStream.Write(header, 0, header.Length);
                         //write data
+                        fileStream.Write(soundEntries[soundID].HeaderData, 0, soundEntries[soundID].HeaderData.Length);
                         fileStream.Write(rawBuffer, 0, rawBuffer.Length);
 
                         if (SoundChannels[CurrentSoundChannel] != null)

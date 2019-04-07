@@ -393,7 +393,7 @@
         /// State ffcc is in.
         /// </summary>
         private FfccState State { get; set; }
-        
+
         #endregion Properties
 
         #region Methods
@@ -422,45 +422,53 @@
         /// <returns>false if EOF, or true if grabbed frame</returns>
         public bool Decode(out AVFrame frame)
         {
-            Return = ffmpeg.avcodec_receive_frame(Decoder.CodecContext, Decoder.Frame);
-            if (Return == ffmpeg.AVERROR(ffmpeg.EAGAIN))
+            do
             {
-                do
+                //need this extra receive frame for when decoding audio with >1 frame per packet
+                Return = ffmpeg.avcodec_receive_frame(Decoder.CodecContext, Decoder.Frame);
+                if (Return == ffmpeg.AVERROR(ffmpeg.EAGAIN))
                 {
                     do
                     {
+                        do
+                        {
+                            //make sure packet is unref before getting a new one.
+                            ffmpeg.av_packet_unref(Decoder.Packet);
+                            Return = ffmpeg.av_read_frame(Decoder.Format, Decoder.Packet);
+                            if (Return == ffmpeg.AVERROR_EOF)
+                            {
+                                goto EOF;
+                            }
+                            else
+                            {
+                                CheckReturn();
+                            }
+                        }
+                        //check for correct stream.
+                        while (Decoder.Packet->stream_index != Decoder.StreamIndex);
+                        Return = ffmpeg.avcodec_send_packet(Decoder.CodecContext, Decoder.Packet);
                         ffmpeg.av_packet_unref(Decoder.Packet);
-                        Return = ffmpeg.av_read_frame(Decoder.Format, Decoder.Packet);
-                        if (Return == ffmpeg.AVERROR_EOF)
-                        {
-                            goto EOF;
-                        }
-                        else
-                        {
-                            CheckReturn();
-                        }
+                        CheckReturn();
+                        Return = ffmpeg.avcodec_receive_frame(Decoder.CodecContext, Decoder.Frame);
                     }
-                    while (Decoder.Packet->stream_index != Decoder.StreamIndex);
-                    Return = ffmpeg.avcodec_send_packet(Decoder.CodecContext, Decoder.Packet);
-                    ffmpeg.av_packet_unref(Decoder.Packet);
+                    while (Return == ffmpeg.AVERROR(ffmpeg.EAGAIN));
                     CheckReturn();
-                    Return = ffmpeg.avcodec_receive_frame(Decoder.CodecContext, Decoder.Frame);
                 }
-                while (Return == ffmpeg.AVERROR(ffmpeg.EAGAIN));
-                CheckReturn();
+                else if (Return == ffmpeg.AVERROR_EOF)
+                {
+                    goto EOF;
+                }
+                else
+                {
+                    CheckReturn();
+                }
             }
-            else if (Return == ffmpeg.AVERROR_EOF)
-            {
-                goto EOF;
-            }
-            else
-            {
-                CheckReturn();
-            }
-
+            //check for frameskip, if enabled check if behind.
+            while (FrameSkip && Behind);
             frame = *Decoder.Frame;
             return true;
 
+            //end of file, check for loop and end.
             EOF:
             Loop();
             frame = *Decoder.Frame;
@@ -483,10 +491,12 @@
         /// <returns>Returns -1 if missing stream or returns AVERROR or returns 0 if no problem.</returns>
         public int Next()
         {
+            //if stream doesn't exist or stream is done, end
             if (Decoder.StreamIndex == -1 || State == FfccState.DONE)
             {
                 return -1;
             }
+            // read next frame(s)
             else
             {
                 return Update(FfccState.READONE);
@@ -1079,10 +1089,7 @@
         {
             while (Decode(out AVFrame _DecodedFrame))
             {
-                if (FrameSkip && Behind)
-                {
-                    continue;
-                }
+
 
                 if (MediaType == AVMediaType.AVMEDIA_TYPE_VIDEO)
                 {
@@ -1143,7 +1150,7 @@
                 //fixed (byte** tmp = &_convertedData)
                 fixed (byte* tmp = &_convertedData[0])
                 {
-                        outSamples = ffmpeg.swr_convert(ResampleContext, &tmp, ResampleFrame->nb_samples, null, 0);
+                    outSamples = ffmpeg.swr_convert(ResampleContext, &tmp, ResampleFrame->nb_samples, null, 0);
                 }
                 int buffer_size = ffmpeg.av_samples_get_buffer_size(null,
                     ResampleFrame->channels,
@@ -1239,7 +1246,7 @@
             while (!((Mode == FfccMode.PROCESS_ALL && State == FfccState.DONE) || (State == FfccState.DONE || State == FfccState.WAITING)));
             return ret;
         }
-        private int WritetoMs(ref byte[] output, int start,ref int length)
+        private int WritetoMs(ref byte[] output, int start, ref int length)
         {
             if (Mode == FfccMode.STATE_MACH)
             {
@@ -1247,7 +1254,7 @@
             }
             else
             {
-                DecodedMemoryStream.Write(output,start,length);
+                DecodedMemoryStream.Write(output, start, length);
             }
             return length - start;
         }
