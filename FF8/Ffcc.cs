@@ -34,13 +34,13 @@
         private AVIOContext* _avio_ctx;
         private byte* _avio_ctx_buffer;
         private int _avio_ctx_buffer_size;
-        private Buffer_data _bufferData;
         private byte[] _convertedData;
         //private byte* _convertedData;
         private MemoryStream _decodedMemoryStream;
         private bool _frameSkip = true;
-        private IntPtr _intPtr;
+        //private IntPtr _intPtr;
         private int _loopstart;
+        public static string DataFileName;
 
         #endregion Fields
 
@@ -49,10 +49,7 @@
         /// <summary>
         /// Opens filename and init class.
         /// </summary>
-        public Ffcc(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH, int loopstart = -1)
-        {
-            Init(filename, mediatype, mode, loopstart);
-        }
+        public Ffcc(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH, int loopstart = -1) => Init(filename, mediatype, mode, loopstart);
 
         /// <summary>
         /// Opens filename and init class.
@@ -64,9 +61,16 @@
         /// https://stackoverflow.com/questions/24758386/intptr-to-callback-function probably could
         /// be wrote better theres alot of hoops to jump threw
         /// </remarks>
-        public Ffcc(byte[] data, int length, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.PROCESS_ALL, int loopstart = -1)
+        //public Ffcc(byte[] data, int length, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.PROCESS_ALL, int loopstart = -1)
+        //{
+        //LoadFromRAM(data, length);
+        //Init(null, mediatype, mode, loopstart);
+        //}
+
+        public Ffcc(Buffer_Data* buffer_Data, string datafilename, AVMediaType mediatype, FfccMode mode, int loopstart = -1)
         {
-            LoadFromRAM(data, length);
+            DataFileName = datafilename;
+            LoadFromRAM(buffer_Data);
             Init(null, mediatype, mode, loopstart);
         }
 
@@ -468,8 +472,8 @@
             frame = *Decoder.Frame;
             return true;
 
-            //end of file, check for loop and end.
-            EOF:
+//end of file, check for loop and end.
+EOF:
             Loop();
             frame = *Decoder.Frame;
             return false;
@@ -478,12 +482,9 @@
         /// <summary>
         /// Dispose of all leaky varibles.
         /// </summary>
-        public void Dispose()
-        {
+        public void Dispose() =>
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above. GC.SuppressFinalize(this);
-        }
+            Dispose(true);// TODO: uncomment the following line if the finalizer is overridden above. GC.SuppressFinalize(this);
 
         /// <summary>
         /// Attempts to get 1 frame of Video, or refill Audio buffer.
@@ -635,10 +636,10 @@
                 {
                     //Marshal.FreeHGlobal((IntPtr)ConvertedData);
                 }
-                if (_intPtr != null)
-                {
-                    Marshal.FreeHGlobal(_intPtr);
-                }
+                //if (_intPtr != null)
+                //{
+                //    Marshal.FreeHGlobal(_intPtr);
+                //}
                 ffmpeg.sws_freeContext(ScalerContext);
                 if (ResampleContext != null)
                 {
@@ -667,10 +668,7 @@
         /// throw new exception
         /// </summary>
         /// <param name="v">string of message</param>
-        private static void die(string v)
-        {
-            throw new Exception(v.Trim('\0'));
-        }
+        private static void die(string v) => throw new Exception(v.Trim('\0'));
 
         /// <summary>
         /// Compairs two numbers and returns the smallest
@@ -678,10 +676,7 @@
         /// <param name="a">number a</param>
         /// <param name="b">number b</param>
         /// <returns>smaller of two numbers</returns>
-        private static int FFMIN(int a, int b)
-        {
-            return a < b ? a : b;
-        }
+        private static int FFMIN(int a, int b) => a < b ? a : b;
 
         /// <summary>
         /// For reading data from a memory pointer as if it's a file.
@@ -692,20 +687,11 @@
         /// <returns>Total bytes read, or EOF</returns>
         private static int Read_packet(void* opaque, byte* buf, int buf_size)
         {
-            Buffer_data* bd = (Buffer_data*)opaque;
-            buf_size = FFMIN(buf_size, bd->size);
+            Buffer_Data* bd = (Buffer_Data*)opaque;
 
-            if (buf_size <= 0)
-            {
-                return ffmpeg.AVERROR_EOF;
-            }
+            return bd->Read(buf, buf_size);
 
-            // copy internal buffer data to buf
-            Buffer.MemoryCopy((void*)bd->ptr, (void*)buf, buf_size, buf_size);
-            bd->ptr += buf_size;
-            bd->size -= buf_size;
 
-            return buf_size;
         }
 
         /// <summary>
@@ -796,19 +782,17 @@
         /// <summary>
         /// Sets up AVFormatContext to be able from the memory buffer.
         /// </summary>
-        /// <param name="buffer">Pointer to data</param>
-        /// <param name="buffer_size">Size of data</param>
-        private void LoadFromRAM(IntPtr buffer, int buffer_size)
+        private void LoadFromRAM(Buffer_Data* bd)
         {
             _avio_ctx = null;
 
             _avio_ctx_buffer_size = 4096;
             int ret = 0;
-            _bufferData = new Buffer_data
-            {
-                ptr = buffer,
-                size = buffer_size
-            };
+            //_bufferData = new Buffer_Data
+            //{
+            //    Header = buffer,
+            //    HeaderSize = buffer_size
+            //};
 
             _avio_ctx_buffer = (byte*)ffmpeg.av_malloc((ulong)_avio_ctx_buffer_size);
             if (_avio_ctx_buffer == null)
@@ -817,10 +801,8 @@
                 return;
             }
             avio_alloc_context_read_packet rf = new avio_alloc_context_read_packet(Read_packet);
-            fixed (Buffer_data* tmp = &_bufferData)
-            {
-                _avio_ctx = ffmpeg.avio_alloc_context(_avio_ctx_buffer, _avio_ctx_buffer_size, 0, tmp, rf, null, null);
-            }
+            _avio_ctx = ffmpeg.avio_alloc_context(_avio_ctx_buffer, _avio_ctx_buffer_size, 0, bd, rf, null, null);
+
 
             if (_avio_ctx == null)
             {
@@ -835,12 +817,12 @@
         /// </summary>
         /// <param name="data">incoming data</param>
         /// <param name="length">size of data</param>
-        private void LoadFromRAM(byte[] data, int length)
-        {
-            _intPtr = Marshal.AllocHGlobal(length);
-            Marshal.Copy(data, 0, _intPtr, length);
-            LoadFromRAM(_intPtr, length);
-        }
+        //private void LoadFromRAM(byte[] data, int length)
+        //{
+        //    _intPtr = Marshal.AllocHGlobal(length);
+        //    Marshal.Copy(data, 0, _intPtr, length);
+        //    LoadFromRAM(_intPtr, length);
+        //}
 
         /// <summary>
         /// Load sound from Memorystream into a SoundEFFect
@@ -883,10 +865,7 @@
         /// <summary>
         /// Load sound from memory stream by default.
         /// </summary>
-        private void LoadSoundFromStream()
-        {
-            LoadSoundFromStream(ref _decodedMemoryStream);
-        }
+        private void LoadSoundFromStream() => LoadSoundFromStream(ref _decodedMemoryStream);
 
         /// <summary>
         /// If looping seek back to LOOPSTART
@@ -1298,12 +1277,78 @@
         /// <summary>
         /// Used only when reading ADPCM data from memory.
         /// </summary>
-        private struct Buffer_data
+        public struct Buffer_Data
         {
             #region Fields
 
-            public IntPtr ptr;
-            public int size;
+            public IntPtr Header;
+            public UInt32 HeaderSize;
+
+            public void SetHeader(IntPtr value) => Header = value;
+            public void SetHeader(byte* value) => Header = (IntPtr)value;
+
+
+            public UInt32 DataSeekLoc;
+            public UInt32 DataSize;
+
+            private unsafe int ReadHeader(byte* buf, int buf_size)
+            {
+                buf_size = FFMIN(buf_size, (int)HeaderSize);
+
+                if (buf_size == 0)
+                {
+                    return ffmpeg.AVERROR_EOF;
+                }
+
+                // copy internal buffer data to buf
+                Buffer.MemoryCopy((void*)Header, (void*)buf, buf_size, buf_size);
+                Header += buf_size;
+                HeaderSize -= (uint)buf_size;
+
+                return buf_size;
+            }
+
+            private unsafe int ReadData(byte* buf, int buf_size)
+            {
+                buf_size = FFMIN(buf_size, (int)DataSize);
+
+                if (buf_size == 0)
+                {
+                    return ffmpeg.AVERROR_EOF;
+                }
+                using (FileStream fs = File.OpenRead(DataFileName))
+                {
+                    fs.Seek(DataSeekLoc, SeekOrigin.Begin);
+                    using (BinaryReader br = new BinaryReader(fs))
+                    {
+                        using (UnmanagedMemoryStream ums = new UnmanagedMemoryStream(buf, buf_size, buf_size, FileAccess.Write))
+                        {
+                            // copy internal buffer data to buf
+                            ums.Write(br.ReadBytes(buf_size), 0, buf_size);
+                            DataSeekLoc += (uint)buf_size;
+                            DataSize -= (uint)buf_size;
+
+                            return buf_size;
+                        }
+                    }
+                }
+            }
+            public unsafe int Read(byte* buf, int buf_size)
+            {
+                int ret;
+                if ((ret = ReadHeader(buf, buf_size)) != ffmpeg.AVERROR_EOF)
+                    return ret;
+                else
+                    return ReadData(buf, buf_size);
+            }
+            //can't do this because soon as fixed block ends the pointer is no good.
+            //private void SetHeader(byte[] value)
+            //{
+            //    fixed (byte* tmp = &value[0])
+            //    {
+            //        Header = (IntPtr)tmp;
+            //    }
+            //}
 
             #endregion Fields
 
