@@ -1207,13 +1207,14 @@ EOF:
 
                     case FfccState.READONE:
                         PrepareProcess();
-                        if (State == FfccState.WAITING)
+                        switch (State)
                         {
-                            ret = 0;
-                        }
-                        else
-                        {
-                            ret = -1;
+                            case FfccState.WAITING:
+                                ret = 0;
+                                break;
+                            default:
+                                ret = -1;
+                                break;
                         }
                         break;
 

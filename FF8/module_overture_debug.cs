@@ -296,16 +296,9 @@ namespace FF8
                 }
 
                 string[] lof = aw.GetListOfFiles();
-                string fileName;
-                if (bNames)
-                {
-                    fileName = lof.First(x => x.ToLower().Contains($"{names}{splashName.ToString("D2")}"));
-                }
-                else
-                {
-                    fileName = lof.First(x => x.ToLower().Contains($"{loops}{splashLoop.ToString("D2")}"));
-                }
-
+                string fileName = bNames
+                    ? lof.First(x => x.ToLower().Contains($"{names}{splashName.ToString("D2")}"))
+                    : lof.First(x => x.ToLower().Contains($"{loops}{splashLoop.ToString("D2")}"));
                 byte[] buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_MAIN, fileName);
                 uint uncompSize = BitConverter.ToUInt32(buffer, 0);
                 buffer = LZSS.DecompressAll(buffer, (uint)buffer.Length);
