@@ -23,7 +23,8 @@ namespace FF8
             { Ditems.Movie, new Item{Text="Movie debug render: {0}"} },
             { Ditems.Music, new Item{Text="Play/Stop music : {0}"} },
             { Ditems.Sounds, new Item{Text="Play audio.dat: {0}"} },
-            { Ditems.World, new Item{Text="Jump to World Map"} }
+            { Ditems.World, new Item{Text="Jump to World Map"} },
+            { Ditems.Menu, new Item{Text="Test Menu"} }
         };
 
         /// <summary>
@@ -70,7 +71,8 @@ namespace FF8
             Movie,
             Music,
             Sounds,
-            World
+            World,
+            Menu
         }
 
         /// <summary>
@@ -540,6 +542,11 @@ namespace FF8
                     Fade = 0.0f;
                     Memory.module = Memory.MODULE_WORLD_DEBUG;
                     Memory.IsMouseVisible = false;
+                    break;
+
+                case Ditems.Menu:
+                    Fade = 0.0f;
+                    Memory.module = Memory.MODULE_MENU_DEBUG;
                     break;
 
                 default:

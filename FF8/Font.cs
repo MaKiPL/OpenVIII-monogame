@@ -1,14 +1,12 @@
-﻿using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FF8
 {
-    class Font
+    internal class Font
     {
         private Texture2D sysfnt; //21 characters long; char is always 12x12
         private Texture2D sysfnt00;
@@ -18,7 +16,7 @@ namespace FF8
         private static readonly Dictionary<byte, string> chartable = new Dictionary<byte, string>
         {
             {0x00, "t"},
-            {0x02, "\n"},
+            {0x02, "\n"}, // changed \n to signal draw text to make a new line
             {0x03, ""},
             {0x04, "" }, //Probably
             {0x0E, "" }, //Probably
@@ -159,10 +157,7 @@ namespace FF8
         };
         #endregion
 
-        public Font()
-        {
-            LoadFonts();
-        }
+        public Font() => LoadFonts();
 
         internal void LoadFonts()
         {
@@ -192,21 +187,29 @@ namespace FF8
         {
             Rectangle ret = new Rectangle(x, y, 0, 0);
             int realX = x;
+            int realY = y;
             int charCountWidth = whichFont == 0 ? 21 : 10;
             int charSize = whichFont == 0 ? 12 : 24;
-
+            float fScaleWidth = (float)Memory.graphics.GraphicsDevice.Viewport.Width / Memory.PreferredViewportWidth;
+            float fScaleHeight = (float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight;
+            int charWidth = (int)(charSize * zoomWidth * fScaleWidth);
+            int charHeight = (int)(charSize * zoomHeight * fScaleHeight);
             foreach (char c in buffer)
             {
+
                 char deltaChar = (char)(c - 32);
                 int verticalPosition = deltaChar / charCountWidth;
                 //i.e. 1280 is 100%, 640 is 50% and therefore 2560 is 200% which means multiply by 0.5f or 2.0f
-                float fScaleWidth = (float)Memory.graphics.GraphicsDevice.Viewport.Width / Memory.PreferredViewportWidth;
-                float fScaleHeight = (float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight;
-
+                if (c == '\n')
+                {
+                    realX = x;
+                    realY += charHeight;
+                    continue;
+                }
                 Rectangle destRect = new Rectangle(realX,
-                    y,
-                    (int)(charSize * zoomWidth * fScaleWidth),
-                    (int)(charSize * zoomHeight * fScaleHeight));
+                realY,
+                charWidth,
+                charHeight);
 
                 Rectangle sourceRect = new Rectangle((deltaChar - (verticalPosition * charCountWidth)) * charSize,
                     verticalPosition * charSize,
@@ -220,9 +223,11 @@ namespace FF8
                 Color.White * Fade);
 
                 realX += (int)(charSize * zoomWidth * fScaleWidth);
-                ret.Height = destRect.Height;
+                int curWidth = realX - x;
+                if (curWidth > ret.Width)
+                    ret.Width = curWidth;
             }
-            ret.Width = realX-ret.X;
+            ret.Height = charHeight + (realY - y);
             return ret;
         }
 
@@ -231,10 +236,13 @@ namespace FF8
         {
             string str = "";
             foreach (char n in s)
+            {
+                if (n == '\n') { str += n; continue; }
                 foreach (KeyValuePair<byte, string> kvp in chartable)
                     if (kvp.Value.Length == 1)
                         if (kvp.Value[0] == n)
                             str += (char)(kvp.Key);
+            }
             return str.Replace("\0", "");
         }
 

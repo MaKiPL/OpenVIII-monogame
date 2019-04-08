@@ -10,12 +10,12 @@ namespace FF8
     //I borrowed this from my Rinoa's toolset, but modified to aim for buffer rather than file-work
     class TEX
     {
-        private Texture texture;
+        public Texture TextureData { get => texture; } //added to get texturedata outside of class.
         private byte[] buffer;
         private int textureLocator;
+        private Texture texture;
 
-
-        struct Texture //RawImage after paletteData
+        public struct Texture //RawImage after paletteData
         {
             public uint Width; //0x3C
             public uint Height; //0x40
@@ -59,6 +59,8 @@ namespace FF8
 
         public Texture2D GetTexture(int forcePalette = -1)
         {
+            if (forcePalette >= texture.NumOfPalettes) //prevents exception for forcing a palette that doesn't exist.
+                return null;
             int localTextureLocator = textureLocator;
             Color[] colors;
             if (texture.PaletteFlag != 0)
@@ -74,12 +76,13 @@ namespace FF8
                     k++;
                 }
                 Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
+
                 byte[] convertBuffer = new byte[texture.Width * texture.Height * 4];
                 for (int i = 0; i < convertBuffer.Length; i += 4)
                 {
                     byte colorkey = buffer[localTextureLocator++];
                     convertBuffer[i] = colors[forcePalette == -1 ? colorkey : (forcePalette * 16) + colorkey].Blue;
-                    convertBuffer[i + 1] = colors[forcePalette == -1 ? colorkey : (forcePalette*16) + colorkey].Green;
+                    convertBuffer[i + 1] = colors[forcePalette == -1 ? colorkey : (forcePalette * 16) + colorkey].Green;
                     convertBuffer[i + 2] = colors[forcePalette == -1 ? colorkey : (forcePalette * 16) + colorkey].Red;
                     convertBuffer[i + 3] = colors[forcePalette == -1 ? colorkey : (forcePalette * 16) + colorkey].Alpha;
                 }
