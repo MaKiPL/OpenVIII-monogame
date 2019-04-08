@@ -414,25 +414,28 @@ namespace FF8
             //header = BitConverter.GetBytes(rawBuffer.Length); //size of data
             //fileStream.Write(header, 0, header.Length);
             //write data
-            unsafe
-            {
-                fixed (byte* tmp = &soundEntries[soundID].HeaderData[0])
-                {
-                    Ffcc.Buffer_Data bd = new Ffcc.Buffer_Data
-                    {
-                        DataSeekLoc = soundEntries[soundID].Offset,
-                        DataSize = soundEntries[soundID].Size,
-                        Header = (IntPtr)tmp,
-                        HeaderSize = (uint)soundEntries[soundID].HeaderData.Length
-                    };
-                    if (SoundChannels[CurrentSoundChannel] != null)
-                    {
-                        SoundChannels[CurrentSoundChannel].Dispose();
-                        SoundChannels[CurrentSoundChannel] = null;
-                    }
-                    SoundChannels[CurrentSoundChannel] = new Ffcc(&bd, Path.Combine(Memory.FF8DIR, "../Sound/audio.dat"), AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
-                }
-            }
+            //unsafe
+            //{
+            //    fixed (byte* tmp = &soundEntries[soundID].HeaderData[0])
+            //    {
+            //        Ffcc.Buffer_Data bd = new Ffcc.Buffer_Data
+            //        {
+            //            DataSeekLoc = soundEntries[soundID].Offset,
+            //            DataSize = soundEntries[soundID].Size,
+            //            Header = (IntPtr)tmp,
+            //            HeaderSize = (uint)soundEntries[soundID].HeaderData.Length
+            //        };
+            //        if (SoundChannels[CurrentSoundChannel] != null)
+            //        {
+            //            SoundChannels[CurrentSoundChannel].Dispose();
+            //            SoundChannels[CurrentSoundChannel] = null;
+            //        }
+            //        SoundChannels[CurrentSoundChannel] = new Ffcc(&bd, Path.Combine(Memory.FF8DIR, "../Sound/audio.dat"), AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
+            //    }
+            //}
+            SoundChannels[CurrentSoundChannel] = new Ffcc(
+                new Ffcc.Buffer_Data{DataSeekLoc = soundEntries[soundID].Offset,DataSize = soundEntries[soundID].Size,HeaderSize = (uint)soundEntries[soundID].HeaderData.Length
+            }, soundEntries[soundID].HeaderData, Path.Combine(Memory.FF8DIR, "../Sound/audio.dat"), AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
             //fileStream.Write(soundEntries[soundID].HeaderData, 0, soundEntries[soundID].HeaderData.Length);
             //    fileStream.Write(rawBuffer, 0, rawBuffer.Length);
 

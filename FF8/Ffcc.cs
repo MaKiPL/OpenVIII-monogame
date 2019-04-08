@@ -74,6 +74,17 @@
             Init(null, mediatype, mode, loopstart);
         }
 
+        public Ffcc(Buffer_Data buffer_Data, byte[] headerData, string datafilename, AVMediaType mediatype, FfccMode mode, int loopstart = -1)
+        {
+            fixed (byte* tmp = &headerData[0])
+            {
+                buffer_Data.SetHeader(tmp);
+                DataFileName = datafilename;
+                LoadFromRAM(&buffer_Data);
+                Init(null, mediatype, mode, loopstart);
+            }
+        }
+
         #endregion Constructors
 
         #region Destructors
