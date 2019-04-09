@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace FF8
 {
-    class Module_battle_debug
+    static class Module_battle_debug
     {
         private static uint bs_cameraPointer;
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
@@ -519,6 +519,8 @@ namespace FF8
 
         private static void InitBattle()
         {
+            MakiExtended.Debugger_Spawn();
+            MakiExtended.Debugger_Feed(typeof(Module_battle_debug));
             Input.OverrideLockMouse=true;
             Input.CurrentMode = Input.MouseLockMode.Center;
 
@@ -531,8 +533,8 @@ namespace FF8
 
             //init renderer
             effect = new BasicEffect(Memory.graphics.GraphicsDevice);
-            camTarget = new Vector3(0, 0f, 0f);
-            camPosition = new Vector3(0f, 50f, -100f);
+            camTarget = new Vector3(41.91198f, 33.59995f, 6.372305f);
+            camPosition = new Vector3(-10.49409f, 39.70397f, 8.321299f);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                                MathHelper.ToRadians(45f),
                                Memory.graphics.GraphicsDevice.DisplayMode.AspectRatio,
