@@ -128,5 +128,30 @@ namespace FF8
 
         public static float ClampOverload(float a, float min, float max)
             => a < min ? max - Math.Abs(a) : a > max ? a - max : a;
+
+        private static MakiDebugger DebuggerWindow;
+        public static List<System.Reflection.FieldInfo> DebuggerFood;
+        public static void Debugger_Spawn()
+        {
+            if (DebuggerWindow == null)
+                DebuggerWindow = new MakiDebugger();
+            else
+            {
+                DebuggerWindow.Close();
+                DebuggerWindow.Dispose();
+                DebuggerWindow = new MakiDebugger();
+            }
+            if (DebuggerFood == null)
+                DebuggerFood = new List<System.Reflection.FieldInfo>();
+            DebuggerFood.Clear();
+            DebuggerWindow.Show();
+        }
+
+        public static void Debugger_Feed(Type b)
+        {
+            var a = b.GetFields(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+            DebuggerFood.AddRange(a);
+            DebuggerWindow.UpdateWindow();
+        }
     }
 }
