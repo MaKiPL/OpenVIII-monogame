@@ -74,7 +74,7 @@ namespace FF8
                             {
                                 Entry tmp = new Entry
                                 {
-                                    CurrentPos= (ushort)ms.Position,
+                                    CurrentPos = (ushort)ms.Position,
                                     Part = c,
                                     X = br.ReadByte(),
                                     Y = br.ReadByte(),
@@ -90,8 +90,8 @@ namespace FF8
                                 tmp.Height = br.ReadByte();
                                 tmp.Offset_Y = br.ReadSByte();
                                 //ms.Seek(1, SeekOrigin.Current);
-                                if (!(tmp.X == 0 && tmp.Y == 0))
-                                    entries[e++] = tmp;
+                                //if (!(tmp.X == 0 && tmp.Y == 0))
+                                entries[e++] = tmp;
                                 //tmp.LoadfromStreamSP2(br);
                             }
                             while (--c > 0);

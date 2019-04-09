@@ -63,8 +63,8 @@ namespace FF8
                     pallet++;
                 currentMode = Mode.Draw;
             }
-            if((Input.Button(Keys.Up) || Input.Button(Keys.Down))&& (icons.GetEntry(icon).GetLoc().count > 1))
-                icon -= (icons.GetEntry(icon).GetLoc().count-1);
+            if ((Input.Button(Keys.Up) || Input.Button(Keys.Down)) && icons.GetEntry(icon) != null && (icons.GetEntry(icon).GetLoc().count > 1))
+                icon -= (icons.GetEntry(icon).GetLoc().count - 1);
             if (Input.Button(Keys.Right))
             {
                 do
@@ -83,7 +83,7 @@ namespace FF8
                 {
                     if (icon == 0)
                         icon = (int)(icons.Count - 1);
-                    else if (icons.GetEntry(icon).GetLoc().count > 1)
+                    else if (icons.GetEntry(icon) != null && icons.GetEntry(icon).GetLoc().count > 1)
                         icon -= icons.GetEntry(icon).GetLoc().count;
                     else
                         icon--;
@@ -116,26 +116,19 @@ namespace FF8
             Memory.SpriteBatchEnd();
             Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
 
-            float scale = ((float)vp.Height / 480) * 3f;
+            float scale = 4f;//((float)vp.Height / 480) * 3f;
             do
             {
                 Rectangle src = icons.GetEntry(icon).GetRectangle();
 
-                //if (src.Height >= src.Width)
-                //{
-                //}
-                //else
-                //{
-                //    scale = vp.Width * 0.1f / src.Width;
-                //}
                 Rectangle dst = new Rectangle()
                 {
                     Width = (int)(src.Width * scale),
                     Height = (int)(src.Height * scale)
                 };
 
-                dst.X = vp.Width / 2 - dst.Width / 2 + (int)(icons.GetEntry(icon).Offset_X * scale);
-                dst.Y = vp.Height / 2 - dst.Height / 2 + (int)(icons.GetEntry(icon).Offset_Y * scale);
+                dst.X = vp.Width / 2 + (int)(icons.GetEntry(icon).Offset_X * scale);
+                dst.Y = vp.Height / 2 + (int)(icons.GetEntry(icon).Offset_Y * scale);
                 if (dst.X < 0)
                     dst.X = 0;
                 if (dst.Y < 0)
