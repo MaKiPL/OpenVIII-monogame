@@ -25,6 +25,7 @@ namespace FF8
 
         public void UpdateWindow()
         {
+            listBox1.Items.Clear();
             foreach(var c in 
             MakiExtended.DebuggerFood)
             {
@@ -57,7 +58,23 @@ namespace FF8
         {
             flowLayoutPanel1.Controls.Clear();
             lastObject = field;
-            object value = field.GetValue(field);
+            object value = null;
+            try
+            {
+                value = field.GetValue(null);
+            }
+            catch //selected type is not accesible due to non-static modifier
+            {
+                for(int i = 0;i<MakiExtended.DebuggerInstanceProvider.Count; i++)
+                {
+                    try { value = field.GetValue(MakiExtended.DebuggerInstanceProvider[i]); if (value != null) break; }
+                    catch { continue; }
+                }
+            }
+
+            if (value == null) //final rescue
+                return;
+
             Type tp = value.GetType();
             if(tp == typeof(int))
             {

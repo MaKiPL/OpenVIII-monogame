@@ -520,7 +520,7 @@ namespace FF8
         private static void InitBattle()
         {
             MakiExtended.Debugger_Spawn();
-            MakiExtended.Debugger_Feed(typeof(Module_battle_debug));
+            MakiExtended.Debugger_Feed(typeof(Module_battle_debug), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
             Input.OverrideLockMouse=true;
             Input.CurrentMode = Input.MouseLockMode.Center;
 

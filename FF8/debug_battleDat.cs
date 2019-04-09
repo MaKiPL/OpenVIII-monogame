@@ -648,6 +648,10 @@ namespace FF8
                         break;
                 }
             }
+            MakiExtended.Debugger_Feed(geometry.GetType(), System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+            MakiExtended.DebuggerInstanceProvider.Add(geometry);
+            MakiExtended.Debugger_Feed(animHeader.GetType(), System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+            MakiExtended.DebuggerInstanceProvider.Add(animHeader);
         }
 
 
