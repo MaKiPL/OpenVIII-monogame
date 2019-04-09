@@ -38,9 +38,14 @@ namespace FF8
             }
         }
 
+        public void _Refresh()
+        {
+            listBox1_SelectedIndexChanged(null, null);
+        }
+
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (listBox1.Items.Count == 0)
+            if (listBox1.Items.Count == 0 || listBox1.SelectedItem == null)
                 return;
             string[] parentDividor = (listBox1.SelectedItem as string).Split(':');
             var field = MakiExtended.DebuggerFood[int.Parse(parentDividor[0])];

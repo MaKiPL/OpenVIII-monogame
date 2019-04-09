@@ -153,5 +153,11 @@ namespace FF8
             DebuggerFood.AddRange(a);
             DebuggerWindow.UpdateWindow();
         }
+
+        public static void Debugger_Update()
+        {
+            if(DebuggerWindow!=null)
+                DebuggerWindow._Refresh();
+        }
     }
 }
