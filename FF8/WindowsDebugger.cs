@@ -122,22 +122,63 @@ namespace FF8
         }
 
         //32 bit integer
-        private void @int(object sender, EventArgs e) => lastObject.SetValue(lastObject, (int)(sender as NumericUpDown).Value);
-        private void @uint(object sender, EventArgs e) => lastObject.SetValue(lastObject, (uint)(sender as NumericUpDown).Value);
+        private void @int(object sender, EventArgs e)
+        {
+            try { lastObject.SetValue(lastObject, (int)(sender as NumericUpDown).Value); }
+            catch {; }
+        }
+
+        private void @uint(object sender, EventArgs e)
+        {
+            try { lastObject.SetValue(lastObject, (uint)(sender as NumericUpDown).Value); }
+            catch {; }
+        }
 
         //vector 3x float
-        private void @vectorX(object sender, EventArgs e) => lastObject.SetValue(lastObject,
-            new Vector3(float.Parse((sender as TextBox).Text),
-                ((Vector3)lastObject.GetValue(lastObject)).Y,
-                ((Vector3)lastObject.GetValue(lastObject)).Z));
-        private void @vectorY(object sender, EventArgs e) => lastObject.SetValue(lastObject,
-            new Vector3(((Vector3)lastObject.GetValue(lastObject)).X,
-                float.Parse((sender as TextBox).Text),
-                ((Vector3)lastObject.GetValue(lastObject)).Z));
-        private void @vectorZ(object sender, EventArgs e) => lastObject.SetValue(lastObject,
-            new Vector3(((Vector3)lastObject.GetValue(lastObject)).X,
-                ((Vector3)lastObject.GetValue(lastObject)).Y,
-                float.Parse((sender as TextBox).Text)));
+        private void @vectorX(object sender, EventArgs e)
+        {
+            try
+            {
+                lastObject.SetValue(lastObject,
+    new Vector3(float.Parse((sender as TextBox).Text),
+    ((Vector3)lastObject.GetValue(lastObject)).Y,
+    ((Vector3)lastObject.GetValue(lastObject)).Z));
+            }
+            catch
+            {
+                ;
+            }
+        }
+
+        private void @vectorY(object sender, EventArgs e)
+        {
+            try
+            {
+                lastObject.SetValue(lastObject,
+    new Vector3(((Vector3)lastObject.GetValue(lastObject)).X,
+    float.Parse((sender as TextBox).Text),
+    ((Vector3)lastObject.GetValue(lastObject)).Z));
+            }
+            catch
+            {
+                ;
+            }
+        }
+
+        private void @vectorZ(object sender, EventArgs e)
+        {
+            try
+            {
+                lastObject.SetValue(lastObject,
+    new Vector3(((Vector3)lastObject.GetValue(lastObject)).X,
+    ((Vector3)lastObject.GetValue(lastObject)).Y,
+    float.Parse((sender as TextBox).Text)));
+            }
+            catch
+            {
+                ;
+            }
+        }
 
 
 
