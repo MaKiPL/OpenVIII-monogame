@@ -650,8 +650,8 @@ namespace FF8
             }
             MakiExtended.Debugger_Feed(geometry.GetType(), System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
             MakiExtended.DebuggerInstanceProvider.Add(geometry);
-            MakiExtended.Debugger_Feed(animHeader.GetType(), System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-            MakiExtended.DebuggerInstanceProvider.Add(animHeader);
+            MakiExtended.Debugger_Feed(animHeader.animations[0].animationFrames[0].GetType(), System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+            MakiExtended.DebuggerInstanceProvider.Add(animHeader.animations[0].animationFrames[0]);
         }
 
 

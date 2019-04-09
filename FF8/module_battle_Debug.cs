@@ -290,7 +290,9 @@ namespace FF8
                     //TODO;
                     continue;
                 }
-                frame[n] = frame[n] == monstersData[n].animHeader.animations[0].cFrames ? 0 : frame[n];
+                frame[n] = frame[n] == monstersData[n].animHeader.animations[0].cFrames ? 0 : 
+                    frame[n] > monstersData[n].animHeader.animations[0].cFrames ? 0 : frame[n];
+
                 for (int i = 0; i < monstersData[n].geometry.cObjects; i++)
                 {
                     var a = monstersData[n].GetVertexPositions(i, new Vector3(-50+(n%12)*10, 50, (n/12)*10), 0, frame[n],frameperFPS/FPS); //DEBUG

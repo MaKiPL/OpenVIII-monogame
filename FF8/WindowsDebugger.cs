@@ -21,7 +21,8 @@ namespace FF8
             InitializeComponent();
         }
 
-        private System.Reflection.FieldInfo lastObject; 
+        private System.Reflection.FieldInfo lastObject;
+        private object instanceProvider;
 
         public void UpdateWindow()
         {
@@ -67,7 +68,7 @@ namespace FF8
             {
                 for(int i = 0;i<MakiExtended.DebuggerInstanceProvider.Count; i++)
                 {
-                    try { value = field.GetValue(MakiExtended.DebuggerInstanceProvider[i]); if (value != null) break; }
+                    try { value = field.GetValue(MakiExtended.DebuggerInstanceProvider[i]); if (value != null) { instanceProvider = MakiExtended.DebuggerInstanceProvider[i]; break; } }
                     catch { continue; }
                 }
             }
@@ -100,6 +101,7 @@ namespace FF8
             }
             if(tp==typeof(Matrix))
             {
+
                 DataGridView dgv = new DataGridView();
                 dgv.Columns.Add("M1", "M1");
                 dgv.Columns.Add("M2", "M2");
@@ -115,6 +117,25 @@ namespace FF8
                 (flowLayoutPanel1.Controls[0] as DataGridView).CellValueChanged += @Matrix;
                 return;
             }
+            if(tp == typeof(Tuple<Vector3[], Debug_battleDat.ShortVector[], Matrix[]>))
+            {
+                DataGridView dgv = new DataGridView();
+                dgv.Columns.Add("M1", "M1");
+                dgv.Columns.Add("M2", "M2");
+                dgv.Columns.Add("M3", "M3");
+                dgv.Columns.Add("M4", "M4");
+                var tmx = (Tuple<Vector3[], Debug_battleDat.ShortVector[], Matrix[]>)value;
+                Matrix[] mxa = tmx.Item3;
+                Matrix mx = mxa[0];
+                dgv.Rows.Add(mx.M11, mx.M12, mx.M13, mx.M14);
+                dgv.Rows.Add(mx.M21, mx.M22, mx.M23, mx.M24);
+                dgv.Rows.Add(mx.M31, mx.M32, mx.M33, mx.M34);
+                dgv.Rows.Add(mx.M41, mx.M42, mx.M43, mx.M44);
+                dgv.AutoSize = true;
+                flowLayoutPanel1.Controls.Add(dgv);
+                (flowLayoutPanel1.Controls[0] as DataGridView).CellValueChanged += @_tmx;
+                return;
+            }
             flowLayoutPanel1.Controls.Add(new Label() { Text = $"UNKNOWN. Type: {tp}", AutoSize=true});
         }
 
@@ -122,7 +143,7 @@ namespace FF8
         private void @Matrix(object sender, DataGridViewCellEventArgs e)
         {
             var dgv = (sender as DataGridView);
-            Matrix mm = (Matrix)lastObject.GetValue(lastObject);
+            Matrix mm = (Matrix)lastObject.GetValue(instanceProvider);
             try
             {
                 mm = new Matrix(
@@ -138,16 +159,38 @@ namespace FF8
             lastObject.SetValue(lastObject, mm);
         }
 
+        //Matrix Tuple3 ShortVec Vec3;
+        private void @_tmx(object sender, DataGridViewCellEventArgs e)
+        {
+            var dgv = (sender as DataGridView);
+            var mma = (Tuple<Vector3[], Debug_battleDat.ShortVector[], Matrix[]>)lastObject.GetValue(instanceProvider); //yes, instanceprovider may be null
+            Matrix mm = mma.Item3[0];
+            try
+            {
+                mm = new Matrix(
+                    float.Parse(dgv.Rows[0].Cells[0].Value.ToString()), float.Parse(dgv.Rows[0].Cells[1].Value.ToString()), float.Parse(dgv.Rows[0].Cells[2].Value.ToString()), float.Parse(dgv.Rows[0].Cells[3].Value.ToString()),
+                    float.Parse(dgv.Rows[1].Cells[0].Value.ToString()), float.Parse(dgv.Rows[1].Cells[1].Value.ToString()), float.Parse(dgv.Rows[1].Cells[2].Value.ToString()), float.Parse(dgv.Rows[1].Cells[3].Value.ToString()),
+                    float.Parse(dgv.Rows[2].Cells[0].Value.ToString()), float.Parse(dgv.Rows[2].Cells[1].Value.ToString()), float.Parse(dgv.Rows[2].Cells[2].Value.ToString()), float.Parse(dgv.Rows[2].Cells[3].Value.ToString()),
+                float.Parse(dgv.Rows[3].Cells[0].Value.ToString()), float.Parse(dgv.Rows[3].Cells[1].Value.ToString()), float.Parse(dgv.Rows[3].Cells[2].Value.ToString()), float.Parse(dgv.Rows[3].Cells[3].Value.ToString()));
+            }
+            catch(Exception ee)
+            {
+                Console.WriteLine(ee.Message);
+            }
+            mma.Item3[0] = mm;
+            lastObject.SetValue(instanceProvider, mma);
+        }
+
         //32 bit integer
         private void @int(object sender, EventArgs e)
         {
-            try { lastObject.SetValue(lastObject, (int)(sender as NumericUpDown).Value); }
+            try { lastObject.SetValue(instanceProvider, (int)(sender as NumericUpDown).Value); }
             catch {; }
         }
 
         private void @uint(object sender, EventArgs e)
         {
-            try { lastObject.SetValue(lastObject, (uint)(sender as NumericUpDown).Value); }
+            try { lastObject.SetValue(instanceProvider, (uint)(sender as NumericUpDown).Value); }
             catch {; }
         }
 
@@ -156,10 +199,10 @@ namespace FF8
         {
             try
             {
-                lastObject.SetValue(lastObject,
+                lastObject.SetValue(instanceProvider,
     new Vector3(float.Parse((sender as TextBox).Text),
-    ((Vector3)lastObject.GetValue(lastObject)).Y,
-    ((Vector3)lastObject.GetValue(lastObject)).Z));
+    ((Vector3)lastObject.GetValue(instanceProvider)).Y,
+    ((Vector3)lastObject.GetValue(instanceProvider)).Z));
             }
             catch
             {
@@ -171,10 +214,10 @@ namespace FF8
         {
             try
             {
-                lastObject.SetValue(lastObject,
-    new Vector3(((Vector3)lastObject.GetValue(lastObject)).X,
+                lastObject.SetValue(instanceProvider,
+    new Vector3(((Vector3)lastObject.GetValue(instanceProvider)).X,
     float.Parse((sender as TextBox).Text),
-    ((Vector3)lastObject.GetValue(lastObject)).Z));
+    ((Vector3)lastObject.GetValue(instanceProvider)).Z));
             }
             catch
             {
@@ -186,9 +229,9 @@ namespace FF8
         {
             try
             {
-                lastObject.SetValue(lastObject,
-    new Vector3(((Vector3)lastObject.GetValue(lastObject)).X,
-    ((Vector3)lastObject.GetValue(lastObject)).Y,
+                lastObject.SetValue(instanceProvider,
+    new Vector3(((Vector3)lastObject.GetValue(instanceProvider)).X,
+    ((Vector3)lastObject.GetValue(instanceProvider)).Y,
     float.Parse((sender as TextBox).Text)));
             }
             catch
