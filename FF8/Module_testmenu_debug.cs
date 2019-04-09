@@ -63,6 +63,8 @@ namespace FF8
                     pallet++;
                 currentMode = Mode.Draw;
             }
+            if((Input.Button(Keys.Up) || Input.Button(Keys.Down))&& (icons.GetEntry(icon).GetLoc().count > 1))
+                icon -= (icons.GetEntry(icon).GetLoc().count-1);
             if (Input.Button(Keys.Right))
             {
                 do
@@ -81,6 +83,8 @@ namespace FF8
                 {
                     if (icon == 0)
                         icon = (int)(icons.Count - 1);
+                    else if (icons.GetEntry(icon).GetLoc().count > 1)
+                        icon -= icons.GetEntry(icon).GetLoc().count;
                     else
                         icon--;
                 }
@@ -107,20 +111,23 @@ namespace FF8
         private static void DrawIcons()
         {
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
+
+            Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
+            Memory.SpriteBatchEnd();
             Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
+
+            float scale = ((float)vp.Height / 480) * 3f;
             do
             {
                 Rectangle src = icons.GetEntry(icon).GetRectangle();
-                float scale;
 
-                if (src.Height >= src.Width)
-                {
-                    scale = vp.Height * 0.25f / src.Height;
-                }
-                else
-                {
-                    scale = vp.Width * 0.25f / src.Width;
-                }
+                //if (src.Height >= src.Width)
+                //{
+                //}
+                //else
+                //{
+                //    scale = vp.Width * 0.1f / src.Width;
+                //}
                 Rectangle dst = new Rectangle()
                 {
                     Width = (int)(src.Width * scale),
@@ -135,12 +142,10 @@ namespace FF8
                     dst.Y = 0;
                 if (dst.X + dst.Width > vp.Width) dst.X = vp.Width - dst.Width;
                 if (dst.Y + dst.Height > vp.Height) dst.Y = vp.Height - dst.Height;
-                Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
                 icons.Draw(icon, pallet, dst);
             }
             while (icons.GetEntry(icon++).Part > 1);
             icon--;
-            Memory.SpriteBatchEnd();
         }
 
         private static void Initialize() => icons = new Icons();

@@ -46,6 +46,7 @@ namespace FF8
                         byte fid = 0;
                         for (int i = 0; i < locs.Length; i++)
                         {
+                            entries[i] = new Entry();
                             fid = entries[i].LoadfromStreamSP2(br, locs[i], (byte)(i - 1 == 0 ? entries[i - 1].Y : 0), fid);
                         }
                     }
