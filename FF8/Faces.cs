@@ -6,13 +6,18 @@ using System.Linq;
 
 namespace FF8
 {
-    internal class Faces
+    internal partial class Faces
     {
+
         #region Fields
 
         private static readonly Texture2D[] faces = new Texture2D[2];
 
         private static Entry[] entries;
+
+        public int Count { get; private set; } = 32;
+
+        public int PalletCount { get; private set; } = 1;
 
         #endregion Fields
 
@@ -26,27 +31,23 @@ namespace FF8
                 byte[] test = ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU,
                     aw.GetListOfFiles().First(x => x.ToLower().Contains("face.sp2")));
                 using (MemoryStream ms = new MemoryStream(test))
-                using (BinaryReader br = new BinaryReader(ms))
                 {
-                    ms.Seek(4, SeekOrigin.Begin);
-                    UInt32[] locs = new UInt32[32];//br.ReadUInt32(); 32 valid values in face.sp2 rest is invalid
-                    entries = new Entry[locs.Length];
-                    for (int i = 0; i < locs.Length; i++)
+                    ushort[] locs;
+                    using (BinaryReader br = new BinaryReader(ms))
                     {
-                        locs[i] = br.ReadUInt32();
-                    }
-                    byte fid = 0;
-                    for (int i = 0; i < locs.Length; i++)
-                    {
-                        ms.Seek(locs[i] + 4, SeekOrigin.Begin);
-                        entries[i].X = br.ReadByte();
-                        entries[i].Y = br.ReadByte();
-                        ms.Seek(2, SeekOrigin.Current);
-                        entries[i].Width = br.ReadUInt16();
-                        entries[i].Height = br.ReadUInt16();
-                        if (i - 1 > 0 && entries[i].Y < entries[i - 1].Y)
-                            fid++;
-                        entries[i].File = fid;
+                        ms.Seek(4, SeekOrigin.Begin);
+                        locs = new UInt16[32];//br.ReadUInt32(); 32 valid values in face.sp2 rest is invalid
+                        entries = new Entry[locs.Length];
+                        for (int i = 0; i < locs.Length; i++)
+                        {
+                            locs[i] = br.ReadUInt16();
+                            ms.Seek(2, SeekOrigin.Current);
+                        }
+                        byte fid = 0;
+                        for (int i = 0; i < locs.Length; i++)
+                        {
+                            fid = entries[i].LoadfromStreamSP2(br, locs[i], (byte)(i - 1 == 0 ? entries[i - 1].Y : 0), fid);
+                        }
                     }
                 }
                 //using (FileStream fs = File.OpenWrite(Path.Combine("d:\\", "face.sp2")))
@@ -119,33 +120,5 @@ namespace FF8
 
         #endregion Methods
 
-        #region Structs
-
-        public struct Entry //Rectangle + File
-        {
-            #region Fields
-
-            private Rectangle src;
-
-            #endregion Fields
-
-            #region Properties
-
-            public byte File { get; set; }
-            public UInt16 Height { get => (UInt16)src.Height; set => src.Height = value; }
-            public UInt16 Width { get => (UInt16)src.Width; set => src.Width = value; }
-            public byte X { get => (byte)src.X; set => src.X = value; }
-            public byte Y { get => (byte)src.Y; set => src.Y = value; }
-
-            #endregion Properties
-
-            #region Methods
-
-            public Rectangle GetRectangle() => src;
-
-            #endregion Methods
-        }
-
-        #endregion Structs
     }
 }

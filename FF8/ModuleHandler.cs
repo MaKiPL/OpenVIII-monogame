@@ -60,6 +60,9 @@ namespace FF8
                 case Memory.MODULE_FACE_TEST:
                     Module_face_test.Update();
                     break;
+                case Memory.MODULE_TESTMENU_DEBUG:
+                    Module_testmenu_debug.Update();
+                    break;
             }
         }
 
@@ -90,6 +93,9 @@ namespace FF8
                     break;
                 case Memory.MODULE_FACE_TEST:
                     Module_face_test.Draw();
+                    break;
+                case Memory.MODULE_TESTMENU_DEBUG:
+                    Module_testmenu_debug.Draw();
                     break;
             }
         }

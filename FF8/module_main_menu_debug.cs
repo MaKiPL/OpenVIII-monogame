@@ -24,7 +24,8 @@ namespace FF8
             { Ditems.Music, new Item{Text="Play/Stop music : {0}"} },
             { Ditems.Sounds, new Item{Text="Play audio.dat: {0}"} },
             { Ditems.World, new Item{Text="Jump to World Map"} },
-            { Ditems.Faces, new Item{Text="Test Faces"} }
+            { Ditems.Faces, new Item{Text="Test Faces"} },
+            { Ditems.TestMenu, new Item{Text="Test Menu Loading"} }
         };
 
         /// <summary>
@@ -72,7 +73,8 @@ namespace FF8
             Music,
             Sounds,
             World,
-            Faces
+            Faces,
+            TestMenu
         }
 
         /// <summary>
@@ -547,6 +549,11 @@ namespace FF8
                 case Ditems.Faces:
                     Fade = 0.0f;
                     Memory.module = Memory.MODULE_FACE_TEST;
+                    break;
+
+                case Ditems.TestMenu:
+                    Fade = 0.0f;
+                    Memory.module = Memory.MODULE_TESTMENU_DEBUG;
                     break;
 
                 default:

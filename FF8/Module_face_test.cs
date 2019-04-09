@@ -10,7 +10,7 @@ namespace FF8
 
         private static Mode currentMode;
 
-        private static Faces faces = new Faces();
+        private static Faces faces;
 
         private static Faces.ID[] FaceValue;
 
@@ -42,7 +42,14 @@ namespace FF8
 
                 case Mode.Wait:
                 case Mode.Draw:
-                    if (pointer >= 0)
+                    DrawFace();
+                    break;
+            }
+        }
+
+        private static void DrawFace()
+        {
+                                if (pointer >= 0)
                     {
                         Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
 
@@ -61,15 +68,13 @@ namespace FF8
                         dst.Width = faces.GetEntry(pos).Width * (dst.Height / faces.GetEntry(pos).Height);
                         dst.X = vp.Width / 2 - dst.Width / 2;
                         dst.Y = 0;
-                        Memory.SpriteBatchStartAlpha();
+                        Memory.SpriteBatchStartStencil();
                         Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
                         faces.Draw(pos, dst);
                         Memory.font.RenderBasicText(Font.CipherDirty($"{FaceValue[pointer].ToString().Replace('_', ' ')}\npos: {pos}\nfile: {i}\ncol: {col}\nrow: {row}\nx: {faces.GetEntry(pos).X}\ny: {faces.GetEntry(pos).Y}\nwidth: {faces.GetEntry(pos).Width}\nheight: {faces.GetEntry(pos).Height}"),
                         (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), 1f, 2f, 0, 1);
                         Memory.SpriteBatchEnd();
                     }
-                    break;
-            }
         }
 
         public static void Update()
@@ -102,6 +107,7 @@ namespace FF8
 
         private static void Initialize()
         {
+            faces = new Faces();
             FaceValue = (Faces.ID[])Enum.GetValues(typeof(Faces.ID));
             Array.Sort(FaceValue);
         }

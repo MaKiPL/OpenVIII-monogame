@@ -67,9 +67,9 @@ namespace FF8
         }
         public static string[] musices;
         public static readonly Dictionary<ushort, List<string>> dicMusic = new Dictionary<ushort, List<string>>(); //ogg and sgt files have same 3 digit prefix.
-        public static void SpriteBatchStartStencil() => spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, null, graphics.GraphicsDevice.DepthStencilState);
+        public static void SpriteBatchStartStencil(SamplerState ss = null) => spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque,ss, graphics.GraphicsDevice.DepthStencilState);
 
-        public static void SpriteBatchStartAlpha() => spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
+        public static void SpriteBatchStartAlpha(SamplerState ss = null) => spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend,ss);
 
         public static void SpriteBatchEnd() => spriteBatch.End();
 
@@ -140,6 +140,7 @@ namespace FF8
         public const int MODULE_MAINMENU_DEBUG = -13;
         public const int MODULE_WORLD_DEBUG = -17;
         public const int MODULE_FACE_TEST = -20;
+        public const int MODULE_TESTMENU_DEBUG = -21;
         #endregion
 
         #region battleProvider
