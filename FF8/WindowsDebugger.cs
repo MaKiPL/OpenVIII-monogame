@@ -76,7 +76,44 @@ namespace FF8
                 (flowLayoutPanel1.Controls[2] as TextBox).TextChanged += @vectorZ;
                 return;
             }
+            if(tp==typeof(Matrix))
+            {
+                DataGridView dgv = new DataGridView();
+                dgv.Columns.Add("M1", "M1");
+                dgv.Columns.Add("M2", "M2");
+                dgv.Columns.Add("M3", "M3");
+                dgv.Columns.Add("M4", "M4");
+                Matrix mx = (Matrix)value;
+                dgv.Rows.Add(mx.M11, mx.M12, mx.M13, mx.M14);
+                dgv.Rows.Add(mx.M21, mx.M22, mx.M23, mx.M24);
+                dgv.Rows.Add(mx.M31, mx.M32, mx.M33, mx.M34);
+                dgv.Rows.Add(mx.M41, mx.M42, mx.M43, mx.M44);
+                dgv.AutoSize = true;
+                flowLayoutPanel1.Controls.Add(dgv);
+                (flowLayoutPanel1.Controls[0] as DataGridView).CellValueChanged += @Matrix;
+                return;
+            }
             flowLayoutPanel1.Controls.Add(new Label() { Text = $"UNKNOWN. Type: {tp}", AutoSize=true});
+        }
+
+        //Matrix
+        private void @Matrix(object sender, DataGridViewCellEventArgs e)
+        {
+            var dgv = (sender as DataGridView);
+            Matrix mm = (Matrix)lastObject.GetValue(lastObject);
+            try
+            {
+                mm = new Matrix(
+                    (float)dgv.Rows[0].Cells[0].Value, (float)dgv.Rows[0].Cells[1].Value, (float)dgv.Rows[0].Cells[2].Value, (float)dgv.Rows[0].Cells[3].Value,
+                    (float)dgv.Rows[1].Cells[0].Value, (float)dgv.Rows[1].Cells[1].Value, (float)dgv.Rows[1].Cells[2].Value, (float)dgv.Rows[1].Cells[3].Value,
+                    (float)dgv.Rows[2].Cells[0].Value, (float)dgv.Rows[2].Cells[1].Value, (float)dgv.Rows[2].Cells[2].Value, (float)dgv.Rows[2].Cells[3].Value,
+                (float)dgv.Rows[3].Cells[0].Value, (float)dgv.Rows[3].Cells[1].Value, (float)dgv.Rows[3].Cells[2].Value, (float)dgv.Rows[3].Cells[3].Value);
+            }
+            catch
+            {
+                ;
+            }
+            lastObject.SetValue(lastObject, mm);
         }
 
         //32 bit integer
