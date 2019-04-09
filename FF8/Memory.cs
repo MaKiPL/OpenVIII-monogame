@@ -99,32 +99,9 @@ namespace FF8
 
 
         public static int module = MODULE_OVERTURE_DEBUG;
-        private static readonly string[] FF8DIR_list = {
-            @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY VIII\Data\lang-en",
-            "/home/robert/FINAL_FANTASY_VIII/Data/lang-en",
-            @"D:\SteamLibrary\steamapps\common\FINAL FANTASY VIII\Data\lang-en",
-            @"D:\Steam\steamapps\common\FINAL FANTASY VIII\Data\lang-en",
-            "/media/griever/Data/SteamLibrary/steamapps/common/FINAL FANTASY VIII/Data/lang-en",
-            "/home/griever/.PlayOnLinux/wineprefix/Steam/drive_c/Program Files/Steam/steamapps/common/FINAL FANTASY VIII/Data/lang-en"
-        };
-        private static string gooddir = "";
-        public static string FF8DIR
-        {
-            get
-            {
-                if (gooddir == "")
-                {
-                    foreach (string s in FF8DIR_list)
-                    {
-                        if (Directory.Exists(s))
-                        {
-                            gooddir = s; break;
-                        }
-                    }
-                }
-                return gooddir;
-            }
-        }
+        
+        public static string FF8DIR => GameLocation.Current.DataPath;
+
         /// <summary>
         /// If true by the end of Update() will skip the next Draw()
         /// </summary>

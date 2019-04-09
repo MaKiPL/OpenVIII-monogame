@@ -67,9 +67,13 @@ Requirements: MonoGame + Visual Studio
 
 4. Open solution FF8.sln
 
-5. Edit game path (so far you have to type it manually) at `Memory.cs:67`:
+5. Edit game path (so far you have to type it manually)
+	at `WindowsGameLocationProvider.cs:34`:
+	at `LinuxGameLocationProvider.cs:16`:
 
-`public const string FF8DIR = @"D:\SteamLibrary\steamapps\common\FINAL FANTASY VIII\Data\lang-en\";`
+`private readonly HardcodedGameLocationProvider _hardcoded = ...`
+
+`@"D:\SteamLibrary\steamapps\common\FINAL FANTASY VIII\Data\lang-en\";`
 
 6. That's all. You can proceed with compilation. 
 
