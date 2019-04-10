@@ -121,7 +121,7 @@ namespace FF8
 
         internal void Draw(ID id, Rectangle dst, float fade = 1f) => Draw((int)id, dst, fade);
 
-        internal void Draw(int id, Rectangle dst, float fade = 1f) => Memory.spriteBatch.Draw(faces[entries[id].File], dst, entries[id].GetRectangle(), Color.White * fade);
+        internal void Draw(int id, Rectangle dst, float fade = 1f) => Memory.spriteBatch.Draw(faces[entries[id].File], dst, entries[id].GetRectangle, Color.White * fade);
 
         #endregion Methods
 

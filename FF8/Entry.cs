@@ -7,7 +7,6 @@ namespace FF8
 {
     public class Entry //Rectangle + File
     {
-
         #region Fields
 
         public byte[] UNK;
@@ -53,7 +52,7 @@ namespace FF8
 
         #region Methods
 
-        public Loc GetLoc() => loc; public Rectangle GetRectangle() => src;
+        public Loc GetLoc => loc; public Rectangle GetRectangle => src;
 
         public byte LoadfromStreamSP2(BinaryReader br, UInt16 loc = 0, byte prevY = 0, byte fid = 0)
         {
@@ -93,12 +92,10 @@ namespace FF8
         }
 
         #endregion Methods
-
     }
 
     public class EntryGroup
     {
-
         #region Fields
 
         private List<Entry> list;
@@ -114,16 +111,25 @@ namespace FF8
 
         #region Properties
 
-        int Height { get => rectangle.Height; }
-        int Offset_X { get => rectangle.X; }
-        int Offset_Y { get => rectangle.Y; }
-        int Width { get => rectangle.Width; }
+        public int Height => rectangle.Height;
+
+        public int Offset_X => rectangle.X;
+
+        public int Offset_Y => rectangle.Y;
+
+        public int Width => rectangle.Width;
+
+        public Rectangle GetRectangle => rectangle;
 
         #endregion Properties
 
         #region Indexers
-
-        public Entry this[int id] => list[id];
+        /// <summary>
+        /// donno if this works for assigning. perfer add.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public Entry this[int id] { get => list[id]; /*set { if (list.Count - 1 < id) Add(value); else list[id] = value; }*/ }
 
         #endregion Indexers
 
@@ -131,7 +137,6 @@ namespace FF8
 
         public void Add(Entry entry)
         {
-
             //TODO fix math
             list.Add(entry);
             if (rectangle.X > entry.Offset_X)
@@ -141,9 +146,7 @@ namespace FF8
                 rectangle.Y = entry.Offset_Y;
             rectangle.Height += entry.Height - (entry.Height + entry.Offset_Y);
         }
-        
 
         #endregion Methods
-
     }
 }

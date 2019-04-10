@@ -63,8 +63,8 @@ namespace FF8
                     pallet++;
                 currentMode = Mode.Draw;
             }
-            if ((Input.Button(Keys.Up) || Input.Button(Keys.Down)) && icons.GetEntry(icon) != null && (icons.GetEntry(icon).GetLoc().count > 1))
-                icon -= (icons.GetEntry(icon).GetLoc().count - 1);
+            if ((Input.Button(Keys.Up) || Input.Button(Keys.Down)) && icons.GetEntry(icon) != null && (icons.GetEntry(icon).GetLoc.count > 1))
+                icon -= (icons.GetEntry(icon).GetLoc.count - 1);
             if (Input.Button(Keys.Right))
             {
                 do
@@ -83,8 +83,8 @@ namespace FF8
                 {
                     if (icon == 0)
                         icon = (int)(icons.Count - 1);
-                    else if (icons.GetEntry(icon) != null && icons.GetEntry(icon).GetLoc().count > 1)
-                        icon -= icons.GetEntry(icon).GetLoc().count;
+                    else if (icons.GetEntry(icon) != null && icons.GetEntry(icon).GetLoc.count > 1)
+                        icon -= icons.GetEntry(icon).GetLoc.count;
                     else
                         icon--;
                 }
@@ -119,7 +119,7 @@ namespace FF8
             float scale = 4f;//((float)vp.Height / 480) * 3f;
             do
             {
-                Rectangle src = icons.GetEntry(icon).GetRectangle();
+                Rectangle src = icons.GetEntry(icon).GetRectangle;
 
                 Rectangle dst = new Rectangle()
                 {
