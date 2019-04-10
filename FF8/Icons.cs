@@ -32,16 +32,16 @@ namespace FF8
                 tex = new TEX(test);
                 PalletCount = tex.TextureData.NumOfPalettes;
                 icons = new Texture2D[PalletCount];
-                //for (int i = 0; i < PalletCount; i++)
-                //{
-                //    icons[i] = tex.GetTexture(i);
-                //    using (FileStream fs = File.OpenWrite($"d:\\icons.{i}.png"))
-                //    {
-                //        //fs.Write(test, 0, test.Length);
+                for (int i = 0; i < PalletCount; i++)
+                {
+                    icons[i] = tex.GetTexture(i);
+                    //using (FileStream fs = File.OpenWrite($"d:\\icons.{i}.png"))
+                    //{
+                    //    //fs.Write(test, 0, test.Length);
 
-                //        icons[i].SaveAsPng(fs, 256, 256);
-                //    }
-                //}
+                    //    icons[i].SaveAsPng(fs, 256, 256);
+                    //}
+                }
                 test = ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU,
                     aw.GetListOfFiles().First(x => x.ToLower().Contains("icon.sp1")));
                 //using (FileStream fs = File.OpenWrite(Path.Combine("d:\\", "icons.sp1")))
@@ -72,27 +72,11 @@ namespace FF8
                             }
                             do
                             {
-                                Entry tmp = new Entry
-                                {
-                                    CurrentPos = (ushort)ms.Position,
-                                    Part = c,
-                                    X = br.ReadByte(),
-                                    Y = br.ReadByte(),
-                                };
+                                Entry tmp = new Entry();
+                                tmp.LoadfromStreamSP1(br);
+                                tmp.Part = c;
                                 tmp.SetLoc(locs[i]);
-
-                                tmp.UNK[0] = br.ReadByte();
-                                tmp.UNK[1] = br.ReadByte();
-                                //ms.Seek(2, SeekOrigin.Current);
-                                tmp.Width = br.ReadByte();
-                                tmp.Offset_X = br.ReadSByte();
-                                //ms.Seek(1, SeekOrigin.Current);
-                                tmp.Height = br.ReadByte();
-                                tmp.Offset_Y = br.ReadSByte();
-                                //ms.Seek(1, SeekOrigin.Current);
-                                //if (!(tmp.X == 0 && tmp.Y == 0))
                                 entries[e++] = tmp;
-                                //tmp.LoadfromStreamSP2(br);
                             }
                             while (--c > 0);
                         }

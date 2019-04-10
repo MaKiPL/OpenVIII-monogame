@@ -17,6 +17,7 @@ namespace FF8
         #endregion Fields
 
         #region Properties
+
         public ushort CurrentPos { get; set; }
         public byte Part { get; set; } = 1;
         public byte File { get; set; }
@@ -24,17 +25,19 @@ namespace FF8
         public byte Width { get => (byte)src.Width; set => src.Width = value; }
         public byte X { get => (byte)src.X; set => src.X = value; }
         public byte Y { get => (byte)src.Y; set => src.Y = value; }
+
         /// <summary>
         /// when you draw shift by X
         /// </summary>
-        public sbyte Offset_X {get => (sbyte) offset.X; set => offset.X = value; }
+        public sbyte Offset_X { get => (sbyte)offset.X; set => offset.X = value; }
+
         /// <summary>
         /// when you draw shift by Y
         /// </summary>
-        public sbyte Offset_Y {get => (sbyte)offset.Y; set => offset.Y = value; }
-    
+        public sbyte Offset_Y { get => (sbyte)offset.Y; set => offset.Y = value; }
 
-        public Loc GetLoc() => loc; public void SetLoc(Loc value) => loc = value; 
+        public Loc GetLoc() => loc; public void SetLoc(Loc value) => loc = value;
+
         public byte[] UNK;
 
         public Entry()
@@ -52,7 +55,7 @@ namespace FF8
 
         public byte LoadfromStreamSP2(BinaryReader br, UInt16 loc = 0, byte prevY = 0, byte fid = 0)
         {
-            if(loc>0)
+            if (loc > 0)
                 br.BaseStream.Seek(loc + 4, SeekOrigin.Begin);
             CurrentPos = loc;
             X = br.ReadByte();
@@ -70,6 +73,19 @@ namespace FF8
                 fid++;
             File = fid;
             return fid;
+        }
+
+        internal void LoadfromStreamSP1(BinaryReader br)
+        {
+            CurrentPos = (ushort)br.BaseStream.Position;
+            X = br.ReadByte();
+            Y = br.ReadByte();
+
+            UNK = br.ReadBytes(2);
+            Width = br.ReadByte();
+            Offset_X = br.ReadSByte();
+            Height = br.ReadByte();
+            Offset_Y = br.ReadSByte();
         }
 
         #endregion Methods
