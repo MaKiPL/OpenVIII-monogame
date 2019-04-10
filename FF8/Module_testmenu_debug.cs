@@ -6,16 +6,19 @@ namespace FF8
 {
     public static class Module_testmenu_debug
     {
+
         #region Fields
 
         private static Mode currentMode;
 
-        private static int time;
-        private static Icons icons;
         private static int icon;
-        private static int pallet = 2; //max16 i think.
+        private static Icons icons;
+        private static int pallet = 2;
+        private static int time;
 
         #endregion Fields
+
+        //max16 i think.
 
         #region Enums
 
@@ -144,5 +147,6 @@ namespace FF8
         private static void Initialize() => icons = new Icons();
 
         #endregion Methods
+
     }
 }

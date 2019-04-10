@@ -15,10 +15,6 @@ namespace FF8
 
         private static Entry[] entries;
 
-        public int Count { get; private set; } = 32;
-
-        public int PalletCount { get; private set; } = 1;
-
         #endregion Fields
 
         #region Constructors
@@ -108,6 +104,14 @@ namespace FF8
         }
 
         #endregion Enums
+
+        #region Properties
+
+        public int Count { get; private set; } = 32;
+
+        public int PalletCount { get; private set; } = 1;
+
+        #endregion Properties
 
         #region Methods
 

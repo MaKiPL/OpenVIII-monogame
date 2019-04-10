@@ -8,17 +8,14 @@ namespace FF8
 {
     internal partial class Icons
     {
+        #region Fields
+
         private static Entry[] entries = null;
         private Texture2D[] icons;
 
-        public enum ID
-        {
-            One,
-            Two
-        }
+        #endregion Fields
 
-        public UInt32 Count { get; private set; }
-        public int PalletCount { get; private set; }
+        #region Constructors
 
         public Icons()
         {
@@ -85,6 +82,27 @@ namespace FF8
             }
         }
 
+        #endregion Constructors
+
+        #region Enums
+
+        public enum ID
+        {
+            One,
+            Two
+        }
+
+        #endregion Enums
+
+        #region Properties
+
+        public UInt32 Count { get; private set; }
+        public int PalletCount { get; private set; }
+
+        #endregion Properties
+
+        #region Methods
+
         public Entry GetEntry(ID id) => GetEntry((int)id);
 
         public Entry GetEntry(int id) => entries[id] ?? null;
@@ -104,5 +122,7 @@ namespace FF8
         }
 
         internal void Draw(Rectangle dst, int pallet, float fade = 1f) => Memory.spriteBatch.Draw(icons[pallet], dst, Color.White * fade);
+
+        #endregion Methods
     }
 }

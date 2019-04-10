@@ -6,6 +6,7 @@ namespace FF8
 {
     internal static class Module_face_test
     {
+
         #region Fields
 
         private static Mode currentMode;
@@ -47,6 +48,34 @@ namespace FF8
             }
         }
 
+        public static void Update()
+        {
+            switch (currentMode)
+            {
+                case Mode.Initialize:
+                    Initialize();
+                    currentMode++;
+                    break;
+
+                case Mode.Draw:
+                    pointer++;
+                    if (pointer >= FaceValue.Length) pointer = 0;
+                    currentMode++;
+                    break;
+
+                case Mode.Wait:
+                    time += Memory.gameTime.ElapsedGameTime.Milliseconds;
+                    if (time > 2000)
+                    {
+                        currentMode--;
+                        time = 0;
+                    }
+                    else
+                        Memory.SuppressDraw = true;
+                    break;
+            }
+        }
+
         private static void DrawFace()
         {
                                 if (pointer >= 0)
@@ -76,35 +105,6 @@ namespace FF8
                         Memory.SpriteBatchEnd();
                     }
         }
-
-        public static void Update()
-        {
-            switch (currentMode)
-            {
-                case Mode.Initialize:
-                    Initialize();
-                    currentMode++;
-                    break;
-
-                case Mode.Draw:
-                    pointer++;
-                    if (pointer >= FaceValue.Length) pointer = 0;
-                    currentMode++;
-                    break;
-
-                case Mode.Wait:
-                    time += Memory.gameTime.ElapsedGameTime.Milliseconds;
-                    if (time > 2000)
-                    {
-                        currentMode--;
-                        time = 0;
-                    }
-                    else
-                        Memory.SuppressDraw = true;
-                    break;
-            }
-        }
-
         private static void Initialize()
         {
             faces = new Faces();
@@ -113,5 +113,6 @@ namespace FF8
         }
 
         #endregion Methods
+
     }
 }
