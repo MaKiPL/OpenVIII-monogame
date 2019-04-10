@@ -58,7 +58,7 @@ namespace FF8
                             //if (locs[i].count > 1) Count += (uint)(locs[i].count - 1);
                         }
 
-                        entries = new EntryGroup[++Count];
+                        entries = new EntryGroup[Count+=2];
 
                         for (int i = 0; i < locs.Length; i++)
                         {
@@ -82,7 +82,7 @@ namespace FF8
                         Y=48,
                         Width=256,
                         Height=16,
-
+                        CustomPallet = 1
                     };
                     Entry BG2 = new Entry
                     {
@@ -90,11 +90,20 @@ namespace FF8
                         Y = 64,
                         Offset_X = 256,
                         Width = 112,
-                        Height = 16
+                        Height = 16,
+                        CustomPallet = 1
                     };
-                    entries[Count - 1] = new EntryGroup(2);
-                    entries[Count - 1].Add(BG);
-                    entries[Count - 1].Add(BG2);
+                    Entry Border_TopLeft = new Entry
+                    {
+                        X = 16,
+                        Y = 0,
+                        Width = 8,
+                        Height = 8
+                    };
+                    entries[Count - 1] = new EntryGroup(3);
+                    entries[Count - 1].Add(BG,BG2, Border_TopLeft);
+                    entries[Count - 2] = new EntryGroup(3);
+                    entries[Count - 2].Add(BG, Border_TopLeft);
 
                 }
             }
@@ -130,7 +139,7 @@ namespace FF8
 
         internal void Draw(int id, int pallet, Rectangle dst, float scale = 1f, float fade = 1f)
         {
-            entries[id].Draw(icons[pallet], dst,scale, fade);
+            entries[id].Draw(icons,pallet, dst,scale, fade);
         
             //Memory.font.RenderBasicText(Font.CipherDirty($"pos: {entries[id].GetLoc().pos}\ncount: {entries[id].GetLoc().count}\n\nid: {id}\n\nUNKS: {string.Join(", ", entries[id].UNK)}\nALTS: {string.Join(", ", Array.ConvertAll(entries[id].UNK, item => (sbyte)item))}\n\npallet: {pallet}\nx: {entries[id].X}\ny: {entries[id].Y}\nwidth: {entries[id].Width}\nheight: {entries[id].Height} \n\nOffset X: {entries[id].Offset_X}\nOffset Y: {entries[id].Offset_Y}"), (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), 1f, 2f, 0, 1);
 

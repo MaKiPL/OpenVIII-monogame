@@ -55,6 +55,8 @@ namespace FF8
 
         public Loc GetLoc => loc; public Rectangle GetRectangle => src;
 
+        public sbyte CustomPallet { get; internal set; } = -1;
+
         public byte LoadfromStreamSP2(BinaryReader br, UInt16 loc = 0, byte prevY = 0, byte fid = 0)
         {
             if (loc > 0)
@@ -142,45 +144,53 @@ namespace FF8
         private Point nag_offset = new Point();
         private Point pos_offset = new Point();
 
-        public void Add(Entry entry)
+        public void Add(params Entry[] entries)
         {
-            //TODO fix math
-            if (list.Count >= 1)
+            foreach (Entry entry in entries)
             {
-                //DiscFix
-                if (entry.Height == 0)
+                //TODO fix math
+                if (list.Count >= 1)
                 {
-                    entry.Height = (byte)Height; // one item had a missing height.
-                    if (Math.Abs(nag_offset.X) + pos_offset.X + entry.Offset_X == 0) //assumes if the items are overlapping put them next to each other instead.
-                        entry.Offset_X = (short)Width;
+                    //DiscFix
+                    if (entry.Height == 0)
+                    {
+                        entry.Height = (byte)Height; // one item had a missing height.
+                        if (Math.Abs(nag_offset.X) + pos_offset.X + entry.Offset_X == 0) //assumes if the items are overlapping put them next to each other instead.
+                            entry.Offset_X = (short)Width;
+                    }
+                    //BarFix
+                    //has 2 sides and no filling.
+                    if (list.Capacity == 2 && list.Count == 1 && 2 * Width + list[0].X == entry.X && list[0].Y == entry.Y)
+                        fillTexture = new Entry { X = (byte)(entry.X - Width), Y = entry.Y, Width = (ushort)Width, Height = (byte)Height, Offset_X = (short)Width };
                 }
-                //BarFix
-                //has 2 sides and no filling.
-                if (list.Capacity == 2 && list.Count == 1 && 2 * Width + list[0].X == entry.X && list[0].Y == entry.Y)
-                    fillTexture = new Entry { X = (byte)(entry.X - Width), Y = entry.Y, Width = (ushort)Width, Height = (byte)Height, Offset_X = (short)Width };
-            }
-            list.Add(entry);
-            //if (rectangle.X > entry.Offset_X)
-            //    rectangle.X = entry.Offset_X;
-            if (Width == 0 || Width > entry.Width)
-                rectangle.Width = entry.Width;
-            if (entry.Offset_X < nag_offset.X)
-                nag_offset.X = entry.Offset_X;
-            if (pos_offset.X == 0 && entry.Offset_X > pos_offset.X)
-                pos_offset.X = entry.Offset_X;
-            //if (rectangle.Y > entry.Offset_Y)
-            //    rectangle.Y = entry.Offset_Y;
-            if (Height==0 || Height < entry.Height)
-                rectangle.Height = entry.Height;
-            if (entry.Offset_Y < nag_offset.Y)
-                nag_offset.Y = entry.Offset_Y;
-            if (pos_offset.Y == 0 || entry.Offset_Y > pos_offset.Y)
-                pos_offset.Y = entry.Offset_Y;
+                list.Add(entry);
+                //if (rectangle.X > entry.Offset_X)
+                //    rectangle.X = entry.Offset_X;
+                Rectangle src = entry.GetRectangle;
+                src.X += entry.Offset_X;
+                src.Y += entry.Offset_Y;
+                
+                bool contain = rectangle.Contains(src);
+                if (Width == 0 || /*Width > entry.Width &&*/ !contain)
+                    rectangle.Width = entry.Width;
+                if (entry.Offset_X < nag_offset.X)
+                    nag_offset.X = entry.Offset_X;
+                if (pos_offset.X == 0 && entry.Offset_X > pos_offset.X)
+                    pos_offset.X = entry.Offset_X;
+                //if (rectangle.Y > entry.Offset_Y)
+                //    rectangle.Y = entry.Offset_Y;
+                if (Height == 0 || /*Height < entry.Height && */ !contain)
+                    rectangle.Height = entry.Height;
+                if (entry.Offset_Y < nag_offset.Y)
+                    nag_offset.Y = entry.Offset_Y;
+                if (pos_offset.Y == 0 || entry.Offset_Y > pos_offset.Y)
+                    pos_offset.Y = entry.Offset_Y;
 
-            //rectangle.Height += entry.Height - (entry.Height + entry.Offset_Y);
+                //rectangle.Height += entry.Height - (entry.Height + entry.Offset_Y);
+            }
         }
 
-        internal void Draw(Texture2D tex, Rectangle inputdst, float scale = 1f, float fade = 1f)
+        internal void Draw(Texture2D[] textures, int pallet, Rectangle inputdst, float scale = 1f, float fade = 1f)
         {
             //Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
 
@@ -193,26 +203,32 @@ namespace FF8
                 dst.X += (int)(fillTexture.Offset_X * scale);
                 dst.Y += (int)(fillTexture.Offset_Y * scale);
                 dst.Width = (int)((pos_offset.X - fillTexture.Width) * scale);
-                Memory.spriteBatch.Draw(tex, dst, fillTexture.GetRectangle, Color.White * fade);
+                Memory.spriteBatch.Draw(textures[pallet], dst, fillTexture.GetRectangle, Color.White * fade);
             }
             foreach (Entry e in list)
             {
+                int cpallet = e.CustomPallet < 0 || e.CustomPallet >= textures.Length ? pallet : e.CustomPallet;
                 dst = inputdst;
                 float vscale = scale;
                 float hscale = scale;
                 if (scale == 0)
                 {
-                    vscale = (float)dst.Height / e.Height;
-                    hscale = (float)dst.Width / e.Width;
+                    //vscale = (float)dst.Height / Height;
+                    vscale = hscale = (float)dst.Width / Width;
                 }
                 dst.X += (int)(e.Offset_X * hscale);
                 dst.Y += (int)(e.Offset_Y * vscale);
                 dst.Width = (int)(e.Width * hscale);
                 dst.Height = (int)(e.Height * vscale);
-
-                //dst.X += (int)(e.Width * scale);
-                //dst.X += (int)(e.X * scale);
-                Memory.spriteBatch.Draw(tex, dst, e.GetRectangle, Color.White * fade);
+                do
+                {
+                    //dst.X += (int)(e.Width * scale);
+                    //dst.X += (int)(e.X * scale);
+                    Memory.spriteBatch.Draw(textures[cpallet], dst, e.GetRectangle, Color.White * fade);
+                    dst.Y += dst.Height;
+                }
+                while (dst.Y < inputdst.Height);
+                //Memory.spriteBatch.Draw(icons[pallet], Vector2.Zero, e.GetRectangle, Color.White*fade,0f,Vector2.Zero,Vector2.UnitX,SpriteEffects.None,0f);
             }
             Memory.SpriteBatchEnd();
             //Memory.SpriteBatchStartStencil(SamplerState.PointClamp);
