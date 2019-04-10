@@ -162,10 +162,10 @@
     <Compile Include="module_battle_Debug.cs" />
     <Compile Include="Module_face_test.cs" />
     <Compile Include="module_field_debug.cs" />
+    <Compile Include="Module_icon_test.cs" />
     <Compile Include="module_main_menu_debug.cs" />
     <Compile Include="module_movie_test.cs" />
     <Compile Include="module_overture_debug.cs" />
-    <Compile Include="Module_testmenu_debug.cs" />
     <Compile Include="module_world_debug.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

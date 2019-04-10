@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace FF8
 {
-    public static class Module_testmenu_debug
+    public static class Module_icon_test
     {
 
         #region Fields

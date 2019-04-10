@@ -140,7 +140,7 @@ namespace FF8
         public const int MODULE_MAINMENU_DEBUG = -13;
         public const int MODULE_WORLD_DEBUG = -17;
         public const int MODULE_FACE_TEST = -20;
-        public const int MODULE_TESTMENU_DEBUG = -21;
+        public const int MODULE_ICON_TEST = -21;
         #endregion
 
         #region battleProvider
