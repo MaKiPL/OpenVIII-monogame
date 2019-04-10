@@ -17,9 +17,7 @@ namespace FF8
         private static int time;
 
         #endregion Fields
-
-        //max16 i think.
-
+        
         #region Enums
 
         private enum Mode
