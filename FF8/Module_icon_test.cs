@@ -14,7 +14,6 @@ namespace FF8
         private static int icon;
         private static Icons icons;
         private static int pallet = 2;
-        private static int time;
 
         #endregion Fields
         
