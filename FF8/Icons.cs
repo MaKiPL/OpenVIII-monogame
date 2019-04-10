@@ -32,16 +32,16 @@ namespace FF8
                 tex = new TEX(test);
                 PalletCount = tex.TextureData.NumOfPalettes;
                 icons = new Texture2D[PalletCount];
-                for (int i = 0; i < PalletCount; i++)
-                {
-                    icons[i] = tex.GetTexture(i);
-                    using (FileStream fs = File.OpenWrite($"d:\\icons.{i}.png"))
-                    {
-                        //fs.Write(test, 0, test.Length);
+                //for (int i = 0; i < PalletCount; i++)
+                //{
+                //    icons[i] = tex.GetTexture(i);
+                //    using (FileStream fs = File.OpenWrite($"d:\\icons.{i}.png"))
+                //    {
+                //        //fs.Write(test, 0, test.Length);
 
-                        icons[i].SaveAsPng(fs, 256, 256);
-                    }
-                }
+                //        icons[i].SaveAsPng(fs, 256, 256);
+                //    }
+                //}
                 test = ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU,
                     aw.GetListOfFiles().First(x => x.ToLower().Contains("icon.sp1")));
                 //using (FileStream fs = File.OpenWrite(Path.Combine("d:\\", "icons.sp1")))
