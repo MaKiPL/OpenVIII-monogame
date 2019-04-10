@@ -63,9 +63,9 @@ namespace FF8
                     pallet++;
                 currentMode = Mode.Draw;
             }
-            if ((Input.Button(Keys.Up) || Input.Button(Keys.Down)) && icons.GetEntry(icon) != null && (icons.GetEntry(icon).GetLoc.count > 1))
-                icon -= (icons.GetEntry(icon).GetLoc.count - 1);
-            if (Input.Button(Keys.Right))
+            //if ((Input.Button(Keys.Up) || Input.Button(Keys.Down)) && icons.GetEntry(icon) != null && (icons.GetEntry(icon).GetLoc.count > 1))
+            //    icon -= (icons.GetEntry(icon).GetLoc.count - 1);
+            if (Input.Button(Keys.Right,true))
             {
                 do
                 {
@@ -77,14 +77,14 @@ namespace FF8
                 while (icons.GetEntry(icon) == null);
                 currentMode = Mode.Draw;
             }
-            if (Input.Button(Keys.Left))
+            if (Input.Button(Keys.Left,true))
             {
                 do
                 {
                     if (icon == 0)
                         icon = (int)(icons.Count - 1);
-                    else if (icons.GetEntry(icon) != null && icons.GetEntry(icon).GetLoc.count > 1)
-                        icon -= icons.GetEntry(icon).GetLoc.count;
+                    //else if (icons.GetEntry(icon) != null && icons.GetEntry(icon).GetLoc.count > 1)
+                    //    icon -= icons.GetEntry(icon).GetLoc.count;
                     else
                         icon--;
                 }
