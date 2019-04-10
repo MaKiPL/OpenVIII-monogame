@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -145,6 +146,17 @@ namespace FF8
             if (rectangle.Y > entry.Offset_Y)
                 rectangle.Y = entry.Offset_Y;
             rectangle.Height += entry.Height - (entry.Height + entry.Offset_Y);
+        }
+
+        internal void Draw(Texture2D tex, Rectangle dst, float fade)
+        {
+
+            Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
+            Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
+            Memory.spriteBatch.Draw(tex, dst, list[0].GetRectangle, Color.White * fade);
+            Memory.SpriteBatchEnd();
+            Memory.SpriteBatchStartStencil(SamplerState.PointClamp);
+            Memory.SpriteBatchEnd();
         }
 
         #endregion Methods

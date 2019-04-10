@@ -109,13 +109,10 @@ namespace FF8
 
         internal void Draw(int id, int pallet, Rectangle dst, float fade = 1f)
         {
-            Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
-            Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
-            Memory.spriteBatch.Draw(icons[pallet], dst, entries[id].GetRectangle, Color.White * fade);
-            Memory.SpriteBatchEnd();
-            Memory.SpriteBatchStartStencil(SamplerState.PointClamp);
+            entries[id].Draw(icons[pallet], dst, fade);
+        
             //Memory.font.RenderBasicText(Font.CipherDirty($"pos: {entries[id].GetLoc().pos}\ncount: {entries[id].GetLoc().count}\n\nid: {id}\n\nUNKS: {string.Join(", ", entries[id].UNK)}\nALTS: {string.Join(", ", Array.ConvertAll(entries[id].UNK, item => (sbyte)item))}\n\npallet: {pallet}\nx: {entries[id].X}\ny: {entries[id].Y}\nwidth: {entries[id].Width}\nheight: {entries[id].Height} \n\nOffset X: {entries[id].Offset_X}\nOffset Y: {entries[id].Offset_Y}"), (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), 1f, 2f, 0, 1);
-            Memory.SpriteBatchEnd();
+
         }
 
         internal void Draw(Rectangle dst, int pallet, float fade = 1f) => Memory.spriteBatch.Draw(icons[pallet], dst, Color.White * fade);
