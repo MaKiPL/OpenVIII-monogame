@@ -290,7 +290,9 @@ namespace FF8
                     //TODO;
                     continue;
                 }
-                frame[n] = frame[n] == monstersData[n].animHeader.animations[0].cFrames ? 0 : frame[n];
+                frame[n] = frame[n] == monstersData[n].animHeader.animations[0].cFrames ? 0 : 
+                    frame[n] > monstersData[n].animHeader.animations[0].cFrames ? 0 : frame[n];
+
                 for (int i = 0; i < monstersData[n].geometry.cObjects; i++)
                 {
                     var a = monstersData[n].GetVertexPositions(i, new Vector3(-50+(n%12)*10, 50, (n/12)*10), 0, frame[n],frameperFPS/FPS); //DEBUG
@@ -520,7 +522,7 @@ namespace FF8
         private static void InitBattle()
         {
             MakiExtended.Debugger_Spawn();
-            MakiExtended.Debugger_Feed(typeof(Module_battle_debug));
+            MakiExtended.Debugger_Feed(typeof(Module_battle_debug), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
             Input.OverrideLockMouse=true;
             Input.CurrentMode = Input.MouseLockMode.Center;
 

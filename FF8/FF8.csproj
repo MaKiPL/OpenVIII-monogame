@@ -139,6 +139,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="ArchiveWorker.cs" />
+    <Compile Include="Sources\Environment\Game\Location\GameLocation.cs" />
+    <Compile Include="Sources\Environment\Game\Location\IGameLocationProvider.cs" />
+    <Compile Include="Sources\Environment\Game\Location\LinuxGameLocationProvider.cs" />
+    <Compile Include="Sources\Environment\Game\Location\WindowsGameLocationProvider.cs" />
+    <Compile Include="Sources\Environment\Runtime\RuntimeEnvironment.cs" />
+    <Compile Include="Sources\Environment\Runtime\RuntimePlatform.cs" />
+    <Compile Include="Sources\Environment\Build\BuildEnvironment.cs" />
     <Compile Include="debug_MCH.cs" />
     <Compile Include="Entry.cs" />
     <Compile Include="ExtapathyExtended.cs" />
@@ -170,6 +177,12 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PseudoBufferedStream.cs" />
+    <Compile Include="Sources\Environment\Game\Location\HardcodedGameLocationProvider.cs" />
+    <Compile Include="Sources\Exceptions\ExceptionList.cs" />
+    <Compile Include="Sources\MonoGame\Hooks\IMonoGameHook.cs" />
+    <Compile Include="Sources\MonoGame\Hooks\MonoGameHooks.cs" />
+    <Compile Include="Sources\MonoGame\Hooks\OpenALWindowsHook.cs" />
+    <Compile Include="Sources\NetFramework\TypeExtensionMethods.cs" />
     <Compile Include="TEX.cs" />
     <Compile Include="TIM2.cs" />
     <Compile Include="debug_battleDat.cs" />

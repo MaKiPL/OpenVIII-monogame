@@ -131,6 +131,7 @@ namespace FF8
 
         private static MakiDebugger DebuggerWindow;
         public static List<System.Reflection.FieldInfo> DebuggerFood;
+        public static List<object> DebuggerInstanceProvider;
         public static void Debugger_Spawn()
         {
             if (DebuggerWindow == null)
@@ -140,18 +141,31 @@ namespace FF8
                 DebuggerWindow.Close();
                 DebuggerWindow.Dispose();
                 DebuggerWindow = new MakiDebugger();
+                DebuggerFood.Clear();
+                DebuggerInstanceProvider.Clear();
             }
             if (DebuggerFood == null)
                 DebuggerFood = new List<System.Reflection.FieldInfo>();
+            if (DebuggerInstanceProvider == null)
+                DebuggerInstanceProvider = new List<object>();
             DebuggerFood.Clear();
             DebuggerWindow.Show();
         }
 
-        public static void Debugger_Feed(Type b)
+        public static void Debugger_Feed(Type b, params System.Reflection.BindingFlags[] flags)
         {
-            var a = b.GetFields(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+            System.Reflection.BindingFlags fg = System.Reflection.BindingFlags.Default;
+            foreach (var g in flags)
+                fg |= g;
+            var a = b.GetFields(fg);
             DebuggerFood.AddRange(a);
             DebuggerWindow.UpdateWindow();
+        }
+
+        public static void Debugger_Update()
+        {
+            if(DebuggerWindow!=null)
+                DebuggerWindow._Refresh();
         }
     }
 }

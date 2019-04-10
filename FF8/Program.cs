@@ -1,4 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using FF8.MonoGame;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
+using MonoGame.OpenAL;
+using MonoGame.Utilities;
 
 namespace FF8
 {
@@ -13,6 +22,8 @@ namespace FF8
         [STAThread]
         static void Main()
         {
+            MonoGameHooks.Initialize();
+
             using (var game = new Game1())
                 game.Run();
         }
