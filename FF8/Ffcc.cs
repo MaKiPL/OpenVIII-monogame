@@ -49,7 +49,12 @@
         /// <summary>
         /// Opens filename and init class.
         /// </summary>
-        public Ffcc(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH, int loopstart = -1) => Init(filename, mediatype, mode, loopstart);
+        public Ffcc(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH, int loopstart = -1)
+        {
+            Init(filename, mediatype, mode, loopstart);
+            if (mode == FfccMode.PROCESS_ALL)
+                Dispose(false);
+        }
 
         /// <summary>
         /// Opens filename and init class.
@@ -67,21 +72,21 @@
         //Init(null, mediatype, mode, loopstart);
         //}
 
-        public Ffcc(Buffer_Data* buffer_Data, string datafilename, AVMediaType mediatype, FfccMode mode, int loopstart = -1)
-        {
-            DataFileName = datafilename;
-            LoadFromRAM(buffer_Data);
-            Init(null, mediatype, mode, loopstart);
-        }
+        //public Ffcc(Buffer_Data* buffer_Data, string datafilename, AVMediaType mediatype, FfccMode mode, int loopstart = -1)
+        //{
+        //    DataFileName = datafilename;
+        //    LoadFromRAM(buffer_Data);
+        //    Init(null, mediatype, mode, loopstart);
+        //}
 
-        public Ffcc(Buffer_Data buffer_Data, byte[] headerData, string datafilename, AVMediaType mediatype, FfccMode mode, int loopstart = -1)
+        public Ffcc(Buffer_Data buffer_Data, byte[] headerData, string datafilename, int loopstart = -1)
         {
             fixed (byte* tmp = &headerData[0])
             {
                 buffer_Data.SetHeader(tmp);
                 DataFileName = datafilename;
                 LoadFromRAM(&buffer_Data);
-                Init(null, mediatype, mode, loopstart);
+                Init(null, AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode.PROCESS_ALL, loopstart);
                 Dispose(false);
             }
         }

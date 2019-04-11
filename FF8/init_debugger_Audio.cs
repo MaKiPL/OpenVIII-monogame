@@ -435,7 +435,7 @@ namespace FF8
             //}
             SoundChannels[CurrentSoundChannel] = new Ffcc(
                 new Ffcc.Buffer_Data{DataSeekLoc = soundEntries[soundID].Offset,DataSize = soundEntries[soundID].Size,HeaderSize = (uint)soundEntries[soundID].HeaderData.Length
-            }, soundEntries[soundID].HeaderData, Path.Combine(Memory.FF8DIR, "../Sound/audio.dat"), AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.PROCESS_ALL);
+            }, soundEntries[soundID].HeaderData, Path.Combine(Memory.FF8DIR, "../Sound/audio.dat"));
             //fileStream.Write(soundEntries[soundID].HeaderData, 0, soundEntries[soundID].HeaderData.Length);
             //    fileStream.Write(rawBuffer, 0, rawBuffer.Length);
 

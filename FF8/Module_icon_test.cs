@@ -116,9 +116,7 @@ namespace FF8
             Memory.SpriteBatchEnd();
             Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
 
-            float scale = 4f;//((float)vp.Height / 480) * 3f;
-                             //do
-                             //{
+            float scale = 4f;
             Rectangle dst = new Rectangle()
             {
                 Width = (int)(icons.GetEntryGroup(icon).Width * scale),
@@ -127,7 +125,7 @@ namespace FF8
             if (icon == Icons.ID.Menu_BG_368)
             {
                 dst.Width = vp.Width;
-                dst.Height = vp.Height-50;
+                dst.Height = vp.Height - 50;
                 scale = 0f;
             }
             else
@@ -135,19 +133,11 @@ namespace FF8
                 dst.X = vp.Width / 2 - dst.Width / 2;
                 dst.Y = vp.Height / 2 - dst.Height / 2;
             }
-            //if (dst.X < 0)
-            //    dst.X = 0;
-            //if (dst.Y < 0)
-            //    dst.Y = 0;
-            //if (dst.X + dst.Width > vp.Width) dst.X = vp.Width - dst.Width;
-            //if (dst.Y + dst.Height > vp.Height) dst.Y = vp.Height - dst.Height;
 
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
             icons.Draw(icon, pallet, dst, scale);
+            Memory.font.RenderBasicText(Font.CipherDirty($"{((icon)).ToString().Replace('_', ' ')}\nid: {(ushort)icon}\n\npallet: {pallet}\n\nwidth: {icons[icon].Width}\nheight: {icons[icon].Height}"), (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), 1f, 2f, 0, 1);
             Memory.SpriteBatchEnd();
-            //}
-            //while (icons.GetEntry(icon++).Part > 1);
-            //icon--;
         }
 
         private static void Initialize() => icons = new Icons();

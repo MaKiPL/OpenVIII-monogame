@@ -582,13 +582,16 @@ namespace FF8
 
         public Entry GetEntry(int id, int index = 0) => GetEntry((ID)id);
 
+        public EntryGroup this[ID id] { get => GetEntryGroup(id); }
+        public EntryGroup this[int id] { get => GetEntryGroup(id); }
+
         internal void Draw(int id, int pallet, Rectangle dst, float scale = 1f, float fade = 1f) => Draw((ID)id, pallet, dst, scale, fade);
 
-        internal void Draw(ID id, int pallet, Rectangle dst, float scale = 1f, float fade = 1f) =>
-            //Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
-            entries[id].Draw(icons, pallet, dst, scale, fade);//Memory.SpriteBatchStartStencil();//Memory.font.RenderBasicText(Font.CipherDirty(//    $"{((ID)(id)).ToString().Replace('_', ' ')}\nid: {(ushort)id}"//    ), (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), 1f, 2f, 0, 1);//Memory.SpriteBatchEnd();
-
-        //internal void Draw(Rectangle dst, int pallet, float fade = 1f) => Memory.spriteBatch.Draw(icons[pallet], dst, Color.White * fade);
+        internal void Draw(ID id, int pallet, Rectangle dst, float scale = 1f, float fade = 1f)
+        {
+            entries[id].Draw(icons, pallet, dst, scale, fade);
+        }
+        
 
         #endregion Methods
     }
