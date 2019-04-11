@@ -11,7 +11,7 @@ namespace FF8
 #if _WINDOWS
                 return true;
 #else
-                return fasle;
+                return false;
 #endif
             }
         }
