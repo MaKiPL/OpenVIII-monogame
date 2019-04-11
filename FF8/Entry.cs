@@ -56,6 +56,9 @@ namespace FF8
         public Loc GetLoc => loc; public Rectangle GetRectangle => src;
 
         public sbyte CustomPallet { get; internal set; } = -1;
+        /// <summary>
+        /// Vector2.Zero = no tile, Vector2.One = tile x & y, Vector.UnitX = tile x, Vector.UnitY = tile y
+        /// </summary>
         public Vector2 Tile { get; internal set; } = Vector2.Zero;
         public bool Snap_Right { get; internal set; } = false;
 
@@ -138,10 +141,6 @@ namespace FF8
 
         public int Height { get => rectangle.Height; private set => rectangle.Height = value; }
 
-        public int Offset_X => 0;//nag_offset.X == 0 ? pos_offset.X : nag_offset.X;
-
-        public int Offset_Y => 0;//nag_offset.Y == 0 ? pos_offset.Y : nag_offset.Y;
-
         public int Width { get => rectangle.Width; private set => rectangle.Width = value; }
 
         public Rectangle GetRectangle => rectangle;
@@ -156,8 +155,6 @@ namespace FF8
         /// <param name="id"></param>
         /// <returns></returns>
         public Entry this[int id] => list[id]; /*set { if (list.Count - 1 < id) Add(value); else list[id] = value; }*/
-
-        private Entry fillTexture = null;
 
         #endregion Indexers
 
