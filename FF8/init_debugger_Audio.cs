@@ -10,6 +10,7 @@ using DirectMidi;
 using System.Runtime.InteropServices;
 using NAudio.Vorbis;
 using FFmpeg.AutoGen;
+using System.Diagnostics;
 
 namespace FF8
 {
