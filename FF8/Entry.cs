@@ -58,14 +58,18 @@ namespace FF8
         public sbyte CustomPallet { get; internal set; } = -1;
         public Vector2 Tile { get; internal set; } = Vector2.Zero;
         public bool Snap_Right { get; internal set; } = false;
+
         /// <summary>
         /// point where you want to stop drawing from right side so -8 would stop 8*scale pixels from edge
         /// </summary>
         public sbyte Offset_X2 { get; internal set; }
+
         /// <summary>
-        /// point where you want to stop drawing from bottom side so -8 would stop 8*scale pixels from edge
+        /// point where you want to stop drawing from bottom side so -8 would stop 8*scale pixels
+        /// from edge
         /// </summary>
         public sbyte Offset_Y2 { get; internal set; }
+
         public bool Snap_Bottom { get; internal set; } = false;
 
         public byte LoadfromStreamSP2(BinaryReader br, UInt16 loc = 0, byte prevY = 0, byte fid = 0)
@@ -179,15 +183,17 @@ namespace FF8
                     //BarFix
                     //has 2 sides and no filling.
                     //if(entry.CurrentPos == 1872)
-                    if (list.Capacity == 2 && list.Count == 1 && (list[0].Width *2) + list[0].X == entry.X && list[0].Y == entry.Y)
-                        Add(new Entry {
+                    if (list.Capacity == 2 && list.Count == 1 && (list[0].Width * 2) + list[0].X == entry.X && list[0].Y == entry.Y)
+                        Add(new Entry
+                        {
                             X = (byte)(entry.X - list[0].Width),
-                            Y = entry.Y, Width = list[0].Width,
+                            Y = entry.Y,
+                            Width = list[0].Width,
                             Height = list[0].Height,
-                            Tile=Vector2.UnitX,
+                            Tile = Vector2.UnitX,
                             Offset_X = (short)list[0].Width,
-                            Offset_X2 = (sbyte)list[0].Width});
-                        
+                            Offset_X2 = (sbyte)-list[0].Width
+                        });
                 }
                 list.Add(entry);
                 ushort width = (ushort)(Math.Abs(entry.Offset_X) + entry.Width);
@@ -199,57 +205,67 @@ namespace FF8
 
         internal void Draw(Texture2D[] textures, int pallet, Rectangle inputdst, float scale = 1f, float fade = 1f)
         {
-            //Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
-
             Rectangle dst;
-            Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
-
-            if (fillTexture != null)
+            if ((int)(8 * scale) <= 0)
             {
-                dst = inputdst;
-                dst.X += (int)(fillTexture.Offset_X * scale);
-                dst.Y += (int)(fillTexture.Offset_Y * scale);
-                dst.Width = (int)((pos_offset.X - fillTexture.Width) * scale);
-                Memory.spriteBatch.Draw(textures[pallet], dst, fillTexture.GetRectangle, Color.White * fade);
+                //vscale = (float)dst.Height / Height;
+                scale = (float)inputdst.Width / Width;
             }
+
             foreach (Entry e in list)
             {
                 int cpallet = e.CustomPallet < 0 || e.CustomPallet >= textures.Length ? pallet : e.CustomPallet;
                 dst = inputdst;
-                float vscale = scale;
-                float hscale = scale;
-                if (scale == 0)
-                {
-                    //vscale = (float)dst.Height / Height;
-                    vscale = hscale = (float)dst.Width / Width;
-                }
-                Point offset = new Point((int)(e.Offset_X * hscale), (int)(e.Offset_Y * vscale));
-                Point offset2 = new Point((int)(e.Offset_X2 * hscale), (int)(e.Offset_Y2 * vscale));
-                //if(e.Snap_Right==true)
-                //{
-                //}
+
+                Point offset = new Point((int)(e.Offset_X * scale), (int)(e.Offset_Y * scale));
+                Point offset2 = new Point((int)(e.Offset_X2 * scale), (int)(e.Offset_Y2 * scale));
                 dst.X += (e.Snap_Right ? inputdst.Width : 0) + offset.X;
                 dst.Y += (e.Snap_Bottom ? inputdst.Height : 0) + offset.Y;
-                dst.Width = (int)(e.Width * hscale);
-                dst.Height = (int)(e.Height * vscale);
+                dst.Width = (int)(e.Width * scale);
+                dst.Height = (int)(e.Height * scale);
+                Rectangle src = e.GetRectangle;
+                bool testY = false;
+                bool testX = false;
+                //if (dst.Height<=0 || dst.Height <= 0) continue; //infinate loop prevention
                 do
                 {
                     do
                     {
-                        //if (e.Tile.Y > 0 && dst.Y > inputdst.Height)
-                        //    dst.Y -= offset.Y % inputdst.Height;
-                        //if (e.Tile.X > 0 && dst.X > inputdst.Width)
-                        //    dst.X -= offset.X % inputdst.Width;
-                        //dst.X += (int)(e.Width * scale);
-                        //dst.X += (int)(e.X * scale);
-                        Memory.spriteBatch.Draw(textures[cpallet], dst, e.GetRectangle, Color.White * fade);
+                        if (e.Tile.Y > 0)
+                        {
+                            testY = (dst.Y + dst.Height) < (inputdst.Y + inputdst.Height + offset2.Y);
+                            if (!testY)
+                            {
+                                int correction = (inputdst.Y + inputdst.Height + offset2.Y) - (dst.Y + dst.Height);
+                                dst.Height += correction;
+                                src.Height += (int)Math.Floor(correction / scale);
+                            }
+                        }
+                        if(e.Tile.X > 0)
+                        { 
+                            testX = (dst.X + dst.Width) < (inputdst.X + inputdst.Width + offset2.X);
+                            if (!testX)
+                            {
+                                int correction = (inputdst.X + inputdst.Width + offset2.X) - (dst.X + dst.Width);
+                                dst.Width += correction;
+                                src.Width += (int)Math.Floor(correction / scale);
+                            }
+                        }
+                        Memory.spriteBatch.Draw(textures[cpallet], dst, src, Color.White * fade);
+                        if (e.Tile.Y > 0)
+                        {
+                            dst.Y += dst.Height;
+                        }
+                        if (e.Tile.X > 0)
+                        {
+                            dst.X += dst.Width;
+                        }
                     }
-                    while (e.Tile.Y > 0 && (dst.Y += dst.Height) < inputdst.Y + inputdst.Height-offset2.Y);
+                    while (e.Tile.Y > 0 && testY);
                 }
-                while (e.Tile.X > 0 && (dst.X += dst.Width) < inputdst.X + inputdst.Width-offset2.X);
+                while (e.Tile.X > 0 && testX);
                 //Memory.spriteBatch.Draw(icons[pallet], Vector2.Zero, e.GetRectangle, Color.White*fade,0f,Vector2.Zero,Vector2.UnitX,SpriteEffects.None,0f);
             }
-            Memory.SpriteBatchEnd();
             //Memory.SpriteBatchStartStencil(SamplerState.PointClamp);
             //Memory.SpriteBatchEnd();
         }

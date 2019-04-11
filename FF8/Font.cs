@@ -183,6 +183,37 @@ namespace FF8
         }
 
 
+        public Rectangle CalcBasicTextArea(string buffer, int x, int y, float zoomWidth = 1f, float zoomHeight = 1f, int whichFont = 0)
+        {
+            Rectangle ret = new Rectangle(x, y, 0, 0);
+            int realX = x;
+            int realY = y;
+            int charCountWidth = whichFont == 0 ? 21 : 10;
+            int charSize = whichFont == 0 ? 12 : 24;
+            float fScaleWidth = (float)Memory.graphics.GraphicsDevice.Viewport.Width / Memory.PreferredViewportWidth;
+            float fScaleHeight = (float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight;
+            int charWidth = (int)(charSize * zoomWidth * fScaleWidth);
+            int charHeight = (int)(charSize * zoomHeight * fScaleHeight);
+            foreach (char c in buffer)
+            {
+                if (c == '\n')
+                {
+                    realX = x;
+                    realY += charHeight;
+                    continue;
+                }
+                int verticalPosition = (char)(c - 32) / charCountWidth;
+                //i.e. 1280 is 100%, 640 is 50% and therefore 2560 is 200% which means multiply by 0.5f or 2.0f
+                realX += (int)(charSize * zoomWidth * fScaleWidth);
+                int curWidth = realX - x;
+                if (curWidth > ret.Width)
+                    ret.Width = curWidth;
+            }
+            ret.Height = charHeight + (realY - y);
+            return ret;
+        }
+
+
         public Rectangle RenderBasicText(string buffer, int x, int y, float zoomWidth = 1f, float zoomHeight = 1f, int whichFont = 0, int isMenu = 0, float Fade = 1.0f)
         {
             Rectangle ret = new Rectangle(x, y, 0, 0);

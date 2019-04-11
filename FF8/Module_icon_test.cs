@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
+using System.Linq;
 
 namespace FF8
 {
@@ -10,7 +12,7 @@ namespace FF8
 
         private static Mode currentMode;
 
-        private static int icon;
+        private static Icons.ID icon;
         private static Icons icons;
         private static int pallet = 2;
 
@@ -47,8 +49,8 @@ namespace FF8
         {
             if (Input.Button(Keys.Up))
             {
-                if (pallet == 0)
-                    pallet = icons.PalletCount - 1;
+                if (pallet <= 0)
+                    pallet = Icons.PalletCount - 1;
                 else
                     pallet--;
                 currentMode = Mode.Draw;
@@ -56,7 +58,7 @@ namespace FF8
 
             if (Input.Button(Keys.Down))
             {
-                if (pallet == icons.PalletCount - 1)
+                if (pallet >= Icons.PalletCount - 1)
                     pallet = 0;
                 else
                     pallet++;
@@ -68,7 +70,7 @@ namespace FF8
             {
                 do
                 {
-                    if (icon == icons.Count - 1)
+                    if (icon >= Enum.GetValues(typeof(Icons.ID)).Cast<Icons.ID>().Max())
                         icon = 0;
                     else
                         icon++;
@@ -80,8 +82,8 @@ namespace FF8
             {
                 do
                 {
-                    if (icon == 0)
-                        icon = (int)(icons.Count - 1);
+                    if (icon <= 0)
+                        icon = Enum.GetValues(typeof(Icons.ID)).Cast<Icons.ID>().Max();
                     //else if (icons.GetEntry(icon) != null && icons.GetEntry(icon).GetLoc.count > 1)
                     //    icon -= icons.GetEntry(icon).GetLoc.count;
                     else
@@ -122,10 +124,10 @@ namespace FF8
                 Width = (int)(icons.GetEntryGroup(icon).Width * scale),
                 Height = (int)(icons.GetEntryGroup(icon).Height * scale)
             };
-            if (icon == icons.Count - 1)
+            if (icon == Icons.ID.Menu_BG_368)
             {
                 dst.Width = vp.Width;
-                dst.Height = vp.Height;
+                dst.Height = vp.Height-50;
                 scale = 0f;
             }
             else
@@ -139,7 +141,10 @@ namespace FF8
             //    dst.Y = 0;
             //if (dst.X + dst.Width > vp.Width) dst.X = vp.Width - dst.Width;
             //if (dst.Y + dst.Height > vp.Height) dst.Y = vp.Height - dst.Height;
+
+            Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
             icons.Draw(icon, pallet, dst, scale);
+            Memory.SpriteBatchEnd();
             //}
             //while (icons.GetEntry(icon++).Part > 1);
             //icon--;

@@ -100,7 +100,7 @@ namespace FF8
 
 
         public const int S_OK = 0x00000000;
-        public const int MaxSoundChannels = 10;
+        public const int MaxSoundChannels = 20; // can crash if attempting to play sound when all other sounds are not done playing.
         /// <summary>
         /// This is for short lived sound effects.
         /// The Larger the array is the more sounds can be played at once.

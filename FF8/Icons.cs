@@ -11,7 +11,7 @@ namespace FF8
     {
         #region Fields
 
-        private static Dictionary<ID,EntryGroup> entries = null;
+        private static Dictionary<ID, EntryGroup> entries = null;
         private static Texture2D[] icons;
 
         #endregion Fields
@@ -59,12 +59,12 @@ namespace FF8
                             locs[i].count = br.ReadUInt16();
                             //if (locs[i].count > 1) Count += (uint)(locs[i].count - 1);
                         }
-                        entries = new Dictionary<ID, EntryGroup>((int)Count+10);
+                        entries = new Dictionary<ID, EntryGroup>((int)Count + 10);
                         for (int i = 0; i < Count; i++)
                         {
                             ms.Seek(locs[i].pos, SeekOrigin.Begin);
                             byte c = (byte)locs[i].count;
-                            entries[(ID)i]=new EntryGroup(c);
+                            entries[(ID)i] = new EntryGroup(c);
                             for (int e = 0; e < c; e++)
                             {
                                 Entry tmp = new Entry();
@@ -83,7 +83,7 @@ namespace FF8
                         Width = 256,
                         Height = 16,
                         CustomPallet = 1,
-                        Tile = Vector2.UnitY
+                        Tile = Vector2.UnitY,
                     };
                     Entry Border_TopLeft = new Entry
                     {
@@ -91,7 +91,7 @@ namespace FF8
                         Y = 0,
                         Width = 8,
                         Height = 8,
-                        CustomPallet = 0
+                        CustomPallet = 0,
                     };
                     Entry Border_Top = new Entry
                     {
@@ -100,6 +100,8 @@ namespace FF8
                         Width = 8,
                         Height = 8,
                         Tile = Vector2.UnitX,
+                        Offset_X = 8,
+                        Offset_X2 = -8,
                         CustomPallet = 0
                     };
                     Entry Border_Bottom = new Entry
@@ -111,6 +113,8 @@ namespace FF8
                         Tile = Vector2.UnitX,
                         Snap_Bottom = true,
                         Offset_Y = -8,
+                        Offset_X = 8,
+                        Offset_X2 = -8,
                         CustomPallet = 0
                     };
                     Entry Border_TopRight = new Entry
@@ -130,6 +134,8 @@ namespace FF8
                         Width = 8,
                         Height = 8,
                         Tile = Vector2.UnitY,
+                        Offset_Y = 8,
+                        Offset_Y2 = -8,
                         CustomPallet = 0
                     };
                     Entry Border_Right = new Entry
@@ -141,6 +147,8 @@ namespace FF8
                         Tile = Vector2.UnitY,
                         Snap_Right = true,
                         Offset_X = -8,
+                        Offset_Y = 8,
+                        Offset_Y2 = -8,
                         CustomPallet = 0
                     };
                     Entry Border_BottomLeft = new Entry
@@ -166,8 +174,7 @@ namespace FF8
                         CustomPallet = 0
                     };
 
-
-                    entries[ID.Bar_BG]=new EntryGroup(new Entry
+                    entries[ID.Bar_BG] = new EntryGroup(new Entry
                     {
                         X = 16,
                         Y = 24,
@@ -176,7 +183,7 @@ namespace FF8
                         Tile = Vector2.UnitX,
                         CustomPallet = 0
                     });
-                    entries[ID.Bar_Fill] =new EntryGroup(new Entry
+                    entries[ID.Bar_Fill] = new EntryGroup(new Entry
                     {
                         X = 0,
                         Y = 16,
@@ -198,6 +205,14 @@ namespace FF8
                         Tile = Vector2.UnitY
                     }, Border_Top, Border_Left, Border_Right, Border_Bottom, Border_TopLeft, Border_TopRight, Border_BottomLeft, Border_BottomRight);
                     Count = (uint)entries.Count;
+
+                    entries[ID.DEBUG] = new EntryGroup(
+                        new Entry { X = 128, Y = 24, Width = 7, Height = 8 },
+                        new Entry { X = 65, Y = 8, Width = 6, Height = 8, Offset_X=7},
+                        new Entry { X = 147, Y = 24, Width = 6, Height = 8, Offset_X = 13 },
+                        new Entry { X = 141, Y = 24, Width = 6, Height = 8, Offset_X = 19 },
+                        new Entry { X = 104, Y = 16, Width = 6, Height = 8, Offset_X = 25 }
+                        );
                 }
             }
         }
@@ -440,7 +455,6 @@ namespace FF8
             Item_Magazine,
             Item_Misc,
 
-            
             Stats_Hit_Points2,
             Stats_Strength2,
             Stats_Vitality2,
@@ -546,41 +560,35 @@ namespace FF8
             Bar_Fill,
             Menu_BG_256,
             Menu_BG_368,
+            DEBUG,
         }
 
         #endregion Enums
 
         #region Properties
 
-        public UInt32 Count { get; private set; }
-        public int PalletCount { get; private set; }
+        public static UInt32 Count { get; private set; }
+        public static int PalletCount { get; private set; }
 
         #endregion Properties
 
         #region Methods
 
-        public EntryGroup GetEntryGroup(ID id) => entries[id]; 
+        public EntryGroup GetEntryGroup(ID id) => entries[id];
 
         public EntryGroup GetEntryGroup(int id) => GetEntryGroup((ID)id);
 
         public Entry GetEntry(ID id, int index = 0) => entries[id][index] ?? null;
 
-        public Entry GetEntry(int id, int index = 0) => GetEntry((ID) id);
+        public Entry GetEntry(int id, int index = 0) => GetEntry((ID)id);
 
         internal void Draw(int id, int pallet, Rectangle dst, float scale = 1f, float fade = 1f) => Draw((ID)id, pallet, dst, scale, fade);
 
-        internal void Draw(ID id, int pallet, Rectangle dst, float scale = 1f, float fade = 1f)
-        {
-            Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
-            entries[id].Draw(icons, pallet, dst, scale, fade);
-            Memory.SpriteBatchStartStencil();
-            Memory.font.RenderBasicText(Font.CipherDirty(
-                $"{((ID)(id)).ToString().Replace('_', ' ')}\nid: {(ushort)id}"
-                ), (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), 1f, 2f, 0, 1);
-            Memory.SpriteBatchEnd();
-        }
+        internal void Draw(ID id, int pallet, Rectangle dst, float scale = 1f, float fade = 1f) =>
+            //Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
+            entries[id].Draw(icons, pallet, dst, scale, fade);//Memory.SpriteBatchStartStencil();//Memory.font.RenderBasicText(Font.CipherDirty(//    $"{((ID)(id)).ToString().Replace('_', ' ')}\nid: {(ushort)id}"//    ), (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), 1f, 2f, 0, 1);//Memory.SpriteBatchEnd();
 
-        internal void Draw(Rectangle dst, int pallet, float fade = 1f) => Memory.spriteBatch.Draw(icons[pallet], dst, Color.White * fade);
+        //internal void Draw(Rectangle dst, int pallet, float fade = 1f) => Memory.spriteBatch.Draw(icons[pallet], dst, Color.White * fade);
 
         #endregion Methods
     }

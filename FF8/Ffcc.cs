@@ -82,6 +82,7 @@
                 DataFileName = datafilename;
                 LoadFromRAM(&buffer_Data);
                 Init(null, mediatype, mode, loopstart);
+                Dispose(false);
             }
         }
 
@@ -630,10 +631,15 @@ EOF:
 
         protected virtual void Dispose(bool disposing)
         {
+            if (disposing)
+            {
+                Stop();
+            }
             if (!isDisposed)
             {
                 if (disposing)
                 {
+                    //Stop();
                     // TODO: dispose managed state (managed objects).
                 }
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
@@ -642,7 +648,6 @@ EOF:
                 {
                     DecodedMemoryStream.Dispose();
                 }
-                Stop();
                 if (ConvertedData != null)
                 {
                     //Marshal.FreeHGlobal((IntPtr)ConvertedData);
