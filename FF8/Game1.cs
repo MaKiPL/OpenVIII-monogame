@@ -34,8 +34,8 @@ namespace FF8
 
             TEX tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU,
                 aw.GetListOfFiles().First(x => x.ToLower().Contains("icon.tex"))));
-            Memory.iconsTex = new Texture2D[16];
-            for (int i = 0; i < 16; i++)
+            Memory.iconsTex = new Texture2D[tex.TextureData.NumOfPalettes];
+            for (int i = 0; i < Memory.iconsTex.Length; i++)
                 Memory.iconsTex[i] = tex.GetTexture(i);
             Memory.FieldHolder.FieldMemory = new int[1024];
             

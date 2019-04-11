@@ -19,11 +19,13 @@ namespace FF8
             { Ditems.Reset, new Item{Text="Reset Main Menu state" } },
             { Ditems.Overture, new Item{Text="Play Overture"} },
             { Ditems.Battle, new Item{Text="Battle encounter: {0}"} },
-            { Ditems.Feild, new Item{Text="Field debug render: {0}"} },
+            { Ditems.Field, new Item{Text="Field debug render: {0}"} },
             { Ditems.Movie, new Item{Text="Movie debug render: {0}"} },
             { Ditems.Music, new Item{Text="Play/Stop music : {0}"} },
             { Ditems.Sounds, new Item{Text="Play audio.dat: {0}"} },
-            { Ditems.World, new Item{Text="Jump to World Map"} }
+            { Ditems.World, new Item{Text="Jump to World Map"} },
+            { Ditems.Faces, new Item{Text="Test Faces"} },
+            { Ditems.Icons, new Item{Text="Test Icons"} }
         };
 
         /// <summary>
@@ -66,11 +68,13 @@ namespace FF8
             Reset,
             Overture,
             Battle,
-            Feild,
+            Field,
             Movie,
             Music,
             Sounds,
-            World
+            World,
+            Faces,
+            Icons
         }
 
         /// <summary>
@@ -99,6 +103,8 @@ namespace FF8
         #endregion Enums
 
         #region Properties
+
+        
 
         public static float Fade { get => fade; set => fade = value; }
 
@@ -187,6 +193,8 @@ namespace FF8
             }
         }
 
+        public static Icons icons { get; private set; }
+
         #endregion Properties
 
         #region Methods
@@ -204,6 +212,7 @@ namespace FF8
             {
                 start01 = GetTexture(1);
             }
+            icons = new Icons();
         }
 
         /// <summary>
@@ -455,7 +464,7 @@ namespace FF8
                     debug_choosedBS--;
                     break;
 
-                case Ditems.Feild:
+                case Ditems.Field:
                     FieldPointer--;
                     break;
 
@@ -504,7 +513,7 @@ namespace FF8
                     init_debugger_Audio.PlayStopMusic();
                     break;
 
-                case Ditems.Feild:
+                case Ditems.Field:
                     Fade = 0.0f;
                     Module_field_debug.ResetField();
                     Memory.module = Memory.MODULE_FIELD_DEBUG;
@@ -542,6 +551,16 @@ namespace FF8
                     Memory.IsMouseVisible = false;
                     break;
 
+                case Ditems.Faces:
+                    Fade = 0.0f;
+                    Memory.module = Memory.MODULE_FACE_TEST;
+                    break;
+
+                case Ditems.Icons:
+                    Fade = 0.0f;
+                    Memory.module = Memory.MODULE_ICON_TEST;
+                    break;
+
                 default:
                     ret = false;
                     break;
@@ -575,7 +594,7 @@ namespace FF8
 
                     break;
 
-                case Ditems.Feild:
+                case Ditems.Field:
                     FieldPointer++;
                     break;
 
@@ -674,17 +693,42 @@ namespace FF8
         /// </summary>
         private static void DrawDebugLobby()
         {
-            Memory.SpriteBatchStartAlpha();
             float vpSpace = vpHeight * 0.03f;
             float item = 0;
-
-            //foreach (KeyValuePair<Ditems, string> e in DebugMenu)
+            Rectangle dst= new Rectangle();
             foreach (Ditems i in (Ditems[])Enum.GetValues(typeof(Ditems)))
             {
                 Item c = strDebugLobby[i];
-                c.Loc = (Memory.font.RenderBasicText(Font.CipherDirty(string.Format(c.Text, InfoDebugLobby(i)).Replace("\0", "")),
-                    (int)(vpWidth * 0.10f), (int)(vpHeight * 0.05f + vpSpace * item++), 1f, 2f, 0, 1, Fade));
+                    c.Loc = Memory.font.CalcBasicTextArea(Font.CipherDirty(string.Format(c.Text, InfoDebugLobby(i)).Replace("\0", "")),
+                    (int)(vpWidth * 0.10f), (int)(vpHeight * 0.05f + vpSpace * item++),1f,2f,0);
+                if (dst.X == 0)
+                    dst.X = c.Loc.X;
+                if (dst.Y == 0)
+                    dst.Y = c.Loc.Y;
+                if (c.Loc.Width > dst.Width)
+                    dst.Width = c.Loc.Width;
+                dst.Height = c.Loc.Y + c.Loc.Height-dst.Y;
                 strDebugLobby[i] = c;
+            }
+            int adj = (int)(dst.Y * .5f);
+            dst.Y -= adj;
+            dst.X -= (int)(dst.X * .6f);
+            dst.Width += dst.X*2;
+            dst.Height += adj*2;
+            Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
+            icons.Draw(Icons.ID.Menu_BG_256, 0, dst, 0,fade);
+            item = 0;
+            dst.X += (int)(4 * 3.5f);
+            dst.Width = 0;
+            dst.Height = 0;
+            icons.Draw(Icons.ID.DEBUG, 2, dst, 3.5f);
+            Memory.SpriteBatchEnd();
+            Memory.SpriteBatchStartAlpha();
+            //foreach (KeyValuePair<Ditems, string> e in DebugMenu)
+            foreach (Ditems i in (Ditems[])Enum.GetValues(typeof(Ditems)))
+            {
+                Memory.font.RenderBasicText(Font.CipherDirty(string.Format(strDebugLobby[i].Text, InfoDebugLobby(i)).Replace("\0", "")),
+                    (int)(vpWidth * 0.10f), (int)(vpHeight * 0.05f + vpSpace * item++), 1f, 2f, 0, 1, Fade);
             }
             Memory.spriteBatch.Draw(Memory.iconsTex[2], new Rectangle(
                 (int)(vpWidth * 0.05f),
@@ -705,7 +749,7 @@ namespace FF8
                 case Ditems.Battle:
                     return debug_choosedBS.ToString("D4");
 
-                case Ditems.Feild:
+                case Ditems.Field:
                     return debug_choosedField;
 
                 case Ditems.Movie:

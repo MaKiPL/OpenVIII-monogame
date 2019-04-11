@@ -57,6 +57,12 @@ namespace FF8
                 case Memory.MODULE_WORLD_DEBUG:
                     Module_world_debug.Update();
                     break;
+                case Memory.MODULE_FACE_TEST:
+                    Module_face_test.Update();
+                    break;
+                case Memory.MODULE_ICON_TEST:
+                    Module_icon_test.Update();
+                    break;
             }
         }
 
@@ -84,6 +90,12 @@ namespace FF8
                     break;
                 case Memory.MODULE_WORLD_DEBUG:
                     Module_world_debug.Draw();
+                    break;
+                case Memory.MODULE_FACE_TEST:
+                    Module_face_test.Draw();
+                    break;
+                case Memory.MODULE_ICON_TEST:
+                    Module_icon_test.Draw();
                     break;
             }
         }

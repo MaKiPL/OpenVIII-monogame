@@ -61,14 +61,7 @@ namespace FF8
             //This function checks if the key on KB is pressed
             //if dblinput is false it makes sure the key wasn't pressed last time.
             bool boolRT = CurrentKBState.IsKeyDown(k);
-            if (!dblinput)
-            {
-                boolRT = boolRT && LastKBState.IsKeyUp(k);
-            }
-            else
-            {
-                boolRT = boolRT && !bLimitInput;
-            }
+            boolRT = !dblinput ? boolRT && LastKBState.IsKeyUp(k) : boolRT && !bLimitInput;
 
             return boolRT;
 

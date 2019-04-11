@@ -631,13 +631,19 @@ namespace FF8
                         seg.block[i].polygons[k / 3].TextureSwitch == 0xC0)
                     {
                         ate.Texture = wm38textures[16][0];
-                    }
-                    else if (seg.block[i].polygons[k / 3].TextureSwitch == 0x60)
-                        ate.Texture = wm39textures[0][0];
-                    else if (seg.block[i].polygons[k / 3].TextureSwitch == 0xE0)
-                        ate.Texture = wm39textures[5][0];
-                    else
-                        ate.Texture = textures[seg.block[i].polygons[k / 3].TPage][seg.block[i].polygons[k / 3].Clut]; //there are two texs, worth looking at other parameters; to reverse! 
+                    }   
+                    else switch (seg.block[i].polygons[k / 3].TextureSwitch)
+                        {
+                            case 0x60:
+                                ate.Texture = wm39textures[0][0];
+                                break;
+                            case 0xE0:
+                                ate.Texture = wm39textures[5][0];
+                                break;
+                            default:
+                                ate.Texture = textures[seg.block[i].polygons[k / 3].TPage][seg.block[i].polygons[k / 3].Clut]; //there are two texs, worth looking at other parameters; to reverse! 
+                                break;
+                        } //there are two texs, worth looking at other parameters; to reverse! 
 
 
 
