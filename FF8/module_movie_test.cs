@@ -234,7 +234,7 @@ namespace FF8
             if (frameTex != null)
             {
                 Memory.SpriteBatchStartStencil();
-                Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
+                Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height), Microsoft.Xna.Framework.Color.White);
                 Memory.SpriteBatchEnd();
             }
             //movieState = STATE_INIT;
@@ -250,7 +250,7 @@ namespace FF8
             }
             //draw frame;
             Memory.SpriteBatchStartStencil();//by default xna filters all textures SamplerState.PointClamp disables that. so video is being filtered why playing.
-            Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
+            Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height), Microsoft.Xna.Framework.Color.White);
             Memory.SpriteBatchEnd();
             
         }
