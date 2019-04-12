@@ -212,19 +212,17 @@ namespace FF8
             ret.Height = charHeight + (realY - y);
             return ret;
         }
-
-
+        public Rectangle RenderBasicText(string buffer, Vector2 pos, Vector2 zoom, int whichFont = 0, int isMenu = 0, float Fade = 1.0f) => RenderBasicText(buffer, (int) pos.X, (int) pos.Y, zoom.X, zoom.Y, whichFont, isMenu, Fade);
+        public Rectangle RenderBasicText(string buffer, Point pos, Vector2 zoom, int whichFont = 0, int isMenu = 0, float Fade = 1.0f) => RenderBasicText(buffer, pos.X, pos.Y, zoom.X, zoom.Y, whichFont, isMenu, Fade);
         public Rectangle RenderBasicText(string buffer, int x, int y, float zoomWidth = 1f, float zoomHeight = 1f, int whichFont = 0, int isMenu = 0, float Fade = 1.0f)
         {
             Rectangle ret = new Rectangle(x, y, 0, 0);
-            int realX = x;
-            int realY = y;
+            Point real = new Point(x, y);
             int charCountWidth = whichFont == 0 ? 21 : 10;
             int charSize = whichFont == 0 ? 12 : 24;
-            float fScaleWidth = (float)Memory.graphics.GraphicsDevice.Viewport.Width / Memory.PreferredViewportWidth;
-            float fScaleHeight = (float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight;
-            int charWidth = (int)(charSize * zoomWidth * fScaleWidth);
-            int charHeight = (int)(charSize * zoomHeight * fScaleHeight);
+            Vector2 zoom = new Vector2(zoomWidth, zoomHeight);
+            Vector2 scale = new Vector2((float)Memory.graphics.GraphicsDevice.Viewport.Width / Memory.PreferredViewportWidth,(float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight);
+            Point size = (new Vector2(charSize,charSize)*zoom*scale).ToPoint();
             foreach (char c in buffer)
             {
 
@@ -233,14 +231,11 @@ namespace FF8
                 //i.e. 1280 is 100%, 640 is 50% and therefore 2560 is 200% which means multiply by 0.5f or 2.0f
                 if (c == '\n')
                 {
-                    realX = x;
-                    realY += charHeight;
+                    real.X = x;
+                    real.Y += size.Y;
                     continue;
                 }
-                Rectangle destRect = new Rectangle(realX,
-                realY,
-                charWidth,
-                charHeight);
+                Rectangle destRect = new Rectangle(real,size);
 
                 Rectangle sourceRect = new Rectangle((deltaChar - (verticalPosition * charCountWidth)) * charSize,
                     verticalPosition * charSize,
@@ -253,12 +248,12 @@ namespace FF8
                     sourceRect,
                 Color.White * Fade);
 
-                realX += (int)(charSize * zoomWidth * fScaleWidth);
-                int curWidth = realX - x;
+                real.X += size.X;
+                int curWidth = real.X - x;
                 if (curWidth > ret.Width)
                     ret.Width = curWidth;
             }
-            ret.Height = charHeight + (realY - y);
+            ret.Height = size.Y + (real.Y - y);
             return ret;
         }
 

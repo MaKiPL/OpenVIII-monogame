@@ -9,6 +9,7 @@
     using System.IO;
     using System.Runtime.InteropServices;
     using System.Text;
+    using System.Threading;
 
     /// <summary>
     /// Ffcc is a front end for processing Audio and Video using ffmpeg.autogen
@@ -23,23 +24,35 @@
 
         /// <summary>
         /// If you have sound skipping increase this number and it'll go away. might decrease sync or
-        /// increase memory load The goal is to keep the dynamicsoundeffectinterface fed. if it plays
+        /// increase memory load The goal is to keep the dynamicsoundeffectinterface fed. If it plays
         /// the audio before you give it more, then you get sound skips.
         /// </summary>
         /// <value>The goal buffer count.</value>
-        /// <remarks>Will want to be as low as possible without sound skipping</remarks>
-        private const int GoalBufferCount = 75;
+        /// <remarks>Will want to be as low as possible without sound skipping.
+        /// 91.875 is 1 second of audio at 44100 hz @ 15 fps;
+        /// 99.9001 is 1 second of audio at 48000 hz @ 15 fps;
+        /// </remarks>
+        private const int GoalBufferCount = 100;
+        /// <summary>
+        /// NextAsync sleeps when filling buffer.
+        /// If set too high buffer will empty before filling it again.
+        /// </summary>
+        private const int NextAsyncSleep = 10;
 
         private readonly AVDictionary* _dict;
         private AVIOContext* _avio_ctx;
         private byte* _avio_ctx_buffer;
         private int _avio_ctx_buffer_size;
         private byte[] _convertedData;
+
         //private byte* _convertedData;
         private MemoryStream _decodedMemoryStream;
+
         private bool _frameSkip = true;
+
         //private IntPtr _intPtr;
         private int _loopstart;
+
         public static string DataFileName;
 
         #endregion Fields
@@ -499,9 +512,42 @@ EOF:
         /// <summary>
         /// Dispose of all leaky varibles.
         /// </summary>
-        public void Dispose() =>
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);// TODO: uncomment the following line if the finalizer is overridden above. GC.SuppressFinalize(this);
+        public void Dispose() => Dispose(true);
+
+        /// <summary>
+        /// For use in threads runs Next till done. To keep audio buffer fed. Or really good timing
+        /// on video frames.
+        /// </summary>
+        public void NextAsync()
+        {
+            bool disposeAll = false;
+            try
+            {
+                if (Mode == FfccMode.STATE_MACH)
+                {
+                    while (State != FfccState.DONE)
+                    {
+                        lock (Decoder) //make the main thread wait if it accesses this class.
+                        {
+                            while (!Ahead)
+                            {
+                                if (Next() < 0)
+                                    break;
+                            }
+                        }
+                        Thread.Sleep(NextAsyncSleep); //delay checks
+                    }
+                }
+            }
+            catch (ThreadAbortException)
+            {
+                disposeAll = true;//stop playing
+            }
+            finally
+            {
+                Dispose(disposeAll); // dispose of everything except audio encase it's still playing.
+            }
+        }
 
         /// <summary>
         /// Attempts to get 1 frame of Video, or refill Audio buffer.
@@ -620,18 +666,21 @@ EOF:
         /// <returns>Texture2D</returns>
         public Texture2D Texture2D()
         {
-            Texture2D frameTex = new Texture2D(Memory.spriteBatch.GraphicsDevice, Decoder.CodecContext->width, Decoder.CodecContext->height, false, SurfaceFormat.Color);
-            const int bpp = 4;
-            byte[] texBuffer = new byte[Decoder.CodecContext->width * Decoder.CodecContext->height * bpp];
-            fixed (byte* ptr = &texBuffer[0])
+            lock (Decoder)
             {
-                byte*[] srcData = { ptr, null, null, null };
-                int[] srcLinesize = { Decoder.CodecContext->width * bpp, 0, 0, 0 };
-                // convert video frame to the RGB data
-                ffmpeg.sws_scale(ScalerContext, Decoder.Frame->data, Decoder.Frame->linesize, 0, Decoder.CodecContext->height, srcData, srcLinesize);
+                Texture2D frameTex = new Texture2D(Memory.spriteBatch.GraphicsDevice, Decoder.CodecContext->width, Decoder.CodecContext->height, false, SurfaceFormat.Color);
+                const int bpp = 4;
+                byte[] texBuffer = new byte[Decoder.CodecContext->width * Decoder.CodecContext->height * bpp];
+                fixed (byte* ptr = &texBuffer[0])
+                {
+                    byte*[] srcData = { ptr, null, null, null };
+                    int[] srcLinesize = { Decoder.CodecContext->width * bpp, 0, 0, 0 };
+                    // convert video frame to the RGB data
+                    ffmpeg.sws_scale(ScalerContext, Decoder.Frame->data, Decoder.Frame->linesize, 0, Decoder.CodecContext->height, srcData, srcLinesize);
+                }
+                frameTex.SetData(texBuffer);
+                return frameTex;
             }
-            frameTex.SetData(texBuffer);
-            return frameTex;
         }
 
         protected virtual void Dispose(bool disposing)
@@ -711,8 +760,6 @@ EOF:
             Buffer_Data* bd = (Buffer_Data*)opaque;
 
             return bd->Read(buf, buf_size);
-
-
         }
 
         /// <summary>
@@ -823,7 +870,6 @@ EOF:
             }
             avio_alloc_context_read_packet rf = new avio_alloc_context_read_packet(Read_packet);
             _avio_ctx = ffmpeg.avio_alloc_context(_avio_ctx_buffer, _avio_ctx_buffer_size, 0, bd, rf, null, null);
-
 
             if (_avio_ctx == null)
             {
@@ -1089,14 +1135,12 @@ EOF:
         {
             while (Decode(out AVFrame _DecodedFrame))
             {
-
-
                 if (MediaType == AVMediaType.AVMEDIA_TYPE_VIDEO)
                 {
                     if (Mode == FfccMode.STATE_MACH)
                     {
                         State = FfccState.WAITING;
-                        return;
+                        break;
                     }
                     // do something with video here.
                     else if (Mode == FfccMode.PROCESS_ALL)
@@ -1106,10 +1150,10 @@ EOF:
                 else if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
                 {
                     Resample(ref _DecodedFrame);
-                    if (Mode == FfccMode.STATE_MACH && !Behind)
+                    if (Mode == FfccMode.STATE_MACH && !Behind) //still behind stay here.
                     {
                         State = FfccState.WAITING;
-                        return;
+                        break;
                     }
                 }
             }
@@ -1233,6 +1277,7 @@ EOF:
                             case FfccState.WAITING:
                                 ret = 0;
                                 break;
+
                             default:
                                 ret = -1;
                                 break;
@@ -1247,6 +1292,7 @@ EOF:
             while (!((Mode == FfccMode.PROCESS_ALL && State == FfccState.DONE) || (State == FfccState.DONE || State == FfccState.WAITING)));
             return ret;
         }
+
         private int WritetoMs(ref byte[] output, int start, ref int length)
         {
             if (Mode == FfccMode.STATE_MACH)
@@ -1259,6 +1305,7 @@ EOF:
             }
             return length - start;
         }
+
         /// <summary>
         /// Write to Memory Stream.
         /// </summary>
@@ -1307,8 +1354,8 @@ EOF:
             public UInt32 HeaderSize;
 
             public void SetHeader(IntPtr value) => Header = value;
-            public void SetHeader(byte* value) => Header = (IntPtr)value;
 
+            public void SetHeader(byte* value) => Header = (IntPtr)value;
 
             public UInt32 DataSeekLoc;
             public UInt32 DataSize;
@@ -1355,6 +1402,7 @@ EOF:
                     }
                 }
             }
+
             public unsafe int Read(byte* buf, int buf_size)
             {
                 int ret;
@@ -1363,6 +1411,7 @@ EOF:
                 else
                     return ReadData(buf, buf_size);
             }
+
             //can't do this because soon as fixed block ends the pointer is no good.
             //private void SetHeader(byte[] value)
             //{
