@@ -230,35 +230,41 @@ namespace FF8
 
             for (int n = 0; n < charactersData.Length; n++)
             {
-                frame[n+monstersData.Length] = frame[n+monstersData.Length] == charactersData[n].character.animHeader.animations[0].cFrames ? 0 : frame[n];
+                frame[n+monstersData.Length] = frame[n+monstersData.Length] == charactersData[n].character.animHeader.animations[0].cFrames ? 0 : frame[n+monstersData.Length];
                 for (int i = 0; i < charactersData[n].character.geometry.cObjects; i++)
                 {
-                    var a = charactersData[n].character.GetVertexPositions(i, new Vector3(-20 + n * 10, 10, 0),0, frame[n], frameperFPS / FPS); //DEBUG
-                    if (a == null || a.Length == 0)
+                    var a = charactersData[n].character.GetVertexPositions(i, new Vector3(-20 + n * 10, 10, 0),0, frame[n+monstersData.Length], frameperFPS / FPS); //DEBUG
+                    if (a == null || a.Item1.Length == 0)
                         return;
-                    ate.Texture = charactersData[n].character.textures.textures[0];
-                    foreach (var pass in ate.CurrentTechnique.Passes)
+                    for (int k = 0; k < a.Item1.Length / 3; k++)
                     {
-                        pass.Apply();
-                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                        vertexData: a, vertexOffset: 0, primitiveCount: a.Length / 3);
+                        ate.Texture = charactersData[n].character.textures.textures[a.Item2[k]];
+                        foreach (var pass in ate.CurrentTechnique.Passes)
+                        {
+                            pass.Apply();
+                            Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                            vertexData: a.Item1, vertexOffset: k*3, primitiveCount: 1);
+                        }
                     }
                 }
             }
             for (int n = 0; n < charactersData.Length; n++)
             {
-                frame[n + monstersData.Length] = frame[n + monstersData.Length] == charactersData[n].weapon.animHeader.animations[0].cFrames ? 0 : frame[n];
+                frame[n + monstersData.Length+charactersData.Length] = frame[n + monstersData.Length + charactersData.Length] == charactersData[n].weapon.animHeader.animations[0].cFrames ? 0 : frame[n+monstersData.Length+charactersData.Length];
                 for (int i = 0; i < charactersData[n].weapon.geometry.cObjects; i++)
                 {
-                    var a = charactersData[n].weapon.GetVertexPositions(i, new Vector3(-20+n*10,10, 0),0, frame[n], frameperFPS / FPS); //DEBUG
-                    if (a == null || a.Length == 0)
+                    var a = charactersData[n].weapon.GetVertexPositions(i, new Vector3(-20+n*10,10, 0),0, frame[n+monstersData.Length+charactersData.Length], frameperFPS / FPS); //DEBUG
+                    if (a == null || a.Item1.Length == 0)
                         return;
-                    ate.Texture = charactersData[n].weapon.textures.textures[0];
-                    foreach (var pass in ate.CurrentTechnique.Passes)
+                    for (int k = 0; k < a.Item1.Length / 3; k++)
                     {
-                        pass.Apply();
-                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                        vertexData: a, vertexOffset: 0, primitiveCount: a.Length / 3);
+                        ate.Texture = charactersData[n].weapon.textures.textures[a.Item2[k]];
+                        foreach (var pass in ate.CurrentTechnique.Passes)
+                        {
+                            pass.Apply();
+                            Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                            vertexData: a.Item1, vertexOffset: k*3, primitiveCount: 1);
+                        }
                     }
                 }
             }
@@ -296,14 +302,17 @@ namespace FF8
                 for (int i = 0; i < monstersData[n].geometry.cObjects; i++)
                 {
                     var a = monstersData[n].GetVertexPositions(i, new Vector3(0+(n%12)*10, 10, (n/12)*10), 0, frame[n],frameperFPS/FPS); //DEBUG
-                    if (a == null || a.Length == 0)
+                    if (a == null || a.Item1.Length == 0)
                         return;
-                    ate.Texture = monstersData[n].textures.textures[0];
-                    foreach (var pass in ate.CurrentTechnique.Passes)
+                    for (int k = 0; k < a.Item1.Length / 3; k++)
                     {
-                        pass.Apply();
-                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                        vertexData: a, vertexOffset: 0, primitiveCount: a.Length / 3);
+                        ate.Texture = monstersData[n].textures.textures[a.Item2[k]];
+                        foreach (var pass in ate.CurrentTechnique.Passes)
+                        {
+                            pass.Apply();
+                            Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                            vertexData: a.Item1, vertexOffset: k*3, primitiveCount: 1);
+                        }
                     }
                 }
             }
@@ -601,7 +610,7 @@ namespace FF8
             ReadMonster();
 
             //for frames indexes monsters are first, then after n monsters characters appear with weapons
-            frame = new int[monstersData.Length + charactersData.Length];
+            frame = new int[monstersData.Length + charactersData.Length*2];
 
             battleModule++;
         }
@@ -615,8 +624,8 @@ namespace FF8
             charactersData = new CharacterData[2];
             charactersData[0] = new CharacterData
             {
-                character = new Debug_battleDat(0, Debug_battleDat.EntityType.Character, 0),
-                weapon = new Debug_battleDat(0, Debug_battleDat.EntityType.Weapon, 0)
+                character = new Debug_battleDat(4, Debug_battleDat.EntityType.Character, 9),
+                weapon = new Debug_battleDat(4, Debug_battleDat.EntityType.Weapon, 23)
             };
             charactersData[1] = new CharacterData
             {
@@ -631,7 +640,7 @@ namespace FF8
             if (enc.bNumOfEnemies == 0)
                 return;
             //DEBUG BELOW; I just want to draw any model
-            monstersData = new Debug_battleDat[] { new Debug_battleDat(0, Debug_battleDat.EntityType.Monster), new Debug_battleDat(11, Debug_battleDat.EntityType.Monster), new Debug_battleDat(26, Debug_battleDat.EntityType.Monster) };
+            monstersData = new Debug_battleDat[] { new Debug_battleDat(122, Debug_battleDat.EntityType.Monster), new Debug_battleDat(126, Debug_battleDat.EntityType.Monster), new Debug_battleDat(15, Debug_battleDat.EntityType.Monster) };
             //for (int n = 26; n <= monstersData.Length; n++)
             //    monstersData[n] = new Debug_battleDat(n, Debug_battleDat.EntityType.Monster);
             //END OF DEBUG

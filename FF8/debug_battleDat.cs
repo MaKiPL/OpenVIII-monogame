@@ -148,6 +148,7 @@ namespace FF8
             public ushort A1 { get => (ushort)(A & 0xFFF); set => A = value; }
             public ushort B1 { get => (ushort)(B & 0xFFF); set => B = value; }
             public ushort C1 { get => (ushort)(C & 0xFFF); set => C = value; }
+            public byte textureIndex { get => (byte)((texUnk >> 6) & 0b111); }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 20)]
@@ -168,6 +169,7 @@ namespace FF8
             public ushort B1 { get => (ushort)(B & 0xFFF); set => B = value; }
             public ushort C1 { get => (ushort)(C & 0xFFF); set => C = value; }
             public ushort D1 { get => (ushort)(D & 0xFFF); set => D = value; }
+            public byte textureIndex { get => (byte)((texUnk >> 6) & 0b111); }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack =1,Size =2)]
@@ -176,8 +178,8 @@ namespace FF8
             public byte U;
             public byte V;
 
-            public float U1 { get => U/128.0f; set => U = (byte)value; }
-            public float V1 { get => V/128.0f; set => V = (byte)value; }
+            public float U1 { get => U /*> 128 || V > 128 ? U / 256.0f : U*/ /128f; set => U = (byte)value; }
+            public float V1 { get => V /*> 128 || U > 128 ? V / 256.0f : V*/ /128f; set => V = (byte)value; }
         }
 
         public Geometry geometry;
@@ -223,10 +225,10 @@ namespace FF8
             return @object;
         }
 
-        public VertexPositionTexture[] GetVertexPositions(int objectId, Vector3 position, int animationId, int animationFrame, float step)
+        public Tuple<VertexPositionTexture[],byte[]> GetVertexPositions(int objectId, Vector3 position, int animationId, int animationFrame, float step)
         {
             Object obj = geometry.objects[objectId];
-            if (animationFrame > animHeader.animations[animationId].animationFrames.Length || animationFrame<0)
+            if (animationFrame >= animHeader.animations[animationId].animationFrames.Length || animationFrame<0)
                 animationFrame = 0;
             AnimationFrame frame = animHeader.animations[animationId].animationFrames[animationFrame];
             AnimationFrame nextFrame;
@@ -240,7 +242,7 @@ namespace FF8
             foreach (var a in obj.verticeData)
                 foreach (var b in a.vertices)
                     verts.Add(CalculateFrame(new Tuple<Vector3, int>(b.GetVector, a.boneId),frame,nextFrame, step));
-
+            byte[] texturePointers = new byte[obj.cTriangles + obj.cQuads*2];
             for (;i<obj.cTriangles; i++ )
             {
                 ///=/=/=/=/==/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
@@ -263,6 +265,7 @@ namespace FF8
                 vpt.Add(new VertexPositionTexture(VerticeDataC, new Vector2(obj.triangles[i].vta.U1, obj.triangles[i].vta.V1)));
                 vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.triangles[i].vtb.U1, obj.triangles[i].vtb.V1)));
                 vpt.Add(new VertexPositionTexture(VerticeDataB, new Vector2(obj.triangles[i].vtc.U1, obj.triangles[i].vtc.V1)));
+                texturePointers[i] = obj.triangles[i].textureIndex;
             }
 
 
@@ -296,23 +299,25 @@ namespace FF8
                 vpt.Add(new VertexPositionTexture(VerticeDataC, new Vector2(obj.quads[i].vtc.U1, obj.quads[i].vtc.V1)));
                 vpt.Add(new VertexPositionTexture(VerticeDataD, new Vector2(obj.quads[i].vtd.U1, obj.quads[i].vtd.V1)));
 
+                texturePointers[obj.cTriangles+i*2] = obj.quads[i].textureIndex;
+                texturePointers[obj.cTriangles + i * 2+1] = obj.quads[i].textureIndex;
             }
 
-            return vpt.ToArray();
+            return new Tuple<VertexPositionTexture[], byte[]>(vpt.ToArray(), texturePointers);
         }
 
         private Tuple<Vector3, int> CalculateFrame(Tuple<Vector3, int> tuple, AnimationFrame frame,AnimationFrame nextFrame, float step)
         {
             Matrix matrix = frame.boneRot.Item3[tuple.Item2]; //get's bone matrix
             Vector3 rootFramePos = new Vector3(
-                matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * -tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
-                matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * -tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
-                matrix.M31 * tuple.Item1.X + matrix.M43 + matrix.M32 * -tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
+                matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
+                matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
+                matrix.M31 * tuple.Item1.X + /*matrix.M43*/ + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
             matrix = nextFrame.boneRot.Item3[tuple.Item2];
             Vector3 nextFramePos = new Vector3(
-                matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * -tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
-                matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * -tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
-                matrix.M31 * tuple.Item1.X + matrix.M43 + matrix.M32 * -tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
+                matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
+                matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
+                matrix.M31 * tuple.Item1.X + /*matrix.M43*/ + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
             rootFramePos = Vector3.SmoothStep(rootFramePos, nextFramePos, step);
             return new Tuple<Vector3, int>(rootFramePos, tuple.Item2);
         }
@@ -373,9 +378,9 @@ namespace FF8
                         animHeader.animations[i].animationFrames[n] = new AnimationFrame()
                         {
                             Position = new Vector3(
-                        x*15f,
-                        y*15f,
-                        z*15f)
+                        x,
+                        y,
+                        z)
                         };
                     else
                         animHeader.animations[i].animationFrames[n] = new AnimationFrame()
@@ -425,18 +430,15 @@ namespace FF8
 
                         if (skeleton.bones[k].parentId == 0xFFFF)
                         {
-                            //I reintroduced old code for testing
-                            //var MatrixRoot = new Matrix();
-                            //MatrixRoot = MakiExtended.MatrixMultiply(MakiExtended.GetRotationMatrixY(270f), MakiExtended.GetRotationMatrixX(180f));
-                            //MatrixRoot = MakiExtended.MatrixMultiply(MakiExtended.GetRotationMatrixZ(90f), MatrixRoot);
-                            //MatrixZ = MakiExtended.MatrixMultiply(MatrixZ, MatrixRoot);
-                            //MatrixZ.M43 = 2;
+                            //MatrixZ.M41 = animHeader.animations[i].animationFrames[n].Position.X;
+                            //MatrixZ.M42 = animHeader.animations[i].animationFrames[n].Position.Y;
+                            //MatrixZ.M43 = animHeader.animations[i].animationFrames[n].Position.Z;
                         }
                         else
                         {
                             var prevBone = animHeader.animations[i].animationFrames[n].boneRot.Item3[skeleton.bones[k].parentId];
                             MatrixZ = Matrix.Multiply(prevBone, MatrixZ);
-                            MatrixZ.M41 = 0; MatrixZ.M42 = 0; MatrixZ.M44 = 1; MatrixZ.M43 = skeleton.bones[skeleton.bones[k].parentId].Size;
+                            MatrixZ.M44 = 1; MatrixZ.M43 = skeleton.bones[skeleton.bones[k].parentId].Size; MatrixZ.M42 = 0; MatrixZ.M41 = 0;
                             MatrixZ.M41 = prevBone.M11 * MatrixZ.M41 + prevBone.M12 * MatrixZ.M42 + prevBone.M13 * MatrixZ.M43 + prevBone.M41;
                             MatrixZ.M42 = prevBone.M21 * MatrixZ.M41 + prevBone.M22 * MatrixZ.M42 + prevBone.M23 * MatrixZ.M43 + prevBone.M42;
                             MatrixZ.M43 = prevBone.M31 * MatrixZ.M41 + prevBone.M32 * MatrixZ.M42 + prevBone.M33 * MatrixZ.M43 + prevBone.M43;
@@ -648,6 +650,7 @@ namespace FF8
                         break;
                 }
             }
+
             MakiExtended.Debugger_Feed(geometry.GetType(), System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
             MakiExtended.DebuggerInstanceProvider.Add(geometry);
             MakiExtended.Debugger_Feed(animHeader.animations[0].animationFrames[0].GetType(), System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
