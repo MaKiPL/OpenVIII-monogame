@@ -417,11 +417,11 @@ namespace FF8
                     for(int k = 0; k<skeleton.cBones; k++)
                     {
                         var rad = animHeader.animations[i].animationFrames[n].boneRot.Item1[k];
-                        Matrix xRot = MakiExtended.GetRotationMatrixX(rad.X);
+                        Matrix xRot = MakiExtended.GetRotationMatrixX(-rad.X);
                         Matrix yRot = MakiExtended.GetRotationMatrixY(-rad.Y);
-                        Matrix zRot = MakiExtended.GetRotationMatrixZ(rad.Z);
-                        var MatrixZ = MakiExtended.MatrixMultiply(xRot, zRot);
-                        MatrixZ = MakiExtended.MatrixMultiply(MatrixZ, yRot);
+                        Matrix zRot = MakiExtended.GetRotationMatrixZ(-rad.Z);
+                        var MatrixZ = MakiExtended.MatrixMultiply(yRot, xRot);
+                        MatrixZ = MakiExtended.MatrixMultiply(zRot, MatrixZ);
 
                         if (skeleton.bones[k].parentId == 0xFFFF)
                         {

@@ -11,7 +11,7 @@ namespace FF8
     {
         private static uint bs_cameraPointer;
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
-        private static float degrees, Yshift;
+        private static float degrees=90, Yshift;
         private static readonly float camDistance = 10.0f;
         private static Vector3 camPosition, camTarget;
         private static TIM2 textureInterface;
@@ -295,7 +295,7 @@ namespace FF8
 
                 for (int i = 0; i < monstersData[n].geometry.cObjects; i++)
                 {
-                    var a = monstersData[n].GetVertexPositions(i, new Vector3(-50+(n%12)*10, 50, (n/12)*10), 0, frame[n],frameperFPS/FPS); //DEBUG
+                    var a = monstersData[n].GetVertexPositions(i, new Vector3(0+(n%12)*10, 10, (n/12)*10), 0, frame[n],frameperFPS/FPS); //DEBUG
                     if (a == null || a.Length == 0)
                         return;
                     ate.Texture = monstersData[n].textures.textures[0];
@@ -536,7 +536,7 @@ namespace FF8
             //init renderer
             effect = new BasicEffect(Memory.graphics.GraphicsDevice);
             camTarget = new Vector3(41.91198f, 33.59995f, 6.372305f);
-            camPosition = new Vector3(-10.49409f, 39.70397f, 8.321299f);
+            camPosition = new Vector3(40.49409f, 39.70397f, -43.321299f);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                                MathHelper.ToRadians(45f),
                                Memory.graphics.GraphicsDevice.DisplayMode.AspectRatio,
@@ -631,8 +631,7 @@ namespace FF8
             if (enc.bNumOfEnemies == 0)
                 return;
             //DEBUG BELOW; I just want to draw any model
-            monstersData = new Debug_battleDat[1];
-            monstersData[0] = new Debug_battleDat(26, Debug_battleDat.EntityType.Monster);
+            monstersData = new Debug_battleDat[] { new Debug_battleDat(0, Debug_battleDat.EntityType.Monster), new Debug_battleDat(11, Debug_battleDat.EntityType.Monster), new Debug_battleDat(26, Debug_battleDat.EntityType.Monster) };
             //for (int n = 26; n <= monstersData.Length; n++)
             //    monstersData[n] = new Debug_battleDat(n, Debug_battleDat.EntityType.Monster);
             //END OF DEBUG
