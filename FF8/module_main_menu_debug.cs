@@ -14,7 +14,7 @@ namespace FF8
         /// <summary>
         /// Strings for the debug menu
         /// </summary>
-        private static readonly Dictionary<Ditems, Item> strDebugLobby = new Dictionary<Ditems, Item>()
+        private static readonly Dictionary<Enum, Item> strDebugLobby = new Dictionary<Enum, Item>()
         {
             { Ditems.Reset, new Item{Text="Reset Main Menu state" } },
             { Ditems.Overture, new Item{Text="Play Overture"} },
@@ -31,7 +31,7 @@ namespace FF8
         /// <summary>
         /// Strings for the main menu
         /// </summary>
-        private static readonly Dictionary<Mitems, Item> strMainLobby = new Dictionary<Mitems, Item>()
+        private static readonly Dictionary<Enum, Item> strMainLobby = new Dictionary<Enum, Item>()
         {
             { Mitems.New, new Item{Text="NEW GAME" } },
             { Mitems.Load, new Item{Text="Continue" } },
@@ -104,9 +104,8 @@ namespace FF8
 
         #region Properties
 
-        
-
-        public static float Fade { get => fade; set => fade = value; }
+        private static float Fade { get => fade; set => fade = value; }
+        private static Vector2 Offset { get; set; }
 
         /// <summary>
         /// Currently selected Field
@@ -194,10 +193,13 @@ namespace FF8
         }
 
         public static Icons icons { get; private set; }
+        public static float vpSpace { get; private set; }
+        public static Vector2 DFontPos { get; private set; }
 
         #endregion Properties
 
         #region Methods
+
         /// <summary>
         /// Init
         /// </summary>
@@ -248,6 +250,7 @@ namespace FF8
             {
                 Fade += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 3;
             }
+
             switch (State)
             {
                 case MainMenuStates.Init:
@@ -256,6 +259,7 @@ namespace FF8
                     break;
 
                 case MainMenuStates.MainLobby:
+                    Offset = new Vector2(-1000, 0);
                     if (!UpdateMainLobby() && (lastfade == fade))
                     {
                         Memory.SuppressDraw = true;
@@ -265,7 +269,11 @@ namespace FF8
                     break;
 
                 case MainMenuStates.DebugScreen:
-                    if (!UpdateDebugLobby() && (lastfade == fade))
+                    if (Offset != Vector2.Zero)
+                    {
+                        Offset = Vector2.SmoothStep(Offset, Vector2.Zero, Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 15f);
+                    }
+                    if (!UpdateDebugLobby() && (lastfade == fade) && Offset == Vector2.Zero)
                     {
                         Memory.SuppressDraw = true;
                         Memory.IsMouseVisible = true;
@@ -297,11 +305,11 @@ namespace FF8
         {
             bool ret = false;
             Point ml = Input.MouseLocation;
-            foreach (KeyValuePair<Mitems, Item> entry in strMainLobby)
+            foreach (KeyValuePair<Enum, Item> entry in strMainLobby)
             {
                 if (entry.Value.Loc.Contains(ml))
                 {
-                    Mchoose = entry.Key;
+                    Mchoose = (Mitems)entry.Key;
                     ret = true;
 
                     if (Input.Button(Buttons.MouseWheelup) || Input.Button(Buttons.MouseWheeldown))
@@ -384,11 +392,11 @@ namespace FF8
         {
             bool ret = false;
             Point ml = Input.MouseLocation;
-            foreach (KeyValuePair<Ditems, Item> entry in strDebugLobby)
+            foreach (KeyValuePair<Enum, Item> entry in strDebugLobby)
             {
                 if (entry.Value.Loc.Contains(ml))
                 {
-                    Dchoose = entry.Key;
+                    Dchoose = (Ditems)entry.Key;
                     ret = true;
 
                     if (Input.Button(Buttons.MouseWheelup))
@@ -627,6 +635,7 @@ namespace FF8
 
             return ret;
         }
+
         /// <summary>
         /// Trigger required draw function.
         /// </summary>
@@ -638,6 +647,8 @@ namespace FF8
             vpWidth = Memory.graphics.GraphicsDevice.Viewport.Width;
             vpHeight = Memory.graphics.GraphicsDevice.Viewport.Width;
             lastfade = fade;
+            vpSpace = vpHeight * 0.03f;
+            DFontPos = new Vector2(vpWidth * .10f, vpHeight * .05f) + Offset;
             switch (State)
             {
                 case MainMenuStates.Init:
@@ -688,37 +699,38 @@ namespace FF8
             Memory.SpriteBatchEnd();
         }
 
+        private static Rectangle FontBoxCalc<T>(Dictionary<Enum, Item> dict)
+        {
+            Rectangle dst = new Rectangle();
+            int item = 0;
+            foreach (Enum i in Enum.GetValues(typeof(T)))
+            {
+                Item c = dict[i];
+                c.Loc = Memory.font.CalcBasicTextArea(Font.CipherDirty(string.Format(c.Text, InfoForLobby<T>(i)).Replace("\0", "")),
+                (int)DFontPos.X, (int)(DFontPos.Y + vpSpace * item++), 1f, 2f, 0);
+                if (dst.X == 0 || dst.Y == 0)
+                    dst.Location = c.Loc.Location;
+                if (c.Loc.Width > dst.Width)
+                    dst.Width = c.Loc.Width;
+                dst.Height = c.Loc.Y + c.Loc.Height - dst.Y;
+                dict[i] = c;
+            }
+            dst.Inflate(vpWidth * .06f, vpHeight * .025f);
+            return dst;
+        }
+
         /// <summary>
         /// Draw Debug Menu
         /// </summary>
         private static void DrawDebugLobby()
         {
-            float vpSpace = vpHeight * 0.03f;
             float item = 0;
-            Rectangle dst= new Rectangle();
-            foreach (Ditems i in (Ditems[])Enum.GetValues(typeof(Ditems)))
-            {
-                Item c = strDebugLobby[i];
-                    c.Loc = Memory.font.CalcBasicTextArea(Font.CipherDirty(string.Format(c.Text, InfoDebugLobby(i)).Replace("\0", "")),
-                    (int)(vpWidth * 0.10f), (int)(vpHeight * 0.05f + vpSpace * item++),1f,2f,0);
-                if (dst.X == 0)
-                    dst.X = c.Loc.X;
-                if (dst.Y == 0)
-                    dst.Y = c.Loc.Y;
-                if (c.Loc.Width > dst.Width)
-                    dst.Width = c.Loc.Width;
-                dst.Height = c.Loc.Y + c.Loc.Height-dst.Y;
-                strDebugLobby[i] = c;
-            }
-            int adj = (int)(dst.Y * .5f);
-            dst.Y -= adj;
-            dst.X -= (int)(dst.X * .6f);
-            dst.Width += dst.X*2;
-            dst.Height += adj*2;
+            Rectangle dst = FontBoxCalc<Ditems>(strDebugLobby);
+            //dst.Offset(Offset);
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
-            icons.Draw(Icons.ID.Menu_BG_256, 0, dst, 0,fade);
+            icons.Draw(Icons.ID.Menu_BG_256, 0, dst, 0, Fade);
             item = 0;
-            dst.X += (int)(4 * 3.5f);
+            dst.Offset(4 * 3.5f, 0);
             dst.Width = 0;
             dst.Height = 0;
             icons.Draw(Icons.ID.DEBUG, 2, dst, 3.5f);
@@ -727,45 +739,53 @@ namespace FF8
             //foreach (KeyValuePair<Ditems, string> e in DebugMenu)
             foreach (Ditems i in (Ditems[])Enum.GetValues(typeof(Ditems)))
             {
-                Memory.font.RenderBasicText(Font.CipherDirty(string.Format(strDebugLobby[i].Text, InfoDebugLobby(i)).Replace("\0", "")),
-                    (int)(vpWidth * 0.10f), (int)(vpHeight * 0.05f + vpSpace * item++), 1f, 2f, 0, 1, Fade);
+                Memory.font.RenderBasicText(Font.CipherDirty(string.Format(strDebugLobby[i].Text, InfoForLobby<Ditems>(i)).Replace("\0", "")),
+                    (int)(DFontPos.X), (int)(DFontPos.Y + vpSpace * item++), 1f, 2f, 0, 1, Fade);
             }
-            Memory.spriteBatch.Draw(Memory.iconsTex[2], new Rectangle(
-                (int)(vpWidth * 0.05f),
-                (int)(vpHeight * 0.05f + vpSpace * ((float)Dchoose)),
-                (int)(24 * 2 * fScaleWidth), (int)(16 * 2 * fScaleWidth)),
+            dst.Location = DFontPos.ToPoint();
+            dst.Size = new Point((int)(24 * 2 * fScaleWidth), (int)(16 * 2 * fScaleWidth));
+            dst.Offset(-(dst.Width + 10 * fScaleWidth), vpSpace * ((float)Dchoose));
+            Memory.spriteBatch.Draw(Memory.iconsTex[2], dst,
                 new Rectangle(232, 0, 23, 15), Color.White * Fade);
             Memory.SpriteBatchEnd();
         }
+
         /// <summary>
         /// Dynamic info for Ditem that is read at draw time.
         /// </summary>
         /// <param name="i">Ditem being drawn</param>
         /// <returns>Dynamic info for Ditem</returns>
-        private static string InfoDebugLobby(Ditems i)
+        private static string InfoForLobby<T>(Enum i)
         {
-            switch (i)
+            switch (typeof(T).Name)
             {
-                case Ditems.Battle:
-                    return debug_choosedBS.ToString("D4");
+                case "Ditems":
+                    switch (i)
+                    {
+                        case Ditems.Battle:
+                            return debug_choosedBS.ToString("D4");
 
-                case Ditems.Field:
-                    return debug_choosedField;
+                        case Ditems.Field:
+                            return debug_choosedField;
 
-                case Ditems.Movie:
-                    return debug_choosedMovie;
+                        case Ditems.Movie:
+                            return debug_choosedMovie;
 
-                case Ditems.Sounds:
-                    return $"{debug_choosedAudio}";
+                        case Ditems.Sounds:
+                            return $"{debug_choosedAudio}";
 
-                case Ditems.Music:
-                    return $"{debug_choosedMusic}";
+                        case Ditems.Music:
+                            return $"{debug_choosedMusic}";
+                    };
+                    break;
             };
             return "";
         }
+
         #endregion Methods
 
         #region Structs
+
         /// <summary>
         /// Container for MenuItems containing relevant info.
         /// </summary>

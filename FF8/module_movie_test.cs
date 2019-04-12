@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 namespace FF8
 {
@@ -18,6 +19,7 @@ namespace FF8
         private const int STATE_FINISHED = 5;
         private const int STATE_RETURN = 6;
         private const int STATE_RESET = 7;
+        private static Thread T_Audio;
 
         private static readonly string[] movieDirs = {
             MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../movies")), //this folder has most movies
@@ -42,9 +44,9 @@ namespace FF8
         }
 
         //private static Bitmap Frame { get; set; } = null;
-        private static Ffcc Ffccvideo { get; set; } = null;
+        private static Ffcc FfccVideo { get; set; } = null;
         private static Texture2D frameTex { get; set; } = null;
-        private static Ffcc Ffccaudio { get; set; } = null;
+        private static Ffcc FfccAudio { get; set; } = null;
         public static int ReturnState { get; set; } = Memory.MODULE_MAINMENU_DEBUG;
         /// <summary>
         /// Index in movie file list
@@ -91,24 +93,25 @@ namespace FF8
                     break;
                 case STATE_STARTPLAY:
                     MovieState++;
-                    if (Ffccaudio != null)
+                    if (FfccAudio != null)
                     {
-                        Ffccaudio.Play();
+                        FfccAudio.Play();
+                        T_Audio.Start();
                     }
-                    if (Ffccvideo != null)
+                    if (FfccVideo != null)
                     {
-                        Ffccvideo.Play();
+                        FfccVideo.Play();
                     }
                     break;
                 case STATE_PLAYING:
-                    if (Ffccaudio != null && !Ffccaudio.Ahead)
+                    //if (FfccAudio != null && !FfccAudio.Ahead)
+                    //{
+                    //    // if we are behind the timer get the next frame of audio.
+                    //    FfccAudio.Next();
+                    //}
+                    if (FfccVideo.Behind)
                     {
-                        // if we are behind the timer get the next frame of audio.
-                        Ffccaudio.Next();
-                    }
-                    if (Ffccvideo.Behind)
-                    {
-                        if (Ffccvideo.Next() < 0)
+                        if (FfccVideo.Next() < 0)
                         {
                             MovieState = STATE_FINISHED;
                             Memory.SuppressDraw = true;
@@ -128,7 +131,7 @@ namespace FF8
                     }
                     if (frameTex == null)
                     {
-                        frameTex = Ffccvideo.Texture2D();
+                        frameTex = FfccVideo.Texture2D();
                     }
                     break;
                 case STATE_PAUSED:
@@ -150,16 +153,16 @@ namespace FF8
         }
         private static void Reset()
         {
-            if (Ffccaudio != null)
+            if (T_Audio != null)
             {
-                Ffccaudio.Dispose();
+                T_Audio.Abort("Ending video playback");
             }
-            Ffccaudio = null;
-            if (Ffccvideo != null)
+            FfccAudio = null;
+            if (FfccVideo != null)
             {
-                Ffccvideo.Dispose();
+                FfccVideo.Dispose();
             }
-            Ffccvideo = null;
+            FfccVideo = null;
 
             MovieState = STATE_INIT;
             if (frameTex != null && !frameTex.IsDisposed)
@@ -176,11 +179,15 @@ namespace FF8
         private static void InitMovie()
         {
 
-            Ffccaudio = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
-            Ffccvideo = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_VIDEO, Ffcc.FfccMode.STATE_MACH);
+            FfccAudio = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
+            T_Audio = new Thread(FfccAudio.NextAsync)
+            {
+                Priority = ThreadPriority.AboveNormal
+            };
+            FfccVideo = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_VIDEO, Ffcc.FfccMode.STATE_MACH);
 
-            FPS = Ffccvideo.FPS;
-            if (FPS == 0)
+            FPS = FfccVideo.FPS;
+            if (Math.Abs(FPS) < double.Epsilon)
             {
                 TextWriter errorWriter = Console.Error;
                 errorWriter.WriteLine("Can not calc FPS, possibly FFMPEG dlls are missing or an error has occured");
@@ -242,7 +249,7 @@ namespace FF8
                 return;
             }
             //draw frame;
-            Memory.SpriteBatchStartStencil();
+            Memory.SpriteBatchStartStencil();//by default xna filters all textures SamplerState.PointClamp disables that. so video is being filtered why playing.
             Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
             Memory.SpriteBatchEnd();
             

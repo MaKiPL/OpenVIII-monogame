@@ -203,7 +203,11 @@ namespace FF8
         internal void Draw(Texture2D[] textures, int pallet, Rectangle inputdst, float scale = 1f, float fade = 1f)
         {
             Rectangle dst;
-            if ((int)(8 * scale) <= 0)
+            scale = Math.Abs(scale);
+            inputdst.Width = Math.Abs(inputdst.Width);
+            inputdst.Height = Math.Abs(inputdst.Height);
+            if (inputdst.X + inputdst.Width < 0 || inputdst.Y + inputdst.Height < 0) return;
+            if ((int)(8 * scale) <= float.Epsilon)
             {
                 //vscale = (float)dst.Height / Height;
                 scale = (float)inputdst.Width / Width;
@@ -223,7 +227,7 @@ namespace FF8
                 Rectangle src = e.GetRectangle;
                 bool testY = false;
                 bool testX = false;
-                //if (dst.Height<=0 || dst.Height <= 0) continue; //infinate loop prevention
+                if (dst.Height<=0 || dst.Height <= 0) continue; //infinate loop prevention
                 do
                 {
                     do
