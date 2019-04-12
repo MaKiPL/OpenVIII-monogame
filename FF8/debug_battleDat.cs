@@ -309,16 +309,17 @@ namespace FF8
         private Tuple<Vector3, int> CalculateFrame(Tuple<Vector3, int> tuple, AnimationFrame frame,AnimationFrame nextFrame, float step)
         {
             Matrix matrix = frame.boneRot.Item3[tuple.Item2]; //get's bone matrix
+            var testVar = frame.boneRot.Item3.Select(x=>x.M43).ToArray();
             Vector3 rootFramePos = new Vector3(
                 matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
                 matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
-                matrix.M31 * tuple.Item1.X + /*matrix.M43*/ + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
+                matrix.M31 * tuple.Item1.X /*+matrix.M43*/ /*(matrix.M43==0?0: -2)*/ + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
             matrix = nextFrame.boneRot.Item3[tuple.Item2];
             Vector3 nextFramePos = new Vector3(
                 matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
                 matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
                 matrix.M31 * tuple.Item1.X + /*matrix.M43*/ + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
-            rootFramePos = Vector3.SmoothStep(rootFramePos, nextFramePos, step);
+            rootFramePos = Vector3.SmoothStep(rootFramePos, nextFramePos, 0); //CHANGE 0 to step TO ENABLE UNLIMITED FPS ANIM BLENDING
             return new Tuple<Vector3, int>(rootFramePos, tuple.Item2);
         }
 #endregion
@@ -430,6 +431,7 @@ namespace FF8
 
                         if (skeleton.bones[k].parentId == 0xFFFF)
                         {
+                            MatrixZ.M43 = -2;
                             //MatrixZ.M41 = animHeader.animations[i].animationFrames[n].Position.X;
                             //MatrixZ.M42 = animHeader.animations[i].animationFrames[n].Position.Y;
                             //MatrixZ.M43 = animHeader.animations[i].animationFrames[n].Position.Z;
@@ -438,10 +440,12 @@ namespace FF8
                         {
                             var prevBone = animHeader.animations[i].animationFrames[n].boneRot.Item3[skeleton.bones[k].parentId];
                             MatrixZ = Matrix.Multiply(prevBone, MatrixZ);
+                            var zZ = MatrixZ.M43; //?
                             MatrixZ.M44 = 1; MatrixZ.M43 = skeleton.bones[skeleton.bones[k].parentId].Size; MatrixZ.M42 = 0; MatrixZ.M41 = 0;
                             MatrixZ.M41 = prevBone.M11 * MatrixZ.M41 + prevBone.M12 * MatrixZ.M42 + prevBone.M13 * MatrixZ.M43 + prevBone.M41;
                             MatrixZ.M42 = prevBone.M21 * MatrixZ.M41 + prevBone.M22 * MatrixZ.M42 + prevBone.M23 * MatrixZ.M43 + prevBone.M42;
                             MatrixZ.M43 = prevBone.M31 * MatrixZ.M41 + prevBone.M32 * MatrixZ.M42 + prevBone.M33 * MatrixZ.M43 + prevBone.M43;
+
                         }
 
                         animHeader.animations[i].animationFrames[n].boneRot.Item3[k] = MatrixZ;
@@ -558,9 +562,6 @@ namespace FF8
             public Texture2D[] textures;
         }
 
-        public Textures textures;
-#endregion
-
         private void ReadSection11(uint v, MemoryStream ms, BinaryReader br)
         {
             ms.Seek(v, SeekOrigin.Begin);
@@ -580,6 +581,9 @@ namespace FF8
                 tm.KillStreams();
             }
         }
+        public Textures textures;
+#endregion
+
 
         public enum EntityType
         {

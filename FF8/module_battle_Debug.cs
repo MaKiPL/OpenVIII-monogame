@@ -198,6 +198,8 @@ namespace FF8
                         DEBUGframe++;
                     if (Input.GetInputDelayed(Keys.Tab))
                         DEBUGframe--;
+                    if (Input.GetInputDelayed(Keys.R))
+                        battleModule = 1;
                     FPSCamera();
                     break;
             }
@@ -271,7 +273,7 @@ namespace FF8
         }
 
         private static int[] frame;
-        private static int DEBUGframe = 0;
+        public static int DEBUGframe = 0;
         private static void DrawMonsters()
         {
             Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
@@ -640,7 +642,7 @@ namespace FF8
             if (enc.bNumOfEnemies == 0)
                 return;
             //DEBUG BELOW; I just want to draw any model
-            monstersData = new Debug_battleDat[] { new Debug_battleDat(122, Debug_battleDat.EntityType.Monster), new Debug_battleDat(126, Debug_battleDat.EntityType.Monster), new Debug_battleDat(15, Debug_battleDat.EntityType.Monster) };
+            monstersData = new Debug_battleDat[] { new Debug_battleDat(113, Debug_battleDat.EntityType.Monster), new Debug_battleDat(0, Debug_battleDat.EntityType.Monster), new Debug_battleDat(15, Debug_battleDat.EntityType.Monster) };
             //for (int n = 26; n <= monstersData.Length; n++)
             //    monstersData[n] = new Debug_battleDat(n, Debug_battleDat.EntityType.Monster);
             //END OF DEBUG
