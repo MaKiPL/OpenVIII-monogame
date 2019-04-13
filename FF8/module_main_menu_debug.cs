@@ -271,7 +271,7 @@ namespace FF8
                 case MainMenuStates.DebugScreen:
                     if (Offset != Vector2.Zero)
                     {
-                        Offset = Vector2.SmoothStep(Offset, Vector2.Zero, Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 15f);
+                        Offset = Vector2.SmoothStep(Offset, Vector2.Zero, .15f);
                     }
                     if (!UpdateDebugLobby() && (lastfade == fade) && Offset == Vector2.Zero)
                     {
