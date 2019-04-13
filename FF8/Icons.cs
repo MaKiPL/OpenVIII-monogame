@@ -98,8 +98,8 @@ namespace FF8
                         Width = 8,
                         Height = 8,
                         Tile = Vector2.UnitX,
-                        Offset = new Point(8,0),
-                        End = new Point(-8,0),
+                        Offset = new Vector2(8,0),
+                        End = new Vector2(-8,0),
                         CustomPallet = 0
                     };
                     Entry Border_Bottom = new Entry
@@ -110,8 +110,8 @@ namespace FF8
                         Height = 8,
                         Tile = Vector2.UnitX,
                         Snap_Bottom = true,
-                        Offset = new Point(8,-8),
-                        End = new Point(-8,0),
+                        Offset = new Vector2(8,-8),
+                        End = new Vector2(-8,0),
                         CustomPallet = 0
                     };
                     Entry Border_TopRight = new Entry
@@ -121,7 +121,7 @@ namespace FF8
                         Width = 8,
                         Height = 8,
                         Snap_Right = true,
-                        Offset = new Point(-8,0),
+                        Offset = new Vector2(-8,0),
                         CustomPallet = 0
                     };
                     Entry Border_Left = new Entry
@@ -131,8 +131,8 @@ namespace FF8
                         Width = 8,
                         Height = 8,
                         Tile = Vector2.UnitY,
-                        Offset = new Point(0,8),
-                        End = new Point(0,-8),
+                        Offset = new Vector2(0,8),
+                        End = new Vector2(0,-8),
                         CustomPallet = 0
                     };
                     Entry Border_Right = new Entry
@@ -143,8 +143,8 @@ namespace FF8
                         Height = 8,
                         Tile = Vector2.UnitY,
                         Snap_Right = true,
-                        Offset = new Point(-8,8),
-                        End = new Point(0,-8),
+                        Offset = new Vector2(-8,8),
+                        End = new Vector2(0,-8),
                         CustomPallet = 0
                     };
                     Entry Border_BottomLeft = new Entry
@@ -154,7 +154,7 @@ namespace FF8
                         Width = 8,
                         Height = 8,
                         Snap_Bottom = true,
-                        Offset = new Point(0,-8),
+                        Offset = new Vector2(0,-8),
                         CustomPallet = 0
                     };
                     Entry Border_BottomRight = new Entry
@@ -165,7 +165,7 @@ namespace FF8
                         Height = 8,
                         Snap_Bottom = true,
                         Snap_Right = true,
-                        Offset = new Point(-8,-8),
+                        Offset = new Vector2(-8,-8),
                         CustomPallet = 0
                     };
 
@@ -185,7 +185,7 @@ namespace FF8
                         Width = 8,
                         Height = 8,
                         Tile = Vector2.UnitX,
-                        Offset = new Point(0,1),
+                        Offset = new Vector2(0,1),
                         CustomPallet = 5
                     });
                     entries[ID.Menu_BG_256] = new EntryGroup(BG, Border_Top, Border_Left, Border_Right, Border_Bottom, Border_TopLeft, Border_TopRight, Border_BottomLeft, Border_BottomRight);
@@ -193,7 +193,7 @@ namespace FF8
                     {
                         X = 0,
                         Y = 64,
-                        Offset = new Point(256,0),
+                        Offset = new Vector2(256,0),
                         Width = 112,
                         Height = 16,
                         CustomPallet = 1,
@@ -202,10 +202,10 @@ namespace FF8
 
                     entries[ID.DEBUG] = new EntryGroup(
                         new Entry { X = 128, Y = 24, Width = 7, Height = 8 },
-                        new Entry { X = 65, Y = 8, Width = 6, Height = 8, Offset = new Point(7,0) },
-                        new Entry { X = 147, Y = 24, Width = 6, Height = 8, Offset = new Point(13,0) },
-                        new Entry { X = 141, Y = 24, Width = 6, Height = 8, Offset = new Point(19, 0) },
-                        new Entry { X = 104, Y = 16, Width = 6, Height = 8, Offset = new Point(25, 0) }
+                        new Entry { X = 65, Y = 8, Width = 6, Height = 8, Offset = new Vector2(7,0) },
+                        new Entry { X = 147, Y = 24, Width = 6, Height = 8, Offset = new Vector2(13,0) },
+                        new Entry { X = 141, Y = 24, Width = 6, Height = 8, Offset = new Vector2(19, 0) },
+                        new Entry { X = 104, Y = 16, Width = 6, Height = 8, Offset = new Vector2(25, 0) }
                         );
                 }
             }

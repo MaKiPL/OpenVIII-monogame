@@ -50,9 +50,8 @@ namespace FF8
 
         #region Methods
 
-        private Point nag_offset = new Point();
-        private Point pos_offset = new Point();
-        private object Offset;
+        private Vector2 nag_Offset = new Vector2();
+        private Vector2 pos_Offset = new Vector2();
 
         public void Add(params Entry[] entries)
         {
@@ -62,10 +61,10 @@ namespace FF8
                 if (list.Count >= 1)
                 {
                     //DiscFix
-                    if (entry.Size.Y == 0)
+                    if (entry.Height < float.Epsilon)
                     {
                         entry.Height = Height; // one item had a missing height.
-                        if (Math.Abs(nag_offset.X) + pos_offset.X + entry.Offset.X == 0) //assumes if the items are overlapping put them next to each other instead.
+                        if (Math.Abs(nag_Offset.X) + pos_Offset.X + entry.Offset.X < float.Epsilon) //assumes if the items are overlapping put them next to each other instead.
                             entry.Offset.X = (short)Width;
                     }
                     //BarFix
@@ -79,19 +78,21 @@ namespace FF8
                             Width = list[0].Width,
                             Height = list[0].Height,
                             Tile = Vector2.UnitX,
-                            Offset = new Point((int)list[0].Width,0),
-                            End = new Point((int)-list[0].Width,0)
+                            Offset = new Vector2((int)list[0].Width,0),
+                            End = new Vector2((int)-list[0].Width,0)
                         });
                 }
                 list.Add(entry);
-                ushort width = (ushort)(Math.Abs(entry.Offset.X) + entry.Width);
-                ushort height = (ushort)(Math.Abs(entry.Offset.Y) + entry.Height);
-                if (Width < width) Width = width;
-                if (Height < height) Height = height;
+                Vector2 size = Abs(entry.Offset) + entry.Size;
+                if (Width < size.X) Width = (int)size.X;
+                if (Height < size.Y) Height = (int) size.Y;
             }
         }
+        internal Vector2 Abs(Vector2 v2  )  {
+        return new Vector2(Math.Abs(v2.X), Math.Abs(v2.Y));
+        }
 
-        internal void Draw(Texture2D[] textures, int pallet, Rectangle inputdst, float scale = 1f, float fade = 1f)
+    internal void Draw(Texture2D[] textures, int pallet, Rectangle inputdst, float scale = 1f, float fade = 1f)
         {
             Rectangle dst;
             scale = Math.Abs(scale);
@@ -101,7 +102,7 @@ namespace FF8
             if ((int)(8 * scale) <= float.Epsilon)
             {
                 //vscale = (float)dst.Height / Height;
-                scale = (float)inputdst.Width / Width;
+                scale = (float)inputdst.Width /Width;
             }
 
             foreach (Entry e in list)
@@ -109,12 +110,13 @@ namespace FF8
                 int cpallet = e.CustomPallet < 0 || e.CustomPallet >= textures.Length ? pallet : e.CustomPallet;
                 dst = inputdst;
 
-                Point offset = new Point((int)(e.Offset.X * scale), (int)(e.Offset.Y * scale));
-                Point offset2 = new Point((int)(e.End.X * scale), (int)(e.End.Y * scale));
-                dst.X += (e.Snap_Right ? inputdst.Width : 0) + offset.X;
-                dst.Y += (e.Snap_Bottom ? inputdst.Height : 0) + offset.Y;
-                dst.Width = (int)(e.Width * scale);
-                dst.Height = (int)(e.Height * scale);
+
+                Vector2 Offset = e.Offset * scale;
+                Point offset2 = (e.End * scale).ToPoint();
+                dst.Offset(e.Snap_Right ? inputdst.Width : 0, e.Snap_Bottom ? inputdst.Height : 0);
+                dst.Offset(Offset);
+                dst.Size = (e.Size * scale).ToPoint();
+               
                 Rectangle src = e.GetRectangle;
                 bool testY = false;
                 bool testX = false;

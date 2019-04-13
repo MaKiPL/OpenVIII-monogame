@@ -13,8 +13,8 @@ namespace FF8
         public Vector2 Location;
         public Vector2 Size;
         private Loc loc;
-        public Point Offset;
-        public Point End;
+        public Vector2 Offset;
+        public Vector2 End;
 
         #endregion Fields
 

@@ -90,13 +90,9 @@ namespace FF8
                         int col = (pos % cols);
                         int row = (pos / cols) % rows;
 
-                        Rectangle dst = new Rectangle
-                        {
-                            Height = vp.Height
-                        };
-                        dst.Width = (int)(faces.GetEntry(pos).Width * (dst.Height / faces.GetEntry(pos).Height));
-                        dst.X = vp.Width / 2 - dst.Width / 2;
-                        dst.Y = 0;
+                        float scale = vp.Height/ faces.GetEntry(pos).Height;
+                        Rectangle dst = new Rectangle(new Point(0), (faces.GetEntry(pos).Size*scale).ToPoint());
+                        dst.Offset(vp.Width/2 - dst.Center.X, 0);
                         Memory.SpriteBatchStartStencil();
                         Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
                         faces.Draw(pos, dst);
