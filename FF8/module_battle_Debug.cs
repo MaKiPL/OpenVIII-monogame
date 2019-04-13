@@ -17,6 +17,9 @@ namespace FF8
         private static TIM2 textureInterface;
         private static Texture2D[] textures;
 
+        private static int monsterTester = 18;
+        private static bool bDisableAnimations = false;
+
 
         //skyRotating floats are hardcoded
         private static readonly ushort[] skyRotators = { 0x4, 0x4, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x0, 0x4, 0x4, 0x0, 0x10, 0x10, 0x0, 0x0, 0x0, 0x0, 0x0, 0x8, 0x2, 0x0, 0x0, 0x8, 0xfffc, 0xfffc, 0x0, 0x0, 0x0, 0x4, 0x0, 0x8, 0x0, 0x4, 0x4, 0x0, 0x4, 0x0, 0x4, 0xfffc, 0x8, 0xfffc, 0xfffc, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x0, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x20, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x8, 0x0, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x8, 0xfffc, 0x4, 0x4, 0x4, 0x4, 0x8, 0x8, 0x4, 0xfffc, 0xfffc, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x4, 0x4, 0x4, 0x4, 0xfffc, 0x0, 0x0, 0x0, 0x0, 0x8, 0x8, 0x0, 0x8, 0xfffc, 0x0, 0x0, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x4, 0x4, 0x4, 0x0, 0x0, 0x8, 0x0, 0x8, 0x8 };
@@ -194,12 +197,25 @@ namespace FF8
                     ReadData();
                     break;
                 case BATTLEMODULE_DRAWGEOMETRY:
+                    if (DEBUGframeTwo.Count() < DEBUGframe)
+                        DEBUGframeTwo.Add(0);
                     if (Input.GetInputDelayed(Keys.OemTilde))
                         DEBUGframe++;
                     if (Input.GetInputDelayed(Keys.Tab))
                         DEBUGframe--;
+                    if (Input.GetInputDelayed(Keys.D1))
+                        DEBUGframeTwo[DEBUGframe]++;
+                    if (Input.GetInputDelayed(Keys.D2))
+                        DEBUGframeTwo[DEBUGframe]--;
                     if (Input.GetInputDelayed(Keys.R))
                         battleModule = 1;
+                    if (Input.GetInputDelayed(Keys.D3))
+                    {
+                        bDisableAnimations = !bDisableAnimations;
+                        Debug_battleDat.bDisableAnimBlend = !Debug_battleDat.bDisableAnimBlend;
+                    }
+                    if (DEBUGframe < 0)
+                        DEBUGframe = 0;
                     FPSCamera();
                     break;
             }
@@ -274,6 +290,7 @@ namespace FF8
 
         private static int[] frame;
         public static int DEBUGframe = 0;
+        public static List<int> DEBUGframeTwo = new List<int>() { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; //master of list initialization xD
         private static void DrawMonsters()
         {
             Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
@@ -303,7 +320,7 @@ namespace FF8
 
                 for (int i = 0; i < monstersData[n].geometry.cObjects; i++)
                 {
-                    var a = monstersData[n].GetVertexPositions(i, new Vector3(0+(n%12)*10, 10, (n/12)*10), 0, frame[n],frameperFPS/FPS); //DEBUG
+                    var a = monstersData[n].GetVertexPositions(i, new Vector3(0+(n%12)*10, 10, (n/12)*10), 0, bDisableAnimations? 0 : frame[n],frameperFPS/FPS); //DEBUG
                     if (a == null || a.Item1.Length == 0)
                         return;
                     for (int k = 0; k < a.Item1.Length / 3; k++)
@@ -446,7 +463,8 @@ namespace FF8
             Memory.font.RenderBasicText(Font.CipherDirty($"Enemies: {string.Join(",", Memory.encounters[Memory.battle_encounter].BEnemies.Where(x => x != 0x00).Select(x => "0x" + (x - 0x10).ToString("X02")).ToArray())}"), 20, 30 * 2, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Levels: {string.Join(",", Memory.encounters[Memory.battle_encounter].bLevels)}"), 20, 30 * 3, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Loaded enemies: {Convert.ToString(Memory.encounters[Memory.battle_encounter].bLoadedEnemy, 2)}"), 20, 30 * 4, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"Debug frame: {DEBUGframe}"), 20, 30 * 5, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Selected bone: {DEBUGframe}/{monstersData[0].skeleton.cBones}"), 20, 30 * 5, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Bone abuser: {DEBUGframeTwo[DEBUGframe]}"), 20, 30 * 6, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
         }
 
@@ -623,17 +641,17 @@ namespace FF8
         private static void ReadCharacters()
         {
             //DEBUG - party provider here
-            charactersData = new CharacterData[2];
-            charactersData[0] = new CharacterData
-            {
-                character = new Debug_battleDat(4, Debug_battleDat.EntityType.Character, 9),
-                weapon = new Debug_battleDat(4, Debug_battleDat.EntityType.Weapon, 23)
-            };
-            charactersData[1] = new CharacterData
-            {
-                character = new Debug_battleDat(2, Debug_battleDat.EntityType.Character, 6),
-                weapon = new Debug_battleDat(2, Debug_battleDat.EntityType.Weapon, 13)
-            };
+            charactersData = new CharacterData[0]; //Testing
+            //charactersData[0] = new CharacterData
+            //{
+            //    character = new Debug_battleDat(4, Debug_battleDat.EntityType.Character, 9),
+            //    weapon = new Debug_battleDat(4, Debug_battleDat.EntityType.Weapon, 23)
+            //};
+            //charactersData[1] = new CharacterData
+            //{
+            //    character = new Debug_battleDat(2, Debug_battleDat.EntityType.Character, 6),
+            //    weapon = new Debug_battleDat(2, Debug_battleDat.EntityType.Weapon, 13)
+            //};
         }
 
         private static void ReadMonster()
@@ -642,7 +660,7 @@ namespace FF8
             if (enc.bNumOfEnemies == 0)
                 return;
             //DEBUG BELOW; I just want to draw any model
-            monstersData = new Debug_battleDat[] { new Debug_battleDat(113, Debug_battleDat.EntityType.Monster), new Debug_battleDat(0, Debug_battleDat.EntityType.Monster), new Debug_battleDat(15, Debug_battleDat.EntityType.Monster) };
+            monstersData = new Debug_battleDat[] { new Debug_battleDat(monsterTester, Debug_battleDat.EntityType.Monster) };
             //for (int n = 26; n <= monstersData.Length; n++)
             //    monstersData[n] = new Debug_battleDat(n, Debug_battleDat.EntityType.Monster);
             //END OF DEBUG

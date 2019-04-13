@@ -10,6 +10,7 @@ namespace FF8
 {
     public class Debug_battleDat
     {
+        public static bool bDisableAnimBlend = false;
         int id;
         readonly EntityType entityType;
         byte[] buffer;
@@ -313,18 +314,83 @@ namespace FF8
             Vector3 rootFramePos = new Vector3(
                 matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
                 matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
-                matrix.M31 * tuple.Item1.X /*+matrix.M43*/ /*(matrix.M43==0?0: -2)*/ + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
+                matrix.M31 * tuple.Item1.X + evaluateM43(matrix.M43, tuple.Item2) /*(matrix.M43==0?0: -2)*/ + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
             matrix = nextFrame.boneRot.Item3[tuple.Item2];
             Vector3 nextFramePos = new Vector3(
                 matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
                 matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
-                matrix.M31 * tuple.Item1.X + /*matrix.M43*/ + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
-            rootFramePos = Vector3.SmoothStep(rootFramePos, nextFramePos, 0); //CHANGE 0 to step TO ENABLE UNLIMITED FPS ANIM BLENDING
+                matrix.M31 * tuple.Item1.X + evaluateM43(matrix.M43, tuple.Item2) + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
+            rootFramePos = Vector3.SmoothStep(rootFramePos, nextFramePos, bDisableAnimBlend ? 0 : step); //CHANGE 0 to step TO ENABLE UNLIMITED FPS ANIM BLENDING
             return new Tuple<Vector3, int>(rootFramePos, tuple.Item2);
         }
-#endregion
 
-#region section 3 Animation
+        #region TemporaryMatrixManualFixers
+        /// <summary>
+        /// switch loop to modify M43 matrix for specific bone and monsterId
+        /// </summary>
+        /// <param name="m43"></param>
+        /// <param name="bone"></param>
+        /// <returns></returns>
+        private float evaluateM43(float m43, int bone)
+        {
+            switch (entityType)
+            {
+                case EntityType.Monster:
+                    return evaluateM43Monster(m43, bone);
+                case EntityType.Character:
+                    return evaluateM43Character(m43, bone);
+                case EntityType.Weapon:
+                    return evaluateM43weapon(m43, bone);
+                default:
+                    return 0f;
+            }
+        }
+
+        private float evaluateM43Character(float m43, int bone)
+        {
+            return 0;
+        }
+
+        private float evaluateM43weapon(float m43, int bone)
+        {
+            return 0;
+        }
+
+        private float evaluateM43Monster(float m43, int bone)
+        {
+            switch(GetId)
+            {
+                case 0:
+                    return 0;
+                case 18:
+                    switch(bone)
+                    {
+                        case 9:
+                        case 10:
+                            return m43 + 1;
+                        case 13:
+                        case 14:
+                        case 16:
+                            return m43 + 2;
+                        case 17:
+                            return m43 + 6;
+                        case 18:
+                            return m43 + 8;
+                        case 19:
+                        case 20:
+                        case 21:
+                            return m43 + 10;
+                        default:
+                            return m43;
+                    }
+                default:
+                    return m43 + Module_battle_debug.DEBUGframeTwo[bone];
+            }
+        }
+        #endregion
+        #endregion
+
+        #region section 3 Animation
         public struct AnimationData
         {
             public uint cAnimations;
