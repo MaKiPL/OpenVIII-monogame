@@ -19,6 +19,33 @@ namespace FF8
         public static Font font;
         public static Texture2D[] iconsTex;
 
+        public enum ScaleMode
+        {
+            Vertical,Horizontal,Stretch
+        }
+        public const ScaleMode _scaleMode = ScaleMode.Vertical;
+        public static Vector2 Scale
+        {
+            get
+            {
+                float h = (float)Memory.graphics.GraphicsDevice.Viewport.Width / Memory.PreferredViewportWidth;
+                float v = (float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight;
+                switch (_scaleMode)
+                {
+#pragma warning disable CS0162 // Unreachable code detected
+                    case ScaleMode.Horizontal:
+                        return new Vector2(h, h);
+                    case ScaleMode.Vertical:
+                        return new Vector2(v, v);
+                    case ScaleMode.Stretch:
+                    default:
+                        return new Vector2(h, v);
+#pragma warning restore CS0162 // Unreachable code detected
+                }
+            }
+        }
+
+
         //original resolution I am working on, therefore if user scales it we need to propertially scale everything
         public static int PreferredViewportWidth = 1280;
         public static int PreferredViewportHeight = 720;

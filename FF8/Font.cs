@@ -192,8 +192,7 @@ namespace FF8
             int charCountWidth = whichFont == 0 ? 21 : 10;
             int charSize = whichFont == 0 ? 12 : 24;
             Vector2 zoom = new Vector2(zoomWidth, zoomHeight);
-            Vector2 scale = new Vector2((float)Memory.graphics.GraphicsDevice.Viewport.Width / Memory.PreferredViewportWidth, (float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight);
-            Point size = (new Vector2(charSize, charSize) * zoom * scale).ToPoint();
+            Point size = (new Vector2(charSize, charSize) * zoom * Memory.Scale).ToPoint();
             foreach (char c in buffer)
             {
                 if (c == '\n')
@@ -221,8 +220,7 @@ namespace FF8
             int charCountWidth = whichFont == 0 ? 21 : 10;
             int charSize = whichFont == 0 ? 12 : 24;
             Vector2 zoom = new Vector2(zoomWidth, zoomHeight);
-            Vector2 scale = new Vector2((float)Memory.graphics.GraphicsDevice.Viewport.Width / Memory.PreferredViewportWidth,(float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight);
-            Point size = (new Vector2(charSize,charSize)*zoom*scale).ToPoint();
+            Point size = (new Vector2(charSize,charSize)*zoom*Memory.Scale).ToPoint();
             foreach (char c in buffer)
             {
 
