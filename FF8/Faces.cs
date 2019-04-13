@@ -1,19 +1,20 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
 namespace FF8
 {
-    internal partial class Faces
+    internal partial class Faces : I_SP2
     {
 
         #region Fields
 
         private static readonly Texture2D[] faces = new Texture2D[2];
 
-        private static Entry[] entries;
+        private static Dictionary<ID, Entry> entries;
 
         #endregion Fields
 
@@ -32,18 +33,23 @@ namespace FF8
                     using (BinaryReader br = new BinaryReader(ms))
                     {
                         ms.Seek(4, SeekOrigin.Begin);
-                        locs = new UInt16[32];//br.ReadUInt32(); 32 valid values in face.sp2 rest is invalid
-                        entries = new Entry[locs.Length];
-                        for (int i = 0; i < locs.Length; i++)
+                        locs = new UInt16[Count];//br.ReadUInt32(); 32 valid values in face.sp2 rest is invalid
+                        entries = new Dictionary<ID, Entry>((int)Count);
+                        for (uint i = 0; i < Count; i++)
                         {
                             locs[i] = br.ReadUInt16();
                             ms.Seek(2, SeekOrigin.Current);
                         }
                         byte fid = 0;
-                        for (int i = 0; i < locs.Length; i++)
+                        Entry Last = null;
+                        for (uint i = 0; i < Count; i++)
                         {
-                            entries[i] = new Entry();
-                            fid = entries[i].LoadfromStreamSP2(br, locs[i], (byte)(i - 1 < 0 ?  0: entries[i - 1].Y), fid);
+                            entries[(ID)i] = new Entry();
+                            fid = entries[(ID)i].LoadfromStreamSP2(br, locs[i],(byte)(Last!=null?Last.Y:0), fid);
+
+                            Last = entries[(ID)i];
+
+
                         }
                     }
                 }
@@ -107,21 +113,20 @@ namespace FF8
 
         #region Properties
 
-        public int Count { get; private set; } = 32;
+        public uint Count => 32;
 
-        public int PalletCount { get; private set; } = 1;
+        public uint PalletCount => 1;
 
         #endregion Properties
 
         #region Methods
 
-        public Entry GetEntry(ID id) => entries[(int)id];
+        public Entry GetEntry(Enum id) => entries[(ID)id];
 
-        public Entry GetEntry(int id) => entries[id];
+        public Entry GetEntry(int id) => entries[(ID)id];
 
-        internal void Draw(ID id, Rectangle dst, float fade = 1f) => Draw((int)id, dst, fade);
-
-        internal void Draw(int id, Rectangle dst, float fade = 1f) => Memory.spriteBatch.Draw(faces[entries[id].File], dst, entries[id].GetRectangle, Color.White * fade);
+        public void Draw(Enum id, Rectangle dst, float fade = 1f) => Memory.spriteBatch.Draw(faces[entries[(ID)id].File], dst, entries[(ID)id].GetRectangle, Color.White * fade);
+        public void Draw(int id, Rectangle dst, float fade = 1f) => Draw((ID)id, dst, fade); 
 
         #endregion Methods
 

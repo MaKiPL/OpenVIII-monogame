@@ -50,7 +50,7 @@ namespace FF8
             if (Input.Button(Keys.Up))
             {
                 if (pallet <= 0)
-                    pallet = Icons.PalletCount - 1;
+                    pallet = (int)icons.PalletCount - 1;
                 else
                     pallet--;
                 currentMode = Mode.Draw;
@@ -58,7 +58,7 @@ namespace FF8
 
             if (Input.Button(Keys.Down))
             {
-                if (pallet >= Icons.PalletCount - 1)
+                if (pallet >= icons.PalletCount - 1)
                     pallet = 0;
                 else
                     pallet++;

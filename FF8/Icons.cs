@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace FF8
 {
-    internal partial class Icons
+    internal partial class Icons : I_SP1
     {
         #region Fields
 
@@ -28,8 +28,7 @@ namespace FF8
                     aw.GetListOfFiles().First(x => x.ToLower().Contains("icon.tex")));
 
                 tex = new TEX(test);
-                PalletCount = tex.TextureData.NumOfPalettes;
-                icons = new Texture2D[PalletCount];
+                icons = new Texture2D[tex.TextureData.NumOfPalettes];
                 for (int i = 0; i < PalletCount; i++)
                 {
                     icons[i] = tex.GetTexture(i);
@@ -51,16 +50,15 @@ namespace FF8
                 {
                     using (BinaryReader br = new BinaryReader(ms))
                     {
-                        Count = br.ReadUInt32();
-                        Loc[] locs = new Loc[Count];
-                        for (int i = 0; i < Count; i++)
+                        Loc[] locs = new Loc[br.ReadUInt32()];
+                        for (int i = 0; i < locs.Length; i++)
                         {
                             locs[i].pos = br.ReadUInt16();
                             locs[i].count = br.ReadUInt16();
                             //if (locs[i].count > 1) Count += (uint)(locs[i].count - 1);
                         }
-                        entries = new Dictionary<ID, EntryGroup>((int)Count + 10);
-                        for (int i = 0; i < Count; i++)
+                        entries = new Dictionary<ID, EntryGroup>(locs.Length+ 10);
+                        for (int i = 0; i < locs.Length; i++)
                         {
                             ms.Seek(locs[i].pos, SeekOrigin.Begin);
                             byte c = (byte)locs[i].count;
@@ -100,8 +98,8 @@ namespace FF8
                         Width = 8,
                         Height = 8,
                         Tile = Vector2.UnitX,
-                        Offset_X = 8,
-                        Offset_X2 = -8,
+                        Offset = new Point(8,0),
+                        End = new Point(-8,0),
                         CustomPallet = 0
                     };
                     Entry Border_Bottom = new Entry
@@ -112,9 +110,8 @@ namespace FF8
                         Height = 8,
                         Tile = Vector2.UnitX,
                         Snap_Bottom = true,
-                        Offset_Y = -8,
-                        Offset_X = 8,
-                        Offset_X2 = -8,
+                        Offset = new Point(8,-8),
+                        End = new Point(-8,0),
                         CustomPallet = 0
                     };
                     Entry Border_TopRight = new Entry
@@ -124,7 +121,7 @@ namespace FF8
                         Width = 8,
                         Height = 8,
                         Snap_Right = true,
-                        Offset_X = -8,
+                        Offset = new Point(-8,0),
                         CustomPallet = 0
                     };
                     Entry Border_Left = new Entry
@@ -134,8 +131,8 @@ namespace FF8
                         Width = 8,
                         Height = 8,
                         Tile = Vector2.UnitY,
-                        Offset_Y = 8,
-                        Offset_Y2 = -8,
+                        Offset = new Point(0,8),
+                        End = new Point(0,-8),
                         CustomPallet = 0
                     };
                     Entry Border_Right = new Entry
@@ -146,9 +143,8 @@ namespace FF8
                         Height = 8,
                         Tile = Vector2.UnitY,
                         Snap_Right = true,
-                        Offset_X = -8,
-                        Offset_Y = 8,
-                        Offset_Y2 = -8,
+                        Offset = new Point(-8,8),
+                        End = new Point(0,-8),
                         CustomPallet = 0
                     };
                     Entry Border_BottomLeft = new Entry
@@ -158,7 +154,7 @@ namespace FF8
                         Width = 8,
                         Height = 8,
                         Snap_Bottom = true,
-                        Offset_Y = -8,
+                        Offset = new Point(0,-8),
                         CustomPallet = 0
                     };
                     Entry Border_BottomRight = new Entry
@@ -169,8 +165,7 @@ namespace FF8
                         Height = 8,
                         Snap_Bottom = true,
                         Snap_Right = true,
-                        Offset_X = -8,
-                        Offset_Y = -8,
+                        Offset = new Point(-8,-8),
                         CustomPallet = 0
                     };
 
@@ -190,7 +185,7 @@ namespace FF8
                         Width = 8,
                         Height = 8,
                         Tile = Vector2.UnitX,
-                        Offset_Y = 1,
+                        Offset = new Point(0,1),
                         CustomPallet = 5
                     });
                     entries[ID.Menu_BG_256] = new EntryGroup(BG, Border_Top, Border_Left, Border_Right, Border_Bottom, Border_TopLeft, Border_TopRight, Border_BottomLeft, Border_BottomRight);
@@ -198,20 +193,19 @@ namespace FF8
                     {
                         X = 0,
                         Y = 64,
-                        Offset_X = 256,
+                        Offset = new Point(256,0),
                         Width = 112,
                         Height = 16,
                         CustomPallet = 1,
                         Tile = Vector2.UnitY
                     }, Border_Top, Border_Left, Border_Right, Border_Bottom, Border_TopLeft, Border_TopRight, Border_BottomLeft, Border_BottomRight);
-                    Count = (uint)entries.Count;
 
                     entries[ID.DEBUG] = new EntryGroup(
                         new Entry { X = 128, Y = 24, Width = 7, Height = 8 },
-                        new Entry { X = 65, Y = 8, Width = 6, Height = 8, Offset_X=7},
-                        new Entry { X = 147, Y = 24, Width = 6, Height = 8, Offset_X = 13 },
-                        new Entry { X = 141, Y = 24, Width = 6, Height = 8, Offset_X = 19 },
-                        new Entry { X = 104, Y = 16, Width = 6, Height = 8, Offset_X = 25 }
+                        new Entry { X = 65, Y = 8, Width = 6, Height = 8, Offset = new Point(7,0) },
+                        new Entry { X = 147, Y = 24, Width = 6, Height = 8, Offset = new Point(13,0) },
+                        new Entry { X = 141, Y = 24, Width = 6, Height = 8, Offset = new Point(19, 0) },
+                        new Entry { X = 104, Y = 16, Width = 6, Height = 8, Offset = new Point(25, 0) }
                         );
                 }
             }
@@ -567,31 +561,36 @@ namespace FF8
 
         #region Properties
 
-        public static UInt32 Count { get; private set; }
-        public static int PalletCount { get; private set; }
+        public uint Count => (uint)entries.Count();
+        public uint PalletCount => (uint)icons.Length;
 
         #endregion Properties
 
         #region Methods
 
-        public EntryGroup GetEntryGroup(ID id) => entries[id];
+        public EntryGroup GetEntryGroup(Enum id) => entries[(ID)id] ?? null;
 
-        public EntryGroup GetEntryGroup(int id) => GetEntryGroup((ID)id);
+        public EntryGroup GetEntryGroup(int id) => entries[(ID)id] ?? null;
 
-        public Entry GetEntry(ID id, int index = 0) => entries[id][index] ?? null;
+        public Entry GetEntry(Enum id, int index) => entries[(ID)id][index] ?? null;
 
-        public Entry GetEntry(int id, int index = 0) => GetEntry((ID)id);
+        public Entry GetEntry(int id, int index) => entries[(ID)id][index] ?? null;
 
-        public EntryGroup this[ID id] { get => GetEntryGroup(id); }
-        public EntryGroup this[int id] { get => GetEntryGroup(id); }
+        public Entry GetEntry(Enum id) => entries[(ID)id][0] ?? null;
 
-        internal void Draw(int id, int pallet, Rectangle dst, float scale = 1f, float fade = 1f) => Draw((ID)id, pallet, dst, scale, fade);
+        public Entry GetEntry(int id) => entries[(ID)id][0] ?? null;
 
-        internal void Draw(ID id, int pallet, Rectangle dst, float scale = 1f, float fade = 1f)
-        {
-            entries[id].Draw(icons, pallet, dst, scale, fade);
-        }
-        
+        public EntryGroup this[Enum id] => GetEntryGroup(id);
+
+        public EntryGroup this[int id] => GetEntryGroup(id);
+
+        public void Draw(int id, int pallet, Rectangle dst, float scale = 1f, float fade = 1f) => Draw((ID)id, pallet, dst, scale, fade);
+
+        public void Draw(Enum id, int pallet, Rectangle dst, float scale = 1f, float fade = 1f) => entries[(ID)id].Draw(icons, pallet, dst, scale, fade);
+
+        public void Draw(int id, Rectangle dst, float fade = 1) => Draw((ID)id, 2, dst);
+
+        public void Draw(Enum id, Rectangle dst, float fade = 1) => Draw((ID)id, 2, dst);
 
         #endregion Methods
     }
