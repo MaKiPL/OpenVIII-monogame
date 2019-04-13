@@ -27,7 +27,7 @@ namespace FF8
         }
 
         public static Point Center => new Point(graphics.GraphicsDevice.Viewport.Width / 2, graphics.GraphicsDevice.Viewport.Height / 2);
-        public const ScaleMode _scaleMode = ScaleMode.Horizontal;
+        public const ScaleMode _scaleMode = ScaleMode.Stretch;
 
         public static Vector2 Scale(float Width = PreferredViewportWidth, float Height = PreferredViewportHeight, ScaleMode scaleMode = _scaleMode, int targetX = 0, int targetY = 0)
         {
