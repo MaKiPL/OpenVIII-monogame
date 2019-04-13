@@ -1,5 +1,6 @@
 ﻿
 using FFmpeg.AutoGen;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -249,8 +250,12 @@ namespace FF8
                 return;
             }
             //draw frame;
+            Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
             Memory.SpriteBatchStartStencil();//by default xna filters all textures SamplerState.PointClamp disables that. so video is being filtered why playing.
-            Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height), Microsoft.Xna.Framework.Color.White);
+            ClearScreen();
+            Rectangle dst = new Rectangle(new Point(0), (new Vector2(frameTex.Width, frameTex.Height) * Memory.Scale(frameTex.Width, frameTex.Height)).ToPoint());
+            dst.Offset(Memory.Center.X - dst.Center.X,Memory.Center.Y - dst.Center.Y);
+            Memory.spriteBatch.Draw(frameTex,dst, Microsoft.Xna.Framework.Color.White);
             Memory.SpriteBatchEnd();
             
         }

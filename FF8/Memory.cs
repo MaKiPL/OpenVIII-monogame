@@ -4,16 +4,18 @@ using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
 #pragma warning disable CS0649
+
 namespace FF8
 {
     internal class Memory
     {
         //monogame
         public static GraphicsDeviceManager graphics;
+
         public static SpriteBatch spriteBatch;
         public static ContentManager content;
-
 
         public static bool IsActive = true;
         public static Font font;
@@ -21,39 +23,46 @@ namespace FF8
 
         public enum ScaleMode
         {
-            Vertical,Horizontal,Stretch
+            Vertical, Horizontal, Stretch
         }
-        public const ScaleMode _scaleMode = ScaleMode.Vertical;
-        public static Vector2 Scale
+
+        public static Point Center => new Point(graphics.GraphicsDevice.Viewport.Width / 2, graphics.GraphicsDevice.Viewport.Height / 2);
+        public const ScaleMode _scaleMode = ScaleMode.Horizontal;
+
+        public static Vector2 Scale(float Width = PreferredViewportWidth, float Height = PreferredViewportHeight, ScaleMode scaleMode = _scaleMode, int targetX = 0, int targetY = 0)
         {
-            get
+            if (targetX == 0)
+                targetX = graphics.GraphicsDevice.Viewport.Width;
+            if (targetY == 0)
+                targetY = graphics.GraphicsDevice.Viewport.Height;
+            float h = targetX/ Width;
+            float v = targetY/ Height;
+            switch (scaleMode)
             {
-                float h = (float)Memory.graphics.GraphicsDevice.Viewport.Width / Memory.PreferredViewportWidth;
-                float v = (float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight;
-                switch (_scaleMode)
-                {
 #pragma warning disable CS0162 // Unreachable code detected
-                    case ScaleMode.Horizontal:
-                        return new Vector2(h, h);
-                    case ScaleMode.Vertical:
-                        return new Vector2(v, v);
-                    case ScaleMode.Stretch:
-                    default:
-                        return new Vector2(h, v);
+                case ScaleMode.Horizontal:
+                    return new Vector2(h, h);
+
+                case ScaleMode.Vertical:
+                    return new Vector2(v, v);
+
+                case ScaleMode.Stretch:
+                default:
+                    return new Vector2(h, v);
 #pragma warning restore CS0162 // Unreachable code detected
-                }
             }
         }
 
-
         //original resolution I am working on, therefore if user scales it we need to propertially scale everything
-        public static int PreferredViewportWidth = 1280;
-        public static int PreferredViewportHeight = 720;
+        public const int PreferredViewportWidth = 1280;
+
+        public const int PreferredViewportHeight = 720;
 
         public static GameTime gameTime;
 
         private static ushort prevmusic = 0;
         private static ushort currmusic = 0;
+
         internal static ushort MusicIndex
         {
             get
@@ -61,7 +70,6 @@ namespace FF8
                 while ((prevmusic > currmusic || prevmusic == ushort.MinValue && currmusic == ushort.MaxValue) &&
                     !dicMusic.ContainsKey(currmusic))
                 {
-
                     if (dicMusic.Keys.Max() < currmusic)
                     {
                         currmusic = dicMusic.Keys.Max();
@@ -73,7 +81,6 @@ namespace FF8
                 }
                 while (prevmusic < currmusic && !dicMusic.ContainsKey(currmusic))
                 {
-
                     if (dicMusic.Keys.Max() < currmusic)
                     {
                         currmusic = dicMusic.Keys.Min();
@@ -92,11 +99,13 @@ namespace FF8
                 currmusic = value;
             }
         }
+
         public static string[] musices;
         public static readonly Dictionary<ushort, List<string>> dicMusic = new Dictionary<ushort, List<string>>(); //ogg and sgt files have same 3 digit prefix.
-        public static void SpriteBatchStartStencil(SamplerState ss = null) => spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque,ss, graphics.GraphicsDevice.DepthStencilState);
 
-        public static void SpriteBatchStartAlpha(SamplerState ss = null) => spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend,ss);
+        public static void SpriteBatchStartStencil(SamplerState ss = null) => spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, ss, graphics.GraphicsDevice.DepthStencilState);
+
+        public static void SpriteBatchStartAlpha(SamplerState ss = null) => spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, ss);
 
         public static void SpriteBatchEnd() => spriteBatch.End();
 
@@ -122,19 +131,19 @@ namespace FF8
             AlphaBlendFunction = BlendFunction.Add,
         };
 
-
-
-
         public static int module = MODULE_OVERTURE_DEBUG;
-        
+
         public static string FF8DIR => GameLocation.Current.DataPath;
 
         /// <summary>
         /// If true by the end of Update() will skip the next Draw()
         /// </summary>
         public static bool SuppressDraw { get; internal set; }
+
         public static bool IsMouseVisible { get; internal set; } = false;
+
         #region modules
+
         public const int MODULE_BATTLE = 3;
         public const int MODULE_FIELD = 5;
         public const int MODULE_FIELD_DEBUG = -5;
@@ -145,9 +154,11 @@ namespace FF8
         public const int MODULE_WORLD_DEBUG = -17;
         public const int MODULE_FACE_TEST = -20;
         public const int MODULE_ICON_TEST = -21;
-        #endregion
+
+        #endregion modules
 
         #region battleProvider
+
         public static int battle_encounter = 000;
         public static int SetBattleMusic = 6;
         public static Init_debugger_battle.Encounter[] encounters;
@@ -170,9 +181,11 @@ namespace FF8
         }
 
         public static VIII_cameraMemoryStruct BS_CameraStruct;
-        #endregion
+
+        #endregion battleProvider
 
         #region MusicDataMidi
+
         public static Dictionary<ushort, string> Songssgt = new Dictionary<ushort, string>()
         {
             {0, "Lose" },
@@ -274,8 +287,11 @@ namespace FF8
             {96, "Keisho" },
             {97, "Compression" },
         };
-        #endregion
+
+        #endregion MusicDataMidi
+
         #region MusicDataOGG
+
         public static Dictionary<ushort, string> Songsogg = new Dictionary<ushort, string>()
         {
             {0,"Lose" },
@@ -364,11 +380,12 @@ namespace FF8
 {517,"The Landing (Alternate)" },
 {518,"The Landing (Alternate - No Intro)" },
 {519,"Galbadia GARDEN (Alternate)" },
-
         };
-        #endregion
 
-        #region  DrawPointMagic
+        #endregion MusicDataOGG
+
+        #region DrawPointMagic
+
         public static Dictionary<byte, string> DrawPointMagic = new Dictionary<byte, string>()
         {
             {0, "Cure - Balamb Garden courtyard"},
@@ -628,15 +645,18 @@ namespace FF8
             {254, "Ultima"},
             {255, "Scan"}
         };
-        #endregion
+
+        #endregion DrawPointMagic
+
         #region FF8Vaiables
+
         /*
-        // ref http://wiki.ffrtt.ru/index.php/FF8/Variables
-        // copied the table into excel and tried to changed the list into c# code.
-        // I was thinking atleast some of it would be useful.
+        // ref http://wiki.ffrtt.ru/index.php/FF8/Variables copied the table into excel and tried to
+        // changed the list into c# code. I was thinking atleast some of it would be useful.
         enum Characters
         {
-            // I noticed some values were in order of these characters so I made those values into arrays and put the character names into an enum.
+            // I noticed some values were in order of these characters so I made those values into
+            // arrays and put the character names into an enum.
             Squall, Zell, Irvine, Quistis, Rinoa, Selphie, Seifer, Edea, Count // Count is the last value and is the number of characters in enum
         }
         struct FF8Variables
@@ -662,7 +682,7 @@ namespace FF8
             //ushort ushort42; //[42]Enemies killed by Edea
 
             unsafe fixed ushort DeathCounter[(int)Characters.Count];
-            
+
             //ushort ushort44; //[44]Squall death count
             //ushort ushort46; //[46]Zell death count
             //ushort ushort48; //[48]Irvine death count
@@ -671,7 +691,7 @@ namespace FF8
             //ushort ushort54; //[54]Selphie death count
             //ushort ushort56; //[56]Seifer death count
             //ushort ushort58; //[58]Edea death count
-            
+
             //unsafe fixed byte byte6067[8]; //[60-67]unused in fields
             ulong EnemiesKilledTotal; //[68]Enemies killed
             ulong Gill; //[72]Amount of Gil the party currently has
@@ -902,7 +922,8 @@ namespace FF8
             byte byteAbove1023; //[Above 1023]Temporary variables used pretty much everywhere.
         }
 */
-        #endregion
+
+        #endregion FF8Vaiables
 
         public static class Archives
         {
@@ -922,6 +943,7 @@ namespace FF8
         {
             //public static string[] MapList;
             public static ushort FieldID = 161;
+
             public static string[] fields;
             public static int[] FieldMemory;
         }
