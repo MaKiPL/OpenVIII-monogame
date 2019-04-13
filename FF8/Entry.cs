@@ -56,7 +56,7 @@ namespace FF8
         /// </summary>
         public Vector2 Tile { get; internal set; } = Vector2.Zero;
         public float Height { get =>Size.Y; internal set=> Size.Y=value; }
-        public float Width { get=>Size.Y; internal set=> Size.X=value; }
+        public float Width { get=>Size.X; internal set=> Size.X=value; }
         public float Y { get => Location.Y; internal set => Location.Y = value; }
         public float X { get => Location.X; internal set => Location.X = value; }
 

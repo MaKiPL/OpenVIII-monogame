@@ -69,14 +69,13 @@ namespace FF8
                     }
                     //BarFix
                     //has 2 sides and no filling.
-                    //if(entry.CurrentPos == 1872)
+                    if(entry.CurrentPos == 1872)
                     if (list.Capacity == 2 && list.Count == 1 && (list[0].Width * 2) + list[0].X == entry.X && list[0].Y == entry.Y)
                         Add(new Entry
                         {
                             X = entry.X - list[0].Width,
                             Y = entry.Y,
-                            Width = list[0].Width,
-                            Height = list[0].Height,
+                            Size = list[0].Size,
                             Tile = Vector2.UnitX,
                             Offset = new Vector2((int)list[0].Width,0),
                             End = new Vector2((int)-list[0].Width,0)
