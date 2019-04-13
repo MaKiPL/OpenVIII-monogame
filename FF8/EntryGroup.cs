@@ -69,7 +69,7 @@ namespace FF8
                     }
                     //BarFix
                     //has 2 sides and no filling.
-                    if(entry.CurrentPos == 1872)
+                    //if(entry.CurrentPos == 1872)
                     if (list.Capacity == 2 && list.Count == 1 && (list[0].Width * 2) + list[0].X == entry.X && list[0].Y == entry.Y)
                         Add(new Entry
                         {
