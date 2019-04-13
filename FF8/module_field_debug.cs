@@ -787,9 +787,7 @@ namespace FF8
                     epe[i].scriptCount = (byte)((bb & 0x7F) + 1);
                     epe[i].label = (byte)(bb >> 7);
                     // was throwing exception
-                    if (symbolNames != null && epe[i].label < symbolNames.Length)
-                        epe[i].labelASM = symbolNames[epe[i].label];
-                    else epe[i].labelASM = "";
+                    epe[i].labelASM = symbolNames != null && epe[i].label < symbolNames.Length ? symbolNames[epe[i].label] : "";
                 }
                 int SYMscriptNameStartingPoint = jsm.cDoorEntity + jsm.cOtherEntity + jsm.cWalkmeshEntity + jsm.cBackgroundEntity;
                 jsm.EntityEntryPoints = epe;

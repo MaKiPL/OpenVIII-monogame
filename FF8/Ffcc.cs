@@ -509,11 +509,24 @@ EOF:
             return false;
         }
 
+        private Thread thread;
         /// <summary>
         /// Dispose of all leaky varibles.
         /// </summary>
         public void Dispose() => Dispose(true);
-
+        /// <summary>
+        /// Same as Play but with a thread. Thread is terminated on Stop() or Dispose().
+        /// </summary>
+        public void PlayInThread(float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f)
+        {
+            Play(volume,pitch,pan);
+            thread = new Thread(NextAsync)
+            {
+                Priority = ThreadPriority.AboveNormal,
+                IsBackground = true             
+            };
+            thread.Start();
+        }
         /// <summary>
         /// For use in threads runs Next till done. To keep audio buffer fed. Or really good timing
         /// on video frames.
@@ -657,6 +670,10 @@ EOF:
             if (SoundEffect != null && !SoundEffect.IsDisposed)
             {
                 SoundEffect.Dispose();
+            }
+            if (thread != null)
+            {
+                thread.Abort("Ending playback");
             }
         }
 

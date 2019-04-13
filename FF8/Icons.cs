@@ -40,11 +40,13 @@ namespace FF8
                     //}
                 }
                 test = ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU,
+                    aw.GetListOfFiles().First(x => x.ToLower().Contains("cardanm.sp2")));
+                using (FileStream fs = File.OpenWrite(Path.Combine("d:\\", "cardanm.sp2")))
+                {
+                    fs.Write(test, 0, test.Length);
+                }
+                test = ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU,
                     aw.GetListOfFiles().First(x => x.ToLower().Contains("icon.sp1")));
-                //using (FileStream fs = File.OpenWrite(Path.Combine("d:\\", "icons.sp1")))
-                //{
-                //    fs.Write(test, 0, test.Length);
-                //}
                 //read from icon.sp1
                 using (MemoryStream ms = new MemoryStream(test))
                 {

@@ -20,7 +20,6 @@ namespace FF8
         private const int STATE_FINISHED = 5;
         private const int STATE_RETURN = 6;
         private const int STATE_RESET = 7;
-        private static Thread T_Audio;
 
         private static readonly string[] movieDirs = {
             MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../movies")), //this folder has most movies
@@ -96,8 +95,7 @@ namespace FF8
                     MovieState++;
                     if (FfccAudio != null)
                     {
-                        FfccAudio.Play();
-                        T_Audio.Start();
+                        FfccAudio.PlayInThread();
                     }
                     if (FfccVideo != null)
                     {
@@ -154,10 +152,6 @@ namespace FF8
         }
         private static void Reset()
         {
-            if (T_Audio != null)
-            {
-                T_Audio.Abort("Ending video playback");
-            }
             FfccAudio = null;
             if (FfccVideo != null)
             {
@@ -181,10 +175,6 @@ namespace FF8
         {
 
             FfccAudio = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
-            T_Audio = new Thread(FfccAudio.NextAsync)
-            {
-                Priority = ThreadPriority.AboveNormal
-            };
             FfccVideo = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_VIDEO, Ffcc.FfccMode.STATE_MACH);
 
             FPS = FfccVideo.FPS;
