@@ -497,7 +497,7 @@ namespace FF8
             Rectangle dst = src;
             dst.Size = (dst.Size.ToVector2() * Memory.Scale(tex.Width, tex.Height)).ToPoint();
             //In game I think we'd keep the field from leaving the screen edge but would center on the Squall and the party when it can.
-            //I setup scaling after noticing the feild didn't size with the screen. I set it to center on screen.
+            //I setup scaling after noticing the field didn't size with the screen. I set it to center on screen.
             dst.Offset(Memory.Center.X - dst.Center.X, Memory.Center.Y - dst.Center.Y);
             Memory.spriteBatch.Draw(tex,dst, src, Color.White);
             //new Microsoft.Xna.Framework.Rectangle(0, 0, 1280 + (width - 320), 720 + (height - 224)),
@@ -513,7 +513,7 @@ namespace FF8
             {
                 Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
-                Module_main_menu_debug.FieldPointer--;               
+                Module_main_menu_debug.FieldPointer--;
                 ResetField();
             }
             if (Input.Button(Buttons.Right) )
