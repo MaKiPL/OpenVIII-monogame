@@ -94,7 +94,7 @@ namespace FF8
                         {
                             Height = vp.Height
                         };
-                        dst.Width = faces.GetEntry(pos).Width * (dst.Height / faces.GetEntry(pos).Height);
+                        dst.Width = (int)(faces.GetEntry(pos).Width * (dst.Height / faces.GetEntry(pos).Height));
                         dst.X = vp.Width / 2 - dst.Width / 2;
                         dst.Y = 0;
                         Memory.SpriteBatchStartStencil();

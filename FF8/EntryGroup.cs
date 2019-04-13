@@ -79,8 +79,8 @@ namespace FF8
                             Width = list[0].Width,
                             Height = list[0].Height,
                             Tile = Vector2.UnitX,
-                            Offset = new Point(list[0].Width,0),
-                            End = new Point(-list[0].Width,0)
+                            Offset = new Point((int)list[0].Width,0),
+                            End = new Point((int)-list[0].Width,0)
                         });
                 }
                 list.Add(entry);

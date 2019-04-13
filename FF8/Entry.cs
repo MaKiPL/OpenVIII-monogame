@@ -10,8 +10,9 @@ namespace FF8
         #region Fields
 
         public byte[] UNK;
+        public Vector2 Location;
+        public Vector2 Size;
         private Loc loc;
-        private Rectangle src;
         public Point Offset;
         public Point End;
 
@@ -34,9 +35,7 @@ namespace FF8
         public sbyte CustomPallet { get; internal set; } = -1;
         public byte File { get; set; }
         //public Loc GetLoc => loc;
-        public Rectangle GetRectangle => src;
-        public Point Size => src.Size;
-        public Point Location => src.Location;
+        public Rectangle GetRectangle => new Rectangle(Location.ToPoint(),Size.ToPoint());
 
         /// <summary>
         /// point where you want to stop drawing from right side so -8 would stop 8*scale pixels from edge
@@ -56,10 +55,10 @@ namespace FF8
         /// Vector2.Zero = no tile, Vector2.One = tile x & y, Vector.UnitX = tile x, Vector.UnitY = tile y
         /// </summary>
         public Vector2 Tile { get; internal set; } = Vector2.Zero;
-        public int Height { get =>src.Height; internal set=> src.Height=value; }
-        public int Width { get=>src.Width; internal set=> src.Width=value; }
-        public int Y { get => src.Y; internal set => src.Y = value; }
-        public int X { get => src.X; internal set => src.X = value; }
+        public float Height { get =>Size.Y; internal set=> Size.Y=value; }
+        public float Width { get=>Size.Y; internal set=> Size.X=value; }
+        public float Y { get => Location.Y; internal set => Location.Y = value; }
+        public float X { get => Location.X; internal set => Location.X = value; }
 
         #endregion Properties
 
@@ -70,14 +69,14 @@ namespace FF8
             if (loc > 0)
                 br.BaseStream.Seek(loc + 4, SeekOrigin.Begin);
             CurrentPos = loc;
-            src.X = br.ReadByte();
-            src.Y = br.ReadByte();
+            Location.X = br.ReadByte();
+            Location.Y = br.ReadByte();
             UNK = br.ReadBytes(2);
-            src.Width = br.ReadByte();
+            Size.X = br.ReadByte();
             Offset.X = br.ReadSByte();
-            src.Height = br.ReadByte();
+            Size.Y = br.ReadByte();
             Offset.Y = br.ReadSByte();
-            if (prevY > 0 && src.Y < prevY)
+            if (prevY > 0 && Location.Y < prevY)
                 fid++;
             File = fid;
             return fid;
@@ -88,13 +87,13 @@ namespace FF8
         internal void LoadfromStreamSP1(BinaryReader br)
         {
             CurrentPos = (ushort)br.BaseStream.Position;
-            src.X = br.ReadByte();
-            src.Y = br.ReadByte();
+            Location.X = br.ReadByte();
+            Location.Y = br.ReadByte();
 
             UNK = br.ReadBytes(2);
-            src.Width = br.ReadByte();
+            Size.X = br.ReadByte();
             Offset.X = br.ReadSByte();
-            src.Height = br.ReadByte();
+            Size.Y = br.ReadByte();
             Offset.Y = br.ReadSByte();
         }
 
