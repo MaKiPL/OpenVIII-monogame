@@ -154,6 +154,7 @@ namespace FF8
         public const int MODULE_WORLD_DEBUG = -17;
         public const int MODULE_FACE_TEST = -20;
         public const int MODULE_ICON_TEST = -21;
+        public const int MODULE_CARD_TEST = -22;
 
         #endregion modules
 
