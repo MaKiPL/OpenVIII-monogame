@@ -139,6 +139,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="ArchiveWorker.cs" />
+    <Compile Include="Cards.cs" />
     <Compile Include="EntryGroup.cs" />
     <Compile Include="I_SP2.cs" />
     <Compile Include="I_SP1.cs" />

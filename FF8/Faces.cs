@@ -9,12 +9,12 @@ namespace FF8
 {
     internal partial class Faces : I_SP2
     {
-
         #region Fields
+        protected const int TextureCount=2;
+        protected const string TextureFilename = "face{0}.tex";
+        protected static readonly Texture2D[] textures = new Texture2D[TextureCount];
 
-        private static readonly Texture2D[] faces = new Texture2D[2];
-
-        private static Dictionary<ID, Entry> entries;
+        protected static Dictionary<ID, Entry> entries;
 
         #endregion Fields
 
@@ -58,12 +58,12 @@ namespace FF8
                 //    fs.Write(test, 0, test.Length);
                 //}
                 TEX tex;
-                tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU,
-                    aw.GetListOfFiles().First(x => x.ToLower().Contains("face1.tex"))));
-                faces[0] = tex.GetTexture();
-                tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU,
-                    aw.GetListOfFiles().First(x => x.ToLower().Contains("face2.tex"))));
-                faces[1] = tex.GetTexture();
+                for (int i = 0; i < TextureCount; i++)
+                {
+                    tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU,
+                        aw.GetListOfFiles().First(x => x.ToLower().Contains(String.Format(TextureFilename,i)))));
+                    textures[0] = tex.GetTexture();
+                }
             }
         }
 
@@ -125,7 +125,7 @@ namespace FF8
 
         public Entry GetEntry(int id) => entries[(ID)id];
 
-        public void Draw(Enum id, Rectangle dst, float fade = 1f) => Memory.spriteBatch.Draw(faces[entries[(ID)id].File], dst, entries[(ID)id].GetRectangle, Color.White * fade);
+        public void Draw(Enum id, Rectangle dst, float fade = 1f) => Memory.spriteBatch.Draw(textures[entries[(ID)id].File], dst, entries[(ID)id].GetRectangle, Color.White * fade);
         public void Draw(int id, Rectangle dst, float fade = 1f) => Draw((ID)id, dst, fade); 
 
         #endregion Methods
