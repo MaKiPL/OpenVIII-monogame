@@ -19,7 +19,11 @@ namespace FF8
 
         public static bool IsActive = true;
         public static Font font;
-        public static Texture2D[] iconsTex;
+        //public static Texture2D[] iconsTex;
+
+        public static Cards Cards;
+        public static Faces Faces;
+        public static Icons Icons;
 
         public enum ScaleMode
         {

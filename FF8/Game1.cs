@@ -32,13 +32,19 @@ namespace FF8
             Memory.font = new Font(); //this initializes the fonts and drawing system- holds fonts in-memory
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
 
-            TEX tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU,
-                aw.GetListOfFiles().First(x => x.ToLower().Contains("icon.tex"))));
-            Memory.iconsTex = new Texture2D[tex.TextureData.NumOfPalettes];
-            for (int i = 0; i < Memory.iconsTex.Length; i++)
-                Memory.iconsTex[i] = tex.GetTexture(i);
+            //TEX tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU,
+            //    aw.GetListOfFiles().First(x => x.ToLower().Contains("icon.tex"))));
+            //Memory.iconsTex = new Texture2D[tex.TextureData.NumOfPalettes];
+            //for (int i = 0; i < Memory.iconsTex.Length; i++)
+            //    Memory.iconsTex[i] = tex.GetTexture(i);
             Memory.FieldHolder.FieldMemory = new int[1024];
+
+
+            Memory.Cards = new Cards();
+            Memory.Faces = new Faces();
+            Memory.Icons = new Icons();
             
+
             base.Initialize();
         }
         protected override void LoadContent()

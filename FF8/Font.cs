@@ -172,14 +172,13 @@ namespace FF8
 
             ReadTdw(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, sysfntTdwFilepath));
         }
-
         internal void ReadTdw(byte[] Tdw)
         {
             int widthPointer = BitConverter.ToInt32(Tdw, 0);
             int dataPointer = BitConverter.ToInt32(Tdw, 4);
             TIM2 tim = new TIM2(Tdw, (uint)dataPointer);
             menuFont = new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight);
-            menuFont.SetData(tim.CreateImageBuffer(tim.GetClutColors(7)));
+            menuFont.SetData(tim.CreateImageBuffer(tim.GetClutColors((ushort)TIM2.FontColorID.White)));
         }
 
 

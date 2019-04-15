@@ -10,8 +10,6 @@ namespace FF8
 
         private static Mode currentMode;
 
-        private static Cards cards;
-
         private static Cards.ID[] CardValue;
 
         private static int pointer = -1;
@@ -84,16 +82,16 @@ namespace FF8
                 var id = CardValue[pointer];
                 uint pos = (uint)id;
                 //int i = cards.GetEntry(id).File;
-                uint col = (uint)(cards.GetEntry(id).X / cards.GetEntry(id).Width) +1;
-                uint row = (uint)(cards.GetEntry(id).Y / cards.GetEntry(id).Width) +1;
+                uint col = (uint)(Memory.Cards.GetEntry(id).X / Memory.Cards.GetEntry(id).Width) +1;
+                uint row = (uint)(Memory.Cards.GetEntry(id).Y / Memory.Cards.GetEntry(id).Width) +1;
 
-                float scale = vp.Height / cards.GetEntry(id).Height;
-                Rectangle dst = new Rectangle(new Point(0), (cards.GetEntry(id).Size * scale).ToPoint());
+                float scale = vp.Height / Memory.Cards.GetEntry(id).Height;
+                Rectangle dst = new Rectangle(new Point(0), (Memory.Cards.GetEntry(id).Size * scale).ToPoint());
                 dst.Offset(vp.Width / 2 - dst.Center.X, 0);
                 Memory.SpriteBatchStartStencil();
                 Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
-                cards.Draw(id, dst);
-                Memory.font.RenderBasicText(Font.CipherDirty($"{CardValue[pointer].ToString().Replace('_', ' ')}\npos: {pos}\ncol: {col}\nrow: {row}\nx: {cards.GetEntry(id).X}\ny: {cards.GetEntry(id).Y}\nwidth: {cards.GetEntry(id).Width}\nheight: {cards.GetEntry(id).Height}"),
+                Memory.Cards.Draw(id, dst);
+                Memory.font.RenderBasicText(Font.CipherDirty($"{CardValue[pointer].ToString().Replace('_', ' ')}\npos: {pos}\ncol: {col}\nrow: {row}\nx: {Memory.Cards.GetEntry(id).X}\ny: {Memory.Cards.GetEntry(id).Y}\nwidth: {Memory.Cards.GetEntry(id).Width}\nheight: {Memory.Cards.GetEntry(id).Height}"),
                 (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), 1f, 2f, 0, 1);
                 Memory.SpriteBatchEnd();
             }
@@ -101,7 +99,6 @@ namespace FF8
 
         private static void Initialize()
         {
-            cards = new Cards();
             CardValue = (Cards.ID[])Enum.GetValues(typeof(Cards.ID));
             Array.Sort(CardValue);
         }

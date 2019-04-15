@@ -642,7 +642,7 @@ namespace FF8
         {
             textureInterface = new TIM2(stageBuffer, texturePointer);
             textures = new Texture2D[textureInterface.GetClutCount];
-            for (int i = 0; i < textureInterface.GetClutCount; i++)
+            for (ushort i = 0; i < textureInterface.GetClutCount; i++)
             {
                 byte[] b = textureInterface.CreateImageBuffer(textureInterface.GetClutColors(i));
                 Texture2D tex = new Texture2D(Memory.spriteBatch.GraphicsDevice,

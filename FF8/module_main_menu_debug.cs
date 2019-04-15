@@ -52,7 +52,9 @@ namespace FF8
         private static Ditems s_dchoose;
         private static Mitems s_mchoose;
         private static Texture2D start00;
+        private static Vector2 start00_size;
         private static Texture2D start01;
+        private static Vector2 start01_size;
         private static MainMenuStates State = 0;
         private static int vpHeight;
         private static int vpWidth;
@@ -194,7 +196,6 @@ namespace FF8
             }
         }
 
-        public static Icons icons { get; private set; }
         public static float vpSpace { get; private set; }
         public static Vector2 DFontPos { get; private set; }
 
@@ -216,7 +217,6 @@ namespace FF8
             {
                 start01 = GetTexture(1);
             }
-            icons = new Icons();
         }
 
         /// <summary>
@@ -240,14 +240,20 @@ namespace FF8
                     break;
             }
             tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, filename));
-            return tex.GetTexture();
+            return TextureHandler.UseBest(tex,TextureHandler.LoadPNG(filename));
         }
-
+        static bool LastActive = false;
         /// <summary>
         /// Triggers functions depending on state
         /// </summary>
         internal static void Update()
         {
+            bool forceupdate = false;
+            if(LastActive != Memory.IsActive)
+            {
+                forceupdate = true;
+                LastActive = Memory.IsActive;
+            }
             if (Fade < 1.0f && State != MainMenuStates.NewGameChoosed)
             {
                 Fade += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 3;
@@ -262,7 +268,7 @@ namespace FF8
 
                 case MainMenuStates.MainLobby:
                     Offset = new Vector2(-1000, 0);
-                    if (!UpdateMainLobby() && (lastfade == fade))
+                    if (!UpdateMainLobby() && (lastfade == fade) && !forceupdate)
                     {
                         Memory.SuppressDraw = true;
                         Memory.IsMouseVisible = true;
@@ -275,7 +281,7 @@ namespace FF8
                     {
                         Offset = Vector2.SmoothStep(Offset, Vector2.Zero, .15f);
                     }
-                    if (!UpdateDebugLobby() && (lastfade == fade) && Offset == Vector2.Zero)
+                    if (!UpdateDebugLobby() && (lastfade == fade) && Offset == Vector2.Zero && !forceupdate)
                     {
                         Memory.SuppressDraw = true;
                         Memory.IsMouseVisible = true;
@@ -684,10 +690,19 @@ namespace FF8
         /// </summary>
         private static void DrawMainLobby()
         {
-            float zoom = 0.65f;
+            float zoom = 0.85f;
             Memory.SpriteBatchStartAlpha();
-            Memory.spriteBatch.Draw(start00, new Rectangle(0, 0, (int)(vpWidth * zoom), (int)(vpHeight * (zoom - 0.1f))), null, Color.White * Fade);
-            Memory.spriteBatch.Draw(start01, new Rectangle((int)(vpWidth * zoom), 0, vpWidth / 3, (int)(vpHeight * (zoom - 0.1f))), Color.White * Fade);
+            Rectangle dst = new Rectangle();
+            start00_size = new Vector2(2f / 3f * vpWidth, 2f / 3f * vpWidth)*zoom;
+            start01_size = new Vector2(1f / 3f * vpWidth, 0)*zoom;
+            dst.Location = ((new Vector2(vpWidth,0)*(1f-zoom))/2).ToPoint();
+            dst.Size = start00_size.ToPoint();
+            //dst = new Rectangle(0, 0, (int)(vpWidth * zoom), (int)(vpHeight * (zoom - 0.1f)));
+            Memory.spriteBatch.Draw(start00, dst, Color.White * Fade);
+            dst.X += (start00_size).ToPoint().X;
+            dst.Width = start01_size.ToPoint().X;
+            //dst = new Rectangle((int)(vpWidth * zoom), 0, vpWidth / 3, (int)(vpHeight * (zoom - 0.1f)));
+            Memory.spriteBatch.Draw(start01, dst, Color.White * Fade);
             float vpSpace = vpHeight * 0.05f;
             float item = 0;
             foreach (Mitems i in (Mitems[])Enum.GetValues(typeof(Mitems)))
@@ -697,12 +712,21 @@ namespace FF8
                     (int)(vpWidth * 0.42f), (int)(vpHeight * 0.35f + vpSpace * item++), 2f, 3f, 0, 1, Fade));
                 strMainLobby[i] = c;
             }
-            Memory.spriteBatch.Draw(Memory.iconsTex[2], new Rectangle(
+
+            Memory.SpriteBatchEnd();
+            Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
+            Memory.Icons.Draw(Icons.ID.Finger_Right, 2, new Rectangle(
                 (int)(vpWidth * 0.37f),
                 (int)(vpHeight * 0.35f + vpSpace * (float)Mchoose),
                 (int)(24 * 2 * fScaleWidth),
-                (int)(16 * 2 * fScaleWidth)),
-                new Rectangle(232, 0, 23, 15), Color.White * Fade);
+                (int)(16 * 2 * fScaleWidth)), 0, fade);
+
+            //Memory.spriteBatch.Draw(Memory.iconsTex[2], new Rectangle(
+            //    (int)(vpWidth * 0.37f),
+            //    (int)(vpHeight * 0.35f + vpSpace * (float)Mchoose),
+            //    (int)(24 * 2 * fScaleWidth),
+            //    (int)(16 * 2 * fScaleWidth)),
+            //    new Rectangle(232, 0, 23, 15), Color.White * Fade);
             Memory.SpriteBatchEnd();
         }
 
@@ -735,25 +759,27 @@ namespace FF8
             Rectangle dst = FontBoxCalc<Ditems>(strDebugLobby);
             //dst.Offset(Offset);
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
-            icons.Draw(Icons.ID.Menu_BG_256, 0, dst, 0, Fade);
+            Memory.Icons.Draw(Icons.ID.Menu_BG_256, 0, dst, 0, Fade);
             item = 0;
             dst.Offset(4 * 3.5f, 0);
             dst.Width = 0;
             dst.Height = 0;
-            icons.Draw(Icons.ID.DEBUG, 2, dst, 3.5f);
+            Memory.Icons.Draw(Icons.ID.DEBUG, 2, dst, 3.5f);
+            dst.Location = DFontPos.ToPoint();
+            dst.Size = new Point((int)(24 * 2 * fScaleWidth), (int)(16 * 2 * fScaleWidth));
+            dst.Offset(-(dst.Width + 10 * fScaleWidth), vpSpace * ((float)Dchoose));
+
+            Memory.Icons.Draw(Icons.ID.Finger_Right, 2, dst, 0, fade);
             Memory.SpriteBatchEnd();
+            //pointclamp looks bad on default fonts.
             Memory.SpriteBatchStartAlpha();
-            //foreach (KeyValuePair<Ditems, string> e in DebugMenu)
             foreach (Ditems i in (Ditems[])Enum.GetValues(typeof(Ditems)))
             {
                 Memory.font.RenderBasicText(Font.CipherDirty(string.Format(strDebugLobby[i].Text, InfoForLobby<Ditems>(i)).Replace("\0", "")),
                     (int)(DFontPos.X), (int)(DFontPos.Y + vpSpace * item++), 1f, 2f, 0, 1, Fade);
             }
-            dst.Location = DFontPos.ToPoint();
-            dst.Size = new Point((int)(24 * 2 * fScaleWidth), (int)(16 * 2 * fScaleWidth));
-            dst.Offset(-(dst.Width + 10 * fScaleWidth), vpSpace * ((float)Dchoose));
-            Memory.spriteBatch.Draw(Memory.iconsTex[2], dst,
-                new Rectangle(232, 0, 23, 15), Color.White * Fade);
+            //Memory.spriteBatch.Draw(Memory.iconsTex[2], dst,
+            //    new Rectangle(232, 0, 23, 15), Color.White * Fade);
             Memory.SpriteBatchEnd();
         }
 
