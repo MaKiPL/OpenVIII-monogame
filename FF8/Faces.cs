@@ -2,9 +2,6 @@
 {
     internal class Faces : SP2
     {
-        //protected static Texture2D[] textures;
-
-        //protected static Dictionary<Enum, Entry> entries;
 
         #region Constructors
 
