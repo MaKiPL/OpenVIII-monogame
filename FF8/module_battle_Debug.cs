@@ -17,7 +17,7 @@ namespace FF8
         private static TIM2 textureInterface;
         private static Texture2D[] textures;
 
-        private static int monsterTester = 1;
+        private static int monsterTester = 4;
         private static bool bDisableAnimations = true;
 
 

@@ -41,7 +41,7 @@ namespace FF8
             public ushort unk4;
             public Bone[] bones;
 
-            public float ScaleX { get => (int)(scaleX/V); set => scaleX = (short)value; } //should it be 4096 or V?
+            public float ScaleX { get => (int)(scaleX/V); set => scaleX = (short)value; }
             public float ScaleY { get => (int)(scaleY/V); set => scaleY = (short)value; }
             public float ScaleZ { get => (int)(scaleZ/V); set => scaleZ = (short)value; }
         }
@@ -483,25 +483,23 @@ namespace FF8
                     for(int k = 0; k<skeleton.cBones; k++)
                     {
                         var rad = animHeader.animations[i].animationFrames[n].boneRot.Item1[k];
-                        Matrix xRot = MakiExtended.GetRotationMatrixX(rad.X);
-                        Matrix yRot = MakiExtended.GetRotationMatrixY(rad.Y);
-                        Matrix zRot = MakiExtended.GetRotationMatrixZ(rad.Z);
-                        var MatrixZ = yRot * xRot*zRot;// MakiExtended.MatrixMultiply(yRot, xRot);
+                        Matrix xRot = MakiExtended.GetRotationMatrixX(-rad.X);
+                        Matrix yRot = MakiExtended.GetRotationMatrixY(-rad.Y);
+                        Matrix zRot = MakiExtended.GetRotationMatrixZ(-rad.Z);
+                        var MatrixZ = MakiExtended.MatrixMultiply(yRot, xRot);
+                        MatrixZ = MakiExtended.MatrixMultiply(zRot, MatrixZ);
 
                         if (skeleton.bones[k].parentId == 0xFFFF)
                         {
-                            MatrixZ.M41 = animHeader.animations[i].animationFrames[n].Position.X;
-                            MatrixZ.M42 = animHeader.animations[i].animationFrames[n].Position.Y;
                             MatrixZ.M43 = animHeader.animations[i].animationFrames[n].Position.Z + 2;
-                            //if bone is root, then it gets +2 to position.Z (why?)
-                            MatrixZ *= MakiExtended.GetRotationMatrixX(180);
                         }
                         else
                         {
                             int parentId = skeleton.bones[k].parentId;
                             Matrix prevBone = animHeader.animations[i].animationFrames[n].boneRot.Item3[parentId];
                             parentId = skeleton.bones[parentId].parentId;
-                            /*MatrixZ.M44 = 1; */MatrixZ.M43 = skeleton.bones[skeleton.bones[k].parentId].Size; MatrixZ.M42 = 0; MatrixZ.M41 = 0;
+                            /*MatrixZ.M44 = 1; */
+                            MatrixZ.M43 = skeleton.bones[skeleton.bones[k].parentId].Size; MatrixZ.M42 = 0; MatrixZ.M41 = 0;
                             //MatrixZ *= prevBone;
                             Matrix v6 = Matrix.Identity;
                             v6.M11 = prevBone.M11 * MatrixZ.M11 + prevBone.M12 * MatrixZ.M21 + prevBone.M13 * MatrixZ.M31;
