@@ -430,7 +430,7 @@ namespace FF8
         public static void PlayMusic()
         {
             string ext = "";
-            bool bFakeLinux = false; //set to force linux behaviour on windows
+            bool bFakeLinux = false; //set to force linux behaviour on windows; To delete after Linux music playable
             
             if (Memory.dicMusic[Memory.MusicIndex].Count > 0)
             {
@@ -611,8 +611,26 @@ namespace FF8
             uint dwVersionLS;
         }
 
+        [StructLayout(LayoutKind.Sequential, Pack =1, Size =32)]
+        struct DMUS_IO_TRACK_HEADER
+        {
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst =16)]
+            byte[] guidClassID;
+            uint dwPosition;
+            uint dwGroup;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst =4)]
+            char[] _ckid;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            char[] _fccType;
+
+            public string ckid { get => new string(_ckid); }
+            public string fccType { get => new string(_fccType); }
+
+        }
+
         static DMUS_IO_SEGMENT_HEADER segh = new DMUS_IO_SEGMENT_HEADER();
         static DMUS_IO_VERSION vers = new DMUS_IO_VERSION();
+        static List<DMUS_IO_TRACK_HEADER> trkh;
         /// <summary>
         /// [LINUX]: This method manually reads DirectMusic Segment files
         /// </summary>
@@ -640,6 +658,7 @@ namespace FF8
         private static void ReadSegmentForm(FileStream fs, BinaryReader br)
         {
             string fourCc;
+            trkh = new List<DMUS_IO_TRACK_HEADER>();
             if ((fourCc = ReadFourCc(br)) != "segh")
                 { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: Broken structure. Expected segh, got={fourCc}");return;}
             uint chunkSize = br.ReadUInt32();
@@ -674,10 +693,12 @@ namespace FF8
                 if ((fourCc = ReadFourCc(br)) != "RIFF")
                 { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected RIFF, got={fourCc}"); return; }
                 chunkSize = br.ReadUInt32();
+                long skipTell = fs.Position;
                 Console.WriteLine($"RIFF entry: {ReadFourCc(br)}/{ReadFourCc(br)}");
-                //for now I'm skipping every RIFF segment so I have a nice working loop through all RIFFs
-                //TODO
-                fs.Seek(chunkSize - 8, SeekOrigin.Current);
+                trkh.Add(MakiExtended.ByteArrayToStructure<DMUS_IO_TRACK_HEADER>(br.ReadBytes((int)br.ReadUInt32())));
+                //TODO HERE
+                //this seek below is to ensure that no critical behaviour happens and every RIFF header is read correctly
+                fs.Seek(skipTell+chunkSize, SeekOrigin.Begin);
 
             }
         }
