@@ -64,7 +64,7 @@ namespace FF8
 
         #region Methods
 
-        public byte LoadfromStreamSP2(BinaryReader br, UInt16 loc = 0, byte prevY = 0, byte fid = 0)
+        public void LoadfromStreamSP2( BinaryReader br, UInt16 loc, Entry prev, ref byte fid)
         {
             if (loc > 0)
                 br.BaseStream.Seek(loc + 4, SeekOrigin.Begin);
@@ -76,10 +76,9 @@ namespace FF8
             Offset.X = br.ReadSByte();
             Size.Y = br.ReadByte();
             Offset.Y = br.ReadSByte();
-            if (prevY > 0 && Location.Y < prevY)
+            if (prev != null && Location.Y < prev.Y)
                 fid++;
             File = fid;
-            return fid;
         }
 
         public void SetLoc(Loc value) => loc = value;

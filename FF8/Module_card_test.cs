@@ -81,21 +81,19 @@ namespace FF8
             {
                 Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
 
-                int rows = 2;
-                int cols = 8;
-                int totalitems = rows * cols;
-                int pos = (int)CardValue[pointer];
-                int i = cards.GetEntry(pos).File;
-                int col = (pos % cols);
-                int row = (pos / cols) % rows;
+                var id = CardValue[pointer];
+                uint pos = (uint)id;
+                //int i = cards.GetEntry(id).File;
+                uint col = (uint)(cards.GetEntry(id).X / cards.GetEntry(id).Width) +1;
+                uint row = (uint)(cards.GetEntry(id).Y / cards.GetEntry(id).Width) +1;
 
-                float scale = vp.Height / cards.GetEntry(pos).Height;
-                Rectangle dst = new Rectangle(new Point(0), (cards.GetEntry(pos).Size * scale).ToPoint());
+                float scale = vp.Height / cards.GetEntry(id).Height;
+                Rectangle dst = new Rectangle(new Point(0), (cards.GetEntry(id).Size * scale).ToPoint());
                 dst.Offset(vp.Width / 2 - dst.Center.X, 0);
                 Memory.SpriteBatchStartStencil();
                 Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
-                cards.Draw(pos, dst);
-                Memory.font.RenderBasicText(Font.CipherDirty($"{CardValue[pointer].ToString().Replace('_', ' ')}\npos: {pos}\nfile: {i}\ncol: {col}\nrow: {row}\nx: {cards.GetEntry(pos).X}\ny: {cards.GetEntry(pos).Y}\nwidth: {cards.GetEntry(pos).Width}\nheight: {cards.GetEntry(pos).Height}"),
+                cards.Draw(id, dst);
+                Memory.font.RenderBasicText(Font.CipherDirty($"{CardValue[pointer].ToString().Replace('_', ' ')}\npos: {pos}\ncol: {col}\nrow: {row}\nx: {cards.GetEntry(id).X}\ny: {cards.GetEntry(id).Y}\nwidth: {cards.GetEntry(id).Width}\nheight: {cards.GetEntry(id).Height}"),
                 (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), 1f, 2f, 0, 1);
                 Memory.SpriteBatchEnd();
             }

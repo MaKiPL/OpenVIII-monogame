@@ -8,23 +8,148 @@ using System.Threading.Tasks;
 
 namespace FF8
 {
-    class Cards : Faces
+    class Cards : SP2
     {
-        private const int TextureCount = 10;
-        private const string TextureFilename = "mc{0:00}.tex";
-        private const int TextureStartOffset = 0;
-        private const string IndexFilename = "cardanm.sp2";
-
-
-        protected new static Texture2D[] textures;
-
-        protected new static Dictionary<Enum, Entry> entries;
-
-        public Cards() => Process(TextureCount, TextureFilename, TextureStartOffset, IndexFilename,ref entries,ref textures);
-
-        public override void Draw(Enum id, Rectangle dst, float fade = 1) => base.Draw(id, dst, fade,ref entries, ref textures);
-        public override void Draw(int id, Rectangle dst, float fade = 1) => base.Draw(id, dst, fade,ref entries, ref textures);
-        public override Entry GetEntry(Enum id) => base.GetEntry(id, ref entries);
-        public override Entry GetEntry(int id) => base.GetEntry(id, ref entries);
+        public new enum ID
+        {
+            //Level 1
+            Geezard,
+            Funguar,
+            Bite_Bug,
+            Red_Bat,
+            Blobra,
+            Gayla,
+            Gesper,
+            Fastitocalon_F,
+            Blood_Soul,
+            Caterchipillar,
+            Cockatrice,
+            //Level 2
+            Grat,
+            Buel,
+            Mesmerize,
+            Glacial_Eye,
+            Belhelmel,
+            Thrustaevis,
+            Anacondaur,
+            Creeps,
+            Grendel,
+            Jelleye,
+            Grand_Mantis,
+            //Level 3
+            Forbidden,
+            Armadodo,
+            Tri_Face,
+            Fastitocalon,
+            Snow_Lion,
+            Ochu,
+            SAM08G,
+            Death_Claw,
+            Cactuar,
+            Tonberry,
+            Abyss_Worm,
+            //Level 4
+            Turtapod,
+            Vysage,
+            T_Rexaur,
+            Bomb,
+            Blitz,
+            Wendigo,
+            Torama,
+            Imp,
+            Blue_Dragon,
+            Adamantoise,
+            Hexadragon,
+            //Level 5
+            Iron_Giant,
+            Behemoth,
+            Chimera,
+            PuPu,
+            Elastoid,
+            GIM47N,
+            Malboro,
+            Ruby_Dragon,
+            Elnoyle,
+            Tonberry_King,
+            Biggs__Wedge,
+            //Boss Cards
+            //Level 6
+            Fujin__Raijin,
+            Elvoret,
+            X_ATM092,
+            Granaldo,
+            Gerogero,
+            Iguion,
+            Abadon,
+            Trauma,
+            Oilboyle,
+            Shumi_Tribe,
+            Krysta,
+            //Level 7
+            Propagator,
+            Jumbo_Cactuar,
+            Tri_Point,
+            Gargantua,
+            Mobile_Type_8,
+            Sphinxara,
+            Tiamat,
+            BGH251F2,
+            Red_Giant,
+            Catoblepas,
+            Ultima_Weapon,
+            //Guardian Force cards
+            //Level 8
+            Chubby_Chocobo,
+            Angelo,
+            Gilgamesh,
+            MiniMog,
+            Chicobo,
+            Quezacotl,
+            Shiva,
+            Ifrit,
+            Siren,
+            Sacred,
+            Minotaur,
+            //Level 9
+            Carbuncle,
+            Diablos,
+            Leviathan,
+            Odin,
+            Pandemona,
+            Cerberus,
+            Alexander,
+            Phoenix,
+            Bahamut,
+            Doomtrain,
+            Eden,
+            //Player cards
+            //Level 10
+            Ward,
+            Kiros,
+            Laguna,
+            Selphie,
+            Quistis,
+            Irvine,
+            Zell,
+            Rinoa,
+            Edea,
+            Seifer,
+            Squall,
+            //Custom Entry
+            Card_Back
+        }
+        public Cards()
+        {
+            TextureCount = 10;
+            TextureFilename = "mc{0:00}.tex";
+            TextureStartOffset = 0;
+            EntriesPerTexture = 11;
+            IndexFilename = "cardanm.sp2";
+            Init();
+            Entries[(uint)ID.Card_Back] = new Entry {X = 192,
+            Y = 128,
+            Width = 64,
+            Height = 64};
+        }
     }
 }

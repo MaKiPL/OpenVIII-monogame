@@ -85,18 +85,19 @@ namespace FF8
                         int rows = 2;
                         int cols = 8;
                         int totalitems = rows * cols;
-                        int pos = (int)FaceValue[pointer];
-                        int i = faces.GetEntry(pos).File;
+                        var id = FaceValue[pointer];
+                        int pos = (int)id;
+                        int i = faces.GetEntry(id).File;
                         int col = (pos % cols);
                         int row = (pos / cols) % rows;
 
-                        float scale = vp.Height/ faces.GetEntry(pos).Height;
-                        Rectangle dst = new Rectangle(new Point(0), (faces.GetEntry(pos).Size*scale).ToPoint());
+                        float scale = vp.Height/ faces.GetEntry(id).Height;
+                        Rectangle dst = new Rectangle(new Point(0), (faces.GetEntry(id).Size*scale).ToPoint());
                         dst.Offset(vp.Width/2 - dst.Center.X, 0);
                         Memory.SpriteBatchStartStencil();
                         Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
-                        faces.Draw(pos, dst);
-                        Memory.font.RenderBasicText(Font.CipherDirty($"{FaceValue[pointer].ToString().Replace('_', ' ')}\npos: {pos}\nfile: {i}\ncol: {col}\nrow: {row}\nx: {faces.GetEntry(pos).X}\ny: {faces.GetEntry(pos).Y}\nwidth: {faces.GetEntry(pos).Width}\nheight: {faces.GetEntry(pos).Height}"),
+                        faces.Draw(id, dst);
+                        Memory.font.RenderBasicText(Font.CipherDirty($"{FaceValue[pointer].ToString().Replace('_', ' ')}\npos: {pos}\nfile: {i}\ncol: {col}\nrow: {row}\nx: {faces.GetEntry(id).X}\ny: {faces.GetEntry(id).Y}\nwidth: {faces.GetEntry(id).Width}\nheight: {faces.GetEntry(id).Height}"),
                         (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), 1f, 2f, 0, 1);
                         Memory.SpriteBatchEnd();
                     }

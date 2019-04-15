@@ -141,8 +141,6 @@
     <Compile Include="ArchiveWorker.cs" />
     <Compile Include="Cards.cs" />
     <Compile Include="EntryGroup.cs" />
-    <Compile Include="I_SP2.cs" />
-    <Compile Include="I_SP1.cs" />
     <Compile Include="Module_card_test.cs" />
     <Compile Include="Sources\Environment\Game\Location\GameLocation.cs" />
     <Compile Include="Sources\Environment\Game\Location\IGameLocationProvider.cs" />
@@ -188,6 +186,7 @@
     <Compile Include="Sources\MonoGame\Hooks\MonoGameHooks.cs" />
     <Compile Include="Sources\MonoGame\Hooks\OpenALWindowsHook.cs" />
     <Compile Include="Sources\NetFramework\TypeExtensionMethods.cs" />
+    <Compile Include="SP2.cs" />
     <Compile Include="TEX.cs" />
     <Compile Include="TIM2.cs" />
     <Compile Include="debug_battleDat.cs" />
