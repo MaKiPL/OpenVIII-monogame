@@ -41,9 +41,9 @@ namespace FF8
             public ushort unk4;
             public Bone[] bones;
 
-            public float ScaleX { get => scaleX; set => scaleX = (short)value; }
-            public float ScaleY { get => scaleY; set => scaleY = (short)value; }
-            public float ScaleZ { get => scaleZ; set => scaleZ = (short)value; }
+            public float ScaleX { get => scaleX/4096f; set => scaleX = (short)value; }
+            public float ScaleY { get => scaleY/4096f; set => scaleY = (short)value; }
+            public float ScaleZ { get => scaleZ/4096f; set => scaleZ = (short)value; }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 48)]
@@ -705,7 +705,7 @@ namespace FF8
                 {
                     case EntityType.Monster:
                         if (id == 127) return;
-                        ReadSection1(datFile.pSections[0], ms, br);
+                        ReadSection1(datFile.pSections[0], ms, br); //checked and correct
                         ReadSection3(datFile.pSections[2], ms, br);
                         ReadSection2(datFile.pSections[1], ms, br);
                         //ReadSection4(datFile.pSections[3]);
