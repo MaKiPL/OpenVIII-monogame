@@ -98,7 +98,7 @@ namespace FF8
 
 
 
-        public static int module = MODULE_BATTLE_DEBUG;
+        public static int module = MODULE_OVERTURE_DEBUG;
         
         public static string FF8DIR => GameLocation.Current.DataPath;
 

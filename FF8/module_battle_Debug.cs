@@ -229,7 +229,7 @@ namespace FF8
                 frame[n+monstersData.Length] = frame[n+monstersData.Length] == charactersData[n].character.animHeader.animations[0].cFrames ? 0 : frame[n+monstersData.Length];
                 for (int i = 0; i < charactersData[n].character.geometry.cObjects; i++)
                 {
-                    var a = charactersData[n].character.GetVertexPositions(i, new Vector3(-20 + n * 10, 10, 0),0, frame[n+monstersData.Length], frameperFPS / FPS); //DEBUG
+                    var a = charactersData[n].character.GetVertexPositions(i, new Vector3(-10 + n * 10, 10, -40),0, frame[n+monstersData.Length], frameperFPS / FPS); //DEBUG
                     if (a == null || a.Item1.Length == 0)
                         return;
                     for (int k = 0; k < a.Item1.Length / 3; k++)
@@ -249,7 +249,7 @@ namespace FF8
                 frame[n + monstersData.Length+charactersData.Length] = frame[n + monstersData.Length + charactersData.Length] == charactersData[n].weapon.animHeader.animations[0].cFrames ? 0 : frame[n+monstersData.Length+charactersData.Length];
                 for (int i = 0; i < charactersData[n].weapon.geometry.cObjects; i++)
                 {
-                    var a = charactersData[n].weapon.GetVertexPositions(i, new Vector3(-20+n*10,10, 0),0, frame[n+monstersData.Length+charactersData.Length], frameperFPS / FPS); //DEBUG
+                    var a = charactersData[n].weapon.GetVertexPositions(i, new Vector3(-10+n*10,10, -40),0, frame[n+monstersData.Length+charactersData.Length], frameperFPS / FPS); //DEBUG
                     if (a == null || a.Item1.Length == 0)
                         return;
                     for (int k = 0; k < a.Item1.Length / 3; k++)
@@ -286,7 +286,7 @@ namespace FF8
                 frameperFPS = 0.0f;
                 }
                 //TODO to grab from encounters
-            Vector3[] enemyPositions = new Vector3[] { new Vector3(10, 10, 0), new Vector3(20, 10, 0), new Vector3(30, 10, 0) };
+            Vector3[] enemyPositions = new Vector3[] { new Vector3(10, 15, 25), new Vector3(0, 8, 0), new Vector3(30, 8, 0) };
             for (int n = 0; n < monstersData.Length; n++)
             {
                 if(monstersData[n].GetId == 127)
@@ -527,8 +527,8 @@ namespace FF8
 
         private static void InitBattle()
         {
-            MakiExtended.Debugger_Spawn();
-            MakiExtended.Debugger_Feed(typeof(Module_battle_debug), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+            //MakiExtended.Debugger_Spawn();
+            //MakiExtended.Debugger_Feed(typeof(Module_battle_debug), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
             Input.OverrideLockMouse=true;
             Input.CurrentMode = Input.MouseLockMode.Center;
 
