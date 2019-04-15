@@ -16,15 +16,16 @@ namespace FF8
         private const int TextureStartOffset = 1;
         private const string IndexFilename = "face.sp2";
 
-        private static Texture2D[] textures;
+        protected static Texture2D[] textures;
 
-        private static Dictionary<Enum, Entry> entries;
+        protected static Dictionary<Enum, Entry> entries;
 
         #endregion Fields
 
         #region Constructors
 
         public Faces() => Process(TextureCount, TextureFilename, TextureStartOffset, IndexFilename, ref entries, ref textures);
+
 
         #endregion Constructors
 
@@ -108,7 +109,12 @@ namespace FF8
                         {
                             ms.Seek(locs[i] + 6, SeekOrigin.Begin);
                             byte t = br.ReadByte();
-                            if (t == 0 || t == 96) continue;
+                            if (t == 0 || t == 96)
+                            {
+                                Count = i + 1;
+                                break;
+                            }
+
                             dict[(ID)i] = new Entry();
                             fid = dict[(ID)i].LoadfromStreamSP2(br, locs[i], (byte)(Last != null ? Last.Y : 0), fid);
 
@@ -130,13 +136,18 @@ namespace FF8
             }
         }
 
-        public Entry GetEntry(Enum id) => entries[id];
+        public virtual Entry GetEntry(Enum id) => entries[id];
 
-        public Entry GetEntry(int id) => entries[(ID)id];
+        public virtual Entry GetEntry(int id) => entries[(ID)id];
 
-        public void Draw(Enum id, Rectangle dst, float fade = 1f) => Memory.spriteBatch.Draw(textures[entries[id].File], dst, entries[id].GetRectangle, Color.White * fade);
+        protected Entry GetEntry(Enum id, ref Dictionary<Enum, Entry> e) => e[id] ?? null;
+        protected Entry GetEntry(int id, ref Dictionary<Enum, Entry> e) => e[(ID)id]?? null;
 
-        public void Draw(int id, Rectangle dst, float fade = 1f) => Draw((ID)id, dst, fade);
+
+        protected void Draw(Enum id, Rectangle dst, float fade, ref Dictionary<Enum, Entry> e, ref Texture2D[] t) => Memory.spriteBatch.Draw(t[e[id].File], dst, e[id].GetRectangle, Color.White * fade);
+        protected void Draw(int id, Rectangle dst, float fade, ref Dictionary<Enum, Entry> e, ref Texture2D[] t) => Draw((ID)id, dst, fade, ref e,ref t);
+        public virtual void Draw(Enum id, Rectangle dst, float fade = 1f) => Draw(id,dst,fade,ref entries,ref textures);
+        public virtual void Draw(int id, Rectangle dst, float fade = 1f) => Draw((ID)id, dst, fade,ref entries, ref textures);
 
         #endregion Methods
     }

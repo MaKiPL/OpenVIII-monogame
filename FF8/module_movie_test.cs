@@ -95,7 +95,7 @@ namespace FF8
                     MovieState++;
                     if (FfccAudio != null)
                     {
-                        FfccAudio.PlayInThread();
+                        FfccAudio.PlayInTask();
                     }
                     if (FfccVideo != null)
                     {
@@ -152,6 +152,10 @@ namespace FF8
         }
         private static void Reset()
         {
+            if (FfccAudio != null)
+            {
+                FfccAudio.Dispose();
+            }
             FfccAudio = null;
             if (FfccVideo != null)
             {

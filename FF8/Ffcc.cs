@@ -10,6 +10,7 @@
     using System.Runtime.InteropServices;
     using System.Text;
     using System.Threading;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Ffcc is a front end for processing Audio and Video using ffmpeg.autogen
@@ -509,7 +510,7 @@ EOF:
             return false;
         }
 
-        private Thread thread;
+        private Task task;
         /// <summary>
         /// Dispose of all leaky varibles.
         /// </summary>
@@ -517,48 +518,46 @@ EOF:
         /// <summary>
         /// Same as Play but with a thread. Thread is terminated on Stop() or Dispose().
         /// </summary>
-        public void PlayInThread(float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f)
+        public void PlayInTask(float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f)
         {
+            if(sourceToken==null)
+            sourceToken = new CancellationTokenSource();
+            if(cancellationToken==null)
+            cancellationToken = sourceToken.Token;
             Play(volume,pitch,pan);
-            thread = new Thread(NextAsync)
-            {
-                Priority = ThreadPriority.AboveNormal,
-                IsBackground = true             
-            };
-            thread.Start();
+            task = new Task(NextinTask);
+            task.Start();
         }
+        CancellationTokenSource sourceToken;
+        CancellationToken cancellationToken;
         /// <summary>
         /// For use in threads runs Next till done. To keep audio buffer fed. Or really good timing
         /// on video frames.
         /// </summary>
-        public void NextAsync()
+        private void NextinTask()
         {
-            bool disposeAll = false;
             try
             {
-                if (Mode == FfccMode.STATE_MACH)
+                while (Mode == FfccMode.STATE_MACH && !cancellationToken.IsCancellationRequested && State != FfccState.DONE)
                 {
-                    while (State != FfccState.DONE)
+                    lock (Decoder) //make the main thread wait if it accesses this class.
                     {
-                        lock (Decoder) //make the main thread wait if it accesses this class.
+                        while (!Ahead)
                         {
-                            while (!Ahead)
-                            {
-                                if (Next() < 0)
-                                    break;
-                            }
+                            if (Next() < 0)
+                                break;
                         }
-                        Thread.Sleep(NextAsyncSleep); //delay checks
                     }
+                    Thread.Sleep(NextAsyncSleep); //delay checks
                 }
             }
-            catch (ThreadAbortException)
-            {
-                disposeAll = true;//stop playing
-            }
+            //catch (ThreadAbortException)
+            //{
+            //    disposeAll = true;//stop playing
+            //}
             finally
             {
-                Dispose(disposeAll); // dispose of everything except audio encase it's still playing.
+                Dispose(cancellationToken.IsCancellationRequested); // dispose of everything except audio encase it's still playing.
             }
         }
 
@@ -645,6 +644,8 @@ EOF:
         /// </summary>
         public void Stop()
         {
+            if (stopped)
+                return;
             if (timer.IsRunning)
             {
                 timer.Stop();
@@ -671,9 +672,9 @@ EOF:
             {
                 SoundEffect.Dispose();
             }
-            if (thread != null)
+            if (task != null)
             {
-                thread.Abort("Ending playback");
+                sourceToken.Cancel();
             }
         }
 
@@ -699,7 +700,7 @@ EOF:
                 return frameTex;
             }
         }
-
+        bool stopped=false;
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)

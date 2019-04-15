@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,10 +16,15 @@ namespace FF8
         private const string IndexFilename = "cardanm.sp2";
 
 
-        private static Texture2D[] textures;
+        protected new static Texture2D[] textures;
 
-        private static Dictionary<Enum, Entry> entries;
+        protected new static Dictionary<Enum, Entry> entries;
 
         public Cards() => Process(TextureCount, TextureFilename, TextureStartOffset, IndexFilename,ref entries,ref textures);
+
+        public override void Draw(Enum id, Rectangle dst, float fade = 1) => base.Draw(id, dst, fade,ref entries, ref textures);
+        public override void Draw(int id, Rectangle dst, float fade = 1) => base.Draw(id, dst, fade,ref entries, ref textures);
+        public override Entry GetEntry(Enum id) => base.GetEntry(id, ref entries);
+        public override Entry GetEntry(int id) => base.GetEntry(id, ref entries);
     }
 }
