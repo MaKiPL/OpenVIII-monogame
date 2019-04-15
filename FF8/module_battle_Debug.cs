@@ -17,7 +17,7 @@ namespace FF8
         private static TIM2 textureInterface;
         private static Texture2D[] textures;
 
-        private static int monsterTester = 1;
+        private static int monsterTester = 69;
         private static bool bDisableAnimations = true;
 
 
@@ -197,8 +197,6 @@ namespace FF8
                     ReadData();
                     break;
                 case BATTLEMODULE_DRAWGEOMETRY:
-                    if (DEBUGframeTwo.Count() < DEBUGframe)
-                        DEBUGframeTwo.Add(0);
                     if (Input.GetInputDelayed(Keys.OemTilde))
                         DEBUGframe++;
                     if (Input.GetInputDelayed(Keys.Tab))
@@ -290,7 +288,7 @@ namespace FF8
 
         private static int[] frame;
         public static int DEBUGframe = 0;
-        public static List<int> DEBUGframeTwo = new List<int>() { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; //master of list initialization xD
+        public static int[] DEBUGframeTwo = new int[256];
         private static void DrawMonsters()
         {
             Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;

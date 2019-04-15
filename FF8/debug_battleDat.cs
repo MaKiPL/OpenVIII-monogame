@@ -502,16 +502,22 @@ namespace FF8
 
                         if (skeleton.bones[k].parentId == 0xFFFF)
                         {
-                            MatrixZ.M43 = -2;
+                            MatrixZ.M43 = 2;
                             //MatrixZ.M41 = animHeader.animations[i].animationFrames[n].Position.X;
                             //MatrixZ.M42 = animHeader.animations[i].animationFrames[n].Position.Y;
                             //MatrixZ.M43 = animHeader.animations[i].animationFrames[n].Position.Z;
                         }
                         else
                         {
-                            var prevBone = animHeader.animations[i].animationFrames[n].boneRot.Item3[skeleton.bones[k].parentId];
-                            MatrixZ = Matrix.Multiply(prevBone, MatrixZ);
-                            var zZ = MatrixZ.M43; //?
+                            int parentId = skeleton.bones[k].parentId;
+                            Matrix prevBone = Matrix.Identity;
+                            while (parentId != 0xffff)
+                            {
+                                prevBone = animHeader.animations[i].animationFrames[n].boneRot.Item3[parentId];
+                                MatrixZ = Matrix.Multiply(prevBone, MatrixZ);
+                                parentId = skeleton.bones[parentId].parentId;
+                                break;
+                            }
                             MatrixZ.M44 = 1; MatrixZ.M43 = skeleton.bones[skeleton.bones[k].parentId].Size; MatrixZ.M42 = 0; MatrixZ.M41 = 0;
                             MatrixZ.M41 = prevBone.M11 * MatrixZ.M41 + prevBone.M12 * MatrixZ.M42 + prevBone.M13 * MatrixZ.M43 + prevBone.M41;
                             MatrixZ.M42 = prevBone.M21 * MatrixZ.M41 + prevBone.M22 * MatrixZ.M42 + prevBone.M23 * MatrixZ.M43 + prevBone.M42;
