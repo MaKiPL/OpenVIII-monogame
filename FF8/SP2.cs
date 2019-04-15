@@ -206,6 +206,7 @@ namespace FF8
     {
         protected uint Cols { get; set; }
         protected uint Rows { get; set; }
+        protected Vector2 Size { get; set; }
         protected uint TextureCount { get; private set; }
         protected uint TextureStartOffset { get; private set; }
         protected string TextureFilename { get; set; }
@@ -218,9 +219,9 @@ namespace FF8
         }
         protected void Init()
         {
-            for (uint c = 0; c < Cols; c++)
+            for (uint r = 0; r < Rows; r++)
             {
-                for (uint r = 0; r < Rows; r++)
+                for (uint c = 0; c < Cols; c++)
                 {
                     ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
                     string path = aw.GetListOfFiles().First(x => x.ToLower().Contains(string.Format(TextureFilename, c + r*Cols + TextureStartOffset)));
@@ -238,8 +239,11 @@ namespace FF8
         {
             if (t.TextureCount == 1)
                 return t[0, 0];
+            throw new Exception("TextureHandler can only be cast to Texture2D if there is only one texture in the array use [cols,rows] instead");
             return null;
         }
+
+
 
         /// <summary>
         /// Load Texture from a mod
