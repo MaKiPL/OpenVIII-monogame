@@ -10,7 +10,7 @@ namespace FF8
 {
     public class Debug_battleDat
     {
-        public static bool bDisableAnimBlend = false;
+        public static bool bDisableAnimBlend = true;
         int id;
         readonly EntityType entityType;
         byte[] buffer;

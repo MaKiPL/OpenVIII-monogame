@@ -17,8 +17,8 @@ namespace FF8
         private static TIM2 textureInterface;
         private static Texture2D[] textures;
 
-        private static int monsterTester = 18;
-        private static bool bDisableAnimations = false;
+        private static int monsterTester = 1;
+        private static bool bDisableAnimations = true;
 
 
         //skyRotating floats are hardcoded
@@ -463,9 +463,30 @@ namespace FF8
             Memory.font.RenderBasicText(Font.CipherDirty($"Enemies: {string.Join(",", Memory.encounters[Memory.battle_encounter].BEnemies.Where(x => x != 0x00).Select(x => "0x" + (x - 0x10).ToString("X02")).ToArray())}"), 20, 30 * 2, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Levels: {string.Join(",", Memory.encounters[Memory.battle_encounter].bLevels)}"), 20, 30 * 3, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Loaded enemies: {Convert.ToString(Memory.encounters[Memory.battle_encounter].bLoadedEnemy, 2)}"), 20, 30 * 4, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"Selected bone: {DEBUGframe}/{monstersData[0].skeleton.cBones}"), 20, 30 * 5, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"Bone abuser: {DEBUGframeTwo[DEBUGframe]}"), 20, 30 * 6, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"~/Tab: Selected bone: {DEBUGframe}/{monstersData[0].skeleton.cBones-1}"), 20, 30 * 5, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"1/2:   Bone abuser: {DEBUGframeTwo[DEBUGframe]}"), 20, 30 * 6, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Bone parents: {ResolveParents(DEBUGframe)}"), 20, 30 * 7, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"R for reset; 3 Animation {(bDisableAnimations?"DISABLED":"ENABLED")}"), 20, 30 * 8, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
+        }
+
+        private static string ResolveParents(int dEBUGframe)
+        {
+            try
+            {
+                int parent = monstersData[0].skeleton.bones[dEBUGframe].parentId;
+                if (parent == 0xffff)
+                    return "";
+                string stBuilder = $"{parent}";
+                while (parent != 0xFFFF)
+                    stBuilder += $"{((parent = monstersData[0].skeleton.bones[parent].parentId) == 0xffff ? "" : $"->{parent}")}";
+                return stBuilder;
+            }
+            catch
+            {
+                return string.Empty;
+            }
+
         }
 
         private static void CreateRotation(Tuple<BS_RENDERER_ADD[], VertexPositionTexture[]> vpt)
