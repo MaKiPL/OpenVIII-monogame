@@ -67,13 +67,11 @@ namespace FF8
 #endif
         }
 
-        public static bool In(int _in, Vector2 range) => /*IsNumber(_in) ?*/
+        public static bool In(int _in, Vector2 range) =>
                 _in >= range.X && _in <= range.Y;
         //: false;
         public static bool In(int _in, int min, int max) => In(_in, new Vector2(min, max));
 
-        //I don't know why I'm getting different results when using MonoGame's rotation matrix. Like it calculates the values or what?
-        //Tried googling why, but no results. Every points to the method I'm implementing here. If you know the answer, please tell me- Maki
         public static Matrix GetRotationMatrixX(float angle)
         => new Matrix(
             1, 0, 0, 0,
@@ -95,7 +93,13 @@ namespace FF8
             0, 0, 1, 0,
             0, 0, 0, 0);
 
-        public static Matrix MatrixMultiply(Matrix a, Matrix b)
+        /// <summary>
+        /// This Matrix operation performs Matrix multiplication and transposing in-place
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static Matrix MatrixMultiply_transpose(Matrix a, Matrix b)
             => new Matrix(
                 b.M11 * a.M11 + b.M21 * a.M12 + b.M31 * a.M13, b.M11 * a.M21 + b.M21 * a.M22 + b.M31 * a.M23, b.M11 * a.M31 + b.M21 * a.M32 + b.M31 * a.M33, 0,
                 b.M12 * a.M11 + b.M22 * a.M12 + b.M32 * a.M13, b.M12 * a.M21 + b.M22 * a.M22 + b.M32 * a.M23, b.M12 * a.M31 + b.M22 * a.M32 + b.M32 * a.M33, 0,
