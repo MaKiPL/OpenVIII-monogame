@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace FF8
 {
-    internal partial class Icons : I_SP1
+    internal partial class Icons
     {
         #region Fields
 
