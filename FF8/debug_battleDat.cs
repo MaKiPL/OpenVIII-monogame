@@ -41,9 +41,9 @@ namespace FF8
             public ushort unk4;
             public Bone[] bones;
 
-            public float ScaleX { get => scaleX/4096f; set => scaleX = (short)value; }
-            public float ScaleY { get => scaleY/4096f; set => scaleY = (short)value; }
-            public float ScaleZ { get => scaleZ/4096f; set => scaleZ = (short)value; }
+            public float ScaleX { get => (int)(scaleX/V); set => scaleX = (short)value; } //should it be 4096 or V?
+            public float ScaleY { get => (int)(scaleY/V); set => scaleY = (short)value; }
+            public float ScaleZ { get => (int)(scaleZ/V); set => scaleZ = (short)value; }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 48)]
@@ -440,28 +440,18 @@ namespace FF8
                 ExtapathyExtended.BitReader bitReader = new ExtapathyExtended.BitReader(ms);
                 for(int n = 0; n<animHeader.animations[i].cFrames; n++) //frames
                 {
-                    float x = bitReader.ReadPositionType();
-                    float y = bitReader.ReadPositionType();
-                    float z = bitReader.ReadPositionType();
-                    //short x_ = (short)x;
-                    //short y_ = (short)y;
-                    //short z_ = (short)z;
+                    float x = bitReader.ReadPositionType()/V;
+                    float y = bitReader.ReadPositionType()/V;
+                    float z = bitReader.ReadPositionType()/V;
                     if (n == 0)
                         animHeader.animations[i].animationFrames[n] = new AnimationFrame()
-                        {
-                            Position = new Vector3(
-                        x,
-                        y,
-                        z)
-                        };
+                        {Position = new Vector3((int)x,(int)y,(int)z)};
                     else
                         animHeader.animations[i].animationFrames[n] = new AnimationFrame()
-                        {
-                            Position = new Vector3(
-                    animHeader.animations[i].animationFrames[n - 1].Position.X + x,
-                    animHeader.animations[i].animationFrames[n - 1].Position.Y + y,
-                    animHeader.animations[i].animationFrames[n - 1].Position.Z + z)
-                        };
+                        {Position = new Vector3(
+                    animHeader.animations[i].animationFrames[n - 1].Position.X + (int)x,
+                    animHeader.animations[i].animationFrames[n - 1].Position.Y + (int)y,
+                    animHeader.animations[i].animationFrames[n - 1].Position.Z + (int)z)};
 
 
                     
@@ -489,44 +479,56 @@ namespace FF8
                             (animHeader.animations[i].animationFrames[n].boneRot.Item2[k].y * 360f / 4096f),
                             (animHeader.animations[i].animationFrames[n].boneRot.Item2[k].z * 360f / 4096f));
                         }
-
                     }
                     for(int k = 0; k<skeleton.cBones; k++)
                     {
                         var rad = animHeader.animations[i].animationFrames[n].boneRot.Item1[k];
-                        Matrix xRot = MakiExtended.GetRotationMatrixX(-rad.X);
-                        Matrix yRot = MakiExtended.GetRotationMatrixY(-rad.Y);
-                        Matrix zRot = MakiExtended.GetRotationMatrixZ(-rad.Z);
-                        var MatrixZ = MakiExtended.MatrixMultiply(yRot, xRot);
-                        MatrixZ = MakiExtended.MatrixMultiply(zRot, MatrixZ);
+                        Matrix xRot = MakiExtended.GetRotationMatrixX(rad.X);
+                        Matrix yRot = MakiExtended.GetRotationMatrixY(rad.Y);
+                        Matrix zRot = MakiExtended.GetRotationMatrixZ(rad.Z);
+                        var MatrixZ = yRot * xRot*zRot;// MakiExtended.MatrixMultiply(yRot, xRot);
 
                         if (skeleton.bones[k].parentId == 0xFFFF)
                         {
-                            MatrixZ.M43 = 2;
-                            //MatrixZ.M41 = animHeader.animations[i].animationFrames[n].Position.X;
-                            //MatrixZ.M42 = animHeader.animations[i].animationFrames[n].Position.Y;
-                            //MatrixZ.M43 = animHeader.animations[i].animationFrames[n].Position.Z;
+                            MatrixZ.M41 = animHeader.animations[i].animationFrames[n].Position.X;
+                            MatrixZ.M42 = animHeader.animations[i].animationFrames[n].Position.Y;
+                            MatrixZ.M43 = animHeader.animations[i].animationFrames[n].Position.Z + 2;
+                            //if bone is root, then it gets +2 to position.Z (why?)
+                            MatrixZ *= MakiExtended.GetRotationMatrixX(180);
                         }
                         else
                         {
                             int parentId = skeleton.bones[k].parentId;
-                            Matrix prevBone = Matrix.Identity;
-                            while (parentId != 0xffff)
-                            {
-                                prevBone = animHeader.animations[i].animationFrames[n].boneRot.Item3[parentId];
-                                MatrixZ = Matrix.Multiply(prevBone, MatrixZ);
-                                parentId = skeleton.bones[parentId].parentId;
-                                break;
-                            }
-                            MatrixZ.M44 = 1; MatrixZ.M43 = skeleton.bones[skeleton.bones[k].parentId].Size; MatrixZ.M42 = 0; MatrixZ.M41 = 0;
-                            MatrixZ.M41 = prevBone.M11 * MatrixZ.M41 + prevBone.M12 * MatrixZ.M42 + prevBone.M13 * MatrixZ.M43 + prevBone.M41;
-                            MatrixZ.M42 = prevBone.M21 * MatrixZ.M41 + prevBone.M22 * MatrixZ.M42 + prevBone.M23 * MatrixZ.M43 + prevBone.M42;
-                            MatrixZ.M43 = prevBone.M31 * MatrixZ.M41 + prevBone.M32 * MatrixZ.M42 + prevBone.M33 * MatrixZ.M43 + prevBone.M43;
+                            Matrix prevBone = animHeader.animations[i].animationFrames[n].boneRot.Item3[parentId];
+                            parentId = skeleton.bones[parentId].parentId;
+                            /*MatrixZ.M44 = 1; */MatrixZ.M43 = skeleton.bones[skeleton.bones[k].parentId].Size; MatrixZ.M42 = 0; MatrixZ.M41 = 0;
+                            //MatrixZ *= prevBone;
+                            Matrix v6 = Matrix.Identity;
+                            v6.M11 = prevBone.M11 * MatrixZ.M11 + prevBone.M12 * MatrixZ.M21 + prevBone.M13 * MatrixZ.M31;
+                            v6.M12 = prevBone.M11 * MatrixZ.M12 + prevBone.M12 * MatrixZ.M22 + prevBone.M13 * MatrixZ.M32;
+                            v6.M13 = prevBone.M11 * MatrixZ.M13 + prevBone.M12 * MatrixZ.M23 + prevBone.M13 * MatrixZ.M33;
 
+                            v6.M21 = prevBone.M21 * MatrixZ.M11 + prevBone.M22 * MatrixZ.M21 + prevBone.M23 * MatrixZ.M31;
+                            v6.M22 = prevBone.M21 * MatrixZ.M12 + prevBone.M22 * MatrixZ.M22 + prevBone.M23 * MatrixZ.M32;
+                            v6.M23 = prevBone.M21 * MatrixZ.M13 + prevBone.M22 * MatrixZ.M23 + prevBone.M23 * MatrixZ.M33;
+
+                            v6.M31 = prevBone.M31 * MatrixZ.M11 + prevBone.M32 * MatrixZ.M21 + prevBone.M33 * MatrixZ.M31;
+                            v6.M32 = prevBone.M31 * MatrixZ.M12 + prevBone.M32 * MatrixZ.M22 + prevBone.M33 * MatrixZ.M32;
+                            v6.M33 = prevBone.M31 * MatrixZ.M13 + prevBone.M32 * MatrixZ.M23 + prevBone.M33 * MatrixZ.M33;
+
+                            v6.M41 = prevBone.M11 * MatrixZ.M41 + prevBone.M12 * MatrixZ.M42 + prevBone.M13 * MatrixZ.M43 + prevBone.M41;
+                            v6.M42 = prevBone.M21 * MatrixZ.M41 + prevBone.M22 * MatrixZ.M42 + prevBone.M23 * MatrixZ.M43 + prevBone.M42;
+                            v6.M43 = prevBone.M31 * MatrixZ.M41 + prevBone.M32 * MatrixZ.M42 + prevBone.M33 * MatrixZ.M43 + prevBone.M43;
+                            MatrixZ = v6;
                         }
 
                         animHeader.animations[i].animationFrames[n].boneRot.Item3[k] = MatrixZ;
 
+                    }
+
+                    for(int k = 1; k<skeleton.cBones; k++)
+                    {
+                        var r = animHeader.animations[i].animationFrames[n].boneRot.Item3[k];
                     }
                 }
             }
@@ -705,7 +707,7 @@ namespace FF8
                 {
                     case EntityType.Monster:
                         if (id == 127) return;
-                        ReadSection1(datFile.pSections[0], ms, br); //checked and correct
+                        ReadSection1(datFile.pSections[0], ms, br); //scales divided by 4096f instead of V=2048; is this correct?
                         ReadSection3(datFile.pSections[2], ms, br);
                         ReadSection2(datFile.pSections[1], ms, br);
                         //ReadSection4(datFile.pSections[3]);
