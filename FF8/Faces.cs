@@ -1,15 +1,10 @@
 ﻿namespace FF8
 {
-
     internal class Faces : SP2
     {
-        #region Fields
-
         //protected static Texture2D[] textures;
 
         //protected static Dictionary<Enum, Entry> entries;
-
-        #endregion Fields
 
         #region Constructors
 

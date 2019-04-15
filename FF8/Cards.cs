@@ -1,19 +1,35 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FF8
+﻿namespace FF8
 {
-    class Cards : SP2
+    internal class Cards : SP2
     {
+        #region Constructors
+
+        public Cards()
+        {
+            TextureCount = 10;
+            TextureFilename = "mc{0:00}.tex";
+            TextureStartOffset = 0;
+            EntriesPerTexture = 11;
+            IndexFilename = "cardanm.sp2";
+            Init();
+            Entries[(uint)ID.Card_Back] = new Entry
+            {
+                X = 192,
+                Y = 128,
+                Width = 64,
+                Height = 64
+            };
+        }
+
+        #endregion Constructors
+
+        #region Enums
+
         public new enum ID
         {
             //Level 1
             Geezard,
+
             Funguar,
             Bite_Bug,
             Red_Bat,
@@ -24,8 +40,10 @@ namespace FF8
             Blood_Soul,
             Caterchipillar,
             Cockatrice,
+
             //Level 2
             Grat,
+
             Buel,
             Mesmerize,
             Glacial_Eye,
@@ -36,8 +54,10 @@ namespace FF8
             Grendel,
             Jelleye,
             Grand_Mantis,
+
             //Level 3
             Forbidden,
+
             Armadodo,
             Tri_Face,
             Fastitocalon,
@@ -48,8 +68,10 @@ namespace FF8
             Cactuar,
             Tonberry,
             Abyss_Worm,
+
             //Level 4
             Turtapod,
+
             Vysage,
             T_Rexaur,
             Bomb,
@@ -60,8 +82,10 @@ namespace FF8
             Blue_Dragon,
             Adamantoise,
             Hexadragon,
+
             //Level 5
             Iron_Giant,
+
             Behemoth,
             Chimera,
             PuPu,
@@ -72,9 +96,11 @@ namespace FF8
             Elnoyle,
             Tonberry_King,
             Biggs__Wedge,
+
             //Boss Cards
             //Level 6
             Fujin__Raijin,
+
             Elvoret,
             X_ATM092,
             Granaldo,
@@ -85,8 +111,10 @@ namespace FF8
             Oilboyle,
             Shumi_Tribe,
             Krysta,
+
             //Level 7
             Propagator,
+
             Jumbo_Cactuar,
             Tri_Point,
             Gargantua,
@@ -97,9 +125,11 @@ namespace FF8
             Red_Giant,
             Catoblepas,
             Ultima_Weapon,
+
             //Guardian Force cards
             //Level 8
             Chubby_Chocobo,
+
             Angelo,
             Gilgamesh,
             MiniMog,
@@ -110,8 +140,10 @@ namespace FF8
             Siren,
             Sacred,
             Minotaur,
+
             //Level 9
             Carbuncle,
+
             Diablos,
             Leviathan,
             Odin,
@@ -122,9 +154,11 @@ namespace FF8
             Bahamut,
             Doomtrain,
             Eden,
+
             //Player cards
             //Level 10
             Ward,
+
             Kiros,
             Laguna,
             Selphie,
@@ -135,21 +169,11 @@ namespace FF8
             Edea,
             Seifer,
             Squall,
+
             //Custom Entry
             Card_Back
         }
-        public Cards()
-        {
-            TextureCount = 10;
-            TextureFilename = "mc{0:00}.tex";
-            TextureStartOffset = 0;
-            EntriesPerTexture = 11;
-            IndexFilename = "cardanm.sp2";
-            Init();
-            Entries[(uint)ID.Card_Back] = new Entry {X = 192,
-            Y = 128,
-            Width = 64,
-            Height = 64};
-        }
+
+        #endregion Enums
     }
 }

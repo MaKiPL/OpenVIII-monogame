@@ -9,6 +9,8 @@ namespace FF8
 {
     internal abstract class SP2 //: I_SP2
     {
+        #region Constructors
+
         protected SP2()
         {
             Count = 0;
@@ -23,14 +25,28 @@ namespace FF8
             Entries = null;
         }
 
+        #endregion Constructors
+
+        #region Enums
+
         /// <summary>
         /// enum to be added to class when implemented
         /// </summary>
         public enum ID { NotImplemented }
+
+        #endregion Enums
+
+        #region Properties
+
         /// <summary>
         /// Number of Entries
         /// </summary>
         public uint Count { get; protected set; }
+
+        /// <summary>
+        /// Entries per texture,ID MOD EntriesPerTexture to get current entry to use on this texture
+        /// </summary>
+        public uint EntriesPerTexture { get; protected set; }
 
         /// <summary>
         /// Number of Pallets
@@ -43,9 +59,19 @@ namespace FF8
         public int TextureCount { get; protected set; }
 
         /// <summary>
-        /// Entries per texture,ID MOD EntriesPerTexture to get current entry to use on this texture
+        /// Dictionary of Entries
         /// </summary>
-        public uint EntriesPerTexture { get; protected set; }
+        protected virtual Dictionary<uint, Entry> Entries { get; set; }
+
+        /// <summary>
+        /// *.sp1 or *.sp2 that contains the entries or entrygroups. With Rectangle and offset information.
+        /// </summary>
+        protected string IndexFilename { get; set; }
+
+        /// <summary>
+        /// Should be Vector2.One unless reading a high res version of textures.
+        /// </summary>
+        protected Vector2 Scale { get; set; }
 
         /// <summary>
         /// Texture filename. To match more than one number use {0:00} or {00:00} for ones with
@@ -56,9 +82,9 @@ namespace FF8
         protected string TextureFilename { get; set; }
 
         /// <summary>
-        /// Should be Vector2.One unless reading a high res version of textures.
+        /// List of textures
         /// </summary>
-        protected Vector2 Scale { get; set; }
+        protected virtual List<Texture2D> Textures { get; set; }
 
         /// <summary>
         /// Some textures start with 1 and some start with 0. This is added to the current number in
@@ -66,20 +92,15 @@ namespace FF8
         /// </summary>
         protected int TextureStartOffset { get; set; }
 
-        /// <summary>
-        /// *.sp1 or *.sp2 that contains the entries or entrygroups. With Rectangle and offset information.
-        /// </summary>
-        protected string IndexFilename { get; set; }
+        #endregion Properties
 
-        /// <summary>
-        /// List of textures
-        /// </summary>
-        protected virtual List<Texture2D> Textures { get; set; }
+        #region Indexers
 
-        /// <summary>
-        /// Dictionary of Entries
-        /// </summary>
-        protected virtual Dictionary<uint, Entry> Entries { get; set; }
+        public Entry this[Enum id] => GetEntry(id);
+
+        #endregion Indexers
+
+        #region Methods
 
         /// <summary>
         /// Draw Item
@@ -87,11 +108,8 @@ namespace FF8
         /// <param name="id"></param>
         /// <param name="dst"></param>
         /// <param name="fade"></param>
-        public virtual void Draw(Enum id, Rectangle dst, float fade = 1)
-        {
-            Memory.spriteBatch.Draw(GetTexture(id), dst, GetEntry(id).GetRectangle, Color.White * fade);
-        }
-        public Entry this[Enum id] => GetEntry(id);
+        public virtual void Draw(Enum id, Rectangle dst, float fade = 1) => Memory.spriteBatch.Draw(GetTexture(id), dst, GetEntry(id).GetRectangle, Color.White * fade);
+
         public virtual Entry GetEntry(Enum id)
         {
             if (Entries.ContainsKey(Convert.ToUInt32(id)))
@@ -100,6 +118,7 @@ namespace FF8
                 return Entries[Convert.ToUInt32(id) % EntriesPerTexture];
             return null;
         }
+
         public virtual Texture2D GetTexture(Enum id)
         {
             uint pos = Convert.ToUInt32(id);
@@ -146,7 +165,7 @@ namespace FF8
                             }
 
                             Entries[i] = new Entry();
-                            Entries[i].LoadfromStreamSP2(br,locs[i], Last, ref fid);
+                            Entries[i].LoadfromStreamSP2(br, locs[i], Last, ref fid);
 
                             Last = Entries[i];
                         }
@@ -165,5 +184,7 @@ namespace FF8
                 }
             }
         }
+
+        #endregion Methods
     }
 }
