@@ -10,11 +10,9 @@ namespace FF8
 {
     public class Debug_battleDat
     {
-        public static bool bDisableAnimBlend = false;
         int id;
         readonly EntityType entityType;
         byte[] buffer;
-        int debug = 0;
 
         private const float V = 2048.0f;
 
@@ -35,15 +33,15 @@ namespace FF8
             public ushort unk;
             public ushort unk2;
             public ushort unk3;
-            private short scaleX;
-            private short scaleY;
-            private short scaleZ;
+            private ushort scaleX;
+            private ushort scaleY;
+            private ushort scaleZ;
             public ushort unk4;
             public Bone[] bones;
 
-            public float ScaleX { get => scaleX; set => scaleX = (short)value; }
-            public float ScaleY { get => scaleY; set => scaleY = (short)value; }
-            public float ScaleZ { get => scaleZ; set => scaleZ = (short)value; }
+            public float ScaleX { get => scaleX/V; set => scaleX = (ushort)value; }
+            public float ScaleY { get => scaleY/V; set => scaleY = (ushort)value; }
+            public float ScaleZ { get => scaleZ/V; set => scaleZ = (ushort)value; }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 48)]
@@ -180,7 +178,12 @@ namespace FF8
             public byte V;
 
             public float U1 { get => U /*> 128 || V > 128 ? U / 256.0f : U*/ /128f; set => U = (byte)value; }
-            public float V1 { get => V /*> 128 || U > 128 ? V / 256.0f : V*/ /128f; set => V = (byte)value; }
+            public float V1 { get => V > 128 ? (V - 128.0f)/128f : V/128f; set => V = (byte)value; }
+
+            public override string ToString()
+            {
+                return $"{U};{U1};{V};{V1}";
+            }
         }
 
         public Geometry geometry;
@@ -314,80 +317,17 @@ namespace FF8
             Vector3 rootFramePos = new Vector3(
                 matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
                 matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
-                matrix.M31 * tuple.Item1.X + evaluateM43(matrix.M43, tuple.Item2) /*(matrix.M43==0?0: -2)*/ + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
+                matrix.M31 * tuple.Item1.X + matrix.M43 + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
             matrix = nextFrame.boneRot.Item3[tuple.Item2];
             Vector3 nextFramePos = new Vector3(
                 matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
                 matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
-                matrix.M31 * tuple.Item1.X + evaluateM43(matrix.M43, tuple.Item2) + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
-            rootFramePos = Vector3.SmoothStep(rootFramePos, nextFramePos, bDisableAnimBlend ? 0 : step); //CHANGE 0 to step TO ENABLE UNLIMITED FPS ANIM BLENDING
+                matrix.M31 * tuple.Item1.X + matrix.M43 + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
+            rootFramePos = Vector3.Transform(rootFramePos, Matrix.CreateScale(GetId == 92 ? 6 : 1)); //TODO
+            nextFramePos = Vector3.Transform(nextFramePos, Matrix.CreateScale(GetId == 92 ? 6 : 1)); //TODO
+            rootFramePos = Vector3.SmoothStep(rootFramePos, nextFramePos, step);
             return new Tuple<Vector3, int>(rootFramePos, tuple.Item2);
         }
-
-        #region TemporaryMatrixManualFixers
-        /// <summary>
-        /// switch loop to modify M43 matrix for specific bone and monsterId
-        /// </summary>
-        /// <param name="m43"></param>
-        /// <param name="bone"></param>
-        /// <returns></returns>
-        private float evaluateM43(float m43, int bone)
-        {
-            switch (entityType)
-            {
-                case EntityType.Monster:
-                    return evaluateM43Monster(m43, bone);
-                case EntityType.Character:
-                    return evaluateM43Character(m43, bone);
-                case EntityType.Weapon:
-                    return evaluateM43weapon(m43, bone);
-                default:
-                    return 0f;
-            }
-        }
-
-        private float evaluateM43Character(float m43, int bone)
-        {
-            return 0;
-        }
-
-        private float evaluateM43weapon(float m43, int bone)
-        {
-            return 0;
-        }
-
-        private float evaluateM43Monster(float m43, int bone)
-        {
-            switch(GetId)
-            {
-                case 0:
-                    return 0;
-                case 18:
-                    switch(bone)
-                    {
-                        case 9:
-                        case 10:
-                            return m43 + 1;
-                        case 13:
-                        case 14:
-                        case 16:
-                            return m43 + 2;
-                        case 17:
-                            return m43 + 6;
-                        case 18:
-                            return m43 + 8;
-                        case 19:
-                        case 20:
-                        case 21:
-                            return m43 + 10;
-                        default:
-                            return m43;
-                    }
-                default:
-                    return m43 + Module_battle_debug.DEBUGframeTwo[bone];
-            }
-        }
-        #endregion
         #endregion
 
         #region section 3 Animation
@@ -435,33 +375,20 @@ namespace FF8
                 ExtapathyExtended.BitReader bitReader = new ExtapathyExtended.BitReader(ms);
                 for(int n = 0; n<animHeader.animations[i].cFrames; n++) //frames
                 {
-                    float x = bitReader.ReadPositionType();
-                    float y = bitReader.ReadPositionType();
-                    float z = bitReader.ReadPositionType();
-                    //short x_ = (short)x;
-                    //short y_ = (short)y;
-                    //short z_ = (short)z;
+                    float x = bitReader.ReadPositionType()/V;
+                    float y = bitReader.ReadPositionType()/V;
+                    float z = bitReader.ReadPositionType()/V;
                     if (n == 0)
                         animHeader.animations[i].animationFrames[n] = new AnimationFrame()
-                        {
-                            Position = new Vector3(
-                        x,
-                        y,
-                        z)
-                        };
+                        {Position = new Vector3((int)x,(int)y,(int)z)};
                     else
                         animHeader.animations[i].animationFrames[n] = new AnimationFrame()
-                        {
-                            Position = new Vector3(
-                    animHeader.animations[i].animationFrames[n - 1].Position.X + x,
-                    animHeader.animations[i].animationFrames[n - 1].Position.Y + y,
-                    animHeader.animations[i].animationFrames[n - 1].Position.Z + z)
-                        };
+                        {Position = new Vector3(
+                    animHeader.animations[i].animationFrames[n - 1].Position.X + (int)x,
+                    animHeader.animations[i].animationFrames[n - 1].Position.Y + (int)y,
+                    animHeader.animations[i].animationFrames[n - 1].Position.Z + (int)z)};
 
-
-                    
-
-                    var singleBit = bitReader.ReadBits(1); //padding byte;
+                    bitReader.ReadBits(1); //padding byte;
                     animHeader.animations[i].animationFrames[n].boneRot = new Tuple<Vector3[], ShortVector[], Matrix[]>(new Vector3[skeleton.cBones], new ShortVector[skeleton.cBones], new Matrix[skeleton.cBones]);
                     for (int k = 0; k < skeleton.cBones; k++) //bones iterator
                     {
@@ -484,7 +411,6 @@ namespace FF8
                             (animHeader.animations[i].animationFrames[n].boneRot.Item2[k].y * 360f / 4096f),
                             (animHeader.animations[i].animationFrames[n].boneRot.Item2[k].z * 360f / 4096f));
                         }
-
                     }
                     for(int k = 0; k<skeleton.cBones; k++)
                     {
@@ -492,30 +418,25 @@ namespace FF8
                         Matrix xRot = MakiExtended.GetRotationMatrixX(-rad.X);
                         Matrix yRot = MakiExtended.GetRotationMatrixY(-rad.Y);
                         Matrix zRot = MakiExtended.GetRotationMatrixZ(-rad.Z);
-                        var MatrixZ = MakiExtended.MatrixMultiply(yRot, xRot);
-                        MatrixZ = MakiExtended.MatrixMultiply(zRot, MatrixZ);
+                        var MatrixZ = MakiExtended.MatrixMultiply_transpose(yRot, xRot);
+                        MatrixZ = MakiExtended.MatrixMultiply_transpose(zRot, MatrixZ);
 
                         if (skeleton.bones[k].parentId == 0xFFFF)
                         {
-                            MatrixZ.M43 = -2;
-                            //MatrixZ.M41 = animHeader.animations[i].animationFrames[n].Position.X;
-                            //MatrixZ.M42 = animHeader.animations[i].animationFrames[n].Position.Y;
-                            //MatrixZ.M43 = animHeader.animations[i].animationFrames[n].Position.Z;
+                            MatrixZ.M43 = animHeader.animations[i].animationFrames[n].Position.Z + 2;
                         }
                         else
                         {
-                            var prevBone = animHeader.animations[i].animationFrames[n].boneRot.Item3[skeleton.bones[k].parentId];
-                            MatrixZ = Matrix.Multiply(prevBone, MatrixZ);
-                            var zZ = MatrixZ.M43; //?
-                            MatrixZ.M44 = 1; MatrixZ.M43 = skeleton.bones[skeleton.bones[k].parentId].Size; MatrixZ.M42 = 0; MatrixZ.M41 = 0;
-                            MatrixZ.M41 = prevBone.M11 * MatrixZ.M41 + prevBone.M12 * MatrixZ.M42 + prevBone.M13 * MatrixZ.M43 + prevBone.M41;
-                            MatrixZ.M42 = prevBone.M21 * MatrixZ.M41 + prevBone.M22 * MatrixZ.M42 + prevBone.M23 * MatrixZ.M43 + prevBone.M42;
-                            MatrixZ.M43 = prevBone.M31 * MatrixZ.M41 + prevBone.M32 * MatrixZ.M42 + prevBone.M33 * MatrixZ.M43 + prevBone.M43;
-
+                            Matrix prevBone = animHeader.animations[i].animationFrames[n].boneRot.Item3[skeleton.bones[k].parentId];
+                            MatrixZ.M43 = skeleton.bones[skeleton.bones[k].parentId].Size; MatrixZ.M42 = 0; MatrixZ.M41 = 0;
+                            Matrix rMatrix = Matrix.Multiply(prevBone, MatrixZ);
+                            rMatrix.M41 = prevBone.M11 * MatrixZ.M41 + prevBone.M12 * MatrixZ.M42 + prevBone.M13 * MatrixZ.M43 + prevBone.M41;
+                            rMatrix.M42 = prevBone.M21 * MatrixZ.M41 + prevBone.M22 * MatrixZ.M42 + prevBone.M23 * MatrixZ.M43 + prevBone.M42;
+                            rMatrix.M43 = prevBone.M31 * MatrixZ.M41 + prevBone.M32 * MatrixZ.M42 + prevBone.M33 * MatrixZ.M43 + prevBone.M43;
+                            MatrixZ = rMatrix;
                         }
 
                         animHeader.animations[i].animationFrames[n].boneRot.Item3[k] = MatrixZ;
-
                     }
                 }
             }
@@ -720,16 +641,7 @@ namespace FF8
                         break;
                 }
             }
-
-            MakiExtended.Debugger_Feed(geometry.GetType(), System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-            MakiExtended.DebuggerInstanceProvider.Add(geometry);
-            MakiExtended.Debugger_Feed(animHeader.animations[0].animationFrames[0].GetType(), System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-            MakiExtended.DebuggerInstanceProvider.Add(animHeader.animations[0].animationFrames[0]);
         }
-
-
-
-
 
         public int GetId => id;
     }
