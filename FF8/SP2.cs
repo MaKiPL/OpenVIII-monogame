@@ -110,10 +110,8 @@ namespace FF8
         /// <param name="fade"></param>
         public virtual void Draw(Enum id, Rectangle dst, float fade = 1)
         {
-            Vector2 scale;
-
             Rectangle src = GetEntry(id).GetRectangle;
-            Texture2D tex = GetTexture(id, out scale);
+            Texture2D tex = GetTexture(id, out Vector2 scale);
             src.Location = (src.Location.ToVector2() * scale).ToPoint();
             src.Size = (src.Size.ToVector2() * scale).ToPoint();
             Memory.spriteBatch.Draw(tex, dst, src, Color.White * fade);
@@ -204,8 +202,44 @@ namespace FF8
     /// <summary>
     /// This contains functions to Load Highres mod versions of textures and get scale vector.
     /// </summary>
-    internal static class TextureHandler
+    internal class TextureHandler
     {
+        protected uint Cols { get; set; }
+        protected uint Rows { get; set; }
+        protected uint TextureCount { get; private set; }
+        protected uint TextureStartOffset { get; private set; }
+        protected string TextureFilename { get; set; }
+        protected Texture2D[,] Textures { get; private set; }
+        public TextureHandler(string filename, uint cols = 1,uint rows = 1)
+        {
+            TextureCount = cols * rows;
+            Textures = new Texture2D[cols,rows];
+            TextureStartOffset = 0;
+        }
+        protected void Init()
+        {
+            for (uint c = 0; c < Cols; c++)
+            {
+                for (uint r = 0; r < Rows; r++)
+                {
+                    ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
+                    string path = aw.GetListOfFiles().First(x => x.ToLower().Contains(string.Format(TextureFilename, c + r*Cols + TextureStartOffset)));
+                    TEX tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
+                    Texture2D pngTex = LoadPNG(path);
+                    Textures[c,r] = (UseBest(tex, pngTex, out Vector2 scale));
+                }
+            }
+        }
+        public Texture2D this[int c, int r]
+        {
+            get=>Textures[c, r];
+        }
+        public static implicit operator Texture2D(TextureHandler t)
+        {
+            if (t.TextureCount == 1)
+                return t[0, 0];
+            return null;
+        }
 
         /// <summary>
         /// Load Texture from a mod
