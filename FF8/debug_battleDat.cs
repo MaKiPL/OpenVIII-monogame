@@ -180,7 +180,12 @@ namespace FF8
             public byte V;
 
             public float U1 { get => U /*> 128 || V > 128 ? U / 256.0f : U*/ /128f; set => U = (byte)value; }
-            public float V1 { get => V /*> 128 || U > 128 ? V / 256.0f : V*/ /128f; set => V = (byte)value; }
+            public float V1 { get => V > 128 ? (V - 128.0f)/128f : V/128f; set => V = (byte)value; }
+
+            public override string ToString()
+            {
+                return $"{U};{U1};{V};{V1}";
+            }
         }
 
         public Geometry geometry;
