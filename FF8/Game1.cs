@@ -82,7 +82,15 @@ namespace FF8
         {
             ModuleHandler.Draw(gameTime);
             base.Draw(gameTime);
-         }
+            //if (Input.GetInputDelayed(Keys.F1))  //SCREENSHOT CAPABILITIES WIP; I'm leaving it as-is for now. I'll be probably using that for battle transitions (or not)
+            //{
+            //Texture2D tex = new Texture2D(graphics.GraphicsDevice, graphics.GraphicsDevice.Viewport.Width, graphics.GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color);
+            //byte[] b = new byte[tex.Width * tex.Height * 4];
+            //graphics.GraphicsDevice.GetBackBufferData<byte>(b);
+            //tex.SetData(b);
+            //    tex.SaveAsJpeg(new System.IO.FileStream("D:/test.jpg", System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.ReadWrite), tex.Width, tex.Height);
+            //}
+        }
 
         private void GracefullyExit()
         {
