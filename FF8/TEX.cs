@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,6 +26,257 @@ namespace FF8
             public uint PaletteSize; //0x58
             public byte[] paletteData; //0xEC
         }
+        /// <summary>
+        /// TEX Header info
+        /// </summary>
+        /// <seealso cref="https://github.com/myst6re/vincent-tim"/>
+        [StructLayout(LayoutKind.Sequential)]
+        public struct TexStruct
+        {
+            // Header
+            /// <summary>
+            /// 1=FF7 | 2=FF8
+            /// </summary>
+            UInt32 version;
+            /// <summary>
+            /// Always 0
+            /// </summary>
+            UInt32 unknown1;
+            /// <summary>
+            /// [bpp = 16] 0 [else] 0 or 1
+            /// </summary>
+            UInt32 hasColorKey;
+            /// <summary>
+            /// 0 or 1 // hasAlphaBits? related to minAlphaBits
+            /// </summary>
+            UInt32 unknown2;
+            /// <summary>
+            /// [bpp = 16] 3 [else] Varies (0, 3, 5, 6, 7... 31)
+            /// </summary>
+            UInt32 unknown3;
+            /// <summary>
+            /// Always 4
+            /// </summary>
+            UInt32 minBitsPerColor;
+            /// <summary>
+            /// Always 8
+            /// </summary>
+            UInt32 maxBitsPerColor;
+            /// <summary>
+            /// 0 or 4
+            /// </summary>
+            UInt32 minAlphaBits;
+            /// <summary>
+            /// Always 8
+            /// </summary>
+            UInt32 maxAlphaBits;
+            /// <summary>
+            /// [bpp = 16] 32 [else] 8
+            /// </summary>
+            UInt32 minBitsPerPixel;
+            /// <summary>
+            /// Always 32
+            /// </summary>
+            UInt32 maxBitsPerPixel;
+            /// <summary>
+            /// Always 0
+            /// </summary>
+            UInt32 unknown4;
+            /// <summary>
+            /// [bpp = 16] 0 [else] varies (1 -> 31)
+            /// </summary>
+            UInt32 nbPalettes;
+            /// <summary>
+            /// [bpp = 16] 0 [else] 16 or 256
+            /// </summary>
+            UInt32 nbColorsPerPalette1;
+            /// <summary>
+            /// [bpp = 16] 16 [bpp = 8] 8 ([bpp = 4] 4)
+            /// </summary>
+            UInt32 bitDepth;
+            /// <summary>
+            /// Width of image
+            /// </summary>
+            UInt32 imageWidth;
+            /// <summary>
+            /// Height of image
+            /// </summary>
+            UInt32 imageHeight;
+            /// <summary>
+            /// Always 0
+            /// </summary>
+            UInt32 pitch;
+            /// <summary>
+            /// Always 0
+            /// </summary>
+            UInt32 unknown5;
+            /// <summary>
+            /// [bpp = 16] 0 [else] 1
+            /// </summary>
+            UInt32 hasPal;
+            /// <summary>
+            /// [bpp = 16] 0 [else] 8
+            /// </summary>
+            UInt32 bitsPerIndex;
+            /// <summary>
+            /// // [bpp = 16] 0 [else] 1
+            /// </summary>
+            UInt32 indexedTo8bit;
+            /// <summary>
+            /// [bpp = 16] 0 [else] varies (16, 32, 48 ... 2048)
+            /// </summary>
+            UInt32 paletteSize;
+            /// <summary>
+            /// [bpp = 16] 0 [else] 16 or 256 // may be 0 sometimes
+            /// </summary>
+            UInt32 nbColorsPerPalette2;
+            /// <summary>
+            /// [bpp = 16] 0 [else] varies
+            /// </summary>
+            UInt32 runtimeData1;
+            /// <summary>
+            /// [bpp = 16] 16 [else] 8
+            /// </summary>
+            UInt32 bitsPerPixel;
+            /// <summary>
+            /// [bpp = 16] 2 [else] 1
+            /// </summary>
+            UInt32 bytesPerPixel;
+            // Pixel format
+            /// <summary>
+            /// [bpp = 16] 5 [else] 0
+            /// </summary>
+            UInt32 nbRedBits1;
+            /// <summary>
+            /// [bpp = 16] 5 [else] 0
+            /// </summary>
+            UInt32 nbGreenBits1;
+            /// <summary>
+            /// [bpp = 16] 5 [else] 0
+            /// </summary>
+            UInt32 nbBlueBits1;
+            /// <summary>
+            /// [bpp = 16] 1 [else] 0
+            /// </summary>
+            UInt32 nbAlphaBits1;
+            /// <summary>
+            /// [bpp = 16] 31 [else] 0
+            /// </summary>
+            UInt32 redBitmask;
+            /// <summary>
+            /// [bpp = 16] 992 [else] 0
+            /// </summary>
+            UInt32 greenBitmask;
+            /// <summary>
+            /// [bpp = 16] 31744 [else] 0
+            /// </summary>
+            UInt32 blueBitmask;
+            /// <summary>
+            /// [bpp = 16] 32768 [else] 0
+            /// </summary>
+            UInt32 alphaBitmask;
+            /// <summary>
+            /// [bpp = 16] 0 [else] 0
+            /// </summary>
+            UInt32 redShift;
+            /// <summary>
+            /// [bpp = 16] 5 [else] 0
+            /// </summary>
+            UInt32 greenShift;
+            /// <summary>
+            /// [bpp = 16] 10 [else] 0
+            /// </summary>
+            UInt32 blueShift;
+            /// <summary>
+            /// [bpp = 16] 15 [else] 0
+            /// </summary>
+            UInt32 alphaShift;
+            /// <summary>
+            /// [bpp = 16] 3 [else] 0
+            /// </summary>
+            UInt32 nbRedBits2;
+            /// <summary>
+            /// [bpp = 16] 3 [else] 0
+            /// </summary>
+            UInt32 nbGreenBits2;
+            /// <summary>
+            /// [bpp = 16] 3 [else] 0
+            /// </summary>
+            UInt32 nbBlueBits2;
+            /// <summary>
+            /// [bpp = 16] 7 [else] 0
+            /// </summary>
+            UInt32 nbAlphaBits2;
+            /// <summary>
+            /// [bpp = 16] 31 [else] 0
+            /// </summary>
+            UInt32 redMax;
+            /// <summary>
+            /// [bpp = 16] 31 [else] 0
+            /// </summary>
+            UInt32 greenMax;
+            /// <summary>
+            /// [bpp = 16] 31 [else] 0
+            /// </summary>
+            UInt32 blueMax;
+            /// <summary>
+            /// [bpp = 16] 1 [else] 0
+            /// </summary>
+            UInt32 alphaMax;
+            // /Pixel format
+            /// <summary>
+            /// Always 0
+            /// </summary>
+            UInt32 hasColorKeyArray;
+            /// <summary>
+            /// Always 0
+            /// </summary>
+            UInt32 runtimeData2;
+            /// <summary>
+            /// Always 255
+            /// </summary>
+            UInt32 referenceAlpha;
+            /// <summary>
+            /// Always 4
+            /// </summary>
+            UInt32 runtimeData3;
+            /// <summary>
+            /// Always 0
+            /// </summary>
+            UInt32 unknown6;
+            /// <summary>
+            /// Always 0
+            /// </summary>
+            UInt32 paletteIndex;
+            /// <summary>
+            /// Varies, sometimes 0
+            /// </summary>
+            UInt32 runtimeData4;
+            /// <summary>
+            /// Varies, sometimes 0
+            /// </summary>
+            UInt32 runtimeData5;
+            /// <summary>
+            /// [bpp = 16] 0 [else] Varies (0, 16, 32, 48 ... 768)
+            /// </summary>
+            UInt32 unknown7;
+            /// <summary>
+            /// [bpp = 16] 0 [else] Varies (0, 128, 129 ... 511, 512)
+            /// </summary>
+            UInt32 unknown8;
+            /// <summary>
+            /// [bpp = 16] 0 or 896 [else] Varies (0, 216 ... 1020)
+            /// </summary>
+            UInt32 unknown9;
+            /// <summary>
+            /// Varies (16, 32, 48 ... 960)
+            /// </summary>
+            UInt32 unknown10;
+            /// <summary>
+            /// Varies (0, 128, 192 or 256) // only on ff8! (version >= 2)
+            /// </summary>
+            UInt32 unknown11;
+    }
 
         struct Color
         {
@@ -33,12 +285,31 @@ namespace FF8
             public byte Blue;
             public byte Alpha;
         }
-
-
+        /// <summary>
+        /// read the start of byte array into a struct
+        /// </summary>
+        /// <seealso cref="https://stackoverflow.com/questions/2871/reading-a-c-c-data-structure-in-c-sharp-from-a-byte-array"/>
+        public TexStruct header;
+        T ByteArrayToStructure<T>(byte[] bytes) where T : struct
+        {
+            T stuff;
+            GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+            try
+            {
+                stuff = (T)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(T));
+            }
+            finally
+            {
+                handle.Free();
+            }
+            return stuff;
+        }
         public TEX(byte[] buffer)
         {
             texture = new Texture();
+            header = ByteArrayToStructure<TexStruct>(buffer);
             this.buffer = buffer;
+
             ReadParameters();
         }
 
