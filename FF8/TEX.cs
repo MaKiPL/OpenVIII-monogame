@@ -60,12 +60,14 @@ namespace FF8
 
         public Texture2D GetTexture(int forcePalette = -1)
         {
-            if (forcePalette >= texture.NumOfPalettes) //prevents exception for forcing a palette that doesn't exist.
-                return null;
+
             int localTextureLocator = textureLocator;
             Color[] colors;
             if (texture.PaletteFlag != 0)
             {
+                if (forcePalette >= texture.NumOfPalettes) //prevents exception for forcing a palette that doesn't exist.
+                    return null;
+
                 colors = new Color[texture.paletteData.Length / 4];
                 int k = 0;
                 for (int i = 0; i < texture.paletteData.Length; i += 4)
