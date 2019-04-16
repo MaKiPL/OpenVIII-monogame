@@ -209,7 +209,7 @@ namespace FF8
                         TextureHandler th = new TextureHandler(TextureBigFilename[i], 2, TextureBigSplit[i] / 2, tex);
 
                         Textures.Add(th);
-                        Scale[i] = th.GetScale();
+                        Scale[i] = Vector2.One;//th.GetScale();
                     }
                     else
                     {

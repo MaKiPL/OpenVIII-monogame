@@ -25,7 +25,7 @@ namespace FF8
             Size = Vector2.Zero;
             Count = cols * rows;
             Textures = new Texture2D[cols, rows];
-            Scales = new Vector2[cols, rows];
+            //Scales = new Vector2[cols, rows];
             StartOffset = 0;
             Rows = rows;
             Cols = cols;
@@ -54,7 +54,7 @@ namespace FF8
         /// <summary>
         /// Scale vector from original to big
         /// </summary>
-        public Vector2 PreScale => Size == Vector2.Zero || ClassicSize == Vector2.Zero ? Vector2.One : Size / ClassicSize;
+        public Vector2 ScaleFactor => Size == Vector2.Zero || ClassicSize == Vector2.Zero ? Vector2.One : Size / ClassicSize;
 
         /// <summary>
         /// X = width and Y = height. The Size of big version texture. Will be used in scaling
@@ -68,7 +68,7 @@ namespace FF8
         /// <summary>
         /// Scale vector big to modded or orignal to modded.
         /// </summary>
-        protected Vector2[,] Scales { get; private set; }
+        //protected Vector2[,] Scales { get; private set; }
 
         protected uint StartOffset { get; set; }
         protected Texture2D[,] Textures { get; private set; }
@@ -173,7 +173,7 @@ namespace FF8
                 for (uint c = 0; c < Cols; c++)
                 {
                     //if all the pieces of Scales are correct they should all have the same scale.
-                    Rectangle _src = Scale(src, Scales[c, r] / PreScale);
+                    Rectangle _src = Scale(src, /*Scales[c, r] /*/ ScaleFactor);
                     Rectangle cnt = ToRectangle(Textures[c, r]);
                     cnt.Offset(new Vector2(cnt.Width * (c), cnt.Height * (r)));
                     if (cnt.Contains(_src))
@@ -199,7 +199,7 @@ namespace FF8
             }
         }
 
-        public Vector2 GetScale(int cols = 0, int rows = 0) => Scales[cols, rows];
+        public Vector2 GetScale(int cols = 0, int rows = 0) => ScaleFactor;//Scales[cols, rows];
 
         protected void Init()
         {
@@ -215,39 +215,40 @@ namespace FF8
                     string path = aw.GetListOfFiles().First(x => (x.IndexOf(string.Format(Filename, c + r * Cols + StartOffset), StringComparison.OrdinalIgnoreCase) >= 0));
                     tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
                     Texture2D pngTex = LoadPNG(path);
+                    //commented out code forces fallback to old texture when 0 pallets.
                     //check to see if texture data is loaded correctly, if not fallback to classic
-                    if (tex.TextureData.NumOfPalettes == 0 && pngTex == null)
-                    {
-                        //for debugging export problem TEX file
-                        using (FileStream fs = File.OpenWrite(Path.Combine(Path.GetTempPath(), Path.GetFileName(path))))
-                        {
-                            byte[] tmp = tex.GetBuffer();
-                            fs.Write(tmp, 0, tmp.Length);
-                        }
-                        if (c == 0 && r == 0)
-                        {
-                            Rows = 1;
-                            Cols = 1;
-                            Count = 1;
-                            if (Classic == null || Classic.TextureData.NumOfPalettes == 0)
-                                throw new Exception("High Res texture won't load correctly and Lowres Classic texture not set.\n" + path);
-                            Textures = new Texture2D[1, 1] { { Classic.GetTexture(0) } };
-                            Scales = new Vector2[1, 1] { { Vector2.One } };
-                            tex = Classic;
-                        }
-                        else if (tex.TextureData.NumOfPalettes == 0 && pngTex == null)
-                        {
-                            throw new Exception("Some but NOT ALL high Res texture parts are loading correctly.\n" + path);
-                        }
-                    }
-                    else
-                    {
-                        Textures[c, r] = (UseBest(tex, pngTex, out Vector2 scale));
-                        Scales[c, r] = scale;
-                    }
-                    if (c2++ < Cols) size.X += tex.TextureData.Width;
+                    //if (tex.TextureData.NumOfPalettes == 0 && pngTex == null)
+                    //{
+                    //    //for debugging export problem TEX file
+                    //    using (FileStream fs = File.OpenWrite(Path.Combine(Path.GetTempPath(), Path.GetFileName(path))))
+                    //    {
+                    //        byte[] tmp = tex.GetBuffer();
+                    //        fs.Write(tmp, 0, tmp.Length);
+                    //    }
+                    //    if (c == 0 && r == 0)
+                    //    {
+                    //        Rows = 1;
+                    //        Cols = 1;
+                    //        Count = 1;
+                    //        if (Classic == null || Classic.TextureData.NumOfPalettes == 0)
+                    //            throw new Exception("High Res texture won't load correctly and Lowres Classic texture not set.\n" + path);
+                    //        Textures = new Texture2D[1, 1] { { Classic.GetTexture(0) } };
+                    //        Scales = new Vector2[1, 1] { { Vector2.One } };
+                    //        tex = Classic;
+                    //    }
+                    //    else if (tex.TextureData.NumOfPalettes == 0 && pngTex == null)
+                    //    {
+                    //        throw new Exception("Some but NOT ALL high Res texture parts are loading correctly.\n" + path);
+                    //    }
+                    //}
+                    //else
+                    //{
+                    Textures[c, r] = (UseBest(tex, pngTex, out Vector2 scale));
+                    //Scales[c, r] = scale;
+                    //}
+                    if (c2++ < Cols) size.X += Textures[c2 - 1, r2].Width;
                 }
-                if (r2++ < Rows) size.Y += tex.TextureData.Height;
+                if (r2++ < Rows) size.Y += Textures[c2 - 1, r2 - 1].Height;
             }
             Size = size;
         }
