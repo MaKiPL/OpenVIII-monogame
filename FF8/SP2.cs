@@ -206,14 +206,14 @@ namespace FF8
                     tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
                     if (TextureBigFilename != null)
                     {
-                        TextureHandler th = new TextureHandler(TextureBigFilename[i], 2, TextureBigSplit[i] / 2, tex);
+                        TextureHandler th = new TextureHandler(TextureBigFilename[i], tex, 2, TextureBigSplit[i] / 2);
 
                         Textures.Add(th);
                         Scale[i] = Vector2.One;//th.GetScale();
                     }
                     else
                     {
-                        TextureHandler th = new TextureHandler(path) { Classic = tex };
+                        TextureHandler th = new TextureHandler(path, tex);
                         Textures.Add(th);
                         Scale[i] = th.GetScale();
                     }
