@@ -18,6 +18,8 @@ namespace FF8
             TextureCount = 1;
             EntriesPerTexture = 1;
             TextureFilename = "";
+            TextureBigFilename = null;
+            TextureBigSplit = null;
             Scale = null;
             TextureStartOffset = 0;
             IndexFilename = "";
@@ -80,11 +82,19 @@ namespace FF8
         /// TODO make array maybe to add support for highres versions. the array will need to come
         /// with a scale factor
         protected string TextureFilename { get; set; }
+        /// <summary>
+        /// For big textures.
+        /// </summary>
+        protected string[] TextureBigFilename { get; set; }
+        /// <summary>
+        /// Big versions of textures take the file and split it into multiple. How many splits per BigFilename.
+        /// </summary>
+        protected uint[] TextureBigSplit { get; set; }
 
         /// <summary>
         /// List of textures
         /// </summary>
-        protected virtual List<Texture2D> Textures { get; set; }
+        protected virtual List<TextureHandler> Textures { get; set; }
 
         /// <summary>
         /// Some textures start with 1 and some start with 0. This is added to the current number in
@@ -143,7 +153,7 @@ namespace FF8
         {
             if (Entries == null)
             {
-                Textures = new List<Texture2D>(TextureCount);
+                Textures = new List<TextureHandler>(TextureCount);
                 ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
                 using (MemoryStream ms = new MemoryStream(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU,
                     aw.GetListOfFiles().First(x => x.ToLower().Contains(IndexFilename)))))
@@ -189,16 +199,32 @@ namespace FF8
                 {
                     string path = aw.GetListOfFiles().First(x => x.ToLower().Contains(string.Format(TextureFilename, i + TextureStartOffset)));
                     tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
-                    Texture2D pngTex = TextureHandler.LoadPNG(path);
-                    Textures.Add(TextureHandler.UseBest(tex, pngTex, out Vector2 scale));
-                    Scale[i] = scale;
+                    if (TextureBigFilename != null)
+                    {
+                        for (int h = 0; h < TextureBigFilename.Length; h++)
+                        {
+                            TextureHandler th = new TextureHandler(TextureBigFilename[h], 2, TextureBigSplit[h] / 2)
+                            {
+                                oldSize = new Vector2(tex.TextureData.Width, tex.TextureData.Height),
+                            };
+
+                            Textures.Add(th);
+                            Scale[i] = th.GetScale();
+                        }
+                    }
+                    else
+                    {
+                        TextureHandler th = new TextureHandler(path);
+                        Textures.Add(th);
+                        Scale[i] = th.GetScale();
+                    }
                 }
             }
         }
 
-
         #endregion Methods
     }
+
     /// <summary>
     /// This contains functions to Load Highres mod versions of textures and get scale vector.
     /// </summary>
@@ -206,44 +232,79 @@ namespace FF8
     {
         protected uint Cols { get; set; }
         protected uint Rows { get; set; }
-        protected Vector2 Size { get; set; }
+
+        /// <summary>
+        /// X = width and Y = height. The Size of original texture. Will be used in scaling
+        /// </summary>
+        public Vector2 oldSize { get; set; }
+        /// <summary>
+        /// X = width and Y = height. The Size of big version texture. Will be used in scaling
+        /// </summary>
+        public Vector2 Size { get; private set; }
+
+        /// <summary>
+        /// Scale vector from original to big
+        /// </summary>
+        public Vector2 PreScale { get => Size == Vector2.Zero || oldSize == Vector2.Zero? Vector2.One:Size / oldSize; }
         protected uint TextureCount { get; private set; }
         protected uint TextureStartOffset { get; private set; }
         protected string TextureFilename { get; set; }
         protected Texture2D[,] Textures { get; private set; }
-        public TextureHandler(string filename, uint cols = 1,uint rows = 1)
+
+        /// <summary>
+        /// Scale vector big to modded or orignal to modded.
+        /// </summary>
+        protected Vector2[,] Scales { get; private set; }
+
+        public TextureHandler(string filename, uint cols = 1, uint rows = 1)
         {
+            Size = Vector2.Zero;
             TextureCount = cols * rows;
-            Textures = new Texture2D[cols,rows];
+            Textures = new Texture2D[cols, rows];
+            Scales = new Vector2[cols, rows];
             TextureStartOffset = 0;
+            Rows = rows;
+            Cols = cols;
+            TextureFilename = filename;
+
+            //load textures;
+            Init();
         }
+
         protected void Init()
         {
+            Vector2 size = Vector2.Zero;
+            TEX tex = null;
+            uint c2 = 0;
+            uint r2 = 0;
             for (uint r = 0; r < Rows; r++)
             {
                 for (uint c = 0; c < Cols; c++)
                 {
                     ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
-                    string path = aw.GetListOfFiles().First(x => x.ToLower().Contains(string.Format(TextureFilename, c + r*Cols + TextureStartOffset)));
-                    TEX tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
+                    string path = aw.GetListOfFiles().First(x => (x.IndexOf(string.Format(TextureFilename, c + r * Cols + TextureStartOffset),StringComparison.OrdinalIgnoreCase)>=0));
+                    tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
                     Texture2D pngTex = LoadPNG(path);
-                    Textures[c,r] = (UseBest(tex, pngTex, out Vector2 scale));
+
+                    Textures[c, r] = (UseBest(tex, pngTex, out Vector2 scale));
+                    Scales[c, r] = scale;
+
+                    if (c2++ < Cols) size.X += tex.TextureData.Width;
                 }
+                if (r2++ < Rows) size.Y += tex.TextureData.Height;
             }
+            Size = size;
         }
-        public Texture2D this[int c, int r]
-        {
-            get=>Textures[c, r];
-        }
+
+        public Texture2D this[int c, int r] => Textures[c, r];
+
         public static implicit operator Texture2D(TextureHandler t)
         {
             if (t.TextureCount == 1)
                 return t[0, 0];
             throw new Exception("TextureHandler can only be cast to Texture2D if there is only one texture in the array use [cols,rows] instead");
-            return null;
+            //return null;
         }
-
-
 
         /// <summary>
         /// Load Texture from a mod
@@ -256,8 +317,8 @@ namespace FF8
             string prefix = bn.Substring(0, 2);
             string pngpath = Path.Combine(Memory.FF8DIR, "..", "..", "textures", prefix, bn);
             if (Directory.Exists(pngpath))
-            {
-                pngpath = Directory.GetFiles(pngpath).Last(x => x.ToLower().Contains(bn));
+            {//TODO: add support for multiple 
+                pngpath = Directory.GetFiles(pngpath).Last(x => (x.IndexOf(bn,StringComparison.OrdinalIgnoreCase)>=0));//.ToLower().Contains(bn.ToLower())
                 using (FileStream fs = File.OpenRead(pngpath))
                 {
                     return Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
@@ -266,13 +327,23 @@ namespace FF8
             return null;
         }
 
+        public Vector2 GetScale(int cols=0,int rows=0)
+        {
+            return Scales[cols, rows];
+        }
+        public static Vector2 GetScale(Vector2 _old, Vector2 _new) => _new / _old;
+
+        public static Vector2 GetScale(Vector2 _old, Texture2D _new) => new Vector2(_new.Width / _old.X, _new.Height / _old.Y);
+
         public static Vector2 GetScale(TEX _old, Texture2D _new) => new Vector2((float)_new.Width / _old.TextureData.Width, (float)_new.Height / _old.TextureData.Height);
+
         public static Vector2 GetScale(Texture2D _old, Texture2D _new) => new Vector2((float)_new.Width / _old.Width, (float)_new.Height / _old.Height);
 
         public static Texture2D UseBest(Texture2D _old, Texture2D _new) => UseBest(_old, _new, out Vector2 scale);
+
         public static Texture2D UseBest(Texture2D _old, Texture2D _new, out Vector2 scale)
         {
-            if(_new == null)
+            if (_new == null)
             {
                 scale = Vector2.One;
                 return _old;
@@ -284,7 +355,9 @@ namespace FF8
                 return _new;
             }
         }
-        public static Texture2D UseBest(TEX _old, Texture2D _new,int pallet = 0) => UseBest(_old, _new, out Vector2 scale,pallet);
+
+        public static Texture2D UseBest(TEX _old, Texture2D _new, int pallet = 0) => UseBest(_old, _new, out Vector2 scale, pallet);
+
         public static Texture2D UseBest(TEX _old, Texture2D _new, out Vector2 scale, int pallet = 0)
         {
             if (_new == null)

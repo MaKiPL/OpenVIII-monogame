@@ -29,14 +29,14 @@
         /// the audio before you give it more, then you get sound skips.
         /// </summary>
         /// <value>The goal buffer count.</value>
-        /// <remarks>Will want to be as low as possible without sound skipping.
-        /// 91.875 is 1 second of audio at 44100 hz @ 15 fps;
-        /// 99.9001 is 1 second of audio at 48000 hz @ 15 fps;
+        /// <remarks>
+        /// Will want to be as low as possible without sound skipping. 91.875 is 1 second of audio at
+        /// 44100 hz @ 15 fps; 99.9001 is 1 second of audio at 48000 hz @ 15 fps;
         /// </remarks>
         private const int GoalBufferCount = 100;
+
         /// <summary>
-        /// NextAsync sleeps when filling buffer.
-        /// If set too high buffer will empty before filling it again.
+        /// NextAsync sleeps when filling buffer. If set too high buffer will empty before filling it again.
         /// </summary>
         private const int NextAsyncSleep = 10;
 
@@ -97,10 +97,16 @@
         {
             fixed (byte* tmp = &headerData[0])
             {
-                buffer_Data.SetHeader(tmp);
-                DataFileName = datafilename;
-                LoadFromRAM(&buffer_Data);
-                Init(null, AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode.PROCESS_ALL, loopstart);
+                lock (Decoder)
+                {
+                    buffer_Data.SetHeader(tmp);
+                    DataFileName = datafilename;
+                    LoadFromRAM(&buffer_Data);
+                    Init(null, AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode.PROCESS_ALL, loopstart);
+                    ffmpeg.avformat_free_context(Decoder.Format);
+                    //ffmpeg.avio_context_free(&Decoder._format->pb); //CTD
+                    Decoder.Format = null;
+                }
                 Dispose(false);
             }
         }
@@ -511,25 +517,29 @@ EOF:
         }
 
         private Task task;
+
         /// <summary>
         /// Dispose of all leaky varibles.
         /// </summary>
         public void Dispose() => Dispose(true);
+
         /// <summary>
         /// Same as Play but with a thread. Thread is terminated on Stop() or Dispose().
         /// </summary>
         public void PlayInTask(float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f)
         {
-            if(sourceToken==null)
-            sourceToken = new CancellationTokenSource();
-            if(cancellationToken==null)
-            cancellationToken = sourceToken.Token;
-            Play(volume,pitch,pan);
+            if (sourceToken == null)
+                sourceToken = new CancellationTokenSource();
+            if (cancellationToken == null)
+                cancellationToken = sourceToken.Token;
+            Play(volume, pitch, pan);
             task = new Task(NextinTask);
             task.Start();
         }
-        CancellationTokenSource sourceToken;
-        CancellationToken cancellationToken;
+
+        private CancellationTokenSource sourceToken;
+        private CancellationToken cancellationToken;
+
         /// <summary>
         /// For use in threads runs Next till done. To keep audio buffer fed. Or really good timing
         /// on video frames.
@@ -700,7 +710,9 @@ EOF:
                 return frameTex;
             }
         }
-        bool stopped=false;
+
+        private bool stopped = false;
+
         protected virtual void Dispose(bool disposing)
         {
             lock (Decoder)

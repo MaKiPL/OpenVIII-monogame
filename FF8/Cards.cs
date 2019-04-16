@@ -3,7 +3,10 @@
     internal class Cards : SP2
     {
         #region Constructors
-
+        /// <summary>
+        /// Card images used in menus. The images used in the triple triad game are in the ff8.exe in tim files.
+        /// </summary>
+        /// <seealso cref="http://forums.qhimm.com/index.php?topic=11084.0"/>
         public Cards()
         {
             TextureCount = 10;

@@ -7,6 +7,9 @@ using System.Linq;
 
 namespace FF8
 {
+    /// <summary>
+    /// Images of parts of most of the menus and ui.
+    /// </summary>
     internal class Icons
     {
         #region Fields
