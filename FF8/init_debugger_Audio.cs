@@ -431,7 +431,8 @@ namespace FF8
         public static void PlayMusic()
         {
             string ext = "";
-
+            bool bFakeLinux = false; //set to force linux behaviour on windows; To delete after Linux music playable
+            
             if (Memory.dicMusic[Memory.MusicIndex].Count > 0)
             {
                 ext = Path.GetExtension(Memory.dicMusic[Memory.MusicIndex][0]).ToLower();
@@ -452,7 +453,11 @@ namespace FF8
                     break;
 
                 case ".sgt":
-
+                    if(MakiExtended.IsLinux || bFakeLinux)
+                    {
+                        ReadSegmentFileManually(pt);
+                        break;
+                    }
                     if (!MakiExtended.IsLinux)
                     {
 #if _WINDOWS && !_X64
@@ -526,12 +531,14 @@ namespace FF8
                         //GCHandle.Alloc(infoport, GCHandleType.Pinned);
 #endif
                     }
+                    
                     break;
             }
 
             musicplaying = true;
             lastplayed = Memory.MusicIndex;
         }
+
 
         public static void KillAudio()
         {
@@ -588,54 +595,117 @@ namespace FF8
             catch { }
 #endif
         }
-
-        private static List<byte[]> ProcessTrackList(byte[] item2)
+        //MUSIC_TIME=LONG->int32; REFERENCE_TIME=LONGLONG->long
+        [StructLayout(LayoutKind.Sequential, Pack =1, Size =24)]
+        struct DMUS_IO_SEGMENT_HEADER
         {
-            PseudoBufferedStream pbs = new PseudoBufferedStream(item2);
-            string head = Encoding.ASCII.GetString(BitConverter.GetBytes(pbs.ReadUInt()));
+            public uint dwRepeats;
+            public int mtLength;
+            public int mtPlayStart;
+            public int mtLoopStart;
+            public int mtLoopEnd;
+            public uint dwResolution;
+        }
 
-            head = Encoding.ASCII.GetString(BitConverter.GetBytes(pbs.ReadUInt())); //RIFF start
-            List<byte[]> Tracks = new List<byte[]>();
-            //now process tracks
-            while (head == "RIFF")
+        [StructLayout(LayoutKind.Sequential, Pack =1, Size =8)]
+        struct DMUS_IO_VERSION
+        {
+            uint dwVersionMS;
+            uint dwVersionLS;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack =1, Size =32)]
+        struct DMUS_IO_TRACK_HEADER
+        {
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst =16)]
+            byte[] guidClassID;
+            uint dwPosition;
+            uint dwGroup;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst =4)]
+            char[] _ckid;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            char[] _fccType;
+
+            public string ckid { get => new string(_ckid); }
+            public string fccType { get => new string(_fccType); }
+
+        }
+
+        static DMUS_IO_SEGMENT_HEADER segh = new DMUS_IO_SEGMENT_HEADER();
+        static DMUS_IO_VERSION vers = new DMUS_IO_VERSION();
+        static List<DMUS_IO_TRACK_HEADER> trkh;
+        /// <summary>
+        /// [LINUX]: This method manually reads DirectMusic Segment files
+        /// </summary>
+        /// <param name="pt"></param>
+        private static void ReadSegmentFileManually(string pt)
+        {
+            using (FileStream fs = new FileStream(pt, FileMode.Open, FileAccess.Read))
+            using (BinaryReader br = new BinaryReader(fs))
             {
-                uint vara = pbs.ReadUInt();
-                byte[] buf = pbs.ReadBytes(vara);
-                Tracks.Add(buf);
-                if (pbs.Tell() == pbs.Length)
+                if(ReadFourCc(br) != "RIFF")
                 {
-                    break;
+                    Console.WriteLine($"init_debugger_Audio::ReadSegmentFileManually: NOT RIFF!");
+                    return;
                 }
-
-                head = Encoding.ASCII.GetString(BitConverter.GetBytes(pbs.ReadUInt()));
+                fs.Seek(4, SeekOrigin.Current);
+                if(ReadFourCc(br) != "DMSG")
+                {
+                    Console.WriteLine($"init_debugger_Audio::ReadSegmentFileManually: Broken structure. Expected DMSG!");
+                    return;
+                }
+                ReadSegmentForm(fs, br);
             }
-            return Tracks;
         }
 
-        private static string SGT_ReadUNAM(Tuple<string, byte[]> uNFO)
+        private static void ReadSegmentForm(FileStream fs, BinaryReader br)
         {
-            PseudoBufferedStream pbs = new PseudoBufferedStream(uNFO.Item2);
-            string unfo = Encoding.ASCII.GetString(BitConverter.GetBytes(pbs.ReadUInt()));
-            string unam = Encoding.ASCII.GetString(BitConverter.GetBytes(pbs.ReadUInt()));
-            uint vara = pbs.ReadUInt();
-            return Encoding.Unicode.GetString(pbs.ReadBytes(vara));
+            string fourCc;
+            trkh = new List<DMUS_IO_TRACK_HEADER>();
+            if ((fourCc = ReadFourCc(br)) != "segh")
+                { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: Broken structure. Expected segh, got={fourCc}");return;}
+            uint chunkSize = br.ReadUInt32();
+            if (chunkSize != Marshal.SizeOf(segh))
+                { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: chunkSize={chunkSize} is different than DMUS_IO_SEGMENT_HEADER sizeof={Marshal.SizeOf(segh)}");return;}
+            segh = MakiExtended.ByteArrayToStructure<DMUS_IO_SEGMENT_HEADER>(br.ReadBytes((int)chunkSize));
+            if((fourCc = ReadFourCc(br)) != "guid")
+                {Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected guid, got={fourCc}");return;}
+            byte[] guid = br.ReadBytes(br.ReadInt32());
+            if ((fourCc = ReadFourCc(br)) != "LIST")
+                { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected LIST, got={fourCc}");return;}
+            //let's skip segment data for now, looks like it's not needed, it's not even oficially a part of segh
+            fs.Seek(br.ReadUInt32(), SeekOrigin.Current);
+            if ((fourCc = ReadFourCc(br)) != "vers")
+                { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected vers, got={fourCc}"); return;}
+            if ((chunkSize = br.ReadUInt32()) != Marshal.SizeOf(vers))
+                { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: vers expected sizeof={Marshal.SizeOf(vers)}, got={chunkSize}");return;}
+            vers = MakiExtended.ByteArrayToStructure<DMUS_IO_VERSION>(br.ReadBytes((int)chunkSize));
+            if ((fourCc = ReadFourCc(br)) != "LIST")
+                { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected LIST, got={fourCc}");return;}
+            //this list should now contain metadata like name, authors and etc. It's completely useless in this project scope
+            fs.Seek(br.ReadUInt32(), SeekOrigin.Current); //therefore let's just skip whole UNFO and etc.
+            if ((fourCc = ReadFourCc(br)) != "LIST")
+                { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected LIST, got={fourCc}"); return; }
+            chunkSize = br.ReadUInt32();
+            if ((fourCc = ReadFourCc(br)) != "trkl")
+            { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected trkl, got={fourCc}"); return; }
+            //at this point we are free to read the file up to the end by reading all available DMTK RIFFs;
+            uint eof = (uint)fs.Position + chunkSize-4;
+            while(fs.Position < eof)
+            {
+                if ((fourCc = ReadFourCc(br)) != "RIFF")
+                { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected RIFF, got={fourCc}"); return; }
+                chunkSize = br.ReadUInt32();
+                long skipTell = fs.Position;
+                Console.WriteLine($"RIFF entry: {ReadFourCc(br)}/{ReadFourCc(br)}");
+                trkh.Add(MakiExtended.ByteArrayToStructure<DMUS_IO_TRACK_HEADER>(br.ReadBytes((int)br.ReadUInt32())));
+                //TODO HERE
+                //this seek below is to ensure that no critical behaviour happens and every RIFF header is read correctly
+                fs.Seek(skipTell+chunkSize, SeekOrigin.Begin);
+
+            }
         }
 
-        private static Tuple<string, byte[]> GetSGTSection_pbs(byte[] buffer)
-        {
-            PseudoBufferedStream pbs = new PseudoBufferedStream(buffer);
-            string head = Encoding.ASCII.GetString(BitConverter.GetBytes(pbs.ReadUInt()));
-            uint vara = pbs.ReadUInt();
-            byte[] buf = pbs.ReadBytes(vara);
-            return new Tuple<string, byte[]>(head, buf);
-        }
-
-        private static Tuple<string, byte[]> GetSGTSection(BinaryReader br)
-        {
-            string head = Encoding.ASCII.GetString(br.ReadBytes(4));
-            uint vara = br.ReadUInt32();
-            byte[] segData = br.ReadBytes((int)vara);
-            return new Tuple<string, byte[]>(head, segData);
-        }
+        private static string ReadFourCc(BinaryReader br) => new string(br.ReadChars(4));
     }
 }

@@ -11,7 +11,7 @@ namespace FF8
     {
         private static uint bs_cameraPointer;
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
-        private static float degrees, Yshift;
+        private static float degrees=90, Yshift;
         private static readonly float camDistance = 10.0f;
         private static Vector3 camPosition, camTarget;
         private static TIM2 textureInterface;
@@ -194,10 +194,6 @@ namespace FF8
                     ReadData();
                     break;
                 case BATTLEMODULE_DRAWGEOMETRY:
-                    if (Input.GetInputDelayed(Keys.OemTilde))
-                        DEBUGframe++;
-                    if (Input.GetInputDelayed(Keys.Tab))
-                        DEBUGframe--;
                     FPSCamera();
                     break;
             }
@@ -230,42 +226,48 @@ namespace FF8
 
             for (int n = 0; n < charactersData.Length; n++)
             {
-                frame[n+monstersData.Length] = frame[n+monstersData.Length] == charactersData[n].character.animHeader.animations[0].cFrames ? 0 : frame[n];
+                frame[n+monstersData.Length] = frame[n+monstersData.Length] == charactersData[n].character.animHeader.animations[0].cFrames ? 0 : frame[n+monstersData.Length];
                 for (int i = 0; i < charactersData[n].character.geometry.cObjects; i++)
                 {
-                    var a = charactersData[n].character.GetVertexPositions(i, new Vector3(-20 + n * 10, 10, 0),0, frame[n], frameperFPS / FPS); //DEBUG
-                    if (a == null || a.Length == 0)
+                    var a = charactersData[n].character.GetVertexPositions(i, new Vector3(-10 + n * 10, 10, -40),0, frame[n+monstersData.Length], frameperFPS / FPS); //DEBUG
+                    if (a == null || a.Item1.Length == 0)
                         return;
-                    ate.Texture = charactersData[n].character.textures.textures[0];
-                    foreach (var pass in ate.CurrentTechnique.Passes)
+                    for (int k = 0; k < a.Item1.Length / 3; k++)
                     {
-                        pass.Apply();
-                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                        vertexData: a, vertexOffset: 0, primitiveCount: a.Length / 3);
+                        ate.Texture = charactersData[n].character.textures.textures[a.Item2[k]];
+                        foreach (var pass in ate.CurrentTechnique.Passes)
+                        {
+                            pass.Apply();
+                            Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                            vertexData: a.Item1, vertexOffset: k*3, primitiveCount: 1);
+                        }
                     }
                 }
             }
             for (int n = 0; n < charactersData.Length; n++)
             {
-                frame[n + monstersData.Length] = frame[n + monstersData.Length] == charactersData[n].weapon.animHeader.animations[0].cFrames ? 0 : frame[n];
+                frame[n + monstersData.Length+charactersData.Length] = frame[n + monstersData.Length + charactersData.Length] == charactersData[n].weapon.animHeader.animations[0].cFrames ? 0 : frame[n+monstersData.Length+charactersData.Length];
                 for (int i = 0; i < charactersData[n].weapon.geometry.cObjects; i++)
                 {
-                    var a = charactersData[n].weapon.GetVertexPositions(i, new Vector3(-20+n*10,10, 0),0, frame[n], frameperFPS / FPS); //DEBUG
-                    if (a == null || a.Length == 0)
+                    var a = charactersData[n].weapon.GetVertexPositions(i, new Vector3(-10+n*10,10, -40),0, frame[n+monstersData.Length+charactersData.Length], frameperFPS / FPS); //DEBUG
+                    if (a == null || a.Item1.Length == 0)
                         return;
-                    ate.Texture = charactersData[n].weapon.textures.textures[0];
-                    foreach (var pass in ate.CurrentTechnique.Passes)
+                    for (int k = 0; k < a.Item1.Length / 3; k++)
                     {
-                        pass.Apply();
-                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                        vertexData: a, vertexOffset: 0, primitiveCount: a.Length / 3);
+                        ate.Texture = charactersData[n].weapon.textures.textures[a.Item2[k]];
+                        foreach (var pass in ate.CurrentTechnique.Passes)
+                        {
+                            pass.Apply();
+                            Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                            vertexData: a.Item1, vertexOffset: k*3, primitiveCount: 1);
+                        }
                     }
                 }
             }
         }
 
         private static int[] frame;
-        private static int DEBUGframe = 0;
+        public static int DEBUGframe = 0;
         private static void DrawMonsters()
         {
             Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
@@ -283,6 +285,8 @@ namespace FF8
                     frame[x] += (int)(frameperFPS/FPS);
                 frameperFPS = 0.0f;
                 }
+                //TODO to grab from encounters
+            Vector3[] enemyPositions = new Vector3[] { new Vector3(10, 15, 25), new Vector3(0, 8, 0), new Vector3(30, 8, 0) };
             for (int n = 0; n < monstersData.Length; n++)
             {
                 if(monstersData[n].GetId == 127)
@@ -295,15 +299,18 @@ namespace FF8
 
                 for (int i = 0; i < monstersData[n].geometry.cObjects; i++)
                 {
-                    var a = monstersData[n].GetVertexPositions(i, new Vector3(-50+(n%12)*10, 50, (n/12)*10), 0, frame[n],frameperFPS/FPS); //DEBUG
-                    if (a == null || a.Length == 0)
+                    var a = monstersData[n].GetVertexPositions(i, enemyPositions[n], 0, frame[n],frameperFPS/FPS); //DEBUG
+                    if (a == null || a.Item1.Length == 0)
                         return;
-                    ate.Texture = monstersData[n].textures.textures[0];
-                    foreach (var pass in ate.CurrentTechnique.Passes)
+                    for (int k = 0; k < a.Item1.Length / 3; k++)
                     {
-                        pass.Apply();
-                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                        vertexData: a, vertexOffset: 0, primitiveCount: a.Length / 3);
+                        ate.Texture = monstersData[n].textures.textures[a.Item2[k]];
+                        foreach (var pass in ate.CurrentTechnique.Passes)
+                        {
+                            pass.Apply();
+                            Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                            vertexData: a.Item1, vertexOffset: k*3, primitiveCount: 1);
+                        }
                     }
                 }
             }
@@ -435,7 +442,6 @@ namespace FF8
             Memory.font.RenderBasicText(Font.CipherDirty($"Enemies: {string.Join(",", Memory.encounters[Memory.battle_encounter].BEnemies.Where(x => x != 0x00).Select(x => "0x" + (x - 0x10).ToString("X02")).ToArray())}"), 20, 30 * 2, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Levels: {string.Join(",", Memory.encounters[Memory.battle_encounter].bLevels)}"), 20, 30 * 3, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Loaded enemies: {Convert.ToString(Memory.encounters[Memory.battle_encounter].bLoadedEnemy, 2)}"), 20, 30 * 4, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"Debug frame: {DEBUGframe}"), 20, 30 * 5, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
         }
 
@@ -521,8 +527,8 @@ namespace FF8
 
         private static void InitBattle()
         {
-            MakiExtended.Debugger_Spawn();
-            MakiExtended.Debugger_Feed(typeof(Module_battle_debug), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+            //MakiExtended.Debugger_Spawn();
+            //MakiExtended.Debugger_Feed(typeof(Module_battle_debug), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
             Input.OverrideLockMouse=true;
             Input.CurrentMode = Input.MouseLockMode.Center;
 
@@ -536,7 +542,7 @@ namespace FF8
             //init renderer
             effect = new BasicEffect(Memory.graphics.GraphicsDevice);
             camTarget = new Vector3(41.91198f, 33.59995f, 6.372305f);
-            camPosition = new Vector3(-10.49409f, 39.70397f, 8.321299f);
+            camPosition = new Vector3(40.49409f, 39.70397f, -43.321299f);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                                MathHelper.ToRadians(45f),
                                Memory.graphics.GraphicsDevice.DisplayMode.AspectRatio,
@@ -601,7 +607,7 @@ namespace FF8
             ReadMonster();
 
             //for frames indexes monsters are first, then after n monsters characters appear with weapons
-            frame = new int[monstersData.Length + charactersData.Length];
+            frame = new int[monstersData.Length + charactersData.Length*2];
 
             battleModule++;
         }
@@ -612,16 +618,16 @@ namespace FF8
         private static void ReadCharacters()
         {
             //DEBUG - party provider here
-            charactersData = new CharacterData[2];
+            charactersData = new CharacterData[2]; //Testing
             charactersData[0] = new CharacterData
             {
-                character = new Debug_battleDat(0, Debug_battleDat.EntityType.Character, 0),
+                character = new Debug_battleDat(0, Debug_battleDat.EntityType.Character, 1),
                 weapon = new Debug_battleDat(0, Debug_battleDat.EntityType.Weapon, 0)
             };
             charactersData[1] = new CharacterData
             {
-                character = new Debug_battleDat(2, Debug_battleDat.EntityType.Character, 6),
-                weapon = new Debug_battleDat(2, Debug_battleDat.EntityType.Weapon, 13)
+                character = new Debug_battleDat(6, Debug_battleDat.EntityType.Character, 14),
+                weapon = new Debug_battleDat(6, Debug_battleDat.EntityType.Weapon, 33)
             };
         }
 
@@ -631,10 +637,13 @@ namespace FF8
             if (enc.bNumOfEnemies == 0)
                 return;
             //DEBUG BELOW; I just want to draw any model
-            monstersData = new Debug_battleDat[1];
-            monstersData[0] = new Debug_battleDat(26, Debug_battleDat.EntityType.Monster);
-            //for (int n = 26; n <= monstersData.Length; n++)
+            //MONSTERS ARE STILL IN DEBUG PHASE. They are NOT read from encounters!
+            monstersData = new Debug_battleDat[3];
+            //for (int n = 0; n < monstersData.Length; n++)
             //    monstersData[n] = new Debug_battleDat(n, Debug_battleDat.EntityType.Monster);
+            monstersData[0] = new Debug_battleDat(92, Debug_battleDat.EntityType.Monster);
+            monstersData[1] = new Debug_battleDat(73, Debug_battleDat.EntityType.Monster);
+            monstersData[2] = new Debug_battleDat(74, Debug_battleDat.EntityType.Monster);
             //END OF DEBUG
         }
 
@@ -779,8 +788,7 @@ namespace FF8
             uint TextureUnused = (uint)basePointer + pbs.ReadUInt();
             uint Texture = (uint)basePointer + pbs.ReadUInt();
             uint EOF = (uint)basePointer + pbs.ReadUInt();
-            //if (pbs.Length != (pbs.Tell() - 6 * 4) + EOF) 
-            if (EOF != pbs.Length) //I though EOF is relative EOF, not global, lol
+            if (EOF != pbs.Length)
                 throw new Exception("BS_PARSER_ERROR_LENGTH: Geometry EOF pointer is other than buffered filesize");
 
             return new MainGeometrySection()
