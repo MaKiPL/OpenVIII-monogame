@@ -213,7 +213,7 @@ namespace FF8
                     }
                     else
                     {
-                        TextureHandler th = new TextureHandler(path);
+                        TextureHandler th = new TextureHandler(path) { Classic = tex };
                         Textures.Add(th);
                         Scale[i] = th.GetScale();
                     }

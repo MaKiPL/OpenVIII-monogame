@@ -42,7 +42,7 @@ namespace FF8
         /// <summary>
         /// Original sub 256x265 texture, required for fallback when issues happen.
         /// </summary>
-        public TEX Classic { get => _classic; private set { _classic = value; if (value != null) ClassicSize = new Vector2(value.TextureData.Width, value.TextureData.Height); } }
+        public TEX Classic { get => _classic; set { _classic = value; if (value != null) ClassicSize = new Vector2(value.TextureData.Width, value.TextureData.Height); } }
 
         /// <summary>
         /// X = width and Y = height. The Size of original texture. Will be used in scaling

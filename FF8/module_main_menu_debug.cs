@@ -267,16 +267,17 @@ namespace FF8
                     break;
 
                 case MainMenuStates.MainLobby:
+                    Memory.IsMouseVisible = true;
                     Offset = new Vector2(-1000, 0);
                     if (!UpdateMainLobby() && (lastfade == fade) && !forceupdate)
                     {
                         Memory.SuppressDraw = true;
-                        Memory.IsMouseVisible = true;
                     }
 
                     break;
 
                 case MainMenuStates.DebugScreen:
+                    Memory.IsMouseVisible = true;
                     if (Offset != Vector2.Zero)
                     {
                         Offset = Vector2.SmoothStep(Offset, Vector2.Zero, .15f);
@@ -284,7 +285,7 @@ namespace FF8
                     if (!UpdateDebugLobby() && (lastfade == fade) && Offset == Vector2.Zero && !forceupdate)
                     {
                         Memory.SuppressDraw = true;
-                        Memory.IsMouseVisible = true;
+                        //Memory.IsMouseVisible = true;
                     }
 
                     break;
@@ -298,6 +299,7 @@ namespace FF8
                     break;
 
                 case MainMenuStates.LoadGameScreen:
+                    Memory.IsMouseVisible = true;
                     break;
 
                 default:
