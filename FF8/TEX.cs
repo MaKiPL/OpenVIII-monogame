@@ -12,6 +12,7 @@ namespace FF8
     {
         public Texture TextureData { get => texture; } //added to get texturedata outside of class.
         private byte[] buffer;
+        public byte[] GetBuffer() => buffer;
         private int textureLocator;
         private Texture texture;
 

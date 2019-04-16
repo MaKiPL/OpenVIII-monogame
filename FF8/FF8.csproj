@@ -188,6 +188,7 @@
     <Compile Include="Sources\NetFramework\TypeExtensionMethods.cs" />
     <Compile Include="SP2.cs" />
     <Compile Include="TEX.cs" />
+    <Compile Include="TextureHandler.cs" />
     <Compile Include="TIM2.cs" />
     <Compile Include="debug_battleDat.cs" />
     <Compile Include="WindowsDebugger.cs">
