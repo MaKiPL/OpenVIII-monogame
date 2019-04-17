@@ -36,14 +36,10 @@ namespace FF8
 
         public void Init(string filename, TEX classic, uint cols = 1, uint rows = 1, int pallet = -1)
         {
-            //if (classic!=null)
-            //    ClassicSize = new Vector2 (classic.TextureData.Width, classic.TextureData.Height);
             Classic = classic;
-            //was importing classic texture because i might need to fall back to it. but as is right now i don't need it taking up ram.
             Size = Vector2.Zero;
             Count = cols * rows;
             Textures = new Texture2D[cols, rows];
-            //Scales = new Vector2[cols, rows];
             StartOffset = 0;
             Rows = rows;
             Cols = cols;
@@ -52,6 +48,8 @@ namespace FF8
 
             //load textures;
             Init();
+            //unload Classic
+            Classic = null;
         }
 
         #endregion Constructors
@@ -134,7 +132,7 @@ namespace FF8
             string suffix = pallet > -1 ? $"{pallet + 13}" : "";
             suffix += ".png";
             if (Directory.Exists(pngpath))
-            {//TODO: add support for multiple'
+            {
                 try
                 {
                     pngpath = Directory.GetFiles(pngpath).Last(x => (x.IndexOf(bn, StringComparison.OrdinalIgnoreCase) >= 0 && x.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)));
@@ -187,8 +185,6 @@ namespace FF8
 
         public static Texture2D UseBest(TEX _old, Texture2D _new, int pallet = 0) => UseBest(_old, _new, out Vector2 scale, pallet);
 
-        //private static int countsaved = 0;
-
         public static Texture2D UseBest(TEX _old, Texture2D _new, out Vector2 scale, int pallet = 0)
         {
             Texture2D tex;
@@ -197,14 +193,7 @@ namespace FF8
                 scale = Vector2.One;
                 if (_old.TextureData.NumOfPalettes <= 1)
                     return _old.GetTexture();
-                //if (pallet == 0)
-                    tex = _old.GetTexture(pallet);
-                //else
-                //{
-                //    tex = _old.GetTexture(pallet);
-                //    using (FileStream fs = File.OpenWrite(Path.Combine(Path.GetTempPath(), $"iconpcs_{countsaved++}_{pallet}.png")))
-                //        tex.SaveAsPng(fs, (int)_old.TextureData.Width, (int)_old.TextureData.Height);
-                //}
+                tex = _old.GetTexture(pallet);
                 return tex;
             }
             else
@@ -237,18 +226,14 @@ namespace FF8
                         cnt.Offset(offset);
                         if (cnt.Contains(_src))
                         {
-                            _src.Location = (GetOffset(cnt, _src)).ToPoint();
-
                             //got lucky the whole thing is in this rectangle
+                            _src.Location = (GetOffset(cnt, _src)).ToPoint();
                             Memory.spriteBatch.Draw(Textures[c, r], dst,_src, color);
                             return;
                         }
                         else if (cnt.Intersects(_src))
                         {
                             //Gotta draw more than once.
-                            //how do i determine the new dst
-                            //this might work. Might need tweaks. It's mostly for big icons00-03
-
                             Rectangle src2 = Rectangle.Intersect(cnt, _src);
                             src2.Location = (GetOffset(cnt, src2)).ToPoint();
                             dst2 = Scale(dst, GetScale(_src.Size, src2.Size));
@@ -304,37 +289,7 @@ namespace FF8
                     tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
                     if (Classic == null && c2 < Cols) oldsize.X += tex.TextureData.Width;
                     Texture2D pngTex = LoadPNG(path, Pallet);
-                    //commented out code forces fallback to old texture when 0 pallets.
-                    //check to see if texture data is loaded correctly, if not fallback to classic
-                    //if (tex.TextureData.NumOfPalettes == 0 && pngTex == null)
-                    //{
-                    //    //for debugging export problem TEX file
-                    //    using (FileStream fs = File.OpenWrite(Path.Combine(Path.GetTempPath(), Path.GetFileName(path))))
-                    //    {
-                    //        byte[] tmp = tex.GetBuffer();
-                    //        fs.Write(tmp, 0, tmp.Length);
-                    //    }
-                    //    if (c == 0 && r == 0)
-                    //    {
-                    //        Rows = 1;
-                    //        Cols = 1;
-                    //        Count = 1;
-                    //        if (Classic == null || Classic.TextureData.NumOfPalettes == 0)
-                    //            throw new Exception("High Res texture won't load correctly and Lowres Classic texture not set.\n" + path);
-                    //        Textures = new Texture2D[1, 1] { { Classic.GetTexture(0) } };
-                    //        Scales = new Vector2[1, 1] { { Vector2.One } };
-                    //        tex = Classic;
-                    //    }
-                    //    else if (tex.TextureData.NumOfPalettes == 0 && pngTex == null)
-                    //    {
-                    //        throw new Exception("Some but NOT ALL high Res texture parts are loading correctly.\n" + path);
-                    //    }
-                    //}
-                    //else
-                    //{
                     Textures[c, r] = (UseBest(tex, pngTex, Pallet));
-                    //Scales[c, r] = scale;
-                    //}
                     if (c2 < Cols) size.X += Textures[c2++, r2].Width;
                 }
                 if (Classic == null && r2 < Rows) oldsize.Y += tex.TextureData.Height;
