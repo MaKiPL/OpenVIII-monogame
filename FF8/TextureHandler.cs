@@ -235,7 +235,7 @@ namespace FF8
                             Rectangle src2 = Rectangle.Intersect(cnt, _src);
                             dst2 = Scale(dst, GetScale(_src.Size, src2.Size));
                             dst2.Offset(dstOffset);
-                            Memory.spriteBatch.Draw(Textures[c, r], dst2, _src, color);
+                            Memory.spriteBatch.Draw(Textures[c, r], dst2, src2, color);
                             drawn = true;
                             dstOffset.X += dst2.Width;
                         }

@@ -394,14 +394,13 @@ namespace FF8
 
         public Texture2D GetTexture(int forcePalette = -1)
         {
-            int localTextureLocator = textureLocator;
-            Color[] colors;
             if (texture.PaletteFlag != 0)
             {
                 if (forcePalette >= texture.NumOfPalettes) //prevents exception for forcing a palette that doesn't exist.
                     return null;
 
-                colors = new Color[texture.paletteData.Length / 4];
+                int localTextureLocator = textureLocator;
+                Color[] colors = new Color[texture.paletteData.Length / 4];
                 int k = 0;
                 for (int i = 0; i < texture.paletteData.Length; i += 4)
                 {
@@ -437,7 +436,7 @@ namespace FF8
                         using (MemoryStream ms = new MemoryStream(buffer))
                         using (BinaryReader br = new BinaryReader(ms))
                         {
-                            ms.Seek(localTextureLocator, SeekOrigin.Begin);
+                            ms.Seek(textureLocator, SeekOrigin.Begin);
                             while (ms.Position < ms.Length)
                                 bw.Write(fromPsColor(br.ReadUInt16()), 0, 4);
                         }
@@ -455,10 +454,12 @@ namespace FF8
                         using (MemoryStream ms = new MemoryStream(buffer))
                         using (BinaryReader br = new BinaryReader(ms))
                         {
-                            ms.Seek(localTextureLocator, SeekOrigin.Begin);
+                            ms.Seek(textureLocator, SeekOrigin.Begin);
                             while (ms.Position < ms.Length)
                             {
+                                //RGB or BGR so might need to reorder things to RGB
                                 bw.Write(br.ReadBytes(3), 0, 3);
+                                //ALPHA
                                 bw.Write((byte)255);
                             }
                         }
