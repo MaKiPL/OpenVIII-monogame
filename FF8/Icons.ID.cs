@@ -2,8 +2,6 @@
 {
     internal partial class Icons
     {
-        #endregion Constructors
-
         #region Enums
 
         public new enum ID : ushort
@@ -348,6 +346,6 @@
             DEBUG,
         }
 
-        #endregion Methods
+        #endregion Enums
     }
 }

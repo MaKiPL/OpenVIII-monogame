@@ -144,11 +144,12 @@ namespace FF8
             return mat1;
         }
 
-
         public static Vector2 ToVector2(Texture2D t) => new Vector2(t.Width, t.Height);
+
         public static Vector2 ToVector2(TextureHandler t) => new Vector2(t.ClassicSize.X, t.ClassicSize.Y);
 
         public static Rectangle ToRectangle(Texture2D t) => new Rectangle(0, 0, t.Width, t.Height);
+
         public static Rectangle ToRectangle(TextureHandler t) => new Rectangle(0, 0, (int)t.ClassicSize.X, (int)t.ClassicSize.Y);
 
         public static Rectangle ToRectangle(Vector2 loc, Vector2 size) => new Rectangle(loc.ToPoint(), size.ToPoint());
@@ -230,8 +231,8 @@ namespace FF8
                         offset.X += cnt.Width;
                     }
                     offset.Y += cnt.Height;
-                    if(drawn)
-                    dstOffset.Y += dst2.Height;
+                    if (drawn)
+                        dstOffset.Y += dst2.Height;
                 }
             }
             //drawing texture directly
@@ -244,10 +245,10 @@ namespace FF8
                 {
                     for (uint c = 0; c < Cols; c++)
                     {
-                        Vector2 scale = GetScale(Size, dst.Size.ToVector2());                        
+                        Vector2 scale = GetScale(Size, dst.Size.ToVector2());
                         dstV = ToVector2(Textures[c, r]) * scale;
-                        Memory.spriteBatch.Draw(Textures[c,r],dstOffset,null,color,0f,Vector2.Zero,scale,SpriteEffects.None,0f);
-                        
+                        Memory.spriteBatch.Draw(Textures[c, r], dstOffset, null, color, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
+
                         dstOffset.X += dstV.X;
                     }
                     dstOffset.Y += dstV.Y;

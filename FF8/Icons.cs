@@ -216,10 +216,7 @@ namespace FF8
             }
         }
 
-#endregion Constructors
-#region Enums
-
-        #endregion Enums
+        #endregion Constructors
 
         #region Properties
 
@@ -238,7 +235,7 @@ namespace FF8
 
         public void Draw(Enum id, int pallet, Rectangle dst, float scale, float fade = 1f) => entries[(ID)id].Draw(icons, pallet, dst, scale, fade);
 
-        public override void Draw(Enum id, Rectangle dst, float fade = 1) => Draw((ID)id, 2, dst,1f);
+        public override void Draw(Enum id, Rectangle dst, float fade = 1) => Draw((ID)id, 2, dst, 1f);
 
         public Entry GetEntry(Enum id, int index) => entries[(ID)id][index] ?? null;
 

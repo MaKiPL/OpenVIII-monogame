@@ -2,8 +2,6 @@
 {
     internal partial class Faces
     {
-        #endregion Constructors
-
         #region Enums
 
         /// <summary>

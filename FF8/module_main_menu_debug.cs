@@ -46,9 +46,11 @@ namespace FF8
         private static int debug_fieldPointer = 90;
         private static int debug_moviePointer = 0;
         private static float fade;
+
         //private static float fScaleHeight;
         //private static float fScaleWidth;
         private static float lastfade;
+
         private static Ditems s_dchoose;
         private static Mitems s_mchoose;
         private static TextureHandler start;
@@ -207,7 +209,7 @@ namespace FF8
         {
             if (start == null)
             {
-                start = new TextureHandler("start{0:00}",2);
+                start = new TextureHandler("start{0:00}", 2);
             }
         }
 
@@ -234,14 +236,15 @@ namespace FF8
         //    tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, filename));
         //    return TextureHandler.UseBest(tex,TextureHandler.LoadPNG(filename));
         //}
-        static bool LastActive = false;
+        private static bool LastActive = false;
+
         /// <summary>
         /// Triggers functions depending on state
         /// </summary>
         internal static void Update()
         {
             bool forceupdate = false;
-            if(LastActive != Memory.IsActive)
+            if (LastActive != Memory.IsActive)
             {
                 forceupdate = true;
                 LastActive = Memory.IsActive;
@@ -653,7 +656,7 @@ namespace FF8
             vpWidth = Memory.PreferredViewportWidth;//Memory.graphics.GraphicsDevice.Viewport.Width;
             vpHeight = Memory.PreferredViewportHeight;//Memory.graphics.GraphicsDevice.Viewport.Width;
             lastfade = fade;
-            vpSpace = vpHeight * 0.09f* Memory.Scale().X;
+            vpSpace = vpHeight * 0.09f * Memory.Scale().X;
             DFontPos = new Vector2(vpWidth * .10f * Memory.Scale().X, vpHeight * .05f * Memory.Scale().Y) + Offset;
             switch (State)
             {
@@ -684,7 +687,7 @@ namespace FF8
         private static void DrawMainLobby()
         {
             Vector2 scale = Memory.Scale();
-            Vector2 vp = (new Vector2(vpWidth, vpHeight))*scale;
+            Vector2 vp = (new Vector2(vpWidth, vpHeight)) * scale;
             float item = 0;
             Vector2 textSize = new Vector2(2f, 3f);// scaled in render function.
             Vector2 textStart = new Vector2(vp.X * .41f, vp.Y * .65f);
@@ -694,19 +697,19 @@ namespace FF8
                 Location = new Point(0),
                 Size = vp.ToPoint()
             };
-            start.Draw(dst,null,Color.White*fade);
+            start.Draw(dst, null, Color.White * fade);
             foreach (Mitems i in (Mitems[])Enum.GetValues(typeof(Mitems)))
             {
                 Item c = strMainLobby[i];
                 c.Loc = (Memory.font.RenderBasicText(Font.CipherDirty(c.Text).Replace("\0", ""),
-                    (int)(textStart.X), (int)(textStart.Y+((textSize.Y+ vpSpace)* item++)), textSize.X, textSize.Y, 0, 1, Fade));
+                    (int)(textStart.X), (int)(textStart.Y + ((textSize.Y + vpSpace) * item++)), textSize.X, textSize.Y, 0, 1, Fade));
                 strMainLobby[i] = c;
             }
             Memory.SpriteBatchEnd();
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
             Memory.Icons.Draw(Icons.ID.Finger_Right, 2, new Rectangle(
-                (int)(textStart.X-((48+10) * scale.X)),
-                (int)(textStart.Y + (10*scale.Y) + ((textSize.Y + vpSpace) * (float)Mchoose)),
+                (int)(textStart.X - ((48 + 10) * scale.X)),
+                (int)(textStart.Y + (10 * scale.Y) + ((textSize.Y + vpSpace) * (float)Mchoose)),
                 (int)(48 * scale.X),
                 (int)(36 * scale.Y)), 0, fade);
             Memory.SpriteBatchEnd();
@@ -729,7 +732,7 @@ namespace FF8
                 dict[i] = c;
             }
             Vector2 scale = Memory.Scale();
-            dst.Inflate(vpWidth * .06f * scale.X, vpHeight * .035f*scale.Y);
+            dst.Inflate(vpWidth * .06f * scale.X, vpHeight * .035f * scale.Y);
             return dst;
         }
 
@@ -747,10 +750,10 @@ namespace FF8
             item = 0;
             dst.Offset(4 * 3.5f, 0);
             dst.Size = (Memory.Icons[Icons.ID.DEBUG].GetRectangle.Size.ToVector2() * scale * 3.5f).ToPoint();
-            Memory.Icons.Draw(Icons.ID.DEBUG, 2, dst,0, fade);
+            Memory.Icons.Draw(Icons.ID.DEBUG, 2, dst, 0, fade);
             dst.Location = DFontPos.ToPoint();
             dst.Size = new Point((int)(24 * 2 * scale.X), (int)(16 * 2 * scale.Y));
-            dst.Offset(-(dst.Width + 10 * scale.X), 6*scale.Y+vpSpace * ((float)Dchoose));
+            dst.Offset(-(dst.Width + 10 * scale.X), 6 * scale.Y + vpSpace * ((float)Dchoose));
 
             Memory.Icons.Draw(Icons.ID.Finger_Right, 2, dst, 0, fade);
             Memory.SpriteBatchEnd();

@@ -2,8 +2,6 @@
 {
     internal partial class Cards
     {
-        #endregion Constructors
-
         #region Enums
 
         public new enum ID
