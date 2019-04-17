@@ -36,8 +36,9 @@ namespace FF8
 
         public void Init(string filename, TEX classic, uint cols = 1, uint rows = 1, int pallet = -1)
         {
-            ClassicSize = new Vector2 (classic.TextureData.Width, classic.TextureData.Height);
-            Classic = null;
+            //if (classic!=null)
+            //    ClassicSize = new Vector2 (classic.TextureData.Width, classic.TextureData.Height);
+            Classic = classic;
             //was importing classic texture because i might need to fall back to it. but as is right now i don't need it taking up ram.
             Size = Vector2.Zero;
             Count = cols * rows;
