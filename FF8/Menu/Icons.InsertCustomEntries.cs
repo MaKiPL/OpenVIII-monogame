@@ -131,7 +131,7 @@ namespace FF8
                 CustomPallet = 1,
                 Tile = Vector2.UnitY
             }, Border_Top, Border_Left, Border_Right, Border_Bottom, Border_TopLeft, Border_TopRight, Border_BottomLeft, Border_BottomRight);
-
+            
             Entries[ID.DEBUG] = new EntryGroup(
                 new Entry { X = 128, Y = 24, Width = 7, Height = 8 },
                 new Entry { X = 65, Y = 8, Width = 6, Height = 8, Offset = new Vector2(7, 0) },
