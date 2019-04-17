@@ -19,7 +19,7 @@ namespace FF8
 
         #region Constructors
 
-        public TextureHandler(string filename, uint cols = 1, uint rows = 1)
+        public TextureHandler(string filename, uint cols = 1, uint rows = 1, uint pallet = 0)
         {
             if (cols == 1 && rows == 1)
             {
@@ -32,9 +32,9 @@ namespace FF8
                 Init(filename, null, cols, rows);
         }
 
-        public TextureHandler(string filename, TEX classic, uint cols = 1, uint rows = 1) => Init(filename, classic, cols, rows);
+        public TextureHandler(string filename, TEX classic, uint cols = 1, uint rows = 1, int pallet = -1) => Init(filename, classic, cols, rows, pallet);
 
-        public void Init(string filename, TEX classic, uint cols = 1, uint rows = 1)
+        public void Init(string filename, TEX classic, uint cols = 1, uint rows = 1, int pallet = -1)
         {
             Classic = classic;
             Size = Vector2.Zero;
@@ -45,6 +45,7 @@ namespace FF8
             Rows = rows;
             Cols = cols;
             Filename = filename;
+            Pallet = pallet;
 
             //load textures;
             Init();
@@ -78,6 +79,7 @@ namespace FF8
 
         protected uint Cols { get; set; }
         protected string Filename { get; set; }
+        public int Pallet { get; protected set; }
         protected uint Rows { get; set; }
 
         /// <summary>
@@ -121,17 +123,26 @@ namespace FF8
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        public static Texture2D LoadPNG(string path)
+        public static Texture2D LoadPNG(string path, int pallet = -1)
         {
             string bn = Path.GetFileNameWithoutExtension(path);
             string prefix = bn.Substring(0, 2);
             string pngpath = Path.Combine(Memory.FF8DIR, "..", "..", "textures", prefix, bn);
+            string suffix = pallet > -1 ? $"{pallet+13}": "";
+            suffix += ".png";
             if (Directory.Exists(pngpath))
-            {//TODO: add support for multiple
-                pngpath = Directory.GetFiles(pngpath).Last(x => (x.IndexOf(bn, StringComparison.OrdinalIgnoreCase) >= 0));//.ToLower().Contains(bn.ToLower())
-                using (FileStream fs = File.OpenRead(pngpath))
+            {//TODO: add support for multiple'
+                try
                 {
-                    return Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
+                    pngpath = Directory.GetFiles(pngpath).Last(x => (x.IndexOf(bn, StringComparison.OrdinalIgnoreCase) >= 0 && x.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)));
+                    using (FileStream fs = File.OpenRead(pngpath))
+                    {
+                        return Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                    // couldn't find a match.
                 }
             }
             return null;
@@ -256,7 +267,7 @@ namespace FF8
             }
         }
 
-        public Vector2 GetScale(int cols = 0, int rows = 0) => ScaleFactor;//Scales[cols, rows];
+        public Vector2 GetScale(int cols = 0, int rows = 0) => ScaleFactor;
 
         protected void Init()
         {
@@ -273,7 +284,7 @@ namespace FF8
                     string path = aw.GetListOfFiles().First(x => (x.IndexOf(string.Format(Filename, c + r * Cols + StartOffset), StringComparison.OrdinalIgnoreCase) >= 0));
                     tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
                     if (Classic == null && c2 < Cols) oldsize.X += tex.TextureData.Width;
-                    Texture2D pngTex = LoadPNG(path);
+                    Texture2D pngTex = LoadPNG(path, Pallet);
                     //commented out code forces fallback to old texture when 0 pallets.
                     //check to see if texture data is loaded correctly, if not fallback to classic
                     //if (tex.TextureData.NumOfPalettes == 0 && pngTex == null)
@@ -302,13 +313,13 @@ namespace FF8
                     //}
                     //else
                     //{
-                    Textures[c, r] = (UseBest(tex, pngTex));
+                    Textures[c, r] = (UseBest(tex, pngTex, Pallet));
                     //Scales[c, r] = scale;
                     //}
-                    if (c2++ < Cols) size.X += Textures[c2 - 1, r2].Width;
+                    if (c2 < Cols) size.X += Textures[c2++, r2].Width;
                 }
                 if (Classic == null && r2 < Rows) oldsize.Y += tex.TextureData.Height;
-                if (r2++ < Rows) size.Y += Textures[c2 - 1, r2 - 1].Height;
+                if (r2 < Rows) size.Y += Textures[c2-1, r2++].Height;
             }
             Size = size;
             if (Classic == null) ClassicSize = oldsize;

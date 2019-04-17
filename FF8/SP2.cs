@@ -48,7 +48,7 @@ namespace FF8
         /// <summary>
         /// Entries per texture,ID MOD EntriesPerTexture to get current entry to use on this texture
         /// </summary>
-        public uint EntriesPerTexture { get; protected set; }
+        protected virtual uint EntriesPerTexture { get; set; }
 
         /// <summary>
         /// Number of Pallets
@@ -161,7 +161,7 @@ namespace FF8
                 Textures = new List<TextureHandler>(TextureCount);
                 ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
                 using (MemoryStream ms = new MemoryStream(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU,
-                    aw.GetListOfFiles().First(x => x.ToLower().Contains(IndexFilename)))))
+                    aw.GetListOfFiles().First(x => x.IndexOf(IndexFilename,StringComparison.OrdinalIgnoreCase)>=0))))
                 {
                     ushort[] locs;
                     using (BinaryReader br = new BinaryReader(ms))

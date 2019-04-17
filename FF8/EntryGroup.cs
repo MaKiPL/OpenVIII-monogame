@@ -91,7 +91,7 @@ namespace FF8
         return new Vector2(Math.Abs(v2.X), Math.Abs(v2.Y));
         }
 
-    internal void Draw(Texture2D[] textures, int pallet, Rectangle inputdst, float scale = 1f, float fade = 1f)
+    internal void Draw(List<TextureHandler> textures, int pallet, Rectangle inputdst, float scale = 1f, float fade = 1f)
         {
             Rectangle dst;
             scale = Math.Abs(scale);
@@ -106,7 +106,7 @@ namespace FF8
 
             foreach (Entry e in list)
             {
-                int cpallet = e.CustomPallet < 0 || e.CustomPallet >= textures.Length ? pallet : e.CustomPallet;
+                int cpallet = e.CustomPallet < 0 || e.CustomPallet >= textures.Count ? pallet : e.CustomPallet;
                 dst = inputdst;
 
 
@@ -144,7 +144,7 @@ namespace FF8
                                 src.Width += (int)Math.Floor(correction / scale);
                             }
                         }
-                        Memory.spriteBatch.Draw(textures[cpallet], dst, src, Color.White * fade);
+                        textures[cpallet].Draw(dst, src, Color.White * fade);
                         if (e.Tile.Y > 0)
                         {
                             dst.Y += dst.Height;
