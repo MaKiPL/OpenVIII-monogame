@@ -689,9 +689,11 @@ namespace FF8
             Vector2 textSize = new Vector2(2f, 3f);// scaled in render function.
             Vector2 textStart = new Vector2(vp.X * .41f, vp.Y * .65f);
             Memory.SpriteBatchStartAlpha();
-            Rectangle dst = new Rectangle(new Point(0),start.ClassicSize.ToPoint());
-            dst.Location = new Point(0);
-            dst.Size = vp.ToPoint();
+            Rectangle dst = new Rectangle()
+            {
+                Location = new Point(0),
+                Size = vp.ToPoint()
+            };
             start.Draw(dst,null,Color.White*fade);
             foreach (Mitems i in (Mitems[])Enum.GetValues(typeof(Mitems)))
             {
