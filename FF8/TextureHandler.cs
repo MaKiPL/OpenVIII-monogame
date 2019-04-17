@@ -193,6 +193,7 @@ namespace FF8
             Vector2 dstOffset = Vector2.Zero;
             if (src != null)
             {
+                bool drawn = false;
                 Vector2 offset = Vector2.Zero;
                 Rectangle dst2 = new Rectangle();
                 Rectangle cnt = new Rectangle();
@@ -200,6 +201,7 @@ namespace FF8
                 {
                     for (uint c = 0; c < Cols; c++)
                     {
+                        drawn = false;
                         dst2 = new Rectangle();
                         //if all the pieces of Scales are correct they should all have the same scale.
                         Rectangle _src = Scale(src.Value, ScaleFactor);
@@ -214,20 +216,21 @@ namespace FF8
                         }
                         else if (cnt.Intersects(_src))
                         {
-                            //crap gotta draw more than once.
+                            //Gotta draw more than once.
                             //how do i determine the new dst
-                            //this might work.
+                            //this might work. Might need tweaks. It's mostly for big icons00-03
 
                             Rectangle src2 = Rectangle.Intersect(cnt, _src);
                             dst2 = Scale(dst, GetScale(_src.Size, src2.Size));
                             dst2.Offset(dstOffset);
                             Memory.spriteBatch.Draw(Textures[c, r], dst2, _src, color);
-                            return;
+                            drawn = true;
+                            dstOffset.X += dst2.Width;
                         }
                         offset.X += cnt.Width;
-                        dstOffset.X += dst2.Width;
                     }
                     offset.Y += cnt.Height;
+                    if(drawn)
                     dstOffset.Y += dst2.Height;
                 }
             }
