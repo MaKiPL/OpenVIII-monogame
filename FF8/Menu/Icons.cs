@@ -21,7 +21,7 @@ namespace FF8
 
         public Icons()
         {
-            FORCE_ORIGINAL = true;
+            //FORCE_ORIGINAL = true;
             TextureBigFilename = new string[] { "iconfl{0:00}.TEX" };
             TextureBigSplit = new uint[] { 4 };
             TextureFilename = "icon.tex";

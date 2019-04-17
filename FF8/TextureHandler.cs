@@ -128,7 +128,7 @@ namespace FF8
             string bn = Path.GetFileNameWithoutExtension(path);
             string prefix = bn.Substring(0, 2);
             string pngpath = Path.Combine(Memory.FF8DIR, "..", "..", "textures", prefix, bn);
-            string suffix = pallet > -1 ? $"{pallet+13}": "";
+            string suffix = pallet > -1 ? $"{pallet + 13}" : "";
             suffix += ".png";
             if (Directory.Exists(pngpath))
             {//TODO: add support for multiple'
@@ -183,17 +183,25 @@ namespace FF8
         }
 
         public static Texture2D UseBest(TEX _old, Texture2D _new, int pallet = 0) => UseBest(_old, _new, out Vector2 scale, pallet);
-        private static int countsaved = 0;
+
+        //private static int countsaved = 0;
+
         public static Texture2D UseBest(TEX _old, Texture2D _new, out Vector2 scale, int pallet = 0)
         {
+            Texture2D tex;
             if (_new == null)
             {
                 scale = Vector2.One;
                 if (_old.TextureData.NumOfPalettes <= 1)
                     return _old.GetTexture();
-                Texture2D tex = _old.GetTexture(pallet);
-                using(FileStream fs = File.OpenWrite(Path.Combine(Path.GetTempPath(),$"iconpcs_{countsaved++}_{pallet}.png")))
-                tex.SaveAsPng(fs, tex.Width, tex.Height);
+                //if (pallet == 0)
+                    tex = _old.GetTexture(pallet);
+                //else
+                //{
+                //    tex = _old.GetTexture(pallet);
+                //    using (FileStream fs = File.OpenWrite(Path.Combine(Path.GetTempPath(), $"iconpcs_{countsaved++}_{pallet}.png")))
+                //        tex.SaveAsPng(fs, (int)_old.TextureData.Width, (int)_old.TextureData.Height);
+                //}
                 return tex;
             }
             else
@@ -214,6 +222,8 @@ namespace FF8
                 Rectangle cnt = new Rectangle();
                 for (uint r = 0; r < Rows; r++)
                 {
+                    offset.X = 0;
+                    //dstOffset.X = 0;
                     for (uint c = 0; c < Cols; c++)
                     {
                         drawn = false;
@@ -225,8 +235,9 @@ namespace FF8
                         if (cnt.Contains(_src))
                         {
                             _src.Location = (GetOffset(cnt, _src)).ToPoint();
+
                             //got lucky the whole thing is in this rectangle
-                            Memory.spriteBatch.Draw(Textures[c, r], dst, _src, color);
+                            Memory.spriteBatch.Draw(Textures[c, r], dst,_src, color);
                             return;
                         }
                         else if (cnt.Intersects(_src))
@@ -236,7 +247,9 @@ namespace FF8
                             //this might work. Might need tweaks. It's mostly for big icons00-03
 
                             Rectangle src2 = Rectangle.Intersect(cnt, _src);
+                            src2.Location = (GetOffset(cnt, src2)).ToPoint();
                             dst2 = Scale(dst, GetScale(_src.Size, src2.Size));
+                            dst2.Location = (dst.Location);
                             dst2.Offset(dstOffset);
                             Memory.spriteBatch.Draw(Textures[c, r], dst2, src2, color);
                             drawn = true;
@@ -322,7 +335,7 @@ namespace FF8
                     if (c2 < Cols) size.X += Textures[c2++, r2].Width;
                 }
                 if (Classic == null && r2 < Rows) oldsize.Y += tex.TextureData.Height;
-                if (r2 < Rows) size.Y += Textures[c2-1, r2++].Height;
+                if (r2 < Rows) size.Y += Textures[c2 - 1, r2++].Height;
             }
             Size = size;
             if (Classic == null) ClassicSize = oldsize;
@@ -331,8 +344,8 @@ namespace FF8
         public static Vector2 GetOffset(Rectangle old, Rectangle @new) => GetOffset(old.Location.ToVector2(), @new.Location.ToVector2());
 
         public static Vector2 GetOffset(Point oldLoc, Point newLoc) => GetOffset(oldLoc.ToVector2(), newLoc.ToVector2());
-
-        public static Vector2 GetOffset(Vector2 oldLoc, Vector2 newLoc) => newLoc - oldLoc;
+        public static Vector2 Abs(Vector2 v) => new Vector2(Math.Abs(v.X), Math.Abs(v.Y));
+        public static Vector2 GetOffset(Vector2 oldLoc, Vector2 newLoc) => Abs(oldLoc-newLoc);
 
         public static Vector2 GetScale(Point oldSize, Point newSize) => GetScale(oldSize.ToVector2(), newSize.ToVector2());
 

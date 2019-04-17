@@ -94,7 +94,8 @@ namespace FF8
         protected string[] TextureBigFilename { get; set; }
 
         /// <summary>
-        /// Big versions of textures take the file and split it into multiple. How many splits per BigFilename.
+        /// Big versions of textures take the file and split it into multiple. How many splits per BigFilename. 
+        /// Value to be interval of 2. As these files are all 2 cols wide. And must be >= 2
         /// </summary>
         protected uint[] TextureBigSplit { get; set; }
 

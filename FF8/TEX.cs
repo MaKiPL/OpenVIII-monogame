@@ -13,6 +13,8 @@ namespace FF8
 
         public byte[] GetBuffer() => buffer;
 
+        private int headersize;
+        private int paletteSectionSize;
         private int textureLocator;
         private Texture texture;
 
@@ -25,6 +27,8 @@ namespace FF8
             public uint PaletteSize; //0x58
             public byte[] paletteData; //0xEC
             public byte bytesPerPixel;
+            internal uint NumOfColorsPerPalette;
+            internal uint bitDepth;
         }
         // this struct works keeping it around incase we need a value from it I only ported out bytesperpixel
         ///// <summary>
@@ -382,18 +386,23 @@ namespace FF8
             texture.Height = BitConverter.ToUInt32(buffer, 0x40);
             texture.bytesPerPixel = buffer[0x68];
             texture.NumOfPalettes = buffer[0x30];
+            texture.NumOfColorsPerPalette = BitConverter.ToUInt32(buffer, 0x34);
+            texture.bitDepth = BitConverter.ToUInt32(buffer, 0x38);
             texture.PaletteFlag = buffer[0x4C];
             texture.PaletteSize = BitConverter.ToUInt32(buffer, 0x58);
+            paletteSectionSize = (int)(texture.PaletteSize * 4);
             if (texture.PaletteFlag != 0)
             {
-                texture.paletteData = new byte[texture.PaletteSize * 4];
-                Buffer.BlockCopy(buffer, 0xF0, texture.paletteData, 0, (int)(texture.PaletteSize * 4));
+                texture.paletteData = new byte[paletteSectionSize];
+                Buffer.BlockCopy(buffer, 0xF0, texture.paletteData, 0, paletteSectionSize);
             }
-            textureLocator = 0xEC + (int)(texture.PaletteSize * 4) + 4;
+            headersize = 0xF0;//0xEC for ff7
+            textureLocator = headersize + paletteSectionSize;
         }
 
         public Texture2D GetTexture(int forcePalette = -1)
         {
+            uint ImageSizeBytes = texture.Width * texture.Height * 4;
             if (texture.PaletteFlag != 0)
             {
                 if (forcePalette >= texture.NumOfPalettes) //prevents exception for forcing a palette that doesn't exist.
@@ -412,14 +421,14 @@ namespace FF8
                 }
                 Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
 
-                byte[] convertBuffer = new byte[texture.Width * texture.Height * 4];
+                byte[] convertBuffer = new byte[ImageSizeBytes];
                 for (int i = 0; i < convertBuffer.Length; i += 4)
                 {
                     byte colorkey = buffer[localTextureLocator++];
-                    convertBuffer[i] = colors[forcePalette == -1 ? colorkey : (forcePalette * 16) + colorkey].Blue;
-                    convertBuffer[i + 1] = colors[forcePalette == -1 ? colorkey : (forcePalette * 16) + colorkey].Green;
-                    convertBuffer[i + 2] = colors[forcePalette == -1 ? colorkey : (forcePalette * 16) + colorkey].Red;
-                    convertBuffer[i + 3] = colors[forcePalette == -1 ? colorkey : (forcePalette * 16) + colorkey].Alpha;
+                    convertBuffer[i] = colors[forcePalette == -1 ? colorkey : (forcePalette * texture.NumOfColorsPerPalette) + colorkey].Blue;
+                    convertBuffer[i + 1] = colors[forcePalette == -1 ? colorkey : (forcePalette * texture.NumOfColorsPerPalette) + colorkey].Green;
+                    convertBuffer[i + 2] = colors[forcePalette == -1 ? colorkey : (forcePalette * texture.NumOfColorsPerPalette) + colorkey].Red;
+                    convertBuffer[i + 3] = colors[forcePalette == -1 ? colorkey : (forcePalette * texture.NumOfColorsPerPalette) + colorkey].Alpha;
                 }
                 bmp.SetData(convertBuffer);
                 return bmp;
@@ -430,7 +439,7 @@ namespace FF8
                 {
                     //working code
                     Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
-                    using (MemoryStream os = new MemoryStream((int)(texture.Width * texture.Height * 4)))
+                    using (MemoryStream os = new MemoryStream((int)(ImageSizeBytes)))
                     using (BinaryWriter bw = new BinaryWriter(os))
                     {
                         using (MemoryStream ms = new MemoryStream(buffer))
@@ -448,7 +457,7 @@ namespace FF8
                 {
                     //working code
                     Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
-                    using (MemoryStream os = new MemoryStream((int)(texture.Width * texture.Height * 4)))
+                    using (MemoryStream os = new MemoryStream((int)(ImageSizeBytes)))
                     using (BinaryWriter bw = new BinaryWriter(os))
                     {
                         using (MemoryStream ms = new MemoryStream(buffer))
