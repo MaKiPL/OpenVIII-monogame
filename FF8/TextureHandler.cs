@@ -183,15 +183,18 @@ namespace FF8
         }
 
         public static Texture2D UseBest(TEX _old, Texture2D _new, int pallet = 0) => UseBest(_old, _new, out Vector2 scale, pallet);
-
+        private static int countsaved = 0;
         public static Texture2D UseBest(TEX _old, Texture2D _new, out Vector2 scale, int pallet = 0)
         {
             if (_new == null)
             {
                 scale = Vector2.One;
-                if (_old.TextureData.NumOfPalettes == 0)
+                if (_old.TextureData.NumOfPalettes <= 1)
                     return _old.GetTexture();
-                return _old.GetTexture(pallet);
+                Texture2D tex = _old.GetTexture(pallet);
+                using(FileStream fs = File.OpenWrite(Path.Combine(Path.GetTempPath(),$"iconpcs_{countsaved++}_{pallet}.png")))
+                tex.SaveAsPng(fs, tex.Width, tex.Height);
+                return tex;
             }
             else
             {

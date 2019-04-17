@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,22 +21,23 @@ namespace FF8
 
         public Icons()
         {
+            FORCE_ORIGINAL = true;
             TextureBigFilename = new string[] { "iconfl{0:00}.TEX" };
             TextureBigSplit = new uint[] { 4 };
             TextureFilename = "icon.tex";
             IndexFilename = "icon.sp1";
             Init();
         }
+
         #endregion Constructors
 
-        
         #region Properties
 
         public new uint Count => (uint)Entries.Count();
         public new uint PalletCount => (uint)Textures.Count();
         public new uint TextureCount => 1;
         private new uint TextureStartOffset => 0;// this really isn't improtant to icons.
-        public new uint EntriesPerTexture => (uint) Enum.GetValues(typeof(Icons.ID)).Cast<Icons.ID>().Max(); // this really isn't improtant to icons.
+        public new uint EntriesPerTexture => (uint)Enum.GetValues(typeof(Icons.ID)).Cast<Icons.ID>().Max(); // this really isn't improtant to icons.
 
         #endregion Properties
 
@@ -48,6 +48,7 @@ namespace FF8
         #endregion Indexers
 
         #region Methods
+
         public override void Init()
         {
             if (Entries == null)
@@ -59,7 +60,10 @@ namespace FF8
                 Textures = new List<TextureHandler>(tex.TextureData.NumOfPalettes);
                 for (int i = 0; i < tex.TextureData.NumOfPalettes; i++)
                 {
-                    Textures.Add(new TextureHandler(TextureBigFilename[0],tex,2,TextureBigSplit[0]/2, i));
+                    if (FORCE_ORIGINAL == false && TextureBigFilename != null && TextureBigSplit != null)
+                        Textures.Add(new TextureHandler(TextureBigFilename[0], tex, 2, TextureBigSplit[0] / 2, i));
+                    else
+                        Textures.Add(new TextureHandler(TextureFilename, tex, 1, 1, i));
                 }
                 //read from icon.sp1
                 using (MemoryStream ms = new MemoryStream(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU,
@@ -94,6 +98,7 @@ namespace FF8
                 }
             }
         }
+
         public void Draw(Enum id, int pallet, Rectangle dst, float scale, float fade = 1f) => Entries[(ID)id].Draw(Textures, pallet, dst, scale, fade);
 
         public override void Draw(Enum id, Rectangle dst, float fade = 1) => Draw((ID)id, 2, dst, 1f);

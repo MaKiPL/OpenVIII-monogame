@@ -41,6 +41,11 @@ namespace FF8
         #region Properties
 
         /// <summary>
+        /// If true disable mods and high res textures.
+        /// </summary>
+        protected bool FORCE_ORIGINAL { get; set; } = false;
+
+        /// <summary>
         /// Number of Entries
         /// </summary>
         public uint Count { get; protected set; }
@@ -204,7 +209,7 @@ namespace FF8
                 {
                     string path = aw.GetListOfFiles().First(x => x.ToLower().Contains(string.Format(TextureFilename, i + TextureStartOffset)));
                     tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
-                    if (TextureBigFilename != null)
+                    if (TextureBigFilename != null && FORCE_ORIGINAL == false)
                     {
                         TextureHandler th = new TextureHandler(TextureBigFilename[i], tex, 2, TextureBigSplit[i] / 2);
 
