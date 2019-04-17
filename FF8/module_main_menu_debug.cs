@@ -46,15 +46,12 @@ namespace FF8
         private static int debug_fieldPointer = 90;
         private static int debug_moviePointer = 0;
         private static float fade;
-        private static float fScaleHeight;
-        private static float fScaleWidth;
+        //private static float fScaleHeight;
+        //private static float fScaleWidth;
         private static float lastfade;
         private static Ditems s_dchoose;
         private static Mitems s_mchoose;
-        private static Texture2D start00;
-        private static Vector2 start00_size;
-        private static Texture2D start01;
-        private static Vector2 start01_size;
+        private static TextureHandler start;
         private static MainMenuStates State = 0;
         private static int vpHeight;
         private static int vpWidth;
@@ -208,40 +205,35 @@ namespace FF8
         /// </summary>
         private static void Init()
         {
-            if (start00 == null)
+            if (start == null)
             {
-                start00 = GetTexture(0);
-            }
-
-            if (start01 == null)
-            {
-                start01 = GetTexture(1);
+                start = new TextureHandler("start{0:00}",2);
             }
         }
 
-        /// <summary>
-        /// Get reqeusted texture from Menu archive.
-        /// </summary>
-        /// <param name="v">0 or 1</param>
-        /// <returns>Requested Texture</returns>
-        private static Texture2D GetTexture(int v)
-        {
-            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
-            TEX tex;
-            string filename = "";
-            switch (v)
-            {
-                case 0:
-                    filename = aw.GetListOfFiles().First(x => x.ToLower().Contains("start00"));
-                    break;
+        ///// <summary>
+        ///// Get reqeusted texture from Menu archive.
+        ///// </summary>
+        ///// <param name="v">0 or 1</param>
+        ///// <returns>Requested Texture</returns>
+        //private static Texture2D GetTexture(int v)
+        //{
+        //    ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
+        //    TEX tex;
+        //    string filename = "";
+        //    switch (v)
+        //    {
+        //        case 0:
+        //            filename = aw.GetListOfFiles().First(x => x.ToLower().Contains("start00"));
+        //            break;
 
-                case 1:
-                    filename = aw.GetListOfFiles().First(x => x.ToLower().Contains("start01"));
-                    break;
-            }
-            tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, filename));
-            return TextureHandler.UseBest(tex,TextureHandler.LoadPNG(filename));
-        }
+        //        case 1:
+        //            filename = aw.GetListOfFiles().First(x => x.ToLower().Contains("start01"));
+        //            break;
+        //    }
+        //    tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, filename));
+        //    return TextureHandler.UseBest(tex,TextureHandler.LoadPNG(filename));
+        //}
         static bool LastActive = false;
         /// <summary>
         /// Triggers functions depending on state
@@ -285,7 +277,6 @@ namespace FF8
                     if (!UpdateDebugLobby() && (lastfade == fade) && Offset == Vector2.Zero && !forceupdate)
                     {
                         Memory.SuppressDraw = true;
-                        //Memory.IsMouseVisible = true;
                     }
 
                     break;
@@ -657,13 +648,13 @@ namespace FF8
         internal static void Draw()
         {
             Memory.graphics.GraphicsDevice.Clear(Color.Black);
-            fScaleWidth = (float)Memory.graphics.GraphicsDevice.Viewport.Width / Memory.PreferredViewportWidth;
-            fScaleHeight = (float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight;
-            vpWidth = Memory.graphics.GraphicsDevice.Viewport.Width;
-            vpHeight = Memory.graphics.GraphicsDevice.Viewport.Width;
+            //fScaleWidth = (float)Memory.graphics.GraphicsDevice.Viewport.Width / Memory.PreferredViewportWidth;
+            //fScaleHeight = (float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight;
+            vpWidth = Memory.PreferredViewportWidth;//Memory.graphics.GraphicsDevice.Viewport.Width;
+            vpHeight = Memory.PreferredViewportHeight;//Memory.graphics.GraphicsDevice.Viewport.Width;
             lastfade = fade;
-            vpSpace = vpHeight * 0.03f;
-            DFontPos = new Vector2(vpWidth * .10f, vpHeight * .05f) + Offset;
+            vpSpace = vpHeight * 0.09f* Memory.Scale().X;
+            DFontPos = new Vector2(vpWidth * .10f * Memory.Scale().X, vpHeight * .05f * Memory.Scale().Y) + Offset;
             switch (State)
             {
                 case MainMenuStates.Init:
@@ -692,43 +683,30 @@ namespace FF8
         /// </summary>
         private static void DrawMainLobby()
         {
-            float zoom = 0.85f;
-            Memory.SpriteBatchStartAlpha();
-            Rectangle dst = new Rectangle();
-            start00_size = new Vector2(2f / 3f * vpWidth, 2f / 3f * vpWidth)*zoom;
-            start01_size = new Vector2(1f / 3f * vpWidth, 0)*zoom;
-            dst.Location = ((new Vector2(vpWidth,0)*(1f-zoom))/2).ToPoint();
-            dst.Size = start00_size.ToPoint();
-            //dst = new Rectangle(0, 0, (int)(vpWidth * zoom), (int)(vpHeight * (zoom - 0.1f)));
-            Memory.spriteBatch.Draw(start00, dst, Color.White * Fade);
-            dst.X += (start00_size).ToPoint().X;
-            dst.Width = start01_size.ToPoint().X;
-            //dst = new Rectangle((int)(vpWidth * zoom), 0, vpWidth / 3, (int)(vpHeight * (zoom - 0.1f)));
-            Memory.spriteBatch.Draw(start01, dst, Color.White * Fade);
-            float vpSpace = vpHeight * 0.05f;
+            Vector2 scale = Memory.Scale();
+            Vector2 vp = (new Vector2(vpWidth, vpHeight))*scale;
             float item = 0;
+            Vector2 textSize = new Vector2(2f, 3f);// scaled in render function.
+            Vector2 textStart = new Vector2(vp.X * .41f, vp.Y * .65f);
+            Memory.SpriteBatchStartAlpha();
+            Rectangle dst = new Rectangle(new Point(0),start.ClassicSize.ToPoint());
+            dst.Location = new Point(0);
+            dst.Size = vp.ToPoint();
+            start.Draw(dst,null,Color.White*fade);
             foreach (Mitems i in (Mitems[])Enum.GetValues(typeof(Mitems)))
             {
                 Item c = strMainLobby[i];
                 c.Loc = (Memory.font.RenderBasicText(Font.CipherDirty(c.Text).Replace("\0", ""),
-                    (int)(vpWidth * 0.42f), (int)(vpHeight * 0.35f + vpSpace * item++), 2f, 3f, 0, 1, Fade));
+                    (int)(textStart.X), (int)(textStart.Y+((textSize.Y+ vpSpace)* item++)), textSize.X, textSize.Y, 0, 1, Fade));
                 strMainLobby[i] = c;
             }
-
             Memory.SpriteBatchEnd();
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
             Memory.Icons.Draw(Icons.ID.Finger_Right, 2, new Rectangle(
-                (int)(vpWidth * 0.37f),
-                (int)(vpHeight * 0.35f + vpSpace * (float)Mchoose),
-                (int)(24 * 2 * fScaleWidth),
-                (int)(16 * 2 * fScaleWidth)), 0, fade);
-
-            //Memory.spriteBatch.Draw(Memory.iconsTex[2], new Rectangle(
-            //    (int)(vpWidth * 0.37f),
-            //    (int)(vpHeight * 0.35f + vpSpace * (float)Mchoose),
-            //    (int)(24 * 2 * fScaleWidth),
-            //    (int)(16 * 2 * fScaleWidth)),
-            //    new Rectangle(232, 0, 23, 15), Color.White * Fade);
+                (int)(textStart.X-((48+10) * scale.X)),
+                (int)(textStart.Y + (10*scale.Y) + ((textSize.Y + vpSpace) * (float)Mchoose)),
+                (int)(48 * scale.X),
+                (int)(36 * scale.Y)), 0, fade);
             Memory.SpriteBatchEnd();
         }
 
@@ -748,7 +726,8 @@ namespace FF8
                 dst.Height = c.Loc.Y + c.Loc.Height - dst.Y;
                 dict[i] = c;
             }
-            dst.Inflate(vpWidth * .06f, vpHeight * .025f);
+            Vector2 scale = Memory.Scale();
+            dst.Inflate(vpWidth * .06f * scale.X, vpHeight * .035f*scale.Y);
             return dst;
         }
 
@@ -757,19 +736,19 @@ namespace FF8
         /// </summary>
         private static void DrawDebugLobby()
         {
+            Vector2 scale = Memory.Scale();
+            vpSpace = vpHeight * 0.05f * scale.X;
             float item = 0;
             Rectangle dst = FontBoxCalc<Ditems>(strDebugLobby);
-            //dst.Offset(Offset);
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
             Memory.Icons.Draw(Icons.ID.Menu_BG_256, 0, dst, 0, Fade);
             item = 0;
             dst.Offset(4 * 3.5f, 0);
-            dst.Width = 0;
-            dst.Height = 0;
-            Memory.Icons.Draw(Icons.ID.DEBUG, 2, dst, 3.5f);
+            dst.Size = (Memory.Icons[Icons.ID.DEBUG].GetRectangle.Size.ToVector2() * scale * 3.5f).ToPoint();
+            Memory.Icons.Draw(Icons.ID.DEBUG, 2, dst,0, fade);
             dst.Location = DFontPos.ToPoint();
-            dst.Size = new Point((int)(24 * 2 * fScaleWidth), (int)(16 * 2 * fScaleWidth));
-            dst.Offset(-(dst.Width + 10 * fScaleWidth), vpSpace * ((float)Dchoose));
+            dst.Size = new Point((int)(24 * 2 * scale.X), (int)(16 * 2 * scale.Y));
+            dst.Offset(-(dst.Width + 10 * scale.X), 6*scale.Y+vpSpace * ((float)Dchoose));
 
             Memory.Icons.Draw(Icons.ID.Finger_Right, 2, dst, 0, fade);
             Memory.SpriteBatchEnd();

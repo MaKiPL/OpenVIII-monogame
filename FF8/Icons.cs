@@ -583,11 +583,11 @@ namespace FF8
 
         public void Draw(int id, int pallet, Rectangle dst, float scale = 1f, float fade = 1f) => Draw((ID)id, pallet, dst, scale, fade);
 
-        public void Draw(Enum id, int pallet, Rectangle dst, float scale = 1f, float fade = 1f) => entries[(ID)id].Draw(icons, pallet, dst, scale, fade);
+        public void Draw(Enum id, int pallet, Rectangle dst, float scale, float fade = 1f) => entries[(ID)id].Draw(icons, pallet, dst, scale, fade);
 
-        public void Draw(int id, Rectangle dst, float fade = 1) => Draw((ID)id, 2, dst);
+        public void Draw(int id, Rectangle dst, float fade = 1) => Draw((ID)id, 2, dst,1f);
 
-        public void Draw(Enum id, Rectangle dst, float fade = 1) => Draw((ID)id, 2, dst);
+        public void Draw(Enum id, Rectangle dst, float fade = 1) => Draw((ID)id, 2, dst,1f);
 
         public Entry GetEntry(Enum id, int index) => entries[(ID)id][index] ?? null;
 

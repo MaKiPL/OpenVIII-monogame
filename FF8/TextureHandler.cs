@@ -19,7 +19,22 @@ namespace FF8
 
         #region Constructors
 
-        public TextureHandler(string filename, TEX classic, uint cols = 1, uint rows = 1)
+        public TextureHandler(string filename, uint cols = 1, uint rows = 1)
+        {
+            if (cols == 1 && rows == 1)
+            {
+                ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
+                filename = aw.GetListOfFiles().First(x => x.IndexOf(filename, StringComparison.OrdinalIgnoreCase) >= 0);
+                TEX tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, filename));
+                Init(filename, tex, cols, rows);
+            }
+            else
+                Init(filename, null, cols, rows);
+        }
+
+        public TextureHandler(string filename, TEX classic, uint cols = 1, uint rows = 1) => Init(filename, classic, cols, rows);
+
+        public void Init(string filename, TEX classic, uint cols = 1, uint rows = 1)
         {
             Classic = classic;
             Size = Vector2.Zero;
@@ -91,6 +106,8 @@ namespace FF8
             //return null;
         }
 
+        public static implicit operator Rectangle(TextureHandler v) => new Rectangle(new Point(0), v.Size.ToPoint());
+
         public static Vector2 GetScale(Vector2 _old, Vector2 _new) => _new / _old;
 
         public static Vector2 GetScale(Vector2 _old, Texture2D _new) => new Vector2(_new.Width / _old.X, _new.Height / _old.Y);
@@ -127,7 +144,12 @@ namespace FF8
             return mat1;
         }
 
+
+        public static Vector2 ToVector2(Texture2D t) => new Vector2(t.Width, t.Height);
+        public static Vector2 ToVector2(TextureHandler t) => new Vector2(t.ClassicSize.X, t.ClassicSize.Y);
+
         public static Rectangle ToRectangle(Texture2D t) => new Rectangle(0, 0, t.Width, t.Height);
+        public static Rectangle ToRectangle(TextureHandler t) => new Rectangle(0, 0, (int)t.ClassicSize.X, (int)t.ClassicSize.Y);
 
         public static Rectangle ToRectangle(Vector2 loc, Vector2 size) => new Rectangle(loc.ToPoint(), size.ToPoint());
 
@@ -166,35 +188,66 @@ namespace FF8
             }
         }
 
-        public void Draw(Rectangle dst, Rectangle src, Color color)
+        public void Draw(Rectangle dst, Rectangle? src, Color color)
         {
-            for (uint r = 0; r < Rows; r++)
+            Vector2 dstOffset = Vector2.Zero;
+            if (src != null)
             {
-                for (uint c = 0; c < Cols; c++)
+                Vector2 offset = Vector2.Zero;
+                Rectangle dst2 = new Rectangle();
+                Rectangle cnt = new Rectangle();
+                for (uint r = 0; r < Rows; r++)
                 {
-                    //if all the pieces of Scales are correct they should all have the same scale.
-                    Rectangle _src = Scale(src, /*Scales[c, r] /*/ ScaleFactor);
-                    Rectangle cnt = ToRectangle(Textures[c, r]);
-                    cnt.Offset(new Vector2(cnt.Width * (c), cnt.Height * (r)));
-                    if (cnt.Contains(_src))
+                    for (uint c = 0; c < Cols; c++)
                     {
-                        _src.Location = (GetOffset(cnt, _src)).ToPoint();
-                        //got lucky the whole thing is in this rectangle
-                        Memory.spriteBatch.Draw(Textures[c, r], dst, _src, color);
-                        return;
+                        dst2 = new Rectangle();
+                        //if all the pieces of Scales are correct they should all have the same scale.
+                        Rectangle _src = Scale(src.Value, ScaleFactor);
+                        cnt = ToRectangle(Textures[c, r]);
+                        cnt.Offset(offset);
+                        if (cnt.Contains(_src))
+                        {
+                            _src.Location = (GetOffset(cnt, _src)).ToPoint();
+                            //got lucky the whole thing is in this rectangle
+                            Memory.spriteBatch.Draw(Textures[c, r], dst, _src, color);
+                            return;
+                        }
+                        else if (cnt.Intersects(_src))
+                        {
+                            //crap gotta draw more than once.
+                            //how do i determine the new dst
+                            //this might work.
+
+                            Rectangle src2 = Rectangle.Intersect(cnt, _src);
+                            dst2 = Scale(dst, GetScale(_src.Size, src2.Size));
+                            dst2.Offset(dstOffset);
+                            Memory.spriteBatch.Draw(Textures[c, r], dst2, _src, color);
+                            return;
+                        }
+                        offset.X += cnt.Width;
+                        dstOffset.X += dst2.Width;
                     }
-                    else if (cnt.Intersects(_src))
+                    offset.Y += cnt.Height;
+                    dstOffset.Y += dst2.Height;
+                }
+            }
+            //drawing texture directly
+            else
+            {
+                Vector2 dstV = Vector2.Zero;
+                dstOffset.X += dst.X;
+                dstOffset.Y += dst.X;
+                for (uint r = 0; r < Rows; r++)
+                {
+                    for (uint c = 0; c < Cols; c++)
                     {
-                        //crap gotta draw more than once.
-                        //how do i determine the new dst
-                        //this might work.
-
-                        Rectangle src2 = Rectangle.Intersect(cnt, _src);
-                        Rectangle dst2 = Scale(dst, GetScale(_src.Size, src2.Size));
-                        dst2.Offset(GetOffset(_src, src2));
-
-                        Memory.spriteBatch.Draw(Textures[c, r], dst2, _src, color);
+                        Vector2 scale = GetScale(Size, dst.Size.ToVector2());                        
+                        dstV = ToVector2(Textures[c, r]) * scale;
+                        Memory.spriteBatch.Draw(Textures[c,r],dstOffset,null,color,0f,Vector2.Zero,scale,SpriteEffects.None,0f);
+                        
+                        dstOffset.X += dstV.X;
                     }
+                    dstOffset.Y += dstV.Y;
                 }
             }
         }
@@ -204,6 +257,7 @@ namespace FF8
         protected void Init()
         {
             Vector2 size = Vector2.Zero;
+            Vector2 oldsize = Vector2.Zero;
             TEX tex = null;
             uint c2 = 0;
             uint r2 = 0;
@@ -214,6 +268,7 @@ namespace FF8
                     ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
                     string path = aw.GetListOfFiles().First(x => (x.IndexOf(string.Format(Filename, c + r * Cols + StartOffset), StringComparison.OrdinalIgnoreCase) >= 0));
                     tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
+                    if (Classic == null && c2 < Cols) oldsize.X += tex.TextureData.Width;
                     Texture2D pngTex = LoadPNG(path);
                     //commented out code forces fallback to old texture when 0 pallets.
                     //check to see if texture data is loaded correctly, if not fallback to classic
@@ -243,23 +298,25 @@ namespace FF8
                     //}
                     //else
                     //{
-                    Textures[c, r] = (UseBest(tex, pngTex, out Vector2 scale));
+                    Textures[c, r] = (UseBest(tex, pngTex));
                     //Scales[c, r] = scale;
                     //}
                     if (c2++ < Cols) size.X += Textures[c2 - 1, r2].Width;
                 }
+                if (Classic == null && r2 < Rows) oldsize.Y += tex.TextureData.Height;
                 if (r2++ < Rows) size.Y += Textures[c2 - 1, r2 - 1].Height;
             }
             Size = size;
+            if (Classic == null) ClassicSize = oldsize;
         }
 
-        private Vector2 GetOffset(Rectangle old, Rectangle @new) => GetOffset(old.Location.ToVector2(), @new.Location.ToVector2());
+        public static Vector2 GetOffset(Rectangle old, Rectangle @new) => GetOffset(old.Location.ToVector2(), @new.Location.ToVector2());
 
-        private Vector2 GetOffset(Point oldLoc, Point newLoc) => GetOffset(oldLoc.ToVector2(), newLoc.ToVector2());
+        public static Vector2 GetOffset(Point oldLoc, Point newLoc) => GetOffset(oldLoc.ToVector2(), newLoc.ToVector2());
 
-        private Vector2 GetOffset(Vector2 oldLoc, Vector2 newLoc) => newLoc - oldLoc;
+        public static Vector2 GetOffset(Vector2 oldLoc, Vector2 newLoc) => newLoc - oldLoc;
 
-        private Vector2 GetScale(Point oldSize, Point newSize) => GetScale(oldSize.ToVector2(), newSize.ToVector2());
+        public static Vector2 GetScale(Point oldSize, Point newSize) => GetScale(oldSize.ToVector2(), newSize.ToVector2());
 
         #endregion Methods
     }
