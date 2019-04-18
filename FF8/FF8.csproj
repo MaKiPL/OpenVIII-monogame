@@ -147,6 +147,7 @@
     <Compile Include="Menu\Icons.InsertCustomEntries.cs" />
     <Compile Include="Menu\Magazine.InsertCustomEntries.cs" />
     <Compile Include="Menu\Magazine.ID.cs" />
+    <Compile Include="Menu\MSG.cs" />
     <Compile Include="Module_card_test.cs" />
     <Compile Include="Sources\Environment\Game\Location\GameLocation.cs" />
     <Compile Include="Sources\Environment\Game\Location\IGameLocationProvider.cs" />
