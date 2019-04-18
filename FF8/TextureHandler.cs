@@ -19,7 +19,7 @@ namespace FF8
 
         #region Constructors
 
-        public TextureHandler(string filename, uint cols = 1, uint rows = 1, uint pallet = 0)
+        public TextureHandler(string filename, uint cols = 1, uint rows = 1, int pallet = -1)
         {
             if (cols == 1 && rows == 1)
             {

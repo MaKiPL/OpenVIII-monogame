@@ -120,12 +120,9 @@ namespace FF8
             textureDataPointer = (uint)pbs.Tell();
         }
 
-        public enum FontColorID
-        {
-            Dark_Gray, Grey, Yellow, Red, Green, Blue, Purple, White
-        }
+        
 
-        public Color[] GetClutColors(FontColorID clut) => GetClutColors((ushort)clut);
+        public Color[] GetClutColors(Font.ColorID clut) => GetClutColors((ushort)clut);
 
         public Color[] GetClutColors(int clut) => GetClutColors((ushort)clut);
 

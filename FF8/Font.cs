@@ -2,14 +2,15 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace FF8
 {
-    internal class Font
+    public class Font
     {
-        private Texture2D sysfnt; //21 characters long; char is always 12x12
-        private Texture2D sysfnt00;
+        private Texture2D sysfnt; //21x10 characters; char is always 12x12
+        private TextureHandler sysfntbig; //21x10 characters; char is always 24x24; 2 files side by side; sysfnt00 is same as sysfld00, but sysfnt00 is missing sysfnt01
         private Texture2D menuFont;
 
         #region CharTable
@@ -156,7 +157,10 @@ namespace FF8
             {0xFF, "ag"}
         };
         #endregion
-
+        public enum ColorID
+        {
+            Dark_Gray, Grey, Yellow, Red, Green, Blue, Purple, White
+        }
         public Font() => LoadFonts();
 
         internal void LoadFonts()
@@ -164,11 +168,9 @@ namespace FF8
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
             string sysfntTdwFilepath = aw.GetListOfFiles().First(x => x.ToLower().Contains("sysfnt.tdw"));
             string sysfntFilepath = aw.GetListOfFiles().First(x => x.ToLower().Contains("sysfnt.tex"));
-            string sysfnt00Filepath = aw.GetListOfFiles().First(x => x.ToLower().Contains("sysfnt00.tex"));
             TEX tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, sysfntFilepath));
-            sysfnt = tex.GetTexture();
-            tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, sysfnt00Filepath));
-            sysfnt00 = tex.GetTexture();
+            sysfnt = tex.GetTexture((int)ColorID.White);
+            sysfntbig = new TextureHandler("sysfld{0:00}.tex",tex, 2,1,(int)ColorID.White);
 
             ReadTdw(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, sysfntTdwFilepath));
         }
@@ -178,7 +180,7 @@ namespace FF8
             int dataPointer = BitConverter.ToInt32(Tdw, 4);
             TIM2 tim = new TIM2(Tdw, (uint)dataPointer);
             menuFont = new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight);
-            menuFont.SetData(tim.CreateImageBuffer(tim.GetClutColors((ushort)TIM2.FontColorID.White)));
+            menuFont.SetData(tim.CreateImageBuffer(tim.GetClutColors(ColorID.White)));
         }
 
 
@@ -216,8 +218,8 @@ namespace FF8
         {
             Rectangle ret = new Rectangle(x, y, 0, 0);
             Point real = new Point(x, y);
-            int charCountWidth = whichFont == 0 ? 21 : 10;
-            int charSize = whichFont == 0 ? 12 : 24;
+            int charCountWidth = 21;
+            int charSize = 12; //pixelhandler does the 2x scaling on the fly.
             Vector2 zoom = new Vector2(zoomWidth, zoomHeight);
             Point size = (new Vector2(charSize,charSize)*zoom*Memory.Scale()).ToPoint();
             foreach (char c in buffer)
@@ -233,17 +235,25 @@ namespace FF8
                     continue;
                 }
                 Rectangle destRect = new Rectangle(real,size);
-
+                // if you use  Memory.SpriteBatchStartAlpha(SamplerState.PointClamp); you won't need to trim last pixel. but it doesn't look good on low res fonts.
                 Rectangle sourceRect = new Rectangle((deltaChar - (verticalPosition * charCountWidth)) * charSize,
                     verticalPosition * charSize,
-                    charSize - 1,
-                    charSize - 1);
+                    charSize,
+                    charSize);
 
 
-                Memory.spriteBatch.Draw(isMenu == 1 ? menuFont : whichFont == 0 ? sysfnt : sysfnt00,
-                    destRect,
-                    sourceRect,
-                Color.White * Fade);
+                if (whichFont == 0 || isMenu == 1)
+                {
+                    //trim pixels to remove texture filtering artifacts.
+                    sourceRect.Width -= 1;
+                    sourceRect.Height -= 1;
+                    Memory.spriteBatch.Draw(isMenu == 1 ? menuFont : sysfnt,
+                        destRect,
+                        sourceRect,
+                    Color.White * Fade);
+                }
+                else
+                    sysfntbig.Draw(destRect, sourceRect, Color.White * Fade);
 
                 real.X += size.X;
                 int curWidth = real.X - x;
