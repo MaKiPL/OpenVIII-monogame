@@ -155,7 +155,7 @@
     <Compile Include="Sources\Environment\Runtime\RuntimeEnvironment.cs" />
     <Compile Include="Sources\Environment\Runtime\RuntimePlatform.cs" />
     <Compile Include="Sources\Environment\Build\BuildEnvironment.cs" />
-    <Compile Include="Battle\debug_MCH.cs" />
+    <Compile Include="World\debug_MCH.cs" />
     <Compile Include="Entry.cs" />
     <Compile Include="ExtapathyExtended.cs" />
     <Compile Include="Menu\Faces.cs" />
