@@ -1,9 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FF8
 {
@@ -123,7 +120,13 @@ namespace FF8
             textureDataPointer = (uint)pbs.Tell();
         }
 
-        public Color[] GetClutColors(int clut)
+        
+
+        public Color[] GetClutColors(Font.ColorID clut) => GetClutColors((ushort)clut);
+
+        public Color[] GetClutColors(int clut) => GetClutColors((ushort)clut);
+
+        public Color[] GetClutColors(ushort clut)
         {
             if (clut > texture.NumOfCluts)
                 throw new Exception("TIM_v2::GetClutColors::given clut is bigger than texture number of cluts");

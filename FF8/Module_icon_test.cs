@@ -13,8 +13,8 @@ namespace FF8
         private static Mode currentMode;
 
         private static Icons.ID icon;
-        private static Icons icons;
-        private static int pallet = 2;
+        private const int DefaultPallet = 2;
+        private static int pallet = DefaultPallet;
 
         #endregion Fields
 
@@ -50,7 +50,7 @@ namespace FF8
             if (Input.Button(Keys.Up))
             {
                 if (pallet <= 0)
-                    pallet = Icons.PalletCount - 1;
+                    pallet = (int)Memory.Icons.PalletCount - 1;
                 else
                     pallet--;
                 currentMode = Mode.Draw;
@@ -58,14 +58,14 @@ namespace FF8
 
             if (Input.Button(Keys.Down))
             {
-                if (pallet >= Icons.PalletCount - 1)
+                if (pallet >= Memory.Icons.PalletCount - 1)
                     pallet = 0;
                 else
                     pallet++;
                 currentMode = Mode.Draw;
             }
-            //if ((Input.Button(Keys.Up) || Input.Button(Keys.Down)) && icons.GetEntry(icon) != null && (icons.GetEntry(icon).GetLoc.count > 1))
-            //    icon -= (icons.GetEntry(icon).GetLoc.count - 1);
+            //if ((Input.Button(Keys.Up) || Input.Button(Keys.Down)) && Memory.Icons.GetEntry(icon) != null && (Memory.Icons.GetEntry(icon).GetLoc.count > 1))
+            //    icon -= (Memory.Icons.GetEntry(icon).GetLoc.count - 1);
             if (Input.Button(Keys.Right))
             {
                 do
@@ -75,7 +75,7 @@ namespace FF8
                     else
                         icon++;
                 }
-                while (icons.GetEntry(icon) == null);
+                while (Memory.Icons.GetEntry(icon) == null);
                 currentMode = Mode.Draw;
             }
             if (Input.Button(Keys.Left))
@@ -84,18 +84,17 @@ namespace FF8
                 {
                     if (icon <= 0)
                         icon = Enum.GetValues(typeof(Icons.ID)).Cast<Icons.ID>().Max();
-                    //else if (icons.GetEntry(icon) != null && icons.GetEntry(icon).GetLoc.count > 1)
-                    //    icon -= icons.GetEntry(icon).GetLoc.count;
+                    //else if (Memory.Icons.GetEntry(icon) != null && Memory.Icons.GetEntry(icon).GetLoc.count > 1)
+                    //    icon -= Memory.Icons.GetEntry(icon).GetLoc.count;
                     else
                         icon--;
                 }
-                while (icons.GetEntry(icon) == null);
+                while (Memory.Icons.GetEntry(icon) == null);
                 currentMode = Mode.Draw;
             }
             switch (currentMode)
             {
                 case Mode.Initialize:
-                    Initialize();
                     currentMode++;
                     break;
 
@@ -119,8 +118,8 @@ namespace FF8
             float scale = 4f;
             Rectangle dst = new Rectangle()
             {
-                Width = (int)(icons.GetEntryGroup(icon).Width * scale),
-                Height = (int)(icons.GetEntryGroup(icon).Height * scale)
+                Width = (int)(Memory.Icons.GetEntryGroup(icon).Width * scale),
+                Height = (int)(Memory.Icons.GetEntryGroup(icon).Height * scale)
             };
             if (icon == Icons.ID.Menu_BG_368)
             {
@@ -135,12 +134,11 @@ namespace FF8
             }
 
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
-            icons.Draw(icon, pallet, dst, scale);
-            Memory.font.RenderBasicText(Font.CipherDirty($"{((icon)).ToString().Replace('_', ' ')}\nid: {(ushort)icon}\n\npallet: {pallet}\n\nwidth: {icons[icon].Width}\nheight: {icons[icon].Height}"), (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), 1f, 2f, 0, 1);
+            Memory.Icons.Draw(icon, pallet, dst, scale);
+            Memory.font.RenderBasicText(Font.CipherDirty($"{((icon)).ToString().Replace('_', ' ')}\nid: {(ushort)icon}\n\npallet: {pallet}\n\nwidth: {Memory.Icons[icon].Width}\nheight: {Memory.Icons[icon].Height}"), (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), 1f, 2f, 0, 1);
             Memory.SpriteBatchEnd();
         }
 
-        private static void Initialize() => icons = new Icons();
 
         #endregion Methods
     }

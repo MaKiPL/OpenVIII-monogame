@@ -2,14 +2,15 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace FF8
 {
-    internal class Font
+    public class Font
     {
-        private Texture2D sysfnt; //21 characters long; char is always 12x12
-        private Texture2D sysfnt00;
+        private Texture2D sysfnt; //21x10 characters; char is always 12x12
+        private TextureHandler sysfntbig; //21x10 characters; char is always 24x24; 2 files side by side; sysfnt00 is same as sysfld00, but sysfnt00 is missing sysfnt01
         private Texture2D menuFont;
 
         #region CharTable
@@ -156,7 +157,10 @@ namespace FF8
             {0xFF, "ag"}
         };
         #endregion
-
+        public enum ColorID
+        {
+            Dark_Gray, Grey, Yellow, Red, Green, Blue, Purple, White
+        }
         public Font() => LoadFonts();
 
         internal void LoadFonts()
@@ -164,52 +168,48 @@ namespace FF8
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
             string sysfntTdwFilepath = aw.GetListOfFiles().First(x => x.ToLower().Contains("sysfnt.tdw"));
             string sysfntFilepath = aw.GetListOfFiles().First(x => x.ToLower().Contains("sysfnt.tex"));
-            string sysfnt00Filepath = aw.GetListOfFiles().First(x => x.ToLower().Contains("sysfnt00.tex"));
             TEX tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, sysfntFilepath));
-            sysfnt = tex.GetTexture();
-            tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, sysfnt00Filepath));
-            sysfnt00 = tex.GetTexture();
+            sysfnt = tex.GetTexture((int)ColorID.White);
+            sysfntbig = new TextureHandler("sysfld{0:00}.tex",tex, 2,1,(int)ColorID.White);
 
             ReadTdw(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, sysfntTdwFilepath));
         }
-
         internal void ReadTdw(byte[] Tdw)
         {
             int widthPointer = BitConverter.ToInt32(Tdw, 0);
             int dataPointer = BitConverter.ToInt32(Tdw, 4);
             TIM2 tim = new TIM2(Tdw, (uint)dataPointer);
             menuFont = new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight);
-            menuFont.SetData(tim.CreateImageBuffer(tim.GetClutColors(7)));
+            menuFont.SetData(tim.CreateImageBuffer(tim.GetClutColors(ColorID.White)));
         }
 
 
+        public Rectangle CalcBasicTextArea(string buffer, Vector2 pos, Vector2 zoom, int whichFont = 0, int isMenu = 0, float Fade = 1.0f) => CalcBasicTextArea(buffer, (int)pos.X, (int)pos.Y, zoom.X, zoom.Y);
+        public Rectangle CalcBasicTextArea(string buffer, Point pos, Vector2 zoom, int whichFont = 0, int isMenu = 0, float Fade = 1.0f) => CalcBasicTextArea(buffer, pos.X, pos.Y, zoom.X, zoom.Y);
         public Rectangle CalcBasicTextArea(string buffer, int x, int y, float zoomWidth = 1f, float zoomHeight = 1f, int whichFont = 0)
         {
             Rectangle ret = new Rectangle(x, y, 0, 0);
-            int realX = x;
-            int realY = y;
+            Point real = new Point(x, y);
             int charCountWidth = whichFont == 0 ? 21 : 10;
             int charSize = whichFont == 0 ? 12 : 24;
-            float fScaleWidth = (float)Memory.graphics.GraphicsDevice.Viewport.Width / Memory.PreferredViewportWidth;
-            float fScaleHeight = (float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight;
-            int charWidth = (int)(charSize * zoomWidth * fScaleWidth);
-            int charHeight = (int)(charSize * zoomHeight * fScaleHeight);
+            Vector2 zoom = new Vector2(zoomWidth, zoomHeight);
+            Point size = (new Vector2(charSize, charSize) * zoom * Memory.Scale()).ToPoint();
             foreach (char c in buffer)
             {
                 if (c == '\n')
                 {
-                    realX = x;
-                    realY += charHeight;
+                    real.X = x;
+                    real.Y += size.Y;
                     continue;
                 }
                 int verticalPosition = (char)(c - 32) / charCountWidth;
                 //i.e. 1280 is 100%, 640 is 50% and therefore 2560 is 200% which means multiply by 0.5f or 2.0f
-                realX += (int)(charSize * zoomWidth * fScaleWidth);
-                int curWidth = realX - x;
+                real.X += size.X;
+                int curWidth = real.X - x;
                 if (curWidth > ret.Width)
                     ret.Width = curWidth;
             }
-            ret.Height = charHeight + (realY - y);
+            ret.Height = size.Y + (real.Y - y);
             return ret;
         }
         public Rectangle RenderBasicText(string buffer, Vector2 pos, Vector2 zoom, int whichFont = 0, int isMenu = 0, float Fade = 1.0f) => RenderBasicText(buffer, (int) pos.X, (int) pos.Y, zoom.X, zoom.Y, whichFont, isMenu, Fade);
@@ -218,11 +218,10 @@ namespace FF8
         {
             Rectangle ret = new Rectangle(x, y, 0, 0);
             Point real = new Point(x, y);
-            int charCountWidth = whichFont == 0 ? 21 : 10;
-            int charSize = whichFont == 0 ? 12 : 24;
+            int charCountWidth = 21;
+            int charSize = 12; //pixelhandler does the 2x scaling on the fly.
             Vector2 zoom = new Vector2(zoomWidth, zoomHeight);
-            Vector2 scale = new Vector2((float)Memory.graphics.GraphicsDevice.Viewport.Width / Memory.PreferredViewportWidth,(float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight);
-            Point size = (new Vector2(charSize,charSize)*zoom*scale).ToPoint();
+            Point size = (new Vector2(charSize,charSize)*zoom*Memory.Scale()).ToPoint();
             foreach (char c in buffer)
             {
 
@@ -236,17 +235,25 @@ namespace FF8
                     continue;
                 }
                 Rectangle destRect = new Rectangle(real,size);
-
+                // if you use  Memory.SpriteBatchStartAlpha(SamplerState.PointClamp); you won't need to trim last pixel. but it doesn't look good on low res fonts.
                 Rectangle sourceRect = new Rectangle((deltaChar - (verticalPosition * charCountWidth)) * charSize,
                     verticalPosition * charSize,
-                    charSize - 1,
-                    charSize - 1);
+                    charSize,
+                    charSize);
 
 
-                Memory.spriteBatch.Draw(isMenu == 1 ? menuFont : whichFont == 0 ? sysfnt : sysfnt00,
-                    destRect,
-                    sourceRect,
-                Color.White * Fade);
+                if (whichFont == 0 || isMenu == 1)
+                {
+                    //trim pixels to remove texture filtering artifacts.
+                    sourceRect.Width -= 1;
+                    sourceRect.Height -= 1;
+                    Memory.spriteBatch.Draw(isMenu == 1 ? menuFont : sysfnt,
+                        destRect,
+                        sourceRect,
+                    Color.White * Fade);
+                }
+                else
+                    sysfntbig.Draw(destRect, sourceRect, Color.White * Fade);
 
                 real.X += size.X;
                 int curWidth = real.X - x;

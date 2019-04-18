@@ -10,6 +10,7 @@
     using System.Runtime.InteropServices;
     using System.Text;
     using System.Threading;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Ffcc is a front end for processing Audio and Video using ffmpeg.autogen
@@ -28,14 +29,14 @@
         /// the audio before you give it more, then you get sound skips.
         /// </summary>
         /// <value>The goal buffer count.</value>
-        /// <remarks>Will want to be as low as possible without sound skipping.
-        /// 91.875 is 1 second of audio at 44100 hz @ 15 fps;
-        /// 99.9001 is 1 second of audio at 48000 hz @ 15 fps;
+        /// <remarks>
+        /// Will want to be as low as possible without sound skipping. 91.875 is 1 second of audio at
+        /// 44100 hz @ 15 fps; 99.9001 is 1 second of audio at 48000 hz @ 15 fps;
         /// </remarks>
         private const int GoalBufferCount = 100;
+
         /// <summary>
-        /// NextAsync sleeps when filling buffer.
-        /// If set too high buffer will empty before filling it again.
+        /// NextAsync sleeps when filling buffer. If set too high buffer will empty before filling it again.
         /// </summary>
         private const int NextAsyncSleep = 10;
 
@@ -96,10 +97,16 @@
         {
             fixed (byte* tmp = &headerData[0])
             {
-                buffer_Data.SetHeader(tmp);
-                DataFileName = datafilename;
-                LoadFromRAM(&buffer_Data);
-                Init(null, AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode.PROCESS_ALL, loopstart);
+                lock (Decoder)
+                {
+                    buffer_Data.SetHeader(tmp);
+                    DataFileName = datafilename;
+                    LoadFromRAM(&buffer_Data);
+                    Init(null, AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode.PROCESS_ALL, loopstart);
+                    ffmpeg.avformat_free_context(Decoder.Format);
+                    //ffmpeg.avio_context_free(&Decoder._format->pb); //CTD
+                    Decoder.Format = null;
+                }
                 Dispose(false);
             }
         }
@@ -509,43 +516,58 @@ EOF:
             return false;
         }
 
+        private Task task;
+
         /// <summary>
         /// Dispose of all leaky varibles.
         /// </summary>
         public void Dispose() => Dispose(true);
 
         /// <summary>
+        /// Same as Play but with a thread. Thread is terminated on Stop() or Dispose().
+        /// </summary>
+        public void PlayInTask(float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f)
+        {
+            if (sourceToken == null)
+                sourceToken = new CancellationTokenSource();
+            if (cancellationToken == null)
+                cancellationToken = sourceToken.Token;
+            Play(volume, pitch, pan);
+            task = new Task(NextinTask);
+            task.Start();
+        }
+
+        private CancellationTokenSource sourceToken;
+        private CancellationToken cancellationToken;
+
+        /// <summary>
         /// For use in threads runs Next till done. To keep audio buffer fed. Or really good timing
         /// on video frames.
         /// </summary>
-        public void NextAsync()
+        private void NextinTask()
         {
-            bool disposeAll = false;
             try
             {
-                if (Mode == FfccMode.STATE_MACH)
+                while (Mode == FfccMode.STATE_MACH && !cancellationToken.IsCancellationRequested && State != FfccState.DONE && !isDisposed)
                 {
-                    while (State != FfccState.DONE)
+                    lock (Decoder) //make the main thread wait if it accesses this class.
                     {
-                        lock (Decoder) //make the main thread wait if it accesses this class.
+                        while (!isDisposed && !Ahead)
                         {
-                            while (!Ahead)
-                            {
-                                if (Next() < 0)
-                                    break;
-                            }
+                            if (Next() < 0)
+                                break;
                         }
-                        Thread.Sleep(NextAsyncSleep); //delay checks
                     }
+                    Thread.Sleep(NextAsyncSleep); //delay checks
                 }
             }
-            catch (ThreadAbortException)
-            {
-                disposeAll = true;//stop playing
-            }
+            //catch (ThreadAbortException)
+            //{
+            //    disposeAll = true;//stop playing
+            //}
             finally
             {
-                Dispose(disposeAll); // dispose of everything except audio encase it's still playing.
+                Dispose(cancellationToken.IsCancellationRequested); // dispose of everything except audio encase it's still playing.
             }
         }
 
@@ -632,6 +654,8 @@ EOF:
         /// </summary>
         public void Stop()
         {
+            if (stopped)
+                return;
             if (timer.IsRunning)
             {
                 timer.Stop();
@@ -658,6 +682,10 @@ EOF:
             {
                 SoundEffect.Dispose();
             }
+            if (task != null)
+            {
+                sourceToken.Cancel();
+            }
         }
 
         /// <summary>
@@ -683,54 +711,61 @@ EOF:
             }
         }
 
+        private bool stopped = false;
+
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                Stop();
-            }
-            if (!isDisposed)
+            lock (Decoder)
             {
                 if (disposing)
                 {
-                    //Stop();
-                    // TODO: dispose managed state (managed objects).
+                    Stop();
                 }
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-                if (DecodedMemoryStream != null)
+                if (!isDisposed)
                 {
-                    DecodedMemoryStream.Dispose();
-                }
-                if (ConvertedData != null)
-                {
-                    //Marshal.FreeHGlobal((IntPtr)ConvertedData);
-                }
-                //if (_intPtr != null)
-                //{
-                //    Marshal.FreeHGlobal(_intPtr);
-                //}
-                ffmpeg.sws_freeContext(ScalerContext);
-                if (ResampleContext != null)
-                {
-                    ffmpeg.swr_close(ResampleContext);
-                    SwrContext* pResampleContext = ResampleContext;
-                    ffmpeg.swr_free(&pResampleContext);
-                }
-                ffmpeg.av_frame_unref(ResampleFrame);
-                ffmpeg.av_free(ResampleFrame);
-                if (_avio_ctx != null)
-                {
-                    //ffmpeg.avio_close(avio_ctx); //CTD
-                    ffmpeg.av_free(_avio_ctx);
-                }
+                    State = FfccState.DONE;
+                    Mode = FfccMode.NOTINIT;
+                    if (disposing)
+                    {
+                        //Stop();
+                        // TODO: dispose managed state (managed objects).
+                    }
+                    // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                    // TODO: set large fields to null.
+                    if (DecodedMemoryStream != null)
+                    {
+                        DecodedMemoryStream.Dispose();
+                    }
+                    if (ConvertedData != null)
+                    {
+                        //Marshal.FreeHGlobal((IntPtr)ConvertedData);
+                    }
+                    //if (_intPtr != null)
+                    //{
+                    //    Marshal.FreeHGlobal(_intPtr);
+                    //}
+                    ffmpeg.sws_freeContext(ScalerContext);
+                    if (ResampleContext != null)
+                    {
+                        ffmpeg.swr_close(ResampleContext);
+                        SwrContext* pResampleContext = ResampleContext;
+                        ffmpeg.swr_free(&pResampleContext);
+                    }
+                    ffmpeg.av_frame_unref(ResampleFrame);
+                    ffmpeg.av_free(ResampleFrame);
+                    if (_avio_ctx != null)
+                    {
+                        //ffmpeg.avio_close(avio_ctx); //CTD
+                        ffmpeg.av_free(_avio_ctx);
+                    }
 
-                //if (avio_ctx_buffer != null)
-                //    ffmpeg.av_freep(avio_ctx_buffer); //throws exception
+                    //if (avio_ctx_buffer != null)
+                    //    ffmpeg.av_freep(avio_ctx_buffer); //throws exception
 
-                // set to true to prevent multiple disposings
-                isDisposed = true;
-                GC.Collect(); // donno if this really does much. was trying to make sure the memory i'm watching is what is really there.
+                    // set to true to prevent multiple disposings
+                    isDisposed = true;
+                    GC.Collect(); // donno if this really does much. was trying to make sure the memory i'm watching is what is really there.
+                }
             }
         }
 

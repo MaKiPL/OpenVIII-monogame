@@ -139,6 +139,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="ArchiveWorker.cs" />
+    <Compile Include="Menu\Cards.cs" />
+    <Compile Include="Menu\Cards.ID.cs" />
+    <Compile Include="EntryGroup.cs" />
+    <Compile Include="Menu\Faces.ID.cs" />
+    <Compile Include="Menu\Icons.ID.cs" />
+    <Compile Include="Menu\Icons.InsertCustomEntries.cs" />
+    <Compile Include="Menu\Magazine.InsertCustomEntries.cs" />
+    <Compile Include="Menu\Magazine.ID.cs" />
+    <Compile Include="Module_card_test.cs" />
     <Compile Include="Sources\Environment\Game\Location\GameLocation.cs" />
     <Compile Include="Sources\Environment\Game\Location\IGameLocationProvider.cs" />
     <Compile Include="Sources\Environment\Game\Location\LinuxGameLocationProvider.cs" />
@@ -149,13 +158,13 @@
     <Compile Include="debug_MCH.cs" />
     <Compile Include="Entry.cs" />
     <Compile Include="ExtapathyExtended.cs" />
-    <Compile Include="Faces.cs" />
+    <Compile Include="Menu\Faces.cs" />
     <Compile Include="Ffcc.cs" />
     <Compile Include="FfccVaribleGroup.cs" />
     <Compile Include="FFmpegBinariesHelper.cs" />
     <Compile Include="Font.cs" />
     <Compile Include="Game1.cs" />
-    <Compile Include="Icons.cs" />
+    <Compile Include="Menu\Icons.cs" />
     <Compile Include="init_debugger_Audio.cs" />
     <Compile Include="init_debugger_battle.cs" />
     <Compile Include="init_debugger_fields.cs" />
@@ -183,7 +192,9 @@
     <Compile Include="Sources\MonoGame\Hooks\MonoGameHooks.cs" />
     <Compile Include="Sources\MonoGame\Hooks\OpenALWindowsHook.cs" />
     <Compile Include="Sources\NetFramework\TypeExtensionMethods.cs" />
+    <Compile Include="SP2.cs" />
     <Compile Include="TEX.cs" />
+    <Compile Include="TextureHandler.cs" />
     <Compile Include="TIM2.cs" />
     <Compile Include="debug_battleDat.cs" />
     <Compile Include="WindowsDebugger.cs">

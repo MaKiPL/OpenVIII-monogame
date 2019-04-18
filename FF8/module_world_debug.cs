@@ -275,7 +275,7 @@ namespace FF8
             {
                 TIM2 tim = new TIM2(v, (uint)(sec[39 - 1] + wm39sections[i]));
                 wm39textures.Add(new Texture2D[tim.GetClutCount]);
-                for (int k = 0; k < wm39textures[i].Length; k++)
+                for (ushort k = 0; k < wm39textures[i].Length; k++)
                 {
                     wm39textures[i][k] = new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight, false, SurfaceFormat.Color);
                     wm39textures[i][k].SetData(tim.CreateImageBuffer(tim.GetClutColors(k), true));
@@ -296,7 +296,7 @@ namespace FF8
             {
                 TIM2 tim = new TIM2(v, (uint)(sec[38 - 1] + wm38sections[i]));
                 wm38textures.Add(new Texture2D[tim.GetClutCount]);
-                for (int k = 0; k < wm38textures[i].Length; k++)
+                for (ushort k = 0; k < wm38textures[i].Length; k++)
                 {
                     wm38textures[i][k] = new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight, false, SurfaceFormat.Color);
                     wm38textures[i][k].SetData(tim.CreateImageBuffer(tim.GetClutColors(k), true));
@@ -317,7 +317,7 @@ namespace FF8
                 int timOffset = i * 0x12800;
                 TIM2 tim = new TIM2(texl, (uint)timOffset);
                 textures.Add(new Texture2D[tim.GetClutCount]);
-                for (int k = 0; k < textures[i].Length; k++)
+                for (ushort k = 0; k < textures[i].Length; k++)
                 {
                     textures[i][k] = new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight, false, SurfaceFormat.Color);
                     textures[i][k].SetData(tim.CreateImageBuffer(tim.GetClutColors(k), true));

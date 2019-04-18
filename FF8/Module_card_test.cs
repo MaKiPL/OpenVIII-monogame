@@ -4,13 +4,13 @@ using System;
 
 namespace FF8
 {
-    internal static class Module_face_test
+    internal class Module_card_test
     {
         #region Fields
 
         private static Mode currentMode;
 
-        private static Faces.ID[] FaceValue;
+        private static Cards.ID[] CardValue;
 
         private static int pointer = -1;
 
@@ -56,7 +56,7 @@ namespace FF8
 
                 case Mode.Draw:
                     pointer++;
-                    if (pointer >= FaceValue.Length) pointer = 0;
+                    if (pointer >= CardValue.Length) pointer = 0;
                     currentMode++;
                     break;
 
@@ -79,22 +79,19 @@ namespace FF8
             {
                 Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
 
-                int rows = 2;
-                int cols = 8;
-                int totalitems = rows * cols;
-                Faces.ID id = FaceValue[pointer];
-                int pos = (int)id;
-                int i = Memory.Faces.GetEntry(id).File;
-                int col = (pos % cols);
-                int row = (pos / cols) % rows;
+                var id = CardValue[pointer];
+                uint pos = (uint)id;
+                //int i = cards.GetEntry(id).File;
+                uint col = (uint)(Memory.Cards.GetEntry(id).X / Memory.Cards.GetEntry(id).Width) +1;
+                uint row = (uint)(Memory.Cards.GetEntry(id).Y / Memory.Cards.GetEntry(id).Width) +1;
 
-                float scale = vp.Height / Memory.Faces.GetEntry(id).Height;
-                Rectangle dst = new Rectangle(new Point(0), (Memory.Faces.GetEntry(id).Size * scale).ToPoint());
+                float scale = vp.Height / Memory.Cards.GetEntry(id).Height;
+                Rectangle dst = new Rectangle(new Point(0), (Memory.Cards.GetEntry(id).Size * scale).ToPoint());
                 dst.Offset(vp.Width / 2 - dst.Center.X, 0);
                 Memory.SpriteBatchStartStencil();
                 Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
-                Memory.Faces.Draw(id, dst);
-                Memory.font.RenderBasicText(Font.CipherDirty($"{FaceValue[pointer].ToString().Replace('_', ' ')}\npos: {pos}\nfile: {i}\ncol: {col}\nrow: {row}\nx: {Memory.Faces.GetEntry(id).X}\ny: {Memory.Faces.GetEntry(id).Y}\nwidth: {Memory.Faces.GetEntry(id).Width}\nheight: {Memory.Faces.GetEntry(id).Height}"),
+                Memory.Cards.Draw(id, dst);
+                Memory.font.RenderBasicText(Font.CipherDirty($"{CardValue[pointer].ToString().Replace('_', ' ')}\npos: {pos}\ncol: {col}\nrow: {row}\nx: {Memory.Cards.GetEntry(id).X}\ny: {Memory.Cards.GetEntry(id).Y}\nwidth: {Memory.Cards.GetEntry(id).Width}\nheight: {Memory.Cards.GetEntry(id).Height}"),
                 (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), 1f, 2f, 0, 1);
                 Memory.SpriteBatchEnd();
             }
@@ -102,8 +99,8 @@ namespace FF8
 
         private static void Initialize()
         {
-            FaceValue = (Faces.ID[])Enum.GetValues(typeof(Faces.ID));
-            Array.Sort(FaceValue);
+            CardValue = (Cards.ID[])Enum.GetValues(typeof(Cards.ID));
+            Array.Sort(CardValue);
         }
 
         #endregion Methods

@@ -333,10 +333,11 @@ namespace FF8
         internal static void Update()
         {
             //checks to see if music buffer is running low and getframe triggers a refill.
-            if (ffccMusic != null && !ffccMusic.Ahead)
-            {
-                ffccMusic.Next();
-            }
+            //if (ffccMusic != null && !ffccMusic.Ahead)
+            //{
+            //    ffccMusic.Next();
+            //}
+            //if played in task we don't need to do this.
         }
 
         //callable test
@@ -445,8 +446,10 @@ namespace FF8
             {
                 case ".ogg":
                     //ffccMusic = new Ffcc(@"c:\eyes_on_me.wav", AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
+                    if (ffccMusic != null)
+                        ffccMusic.Dispose();
                     ffccMusic = new Ffcc(pt, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
-                    ffccMusic.Play(.5f);
+                    ffccMusic.PlayInTask(.5f);
                     break;
 
                 case ".sgt":

@@ -1,5 +1,6 @@
 ﻿
 using FFmpeg.AutoGen;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -19,7 +20,6 @@ namespace FF8
         private const int STATE_FINISHED = 5;
         private const int STATE_RETURN = 6;
         private const int STATE_RESET = 7;
-        private static Thread T_Audio;
 
         private static readonly string[] movieDirs = {
             MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../movies")), //this folder has most movies
@@ -95,8 +95,7 @@ namespace FF8
                     MovieState++;
                     if (FfccAudio != null)
                     {
-                        FfccAudio.Play();
-                        T_Audio.Start();
+                        FfccAudio.PlayInTask();
                     }
                     if (FfccVideo != null)
                     {
@@ -153,9 +152,9 @@ namespace FF8
         }
         private static void Reset()
         {
-            if (T_Audio != null)
+            if (FfccAudio != null)
             {
-                T_Audio.Abort("Ending video playback");
+                FfccAudio.Dispose();
             }
             FfccAudio = null;
             if (FfccVideo != null)
@@ -180,10 +179,6 @@ namespace FF8
         {
 
             FfccAudio = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
-            T_Audio = new Thread(FfccAudio.NextAsync)
-            {
-                Priority = ThreadPriority.AboveNormal
-            };
             FfccVideo = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_VIDEO, Ffcc.FfccMode.STATE_MACH);
 
             FPS = FfccVideo.FPS;
@@ -249,8 +244,12 @@ namespace FF8
                 return;
             }
             //draw frame;
+            Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
             Memory.SpriteBatchStartStencil();//by default xna filters all textures SamplerState.PointClamp disables that. so video is being filtered why playing.
-            Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height), Microsoft.Xna.Framework.Color.White);
+            ClearScreen();
+            Rectangle dst = new Rectangle(new Point(0), (new Vector2(frameTex.Width, frameTex.Height) * Memory.Scale(frameTex.Width, frameTex.Height)).ToPoint());
+            dst.Offset(Memory.Center.X - dst.Center.X,Memory.Center.Y - dst.Center.Y);
+            Memory.spriteBatch.Draw(frameTex,dst, Microsoft.Xna.Framework.Color.White);
             Memory.SpriteBatchEnd();
             
         }
