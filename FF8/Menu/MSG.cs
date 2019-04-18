@@ -59,9 +59,19 @@ namespace FF8
 
             //pet_exp.msg = 18 strings
             //format: ability name\0description\0
-            //{0x03,0x40} = Angelo's name
-            //example: {0x03,0x40} Rush\0 Damage one enemy\0
+            //{0x0340} = Angelo's name
+            //example: {0x0340} Rush\0 Damage one enemy\0
             //list of Angelo's attack names and descriptions
+
+            //namedic.bin 32 strings
+            //Seems to be location names.
+            //start of file
+            //  UIint16 Count
+            //  UIint16[Count]Location
+            //at each location
+            //  Byte[Count][Bytes to null]
+
+
         }
     }
 }

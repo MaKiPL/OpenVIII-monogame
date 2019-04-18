@@ -248,30 +248,33 @@ namespace FF8
             {0xE5, ""},// pos:197, col:0, row:0 --
             {0xE6, ""},// pos:198, col:0, row:0 --
             {0xE7, ""},// pos:199, col:0, row:0 --
-            {0xE8, ""},// pos:200, col:0, row:0 --
-            {0xE9, ""},// pos:201, col:0, row:0 --
-            {0xEA, ""},// pos:202, col:0, row:0 --
-            {0xEB, ""},// pos:203, col:0, row:0 --
-            {0xEC, ""},// pos:204, col:0, row:0 --
-            {0xED, ""},// pos:205, col:0, row:0 --
-            {0xEE, ""},// pos:206, col:0, row:0 --
-            {0xEF, ""},// pos:207, col:0, row:0 --
-            {0xF0, ""},// pos:208, col:0, row:0 --
-            {0xF1, ""},// pos:209, col:0, row:0 --
-            {0xF2, ""},// pos:210, col:0, row:0 --
-            {0xF3, ""},// pos:211, col:0, row:0 --
-            {0xF4, ""},// pos:212, col:0, row:0 --
-            {0xF5, ""},// pos:213, col:0, row:0 --
-            {0xF6, ""},// pos:214, col:0, row:0 --
-            {0xF7, ""},// pos:215, col:0, row:0 --
-            {0xF8, ""},// pos:216, col:0, row:0 --
-            {0xF9, ""},// pos:217, col:0, row:0 --
+            {0xE8, "in"},// pos:200, col:0, row:0 --
+            {0xE9, "e "},// pos:201, col:0, row:0 --
+            {0xEA, "ne"},// pos:202, col:0, row:0 --
+            {0xEB, "to"},// pos:203, col:0, row:0 --
+            {0xEC, "to"},// pos:204, col:0, row:0 --
+            {0xED, "HP"},// pos:205, col:0, row:0 --
+            {0xEE, "l "},// pos:206, col:0, row:0 --
+            {0xEF, "ll"},// pos:207, col:0, row:0 --
+            {0xF0, "GF"},// pos:208, col:0, row:0 --
+            {0xF1, "nt"},// pos:209, col:0, row:0 --
+            {0xF2, "il"},// pos:210, col:0, row:0 --
+            {0xF3, "o "},// pos:211, col:0, row:0 --
+            {0xF4, "ef"},// pos:212, col:0, row:0 --
+            {0xF5, "on"},// pos:213, col:0, row:0 --
+            {0xF6, " w"},// pos:214, col:0, row:0 --
+            {0xF7, " r"},// pos:215, col:0, row:0 --
+            {0xF8, "wi"},// pos:216, col:0, row:0 --
+            {0xF9, "fi"},// pos:217, col:0, row:0 --
             {0xFA, ""},// pos:218, col:0, row:0 --
-            {0xFB, ""},// pos:219, col:0, row:0 --
-            {0xFC, ""},// pos:220, col:0, row:0 --
+            {0xFB, "s "},// pos:219, col:0, row:0 --
+            {0xFC, "ar"},// pos:220, col:0, row:0 --
             {0xFD, ""},// pos:221, col:0, row:0 --
-            {0xFE, ""},// pos:222, col:0, row:0 --
-            {0xFF, ""},// pos:223, col:0, row:0 --
+            {0xFE, " S"},// pos:222, col:0, row:0 --
+            {0xFF, "ag"},// pos:223, col:0, row:0 --
+
+
+
 
             //{0x00, "\0"}, // I think \0 is a new string. if you read in a msg file it a array of strings each ending with \0
             //{0x02, "\n"}, // changed \n to signal draw text to make a new line
