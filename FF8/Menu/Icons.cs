@@ -24,7 +24,7 @@ namespace FF8
             //FORCE_ORIGINAL = true;
             TextureBigFilename = new string[] { "iconfl{0:00}.TEX" };
             TextureBigSplit = new uint[] { 4 };
-            TextureFilename = "icon.tex";
+            TextureFilename[0] = "icon.tex";
             IndexFilename = "icon.sp1";
             Init();
         }
@@ -49,24 +49,26 @@ namespace FF8
 
         #region Methods
 
-        public override void Init()
+        protected override void InitTextures(ArchiveWorker aw = null)
+        {
+            TEX tex;
+            tex = new TEX(ArchiveWorker.GetBinaryFile(ArchiveString,
+                aw.GetListOfFiles().First(x => x.IndexOf(TextureFilename[0], StringComparison.OrdinalIgnoreCase) >= 0)));
+            Textures = new List<TextureHandler>(tex.TextureData.NumOfPalettes);
+            for (int i = 0; i < tex.TextureData.NumOfPalettes; i++)
+            {
+                if (FORCE_ORIGINAL == false && TextureBigFilename != null && TextureBigSplit != null)
+                    Textures.Add(new TextureHandler(TextureBigFilename[0], tex, 2, TextureBigSplit[0] / 2, i));
+                else
+                    Textures.Add(new TextureHandler(TextureFilename[0], tex, 1, 1, i));
+            }
+        }
+        protected override void InitEntries(ArchiveWorker aw = null)
         {
             if (Entries == null)
             {
-                ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
-                TEX tex;
-                tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU,
-                    aw.GetListOfFiles().First(x => x.IndexOf(TextureFilename, StringComparison.OrdinalIgnoreCase) >= 0)));
-                Textures = new List<TextureHandler>(tex.TextureData.NumOfPalettes);
-                for (int i = 0; i < tex.TextureData.NumOfPalettes; i++)
-                {
-                    if (FORCE_ORIGINAL == false && TextureBigFilename != null && TextureBigSplit != null)
-                        Textures.Add(new TextureHandler(TextureBigFilename[0], tex, 2, TextureBigSplit[0] / 2, i));
-                    else
-                        Textures.Add(new TextureHandler(TextureFilename, tex, 1, 1, i));
-                }
                 //read from icon.sp1
-                using (MemoryStream ms = new MemoryStream(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU,
+                using (MemoryStream ms = new MemoryStream(ArchiveWorker.GetBinaryFile(ArchiveString,
                     aw.GetListOfFiles().First(x => x.IndexOf(IndexFilename, StringComparison.OrdinalIgnoreCase) >= 0))))
                 {
                     using (BinaryReader br = new BinaryReader(ms))

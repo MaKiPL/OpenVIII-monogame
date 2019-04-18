@@ -4,7 +4,7 @@ namespace FF8
 {
     internal partial class Icons
     {
-        protected void InsertCustomEntries()
+        protected override void InsertCustomEntries()
         {
             Entry BG = new Entry
             {

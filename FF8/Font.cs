@@ -19,7 +19,7 @@ namespace FF8
             {0x00, "\0"},// pos:-32, col:0, row:-1 -- is end of a string. MSG files have more than one string sepperated by \0
             {0x01, ""},// pos:-31, col:0, row:0 --
             {0x02, "\n"},// pos:-30, col:0, row:0 -- new line
-            {0x03, ""},// pos:-29, col:0, row:0 --
+            {0x03, ""},// pos:-29, col:0, row:0 -- special character. {0x03,0x40 = [Angelo's Name]}
             {0x04, ""},// pos:-28, col:0, row:0 --
             {0x05, ""},// pos:-27, col:0, row:0 --
             {0x06, ""},// pos:-26, col:0, row:0 --
@@ -28,9 +28,9 @@ namespace FF8
             {0x09, ""},// pos:-23, col:0, row:0 --
             {0x0A, ""},// pos:-22, col:0, row:0 --
             {0x0B, ""},// pos:-21, col:0, row:0 --
-            {0x0C, ""},// pos:-20, col:0, row:0 -- 
+            {0x0C, ""},// pos:-20, col:0, row:0 -- <MAGBYTE>
             {0x0D, ""},// pos:-19, col:0, row:0 --
-            {0x0E, ""},// pos:-18, col:0, row:0 --
+            {0x0E, ""},// pos:-18, col:0, row:0 -- <$>
             {0x0F, ""},// pos:-17, col:0, row:0 --
             {0x10, ""},// pos:-16, col:0, row:0 --
             {0x11, ""},// pos:-15, col:0, row:0 --
