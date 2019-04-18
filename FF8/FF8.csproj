@@ -155,7 +155,7 @@
     <Compile Include="Sources\Environment\Runtime\RuntimeEnvironment.cs" />
     <Compile Include="Sources\Environment\Runtime\RuntimePlatform.cs" />
     <Compile Include="Sources\Environment\Build\BuildEnvironment.cs" />
-    <Compile Include="debug_MCH.cs" />
+    <Compile Include="Battle\debug_MCH.cs" />
     <Compile Include="Entry.cs" />
     <Compile Include="ExtapathyExtended.cs" />
     <Compile Include="Menu\Faces.cs" />
@@ -166,7 +166,7 @@
     <Compile Include="Game1.cs" />
     <Compile Include="Menu\Icons.cs" />
     <Compile Include="init_debugger_Audio.cs" />
-    <Compile Include="init_debugger_battle.cs" />
+    <Compile Include="Battle\init_debugger_battle.cs" />
     <Compile Include="init_debugger_fields.cs" />
     <Compile Include="Input.cs" />
     <Compile Include="Loc.cs" />
@@ -174,15 +174,15 @@
     <Compile Include="MakiExtended.cs" />
     <Compile Include="Memory.cs" />
     <Compile Include="ModuleHandler.cs" />
-    <Compile Include="module_battle.cs" />
-    <Compile Include="module_battle_Debug.cs" />
+    <Compile Include="Battle\module_battle.cs" />
+    <Compile Include="Battle\module_battle_Debug.cs" />
     <Compile Include="Module_face_test.cs" />
     <Compile Include="module_field_debug.cs" />
     <Compile Include="Module_icon_test.cs" />
     <Compile Include="module_main_menu_debug.cs" />
     <Compile Include="module_movie_test.cs" />
     <Compile Include="module_overture_debug.cs" />
-    <Compile Include="module_world_debug.cs" />
+    <Compile Include="World\module_world_debug.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PseudoBufferedStream.cs" />
@@ -196,7 +196,7 @@
     <Compile Include="TEX.cs" />
     <Compile Include="TextureHandler.cs" />
     <Compile Include="TIM2.cs" />
-    <Compile Include="debug_battleDat.cs" />
+    <Compile Include="Battle\debug_battleDat.cs" />
     <Compile Include="WindowsDebugger.cs">
       <SubType>Form</SubType>
     </Compile>
