@@ -135,7 +135,7 @@ namespace FF8
             AlphaBlendFunction = BlendFunction.Add,
         };
 
-        public static int module = MODULE_OVERTURE_DEBUG;
+        public static int module = MODULE_BATTLE_DEBUG;
 
         public static string FF8DIR => GameLocation.Current.DataPath;
 
@@ -164,7 +164,7 @@ namespace FF8
 
         #region battleProvider
 
-        public static int battle_encounter = 000;
+        public static int battle_encounter = 060;
         public static int SetBattleMusic = 6;
         public static Init_debugger_battle.Encounter[] encounters;
 

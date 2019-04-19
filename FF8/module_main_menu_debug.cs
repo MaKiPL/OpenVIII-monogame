@@ -782,7 +782,7 @@ namespace FF8
                     switch (i)
                     {
                         case Ditems.Battle:
-                            return debug_choosedBS.ToString("D4");
+                            return $"{debug_choosedBS.ToString("D4")} (a0stg{Memory.encounters[debug_choosedBS].bScenario.ToString("D03")})";
 
                         case Ditems.Field:
                             return debug_choosedField;
