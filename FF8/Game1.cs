@@ -9,6 +9,9 @@ namespace FF8
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        SpriteBatch spriteRender;
+        private float scale = 1f;
+        RenderTarget2D rt;
 
         public Game1()
         {
@@ -24,6 +27,7 @@ namespace FF8
             Memory.graphics = graphics;
             Memory.spriteBatch = spriteBatch;
             Memory.content = Content;
+            spriteRender = new SpriteBatch(GraphicsDevice);
 
             init_debugger_Audio.DEBUG(); //this initializes the DirectAudio, it's true that it gets loaded AFTER logo, but we will do the opposite
             init_debugger_Audio.DEBUG_SoundAudio(); //this initalizes the WAVE format audio.dat
@@ -45,6 +49,7 @@ namespace FF8
             Memory.Icons = new Icons();
             
 
+            rt = new RenderTarget2D(GraphicsDevice, (int)(GraphicsDevice.Viewport.Width * scale), (int)(GraphicsDevice.Viewport.Height * scale), false, SurfaceFormat.Color, DepthFormat.Depth24);
             base.Initialize();
         }
         protected override void LoadContent()
@@ -86,16 +91,37 @@ namespace FF8
 
         protected override void Draw(GameTime gameTime)
         {
+            this.Window.Title = $"OpenVIII - Debug showcase of resolution scaling: {(scale*100).ToString("F02")}%";
+            if (Input.GetInputDelayed(Keys.NumPad1))
+            {
+                scale += 0.25f;
+                rt = new RenderTarget2D(GraphicsDevice, (int)(GraphicsDevice.Viewport.Width * scale), (int)(GraphicsDevice.Viewport.Height * scale), false, SurfaceFormat.Color, DepthFormat.Depth24);
+            }
+            if (Input.GetInputDelayed(Keys.NumPad2))
+            {
+                rt = new RenderTarget2D(GraphicsDevice, (int)(GraphicsDevice.Viewport.Width * scale), (int)(GraphicsDevice.Viewport.Height * scale), false, SurfaceFormat.Color, DepthFormat.Depth24);
+                scale -= 0.25f;
+            }
+            //RESOLUTION SCALING IMPLEMENTATION - TO USE WITH TestBranch
+            GraphicsDevice.SetRenderTarget(rt);
             ModuleHandler.Draw(gameTime);
             base.Draw(gameTime);
-            //if (Input.GetInputDelayed(Keys.F1))  //SCREENSHOT CAPABILITIES WIP; I'm leaving it as-is for now. I'll be probably using that for battle transitions (or not)
-            //{
-            //Texture2D tex = new Texture2D(graphics.GraphicsDevice, graphics.GraphicsDevice.Viewport.Width, graphics.GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color);
-            //byte[] b = new byte[tex.Width * tex.Height * 4];
-            //graphics.GraphicsDevice.GetBackBufferData<byte>(b);
-            //tex.SetData(b);
-            //    tex.SaveAsJpeg(new System.IO.FileStream("D:/test.jpg", System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.ReadWrite), tex.Width, tex.Height);
-            //}
+            GraphicsDevice.SetRenderTarget(null);
+            if (rt != null)
+            {
+                spriteRender.Begin(rasterizerState: RasterizerState.CullCounterClockwise, depthStencilState: DepthStencilState.Default, samplerState: SamplerState.PointClamp);
+                spriteRender.Draw(rt, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
+                spriteRender.End();
+            }
+            base.Draw(gameTime);
+            if (Input.GetInputDelayed(Keys.F1))  //SCREENSHOT CAPABILITIES WIP; I'm leaving it as-is for now. I'll be probably using that for battle transitions (or not)
+            {
+                Texture2D tex = new Texture2D(graphics.GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color);
+                byte[] b = new byte[tex.Width * tex.Height * 4];
+                graphics.GraphicsDevice.GetBackBufferData<byte>(b);
+                tex.SetData(b);
+                tex.SaveAsJpeg(new System.IO.FileStream("D:/test.jpg", System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.ReadWrite), tex.Width, tex.Height);
+            }
         }
 
         private void GracefullyExit()

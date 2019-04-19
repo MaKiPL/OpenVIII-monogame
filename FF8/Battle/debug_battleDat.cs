@@ -313,7 +313,6 @@ namespace FF8
         private Tuple<Vector3, int> CalculateFrame(Tuple<Vector3, int> tuple, AnimationFrame frame,AnimationFrame nextFrame, float step)
         {
             Matrix matrix = frame.boneRot.Item3[tuple.Item2]; //get's bone matrix
-            var testVar = frame.boneRot.Item3.Select(x=>x.M43).ToArray();
             Vector3 rootFramePos = new Vector3(
                 matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
                 matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
