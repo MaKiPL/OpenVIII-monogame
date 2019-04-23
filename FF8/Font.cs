@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace FF8
 {
@@ -214,7 +215,7 @@ namespace FF8
             {0xC1, "»"},// pos:161, col:15, row:9 --
             {0xC2, "±"},// pos:162, col:16, row:9 --
             {0xC3, ""},// pos:163, col:17, row:9 --
-            {0xC4, "♫"},// pos:164, col:18, row:9 --
+            //{0xC4, ""},//{0xC4, "♫"},// pos:164, col:18, row:9 -- seems to be used as an alignment or a place holder many strings have 3 of these in a row.
             {0xC5, "↑"},// pos:165, col:19, row:9 --
             {0xC6, "VI"},// pos:166, col:20, row:9 --
             {0xC7, "II"},// pos:167, col:21, row:9 --
@@ -452,35 +453,36 @@ namespace FF8
             {0x0520, "L2" },
             {0x0521, "R2" },
             //other
-            {0x0541, "Junction Symbol" },
-            {0x0542, "Right Arrow" },
-            { 0x55D,  "Fire" },
-            { 0x55E,  "Ice" },
-            { 0x55F,  "Thunder" },
-            { 0x560,  "Earth" },
-            { 0x561,  "Poison" },
-            { 0x562,  "Wind" },
-            { 0x563,  "Water" },
-            { 0x564,  "Holy" },
-            { 0x565,  "Death" },
-            { 0x566,  "Poison" },
-            { 0x567,  "Petrify" },
-            { 0x568,  "Darkness" },
-            { 0x569,  "Silence" },
-            { 0x56A,  "Berserk" },
-            { 0x56B,  "Zombie" },
-            { 0x56C,  "Sleep" },
-            { 0x56D,  "Slow" },
-            { 0x56E,  "Stop" },
-            { 0x56F,  "Curse" },
-            { 0x570,  "Confuse" },
-            { 0x571,  "Drain" },
-            {0x545, "Junction Ability" },
-            {0x546,   "Command Ability" },
-            {0x548,   "Character Ability" },
-            {0x549,   "Party Ability" },
-            {0x54A,   "GF Ability" },
-            {0x54B,   "Menu Ability" },
+            //commented out because these seem to be varible depending on where they are used.
+            //{0x0541, "Junction Symbol" },
+            //{0x0542, "Right Arrow" },
+            //{ 0x55D,  "Fire" },
+            //{ 0x55E,  "Ice" },
+            //{ 0x55F,  "Thunder" },
+            //{ 0x560,  "Earth" },
+            //{ 0x561,  "Poison" },
+            //{ 0x562,  "Wind" },
+            //{ 0x563,  "Water" },
+            //{ 0x564,  "Holy" },
+            //{ 0x565,  "Death" },
+            //{ 0x566,  "Poison" },
+            //{ 0x567,  "Petrify" },
+            //{ 0x568,  "Darkness" },
+            //{ 0x569,  "Silence" },
+            //{ 0x56A,  "Berserk" },
+            //{ 0x56B,  "Zombie" },
+            //{ 0x56C,  "Sleep" },
+            //{ 0x56D,  "Slow" },
+            //{ 0x56E,  "Stop" },
+            //{ 0x56F,  "Curse" },
+            //{ 0x570,  "Confuse" },
+            //{ 0x571,  "Drain" },
+            //{0x545, "Junction Ability" },
+            //{0x546,   "Command Ability" },
+            //{0x548,   "Character Ability" },
+            //{0x549,   "Party Ability" },
+            //{0x54A,   "GF Ability" },
+            //{0x54B,   "Menu Ability" },
         };
 
         /// <summary>
@@ -517,6 +519,88 @@ namespace FF8
             {0xB22, "Option-0xB22" }, // could be wrong
             {0xB23, "Option-0xB23" }, // could be wrong
             //0xC values are spells.
+        };
+
+        private static Dictionary<int, string> Spell = new Dictionary<int, string>()
+        {
+            //Spell
+            //http://forums.qhimm.com/index.php?topic=11137.msg166280#msg166280
+            {0xC00,"Empty"},
+            {0xC01,"Fire"},
+            {0xC02,"Fira"},
+            {0xC03,"Firaga"},
+            {0xC04,"Blizzard"},
+            {0xC05,"Blizzara"},
+            {0xC06,"Blizzaga"},
+            {0xC07,"Thunder"},
+            {0xC08,"Thundara"},
+            {0xC09,"Thundaga"},
+            {0xC0A,"Water"},
+            {0xC0B,"Aero"},
+            {0xC0C,"Bio"},
+            {0xC0D,"Demi"},
+            {0xC0E,"Holy"},
+            {0xC0F,"Flare"},
+            {0xC10,"Meteor"},
+            {0xC11,"Quake"},
+            {0xC12,"Tornado"},
+            {0xC13,"Ultima"},
+            {0xC14,"Apocalypse"},
+            {0xC15,"Cure"},
+            {0xC16,"Cura"},
+            {0xC17,"Curaga"},
+            {0xC18,"Life"},
+            {0xC19,"Full-Life"},
+            {0xC1A,"Regan"},
+            {0xC1B,"Esuna"},
+            {0xC1C,"Dispel"},
+            {0xC1D,"Protect"},
+            {0xC1E,"Shell"},
+            {0xC1F,"Reflect"},
+            {0xC20,"Aura"},
+            {0xC21,"Double"},
+            {0xC22,"Triple"},
+            {0xC23,"Haste"},
+            {0xC24,"Slow"},
+            {0xC25,"Stop"},
+            {0xC26,"Blind"},
+            {0xC27,"Confuse"},
+            {0xC28,"Sleep"},
+            {0xC29,"Silence"},
+            {0xC2A,"Break"},
+            {0xC2B,"Death"},
+            {0xC2C,"Drain"},
+            {0xC2D,"Pain"},
+            {0xC2E,"Berserk"},
+            {0xC2F,"Float"},
+            {0xC30,"Zombie"},
+            {0xC31,"Meltdown"},
+            {0xC32,"Scan"},
+            {0xC33,"Full-Cure"},
+            {0xC34,"Wall"},
+            {0xC35,"Rapture"},
+            {0xC36,"Percent"},
+            {0xC37,"Catastrophe"},
+            {0xC38,"The End"},
+            //GF
+            {0xC60,"Quezacotl" },
+            {0xC61,"Shiva" },
+            {0xC62,"Ifrit" },
+            {0xC63,"Siren" },
+            {0xC64,"Brothers" },
+            {0xC65,"Diablos" },
+            {0xC66,"Carbuncle" },
+            {0xC67,"Leviathan" },
+            {0xC68,"Pandemona" },
+            {0xC69,"Cerberus" },
+            {0xC6A,"Alexander" },
+            {0xC6B,"Doomtrain" },
+            {0xC6C,"Bahamut" },
+            {0xC6D,"Cactuar" },
+            {0xC6E,"Tonberry" },
+            {0xC6F,"Eden" }
+
+
         };
 
         public Font() => LoadFonts();
@@ -668,7 +752,7 @@ namespace FF8
                         byte b = br.ReadByte();
                         if (chartable.ContainsKey(b))
                         {
-                            byte[] c = System.Text.Encoding.UTF8.GetBytes(chartable[b]);
+                            byte[] c = Encoding.UTF8.GetBytes(chartable[b]);
                             os.Write(c, 0, c.Length);
                         }
                         else if(ms.Position < ms.Length)
@@ -679,35 +763,44 @@ namespace FF8
                             {
                                 case 0x06:
                                     if (ColorCode.ContainsKey(i))
-                                        bw.Write(System.Text.Encoding.ASCII.GetBytes($"<Color: \"{ColorCode[i]}\">"));
+                                        bw.Write(Encoding.UTF8.GetBytes($"<Color: \"{ColorCode[i]}\">"));
                                     else
-                                        bw.Write(System.Text.Encoding.ASCII.GetBytes($"<Color: {string.Format("0x{0:X2}", i)}>"));
+                                        bw.Write(Encoding.UTF8.GetBytes($"<Color: {string.Format("0x{0:X2}", i)}>"));
                                     break;
 
                                 case 0x05:
                                     if (Icons.ContainsKey(i))
-                                        bw.Write(System.Text.Encoding.ASCII.GetBytes($"<Icon_Button: \"{Icons[i]}\">"));
+                                        bw.Write(Encoding.UTF8.GetBytes($"<Icon_Button: \"{Icons[i]}\">"));
                                     else
-                                        bw.Write(System.Text.Encoding.ASCII.GetBytes($"<Icon_Button: {string.Format("0x{0:X2}", i)}>"));
+                                        bw.Write(Encoding.UTF8.GetBytes($"<Icon_Button: {string.Format("0x{0:X2}", i)}>"));
                                     break;
 
                                 case 0x03:
                                     if (Names.ContainsKey(i))
-                                        bw.Write(System.Text.Encoding.ASCII.GetBytes($"<Name: \"{Names[i]}\">"));
+                                        bw.Write(Encoding.UTF8.GetBytes($"<Name: \"{Names[i]}\">"));
                                     else
-                                        bw.Write(System.Text.Encoding.ASCII.GetBytes($"<Name: {string.Format("0x{0:X2}", i)}>"));
+                                        bw.Write(Encoding.UTF8.GetBytes($"<Name: {string.Format("0x{0:X2}", i)}>"));
                                     break;
 
-                                case 0x0A:
-                                case 0x0B:
                                 case 0x0C:
-                                    if (Special.ContainsKey(i))
-                                        bw.Write(System.Text.Encoding.ASCII.GetBytes($"<Special: \"{Special[i]}\">"));
+                                    if (Spell.ContainsKey(i))
+                                        bw.Write(Encoding.UTF8.GetBytes($"<Spell_GF: \"{Spell[i]}\">"));
                                     else
-                                        bw.Write(System.Text.Encoding.ASCII.GetBytes($"<Special: {string.Format("0x{0:X2}", i)}>"));
+                                        bw.Write(Encoding.UTF8.GetBytes($"<Spell_GF: {string.Format("0x{0:X2}", i)}>"));
+                                    break;
+                                case 0x0A:
+                                case 0x0B://0x0B can be 2 or 3 bytes only grabbing 2 so might have extra rando character near
+                                    if (Special.ContainsKey(i))
+                                        bw.Write(Encoding.UTF8.GetBytes($"<Special: \"{Special[i]}\">"));
+                                    else
+                                        bw.Write(Encoding.UTF8.GetBytes($"<Special: {string.Format("0x{0:X2}", i)}>"));
+                                    break;
+                                case 0xC4:
+                                        ms.Seek(-1, SeekOrigin.Current);
+                                        bw.Write(Encoding.UTF8.GetBytes(string.Format("0x{0:X2}", (int)b)));
                                     break;
                                 default:
-                                    bw.Write(i);
+                                    bw.Write(Encoding.UTF8.GetBytes(string.Format("0x{0:X2}", i)));
                                     break;
                             }
                         }

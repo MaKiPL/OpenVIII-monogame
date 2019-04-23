@@ -179,12 +179,12 @@ namespace FF8
             if (pad)
                 fPaddings = mngrp_read_padding(br, fpos);
             else
-                fPaddings = new uint[] { fpos.seek };
+                fPaddings = new uint[] { 1 };
             sPositions.Add(f, new List<uint>());
             for (uint p = 0; p < fPaddings.Length; p++)
             {
                 if (fPaddings[p] <= 0) continue;
-                uint fpad = fPaddings[p] + fpos.seek;
+                uint fpad = pad ? fPaddings[p] + fpos.seek: fpos.seek;
                 br.BaseStream.Seek(fpad, SeekOrigin.Begin);
                 if (br.BaseStream.Position + 4 < br.BaseStream.Length)
                 {
@@ -292,15 +292,15 @@ namespace FF8
             uint[] fPaddings = null;
             br.BaseStream.Seek(fpos.seek, SeekOrigin.Begin);
             uint size = type == 0 ? br.ReadUInt16() : br.ReadUInt32();
-            fPaddings = new uint[size * (type * 2)];
+            fPaddings = new uint[type == 0 ? size : size*type*2];
             for (int i = 0; i < fPaddings.Length; i += 1 + type)
             {
                 fPaddings[i] = br.ReadUInt16();
-                if (fPaddings[i] + fpos.seek >= fpos.max)
+                if (type == 0 && fPaddings[i] + fpos.seek >= fpos.max)
                     fPaddings[i] = 0;
                 //if (fPaddings[i] != 0)
                 //    fPaddings[i] += fpos.seek;
-                for (int j = 0; j < type; j++)
+                for (int j = 1; j < type+1; j++)
                 {
                     fPaddings[i + j] = br.ReadUInt16();
                 }
