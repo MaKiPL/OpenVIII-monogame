@@ -43,7 +43,7 @@ namespace FF8
             Memory.Strings = new Strings();
 #if DEBUG
             //export the string data so you can find where the string you want is.
-            // then you can Memory
+            // then you can Memory.Strings.Read() it :)
             if(Directory.Exists(@"d:\"))
             Memory.Strings.Dump(Path.Combine(@"d:\", "menudump.txt"));
 #endif
