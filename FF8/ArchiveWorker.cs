@@ -12,15 +12,14 @@ namespace FF8
         private string _path;
         public static string[] FileList;
 
-        public string Path { get => _path; private set => _path = value; }
 
         public ArchiveWorker(string path)
         {
-            Path = MakiExtended.GetUnixFullPath(path);
-            string root = System.IO.Path.GetDirectoryName(Path);
-            string file = System.IO.Path.GetFileNameWithoutExtension(path);
-            string fi = MakiExtended.GetUnixFullPath($"{System.IO.Path.Combine(root, file)}{Memory.Archives.B_FileIndex}");
-            string fl = MakiExtended.GetUnixFullPath($"{System.IO.Path.Combine(root, file)}{Memory.Archives.B_FileList}");
+            _path = MakiExtended.GetUnixFullPath(path);
+            string root = Path.GetDirectoryName(_path);
+            string file = Path.GetFileNameWithoutExtension(path);
+            string fi = MakiExtended.GetUnixFullPath($"{Path.Combine(root, file)}{Memory.Archives.B_FileIndex}");
+            string fl = MakiExtended.GetUnixFullPath($"{Path.Combine(root, file)}{Memory.Archives.B_FileList}");
             if (!File.Exists(fi)) throw new Exception($"There is no {file}.fi file!\nExiting...");
             if (!File.Exists(fl)) throw new Exception($"There is no {file}.fl file!\nExiting...");
             FileList = ProduceFileLists();
@@ -28,12 +27,12 @@ namespace FF8
 
         private string[] ProduceFileLists() =>
             File.ReadAllLines(
-                    $"{System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Path), System.IO.Path.GetFileNameWithoutExtension(Path))}{Memory.Archives.B_FileList}"
+                    $"{Path.Combine(Path.GetDirectoryName(_path), Path.GetFileNameWithoutExtension(_path))}{Memory.Archives.B_FileList}"
                     );
 
         public static string[] GetBinaryFileList(byte[] fl) =>System.Text.Encoding.ASCII.GetString(fl).Replace("\r", "").Replace("\0", "").Split('\n');
 
-        public byte[] GetBinaryFile(string fileName) => GetBinaryFile(Path, fileName);
+        public byte[] GetBinaryFile(string fileName) => GetBinaryFile(_path, fileName);
         public static byte[] GetBinaryFile(string archiveName, string fileName)
         {
             byte[] isComp = GetBin(MakiExtended.GetUnixFullPath(archiveName), fileName);
@@ -155,7 +154,7 @@ namespace FF8
         public FI[] GetFI()
         {
             FI[] FileIndex = new FI[FileList.Length];
-            string flPath = $"{System.IO.Path.GetDirectoryName(Path)}\\{System.IO.Path.GetFileNameWithoutExtension(Path)}.fi";
+            string flPath = $"{Path.GetDirectoryName(_path)}\\{Path.GetFileNameWithoutExtension(_path)}.fi";
             using (FileStream fs = new FileStream(flPath, FileMode.Open, FileAccess.Read))
             using (BinaryReader br = new BinaryReader(fs))
                 for (int i = 0; i <= FileIndex.Length - 1; i++)
