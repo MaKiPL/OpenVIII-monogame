@@ -210,6 +210,7 @@ namespace FF8
                 { Mitems.Load, new Item{Text=Encoding.UTF8.GetString(Memory.Strings.Read(Strings.FileID.MNGRP, 1 ,106)) } },
                 { Mitems.Debug, new Item{Text=Font.CipherDirty("OpenVIII debug tools") } }
             };
+            Memory.Strings.Close();
             if (start == null)
             {
                 start = new TextureHandler("start{0:00}", 2);

@@ -20,6 +20,7 @@ namespace FF8
         private List<Loc> mngrp_SubPositions;
         private Dictionary<uint, List<uint>> sPositions;
         private uint[] StringsLoc;
+        private Dictionary<uint, List<uint>> ComplexStr;
         private uint[] StringsPadLoc;
 
         #endregion Fields
@@ -70,7 +71,7 @@ namespace FF8
                     else
                     {
                         last = s.Key;
-                        bw.Write(Encoding.UTF8.GetBytes($"</file>\n<fpos id={s.Key} seek={fpos.seek} length={fpos.length}>\n"));
+                        bw.Write(Encoding.UTF8.GetBytes($"</file>\n<file id={s.Key} seek={fpos.seek} length={fpos.length}>\n"));
                     }
 
                     for (int j = 0; j < s.Value.Count; j++)
@@ -88,8 +89,14 @@ namespace FF8
             }
         }
 
-        public byte[] Read(FileID fileID, SectionID sectionID, int stringID) => Read(fileID, (int)sectionID, stringID);
-
+        //public byte[] Read(FileID fileID, SectionID sectionID, int stringID) => Read(fileID, (int)sectionID, stringID);
+        /// <summary>
+        /// Remember to Close() if done using
+        /// </summary>
+        /// <param name="fileID"></param>
+        /// <param name="sectionID"></param>
+        /// <param name="stringID"></param>
+        /// <returns></returns>
         public byte[] Read(FileID fileID, int sectionID, int stringID)
         {
             switch (fileID)
@@ -101,16 +108,59 @@ namespace FF8
 
             return null;
         }
-
-        private byte[] Read(FileID fid, uint pos)
+        MemoryStream localms;
+        BinaryReader localbr;
+        bool opened = false;
+        public void GetAW(FileID fileID)
         {
-            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(
-                aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)FileID.MNGRP], StringComparison.OrdinalIgnoreCase) >= 0))))
-            using (BinaryReader br = new BinaryReader(ms))
+            switch (fileID)
             {
-                return Read(br, fid, pos);
+                case FileID.MNGRP:
+                case FileID.MNGRP_MAP:
+                default:
+                    ArchiveString = Memory.Archives.A_MENU;
+                    break;
+            }
+            if(aw == null || aw.GetPath() != ArchiveString)
+            aw = new ArchiveWorker(ArchiveString);
+        }
+        public void Open(FileID fileID)
+        {
+            if (opened)
+                throw new Exception("Must close before opening again");
+            GetAW(fileID);
+            localms = new MemoryStream(aw.GetBinaryFile(
+                   aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)fileID], StringComparison.OrdinalIgnoreCase) >= 0)));
+            localbr = new BinaryReader(localms);
+            opened = true;
+        }
+        public void Close()
+        {
+            if(opened)
+            {
+                localbr.Close();
+                localbr.Dispose();
+                opened = false;
             }
         }
+        private byte[] Read(FileID fid, uint pos)
+        {
+            if (!opened)
+                Open(fid);
+            return Read(localbr, fid, pos);
+        }
+        //private byte[] Read(FileID fid, uint pos)
+        //{
+        //    try
+        //    {
+        //        Open(fid);
+        //        return Read(localbr, fid, pos);
+        //    }
+        //    finally
+        //    {
+        //        Close();
+        //    }
+        //}
 
         private byte[] Read(BinaryReader br, FileID fid, uint pos)
         {
@@ -139,8 +189,7 @@ namespace FF8
 
         private void init()
         {
-            ArchiveString = Memory.Archives.A_MENU;
-            aw = new ArchiveWorker(ArchiveString);
+            GetAW(FileID.MNGRP);
             mngrp_init();
         }
 
@@ -178,11 +227,12 @@ namespace FF8
             if (pad)
                 fPaddings = mngrp_read_padding(br, fpos);
             else
-                fPaddings = new uint[] { fpos.seek };
+                fPaddings = new uint[] { 1 };
             sPositions.Add(f, new List<uint>());
-            foreach (uint fpad in fPaddings)
+            for (uint p = 0; p < fPaddings.Length; p++)
             {
-                if (fpad <= 0) continue;
+                if (fPaddings[p] <= 0) continue;
+                uint fpad = pad ? fPaddings[p] + fpos.seek: fpos.seek;
                 br.BaseStream.Seek(fpad, SeekOrigin.Begin);
                 if (br.BaseStream.Position + 4 < br.BaseStream.Length)
                 {
@@ -225,9 +275,18 @@ namespace FF8
                 aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)FileID.MNGRP], StringComparison.OrdinalIgnoreCase) >= 0))))
             using (BinaryReader br = new BinaryReader(ms))
             {
+                //string contain padding values at start of file
+                //then location data before strings
                 StringsPadLoc = new uint[] { (uint)SectionID.tkmnmes1, (uint)SectionID.tkmnmes2, (uint)SectionID.tkmnmes3 };
-                StringsLoc = new uint[] { 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73 };
-
+                //only location data before strings
+                StringsLoc = new uint[] { 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54,
+                    55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 81, 82, 83, 84, 85, 86, 87, 88, 116};
+                //complexstr has locations in first file,
+                //and they have 8 bytes of stuff at the start of each entry, 6 bytes UNK and ushort length?
+                //also can have multiple null ending strings per entry.
+                ComplexStr = new Dictionary<uint, List<uint>> { { 74, new List<uint> { 75, 76, 77, 78, 79, 80 } } };
+                //these files come in pairs. the bin has string offsets and 6 bytes of other data
+                //msg is where the strings are.
                 BinMSG = new Dictionary<uint, uint>
                 {{106,111},{107,112},{108,113},{109,114},{110,115}};
 
@@ -241,25 +300,62 @@ namespace FF8
                     {
                         mngrp_get_string_BinMSG(br, f, mngrp_SubPositions[(int)BinMSG[f]].seek);
                     }
+                    else if (ComplexStr.ContainsKey(f))
+                    {
+                        Mngrp_get_string_ComplexStr(br, f, ComplexStr[f]);
+                    }
                 }
             }
         }
 
-        private uint[] mngrp_read_padding(BinaryReader br, Loc fpos)
+        private void Mngrp_get_string_ComplexStr(BinaryReader br, uint f, List<uint> list)
+        {
+            uint[] fPaddings;
+            fPaddings = mngrp_read_padding(br, mngrp_SubPositions[(int)f], 1);
+            sPositions.Add(f, new List<uint>());
+            for (uint p = 0; p < fPaddings.Length; p += 2)
+            {
+                f = list[(int)fPaddings[(int)p + 1]];
+                Loc fpos = mngrp_SubPositions[(int)f];
+                uint fpad = fPaddings[p] + fpos.seek;
+                br.BaseStream.Seek(fpad, SeekOrigin.Begin);
+                if (!sPositions.ContainsKey(f))
+                    sPositions.Add(f, new List<uint>());
+                br.BaseStream.Seek(fpad + 6, SeekOrigin.Begin);
+                //byte[] UNK = br.ReadBytes(6);
+                ushort len = br.ReadUInt16();
+                uint stop = (uint)(br.BaseStream.Position + len - 9); //6 for UNK, 2 for len 1, for end null
+                sPositions[f].Add((uint)br.BaseStream.Position);
+                //entry contains possible more than one string so I am scanning for null
+                while (br.BaseStream.Position + 1 < stop)
+                {
+                    byte b = br.ReadByte();
+                    if (b == 0) sPositions[f].Add((uint)br.BaseStream.Position);
+                }
+            }
+        }
+
+        private uint[] mngrp_read_padding(BinaryReader br, Loc fpos, int type = 0)
         {
             uint[] fPaddings = null;
             br.BaseStream.Seek(fpos.seek, SeekOrigin.Begin);
-            fPaddings = new uint[br.ReadUInt16()];
-            for (int i = 0; i < fPaddings.Length; i++)
+            uint size = type == 0 ? br.ReadUInt16() : br.ReadUInt32();
+            fPaddings = new uint[type == 0 ? size : size*type*2];
+            for (int i = 0; i < fPaddings.Length; i += 1 + type)
             {
                 fPaddings[i] = br.ReadUInt16();
-                if (fPaddings[i] + fpos.seek >= fpos.max)
+                if (type == 0 && fPaddings[i] + fpos.seek >= fpos.max)
                     fPaddings[i] = 0;
-                if (fPaddings[i] != 0)
-                    fPaddings[i] += fpos.seek;
+                //if (fPaddings[i] != 0)
+                //    fPaddings[i] += fpos.seek;
+                for (int j = 1; j < type+1; j++)
+                {
+                    fPaddings[i + j] = br.ReadUInt16();
+                }
             }
             return fPaddings;
         }
+
         #endregion Methods
 
         //private void readfile()
