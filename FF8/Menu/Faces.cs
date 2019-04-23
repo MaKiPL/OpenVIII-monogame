@@ -11,10 +11,10 @@
         {
             TextureBigFilename = new string[] { "Face_b{0:00}.TEX", "Gf_big{0:00}.TEX" };
             TextureBigSplit = new uint[] { 2, 2 };
-            TextureFilename = "face{0:0}.tex";
+            TextureFilename = new string[] { "face{0:0}.tex" };
+            TextureCount = new int[] { 2 };
             TextureStartOffset = 1;
             IndexFilename = "face.sp2";
-            TextureCount = 2;
             EntriesPerTexture = 16;
             Init();
         }

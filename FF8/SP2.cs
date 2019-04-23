@@ -15,9 +15,9 @@ namespace FF8
         {
             Count = 0;
             PalletCount = 1;
-            TextureCount = 1;
+            TextureCount = new int[] { 1 };
             EntriesPerTexture = 1;
-            TextureFilename = "";
+            TextureFilename = new string [] {""};
             TextureBigFilename = null;
             TextureBigSplit = null;
             Scale = null;
@@ -25,6 +25,7 @@ namespace FF8
             IndexFilename = "";
             Textures = null;
             Entries = null;
+            ArchiveString = Memory.Archives.A_MENU;
         }
 
         #endregion Constructors
@@ -53,7 +54,7 @@ namespace FF8
         /// <summary>
         /// Entries per texture,ID MOD EntriesPerTexture to get current entry to use on this texture
         /// </summary>
-        protected virtual uint EntriesPerTexture { get; set; }
+        protected virtual int EntriesPerTexture { get; set; }
 
         /// <summary>
         /// Number of Pallets
@@ -63,12 +64,13 @@ namespace FF8
         /// <summary>
         /// Number of Textures
         /// </summary>
-        public int TextureCount { get; protected set; }
+        public int[] TextureCount { get; protected set; }
 
         /// <summary>
         /// Dictionary of Entries
         /// </summary>
         protected virtual Dictionary<uint, Entry> Entries { get; set; }
+        protected string ArchiveString { get; set; }
 
         /// <summary>
         /// *.sp1 or *.sp2 that contains the entries or entrygroups. With Rectangle and offset information.
@@ -86,7 +88,7 @@ namespace FF8
         /// </summary>
         /// TODO make array maybe to add support for highres versions. the array will need to come
         /// with a scale factor
-        protected string TextureFilename { get; set; }
+        protected string[] TextureFilename { get; set; }
 
         /// <summary>
         /// For big textures.
@@ -142,8 +144,8 @@ namespace FF8
         {
             if (Entries.ContainsKey(Convert.ToUInt32(id)))
                 return Entries[Convert.ToUInt32(id)];
-            if (Entries.ContainsKey(Convert.ToUInt32(id) % EntriesPerTexture))
-                return Entries[Convert.ToUInt32(id) % EntriesPerTexture];
+            if (Entries.ContainsKey((uint)(Convert.ToUInt32(id) % EntriesPerTexture)))
+                return Entries[(uint)(Convert.ToUInt32(id) % EntriesPerTexture)];
             return null;
         }
 
@@ -152,27 +154,44 @@ namespace FF8
             uint pos = Convert.ToUInt32(id);
             uint File = GetEntry(id).File;
             //check if we set a custom file and we have a pos more then set entriespertexture
-            if (File == 0 && pos > EntriesPerTexture)
-                File = pos / EntriesPerTexture;
-            if (File >= TextureCount)
-                File %= (uint)TextureCount;
+            if (File == 0 && EntriesPerTexture > 0 && pos > EntriesPerTexture)
+                File = (uint)(pos / EntriesPerTexture);
+            if (File > 0)
+            {
+                uint j = (uint)TextureCount.Sum();
+                if (File >= j)
+                {
+                    File %= j;
+                }
+            }            
             scale = Scale[File];
             return Textures[(int)File];
         }
 
-        public virtual void Init()
+        protected virtual void Init()
+        {
+
+
+            ArchiveWorker aw = new ArchiveWorker(ArchiveString);
+            InitEntries(aw);
+            InitTextures(aw);
+            InsertCustomEntries();
+        }
+
+        protected virtual void InsertCustomEntries() {}
+
+        protected virtual void InitEntries(ArchiveWorker aw = null)
         {
             if (Entries == null)
             {
-                Textures = new List<TextureHandler>(TextureCount);
-                ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
-                using (MemoryStream ms = new MemoryStream(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU,
-                    aw.GetListOfFiles().First(x => x.IndexOf(IndexFilename,StringComparison.OrdinalIgnoreCase)>=0))))
+                if (aw == null)
+                    aw = new ArchiveWorker(ArchiveString);
+                using (MemoryStream ms = new MemoryStream(ArchiveWorker.GetBinaryFile(ArchiveString,
+                    aw.GetListOfFiles().First(x => x.IndexOf(IndexFilename, StringComparison.OrdinalIgnoreCase) >= 0))))
                 {
                     ushort[] locs;
                     using (BinaryReader br = new BinaryReader(ms))
                     {
-                        //ms.Seek(4, SeekOrigin.Begin);
                         Count = br.ReadUInt32();
                         locs = new ushort[Count];//br.ReadUInt32(); 32 valid values in face.sp2 rest is invalid
                         Entries = new Dictionary<uint, Entry>((int)Count);
@@ -200,19 +219,27 @@ namespace FF8
                         }
                     }
                 }
-                //using (FileStream fs = File.OpenWrite(Path.Combine("d:\\", "face.sp2")))
-                //{
-                //    fs.Write(test, 0, test.Length);
-                //}
+            }
+        }
+        protected virtual void InitTextures(ArchiveWorker aw = null)
+        {
+            if (Textures == null)
+                Textures = new List<TextureHandler>(TextureCount.Sum());
+            if (Textures.Count <= 0)
+            {
+                if (aw == null)
+                    aw = new ArchiveWorker(ArchiveString);
                 TEX tex;
-                Scale = new Dictionary<uint, Vector2>(TextureCount);
-                for (uint i = 0; i < TextureCount; i++)
+                Scale = new Dictionary<uint, Vector2>(TextureCount.Sum());
+                int b = 0;
+                for (int j =0; j< TextureCount.Length; j++)
+                for (uint i = 0; i < TextureCount[j]; i++)
                 {
-                    string path = aw.GetListOfFiles().First(x => x.ToLower().Contains(string.Format(TextureFilename, i + TextureStartOffset)));
-                    tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
-                    if (TextureBigFilename != null && FORCE_ORIGINAL == false)
+                    string path = aw.GetListOfFiles().First(x => x.ToLower().Contains(string.Format(TextureFilename[j], i + TextureStartOffset)));
+                    tex = new TEX(ArchiveWorker.GetBinaryFile(ArchiveString, path));
+                    if (TextureBigFilename != null && FORCE_ORIGINAL == false && b< TextureBigFilename.Length && b< TextureBigSplit.Length)
                     {
-                        TextureHandler th = new TextureHandler(TextureBigFilename[i], tex, 2, TextureBigSplit[i] / 2);
+                        TextureHandler th = new TextureHandler(TextureBigFilename[b], tex, 2, TextureBigSplit[b++] / 2);
 
                         Textures.Add(th);
                         Scale[i] = Vector2.One;//th.GetScale();

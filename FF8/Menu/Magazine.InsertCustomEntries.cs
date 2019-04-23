@@ -7,13 +7,13 @@ namespace FF8
     {
         #region Fields
 
-        private Dictionary<ID, Entry> Entries;
+        private new Dictionary<ID, Entry> Entries;
 
         #endregion Fields
 
         #region Methods
 
-        protected void InsertCustomEntries()
+        protected override void InsertCustomEntries()
         {
             Entries = new Dictionary<ID, Entry>
             {
