@@ -42,8 +42,10 @@ namespace FF8
 
             Memory.Strings = new Strings();
 #if DEBUG
+            //export the string data so you can find where the string you want is.
+            // then you can Memory
             if(Directory.Exists(@"d:\"))
-            Memory.Strings.DumpMe(Path.Combine(@"d:\", "menudump.txt"));
+            Memory.Strings.Dump(Path.Combine(@"d:\", "menudump.txt"));
 #endif
 
             Memory.Cards = new Cards();

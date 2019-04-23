@@ -11,16 +11,26 @@ namespace FF8
     /// </summary>
     internal class Strings
     {
+        #region Fields
+
         private readonly string[] filenames = new string[] { "mngrp.bin", "mngrphd.bin" };
-        private List<Loc> mngrp_SubPositions;
-        private Dictionary<uint, List<uint>> sPositions;
-        private uint[] StringsPadLoc;
-        private uint[] StringsLoc;
-        private Dictionary<uint, uint> BinMSG;
         private string ArchiveString;
         private ArchiveWorker aw;
+        private Dictionary<uint, uint> BinMSG;
+        private List<Loc> mngrp_SubPositions;
+        private Dictionary<uint, List<uint>> sPositions;
+        private uint[] StringsLoc;
+        private uint[] StringsPadLoc;
+
+        #endregion Fields
+
+        #region Constructors
 
         public Strings() => init();
+
+        #endregion Constructors
+
+        #region Enums
 
         public enum FileID : uint
         {
@@ -35,11 +45,122 @@ namespace FF8
             tkmnmes3 = 2,
         }
 
+        #endregion Enums
+
+        #region Methods
+
+        public void Dump(string path)
+        {
+            using (FileStream fs = File.Create(path))
+            using (BinaryWriter bw = new BinaryWriter(fs))
+
+            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(
+                aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)FileID.MNGRP], StringComparison.OrdinalIgnoreCase) >= 0))))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                uint last = 0;
+                foreach (KeyValuePair<uint, List<uint>> s in sPositions)
+                {
+                    Loc fpos = mngrp_SubPositions[(int)s.Key];
+                    if (s.Key == 0)
+                    {
+                        last = s.Key;
+                        bw.Write(Encoding.UTF8.GetBytes($"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n<file id={s.Key} seek={fpos.seek} length={fpos.length}>\n"));
+                    }
+                    else
+                    {
+                        last = s.Key;
+                        bw.Write(Encoding.UTF8.GetBytes($"</file>\n<fpos id={s.Key} seek={fpos.seek} length={fpos.length}>\n"));
+                    }
+
+                    for (int j = 0; j < s.Value.Count; j++)
+                    {
+                        byte[] b = Font.DecodeDirty(Read(br, FileID.MNGRP, s.Value[j]));
+                        if (b != null)
+                        {
+                            bw.Write(Encoding.UTF8.GetBytes($"\t<string id={j} seek={s.Value[j]}>"));
+                            bw.Write(b);
+                            bw.Write(Encoding.UTF8.GetBytes("</string>\n"));
+                        }
+                    }
+                }
+                bw.Write(Encoding.UTF8.GetBytes($"</file>"));
+            }
+        }
+
+        public byte[] Get(FileID fid, SubID sid, int b) => Get(fid, (int)sid, b);
+
+        public byte[] Get(FileID fid, int sid, int b)
+        {
+            switch (fid)
+            {
+                case FileID.MNGRP:
+                case FileID.MNGRP_MAP:
+                    return Read(fid, sPositions[(uint)sid][b]);
+            }
+
+            return null;
+        }
+
         private void init()
         {
             ArchiveString = Memory.Archives.A_MENU;
             aw = new ArchiveWorker(ArchiveString);
             mngrp_init();
+        }
+
+        private void mngrp_get_string_BinMSG(BinaryReader br, uint f, uint msgPos)
+        {
+            Loc fpos = mngrp_SubPositions[(int)f];
+            br.BaseStream.Seek(fpos.seek, SeekOrigin.Begin);
+            if (sPositions.ContainsKey(f))
+            {
+            }
+            else
+            {
+                ushort b = 0;
+                ushort last = b;
+                sPositions.Add(f, new List<uint>());
+                while (br.BaseStream.Position < fpos.max)
+                {
+                    b = br.ReadUInt16();
+                    if (last > b)
+                        break;
+                    else
+                    {
+                        sPositions[f].Add(b + msgPos);
+                        br.BaseStream.Seek(6, SeekOrigin.Current);
+                        last = b;
+                    }
+                }
+            }
+        }
+
+        private void mngrp_get_string_offsets(BinaryReader br, uint f, bool pad = false)
+        {
+            Loc fpos = mngrp_SubPositions[(int)f];
+            uint[] fPaddings;
+            if (pad)
+                fPaddings = mngrp_read_padding(br, fpos);
+            else
+                fPaddings = new uint[] { fpos.seek };
+            sPositions.Add(f, new List<uint>());
+            foreach (uint fpad in fPaddings)
+            {
+                if (fpad <= 0) continue;
+                br.BaseStream.Seek(fpad, SeekOrigin.Begin);
+                if (br.BaseStream.Position + 4 < br.BaseStream.Length)
+                {
+                    int count = br.ReadUInt16();
+                    for (int i = 0; i < count && br.BaseStream.Position + 2 < br.BaseStream.Length; i++)
+                    {
+                        uint c = br.ReadUInt16();
+                        if (c == 0) continue;
+                        c += fpad;
+                        sPositions[f].Add(c);
+                    }
+                }
+            }
         }
 
         private void mngrp_GetFileLocations()
@@ -89,109 +210,6 @@ namespace FF8
             }
         }
 
-        private void mngrp_get_string_BinMSG(BinaryReader br, uint f, uint msgPos)
-        {
-            Loc fpos = mngrp_SubPositions[(int)f];
-            br.BaseStream.Seek(fpos.seek, SeekOrigin.Begin);
-            if (sPositions.ContainsKey(f))
-            {
-            }
-            else
-            {
-                ushort b = 0;
-                ushort last = b;
-                sPositions.Add(f, new List<uint>());
-                while (br.BaseStream.Position < fpos.max)
-                {
-                    b = br.ReadUInt16();
-                    if (last > b)
-                        break;
-                    else
-                    {
-                        sPositions[f].Add(b + msgPos);
-                        br.BaseStream.Seek(6, SeekOrigin.Current);
-                        last = b;
-                    }
-                }
-            }
-        }
-
-        private byte[] readString(FileID fid, uint pos)
-        {
-            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(
-                aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)FileID.MNGRP], StringComparison.OrdinalIgnoreCase) >= 0))))
-            using (BinaryReader br = new BinaryReader(ms))
-            {
-                return readString(br, fid, pos);
-            }
-        }
-
-        private byte[] readString(BinaryReader br, FileID fid, uint pos)
-        {
-            using (MemoryStream os = new MemoryStream(50))
-            {
-                br.BaseStream.Seek(pos, SeekOrigin.Begin);
-                int c = 0;
-                byte b = 0;
-                do
-                {
-                    //sometimes strings start with 00 or 01. But there is another 00 at the end. 
-                    //I think it's for SeeD test like 1 is right and 0 is wrong. for now i skip them.
-                    b = br.ReadByte();
-                    if (b != 0 && b != 1) 
-                    {
-                        os.WriteByte(b);
-                    }
-                    c++;
-                }
-                while (b != 0 || c == 0);
-                if (os.Length > 0)
-                    return os.ToArray();
-            }
-            return null;
-        }
-
-        public byte[] GetEntry(FileID fid, SubID sid, int b) => GetEntry(fid, (int)sid, b);
-
-        public byte[] GetEntry(FileID fid, int sid, int b)
-        {
-            switch (fid)
-            {
-                case FileID.MNGRP:
-                case FileID.MNGRP_MAP:
-                    return readString(fid, sPositions[(uint)sid][b]);
-            }
-
-            return null;
-        }
-
-        private void mngrp_get_string_offsets(BinaryReader br, uint f, bool pad = false)
-        {
-            Loc fpos = mngrp_SubPositions[(int)f];
-            uint[] fPaddings;
-            if (pad)
-                fPaddings = mngrp_read_padding(br, fpos);
-            else
-                fPaddings = new uint[] { fpos.seek };
-            sPositions.Add(f, new List<uint>());
-            foreach (uint fpad in fPaddings)
-            {
-                if (fpad <= 0) continue;
-                br.BaseStream.Seek(fpad, SeekOrigin.Begin);
-                if (br.BaseStream.Position + 4 < br.BaseStream.Length)
-                {
-                    int count = br.ReadUInt16();
-                    for (int i = 0; i < count && br.BaseStream.Position + 2 < br.BaseStream.Length; i++)
-                    {
-                        uint c = br.ReadUInt16();
-                        if (c == 0) continue;
-                        c += fpad;
-                        sPositions[f].Add(c);
-                    }
-                }
-            }
-        }
-
         private uint[] mngrp_read_padding(BinaryReader br, Loc fpos)
         {
             uint[] fPaddings = null;
@@ -208,44 +226,42 @@ namespace FF8
             return fPaddings;
         }
 
-        public void DumpMe(string path)
+        private byte[] Read(FileID fid, uint pos)
         {
-            using (FileStream fs = File.Create(path))
-            using (BinaryWriter bw = new BinaryWriter(fs))
-
             using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(
                 aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)FileID.MNGRP], StringComparison.OrdinalIgnoreCase) >= 0))))
             using (BinaryReader br = new BinaryReader(ms))
             {
-                uint last = 0;
-                foreach (KeyValuePair<uint, List<uint>> s in sPositions)
-                {
-                    Loc fpos = mngrp_SubPositions[(int)s.Key];
-                    if (s.Key == 0)
-                    {
-                        last = s.Key;
-                        bw.Write(Encoding.UTF8.GetBytes($"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n<file id={s.Key} seek={fpos.seek} length={fpos.length}>\n"));
-                    }
-                    else
-                    {
-                        last = s.Key;
-                        bw.Write(Encoding.UTF8.GetBytes($"</file>\n<fpos id={s.Key} seek={fpos.seek} length={fpos.length}>\n"));
-                    }
-
-                    for (int j = 0; j < s.Value.Count; j++)
-                    {
-                        byte[] b = Font.DecodeDirty(readString(br, FileID.MNGRP, s.Value[j]));
-                        if (b != null)
-                        {
-                            bw.Write(Encoding.UTF8.GetBytes($"\t<string id={j} seek={s.Value[j]}>"));
-                            bw.Write(b);
-                            bw.Write(Encoding.UTF8.GetBytes("</string>\n"));
-                        }
-                    }
-                }
-                bw.Write(Encoding.UTF8.GetBytes($"</file>"));
+                return Read(br, fid, pos);
             }
         }
+
+        private byte[] Read(BinaryReader br, FileID fid, uint pos)
+        {
+            using (MemoryStream os = new MemoryStream(50))
+            {
+                br.BaseStream.Seek(pos, SeekOrigin.Begin);
+                int c = 0;
+                byte b = 0;
+                do
+                {
+                    //sometimes strings start with 00 or 01. But there is another 00 at the end.
+                    //I think it's for SeeD test like 1 is right and 0 is wrong. for now i skip them.
+                    b = br.ReadByte();
+                    if (b != 0 && b != 1)
+                    {
+                        os.WriteByte(b);
+                    }
+                    c++;
+                }
+                while (b != 0 || c == 0);
+                if (os.Length > 0)
+                    return os.ToArray();
+            }
+            return null;
+        }
+
+        #endregion Methods
 
         //private void readfile()
         //{

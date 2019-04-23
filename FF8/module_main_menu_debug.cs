@@ -206,8 +206,8 @@ namespace FF8
             };
             strMainLobby = new Dictionary<Enum, Item>()
             {
-                { Mitems.New, new Item{Text=Encoding.UTF8.GetString(Memory.Strings.GetEntry(Strings.FileID.MNGRP, 1 ,105)) } },
-                { Mitems.Load, new Item{Text=Encoding.UTF8.GetString(Memory.Strings.GetEntry(Strings.FileID.MNGRP, 1 ,106)) } },
+                { Mitems.New, new Item{Text=Encoding.UTF8.GetString(Memory.Strings.Get(Strings.FileID.MNGRP, 1 ,105)) } },
+                { Mitems.Load, new Item{Text=Encoding.UTF8.GetString(Memory.Strings.Get(Strings.FileID.MNGRP, 1 ,106)) } },
                 { Mitems.Debug, new Item{Text=Font.CipherDirty("OpenVIII debug tools") } }
             };
             if (start == null)
