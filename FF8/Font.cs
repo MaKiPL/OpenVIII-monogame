@@ -671,7 +671,7 @@ namespace FF8
                             byte[] c = System.Text.Encoding.UTF8.GetBytes(chartable[b]);
                             os.Write(c, 0, c.Length);
                         }
-                        else
+                        else if(ms.Position < ms.Length)
                         {
                             byte c = br.ReadByte();
                             ushort i = BitConverter.ToUInt16(new byte[] { c,b }, 0);
@@ -710,6 +710,10 @@ namespace FF8
                                     bw.Write(i);
                                     break;
                             }
+                        }
+                        else
+                        {
+                            bw.Write(b);
                         }
                     }
                     if (os.Length > 0)
