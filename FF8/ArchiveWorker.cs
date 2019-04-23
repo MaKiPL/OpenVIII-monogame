@@ -17,7 +17,7 @@ namespace FF8
         {
             _path = MakiExtended.GetUnixFullPath(path);
             string root = Path.GetDirectoryName(_path);
-            string file = Path.GetFileNameWithoutExtension(path);
+            string file = Path.GetFileNameWithoutExtension(_path);
             string fi = MakiExtended.GetUnixFullPath($"{Path.Combine(root, file)}{Memory.Archives.B_FileIndex}");
             string fl = MakiExtended.GetUnixFullPath($"{Path.Combine(root, file)}{Memory.Archives.B_FileList}");
             if (!File.Exists(fi)) throw new Exception($"There is no {file}.fi file!\nExiting...");
