@@ -38,7 +38,7 @@ namespace FF8
             MNGRP_MAP = 1,
         }
 
-        public enum SubID : uint
+        public enum SectionID : uint
         {
             tkmnmes1 = 0,
             tkmnmes2 = 1,
@@ -88,17 +88,52 @@ namespace FF8
             }
         }
 
-        public byte[] Get(FileID fid, SubID sid, int b) => Get(fid, (int)sid, b);
+        public byte[] Read(FileID fileID, SectionID sectionID, int stringID) => Read(fileID, (int)sectionID, stringID);
 
-        public byte[] Get(FileID fid, int sid, int b)
+        public byte[] Read(FileID fileID, int sectionID, int stringID)
         {
-            switch (fid)
+            switch (fileID)
             {
                 case FileID.MNGRP:
                 case FileID.MNGRP_MAP:
-                    return Read(fid, sPositions[(uint)sid][b]);
+                    return Read(fileID, sPositions[(uint)sectionID][stringID]);
             }
 
+            return null;
+        }
+
+        private byte[] Read(FileID fid, uint pos)
+        {
+            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(
+                aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)FileID.MNGRP], StringComparison.OrdinalIgnoreCase) >= 0))))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                return Read(br, fid, pos);
+            }
+        }
+
+        private byte[] Read(BinaryReader br, FileID fid, uint pos)
+        {
+            using (MemoryStream os = new MemoryStream(50))
+            {
+                br.BaseStream.Seek(pos, SeekOrigin.Begin);
+                int c = 0;
+                byte b = 0;
+                do
+                {
+                    //sometimes strings start with 00 or 01. But there is another 00 at the end.
+                    //I think it's for SeeD test like 1 is right and 0 is wrong. for now i skip them.
+                    b = br.ReadByte();
+                    if (b != 0 && b != 1)
+                    {
+                        os.WriteByte(b);
+                    }
+                    c++;
+                }
+                while (b != 0 || c == 0);
+                if (os.Length > 0)
+                    return os.ToArray();
+            }
             return null;
         }
 
@@ -190,7 +225,7 @@ namespace FF8
                 aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)FileID.MNGRP], StringComparison.OrdinalIgnoreCase) >= 0))))
             using (BinaryReader br = new BinaryReader(ms))
             {
-                StringsPadLoc = new uint[] { (uint)SubID.tkmnmes1, (uint)SubID.tkmnmes2, (uint)SubID.tkmnmes3 };
+                StringsPadLoc = new uint[] { (uint)SectionID.tkmnmes1, (uint)SectionID.tkmnmes2, (uint)SectionID.tkmnmes3 };
                 StringsLoc = new uint[] { 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73 };
 
                 BinMSG = new Dictionary<uint, uint>
@@ -225,42 +260,6 @@ namespace FF8
             }
             return fPaddings;
         }
-
-        private byte[] Read(FileID fid, uint pos)
-        {
-            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(
-                aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)FileID.MNGRP], StringComparison.OrdinalIgnoreCase) >= 0))))
-            using (BinaryReader br = new BinaryReader(ms))
-            {
-                return Read(br, fid, pos);
-            }
-        }
-
-        private byte[] Read(BinaryReader br, FileID fid, uint pos)
-        {
-            using (MemoryStream os = new MemoryStream(50))
-            {
-                br.BaseStream.Seek(pos, SeekOrigin.Begin);
-                int c = 0;
-                byte b = 0;
-                do
-                {
-                    //sometimes strings start with 00 or 01. But there is another 00 at the end.
-                    //I think it's for SeeD test like 1 is right and 0 is wrong. for now i skip them.
-                    b = br.ReadByte();
-                    if (b != 0 && b != 1)
-                    {
-                        os.WriteByte(b);
-                    }
-                    c++;
-                }
-                while (b != 0 || c == 0);
-                if (os.Length > 0)
-                    return os.ToArray();
-            }
-            return null;
-        }
-
         #endregion Methods
 
         //private void readfile()
