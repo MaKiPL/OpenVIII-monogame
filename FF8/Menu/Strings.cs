@@ -89,8 +89,14 @@ namespace FF8
             }
         }
 
-        public byte[] Read(FileID fileID, SectionID sectionID, int stringID) => Read(fileID, (int)sectionID, stringID);
-
+        //public byte[] Read(FileID fileID, SectionID sectionID, int stringID) => Read(fileID, (int)sectionID, stringID);
+        /// <summary>
+        /// Remember to Close() if done using
+        /// </summary>
+        /// <param name="fileID"></param>
+        /// <param name="sectionID"></param>
+        /// <param name="stringID"></param>
+        /// <returns></returns>
         public byte[] Read(FileID fileID, int sectionID, int stringID)
         {
             switch (fileID)
@@ -102,16 +108,59 @@ namespace FF8
 
             return null;
         }
-
-        private byte[] Read(FileID fid, uint pos)
+        MemoryStream localms;
+        BinaryReader localbr;
+        bool opened = false;
+        public void GetAW(FileID fileID)
         {
-            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(
-                aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)FileID.MNGRP], StringComparison.OrdinalIgnoreCase) >= 0))))
-            using (BinaryReader br = new BinaryReader(ms))
+            switch (fileID)
             {
-                return Read(br, fid, pos);
+                case FileID.MNGRP:
+                case FileID.MNGRP_MAP:
+                default:
+                    ArchiveString = Memory.Archives.A_MENU;
+                    break;
+            }
+            if(aw == null || aw.GetPath() != ArchiveString)
+            aw = new ArchiveWorker(ArchiveString);
+        }
+        public void Open(FileID fileID)
+        {
+            if (opened)
+                throw new Exception("Must close before opening again");
+            GetAW(fileID);
+            localms = new MemoryStream(aw.GetBinaryFile(
+                   aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)fileID], StringComparison.OrdinalIgnoreCase) >= 0)));
+            localbr = new BinaryReader(localms);
+            opened = true;
+        }
+        public void Close()
+        {
+            if(opened)
+            {
+                localbr.Close();
+                localbr.Dispose();
+                opened = false;
             }
         }
+        private byte[] Read(FileID fid, uint pos)
+        {
+            if (!opened)
+                Open(fid);
+            return Read(localbr, fid, pos);
+        }
+        //private byte[] Read(FileID fid, uint pos)
+        //{
+        //    try
+        //    {
+        //        Open(fid);
+        //        return Read(localbr, fid, pos);
+        //    }
+        //    finally
+        //    {
+        //        Close();
+        //    }
+        //}
 
         private byte[] Read(BinaryReader br, FileID fid, uint pos)
         {
@@ -140,8 +189,7 @@ namespace FF8
 
         private void init()
         {
-            ArchiveString = Memory.Archives.A_MENU;
-            aw = new ArchiveWorker(ArchiveString);
+            GetAW(FileID.MNGRP);
             mngrp_init();
         }
 

@@ -10,6 +10,7 @@ namespace FF8
         static uint _locationInFs;
         static bool _compressed;
         private string _path;
+        public string GetPath() => _path;
         public static string[] FileList;
 
 
