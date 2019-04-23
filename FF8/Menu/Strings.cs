@@ -131,13 +131,20 @@ namespace FF8
             using (MemoryStream os = new MemoryStream(50))
             {
                 br.BaseStream.Seek(pos, SeekOrigin.Begin);
+                int c = 0;
                 byte b = 0;
                 do
                 {
+                    //sometimes strings start with 00 or 01. But there is another 00 at the end. 
+                    //I think it's for SeeD test like 1 is right and 0 is wrong. for now i skip them.
                     b = br.ReadByte();
-                    if (b != 0) os.WriteByte(b);
+                    if (b != 0 && b != 1) 
+                    {
+                        c++;
+                        os.WriteByte(b);
+                    }
                 }
-                while (b != 0);
+                while (b != 0 || c == 0);
                 if (os.Length > 0)
                     return os.ToArray();
             }
