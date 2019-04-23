@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace FF8
 {
@@ -14,30 +15,12 @@ namespace FF8
         /// <summary>
         /// Strings for the debug menu
         /// </summary>
-        private static readonly Dictionary<Enum, Item> strDebugLobby = new Dictionary<Enum, Item>()
-        {
-            { Ditems.Reset, new Item{Text="Reset Main Menu state" } },
-            { Ditems.Overture, new Item{Text="Play Overture"} },
-            { Ditems.Battle, new Item{Text="Battle encounter: {0}"} },
-            { Ditems.Field, new Item{Text="Field debug render: {0}"} },
-            { Ditems.Movie, new Item{Text="Movie debug render: {0}"} },
-            { Ditems.Music, new Item{Text="Play/Stop music : {0}"} },
-            { Ditems.Sounds, new Item{Text="Play audio.dat: {0}"} },
-            { Ditems.World, new Item{Text="Jump to World Map"} },
-            { Ditems.Faces, new Item{Text="Test Faces"} },
-            { Ditems.Icons, new Item{Text="Test Icons"} },
-            { Ditems.Cards, new Item{Text="Test Cards"} }
-        };
+        private static Dictionary<Enum, Item> strDebugLobby;
 
         /// <summary>
         /// Strings for the main menu
         /// </summary>
-        private static readonly Dictionary<Enum, Item> strMainLobby = new Dictionary<Enum, Item>()
-        {
-            { Mitems.New, new Item{Text="NEW GAME" } },
-            { Mitems.Load, new Item{Text="Continue" } },
-            { Mitems.Debug, new Item{Text="OpenVIII debug tools" } }
-        };
+        private static Dictionary<Enum, Item> strMainLobby;
 
         private static int debug_choosedBS, debug_choosedAudio;
         private static string debug_choosedField = Memory.FieldHolder.fields[debug_fieldPointer];
@@ -207,6 +190,26 @@ namespace FF8
         /// </summary>
         private static void Init()
         {
+            strDebugLobby = new Dictionary<Enum, Item>()
+            {
+                { Ditems.Reset, new Item{Text=Font.CipherDirty("Reset Main Menu state") } },
+                { Ditems.Overture, new Item{Text=Font.CipherDirty("Play Overture")} },
+                { Ditems.Battle, new Item{Text=Font.CipherDirty("Battle encounter: ")+"{0}"} },
+                { Ditems.Field, new Item{Text=Font.CipherDirty("Field debug render: ")+"{0}"} },
+                { Ditems.Movie, new Item{Text=Font.CipherDirty("Movie debug render: ")+"{0}"} },
+                { Ditems.Music, new Item{Text=Font.CipherDirty("Play/Stop music: ")+"{0}"} },
+                { Ditems.Sounds, new Item{Text=Font.CipherDirty("Play audio.dat: ")+"{0}"} },
+                { Ditems.World, new Item{Text=Font.CipherDirty("Jump to World Map")} },
+                { Ditems.Faces, new Item{Text=Font.CipherDirty("Test Faces")} },
+                { Ditems.Icons, new Item{Text=Font.CipherDirty("Test Icons")} },
+                { Ditems.Cards, new Item{Text=Font.CipherDirty("Test Cards")} }
+            };
+            strMainLobby = new Dictionary<Enum, Item>()
+            {
+                { Mitems.New, new Item{Text=Encoding.UTF8.GetString(Memory.Strings.GetEntry(Strings.FileID.MNGRP, 1 ,105)) } },
+                { Mitems.Load, new Item{Text=Encoding.UTF8.GetString(Memory.Strings.GetEntry(Strings.FileID.MNGRP, 1 ,106)) } },
+                { Mitems.Debug, new Item{Text=Font.CipherDirty("OpenVIII debug tools") } }
+            };
             if (start == null)
             {
                 start = new TextureHandler("start{0:00}", 2);
@@ -701,7 +704,7 @@ namespace FF8
             foreach (Mitems i in (Mitems[])Enum.GetValues(typeof(Mitems)))
             {
                 Item c = strMainLobby[i];
-                c.Loc = (Memory.font.RenderBasicText(Font.CipherDirty(c.Text).Replace("\0", ""),
+                c.Loc = (Memory.font.RenderBasicText(c.Text.Replace("\0", ""),
                     (int)(textStart.X), (int)(textStart.Y + ((textSize.Y + vpSpace) * item++)), textSize.X, textSize.Y, 0, 1, Fade));
                 strMainLobby[i] = c;
             }
@@ -722,7 +725,7 @@ namespace FF8
             foreach (Enum i in Enum.GetValues(typeof(T)))
             {
                 Item c = dict[i];
-                c.Loc = Memory.font.CalcBasicTextArea(Font.CipherDirty(string.Format(c.Text, InfoForLobby<T>(i)).Replace("\0", "")),
+                c.Loc = Memory.font.CalcBasicTextArea(string.Format(c.Text, Font.CipherDirty(InfoForLobby<T>(i)).Replace("\0", "")),
                 (int)DFontPos.X, (int)(DFontPos.Y + vpSpace * item++), 1f, 2f, 0);
                 if (dst.X == 0 || dst.Y == 0)
                     dst.Location = c.Loc.Location;
@@ -761,7 +764,7 @@ namespace FF8
             Memory.SpriteBatchStartAlpha();
             foreach (Ditems i in (Ditems[])Enum.GetValues(typeof(Ditems)))
             {
-                Memory.font.RenderBasicText(Font.CipherDirty(string.Format(strDebugLobby[i].Text, InfoForLobby<Ditems>(i)).Replace("\0", "")),
+                Memory.font.RenderBasicText(string.Format(strDebugLobby[i].Text, Font.CipherDirty(InfoForLobby<Ditems>(i)).Replace("\0", "")),
                     (int)(DFontPos.X), (int)(DFontPos.Y + vpSpace * item++), 1f, 2f, 0, 1, Fade);
             }
             //Memory.spriteBatch.Draw(Memory.iconsTex[2], dst,

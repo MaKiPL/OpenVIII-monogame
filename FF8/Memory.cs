@@ -24,6 +24,7 @@ namespace FF8
         public static Cards Cards;
         public static Faces Faces;
         public static Icons Icons;
+        public static Strings Strings;
 
         public enum ScaleMode
         {

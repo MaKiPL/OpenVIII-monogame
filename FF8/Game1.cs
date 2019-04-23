@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.IO;
 using System.Linq;
 
 namespace FF8
@@ -39,11 +40,16 @@ namespace FF8
             //    Memory.iconsTex[i] = tex.GetTexture(i);
             Memory.FieldHolder.FieldMemory = new int[1024];
 
+            Memory.Strings = new Strings();
+#if DEBUG
+            if(Directory.Exists(@"d:\"))
+            Memory.Strings.DumpMe(Path.Combine(@"d:\", "menudump.txt"));
+#endif
 
             Memory.Cards = new Cards();
             Memory.Faces = new Faces();
             Memory.Icons = new Icons();
-            
+
 
             base.Initialize();
         }

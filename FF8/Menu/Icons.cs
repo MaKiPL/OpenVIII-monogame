@@ -76,14 +76,14 @@ namespace FF8
                         Loc[] locs = new Loc[br.ReadUInt32()];
                         for (int i = 0; i < locs.Length; i++)
                         {
-                            locs[i].pos = br.ReadUInt16();
-                            locs[i].count = br.ReadUInt16();
+                            locs[i].seek = br.ReadUInt16();
+                            locs[i].length = br.ReadUInt16();
                         }
                         Entries = new Dictionary<ID, EntryGroup>(locs.Length + 10);
                         for (int i = 0; i < locs.Length; i++)
                         {
-                            ms.Seek(locs[i].pos, SeekOrigin.Begin);
-                            byte c = (byte)locs[i].count;
+                            ms.Seek(locs[i].seek, SeekOrigin.Begin);
+                            byte c = (byte)locs[i].length;
                             Entries[(ID)i] = new EntryGroup(c);
                             for (int e = 0; e < c; e++)
                             {

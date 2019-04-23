@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace FF8
@@ -16,38 +17,39 @@ namespace FF8
 
         private static readonly Dictionary<byte, string> chartable = new Dictionary<byte, string>
         {
+            //Commented out special bytes so they are passed through and I can see them in the dump file. Then I can figure out what to do with them.
             {0x00, "\0"},// pos:-32, col:0, row:-1 -- is end of a string. MSG files have more than one string sepperated by \0
-            {0x01, ""},// pos:-31, col:0, row:0 --
+            {0x01, ""},// pos:-31, col:0, row:0 -- //some strings start with 0x01 unsure if it does anything.
             {0x02, "\n"},// pos:-30, col:0, row:0 -- new line
-            {0x03, ""},// pos:-29, col:0, row:0 -- special character. {0x03,0x40 = [Angelo's Name]}
-            {0x04, ""},// pos:-28, col:0, row:0 --
-            {0x05, ""},// pos:-27, col:0, row:0 --
-            {0x06, ""},// pos:-26, col:0, row:0 --
-            {0x07, ""},// pos:-25, col:0, row:0 --
-            {0x08, ""},// pos:-24, col:0, row:0 --
-            {0x09, ""},// pos:-23, col:0, row:0 --
-            {0x0A, ""},// pos:-22, col:0, row:0 --
-            {0x0B, ""},// pos:-21, col:0, row:0 --
-            {0x0C, ""},// pos:-20, col:0, row:0 -- <MAGBYTE>
-            {0x0D, ""},// pos:-19, col:0, row:0 --
-            {0x0E, ""},// pos:-18, col:0, row:0 -- <$>
-            {0x0F, ""},// pos:-17, col:0, row:0 --
-            {0x10, ""},// pos:-16, col:0, row:0 --
-            {0x11, ""},// pos:-15, col:0, row:0 --
-            {0x12, ""},// pos:-14, col:0, row:0 --
-            {0x13, ""},// pos:-13, col:0, row:0 --
-            {0x14, ""},// pos:-12, col:0, row:0 --
-            {0x15, ""},// pos:-11, col:0, row:0 --
-            {0x16, ""},// pos:-10, col:0, row:1 --
-            {0x17, ""},// pos:-9, col:0, row:0 --
-            {0x18, ""},// pos:-8, col:0, row:0 --
-            {0x19, ""},// pos:-7, col:0, row:0 --
-            {0x1A, ""},// pos:-6, col:0, row:0 --
-            {0x1B, ""},// pos:-5, col:0, row:0 --
-            {0x1C, ""},// pos:-4, col:0, row:0 --
-            {0x1D, ""},// pos:-3, col:0, row:0 --
-            {0x1E, ""},// pos:-2, col:0, row:0 --
-            {0x1F, ""},// pos:-1, col:0, row:0 --
+            //{0x03, ""},// pos:-29, col:0, row:0 -- special character. {0x03,0x40 = [Angelo's Name]}
+            //{0x04, ""},// pos:-28, col:0, row:0 --
+            //{0x05, ""},// pos:-27, col:0, row:0 --
+            //{0x06, ""},// pos:-26, col:0, row:0 --
+            //{0x07, ""},// pos:-25, col:0, row:0 --
+            //{0x08, ""},// pos:-24, col:0, row:0 --
+            //{0x09, ""},// pos:-23, col:0, row:0 --
+            //{0x0A, ""},// pos:-22, col:0, row:0 --
+            //{0x0B, ""},// pos:-21, col:0, row:0 --
+            //{0x0C, ""},// pos:-20, col:0, row:0 -- <MAGBYTE>
+            //{0x0D, ""},// pos:-19, col:0, row:0 --
+            //{0x0E, ""},// pos:-18, col:0, row:0 -- <$>
+            //{0x0F, ""},// pos:-17, col:0, row:0 --
+            //{0x10, ""},// pos:-16, col:0, row:0 --
+            //{0x11, ""},// pos:-15, col:0, row:0 --
+            //{0x12, ""},// pos:-14, col:0, row:0 --
+            //{0x13, ""},// pos:-13, col:0, row:0 --
+            //{0x14, ""},// pos:-12, col:0, row:0 --
+            //{0x15, ""},// pos:-11, col:0, row:0 --
+            //{0x16, ""},// pos:-10, col:0, row:1 --
+            //{0x17, ""},// pos:-9, col:0, row:0 --
+            //{0x18, ""},// pos:-8, col:0, row:0 --
+            //{0x19, ""},// pos:-7, col:0, row:0 --
+            //{0x1A, ""},// pos:-6, col:0, row:0 --
+            //{0x1B, ""},// pos:-5, col:0, row:0 --
+            //{0x1C, ""},// pos:-4, col:0, row:0 --
+            //{0x1D, ""},// pos:-3, col:0, row:0 --
+            //{0x1E, ""},// pos:-2, col:0, row:0 --
+            //{0x1F, ""},// pos:-1, col:0, row:0 --
             {0x20, " "},// pos:0, col:1, row:1 -- Start of font texture
             {0x21, "0"},// pos:1, col:2, row:1 --
             {0x22, "1"},// pos:2, col:3, row:1 --
@@ -69,7 +71,7 @@ namespace FF8
             {0x32, "-"},// pos:18, col:19, row:2 --
             {0x33, "="},// pos:19, col:20, row:2 --
             {0x34, "*"},// pos:20, col:21, row:2 --
-            {0x35, "&"},// pos:21, col:1, row:2 --
+            {0x35, "&amp;"},//& pos:21, col:1, row:2 -- temporarly set to this so i could have formatting on pastebin
             {0x36, "「"},// pos:22, col:2, row:2 --
             {0x37, "」"},// pos:23, col:3, row:2 --
             {0x38, "("},// pos:24, col:4, row:2 --
@@ -243,11 +245,11 @@ namespace FF8
             {0xE0, "nu"},// pos:192, col:4, row:10 --
             {0xE1, "ra"},// pos:193, col:5, row:10 --
             {0xE2, "®"},// pos:194, col:6, row:10 -- End of font texture
-            {0xE3, ""},// pos:195, col:0, row:0 --
-            {0xE4, ""},// pos:196, col:0, row:0 --
-            {0xE5, ""},// pos:197, col:0, row:0 --
-            {0xE6, ""},// pos:198, col:0, row:0 --
-            {0xE7, ""},// pos:199, col:0, row:0 --
+            //{0xE3, ""},// pos:195, col:0, row:0 --
+            //{0xE4, ""},// pos:196, col:0, row:0 --
+            //{0xE5, ""},// pos:197, col:0, row:0 --
+            //{0xE6, ""},// pos:198, col:0, row:0 --
+            //{0xE7, ""},// pos:199, col:0, row:0 --
             {0xE8, "in"},// pos:200, col:0, row:0 --
             {0xE9, "e "},// pos:201, col:0, row:0 --
             {0xEA, "ne"},// pos:202, col:0, row:0 --
@@ -266,15 +268,12 @@ namespace FF8
             {0xF7, " r"},// pos:215, col:0, row:0 --
             {0xF8, "wi"},// pos:216, col:0, row:0 --
             {0xF9, "fi"},// pos:217, col:0, row:0 --
-            {0xFA, ""},// pos:218, col:0, row:0 --
+            //{0xFA, ""},// pos:218, col:0, row:0 --
             {0xFB, "s "},// pos:219, col:0, row:0 --
             {0xFC, "ar"},// pos:220, col:0, row:0 --
             {0xFD, ""},// pos:221, col:0, row:0 --
             {0xFE, " S"},// pos:222, col:0, row:0 --
             {0xFF, "ag"},// pos:223, col:0, row:0 --
-
-
-
 
             //{0x00, "\0"}, // I think \0 is a new string. if you read in a msg file it a array of strings each ending with \0
             //{0x02, "\n"}, // changed \n to signal draw text to make a new line
@@ -423,6 +422,102 @@ namespace FF8
         {
             Dark_Gray, Grey, Yellow, Red, Green, Blue, Purple, White
         }
+        /// <summary>
+        /// Change colors of text following this.
+        /// </summary>
+        private static Dictionary<int, ColorID> ColorCode = new Dictionary<int, ColorID>()
+        {
+            {0x0625, ColorID.Blue },
+            {0x0627, ColorID.White },
+            {0x0624, ColorID.Green }
+        };
+
+        /// <summary>
+        /// Placeholder for button images.
+        /// </summary>
+        private static Dictionary<int, string> Icons = new Dictionary<int, string>()
+        {
+            //on pc it puts a green letter for the keyboard key
+            //two lefts and two rights doesn't make sense.
+            
+            //buttons
+            {0x052F, "Left" },
+            {0x052D, "Right" },
+            {0x052C, "Left" },
+            {0x052E, "Right" },
+            {0x0526, "Okay" },
+            {0x0524, "Cancel" },
+            {0x053B, "Start" },
+            {0x0522, "L1" },
+            {0x0520, "L2" },
+            {0x0521, "R2" },
+            //other
+            {0x0541, "Junction Symbol" },
+            {0x0542, "Right Arrow" },
+            { 0x55D,  "Fire" },
+            { 0x55E,  "Ice" },
+            { 0x55F,  "Thunder" },
+            { 0x560,  "Earth" },
+            { 0x561,  "Poison" },
+            { 0x562,  "Wind" },
+            { 0x563,  "Water" },
+            { 0x564,  "Holy" },
+            { 0x565,  "Death" },
+            { 0x566,  "Poison" },
+            { 0x567,  "Petrify" },
+            { 0x568,  "Darkness" },
+            { 0x569,  "Silence" },
+            { 0x56A,  "Berserk" },
+            { 0x56B,  "Zombie" },
+            { 0x56C,  "Sleep" },
+            { 0x56D,  "Slow" },
+            { 0x56E,  "Stop" },
+            { 0x56F,  "Curse" },
+            { 0x570,  "Confuse" },
+            { 0x571,  "Drain" },
+            {0x545, "Junction Ability" },
+            {0x546,   "Command Ability" },
+            {0x548,   "Character Ability" },
+            {0x549,   "Party Ability" },
+            {0x54A,   "GF Ability" },
+            {0x54B,   "Menu Ability" },
+        };
+
+        /// <summary>
+        /// Place holders for names that can be customized.
+        /// </summary>
+        private static Dictionary<int, string> Names = new Dictionary<int, string>()
+        {
+            {0x0330, "Squall" },
+            {0x0334, "Riona" },
+            {0x0340, "Angelio" },
+            {0x333, "Character" } // could be GF, could be character, unsure.
+        };
+
+        /// <summary>
+        /// Place holders for various things. The 0A values change depending on what section/string you are in. 0B values can be 2 or 3 bytes total.
+        /// </summary>
+        private static Dictionary<int, string> Special = new Dictionary<int, string>()
+        {
+            //{0xA29, "Ability" }, // that can be learned.
+            //{0xA27, "Character Name"}, //could be wrong
+            //{0xA24, "GF Name" },
+            //{0xA25, "Ability" },
+            //{0xA22, "Amount" }, //current level or change unsure.
+            //{0xA28, "Stat" },
+            //{0xA26, "Spell or Rank" }, //Selected spell or SeeD rank
+            //{0xA20, "Value" }, //Card Level or SeeD test scores
+            //{0xABB, "Ignore require: GF Medicine: Ribbon" }, //might be more general like all GF medicine only abilites.
+            //{0xA97, "Ignore require: Tonberry ability unlock" }, // could be you need to unlock or just have the gf
+            //{0xA96, "Ignore require: Cactuar ability unlock" }, // could be you need to unlock or just have the gf
+            //{0xABF, "Ignore require: Defeat Omega Weapon" },
+            //{0xA3F, "End Ignore" },
+            {0xB20, "Option-0xB20" }, // could be wrong, //following byte is like an id of selection.
+            {0xB21, "Option-0xB21" }, // could be wrong
+            {0xB22, "Option-0xB22" }, // could be wrong
+            {0xB23, "Option-0xB23" }, // could be wrong
+            //0xC values are spells.
+        };
 
         public Font() => LoadFonts();
 
@@ -531,12 +626,21 @@ namespace FF8
             return ret;
         }
 
-        //dirty, do not use for anything else than translating for your own purpouses. I'm just lazy
+        /// <summary>
+        /// Converts clean string into dirty string for drawing.
+        /// </summary>
+        /// <param name="s">Clean String</param>
+        /// <returns>Dirty String</returns>
+        /// <remarks>
+        /// dirty, do not use for anything else than translating for your own purpouses. I'm just lazy
+        /// </remarks>
         public static string CipherDirty(string s)
         {
             string str = "";
             foreach (char n in s)
             {
+                // might need to change this to let the 0x02 pass and make the render function detect
+                // the 0x02 instead of \n
                 if (n == '\n') { str += n; continue; }
                 foreach (KeyValuePair<byte, string> kvp in chartable)
                     if (kvp.Value.Length == 1)
@@ -544,6 +648,74 @@ namespace FF8
                             str += (char)(kvp.Key);
             }
             return str.Replace("\0", "");
+        }
+
+        /// <summary>
+        /// Really for debugging. As we won't really need to decode the strings other than that.
+        /// </summary>
+        /// <param name="s">Dirty String</param>
+        /// <returns>Clean String</returns>
+        public static byte[] DecodeDirty(byte[] s)
+        {
+            if (s != null)
+                using (MemoryStream os = new MemoryStream(s.Length))
+                using (BinaryWriter bw = new BinaryWriter(os)) 
+                using (MemoryStream ms = new MemoryStream(s))
+                using (BinaryReader br = new BinaryReader(ms))
+                {
+                    while (ms.Position < ms.Length)
+                    {
+                        byte b = br.ReadByte();
+                        if (chartable.ContainsKey(b))
+                        {
+                            byte[] c = System.Text.Encoding.UTF8.GetBytes(chartable[b]);
+                            os.Write(c, 0, c.Length);
+                        }
+                        else
+                        {
+                            byte c = br.ReadByte();
+                            ushort i = BitConverter.ToUInt16(new byte[] { c,b }, 0);
+                            switch (b)
+                            {
+                                case 0x06:
+                                    if (ColorCode.ContainsKey(i))
+                                        bw.Write(System.Text.Encoding.ASCII.GetBytes($"<Color: \"{ColorCode[i]}\">"));
+                                    else
+                                        bw.Write(System.Text.Encoding.ASCII.GetBytes($"<Color: {string.Format("0x{0:X2}", i)}>"));
+                                    break;
+
+                                case 0x05:
+                                    if (Icons.ContainsKey(i))
+                                        bw.Write(System.Text.Encoding.ASCII.GetBytes($"<Icon_Button: \"{Icons[i]}\">"));
+                                    else
+                                        bw.Write(System.Text.Encoding.ASCII.GetBytes($"<Icon_Button: {string.Format("0x{0:X2}", i)}>"));
+                                    break;
+
+                                case 0x03:
+                                    if (Names.ContainsKey(i))
+                                        bw.Write(System.Text.Encoding.ASCII.GetBytes($"<Name: \"{Names[i]}\">"));
+                                    else
+                                        bw.Write(System.Text.Encoding.ASCII.GetBytes($"<Name: {string.Format("0x{0:X2}", i)}>"));
+                                    break;
+
+                                case 0x0A:
+                                case 0x0B:
+                                case 0x0C:
+                                    if (Special.ContainsKey(i))
+                                        bw.Write(System.Text.Encoding.ASCII.GetBytes($"<Special: \"{Special[i]}\">"));
+                                    else
+                                        bw.Write(System.Text.Encoding.ASCII.GetBytes($"<Special: {string.Format("0x{0:X2}", i)}>"));
+                                    break;
+                                default:
+                                    bw.Write(i);
+                                    break;
+                            }
+                        }
+                    }
+                    if (os.Length > 0)
+                        return os.ToArray();
+                }
+            return null;
         }
 
         /*
