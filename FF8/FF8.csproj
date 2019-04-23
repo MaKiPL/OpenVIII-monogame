@@ -150,6 +150,10 @@
     <Compile Include="Menu\Magazine.ID.cs" />
     <Compile Include="Menu\Strings.cs" />
     <Compile Include="Module_card_test.cs" />
+    <Compile Include="Module_main_menu_debug.Item.cs" />
+    <Compile Include="Module_main_menu_Loading.cs" />
+    <Compile Include="Module_main_menu_MainLobby.cs" />
+    <Compile Include="Module_main_menu_DebugLobby.cs" />
     <Compile Include="Sources\Environment\Game\Location\GameLocation.cs" />
     <Compile Include="Sources\Environment\Game\Location\IGameLocationProvider.cs" />
     <Compile Include="Sources\Environment\Game\Location\LinuxGameLocationProvider.cs" />

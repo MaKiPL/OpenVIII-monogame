@@ -626,11 +626,11 @@ namespace FF8
             menuFont.SetData(tim.CreateImageBuffer(tim.GetClutColors(ColorID.White)));
         }
 
-        public Rectangle CalcBasicTextArea(string buffer, Vector2 pos, Vector2 zoom, int whichFont = 0, int isMenu = 0, float Fade = 1.0f) => CalcBasicTextArea(buffer, (int)pos.X, (int)pos.Y, zoom.X, zoom.Y);
+        public Rectangle CalcBasicTextArea(byte[] buffer, Vector2 pos, Vector2 zoom, int whichFont = 0, int isMenu = 0, float Fade = 1.0f) => CalcBasicTextArea(buffer, (int)pos.X, (int)pos.Y, zoom.X, zoom.Y);
 
-        public Rectangle CalcBasicTextArea(string buffer, Point pos, Vector2 zoom, int whichFont = 0, int isMenu = 0, float Fade = 1.0f) => CalcBasicTextArea(buffer, pos.X, pos.Y, zoom.X, zoom.Y);
+        public Rectangle CalcBasicTextArea(byte[] buffer, Point pos, Vector2 zoom, int whichFont = 0, int isMenu = 0, float Fade = 1.0f) => CalcBasicTextArea(buffer, pos.X, pos.Y, zoom.X, zoom.Y);
 
-        public Rectangle CalcBasicTextArea(string buffer, int x, int y, float zoomWidth = 1f, float zoomHeight = 1f, int whichFont = 0)
+        public Rectangle CalcBasicTextArea(byte[] buffer, int x, int y, float zoomWidth = 1f, float zoomHeight = 1f, int whichFont = 0)
         {
             Rectangle ret = new Rectangle(x, y, 0, 0);
             Point real = new Point(x, y);
@@ -638,7 +638,7 @@ namespace FF8
             int charSize = whichFont == 0 ? 12 : 24;
             Vector2 zoom = new Vector2(zoomWidth, zoomHeight);
             Point size = (new Vector2(charSize, charSize) * zoom * Memory.Scale()).ToPoint();
-            foreach (char c in buffer)
+            foreach (byte c in buffer)
             {
                 if (c == 0x02) //02 is encoded \n
                 {
@@ -646,7 +646,7 @@ namespace FF8
                     real.Y += size.Y;
                     continue;
                 }
-                int verticalPosition = (char)(c - 32) / charCountWidth;
+                int verticalPosition = (byte)(c - 32) / charCountWidth;
                 //i.e. 1280 is 100%, 640 is 50% and therefore 2560 is 200% which means multiply by 0.5f or 2.0f
                 real.X += size.X;
                 int curWidth = real.X - x;
@@ -657,11 +657,11 @@ namespace FF8
             return ret;
         }
 
-        public Rectangle RenderBasicText(string buffer, Vector2 pos, Vector2 zoom, int whichFont = 0, int isMenu = 0, float Fade = 1.0f) => RenderBasicText(buffer, (int)pos.X, (int)pos.Y, zoom.X, zoom.Y, whichFont, isMenu, Fade);
+        public Rectangle RenderBasicText(byte[] buffer, Vector2 pos, Vector2 zoom, int whichFont = 0, int isMenu = 0, float Fade = 1.0f) => RenderBasicText(buffer, (int)pos.X, (int)pos.Y, zoom.X, zoom.Y, whichFont, isMenu, Fade);
 
-        public Rectangle RenderBasicText(string buffer, Point pos, Vector2 zoom, int whichFont = 0, int isMenu = 0, float Fade = 1.0f) => RenderBasicText(buffer, pos.X, pos.Y, zoom.X, zoom.Y, whichFont, isMenu, Fade);
+        public Rectangle RenderBasicText(byte[] buffer, Point pos, Vector2 zoom, int whichFont = 0, int isMenu = 0, float Fade = 1.0f) => RenderBasicText(buffer, pos.X, pos.Y, zoom.X, zoom.Y, whichFont, isMenu, Fade);
 
-        public Rectangle RenderBasicText(string buffer, int x, int y, float zoomWidth = 1f, float zoomHeight = 1f, int whichFont = 0, int isMenu = 0, float Fade = 1.0f)
+        public Rectangle RenderBasicText(byte[] buffer, int x, int y, float zoomWidth = 1f, float zoomHeight = 1f, int whichFont = 0, int isMenu = 0, float Fade = 1.0f)
         {
             Rectangle ret = new Rectangle(x, y, 0, 0);
             Point real = new Point(x, y);
@@ -669,9 +669,9 @@ namespace FF8
             int charSize = 12; //pixelhandler does the 2x scaling on the fly.
             Vector2 zoom = new Vector2(zoomWidth, zoomHeight);
             Point size = (new Vector2(charSize, charSize) * zoom * Memory.Scale()).ToPoint();
-            foreach (char c in buffer)
+            foreach (byte c in buffer)
             {
-                char deltaChar = (char)(c - 32);
+                byte deltaChar = (byte)(c - 32);
                 int verticalPosition = deltaChar / charCountWidth;
                 //i.e. 1280 is 100%, 640 is 50% and therefore 2560 is 200% which means multiply by 0.5f or 2.0f
                 if (c == 0x02)// \n
@@ -718,20 +718,22 @@ namespace FF8
         /// <remarks>
         /// dirty, do not use for anything else than translating for your own purpouses. I'm just lazy
         /// </remarks>
-        public static string CipherDirty(string s)
+        public static byte[] CipherDirty(string s)
         {
-            string str = "";
-            foreach (char n in s)
+            using (MemoryStream ms = new MemoryStream(s.Length))
             {
-                // might need to change this to let the 0x02 pass and make the render function detect
-                // the 0x02 instead of \n
-                //if (n == '\n') { str += n; continue; }
-                foreach (KeyValuePair<byte, string> kvp in chartable)
-                    if (kvp.Value.Length == 1)
-                        if (kvp.Value[0] == n)
-                            str += (char)(kvp.Key);
+                foreach (char n in s)
+                {
+                    // might need to change this to let the 0x02 pass and make the render function detect
+                    // the 0x02 instead of \n
+                    //if (n == '\n') { str += n; continue; }
+                    foreach (KeyValuePair<byte, string> kvp in chartable)
+                        if (kvp.Value.Length == 1)
+                            if (kvp.Value[0] == n)
+                               ms.WriteByte(kvp.Key);
+                }
+                return ms.ToArray();
             }
-            return str.Replace("\0", "");
         }
 
         /// <summary>
