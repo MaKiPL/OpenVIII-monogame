@@ -556,7 +556,7 @@ namespace FF8
             Point size = (new Vector2(charSize, charSize) * zoom * Memory.Scale()).ToPoint();
             foreach (char c in buffer)
             {
-                if (c == '\n')
+                if (c == 0x02) //02 is encoded \n
                 {
                     real.X = x;
                     real.Y += size.Y;
@@ -590,7 +590,7 @@ namespace FF8
                 char deltaChar = (char)(c - 32);
                 int verticalPosition = deltaChar / charCountWidth;
                 //i.e. 1280 is 100%, 640 is 50% and therefore 2560 is 200% which means multiply by 0.5f or 2.0f
-                if (c == '\n')
+                if (c == 0x02)// \n
                 {
                     real.X = x;
                     real.Y += size.Y;
@@ -641,7 +641,7 @@ namespace FF8
             {
                 // might need to change this to let the 0x02 pass and make the render function detect
                 // the 0x02 instead of \n
-                if (n == '\n') { str += n; continue; }
+                //if (n == '\n') { str += n; continue; }
                 foreach (KeyValuePair<byte, string> kvp in chartable)
                     if (kvp.Value.Length == 1)
                         if (kvp.Value[0] == n)
