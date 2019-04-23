@@ -140,9 +140,9 @@ namespace FF8
                     b = br.ReadByte();
                     if (b != 0 && b != 1) 
                     {
-                        c++;
                         os.WriteByte(b);
                     }
+                    c++;
                 }
                 while (b != 0 || c == 0);
                 if (os.Length > 0)
