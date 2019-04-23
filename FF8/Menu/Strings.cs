@@ -228,11 +228,11 @@ namespace FF8
             {
                 StringsPadLoc = new uint[] { (uint)SectionID.tkmnmes1, (uint)SectionID.tkmnmes2, (uint)SectionID.tkmnmes3 };
                 StringsLoc = new uint[] { 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54,
-                    55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 81 ,82,83,84,85,86,87,88,116};
+                    55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 81, 82, 83, 84, 85, 86, 87, 88, 116};
                 //complexstr have locations in first file,
                 //and they have 8 bytes of stuff at the start of each entry, 6 bytes UNK and ushort length?
                 //also can have multiple null ending strings.
-                ComplexStr = new Dictionary<uint, List<uint>> { { 74, new List<uint> { 75, 76, 77, 78, 79, 80 } } }; 
+                ComplexStr = new Dictionary<uint, List<uint>> { { 74, new List<uint> { 75, 76, 77, 78, 79, 80 } } };
                 BinMSG = new Dictionary<uint, uint>
                 {{106,111},{107,112},{108,113},{109,114},{110,115}};
 
@@ -265,6 +265,7 @@ namespace FF8
             }
             return fPaddings;
         }
+
         #endregion Methods
 
         //private void readfile()
