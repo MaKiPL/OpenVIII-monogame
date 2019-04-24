@@ -98,12 +98,9 @@ namespace FF8
             inputdst.Width = Math.Abs(inputdst.Width);
             inputdst.Height = Math.Abs(inputdst.Height);
             if (inputdst.X + inputdst.Width < 0 || inputdst.Y + inputdst.Height < 0) return;
-            if (inscale == Vector2.Zero)
-            {
-                //vscale = (float)dst.Height / Height;
-                inscale = new Vector2((float)inputdst.Width / Width);
-            }
-            Vector2 scale = inscale;
+
+            Vector2 autoscale = new Vector2((float)inputdst.Width / Width, (float)inputdst.Height / Height);
+            Vector2 scale = inscale == Vector2.Zero ? new Vector2(autoscale.X) : inscale;
             foreach (Entry e in list)
             {
                 int cpallet = e.CustomPallet < 0 || e.CustomPallet >= textures.Count ? pallet : e.CustomPallet;
@@ -117,38 +114,28 @@ namespace FF8
                 Rectangle src = e.GetRectangle;
                 bool testY = false;
                 bool testX = false;
-
-                if (dst.Width > inputdst.Width)
+                if (dst.X + dst.Width > inputdst.X + inputdst.Width)
                 {
-                    int change = (dst.Width - inputdst.Width);
+                    int change = (int)Math.Round((Width*scale.X - inputdst.Width));
                     src.Width -= (int)Math.Round(change / scale.X);
                     dst.Width -= change;
                 }
-                else if (e.Fill.X > 0)
+                else if (e.Fill.X > 0 && autoscale.X > scale.X)
                 {
-                    //int change = Math.Abs(dst.Width - inputdst.Width);
-                    float hscale = (float)inputdst.Width / Width;
-                    if (hscale > scale.X)
-                    {
-                        scale.X = hscale;
-                        dst.Width = (int)Math.Round((src.Width * hscale));
-                    }
+                    scale.X = autoscale.X;
+                    dst.Width = (int)Math.Round((src.Width * autoscale.X));
                 }
-                if (dst.Height > inputdst.Height)
+                if (dst.Y + dst.Height > inputdst.Y + inputdst.Height)
                 {
-                    int change = (dst.Height - inputdst.Height);
+                    int change = (int)Math.Round((Width * scale.Y - inputdst.Height));
                     src.Height -= (int)Math.Round(change / scale.Y);
                     dst.Height -= change;
                 }
-                else if (e.Fill.Y > 0)
+                else if (e.Fill.Y > 0 && autoscale.Y > scale.Y)
                 {
-                    //int change = Math.Abs(dst.Width - inputdst.Width);
-                    float vscale = (float)inputdst.Height / Height;
-                    if (vscale > scale.Y)
-                    {
-                        scale.Y = vscale;
-                        dst.Height = (int)Math.Round((src.Height * vscale));
-                    }
+                    scale.Y = autoscale.Y;
+                    dst.Height = (int)Math.Round((src.Height * autoscale.Y));
+                 
                 }
 
                 if (dst.Height <= 0 || dst.Height <= 0) continue; //infinate loop prevention
