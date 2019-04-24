@@ -87,11 +87,7 @@ namespace FF8
                     (int)(textStart.X), (int)(textStart.Y + ((textSize.Y + vpSpace) * item++)), textSize.X, textSize.Y, 1, 0, Fade));
                 strMainLobby[i] = c;
             }
-            Memory.Icons.Draw(Icons.ID.Finger_Right, 2, new Rectangle(
-                (int)(textStart.X - ((48 + 10) * scale.X)),
-                (int)(textStart.Y + (10 * scale.Y) + ((textSize.Y + vpSpace) * (float)Mchoose)),
-                (int)(48 * scale.X),
-                (int)(36 * scale.Y)), Vector2.Zero, fade);
+            DrawPointer(new Point((int)(textStart.X), (int)((((textSize.Y + vpSpace) * (float)Mchoose)+textStart.Y+(6*textSize.Y))*scale.Y)));
             Memory.SpriteBatchEnd();
         }
 

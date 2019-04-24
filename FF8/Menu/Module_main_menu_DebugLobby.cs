@@ -163,7 +163,8 @@ namespace FF8
             float item = 0;
             Rectangle dst = FontBoxCalc<Ditems>(strDebugLobby);
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
-            Memory.Icons.Draw(Icons.ID.Menu_BG_256, 0, dst, new Vector2(2f), Fade);
+            DrawBox(null, null, dst);
+            //Memory.Icons.Draw(Icons.ID.Menu_BG_256, 0, dst, new Vector2(2f), Fade);
             item = 0;
             dst.Offset(4 * 3.5f, 0);
             dst.Size = (Memory.Icons[Icons.ID.DEBUG].GetRectangle.Size.ToVector2() * scale * 3.5f).ToPoint();
@@ -171,7 +172,8 @@ namespace FF8
             dst.Location = DFontPos.ToPoint();
             dst.Size = new Point((int)(24 * 2 * scale.X), (int)(16 * 2 * scale.Y));
             dst.Offset(-(dst.Width + 10 * scale.X), 6 * scale.Y + vpSpace * ((float)Dchoose));
-
+            //want to use new function brain hurts on this screen lol
+            //DrawPointer(new Point((int)(textStart.X), (int)((((textSize.Y + vpSpace) * (float)Mchoose) + textStart.Y + (6 * textSize.Y)) * scale.Y)));
             Memory.Icons.Draw(Icons.ID.Finger_Right, 2, dst, Vector2.Zero, fade);
             //Memory.SpriteBatchEnd();
             //pointclamp looks bad on default fonts.
