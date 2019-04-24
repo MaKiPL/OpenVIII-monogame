@@ -109,6 +109,7 @@ namespace FF8
                 Width = 8,
                 Height = 8,
                 Tile = Vector2.UnitX,
+                Fill = Vector2.UnitY,
                 CustomPallet = 0
             });
             Entries[ID.Bar_Fill] = new EntryGroup(new Entry
@@ -118,7 +119,9 @@ namespace FF8
                 Width = 8,
                 Height = 8,
                 Tile = Vector2.UnitX,
-                Offset = new Vector2(0, 1),
+                Fill = Vector2.UnitY,
+                Offset = new Vector2(2, 2),
+                End = new Vector2(-2, 0),
                 CustomPallet = 5
             });
             Entries[ID.Menu_BG_256] = new EntryGroup(BG, Border_Top, Border_Left, Border_Right, Border_Bottom, Border_TopLeft, Border_TopRight, Border_BottomLeft, Border_BottomRight);

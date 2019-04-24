@@ -100,7 +100,8 @@ namespace FF8
             if (inputdst.X + inputdst.Width < 0 || inputdst.Y + inputdst.Height < 0) return;
 
             Vector2 autoscale = new Vector2((float)inputdst.Width / Width, (float)inputdst.Height / Height);
-            Vector2 scale = inscale == Vector2.Zero ? new Vector2(autoscale.X) : inscale;
+            Vector2 scale = (inscale == Vector2.Zero || inscale == Vector2.UnitX) ? new Vector2(autoscale.X) : inscale;
+            scale = inscale == Vector2.UnitY ? new Vector2(autoscale.Y) : inscale;
             foreach (Entry e in list)
             {
                 int cpallet = e.CustomPallet < 0 || e.CustomPallet >= textures.Count ? pallet : e.CustomPallet;

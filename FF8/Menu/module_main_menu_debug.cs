@@ -92,7 +92,7 @@ namespace FF8
                     break;
 
                 case MainMenuStates.LoadGameCheckingSlot:
-                    DrawLoadingSlot();
+                    DrawLGCheckSlot();
                     break;
 
                 case MainMenuStates.LoadGameChooseGame:
