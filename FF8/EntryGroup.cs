@@ -113,7 +113,7 @@ namespace FF8
                 Vector2 Offset = e.Offset * scale;
                 Point offset2 = RoundedPoint(e.End * scale);
                 dst.Offset(e.Snap_Right ? inputdst.Width : 0, e.Snap_Bottom ? inputdst.Height : 0);
-                dst.Offset(Offset);
+                dst.Offset(RoundedPoint(Offset));
                 dst.Size = RoundedPoint(e.Size * scale);
                 Rectangle src = e.GetRectangle;
                 bool testY = false;
@@ -165,7 +165,7 @@ namespace FF8
                             {
                                 int correction = (inputdst.Y + inputdst.Height + offset2.Y) - (dst.Y + dst.Height);
                                 dst.Height += correction;
-                                src.Height += (int)Math.Floor(correction / scale.Y);
+                                src.Height += (int)Math.Round(correction / scale.Y);
                             }
                         }
                         if(e.Tile.X > 0)
@@ -175,7 +175,7 @@ namespace FF8
                             {
                                 int correction = (inputdst.X + inputdst.Width + offset2.X) - (dst.X + dst.Width);
                                 dst.Width += correction;
-                                src.Width += (int)Math.Floor(correction / scale.X);
+                                src.Width += (int)Math.Round(correction / scale.X);
                             }
                         }
                         //else if( dst.Width< inputdst.Width)
