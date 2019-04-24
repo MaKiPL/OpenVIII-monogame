@@ -101,9 +101,9 @@ namespace FF8
             }
         }
 
-        public void Draw(Enum id, int pallet, Rectangle dst, float scale, float fade = 1f) => Entries[(ID)id].Draw(Textures, pallet, dst, scale, fade);
+        public void Draw(Enum id, int pallet, Rectangle dst, Vector2 scale, float fade = 1f) => Entries[(ID)id].Draw(Textures, pallet, dst, scale, fade);
 
-        public override void Draw(Enum id, Rectangle dst, float fade = 1) => Draw((ID)id, 2, dst, 1f);
+        public override void Draw(Enum id, Rectangle dst, float fade = 1) => Draw((ID)id, 2, dst, Vector2.One,fade);
 
         public Entry GetEntry(Enum id, int index) => Entries[(ID)id][index] ?? null;
 

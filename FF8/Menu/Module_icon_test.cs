@@ -115,17 +115,17 @@ namespace FF8
             Memory.SpriteBatchEnd();
             Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
 
-            float scale = 4f;
+            Vector2 scale = new Vector2(4f);
             Rectangle dst = new Rectangle()
             {
-                Width = (int)(Memory.Icons.GetEntryGroup(icon).Width * scale),
-                Height = (int)(Memory.Icons.GetEntryGroup(icon).Height * scale)
+                Width = (int)(Memory.Icons.GetEntryGroup(icon).Width * scale.X),
+                Height = (int)(Memory.Icons.GetEntryGroup(icon).Height * scale.Y)
             };
             if (icon == Icons.ID.Menu_BG_368)
             {
                 dst.Width = vp.Width;
                 dst.Height = vp.Height - 50;
-                scale = 0f;
+                scale = Vector2.Zero;
             }
             else
             {

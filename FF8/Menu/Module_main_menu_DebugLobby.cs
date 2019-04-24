@@ -129,6 +129,30 @@ namespace FF8
 
         #region Methods
 
+        private static Rectangle FontBoxCalc<T>(Dictionary<Enum, Item> dict)
+        {
+            Rectangle dst = new Rectangle();
+            int item = 0;
+            foreach (Enum i in Enum.GetValues(typeof(T)))
+            {
+                Item c = dict[i];
+                byte[] end = Font.CipherDirty(InfoForLobby<Ditems>(i));
+                byte[] combine = new byte[strDebugLobby[i].Text.Length + end.Length];
+                Array.Copy(strDebugLobby[i].Text, combine, strDebugLobby[i].Text.Length);
+                Array.Copy(end, 0, combine, strDebugLobby[i].Text.Length, end.Length);
+                c.Loc = Memory.font.CalcBasicTextArea(combine,
+                (int)DFontPos.X, (int)(DFontPos.Y + vpSpace * item++), 2.545454545f, 3.0375f, 0);
+                if (dst.X == 0 || dst.Y == 0)
+                    dst.Location = c.Loc.Location;
+                if (c.Loc.Width > dst.Width)
+                    dst.Width = c.Loc.Width;
+                dst.Height = c.Loc.Y + c.Loc.Height - dst.Y;
+                dict[i] = c;
+            }
+            Vector2 scale = Memory.Scale();
+            dst.Inflate(vpWidth * .06f * scale.X, vpHeight * .035f * scale.Y);
+            return dst;
+        }
         /// <summary>
         /// Draw Debug Menu
         /// </summary>
@@ -139,16 +163,16 @@ namespace FF8
             float item = 0;
             Rectangle dst = FontBoxCalc<Ditems>(strDebugLobby);
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
-            Memory.Icons.Draw(Icons.ID.Menu_BG_256, 0, dst, 2, Fade);
+            Memory.Icons.Draw(Icons.ID.Menu_BG_256, 0, dst, new Vector2(2f), Fade);
             item = 0;
             dst.Offset(4 * 3.5f, 0);
             dst.Size = (Memory.Icons[Icons.ID.DEBUG].GetRectangle.Size.ToVector2() * scale * 3.5f).ToPoint();
-            Memory.Icons.Draw(Icons.ID.DEBUG, 2, dst, 0, fade);
+            Memory.Icons.Draw(Icons.ID.DEBUG, 2, dst, Vector2.Zero, fade);
             dst.Location = DFontPos.ToPoint();
             dst.Size = new Point((int)(24 * 2 * scale.X), (int)(16 * 2 * scale.Y));
             dst.Offset(-(dst.Width + 10 * scale.X), 6 * scale.Y + vpSpace * ((float)Dchoose));
 
-            Memory.Icons.Draw(Icons.ID.Finger_Right, 2, dst, 0, fade);
+            Memory.Icons.Draw(Icons.ID.Finger_Right, 2, dst, Vector2.Zero, fade);
             //Memory.SpriteBatchEnd();
             //pointclamp looks bad on default fonts.
             //Memory.SpriteBatchStartAlpha();

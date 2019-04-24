@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace FF8
 {
@@ -34,6 +34,30 @@ namespace FF8
         }
 
         #endregion Enums
+
+        #region Properties
+
+        /// <summary>
+        /// Current choice on main menu
+        /// </summary>
+        private static Mitems Mchoose
+        {
+            get => s_mchoose;
+            set
+            {
+                if (value > s_mchoose && value > (Mitems)Enum.GetValues(typeof(Mitems)).Cast<int>().Max())
+                {
+                    value = 0;
+                }
+                else if (value < s_mchoose && s_mchoose <= 0)
+                {
+                    value = (Mitems)Enum.GetValues(typeof(Mitems)).Cast<int>().Max();
+                }
+                s_mchoose = value;
+            }
+        }
+
+        #endregion Properties
 
         #region Methods
 
@@ -67,7 +91,7 @@ namespace FF8
                 (int)(textStart.X - ((48 + 10) * scale.X)),
                 (int)(textStart.Y + (10 * scale.Y) + ((textSize.Y + vpSpace) * (float)Mchoose)),
                 (int)(48 * scale.X),
-                (int)(36 * scale.Y)), 0, fade);
+                (int)(36 * scale.Y)), Vector2.Zero, fade);
             Memory.SpriteBatchEnd();
         }
 

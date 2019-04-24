@@ -126,7 +126,7 @@ namespace FF8
             {
                 X = 0,
                 Y = 64,
-                Offset = new Vector2(256, 0),
+                Offset = new Vector2(255, 0), //offset should be 256 but i had issue with 1 pixel gap should be able to get away with losing one pixel.
                 Width = 112,
                 Height = 16,
                 CustomPallet = 1,
