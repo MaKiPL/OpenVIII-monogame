@@ -139,7 +139,7 @@ namespace FF8
             float item = 0;
             Rectangle dst = FontBoxCalc<Ditems>(strDebugLobby);
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
-            Memory.Icons.Draw(Icons.ID.Menu_BG_256, 0, dst, 0, Fade);
+            Memory.Icons.Draw(Icons.ID.Menu_BG_256, 0, dst, 2, Fade);
             item = 0;
             dst.Offset(4 * 3.5f, 0);
             dst.Size = (Memory.Icons[Icons.ID.DEBUG].GetRectangle.Size.ToVector2() * scale * 3.5f).ToPoint();
@@ -149,9 +149,9 @@ namespace FF8
             dst.Offset(-(dst.Width + 10 * scale.X), 6 * scale.Y + vpSpace * ((float)Dchoose));
 
             Memory.Icons.Draw(Icons.ID.Finger_Right, 2, dst, 0, fade);
-            Memory.SpriteBatchEnd();
+            //Memory.SpriteBatchEnd();
             //pointclamp looks bad on default fonts.
-            Memory.SpriteBatchStartAlpha();
+            //Memory.SpriteBatchStartAlpha();
             foreach (Ditems i in (Ditems[])Enum.GetValues(typeof(Ditems)))
             {
                 byte[] end = Font.CipherDirty(InfoForLobby<Ditems>(i));
@@ -159,7 +159,7 @@ namespace FF8
                 Array.Copy(strDebugLobby[i].Text, combine, strDebugLobby[i].Text.Length);
                 Array.Copy(end, 0, combine, strDebugLobby[i].Text.Length, end.Length);
                 Memory.font.RenderBasicText(combine,
-                    (int)(DFontPos.X), (int)(DFontPos.Y + vpSpace * item++), 1f, 2f, 0, 1, Fade);
+                    (int)(DFontPos.X), (int)(DFontPos.Y + vpSpace * item++), 2.545454545f, 3.0375f, 1, 0, Fade);
             }
             //Memory.spriteBatch.Draw(Memory.iconsTex[2], dst,
             //    new Rectangle(232, 0, 23, 15), Color.White * Fade);

@@ -39,7 +39,8 @@ namespace FF8
             LoadFF8,
             Loading,
             Slot1,
-            Slot2
+            Slot2,
+            FF8
         }
 
         /// <summary>
@@ -214,7 +215,7 @@ namespace FF8
                 Array.Copy(strDebugLobby[i].Text, combine, strDebugLobby[i].Text.Length);
                 Array.Copy(end, 0, combine, strDebugLobby[i].Text.Length, end.Length);
                 c.Loc = Memory.font.CalcBasicTextArea(combine,
-                (int)DFontPos.X, (int)(DFontPos.Y + vpSpace * item++), 1f, 2f, 0);
+                (int)DFontPos.X, (int)(DFontPos.Y + vpSpace * item++), 2.545454545f, 3.0375f, 0);
                 if (dst.X == 0 || dst.Y == 0)
                     dst.Location = c.Loc.Location;
                 if (c.Loc.Width > dst.Width)

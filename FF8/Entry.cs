@@ -59,6 +59,7 @@ namespace FF8
         public float Width { get=>Size.X; internal set=> Size.X=value; }
         public float Y { get => Location.Y; internal set => Location.Y = value; }
         public float X { get => Location.X; internal set => Location.X = value; }
+        public Vector2 Fill { get; internal set; }
 
         #endregion Properties
 

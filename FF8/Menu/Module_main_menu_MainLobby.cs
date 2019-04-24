@@ -45,8 +45,8 @@ namespace FF8
             Vector2 scale = Memory.Scale();
             Vector2 vp = (new Vector2(vpWidth, vpHeight)) * scale;
             float item = 0;
-            Vector2 textSize = new Vector2(2f, 3f);// scaled in render function.
-            Vector2 textStart = new Vector2(vp.X * .41f, vp.Y * .65f);
+            Vector2 textSize = new Vector2(2.545454545f, 3.0375f);// scaled in render function.
+            Vector2 textStart = new Vector2(vp.X * 0.45078125f, vp.Y * .65f);
             Memory.SpriteBatchStartAlpha();
             Rectangle dst = new Rectangle()
             {
@@ -54,15 +54,15 @@ namespace FF8
                 Size = vp.ToPoint()
             };
             start.Draw(dst, null, Color.White * fade);
+            Memory.SpriteBatchEnd();
+            Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
             foreach (Mitems i in (Mitems[])Enum.GetValues(typeof(Mitems)))
             {
                 Item c = strMainLobby[i];
                 c.Loc = (Memory.font.RenderBasicText(c.Text,
-                    (int)(textStart.X), (int)(textStart.Y + ((textSize.Y + vpSpace) * item++)), textSize.X, textSize.Y, 0, 1, Fade));
+                    (int)(textStart.X), (int)(textStart.Y + ((textSize.Y + vpSpace) * item++)), textSize.X, textSize.Y, 1, 0, Fade));
                 strMainLobby[i] = c;
             }
-            Memory.SpriteBatchEnd();
-            Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
             Memory.Icons.Draw(Icons.ID.Finger_Right, 2, new Rectangle(
                 (int)(textStart.X - ((48 + 10) * scale.X)),
                 (int)(textStart.Y + (10 * scale.Y) + ((textSize.Y + vpSpace) * (float)Mchoose)),

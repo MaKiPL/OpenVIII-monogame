@@ -111,7 +111,7 @@ namespace FF8
         MemoryStream localms;
         BinaryReader localbr;
         bool opened = false;
-        public void GetAW(FileID fileID)
+        public void GetAW(FileID fileID, bool force = false)
         {
             switch (fileID)
             {
@@ -121,7 +121,7 @@ namespace FF8
                     ArchiveString = Memory.Archives.A_MENU;
                     break;
             }
-            if(aw == null || aw.GetPath() != ArchiveString)
+            if(aw == null || aw.GetPath() != ArchiveString || force)
             aw = new ArchiveWorker(ArchiveString);
         }
         public void Open(FileID fileID)
@@ -129,8 +129,17 @@ namespace FF8
             if (opened)
                 throw new Exception("Must close before opening again");
             GetAW(fileID);
-            localms = new MemoryStream(aw.GetBinaryFile(
-                   aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)fileID], StringComparison.OrdinalIgnoreCase) >= 0)));
+            try
+            {
+                localms = new MemoryStream(aw.GetBinaryFile(
+                       aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)fileID], StringComparison.OrdinalIgnoreCase) >= 0)));
+            }
+            catch
+            {
+                GetAW(fileID,true);
+                localms = new MemoryStream(aw.GetBinaryFile(
+                       aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)fileID], StringComparison.OrdinalIgnoreCase) >= 0)));
+            }
             localbr = new BinaryReader(localms);
             opened = true;
         }

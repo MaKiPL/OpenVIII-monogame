@@ -90,20 +90,20 @@ namespace FF8
         internal Vector2 Abs(Vector2 v2  )  {
         return new Vector2(Math.Abs(v2.X), Math.Abs(v2.Y));
         }
-
-    internal void Draw(List<TextureHandler> textures, int pallet, Rectangle inputdst, float scale = 1f, float fade = 1f)
+        internal Point RoundedPoint(Vector2 v) => new Point((int)Math.Round(v.X),(int)Math.Round(v.Y));
+    internal void Draw(List<TextureHandler> textures, int pallet, Rectangle inputdst, float inscale = 1f, float fade = 1f)
         {
             Rectangle dst;
-            scale = Math.Abs(scale);
+            inscale = Math.Abs(inscale);
             inputdst.Width = Math.Abs(inputdst.Width);
             inputdst.Height = Math.Abs(inputdst.Height);
             if (inputdst.X + inputdst.Width < 0 || inputdst.Y + inputdst.Height < 0) return;
-            if ((int)(8 * scale) <= float.Epsilon)
+            if ((int)(8 * inscale) <= float.Epsilon)
             {
                 //vscale = (float)dst.Height / Height;
-                scale = (float)inputdst.Width /Width;
+                inscale = (float)inputdst.Width /Width;
             }
-
+            Vector2 scale = new Vector2(inscale);
             foreach (Entry e in list)
             {
                 int cpallet = e.CustomPallet < 0 || e.CustomPallet >= textures.Count ? pallet : e.CustomPallet;
@@ -111,15 +111,49 @@ namespace FF8
 
 
                 Vector2 Offset = e.Offset * scale;
-                Point offset2 = (e.End * scale).ToPoint();
+                Point offset2 = RoundedPoint(e.End * scale);
                 dst.Offset(e.Snap_Right ? inputdst.Width : 0, e.Snap_Bottom ? inputdst.Height : 0);
                 dst.Offset(Offset);
-                dst.Size = (e.Size * scale).ToPoint();
-               
+                dst.Size = RoundedPoint(e.Size * scale);
                 Rectangle src = e.GetRectangle;
                 bool testY = false;
                 bool testX = false;
+
+                if (dst.Width > inputdst.Width)
+                {
+                    int change = (dst.Width - inputdst.Width);
+                    src.Width -= (int)(change / scale.X);
+                    dst.Width -= change;
+                }
+                else if (e.Fill.X > 0)
+                {
+                    //int change = Math.Abs(dst.Width - inputdst.Width);
+                    float hscale = (float)inputdst.Width / Width;
+                    if (hscale > scale.X)
+                    {
+                        scale.X = hscale;
+                        dst.Width = (int)Math.Round((src.Width * hscale));
+                    }
+                }
+                if (dst.Height > inputdst.Height)
+                {
+                    int change = (dst.Height - inputdst.Height);
+                    src.Height -= (int)(change / scale.Y);
+                    dst.Height -= change;
+                }
+                else if (e.Fill.Y > 0)
+                {
+                    //int change = Math.Abs(dst.Width - inputdst.Width);
+                    float vscale = (float)inputdst.Height / Height;
+                    if (vscale > scale.Y)
+                    {
+                        scale.Y = vscale;
+                        dst.Height = (int)Math.Round((src.Height * vscale));
+                    }
+                }
+
                 if (dst.Height<=0 || dst.Height <= 0) continue; //infinate loop prevention
+
                 do
                 {
                     do
@@ -131,7 +165,7 @@ namespace FF8
                             {
                                 int correction = (inputdst.Y + inputdst.Height + offset2.Y) - (dst.Y + dst.Height);
                                 dst.Height += correction;
-                                src.Height += (int)Math.Floor(correction / scale);
+                                src.Height += (int)Math.Floor(correction / scale.Y);
                             }
                         }
                         if(e.Tile.X > 0)
@@ -141,9 +175,14 @@ namespace FF8
                             {
                                 int correction = (inputdst.X + inputdst.Width + offset2.X) - (dst.X + dst.Width);
                                 dst.Width += correction;
-                                src.Width += (int)Math.Floor(correction / scale);
+                                src.Width += (int)Math.Floor(correction / scale.X);
                             }
                         }
+                        //else if( dst.Width< inputdst.Width)
+                        //{
+                        //    float hscale = (float)inputdst.Width / Width;
+                        //    dst.Width = (int)(src.Width * hscale);
+                        //}
                         textures[cpallet].Draw(dst, src, Color.White * fade);
                         if (e.Tile.Y > 0)
                         {

@@ -13,6 +13,7 @@ namespace FF8
                 Width = 256,
                 Height = 16,
                 CustomPallet = 1,
+                Fill = Vector2.UnitX,
                 Tile = Vector2.UnitY,
             };
             Entry Border_TopLeft = new Entry
@@ -129,6 +130,7 @@ namespace FF8
                 Width = 112,
                 Height = 16,
                 CustomPallet = 1,
+                Fill = Vector2.UnitX,
                 Tile = Vector2.UnitY
             }, Border_Top, Border_Left, Border_Right, Border_Bottom, Border_TopLeft, Border_TopRight, Border_BottomLeft, Border_BottomRight);
             
