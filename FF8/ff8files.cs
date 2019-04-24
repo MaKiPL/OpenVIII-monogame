@@ -5,6 +5,13 @@ using System.Text.RegularExpressions;
 
 namespace FF8
 {
+    /// <summary>
+    /// parse data from save game files
+    /// </summary>
+    /// <seealso cref="http://wiki.ffrtt.ru/index.php/FF8/GameSaveFormat#The_save_format"/>
+    /// <seealso cref="https://github.com/myst6re/hyne"/>
+    /// <seealso cref="https://cdn.discordapp.com/attachments/552838120895283210/570733614656913408/ff8_save.zip"/>
+    /// <remarks>antiquechrono was helping. he even wrote a whole class using kaitai. Though I donno if we wanna use kaitai.</remarks>
     internal static class Ff8files
     {
         public struct Data
@@ -27,7 +34,7 @@ namespace FF8
             public uint Currentsave;//0x005C
         }
         //C:\Users\pcvii\OneDrive\Documents\Square Enix\FINAL FANTASY VIII Steam\user_1727519
-
+        // might crash linux. just trying to get something working.
         public static string SaveFolder { get; private set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Square Enix", "FINAL FANTASY VIII Steam");
         public static Data[,] FileList { get; private set; }
 
@@ -59,33 +66,34 @@ namespace FF8
                 //bool compe = BitConverter.ToUInt32(FI, (loc * 12) + 8) != 0;
                 //fs.Seek(0, SeekOrigin.Begin);
                 byte[] tmp = br.ReadBytes((int)fs.Length-4);
-                decmp = LZSS.DecompressAll(tmp,(uint)fs.Length-4);
+                decmp = LZSS.DecompressAllNew(tmp);
             }
-            using (FileStream fs = File.Create(Path.Combine(@"d:\", Path.GetFileName(file))))
-            using (BinaryWriter bw = new BinaryWriter(fs))
-            {
-                bw.Write(decmp);
-            }
+            //using (FileStream fs = File.Create(Path.Combine(@"d:\", Path.GetFileName(file))))
+            //using (BinaryWriter bw = new BinaryWriter(fs))
+            //{
+            //    bw.Write(decmp);
+            //}
             using (MemoryStream ms = new MemoryStream(decmp))
             using (BinaryReader br = new BinaryReader(ms))
             {
                 Data d = new Data();
-                ms.Seek(0x0004, SeekOrigin.Begin); d.LocationID = br.ReadUInt16();//0x0004
-                ms.Seek(0x0006, SeekOrigin.Begin); d.firstcharacterscurrentHP = br.ReadUInt16();//0x0006
-                ms.Seek(0x0008, SeekOrigin.Begin); d.firstcharactersmaxHP = br.ReadUInt16();//0x0008
-                ms.Seek(0x000A, SeekOrigin.Begin); d.savecount = br.ReadUInt16();//0x000A
-                ms.Seek(0x000C, SeekOrigin.Begin); d.AmountofGil = br.ReadUInt32();//0x000C
-                ms.Seek(0x0020, SeekOrigin.Begin); d.Totalnumberofsecondsplayed = br.ReadUInt32();//0x0020
-                ms.Seek(0x0024, SeekOrigin.Begin); d.firstcharacterslevel = br.ReadByte();//0x0024
-                ms.Seek(0x0025, SeekOrigin.Begin); d.firstcharactersportrait = br.ReadByte();//0x0025
-                ms.Seek(0x0026, SeekOrigin.Begin); d.secondcharactersportrait = br.ReadByte();//0x0026
-                ms.Seek(0x0027, SeekOrigin.Begin); d.thirdcharactersportrait = br.ReadByte();//0x0027
-                ms.Seek(0x0028, SeekOrigin.Begin); d.Squallsname = br.ReadBytes(12);//0x0028
-                ms.Seek(0x0034, SeekOrigin.Begin); d.Rinoasname = br.ReadBytes(12);//0x0034
-                ms.Seek(0x0040, SeekOrigin.Begin); d.Angelosname = br.ReadBytes(12);//0x0040
-                ms.Seek(0x004C, SeekOrigin.Begin); d.Bokosname = br.ReadBytes(12);//0x004C
-                ms.Seek(0x0058, SeekOrigin.Begin); d.CurrentDisk = br.ReadUInt32();//0x0058
-                ms.Seek(0x005C, SeekOrigin.Begin); d.Currentsave = br.ReadUInt32();//0x005C
+                ms.Seek(0x184, SeekOrigin.Begin);
+                d.LocationID = br.ReadUInt16();//0x0004
+                d.firstcharacterscurrentHP = br.ReadUInt16();//0x0006
+                d.firstcharactersmaxHP = br.ReadUInt16();//0x0008
+                d.savecount = br.ReadUInt16();//0x000A
+                d.AmountofGil = br.ReadUInt32();//0x000C
+                d.Totalnumberofsecondsplayed = br.ReadUInt32();//0x0020
+                d.firstcharacterslevel = br.ReadByte();//0x0024
+                d.firstcharactersportrait = br.ReadByte();//0x0025
+                d.secondcharactersportrait = br.ReadByte();//0x0026
+                d.thirdcharactersportrait = br.ReadByte();//0x0027
+                d.Squallsname = br.ReadBytes(12);//0x0028
+                d.Rinoasname = br.ReadBytes(12);//0x0034
+                d.Angelosname = br.ReadBytes(12);//0x0040
+                d.Bokosname = br.ReadBytes(12);//0x004C
+                d.CurrentDisk = br.ReadUInt32();//0x0058
+                d.Currentsave = br.ReadUInt32();//0x005C
                 return d;
             }
         }
