@@ -10,6 +10,7 @@ namespace FF8
         #region Fields
 
         private static sbyte _slotLoc = 0;
+
         /// <summary>
         /// Rectangle is hotspot for mouse, Point is where the finger points
         /// </summary>
@@ -59,10 +60,10 @@ namespace FF8
 
         #region Methods
 
-        private static Tuple<Rectangle, Point> DrawBox(byte[] buffer, Icons.ID? title, Rectangle dst, bool indent = true, bool bottom = false)
+        private static Tuple<Rectangle, Point> DrawBox(byte[] buffer, Icons.ID? title, Rectangle dst, bool indent = true, bool bottom = false, bool prescaled = false)
         {
             Point cursor = new Point(0);
-            Vector2 scale = Memory.Scale();
+            Vector2 scale = prescaled ? Vector2.One: Memory.Scale();
             dst.Size = (dst.Size.ToVector2() * scale).ToPoint();
             dst.Location = (dst.Location.ToVector2() * scale).ToPoint();
             Vector2 bgscale = 2f * scale;
@@ -78,7 +79,7 @@ namespace FF8
                 Memory.Icons.Draw(title.Value, 2, dst, bgscale + (.5f * scale), fade);
             }
 
-            if (buffer!= null && buffer.Length > 0)
+            if (buffer != null && buffer.Length > 0)
             {
                 if (indent)
                     dst.Offset(0.0546875f * vpWidth * scale.X, 0.0291666666666667f * vpHeight * scale.Y);
@@ -102,13 +103,52 @@ namespace FF8
         }
 
         private static void DrawLGChooseGame() => DrawLGSGChooseGame(strLoadScreen[Litems.Load].Text, strLoadScreen[Litems.BlockToLoad].Text);
+
         private static void DrawSGChooseGame() => DrawLGSGChooseGame(strLoadScreen[Litems.Save].Text, strLoadScreen[Litems.BlockToSave].Text);
+
         private static void DrawLGSGChooseGame(byte[] topright, byte[] help)
         {
+            RenderTarget2D OffScreenBuffer = new RenderTarget2D(Memory.graphics.GraphicsDevice, (int)(vpWidth * 0.65625f), (int)(vpHeight * 0.6625f), false, SurfaceFormat.Color, DepthFormat.None);
+            Memory.graphics.GraphicsDevice.SetRenderTarget(OffScreenBuffer);
+            Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
+            Rectangle dst = new Rectangle
+            {
+                X = (int)(vpWidth * 0f),
+                Y = (int)(vpHeight * 0f),
+                Width = (int)(vpWidth * 0.65625f),
+                Height = (int)(vpHeight * 0.220833333333333f),
+            };
+            DrawBox(null, Icons.ID.Size_08x16_1, dst, false, false, true);
+            dst = new Rectangle
+            {
+                X = (int)(vpWidth * 0f),
+                Y = (int)(vpHeight * 0.220833333333333f),
+                Width = (int)(vpWidth * 0.65625f),
+                Height = (int)(vpHeight * 0.220833333333333f),
+            };
+            DrawBox(null, Icons.ID.Size_08x16_2, dst,false,false,true);
+            dst = new Rectangle
+            {
+                X = (int)(vpWidth * 0f),
+                Y = (int)(vpHeight * 0.441666666666667f),
+                Width = (int)(vpWidth * 0.65625f),
+                Height = (int)(vpHeight * 0.220833333333333f),
+            };
+            DrawBox(null, Icons.ID.Size_08x16_3, dst, false, false, true);
+
+            Memory.SpriteBatchEnd();
+            Memory.graphics.GraphicsDevice.SetRenderTarget(null);
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
             DrawLGSGHeader(strLoadScreen[Litems.GameFolderSlot1 + SlotLoc].Text, topright, help);
+            dst = new Rectangle
+            {
+                X = (int)(vpWidth * 0.171875f),
+                Y = (int)(vpHeight * 0.266666666666667f),
+                Width = (int)(vpWidth * 0.65625f),
+                Height = (int)(vpHeight * 0.6625f),
+            };
+            Memory.spriteBatch.Draw(OffScreenBuffer, dst, Color.White * fade);
             Memory.SpriteBatchEnd();
-
         }
 
         /// <summary>
@@ -157,14 +197,17 @@ namespace FF8
         private static void DrawLoadingGame() => throw new NotImplementedException();
 
         private static void DrawLGCheckSlot() => DrawLGSGCheckSlot(strLoadScreen[Litems.Load].Text);
+
         private static void DrawSGCheckSlot() => DrawLGSGCheckSlot(strLoadScreen[Litems.Save].Text);
+
         private static void DrawLGSGCheckSlot(byte[] topright)
         {
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
-            DrawLGSGHeader(strLoadScreen[Litems.GameFolderSlot1+SlotLoc].Text, topright, strLoadScreen[Litems.CheckGameFolder].Text);
+            DrawLGSGHeader(strLoadScreen[Litems.GameFolderSlot1 + SlotLoc].Text, topright, strLoadScreen[Litems.CheckGameFolder].Text);
             DrawLGSGLoadBar();
             Memory.SpriteBatchEnd();
         }
+
         private static void DrawLGSGLoadBar()
         {
             Rectangle dst = new Rectangle
@@ -190,6 +233,7 @@ namespace FF8
             dst.Width = (int)(dst.Width * PercentLoaded);
             Memory.Icons.Draw(Icons.ID.Bar_Fill, -1, dst, Vector2.UnitY, fade);
         }
+
         /// <summary>
         /// Draw Save Choose Slot Screen
         /// </summary>
@@ -217,7 +261,9 @@ namespace FF8
             SlotLoc = 0;
         }
 
-        private static void UpdateLGChooseGame() { }
+        private static void UpdateLGChooseGame()
+        {
+        }
 
         private static bool UpdateLGChooseSlot()
         {
@@ -273,7 +319,6 @@ namespace FF8
 
         private static void UpdateLoadingSlot()
         {
-
             if (PercentLoaded < 1.0f)
             {
                 PercentLoaded += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 3;

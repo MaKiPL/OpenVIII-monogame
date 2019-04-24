@@ -100,6 +100,28 @@ namespace FF8
                 }
             }
         }
+        public void Draw(int number,byte type, int pallet, Vector2 location, Vector2 scale, float fade = 1f)
+        {
+            ID[] numberstarts = { ID.Size_08x08_0, ID.Size_08x08_ALT_0, ID.Size_08x16_ALT_0, ID.Size_08x16_0, ID.Size_16x16_0, ID.Size_08x08_ALT2_0 };
+            List<ID>[] nums = new List<ID>[numberstarts.Length];
+            int j = 0;
+            foreach (ID id in numberstarts)
+            {
+                nums[j++] = new List<ID>(10);
+                for (byte i = 0; i < 10; i++)
+                {
+                    nums[0].Add(id + i);
+                }
+            }
+            IEnumerable<int> intList = $"{number}".Select(digit => int.Parse(digit.ToString()));
+            var dst = new Rectangle { Location = location.ToPoint() };
+            foreach (int i in intList)
+            {
+                Draw(nums[type][i], pallet,dst, scale, fade);
+                dst.Offset(Entries[nums[type][i]].GetRectangle.Width, 0);
+            }
+
+        }
 
         public void Draw(Enum id, int pallet, Rectangle dst, Vector2 scale, float fade = 1f) => Entries[(ID)id].Draw(Textures, pallet, dst, scale, fade);
 
