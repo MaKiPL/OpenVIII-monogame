@@ -51,7 +51,7 @@ namespace FF8
             Memory.Cards = new Cards();
             Memory.Faces = new Faces();
             Memory.Icons = new Icons();
-
+            Ff8files.init();
 
             base.Initialize();
         }

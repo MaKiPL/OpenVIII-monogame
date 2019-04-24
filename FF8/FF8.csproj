@@ -139,6 +139,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="ArchiveWorker.cs" />
+    <Compile Include="ff8files.cs" />
     <Compile Include="Menu\Cards.cs" />
     <Compile Include="Menu\Cards.ID.cs" />
     <Compile Include="EntryGroup.cs" />

@@ -120,7 +120,6 @@ namespace FF8
                 Draw(nums[type][i], pallet,dst, scale, fade);
                 dst.Offset(Entries[nums[type][i]].GetRectangle.Width, 0);
             }
-
         }
 
         public void Draw(Enum id, int pallet, Rectangle dst, Vector2 scale, float fade = 1f) => Entries[(ID)id].Draw(Textures, pallet, dst, scale, fade);
