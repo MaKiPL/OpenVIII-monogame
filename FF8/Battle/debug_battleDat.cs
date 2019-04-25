@@ -177,12 +177,16 @@ namespace FF8
             public byte U;
             public byte V;
 
-            public float U1 { get => U /*> 128 || V > 128 ? U / 256.0f : U*/ /128f; set => U = (byte)value; }
-            public float V1(float w=128f) { return V > 128 ? (V - 128f)/w : V/w; }
+            public float U1(float h=128f) { return U / h; }
+            public float V1(float w=128f) { return V > 128 ? //if bigger than 128, then multitexture index to odd
+                    (V - 128f)/w 
+                    : w==32 ?  //if equals 32, then it's weapon texture and should be in range of 96-128
+                        (V-96)/w 
+                        : V/w; } //if none of these cases, then divide by resolution;
 
             public override string ToString()
             {
-                return $"{U};{U1};{V};{V1()}";
+                return $"{U};{U1()};{V};{V1()}";
             }
         }
 
@@ -268,10 +272,10 @@ namespace FF8
                 VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateTranslation(position));
                 ///
                 ///=/=/=/=/==/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
-
-                vpt.Add(new VertexPositionTexture(VerticeDataC, new Vector2(obj.triangles[i].vta.U1, obj.triangles[i].vta.V1(textures.textures[obj.triangles[i].textureIndex].Height))));
-                vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.triangles[i].vtb.U1, obj.triangles[i].vtb.V1(textures.textures[obj.triangles[i].textureIndex].Height))));
-                vpt.Add(new VertexPositionTexture(VerticeDataB, new Vector2(obj.triangles[i].vtc.U1, obj.triangles[i].vtc.V1(textures.textures[obj.triangles[i].textureIndex].Height))));
+                var prevarTexT = textures.textures[obj.triangles[i].textureIndex];
+                vpt.Add(new VertexPositionTexture(VerticeDataC, new Vector2(obj.triangles[i].vta.U1(prevarTexT.Width), obj.triangles[i].vta.V1(prevarTexT.Height))));
+                vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.triangles[i].vtb.U1(prevarTexT.Width), obj.triangles[i].vtb.V1(prevarTexT.Height))));
+                vpt.Add(new VertexPositionTexture(VerticeDataB, new Vector2(obj.triangles[i].vtc.U1(prevarTexT.Width), obj.triangles[i].vtc.V1(prevarTexT.Height))));
                 texturePointers[i] = obj.triangles[i].textureIndex;
             }
 
@@ -301,14 +305,14 @@ namespace FF8
                 VerticeDataD = Vector3.Transform(VerticeDataD, Matrix.CreateFromQuaternion(rotation));
                 VerticeDataD = Vector3.Transform(VerticeDataD, Matrix.CreateTranslation(position));
                 ///
+                var preVarTex = textures.textures[obj.quads[i].textureIndex];
+                vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.quads[i].vta.U1(preVarTex.Width), obj.quads[i].vta.V1(preVarTex.Height))));
+                vpt.Add(new VertexPositionTexture(VerticeDataB, new Vector2(obj.quads[i].vtb.U1(preVarTex.Width), obj.quads[i].vtb.V1(preVarTex.Height))));
+                vpt.Add(new VertexPositionTexture(VerticeDataD, new Vector2(obj.quads[i].vtd.U1(preVarTex.Width), obj.quads[i].vtd.V1(preVarTex.Height))));
 
-                vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.quads[i].vta.U1, obj.quads[i].vta.V1(textures.textures[obj.quads[i].textureIndex].Height))));
-                vpt.Add(new VertexPositionTexture(VerticeDataB, new Vector2(obj.quads[i].vtb.U1, obj.quads[i].vtb.V1(textures.textures[obj.quads[i].textureIndex].Height))));
-                vpt.Add(new VertexPositionTexture(VerticeDataD, new Vector2(obj.quads[i].vtd.U1, obj.quads[i].vtd.V1(textures.textures[obj.quads[i].textureIndex].Height))));
-
-                vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.quads[i].vta.U1, obj.quads[i].vta.V1(textures.textures[obj.quads[i].textureIndex].Height))));
-                vpt.Add(new VertexPositionTexture(VerticeDataC, new Vector2(obj.quads[i].vtc.U1, obj.quads[i].vtc.V1(textures.textures[obj.quads[i].textureIndex].Height))));
-                vpt.Add(new VertexPositionTexture(VerticeDataD, new Vector2(obj.quads[i].vtd.U1, obj.quads[i].vtd.V1(textures.textures[obj.quads[i].textureIndex].Height))));
+                vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.quads[i].vta.U1(preVarTex.Width), obj.quads[i].vta.V1(preVarTex.Height))));
+                vpt.Add(new VertexPositionTexture(VerticeDataC, new Vector2(obj.quads[i].vtc.U1(preVarTex.Width), obj.quads[i].vtc.V1(preVarTex.Height))));
+                vpt.Add(new VertexPositionTexture(VerticeDataD, new Vector2(obj.quads[i].vtd.U1(preVarTex.Width), obj.quads[i].vtd.V1(preVarTex.Height))));
 
                 texturePointers[obj.cTriangles+i*2] = obj.quads[i].textureIndex;
                 texturePointers[obj.cTriangles + i * 2+1] = obj.quads[i].textureIndex;

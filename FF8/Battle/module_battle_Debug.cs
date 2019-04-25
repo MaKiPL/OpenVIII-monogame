@@ -226,6 +226,7 @@ namespace FF8
             ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
             effect.TextureEnabled = true;
 
+            //CHARACTER
             for (int n = 0; n < charactersData.Length; n++)
             {
                 frame[n+monstersData.Length] = frame[n+monstersData.Length] == charactersData[n].character.animHeader.animations[0].cFrames ? 0 : frame[n+monstersData.Length];
@@ -246,6 +247,7 @@ namespace FF8
                     }
                 }
             }
+            //WEAPON
             for (int n = 0; n < charactersData.Length; n++)
             {
                 frame[n + monstersData.Length+charactersData.Length] = frame[n + monstersData.Length + charactersData.Length] == charactersData[n].weapon.animHeader.animations[0].cFrames ? 0 : frame[n+monstersData.Length+charactersData.Length];
