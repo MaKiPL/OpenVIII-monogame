@@ -197,6 +197,8 @@ namespace FF8
                     FPSCamera();
                     break;
             }
+            if (Input.GetInputDelayed(Keys.F1))
+                DEBUGframe += 1;
         }
 
         public static void Draw()
@@ -229,7 +231,7 @@ namespace FF8
                 frame[n+monstersData.Length] = frame[n+monstersData.Length] == charactersData[n].character.animHeader.animations[0].cFrames ? 0 : frame[n+monstersData.Length];
                 for (int i = 0; i < charactersData[n].character.geometry.cObjects; i++)
                 {
-                    var a = charactersData[n].character.GetVertexPositions(i, new Vector3(-10 + n * 10, 10, -40),0, frame[n+monstersData.Length], frameperFPS / FPS); //DEBUG
+                    var a = charactersData[n].character.GetVertexPositions(i, new Vector3(-10 + n * 10, 10, -40),Quaternion.CreateFromYawPitchRoll(3f,0,0),0, frame[n+monstersData.Length], frameperFPS / FPS); //DEBUG
                     if (a == null || a.Item1.Length == 0)
                         return;
                     for (int k = 0; k < a.Item1.Length / 3; k++)
@@ -249,7 +251,7 @@ namespace FF8
                 frame[n + monstersData.Length+charactersData.Length] = frame[n + monstersData.Length + charactersData.Length] == charactersData[n].weapon.animHeader.animations[0].cFrames ? 0 : frame[n+monstersData.Length+charactersData.Length];
                 for (int i = 0; i < charactersData[n].weapon.geometry.cObjects; i++)
                 {
-                    var a = charactersData[n].weapon.GetVertexPositions(i, new Vector3(-10+n*10,10, -40),0, frame[n+monstersData.Length+charactersData.Length], frameperFPS / FPS); //DEBUG
+                    var a = charactersData[n].weapon.GetVertexPositions(i, new Vector3(-10+n*10,10, -40), Quaternion.CreateFromYawPitchRoll(3f, 0, 0),0, frame[n+monstersData.Length+charactersData.Length], frameperFPS / FPS); //DEBUG
                     if (a == null || a.Item1.Length == 0)
                         return;
                     for (int k = 0; k < a.Item1.Length / 3; k++)
@@ -299,7 +301,7 @@ namespace FF8
 
                 for (int i = 0; i < monstersData[n].geometry.cObjects; i++)
                 {
-                    var a = monstersData[n].GetVertexPositions(i, enemyPositions[n], 0, frame[n],frameperFPS/FPS); //DEBUG
+                    var a = monstersData[n].GetVertexPositions(i, enemyPositions[n], Quaternion.CreateFromYawPitchRoll(0, 0, 0),0, frame[n],frameperFPS/FPS); //DEBUG
                     if (a == null || a.Item1.Length == 0)
                         return;
                     for (int k = 0; k < a.Item1.Length / 3; k++)
@@ -442,6 +444,7 @@ namespace FF8
             Memory.font.RenderBasicText(Font.CipherDirty($"Enemies: {string.Join(",", Memory.encounters[Memory.battle_encounter].BEnemies.Where(x => x != 0x00).Select(x => "0x" + (x - 0x10).ToString("X02")).ToArray())}"), 20, 30 * 2, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Levels: {string.Join(",", Memory.encounters[Memory.battle_encounter].bLevels)}"), 20, 30 * 3, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Loaded enemies: {Convert.ToString(Memory.encounters[Memory.battle_encounter].bLoadedEnemy, 2)}"), 20, 30 * 4, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Debug variable: {DEBUGframe}"), 20, 30 * 5, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
         }
 

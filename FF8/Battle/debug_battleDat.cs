@@ -229,7 +229,7 @@ namespace FF8
             return @object;
         }
 
-        public Tuple<VertexPositionTexture[],byte[]> GetVertexPositions(int objectId, Vector3 position, int animationId, int animationFrame, float step)
+        public Tuple<VertexPositionTexture[],byte[]> GetVertexPositions(int objectId, Vector3 position,Quaternion rotation, int animationId, int animationFrame, float step)
         {
             Object obj = geometry.objects[objectId];
             if (animationFrame >= animHeader.animations[animationId].animationFrames.Length || animationFrame<0)
@@ -254,14 +254,17 @@ namespace FF8
                 ////////////////////=============VERTEX C========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeC = verts[ obj.triangles[i].C1];
                 Vector3 VerticeDataC = VerticeC.Item1;
+                VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateFromQuaternion(rotation));
                 VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateTranslation(position));
                 ////////////////////=============VERTEX A========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeA = verts[obj.triangles[i].A1];
                 Vector3 VerticeDataA = VerticeA.Item1;
+                VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateFromQuaternion(rotation));
                 VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateTranslation(position));
                 ////////////////////=============VERTEX B========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeB = verts[obj.triangles[i].B1];
                 Vector3 VerticeDataB = VerticeB.Item1;
+                VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateFromQuaternion(rotation));
                 VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateTranslation(position));
                 ///
                 ///=/=/=/=/==/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
@@ -280,18 +283,22 @@ namespace FF8
                 ////////////////////=============VERTEX A========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeA = verts[obj.quads[i].A1];
                 Vector3 VerticeDataA = VerticeA.Item1;
+                VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateFromQuaternion(rotation));
                 VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateTranslation(position));
                 ////////////////////=============VERTEX B========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeB = verts[obj.quads[i].B1];
                 Vector3 VerticeDataB = VerticeB.Item1;
+                VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateFromQuaternion(rotation));
                 VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateTranslation(position));
                 ////////////////////=============VERTEX C========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeC = verts[obj.quads[i].C1];
                 Vector3 VerticeDataC = VerticeC.Item1;
+                VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateFromQuaternion(rotation));
                 VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateTranslation(position));
                 ////////////////////=============VERTEX D========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeD = verts[obj.quads[i].D1];
                 Vector3 VerticeDataD = VerticeD.Item1;
+                VerticeDataD = Vector3.Transform(VerticeDataD, Matrix.CreateFromQuaternion(rotation));
                 VerticeDataD = Vector3.Transform(VerticeDataD, Matrix.CreateTranslation(position));
                 ///
 
