@@ -87,11 +87,13 @@ namespace FF8
             }
         }
 
-        internal Vector2 Abs(Vector2 v2) => new Vector2(Math.Abs(v2.X), Math.Abs(v2.Y));
+        internal static Vector2 Abs(Vector2 v2) => new Vector2(Math.Abs(v2.X), Math.Abs(v2.Y));
 
-        internal Point RoundedPoint(Vector2 v) => new Point((int)Math.Round(v.X), (int)Math.Round(v.Y));
+        internal static Point RoundedPoint(Vector2 v) => new Point((int)Math.Round(v.X), (int)Math.Round(v.Y));
 
-        internal void Draw(List<TextureHandler> textures, int pallet, Rectangle inputdst, Vector2 inscale, float fade = 1f)
+        internal void Draw(List<TextureHandler> textures, int pallet, Rectangle inputdst, Vector2 inscale, float fade = 1f) =>
+            Draw(textures, list, pallet, inputdst, inscale, fade, new Point(Width, Height));
+        internal static void Draw(List<TextureHandler> textures,List<Entry> elist, int pallet, Rectangle inputdst, Vector2 inscale, float fade, Point totalSize)
         {
             Rectangle dst;
             inscale = Abs(inscale);
@@ -99,11 +101,21 @@ namespace FF8
             inputdst.Height = Math.Abs(inputdst.Height);
             if (inputdst.X + inputdst.Width < 0 || inputdst.Y + inputdst.Height < 0) return;
 
-            Vector2 autoscale = new Vector2((float)inputdst.Width / Width, (float)inputdst.Height / Height);
-            Vector2 scale = (inscale == Vector2.Zero || inscale == Vector2.UnitX) ? new Vector2(autoscale.X) : inscale;
-            scale = inscale == Vector2.UnitY ? new Vector2(autoscale.Y) : inscale;
-            foreach (Entry e in list)
+            Vector2 autoscale = new Vector2((float)inputdst.Width / totalSize.X, (float)inputdst.Height / totalSize.Y);
+            Vector2 scale;
+            if (inscale == Vector2.Zero || inscale == Vector2.UnitX)
+                scale = new Vector2(autoscale.X);
+            else if (inscale == Vector2.UnitY)
+                scale = new Vector2(autoscale.Y);
+            else
+                scale = inscale;
+            foreach (Entry e in elist)
             {
+                if (totalSize == new Point(0))
+                {
+                    totalSize.X = (int)e.Width;
+                    totalSize.Y = (int)e.Height;
+                }
                 int cpallet = e.CustomPallet < 0 || e.CustomPallet >= textures.Count ? pallet : e.CustomPallet;
                 dst = inputdst;
 
@@ -115,9 +127,9 @@ namespace FF8
                 Rectangle src = e.GetRectangle;
                 bool testY = false;
                 bool testX = false;
-                if (dst.X + dst.Width > inputdst.X + inputdst.Width)
+                if ((inputdst.Width!=0) && dst.X + dst.Width > inputdst.X + inputdst.Width)
                 {
-                    int change = (int)Math.Round((Width*scale.X - inputdst.Width));
+                    int change = (int)Math.Round((totalSize.X * scale.X - inputdst.Width));
                     src.Width -= (int)Math.Round(change / scale.X);
                     dst.Width -= change;
                 }
@@ -126,9 +138,10 @@ namespace FF8
                     scale.X = autoscale.X;
                     dst.Width = (int)Math.Round((src.Width * autoscale.X));
                 }
-                if (dst.Y + dst.Height > inputdst.Y + inputdst.Height)
+                
+                if ((inputdst.Height != 0) && dst.Y + dst.Height > inputdst.Y + inputdst.Height)
                 {
-                    int change = (int)Math.Round((Width * scale.Y - inputdst.Height));
+                    int change = (int)Math.Round((totalSize.Y * scale.Y - inputdst.Height));
                     src.Height -= (int)Math.Round(change / scale.Y);
                     dst.Height -= change;
                 }

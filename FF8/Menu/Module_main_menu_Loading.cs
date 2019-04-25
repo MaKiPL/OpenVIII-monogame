@@ -111,6 +111,8 @@ namespace FF8
             RenderTarget2D OffScreenBuffer = new RenderTarget2D(Memory.graphics.GraphicsDevice, (int)(vpWidth * 0.65625f), (int)(vpHeight * 0.6625f), false, SurfaceFormat.Color, DepthFormat.None);
             Memory.graphics.GraphicsDevice.SetRenderTarget(OffScreenBuffer);
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
+
+            int block = 1;
             Rectangle dst = new Rectangle
             {
                 X = (int)(vpWidth * 0f),
@@ -118,7 +120,26 @@ namespace FF8
                 Width = (int)(vpWidth * 0.65625f),
                 Height = (int)(vpHeight * 0.220833333333333f),
             };
-            DrawBox(null, Icons.ID.Size_08x16_1, dst, false, false, true);
+            DrawBox(null, null, dst, false, false, true);
+            Vector2 offset = new Vector2
+            {
+                X = (vpWidth * 0.00625f),
+                Y = 0,
+            };
+            Ff8files.Data d = Ff8files.FileList[SlotLoc, block - 1];
+            Rectangle f = new Rectangle
+            {
+                X = (int)(vpWidth * 0.04296875f),
+                Y = (int)(vpHeight * 0.00833333333333333f),
+                Width = (int)(vpWidth * 0.0625f),
+                Height = (int)(vpHeight * 0.2f),
+            };
+            Memory.Faces.Draw((Faces.ID)d.firstcharactersportrait, f, fade);
+            f.Offset(vpWidth * 0.06640625f, 0);
+            Memory.Faces.Draw((Faces.ID)d.secondcharactersportrait, f, fade);
+            f.Offset(vpWidth * 0.06640625f, 0);
+            Memory.Faces.Draw((Faces.ID)d.thirdcharactersportrait, f, fade);
+            Memory.Icons.Draw(block++, 4, 2, offset, new Vector2(3f), fade); // 2,2 looks close
             dst = new Rectangle
             {
                 X = (int)(vpWidth * 0f),
@@ -126,7 +147,9 @@ namespace FF8
                 Width = (int)(vpWidth * 0.65625f),
                 Height = (int)(vpHeight * 0.220833333333333f),
             };
-            DrawBox(null, Icons.ID.Size_08x16_2, dst,false,false,true);
+            DrawBox(null, null, dst,false,false,true);
+            offset.Y = dst.Y;
+            Memory.Icons.Draw(block++, 4, 2, offset, new Vector2(3f), fade); // 2,2 looks close
             dst = new Rectangle
             {
                 X = (int)(vpWidth * 0f),
@@ -134,7 +157,9 @@ namespace FF8
                 Width = (int)(vpWidth * 0.65625f),
                 Height = (int)(vpHeight * 0.220833333333333f),
             };
-            DrawBox(null, Icons.ID.Size_08x16_3, dst, false, false, true);
+            DrawBox(null, null, dst, false, false, true);
+            offset.Y = dst.Y;
+            Memory.Icons.Draw(block++, 4, 2, offset, new Vector2(3f), fade); // 2,2 looks close
 
             Memory.SpriteBatchEnd();
             Memory.graphics.GraphicsDevice.SetRenderTarget(null);
