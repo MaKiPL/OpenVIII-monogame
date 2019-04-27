@@ -50,6 +50,10 @@ namespace FF8
                     || value is decimal;
 
         public static double Distance3D(Vector3 xo, Vector3 xa) => Vector3.Distance(xo, xa);
+
+        public static bool GetBit(byte @object, int positionFromRight) => ((@object >> positionFromRight) & 1) > 0;
+        public static bool GetBit(int @object, int positionFromRight) => ((@object >> positionFromRight) & 1) > 0;
+
         public static bool IsLinux
         {
             get

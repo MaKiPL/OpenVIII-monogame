@@ -17,11 +17,11 @@ namespace FF8
         private static TIM2 textureInterface;
         private static Texture2D[] textures;
 
+        static List<EnemyInstanceInformation> EnemyInstances;
 
         //skyRotating floats are hardcoded
         private static readonly ushort[] skyRotators = { 0x4, 0x4, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x0, 0x4, 0x4, 0x0, 0x10, 0x10, 0x0, 0x0, 0x0, 0x0, 0x0, 0x8, 0x2, 0x0, 0x0, 0x8, 0xfffc, 0xfffc, 0x0, 0x0, 0x0, 0x4, 0x0, 0x8, 0x0, 0x4, 0x4, 0x0, 0x4, 0x0, 0x4, 0xfffc, 0x8, 0xfffc, 0xfffc, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x0, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x20, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x8, 0x0, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x8, 0xfffc, 0x4, 0x4, 0x4, 0x4, 0x8, 0x8, 0x4, 0xfffc, 0xfffc, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x4, 0x4, 0x4, 0x4, 0xfffc, 0x0, 0x0, 0x0, 0x0, 0x8, 0x8, 0x0, 0x8, 0xfffc, 0x0, 0x0, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x4, 0x4, 0x4, 0x0, 0x0, 0x8, 0x0, 0x8, 0x8 };
-        static float localRotator = 0.0f;
-
+        static float localRotator = 0.0f; //a rotator is a float that holds current axis rotation for sky. May be malformed by skyRotators or TimeCompression magic
 
 
         public static BasicEffect effect;
@@ -38,13 +38,28 @@ namespace FF8
         private const int BATTLEMODULE_DRAWGEOMETRY = 2;
         private const int BATTLEMODULE_CAMERAINTRO = 3;
         private const int BATTLEMODULE_ACTIVE = 4;
-        private const float FPS = 1000.0f / 15f;
+        private const float FPS = 1000.0f / 15f; //Natively the game we are rewritting works in 15 FPS per second
 
-        private struct BS_RENDERER_ADD
+        /// <summary>
+        /// This is helper struct that works along with VertexPosition to provide Clut, texture page and bool to decide if it's quad or triangle
+        /// </summary>
+        private struct Stage_GeometryInfoSupplier
         {
             public bool bQuad;
             public byte clut;
             public byte texPage;
+        }
+
+        private struct EnemyInstanceInformation
+        {
+            public Debug_battleDat Data;
+            /// <summary>
+            /// bit position of the enemy in encounter data. Use to pair the information with encounter data
+            /// </summary>
+            public byte index;
+            public bool bIsHidden;
+            public bool bIsActive;
+            public bool bisTargetable;
         }
 
 
@@ -289,26 +304,36 @@ namespace FF8
                     frame[x] += (int)(frameperFPS/FPS);
                 frameperFPS = 0.0f;
                 }
-                //TODO to grab from encounters
-            Vector3[] enemyPositions = new Vector3[] { new Vector3(10, 15, 25), new Vector3(0, 8, 0), new Vector3(30, 8, 0) };
-            for (int n = 0; n < monstersData.Length; n++)
+
+            for (int n = 0; n < EnemyInstances.Count; n++)
             {
-                if(monstersData[n].GetId == 127)
+                if(EnemyInstances[n].Data.GetId == 127)
                 {
                     //TODO;
                     continue;
                 }
-                frame[n] = frame[n] == monstersData[n].animHeader.animations[0].cFrames ? 0 : 
-                    frame[n] > monstersData[n].animHeader.animations[0].cFrames ? 0 : frame[n];
+                //TODO issue #43
+                frame[n] = frame[n] == EnemyInstances[n].Data.animHeader.animations[0].cFrames ? 0 : 
+                    frame[n] > EnemyInstances[n].Data.animHeader.animations[0].cFrames ? 0 : frame[n];
+                //End of TODO issue #43
 
-                for (int i = 0; i < monstersData[n].geometry.cObjects; i++)
+
+                var enemyPosition = Memory.encounters[Memory.battle_encounter].enemyCoordinates.GetEnemyCoordinateByIndex(EnemyInstances[n].index);
+
+                for (int i = 0; i < EnemyInstances[n].Data.geometry.cObjects; i++)
                 {
-                    var a = monstersData[n].GetVertexPositions(i, enemyPositions[n], Quaternion.CreateFromYawPitchRoll(0, 0, 0),0, frame[n],frameperFPS/FPS); //DEBUG
+                    var a = EnemyInstances[n].Data.GetVertexPositions(
+                        objectId: i,
+                        position: enemyPosition.GetVector(),
+                        rotation: Quaternion.CreateFromYawPitchRoll(0, 0, 0),
+                        animationId: 0, //Refer to issue #43 on GitHub
+                        animationFrame: frame[n],
+                        step: frameperFPS/FPS);
                     if (a == null || a.Item1.Length == 0)
                         return;
                     for (int k = 0; k < a.Item1.Length / 3; k++)
                     {
-                        ate.Texture = monstersData[n].textures.textures[a.Item2[k]];
+                        ate.Texture = EnemyInstances[n].Data.textures.textures[a.Item2[k]];
                         foreach (var pass in ate.CurrentTechnique.Passes)
                         {
                             pass.Apply();
@@ -413,7 +438,7 @@ namespace FF8
                 foreach (var b in modelGroups[n].models)
                 {
                     var vpt = GetVertexBuffer(b);
-                    if (n == 3 && skyRotators[Memory.encounters[Memory.battle_encounter].bScenario] != 0)
+                    if (n == 3 && skyRotators[Memory.encounters[Memory.battle_encounter].Scenario] != 0)
                         CreateRotation(vpt);
                     if (vpt == null) continue;
                     int localVertexIndex = 0;
@@ -442,29 +467,32 @@ namespace FF8
 
             Memory.SpriteBatchStartAlpha();
             Memory.font.RenderBasicText(Font.CipherDirty($"Encounter ready at: {Memory.battle_encounter}"), 0, 0, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"Camera: {Memory.encounters[Memory.battle_encounter].bCamera}"), 20, 30, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Camera: {Memory.encounters[Memory.battle_encounter].PrimaryCamera}"), 20, 30, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Enemies: {string.Join(",", Memory.encounters[Memory.battle_encounter].BEnemies.Where(x => x != 0x00).Select(x => "0x" + (x - 0x10).ToString("X02")).ToArray())}"), 20, 30 * 2, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Levels: {string.Join(",", Memory.encounters[Memory.battle_encounter].bLevels)}"), 20, 30 * 3, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"Loaded enemies: {Convert.ToString(Memory.encounters[Memory.battle_encounter].bLoadedEnemy, 2)}"), 20, 30 * 4, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Loaded enemies: {Convert.ToString(Memory.encounters[Memory.battle_encounter].UnloadedEnemy, 2)}"), 20, 30 * 4, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Debug variable: {DEBUGframe}"), 20, 30 * 5, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
         }
 
-        private static void CreateRotation(Tuple<BS_RENDERER_ADD[], VertexPositionTexture[]> vpt)
+        private static void CreateRotation(Tuple<Stage_GeometryInfoSupplier[], VertexPositionTexture[]> vpt)
         {
-            localRotator += (short)skyRotators[Memory.encounters[Memory.battle_encounter].bScenario]/4096f * Memory.gameTime.ElapsedGameTime.Milliseconds;
+            localRotator += (short)skyRotators[Memory.encounters[Memory.battle_encounter].Scenario]/4096f * Memory.gameTime.ElapsedGameTime.Milliseconds;
             if (localRotator <= 0)
                 return;
             for (int i = 0; i < vpt.Item2.Length; i++)
                 vpt.Item2[i].Position = Vector3.Transform(vpt.Item2[i].Position, Matrix.CreateRotationY(MathHelper.ToRadians(localRotator)));
         }
 
-        private static Tuple<BS_RENDERER_ADD[], VertexPositionTexture[]> GetVertexBuffer(Model model)
+        /// <summary>
+        /// Converts requested Model data (Stage group geometry) into MonoGame VertexPositionTexture
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        private static Tuple<Stage_GeometryInfoSupplier[], VertexPositionTexture[]> GetVertexBuffer(Model model)
         {
-            //draw model triangles
-            //every triangle have three vertices, so...
             List<VertexPositionTexture> vptDynamic = new List<VertexPositionTexture>();
-            List<BS_RENDERER_ADD> bs_renderer_supplier = new List<BS_RENDERER_ADD>();
+            List<Stage_GeometryInfoSupplier> bs_renderer_supplier = new List<Stage_GeometryInfoSupplier>();
             if (model.vertices == null) return null;
             for (int i = 0; i < model.triangles.Length; i++)
             {
@@ -477,7 +505,7 @@ namespace FF8
                     CalculateUV(model.triangles[i].U3, model.triangles[i].V3, model.triangles[i].TexturePage, textureInterface.GetWidth)));
                 vptDynamic.Add(new VertexPositionTexture(new Vector3((float)C.X / 100, (float)C.Y / 100, (float)C.Z / 100),
                     CalculateUV(model.triangles[i].U1, model.triangles[i].V1, model.triangles[i].TexturePage, textureInterface.GetWidth)));
-                bs_renderer_supplier.Add(new BS_RENDERER_ADD()
+                bs_renderer_supplier.Add(new Stage_GeometryInfoSupplier()
                 {
                     bQuad = false,
                     clut = model.triangles[i].clut,
@@ -509,14 +537,14 @@ namespace FF8
                 vptDynamic.Add(new VertexPositionTexture(new Vector3((float)D.X / 100, (float)D.Y / 100, (float)D.Z / 100),
                     CalculateUV(model.quads[i].U4, model.quads[i].V4, model.quads[i].TexturePage, textureInterface.GetWidth)));
 
-                bs_renderer_supplier.Add(new BS_RENDERER_ADD()
+                bs_renderer_supplier.Add(new Stage_GeometryInfoSupplier()
                 {
                     bQuad = true,
                     clut = model.quads[i].clut,
                     texPage = model.quads[i].TexturePage
                 });
             }
-            return new Tuple<BS_RENDERER_ADD[], VertexPositionTexture[]>
+            return new Tuple<Stage_GeometryInfoSupplier[], VertexPositionTexture[]>
                 (bs_renderer_supplier.ToArray(), vptDynamic.ToArray());
         }
 
@@ -538,10 +566,10 @@ namespace FF8
             Input.CurrentMode = Input.MouseLockMode.Center;
 
             Init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
-            int stage = enc.bScenario;
+            int stage = enc.Scenario;
             battlename = $"a0stg{stage.ToString("000")}.x";
             Console.WriteLine($"BS_DEBUG: Loading stage {battlename}");
-            Console.WriteLine($"BS_DEBUG/ENC: Encounter: {Memory.battle_encounter}\t cEnemies: {enc.bNumOfEnemies}\t Enemies: {string.Join(",", enc.BEnemies.Where(x => x != 0x00).Select(x => $"0x{(x - 0x10).ToString("X02")}").ToArray())}");
+            Console.WriteLine($"BS_DEBUG/ENC: Encounter: {Memory.battle_encounter}\t cEnemies: {enc.EnabledEnemy}\t Enemies: {string.Join(",", enc.BEnemies.Where(x => x != 0x00).Select(x => $"0x{(x - 0x10).ToString("X02")}").ToArray())}");
 
 
             //init renderer
@@ -636,22 +664,35 @@ namespace FF8
             };
         }
 
+        /// <summary>
+        /// This method is responsible to read/parse the enemy data. It holds the result in monstersData[]
+        /// This method was designed to read only one instance of enemy. A list called EnemyInstance holds data information for each enemy
+        /// </summary>
         private static void ReadMonster()
         {
             Init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
-            if (enc.bNumOfEnemies == 0)
+            if (enc.EnabledEnemy == 0)
                 return;
-            //DEBUG BELOW; I just want to draw any model
-            //MONSTERS ARE STILL IN DEBUG PHASE. They are NOT read from encounters!
-            monstersData = new Debug_battleDat[3];
-            //for (int n = 0; n < monstersData.Length; n++)
-            //    monstersData[n] = new Debug_battleDat(n, Debug_battleDat.EntityType.Monster);
-            monstersData[0] = new Debug_battleDat(92, Debug_battleDat.EntityType.Monster);
-            monstersData[1] = new Debug_battleDat(73, Debug_battleDat.EntityType.Monster);
-            monstersData[2] = new Debug_battleDat(74, Debug_battleDat.EntityType.Monster);
-            //END OF DEBUG
+            var DistinctMonsterPointers = enc.BEnemies.GroupBy(x => x).ToArray();
+            monstersData = new Debug_battleDat[DistinctMonsterPointers.Count()];
+            for (int n = 0; n < monstersData.Length; n++)
+                monstersData[n] = new Debug_battleDat(DistinctMonsterPointers[n].Key, Debug_battleDat.EntityType.Monster);
+
+            EnemyInstances = new List<EnemyInstanceInformation>();
+            for(int i = 0; i<8; i++)
+                if (MakiExtended.GetBit(enc.EnabledEnemy, 7-i))
+                    EnemyInstances.Add(new EnemyInstanceInformation() { Data = monstersData.Where(x => x.GetId == enc.BEnemies[i] ).First(),
+                        bIsHidden =MakiExtended.GetBit(enc.HiddenEnemies, 7-i),
+                        bIsActive = true,
+                        index = (byte)(7-i),
+                        bisTargetable = MakiExtended.GetBit(enc.UntargetableEnemy, 7-i)});
+            
         }
 
+        /// <summary>
+        /// Method designed for Stage texture loading. 
+        /// </summary>
+        /// <param name="texturePointer">Absolute pointer to TIM texture header in stageBuffer</param>
         private static void ReadTexture(uint texturePointer)
         {
             textureInterface = new TIM2(stageBuffer, texturePointer);
@@ -666,6 +707,15 @@ namespace FF8
             }
         }
 
+        /// <summary>
+        /// Reads Stage model groups pointers and reads/parses them individually. 
+        /// Group0 is stage ground. It's always enabled except special sequences like GFs
+        /// Group1 is main geometry. It's prior to Time Compression deformation
+        /// Group2 is main/additional geometry. It's prior to Time Compression deformation
+        /// Group3 is Sky. It's NON-prior to Time Compression, but may be modified by SkyRotators and/or TimeCompression last Stage skyRotation multiplier
+        /// </summary>
+        /// <param name="pointer"></param>
+        /// <returns></returns>
         private static ModelGroup ReadModelGroup(uint pointer)
         {
             pbs.Seek(pointer, System.IO.SeekOrigin.Begin);
@@ -679,12 +729,17 @@ namespace FF8
             return new ModelGroup() { models = models };
         }
 
+        /// <summary>
+        /// This is the main class that reads given Stage geometry group. It stores the data into Model structure
+        /// </summary>
+        /// <param name="pointer">absolute pointer in pbs[deprecated] buffer for given Stage geometry group</param>
+        /// <returns></returns>
         private static Model ReadModel(uint pointer)
         {
             bool bSpecial = false;
             pbs.Seek(pointer, System.IO.SeekOrigin.Begin);
             uint header = MakiExtended.UintLittleEndian(pbs.ReadUInt());
-            if (header != 0x01000100)
+            if (header != 0x01000100) //those may be some switches, but I don't know what they mean
             {
                 Console.WriteLine("WARNING- THIS STAGE IS DIFFERENT! It has weird object section. INTERESTING, TO REVERSE!");
                 bSpecial = true;
@@ -693,7 +748,7 @@ namespace FF8
             Vertex[] vertices = new Vertex[verticesCount];
             for (int i = 0; i < verticesCount; i++)
                 vertices[i] = ReadVertex();
-            if (bSpecial && Memory.encounters[Memory.battle_encounter].bScenario == 20)
+            if (bSpecial && Memory.encounters[Memory.battle_encounter].Scenario == 20)
                 return new Model();
             pbs.Seek((pbs.Tell() % 4) + 4, System.IO.SeekOrigin.Current);
             ushort trianglesCount = pbs.ReadUShort();
@@ -808,6 +863,12 @@ namespace FF8
             }; //EOF = EOF; beauty of language
         }
 
+        /// <summary>
+        /// Gets vanilla engine camera pointers. A team that rewrote the game into PC just left PlayStation MIPS data inside files
+        /// and therefore their code is to skip given hardcoded data which in fact are PS compiled instructions
+        /// This data is naturally read by PlayStation in original console release.
+        /// </summary>
+        /// <returns>Camera pointer (data after PlayStation MIPS)</returns>
         private static uint GetCameraPointer()
         {
             int[] _x5D4 = {4,5,9,12,13,14,15,21,22,23,24,26,
@@ -822,11 +883,11 @@ namespace FF8
 117,118,119,120,128,129,130,131,132,133,134,139,140,143,146,152,153,154,
 155,156,159,161,162};
 
-            int _5d4 = _x5D4.Count(x => x == Memory.encounters[Memory.battle_encounter].bScenario);
-            int _5d8 = _x5D8.Count(x => x == Memory.encounters[Memory.battle_encounter].bScenario);
+            int _5d4 = _x5D4.Count(x => x == Memory.encounters[Memory.battle_encounter].Scenario);
+            int _5d8 = _x5D8.Count(x => x == Memory.encounters[Memory.battle_encounter].Scenario);
             if (_5d4 > 0) return 0x5D4;
             if (_5d8 > 0) return 0x5D8;
-            switch (Memory.encounters[Memory.battle_encounter].bScenario)
+            switch (Memory.encounters[Memory.battle_encounter].Scenario)
             {
                 case 8:
                 case 48:
@@ -872,6 +933,7 @@ namespace FF8
             throw new Exception("0xFFF, unknown pointer!");
         }
 
+        //TODO
         private static void ReadCamera()
         {
             Memory.BS_CameraStruct = new Memory.VIII_cameraMemoryStruct();
@@ -921,7 +983,7 @@ namespace FF8
         }
 
 
-        //WIP debug only, used for reverse engineering
+        //WIP debug only, used for reverse engineering TODO
         private static void ReadAnimation(int animId)
         {
             Memory.BS_CameraStruct.camAnimId = (byte)animId;

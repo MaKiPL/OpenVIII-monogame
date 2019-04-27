@@ -14,7 +14,10 @@ namespace FF8
         readonly EntityType entityType;
         byte[] buffer;
 
-        private const float V = 2048.0f;
+        /// <summary>
+        /// V is the scale dividor. For now in Battle and World modules I'm dividing native f16 to 2048f
+        /// </summary>
+        public const float V = 2048.0f;
 
         public struct DatFile
         {
@@ -233,6 +236,17 @@ namespace FF8
             return @object;
         }
 
+        /// <summary>
+        /// This method returns geometry data AFTER animation matrix translations, local position/rotation translations. This is the final step of calculation. 
+        /// This data should be used only by Renderer. Any translations/vertices manipulation should happen inside this method or earlier
+        /// </summary>
+        /// <param name="objectId">Monsters can have more than one object. Treat it like multi-model geometry. They are all needed to build whole model</param>
+        /// <param name="position">a Vector3 to set global position</param>
+        /// <param name="rotation">a Quaternion to set the correct rotation. 1=90, 2=180 ... </param>
+        /// <param name="animationId">an animation pointer. Animation 0 is always idle</param>
+        /// <param name="animationFrame">an animation frame from animation id. You should pass incrementing frame and reset to 0 when frameCount max is hit</param>
+        /// <param name="step">FEATURE: This float (0.0 - 1.0) is used in Linear interpolation in animation frames blending. 0.0 means frameN, 1.0 means FrameN+1. Usually this should be a result of deltaTime to see if computer is capable of rendering smooth animations rather than constant 15 FPS</param>
+        /// <returns></returns>
         public Tuple<VertexPositionTexture[],byte[]> GetVertexPositions(int objectId, Vector3 position,Quaternion rotation, int animationId, int animationFrame, float step)
         {
             Object obj = geometry.objects[objectId];
@@ -259,17 +273,17 @@ namespace FF8
                 Tuple<Vector3, int> VerticeC = verts[ obj.triangles[i].C1];
                 Vector3 VerticeDataC = VerticeC.Item1;
                 VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateFromQuaternion(rotation));
-                VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateTranslation(position));
+                VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateTranslation(position/*+frame.Position*/));
                 ////////////////////=============VERTEX A========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeA = verts[obj.triangles[i].A1];
                 Vector3 VerticeDataA = VerticeA.Item1;
                 VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateFromQuaternion(rotation));
-                VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateTranslation(position));
+                VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateTranslation(position/*+frame.Position*/));
                 ////////////////////=============VERTEX B========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeB = verts[obj.triangles[i].B1];
                 Vector3 VerticeDataB = VerticeB.Item1;
                 VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateFromQuaternion(rotation));
-                VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateTranslation(position));
+                VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateTranslation(position/*+frame.Position*/));
                 ///
                 ///=/=/=/=/==/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
                 var prevarTexT = textures.textures[obj.triangles[i].textureIndex];
@@ -288,22 +302,22 @@ namespace FF8
                 Tuple<Vector3, int> VerticeA = verts[obj.quads[i].A1];
                 Vector3 VerticeDataA = VerticeA.Item1;
                 VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateFromQuaternion(rotation));
-                VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateTranslation(position));
+                VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateTranslation(position/*+frame.Position*/));
                 ////////////////////=============VERTEX B========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeB = verts[obj.quads[i].B1];
                 Vector3 VerticeDataB = VerticeB.Item1;
                 VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateFromQuaternion(rotation));
-                VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateTranslation(position));
+                VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateTranslation(position/*+frame.Position*/));
                 ////////////////////=============VERTEX C========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeC = verts[obj.quads[i].C1];
                 Vector3 VerticeDataC = VerticeC.Item1;
                 VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateFromQuaternion(rotation));
-                VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateTranslation(position));
+                VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateTranslation(position/*+frame.Position*/));
                 ////////////////////=============VERTEX D========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeD = verts[obj.quads[i].D1];
                 Vector3 VerticeDataD = VerticeD.Item1;
                 VerticeDataD = Vector3.Transform(VerticeDataD, Matrix.CreateFromQuaternion(rotation));
-                VerticeDataD = Vector3.Transform(VerticeDataD, Matrix.CreateTranslation(position));
+                VerticeDataD = Vector3.Transform(VerticeDataD, Matrix.CreateTranslation(position/*+frame.Position*/));
                 ///
                 var preVarTex = textures.textures[obj.quads[i].textureIndex];
                 vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.quads[i].vta.U1(preVarTex.Width), obj.quads[i].vta.V1(preVarTex.Height))));
@@ -386,18 +400,18 @@ namespace FF8
                 ExtapathyExtended.BitReader bitReader = new ExtapathyExtended.BitReader(ms);
                 for(int n = 0; n<animHeader.animations[i].cFrames; n++) //frames
                 {
-                    float x = bitReader.ReadPositionType()/V;
-                    float y = bitReader.ReadPositionType()/V;
-                    float z = bitReader.ReadPositionType()/V;
+                    float x = bitReader.ReadPositionType()*.01f;
+                    float y = bitReader.ReadPositionType() * .01f;
+                    float z = bitReader.ReadPositionType() * .01f;
                     if (n == 0)
                         animHeader.animations[i].animationFrames[n] = new AnimationFrame()
-                        {Position = new Vector3((int)x,(int)y,(int)z)};
+                        {Position = new Vector3(x,y,z)};
                     else
                         animHeader.animations[i].animationFrames[n] = new AnimationFrame()
                         {Position = new Vector3(
-                    animHeader.animations[i].animationFrames[n - 1].Position.X + (int)x,
-                    animHeader.animations[i].animationFrames[n - 1].Position.Y + (int)y,
-                    animHeader.animations[i].animationFrames[n - 1].Position.Z + (int)z)};
+                    animHeader.animations[i].animationFrames[n - 1].Position.X + x,
+                    animHeader.animations[i].animationFrames[n - 1].Position.Y + y,
+                    animHeader.animations[i].animationFrames[n - 1].Position.Z + z)};
 
                     bitReader.ReadBits(1); //padding byte;
                     animHeader.animations[i].animationFrames[n].boneRot = new Tuple<Vector3[], ShortVector[], Matrix[]>(new Vector3[skeleton.cBones], new ShortVector[skeleton.cBones], new Matrix[skeleton.cBones]);
