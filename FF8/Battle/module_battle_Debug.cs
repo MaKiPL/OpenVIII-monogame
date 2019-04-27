@@ -324,7 +324,7 @@ namespace FF8
                 {
                     var a = EnemyInstances[n].Data.GetVertexPositions(
                         objectId: i,
-                        position: enemyPosition.GetVector(),
+                        position: enemyPosition.GetVector() + new Vector3(0,2.5f,0),
                         rotation: Quaternion.CreateFromYawPitchRoll(0, 0, 0),
                         animationId: 0, //Refer to issue #43 on GitHub
                         animationFrame: frame[n],
@@ -468,10 +468,8 @@ namespace FF8
             Memory.SpriteBatchStartAlpha();
             Memory.font.RenderBasicText(Font.CipherDirty($"Encounter ready at: {Memory.battle_encounter}"), 0, 0, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Camera: {Memory.encounters[Memory.battle_encounter].PrimaryCamera}"), 20, 30, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"Enemies: {string.Join(",", Memory.encounters[Memory.battle_encounter].BEnemies.Where(x => x != 0x00).Select(x => "0x" + (x - 0x10).ToString("X02")).ToArray())}"), 20, 30 * 2, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"Levels: {string.Join(",", Memory.encounters[Memory.battle_encounter].bLevels)}"), 20, 30 * 3, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"Loaded enemies: {Convert.ToString(Memory.encounters[Memory.battle_encounter].UnloadedEnemy, 2)}"), 20, 30 * 4, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"Debug variable: {DEBUGframe}"), 20, 30 * 5, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Debug variable: {DEBUGframe}"), 20, 30 * 2, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"frame[n]: {string.Join(" ", frame)}"), 20, 30 * 3, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
         }
 

@@ -273,17 +273,17 @@ namespace FF8
                 Tuple<Vector3, int> VerticeC = verts[ obj.triangles[i].C1];
                 Vector3 VerticeDataC = VerticeC.Item1;
                 VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateFromQuaternion(rotation));
-                VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateTranslation(position/*+frame.Position*/));
+                VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateTranslation(position+Vector3.SmoothStep(frame.Position, nextFrame.Position, step)));
                 ////////////////////=============VERTEX A========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeA = verts[obj.triangles[i].A1];
                 Vector3 VerticeDataA = VerticeA.Item1;
                 VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateFromQuaternion(rotation));
-                VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateTranslation(position/*+frame.Position*/));
+                VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateTranslation(position+ Vector3.SmoothStep(frame.Position, nextFrame.Position, step)));
                 ////////////////////=============VERTEX B========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeB = verts[obj.triangles[i].B1];
                 Vector3 VerticeDataB = VerticeB.Item1;
                 VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateFromQuaternion(rotation));
-                VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateTranslation(position/*+frame.Position*/));
+                VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateTranslation(position+ Vector3.SmoothStep(frame.Position, nextFrame.Position, step)));
                 ///
                 ///=/=/=/=/==/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
                 var prevarTexT = textures.textures[obj.triangles[i].textureIndex];
@@ -302,22 +302,22 @@ namespace FF8
                 Tuple<Vector3, int> VerticeA = verts[obj.quads[i].A1];
                 Vector3 VerticeDataA = VerticeA.Item1;
                 VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateFromQuaternion(rotation));
-                VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateTranslation(position/*+frame.Position*/));
+                VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateTranslation(position+ Vector3.SmoothStep(frame.Position, nextFrame.Position, step)));
                 ////////////////////=============VERTEX B========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeB = verts[obj.quads[i].B1];
                 Vector3 VerticeDataB = VerticeB.Item1;
                 VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateFromQuaternion(rotation));
-                VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateTranslation(position/*+frame.Position*/));
+                VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateTranslation(position+ Vector3.SmoothStep(frame.Position, nextFrame.Position, step)));
                 ////////////////////=============VERTEX C========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeC = verts[obj.quads[i].C1];
                 Vector3 VerticeDataC = VerticeC.Item1;
                 VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateFromQuaternion(rotation));
-                VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateTranslation(position/*+frame.Position*/));
+                VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateTranslation(position+ Vector3.SmoothStep(frame.Position, nextFrame.Position, step)));
                 ////////////////////=============VERTEX D========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeD = verts[obj.quads[i].D1];
                 Vector3 VerticeDataD = VerticeD.Item1;
                 VerticeDataD = Vector3.Transform(VerticeDataD, Matrix.CreateFromQuaternion(rotation));
-                VerticeDataD = Vector3.Transform(VerticeDataD, Matrix.CreateTranslation(position/*+frame.Position*/));
+                VerticeDataD = Vector3.Transform(VerticeDataD, Matrix.CreateTranslation(position+ Vector3.SmoothStep(frame.Position, nextFrame.Position, step)));
                 ///
                 var preVarTex = textures.textures[obj.quads[i].textureIndex];
                 vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.quads[i].vta.U1(preVarTex.Width), obj.quads[i].vta.V1(preVarTex.Height))));
@@ -401,7 +401,7 @@ namespace FF8
                 for(int n = 0; n<animHeader.animations[i].cFrames; n++) //frames
                 {
                     float x = bitReader.ReadPositionType()*.01f;
-                    float y = bitReader.ReadPositionType() * .01f;
+                    float y = bitReader.ReadPositionType() * .01f * -1f;
                     float z = bitReader.ReadPositionType() * .01f;
                     if (n == 0)
                         animHeader.animations[i].animationFrames[n] = new AnimationFrame()
