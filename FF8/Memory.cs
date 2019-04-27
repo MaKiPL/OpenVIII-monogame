@@ -146,6 +146,7 @@ namespace FF8
         public static bool SuppressDraw { get; internal set; }
 
         public static bool IsMouseVisible { get; internal set; } = false;
+        public static DirtyEncoding DirtyEncoding;
 
         #region modules
 

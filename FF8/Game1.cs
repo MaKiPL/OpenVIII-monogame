@@ -38,8 +38,8 @@ namespace FF8
             //Memory.iconsTex = new Texture2D[tex.TextureData.NumOfPalettes];
             //for (int i = 0; i < Memory.iconsTex.Length; i++)
             //    Memory.iconsTex[i] = tex.GetTexture(i);
+            Memory.DirtyEncoding = new DirtyEncoding();
             Memory.FieldHolder.FieldMemory = new int[1024];
-
             Memory.Strings = new Strings();
 #if DEBUG
             //export the string data so you can find where the string you want is.

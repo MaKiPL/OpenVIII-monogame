@@ -124,6 +124,7 @@ namespace FF8
                 End = new Vector2(-2, 0),
                 CustomPallet = 5
             });
+            Entries[ID.MenuBorder] = new EntryGroup(Border_Top, Border_Left, Border_Right, Border_Bottom, Border_TopLeft, Border_TopRight, Border_BottomLeft, Border_BottomRight);
             Entries[ID.Menu_BG_256] = new EntryGroup(BG, Border_Top, Border_Left, Border_Right, Border_Bottom, Border_TopLeft, Border_TopRight, Border_BottomLeft, Border_BottomRight);
             Entries[ID.Menu_BG_368] = new EntryGroup(BG, new Entry
             {

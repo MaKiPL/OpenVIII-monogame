@@ -93,6 +93,10 @@ namespace FF8
 
         internal void Draw(List<TextureHandler> textures, int pallet, Rectangle inputdst, Vector2 inscale, float fade = 1f) =>
             Draw(textures, list, pallet, inputdst, inscale, fade, new Point(Width, Height));
+        internal static int GetChange(int tot,int goal, float scale = 1f)
+        {
+           return (int) Math.Round(Math.Abs(tot* scale - goal));
+        }
         internal static void Draw(List<TextureHandler> textures,List<Entry> elist, int pallet, Rectangle inputdst, Vector2 inscale, float fade, Point totalSize)
         {
             Rectangle dst;
@@ -129,7 +133,7 @@ namespace FF8
                 bool testX = false;
                 if ((inputdst.Width!=0) && dst.X + dst.Width > inputdst.X + inputdst.Width)
                 {
-                    int change = (int)Math.Round((totalSize.X * scale.X - inputdst.Width));
+                    int change = GetChange(totalSize.X,inputdst.Width,scale.X);
                     src.Width -= (int)Math.Round(change / scale.X);
                     dst.Width -= change;
                 }
@@ -141,7 +145,7 @@ namespace FF8
                 
                 if ((inputdst.Height != 0) && dst.Y + dst.Height > inputdst.Y + inputdst.Height)
                 {
-                    int change = (int)Math.Round((totalSize.Y * scale.Y - inputdst.Height));
+                    int change = GetChange(totalSize.Y, inputdst.Height, scale.Y); ;
                     src.Height -= (int)Math.Round(change / scale.Y);
                     dst.Height -= change;
                 }

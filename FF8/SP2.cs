@@ -134,12 +134,22 @@ namespace FF8
             TextureHandler tex = GetTexture(id);
             tex.Draw(dst, src, Color.White * fade);
         }
-        //public virtual void Draw(Enum id, Rectangle dst, Vector2 scale, float fade = 1)
-        //{
-        //    Rectangle src = GetEntry(id).GetRectangle;
-        //    TextureHandler tex = GetTexture(id);
-        //    tex.Draw(dst, src, Color.White * fade);
-        //}
+        public virtual void Draw(Enum id, Rectangle dst, Vector2 fill, float fade = 1)
+        {
+            Rectangle src = GetEntry(id).GetRectangle;
+            if (fill == Vector2.UnitX)
+            {
+                float r = (float)dst.Height / dst.Width;
+                src.Height = (int)Math.Round(src.Height * r);
+            }
+            else if (fill == Vector2.UnitY)
+            {
+                float r = (float)dst.Width / dst.Height;
+                src.Width = (int)Math.Round(src.Width * r);
+            }
+            TextureHandler tex = GetTexture(id);
+            tex.Draw(dst, src, Color.White * fade);
+        }
 
         private TextureHandler GetTexture(Enum id) => GetTexture(id,out Vector2 scale);
 

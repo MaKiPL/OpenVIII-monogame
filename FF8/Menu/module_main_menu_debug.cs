@@ -67,8 +67,6 @@ namespace FF8
             Memory.graphics.GraphicsDevice.Clear(Color.Black);
             //fScaleWidth = (float)Memory.graphics.GraphicsDevice.Viewport.Width / Memory.PreferredViewportWidth;
             //fScaleHeight = (float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight;
-            vpWidth = Memory.PreferredViewportWidth;//Memory.graphics.GraphicsDevice.Viewport.Width;
-            vpHeight = Memory.PreferredViewportHeight;//Memory.graphics.GraphicsDevice.Viewport.Width;
             lastfade = fade;
             vpSpace = vpHeight * 0.09f * Memory.Scale().X;
             DFontPos = new Vector2(vpWidth * .10f * Memory.Scale().X, vpHeight * .05f * Memory.Scale().Y) + Offset;
@@ -120,6 +118,9 @@ namespace FF8
             {
                 Fade += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 3;
             }
+
+            vpWidth = Memory.PreferredViewportWidth;//Memory.graphics.GraphicsDevice.Viewport.Width;
+            vpHeight = Memory.PreferredViewportHeight;//Memory.graphics.GraphicsDevice.Viewport.Width;
 
             switch (State)
             {
