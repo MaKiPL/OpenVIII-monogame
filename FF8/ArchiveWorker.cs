@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace FF8
 {
@@ -37,7 +38,9 @@ namespace FF8
         public static byte[] GetBinaryFile(string archiveName, string fileName)
         {
             byte[] isComp = GetBin(MakiExtended.GetUnixFullPath(archiveName), fileName);
-            return isComp == null ? null : _compressed ? LZSS.DecompressAll(isComp, (uint)isComp.Length, (int)_unpackedFileSize) : isComp;
+            if(_compressed)
+                isComp = isComp.Skip(4).ToArray();
+            return isComp == null ? null : _compressed ? LZSS.DecompressAllNew(isComp) : isComp;
         }
         /// <summary>
         /// Give me three archives as bytes uncompressed please!
@@ -77,7 +80,7 @@ namespace FF8
             byte[] file = new byte[fsLen];
 
             Array.Copy(FS, fSpos, file, 0, file.Length);
-            return compe ? LZSS.DecompressAll(file, (uint)file.Length, (int)fsLen) : file;
+            return compe ? LZSS.DecompressAllNew(file) : file;
         }
 
         private static byte[] GetBin(string archiveName, string fileName)
