@@ -741,6 +741,7 @@ namespace FF8
         /// Anything from 0-127 should be able to convert back and forth.
         /// But anything 128-256 may get messed up as c# stores it's strings as 16-bit unicode
         /// </remarks>
+        [Obsolete("use 'Memory.DirtyEncoding.GetBytes(s)' or 'new FF8String(s)'")]
         public static byte[] CipherDirty(string s) => Memory.DirtyEncoding.GetBytes(s);
         //{
         //    using (MemoryStream ms = new MemoryStream(s.Length))
@@ -760,11 +761,11 @@ namespace FF8
         //}
 
         /// <summary>
-        /// Really for debugging. As we won't really need to decode the strings other than that.
+        /// For string dump file. Not ment to be used to decode FF8Strings.
         /// </summary>
         /// <param name="s">Dirty String</param>
-        /// <returns>Clean String</returns>
-        public static byte[] DecodeDirty(byte[] s)
+        /// <returns>Clean UTF8 String in byte[] form with some XML</returns>
+        public static byte[] DumpDirtyString(byte[] s)
         {
             if (s != null)
                 using (MemoryStream os = new MemoryStream(s.Length))

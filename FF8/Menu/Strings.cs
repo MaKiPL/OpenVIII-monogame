@@ -76,7 +76,7 @@ namespace FF8
 
                     for (int j = 0; j < s.Value.Count; j++)
                     {
-                        byte[] b = Font.DecodeDirty(Read(br, FileID.MNGRP, s.Value[j]));
+                        byte[] b = Font.DumpDirtyString(Read(br, FileID.MNGRP, s.Value[j]));
                         if (b != null)
                         {
                             bw.Write(Encoding.UTF8.GetBytes($"\t<string id={j} seek={s.Value[j]}>"));
