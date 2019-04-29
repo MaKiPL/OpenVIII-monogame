@@ -14,24 +14,82 @@ namespace FF8
     /// <remarks>antiquechrono was helping. he even wrote a whole class using kaitai. Though I donno if we wanna use kaitai.</remarks>
     internal static class Ff8files
     {
-        public struct Data
+        public class Data
         {
             public ushort LocationID;//0x0004
             public ushort firstcharacterscurrentHP;//0x0006
             public ushort firstcharactersmaxHP;//0x0008
             public ushort savecount;//0x000A
             public uint AmountofGil;//0x000C
-            public TimeSpan Totalnumberofsecondsplayed;//0x0020
+            /// <summary>
+            /// Stored playtime in seconds. Made into timespan for easy parsing.
+            /// </summary>
+            public TimeSpan timeplayed;//0x0020
             public byte firstcharacterslevel;//0x0024
-            public byte firstcharactersportrait;//0x0025
-            public byte secondcharactersportrait;//0x0026
-            public byte thirdcharactersportrait;//0x0027
-            public byte[] Squallsname;//0x0028 //12
-            public byte[] Rinoasname;//0x0034 //12
-            public byte[] Angelosname;//0x0040 //12
-            public byte[] Bokosname;//0x004C
+            /// <summary>
+            /// 0xFF = blank; The value should cast to Faces.ID
+            /// </summary>
+            public byte[] charactersportraits;//0x0025//0x0026//0x0027
+            /// <summary>
+            /// 12 characters 0x00 terminated
+            /// </summary>
+            public byte[] Squallsname;//0x0028 //12 characters 0x00 terminated
+            public byte[] Rinoasname;//0x0034 //12 characters 0x00 terminated
+            public byte[] Angelosname;//0x0040 //12 characters 0x00 terminated
+            public byte[] Bokosname;//0x004C //12 characters 0x00 terminated
+            // 0  = Disc 1
             public uint CurrentDisk;//0x0058
             public uint Currentsave;//0x005C
+
+            public GFData[] GFs;
+
+            public Data()
+            {
+                LocationID = 0;
+                firstcharacterscurrentHP = 0;
+                firstcharactersmaxHP = 0;
+                savecount = 0;
+                AmountofGil = 0;
+                timeplayed = new TimeSpan();
+                firstcharacterslevel = 0;
+                charactersportraits = null;
+                Squallsname = null;
+                Rinoasname = null;
+                Angelosname = null;
+                Bokosname = null;
+                CurrentDisk = 0;
+                Currentsave = 0;
+                GFs = new GFData[16];
+            }
+        }
+        public struct GFData
+        {
+            public byte[] Name; //Offset (0x00 terminated)
+            public uint Experience; //0x00 
+            public byte Unknown; //0x0C 
+            public byte Exists; //0x10 
+            public ushort HP; //0x11 
+            public byte[] Complete; //0x12 abilities (1 bit = 1 ability completed, 9 bits unused)
+            public byte[] APs; //0x14 (1 byte = 1 ability of the GF, 2 bytes unused)
+            public ushort NumberKills; //0x24 of kills
+            public ushort NumberKOs; //0x3C of KOs
+            public byte Learning; //0x3E ability
+            public byte[] Forgotten; //0x41 abilities (1 bit = 1 ability of the GF forgotten, 2 bits unused)
+            
+            public void Read(BinaryReader br)
+            {
+                Name = br.ReadBytes(12);//0x00 (0x00 terminated)
+                Experience = br.ReadUInt32();//0x0C 
+                Unknown = br.ReadByte();//0x10 
+                Exists = br.ReadByte();//0x11 
+                HP = br.ReadUInt16();//0x12 
+                Complete = br.ReadBytes(16);//0x14 abilities (1 bit = 1 ability completed, 9 bits unused)
+                APs = br.ReadBytes(24);//0x24 (1 byte = 1 ability of the GF, 2 bytes unused)
+                NumberKills = br.ReadUInt16();//0x3C of kills
+                NumberKOs = br.ReadUInt16();//0x3E of KOs
+                Learning = br.ReadByte();//0x41 ability
+                Forgotten = br.ReadBytes(3);//0x42 abilities (1 bit = 1 ability of the GF forgotten, 2 bits unused)
+            }
         }
         /// <summary>
         /// Locations used by save files.
@@ -355,24 +413,28 @@ namespace FF8
             using (MemoryStream ms = new MemoryStream(decmp))
             using (BinaryReader br = new BinaryReader(ms))
             {
-                Data d = new Data();
                 ms.Seek(0x184, SeekOrigin.Begin);
-                d.LocationID = br.ReadUInt16();//0x0004
-                d.firstcharacterscurrentHP = br.ReadUInt16();//0x0006
-                d.firstcharactersmaxHP = br.ReadUInt16();//0x0008
-                d.savecount = br.ReadUInt16();//0x000A
-                d.AmountofGil = br.ReadUInt32();//0x000C
-                d.Totalnumberofsecondsplayed = new TimeSpan(0,0,(int)br.ReadUInt32());//0x0020
-                d.firstcharacterslevel = br.ReadByte();//0x0024
-                d.firstcharactersportrait = br.ReadByte();//0x0025
-                d.secondcharactersportrait = br.ReadByte();//0x0026
-                d.thirdcharactersportrait = br.ReadByte();//0x0027
-                d.Squallsname = br.ReadBytes(12);//0x0028
-                d.Rinoasname = br.ReadBytes(12);//0x0034
-                d.Angelosname = br.ReadBytes(12);//0x0040
-                d.Bokosname = br.ReadBytes(12);//0x004C
-                d.CurrentDisk = br.ReadUInt32();//0x0058
-                d.Currentsave = br.ReadUInt32();//0x005C
+                Data d = new Data
+                {
+                    LocationID = br.ReadUInt16(),//0x0004
+                    firstcharacterscurrentHP = br.ReadUInt16(),//0x0006
+                    firstcharactersmaxHP = br.ReadUInt16(),//0x0008
+                    savecount = br.ReadUInt16(),//0x000A
+                    AmountofGil = br.ReadUInt32(),//0x000C
+                    timeplayed = new TimeSpan(0, 0, (int)br.ReadUInt32()),//0x0020
+                    firstcharacterslevel = br.ReadByte(),//0x0024
+                    charactersportraits = br.ReadBytes(3),//0x0025//0x0026//0x0027 0xFF = blank.
+                    Squallsname = br.ReadBytes(12),//0x0028
+                    Rinoasname = br.ReadBytes(12),//0x0034
+                    Angelosname = br.ReadBytes(12),//0x0040
+                    Bokosname = br.ReadBytes(12),//0x004C
+                    CurrentDisk = br.ReadUInt32(),//0x0058
+                    Currentsave = br.ReadUInt32()//0x005C
+                };
+                for (int i = 0; i< d.GFs.Length; i++)
+                {
+                    d.GFs[i].Read(br);
+                }
                 return d;
             }
         }
