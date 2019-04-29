@@ -21,7 +21,7 @@ namespace FF8
             public ushort firstcharactersmaxHP;//0x0008
             public ushort savecount;//0x000A
             public uint AmountofGil;//0x000C
-            public uint Totalnumberofsecondsplayed;//0x0020
+            public TimeSpan Totalnumberofsecondsplayed;//0x0020
             public byte firstcharacterslevel;//0x0024
             public byte firstcharactersportrait;//0x0025
             public byte secondcharactersportrait;//0x0026
@@ -362,7 +362,7 @@ namespace FF8
                 d.firstcharactersmaxHP = br.ReadUInt16();//0x0008
                 d.savecount = br.ReadUInt16();//0x000A
                 d.AmountofGil = br.ReadUInt32();//0x000C
-                d.Totalnumberofsecondsplayed = br.ReadUInt32();//0x0020
+                d.Totalnumberofsecondsplayed = new TimeSpan(0,0,(int)br.ReadUInt32());//0x0020
                 d.firstcharacterslevel = br.ReadByte();//0x0024
                 d.firstcharactersportrait = br.ReadByte();//0x0025
                 d.secondcharactersportrait = br.ReadByte();//0x0026

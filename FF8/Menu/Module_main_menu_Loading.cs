@@ -107,6 +107,81 @@ namespace FF8
 
         private static void DrawSGChooseGame() => DrawLGSGChooseGame(strLoadScreen[Litems.Save].Text, strLoadScreen[Litems.BlockToSave].Text);
         private static RenderTarget2D OffScreenBuffer;
+        private static void DrawBlock(int block, Ff8files.Data d)
+        {
+            Rectangle dst = new Rectangle
+            {
+                X = (int)(vpWidth * 0f),
+                Y = (int)(vpHeight * 0.220833333333333f * ((block-1)%3)),
+                Width = (int)(vpWidth * 0.65625f),
+                Height = (int)(vpHeight * 0.220833333333333f),
+            };
+            Vector2 offset = dst.Location.ToVector2();
+
+            DrawBox(null, null, dst, false, false, true);
+
+            Vector2 blocknumpos = new Vector2
+            {
+                X = (vpWidth * 0.00625f),
+                Y = 0,
+            }+ offset;
+            Memory.Icons.Draw(block++, 4, 2, "D2", blocknumpos, new Vector2(3f), fade); // 2,2 looks close
+
+            Rectangle faceRect = new Rectangle
+            {
+                X = (int)(vpWidth * 0.04296875f),
+                Y = (int)(vpHeight * 0.0104166666666667f),
+                Width = (int)(vpWidth * 0.07421875f),
+                Height = (int)(vpHeight * 0.2f),
+            };
+            faceRect.Offset(offset);
+            Memory.Faces.Draw((Faces.ID)d.firstcharactersportrait, faceRect, Vector2.UnitY, fade);
+            Memory.Icons.Draw(Icons.ID.MenuBorder, 2, faceRect, new Vector2(1f), fade);
+            faceRect.Offset(faceRect.Width, 0);
+            Memory.Faces.Draw((Faces.ID)d.secondcharactersportrait, faceRect, Vector2.UnitY, fade);
+            Memory.Icons.Draw(Icons.ID.MenuBorder, 2, faceRect, new Vector2(1f), fade);
+            faceRect.Offset(faceRect.Width, 0);
+            Memory.Faces.Draw((Faces.ID)d.thirdcharactersportrait, faceRect, Vector2.UnitY, fade);
+            Memory.Icons.Draw(Icons.ID.MenuBorder, 2, faceRect, new Vector2(1f), fade);
+            Point detailsLoc = (new Point
+            {
+                X = (int)(vpWidth * 0.26796875f),
+                Y = (int)(vpHeight * 0.0166666666666667f),
+            }.ToVector2() + offset).ToPoint();
+            byte[] name = Font.CipherDirty(Enum.GetName(typeof(Faces.ID), (Faces.ID)d.firstcharactersportrait).Replace('_', ' '));
+            byte[] lv_ = Font.CipherDirty($"LV.   {d.firstcharacterslevel}");
+            Memory.font.RenderBasicText(name, detailsLoc, new Vector2(2.545454545f, 3.0375f), 1, 0, fade, true);
+            int playy = detailsLoc.Y;
+            detailsLoc.Y += (int)(vpHeight * 0.0541666666666667f);
+            Rectangle disc = Memory.font.RenderBasicText(lv_, detailsLoc, new Vector2(2.545454545f, 3.0375f), 1, 0, fade, true);
+            disc.Offset((int)(vpWidth * 0.1171875f), (int)(vpHeight * 0.00833333333333333f));
+            Memory.Icons.Draw(Icons.ID.DISC, 2, disc, new Vector2(2.90909090857143f), fade);
+            Memory.Icons.Draw((int)d.CurrentDisk, 0, 2, "D1", new Vector2(disc.X + disc.Width, disc.Y), new Vector2(2.90909090857143f), fade);
+
+            disc.Location = new Vector2 { X = (vpWidth * 0.625f), Y = disc.Y }.ToPoint();
+            Memory.Icons.Draw(Icons.ID.G, 2, disc, new Vector2(2.90909090857143f), fade);
+            var digits = Math.Floor(Math.Log10(d.AmountofGil) + 2);
+            disc.Offset(new Vector2 { X = (float)(digits * vpWidth * -0.015625f) });
+            Memory.Icons.Draw((int)d.AmountofGil, 0, 2, "D1", disc.Location.ToVector2(), new Vector2(2.90909090857143f), fade);
+            disc.Location = new Vector2 { X = (vpWidth * 0.625f), Y = playy }.ToPoint();
+            disc.Offset(new Vector2 { X = (float)(1 * vpWidth * -0.015625f) });
+            Memory.Icons.Draw(d.Totalnumberofsecondsplayed.Minutes, 0, 2, "D2", disc.Location.ToVector2(), new Vector2(2.90909090857143f), fade);
+            disc.Offset(new Vector2 { X = (float)(1 * vpWidth * -0.015625f) });
+            Memory.Icons.Draw(Icons.ID.Colon, 13, disc, new Vector2(2.90909090857143f), fade);
+            disc.Offset(new Vector2 { X = (float)(2 * vpWidth * -0.015625f) });
+            Memory.Icons.Draw(d.Totalnumberofsecondsplayed.Hours, 0, 2, "D1", disc.Location.ToVector2(), new Vector2(2.90909090857143f), fade);
+            disc.Offset(new Vector2 { X = (float)(vpWidth * -0.0625f) });
+            Memory.Icons.Draw(Icons.ID.PLAY, 13, disc, new Vector2(2.90909090857143f), fade);
+            Rectangle locbox = new Rectangle
+            {
+                X = faceRect.Width + faceRect.X,
+                Y = (int)(vpHeight * 0.129166666666667f),
+                Width = dst.Width - faceRect.Width - faceRect.X,
+                Height = (int)(vpHeight * 0.0916666666666667f),
+            };
+            locbox.Offset(offset);
+            DrawBox(Font.CipherDirty(Ff8files.Locations[d.LocationID]), null, locbox, false, false, true);
+        }
         private static void DrawLGSGChooseGame(byte[] topright, byte[] help)
         {
             Rectangle dst;
@@ -116,75 +191,36 @@ namespace FF8
                 Memory.graphics.GraphicsDevice.SetRenderTarget(OffScreenBuffer);
                 Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
 
-                int block = 1;
-                dst = new Rectangle
+                for (int block = 1; block <= 3; block++)
                 {
-                    X = (int)(vpWidth * 0f),
-                    Y = (int)(vpHeight * 0f),
-                    Width = (int)(vpWidth * 0.65625f),
-                    Height = (int)(vpHeight * 0.220833333333333f),
-                };
-                DrawBox(null, null, dst, false, false, true);
-                Vector2 offset = new Vector2
-                {
-                    X = (vpWidth * 0.00625f),
-                    Y = 0,
-                };
-                Ff8files.Data d = Ff8files.FileList[SlotLoc, block - 1];
-                Rectangle f = new Rectangle
-                {
-                    X = (int)(vpWidth * 0.04296875f),
-                    Y = (int)(vpHeight * 0.0104166666666667f),
-                    Width = (int)(vpWidth * 0.07421875f),
-                    Height = (int)(vpHeight * 0.2f),
-                };
-                Memory.Faces.Draw((Faces.ID)d.firstcharactersportrait, f, Vector2.UnitY, fade);
-                Point t = new Point
-                {
-                    X = (int)(vpWidth * 0.26796875f),
-                    Y = (int)(vpHeight * 0.0166666666666667f),
-                };
-                byte[] name = Font.CipherDirty(Enum.GetName(typeof(Faces.ID), (Faces.ID)d.firstcharactersportrait).Replace('_', ' '));
-                byte[] lv_ = Font.CipherDirty($"LV.   {d.firstcharacterslevel}");
-                Memory.font.RenderBasicText(name, t, new Vector2(2.545454545f, 3.0375f), 1, 0, fade, true);
-                t.Y += (int)(vpHeight * 0.0541666666666667f);
-                Memory.font.RenderBasicText(lv_, t, new Vector2(2.545454545f, 3.0375f), 1, 0, fade, true);
-                Memory.Icons.Draw(Icons.ID.MenuBorder, 2, f, new Vector2(1f), fade);
-                f.Offset(f.Width, 0);
-                Memory.Faces.Draw((Faces.ID)d.secondcharactersportrait, f, Vector2.UnitY, fade);
-                Memory.Icons.Draw(Icons.ID.MenuBorder, 2, f, new Vector2(1f), fade);
-                f.Offset(f.Width, 0);
-                Memory.Faces.Draw((Faces.ID)d.thirdcharactersportrait, f, Vector2.UnitY, fade);
-                Memory.Icons.Draw(Icons.ID.MenuBorder, 2, f, new Vector2(1f), fade);
-                Rectangle locbox = new Rectangle
-                {
-                    X = f.Width + f.X,
-                    Y = (int)(vpHeight * 0.129166666666667f),
-                    Width = dst.Width - f.Width - f.X,
-                    Height = (int)(vpHeight * 0.0916666666666667f),
-                };
-                DrawBox(Font.CipherDirty(Ff8files.Locations[d.LocationID]), null, locbox, false, false, true);
-                Memory.Icons.Draw(block++, 4, 2, offset, new Vector2(3f), fade); // 2,2 looks close
-                dst = new Rectangle
-                {
-                    X = (int)(vpWidth * 0f),
-                    Y = (int)(vpHeight * 0.220833333333333f),
-                    Width = (int)(vpWidth * 0.65625f),
-                    Height = (int)(vpHeight * 0.220833333333333f),
-                };
-                DrawBox(null, null, dst, false, false, true);
-                offset.Y = dst.Y;
-                Memory.Icons.Draw(block++, 4, 2, offset, new Vector2(3f), fade); // 2,2 looks close
-                dst = new Rectangle
-                {
-                    X = (int)(vpWidth * 0f),
-                    Y = (int)(vpHeight * 0.441666666666667f),
-                    Width = (int)(vpWidth * 0.65625f),
-                    Height = (int)(vpHeight * 0.220833333333333f),
-                };
-                DrawBox(null, null, dst, false, false, true);
-                offset.Y = dst.Y;
-                Memory.Icons.Draw(block++, 4, 2, offset, new Vector2(3f), fade); // 2,2 looks close
+                    Ff8files.Data d = Ff8files.FileList[SlotLoc, block - 1];
+                    DrawBlock(block, d);
+                }
+
+
+
+
+                
+                //dst = new Rectangle
+                //{
+                //    X = (int)(vpWidth * 0f),
+                //    Y = (int)(vpHeight * 0.220833333333333f),
+                //    Width = (int)(vpWidth * 0.65625f),
+                //    Height = (int)(vpHeight * 0.220833333333333f),
+                //};
+                //DrawBox(null, null, dst, false, false, true);
+                //offset.Y = dst.Y;
+                //Memory.Icons.Draw(block++, 4, 2, "D2", offset, new Vector2(3f), fade); // 2,2 looks close
+                //dst = new Rectangle
+                //{
+                //    X = (int)(vpWidth * 0f),
+                //    Y = (int)(vpHeight * 0.441666666666667f),
+                //    Width = (int)(vpWidth * 0.65625f),
+                //    Height = (int)(vpHeight * 0.220833333333333f),
+                //};
+                //DrawBox(null, null, dst, false, false, true);
+                //offset.Y = dst.Y;
+                //Memory.Icons.Draw(block++, 4, 2, "D2", offset, new Vector2(3f), fade); // 2,2 looks close
 
                 Memory.SpriteBatchEnd();
                 Memory.graphics.GraphicsDevice.SetRenderTarget(null);
@@ -198,8 +234,13 @@ namespace FF8
                 Width = (int)(vpWidth * 0.65625f),
                 Height = (int)(vpHeight * 0.6625f),
             };
-            if(OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)
+            if (OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)
+            {
+                Vector2 scale = Memory.Scale();
+                dst.Location = (dst.Location.ToVector2() * scale).ToPoint();
+                dst.Size = (dst.Size.ToVector2() * scale).ToPoint();
                 Memory.spriteBatch.Draw(OffScreenBuffer, dst, Color.White * fade);
+            }
             Memory.SpriteBatchEnd();
         }
 
