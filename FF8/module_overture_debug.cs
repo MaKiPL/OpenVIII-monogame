@@ -301,7 +301,9 @@ namespace FF8
                     : lof.First(x => x.ToLower().Contains($"{loops}{splashLoop.ToString("D2")}"));
                 byte[] buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_MAIN, fileName);
                 uint uncompSize = BitConverter.ToUInt32(buffer, 0);
+                buffer = buffer.Skip(4).ToArray(); //hotfix for new LZSS
                 buffer = LZSS.DecompressAllNew(buffer);
+                
 
                 if (splashTex != null && !splashTex.IsDisposed)
                     splashTex.Dispose();
