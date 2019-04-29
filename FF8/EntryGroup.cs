@@ -1,10 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace FF8
 {
-    public class EntryGroup
+    public class EntryGroup : IEnumerator, IEnumerable
     {
         #region Fields
 
@@ -23,16 +24,20 @@ namespace FF8
             rectangle = new Rectangle();
             Add(entries);
         }
-
         #endregion Fields
 
         #region Properties
-
+        public int Count => list.Count;
         public int Height { get => rectangle.Height; private set => rectangle.Height = value; }
 
         public int Width { get => rectangle.Width; private set => rectangle.Width = value; }
 
         public Rectangle GetRectangle => rectangle;
+
+        public object Current
+        {
+            get { return list[position-1]; }
+        }
 
         #endregion Properties
 
@@ -197,6 +202,10 @@ namespace FF8
                 while (e.Tile.X > 0 && testX);
             }
         }
+        int position = 0;
+        public bool MoveNext() => ++position<=list.Count;
+        public void Reset() => position = 0;
+        public IEnumerator GetEnumerator() => this;
 
         #endregion Methods
     }
