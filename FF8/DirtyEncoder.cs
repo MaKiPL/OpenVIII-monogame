@@ -17,15 +17,15 @@ namespace FF8
         }
 
         public FF8String(byte[] @value) => Value = @value;
-
+        public int Length => value.Length;
         public FF8String(string input) => Value = Memory.DirtyEncoding.GetBytes(input);
 
         public byte[] Value { get => value; set => this.value = value; }
         public string Value_str => ToString();
         public override string ToString() => Memory.DirtyEncoding.GetString(Value);
 
-        public static implicit operator string(FF8String input) => input.ToString();
-        public static implicit operator byte[] (FF8String input) => input.Value;
+        public static implicit operator string(FF8String input) => input != null?input.ToString():null;
+        public static implicit operator byte[] (FF8String input) => input!=null?input.Value:null;
 
         public static implicit operator FF8String(string input) => new FF8String(input);
         public static implicit operator FF8String(byte[] input) => new FF8String(input);

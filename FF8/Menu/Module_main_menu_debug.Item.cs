@@ -14,7 +14,7 @@ namespace FF8
             #region Properties
 
             public Rectangle Loc { get; set; }
-            public byte[] Text { get; set; }
+            public FF8String Text { get; set; }
 
             #endregion Properties
         }

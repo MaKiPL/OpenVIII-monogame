@@ -97,7 +97,7 @@ namespace FF8
         /// <param name="sectionID"></param>
         /// <param name="stringID"></param>
         /// <returns></returns>
-        public byte[] Read(FileID fileID, int sectionID, int stringID)
+        public FF8String Read(FileID fileID, int sectionID, int stringID)
         {
             switch (fileID)
             {
@@ -152,7 +152,7 @@ namespace FF8
                 opened = false;
             }
         }
-        private byte[] Read(FileID fid, uint pos)
+        private FF8String Read(FileID fid, uint pos)
         {
             if (!opened)
                 Open(fid);
@@ -171,7 +171,7 @@ namespace FF8
         //    }
         //}
 
-        private byte[] Read(BinaryReader br, FileID fid, uint pos)
+        private FF8String Read(BinaryReader br, FileID fid, uint pos)
         {
             using (MemoryStream os = new MemoryStream(50))
             {
