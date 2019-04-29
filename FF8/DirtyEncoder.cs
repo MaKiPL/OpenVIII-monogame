@@ -6,13 +6,37 @@ using System.Text;
 namespace FF8
 {
     /// <summary>
+    /// This holds the encoded bytes and provides implict casts to string and byte[]
+    /// </summary>
+    public class FF8String
+    {
+        private byte[] value;
+
+        public FF8String()
+        {
+        }
+
+        public FF8String(byte[] @value) => Value = @value;
+
+        public FF8String(string input) => Value = Memory.DirtyEncoding.GetBytes(input);
+
+        public byte[] Value { get => value; set => this.value = value; }
+        public string Value_str => ToString();
+        public override string ToString() => Memory.DirtyEncoding.GetString(Value);
+
+        public static implicit operator string(FF8String input) => input.ToString();
+        public static implicit operator byte[] (FF8String input) => input.Value;
+
+        public static implicit operator FF8String(string input) => new FF8String(input);
+        public static implicit operator FF8String(byte[] input) => new FF8String(input);
+    }
+    /// <summary>
     /// class to add function to dictionary
     /// </summary>
     /// <see cref="https://stackoverflow.com/questions/22595655/how-to-do-a-dictionary-reverse-lookup"/>
     public static class DictionaryEx
     {
         #region Methods
-
         /// <summary>
         /// Reverses Key and Value of dictionary.
         /// </summary>
@@ -314,7 +338,7 @@ namespace FF8
             //{0xFA, ""},// pos:218, col:0, row:0 --
             {0xFB, "s "},// pos:219, col:0, row:0 --
             {0xFC, "ar"},// pos:220, col:0, row:0 --
-            {0xFD, ""},// pos:221, col:0, row:0 --
+            //{0xFD, ""},// pos:221, col:0, row:0 --
             {0xFE, " S"},// pos:222, col:0, row:0 --
             {0xFF, "ag"},// pos:223, col:0, row:0 --
         };
@@ -384,20 +408,24 @@ namespace FF8
 
         public override string GetString(byte[] bytes)
         {
-            using (MemoryStream ms = new MemoryStream(GetMaxByteCount(bytes.Length)))
-            using (BinaryWriter bw = new BinaryWriter(ms))
-            using (StreamReader sr = new StreamReader(ms))
-            {
+            //using (MemoryStream ms = new MemoryStream(GetMaxByteCount(bytes.Length)))
+            //using (BinaryWriter bw = new BinaryWriter(ms))
+            //using (StreamReader sr = new StreamReader(ms))
+            //{
+
+                string @out = "";
                 foreach (byte c in bytes)
                 {
                     string b = BytetoChar.ContainsKey(c) ? BytetoChar[c].ToString() :
                         BytetoStr.ContainsKey(c) ? BytetoStr[c] :
                         ((char)c).ToString();
-                    bw.Write(b);
+                    //bw.Write(b);
+                    @out += b;
                 }
-                ms.Seek(0, SeekOrigin.Begin);
-                return sr.ReadToEnd();
-            }
+            return @out;
+                //ms.Seek(0, SeekOrigin.Begin);
+                //return sr.ReadToEnd();
+        //    }
         }
 
         #endregion Methods

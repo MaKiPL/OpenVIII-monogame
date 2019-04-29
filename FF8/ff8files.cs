@@ -33,16 +33,15 @@ namespace FF8
             /// <summary>
             /// 12 characters 0x00 terminated
             /// </summary>
-            public byte[] Squallsname;//0x0028 //12 characters 0x00 terminated
-            public byte[] Rinoasname;//0x0034 //12 characters 0x00 terminated
-            public byte[] Angelosname;//0x0040 //12 characters 0x00 terminated
-            public byte[] Bokosname;//0x004C //12 characters 0x00 terminated
+            public FF8String Squallsname;//0x0028 //12 characters 0x00 terminated
+            public FF8String Rinoasname;//0x0034 //12 characters 0x00 terminated
+            public FF8String Angelosname;//0x0040 //12 characters 0x00 terminated
+            public FF8String Bokosname;//0x004C //12 characters 0x00 terminated
             // 0  = Disc 1
             public uint CurrentDisk;//0x0058
             public uint Currentsave;//0x005C
 
             public GFData[] GFs;
-
             public Data()
             {
                 LocationID = 0;
@@ -64,7 +63,7 @@ namespace FF8
         }
         public struct GFData
         {
-            public byte[] Name; //Offset (0x00 terminated)
+            public FF8String Name; //Offset (0x00 terminated)
             public uint Experience; //0x00 
             public byte Unknown; //0x0C 
             public byte Exists; //0x10 
@@ -75,7 +74,7 @@ namespace FF8
             public ushort NumberKOs; //0x3C of KOs
             public byte Learning; //0x3E ability
             public byte[] Forgotten; //0x41 abilities (1 bit = 1 ability of the GF forgotten, 2 bits unused)
-            
+
             public void Read(BinaryReader br)
             {
                 Name = br.ReadBytes(12);//0x00 (0x00 terminated)
