@@ -160,7 +160,7 @@ namespace FF8
             };
             faceRect.Offset(offset);
             sbyte mainchar = -1;
-            for (byte face = 0; d.charactersportraits != null && face < d.charactersportraits.Length; face++)
+            for (byte face = 0; d != null && d.charactersportraits != null && face < d.charactersportraits.Length; face++)
             {
                 if (face != 0)
                     faceRect.Offset(faceRect.Width, 0);
@@ -171,7 +171,7 @@ namespace FF8
                     if (mainchar == -1) mainchar = (sbyte)face;
                 }
             }
-            if (mainchar > -1 && d.charactersportraits != null && d.charactersportraits[mainchar] != 0xFF)
+            if (mainchar > -1 &&  d!=null && d.charactersportraits != null && d.charactersportraits[mainchar] != 0xFF)
             {
                 Point detailsLoc = (new Point
                 {

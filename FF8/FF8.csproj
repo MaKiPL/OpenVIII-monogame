@@ -138,6 +138,7 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ArchiveSearch.cs" />
     <Compile Include="ArchiveWorker.cs" />
     <Compile Include="DirtyEncoder.cs" />
     <Compile Include="ff8files.cs" />

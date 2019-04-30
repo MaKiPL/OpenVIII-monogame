@@ -44,8 +44,12 @@ namespace FF8
 #if DEBUG
             //export the string data so you can find where the string you want is.
             // then you can Memory.Strings.Read() it :)
-            if(Directory.Exists(@"d:\"))
-            Memory.Strings.Dump(Path.Combine(@"d:\", "menudump.txt"));
+            if (Directory.Exists(@"d:\"))
+            {
+                Memory.Strings.Dump(Strings.FileID.MNGRP, Path.Combine(@"d:\", "MNGRPdump.txt"));
+                Memory.Strings.Dump(Strings.FileID.AREAMES, Path.Combine(@"d:\", "AREAMESdump.txt"));
+                Memory.Strings.Dump(Strings.FileID.NAMEDIC, Path.Combine(@"d:\", "NAMEDICdump.txt"));
+            }
 #endif
 
             Memory.Cards = new Cards();
@@ -54,6 +58,8 @@ namespace FF8
             Ff8files.init();
 
             base.Initialize();
+            //ArchiveSearch s = new ArchiveSearch("Zell\0");
+
         }
         protected override void LoadContent()
         {
