@@ -41,7 +41,7 @@ namespace FF8
     {
         #region Fields
 
-        private readonly string[] filenames = new string[] { "mngrp.bin", "mngrphd.bin", "areames.dc1", "namedic.bin" };
+        private readonly string[] filenames = new string[] { "mngrp.bin", "mngrphd.bin", "areames.dc1", "namedic.bin", "kernel.bin" };
         private string ArchiveString;
         private ArchiveWorker aw;
 
@@ -81,6 +81,7 @@ namespace FF8
 
             AREAMES = 2,
             NAMEDIC = 3,
+            KERNEL = 4,
         }
 
         /// <summary>
@@ -159,6 +160,7 @@ namespace FF8
                     break;
 
                 case FileID.NAMEDIC:
+                case FileID.KERNEL:
                     ArchiveString = Memory.Archives.A_MAIN;
                     break;
             }
@@ -217,9 +219,52 @@ namespace FF8
             simple_init(FileID.AREAMES);
             GetAW(FileID.NAMEDIC, true);
             simple_init(FileID.NAMEDIC);
+            GetAW(FileID.KERNEL);
+            Kernel_init(FileID.KERNEL);
+
         }
 
-        private void mngrp_get_string_BinMSG(BinaryReader br, FileID fileID, uint key, uint msgPos)
+        private void Kernel_init(FileID fileID)
+        {
+            files[fileID] = new Stringfile(new Dictionary<uint, List<uint>>(56), new List<Loc>(56));
+            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(
+                aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)fileID], StringComparison.OrdinalIgnoreCase) >= 0))))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                uint count = br.ReadUInt32();
+                while(count-- >0)
+                {
+                    Loc l = new Loc { seek = br.ReadUInt32() };
+                    if (count <= 0) l.length = (uint)ms.Length - l.seek;
+                    else
+                    {
+                        l.length = br.ReadUInt32() - l.seek;
+                        ms.Seek(-4, SeekOrigin.Current);
+                    }
+                    files[fileID].subPositions.Add(l);
+                }
+
+                BinMSG = new Dictionary<uint, uint> {{0,31},};
+                for (uint key = 0; key < files[fileID].subPositions.Count; key++)
+                {
+                    Loc fpos = files[fileID].subPositions[(int)key];
+                    bool pad = (Array.IndexOf(StringsPadLoc, key) >= 0);
+                    //if (pad || Array.IndexOf(StringsLoc, key) >= 0)
+                    //    mngrp_get_string_offsets(br, fileID, key, pad);
+                    //else 
+                    if (BinMSG.ContainsKey(key))
+                    {
+                        mngrp_get_string_BinMSG(br, fileID, key, files[fileID].subPositions[(int)BinMSG[key]].seek,2,4);
+                    }
+                    //else if (ComplexStr.ContainsKey(key))
+                    //{
+                    //    Mngrp_get_string_ComplexStr(br, fileID, key, ComplexStr[key]);
+                    //}
+                }
+            }
+        }
+
+        private void mngrp_get_string_BinMSG(BinaryReader br, FileID fileID, uint key, uint msgPos, uint grab = 0, uint skip = 0)
         {
             Loc fpos = files[fileID].subPositions[(int)key];
             br.BaseStream.Seek(fpos.seek, SeekOrigin.Begin);
@@ -231,6 +276,7 @@ namespace FF8
                 ushort b = 0;
                 ushort last = b;
                 files[fileID].sPositions.Add(key, new List<uint>());
+                uint g = 1;
                 while (br.BaseStream.Position < fpos.max)
                 {
                     b = br.ReadUInt16();
@@ -238,9 +284,16 @@ namespace FF8
                         break;
                     else
                     {
-                        files[fileID].sPositions[key].Add(b + msgPos);
-                        br.BaseStream.Seek(6, SeekOrigin.Current);
-                        last = b;
+                        if (b != 0xFFFF)
+                        {
+                            files[fileID].sPositions[key].Add(b + msgPos);
+                            last = b;
+                        }
+                        if (grab > 0 && ++g > grab)
+                        {
+                            br.BaseStream.Seek(skip, SeekOrigin.Current);
+                            g = 1;
+                        }
                     }
                 }
             }
@@ -358,7 +411,7 @@ namespace FF8
                         mngrp_get_string_offsets(br, fileID, key, pad);
                     else if (BinMSG.ContainsKey(key))
                     {
-                        mngrp_get_string_BinMSG(br, fileID, key, files[fileID].subPositions[(int)BinMSG[key]].seek);
+                        mngrp_get_string_BinMSG(br, fileID, key, files[fileID].subPositions[(int)BinMSG[key]].seek,1,6);
                     }
                     else if (ComplexStr.ContainsKey(key))
                     {

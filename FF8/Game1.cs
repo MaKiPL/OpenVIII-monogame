@@ -49,6 +49,7 @@ namespace FF8
                 Memory.Strings.Dump(Strings.FileID.MNGRP, Path.Combine(@"d:\", "MNGRPdump.txt"));
                 Memory.Strings.Dump(Strings.FileID.AREAMES, Path.Combine(@"d:\", "AREAMESdump.txt"));
                 Memory.Strings.Dump(Strings.FileID.NAMEDIC, Path.Combine(@"d:\", "NAMEDICdump.txt"));
+                Memory.Strings.Dump(Strings.FileID.KERNEL, Path.Combine(@"d:\", "KERNELdump.txt"));
             }
 #endif
 
