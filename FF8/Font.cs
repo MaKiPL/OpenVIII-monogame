@@ -676,7 +676,7 @@ namespace FF8
                 {
                     width = charWidths[deltaChar];
                     size.X = (int)(charWidths[deltaChar] * zoom.X * scale.X);
-                }
+                }                
                 else
                 {
                     width = charSize;
@@ -776,7 +776,13 @@ namespace FF8
                     while (ms.Position < ms.Length)
                     {
                         byte b = br.ReadByte();
-                        if (DirtyEncoding.BytetoChar.ContainsKey(b))
+
+                        if (DirtyEncoding.BytetoStr.ContainsKey(b))
+                        {
+                            byte[] c = Encoding.UTF8.GetBytes(DirtyEncoding.BytetoStr[b]);
+                            os.Write(c, 0, c.Length);
+                        }
+                        else if (DirtyEncoding.BytetoChar.ContainsKey(b))
                         {
                             byte[] c = Encoding.UTF8.GetBytes(DirtyEncoding.BytetoChar[b].ToString());
                             os.Write(c, 0, c.Length);

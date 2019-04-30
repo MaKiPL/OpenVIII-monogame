@@ -379,7 +379,7 @@ namespace FF8
             {0xE9, "e "},// pos:201, col:0, row:0 --
             {0xEA, "ne"},// pos:202, col:0, row:0 --
             {0xEB, "to"},// pos:203, col:0, row:0 --
-            {0xEC, "to"},// pos:204, col:0, row:0 --
+            {0xEC, "re"},// pos:204, col:0, row:0 --
             {0xED, "HP"},// pos:205, col:0, row:0 --
             {0xEE, "l "},// pos:206, col:0, row:0 --
             {0xEF, "ll"},// pos:207, col:0, row:0 --
