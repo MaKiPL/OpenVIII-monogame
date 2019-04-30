@@ -6,37 +6,13 @@ using System.Text;
 namespace FF8
 {
     /// <summary>
-    /// This holds the encoded bytes and provides implict casts to string and byte[]
-    /// </summary>
-    public class FF8String
-    {
-        private byte[] value;
-
-        public FF8String()
-        {
-        }
-        public byte this[int index] => value[index];
-        public FF8String(byte[] @value) => Value = @value;
-        public int Length => value.Length;
-        public FF8String(string input) => Value = Memory.DirtyEncoding.GetBytes(input);
-
-        public byte[] Value { get => value; set => this.value = value; }
-        public string Value_str => ToString();
-        public override string ToString() => Memory.DirtyEncoding.GetString(Value);
-
-        public static implicit operator string(FF8String input) => input != null?input.ToString():null;
-        public static implicit operator byte[] (FF8String input) => input!=null?input.Value:null;
-
-        public static implicit operator FF8String(string input) => new FF8String(input);
-        public static implicit operator FF8String(byte[] input) => new FF8String(input);
-    }
-    /// <summary>
     /// class to add function to dictionary
     /// </summary>
     /// <see cref="https://stackoverflow.com/questions/22595655/how-to-do-a-dictionary-reverse-lookup"/>
     public static class DictionaryEx
     {
         #region Methods
+
         /// <summary>
         /// Reverses Key and Value of dictionary.
         /// </summary>
@@ -54,6 +30,58 @@ namespace FF8
             }
             return dictionary;
         }
+
+        #endregion Methods
+    }
+
+    /// <summary>
+    /// This holds the encoded bytes and provides implict casts to string and byte[]
+    /// </summary>
+    public class FF8String
+    {
+        #region Fields
+
+        private byte[] value;
+
+        #endregion Fields
+
+        #region Constructors
+
+        public FF8String()
+        {
+        }
+
+        public FF8String(byte[] @value) => Value = @value;
+
+        public FF8String(string input) => Value = Memory.DirtyEncoding.GetBytes(input);
+
+        #endregion Constructors
+
+        #region Properties
+
+        public byte[] Value { get => value; set => this.value = value; }
+        public string Value_str => ToString();
+        public int Length => value.Length;
+
+        #endregion Properties
+
+        #region Indexers
+
+        public byte this[int index] => value[index];
+
+        #endregion Indexers
+
+        #region Methods
+
+        public static implicit operator byte[] (FF8String input) => input != null ? input.Value : null;
+
+        public static implicit operator FF8String(string input) => new FF8String(input);
+
+        public static implicit operator FF8String(byte[] input) => new FF8String(input);
+
+        public static implicit operator string(FF8String input) => input != null ? input.ToString() : null;
+
+        public override string ToString() => Memory.DirtyEncoding.GetString(Value);
 
         #endregion Methods
     }
@@ -343,8 +371,8 @@ namespace FF8
             {0xFF, "ag"},// pos:223, col:0, row:0 --
         };
 
-        public readonly static Dictionary<char, byte> ChartoByte = BytetoChar.Reverse();
-        public readonly static Dictionary<string, byte> StrtoByte = BytetoStr.Reverse();
+        public static readonly Dictionary<char, byte> ChartoByte = BytetoChar.Reverse();
+        public static readonly Dictionary<string, byte> StrtoByte = BytetoStr.Reverse();
 
         #endregion Fields
 
@@ -412,20 +440,19 @@ namespace FF8
             //using (BinaryWriter bw = new BinaryWriter(ms))
             //using (StreamReader sr = new StreamReader(ms))
             //{
-
-                string @out = "";
-                foreach (byte c in bytes)
-                {
-                    string b = BytetoChar.ContainsKey(c) ? BytetoChar[c].ToString() :
-                        BytetoStr.ContainsKey(c) ? BytetoStr[c] :
-                        ((char)c).ToString();
-                    //bw.Write(b);
-                    @out += b;
-                }
+            string @out = "";
+            foreach (byte c in bytes)
+            {
+                string b = BytetoChar.ContainsKey(c) ? BytetoChar[c].ToString() :
+                    BytetoStr.ContainsKey(c) ? BytetoStr[c] :
+                    ((char)c).ToString();
+                //bw.Write(b);
+                @out += b;
+            }
             return @out;
-                //ms.Seek(0, SeekOrigin.Begin);
-                //return sr.ReadToEnd();
-        //    }
+            //ms.Seek(0, SeekOrigin.Begin);
+            //return sr.ReadToEnd();
+            //    }
         }
 
         #endregion Methods
