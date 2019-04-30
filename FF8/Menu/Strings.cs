@@ -12,7 +12,9 @@ namespace FF8
 
         public Dictionary<uint, List<uint>> sPositions;
         public List<Loc> subPositions;
-
+        /// <summary>
+        /// do not use this.
+        /// </summary>
         private Stringfile()
         {
             this.sPositions = null;
