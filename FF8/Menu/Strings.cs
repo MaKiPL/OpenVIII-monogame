@@ -6,12 +6,18 @@ using System.Text;
 
 namespace FF8
 {
-    public struct Stringfile
+    public class Stringfile
     {
         #region Fields
 
         public Dictionary<uint, List<uint>> sPositions;
         public List<Loc> subPositions;
+
+        private Stringfile()
+        {
+            this.sPositions = null;
+            this.subPositions = null;
+        }
 
         #endregion Fields
 
