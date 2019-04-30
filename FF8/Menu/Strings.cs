@@ -56,6 +56,7 @@ namespace FF8
         private bool opened = false;
         private uint[] StringsLoc;
         private uint[] StringsPadLoc;
+        private Dictionary<uint, Tuple<uint, uint, uint>> LocSTR;
 
         #endregion Fields
 
@@ -244,7 +245,7 @@ namespace FF8
                     files[fileID].subPositions.Add(l);
                 }
 
-                BinMSG = new Dictionary<uint, uint> {{0,31},};
+                LocSTR = new Dictionary<uint, Tuple<uint,uint,uint>> {{0, new Tuple<uint, uint, uint>(31,2,4) },};
                 for (uint key = 0; key < files[fileID].subPositions.Count; key++)
                 {
                     Loc fpos = files[fileID].subPositions[(int)key];
@@ -254,7 +255,7 @@ namespace FF8
                     //else 
                     if (BinMSG.ContainsKey(key))
                     {
-                        mngrp_get_string_BinMSG(br, fileID, key, files[fileID].subPositions[(int)BinMSG[key]].seek,2,4);
+                        mngrp_get_string_BinMSG(br, fileID, key, files[fileID].subPositions[(int)(LocSTR[key].Item1)].seek, LocSTR[key].Item2, LocSTR[key].Item3);
                     }
                     //else if (ComplexStr.ContainsKey(key))
                     //{
