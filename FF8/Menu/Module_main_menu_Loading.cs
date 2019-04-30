@@ -220,7 +220,7 @@ namespace FF8
             return new Tuple<Rectangle, Point>(dst, (dst.Location.ToVector2() + new Vector2(0, dst.Height / 2)).ToPoint());
         }
 
-        private static Tuple<Rectangle, Point> DrawBox(byte[] buffer, Icons.ID? title, Rectangle dst, bool indent = true, bool bottom = false, bool prescaled = false)
+        private static Tuple<Rectangle, Point> DrawBox(FF8String buffer, Icons.ID? title, Rectangle dst, bool indent = true, bool bottom = false, bool prescaled = false)
         {
             Point cursor = new Point(0);
             Vector2 scale = prescaled ? Vector2.One : Memory.Scale();

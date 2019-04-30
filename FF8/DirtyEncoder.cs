@@ -15,7 +15,7 @@ namespace FF8
         public FF8String()
         {
         }
-
+        public byte this[int index] => value[index];
         public FF8String(byte[] @value) => Value = @value;
         public int Length => value.Length;
         public FF8String(string input) => Value = Memory.DirtyEncoding.GetBytes(input);
