@@ -76,13 +76,13 @@ namespace FF8
 
         #region Methods
 
-        public static implicit operator byte[] (FF8String input) => input != null ? input.Value : null;
+        public static implicit operator byte[] (FF8String input) => input?.Value;
 
         public static implicit operator FF8String(string input) => new FF8String(input);
 
         public static implicit operator FF8String(byte[] input) => new FF8String(input);
 
-        public static implicit operator string(FF8String input) => input != null ? input.ToString() : null;
+        public static implicit operator string(FF8String input) => input?.ToString();
 
         public override string ToString() => Memory.DirtyEncoding.GetString(Value);
 
