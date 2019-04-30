@@ -253,7 +253,7 @@ namespace FF8
                     //if (pad || Array.IndexOf(StringsLoc, key) >= 0)
                     //    mngrp_get_string_offsets(br, fileID, key, pad);
                     //else 
-                    if (BinMSG.ContainsKey(key))
+                    if (LocSTR.ContainsKey(key))
                     {
                         mngrp_get_string_BinMSG(br, fileID, key, files[fileID].subPositions[(int)(LocSTR[key].Item1)].seek, LocSTR[key].Item2, LocSTR[key].Item3);
                     }
