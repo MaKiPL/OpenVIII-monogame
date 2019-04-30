@@ -8,14 +8,22 @@ namespace FF8
 {
     public struct Stringfile
     {
+        #region Fields
+
         public Dictionary<uint, List<uint>> sPositions;
         public List<Loc> subPositions;
+
+        #endregion Fields
+
+        #region Constructors
 
         public Stringfile(Dictionary<uint, List<uint>> sPositions, List<Loc> subPositions)
         {
             this.sPositions = sPositions;
             this.subPositions = subPositions;
         }
+
+        #endregion Constructors
     }
 
     /// <summary>
@@ -25,16 +33,19 @@ namespace FF8
     {
         #region Fields
 
-        private readonly string[] filenames = new string[] { "mngrp.bin", "mngrphd.bin", "areames.dc1" , "namedic.bin"};
+        private readonly string[] filenames = new string[] { "mngrp.bin", "mngrphd.bin", "areames.dc1", "namedic.bin" };
         private string ArchiveString;
-        private Dictionary <FileID, Stringfile> files;
         private ArchiveWorker aw;
+
+        //temp storage for locations isn't kept long term.
+        private Dictionary<uint, uint> BinMSG;
+
+        private Dictionary<uint, List<uint>> ComplexStr;
+        private Dictionary<FileID, Stringfile> files;
+        private FileID last;
         private BinaryReader localbr;
         private MemoryStream localms;
         private bool opened = false;
-        //temp storage for locations isn't kept long term.
-        private Dictionary<uint, uint> BinMSG;
-        private Dictionary<uint, List<uint>> ComplexStr;
         private uint[] StringsLoc;
         private uint[] StringsPadLoc;
 
@@ -47,16 +58,19 @@ namespace FF8
         #endregion Constructors
 
         #region Enums
+
         /// <summary>
         /// filenames of files with strings and id's for structs that hold the data.
         /// </summary>
         public enum FileID : uint
         {
             MNGRP = 0,
+
             /// <summary>
             /// only used as holder for the mngrp's map filename
             /// </summary>
             MNGRP_MAP = 1,
+
             AREAMES = 2,
             NAMEDIC = 3,
         }
@@ -135,6 +149,7 @@ namespace FF8
                 default:
                     ArchiveString = Memory.Archives.A_MENU;
                     break;
+
                 case FileID.NAMEDIC:
                     ArchiveString = Memory.Archives.A_MAIN;
                     break;
@@ -161,6 +176,7 @@ namespace FF8
             }
             localbr = new BinaryReader(localms);
             opened = true;
+            last = fileID;
         }
 
         //public byte[] Read(FileID fileID, SectionID sectionID, int stringID) => Read(fileID, (int)sectionID, stringID);
@@ -184,31 +200,18 @@ namespace FF8
             }
         }
 
-        private void simple_init(FileID fileID)
-        {
-            string[] list = aw.GetListOfFiles();
-            string index = list.First(x => x.IndexOf(filenames[(int)fileID], StringComparison.OrdinalIgnoreCase) >= 0);
-            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(index)))
-            using (BinaryReader br = new BinaryReader(ms))
-            {
-                if (!files.ContainsKey(fileID))
-                    files[fileID] = new Stringfile(new Dictionary<uint, List<uint>>(1), new List<Loc>(1) { new Loc { seek = 0, length = uint.MaxValue } });
-                mngrp_get_string_offsets(br, fileID, 0);
-            }
-        }
-
         private void init()
         {
             files = new Dictionary<FileID, Stringfile>(2);
-            GetAW(FileID.MNGRP,true);
+            GetAW(FileID.MNGRP, true);
             mngrp_init();
             GetAW(FileID.AREAMES);
             simple_init(FileID.AREAMES);
-            GetAW(FileID.NAMEDIC,true);
+            GetAW(FileID.NAMEDIC, true);
             simple_init(FileID.NAMEDIC);
         }
 
-        private void mngrp_get_string_BinMSG(BinaryReader br,FileID fileID, uint key, uint msgPos)
+        private void mngrp_get_string_BinMSG(BinaryReader br, FileID fileID, uint key, uint msgPos)
         {
             Loc fpos = files[fileID].subPositions[(int)key];
             br.BaseStream.Seek(fpos.seek, SeekOrigin.Begin);
@@ -285,7 +288,7 @@ namespace FF8
                     for (int i = 0; i < count && br.BaseStream.Position + 2 < br.BaseStream.Length; i++)
                     {
                         uint c = br.ReadUInt16();
-                        if (c < br.BaseStream.Length && c!=0)
+                        if (c < br.BaseStream.Length && c != 0)
                         {
                             c += fpad;
                             files[fileID].sPositions[key].Add(c);
@@ -320,7 +323,6 @@ namespace FF8
             files[fileID] = new Stringfile(new Dictionary<uint, List<uint>>(118), new List<Loc>(118));
             mngrp_GetFileLocations();
 
-            
             using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(
                 aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)FileID.MNGRP], StringComparison.OrdinalIgnoreCase) >= 0))))
             using (BinaryReader br = new BinaryReader(ms))
@@ -379,15 +381,57 @@ namespace FF8
             return fPaddings;
         }
 
-        private FF8String Read(FileID fid, uint pos)
+        private FF8String Read(FileID fileID, uint pos)
         {
             //switching archive make sure we are closed before opening another.
-            if (aw != null || aw.GetPath() != ArchiveString)
+            if (aw != null || aw.GetPath() != ArchiveString || last != fileID)
                 Close();
             if (!opened)
-                Open(fid);
-            return Read(localbr, fid, pos);
+                Open(fileID);
+            return Read(localbr, fileID, pos);
         }
+
+        private FF8String Read(BinaryReader br, FileID fid, uint pos)
+        {
+            if (pos < br.BaseStream.Length)
+                using (MemoryStream os = new MemoryStream(50))
+                {
+                    br.BaseStream.Seek(pos, SeekOrigin.Begin);
+                    int c = 0;
+                    byte b = 0;
+                    do
+                    {
+                        if (br.BaseStream.Position > br.BaseStream.Length) break;
+                        //sometimes strings start with 00 or 01. But there is another 00 at the end.
+                        //I think it's for SeeD test like 1 is right and 0 is wrong. for now i skip them.
+                        b = br.ReadByte();
+                        if (b != 0 && b != 1)
+                        {
+                            os.WriteByte(b);
+                        }
+                        c++;
+                    }
+                    while (b != 0 || c == 0);
+                    if (os.Length > 0)
+                        return os.ToArray();
+                }
+            return null;
+        }
+
+        private void simple_init(FileID fileID)
+        {
+            string[] list = aw.GetListOfFiles();
+            string index = list.First(x => x.IndexOf(filenames[(int)fileID], StringComparison.OrdinalIgnoreCase) >= 0);
+            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(index)))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                if (!files.ContainsKey(fileID))
+                    files[fileID] = new Stringfile(new Dictionary<uint, List<uint>>(1), new List<Loc>(1) { new Loc { seek = 0, length = uint.MaxValue } });
+                mngrp_get_string_offsets(br, fileID, 0);
+            }
+        }
+
+        #endregion Methods
 
         //private byte[] Read(FileID fid, uint pos)
         //{
@@ -401,36 +445,6 @@ namespace FF8
         //        Close();
         //    }
         //}
-
-        private FF8String Read(BinaryReader br, FileID fid, uint pos)
-        {
-            if (pos < br.BaseStream.Length)
-            using (MemoryStream os = new MemoryStream(50))
-            {
-                br.BaseStream.Seek(pos, SeekOrigin.Begin);
-                int c = 0;
-                byte b = 0;
-                do
-                {
-                    if (br.BaseStream.Position > br.BaseStream.Length) break;
-                    //sometimes strings start with 00 or 01. But there is another 00 at the end.
-                    //I think it's for SeeD test like 1 is right and 0 is wrong. for now i skip them.
-                    b = br.ReadByte();
-                    if (b != 0 && b != 1)
-                    {
-                        os.WriteByte(b);
-                    }
-                    c++;
-                }
-                while (b != 0 || c == 0);
-                if (os.Length > 0)
-                    return os.ToArray();
-            }
-            return null;
-        }
-
-        #endregion Methods
-
         //private void readfile()
         //{
         //    //text is prescrabbled and is ready to draw to screen using font renderer
