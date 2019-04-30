@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -37,11 +38,12 @@ namespace FF8
     /// <summary>
     /// This holds the encoded bytes and provides implict casts to string and byte[]
     /// </summary>
-    public class FF8String
+    public class FF8String : IEnumerator, IEnumerable
     {
         #region Fields
 
         private byte[] value;
+        private int position = 0;
 
         #endregion Fields
 
@@ -62,6 +64,7 @@ namespace FF8
         public byte[] Value { get => value; set => this.value = value; }
         public string Value_str => ToString();
         public int Length => value.Length;
+        public object Current { get => Value[position-1] ; }
 
         #endregion Properties
 
@@ -82,6 +85,10 @@ namespace FF8
         public static implicit operator string(FF8String input) => input != null ? input.ToString() : null;
 
         public override string ToString() => Memory.DirtyEncoding.GetString(Value);
+
+        public bool MoveNext() => ++position <= Length;
+        public void Reset() => position = 0;
+        public IEnumerator GetEnumerator() => this;
 
         #endregion Methods
     }
