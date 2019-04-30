@@ -178,8 +178,8 @@ namespace FF8
                     X = (int)(vpWidth * 0.26796875f),
                     Y = (int)(vpHeight * 0.0166666666666667f),
                 }.ToVector2() + offset).ToPoint();
-                byte[] name = Font.CipherDirty(Enum.GetName(typeof(Faces.ID), (Faces.ID)d.charactersportraits[mainchar]).Replace('_', ' '));
-                byte[] lv_ = Font.CipherDirty($"LV.   {d.firstcharacterslevel}");
+                FF8String name = new FF8String(Enum.GetName(typeof(Faces.ID), (Faces.ID)d.charactersportraits[mainchar]).Replace('_', ' '));
+                FF8String lv_ = new FF8String($"LV.   {d.firstcharacterslevel}");
                 Memory.font.RenderBasicText(name, detailsLoc, new Vector2(2.545454545f, 3.0375f), 1, 0, fade, true);
                 int playy = detailsLoc.Y;
                 detailsLoc.Y += (int)(vpHeight * 0.0541666666666667f);
@@ -215,7 +215,7 @@ namespace FF8
                     Height = (int)(vpHeight * 0.0916666666666667f),
                 };
                 locbox.Offset(offset);
-                DrawBox(Font.CipherDirty(Ff8files.Locations[d.LocationID]), null, locbox, false, false, true);
+                DrawBox(Memory.Strings.Read(Strings.FileID.AREAMES,0,d.LocationID), null, locbox, false, false, true);
             }
             return new Tuple<Rectangle, Point>(dst, (dst.Location.ToVector2() + new Vector2(0, dst.Height / 2)).ToPoint());
         }

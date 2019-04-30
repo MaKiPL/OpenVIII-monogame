@@ -381,6 +381,9 @@ namespace FF8
 
         private FF8String Read(FileID fid, uint pos)
         {
+            //switching archive make sure we are closed before opening another.
+            if (aw != null || aw.GetPath() != ArchiveString)
+                Close();
             if (!opened)
                 Open(fid);
             return Read(localbr, fid, pos);
