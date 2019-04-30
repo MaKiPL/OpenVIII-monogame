@@ -53,7 +53,7 @@ namespace FF8
 
         public FF8String(byte[] @value) => Value = @value;
 
-        public FF8String(string input) => Value = Memory.DirtyEncoding.GetBytes(input);
+        public FF8String(string @value) => Value = Memory.DirtyEncoding.GetBytes(@value);
 
         #endregion Constructors
 
