@@ -215,7 +215,7 @@ namespace FF8
                     Height = (int)(vpHeight * 0.0916666666666667f),
                 };
                 locbox.Offset(offset);
-                DrawBox(Memory.Strings.Read(Strings.FileID.AREAMES,0,d.LocationID), null, locbox, false, false, true);
+                DrawBox(Memory.Strings.Read(Strings.FileID.AREAMES,0,d.LocationID).ReplaceRegion(), null, locbox, false, false, true);
             }
             return new Tuple<Rectangle, Point>(dst, (dst.Location.ToVector2() + new Vector2(0, dst.Height / 2)).ToPoint());
         }

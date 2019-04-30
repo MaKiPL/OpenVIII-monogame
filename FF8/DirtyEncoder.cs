@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -90,6 +91,28 @@ namespace FF8
         public void Reset() => position = 0;
         public IEnumerator GetEnumerator() => this;
 
+        public FF8String ReplaceRegion()
+        {
+            int i = 0;
+            do
+            {
+                i = Array.FindIndex(value, i, Length - i, x => x == 0x0E);
+                if (i >= 0)
+                {
+                    byte id = (byte)(value[i + 1] - 0x20);
+                    //byte[] start = value.Take(i).ToArray();
+                    byte[] newdata = Memory.Strings.Read(Strings.FileID.NAMEDIC, 0, id);
+                    byte[] end = value.Skip(2 + i).ToArray();
+
+                    Array.Resize(ref value, Length + newdata.Length - 2);
+                    Array.Copy(newdata,0,value,i,newdata.Length);
+                    Array.Copy(end, 0, value, i+newdata.Length, end.Length);
+                    i+=newdata.Length;
+                }
+            }
+            while (i >= 0&& i < Length);
+            return this;
+        }
         #endregion Methods
     }
 
