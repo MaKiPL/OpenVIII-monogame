@@ -509,17 +509,22 @@ namespace FF8
         public static string SaveFolder { get; private set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Square Enix", "FINAL FANTASY VIII Steam");
         public static Data[,] FileList { get; private set; }
 
-        public static void init()
+        public static void Init()
         {
-            SaveFolder = Directory.GetDirectories(SaveFolder)[0];
-            FileList = new Data[2, 30];
-            foreach (string file in Directory.EnumerateFiles(SaveFolder))
+            if (!Directory.Exists(SaveFolder)) Directory.CreateDirectory(SaveFolder);
+            string[] dirs = Directory.GetDirectories(SaveFolder);
+            if (dirs.Length > 0)
             {
-                Match n = Regex.Match(file, @"slot(\d+)_save(\d+).ff8");
-                    
-                if(n.Success && n.Groups.Count>0)
+                SaveFolder = Directory.GetDirectories(SaveFolder)[0];
+                FileList = new Data[2, 30];
+                foreach (string file in Directory.EnumerateFiles(SaveFolder))
                 {
-                    FileList[int.Parse(n.Groups[1].Value)-1, int.Parse(n.Groups[2].Value)-1] = read(file);
+                    Match n = Regex.Match(file, @"slot(\d+)_save(\d+).ff8");
+
+                    if (n.Success && n.Groups.Count > 0)
+                    {
+                        FileList[int.Parse(n.Groups[1].Value) - 1, int.Parse(n.Groups[2].Value) - 1] = read(file);
+                    }
                 }
             }
         }

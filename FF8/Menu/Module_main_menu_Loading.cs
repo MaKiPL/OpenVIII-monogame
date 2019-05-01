@@ -288,7 +288,8 @@ namespace FF8
                 int bloc = 0;
                 for (int block = 0 + 3 * (Blockpage); block < 3 + 3 * (Blockpage); block++)
                 {
-                    Ff8files.Data d = Ff8files.FileList[SlotLoc, block];
+
+                    Ff8files.Data d = Ff8files.FileList == null ? null : Ff8files.FileList[SlotLoc, block];
                     Tuple<Rectangle, Point> b = DrawBlock(block, d);
                     //cords returned by drawblock assume being in the offscreen buffer.
                     //Which is the size of the 3 blocks. So we need to offset
