@@ -23,6 +23,8 @@
                    length == loc.length;
         }
 
+        public static implicit operator uint(Loc @in) => @in.seek;
+
         public override int GetHashCode()
         {
             var hashCode = 202372718;

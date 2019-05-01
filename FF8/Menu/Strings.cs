@@ -12,14 +12,6 @@ namespace FF8
 
         public Dictionary<uint, List<uint>> sPositions;
         public List<Loc> subPositions;
-        /// <summary>
-        /// do not use this.
-        /// </summary>
-        private Stringfile()
-        {
-            this.sPositions = null;
-            this.subPositions = null;
-        }
 
         #endregion Fields
 
@@ -29,6 +21,15 @@ namespace FF8
         {
             this.sPositions = sPositions;
             this.subPositions = subPositions;
+        }
+
+        /// <summary>
+        /// do not use this.
+        /// </summary>
+        private Stringfile()
+        {
+            this.sPositions = null;
+            this.subPositions = null;
         }
 
         #endregion Constructors
@@ -53,10 +54,16 @@ namespace FF8
         private FileID last;
         private BinaryReader localbr;
         private MemoryStream localms;
+
+        /// <summary>
+        /// Colly's list of string pointers. Adapted. Some strings might be missing.
+        /// </summary>
+        /// <see cref="http://www.balamb.pl/qh/kernel-pointers.htm"/>
+        private Dictionary<uint, Tuple<uint, uint, uint>> LocSTR;
+
         private bool opened = false;
         private uint[] StringsLoc;
         private uint[] StringsPadLoc;
-        private Dictionary<uint, Tuple<uint, uint, uint>> LocSTR;
 
         #endregion Fields
 
@@ -222,7 +229,6 @@ namespace FF8
             simple_init(FileID.NAMEDIC);
             GetAW(FileID.KERNEL);
             Kernel_init(FileID.KERNEL);
-
         }
 
         private void Kernel_init(FileID fileID)
@@ -233,7 +239,7 @@ namespace FF8
             using (BinaryReader br = new BinaryReader(ms))
             {
                 uint count = br.ReadUInt32();
-                while(count-- >0)
+                while (count-- > 0)
                 {
                     Loc l = new Loc { seek = br.ReadUInt32() };
                     if (count <= 0) l.length = (uint)ms.Length - l.seek;
@@ -245,14 +251,42 @@ namespace FF8
                     files[fileID].subPositions.Add(l);
                 }
 
-                LocSTR = new Dictionary<uint, Tuple<uint,uint,uint>> {{0, new Tuple<uint, uint, uint>(31,2,4) },};
+                LocSTR = new Dictionary<uint, Tuple<uint, uint, uint>> {
+                    //working
+                    {0, new Tuple<uint, uint, uint>(31,2,4) },
+                    {1, new Tuple<uint, uint, uint>(32,2,56) },
+                    {2, new Tuple<uint, uint, uint>(33,2,128) },
+                    {3, new Tuple<uint, uint, uint>(34,1,18) },//38,58,178, or 78
+                    {4, new Tuple<uint, uint, uint>(35,1,10) },
+                    {5, new Tuple<uint, uint, uint>(36,2,20) },
+                    {6, new Tuple<uint, uint, uint>(37,1,34) },//+1interval 70 //character names here.
+                    {7, new Tuple<uint, uint, uint>(38,2,20) },
+                    {8, new Tuple<uint, uint, uint>(39,1,0) },
+                    {9, new Tuple<uint, uint, uint>(40,1,18) },
+                    {11, new Tuple<uint, uint, uint>(41,2,4) },
+                    {12, new Tuple<uint, uint, uint>(42,2,4) },
+                    {13, new Tuple<uint, uint, uint>(43,2,4) },
+                    {14, new Tuple<uint, uint, uint>(44,2,4) },
+                    {15, new Tuple<uint, uint, uint>(45,2,4) },
+                    {16, new Tuple<uint, uint, uint>(46,2,4) },
+                    {17, new Tuple<uint, uint, uint>(47,2,4) },
+                    {18, new Tuple<uint, uint, uint>(48,2,20) },
+                    {19, new Tuple<uint, uint, uint>(49,2,12) },
+                    {21, new Tuple<uint, uint, uint>(50,2,20) },
+                    {22, new Tuple<uint, uint, uint>(51,2,28) },
+                    {24, new Tuple<uint, uint, uint>(52,2,4) },
+                    {25, new Tuple<uint, uint, uint>(53,2,18) },
+                    {28, new Tuple<uint, uint, uint>(54,2,10) },
+                    {30, new Tuple<uint, uint, uint>(55,1,0) },
+                };
+
                 for (uint key = 0; key < files[fileID].subPositions.Count; key++)
                 {
                     Loc fpos = files[fileID].subPositions[(int)key];
                     bool pad = (Array.IndexOf(StringsPadLoc, key) >= 0);
                     //if (pad || Array.IndexOf(StringsLoc, key) >= 0)
                     //    mngrp_get_string_offsets(br, fileID, key, pad);
-                    //else 
+                    //else
                     if (LocSTR.ContainsKey(key))
                     {
                         mngrp_get_string_BinMSG(br, fileID, key, files[fileID].subPositions[(int)(LocSTR[key].Item1)].seek, LocSTR[key].Item2, LocSTR[key].Item3);
@@ -412,7 +446,7 @@ namespace FF8
                         mngrp_get_string_offsets(br, fileID, key, pad);
                     else if (BinMSG.ContainsKey(key))
                     {
-                        mngrp_get_string_BinMSG(br, fileID, key, files[fileID].subPositions[(int)BinMSG[key]].seek,1,6);
+                        mngrp_get_string_BinMSG(br, fileID, key, files[fileID].subPositions[(int)BinMSG[key]].seek, 1, 6);
                     }
                     else if (ComplexStr.ContainsKey(key))
                     {
