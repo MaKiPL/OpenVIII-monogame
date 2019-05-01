@@ -570,6 +570,8 @@ namespace FF8
                     return d.GFs[(int)id - 16].Name;
                 case Faces.ID.Griever:
                     return d.Grieversname;
+                case Faces.ID.MiniMog:
+                    return Read(FileID.KERNEL, 0, 72); // also in KERNEL, 12, 36
                 default:
                     return new FF8String();
             }
