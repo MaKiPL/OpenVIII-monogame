@@ -591,6 +591,7 @@ namespace FF8
             else
             {
                 State = MainMenuStates.LoadGameChooseGame;
+                init_debugger_Audio.PlaySound(35);
             }
             UpdateLGChooseGame();
         }
