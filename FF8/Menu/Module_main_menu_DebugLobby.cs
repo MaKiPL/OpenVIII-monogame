@@ -11,17 +11,9 @@ namespace FF8
     {
         #region Fields
 
-        private static int debug_choosedBS, debug_choosedAudio;
+        private static int debug_choosedBS, debug_choosedAudio, debug_fieldPointer, debug_moviePointer;
 
-        private static string debug_choosedField = Memory.FieldHolder.fields[debug_fieldPointer];
-
-        private static string debug_choosedMovie = Path.GetFileNameWithoutExtension(Module_movie_test.Movies[debug_moviePointer]);
-
-        private static string debug_choosedMusic = Path.GetFileNameWithoutExtension(Memory.dicMusic[0][0]);
-
-        private static int debug_fieldPointer = 90;
-
-        private static int debug_moviePointer = 0;
+        private static string debug_choosedField, debug_choosedMovie, debug_choosedMusic;
 
         private static Ditems s_dchoose;
 
@@ -89,6 +81,7 @@ namespace FF8
             get => debug_moviePointer;
             set
             {
+
                 if (value >= Module_movie_test.Movies.Count)
                 {
                     value = 0;
@@ -100,7 +93,8 @@ namespace FF8
 
                 debug_moviePointer = value;
                 Module_movie_test.Index = value;
-                debug_choosedMovie = Path.GetFileNameWithoutExtension(Module_movie_test.Movies[value]);
+                if(Module_movie_test.Movies.Count>0)
+                    debug_choosedMovie = Path.GetFileNameWithoutExtension(Module_movie_test.Movies[value]);
             }
         }
 
@@ -137,9 +131,15 @@ namespace FF8
             {
                 Item c = dict[i];
                 byte[] end = Font.CipherDirty(InfoForLobby<Ditems>(i));
-                byte[] combine = new byte[strDebugLobby[i].Text.Length + end.Length];
-                Array.Copy(strDebugLobby[i].Text, combine, strDebugLobby[i].Text.Length);
-                Array.Copy(end, 0, combine, strDebugLobby[i].Text.Length, end.Length);
+                byte[] combine;
+                if (end != null)
+                {
+                    combine = new byte[strDebugLobby[i].Text.Length + end.Length];
+                    Array.Copy(strDebugLobby[i].Text, combine, strDebugLobby[i].Text.Length);
+                    Array.Copy(end, 0, combine, strDebugLobby[i].Text.Length, end.Length);
+                }
+                else
+                    combine = strDebugLobby[i].Text;
                 c.Loc = Memory.font.CalcBasicTextArea(combine,
                 (int)DFontPos.X, (int)(DFontPos.Y + vpSpace * item++), 2.545454545f, 3.0375f, 0);
                 if (dst.X == 0 || dst.Y == 0)
@@ -181,9 +181,15 @@ namespace FF8
             foreach (Ditems i in (Ditems[])Enum.GetValues(typeof(Ditems)))
             {
                 byte[] end = Font.CipherDirty(InfoForLobby<Ditems>(i));
-                byte[] combine = new byte[strDebugLobby[i].Text.Length + end.Length];
-                Array.Copy(strDebugLobby[i].Text, combine, strDebugLobby[i].Text.Length);
-                Array.Copy(end, 0, combine, strDebugLobby[i].Text.Length, end.Length);
+                byte[] combine;
+                if (end != null)
+                {
+                    combine = new byte[strDebugLobby[i].Text.Length + end.Length];
+                    Array.Copy(strDebugLobby[i].Text, combine, strDebugLobby[i].Text.Length);
+                    Array.Copy(end, 0, combine, strDebugLobby[i].Text.Length, end.Length);
+                }
+                else
+                    combine = strDebugLobby[i].Text;
                 Memory.font.RenderBasicText(combine,
                     (int)(DFontPos.X), (int)(DFontPos.Y + vpSpace * item++), 2.545454545f, 3.0375f, 1, 0, Fade);
             }
@@ -224,7 +230,9 @@ namespace FF8
             return "";
         }
 
-        private static void InitDebug() => strDebugLobby = new Dictionary<Enum, Item>()
+        private static void InitDebug()
+        {
+            strDebugLobby = new Dictionary<Enum, Item>()
             {
                 { Ditems.Reset, new Item{Text=Font.CipherDirty("Reset Main Menu state") } },
                 { Ditems.Overture, new Item{Text=Font.CipherDirty("Play Overture")} },
@@ -236,8 +244,19 @@ namespace FF8
                 { Ditems.World, new Item{Text=Font.CipherDirty("Jump to World Map")} },
                 { Ditems.Faces, new Item{Text=Font.CipherDirty("Test Faces")} },
                 { Ditems.Icons, new Item{Text=Font.CipherDirty("Test Icons")} },
-                { Ditems.Cards, new Item{Text=Font.CipherDirty("Test Cards")} }
+                { Ditems.Cards, new Item{Text=Font.CipherDirty("Test Cards")} },
             };
+            debug_choosedField = Memory.FieldHolder.fields[debug_fieldPointer];
+            if(Module_movie_test.Movies.Count>0)
+                debug_choosedMovie = Path.GetFileNameWithoutExtension(Module_movie_test.Movies[debug_moviePointer]);
+
+            if(Memory.dicMusic.Count>0 && Memory.dicMusic[0].Count>0)
+                debug_choosedMusic = Path.GetFileNameWithoutExtension(Memory.dicMusic[0][0]);
+
+            debug_fieldPointer = 90;
+
+            debug_moviePointer = 0;
+    }
 
         /// <summary>
         /// Update Debug Menu
@@ -337,15 +356,18 @@ namespace FF8
 
                 case Ditems.Music:
 
-                    if (Memory.MusicIndex <= ushort.MinValue)
+                    if (Memory.dicMusic.Count > 0)
                     {
-                        Memory.MusicIndex = ushort.MaxValue;
+                        if (Memory.MusicIndex <= ushort.MinValue)
+                        {
+                            Memory.MusicIndex = ushort.MaxValue;
+                        }
+                        else
+                        {
+                            Memory.MusicIndex--;
+                        }
+                        debug_choosedMusic = Path.GetFileNameWithoutExtension(Memory.dicMusic[Memory.MusicIndex][0]);
                     }
-                    else
-                    {
-                        Memory.MusicIndex--;
-                    }
-                    debug_choosedMusic = Path.GetFileNameWithoutExtension(Memory.dicMusic[Memory.MusicIndex][0]);
                     break;
 
                 default:
@@ -472,15 +494,18 @@ namespace FF8
 
                 case Ditems.Music:
                     //case Ditems.MusicNext:
-                    if (Memory.MusicIndex >= ushort.MaxValue || Memory.MusicIndex >= Memory.dicMusic.Keys.Max())
+                    if (Memory.dicMusic.Count > 0)
                     {
-                        Memory.MusicIndex = 0;
+                        if (Memory.MusicIndex >= ushort.MaxValue || Memory.MusicIndex >= Memory.dicMusic.Keys.Max())
+                        {
+                            Memory.MusicIndex = 0;
+                        }
+                        else
+                        {
+                            Memory.MusicIndex++;
+                        }
+                        debug_choosedMusic = Path.GetFileNameWithoutExtension(Memory.dicMusic[Memory.MusicIndex][0]);
                     }
-                    else
-                    {
-                        Memory.MusicIndex++;
-                    }
-                    debug_choosedMusic = Path.GetFileNameWithoutExtension(Memory.dicMusic[Memory.MusicIndex][0]);
                     //init_debugger_Audio.PlayMusic();
                     break;
 

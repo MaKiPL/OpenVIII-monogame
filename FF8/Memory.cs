@@ -75,31 +75,34 @@ namespace FF8
         {
             get
             {
-                while ((prevmusic > currmusic || prevmusic == ushort.MinValue && currmusic == ushort.MaxValue) &&
-                    !dicMusic.ContainsKey(currmusic))
+                if (dicMusic.Count > 0)
                 {
-                    if (dicMusic.Keys.Max() < currmusic)
+                    while ((prevmusic > currmusic || prevmusic == ushort.MinValue && currmusic == ushort.MaxValue) &&
+                        !dicMusic.ContainsKey(currmusic))
                     {
-                        currmusic = dicMusic.Keys.Max();
+                        if (dicMusic.Keys.Max() < currmusic)
+                        {
+                            currmusic = dicMusic.Keys.Max();
+                        }
+                        else
+                        {
+                            currmusic--;
+                        }
                     }
-                    else
+                    while (dicMusic.Count > 0 && prevmusic < currmusic && !dicMusic.ContainsKey(currmusic))
                     {
-                        currmusic--;
+                        if (dicMusic.Keys.Max() < currmusic)
+                        {
+                            currmusic = dicMusic.Keys.Min();
+                        }
+                        else
+                        {
+                            currmusic++;
+                        }
                     }
+                    return currmusic;
                 }
-                while (prevmusic < currmusic && !dicMusic.ContainsKey(currmusic))
-                {
-                    if (dicMusic.Keys.Max() < currmusic)
-                    {
-                        currmusic = dicMusic.Keys.Min();
-                    }
-                    else
-                    {
-                        currmusic++;
-                    }
-                }
-
-                return currmusic;
+                else return 0;
             }
             set
             {

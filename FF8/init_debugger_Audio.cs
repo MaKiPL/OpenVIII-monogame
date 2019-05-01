@@ -253,7 +253,7 @@ namespace FF8
             }
             if (music_wav_pt != null)
             {
-                Memory.musices = Directory.GetFiles(music_pt, "*.wav");
+                Memory.musices = Directory.GetFiles(music_wav_pt, "*.wav");
 
                 foreach (string m in Memory.musices)
                 {
@@ -287,6 +287,7 @@ namespace FF8
         internal static void DEBUG_SoundAudio()
         {
             string path = Path.Combine(Memory.FF8DIR, "../Sound/audio.fmt");
+            if(File.Exists(path))
             using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
             using (BinaryReader br = new BinaryReader(fs))
             {
@@ -309,7 +310,8 @@ namespace FF8
                     soundEntries[i].fillHeader(br);
                 }
             }
-            soundEntriesCount = soundEntries.Length;
+
+            soundEntriesCount = soundEntries ==null ? 0: soundEntries.Length;
         }
 
         internal static void PlaySound(int soundID)
@@ -432,11 +434,13 @@ namespace FF8
         {
             string ext = "";
             bool bFakeLinux = false; //set to force linux behaviour on windows; To delete after Linux music playable
-            
-            if (Memory.dicMusic[Memory.MusicIndex].Count > 0)
+
+            if (Memory.dicMusic.Count > 0 && Memory.dicMusic[Memory.MusicIndex].Count > 0)
             {
                 ext = Path.GetExtension(Memory.dicMusic[Memory.MusicIndex][0]).ToLower();
             }
+            else
+                return;
 
             string pt = Memory.dicMusic[Memory.MusicIndex][0];
 

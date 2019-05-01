@@ -442,6 +442,8 @@ namespace FF8
 
         public override byte[] GetBytes(string s)
         {
+            if (s == null)
+                return null;
             using (MemoryStream ms = new MemoryStream(GetMaxCharCount(s.Length)))
             using (BinaryWriter bw = new BinaryWriter(ms))
             {

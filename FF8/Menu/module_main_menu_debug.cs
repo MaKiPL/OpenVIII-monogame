@@ -8,24 +8,12 @@ namespace FF8
     {
         #region Fields
 
-        private static float fade;
+        private static float fade, lastfade;
 
-        //        case 1:
-        //            filename = aw.GetListOfFiles().First(x => x.ToLower().Contains("start01"));
-        //            break;
-        //    }
-        //    tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, filename));
-        //    return TextureHandler.UseBest(tex,TextureHandler.LoadPNG(filename));
-        //}
         private static bool LastActive = false;
 
-        //private static float fScaleHeight;
-        //private static float fScaleWidth;
-        private static float lastfade;
-
         private static MainMenuStates State = 0;
-        private static int vpHeight;
-        private static int vpWidth;
+        private static int vpHeight, vpWidth;
 
         #endregion Fields
 
@@ -65,8 +53,6 @@ namespace FF8
         internal static void Draw()
         {
             Memory.graphics.GraphicsDevice.Clear(Color.Black);
-            //fScaleWidth = (float)Memory.graphics.GraphicsDevice.Viewport.Width / Memory.PreferredViewportWidth;
-            //fScaleHeight = (float)Memory.graphics.GraphicsDevice.Viewport.Height / Memory.PreferredViewportHeight;
             lastfade = fade;
             vpSpace = vpHeight * 0.09f * Memory.Scale().X;
             DFontPos = new Vector2(vpWidth * .10f * Memory.Scale().X, vpHeight * .05f * Memory.Scale().Y) + Offset;

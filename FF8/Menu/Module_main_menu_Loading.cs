@@ -32,7 +32,7 @@ namespace FF8
     {
         #region Fields
 
-        private static sbyte _slotLoc = 0;
+        private static sbyte _slotLoc, _blockLoc;
 
         private static bool blinkstate;
 
@@ -48,7 +48,6 @@ namespace FF8
         private static Tuple<Rectangle, Point>[] SlotLocs = new Tuple<Rectangle, Point>[2];
 
         private static Tuple<Rectangle, Point>[] BlockLocs = new Tuple<Rectangle, Point>[3];
-        private static sbyte _blockLoc;
 
         #endregion Fields
 
@@ -435,7 +434,11 @@ namespace FF8
                 { Litems.BlockToSave, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 1 ,89) } },
             };
             SlotLoc = 0;
-        }
+            BlockLoc = 0;
+
+            SlotLocs = new Tuple<Rectangle, Point>[2];
+            BlockLocs = new Tuple<Rectangle, Point>[3];
+    }
 
         private static bool UpdateLGChooseGame()
         {
