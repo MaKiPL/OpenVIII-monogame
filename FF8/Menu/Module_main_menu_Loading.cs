@@ -178,7 +178,7 @@ namespace FF8
                     X = (int)(vpWidth * 0.26796875f),
                     Y = (int)(vpHeight * 0.0166666666666667f),
                 }.ToVector2() + offset).ToPoint();
-                FF8String name = new FF8String(Enum.GetName(typeof(Faces.ID), (Faces.ID)d.charactersportraits[mainchar]).Replace('_', ' '));
+                FF8String name = Memory.Strings.GetName((Faces.ID)d.charactersportraits[mainchar],d);
                 FF8String lv_ = new FF8String($"LV.   {d.firstcharacterslevel}");
                 Memory.font.RenderBasicText(name, detailsLoc, new Vector2(2.545454545f, 3.0375f), 1, 0, fade, true);
                 int playy = detailsLoc.Y;

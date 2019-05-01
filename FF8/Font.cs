@@ -661,6 +661,7 @@ namespace FF8
 
         public Rectangle RenderBasicText(byte[] buffer, int x, int y, float zoomWidth = 2.0f, float zoomHeight = 2.7f, int whichFont = 0, int isMenu = 0, float Fade = 1.0f, bool skipdraw =false, bool prescaled = false)
         {
+            if (buffer == null) return new Rectangle();
             Rectangle ret = new Rectangle(x, y, 0, 0);
             Point real = new Point(x, y);
             int charCountWidth = 21;
@@ -671,6 +672,7 @@ namespace FF8
             int width;
             foreach (byte c in buffer)
             {
+                if (c == 0) continue;
                 byte deltaChar = (byte)(c - 32);
                 if (deltaChar < charWidths.Length)
                 {
