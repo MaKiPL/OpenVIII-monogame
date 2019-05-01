@@ -353,6 +353,7 @@
             /// Word DEBUG made from peices of of words. Might look terrible on mods unless they align exactly to the same grid.
             /// </summary>
             DEBUG,
+            MenuBorder,
         }
 
         #endregion Enums

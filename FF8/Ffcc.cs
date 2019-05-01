@@ -41,6 +41,7 @@
         private const int NextAsyncSleep = 10;
 
         private readonly AVDictionary* _dict;
+        private avio_alloc_context_read_packet rf;
         private AVIOContext* _avio_ctx;
         private byte* _avio_ctx_buffer;
         private int _avio_ctx_buffer_size;
@@ -764,7 +765,7 @@ EOF:
 
                     // set to true to prevent multiple disposings
                     isDisposed = true;
-                    GC.Collect(); // donno if this really does much. was trying to make sure the memory i'm watching is what is really there.
+                    //GC.Collect(); // donno if this really does much. was trying to make sure the memory i'm watching is what is really there.
                 }
             }
         }
@@ -903,7 +904,7 @@ EOF:
                 ret = ffmpeg.AVERROR(ffmpeg.ENOMEM);
                 return;
             }
-            avio_alloc_context_read_packet rf = new avio_alloc_context_read_packet(Read_packet);
+            rf = new avio_alloc_context_read_packet(Read_packet);
             _avio_ctx = ffmpeg.avio_alloc_context(_avio_ctx_buffer, _avio_ctx_buffer_size, 0, bd, rf, null, null);
 
             if (_avio_ctx == null)

@@ -18,7 +18,7 @@ namespace FF8
         #endregion Fields
 
         #region Constructors
-
+        public bool Modded { get; private set; } = false;
         public TextureHandler(string filename, uint cols = 1, uint rows = 1, int pallet = -1)
         {
             if (cols == 1 && rows == 1)
@@ -290,6 +290,7 @@ namespace FF8
                     if (Classic == null && c2 < Cols) oldsize.X += tex.TextureData.Width;
                     Texture2D pngTex = LoadPNG(path, Pallet);
                     Textures[c, r] = (UseBest(tex, pngTex, Pallet));
+                    if (pngTex != null) Modded = true;
                     if (c2 < Cols) size.X += Textures[c2++, r2].Width;
                 }
                 if (Classic == null && r2 < Rows) oldsize.Y += tex.TextureData.Height;
