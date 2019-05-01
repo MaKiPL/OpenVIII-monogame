@@ -41,7 +41,14 @@ namespace FF8
             public uint CurrentDisk;//0x0058
             public uint Currentsave;//0x005C
 
-            public GFData[] GFs;
+            public GFData[] GFs; // 0x0060 -> 0x045C //68 bytes per 16 total
+            public CharacterData[] Characters; // 0x04A0 -> 0x08C8 //152 bytes per 8 total
+            public byte[] Shops; //0x0960 //400 bytes
+            public byte[] Configuration; //0x0AF0 //20 bytes
+            public byte[] Party; //0x0B04 // 4 bytes 0xFF terminated.
+            public byte[] KnownWeapons; //0x0B08 // 4 bytes
+            public FF8String Grieversname; //0x0B0C // 12 bytes
+
             public Data()
             {
                 LocationID = 0;
@@ -59,8 +66,136 @@ namespace FF8
                 CurrentDisk = 0;
                 Currentsave = 0;
                 GFs = new GFData[16];
+                Characters = new CharacterData[8];
+                Shops = null;
+                Configuration = null;
+                Party = null;
+                KnownWeapons = null;
+                Grieversname = null;
+            }
+            public void Read(BinaryReader br)
+            {
+                LocationID = br.ReadUInt16();//0x0004
+                firstcharacterscurrentHP = br.ReadUInt16();//0x0006
+                firstcharactersmaxHP = br.ReadUInt16();//0x0008
+                savecount = br.ReadUInt16();//0x000A
+                AmountofGil = br.ReadUInt32();//0x000C
+                timeplayed = new TimeSpan(0, 0, (int)br.ReadUInt32());//0x0020
+                firstcharacterslevel = br.ReadByte();//0x0024
+                charactersportraits = br.ReadBytes(3);//0x0025//0x0026//0x0027 0xFF = blank.
+                Squallsname = br.ReadBytes(12);//0x0028
+                Rinoasname = br.ReadBytes(12);//0x0034
+                Angelosname = br.ReadBytes(12);//0x0040
+                Bokosname = br.ReadBytes(12);//0x004C
+                CurrentDisk = br.ReadUInt32();//0x0058
+                Currentsave = br.ReadUInt32();//0x005C
+                for (int i = 0; i < GFs.Length; i++)
+                {
+                    GFs[i].Read(br);
+                }
+                for (int i= 0; i<8;i++)
+                    Characters[i].Read(br); // 0x04A0 -> 0x08C8 //152 bytes per 8 total
+                Shops = br.ReadBytes(400); //0x0960 //400 bytes
+                Configuration = br.ReadBytes(20); //0x0AF0 //20 bytes
+                Party = br.ReadBytes(4); //0x0B04 // 4 bytes 0xFF terminated.
+                KnownWeapons = br.ReadBytes(4); //0x0B08 // 4 bytes
+                Grieversname = br.ReadBytes(12); //0x0B0C // 12 bytes
+        }
+        }
+        /// <summary>
+        /// Data for each Character
+        /// </summary>
+        /// <see cref="http://wiki.ffrtt.ru/index.php/FF8/GameSaveFormat#Characters"/>
+        public struct CharacterData
+        {
+            public ushort MaxHPs; //0x00 
+            public uint Experience; //0x02 
+            public byte ModelID; //0x04 
+            public byte WeaponID; //0x08 
+            public byte STR; //0x09 
+            public byte VIT; //0x0A 
+            public byte MAG; //0x0B 
+            public byte SPR; //0x0C 
+            public byte SPD; //0x0D 
+            public byte LCK; //0x0E 
+            public ushort[] Magics; //0x0F 
+            public byte[] Commands; //0x10 
+            public byte Paddingorunusedcommand; //0x50 
+            public uint Abilities; //0x53 
+            public ushort JunctionnedGFs; //0x54 
+            public byte Unknown1; //0x58 
+            public byte Alternativemodel; //0x5A (Normal, SeeD, Soldier...)
+            public byte JunctionHP; //0x5B 
+            public byte JunctionSTR; //0x5C 
+            public byte JunctionVIT; //0x5D 
+            public byte JunctionMAG; //0x5E 
+            public byte JunctionSPR; //0x5F 
+            public byte JunctionSPD; //0x60 
+            public byte JunctionEVA; //0x61 
+            public byte JunctionHIT; //0x62 
+            public byte JunctionLCK; //0x63 
+            public byte Junctionelementalattack; //0x64 
+            public byte Junctionmentalattack; //0x65 
+            public uint Junctionelementaldefense; //0x66 
+            public uint Junctionmentaldefense; //0x67 
+            public byte Unknown2; //0x6B (padding?)
+            public ushort[] CompatibilitywithGFs; //0x6F 
+            public ushort Numberofkills; //0x70 
+            public ushort NumberofKOs; //0x90 
+            public byte Exists; //0x92 
+            public byte Unknown3; //0x94 
+            public byte MentalStatus; //0x95 
+            public byte Unknown4; //0x96 
+            public void Read(BinaryReader br)
+            {
+                MaxHPs = br.ReadUInt16();//0x02 
+                Experience = br.ReadUInt32();//0x04 
+                ModelID = br.ReadByte();//0x08 
+                WeaponID = br.ReadByte();//0x09 
+                STR = br.ReadByte();//0x0A 
+                VIT = br.ReadByte();//0x0B 
+                MAG = br.ReadByte();//0x0C 
+                SPR = br.ReadByte();//0x0D 
+                SPD = br.ReadByte();//0x0E 
+                LCK = br.ReadByte();//0x0F 
+                Magics = new ushort[32];
+                for (int i=0;i<32;i++)
+                    Magics[i] = br.ReadUInt16();//0x10 
+                Commands = br.ReadBytes(3);//0x50 
+                Paddingorunusedcommand = br.ReadByte();//0x53 
+                Abilities = br.ReadUInt32();//0x54 
+                JunctionnedGFs = br.ReadUInt16();//0x58 
+                Unknown1 = br.ReadByte();//0x5A 
+                Alternativemodel = br.ReadByte();//0x5B (Normal, SeeD, Soldier...)
+                JunctionHP = br.ReadByte();//0x5C 
+                JunctionSTR = br.ReadByte();//0x5D 
+                JunctionVIT = br.ReadByte();//0x5E 
+                JunctionMAG = br.ReadByte();//0x5F 
+                JunctionSPR = br.ReadByte();//0x60 
+                JunctionSPD = br.ReadByte();//0x61 
+                JunctionEVA = br.ReadByte();//0x62 
+                JunctionHIT = br.ReadByte();//0x63 
+                JunctionLCK = br.ReadByte();//0x64 
+                Junctionelementalattack = br.ReadByte();//0x65 
+                Junctionmentalattack = br.ReadByte();//0x66 
+                Junctionelementaldefense = br.ReadUInt32();//0x67 
+                Junctionmentaldefense = br.ReadUInt32();//0x6B 
+                Unknown2 = br.ReadByte();//0x6F (padding?)
+                CompatibilitywithGFs = new ushort[16];
+                for (int i = 0; i < 16; i++)
+                    CompatibilitywithGFs[i] = br.ReadUInt16();//0x70 
+                Numberofkills = br.ReadUInt16();//0x90 
+                NumberofKOs = br.ReadUInt16();//0x92 
+                Exists = br.ReadByte();//0x94 
+                Unknown3 = br.ReadByte();//0x95 
+                MentalStatus = br.ReadByte();//0x96 
+                Unknown4 = br.ReadByte();//0x97 
             }
         }
+        /// <summary>
+        /// Data for each GF
+        /// </summary>
+        /// <see cref="http://wiki.ffrtt.ru/index.php/FF8/GameSaveFormat#Guardian_Forces"/>
         public struct GFData
         {
             public FF8String Name; //Offset (0x00 terminated)
@@ -413,27 +548,9 @@ namespace FF8
             using (BinaryReader br = new BinaryReader(ms))
             {
                 ms.Seek(0x184, SeekOrigin.Begin);
-                Data d = new Data
-                {
-                    LocationID = br.ReadUInt16(),//0x0004
-                    firstcharacterscurrentHP = br.ReadUInt16(),//0x0006
-                    firstcharactersmaxHP = br.ReadUInt16(),//0x0008
-                    savecount = br.ReadUInt16(),//0x000A
-                    AmountofGil = br.ReadUInt32(),//0x000C
-                    timeplayed = new TimeSpan(0, 0, (int)br.ReadUInt32()),//0x0020
-                    firstcharacterslevel = br.ReadByte(),//0x0024
-                    charactersportraits = br.ReadBytes(3),//0x0025//0x0026//0x0027 0xFF = blank.
-                    Squallsname = br.ReadBytes(12),//0x0028
-                    Rinoasname = br.ReadBytes(12),//0x0034
-                    Angelosname = br.ReadBytes(12),//0x0040
-                    Bokosname = br.ReadBytes(12),//0x004C
-                    CurrentDisk = br.ReadUInt32(),//0x0058
-                    Currentsave = br.ReadUInt32()//0x005C
-                };
-                for (int i = 0; i< d.GFs.Length; i++)
-                {
-                    d.GFs[i].Read(br);
-                }
+                Data d = new Data();
+                d.Read(br);
+
                 return d;
             }
         }

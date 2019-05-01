@@ -67,7 +67,10 @@ namespace FF8
 
         private static ushort prevmusic = 0;
         private static ushort currmusic = 0;
-
+        /// <summary>
+        /// Stores current savestate. When you save this is wrote. When you load this is replaced.
+        /// </summary>
+        public static Ff8files.Data State = new Ff8files.Data();
         internal static ushort MusicIndex
         {
             get

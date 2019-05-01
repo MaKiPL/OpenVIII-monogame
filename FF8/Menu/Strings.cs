@@ -275,8 +275,8 @@ namespace FF8
                     {21, new Tuple<uint, uint, uint>(50,2,20) },
                     {22, new Tuple<uint, uint, uint>(51,2,28) },
                     {24, new Tuple<uint, uint, uint>(52,2,4) },
-                    {25, new Tuple<uint, uint, uint>(53,2,18) },
-                    {28, new Tuple<uint, uint, uint>(54,2,10) },
+                    {25, new Tuple<uint, uint, uint>(53,1,18) },
+                    {28, new Tuple<uint, uint, uint>(54,1,10) },
                     {30, new Tuple<uint, uint, uint>(55,1,0) },
                 };
 
@@ -526,7 +526,54 @@ namespace FF8
                 mngrp_get_string_offsets(br, fileID, 0);
             }
         }
-
+        public FF8String GetName(Faces.ID id, Ff8files.Data d = null )
+        {
+            if (d == null)
+                d = Memory.State;
+            switch (id)
+            {
+                case Faces.ID.Squall_Leonhart:
+                    return d.Squallsname;
+                case Faces.ID.Rinoa_Heartilly:
+                    return d.Rinoasname;
+                case Faces.ID.Angelo:
+                    return d.Angelosname;
+                case Faces.ID.Boko:
+                    return d.Bokosname;
+                case Faces.ID.Zell_Dincht:
+                case Faces.ID.Irvine_Kinneas:
+                case Faces.ID.Quistis_Trepe:
+                    return Read(FileID.KERNEL, 6, (int)id - 1);
+                case Faces.ID.Selphie_Tilmitt:
+                case Faces.ID.Seifer_Almasy:
+                case Faces.ID.Edea_Kramer:
+                case Faces.ID.Laguna_Loire:
+                case Faces.ID.Kiros_Seagill:
+                case Faces.ID.Ward_Zabac:
+                    return Read(FileID.KERNEL, 6, (int)id - 2);
+                case Faces.ID.Quezacotl:
+                case Faces.ID.Shiva:
+                case Faces.ID.Ifrit:
+                case Faces.ID.Siren:
+                case Faces.ID.Brothers:
+                case Faces.ID.Diablos:
+                case Faces.ID.Carbuncle:
+                case Faces.ID.Leviathan:
+                case Faces.ID.Pandemona:
+                case Faces.ID.Cerberus:
+                case Faces.ID.Alexander:
+                case Faces.ID.Doomtrain:
+                case Faces.ID.Bahamut:
+                case Faces.ID.Cactuar:
+                case Faces.ID.Tonberry:
+                case Faces.ID.Eden:
+                    return d.GFs[(int)id - 16].Name;
+                case Faces.ID.Griever:
+                    return d.Grieversname;
+                default:
+                    return new FF8String();
+            }
+        }
         #endregion Methods
 
         //private byte[] Read(FileID fid, uint pos)

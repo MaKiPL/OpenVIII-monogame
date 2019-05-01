@@ -97,7 +97,7 @@ namespace FF8
             {
                 { Mitems.New, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 1 ,105) } },
                 { Mitems.Load, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 1 ,106) } },
-                { Mitems.Debug, new Item{Text=Font.CipherDirty("OpenVIII debug tools") } }
+                { Mitems.Debug, new Item{Text=new FF8String("OpenVIII debug tools") } }
             };
             if (start == null)
             {
