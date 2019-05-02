@@ -923,7 +923,7 @@ namespace FF8
                 case 142:
                     return 0x183C;
                 case 147:
-                    return 0xa0c;
+                    return 0x10f0;
                 case 157:
                     return 0x638;
 
