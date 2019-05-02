@@ -130,17 +130,7 @@ namespace FF8
             foreach (Enum i in Enum.GetValues(typeof(T)))
             {
                 Item c = dict[i];
-                byte[] end = Font.CipherDirty(InfoForLobby<Ditems>(i));
-                byte[] combine;
-                if (end != null)
-                {
-                    combine = new byte[strDebugLobby[i].Text.Length + end.Length];
-                    Array.Copy(strDebugLobby[i].Text, combine, strDebugLobby[i].Text.Length);
-                    Array.Copy(end, 0, combine, strDebugLobby[i].Text.Length, end.Length);
-                }
-                else
-                    combine = strDebugLobby[i].Text;
-                c.Loc = Memory.font.CalcBasicTextArea(combine,
+                c.Loc = Memory.font.CalcBasicTextArea(FF8String.Combine(strDebugLobby[i].Text, InfoForLobby<Ditems>(i)),
                 (int)DFontPos.X, (int)(DFontPos.Y + vpSpace * item++), 2.545454545f, 3.0375f, 0);
                 if (dst.X == 0 || dst.Y == 0)
                     dst.Location = c.Loc.Location;
@@ -149,7 +139,7 @@ namespace FF8
                 dst.Height = c.Loc.Y + c.Loc.Height - dst.Y;
                 dict[i] = c;
             }
-            Vector2 scale = Memory.Scale();
+            
             dst.Inflate(vpWidth * .06f * scale.X, vpHeight * .035f * scale.Y);
             return dst;
         }
@@ -158,7 +148,7 @@ namespace FF8
         /// </summary>
         private static void DrawDebugLobby()
         {
-            Vector2 scale = Memory.Scale();
+            
             vpSpace = vpHeight * 0.05f * scale.X;
             float item = 0;
             Rectangle dst = FontBoxCalc<Ditems>(strDebugLobby);
@@ -180,17 +170,7 @@ namespace FF8
             //Memory.SpriteBatchStartAlpha();
             foreach (Ditems i in (Ditems[])Enum.GetValues(typeof(Ditems)))
             {
-                byte[] end = Font.CipherDirty(InfoForLobby<Ditems>(i));
-                byte[] combine;
-                if (end != null)
-                {
-                    combine = new byte[strDebugLobby[i].Text.Length + end.Length];
-                    Array.Copy(strDebugLobby[i].Text, combine, strDebugLobby[i].Text.Length);
-                    Array.Copy(end, 0, combine, strDebugLobby[i].Text.Length, end.Length);
-                }
-                else
-                    combine = strDebugLobby[i].Text;
-                Memory.font.RenderBasicText(combine,
+                Memory.font.RenderBasicText(FF8String.Combine(strDebugLobby[i].Text, InfoForLobby<Ditems>(i)),
                     (int)(DFontPos.X), (int)(DFontPos.Y + vpSpace * item++), 2.545454545f, 3.0375f, 1, 0, Fade);
             }
             //Memory.spriteBatch.Draw(Memory.iconsTex[2], dst,
@@ -234,17 +214,17 @@ namespace FF8
         {
             strDebugLobby = new Dictionary<Enum, Item>()
             {
-                { Ditems.Reset, new Item{Text=Font.CipherDirty("Reset Main Menu state") } },
-                { Ditems.Overture, new Item{Text=Font.CipherDirty("Play Overture")} },
-                { Ditems.Battle, new Item{Text=Font.CipherDirty("Battle encounter: ")} },
-                { Ditems.Field, new Item{Text=Font.CipherDirty("Field debug render: ")} },
-                { Ditems.Movie, new Item{Text=Font.CipherDirty("Movie debug render: ")} },
-                { Ditems.Music, new Item{Text=Font.CipherDirty("Play/Stop music: ")} },
-                { Ditems.Sounds, new Item{Text=Font.CipherDirty("Play audio.dat: ")} },
-                { Ditems.World, new Item{Text=Font.CipherDirty("Jump to World Map")} },
-                { Ditems.Faces, new Item{Text=Font.CipherDirty("Test Faces")} },
-                { Ditems.Icons, new Item{Text=Font.CipherDirty("Test Icons")} },
-                { Ditems.Cards, new Item{Text=Font.CipherDirty("Test Cards")} },
+                { Ditems.Reset, new Item{Text=new FF8String("Reset Main Menu state") } },
+                { Ditems.Overture, new Item{Text=new FF8String("Play Overture")} },
+                { Ditems.Battle, new Item{Text=new FF8String("Battle encounter: ")} },
+                { Ditems.Field, new Item{Text=new FF8String("Field debug render: ")} },
+                { Ditems.Movie, new Item{Text=new FF8String("Movie debug render: ")} },
+                { Ditems.Music, new Item{Text=new FF8String("Play/Stop music: ")} },
+                { Ditems.Sounds, new Item{Text=new FF8String("Play audio.dat: ")} },
+                { Ditems.World, new Item{Text=new FF8String("Jump to World Map")} },
+                { Ditems.Faces, new Item{Text=new FF8String("Test Faces")} },
+                { Ditems.Icons, new Item{Text=new FF8String("Test Icons")} },
+                { Ditems.Cards, new Item{Text=new FF8String("Test Cards")} },
             };
             debug_choosedField = Memory.FieldHolder.fields[debug_fieldPointer];
             if(Module_movie_test.Movies.Count>0)

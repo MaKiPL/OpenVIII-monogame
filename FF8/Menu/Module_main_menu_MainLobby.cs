@@ -66,7 +66,7 @@ namespace FF8
         /// </summary>
         private static void DrawMainLobby()
         {
-            Vector2 scale = Memory.Scale();
+            
             Vector2 vp = (new Vector2(vpWidth, vpHeight)) * scale;
             float item = 0;
             Vector2 textSize = new Vector2(2.545454545f, 3.0375f);// scaled in render function.
@@ -87,7 +87,7 @@ namespace FF8
                     (int)(textStart.X), (int)(textStart.Y + ((textSize.Y + vpSpace) * item++)), textSize.X, textSize.Y, 1, 0, Fade));
                 strMainLobby[i] = c;
             }
-            DrawPointer(new Point((int)(textStart.X), (int)((((textSize.Y + vpSpace) * (float)Mchoose)+textStart.Y+(6*textSize.Y))*scale.Y)));
+            DrawPointer(new Point((int)(textStart.X), (int)((((textSize.Y + vpSpace) * (float)Mchoose)+textStart.Y+(6*textSize.Y)))));
             Memory.SpriteBatchEnd();
         }
 
