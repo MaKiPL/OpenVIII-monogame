@@ -651,7 +651,7 @@ namespace FF8
 
         private static void Init()
         {
-            ArchiveWorker aw = new ArchiveWorker(Path.Combine(Memory.FF8DIR, "field.fs"));
+            ArchiveWorker aw = new ArchiveWorker($"{Memory.Archives.A_FIELD}.fs");
             string[] test = aw.GetListOfFiles();
             if (Memory.FieldHolder.FieldID >= Memory.FieldHolder.fields.Length ||
                 Memory.FieldHolder.FieldID < 0)
@@ -661,9 +661,9 @@ namespace FF8
             string fieldArchive = CollectionEntry.First();
             int fieldLen = fieldArchive.Length - 2;
             fieldArchive = fieldArchive.Substring(0, fieldLen);
-            byte[] fs = ArchiveWorker.GetBinaryFile(Path.Combine(Memory.FF8DIR, "field"), $"{fieldArchive}fs");
-            byte[] fi = ArchiveWorker.GetBinaryFile(Path.Combine(Memory.FF8DIR, "field"), $"{fieldArchive}fi");
-            byte[] fl = ArchiveWorker.GetBinaryFile(Path.Combine(Memory.FF8DIR, "field"), $"{fieldArchive}fl");
+            byte[] fs = ArchiveWorker.GetBinaryFile(Memory.Archives.A_FIELD, $"{fieldArchive}fs");
+            byte[] fi = ArchiveWorker.GetBinaryFile(Memory.Archives.A_FIELD, $"{fieldArchive}fi");
+            byte[] fl = ArchiveWorker.GetBinaryFile(Memory.Archives.A_FIELD, $"{fieldArchive}fl");
             if (fs == null || fi == null || fl == null) return;
             string[] test_ = ArchiveWorker.GetBinaryFileList(fl);
             string mim = null;

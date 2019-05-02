@@ -288,7 +288,7 @@ namespace FF8
     /// antiquechrono was helping. he even wrote a whole class using kaitai. Though I donno if we
     /// wanna use kaitai.
     /// </remarks>
-    internal static class Ff8files
+    internal static class Saves
     {
         public class Data
         {

@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using NAudio.Vorbis;
 using FFmpeg.AutoGen;
 using System.Diagnostics;
+using System.Linq;
 
 namespace FF8
 {
@@ -139,7 +140,7 @@ namespace FF8
             //Roses and Wine V07 moves most of the sgt files to dmusic_backup
             //it leaves a few files behind. I think because RaW doesn't replace everything.
             //ogg files stored in:
-            RaW_ogg_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../../RaW/GLOBAL/Music"));
+            RaW_ogg_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "RaW/GLOBAL/Music"));
             if (!Directory.Exists(RaW_ogg_pt))
             {
                 RaW_ogg_pt = null;
@@ -147,19 +148,19 @@ namespace FF8
             // From what I gather the OGG files and the sgt files have the same numerical prefix. I
             // might try to add the functionality to the debug screen monday.
 
-            dmusic_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../Music/dmusic_backup/"));
+            dmusic_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music","dmusic_backup"));
             if (!Directory.Exists(dmusic_pt))
             {
                 dmusic_pt = null;
             }
 
-            music_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../Music/dmusic/"));
+            music_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music","dmusic"));
             if (!Directory.Exists(music_pt))
             {
                 music_pt = null;
             }
 
-            music_wav_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../Music/"));
+            music_wav_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music"));
             if (!Directory.Exists(music_wav_pt))
             {
                 music_wav_pt = null;
@@ -169,7 +170,7 @@ namespace FF8
             // with the same prefix. so you can later on switch out which one you want.
             if (RaW_ogg_pt != null)
             {
-                Memory.musices = Directory.GetFiles(RaW_ogg_pt, "*.ogg");
+                Memory.musices = Directory.GetFiles(RaW_ogg_pt).Where(x=> x.EndsWith(".ogg",StringComparison.OrdinalIgnoreCase)).ToArray();
                 foreach (string m in Memory.musices)
                 {
                     if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
@@ -193,7 +194,7 @@ namespace FF8
             }
             if (dmusic_pt != null)
             {
-                Memory.musices = Directory.GetFiles(dmusic_pt, "*.sgt");
+                Memory.musices = Directory.GetFiles(dmusic_pt).Where(x => x.EndsWith(".sgt", StringComparison.OrdinalIgnoreCase)).ToArray();
 
                 foreach (string m in Memory.musices)
                 {
@@ -223,7 +224,7 @@ namespace FF8
             }
             if (music_pt != null)
             {
-                Memory.musices = Directory.GetFiles(music_pt, "*.sgt");
+                Memory.musices = Directory.GetFiles(music_pt).Where(x => x.EndsWith(".sgt", StringComparison.OrdinalIgnoreCase)).ToArray();
 
                 foreach (string m in Memory.musices)
                 {
@@ -253,7 +254,7 @@ namespace FF8
             }
             if (music_wav_pt != null)
             {
-                Memory.musices = Directory.GetFiles(music_wav_pt, "*.wav");
+                Memory.musices = Directory.GetFiles(music_wav_pt).Where(x => x.EndsWith(".wav", StringComparison.OrdinalIgnoreCase)).ToArray();
 
                 foreach (string m in Memory.musices)
                 {
@@ -286,7 +287,7 @@ namespace FF8
         //I messed around here as figuring out how things worked probably didn't need to mess with this.
         internal static void DEBUG_SoundAudio()
         {
-            string path = Path.Combine(Memory.FF8DIR, "../Sound/audio.fmt");
+            string path = Path.Combine(Memory.FF8DIRdata, "Sound","audio.fmt");
             if(File.Exists(path))
             using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
             using (BinaryReader br = new BinaryReader(fs))
@@ -323,7 +324,7 @@ namespace FF8
             SoundChannels[CurrentSoundChannel] = new Ffcc(
                 new Ffcc.Buffer_Data { DataSeekLoc = soundEntries[soundID].Offset, DataSize = soundEntries[soundID].Size, HeaderSize = (uint)soundEntries[soundID].HeaderData.Length },
                 soundEntries[soundID].HeaderData,
-                Path.Combine(Memory.FF8DIR, "../Sound/audio.dat"));
+                Path.Combine(Memory.FF8DIRdata, "Sound","audio.dat"));
             SoundChannels[CurrentSoundChannel++].Play();
         }
 
@@ -473,10 +474,10 @@ namespace FF8
                             loader.Initialize();
                             loader.LoadSegment(pt, out segment);
                             ccollection = new CCollection();
-                            string pathDLS = Path.Combine(Memory.FF8DIR, "../Music/dmusic_backup/FF8.dls");
+                            string pathDLS = Path.Combine(Memory.FF8DIRdata, "Music/dmusic_backup/FF8.dls");
                             if (!File.Exists(pathDLS))
                             {
-                                pathDLS = Path.Combine(Memory.FF8DIR, "../Music/dmusic/FF8.dls");
+                                pathDLS = Path.Combine(Memory.FF8DIRdata, "Music/dmusic/FF8.dls");
                             }
 
                             loader.LoadDLS(pathDLS, out ccollection);

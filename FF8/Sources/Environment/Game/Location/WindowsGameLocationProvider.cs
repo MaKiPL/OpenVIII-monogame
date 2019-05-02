@@ -25,7 +25,7 @@ namespace FF8
                 if (registryKey != null)
                 {
                     String installLocation = (String)registryKey.GetValue(SteamGamePathTag);
-                    String dataPath = Path.Combine(installLocation, "Data", "lang-en");
+                    String dataPath = installLocation;//Path.Combine(installLocation, "Data", "lang-en");
                     if (Directory.Exists(dataPath))
                         return new GameLocation(dataPath);
                 }
@@ -46,9 +46,9 @@ namespace FF8
 
         private readonly HardcodedGameLocationProvider _hardcoded = new HardcodedGameLocationProvider(new[]
         {
-            @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY VIII\Data\lang-en",
-            @"D:\SteamLibrary\steamapps\common\FINAL FANTASY VIII\Data\lang-en",
-            @"D:\Steam\steamapps\common\FINAL FANTASY VIII\Data\lang-en",
+            @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY VIII",//Data\lang-en
+            @"D:\SteamLibrary\steamapps\common\FINAL FANTASY VIII",
+            @"D:\Steam\steamapps\common\FINAL FANTASY VIII",
         });
     }
 }
