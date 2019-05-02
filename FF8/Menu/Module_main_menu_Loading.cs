@@ -180,10 +180,10 @@ namespace FF8
             block++;
             Rectangle dst = new Rectangle
             {
-                X = (int)(vpWidth * 0f),
-                Y = (int)(vpHeight * 0.220833333333333f * ((block - 1) % 3)),
-                Width = (int)(vpWidth * 0.65625f),
-                Height = (int)(vpHeight * 0.220833333333333f),
+                X = 0,
+                Y = (OffScreenBuffer.Height/3 * ((block - 1) % 3)),
+                Width = (OffScreenBuffer.Width),
+                Height = OffScreenBuffer.Height/3,
             };
             Vector2 offset = dst.Location.ToVector2();
 
@@ -191,17 +191,18 @@ namespace FF8
 
             Vector2 blocknumpos = new Vector2
             {
-                X = (vpWidth * 0.00625f),
+                X = (OffScreenBuffer.Width * 0.00952381f),
                 Y = 0,
             } + offset;
-            Memory.Icons.Draw(block++, 4, 2, "D2", blocknumpos, new Vector2(3f), fade); // 2,2 looks close
+            Vector2 blocknumsize = new Vector2(OffScreenBuffer.Height * 0.00628930817610063f);
+            Memory.Icons.Draw(block++, 4, 2, "D2", blocknumpos, blocknumsize, fade); // 2,2 looks close
 
             Rectangle faceRect = new Rectangle
             {
-                X = (int)(vpWidth * 0.04296875f),
-                Y = (int)(vpHeight * 0.0104166666666667f),
-                Width = (int)(vpWidth * 0.07421875f),
-                Height = (int)(vpHeight * 0.2f),
+                X = (int)(OffScreenBuffer.Width * 0.0654761904761905f),
+                Y = (int)(OffScreenBuffer.Height * 0.0157232704402516f),
+                Width = (int)(OffScreenBuffer.Width * 0.113095238095238f),
+                Height = (int)(OffScreenBuffer.Height * 0.30188679245283f),
             };
             faceRect.Offset(offset);
             sbyte mainchar = -1;
@@ -220,49 +221,64 @@ namespace FF8
             {
                 Point detailsLoc = (new Point
                 {
-                    X = (int)(vpWidth * 0.26796875f),
-                    Y = (int)(vpHeight * 0.0166666666666667f),
+                    X = (int)(OffScreenBuffer.Width * 0.408333333333333f),
+                    Y = (int)(OffScreenBuffer.Height * 0.0251572327044026f),
                 }.ToVector2() + offset).ToPoint();
                 FF8String name = Memory.Strings.GetName((Faces.ID)d.charactersportraits[mainchar],d);
                 FF8String lv_ = new FF8String($"LV.   {d.firstcharacterslevel}");
-                Memory.font.RenderBasicText(name, detailsLoc, new Vector2(2.545454545f, 3.0375f), 1, 0, fade, true);
-                int playy = detailsLoc.Y;
-                detailsLoc.Y += (int)(vpHeight * 0.0541666666666667f);
-                Rectangle disc = Memory.font.RenderBasicText(lv_, detailsLoc, new Vector2(2.545454545f, 3.0375f), 1, 0, fade, true);
-                disc.Offset(0, (int)(vpHeight * 0.00833333333333333f));
-                disc.X = (int)(vpWidth * 0.3828125f);
-                Memory.Icons.Draw(Icons.ID.DISC, 2, disc, new Vector2(2.90909090857143f), fade);
-                Memory.Icons.Draw((int)d.CurrentDisk+1, 0, 2, "D1", new Vector2(disc.X + (0.078125f * vpWidth), disc.Y), new Vector2(2.90909090857143f), fade);
+                Vector2 TextScale = new Vector2(OffScreenBuffer.Width * 0.0030303030297619f, OffScreenBuffer.Height * 0.00636792452830189f);
+                Memory.font.RenderBasicText(name, detailsLoc, TextScale, 1, 0, fade, true);
 
-                disc.Location = new Vector2 { X = (vpWidth * 0.625f), Y = disc.Y }.ToPoint();
-                Memory.Icons.Draw(Icons.ID.G, 2, disc, new Vector2(2.90909090857143f), fade);
+                int playy = detailsLoc.Y;
+                detailsLoc.Y += (int)(OffScreenBuffer.Height * 0.0817610062893082f);
+                Rectangle disc = Memory.font.RenderBasicText(lv_, detailsLoc, TextScale, 1, 0, fade, true);
+                disc.Offset(0, (int)(OffScreenBuffer.Height * 0.0125786163522013f));
+                disc.X = (int)(OffScreenBuffer.Width * 0.583333333333333f);
+                Vector2 DiscScale = new Vector2(OffScreenBuffer.Height * 0.0060987230787661f);
+                Memory.Icons.Draw(Icons.ID.DISC, 2, disc, DiscScale, fade);
+                Vector2 CurrDiscLoc = new Vector2(disc.X + (0.119047619047619f * OffScreenBuffer.Width), disc.Y);
+                Memory.Icons.Draw((int)d.CurrentDisk+1, 0, 2, "D1", CurrDiscLoc, DiscScale, fade);
+                float X1 = OffScreenBuffer.Width * 0.952380952380952f;
+                float X2 = OffScreenBuffer.Width * -0.0238095238095238f;
+                float X3 = OffScreenBuffer.Width * -0.0952380952380952f;
+                disc.Location = new Vector2 { X = X1, Y = disc.Y }.ToPoint();
+                Memory.Icons.Draw(Icons.ID.G, 2, disc, DiscScale, fade);
                 double digits = Math.Floor(Math.Log10(d.AmountofGil) + 2);
-                disc.Offset(new Vector2 { X = (float)(digits * vpWidth * -0.015625f) });
-                Memory.Icons.Draw((int)d.AmountofGil, 0, 2, "D1", disc.Location.ToVector2(), new Vector2(2.90909090857143f), fade);
-                disc.Location = new Vector2 { X = (vpWidth * 0.625f), Y = playy }.ToPoint();
-                disc.Offset(new Vector2 { X = 1 * vpWidth * -0.015625f });
-                Memory.Icons.Draw(d.timeplayed.Minutes, 0, 2, "D2", disc.Location.ToVector2(), new Vector2(2.90909090857143f), fade);
+                disc.Offset(new Vector2 { X = (float)(digits *X2) });
+                Memory.Icons.Draw((int)d.AmountofGil, 0, 2, "D1", disc.Location.ToVector2(), DiscScale, fade);
+                disc.Location = new Vector2 { X = X1, Y = playy }.ToPoint();
+                disc.Offset(new Vector2 { X =X2 });
+                Memory.Icons.Draw(d.timeplayed.Minutes, 0, 2, "D2", disc.Location.ToVector2(), DiscScale, fade);
 
                 if ((int)d.timeplayed.TotalHours > 0)
                 {
-                    disc.Offset(new Vector2 { X = 1 * vpWidth * -0.015625f });
-                    Memory.Icons.Draw(Icons.ID.Colon, 13, disc, new Vector2(2.90909090857143f), fade);
-                    disc.Offset(new Vector2 { X = (float)Math.Floor(Math.Log10((int)d.timeplayed.TotalHours) + 1) * vpWidth * -0.015625f });
-                    Memory.Icons.Draw((int)d.timeplayed.TotalHours, 0, 2, "D1", disc.Location.ToVector2(), new Vector2(2.90909090857143f), fade);
+                    disc.Offset(new Vector2 { X = 1 *X2 });
+                    Memory.Icons.Draw(Icons.ID.Colon, 13, disc, DiscScale, fade);
+                    disc.Offset(new Vector2 { X = (float)Math.Floor(Math.Log10((int)d.timeplayed.TotalHours) + 1) *X2 });
+                    Memory.Icons.Draw((int)d.timeplayed.TotalHours, 0, 2, "D1", disc.Location.ToVector2(), DiscScale, fade);
                 }
-                disc.Offset(new Vector2 { X = vpWidth * -0.0625f + vpWidth * -0.015625f });
-                Memory.Icons.Draw(Icons.ID.PLAY, 13, disc, new Vector2(2.90909090857143f), fade);
+                disc.Offset(new Vector2 { X = X3+X2 });
+                Memory.Icons.Draw(Icons.ID.PLAY, 13, disc, DiscScale, fade);
                 Rectangle locbox = new Rectangle
                 {
                     X = faceRect.Width + faceRect.X,
-                    Y = (int)(vpHeight * 0.129166666666667f),
-                    Width = dst.Width - faceRect.Width - faceRect.X,
-                    Height = (int)(vpHeight * 0.0916666666666667f),
+                    Y = (int)(OffScreenBuffer.Height * 0.19496855345912f),
+                    Width = OffScreenBuffer.Width - faceRect.Width - faceRect.X,
+                    Height = (int)(OffScreenBuffer.Height * 0.138364779874214f),
                 };
                 locbox.Offset(offset);
-                DrawBox(Memory.Strings.Read(Strings.FileID.AREAMES,0,d.LocationID).ReplaceRegion(), null, locbox, false, false, true);
+                DrawBox(null, null, locbox, false, false, true);
+                FF8String loc = Memory.Strings.Read(Strings.FileID.AREAMES, 0, d.LocationID).ReplaceRegion();
+                locbox.Offset(0.0297619047619048f * OffScreenBuffer.Width, 0.0440251572327044f * OffScreenBuffer.Height);
+                Memory.font.RenderBasicText(loc, locbox.Location, TextScale, 1, 0, fade, true);
+
             }
-            return new Tuple<Rectangle, Point>(dst, (dst.Location.ToVector2() + new Vector2(0, dst.Height / 2)).ToPoint());
+
+            dst.X = (int)(vpWidth * 0f);
+            dst.Y = (int)(vpHeight * 0.220833333333333f * ((block - 1) % 3));
+            dst.Width = (int)(vpWidth * 0.65625f);
+            dst.Height = (int)(vpHeight * 0.220833333333333f);
+            return new Tuple<Rectangle, Point>(dst, (dst.Location.ToVector2() + new Vector2(25f, dst.Height / 2)).ToPoint());
         }
 
         private static Tuple<Rectangle, Point> DrawBox(FF8String buffer, Icons.ID? title, Rectangle dst, bool indent = true, bool bottom = false, bool prescaled = false)
@@ -396,7 +412,9 @@ namespace FF8
             }
             else
             {
-                DrawPointer(BlockLocs[BlockLoc].Item2.Scale(scale), (sbyte)(10* scale.Y));
+                Point ptr = BlockLocs[BlockLoc].Item2;
+                ptr = ptr.Scale(scale);
+                DrawPointer(ptr);
             }
             Memory.SpriteBatchEnd();
         }
@@ -635,11 +653,12 @@ namespace FF8
                     State = MainMenuStates.LoadGameCheckingSlot;
                 }
             }
-
+            if (scale != lastscale && OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)
+                OffScreenBuffer.Dispose();
             if (OffScreenBuffer == null || OffScreenBuffer.IsDisposed)
                 //if you make these with out disposing enough times gfx driver crashes.
                 //happened many times if i left this running and had this just ran every draw call. heh.
-                OffScreenBuffer = new RenderTarget2D(Memory.graphics.GraphicsDevice, (int)(vpWidth * 0.65625f), (int)(vpHeight * 0.6625f), false, SurfaceFormat.Color, DepthFormat.None);
+                OffScreenBuffer = new RenderTarget2D(Memory.graphics.GraphicsDevice, (int)(vpWidth * 0.65625f *scale.X), (int)(vpHeight * 0.6625f*scale.Y), false, SurfaceFormat.Color, DepthFormat.None);
             return ret;
         }
 
