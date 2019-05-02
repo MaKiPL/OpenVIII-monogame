@@ -105,7 +105,7 @@ Requirements: MonoGame + Visual Studio
 
 `MonoGame.Framework.OpenGL`
 
-9. That's all. You can now compile the executable. Make sure you type path at `Memory:cs:67`
+9. That's all. You can now compile the executable. Make sure you add path to array at `WindowsGameLocationProvider.cs:36` or `LinuxGameLocationProvider.cs:18`
 
 ## Development guidelines
 
