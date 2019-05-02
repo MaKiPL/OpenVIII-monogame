@@ -94,11 +94,18 @@ namespace FF8
         /// </summary>
         internal static void Update()
         {
+            lastscale = scale;
+            scale = Memory.Scale();
             bool forceupdate = false;
+            Memory.SuppressDraw = true;
             if (LastActive != Memory.IsActive)
             {
                 forceupdate = true;
                 LastActive = Memory.IsActive;
+            }
+            if (lastscale != scale)
+            {
+                forceupdate = true;
             }
             if (Fade < 1.0f && State != MainMenuStates.NewGameChoosed)
             {
@@ -118,9 +125,9 @@ namespace FF8
                 case MainMenuStates.MainLobby:
                     Memory.IsMouseVisible = true;
                     Offset = new Vector2(-1000, 0);
-                    if (!UpdateMainLobby() && (lastfade == fade) && !forceupdate)
+                    if (UpdateMainLobby() || (lastfade != fade))
                     {
-                        Memory.SuppressDraw = true;
+                        forceupdate = true;
                     }
 
                     break;
@@ -131,9 +138,9 @@ namespace FF8
                     {
                         Offset = Vector2.SmoothStep(Offset, Vector2.Zero, .15f);
                     }
-                    if (!UpdateDebugLobby() && (lastfade == fade) && Offset == Vector2.Zero && !forceupdate)
+                    if (UpdateDebugLobby() || (lastfade != fade) || Offset != Vector2.Zero)
                     {
-                        Memory.SuppressDraw = true;
+                        forceupdate = true;
                     }
 
                     break;
@@ -163,9 +170,14 @@ namespace FF8
                     Memory.IsMouseVisible = false;
                     break;
 
-                default:
-                    goto case 0;
+                //default:
+                //    goto case 0;
             }
+            //disabled because if you resize the window the next update call undoes this before drawing happens.
+            //need a way to detect if drawing has happened before suppressing draw again.
+            //if(forceupdate)
+                Memory.SuppressDraw = false;
+
         }
 
         /// <summary>

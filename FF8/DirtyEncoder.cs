@@ -90,7 +90,28 @@ namespace FF8
         public bool MoveNext() => ++position <= Length;
         public void Reset() => position = 0;
         public IEnumerator GetEnumerator() => this;
+        public FF8String Append(FF8String end)
+        {
+            if (end != null && end.Length > 0)
+            {
+                Array.Resize(ref value, Length + end.Length);
+                Array.Copy(end, 0, value, Length, end.Length);
+            }
+            return this;
+        }
 
+        public static FF8String Combine(FF8String start,FF8String end)
+        {
+            if (end != null && end.Length > 0)
+            {
+                byte[] combine = new byte[start.Length + end.Length];
+                Array.Copy(start, 0, combine, 0, start.Length);
+                Array.Copy(end, 0, combine, start.Length, end.Length);
+                return combine;
+            }
+            else
+            return start;
+        }
         public FF8String ReplaceRegion()
         {
             int i = 0;
