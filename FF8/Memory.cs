@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace FF8
 {
-    internal class Memory
+    internal static class Memory
     {
         //monogame
         public static GraphicsDeviceManager graphics;
@@ -40,8 +40,8 @@ namespace FF8
                 targetX = graphics.GraphicsDevice.Viewport.Width;
             if (targetY == 0)
                 targetY = graphics.GraphicsDevice.Viewport.Height;
-            float h = targetX/ Width;
-            float v = targetY/ Height;
+            float h = targetX / Width;
+            float v = targetY / Height;
             switch (scaleMode)
             {
 #pragma warning disable CS0162 // Unreachable code detected
@@ -70,7 +70,7 @@ namespace FF8
         /// <summary>
         /// Stores current savestate. When you save this is wrote. When you load this is replaced.
         /// </summary>
-        public static Ff8files.Data State = new Ff8files.Data();
+        public static Saves.Data State = new Saves.Data();
         internal static ushort MusicIndex
         {
             get
@@ -145,7 +145,41 @@ namespace FF8
         public static int module = MODULE_OVERTURE_DEBUG;
 
         public static string FF8DIR => GameLocation.Current.DataPath;
+        public static string FF8DIRdata { get; private set; }
+        public static string FF8DIRdata_lang { get; private set; }
 
+        public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
+        {
+            FF8DIRdata = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "Data"));
+            string testdir = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIRdata, "lang-en"));
+            FF8DIRdata_lang = Directory.Exists(testdir) ? testdir : FF8DIRdata;
+
+            Memory.graphics = graphics;
+            Memory.spriteBatch = spriteBatch;
+            Memory.content = content;
+
+            Memory.DirtyEncoding = new DirtyEncoding();
+            Memory.FieldHolder.FieldMemory = new int[1024];
+
+            Memory.font = new Font(); //this initializes the fonts and drawing system- holds fonts in-memory
+            Memory.Strings = new Strings();
+#if DEBUG
+            //export the string data so you can find where the string you want is.
+            // then you can Memory.Strings.Read() it :)
+            if (Directory.Exists(@"d:\"))
+            {
+                Memory.Strings.Dump(Strings.FileID.MNGRP, Path.Combine(@"d:\", "MNGRPdump.txt"));
+                Memory.Strings.Dump(Strings.FileID.AREAMES, Path.Combine(@"d:\", "AREAMESdump.txt"));
+                Memory.Strings.Dump(Strings.FileID.NAMEDIC, Path.Combine(@"d:\", "NAMEDICdump.txt"));
+                Memory.Strings.Dump(Strings.FileID.KERNEL, Path.Combine(@"d:\", "KERNELdump.txt"));
+            }
+
+            Memory.Cards = new Cards();
+            Memory.Faces = new Faces();
+            Memory.Icons = new Icons();
+
+#endif
+        }
         /// <summary>
         /// If true by the end of Update() will skip the next Draw()
         /// </summary>
@@ -664,12 +698,12 @@ namespace FF8
 
         public static class Archives
         {
-            public static string A_BATTLE = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "battle"));
-            public static string A_FIELD = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "field"));
-            public static string A_MAGIC = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "magic"));
-            public static string A_MAIN = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "main"));
-            public static string A_MENU = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "menu"));
-            public static string A_WORLD = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "world"));
+            public static string A_BATTLE = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "battle"));
+            public static string A_FIELD = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "field"));
+            public static string A_MAGIC = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "magic"));
+            public static string A_MAIN = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "main"));
+            public static string A_MENU = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "menu"));
+            public static string A_WORLD = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "world"));
 
             public const string B_FileList = ".fl";
             public const string B_FileIndex = ".fi";

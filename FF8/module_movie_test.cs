@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 
 namespace FF8
@@ -22,8 +23,8 @@ namespace FF8
         private const int STATE_RESET = 7;
 
         private static readonly string[] movieDirs = {
-            MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../movies")), //this folder has most movies
-            MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "movies"))}; //this folder has rest of movies
+            MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "movies")), //this folder has most movies
+            MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata_lang, "movies"))}; //this folder has rest of movies
         private static List<string> _movies = new List<string>();
         /// <summary>
         /// Movie file list
@@ -36,8 +37,13 @@ namespace FF8
                 {
                     foreach (string s in movieDirs)
                     {
-                        if(Directory.Exists(s))
-                        _movies.AddRange(Directory.GetFiles(s, "*.avi"));
+                        if (Directory.Exists(s))
+                        {
+                            _movies.AddRange(Directory.GetFiles(s).Where(x => 
+                            x.EndsWith(".avi",StringComparison.OrdinalIgnoreCase) ||
+                            x.EndsWith(".mkv", StringComparison.OrdinalIgnoreCase) ||
+                            x.EndsWith(".bik", StringComparison.OrdinalIgnoreCase)));
+                        }
                     }
                 }
                 return _movies;

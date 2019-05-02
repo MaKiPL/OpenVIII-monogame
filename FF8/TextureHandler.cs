@@ -128,7 +128,7 @@ namespace FF8
         {
             string bn = Path.GetFileNameWithoutExtension(path);
             string prefix = bn.Substring(0, 2);
-            string pngpath = Path.Combine(Memory.FF8DIR, "..", "..", "textures", prefix, bn);
+            string pngpath = Path.Combine(Memory.FF8DIR, "textures", prefix, bn);
             string suffix = pallet > -1 ? $"{pallet + 13}" : "";
             suffix += ".png";
             if (Directory.Exists(pngpath))

@@ -15,9 +15,9 @@ namespace FF8
 
         private readonly HardcodedGameLocationProvider _hardcoded = new HardcodedGameLocationProvider(new[]
         {
-            "/home/robert/FINAL_FANTASY_VIII/Data/lang-en",
-            "/media/griever/Data/SteamLibrary/steamapps/common/FINAL FANTASY VIII/Data/lang-en",
-            "/home/griever/.PlayOnLinux/wineprefix/Steam/drive_c/Program Files/Steam/steamapps/common/FINAL FANTASY VIII/Data/lang-en"
+            "/home/robert/FINAL_FANTASY_VIII",
+            "/media/griever/Data/SteamLibrary/steamapps/common/FINAL FANTASY VIII",
+            "/home/griever/.PlayOnLinux/wineprefix/Steam/drive_c/Program Files/Steam/steamapps/common/FINAL FANTASY VIII"
         });
     }
 }

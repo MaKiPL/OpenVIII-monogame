@@ -52,6 +52,9 @@ namespace FF8
         }
 
         public static Point RoundedPoint(this Vector2 v) => new Point((int)Math.Round(v.X), (int)Math.Round(v.Y));
+
+        public static Point CeilingPoint(this Vector2 v) => v.Ceiling().ToPoint();
+        public static Point FloorPoint(this Vector2 v) => v.Floor().ToPoint();
         public static Vector2 Round(this Vector2 v) => new Vector2 ((float)Math.Round(v.X), (float)Math.Round(v.Y));
         public static Vector2 Ceiling(this Vector2 v) => new Vector2((float)Math.Ceiling(v.X), (float)Math.Ceiling(v.Y));
         public static Vector2 Floor(this Vector2 v) => new Vector2((float)Math.Floor(v.X), (float)Math.Floor(v.Y));
@@ -175,7 +178,7 @@ namespace FF8
 
         #region Methods
 
-        private static Tuple<Rectangle, Point> DrawBlock(int block, Ff8files.Data d)
+        private static Tuple<Rectangle, Point> DrawBlock(int block, Saves.Data d)
         {
             block++;
             Rectangle dst = new Rectangle
@@ -350,7 +353,7 @@ namespace FF8
                 for (int block = 0 + 3 * (Blockpage); block < 3 + 3 * (Blockpage); block++)
                 {
 
-                    Ff8files.Data d = Ff8files.FileList == null ? null : Ff8files.FileList[SlotLoc, block];
+                    Saves.Data d = Saves.FileList == null ? null : Saves.FileList[SlotLoc, block];
                     Tuple<Rectangle, Point> b = DrawBlock(block, d);
                     //cords returned by drawblock assume being in the offscreen buffer.
                     //Which is the size of the 3 blocks. So we need to offset

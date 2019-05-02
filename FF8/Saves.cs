@@ -288,7 +288,7 @@ namespace FF8
     /// antiquechrono was helping. he even wrote a whole class using kaitai. Though I donno if we
     /// wanna use kaitai.
     /// </remarks>
-    internal static class Ff8files
+    internal static class Saves
     {
         public class Data
         {
@@ -905,25 +905,46 @@ namespace FF8
 
         //C:\Users\pcvii\OneDrive\Documents\Square Enix\FINAL FANTASY VIII Steam\user_1727519
         // might crash linux. just trying to get something working.
-        public static string SaveFolder { get; private set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Square Enix", "FINAL FANTASY VIII Steam");
+        public static string SteamFolder { get; private set; }
+        public static string CD2000Folder { get; private set; }
 
         public static Data[,] FileList { get; private set; }
 
         public static void Init()
         {
-            if (!Directory.Exists(SaveFolder)) Directory.CreateDirectory(SaveFolder);
-            string[] dirs = Directory.GetDirectories(SaveFolder);
-            if (dirs.Length > 0)
+            FileList = new Data[2, 30];
+            CD2000Folder = Path.Combine(Memory.FF8DIR, "Save");
+            SteamFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Square Enix", "FINAL FANTASY VIII Steam");
+            if (Directory.Exists(SteamFolder))
             {
-                SaveFolder = Directory.GetDirectories(SaveFolder)[0];
-                FileList = new Data[2, 30];
-                foreach (string file in Directory.EnumerateFiles(SaveFolder))
+                string[] dirs = Directory.GetDirectories(SteamFolder);
+                if (dirs.Length > 0)
                 {
-                    Match n = Regex.Match(file, @"slot(\d+)_save(\d+).ff8");
-
-                    if (n.Success && n.Groups.Count > 0)
+                    SteamFolder = Directory.GetDirectories(SteamFolder)[0];
+                    foreach (string file in Directory.EnumerateFiles(SteamFolder))
                     {
-                        FileList[int.Parse(n.Groups[1].Value) - 1, int.Parse(n.Groups[2].Value) - 1] = read(file);
+                        Match n = Regex.Match(file, @"slot(\d+)_save(\d+).ff8");
+
+                        if (n.Success && n.Groups.Count > 0)
+                        {
+                            FileList[int.Parse(n.Groups[1].Value) - 1, int.Parse(n.Groups[2].Value) - 1] = read(file);
+                        }
+                    }
+                }
+            }
+            else if (Directory.Exists(CD2000Folder))
+            {
+                string[] files = Directory.GetFiles(CD2000Folder, "*", SearchOption.AllDirectories);
+                if (files.Length > 0)
+                {
+                    foreach (string file in files)
+                    {
+                        Match n = Regex.Match(file, @"Slot(\d+)[\\/]save(\d+)");
+
+                        if (n.Success && n.Groups.Count > 0)
+                        {
+                            FileList[int.Parse(n.Groups[1].Value) - 1, int.Parse(n.Groups[2].Value) - 1] = read(file);
+                        }
                     }
                 }
             }
