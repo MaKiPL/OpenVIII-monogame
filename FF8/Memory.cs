@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace FF8
 {
-    internal class Memory
+    internal static class Memory
     {
         //monogame
         public static GraphicsDeviceManager graphics;
@@ -40,8 +40,8 @@ namespace FF8
                 targetX = graphics.GraphicsDevice.Viewport.Width;
             if (targetY == 0)
                 targetY = graphics.GraphicsDevice.Viewport.Height;
-            float h = targetX/ Width;
-            float v = targetY/ Height;
+            float h = targetX / Width;
+            float v = targetY / Height;
             switch (scaleMode)
             {
 #pragma warning disable CS0162 // Unreachable code detected
@@ -148,7 +148,7 @@ namespace FF8
         public static string FF8DIRdata { get; private set; }
         public static string FF8DIRdata_lang { get; private set; }
 
-        public static void Init(GraphicsDeviceManager graphics,SpriteBatch spriteBatch,ContentManager content)
+        public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
         {
             FF8DIRdata = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "Data"));
             string testdir = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIRdata, "lang-en"));
