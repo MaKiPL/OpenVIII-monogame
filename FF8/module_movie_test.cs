@@ -39,7 +39,7 @@ namespace FF8
                     {
                         if (Directory.Exists(s))
                         {
-                            _movies.AddRange(Directory.GetFiles(s).Where(x => 
+                            _movies.AddRange(Directory.GetFiles(s,"*",SearchOption.AllDirectories).Where(x => 
                             x.EndsWith(".avi",StringComparison.OrdinalIgnoreCase) ||
                             x.EndsWith(".mkv", StringComparison.OrdinalIgnoreCase) ||
                             x.EndsWith(".bik", StringComparison.OrdinalIgnoreCase)));
