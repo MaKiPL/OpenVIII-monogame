@@ -8,6 +8,11 @@ namespace FF8
     {
         private const String SteamRegistyPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 39150";
         private const String SteamGamePathTag = @"InstallLocation";
+        /// <summary>
+        /// Supplied from LordUrQuan
+        /// </summary>
+        private const String CD2000RegistyPath = @"SOFTWARE\Wow6432Node\Square Soft, Inc\FINAL FANTASY VIII\1.00";
+        private const String CD2000GamePathTag = @"AppPath";
 
         public GameLocation GetGameLocation()
         {
@@ -25,8 +30,16 @@ namespace FF8
                         return new GameLocation(dataPath);
                 }
             }
+            using (RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
+            using (RegistryKey registryKey = localMachine.OpenSubKey(CD2000RegistyPath))
+            {
+                String installLocation = (String)registryKey.GetValue(CD2000GamePathTag);
+                String dataPath = Path.Combine(installLocation, "Data"); //no lang-en on cd version.
+                if (Directory.Exists(dataPath))
+                    return new GameLocation(dataPath);
+            }
 
-            throw new DirectoryNotFoundException($"Cannot find game directory." +
+                throw new DirectoryNotFoundException($"Cannot find game directory." +
                                                  $"Add your own path to the {nameof(WindowsGameLocationProvider)} type or fix a registration in the registry:" +
                                                  $"{SteamRegistyPath}.{SteamGamePathTag}");
         }
