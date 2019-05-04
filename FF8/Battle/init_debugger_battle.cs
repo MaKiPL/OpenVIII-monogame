@@ -9,7 +9,6 @@ namespace FF8
     {
         public struct EncounterFlag
         {
-            private byte @switch;
             public bool CantEspace;
             public bool NoVictorySequence;
             public bool ShowTimer;
@@ -17,7 +16,7 @@ namespace FF8
             public bool SkipEXPScreen;
             public bool SurpriseAttack;
             public bool BackAttacked;
-            public bool IsRandomBattle;
+            public bool isScriptedBattle;
 
             public byte Switch { set => SetFlags(value); }
 
@@ -30,7 +29,7 @@ namespace FF8
                 SkipEXPScreen = (@switch >> 4 & 1) == 1;
                 SurpriseAttack = (@switch >> 5 & 1) == 1;
                 BackAttacked = (@switch >> 6 & 1) == 1;
-                IsRandomBattle = (@switch >> 7 & 1) == 1;
+                isScriptedBattle = (@switch >> 7 & 1) == 1;
             }
         }
 

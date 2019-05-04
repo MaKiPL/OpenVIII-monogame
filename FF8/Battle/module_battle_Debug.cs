@@ -18,6 +18,7 @@ namespace FF8
         private static Texture2D[] textures;
 
         static List<EnemyInstanceInformation> EnemyInstances;
+        static List<CharacterInstanceInformation> CharacterInstances;
 
         //skyRotating floats are hardcoded
         private static readonly ushort[] skyRotators = { 0x4, 0x4, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x0, 0x4, 0x4, 0x0, 0x10, 0x10, 0x0, 0x0, 0x0, 0x0, 0x0, 0x8, 0x2, 0x0, 0x0, 0x8, 0xfffc, 0xfffc, 0x0, 0x0, 0x0, 0x4, 0x0, 0x8, 0x0, 0x4, 0x4, 0x0, 0x4, 0x0, 0x4, 0xfffc, 0x8, 0xfffc, 0xfffc, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x0, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x20, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x8, 0x0, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x8, 0xfffc, 0x4, 0x4, 0x4, 0x4, 0x8, 0x8, 0x4, 0xfffc, 0xfffc, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x4, 0x4, 0x4, 0x4, 0xfffc, 0x0, 0x0, 0x0, 0x0, 0x8, 0x8, 0x0, 0x8, 0xfffc, 0x0, 0x0, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x4, 0x4, 0x4, 0x0, 0x0, 0x8, 0x0, 0x8, 0x8 };
@@ -60,6 +61,20 @@ namespace FF8
             public bool bIsHidden;
             public bool bIsActive;
             public bool bIsUntargetable;
+            public AnimationSystem animationSystem;
+        }
+
+        /// <summary>
+        /// CharacterInstanceInformation should only be used for battle-exclusive data. Manipulating HP, GFs, junctions and other character-specific
+        /// things should happen outside battle, because such information about characters is shared between almost all modules. 
+        /// This field contains information about the current status of battle rendering like animation frames/ rendering flags/ effects attached
+        /// </summary>
+        private struct CharacterInstanceInformation
+        {
+            public CharacterData Data;
+            public int characterId; //0 is Whatever guy
+            public bool bIsHidden; //GF sequences, magic...
+            public AnimationSystem animationSystem;
         }
 
 
@@ -212,8 +227,10 @@ namespace FF8
                     FPSCamera();
                     break;
             }
-            if (Input.GetInputDelayed(Keys.F1))
+            if (Input.Button(Keys.F1))
                 DEBUGframe += 1;
+            if (Input.Button(Keys.F2))
+                AddAnimationToQueue(Debug_battleDat.EntityType.Character, 0, DEBUGframe);
         }
 
         public static void Draw()
@@ -224,6 +241,7 @@ namespace FF8
                     DrawGeometry();
                     DrawMonsters();
                     DrawCharactersWeapons();
+                    UpdateFrames();
                     break;
 
             }
@@ -242,17 +260,17 @@ namespace FF8
             effect.TextureEnabled = true;
 
             //CHARACTER
-            for (int n = 0; n < charactersData.Length; n++)
+            for (int n = 0; n < CharacterInstances.Count; n++)
             {
-                frame[n+monstersData.Length] = frame[n+monstersData.Length] == charactersData[n].character.animHeader.animations[0].cFrames ? 0 : frame[n+monstersData.Length];
-                for (int i = 0; i < charactersData[n].character.geometry.cObjects; i++)
+                CheckAnimationFrame(Debug_battleDat.EntityType.Character, n);
+                for (int i = 0; i < CharacterInstances[n].Data.character.geometry.cObjects; i++)
                 {
-                    var a = charactersData[n].character.GetVertexPositions(i, new Vector3(-10 + n * 10, 10, -40),Quaternion.CreateFromYawPitchRoll(3f,0,0),0, frame[n+monstersData.Length], frameperFPS / FPS); //DEBUG
+                    var a = CharacterInstances[n].Data.character.GetVertexPositions(i, new Vector3(-10 + n * 10, 10, -40),Quaternion.CreateFromYawPitchRoll(3f,0,0), CharacterInstances[n].animationSystem.animationId, CharacterInstances[n].animationSystem.animationFrame, frameperFPS / FPS); //DEBUG
                     if (a == null || a.Item1.Length == 0)
                         return;
                     for (int k = 0; k < a.Item1.Length / 3; k++)
                     {
-                        ate.Texture = charactersData[n].character.textures.textures[a.Item2[k]];
+                        ate.Texture = CharacterInstances[n].Data.character.textures.textures[a.Item2[k]];
                         foreach (var pass in ate.CurrentTechnique.Passes)
                         {
                             pass.Apply();
@@ -263,17 +281,17 @@ namespace FF8
                 }
             }
             //WEAPON
-            for (int n = 0; n < charactersData.Length; n++)
+            for (int n = 0; n < CharacterInstances.Count; n++)
             {
-                frame[n + monstersData.Length+charactersData.Length] = frame[n + monstersData.Length + charactersData.Length] == charactersData[n].weapon.animHeader.animations[0].cFrames ? 0 : frame[n+monstersData.Length+charactersData.Length];
-                for (int i = 0; i < charactersData[n].weapon.geometry.cObjects; i++)
+                CheckAnimationFrame(Debug_battleDat.EntityType.Weapon, n);
+                for (int i = 0; i < CharacterInstances[n].Data.weapon.geometry.cObjects; i++)
                 {
-                    var a = charactersData[n].weapon.GetVertexPositions(i, new Vector3(-10+n*10,10, -40), Quaternion.CreateFromYawPitchRoll(3f, 0, 0),0, frame[n+monstersData.Length+charactersData.Length], frameperFPS / FPS); //DEBUG
+                    var a = CharacterInstances[n].Data.weapon.GetVertexPositions(i, new Vector3(-10+n*10,10, -40), Quaternion.CreateFromYawPitchRoll(3f, 0, 0), CharacterInstances[n].animationSystem.animationId, CharacterInstances[n].animationSystem.animationFrame, frameperFPS / FPS); //DEBUG
                     if (a == null || a.Item1.Length == 0)
                         return;
                     for (int k = 0; k < a.Item1.Length / 3; k++)
                     {
-                        ate.Texture = charactersData[n].weapon.textures.textures[a.Item2[k]];
+                        ate.Texture = CharacterInstances[n].Data.weapon.textures.textures[a.Item2[k]];
                         foreach (var pass in ate.CurrentTechnique.Passes)
                         {
                             pass.Apply();
@@ -285,7 +303,60 @@ namespace FF8
             }
         }
 
-        private static int[] frame;
+        private static void CheckAnimationFrame(Debug_battleDat.EntityType type, int n)
+        {
+            Debug_battleDat.Animation animationSystem;
+            switch(type)
+            {
+                case Debug_battleDat.EntityType.Monster:
+                    animationSystem = EnemyInstances[n].Data.animHeader.animations[EnemyInstances[n].animationSystem.animationId];
+                    if (EnemyInstances[n].animationSystem.animationFrame >= animationSystem.cFrames)
+                    {
+                        var InstanceInformationProvider = EnemyInstances[n];
+                        InstanceInformationProvider.animationSystem.animationFrame = 0;
+                        if (EnemyInstances[n].animationSystem.AnimationQueue.Count > 0)
+                        {
+                            InstanceInformationProvider.animationSystem.animationId = EnemyInstances[n].animationSystem.AnimationQueue.First();
+                            EnemyInstances[n].animationSystem.AnimationQueue.RemoveAt(0);
+                        }
+                        EnemyInstances[n] = InstanceInformationProvider;
+                    }
+                    return;
+                case Debug_battleDat.EntityType.Character:
+                case Debug_battleDat.EntityType.Weapon:
+                    animationSystem = CharacterInstances[n].Data.character.animHeader.animations[CharacterInstances[n].animationSystem.animationId];
+                    if (CharacterInstances[n].animationSystem.animationFrame >= animationSystem.cFrames)
+                    {
+                        var InstanceInformationProvider = CharacterInstances[n];
+                        InstanceInformationProvider.animationSystem.animationFrame = 0;
+                        if (CharacterInstances[n].animationSystem.AnimationQueue.Count > 0)
+                        {
+                            InstanceInformationProvider.animationSystem.animationId = CharacterInstances[n].animationSystem.AnimationQueue.First();
+                            CharacterInstances[n].animationSystem.AnimationQueue.RemoveAt(0);
+                        }
+                        CharacterInstances[n] = InstanceInformationProvider;
+                    }
+                    return;
+                default:
+                    return;
+            }
+        }
+
+
+
+        /// <summary>
+        /// Animation system. Decided to go for struct, so I can attach it to instance and manipulate easily grouped. It's also open for modifications
+        /// </summary>
+        private struct AnimationSystem
+        {
+            public int animationId;
+            public int animationFrame;
+            public bool bStopAnimation; //pertification placeholder? 
+            public List<int> AnimationQueue;
+        }
+
+        
+
         public static int DEBUGframe = 0;
         private static void DrawMonsters()
         {
@@ -296,29 +367,17 @@ namespace FF8
             ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
             effect.TextureEnabled = true;
 
-            float tick = Memory.gameTime.ElapsedGameTime.Milliseconds;
-                frameperFPS += tick;
-                if (frameperFPS > FPS)
-                {
-                for (int x = 0; x < frame.Length; x++)
-                    frame[x] += (int)(frameperFPS/FPS);
-                frameperFPS = 0.0f;
-                }
-
             if (EnemyInstances == null)
                 return;
             for (int n = 0; n < EnemyInstances.Count; n++)
             {
-                if(EnemyInstances[n].Data.GetId == 127)
+                if (EnemyInstances[n].Data.GetId == 127)
                 {
                     //TODO;
                     continue;
                 }
-                //TODO issue #43
-                frame[n] = frame[n] == EnemyInstances[n].Data.animHeader.animations[0].cFrames ? 0 : 
-                    frame[n] > EnemyInstances[n].Data.animHeader.animations[0].cFrames ? 0 : frame[n];
-                //End of TODO issue #43
 
+                CheckAnimationFrame(Debug_battleDat.EntityType.Monster, n);
 
                 var enemyPosition = Memory.encounters[Memory.battle_encounter].enemyCoordinates.GetEnemyCoordinateByIndex(EnemyInstances[n].index);
 
@@ -328,9 +387,9 @@ namespace FF8
                         objectId: i,
                         position: enemyPosition.GetVector(),
                         rotation: Quaternion.CreateFromYawPitchRoll(0, 0, 0),
-                        animationId: 0, //Refer to issue #43 on GitHub
-                        animationFrame: frame[n],
-                        step: frameperFPS/FPS);
+                        animationId: EnemyInstances[n].animationSystem.animationId, //Refer to issue #43 on GitHub
+                        animationFrame: EnemyInstances[n].animationSystem.animationFrame,
+                        step: frameperFPS / FPS);
                     if (a == null || a.Item1.Length == 0)
                         return;
                     for (int k = 0; k < a.Item1.Length / 3; k++)
@@ -340,10 +399,87 @@ namespace FF8
                         {
                             pass.Apply();
                             Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                            vertexData: a.Item1, vertexOffset: k*3, primitiveCount: 1);
+                            vertexData: a.Item1, vertexOffset: k * 3, primitiveCount: 1);
                         }
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Increments animation frames by N, where N is equal to int(deltaTime/FPS).
+        /// 15FPS is one frame per ~66 miliseconds. Therefore if deltaTime hits at least:
+        /// below 33, then frame gets interpolated
+        /// above 122, then frame gets skipped (by x/66)
+        /// </summary>
+        private static void UpdateFrames()
+        {
+            float tick = Memory.gameTime.ElapsedGameTime.Milliseconds;
+            frameperFPS += tick;
+            if (frameperFPS > FPS)
+            {
+                for (int x = 0; x < EnemyInstances.Count; x++)
+                {
+                    var InstanceInformationProvider = EnemyInstances[x];
+                    InstanceInformationProvider.animationSystem.animationFrame++;
+                    EnemyInstances[x] = InstanceInformationProvider;
+                }
+                for (int x = 0; x < CharacterInstances.Count; x++)
+                {
+                    var InstanceInformationProvider = CharacterInstances[x];
+                    InstanceInformationProvider.animationSystem.animationFrame++;
+                    CharacterInstances[x] = InstanceInformationProvider;
+                }
+                frameperFPS = 0.0f;
+            }
+        }
+
+        /// <summary>
+        /// Plays requested animation for given entity immidiately (without waiting for current animation to stop if have any queued animations)
+        /// </summary>
+        /// <param name="entityType">Provide either Monster or Character/weapon</param>
+        /// <param name="nIndex">Index of entityTypeInstance. Monster is monsterInstances, character is CharacterInstances</param>
+        /// <param name="newAnimId">self explanatory</param>
+        public static void PlayAnimationImmidiately(Debug_battleDat.EntityType entityType, int nIndex, int newAnimId)
+        {
+
+            switch(entityType)
+            {
+                case Debug_battleDat.EntityType.Monster:
+                    EnemyInstanceInformation MInstanceInformationProvider = EnemyInstances[nIndex];
+                    MInstanceInformationProvider.animationSystem.animationId = newAnimId;
+                    MInstanceInformationProvider.animationSystem.animationFrame = 0;
+                    EnemyInstances[nIndex] = MInstanceInformationProvider;
+                    return;
+                case Debug_battleDat.EntityType.Character:
+                case Debug_battleDat.EntityType.Weapon:
+                    CharacterInstanceInformation CInstanceInformationProvider = CharacterInstances[nIndex];
+                    CInstanceInformationProvider.animationSystem.animationId = newAnimId;
+                    CInstanceInformationProvider.animationSystem.animationFrame = 0;
+                    CharacterInstances[nIndex] = CInstanceInformationProvider;
+                    return;
+                default:
+                    return;
+            }
+        }
+
+        public static void AddAnimationToQueue(Debug_battleDat.EntityType entityType, int nIndex, int newAnimId)
+        {
+            switch (entityType)
+            {
+                case Debug_battleDat.EntityType.Monster:
+                    EnemyInstanceInformation MInstanceInformationProvider = EnemyInstances[nIndex];
+                    MInstanceInformationProvider.animationSystem.AnimationQueue.Add(newAnimId);
+                    EnemyInstances[nIndex] = MInstanceInformationProvider;
+                    return;
+                case Debug_battleDat.EntityType.Character:
+                case Debug_battleDat.EntityType.Weapon:
+                    CharacterInstanceInformation CInstanceInformationProvider = CharacterInstances[nIndex];
+                    CInstanceInformationProvider.animationSystem.AnimationQueue.Add(newAnimId);
+                    CharacterInstances[nIndex] = CInstanceInformationProvider;
+                    return;
+                default:
+                    return;
             }
         }
 
@@ -354,8 +490,6 @@ namespace FF8
         public static void FPSCamera()
         {
             #region FPScamera
-            float x_shift = 0.0f, y_shift = 0.0f, leftdistX = 0.0f, leftdistY = 0.0f;
-
             //speedcontrols
             //+ to increase
             //- to decrease
@@ -372,10 +506,10 @@ namespace FF8
             if (Input.Button(Keys.Multiply)) maxMoveSpeed = defaultmaxMoveSpeed;
 
             //speed is effected by the milliseconds between frames. so alittle goes a long way. :P
-            x_shift = Input.Distance(Buttons.MouseXjoy, maxLookSpeed);
-            y_shift = Input.Distance(Buttons.MouseYjoy, maxLookSpeed);
-            leftdistX = Math.Abs(Input.Distance(Buttons.LeftStickX, maxMoveSpeed));
-            leftdistY = Math.Abs(Input.Distance(Buttons.LeftStickY, maxMoveSpeed));
+            float x_shift = Input.Distance(Buttons.MouseXjoy, maxLookSpeed);
+            float y_shift = Input.Distance(Buttons.MouseYjoy, maxLookSpeed);
+            float leftdistX = Math.Abs(Input.Distance(Buttons.LeftStickX, maxMoveSpeed));
+            float leftdistY = Math.Abs(Input.Distance(Buttons.LeftStickY, maxMoveSpeed));
             x_shift += Input.Distance(Buttons.RightStickX, maxLookSpeed);
             y_shift += Input.Distance(Buttons.RightStickY, maxLookSpeed);
             Yshift -= y_shift;
@@ -469,9 +603,7 @@ namespace FF8
 
             Memory.SpriteBatchStartAlpha();
             Memory.font.RenderBasicText(Font.CipherDirty($"Encounter ready at: {Memory.battle_encounter}"), 0, 0, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"Camera: {Memory.encounters[Memory.battle_encounter].PrimaryCamera}"), 20, 30, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"Debug variable: {DEBUGframe}"), 20, 30 * 2, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"frame[n]: {string.Join(" ", frame)}"), 20, 30 * 3, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"Debug variable: {DEBUGframe}"), 20, 30 * 1, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
         }
 
@@ -636,11 +768,9 @@ namespace FF8
 
             ReadTexture(MainSection.TexturePointer);
 
+
             ReadCharacters();
             ReadMonster();
-
-            //for frames indexes monsters are first, then after n monsters characters appear with weapons
-            frame = new int[monstersData.Length + charactersData.Length*2];
 
             battleModule++;
         }
@@ -650,19 +780,34 @@ namespace FF8
 
         private static void ReadCharacters()
         {
-            //DEBUG - party provider here
-            charactersData = new CharacterData[2]; //Testing
-            charactersData[0] = new CharacterData
+            CharacterInstances = new List<CharacterInstanceInformation>
             {
-                character = new Debug_battleDat(0, Debug_battleDat.EntityType.Character, 1),
-                weapon = new Debug_battleDat(0, Debug_battleDat.EntityType.Weapon, 0)
-            };
-            charactersData[1] = new CharacterData
-            {
-                character = new Debug_battleDat(6, Debug_battleDat.EntityType.Character, 14),
-                weapon = new Debug_battleDat(6, Debug_battleDat.EntityType.Weapon, 33)
+                new CharacterInstanceInformation()
+                {
+                    Data = ReadCharacterData(0,0,0),
+                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
+                    characterId = 0,
+                },
+                new CharacterInstanceInformation()
+                {
+                    Data = ReadCharacterData(2,6,13),
+                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
+                    characterId = 2
+                },
+                new CharacterInstanceInformation()
+                {
+                    Data = ReadCharacterData(3,7,18),
+                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
+                    characterId = 0
+                }
             };
         }
+
+        private static CharacterData ReadCharacterData(int characterId, int alternativeCostumeId, int weaponId) => new CharacterData()
+        {
+            character = new Debug_battleDat(characterId, Debug_battleDat.EntityType.Character, alternativeCostumeId),
+            weapon = new Debug_battleDat(characterId, Debug_battleDat.EntityType.Weapon, weaponId)
+        };
 
         /// <summary>
         /// This method is responsible to read/parse the enemy data. It holds the result in monstersData[]
@@ -689,7 +834,9 @@ namespace FF8
                         bIsHidden =MakiExtended.GetBit(enc.HiddenEnemies, 7-i),
                         bIsActive = true,
                         index = (byte)(7-i),
-                        bIsUntargetable = MakiExtended.GetBit(enc.UntargetableEnemy, 7-i)});
+                        bIsUntargetable = MakiExtended.GetBit(enc.UntargetableEnemy, 7-i),
+                        animationSystem = new AnimationSystem() { AnimationQueue= new List<int>()}}
+                        );
             
         }
 

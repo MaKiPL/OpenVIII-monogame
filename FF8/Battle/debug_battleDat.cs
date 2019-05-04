@@ -42,7 +42,7 @@ namespace FF8
             public ushort unk7;
             public Bone[] bones;
 
-            public Vector3 GetScale => new Vector3(scale/V*10, scale/V*10, scale/V*10);
+            public Vector3 GetScale => new Vector3(scale/V*12, scale/V*12, scale/V*12);
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 48)]
