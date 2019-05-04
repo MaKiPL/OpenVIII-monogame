@@ -65,6 +65,7 @@ namespace FF8
 
             public Coordinate GetEnemyCoordinateByIndex(byte index)
             {
+                Console.WriteLine($"GRABBED FOR: {index}");
                 switch (index)
                 {
                     case 0:
@@ -96,9 +97,9 @@ namespace FF8
             public short z;
 
             public Vector3 GetVector() => new Vector3(
-                x / (Debug_battleDat.V / 8),
-                y / (Debug_battleDat.V / 8),
-                -z / (Debug_battleDat.V / 8));
+                x /256f,
+                y /256f ,
+                z /256f );
         }
 
 

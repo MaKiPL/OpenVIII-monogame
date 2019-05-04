@@ -59,7 +59,7 @@ namespace FF8
             public byte index;
             public bool bIsHidden;
             public bool bIsActive;
-            public bool bisTargetable;
+            public bool bIsUntargetable;
         }
 
 
@@ -326,7 +326,7 @@ namespace FF8
                 {
                     var a = EnemyInstances[n].Data.GetVertexPositions(
                         objectId: i,
-                        position: enemyPosition.GetVector() + new Vector3(0,2.5f,0),
+                        position: enemyPosition.GetVector(),
                         rotation: Quaternion.CreateFromYawPitchRoll(0, 0, 0),
                         animationId: 0, //Refer to issue #43 on GitHub
                         animationFrame: frame[n],
@@ -689,7 +689,7 @@ namespace FF8
                         bIsHidden =MakiExtended.GetBit(enc.HiddenEnemies, 7-i),
                         bIsActive = true,
                         index = (byte)(7-i),
-                        bisTargetable = MakiExtended.GetBit(enc.UntargetableEnemy, 7-i)});
+                        bIsUntargetable = MakiExtended.GetBit(enc.UntargetableEnemy, 7-i)});
             
         }
 
