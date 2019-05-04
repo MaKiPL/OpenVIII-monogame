@@ -42,9 +42,11 @@ namespace FF8
             public ushort unk4;
             public Bone[] bones;
 
-            public float ScaleX { get => scaleX/V; set => scaleX = (ushort)value; }
-            public float ScaleY { get => scaleY/V; set => scaleY = (ushort)value; }
-            public float ScaleZ { get => scaleZ/V; set => scaleZ = (ushort)value; }
+            public float ScaleX { get => scaleX; set => scaleX = (ushort)value; }
+            public float ScaleY { get => scaleY; set => scaleY = (ushort)value; }
+            public float ScaleZ { get => scaleZ; set => scaleZ = (ushort)value; }
+
+            public Vector3 GetScale => new Vector3(1, 1, 1);
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 48)]
@@ -348,8 +350,8 @@ namespace FF8
                 matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
                 matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
                 matrix.M31 * tuple.Item1.X + matrix.M43 + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
-            rootFramePos = Vector3.Transform(rootFramePos, Matrix.CreateScale(GetId == 92 ? 6 : 1)); //TODO
-            nextFramePos = Vector3.Transform(nextFramePos, Matrix.CreateScale(GetId == 92 ? 6 : 1)); //TODO
+            rootFramePos = Vector3.Transform(rootFramePos, Matrix.CreateScale(skeleton.GetScale));
+            nextFramePos = Vector3.Transform(nextFramePos, Matrix.CreateScale(skeleton.GetScale));
             rootFramePos = Vector3.SmoothStep(rootFramePos, nextFramePos, step);
             return new Tuple<Vector3, int>(rootFramePos, tuple.Item2);
         }

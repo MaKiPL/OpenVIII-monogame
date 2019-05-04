@@ -305,6 +305,8 @@ namespace FF8
                 frameperFPS = 0.0f;
                 }
 
+            if (EnemyInstances == null)
+                return;
             for (int n = 0; n < EnemyInstances.Count; n++)
             {
                 if(EnemyInstances[n].Data.GetId == 127)
@@ -670,12 +672,16 @@ namespace FF8
         {
             Init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
             if (enc.EnabledEnemy == 0)
+            {
+                monstersData = new Debug_battleDat[0];
                 return;
+            }
             var DistinctMonsterPointers = enc.BEnemies.GroupBy(x => x).ToArray();
             monstersData = new Debug_battleDat[DistinctMonsterPointers.Count()];
             for (int n = 0; n < monstersData.Length; n++)
                 monstersData[n] = new Debug_battleDat(DistinctMonsterPointers[n].Key, Debug_battleDat.EntityType.Monster);
-
+            if (monstersData == null)
+                monstersData = new Debug_battleDat[0];
             EnemyInstances = new List<EnemyInstanceInformation>();
             for(int i = 0; i<8; i++)
                 if (MakiExtended.GetBit(enc.EnabledEnemy, 7-i))
