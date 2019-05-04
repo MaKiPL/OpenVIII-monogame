@@ -97,9 +97,9 @@ namespace FF8
             public short z;
 
             public Vector3 GetVector() => new Vector3(
-                x /256f,
-                y /256f ,
-                z /256f );
+                x /100,
+                y /100 ,
+                -z /100 );
         }
 
 
