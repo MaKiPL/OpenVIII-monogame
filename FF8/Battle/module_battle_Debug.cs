@@ -229,8 +229,6 @@ namespace FF8
             }
             if (Input.Button(Keys.F1))
                 DEBUGframe += 1;
-            if (Input.Button(Keys.F2))
-                AddAnimationToQueue(Debug_battleDat.EntityType.Character, 0, DEBUGframe);
         }
 
         public static void Draw()
@@ -265,7 +263,7 @@ namespace FF8
                 CheckAnimationFrame(Debug_battleDat.EntityType.Character, n);
                 for (int i = 0; i < CharacterInstances[n].Data.character.geometry.cObjects; i++)
                 {
-                    var a = CharacterInstances[n].Data.character.GetVertexPositions(i, new Vector3(-10 + n * 10, 10, -40),Quaternion.CreateFromYawPitchRoll(3f,0,0), CharacterInstances[n].animationSystem.animationId, CharacterInstances[n].animationSystem.animationFrame, frameperFPS / FPS); //DEBUG
+                    var a = CharacterInstances[n].Data.character.GetVertexPositions(i, new Vector3(-10 + n * 10, 0, -40),Quaternion.CreateFromYawPitchRoll(3f,0,0), CharacterInstances[n].animationSystem.animationId, CharacterInstances[n].animationSystem.animationFrame, frameperFPS / FPS); //DEBUG
                     if (a == null || a.Item1.Length == 0)
                         return;
                     for (int k = 0; k < a.Item1.Length / 3; k++)
@@ -286,7 +284,7 @@ namespace FF8
                 CheckAnimationFrame(Debug_battleDat.EntityType.Weapon, n);
                 for (int i = 0; i < CharacterInstances[n].Data.weapon.geometry.cObjects; i++)
                 {
-                    var a = CharacterInstances[n].Data.weapon.GetVertexPositions(i, new Vector3(-10+n*10,10, -40), Quaternion.CreateFromYawPitchRoll(3f, 0, 0), CharacterInstances[n].animationSystem.animationId, CharacterInstances[n].animationSystem.animationFrame, frameperFPS / FPS); //DEBUG
+                    var a = CharacterInstances[n].Data.weapon.GetVertexPositions(i, new Vector3(-10+n*10,0, -40), Quaternion.CreateFromYawPitchRoll(3f, 0, 0), CharacterInstances[n].animationSystem.animationId, CharacterInstances[n].animationSystem.animationFrame, frameperFPS / FPS); //DEBUG
                     if (a == null || a.Item1.Length == 0)
                         return;
                     for (int k = 0; k < a.Item1.Length / 3; k++)
@@ -387,7 +385,7 @@ namespace FF8
                         objectId: i,
                         position: enemyPosition.GetVector(),
                         rotation: Quaternion.CreateFromYawPitchRoll(0, 0, 0),
-                        animationId: EnemyInstances[n].animationSystem.animationId, //Refer to issue #43 on GitHub
+                        animationId: EnemyInstances[n].animationSystem.animationId,
                         animationFrame: EnemyInstances[n].animationSystem.animationFrame,
                         step: frameperFPS / FPS);
                     if (a == null || a.Item1.Length == 0)
@@ -701,7 +699,7 @@ namespace FF8
             int stage = enc.Scenario;
             battlename = $"a0stg{stage.ToString("000")}.x";
             Console.WriteLine($"BS_DEBUG: Loading stage {battlename}");
-            Console.WriteLine($"BS_DEBUG/ENC: Encounter: {Memory.battle_encounter}\t cEnemies: {enc.EnabledEnemy}\t Enemies: {string.Join(",", enc.BEnemies.Where(x => x != 0x00).Select(x => $"0x{(x - 0x10).ToString("X02")}").ToArray())}");
+            Console.WriteLine($"BS_DEBUG/ENC: Encounter: {Memory.battle_encounter}\t cEnemies: {enc.EnabledEnemy}\t Enemies: {string.Join(",", enc.BEnemies.Where(x => x != 0x00).Select(x => $"{x}").ToArray())}");
 
 
             //init renderer

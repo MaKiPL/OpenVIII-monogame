@@ -64,7 +64,6 @@ namespace FF8
 
             public Coordinate GetEnemyCoordinateByIndex(byte index)
             {
-                Console.WriteLine($"GRABBED FOR: {index}");
                 switch (index)
                 {
                     case 0:
