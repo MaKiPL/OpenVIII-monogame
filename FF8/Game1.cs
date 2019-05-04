@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 using System.Linq;
 
 namespace FF8
@@ -51,6 +52,82 @@ namespace FF8
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
             Memory.spriteBatch = spriteBatch;
+            Memory.shadowTexture = Content.Load<Texture2D>("Shadow");
+            GenerateShadowModel();
+        }
+
+        private void GenerateShadowModel()
+        {
+            /*
+             * X-X
+             * X-X
+             * X-X
+             */
+            Vector3[] vertices = new Vector3[] //3x3 
+            {
+                new Vector3(-10,0,10),
+                new Vector3(0,0,10),
+                new Vector3(0,0,0),
+                new Vector3(-10,0,0),
+                new Vector3(10,0,10),
+                new Vector3(10,0,0),
+                new Vector3(0,0,-10),
+                new Vector3(-10,0,-10),
+                new Vector3(10,0,-10),
+            };
+
+            Vector2[] textureCoordinates = new Vector2[]
+            {
+                new Vector2(0.0099f, 0.9950f),
+            new Vector2(0.0099f, 0.0189f),
+            new Vector2(0.9777f, 0.0189f),
+            new Vector2(0.9777f, 0.9950f),
+            new Vector2(0.9821f, 0.9995f),
+            new Vector2(0.0143f, 0.9995f),
+            new Vector2(0.0143f, 0.0144f),
+            new Vector2(0.9821f, 0.0144f)
+            };
+
+        VertexPositionTexture[] vpt = new VertexPositionTexture[]
+            {
+
+                //righttop (should be bottom left)
+                                new VertexPositionTexture(vertices[0], textureCoordinates[6]),
+                new VertexPositionTexture(vertices[1], textureCoordinates[7]),
+                new VertexPositionTexture(vertices[2], textureCoordinates[4]),
+                                new VertexPositionTexture(vertices[2], textureCoordinates[4]),
+                new VertexPositionTexture(vertices[3], textureCoordinates[5]),
+                new VertexPositionTexture(vertices[0], textureCoordinates[6]),
+
+
+                //top left
+                                new VertexPositionTexture(vertices[1], textureCoordinates[0]),
+                new VertexPositionTexture(vertices[4], textureCoordinates[1]),
+                new VertexPositionTexture(vertices[5], textureCoordinates[2]),
+                                new VertexPositionTexture(vertices[5], textureCoordinates[2]),
+                new VertexPositionTexture(vertices[2], textureCoordinates[3]),
+                new VertexPositionTexture(vertices[1], textureCoordinates[0]),
+
+
+                //bottom right should be top right
+                                new VertexPositionTexture(vertices[3], textureCoordinates[7]),
+                new VertexPositionTexture(vertices[2], textureCoordinates[4]),
+                new VertexPositionTexture(vertices[6], textureCoordinates[5]),
+                                new VertexPositionTexture(vertices[6], textureCoordinates[5]),
+                new VertexPositionTexture(vertices[7], textureCoordinates[6]),
+                new VertexPositionTexture(vertices[3], textureCoordinates[7]),
+
+
+                //bottom left should be bottom right
+                                new VertexPositionTexture(vertices[2], textureCoordinates[4]),
+                new VertexPositionTexture(vertices[5], textureCoordinates[5]),
+                new VertexPositionTexture(vertices[8], textureCoordinates[6]),
+                                new VertexPositionTexture(vertices[8], textureCoordinates[6]),
+                new VertexPositionTexture(vertices[6], textureCoordinates[7]),
+                new VertexPositionTexture(vertices[2], textureCoordinates[4]),
+            };
+
+            Memory.shadowGeometry = vpt;
         }
 
         protected override void UnloadContent()

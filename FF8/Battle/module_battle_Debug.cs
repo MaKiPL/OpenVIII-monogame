@@ -261,9 +261,10 @@ namespace FF8
             for (int n = 0; n < CharacterInstances.Count; n++)
             {
                 CheckAnimationFrame(Debug_battleDat.EntityType.Character, n);
+                Vector3 charaPosition = new Vector3(-10 + n * 10, 0, -40);
                 for (int i = 0; i < CharacterInstances[n].Data.character.geometry.cObjects; i++)
                 {
-                    var a = CharacterInstances[n].Data.character.GetVertexPositions(i, new Vector3(-10 + n * 10, 0, -40),Quaternion.CreateFromYawPitchRoll(3f,0,0), CharacterInstances[n].animationSystem.animationId, CharacterInstances[n].animationSystem.animationFrame, frameperFPS / FPS); //DEBUG
+                    var a = CharacterInstances[n].Data.character.GetVertexPositions(i,charaPosition ,Quaternion.CreateFromYawPitchRoll(3f,0,0), CharacterInstances[n].animationSystem.animationId, CharacterInstances[n].animationSystem.animationFrame, frameperFPS / FPS); //DEBUG
                     if (a == null || a.Item1.Length == 0)
                         return;
                     for (int k = 0; k < a.Item1.Length / 3; k++)
@@ -277,14 +278,16 @@ namespace FF8
                         }
                     }
                 }
+                DrawShadow(charaPosition, ate, .5f);
             }
             //WEAPON
             for (int n = 0; n < CharacterInstances.Count; n++)
             {
                 CheckAnimationFrame(Debug_battleDat.EntityType.Weapon, n);
+                Vector3 weaponPosition = new Vector3(-10 + n * 10, 0, -40);
                 for (int i = 0; i < CharacterInstances[n].Data.weapon.geometry.cObjects; i++)
                 {
-                    var a = CharacterInstances[n].Data.weapon.GetVertexPositions(i, new Vector3(-10+n*10,0, -40), Quaternion.CreateFromYawPitchRoll(3f, 0, 0), CharacterInstances[n].animationSystem.animationId, CharacterInstances[n].animationSystem.animationFrame, frameperFPS / FPS); //DEBUG
+                    var a = CharacterInstances[n].Data.weapon.GetVertexPositions(i, weaponPosition, Quaternion.CreateFromYawPitchRoll(3f, 0, 0), CharacterInstances[n].animationSystem.animationId, CharacterInstances[n].animationSystem.animationFrame, frameperFPS / FPS); //DEBUG
                     if (a == null || a.Item1.Length == 0)
                         return;
                     for (int k = 0; k < a.Item1.Length / 3; k++)
@@ -401,6 +404,22 @@ namespace FF8
                         }
                     }
                 }
+                DrawShadow(enemyPosition.GetVector(), ate, EnemyInstances[n].Data.skeleton.GetScale.X/5);
+            }
+        }
+
+        private static void DrawShadow(Vector3 enemyPosition, AlphaTestEffect ate, float scale)
+        {
+            VertexPositionTexture[] ptCopy = Memory.shadowGeometry.Clone() as VertexPositionTexture[];
+            for(int i = 0; i<ptCopy.Length; i++)
+                ptCopy[i].Position =  Vector3.Transform(ptCopy[i].Position, Matrix.CreateScale(scale));
+            for (int i = 0; i < ptCopy.Length; i++)
+                ptCopy[i].Position = Vector3.Add(ptCopy[i].Position, new Vector3(enemyPosition.X, 0.1f, enemyPosition.Z));
+            ate.Texture = Memory.shadowTexture;
+            foreach(var pass in ate.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, ptCopy, 0, 8);
             }
         }
 
