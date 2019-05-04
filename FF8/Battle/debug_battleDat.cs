@@ -33,20 +33,16 @@ namespace FF8
         public struct Skeleton
         {
             public ushort cBones;
-            public ushort unk;
+            public ushort scale;
             public ushort unk2;
             public ushort unk3;
-            private ushort scaleX;
-            private ushort scaleY;
-            private ushort scaleZ;
-            public ushort unk4;
+            private ushort unk4;
+            private ushort unk5;
+            private ushort unk6;
+            public ushort unk7;
             public Bone[] bones;
 
-            public float ScaleX { get => scaleX; set => scaleX = (ushort)value; }
-            public float ScaleY { get => scaleY; set => scaleY = (ushort)value; }
-            public float ScaleZ { get => scaleZ; set => scaleZ = (ushort)value; }
-
-            public Vector3 GetScale => new Vector3(1, 1, 1);
+            public Vector3 GetScale => new Vector3(scale/V*8, scale/V*8, scale/V*8);
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 48)]
