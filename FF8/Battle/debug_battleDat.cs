@@ -600,7 +600,20 @@ namespace FF8
             buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, path);
 
 #if _WINDOWS
-            MakiExtended.DumpBuffer(buffer, "D:/out.dat");
+            try
+            {
+                string targetdir = @"d:\";
+                if (Directory.Exists(targetdir))
+                {
+                    var drivei = DriveInfo.GetDrives().Where(x => x.Name.IndexOf(Path.GetPathRoot(targetdir),StringComparison.OrdinalIgnoreCase)>=0).ToArray();                    
+                    var di = new DirectoryInfo(targetdir);
+                    if(!di.Attributes.HasFlag(FileAttributes.ReadOnly) && drivei.Count()==1 && drivei[0].DriveType == DriveType.Fixed)
+                        MakiExtended.DumpBuffer(buffer, Path.Combine(targetdir,"out.dat"));
+                }
+            }
+            catch(IOException)
+            {
+            }
 #endif
 
             using (MemoryStream ms = new MemoryStream(buffer))

@@ -230,7 +230,11 @@ namespace FF8
             GetAW(FileID.KERNEL);
             Kernel_init(FileID.KERNEL);
         }
-
+        /// <summary>
+        /// Fetch strings from kernel.bin
+        /// </summary>
+        /// <param name="fileID">Should be FileID.KERNEL</param>
+        /// <see cref="http://www.balamb.pl/qh/kernel-pointers.htm"/>
         private void Kernel_init(FileID fileID)
         {
             files[fileID] = new Stringfile(new Dictionary<uint, List<uint>>(56), new List<Loc>(56));
