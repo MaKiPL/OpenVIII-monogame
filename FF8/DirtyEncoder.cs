@@ -64,7 +64,7 @@ namespace FF8
 
         public byte[] Value { get => value; set => this.value = value; }
         public string Value_str => ToString();
-        public int Length => value.Length;
+        public int Length => value==null? 0:value.Length;
         public object Current { get => Value[position-1] ; }
 
         #endregion Properties
