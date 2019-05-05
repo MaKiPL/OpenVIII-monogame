@@ -600,7 +600,14 @@ namespace FF8
             buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, path);
 
 #if _WINDOWS
-            MakiExtended.DumpBuffer(buffer, "D:/out.dat");
+            try
+            {
+                if(Directory.Exists(@"d:\"))
+                MakiExtended.DumpBuffer(buffer, "D:/out.dat");
+            }
+            catch(IOException)
+            {
+            }
 #endif
 
             using (MemoryStream ms = new MemoryStream(buffer))
