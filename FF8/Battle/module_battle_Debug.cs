@@ -283,7 +283,8 @@ namespace FF8
             }
             //WEAPON
             for (int n = 0; n < CharacterInstances.Count; n++)
-            {
+            {   if (CharacterInstances[n].Data.weapon == null)
+                    return;
                 CheckAnimationFrame(Debug_battleDat.EntityType.Weapon, n);
                 Vector3 weaponPosition = new Vector3(-40 + n * 10, 0+DEBUGframe, -40+1);
                 for (int i = 0; i < CharacterInstances[n].Data.weapon.geometry.cObjects; i++)
@@ -860,13 +861,13 @@ namespace FF8
                     Data = ReadCharacterData(10,21,39),
                     animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
                     characterId = 10
-                }/*,
-                //new CharacterInstanceInformation()
-                //{
-                //    Data = ReadCharacterData(7,16,-1),
-                //    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
-                //    characterId = 0
-                }*/
+                },
+                new CharacterInstanceInformation()
+                {
+                    Data = ReadCharacterData(7,16,-1),
+                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
+                    characterId = 7
+                }
             };
         }
 
@@ -874,9 +875,10 @@ namespace FF8
         {
             var character = new Debug_battleDat(characterId, Debug_battleDat.EntityType.Character, alternativeCostumeId);
             Debug_battleDat weapon;
-            if(characterId == 1 || characterId ==9)
+            if (characterId == 1 || characterId == 9)
                 weapon = new Debug_battleDat(characterId, Debug_battleDat.EntityType.Weapon, weaponId, character);
-            else weapon = new Debug_battleDat(characterId, Debug_battleDat.EntityType.Weapon, weaponId);
+            else if (weaponId != -1) weapon = new Debug_battleDat(characterId, Debug_battleDat.EntityType.Weapon, weaponId);
+            else weapon = null;
             return new CharacterData()
             {
                 character = character,
