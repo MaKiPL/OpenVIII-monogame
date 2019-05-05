@@ -605,7 +605,10 @@ namespace FF8
                 string targetdir = @"d:\";
                 if (Directory.Exists(targetdir))
                 {
-                    MakiExtended.DumpBuffer(buffer, Path.Combine(targetdir,"out.dat"));
+                    var drivei = DriveInfo.GetDrives().Where(x => x.Name.IndexOf(Path.GetPathRoot(targetdir),StringComparison.OrdinalIgnoreCase)>=0).ToArray();                    
+                    var di = new DirectoryInfo(targetdir);
+                    if(!di.Attributes.HasFlag(FileAttributes.ReadOnly) && drivei.Count()==1 && drivei[0].DriveType == DriveType.Fixed)
+                        MakiExtended.DumpBuffer(buffer, Path.Combine(targetdir,"out.dat"));
                 }
             }
             catch(IOException)
