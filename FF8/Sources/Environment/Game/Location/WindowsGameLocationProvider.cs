@@ -34,7 +34,7 @@ namespace FF8
             using (RegistryKey registryKey = localMachine.OpenSubKey(CD2000RegistyPath))
             {
                 String installLocation = (String)registryKey.GetValue(CD2000GamePathTag);
-                String dataPath = Path.Combine(installLocation, "Data"); //no lang-en on cd version.
+                String dataPath = installLocation; //Path.Combine(installLocation, "Data"); //no lang-en on cd version.
                 if (Directory.Exists(dataPath))
                     return new GameLocation(dataPath);
             }
