@@ -194,7 +194,6 @@ namespace FF8
         private static ModelGroup[] modelGroups;
 
         private static Debug_battleDat[] monstersData;
-        private static CharacterData[] charactersData;
 
         private struct CharacterData
         {
@@ -229,6 +228,8 @@ namespace FF8
             }
             if (Input.Button(Keys.F1))
                 DEBUGframe += 1;
+            if (Input.Button(Keys.F2))
+                DEBUGframe--;
         }
 
         public static void Draw()
@@ -832,6 +833,12 @@ namespace FF8
         /// </summary>
         private static void ReadMonster()
         {
+            //for(int i = 0; i<199; i++)
+            //{
+            //    var dcd = new Debug_battleDat(i, Debug_battleDat.EntityType.Monster);
+            //    var ecd = dcd.skeleton.GetScale.Y;
+            //    Console.WriteLine($"{i}/{ecd}");
+            //}
             Init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
             if (enc.EnabledEnemy == 0)
             {

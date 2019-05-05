@@ -264,8 +264,9 @@ namespace FF8
                 foreach (var b in a.vertices)
                     verts.Add(CalculateFrame(new Tuple<Vector3, int>(b.GetVector, a.boneId),frame,nextFrame, step));
             byte[] texturePointers = new byte[obj.cTriangles + obj.cQuads*2];
-
-            Vector3 translationPosition = position + Vector3.SmoothStep(frame.Position, nextFrame.Position, step);
+            Vector3 snapToGround = Vector3.Zero;
+            FixScaleYOffset(out snapToGround);
+            Vector3 translationPosition = position + Vector3.SmoothStep(frame.Position, nextFrame.Position, step) + snapToGround;
 
             for (;i<obj.cTriangles; i++ )
             {
@@ -335,6 +336,290 @@ namespace FF8
             }
 
             return new Tuple<VertexPositionTexture[], byte[]>(vpt.ToArray(), texturePointers);
+        }
+
+        /// <summary>
+        /// Lazy class to fix Y axis of entities because due to scalling some appeared above or below the stage.
+        /// Those entities that have so far unknown Y axis are vurnable to DEBUGframe variable
+        /// </summary>
+        /// <param name="snapToGround"></param>
+        private void FixScaleYOffset(out Vector3 snapToGround)
+        {
+            float fScaleResolver = skeleton.GetScale.Y;
+            float y = 0f;
+            switch(entityType)
+            {
+                case EntityType.Monster:
+                    switch (GetId)
+                    {
+                        case 68:
+                            y = -300f;
+                            break;
+                        case 21:
+                        case 18:
+                            y = -125;
+                            break;
+                        case 125:
+                            y = -120;
+                            break;
+                        case 25:
+                            y = -100;
+                            break;
+                        case 113:
+                            y = -90;
+                            break;
+                        case 54:
+                            y = -57;
+                            break;
+                        case 119:
+                        case 136:
+                            y = -50;
+                            break;
+                        case 88:
+                        case 100:
+                            y = -30;
+                            break;
+                        case 55:
+                            y = -28;
+                            break;
+                        case 82:
+                        case 142:
+                            y = -27;
+                            break;
+                        case 85:
+                        case 86:
+                        case 87:
+                        case 128:
+                        case 71:
+                        case 73:
+                        case 76:
+                        case 108:
+                        case 15:
+                        case 134:
+                        case 143:
+                        case 17:
+                            y = -25;
+                            break;
+                        case 75:
+                            y = -23;
+                            break;
+                        case 28:
+                        case 29:
+                        case 78:
+                        case 79:
+                        case 120:
+                        case 137:
+                        case 14:
+                            y = -20;
+                            break;
+                        case 60:
+                            y = -19;
+                            break;
+                        case 31:
+                            y = -18;
+                            break;
+                        case 64:
+                        case 72:
+                        case 74:
+                        case 135:
+                            y = -17;
+                            break;
+                        case 4:
+                        case 46:
+                        case 56:
+                        case 59:
+                        case 13:
+                            y = -14;
+                            break;
+                        case 39:
+                        case 40:
+                            y = -12;
+                            break;
+                        case 42:
+                            y = -11;
+                            break;
+                        case 69:
+                            y = -10;
+                            break;
+                        case 57:
+                            y = -6;
+                            break;
+                        case 129:
+                            y = -4;
+                            break;
+                        case 62:
+                        case 23:
+                        case 80:
+                        case 81:
+                            y = -3;
+                            break;
+                        case 96:
+                            y = -2;
+                            break;
+                        case 33:
+                        case 95:
+                        case 37:
+                        case 99:
+                        case 48:
+                        case 124:
+                            break; //f default 0, so no need to explicitely write it again
+                        case 53:
+                            y = 2;
+                            break;
+                        case 19:
+                            y = 3;
+                            break;
+                        case 32:
+                        case 93:
+                            y = 4;
+                            break;
+                        case 52:
+                            y = 5;
+                            break;
+                        case 121:
+                        case 22:
+                            y = 6;
+                            break;
+                        case 9:
+                        case 27:
+                        case 65:
+                        case 35:
+                        case 36:
+                        case 50:
+                        case 12:
+                        case 11:
+                            y = 10;
+                            break;
+                        case 7:
+                        case 16:
+                            y = 15;
+                            break;
+                        case 45:
+                            y = 18;
+                            break;
+                        case 6:
+                        case 43:
+                        case 3:
+                        case 8:
+                            y = 20;
+                            break;
+                        case 1:
+                            y = 24;
+                            break;
+                        case 63:
+                            y = 25;
+                            break;
+                        case 41:
+                        case 24:
+                            y = 30;
+                            break;
+                        case 115:
+                            y = 32;
+                            break;
+                        case 20:
+                        case 10:
+                        case 133:
+                            y = 40;
+                            break;
+                        case 38:
+                        case 49:
+                            y = 50;
+                            break;
+                        case 61:
+                        case 114:
+                            y = 60;
+                            break;
+                        case 89:
+                        case 97:
+                        case 98:
+                        case 111:
+                            y = 62;
+                            break;
+                        case 90:
+                            y = 90;
+                            break;
+                        case 51:
+                            y = 72;
+                            break;
+                        case 66:
+                            y = 80;
+                            break;
+                        case 112:
+                            y = 85;
+                            break;
+                        case 130:
+                            y = 90;
+                            break;
+                        case 5:
+                        case 26:
+                        case 77:
+                        case 30:
+                        case 92:
+                            y = 100;
+                            break;
+                        case 67:
+                        case 132:
+                            y = 150;
+                            break;
+                        case 131:
+                            y = 160;
+                            break;
+                        case 122:
+                        case 84:
+                            y = 180;
+                            break;
+                        case 109:
+                            y = 240;
+                            break;
+                        case 118:
+                        case 140:
+                        case 138:
+                        case 141:
+                            y = 250;
+                            break;
+                        default:
+                            y = Module_battle_debug.DEBUGframe;
+                            break;
+                    }
+                    break;
+                case EntityType.Character:
+                case EntityType.Weapon:
+                    switch(GetId)
+                    {
+                        case 0:
+                            y = -30;
+                            break;
+                        case 1:
+                        case 2:
+                            y = -32;
+                            break;
+                        case 3:
+                            y = -64;
+                            break;
+                        case 4:
+                        case 5:
+                        case 6:
+                        case 7:
+                        case 8:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                            y = Module_battle_debug.DEBUGframe;
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+            }
+
+
+
+            y = fScaleResolver+  y/10f;
+            snapToGround = new Vector3(0, y, 0);
         }
 
         private Tuple<Vector3, int> CalculateFrame(Tuple<Vector3, int> tuple, AnimationFrame frame,AnimationFrame nextFrame, float step)
@@ -615,7 +900,7 @@ namespace FF8
         public Debug_battleDat(int fileId, EntityType entityType, int additionalFileId = -1)
         {
             id = fileId;
-
+            Console.WriteLine($"DEBUG: Creating new BattleDat with {fileId},{entityType},{additionalFileId}");
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
             string fileName = entityType == EntityType.Monster ? $"c0m{id.ToString("D03")}" :
                 entityType == EntityType.Character ? $"d{fileId}c{additionalFileId.ToString("D03")}" :
