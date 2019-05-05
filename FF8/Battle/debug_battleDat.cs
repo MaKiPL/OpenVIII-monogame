@@ -345,6 +345,8 @@ namespace FF8
         /// <param name="snapToGround"></param>
         private void FixScaleYOffset(out Vector3 snapToGround)
         {
+            //snapToGround = Vector3.Zero;
+            //return;
             float fScaleResolver = skeleton.GetScale.Y;
             float y = 0f;
             switch(entityType)
@@ -625,7 +627,6 @@ namespace FF8
         private Tuple<Vector3, int> CalculateFrame(Tuple<Vector3, int> tuple, AnimationFrame frame,AnimationFrame nextFrame, float step)
         {
             Matrix matrix = frame.boneRot.Item3[tuple.Item2]; //get's bone matrix
-            var testVar = frame.boneRot.Item3.Select(x=>x.M43).ToArray();
             Vector3 rootFramePos = new Vector3(
                 matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
                 matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
@@ -735,12 +736,18 @@ namespace FF8
 
                         if (skeleton.bones[k].parentId == 0xFFFF)
                         {
+                            //I'm leaving the code below, because there might be some issue with M4 dimension for position translation for bone0 only
+                            //Matrix rt = Matrix.CreateTranslation(animHeader.animations[i].animationFrames[n].Position);
+                            //MatrixZ.M41 = rt.M42;
+                            //MatrixZ.M42 = rt.M41; //up/down
+                            //MatrixZ.M43 = rt.M43;
+                            //MatrixZ.M44 = 1;
                             MatrixZ.M43 = animHeader.animations[i].animationFrames[n].Position.Z + 2;
                         }
                         else
                         {
                             Matrix prevBone = animHeader.animations[i].animationFrames[n].boneRot.Item3[skeleton.bones[k].parentId];
-                            MatrixZ.M43 = skeleton.bones[skeleton.bones[k].parentId].Size; MatrixZ.M42 = 0; MatrixZ.M41 = 0;
+                            MatrixZ.M43 = skeleton.bones[skeleton.bones[k].parentId].Size;
                             Matrix rMatrix = Matrix.Multiply(prevBone, MatrixZ);
                             rMatrix.M41 = prevBone.M11 * MatrixZ.M41 + prevBone.M12 * MatrixZ.M42 + prevBone.M13 * MatrixZ.M43 + prevBone.M41;
                             rMatrix.M42 = prevBone.M21 * MatrixZ.M41 + prevBone.M22 * MatrixZ.M42 + prevBone.M23 * MatrixZ.M43 + prevBone.M42;
