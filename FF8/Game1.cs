@@ -27,8 +27,7 @@ namespace FF8
             init_debugger_Audio.DEBUG_SoundAudio(); //this initalizes the WAVE format audio.dat
             Init_debugger_fields.DEBUG(); //this initializes the field module, it's worth to have this at the beginning
             Init_debugger_battle.DEBUG(); //this initializes the encounters
-            //ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
-            Saves.Init();
+            Saves.Init(); //loads all savegames from steam or cd2000 directories. first come first serve.
             base.Initialize();
             //ArchiveSearch s = new ArchiveSearch("Zell\0");//used to find file a string is in. disable if not using.
 
