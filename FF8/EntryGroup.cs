@@ -1,11 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace FF8
 {
-    public class EntryGroup
+    public class EntryGroup : IEnumerator, IEnumerable
     {
         #region Fields
 
@@ -24,16 +24,20 @@ namespace FF8
             rectangle = new Rectangle();
             Add(entries);
         }
-
         #endregion Fields
 
         #region Properties
-
+        public int Count => list.Count;
         public int Height { get => rectangle.Height; private set => rectangle.Height = value; }
 
         public int Width { get => rectangle.Width; private set => rectangle.Width = value; }
 
         public Rectangle GetRectangle => rectangle;
+
+        public object Current
+        {
+            get { return list[position-1]; }
+        }
 
         #endregion Properties
 
@@ -77,49 +81,88 @@ namespace FF8
                             Y = entry.Y,
                             Size = list[0].Size,
                             Tile = Vector2.UnitX,
-                            Offset = new Vector2((int)list[0].Width,0),
-                            End = new Vector2((int)-list[0].Width,0)
+                            Offset = new Vector2((int)list[0].Width, 0),
+                            End = new Vector2((int)-list[0].Width, 0)
                         });
                 }
                 list.Add(entry);
                 Vector2 size = Abs(entry.Offset) + entry.Size;
                 if (Width < size.X) Width = (int)size.X;
-                if (Height < size.Y) Height = (int) size.Y;
+                if (Height < size.Y) Height = (int)size.Y;
             }
         }
-        internal Vector2 Abs(Vector2 v2  )  {
-        return new Vector2(Math.Abs(v2.X), Math.Abs(v2.Y));
-        }
 
-    internal void Draw(List<TextureHandler> textures, int pallet, Rectangle inputdst, float scale = 1f, float fade = 1f)
+        internal static Vector2 Abs(Vector2 v2) => new Vector2(Math.Abs(v2.X), Math.Abs(v2.Y));
+
+        internal static Point RoundedPoint(Vector2 v) => v.RoundedPoint();
+
+        internal void Draw(List<TextureHandler> textures, int pallet, Rectangle inputdst, Vector2 inscale, float fade = 1f) =>
+            Draw(textures, list, pallet, inputdst, inscale, fade, new Point(Width, Height));
+        internal static int GetChange(int tot,int goal, float scale = 1f)
+        {
+           return (int) Math.Round(Math.Abs(tot* scale - goal));
+        }
+        internal static void Draw(List<TextureHandler> textures,List<Entry> elist, int pallet, Rectangle inputdst, Vector2 inscale, float fade, Point totalSize)
         {
             Rectangle dst;
-            scale = Math.Abs(scale);
+            inscale = Abs(inscale);
             inputdst.Width = Math.Abs(inputdst.Width);
             inputdst.Height = Math.Abs(inputdst.Height);
             if (inputdst.X + inputdst.Width < 0 || inputdst.Y + inputdst.Height < 0) return;
-            if ((int)(8 * scale) <= float.Epsilon)
-            {
-                //vscale = (float)dst.Height / Height;
-                scale = (float)inputdst.Width /Width;
-            }
 
-            foreach (Entry e in list)
+            Vector2 autoscale = new Vector2((float)inputdst.Width / totalSize.X, (float)inputdst.Height / totalSize.Y);
+            Vector2 scale;
+            if (inscale == Vector2.Zero || inscale == Vector2.UnitX)
+                scale = new Vector2(autoscale.X);
+            else if (inscale == Vector2.UnitY)
+                scale = new Vector2(autoscale.Y);
+            else
+                scale = inscale;
+            foreach (Entry e in elist)
             {
+                if (totalSize == new Point(0))
+                {
+                    totalSize.X = (int)e.Width;
+                    totalSize.Y = (int)e.Height;
+                }
                 int cpallet = e.CustomPallet < 0 || e.CustomPallet >= textures.Count ? pallet : e.CustomPallet;
                 dst = inputdst;
 
-
                 Vector2 Offset = e.Offset * scale;
-                Point offset2 = (e.End * scale).ToPoint();
+                Point offset2 = RoundedPoint(e.End * scale);
                 dst.Offset(e.Snap_Right ? inputdst.Width : 0, e.Snap_Bottom ? inputdst.Height : 0);
-                dst.Offset(Offset);
-                dst.Size = (e.Size * scale).ToPoint();
-               
+                dst.Offset(RoundedPoint(Offset));
+                dst.Size = RoundedPoint(e.Size * scale);
                 Rectangle src = e.GetRectangle;
                 bool testY = false;
                 bool testX = false;
-                if (dst.Height<=0 || dst.Height <= 0) continue; //infinate loop prevention
+                if ((inputdst.Width!=0) && dst.X + dst.Width > inputdst.X + inputdst.Width)
+                {
+                    int change = GetChange(totalSize.X,inputdst.Width,scale.X);
+                    src.Width -= (int)Math.Round(change / scale.X);
+                    dst.Width -= change;
+                }
+                else if (e.Fill.X > 0 && autoscale.X > scale.X)
+                {
+                    scale.X = autoscale.X;
+                    dst.Width = (int)Math.Round((src.Width * autoscale.X));
+                }
+                
+                if ((inputdst.Height != 0) && dst.Y + dst.Height > inputdst.Y + inputdst.Height)
+                {
+                    int change = GetChange(totalSize.Y, inputdst.Height, scale.Y); ;
+                    src.Height -= (int)Math.Round(change / scale.Y);
+                    dst.Height -= change;
+                }
+                else if (e.Fill.Y > 0 && autoscale.Y > scale.Y)
+                {
+                    scale.Y = autoscale.Y;
+                    dst.Height = (int)Math.Round((src.Height * autoscale.Y));
+                 
+                }
+
+                if (dst.Height <= 0 || dst.Height <= 0) continue; //infinate loop prevention
+
                 do
                 {
                     do
@@ -131,17 +174,17 @@ namespace FF8
                             {
                                 int correction = (inputdst.Y + inputdst.Height + offset2.Y) - (dst.Y + dst.Height);
                                 dst.Height += correction;
-                                src.Height += (int)Math.Floor(correction / scale);
+                                src.Height += (int)Math.Round(correction / scale.Y);
                             }
                         }
-                        if(e.Tile.X > 0)
-                        { 
+                        if (e.Tile.X > 0)
+                        {
                             testX = (dst.X + dst.Width) < (inputdst.X + inputdst.Width + offset2.X);
                             if (!testX)
                             {
                                 int correction = (inputdst.X + inputdst.Width + offset2.X) - (dst.X + dst.Width);
                                 dst.Width += correction;
-                                src.Width += (int)Math.Floor(correction / scale);
+                                src.Width += (int)Math.Round(correction / scale.X);
                             }
                         }
                         textures[cpallet].Draw(dst, src, Color.White * fade);
@@ -157,11 +200,12 @@ namespace FF8
                     while (e.Tile.Y > 0 && testY);
                 }
                 while (e.Tile.X > 0 && testX);
-                //Memory.spriteBatch.Draw(icons[pallet], Vector2.Zero, e.GetRectangle, Color.White*fade,0f,Vector2.Zero,Vector2.UnitX,SpriteEffects.None,0f);
             }
-            //Memory.SpriteBatchStartStencil(SamplerState.PointClamp);
-            //Memory.SpriteBatchEnd();
         }
+        int position = 0;
+        public bool MoveNext() => ++position<=list.Count;
+        public void Reset() => position = 0;
+        public IEnumerator GetEnumerator() => this;
 
         #endregion Methods
     }

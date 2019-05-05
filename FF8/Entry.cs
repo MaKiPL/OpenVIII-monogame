@@ -15,8 +15,14 @@ namespace FF8
         private Loc loc;
         public Vector2 Offset;
         public Vector2 End;
-
         #endregion Fields
+
+        public string ToStringHeader = "{File},{Part},{CustomPallet},{Location.X},{Location.Y},{Size.X},{Size.Y},{Offset.X},{Offset.Y},{End.X},{End.Y},{Tile.X},{Tile.Y},{Fill.X},{Fill.Y},{Snap_Right},{Snap_Bottom}\n";
+        public override string ToString()
+        {
+            
+            return $"{File},{Part},{CustomPallet},{Location.X},{Location.Y},{Size.X},{Size.Y},{Offset.X},{Offset.Y},{End.X},{End.Y},{Tile.X},{Tile.Y},{Fill.X},{Fill.Y},{Snap_Right},{Snap_Bottom}\n";
+        }
 
         #region Constructors
 
@@ -59,6 +65,7 @@ namespace FF8
         public float Width { get=>Size.X; internal set=> Size.X=value; }
         public float Y { get => Location.Y; internal set => Location.Y = value; }
         public float X { get => Location.X; internal set => Location.X = value; }
+        public Vector2 Fill { get; internal set; }
 
         #endregion Properties
 
