@@ -166,12 +166,20 @@ namespace FF8
 #if DEBUG
             //export the string data so you can find where the string you want is.
             // then you can Memory.Strings.Read() it :)
-            if (Directory.Exists(@"d:\"))
+            try
             {
-                Memory.Strings.Dump(Strings.FileID.MNGRP, Path.Combine(@"d:\", "MNGRPdump.txt"));
-                Memory.Strings.Dump(Strings.FileID.AREAMES, Path.Combine(@"d:\", "AREAMESdump.txt"));
-                Memory.Strings.Dump(Strings.FileID.NAMEDIC, Path.Combine(@"d:\", "NAMEDICdump.txt"));
-                Memory.Strings.Dump(Strings.FileID.KERNEL, Path.Combine(@"d:\", "KERNELdump.txt"));
+                string dumpfolder = Path.GetTempPath();
+                if (Directory.Exists(dumpfolder))
+                {
+                    Memory.Strings.Dump(Strings.FileID.MNGRP, Path.Combine(dumpfolder, "MNGRPdump.txt"));
+                    Memory.Strings.Dump(Strings.FileID.AREAMES, Path.Combine(dumpfolder, "AREAMESdump.txt"));
+                    Memory.Strings.Dump(Strings.FileID.NAMEDIC, Path.Combine(dumpfolder, "NAMEDICdump.txt"));
+                    Memory.Strings.Dump(Strings.FileID.KERNEL, Path.Combine(dumpfolder, "KERNELdump.txt"));
+                }
+            }
+            catch (IOException)
+            {
+
             }
 
             Memory.Cards = new Cards();
