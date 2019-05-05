@@ -137,7 +137,7 @@ namespace FF8
             AlphaBlendFunction = BlendFunction.Add,
         };
 
-        public static int module = MODULE_BATTLE_DEBUG;
+        public static int module = MODULE_OVERTURE_DEBUG;
 
         public static string FF8DIR => GameLocation.Current.DataPath;
 
@@ -169,7 +169,7 @@ namespace FF8
         /// <summary>
         /// Active battle encounter. Set by field or battle module. You shouldn't change it in-battle. 
         /// </summary>
-        public static int battle_encounter = 9;
+        public static int battle_encounter = 38;
         /// <summary>
         /// Battle music pointer. Set by SETBATTLEMUSIC in field module or by world module. Default=6
         /// </summary>
