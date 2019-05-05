@@ -68,6 +68,12 @@ namespace FF8
             public float Unk6 { get => unk6 / 4096.0f; }
         }
 
+        /// <summary>
+        /// Skeleton data section
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="ms"></param>
+        /// <param name="br"></param>
         private void ReadSection1(uint v, MemoryStream ms, BinaryReader br)
         {
             ms.Seek(v, SeekOrigin.Begin);
@@ -193,6 +199,12 @@ namespace FF8
 
         public Geometry geometry;
 
+        /// <summary>
+        /// Geometry section
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="ms"></param>
+        /// <param name="br"></param>
         private void ReadSection2(uint v, MemoryStream ms, BinaryReader br)
         {
             ms.Seek(v, SeekOrigin.Begin);
@@ -593,26 +605,31 @@ namespace FF8
                             break;
                         case 1:
                         case 2:
+                        case 8:
                             y = -32;
                             break;
                         case 3:
                             y = -64;
                             break;
                         case 4:
+                            y = -66;
+                            break;
                         case 5:
+                            y = -60;
+                            break;
                         case 6:
+                            y = -26;
+                            break;
                         case 7:
-                        case 8:
+                            goto default;
                         case 9:
+                            y = -36;
+                            break;
                         case 10:
-                        case 11:
-                        case 12:
-                        case 13:
-                        case 14:
-                        case 15:
-                            y = Module_battle_debug.DEBUGframe;
+                            y = 0;
                             break;
                         default:
+                            y = Module_battle_debug.DEBUGframe;
                             break;
                     }
                     break;
@@ -672,6 +689,12 @@ namespace FF8
             public short z;
         }
 
+        /// <summary>
+        /// Animation section
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="ms"></param>
+        /// <param name="br"></param>
         private void ReadSection3(uint v, MemoryStream ms, BinaryReader br)
         {
             ms.Seek(v, SeekOrigin.Begin);
@@ -904,14 +927,14 @@ namespace FF8
         /// <param name="fileId">This number is used in c0m(fileId) or d(fileId)cXYZ</param>
         /// <param name="entityType">Supply Monster, character or weapon (0,1,2)</param>
         /// <param name="additionalFileId">Used only in character or weapon to supply for d(fileId)[c/w](additionalFileId)</param>
-        public Debug_battleDat(int fileId, EntityType entityType, int additionalFileId = -1)
+        public Debug_battleDat(int fileId, EntityType entityType, int additionalFileId = -1, Debug_battleDat skeletonReference = null)
         {
             id = fileId;
             Console.WriteLine($"DEBUG: Creating new BattleDat with {fileId},{entityType},{additionalFileId}");
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
             string fileName = entityType == EntityType.Monster ? $"c0m{id.ToString("D03")}" :
-                entityType == EntityType.Character ? $"d{fileId}c{additionalFileId.ToString("D03")}" :
-                entityType == EntityType.Weapon ? $"d{fileId}w{additionalFileId.ToString("D03")}" : string.Empty;
+                entityType == EntityType.Character ? $"d{fileId.ToString("x")}c{additionalFileId.ToString("D03")}" :
+                entityType == EntityType.Weapon ? $"d{fileId.ToString("x")}w{additionalFileId.ToString("D03")}" : string.Empty;
             this.entityType = entityType;
             if (string.IsNullOrEmpty(fileName))
                 return;
@@ -953,10 +976,20 @@ namespace FF8
                         ReadSection11(datFile.pSections[5], ms, br);
                         break;
                     case EntityType.Weapon:
-                        ReadSection1(datFile.pSections[0], ms, br);
-                        ReadSection3(datFile.pSections[2], ms, br);
-                        ReadSection2(datFile.pSections[1], ms, br);
-                        ReadSection11(datFile.pSections[6], ms, br);
+                        if (skeletonReference == null)
+                        {
+                            ReadSection1(datFile.pSections[0], ms, br);
+                            ReadSection3(datFile.pSections[2], ms, br);
+                            ReadSection2(datFile.pSections[1], ms, br);
+                            ReadSection11(datFile.pSections[6], ms, br);
+                        }
+                        else
+                        {
+                            skeleton = skeletonReference.skeleton;
+                            animHeader = skeletonReference.animHeader;
+                            ReadSection2(datFile.pSections[0], ms, br);
+                            ReadSection11(datFile.pSections[4], ms, br);
+                        }
                         break;
                 }
             }

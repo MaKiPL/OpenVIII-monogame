@@ -262,7 +262,7 @@ namespace FF8
             for (int n = 0; n < CharacterInstances.Count; n++)
             {
                 CheckAnimationFrame(Debug_battleDat.EntityType.Character, n);
-                Vector3 charaPosition = new Vector3(-10 + n * 10, 0, -40);
+                Vector3 charaPosition = new Vector3(-40 + n * 10, 0, -40);
                 for (int i = 0; i < CharacterInstances[n].Data.character.geometry.cObjects; i++)
                 {
                     var a = CharacterInstances[n].Data.character.GetVertexPositions(i,charaPosition ,Quaternion.CreateFromYawPitchRoll(3f,0,0), CharacterInstances[n].animationSystem.animationId, CharacterInstances[n].animationSystem.animationFrame, frameperFPS / FPS); //DEBUG
@@ -285,7 +285,7 @@ namespace FF8
             for (int n = 0; n < CharacterInstances.Count; n++)
             {
                 CheckAnimationFrame(Debug_battleDat.EntityType.Weapon, n);
-                Vector3 weaponPosition = new Vector3(-10 + n * 10, 0, -40);
+                Vector3 weaponPosition = new Vector3(-40 + n * 10, 0+DEBUGframe, -40+1);
                 for (int i = 0; i < CharacterInstances[n].Data.weapon.geometry.cObjects; i++)
                 {
                     var a = CharacterInstances[n].Data.weapon.GetVertexPositions(i, weaponPosition, Quaternion.CreateFromYawPitchRoll(3f, 0, 0), CharacterInstances[n].animationSystem.animationId, CharacterInstances[n].animationSystem.animationFrame, frameperFPS / FPS); //DEBUG
@@ -622,6 +622,7 @@ namespace FF8
             Memory.SpriteBatchStartAlpha();
             Memory.font.RenderBasicText(Font.CipherDirty($"Encounter ready at: {Memory.battle_encounter}"), 0, 0, 1, 1, 0, 1);
             Memory.font.RenderBasicText(Font.CipherDirty($"Debug variable: {DEBUGframe}"), 20, 30 * 1, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(Font.CipherDirty($"1000/deltaTime milliseconds: {1000/Memory.gameTime.ElapsedGameTime.Milliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
         }
 
@@ -808,6 +809,12 @@ namespace FF8
                 },
                 new CharacterInstanceInformation()
                 {
+                    Data = ReadCharacterData(1,3,8),
+                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
+                    characterId = 1
+                },
+                new CharacterInstanceInformation()
+                {
                     Data = ReadCharacterData(2,6,13),
                     animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
                     characterId = 2
@@ -816,16 +823,66 @@ namespace FF8
                 {
                     Data = ReadCharacterData(3,7,18),
                     animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
-                    characterId = 0
-                }
+                    characterId = 3
+                },
+                new CharacterInstanceInformation()
+                {
+                    Data = ReadCharacterData(4,9,23),
+                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
+                    characterId = 4
+                },
+                new CharacterInstanceInformation()
+                {
+                    Data = ReadCharacterData(5,11,28),
+                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
+                    characterId = 5
+                },
+                new CharacterInstanceInformation()
+                {
+                    Data = ReadCharacterData(6,14,33),
+                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
+                    characterId = 6
+                },
+                new CharacterInstanceInformation()
+                {
+                    Data = ReadCharacterData(8,17,35),
+                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
+                    characterId = 8
+                },
+                new CharacterInstanceInformation()
+                {
+                    Data = ReadCharacterData(9,19,37),
+                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
+                    characterId = 9
+                },
+                new CharacterInstanceInformation()
+                {
+                    Data = ReadCharacterData(10,21,39),
+                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
+                    characterId = 10
+                }/*,
+                //new CharacterInstanceInformation()
+                //{
+                //    Data = ReadCharacterData(7,16,-1),
+                //    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
+                //    characterId = 0
+                }*/
             };
         }
 
-        private static CharacterData ReadCharacterData(int characterId, int alternativeCostumeId, int weaponId) => new CharacterData()
+        private static CharacterData ReadCharacterData(int characterId, int alternativeCostumeId, int weaponId)
         {
-            character = new Debug_battleDat(characterId, Debug_battleDat.EntityType.Character, alternativeCostumeId),
-            weapon = new Debug_battleDat(characterId, Debug_battleDat.EntityType.Weapon, weaponId)
-        };
+            var character = new Debug_battleDat(characterId, Debug_battleDat.EntityType.Character, alternativeCostumeId);
+            Debug_battleDat weapon;
+            if(characterId == 1 || characterId ==9)
+                weapon = new Debug_battleDat(characterId, Debug_battleDat.EntityType.Weapon, weaponId, character);
+            else weapon = new Debug_battleDat(characterId, Debug_battleDat.EntityType.Weapon, weaponId);
+            return new CharacterData()
+            {
+                character = character,
+                weapon = weapon
+            };
+        }
 
         /// <summary>
         /// This method is responsible to read/parse the enemy data. It holds the result in monstersData[]
