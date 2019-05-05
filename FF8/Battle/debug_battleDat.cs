@@ -602,8 +602,11 @@ namespace FF8
 #if _WINDOWS
             try
             {
-                if(Directory.Exists(@"d:\"))
-                MakiExtended.DumpBuffer(buffer, "D:/out.dat");
+                string targetdir = @"d:\";
+                if (Directory.Exists(targetdir))
+                {
+                    MakiExtended.DumpBuffer(buffer, Path.Combine(targetdir,"out.dat"));
+                }
             }
             catch(IOException)
             {
