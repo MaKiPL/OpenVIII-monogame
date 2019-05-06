@@ -1329,6 +1329,8 @@ namespace FF8
         /// <param name="animId"></param>
         private static uint ReadAnimation(int animId)
         {
+            //DEBUG- Ok, so I tested it with real assembler of viii and control_word &1 case 0 works perfectly!
+            //phew! well, that's something. I'm not quite sure how does it still work, but at least I parse it 1:1 correctly
             short local2C;
             byte keyframecount =0;
             ushort totalframecount = 0;
@@ -1396,10 +1398,10 @@ namespace FF8
                     {
                         while(true) //I'm setting this to true and breaking in code as this works on peeking on next variable via pointer and that's not possible here without unsafe block
                         {
+                            battleCamera.cam.unkword024[keyframecount] = totalframecount;
                             current_position = br.ReadUInt16();
                             if ((short)current_position < 0) //reverse of *current_position >= 0, also cast to signed is important here
                                 break;
-                            battleCamera.cam.unkword024[keyframecount] = totalframecount;
                             totalframecount += (ushort)(current_position * 16); //here is increment of short*, but I already did that above
                             battleCamera.cam.unkbyte124[keyframecount] = (byte)(current_position =  br.ReadUInt16()); //cam->unkbyte124[keyframecount] = *current_position++; - looks like we are wasting one byte due to integer sizes
                             battleCamera.cam.unkword064[keyframecount] = current_position = br.ReadUInt16();
@@ -1461,7 +1463,7 @@ namespace FF8
             battleCamera.cam.unkbyte001 = keyframecount;
             battleCamera.cam.unkword00E = totalframecount;
             battleCamera.cam.unkword00C = 0;
-            return (uint)(ms.Position); //returns current position +1, but the HEX editor tells me it's not neccesary here due to probably memory * variable getting
+            return (uint)(ms.Position+2);
         }
 
 
