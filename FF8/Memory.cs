@@ -26,6 +26,8 @@ namespace FF8
         public static Icons Icons;
         public static Strings Strings;
 
+        public static Texture2D shadowTexture;
+        public static VertexPositionTexture[] shadowGeometry;
         public enum ScaleMode
         {
             Vertical, Horizontal, Stretch
@@ -214,7 +216,13 @@ namespace FF8
 
         #region battleProvider
 
-        public static int battle_encounter = 000;
+        /// <summary>
+        /// Active battle encounter. Set by field or battle module. You shouldn't change it in-battle. 
+        /// </summary>
+        public static int battle_encounter = 38;
+        /// <summary>
+        /// Battle music pointer. Set by SETBATTLEMUSIC in field module or by world module. Default=6
+        /// </summary>
         public static int SetBattleMusic = 6;
         public static Init_debugger_battle.Encounter[] encounters;
 
