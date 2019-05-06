@@ -2,7 +2,9 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace FF8
 {
@@ -95,6 +97,7 @@ namespace FF8
             switch (currentMode)
             {
                 case Mode.Initialize:
+                    //SaveStringToFile();
                     currentMode++;
                     break;
 
@@ -115,17 +118,17 @@ namespace FF8
             Memory.SpriteBatchEnd();
             Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
 
-            float scale = 4f;
+            Vector2 scale = new Vector2(4f);
             Rectangle dst = new Rectangle()
             {
-                Width = (int)(Memory.Icons.GetEntryGroup(icon).Width * scale),
-                Height = (int)(Memory.Icons.GetEntryGroup(icon).Height * scale)
+                Width = (int)(Memory.Icons.GetEntryGroup(icon).Width * scale.X),
+                Height = (int)(Memory.Icons.GetEntryGroup(icon).Height * scale.Y)
             };
             if (icon == Icons.ID.Menu_BG_368)
             {
                 dst.Width = vp.Width;
                 dst.Height = vp.Height - 50;
-                scale = 0f;
+                scale = Vector2.Zero;
             }
             else
             {
@@ -135,8 +138,29 @@ namespace FF8
 
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
             Memory.Icons.Draw(icon, pallet, dst, scale);
-            Memory.font.RenderBasicText(Font.CipherDirty($"{((icon)).ToString().Replace('_', ' ')}\nid: {(ushort)icon}\n\npallet: {pallet}\n\nwidth: {Memory.Icons[icon].Width}\nheight: {Memory.Icons[icon].Height}"), (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), 1f, 2f, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"{(icon).ToString().Replace('_', ' ')}\nid: {(ushort)icon}\n\npallet: {pallet}\n\nwidth: {Memory.Icons[icon].Width}\nheight: {Memory.Icons[icon].Height}"), (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), 1f, 2f, 0, 1);
             Memory.SpriteBatchEnd();
+        }
+        static public void SaveStringToFile()
+        {
+            using (FileStream fs = File.Create("D:\\iconsdatadump.csv"))
+            using (BinaryWriter bw = new BinaryWriter(fs))
+            {
+                bw.Write(Encoding.UTF8.GetBytes(ToString()));
+            }
+        }
+        static public new string ToString()
+        {
+            string output = "{Enum Name},{Enum ID}," + Memory.Icons.GetEntry(Icons.ID.Finger_Right).ToStringHeader;
+            for(uint i = 0; i < Memory.Icons.Count; i++)
+            {
+                EntryGroup eg = Memory.Icons.GetEntryGroup((Icons.ID)i);
+                foreach(Entry e in eg)
+                {
+                    output += $"{((Icons.ID)i).ToString().Replace('_', ' ')},{i}," + e.ToString();
+                }
+            }
+            return output;
         }
 
 

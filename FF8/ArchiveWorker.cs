@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace FF8
 {
@@ -9,8 +10,10 @@ namespace FF8
         static uint _unpackedFileSize;
         static uint _locationInFs;
         static bool _compressed;
-        public readonly string _path;
+        private string _path;
+        public string GetPath() => _path;
         public static string[] FileList;
+
 
         public ArchiveWorker(string path)
         {
@@ -26,15 +29,18 @@ namespace FF8
 
         private string[] ProduceFileLists() =>
             File.ReadAllLines(
-                    $"{Path.Combine(System.IO.Path.GetDirectoryName(_path), System.IO.Path.GetFileNameWithoutExtension(_path))}{Memory.Archives.B_FileList}"
+                    $"{Path.Combine(Path.GetDirectoryName(_path), Path.GetFileNameWithoutExtension(_path))}{Memory.Archives.B_FileList}"
                     );
 
         public static string[] GetBinaryFileList(byte[] fl) =>System.Text.Encoding.ASCII.GetString(fl).Replace("\r", "").Replace("\0", "").Split('\n');
 
+        public byte[] GetBinaryFile(string fileName) => GetBinaryFile(_path, fileName);
         public static byte[] GetBinaryFile(string archiveName, string fileName)
         {
             byte[] isComp = GetBin(MakiExtended.GetUnixFullPath(archiveName), fileName);
-            return isComp == null ? null : _compressed ? LZSS.DecompressAll(isComp, (uint)isComp.Length, (int)_unpackedFileSize) : isComp;
+            if(_compressed)
+                isComp = isComp.Skip(4).ToArray();
+            return isComp == null ? null : _compressed ? LZSS.DecompressAllNew(isComp) : isComp;
         }
         /// <summary>
         /// Give me three archives as bytes uncompressed please!
@@ -74,7 +80,7 @@ namespace FF8
             byte[] file = new byte[fsLen];
 
             Array.Copy(FS, fSpos, file, 0, file.Length);
-            return compe ? LZSS.DecompressAll(file, (uint)file.Length, (int)fsLen) : file;
+            return compe ? LZSS.DecompressAllNew(file) : file;
         }
 
         private static byte[] GetBin(string archiveName, string fileName)
@@ -152,7 +158,7 @@ namespace FF8
         public FI[] GetFI()
         {
             FI[] FileIndex = new FI[FileList.Length];
-            string flPath = $"{System.IO.Path.GetDirectoryName(_path)}\\{System.IO.Path.GetFileNameWithoutExtension(_path)}.fi";
+            string flPath = $"{Path.GetDirectoryName(_path)}\\{Path.GetFileNameWithoutExtension(_path)}.fi";
             using (FileStream fs = new FileStream(flPath, FileMode.Open, FileAccess.Read))
             using (BinaryReader br = new BinaryReader(fs))
                 for (int i = 0; i <= FileIndex.Length - 1; i++)

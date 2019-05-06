@@ -4,7 +4,7 @@ namespace FF8
 {
     internal partial class Icons
     {
-        protected void InsertCustomEntries()
+        protected override void InsertCustomEntries()
         {
             Entry BG = new Entry
             {
@@ -13,6 +13,7 @@ namespace FF8
                 Width = 256,
                 Height = 16,
                 CustomPallet = 1,
+                Fill = Vector2.UnitX,
                 Tile = Vector2.UnitY,
             };
             Entry Border_TopLeft = new Entry
@@ -108,6 +109,7 @@ namespace FF8
                 Width = 8,
                 Height = 8,
                 Tile = Vector2.UnitX,
+                Fill = Vector2.UnitY,
                 CustomPallet = 0
             });
             Entries[ID.Bar_Fill] = new EntryGroup(new Entry
@@ -117,18 +119,22 @@ namespace FF8
                 Width = 8,
                 Height = 8,
                 Tile = Vector2.UnitX,
-                Offset = new Vector2(0, 1),
+                Fill = Vector2.UnitY,
+                Offset = new Vector2(2, 2),
+                End = new Vector2(-2, 0),
                 CustomPallet = 5
             });
+            Entries[ID.MenuBorder] = new EntryGroup(Border_Top, Border_Left, Border_Right, Border_Bottom, Border_TopLeft, Border_TopRight, Border_BottomLeft, Border_BottomRight);
             Entries[ID.Menu_BG_256] = new EntryGroup(BG, Border_Top, Border_Left, Border_Right, Border_Bottom, Border_TopLeft, Border_TopRight, Border_BottomLeft, Border_BottomRight);
             Entries[ID.Menu_BG_368] = new EntryGroup(BG, new Entry
             {
                 X = 0,
                 Y = 64,
-                Offset = new Vector2(256, 0),
+                Offset = new Vector2(255, 0), //offset should be 256 but i had issue with 1 pixel gap should be able to get away with losing one pixel.
                 Width = 112,
                 Height = 16,
                 CustomPallet = 1,
+                Fill = Vector2.UnitX,
                 Tile = Vector2.UnitY
             }, Border_Top, Border_Left, Border_Right, Border_Bottom, Border_TopLeft, Border_TopRight, Border_BottomLeft, Border_BottomRight);
             

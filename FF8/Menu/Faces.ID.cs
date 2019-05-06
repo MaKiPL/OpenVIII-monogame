@@ -20,7 +20,7 @@
             Laguna_Loire,
             Kiros_Seagill,
             Ward_Zabac,
-            Lion = Ward_Zabac + 2, //skipped blank
+            Griever = Ward_Zabac + 2, //skipped blank
             MiniMog,
             Boko,
             Angelo,

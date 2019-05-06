@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 
 namespace FF8
@@ -22,8 +23,8 @@ namespace FF8
         private const int STATE_RESET = 7;
 
         private static readonly string[] movieDirs = {
-            MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../movies")), //this folder has most movies
-            MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "movies"))}; //this folder has rest of movies
+            MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "movies")), //this folder has most movies
+            MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata_lang, "movies"))}; //this folder has rest of movies
         private static List<string> _movies = new List<string>();
         /// <summary>
         /// Movie file list
@@ -36,7 +37,13 @@ namespace FF8
                 {
                     foreach (string s in movieDirs)
                     {
-                        _movies.AddRange(Directory.GetFiles(s, "*.avi"));
+                        if (Directory.Exists(s))
+                        {
+                            _movies.AddRange(Directory.GetFiles(s,"*",SearchOption.AllDirectories).Where(x => 
+                            x.EndsWith(".avi",StringComparison.OrdinalIgnoreCase) ||
+                            x.EndsWith(".mkv", StringComparison.OrdinalIgnoreCase) ||
+                            x.EndsWith(".bik", StringComparison.OrdinalIgnoreCase)));
+                        }
                     }
                 }
                 return _movies;
@@ -108,12 +115,14 @@ namespace FF8
                     //    // if we are behind the timer get the next frame of audio.
                     //    FfccAudio.Next();
                     //}
-                    if (FfccVideo.Behind)
+                    if (FfccVideo==null)
+                        MovieState = STATE_FINISHED;
+                    else if (FfccVideo.Behind)
                     {
                         if (FfccVideo.Next() < 0)
                         {
                             MovieState = STATE_FINISHED;
-                            Memory.SuppressDraw = true;
+                            //Memory.SuppressDraw = true;
                             break;
                         }
                         else if (frameTex != null)
@@ -130,7 +139,8 @@ namespace FF8
                     }
                     if (frameTex == null)
                     {
-                        frameTex = FfccVideo.Texture2D();
+                        if(FfccVideo!=null)
+                            frameTex = FfccVideo.Texture2D();
                     }
                     break;
                 case STATE_PAUSED:
@@ -177,18 +187,19 @@ namespace FF8
         // The flush packet is a non-null packet with size 0 and data null
         private static void InitMovie()
         {
-
-            FfccAudio = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
-            FfccVideo = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_VIDEO, Ffcc.FfccMode.STATE_MACH);
-
-            FPS = FfccVideo.FPS;
-            if (Math.Abs(FPS) < double.Epsilon)
+            if (Movies != null && Index < Movies.Count)
             {
-                TextWriter errorWriter = Console.Error;
-                errorWriter.WriteLine("Can not calc FPS, possibly FFMPEG dlls are missing or an error has occured");
-                MovieState = STATE_RETURN;
-            }
+                FfccAudio = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
+                FfccVideo = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_VIDEO, Ffcc.FfccMode.STATE_MACH);
 
+                FPS = FfccVideo.FPS;
+                if (Math.Abs(FPS) < double.Epsilon)
+                {
+                    TextWriter errorWriter = Console.Error;
+                    errorWriter.WriteLine("Can not calc FPS, possibly FFMPEG dlls are missing or an error has occured");
+                    MovieState = STATE_RETURN;
+                }
+            }
         }
 
         internal static void Draw()

@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
+using System.IO;
 using System.Linq;
 
 namespace FF8
@@ -24,15 +26,16 @@ namespace FF8
         protected override void Initialize()
         {
             FFmpeg.AutoGen.Example.FFmpegBinariesHelper.RegisterFFmpegBinaries();
+            Memory.Init(graphics, spriteBatch, Content);
             Memory.graphics = graphics;
             Memory.spriteBatch = spriteBatch;
             Memory.content = Content;
             spriteRender = new SpriteBatch(GraphicsDevice);
-
             init_debugger_Audio.DEBUG(); //this initializes the DirectAudio, it's true that it gets loaded AFTER logo, but we will do the opposite
             init_debugger_Audio.DEBUG_SoundAudio(); //this initalizes the WAVE format audio.dat
             Init_debugger_fields.DEBUG(); //this initializes the field module, it's worth to have this at the beginning
             Init_debugger_battle.DEBUG(); //this initializes the encounters
+            Saves.Init(); //loads all savegames from steam or cd2000 directories. first come first serve.
             Memory.font = new Font(); //this initializes the fonts and drawing system- holds fonts in-memory
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
 
@@ -51,11 +54,89 @@ namespace FF8
 
             rt = new RenderTarget2D(GraphicsDevice, (int)(GraphicsDevice.Viewport.Width * scale), (int)(GraphicsDevice.Viewport.Height * scale), false, SurfaceFormat.Color, DepthFormat.Depth24);
             base.Initialize();
+            //ArchiveSearch s = new ArchiveSearch("Zell\0");//used to find file a string is in. disable if not using.
+
         }
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
             Memory.spriteBatch = spriteBatch;
+            Memory.shadowTexture = Content.Load<Texture2D>("Shadow");
+            GenerateShadowModel();
+        }
+
+        private void GenerateShadowModel()
+        {
+            /*
+             * X-X
+             * X-X
+             * X-X
+             */
+            Vector3[] vertices = new Vector3[] //3x3 
+            {
+                new Vector3(-10,0,10),
+                new Vector3(0,0,10),
+                new Vector3(0,0,0),
+                new Vector3(-10,0,0),
+                new Vector3(10,0,10),
+                new Vector3(10,0,0),
+                new Vector3(0,0,-10),
+                new Vector3(-10,0,-10),
+                new Vector3(10,0,-10),
+            };
+
+            Vector2[] textureCoordinates = new Vector2[]
+            {
+                new Vector2(0.0099f, 0.9950f),
+            new Vector2(0.0099f, 0.0189f),
+            new Vector2(0.9777f, 0.0189f),
+            new Vector2(0.9777f, 0.9950f),
+            new Vector2(0.9821f, 0.9995f),
+            new Vector2(0.0143f, 0.9995f),
+            new Vector2(0.0143f, 0.0144f),
+            new Vector2(0.9821f, 0.0144f)
+            };
+
+        VertexPositionTexture[] vpt = new VertexPositionTexture[]
+            {
+
+                //righttop (should be bottom left)
+                                new VertexPositionTexture(vertices[0], textureCoordinates[6]),
+                new VertexPositionTexture(vertices[1], textureCoordinates[7]),
+                new VertexPositionTexture(vertices[2], textureCoordinates[4]),
+                                new VertexPositionTexture(vertices[2], textureCoordinates[4]),
+                new VertexPositionTexture(vertices[3], textureCoordinates[5]),
+                new VertexPositionTexture(vertices[0], textureCoordinates[6]),
+
+
+                //top left
+                                new VertexPositionTexture(vertices[1], textureCoordinates[0]),
+                new VertexPositionTexture(vertices[4], textureCoordinates[1]),
+                new VertexPositionTexture(vertices[5], textureCoordinates[2]),
+                                new VertexPositionTexture(vertices[5], textureCoordinates[2]),
+                new VertexPositionTexture(vertices[2], textureCoordinates[3]),
+                new VertexPositionTexture(vertices[1], textureCoordinates[0]),
+
+
+                //bottom right should be top right
+                                new VertexPositionTexture(vertices[3], textureCoordinates[7]),
+                new VertexPositionTexture(vertices[2], textureCoordinates[4]),
+                new VertexPositionTexture(vertices[6], textureCoordinates[5]),
+                                new VertexPositionTexture(vertices[6], textureCoordinates[5]),
+                new VertexPositionTexture(vertices[7], textureCoordinates[6]),
+                new VertexPositionTexture(vertices[3], textureCoordinates[7]),
+
+
+                //bottom left should be bottom right
+                                new VertexPositionTexture(vertices[2], textureCoordinates[4]),
+                new VertexPositionTexture(vertices[5], textureCoordinates[5]),
+                new VertexPositionTexture(vertices[8], textureCoordinates[6]),
+                                new VertexPositionTexture(vertices[8], textureCoordinates[6]),
+                new VertexPositionTexture(vertices[6], textureCoordinates[7]),
+                new VertexPositionTexture(vertices[2], textureCoordinates[4]),
+            };
+
+            Memory.shadowGeometry = vpt;
         }
 
         protected override void UnloadContent()

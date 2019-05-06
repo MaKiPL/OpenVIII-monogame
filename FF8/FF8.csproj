@@ -138,16 +138,25 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ArchiveSearch.cs" />
     <Compile Include="ArchiveWorker.cs" />
+    <Compile Include="DirtyEncoder.cs" />
     <Compile Include="Menu\Cards.cs" />
     <Compile Include="Menu\Cards.ID.cs" />
     <Compile Include="EntryGroup.cs" />
     <Compile Include="Menu\Faces.ID.cs" />
     <Compile Include="Menu\Icons.ID.cs" />
     <Compile Include="Menu\Icons.InsertCustomEntries.cs" />
+    <Compile Include="Menu\Magazine.cs" />
     <Compile Include="Menu\Magazine.InsertCustomEntries.cs" />
     <Compile Include="Menu\Magazine.ID.cs" />
-    <Compile Include="Module_card_test.cs" />
+    <Compile Include="Menu\Strings.cs" />
+    <Compile Include="Menu\Module_card_test.cs" />
+    <Compile Include="Menu\Module_main_menu_debug.Item.cs" />
+    <Compile Include="Menu\Module_main_menu_Loading.cs" />
+    <Compile Include="Menu\Module_main_menu_MainLobby.cs" />
+    <Compile Include="Menu\Module_main_menu_DebugLobby.cs" />
+    <Compile Include="Saves.cs" />
     <Compile Include="Sources\Environment\Game\Location\GameLocation.cs" />
     <Compile Include="Sources\Environment\Game\Location\IGameLocationProvider.cs" />
     <Compile Include="Sources\Environment\Game\Location\LinuxGameLocationProvider.cs" />
@@ -176,10 +185,10 @@
     <Compile Include="ModuleHandler.cs" />
     <Compile Include="Battle\module_battle.cs" />
     <Compile Include="Battle\module_battle_Debug.cs" />
-    <Compile Include="Module_face_test.cs" />
+    <Compile Include="Menu\Module_face_test.cs" />
     <Compile Include="module_field_debug.cs" />
-    <Compile Include="Module_icon_test.cs" />
-    <Compile Include="module_main_menu_debug.cs" />
+    <Compile Include="Menu\Module_icon_test.cs" />
+    <Compile Include="Menu\module_main_menu_debug.cs" />
     <Compile Include="module_movie_test.cs" />
     <Compile Include="module_overture_debug.cs" />
     <Compile Include="World\module_world_debug.cs" />
@@ -208,8 +217,8 @@
     <Reference Include="DirectMidiNet">
       <HintPath>..\DirectMidiNet.dll</HintPath>
     </Reference>
-    <Reference Include="FFmpeg.AutoGen, Version=4.1.0.2, Culture=neutral, PublicKeyToken=9b7632533a381715, processorArchitecture=MSIL">
-      <HintPath>..\packages\FFmpeg.AutoGen.4.1.0.2\lib\net45\FFmpeg.AutoGen.dll</HintPath>
+    <Reference Include="FFmpeg.AutoGen, Version=4.1.0.4, Culture=neutral, PublicKeyToken=9b7632533a381715, processorArchitecture=MSIL">
+      <HintPath>..\packages\FFmpeg.AutoGen.4.1.0.4\lib\net45\FFmpeg.AutoGen.dll</HintPath>
     </Reference>
     <Reference Include="NAudio, Version=1.8.5.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\NAudio.1.8.5\lib\net35\NAudio.dll</HintPath>

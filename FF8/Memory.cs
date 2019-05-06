@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace FF8
 {
-    internal class Memory
+    internal static class Memory
     {
         //monogame
         public static GraphicsDeviceManager graphics;
@@ -24,7 +24,10 @@ namespace FF8
         public static Cards Cards;
         public static Faces Faces;
         public static Icons Icons;
+        public static Strings Strings;
 
+        public static Texture2D shadowTexture;
+        public static VertexPositionTexture[] shadowGeometry;
         public enum ScaleMode
         {
             Vertical, Horizontal, Stretch
@@ -39,8 +42,8 @@ namespace FF8
                 targetX = graphics.GraphicsDevice.Viewport.Width;
             if (targetY == 0)
                 targetY = graphics.GraphicsDevice.Viewport.Height;
-            float h = targetX/ Width;
-            float v = targetY/ Height;
+            float h = targetX / Width;
+            float v = targetY / Height;
             switch (scaleMode)
             {
 #pragma warning disable CS0162 // Unreachable code detected
@@ -66,36 +69,42 @@ namespace FF8
 
         private static ushort prevmusic = 0;
         private static ushort currmusic = 0;
-
+        /// <summary>
+        /// Stores current savestate. When you save this is wrote. When you load this is replaced.
+        /// </summary>
+        public static Saves.Data State = new Saves.Data();
         internal static ushort MusicIndex
         {
             get
             {
-                while ((prevmusic > currmusic || prevmusic == ushort.MinValue && currmusic == ushort.MaxValue) &&
-                    !dicMusic.ContainsKey(currmusic))
+                if (dicMusic.Count > 0)
                 {
-                    if (dicMusic.Keys.Max() < currmusic)
+                    while ((prevmusic > currmusic || prevmusic == ushort.MinValue && currmusic == ushort.MaxValue) &&
+                        !dicMusic.ContainsKey(currmusic))
                     {
-                        currmusic = dicMusic.Keys.Max();
+                        if (dicMusic.Keys.Max() < currmusic)
+                        {
+                            currmusic = dicMusic.Keys.Max();
+                        }
+                        else
+                        {
+                            currmusic--;
+                        }
                     }
-                    else
+                    while (dicMusic.Count > 0 && prevmusic < currmusic && !dicMusic.ContainsKey(currmusic))
                     {
-                        currmusic--;
+                        if (dicMusic.Keys.Max() < currmusic)
+                        {
+                            currmusic = dicMusic.Keys.Min();
+                        }
+                        else
+                        {
+                            currmusic++;
+                        }
                     }
+                    return currmusic;
                 }
-                while (prevmusic < currmusic && !dicMusic.ContainsKey(currmusic))
-                {
-                    if (dicMusic.Keys.Max() < currmusic)
-                    {
-                        currmusic = dicMusic.Keys.Min();
-                    }
-                    else
-                    {
-                        currmusic++;
-                    }
-                }
-
-                return currmusic;
+                else return 0;
             }
             set
             {
@@ -138,13 +147,56 @@ namespace FF8
         public static int module = MODULE_BATTLE_DEBUG;
 
         public static string FF8DIR => GameLocation.Current.DataPath;
+        public static string FF8DIRdata { get; private set; }
+        public static string FF8DIRdata_lang { get; private set; }
 
+        public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
+        {
+            FF8DIRdata = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "Data"));
+            string testdir = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIRdata, "lang-en"));
+            FF8DIRdata_lang = Directory.Exists(testdir) ? testdir : FF8DIRdata;
+
+            Memory.graphics = graphics;
+            Memory.spriteBatch = spriteBatch;
+            Memory.content = content;
+
+            Memory.DirtyEncoding = new DirtyEncoding();
+            Memory.FieldHolder.FieldMemory = new int[1024];
+
+            Memory.font = new Font(); //this initializes the fonts and drawing system- holds fonts in-memory
+            Memory.Strings = new Strings();
+#if DEBUG
+            //export the string data so you can find where the string you want is.
+            // then you can Memory.Strings.Read() it :)
+            try
+            {
+                string dumpfolder = Path.GetTempPath();
+                if (Directory.Exists(dumpfolder))
+                {
+                    Memory.Strings.Dump(Strings.FileID.MNGRP, Path.Combine(dumpfolder, "MNGRPdump.txt"));
+                    Memory.Strings.Dump(Strings.FileID.AREAMES, Path.Combine(dumpfolder, "AREAMESdump.txt"));
+                    Memory.Strings.Dump(Strings.FileID.NAMEDIC, Path.Combine(dumpfolder, "NAMEDICdump.txt"));
+                    Memory.Strings.Dump(Strings.FileID.KERNEL, Path.Combine(dumpfolder, "KERNELdump.txt"));
+                }
+            }
+            catch (IOException)
+            {
+
+            }
+
+            Memory.Cards = new Cards();
+            Memory.Faces = new Faces();
+            Memory.Icons = new Icons();
+
+#endif
+        }
         /// <summary>
         /// If true by the end of Update() will skip the next Draw()
         /// </summary>
         public static bool SuppressDraw { get; internal set; }
 
         public static bool IsMouseVisible { get; internal set; } = false;
+        public static DirtyEncoding DirtyEncoding;
 
         #region modules
 
@@ -164,7 +216,13 @@ namespace FF8
 
         #region battleProvider
 
-        public static int battle_encounter = 000;
+        /// <summary>
+        /// Active battle encounter. Set by field or battle module. You shouldn't change it in-battle. 
+        /// </summary>
+        public static int battle_encounter = 38;
+        /// <summary>
+        /// Battle music pointer. Set by SETBATTLEMUSIC in field module or by world module. Default=6
+        /// </summary>
         public static int SetBattleMusic = 6;
         public static Init_debugger_battle.Encounter[] encounters;
 
@@ -653,291 +711,15 @@ namespace FF8
 
         #endregion DrawPointMagic
 
-        #region FF8Vaiables
-
-        /*
-        // ref http://wiki.ffrtt.ru/index.php/FF8/Variables copied the table into excel and tried to
-        // changed the list into c# code. I was thinking atleast some of it would be useful.
-        enum Characters
-        {
-            // I noticed some values were in order of these characters so I made those values into
-            // arrays and put the character names into an enum.
-            Squall, Zell, Irvine, Quistis, Rinoa, Selphie, Seifer, Edea, Count // Count is the last value and is the number of characters in enum
-        }
-        struct FF8Variables
-        {
-            //unsafe fixed byte byte03[4]; //[0-3]unused in fields (always "FF-8")
-            ulong Steps; //[4]Steps (used to generate random encounters)
-            ulong Payslip; //[8]Payslip
-            //unsafe fixed byte byte1215[4]; //[12-15]unused in fields
-            short SeedRankPts; //[16]SeeD rank points?
-            //unsafe fixed byte byte1819[2]; //[18-19]unused in fields
-            ulong BattlesWon; //[20]Battles won. (Fun fact: this affects the basketball shot in Trabia.)
-            unsafe fixed byte byte2425[2]; //[24-25]unused in fields
-            ushort EscapedBattles; //[26]Battles escaped.
-            unsafe fixed ushort EnemiesKilled[(int)Characters.Count];
-
-            //ushort ushort28; //[28]Enemies killed by Squall
-            //ushort ushort30; //[30]Enemies killed by Zell
-            //ushort ushort32; //[32]Enemies killed by Irvine
-            //ushort ushort34; //[34]Enemies killed by Quistis
-            //ushort ushort36; //[36]Enemies killed by Rinoa
-            //ushort ushort38; //[38]Enemies killed by Selphie
-            //ushort ushort40; //[40]Enemies killed by Seifer
-            //ushort ushort42; //[42]Enemies killed by Edea
-
-            unsafe fixed ushort DeathCounter[(int)Characters.Count];
-
-            //ushort ushort44; //[44]Squall death count
-            //ushort ushort46; //[46]Zell death count
-            //ushort ushort48; //[48]Irvine death count
-            //ushort ushort50; //[50]Quistis death count
-            //ushort ushort52; //[52]Rinoa death count
-            //ushort ushort54; //[54]Selphie death count
-            //ushort ushort56; //[56]Seifer death count
-            //ushort ushort58; //[58]Edea death count
-
-            //unsafe fixed byte byte6067[8]; //[60-67]unused in fields
-            ulong EnemiesKilledTotal; //[68]Enemies killed
-            ulong Gill; //[72]Amount of Gil the party currently has
-            ulong GillLaguna; //[76]Amount of Gil Laguna's party has
-            ulong FMVFrames; //[80]Counts the number of frames since the current movie started playing. (default fps is 15?)
-            ushort LastArea; //[84]Last area visited.
-            sbyte CurrentCarRent; //[86]Current car rent.
-            //sbyte sbyte87; //[87]Built-in engine variable. No idea what it does. Scripts always check if it's equal to 0 or 10. Related to music.
-            //sbyte sbyte88; //[88]Built-in engine variable. Used exclusively on save points. Never written to with field scripts. Related to Siren's Move-Find ability.
-            //unsafe fixed byte byte89103[15]; //[89-103]unused in fields
-            ulong ulong104; //[104]Seems related to SARALYDISPON/SARALYON/MUSICLOAD/PHSPOWER opcodes
-            ulong ulong108; //[108]Music related
-            //ulong ulong112; //[112]unused in fields
-            unsafe fixed byte DrawPtsFeild[32]; //[116-147]Draw points in field
-            unsafe fixed byte DrawPtsWorld[31]; //[148-179]Draw points in worldmap
-            unsafe fixed byte byte180255[76]; //[180-255]unused in fields
-            ushort StoryQuestprogress; //[256]Main Story quest progress.
-            //byte byte258; //[258]not investigated
-            //unsafe fixed byte byte259260[2]; //[259-260]unused in fields
-            //byte byte261; //[261]not investigated
-            //unsafe fixed byte byte262263[2]; //[262-263]unused in fields
-            //byte byte264; //[264]not investigated
-            //byte byte265; //[265]not investigated
-            byte WorldMapVersion; //[266]World map version? (3=Esthar locations unlocked)
-            //byte byte267; //[267]unused in fields
-            //byte byte268; //[268]not investigated
-            //byte byte269; //[269]not investigated
-            //byte byte270; //[270]not investigated
-            //byte byte271; //[271]unused in fields
-            //unsafe fixed byte byte272299[28]; //[272-299]SO MANY F***ING CARD GAME VARIABLES
-            byte CardQueenrecards; //[300]Card Queen re-cards.
-            //unsafe fixed byte byte301303[3]; //[301-303]unused in fields
-            unsafe fixed byte TimberManiacsIssues[2]; //[304-305]Timber Maniacs issues found.
-            unsafe fixed byte Hacktuar[14]; //[306-319]Reserved for Hacktuar / FF8Voice
-            unsafe fixed byte UltimeciaGallery[3]; //[320-332]Ultimecia Gallery related (pictures viewed?)
-            byte UltimeciaArmory; //[333]Ultimecia Armory chest flags
-            byte UltimeciaCastle; //[334]Ultimecia Castle seals. See SEALEDOFF for details.
-            byte Card; //[335]Card related
-            byte BusRelated; //[336]Deling City bus related
-            unsafe fixed byte GatesOpened[3]; //[338-340]Deling Sewer gates opened
-            //byte byte341; //[341]Does lots of things.5
-            byte BusSystem; //[342]Deling City bus system
-            byte byte343; //[343]G-Garden door/event flags.
-            byte byte344; //[344]B-Garden / G-Garden event flags (during GvG)
-            byte byte345; //[345]G-Garden door/event flags.
-            unsafe fixed byte byte346349[4]; //[346-349]FH Instrument (346 Zell, 347 Irvine, 348 Selphie, 349 Quistis)
-            unsafe fixed ushort ushort350356[7]; //[350-356]Health Bars (Garden mech fight)
-            byte byte358; //[358]Space station talk flags, Centra ruins related (beat odin?).
-            byte byte359; //[359]Centra ruins related (beat odin?).
-            ulong ulong360; //[360]Choice of FH music.
-            unsafe fixed byte byte364368[5]; //[364-368]Randomly generated code for Centra Ruins.
-            unsafe fixed byte byte369370[2]; //[369-370]Ultimecia Castle flags
-            byte byte371; //[371]unused in fields
-            unsafe fixed byte byte372376[5]; //[372-376]Ultimecia boss/timer/item flags
-            byte byte377; //[377]Ultimecia organ note controller
-            byte byte378; //[378]Centra Ruins timer (controls blackout messages from Odin)
-            byte byte379; //[379]unused in fields
-            ushort ushort380; //[380]Squall health during mech fight.
-            unsafe fixed byte byte382383[2]; //[382-383]unused in fields
-            byte byte384; //[384]Something about Laguna's time periods and GFs.
-            byte byte385; //[385]Laguna dialogue in pub. Only the +2 bit is ever set. Don't change the +1 bit.
-            byte byte387; //[387]Winhill progress?
-            byte byte388; //[388]Timber Maniacs HQ talk flags (main lobby)
-            byte byte389; //[389]Timber Maniacs HQ talk flags (office room)
-            byte byte390; //[390]Edea talk flags at her house
-            byte byte391; //[391]Laguna talk flags (in his office, disc 3)
-            //byte byte392; //[392]unknown (used in Edea's house and in the Balamb Garden computer system)
-            //unsafe fixed byte byte393399[7]; //[393-399]unused in fields
-            //ulong ulong400and404; //[400 and 404]Related to monsters killed in Winhill, but I don't think it actually does anything. Will investigate.
-            byte byte408; //[408]unused in fields
-            byte byte409; //[409]Balamb Garden computer system
-            unsafe fixed byte byte410431[22]; //[410-431]unused in fields
-            byte byte432; //[432]BG Main hall flags
-            byte byte433; //[433]Flags. Switches are assigned all over BG. No idea what any of them control.
-            byte byte434; //[434]Flags. Switches are assigned all over BG. No idea what any of them control.
-            byte byte435; //[435]Flags. Switches are assigned all over BG. No idea what any of them control.
-            byte byte436; //[436]Moomba friendship level in the prison? Some actions cause these flags to be set.
-            byte byte437; //[437]In BG on Disc 2, keeps track of who's in your party. In the prison, it's the current floor you're on.
-            byte byte438; //[438]Cid vs Norg event flags
-            byte byte439; //[439]Cid vs Norg event flags
-            byte byte440; //[440]Event flags. (+1 Quad ambush, +2 quad item giver, +4/+8 Infirmary helped, +16 Nida, +64 Kadowaki Elixir, +128 Training center)
-            byte byte441; //[441]Cid vs Norg event flags
-            byte byte442; //[442]Rinoa Garden tour flags
-            ushort ushort443; //[443]Zell Health in Prison (Hacktuar)
-            unsafe fixed byte byte445447[3]; //[445-447]Propagator defeated flags
-            ushort ushort448; //[448]Unknown
-            unsafe fixed byte byte450451[2]; //[450-451]Various magazine/talk flags
-            byte byte452; //[452]Lunatic Pandora areas visited?
-            unsafe fixed byte byte453455[3]; //[453-455]Moomba teleport variables
-            unsafe fixed byte byte456457[2]; //[456-457]unused in fields
-            unsafe fixed byte byte458459[2]; //[458-459]Used with MUSICSKIP in some Balamb Garden areas
-            byte byte460; //[460]Random flags (some used for Card Club)
-            unsafe fixed byte byte461473[13]; //[461-473]unused in fields
-            byte byte474; //[474]Random flags (some used for Card Club)
-            unsafe fixed byte byte475478[4]; //[475-478]CC Group variables
-            byte byte479; //[479]If set to 0, disables all random battles during area loading.
-            byte byte480; //[480]State of students in classroom (what they're doing).
-            byte byte481; //[481]Controls a conversation in the cafeteria.
-            short short482; //[482]Error ratio of missiles
-            byte byte484; //[484]Missile Base progression?
-            byte byte485; //[485]ToUK Progression (initially 0b111010101, +2 on finish quest. No other pops)
-            byte byte486; //[486]ToUK room? (used to control map jumps in the maze)
-            byte byte487; //[487]Missile base progression (also does something in BG2F classroom)
-            byte byte488; //[488]Alternate Party Flags. Irvine +1/+16, Quistis +2/+32, Rinoa +4/+64, Zell +8/+128.1
-            byte byte489; //[489]Random talk flags?
-            byte byte490; //[490]Cafeteria cutscene
-            byte byte491; //[491]ToUK stuff
-            byte byte492; //[492]I think this is a door opener for the missile base if you choose a short time limit.
-            byte byte493; //[493]Missile base timer related?
-            unsafe fixed byte byte494527[34]; //[494-527]unused in fields
-            short short528; //[528]Sub-story progression (it's a progression variable for individual segments of the game)
-            byte byte530; //[530]X-ATM related (defeated it in battle?)
-            byte byte531; //[531]Functionally unused. Read from at dollet, only manipulated in debug rooms.
-            byte byte532; //[532]Controls footstep sounds at dollet (sand to concrete)
-            byte byte533; //[533]not investigated
-            byte byte534; //[534]not investigated
-            byte byte535; //[535]not investigated
-            byte byte536; //[536]not investigated
-            byte byte537; //[537]not investigated
-            byte byte538; //[538]not investigated
-            byte byte539; //[539]not investigated
-            unsafe fixed byte byte540591[52]; //[540-591]unused in fields
-            unsafe fixed byte byte592593[2]; //[592-593]Seems to control angles and character facing.
-            byte byte594; //[594]unused in fields
-            byte byte595; //[595]not investigated
-            byte byte596; //[596]not investigated
-            byte byte597; //[597]not investigated
-            byte byte598; //[598]not investigated
-            byte byte599; //[599]not investigated
-            byte byte600; //[600]not investigated
-            byte byte601; //[601]not investigated
-            byte byte602; //[602]not investigated
-            byte byte603; //[603]not investigated
-            byte byte604; //[604]not investigated
-            byte byte605; //[605]not investigated
-            byte byte606; //[606]not investigated
-            byte byte607; //[607]not investigated
-            byte byte608; //[608]not investigated
-            byte byte609; //[609]not investigated
-            byte byte610; //[610]not investigated
-            byte byte611; //[611]not investigated
-            byte byte612; //[612]not investigated
-            byte byte613; //[613]not investigated
-            byte byte614; //[614]not investigated
-            byte byte615; //[615]not investigated
-            byte byte616; //[616]not investigated
-            byte byte617; //[617]not investigated
-            byte byte618; //[618]not investigated
-            byte byte619; //[619]not investigated
-            byte byte620; //[620]not investigated
-            byte byte621; //[621]not investigated
-            byte byte622; //[622]not investigated
-            byte byte623; //[623]not investigated
-            byte byte624; //[624]not investigated
-            byte byte625; //[625]Balamb visited flags (+8 Zell's room)
-            byte byte626; //[626]not investigated
-            byte byte627; //[627]not investigated
-            byte byte628; //[628]unused in fields
-            byte byte629; //[629]not investigated
-            byte byte630; //[630]not investigated
-            byte byte631; //[631]not investigated
-            byte byte632; //[632]not investigated
-            byte byte633; //[633]not investigated
-            ushort ushort634; //[634]not investigated
-            byte byte636; //[636]not investigated
-            byte byte637; //[637]unused in fields
-            byte byte638; //[638]not investigated
-            byte byte639; //[639]unused in fields
-            byte byte640; //[640]not investigated
-            byte byte641; //[641]not investigated
-            byte byte642; //[642]not investigated
-            byte byte643; //[643]not investigated
-            byte byte644; //[644]not investigated
-            byte byte645; //[645]not investigated
-            byte byte646; //[646]not investigated
-            byte byte647; //[647]not investigated
-            byte byte648; //[648]not investigated
-            byte byte649; //[649]not investigated
-            unsafe fixed byte byte650655[6]; //[650-655]unused in fields
-            ushort ushort656; //[656]not investigated
-            byte byte658; //[658]not investigated
-            byte byte659; //[659]not investigated
-            byte byte660; //[660]not investigated
-            byte byte661; //[661]not investigated
-            byte byte662; //[662]not investigated
-            byte byte663; //[663]not investigated
-            byte byte664; //[664]not investigated
-            byte byte665; //[665]not investigated
-            ushort ushort666; //[666]not investigated
-            byte byte668; //[668]not investigated
-            unsafe fixed byte byte669671[3]; //[669-671]unused in fields
-            ushort ushort672; //[672]not investigated
-            byte byte674; //[674]unused in fields
-            byte byte675; //[675]not investigated
-            byte byte676; //[676]unused in fields
-            byte byte677; //[677]not investigated
-            byte byte678; //[678]not investigated
-            byte byte679; //[679]unused in fields
-            byte byte680; //[680]not investigated
-            byte byte681; //[681]not investigated
-            byte byte682; //[682]not investigated
-            byte byte683; //[683]not investigated
-            byte byte684; //[684]not investigated
-            byte byte685; //[685]not investigated
-            byte byte686; //[686]not investigated
-            byte byte687; //[687]not investigated
-            byte byte688; //[688]not investigated
-            byte byte689; //[689]not investigated
-            byte byte690; //[690]not investigated
-            byte byte691; //[691]not investigated
-            unsafe fixed byte byte692719[28]; //[692-719]unused in fields
-            byte byte720; //[720]Squall's costume (0=normal, 1=student, 2=SeeD, 3=Bandage on forehead)
-            byte byte721; //[721]Zell's Costume (0=normal, 1=student, 2=SeeD)
-            byte byte722; //[722]Selphie's costume (0=normal, 1=student, 2=SeeD)
-            byte byte723; //[723]Quistis' Costume (0=normal, 1=SeeD)
-            ushort ushort724; //[724]Dollet mission time
-            ushort ushort726; //[726]not investigated
-            byte byte728; //[728]Does lots of things.3
-            byte byte729; //[729]not investigated
-            byte byte730; //[730]Flags (+1 Joined Garden Festival Committee, +4 Gave Selphie tour of BG, +16 Kadowaki asks for Cid, +32 and +64 Tomb of Unknown Kind hints?, +128 Beat all card people?)
-            byte byte731; //[731]unused in fields
-            ushort ushort732; //[732]not investigated
-            byte byte734; //[734]Split Party Flags (+1 Zell, +2 Irvine, +4 Rinoa, +8 Quistis, +16 Selphie).2
-            byte byte735; //[735]not investigated
-            unsafe fixed byte byte736751[16]; //[736-751]unused in fields
-            byte byte752; //[752]not investigated
-            unsafe fixed byte byte7531023[271]; //[753-1023]unused in fields
-            byte byteAbove1023; //[Above 1023]Temporary variables used pretty much everywhere.
-        }
-*/
-
-        #endregion FF8Vaiables
 
         public static class Archives
         {
-            public static string A_BATTLE = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "battle"));
-            public static string A_FIELD = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "field"));
-            public static string A_MAGIC = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "magic"));
-            public static string A_MAIN = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "main"));
-            public static string A_MENU = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "menu"));
-            public static string A_WORLD = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "world"));
+            public static string A_BATTLE = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "battle"));
+            public static string A_FIELD = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "field"));
+            public static string A_MAGIC = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "magic"));
+            public static string A_MAIN = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "main"));
+            public static string A_MENU = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "menu"));
+            public static string A_WORLD = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "world"));
 
             public const string B_FileList = ".fl";
             public const string B_FileIndex = ".fi";

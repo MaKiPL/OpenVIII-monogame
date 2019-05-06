@@ -11,8 +11,8 @@
         /// <seealso cref="http://forums.qhimm.com/index.php?topic=11084.0"/>
         public Cards()
         {
-            TextureCount = 10;
-            TextureFilename = "mc{0:00}.tex";
+            TextureCount[0] = 10;
+            TextureFilename[0] = "mc{0:00}.tex";
             TextureStartOffset = 0;
             EntriesPerTexture = 11;
             IndexFilename = "cardanm.sp2";
