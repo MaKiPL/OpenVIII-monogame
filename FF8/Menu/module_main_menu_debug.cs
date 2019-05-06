@@ -231,6 +231,7 @@ namespace FF8
             InitMain();
             InitLoad();
             InitDebug();
+            Init_InGameMenu();
             Memory.Strings.Close();
         }
 

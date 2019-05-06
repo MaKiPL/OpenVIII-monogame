@@ -19,6 +19,9 @@ namespace FF8
             Draw_IGM_SideBar();
             Draw_IGM_ClockBox();
             Draw_IGM_LocationBox();
+            for (sbyte i = 0; i < 3; i++)
+                Draw_PartyStatus_Box(i, (Faces.ID)Memory.State.Party[0]);
+            Draw_IGM_ExtraBox();
         }
         private static void Draw_IGM_Header(FF8String help)
         {
@@ -35,17 +38,21 @@ namespace FF8
 
         private static void Draw_IGM_LocationBox()
         {
+            FF8String loc = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Memory.State.LocationID).ReplaceRegion();
+            Rectangle dst = new Rectangle { };
+            DrawBox(loc, null, dst, false);
         }
 
         private static void Draw_IGM_ExtraBox()
         {
-
+            for (sbyte i = 0; i < 3; i++)
+                Draw_NonPartyStatus(i, (Faces.ID)Memory.State.Party[0]);
         }
         private static void Draw_PartyStatus_Box(sbyte pos, Faces.ID character)
         {
 
         }
-        private static void Draw_NonPartyStatus()
+        private static void Draw_NonPartyStatus(sbyte pos, Faces.ID character)
         {
 
         }
