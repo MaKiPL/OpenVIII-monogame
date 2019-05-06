@@ -219,7 +219,13 @@ namespace FF8
             if (IGM_NonParty_Size != null)
             {
                 if (character != Faces.ID.Blank)
-                    DrawBox(IGM_Party_Size[pos], Memory.Strings.GetName(character), Icons.ID.STATUS, indent: false);
+                {
+                    var dims = DrawBox(IGM_Party_Size[pos], Memory.Strings.GetName(character), Icons.ID.STATUS, indent: false);
+                    var r = dims.Item3;
+                    r.Offset(184 * scale.X, 6 * scale.Y);
+                    Memory.Icons.Draw(Icons.ID.Lv,2, r, TextScale, fade);
+                    //Memory.Icons.Draw(Memory.State.Characters[(int)character], 2, r, TextScale, fade);
+                }
                 else
                     DrawBox(IGM_Party_Size[pos]);
             }
