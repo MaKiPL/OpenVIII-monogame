@@ -66,8 +66,7 @@ Requirements: MonoGame + Visual Studio
 [MonoGame for Visual Studio](http://teamcity.monogame.net/repository/download/MonoGame_PackagingWindows/latest.lastSuccessful/MonoGameSetup.exe?guest=1)
 
 4. If you get "Unable to load DLL 'FreeImage'", Download and install:
-[Visual C++ Redistributable Packages for Visual Studio 2013]
-(https://www.microsoft.com/en-us/download/details.aspx?id=40784)
+[Visual C++ Redistributable Packages for Visual Studio 2013](https://www.microsoft.com/en-us/download/details.aspx?id=40784)
 
 ## Getting started (Linux/Mono) [Tested on Ubuntu]
 
