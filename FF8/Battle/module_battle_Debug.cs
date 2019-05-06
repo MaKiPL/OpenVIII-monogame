@@ -1167,13 +1167,30 @@ namespace FF8
             throw new Exception("0xFFF, unknown pointer!");
         }
 
+        public struct VIII_cameraMemoryStruct
+        {
+            public byte camAnimId; //.data:01D977A8 beginning of struct
+            public byte UNKNOWNpadding; //?
+            public ushort mainController; //so far unknown, probably a controller for animation? .data:01D977AA
+            public ushort secondWordController;
+            public ushort thirdWordController;
+            public byte cameraVar1; //this is later set up after controllers bit-parsing. May be actually camera
+            public byte cameraVar2;
+            public byte cameraVar3;
+            public byte cameraVar4;
+            public byte cameraVar5;
+            public byte cameraVar6;
+            public ushort unknownWord; //.data:01D977B6 unknown, padding? is this struct packed?
+            public uint animationPointer; //.data:01D977B8 always used with animation data + this struct
+        }
+
+        public static VIII_cameraMemoryStruct BS_CameraStruct;
+
         //TODO
         private static void ReadCamera()
         {
-            Memory.BS_CameraStruct = new Memory.VIII_cameraMemoryStruct();
+            BS_CameraStruct = new VIII_cameraMemoryStruct();
             uint cCameraHeaderSector = pbs.ReadUShort();
-            //if (cCameraHeaderSector != 0x2)
-            //    ; //error handler?
             uint pCameraSetting = pbs.ReadUShort();
             uint pCameraAnimationCollection = pbs.ReadUShort();
             uint sCameraDataSize = pbs.ReadUShort();
@@ -1220,13 +1237,13 @@ namespace FF8
         //WIP debug only, used for reverse engineering TODO
         private static void ReadAnimation(int animId)
         {
-            Memory.BS_CameraStruct.camAnimId = (byte)animId;
+            BS_CameraStruct.camAnimId = (byte)animId;
             if ((animId >> 4) >= battleCamera.battleCameraCollection.cAnimCollectionCount)
                 return;
             var pointer = battleCamera.battleCameraCollection.battleCameraSet[animId >> 4].animPointers[animId & 0xF];
             pbs.Seek(pointer, 0);
             ushort eax = pbs.ReadUShort();
-            Memory.BS_CameraStruct.mainController = eax; //[esi+2], ax 
+            BS_CameraStruct.mainController = eax; //[esi+2], ax 
             if (eax == 0xFFFF)
                 return;
             ushort ebx = eax;
@@ -1235,21 +1252,21 @@ namespace FF8
             if (eax == 0)
             {
                 eax = 0x200;
-                Memory.BS_CameraStruct.thirdWordController = Memory.BS_CameraStruct.secondWordController = eax;
+                BS_CameraStruct.thirdWordController = BS_CameraStruct.secondWordController = eax;
                 goto structFullfiled; 
             }
             eax--;
             if (eax == 0)
             {
                 eax = pbs.ReadUShort();
-                Memory.BS_CameraStruct.thirdWordController = Memory.BS_CameraStruct.secondWordController = eax;
+                BS_CameraStruct.thirdWordController = BS_CameraStruct.secondWordController = eax;
                 goto structFullfiled;
             }
             eax--;
             if (eax != 0)
                 goto structFullfiled;
-            Memory.BS_CameraStruct.secondWordController = pbs.ReadUShort(); //esi+4
-            Memory.BS_CameraStruct.thirdWordController = pbs.ReadUShort(); //esi+6 
+            BS_CameraStruct.secondWordController = pbs.ReadUShort(); //esi+4
+            BS_CameraStruct.thirdWordController = pbs.ReadUShort(); //esi+6 
 
 
         structFullfiled:
