@@ -1162,48 +1162,48 @@ namespace FF8
         [StructLayout(LayoutKind.Sequential, Pack =1, Size =1092)]
         public struct CameraStruct
         {
-            byte unkbyte000; //000
-            byte unkbyte001; //001 keyframe count?
-            ushort control_word; //002
-            ushort unkword004; //004
-            ushort unkword006; //006
-            ushort unkword008; //008
-            ushort unkword00A; //00A
-            ushort unkword00C; //00C
-            ushort unkword00E; //00E total frame count/time?
+            public byte unkbyte000; //000
+            public byte unkbyte001; //001 keyframe count?
+            public ushort control_word; //002
+            public ushort unkword004; //004
+            public ushort unkword006; //006
+            public ushort unkword008; //008
+            public ushort unkword00A; //00A
+            public ushort unkword00C; //00C
+            public ushort unkword00E; //00E total frame count/time?
             [MarshalAs(UnmanagedType.ByValArray, SizeConst =20)]
-            byte[] unk; //010
+            public byte[] unk; //010
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            ushort[] unkword024; //024 - start frames for each key frame?
+            public ushort[] unkword024; //024 - start frames for each key frame?
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            ushort[] unkword064; //064
+            public ushort[] unkword064; //064
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            ushort[] unkword0A4; //0A4
+            public ushort[] unkword0A4; //0A4
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            ushort[] unkword0E4; //0E4
+            public ushort[] unkword0E4; //0E4
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            byte[] unkbyte124; //124
+            public byte[] unkbyte124; //124
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            short[] unkword144; //144
+            public ushort[] unkword144; //144
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            short[] unkword184; //184
+            public ushort[] unkword184; //184
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            short[] unkword1C4; //1C4
+            public ushort[] unkword1C4; //1C4
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            byte[] unkbyte204; //204
+            public byte[] unkbyte204; //204
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
-            byte[] unkbyte224; //224
+            public byte[] unkbyte224; //224
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
-            byte[] unkbyte2A4; //2A4
+            public byte[] unkbyte2A4; //2A4
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
-            byte[] unkbyte324; //324
+            public byte[] unkbyte324; //324
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
-            byte[] unkbyte3A4; //3A4
+            public byte[] unkbyte3A4; //3A4
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
-            byte[] unkbyte424; //424
+            public byte[] unkbyte424; //424
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
-            byte[] unkbyte4A4; //4A4
+            public byte[] unkbyte4A4; //4A4
         };
 
         /// <summary>
@@ -1281,8 +1281,8 @@ namespace FF8
                 for (int n = 0; n < bcc.battleCameraSet[i].animPointers.Length; n++)
                     bcc.battleCameraSet[i].animPointers[n] = (uint)(ms.Position + br.ReadUInt16() * 2 - n * 2);
             }
-
-            battleCamera = new BattleCamera() { battleCameraCollection = bcc, battleCameraSettings = bcs, cam = new CameraStruct() };
+            CameraStruct cam = MakiExtended.ByteArrayToStructure<CameraStruct>(new byte[Marshal.SizeOf(typeof(CameraStruct))]); //what about this kind of trick to initialize struct with a lot amount of fixed sizes in arrays? 
+            battleCamera = new BattleCamera() { battleCameraCollection = bcc, battleCameraSettings = bcs, cam = cam };
 
             ReadAnimation(GetRandomCameraN(Memory.encounters[Memory.battle_encounter]));
 
@@ -1327,61 +1327,195 @@ namespace FF8
         /// to support GF and magic reading
         /// </summary>
         /// <param name="animId"></param>
-        private static void ReadAnimation(int animId)
+        private static uint ReadAnimation(int animId)
         {
+            short local2C;
+            byte keyframecount =0;
+            ushort totalframecount = 0;
+            short local1C;
+            short local18;
+            short local14;
+            short local10;
+
+
             var tpGetter = GetCameraCollectionPointers(animId);
             uint cameraAnimationGlobalPointer = battleCamera.battleCameraCollection.battleCameraSet[tpGetter.Item1].animPointers[tpGetter.Item2];
-            
-        //    BS_CameraStruct.camAnimId = (byte)animId;
-        //    if ((animId >> 4) >= battleCamera.battleCameraCollection.cAnimCollectionCount)
-        //        return;
-        //    var pointer = battleCamera.battleCameraCollection.battleCameraSet[animId >> 4].animPointers[animId & 0xF];
-        //    ms.Seek(pointer, 0);
-        //    ushort eax = br.ReadUInt16();
-        //    BS_CameraStruct.mainController = eax; //[esi+2], ax 
-        //    if (eax == 0xFFFF)
-        //        return;
-        //    ushort ebx = eax;
-        //    eax = (ushort)((eax >> 6) & 3);
-        //    eax--;
-        //    if (eax == 0)
-        //    {
-        //        eax = 0x200;
-        //        BS_CameraStruct.thirdWordController = BS_CameraStruct.secondWordController = eax;
-        //        goto structFullfiled; 
-        //    }
-        //    eax--;
-        //    if (eax == 0)
-        //    {
-        //        eax = br.ReadUInt16();
-        //        BS_CameraStruct.thirdWordController = BS_CameraStruct.secondWordController = eax;
-        //        goto structFullfiled;
-        //    }
-        //    eax--;
-        //    if (eax != 0)
-        //        goto structFullfiled;
-        //    BS_CameraStruct.secondWordController = br.ReadUInt16(); //esi+4
-        //    BS_CameraStruct.thirdWordController = br.ReadUInt16(); //esi+6 
+            ms.Seek(cameraAnimationGlobalPointer, SeekOrigin.Begin);
+            battleCamera.cam.control_word = br.ReadUInt16(); 
+            if (battleCamera.cam.control_word == 0xFFFF)
+                return 0; //return NULL
+
+            var current_position = br.ReadUInt16(); //getter for *current_position
+            ms.Seek(-2, SeekOrigin.Current); //roll back one WORD because no increment
+
+            switch((battleCamera.cam.control_word >> 6) & 3)
+            {
+                case 1:
+                    battleCamera.cam.unkword004 = 0x200;
+                    battleCamera.cam.unkword006 = 0x200;
+                    break;
+                case 2:
+                    battleCamera.cam.unkword004 = current_position;
+                    battleCamera.cam.unkword006 = current_position;
+                    br.ReadUInt16(); //current_position++
+                    break;
+                case 3:
+                    battleCamera.cam.unkword004 = current_position;
+                    current_position = br.ReadUInt16();
+                    battleCamera.cam.unkword006 = current_position;
+                    ms.Seek(2, SeekOrigin.Current); //skipping WORD, because we already rolled back one WORD above this switch
+                    break;
+            }
+            switch ((battleCamera.cam.control_word >> 8) & 3)
+            {
+                case 0: //TODO!!
+                    battleCamera.cam.unkword008 = 00000000; //TODO, what's ff8vars.unkword1D977A2?
+                    battleCamera.cam.unkword00A = 00000000; //same as above; cam->unkword00A = ff8vars.unkword1D977A2;
+                    break;
+                case 1:
+                    battleCamera.cam.unkword008 = 0;
+                    battleCamera.cam.unkword00A = 0;
+                    break;
+                case 2:
+                    current_position = br.ReadUInt16(); //* + current_position++;
+                    battleCamera.cam.unkword008 = current_position;
+                    battleCamera.cam.unkword00A = current_position;
+                    break;
+                case 3:
+                    current_position = br.ReadUInt16(); //* + current_position++;
+                    battleCamera.cam.unkword008 = current_position;
+                    current_position = br.ReadUInt16(); //* + current_position++;
+                    battleCamera.cam.unkword00A = current_position;
+                    break;
+            }
+
+            current_position = br.ReadUInt16();
+            ms.Seek(-2, SeekOrigin.Current);
 
 
-        //structFullfiled:
-        //    eax = ebx;
-        //    eax = (ushort)((eax >> 8) & 3);
-        //    switch (eax)
-        //    {
-        //        case 0:
-        //            break;
-        //        case 1:
-        //            break;
-        //        case 2:
-        //            break;
-        //        case 3:
-        //            break;
-        //    }
 
-        //    //default here
-        //    //there's now some operations to copy next vars
-        //    //see BS_Camera_ReadAnimation+CC 00103B8C
+            switch (battleCamera.cam.control_word & 1)
+            {
+                case 0:
+                    if(current_position >= 0)
+                    {
+                        while(current_position >= 0)
+                        {
+                            battleCamera.cam.unkword024[keyframecount] = totalframecount;
+                            totalframecount += (ushort)(current_position * 16);
+                            ms.Seek(2, SeekOrigin.Current);
+                            battleCamera.cam.unkbyte124[keyframecount] = br.ReadByte();
+                            battleCamera.cam.unkword064[keyframecount] = br.ReadUInt16();
+                            battleCamera.cam.unkword0A4[keyframecount] = br.ReadUInt16();
+                            battleCamera.cam.unkword0E4[keyframecount] = br.ReadUInt16();
+                            battleCamera.cam.unkbyte204[keyframecount] = br.ReadByte();
+                            battleCamera.cam.unkword144[keyframecount] = br.ReadUInt16();
+                            battleCamera.cam.unkword184[keyframecount] = br.ReadUInt16();
+                            battleCamera.cam.unkword1C4[keyframecount] = br.ReadUInt16();
+                            keyframecount++;
+                        }
+
+                        if(keyframecount>2)
+                        {
+                            //ff8funcs.Sub50D010(cam->unkword024, cam->unkword064, cam->unkword0A4, cam->unkword0E4, keyframecount, cam->unkbyte224, cam->unkbyte2A4, cam->unkbyte324);
+                            //ff8funcs.Sub50D010(cam->unkword024, cam->unkword144, cam->unkword184, cam->unkword1C4, keyframecount, cam->unkbyte3A4, cam->unkbyte424, cam->unkbyte4A4);
+                        }
+                    }
+                    break;
+                case 1:
+                    {
+                        if(current_position >= 0)
+                        {
+                            local14 = (short)(ms.Position + 5*2); //current_position + 5; but current_position is WORD, so multiply by two
+                            local10 = (short)(ms.Position + 6*2);
+                            local2C = (short)(ms.Position + 7*2);
+                            local18 = (short)(ms.Position + 1*2);
+                            local1C = (short)(ms.Position + 2*2);
+                            while(current_position >= 0)
+                            {
+                                /*
+                                 * 					cam->unkword024[keyframecount] = totalframecount;
+					totalframecount += *current_position++ * 16;
+					ff8funcs.Sub503AE0(++local18, ++local1C, ++ebx, *(BYTE*)current_position, &cam->unkword064[keyframecount], &cam->unkword0A4[keyframecount], &cam->unkword0E4[keyframecount]);
+					ff8funcs.Sub503AE0(++local14, ++local10, ++local2C, *(BYTE*)(current_position + 4), &cam->unkword144[keyframecount], &cam->unkword184[keyframecount], &cam->unkword1C4[keyframecount]);
+					cam->unkbyte204[keyframecount] = 0xFB;
+					cam->unkbyte124[keyframecount] = 0xFB;
+					local1C += 8;
+					local18 += 8;
+					current_position += 8;
+					local2C += 8;
+					ebx += 8;
+					local10 += 8;
+					local14 += 8;
+					keyframecount++;
+                    */
+                            }
+                        }
+                        break;
+                    }
+
+            }
+
+            if((battleCamera.cam.control_word & 0x3E) == 0x1E)
+            {
+                //ff8funcs.Sub503300();
+            }
+            battleCamera.cam.unkbyte001 = keyframecount;
+            battleCamera.cam.unkword00E = totalframecount;
+            battleCamera.cam.unkword00C = 0;
+            return (uint)(ms.Position + 1);
+
+
+            //    BS_CameraStruct.camAnimId = (byte)animId;
+            //    if ((animId >> 4) >= battleCamera.battleCameraCollection.cAnimCollectionCount)
+            //        return;
+            //    var pointer = battleCamera.battleCameraCollection.battleCameraSet[animId >> 4].animPointers[animId & 0xF];
+            //    ms.Seek(pointer, 0);
+            //    ushort eax = br.ReadUInt16();
+            //    BS_CameraStruct.mainController = eax; //[esi+2], ax 
+            //    if (eax == 0xFFFF)
+            //        return;
+            //    ushort ebx = eax;
+            //    eax = (ushort)((eax >> 6) & 3);
+            //    eax--;
+            //    if (eax == 0)
+            //    {
+            //        eax = 0x200;
+            //        BS_CameraStruct.thirdWordController = BS_CameraStruct.secondWordController = eax;
+            //        goto structFullfiled; 
+            //    }
+            //    eax--;
+            //    if (eax == 0)
+            //    {
+            //        eax = br.ReadUInt16();
+            //        BS_CameraStruct.thirdWordController = BS_CameraStruct.secondWordController = eax;
+            //        goto structFullfiled;
+            //    }
+            //    eax--;
+            //    if (eax != 0)
+            //        goto structFullfiled;
+            //    BS_CameraStruct.secondWordController = br.ReadUInt16(); //esi+4
+            //    BS_CameraStruct.thirdWordController = br.ReadUInt16(); //esi+6 
+
+
+            //structFullfiled:
+            //    eax = ebx;
+            //    eax = (ushort)((eax >> 8) & 3);
+            //    switch (eax)
+            //    {
+            //        case 0:
+            //            break;
+            //        case 1:
+            //            break;
+            //        case 2:
+            //            break;
+            //        case 3:
+            //            break;
+            //    }
+
+            //    //default here
+            //    //there's now some operations to copy next vars
+            //    //see BS_Camera_ReadAnimation+CC 00103B8C
         }
 
 
