@@ -11,6 +11,9 @@ namespace FF8
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        SpriteBatch spriteRender;
+        private float scale = 1f;
+        RenderTarget2D rt;
 
         public Game1()
         {
@@ -24,11 +27,32 @@ namespace FF8
         {
             FFmpeg.AutoGen.Example.FFmpegBinariesHelper.RegisterFFmpegBinaries();
             Memory.Init(graphics, spriteBatch, Content);
+            Memory.graphics = graphics;
+            Memory.spriteBatch = spriteBatch;
+            Memory.content = Content;
+            spriteRender = new SpriteBatch(GraphicsDevice);
             init_debugger_Audio.DEBUG(); //this initializes the DirectAudio, it's true that it gets loaded AFTER logo, but we will do the opposite
             init_debugger_Audio.DEBUG_SoundAudio(); //this initalizes the WAVE format audio.dat
             Init_debugger_fields.DEBUG(); //this initializes the field module, it's worth to have this at the beginning
             Init_debugger_battle.DEBUG(); //this initializes the encounters
             Saves.Init(); //loads all savegames from steam or cd2000 directories. first come first serve.
+            Memory.font = new Font(); //this initializes the fonts and drawing system- holds fonts in-memory
+            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
+
+            //TEX tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU,
+            //    aw.GetListOfFiles().First(x => x.ToLower().Contains("icon.tex"))));
+            //Memory.iconsTex = new Texture2D[tex.TextureData.NumOfPalettes];
+            //for (int i = 0; i < Memory.iconsTex.Length; i++)
+            //    Memory.iconsTex[i] = tex.GetTexture(i);
+            Memory.FieldHolder.FieldMemory = new int[1024];
+
+
+            Memory.Cards = new Cards();
+            Memory.Faces = new Faces();
+            Memory.Icons = new Icons();
+            
+
+            rt = new RenderTarget2D(GraphicsDevice, (int)(GraphicsDevice.Viewport.Width * scale), (int)(GraphicsDevice.Viewport.Height * scale), false, SurfaceFormat.Color, DepthFormat.Depth24);
             base.Initialize();
             //ArchiveSearch s = new ArchiveSearch("Zell\0");//used to find file a string is in. disable if not using.
 
@@ -148,16 +172,37 @@ namespace FF8
 
         protected override void Draw(GameTime gameTime)
         {
+            this.Window.Title = $"OpenVIII - Debug showcase of resolution scaling: {(scale*100).ToString("F02")}%";
+            if (Input.GetInputDelayed(Keys.NumPad1))
+            {
+                scale += 0.25f;
+                rt = new RenderTarget2D(GraphicsDevice, (int)(GraphicsDevice.Viewport.Width * scale), (int)(GraphicsDevice.Viewport.Height * scale), false, SurfaceFormat.Color, DepthFormat.Depth24);
+            }
+            if (Input.GetInputDelayed(Keys.NumPad2))
+            {
+                rt = new RenderTarget2D(GraphicsDevice, (int)(GraphicsDevice.Viewport.Width * scale), (int)(GraphicsDevice.Viewport.Height * scale), false, SurfaceFormat.Color, DepthFormat.Depth24);
+                scale -= 0.25f;
+            }
+            //RESOLUTION SCALING IMPLEMENTATION - TO USE WITH TestBranch
+            GraphicsDevice.SetRenderTarget(rt);
             ModuleHandler.Draw(gameTime);
             base.Draw(gameTime);
-            //if (Input.GetInputDelayed(Keys.F1))  //SCREENSHOT CAPABILITIES WIP; I'm leaving it as-is for now. I'll be probably using that for battle transitions (or not)
-            //{
-            //Texture2D tex = new Texture2D(graphics.GraphicsDevice, graphics.GraphicsDevice.Viewport.Width, graphics.GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color);
-            //byte[] b = new byte[tex.Width * tex.Height * 4];
-            //graphics.GraphicsDevice.GetBackBufferData<byte>(b);
-            //tex.SetData(b);
-            //    tex.SaveAsJpeg(new System.IO.FileStream("D:/test.jpg", System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.ReadWrite), tex.Width, tex.Height);
-            //}
+            GraphicsDevice.SetRenderTarget(null);
+            if (rt != null)
+            {
+                spriteRender.Begin(rasterizerState: RasterizerState.CullCounterClockwise, depthStencilState: DepthStencilState.Default, samplerState: SamplerState.PointClamp);
+                spriteRender.Draw(rt, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
+                spriteRender.End();
+            }
+            base.Draw(gameTime);
+            if (Input.GetInputDelayed(Keys.F1))  //SCREENSHOT CAPABILITIES WIP; I'm leaving it as-is for now. I'll be probably using that for battle transitions (or not)
+            {
+                Texture2D tex = new Texture2D(graphics.GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color);
+                byte[] b = new byte[tex.Width * tex.Height * 4];
+                graphics.GraphicsDevice.GetBackBufferData<byte>(b);
+                tex.SetData(b);
+                tex.SaveAsJpeg(new System.IO.FileStream("D:/test.jpg", System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.ReadWrite), tex.Width, tex.Height);
+            }
         }
 
         private void GracefullyExit()
