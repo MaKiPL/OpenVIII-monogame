@@ -23,9 +23,9 @@ namespace FF8
         /// <summary>
         /// Rectangle is hotspot for mouse, Point is where the finger points
         /// </summary>
-        private static Tuple<Rectangle, Point>[] SlotLocs = new Tuple<Rectangle, Point>[2];
+        private static Tuple<Rectangle, Point, Rectangle>[] SlotLocs = new Tuple<Rectangle, Point, Rectangle>[2];
 
-        private static Tuple<Rectangle, Point>[] BlockLocs = new Tuple<Rectangle, Point>[3];
+        private static Tuple<Rectangle, Point, Rectangle>[] BlockLocs = new Tuple<Rectangle, Point, Rectangle>[3];
         private static Texture2D LastPage;
         private static Vector2 PageTarget;
         private static Vector2 PageSize;
@@ -223,7 +223,7 @@ namespace FF8
             return new Tuple<Rectangle, Point>(dst, (dst.Location.ToVector2() + new Vector2(25f, dst.Height / 2)).ToPoint());
         }
 
-        private static Tuple<Rectangle, Point> DrawBox(Rectangle dst, FF8String buffer = null, Icons.ID? title = null, bool indent = true, bool bottom = false, bool prescaled = false)
+        private static Tuple<Rectangle, Point, Rectangle> DrawBox(Rectangle dst, FF8String buffer = null, Icons.ID? title = null, bool indent = true, bool bottom = false, bool prescaled = false)
         {
             Point cursor = new Point(0);
             Vector2 scale = prescaled ? Vector2.One : Memory.Scale();
@@ -241,7 +241,7 @@ namespace FF8
                 //dst.Size = (Memory.Icons[title.Value].GetRectangle.Size.ToVector2() * scale * 2.823317308f).ToPoint();
                 Memory.Icons.Draw(title.Value, 2, dst, bgscale + (.5f * scale), fade);
             }
-
+            Rectangle font = new Rectangle();
             if (buffer != null && buffer.Length > 0)
             {
                 if (indent)
@@ -250,11 +250,11 @@ namespace FF8
                     dst.Offset(0.01953125f * vpWidth * scale.X, dst.Height - 0.066666667f * vpHeight * scale.Y);
                 else
                     dst.Offset(0.01953125f * vpWidth * scale.X, 0.0291666666666667f * vpHeight * scale.Y);
-                Memory.font.RenderBasicText(buffer, dst.Location, new Vector2(2.545454545f, 3.0375f), 1, 0, fade, prescaled);
+                font = Memory.font.RenderBasicText(buffer, dst.Location, new Vector2(2.545454545f, 3.0375f), 1, 0, fade, prescaled);
                 cursor = dst.Location;
                 cursor.Y += (int)(18.225f * scale.Y); // 12 * (3.0375/2) * scale.Y
             }
-            return new Tuple<Rectangle, Point>(hotspot, cursor);
+            return new Tuple<Rectangle, Point, Rectangle>(hotspot, cursor, font);
         }
 
         private static void DrawLGCheckSlot() => DrawLGSGCheckSlot(strLoadScreen[Litems.Load].Text);
@@ -299,7 +299,7 @@ namespace FF8
                     r.Offset(dst.Location);
                     Point p = b.Item2;
                     p.Offset(dst.Location);
-                    BlockLocs[bloc] = new Tuple<Rectangle, Point>(r, p);
+                    BlockLocs[bloc] = new Tuple<Rectangle, Point, Rectangle>(r, p, new Rectangle());
                 }
                 Memory.SpriteBatchEnd();
                 Memory.graphics.GraphicsDevice.SetRenderTarget(null);
@@ -411,14 +411,14 @@ namespace FF8
             Memory.Icons.Draw(Icons.ID.Bar_Fill, -1, dst, Vector2.UnitY, fade);
         }
 
-        private static Tuple<Rectangle, Point> DrawLGSGSlot(Vector2 offset, FF8String title, FF8String main)
+        private static Tuple<Rectangle, Point,Rectangle> DrawLGSGSlot(Vector2 offset, FF8String title, FF8String main)
         {
             Rectangle dst = new Rectangle((int)(vpWidth * 0.3703125f), (int)(vpHeight * 0.386111111f), (int)(vpWidth * 0.259375f), (int)(vpHeight * 0.141666667f));
             Rectangle slot = new Rectangle(dst.Location, new Point((int)(vpWidth * 0.1f), (int)(vpHeight * 0.0875f)));
             slot.Offset(vpWidth * -0.00859375f, vpHeight * -0.033333333f);
             slot.Offset(offset);
             dst.Offset(offset);
-            Tuple<Rectangle, Point> location = DrawBox(dst, main, null, false, true);
+            Tuple<Rectangle, Point, Rectangle> location = DrawBox(dst, main, null, false, true);
             DrawBox(slot, title, null, false, false);
             return location;
         }
@@ -472,8 +472,8 @@ namespace FF8
             SlotLoc = 0;
             BlockLoc = 0;
 
-            SlotLocs = new Tuple<Rectangle, Point>[2];
-            BlockLocs = new Tuple<Rectangle, Point>[3];
+            SlotLocs = new Tuple<Rectangle, Point, Rectangle>[2];
+            BlockLocs = new Tuple<Rectangle, Point, Rectangle>[3];
     }
 
         private static bool UpdateLGChooseGame()

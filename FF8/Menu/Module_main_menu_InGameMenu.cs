@@ -180,6 +180,7 @@ namespace FF8
             Draw_IGM_PartyStatus_Boxes();
             DrawPointer(strSideBar[choSideBar].Point);
 
+
             Memory.SpriteBatchEnd();
         }
 
