@@ -129,7 +129,7 @@ namespace FF8
             };
             Vector2 offset = dst.Location.ToVector2();
 
-            DrawBox(null, null, dst, false, false, true);
+            DrawBox(dst, null, null, false, false, true);
 
             Vector2 blocknumpos = new Vector2
             {
@@ -209,7 +209,7 @@ namespace FF8
                     Height = (int)(OffScreenBuffer.Height * 0.138364779874214f),
                 };
                 locbox.Offset(offset);
-                DrawBox(null, null, locbox, false, false, true);
+                DrawBox(locbox, null, null, false, false, true);
                 FF8String loc = Memory.Strings.Read(Strings.FileID.AREAMES, 0, d.LocationID).ReplaceRegion();
                 locbox.Offset(0.0297619047619048f * OffScreenBuffer.Width, 0.0440251572327044f * OffScreenBuffer.Height);
                 Memory.font.RenderBasicText(loc, locbox.Location, TextScale, 1, 0, fade, true);
@@ -223,7 +223,7 @@ namespace FF8
             return new Tuple<Rectangle, Point>(dst, (dst.Location.ToVector2() + new Vector2(25f, dst.Height / 2)).ToPoint());
         }
 
-        private static Tuple<Rectangle, Point> DrawBox(FF8String buffer, Icons.ID? title, Rectangle dst, bool indent = true, bool bottom = false, bool prescaled = false)
+        private static Tuple<Rectangle, Point> DrawBox(Rectangle dst, FF8String buffer = null, Icons.ID? title = null, bool indent = true, bool bottom = false, bool prescaled = false)
         {
             Point cursor = new Point(0);
             Vector2 scale = prescaled ? Vector2.One : Memory.Scale();
@@ -379,11 +379,11 @@ namespace FF8
         private static Rectangle DrawLGSGHeader(FF8String info, FF8String name, FF8String help)
         {
             Rectangle dst = new Rectangle((int)(vpWidth * 0.82421875f), (int)(vpHeight * 0.0583333333333333f), (int)(vpWidth * 0.17578125f), (int)(vpHeight * 0.0916666666666667f));
-            DrawBox(name, null, dst, false);
+            DrawBox(dst, name, null, false);
             dst = new Rectangle(0, dst.Y, (int)(vpWidth * 0.8203125f), dst.Height);
-            DrawBox(info, Icons.ID.INFO, dst);
+            DrawBox(dst, info, Icons.ID.INFO);
             dst = new Rectangle((int)(vpWidth * 0.0282101167315175f), (int)(dst.Height + dst.Y + vpHeight * 0.0041666666666667f), (int)(vpWidth * 0.943579766536965f), dst.Height);
-            DrawBox(help, Icons.ID.HELP, dst, false);
+            DrawBox(dst, help, Icons.ID.HELP, false);
             return dst;
         }
 
@@ -396,7 +396,7 @@ namespace FF8
                 Width = (int)(vpWidth * 0.34375f),
                 Height = (int)(vpHeight * 0.1f),
             };
-            dst = DrawBox(null, Icons.ID.INFO, dst).Item1;
+            dst = DrawBox(dst, null, Icons.ID.INFO).Item1;
             
             dst.Offset(new Vector2
             {
@@ -420,8 +420,8 @@ namespace FF8
             slot.Offset(vpWidth * -0.00859375f, vpHeight * -0.033333333f);
             slot.Offset(offset);
             dst.Offset(offset);
-            Tuple<Rectangle, Point> location = DrawBox(main, null, dst, false, true);
-            DrawBox(title, null, slot, false, false);
+            Tuple<Rectangle, Point> location = DrawBox(dst, main, null, false, true);
+            DrawBox(slot, title, null, false, false);
             return location;
         }
         private static void DrawLGdata() => DrawLGSGdata(strLoadScreen[Litems.Load].Text, strLoadScreen[Litems.Loading].Text);

@@ -153,7 +153,7 @@ namespace FF8
             float item = 0;
             Rectangle dst = FontBoxCalc<Ditems>(strDebugLobby);
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
-            DrawBox(null, null, dst);
+            DrawBox(dst, null, null);
             //Memory.Icons.Draw(Icons.ID.Menu_BG_256, 0, dst, new Vector2(2f), Fade);
             item = 0;
             dst.Offset(4 * 3.5f, 0);

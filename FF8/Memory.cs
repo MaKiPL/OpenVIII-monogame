@@ -118,7 +118,7 @@ namespace FF8
 
         public static void SpriteBatchStartStencil(SamplerState ss = null) => spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, ss, graphics.GraphicsDevice.DepthStencilState);
 
-        public static void SpriteBatchStartAlpha(SamplerState ss = null) => spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, ss);
+        public static void SpriteBatchStartAlpha(SamplerState ss = null, Matrix? tm = null) => spriteBatch.Begin(sortMode: SpriteSortMode.Deferred, blendState: BlendState.AlphaBlend, samplerState: ss, transformMatrix: tm);
 
         public static void SpriteBatchEnd() => spriteBatch.End();
 
