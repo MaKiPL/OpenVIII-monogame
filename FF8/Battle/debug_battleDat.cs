@@ -83,13 +83,13 @@ namespace FF8
             skeleton = new Skeleton()
             {
                 cBones = br.ReadUInt16(),
-                unk = br.ReadUInt16(),
+                scale = br.ReadUInt16(),
                 unk2 = br.ReadUInt16(),
                 unk3 = br.ReadUInt16(),
-                ScaleX = br.ReadUInt16(),
-                ScaleY = br.ReadUInt16(),
-                ScaleZ = br.ReadUInt16(),
-                unk4 = br.ReadUInt16()
+                unk4 = br.ReadUInt16(),
+                unk5 = br.ReadUInt16(),
+                unk6 = br.ReadUInt16(),
+                unk7 = br.ReadUInt16()
             };
 #endif
             skeleton.bones = new Bone[skeleton.cBones];

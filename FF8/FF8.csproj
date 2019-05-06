@@ -150,6 +150,8 @@
     <Compile Include="Menu\Magazine.cs" />
     <Compile Include="Menu\Magazine.InsertCustomEntries.cs" />
     <Compile Include="Menu\Magazine.ID.cs" />
+    <Compile Include="Menu\Module_main_menu_InGameMenu.cs" />
+    <Compile Include="Menu\PointEx.cs" />
     <Compile Include="Menu\Strings.cs" />
     <Compile Include="Menu\Module_card_test.cs" />
     <Compile Include="Menu\Module_main_menu_debug.Item.cs" />

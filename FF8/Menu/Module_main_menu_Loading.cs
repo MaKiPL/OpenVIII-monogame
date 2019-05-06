@@ -6,68 +6,6 @@ using System.Collections.Generic;
 
 namespace FF8
 {
-    /// <summary>
-    /// class to add offset to point
-    /// </summary>
-    public static class PointEx
-    {
-        #region Methods
-
-        public static Point Offset(this ref Point source, Point offset)
-        {
-            source = (source.ToVector2() + offset.ToVector2()).ToPoint();
-            return source;
-        }
-
-        public static Point Offset(this ref Point source, Vector2 offset)
-        {
-            source = (source.ToVector2() + offset).ToPoint();
-            return source;
-        }
-
-        public static Rectangle Scale(this Rectangle source, Vector2 scale)
-        {
-            source.Location = (source.Location.ToVector2() * scale).RoundedPoint();
-            source.Size = (source.Size.ToVector2() * scale).RoundedPoint();
-            return source;
-        }
-        public static Rectangle Scale(this Rectangle source)
-        {
-            Vector2 scale = Memory.Scale();
-            source.Location = (source.Location.ToVector2() * scale).RoundedPoint();
-            source.Size = (source.Size.ToVector2() * scale).RoundedPoint();
-            return source;
-        }
-
-        public static Point Scale(this Point source, Vector2 scale)
-        {
-            source = (source.ToVector2() * scale).RoundedPoint();
-            return source;
-        }
-        public static Point Scale(this Point source)
-        {
-            Vector2 scale = Memory.Scale();
-            source = (source.ToVector2() * scale).RoundedPoint();
-            return source;
-        }
-
-        public static Point RoundedPoint(this Vector2 v) => new Point((int)Math.Round(v.X), (int)Math.Round(v.Y));
-
-        public static Point CeilingPoint(this Vector2 v) => v.Ceiling().ToPoint();
-        public static Point FloorPoint(this Vector2 v) => v.Floor().ToPoint();
-        public static Vector2 Round(this Vector2 v) => new Vector2 ((float)Math.Round(v.X), (float)Math.Round(v.Y));
-        public static Vector2 Ceiling(this Vector2 v) => new Vector2((float)Math.Ceiling(v.X), (float)Math.Ceiling(v.Y));
-        public static Vector2 Floor(this Vector2 v) => new Vector2((float)Math.Floor(v.X), (float)Math.Floor(v.Y));
-        public static Vector2 FloorOrCeiling(this Vector2 v, Vector2 target)
-        {
-            float X, Y;
-            X = v.X < target.X ? (float)Math.Ceiling(v.X) : (float)Math.Floor(v.X);
-            Y = v.Y < target.Y ? (float)Math.Ceiling(v.Y) : (float)Math.Floor(v.Y);
-            return new Vector2(X, Y);
-        }
-
-        #endregion Methods
-    }
 
     internal static partial class Module_main_menu_debug
     {
@@ -117,7 +55,8 @@ namespace FF8
             GameFolderSlot2,
             CheckGameFolder,
             BlockToLoad,
-            BlockToSave
+            BlockToSave,
+            Saving
         }
 
         #endregion Enums
@@ -327,7 +266,7 @@ namespace FF8
         /// </summary>
         private static void DrawLGChooseSlot() => DrawLGSGChooseSlot(strLoadScreen[Litems.Load].Text, strLoadScreen[Litems.LoadFF8].Text);
 
-        private static void DrawLGSGCheckSlot(byte[] topright)
+        private static void DrawLGSGCheckSlot(FF8String topright)
         {
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
             DrawLGSGHeader(strLoadScreen[Litems.GameFolderSlot1 + SlotLoc].Text, topright, strLoadScreen[Litems.CheckGameFolder].Text);
@@ -335,7 +274,7 @@ namespace FF8
             Memory.SpriteBatchEnd();
         }
 
-        private static void DrawLGSGChooseGame(byte[] topright, byte[] help)
+        private static void DrawLGSGChooseGame(FF8String topright, FF8String help)
         {
             Rectangle dst = new Rectangle
             {
@@ -427,7 +366,7 @@ namespace FF8
         /// </summary>
         /// <param name="topright">Text in top right box</param>
         /// <param name="help">Text in help box</param>
-        private static void DrawLGSGChooseSlot(byte[] topright, byte[] help)
+        private static void DrawLGSGChooseSlot(FF8String topright, FF8String help)
         {
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
             DrawLGSGHeader(strLoadScreen[Litems.GameFolder].Text, topright, help);
@@ -437,7 +376,7 @@ namespace FF8
             Memory.SpriteBatchEnd();
         }
 
-        private static Rectangle DrawLGSGHeader(byte[] info, byte[] name, byte[] help)
+        private static Rectangle DrawLGSGHeader(FF8String info, FF8String name, FF8String help)
         {
             Rectangle dst = new Rectangle((int)(vpWidth * 0.82421875f), (int)(vpHeight * 0.0583333333333333f), (int)(vpWidth * 0.17578125f), (int)(vpHeight * 0.0916666666666667f));
             DrawBox(name, null, dst, false);
@@ -474,7 +413,7 @@ namespace FF8
             Memory.Icons.Draw(Icons.ID.Bar_Fill, -1, dst, Vector2.UnitY, fade);
         }
 
-        private static Tuple<Rectangle, Point> DrawLGSGSlot(Vector2 offset, byte[] title, byte[] main)
+        private static Tuple<Rectangle, Point> DrawLGSGSlot(Vector2 offset, FF8String title, FF8String main)
         {
             Rectangle dst = new Rectangle((int)(vpWidth * 0.3703125f), (int)(vpHeight * 0.386111111f), (int)(vpWidth * 0.259375f), (int)(vpHeight * 0.141666667f));
             Rectangle slot = new Rectangle(dst.Location, new Point((int)(vpWidth * 0.1f), (int)(vpHeight * 0.0875f)));
@@ -485,8 +424,15 @@ namespace FF8
             DrawBox(title, null, slot, false, false);
             return location;
         }
-
-        private static void DrawLoadingGame() => throw new NotImplementedException();
+        private static void DrawLGdata() => DrawLGSGdata(strLoadScreen[Litems.Load].Text, strLoadScreen[Litems.Loading].Text);
+        private static void DrawSGdata() => DrawLGSGdata(strLoadScreen[Litems.Save].Text, strLoadScreen[Litems.Saving].Text);
+        private static void DrawLGSGdata(FF8String topright,FF8String help)
+        {
+            Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
+            DrawLGSGHeader(strLoadScreen[Litems.GameFolderSlot1 + SlotLoc].Text, topright, help);
+            DrawLGSGLoadBar();
+            Memory.SpriteBatchEnd();
+        }
 
         private static void DrawPointer(Point cursor, sbyte xoffset = -10)
         {
@@ -516,6 +462,7 @@ namespace FF8
                 { Litems.SaveFF8, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 1 ,117) } },
                 { Litems.FF8, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 1 ,127) } },
                 { Litems.Loading, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 1 ,93) } },
+                { Litems.Saving, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 1 ,94) } },
                 { Litems.Slot1, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 1 ,87) } },
                 { Litems.Slot2, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 1 ,88) } },
                 { Litems.GameFolderSlot1, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 1 ,121) } },
@@ -653,7 +600,8 @@ namespace FF8
                 else if (Input.Button(Buttons.Okay))
                 {
                     PercentLoaded = 0f;
-                    State = MainMenuStates.LoadGameCheckingSlot;
+                    //State = MainMenuStates.LoadGameCheckingSlot;
+                    State = MainMenuStates.LoadGameLoading;
                 }
             }
             if (scale != lastscale && OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)
@@ -715,7 +663,21 @@ namespace FF8
             return ret;
         }
 
-        private static void UpdateLoading() => throw new NotImplementedException();
+        private static void UpdateLoadingData()
+        {
+            if (PercentLoaded < 1.0f)
+            {
+                PercentLoaded += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 3;
+            }
+            else
+            {
+                State = MainMenuStates.LoadGameChooseGame; // start loaded game.
+                Memory.State = Saves.FileList[SlotLoc, BlockLoc];
+                //till we have a game to load i'm going to display ingame menu.
+                init_debugger_Audio.PlaySound(36);
+            }
+            UpdateLGChooseGame();
+        }
 
         private static void UpdateLoadingSlot()
         {
@@ -731,6 +693,10 @@ namespace FF8
             UpdateLGChooseGame();
         }
 
+        private static void UpdateSGChooseSlot() => throw new NotImplementedException();
+        private static void UpdateSGCheckSlot() => throw new NotImplementedException();
+        private static void UpdateSGChooseGame() => throw new NotImplementedException();
+        private static void UpdateSGdata() => throw new NotImplementedException();
         #endregion Methods
     }
 }

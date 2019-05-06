@@ -31,7 +31,12 @@ namespace FF8
             LoadGameChooseSlot,
             LoadGameChooseGame,
             DebugScreen,
-            LoadGameCheckingSlot
+            LoadGameCheckingSlot,
+            SaveGameChooseSlot,
+            SaveGameCheckingSlot,
+            SaveGameChooseGame,
+            SaveGameSaving,
+            InGameMenu
         }
 
         #endregion Enums
@@ -84,7 +89,26 @@ namespace FF8
                     break;
 
                 case MainMenuStates.LoadGameLoading:
-                    DrawLoadingGame();
+                    DrawLGdata();
+                    break;
+
+                case MainMenuStates.SaveGameChooseSlot:
+                    DrawSGChooseSlot();
+                    break;
+
+                case MainMenuStates.SaveGameCheckingSlot:
+                    DrawSGCheckSlot();
+                    break;
+
+                case MainMenuStates.SaveGameChooseGame:
+                    DrawSGChooseGame();
+                    break;
+
+                case MainMenuStates.SaveGameSaving:
+                    DrawSGdata();
+                    break;
+                case MainMenuStates.InGameMenu:
+                    DrawInGameMenu();
                     break;
             }
         }
@@ -166,12 +190,31 @@ namespace FF8
                     break;
 
                 case MainMenuStates.LoadGameLoading:
-                    UpdateLoading();
+                    UpdateLoadingData();
                     Memory.IsMouseVisible = false;
                     break;
 
-                //default:
-                //    goto case 0;
+                case MainMenuStates.SaveGameChooseSlot:
+                    UpdateSGChooseSlot();
+                    break;
+
+                case MainMenuStates.SaveGameCheckingSlot:
+                    UpdateSGCheckSlot();
+                    break;
+
+                case MainMenuStates.SaveGameChooseGame:
+                    UpdateSGChooseGame();
+                    break;
+
+                case MainMenuStates.SaveGameSaving:
+                    UpdateSGdata();
+                    break;
+                case MainMenuStates.InGameMenu:
+                    UpdateInGameMenu();
+                    break;
+
+                default:
+                    goto case 0;
             }
             //disabled because if you resize the window the next update call undoes this before drawing happens.
             //need a way to detect if drawing has happened before suppressing draw again.
