@@ -116,9 +116,9 @@ namespace FF8
         public static string[] musices;
         public static readonly Dictionary<ushort, List<string>> dicMusic = new Dictionary<ushort, List<string>>(); //ogg and sgt files have same 3 digit prefix.
 
-        public static void SpriteBatchStartStencil(SamplerState ss = null) => spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, SamplerState.PointClamp, graphics.GraphicsDevice.DepthStencilState);
+        public static void SpriteBatchStartStencil(SamplerState ss = null) => spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, ss, graphics.GraphicsDevice.DepthStencilState);
 
-        public static void SpriteBatchStartAlpha(SamplerState ss = null) => spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
+        public static void SpriteBatchStartAlpha(SamplerState ss = null) => spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, ss);
 
         public static void SpriteBatchEnd() => spriteBatch.End();
 
@@ -144,7 +144,7 @@ namespace FF8
             AlphaBlendFunction = BlendFunction.Add,
         };
 
-        public static int module = MODULE_BATTLE_DEBUG;
+        public static int module = MODULE_OVERTURE_DEBUG;
 
         public static string FF8DIR => GameLocation.Current.DataPath;
         public static string FF8DIRdata { get; private set; }

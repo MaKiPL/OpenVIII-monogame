@@ -476,14 +476,7 @@
                         {
                             //make sure packet is unref before getting a new one.
                             ffmpeg.av_packet_unref(Decoder.Packet);
-                            try
-                            {
-                                Return = ffmpeg.av_read_frame(Decoder.Format, Decoder.Packet);
-                            }
-                            catch
-                            {
-                                Return = ffmpeg.AVERROR_EOF;
-                            }
+                            Return = ffmpeg.av_read_frame(Decoder.Format, Decoder.Packet);
                             if (Return == ffmpeg.AVERROR_EOF)
                             {
                                 goto EOF;
