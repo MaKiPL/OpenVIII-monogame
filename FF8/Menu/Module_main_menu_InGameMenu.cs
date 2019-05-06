@@ -1,7 +1,4 @@
-﻿using FF8.Menu;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
+﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,9 +13,14 @@ namespace FF8
         private static Rectangle IGM_Header_Size;
         private static Rectangle IGM_Footer_Size;
         private static Rectangle IGM_Clock_Size;
+        private static Rectangle IGM_SideBox_Size;
+        private static Rectangle[] IGM_Party_Size;
+        private static Rectangle IGM_NonPartyBox_Size;
+        private static Rectangle[] IGM_NonParty_Size;
         private static Matrix IGM_focus;
         private static FF8String IGM_Footer_Text;
         private static FF8String IGM_Header_Text;
+        private static IGMItems choSideBar;
 
         private static void Init_InGameMenu()
         {
@@ -52,22 +54,120 @@ namespace FF8
             };
         }
 
-
         private static void UpdateInGameMenu()
         {
             IGM_Size = new Rectangle { Width = 843, Height = 630 }.Scale(scale);
-            IGM_focus = Matrix.CreateTranslation(-IGM_Size.X - (IGM_Size.Width / 2), -IGM_Size.Y - (IGM_Size.Width / 2), 0)
+            IGM_focus = Matrix.CreateTranslation(-IGM_Size.X - (IGM_Size.Width / 2), -IGM_Size.Y - (IGM_Size.Height / 2), 0)
                 * Matrix.CreateTranslation(vpWidth / 2, vpHeight / 2, 0);
 
             IGM_Header_Size = new Rectangle { Width = 610, Height = 75 }.Scale(scale);
-            IGM_Footer_Size = new Rectangle { Width = 610, Height = 75,Y=630-75 }.Scale(scale);
-            IGM_Clock_Size = new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 };
-            
+            IGM_Footer_Size = new Rectangle { Width = 610, Height = 75, Y = 630 - 75 }.Scale(scale);
+            IGM_Clock_Size = new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 }.Scale(scale);
+            IGM_SideBox_Size = new Rectangle { Width = 226, Height = 492, X = 843 - 226 }.Scale(scale);
+
+            for (int i = 0; i < strSideBar.Count; i++)
+            {
+                Item l = strSideBar[(IGMItems)i];
+                Rectangle r = new Rectangle
+                {
+                    Width = IGM_SideBox_Size.Width,
+                    Height = IGM_SideBox_Size.Height / strSideBar.Count(),
+                    X = IGM_SideBox_Size.X,
+                    Y = IGM_SideBox_Size.Y + (IGM_SideBox_Size.Height / strSideBar.Count()) * i,
+                }.Scale();
+                r.Inflate(-26 * scale.X, -12 * scale.Y);
+                l.Loc = r;
+                l.Point = new Point(l.Loc.X, l.Loc.Center.Y);
+                strSideBar[(IGMItems)i] = l;
+            }
+            IGM_Party_Size = new Rectangle[3];
+            for (int i = 0; i < 3; i++)
+                IGM_Party_Size[i] = new Rectangle { Width = 580, Height = 78, X = 20, Y = 84 + 78 * i }.Scale(scale);
+
+            IGM_NonPartyBox_Size = new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 }.Scale(scale);
+            IGM_NonParty_Size = new Rectangle[6];
+            int row = 0, col = 0;
+            for (int i = 0; i < IGM_NonParty_Size.Length; i++)
+            {
+                int width = IGM_NonPartyBox_Size.Width / 2;
+                int height = IGM_NonPartyBox_Size.Height / 3;
+                row = i / 2;
+                col = i % 2;
+                IGM_NonParty_Size[i] = new Rectangle
+                {
+                    Width = width,
+                    Height = height,
+                    X = IGM_NonPartyBox_Size.X + col * width,
+                    Y = IGM_NonPartyBox_Size.Y + row * height
+                }.Scale(scale);
+                IGM_NonParty_Size[i].Inflate(-26 * scale.X, -12 * scale.Y);
+            }
 
             IGM_Footer_Text = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Memory.State.LocationID).ReplaceRegion();
-            IGM_Header_Text = strHeaderText[IGMItems.Junction];
-
+            IGM_Header_Text = strHeaderText[choSideBar];
+            UpdateInGameMenuInput();
         }
+
+        private static bool UpdateInGameMenuInput()
+        {
+            bool ret = false;
+            Point ml = Input.MouseLocation;
+
+            if (strSideBar != null && strSideBar.Count > 0)
+            {
+                foreach (KeyValuePair<Enum, Item> item in strSideBar)
+                {
+                    Rectangle r = item.Value.Loc;
+                    r.Offset(IGM_focus.Translation.X, IGM_focus.Translation.Y);
+                    if (r.Contains(ml))
+                    {
+                        choSideBar = (IGMItems)item.Key;
+                        ret = true;
+
+                        if (Input.Button(Buttons.MouseWheelup) || Input.Button(Buttons.MouseWheeldown))
+                        {
+                            return ret;
+                        }
+                        break;
+                    }
+                }
+
+                if (Input.Button(Buttons.Down))
+                {
+                    Input.ResetInputLimit();
+                    init_debugger_Audio.PlaySound(0);
+                    if (++choSideBar > Enum.GetValues(typeof(IGMItems)).Cast<IGMItems>().Max())
+                        choSideBar = Enum.GetValues(typeof(IGMItems)).Cast<IGMItems>().Min();
+                    ret = true;
+                }
+                else if (Input.Button(Buttons.Up))
+                {
+                    Input.ResetInputLimit();
+                    init_debugger_Audio.PlaySound(0);
+                    if (--choSideBar < 0)
+                        choSideBar = Enum.GetValues(typeof(IGMItems)).Cast<IGMItems>().Max();
+                    ret = true;
+                }
+                else if (Input.Button(Buttons.Cancel))
+                {
+                    Input.ResetInputLimit();
+                    init_debugger_Audio.PlaySound(8);
+                    init_debugger_Audio.StopAudio();
+                    Dchoose = 0;
+                    Fade = 0.0f;
+                    State = MainMenuStates.LoadGameChooseGame;
+                    ret = true;
+                }
+                else if (Input.Button(Buttons.Okay))
+                {
+                    //PercentLoaded = 0f;
+                    ////State = MainMenuStates.LoadGameCheckingSlot;
+                    //State = MainMenuStates.LoadGameLoading;
+                }
+            }
+            return ret;
+        }
+
         private static void DrawInGameMenu()
         {
             Memory.SpriteBatchStartAlpha(tm: IGM_focus);
@@ -76,54 +176,63 @@ namespace FF8
             Draw_IGM_SideBar();
             Draw_IGM_ClockBox();
             Draw_IGM_FooterBox();
-            for (sbyte i = 0; i < 3; i++)
-                if (Memory.State.Party[i] != 0xFF)
-                {
-                    Draw_PartyStatus_Box(i, (Faces.ID)Memory.State.Party[i]);
-                }
-            Draw_IGM_ExtraBox();
+            Draw_IGM_NonPartyBox();
+            Draw_IGM_PartyStatus_Boxes();
+            DrawPointer(strSideBar[choSideBar].Point);
+
             Memory.SpriteBatchEnd();
         }
-        private static void Draw_IGM_Header()
+
+        private static void Draw_IGM_PartyStatus_Boxes()
         {
-            DrawBox(IGM_Header_Size, IGM_Header_Text, Icons.ID.HELP, false);
+            for (sbyte i = 0; i < 3; i++)
+                Draw_IGM_PartyStatus_Box(i, Memory.State.Party[i]);
         }
+
+        private static void Draw_IGM_Header() => DrawBox(IGM_Header_Size, IGM_Header_Text, Icons.ID.HELP, false);
 
         private static void Draw_IGM_SideBar(bool Save = false)
         {
-        }
-        private static void Draw_IGM_ClockBox()
-        {
-            DrawBox(IGM_Clock_Size);
-        }
-
-        private static void Draw_IGM_FooterBox()
-        {
-            DrawBox(IGM_Footer_Size, IGM_Footer_Text, null, false);
+            DrawBox(IGM_SideBox_Size);
+            for (int i = 0; i < strSideBar.Count; i++)
+                Memory.font.RenderBasicText(strSideBar[(IGMItems)i], strSideBar[(IGMItems)i].Loc.Location, TextScale, 1, Fade: fade);
         }
 
-        private static void Draw_IGM_ExtraBox()
+        private static void Draw_IGM_ClockBox() => DrawBox(IGM_Clock_Size);
+
+        private static void Draw_IGM_FooterBox() => DrawBox(IGM_Footer_Size, IGM_Footer_Text, indent: false);
+
+        private static void Draw_IGM_NonPartyBox()
         {
-            for (byte i = 0; i <= (byte)Faces.ID.Eden; i++)
+            DrawBox(IGM_NonPartyBox_Size);
+            sbyte pos = 0;
+            for (byte i = 0; i <= (byte)Faces.ID.Edea_Kramer && IGM_NonParty_Size != null && pos < IGM_NonParty_Size.Length; i++)
             {
-                if(Memory.State.Party.Where(x=>x>=0 && x<= (byte)Faces.ID.Eden).Count()>=1 && !Memory.State.Party.Contains(i))
-                Draw_NonPartyStatus((sbyte)i, (Faces.ID)i);
+                if (!Memory.State.Party.Contains((Faces.ID)i) && Memory.State.Characters[i].Exists != 0 && Memory.State.Characters[i].Exists != 6)//15,9,7,4 shows on menu, 0 locked, 6 hidden
+                    Draw_NonPartyStatus(pos++, (Faces.ID)i);
             }
-                
         }
-        private static void Draw_PartyStatus_Box(sbyte pos, Faces.ID character)
-        {
 
+        private static void Draw_IGM_PartyStatus_Box(sbyte pos, Faces.ID character)
+        {
+            if (IGM_NonParty_Size != null)
+            {
+                if (character != Faces.ID.Blank)
+                    DrawBox(IGM_Party_Size[pos], Memory.Strings.GetName(character), Icons.ID.STATUS, indent: false);
+                else
+                    DrawBox(IGM_Party_Size[pos]);
+            }
         }
+
         private static void Draw_NonPartyStatus(sbyte pos, Faces.ID character)
         {
-
+            if (IGM_NonParty_Size != null && pos < IGM_NonParty_Size.Length)
+                Memory.font.RenderBasicText(Memory.Strings.GetName(character), IGM_NonParty_Size[pos].Location, TextScale, 1, Fade: fade);
         }
-
     }
 }
 
-namespace FF8.Menu
+namespace FF8
 {
     public enum IGMItems
     {

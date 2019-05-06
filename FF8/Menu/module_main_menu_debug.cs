@@ -14,6 +14,7 @@ namespace FF8
 
         private static MainMenuStates State = 0;
         private static int vpHeight, vpWidth;
+        private static bool blinkstate;
 
         #endregion Fields
 
@@ -118,6 +119,10 @@ namespace FF8
         /// </summary>
         internal static void Update()
         {
+            if (blinkstate)
+                blink += Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
+            else
+                blink -= Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
             lastscale = scale;
             scale = Memory.Scale();
             bool forceupdate = false;
@@ -210,6 +215,7 @@ namespace FF8
                     UpdateSGdata();
                     break;
                 case MainMenuStates.InGameMenu:
+                    Memory.IsMouseVisible = true;
                     UpdateInGameMenu();
                     break;
 

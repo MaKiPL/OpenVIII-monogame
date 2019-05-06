@@ -13,7 +13,6 @@ namespace FF8
 
         private static sbyte _slotLoc, _blockLoc;
 
-        private static bool blinkstate;
 
         private static int blockpage;
 
@@ -35,6 +34,7 @@ namespace FF8
         private static Vector2 LastPageTarget;
         private static Vector2 lastscale;
         private static Vector2 scale;
+        private static Vector2 TextScale;
 
         #endregion Fields
 
@@ -137,7 +137,7 @@ namespace FF8
                 Y = 0,
             } + offset;
             Vector2 blocknumsize = new Vector2(OffScreenBuffer.Height * 0.00628930817610063f);
-            Memory.Icons.Draw(block++, 4, 2, "D2", blocknumpos, blocknumsize, fade); // 2,2 looks close
+            Memory.Icons.Draw(block, 4, 2, "D2", blocknumpos, blocknumsize, fade); // 2,2 looks close
 
             Rectangle faceRect = new Rectangle
             {
@@ -152,14 +152,14 @@ namespace FF8
             {
                 if (face != 0)
                     faceRect.Offset(faceRect.Width, 0);
-                if (d.charactersportraits[face] != 0xFF)
+                if (d.charactersportraits[face] != Faces.ID.Blank)
                 {
                     Memory.Faces.Draw((Faces.ID)d.charactersportraits[face], faceRect, Vector2.UnitY, fade);
                     Memory.Icons.Draw(Icons.ID.MenuBorder, 2, faceRect, new Vector2(1f), fade);
                     if (mainchar == -1) mainchar = (sbyte)face;
                 }
             }
-            if (mainchar > -1 &&  d!=null && d.charactersportraits != null && d.charactersportraits[mainchar] != 0xFF)
+            if (mainchar > -1 &&  d!=null && d.charactersportraits != null && d.charactersportraits[mainchar] != Faces.ID.Blank)
             {
                 Point detailsLoc = (new Point
                 {
@@ -168,7 +168,7 @@ namespace FF8
                 }.ToVector2() + offset).ToPoint();
                 FF8String name = Memory.Strings.GetName((Faces.ID)d.charactersportraits[mainchar],d);
                 FF8String lv_ = new FF8String($"LV.   {d.firstcharacterslevel}");
-                Vector2 TextScale = new Vector2(OffScreenBuffer.Width * 0.0030303030297619f, OffScreenBuffer.Height * 0.00636792452830189f);
+                TextScale = new Vector2(OffScreenBuffer.Width * 0.0030303030297619f, OffScreenBuffer.Height * 0.00636792452830189f);
                 Memory.font.RenderBasicText(name, detailsLoc, TextScale, 1, 0, fade, true);
 
                 int playy = detailsLoc.Y;
@@ -288,11 +288,9 @@ namespace FF8
             {
                 Memory.graphics.GraphicsDevice.SetRenderTarget(OffScreenBuffer);
                 Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
-                int bloc = 0;
-                for (int block = 0 + 3 * (Blockpage); block < 3 + 3 * (Blockpage); block++)
-                {
-
-                    Saves.Data d = Saves.FileList == null ? null : Saves.FileList[SlotLoc, block];
+                for (int bloc = 0; bloc<3; bloc++)                {
+                    int block = bloc + 3 * (Blockpage);
+                    Saves.Data d = Saves.FileList?[SlotLoc, block];
                     Tuple<Rectangle, Point> b = DrawBlock(block, d);
                     //cords returned by drawblock assume being in the offscreen buffer.
                     //Which is the size of the 3 blocks. So we need to offset
@@ -301,7 +299,7 @@ namespace FF8
                     r.Offset(dst.Location);
                     Point p = b.Item2;
                     p.Offset(dst.Location);
-                    BlockLocs[bloc++] = new Tuple<Rectangle, Point>(r, p);
+                    BlockLocs[bloc] = new Tuple<Rectangle, Point>(r, p);
                 }
                 Memory.SpriteBatchEnd();
                 Memory.graphics.GraphicsDevice.SetRenderTarget(null);
@@ -480,11 +478,6 @@ namespace FF8
 
         private static bool UpdateLGChooseGame()
         {
-            if (blinkstate)
-                blink += Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
-            else
-                blink -= Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
-
             bool ret = false;
             Point ml = Input.MouseLocation;
 
@@ -497,9 +490,15 @@ namespace FF8
                         BlockLoc = (sbyte)i;
                         ret = true;
 
-                        if (Input.Button(Buttons.MouseWheelup) || Input.Button(Buttons.MouseWheeldown))
+                        if (Input.Button(Buttons.MouseWheelup))
                         {
-                            return ret;
+                            UpdateLGChooseGameLEFT();
+                            return true;
+                        }
+                        else if(Input.Button(Buttons.MouseWheeldown))
+                        {
+                            UpdateLGChooseGameRIGHT();
+                            return true;
                         }
                         break;
                     }
@@ -514,56 +513,12 @@ namespace FF8
                 }
                 else if (Input.Button(Buttons.Left))
                 {
-                    Input.ResetInputLimit();
-                    init_debugger_Audio.PlaySound(0);
-                    if(LastPage!=null && !LastPage.IsDisposed)
-                    {
-                        LastPage.Dispose();
-                        CurrentLastPageLoc = Vector2.Zero;
-                    }
-                    if (OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)
-                    {
-                        lock (OffScreenBuffer)
-                        {
-                            LastPage = new Texture2D(Memory.graphics.GraphicsDevice, OffScreenBuffer.Width, OffScreenBuffer.Height);
-                            lock (LastPage)
-                            {
-                                Color[] texdata = new Color[OffScreenBuffer.Width * OffScreenBuffer.Height];
-                                OffScreenBuffer.GetData(texdata);
-                                LastPage.SetData(texdata);
-                                LastPageTarget = new Vector2(vpWidth * scale.X, CurrentPageLoc.Y);
-                                CurrentPageLoc = new Vector2(-PageSize.X, CurrentPageLoc.Y);
-                            }
-                        }
-                    }
-                    Blockpage--;
+                    UpdateLGChooseGameLEFT();
                     ret = true;
                 }
                 else if (Input.Button(Buttons.Right))
                 {
-                    Input.ResetInputLimit();
-                    init_debugger_Audio.PlaySound(0);
-                    if (LastPage != null && !LastPage.IsDisposed)
-                    {
-                        LastPage.Dispose();
-                        CurrentLastPageLoc = Vector2.Zero;
-                    }
-                    if (OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)
-                    {
-                        lock (OffScreenBuffer)
-                        {
-                            LastPage = new Texture2D(Memory.graphics.GraphicsDevice, OffScreenBuffer.Width, OffScreenBuffer.Height);
-                            lock (LastPage)
-                            {
-                                Color[] texdata = new Color[OffScreenBuffer.Width * OffScreenBuffer.Height];
-                                OffScreenBuffer.GetData(texdata);
-                                LastPage.SetData(texdata);
-                                LastPageTarget = new Vector2(-PageSize.X, CurrentPageLoc.Y);
-                                CurrentPageLoc = new Vector2(vpWidth * scale.X, CurrentPageLoc.Y);
-                            }
-                        }
-                    }
-                    Blockpage++;
+                    UpdateLGChooseGameRIGHT();
                     ret = true;
                 }
                 else if (Input.Button(Buttons.Up))
@@ -611,6 +566,60 @@ namespace FF8
                 //happened many times if i left this running and had this just ran every draw call. heh.
                 OffScreenBuffer = new RenderTarget2D(Memory.graphics.GraphicsDevice, (int)(vpWidth * 0.65625f *scale.X), (int)(vpHeight * 0.6625f*scale.Y), false, SurfaceFormat.Color, DepthFormat.None);
             return ret;
+        }
+
+        private static void UpdateLGChooseGameRIGHT()
+        {
+            Input.ResetInputLimit();
+            init_debugger_Audio.PlaySound(0);
+            if (LastPage != null && !LastPage.IsDisposed)
+            {
+                LastPage.Dispose();
+                CurrentLastPageLoc = Vector2.Zero;
+            }
+            if (OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)
+            {
+                lock (OffScreenBuffer)
+                {
+                    LastPage = new Texture2D(Memory.graphics.GraphicsDevice, OffScreenBuffer.Width, OffScreenBuffer.Height);
+                    lock (LastPage)
+                    {
+                        Color[] texdata = new Color[OffScreenBuffer.Width * OffScreenBuffer.Height];
+                        OffScreenBuffer.GetData(texdata);
+                        LastPage.SetData(texdata);
+                        LastPageTarget = new Vector2(-PageSize.X, CurrentPageLoc.Y);
+                        CurrentPageLoc = new Vector2(vpWidth * scale.X, CurrentPageLoc.Y);
+                    }
+                }
+            }
+            Blockpage++;
+        }
+
+        private static void UpdateLGChooseGameLEFT()
+        {
+            Input.ResetInputLimit();
+            init_debugger_Audio.PlaySound(0);
+            if (LastPage != null && !LastPage.IsDisposed)
+            {
+                LastPage.Dispose();
+                CurrentLastPageLoc = Vector2.Zero;
+            }
+            if (OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)
+            {
+                lock (OffScreenBuffer)
+                {
+                    LastPage = new Texture2D(Memory.graphics.GraphicsDevice, OffScreenBuffer.Width, OffScreenBuffer.Height);
+                    lock (LastPage)
+                    {
+                        Color[] texdata = new Color[OffScreenBuffer.Width * OffScreenBuffer.Height];
+                        OffScreenBuffer.GetData(texdata);
+                        LastPage.SetData(texdata);
+                        LastPageTarget = new Vector2(vpWidth * scale.X, CurrentPageLoc.Y);
+                        CurrentPageLoc = new Vector2(-PageSize.X, CurrentPageLoc.Y);
+                    }
+                }
+            }
+            Blockpage--;
         }
 
         private static bool UpdateLGChooseSlot()
@@ -671,8 +680,8 @@ namespace FF8
             }
             else
             {
-                State = MainMenuStates.LoadGameChooseGame; // start loaded game.
-                Memory.State = Saves.FileList[SlotLoc, BlockLoc];
+                State = MainMenuStates.InGameMenu; // start loaded game.
+                Memory.State = Saves.FileList[SlotLoc, BlockLoc + blockpage*3];
                 //till we have a game to load i'm going to display ingame menu.
                 init_debugger_Audio.PlaySound(36);
             }

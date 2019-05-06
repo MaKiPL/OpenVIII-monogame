@@ -16,6 +16,26 @@ namespace FF8
             // and put the character names into an enum.
             Squall, Zell, Irvine, Quistis, Rinoa, Selphie, Seifer, Edea, Count // Count is the last value and is the number of characters in enum
         }
+        internal enum GFs
+        {
+            Quezacotl,
+            Shiva,
+            Ifrit,
+            Siren,
+            Brothers,
+            Diablos,
+            Carbuncle,
+            Leviathan,
+            Pandemona,
+            Cerberus,
+            Alexander,
+            Doomtrain,
+            Bahamut,
+            Cactuar,
+            Tonberry,
+            Eden,
+            Count
+        }
         unsafe fixed byte byte03[4]; //[0-3]unused in fields (always "FF-8")
         private ulong Steps; //[4]Steps (used to generate random encounters)
 
@@ -308,7 +328,7 @@ namespace FF8
             /// <summary>
             /// 0xFF = blank; The value should cast to Faces.ID
             /// </summary>
-            public byte[] charactersportraits;//0x0025//0x0026//0x0027
+            public Faces.ID[] charactersportraits;//0x0025//0x0026//0x0027
 
             /// <summary>
             /// 12 characters 0x00 terminated
@@ -328,7 +348,7 @@ namespace FF8
             public CharacterData[] Characters; // 0x04A0 -> 0x08C8 //152 bytes per 8 total
             public byte[] Shops; //0x0960 //400 bytes
             public byte[] Configuration; //0x0AF0 //20 bytes
-            public byte[] Party; //0x0B04 // 4 bytes 0xFF terminated.
+            public Faces.ID[] Party; //0x0B04 // 4 bytes 0xFF terminated.
             public byte[] KnownWeapons; //0x0B08 // 4 bytes
             public FF8String Grieversname; //0x0B0C // 12 bytes
 
@@ -418,7 +438,7 @@ namespace FF8
                 AmountofGil = br.ReadUInt32();//0x000C
                 timeplayed = new TimeSpan(0, 0, (int)br.ReadUInt32());//0x0020
                 firstcharacterslevel = br.ReadByte();//0x0024
-                charactersportraits = br.ReadBytes(3);//0x0025//0x0026//0x0027 0xFF = blank.
+                charactersportraits = Array.ConvertAll(br.ReadBytes(3), Item => (Faces.ID)Item);//0x0025//0x0026//0x0027 0xFF = blank.
                 Squallsname = br.ReadBytes(12);//0x0028
                 Rinoasname = br.ReadBytes(12);//0x0034
                 Angelosname = br.ReadBytes(12);//0x0040
@@ -429,11 +449,15 @@ namespace FF8
                 {
                     GFs[i].Read(br);
                 }
-                for (int i = 0; i < 8; i++)
+                for (int i = 0; i <= (int)Faces.ID.Edea_Kramer; i++)
+                {
                     Characters[i].Read(br); // 0x04A0 -> 0x08C8 //152 bytes per 8 total
+                    Characters[i].Name = Memory.Strings.GetName((Faces.ID)i,this);
+                }
                 Shops = br.ReadBytes(400); //0x0960 //400 bytes
                 Configuration = br.ReadBytes(20); //0x0AF0 //20 bytes
-                Party = br.ReadBytes(4); //0x0B04 // 4 bytes 0xFF terminated.
+                Party = charactersportraits;
+                br.BaseStream.Seek(4, SeekOrigin.Current);//0x0B04 // 4 bytes 0xFF terminated.
                 KnownWeapons = br.ReadBytes(4); //0x0B08 // 4 bytes
                 Grieversname = br.ReadBytes(12); //0x0B0C // 12 bytes
 
@@ -505,7 +529,9 @@ namespace FF8
         /// <see cref="http://wiki.ffrtt.ru/index.php/FF8/GameSaveFormat#Characters"/>
         public struct CharacterData
         {
-            public ushort MaxHPs; //0x00
+            public FF8String Name; //not saved to file.
+            public ushort CurrentHPS; //0x00 -- forgot this one heh
+            public ushort MaxHPs; //0x02
             public uint Experience; //0x02
             public byte ModelID; //0x04
             public byte WeaponID; //0x08
@@ -546,6 +572,7 @@ namespace FF8
 
             public void Read(BinaryReader br)
             {
+                CurrentHPS = br.ReadUInt16();//0x00
                 MaxHPs = br.ReadUInt16();//0x02
                 Experience = br.ReadUInt32();//0x04
                 ModelID = br.ReadByte();//0x08
@@ -589,6 +616,8 @@ namespace FF8
                 MentalStatus = br.ReadByte();//0x96
                 Unknown4 = br.ReadByte();//0x97
             }
+
+            public override string ToString() => Name.Length>0?Name.ToString():base.ToString();
         }
 
         /// <summary>
@@ -597,6 +626,7 @@ namespace FF8
         /// <see cref="http://wiki.ffrtt.ru/index.php/FF8/GameSaveFormat#Guardian_Forces"/>
         public struct GFData
         {
+            
             public FF8String Name; //Offset (0x00 terminated)
             public uint Experience; //0x00
             public byte Unknown; //0x0C
@@ -623,6 +653,8 @@ namespace FF8
                 Learning = br.ReadByte();//0x41 ability
                 Forgotten = br.ReadBytes(3);//0x42 abilities (1 bit = 1 ability of the GF forgotten, 2 bits unused)
             }
+
+            public override string ToString() => Name.ToString();
         }
 
         /// <summary>

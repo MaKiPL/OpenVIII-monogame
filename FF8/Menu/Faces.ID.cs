@@ -39,7 +39,8 @@
             Bahamut,
             Cactuar,
             Tonberry,
-            Eden
+            Eden,
+            Blank = 0xFF            
         }
 
         #endregion Enums
