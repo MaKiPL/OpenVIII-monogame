@@ -1389,29 +1389,26 @@ namespace FF8
                     break;
             }
 
-            current_position = br.ReadUInt16();
-            ms.Seek(-2, SeekOrigin.Current);
-
-
-
             switch (battleCamera.cam.control_word & 1)
             {
                 case 0:
                     if(current_position >= 0)
                     {
-                        while(current_position >= 0)
+                        while(true) //I'm setting this to true and breaking in code as this works on peeking on next variable via pointer and that's not possible here without unsafe block
                         {
+                            current_position = br.ReadUInt16();
+                            if ((short)current_position < 0) //reverse of *current_position >= 0, also cast to signed is important here
+                                break;
                             battleCamera.cam.unkword024[keyframecount] = totalframecount;
-                            totalframecount += (ushort)(current_position * 16);
-                            ms.Seek(2, SeekOrigin.Current);
-                            battleCamera.cam.unkbyte124[keyframecount] = (byte)br.ReadUInt16(); //cam->unkbyte124[keyframecount] = *current_position++; - looks like we are wasting one byte due to integer sizes
-                            battleCamera.cam.unkword064[keyframecount] = br.ReadUInt16();
-                            battleCamera.cam.unkword0A4[keyframecount] = br.ReadUInt16();
-                            battleCamera.cam.unkword0E4[keyframecount] = br.ReadUInt16();
-                            battleCamera.cam.unkbyte204[keyframecount] = (byte)br.ReadUInt16(); //m->unkbyte204[keyframecount] = *current_position++;
-                            battleCamera.cam.unkword144[keyframecount] = br.ReadUInt16();
-                            battleCamera.cam.unkword184[keyframecount] = br.ReadUInt16();
-                            battleCamera.cam.unkword1C4[keyframecount] = br.ReadUInt16();
+                            totalframecount += (ushort)(current_position * 16); //here is increment of short*, but I already did that above
+                            battleCamera.cam.unkbyte124[keyframecount] = (byte)(current_position =  br.ReadUInt16()); //cam->unkbyte124[keyframecount] = *current_position++; - looks like we are wasting one byte due to integer sizes
+                            battleCamera.cam.unkword064[keyframecount] = current_position = br.ReadUInt16();
+                            battleCamera.cam.unkword0A4[keyframecount] = current_position = br.ReadUInt16();
+                            battleCamera.cam.unkword0E4[keyframecount] = current_position = br.ReadUInt16();
+                            battleCamera.cam.unkbyte204[keyframecount] = (byte)(current_position = br.ReadUInt16()); //m->unkbyte204[keyframecount] = *current_position++;
+                            battleCamera.cam.unkword144[keyframecount] = current_position = br.ReadUInt16();
+                            battleCamera.cam.unkword184[keyframecount] = current_position = br.ReadUInt16();
+                            battleCamera.cam.unkword1C4[keyframecount] = current_position = br.ReadUInt16();
                             keyframecount++;
                         }
 
@@ -1449,6 +1446,7 @@ namespace FF8
 					local14 += 8;
 					keyframecount++;
                     */
+                                break; //Infinite loop prevention
                             }
                         }
                         break;
@@ -1463,59 +1461,7 @@ namespace FF8
             battleCamera.cam.unkbyte001 = keyframecount;
             battleCamera.cam.unkword00E = totalframecount;
             battleCamera.cam.unkword00C = 0;
-            return (uint)(ms.Position + 1);
-
-
-            //    BS_CameraStruct.camAnimId = (byte)animId;
-            //    if ((animId >> 4) >= battleCamera.battleCameraCollection.cAnimCollectionCount)
-            //        return;
-            //    var pointer = battleCamera.battleCameraCollection.battleCameraSet[animId >> 4].animPointers[animId & 0xF];
-            //    ms.Seek(pointer, 0);
-            //    ushort eax = br.ReadUInt16();
-            //    BS_CameraStruct.mainController = eax; //[esi+2], ax 
-            //    if (eax == 0xFFFF)
-            //        return;
-            //    ushort ebx = eax;
-            //    eax = (ushort)((eax >> 6) & 3);
-            //    eax--;
-            //    if (eax == 0)
-            //    {
-            //        eax = 0x200;
-            //        BS_CameraStruct.thirdWordController = BS_CameraStruct.secondWordController = eax;
-            //        goto structFullfiled; 
-            //    }
-            //    eax--;
-            //    if (eax == 0)
-            //    {
-            //        eax = br.ReadUInt16();
-            //        BS_CameraStruct.thirdWordController = BS_CameraStruct.secondWordController = eax;
-            //        goto structFullfiled;
-            //    }
-            //    eax--;
-            //    if (eax != 0)
-            //        goto structFullfiled;
-            //    BS_CameraStruct.secondWordController = br.ReadUInt16(); //esi+4
-            //    BS_CameraStruct.thirdWordController = br.ReadUInt16(); //esi+6 
-
-
-            //structFullfiled:
-            //    eax = ebx;
-            //    eax = (ushort)((eax >> 8) & 3);
-            //    switch (eax)
-            //    {
-            //        case 0:
-            //            break;
-            //        case 1:
-            //            break;
-            //        case 2:
-            //            break;
-            //        case 3:
-            //            break;
-            //    }
-
-            //    //default here
-            //    //there's now some operations to copy next vars
-            //    //see BS_Camera_ReadAnimation+CC 00103B8C
+            return (uint)(ms.Position); //returns current position +1, but the HEX editor tells me it's not neccesary here due to probably memory * variable getting
         }
 
 
