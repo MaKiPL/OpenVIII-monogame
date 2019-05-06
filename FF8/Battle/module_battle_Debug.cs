@@ -1404,11 +1404,11 @@ namespace FF8
                             battleCamera.cam.unkword024[keyframecount] = totalframecount;
                             totalframecount += (ushort)(current_position * 16);
                             ms.Seek(2, SeekOrigin.Current);
-                            battleCamera.cam.unkbyte124[keyframecount] = br.ReadByte();
+                            battleCamera.cam.unkbyte124[keyframecount] = (byte)br.ReadUInt16(); //cam->unkbyte124[keyframecount] = *current_position++; - looks like we are wasting one byte due to integer sizes
                             battleCamera.cam.unkword064[keyframecount] = br.ReadUInt16();
                             battleCamera.cam.unkword0A4[keyframecount] = br.ReadUInt16();
                             battleCamera.cam.unkword0E4[keyframecount] = br.ReadUInt16();
-                            battleCamera.cam.unkbyte204[keyframecount] = br.ReadByte();
+                            battleCamera.cam.unkbyte204[keyframecount] = (byte)br.ReadUInt16(); //m->unkbyte204[keyframecount] = *current_position++;
                             battleCamera.cam.unkword144[keyframecount] = br.ReadUInt16();
                             battleCamera.cam.unkword184[keyframecount] = br.ReadUInt16();
                             battleCamera.cam.unkword1C4[keyframecount] = br.ReadUInt16();
