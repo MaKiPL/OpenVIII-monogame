@@ -140,7 +140,9 @@
   <ItemGroup>
     <Compile Include="ArchiveSearch.cs" />
     <Compile Include="ArchiveWorker.cs" />
+    <Compile Include="DictionaryEx.cs" />
     <Compile Include="DirtyEncoder.cs" />
+    <Compile Include="FF8String.cs" />
     <Compile Include="Menu\Cards.cs" />
     <Compile Include="Menu\Cards.ID.cs" />
     <Compile Include="EntryGroup.cs" />
@@ -152,6 +154,7 @@
     <Compile Include="Menu\Magazine.ID.cs" />
     <Compile Include="Menu\Module_main_menu_InGameMenu.cs" />
     <Compile Include="Menu\PointEx.cs" />
+    <Compile Include="Menu\Stringfile.cs" />
     <Compile Include="Menu\Strings.cs" />
     <Compile Include="Menu\Module_card_test.cs" />
     <Compile Include="Menu\Module_main_menu_debug.Item.cs" />
