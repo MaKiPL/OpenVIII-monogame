@@ -18,7 +18,7 @@ namespace FF8
         private static Rectangle[] IGM_Party_Size;
         private static Rectangle IGM_NonPartyBox_Size;
         private static Rectangle[] IGM_NonParty_Size;
-        private static Matrix IGM_focus;
+        private static Matrix General_focus;
         private static FF8String IGM_Footer_Text;
         private static FF8String IGM_Header_Text;
         private static IGMItems choSideBar;
@@ -60,7 +60,7 @@ namespace FF8
             IGM_Size = new Rectangle { Width = 843, Height = 630 };
             Vector2 Zoom = Memory.Scale();
             
-            IGM_focus = Matrix.CreateTranslation(-IGM_Size.X - (IGM_Size.Width / 2), -IGM_Size.Y - (IGM_Size.Height / 2), 0) * Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) * Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
+            General_focus = Matrix.CreateTranslation(-IGM_Size.X - (IGM_Size.Width / 2), -IGM_Size.Y - (IGM_Size.Height / 2), 0) * Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) * Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
 
             IGM_Header_Size = new Rectangle { Width = 610, Height = 75 };
             IGM_Footer_Size = new Rectangle { Width = 610, Height = 75, Y = 630 - 75 };
@@ -115,7 +115,7 @@ namespace FF8
         private static bool UpdateInGameMenuInput()
         {
             bool ret = false;
-            Point ml = Input.MouseLocation.Transform(IGM_focus);
+            Point ml = Input.MouseLocation.Transform(General_focus);
 
             if (strSideBar != null && strSideBar.Count > 0)
             {
@@ -174,7 +174,7 @@ namespace FF8
 
         private static void DrawInGameMenu()
         {
-            Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: IGM_focus);
+            Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: General_focus);
 
             Draw_IGM_Header();
             Draw_IGM_SideBar();
@@ -200,7 +200,7 @@ namespace FF8
         {
             DrawBox(IGM_SideBox_Size);
             for (int i = 0; i < strSideBar.Count; i++)
-                Memory.font.RenderBasicText(strSideBar[(IGMItems)i], strSideBar[(IGMItems)i].Loc.Location, TextScale, 1, Fade: fade);
+                Memory.font.RenderBasicText(strSideBar[(IGMItems)i], strSideBar[(IGMItems)i].Loc.Location, TextScale, Fade: fade, lineSpacing: 1);
         }
 
         private static void Draw_IGM_ClockBox() => DrawBox(IGM_Clock_Size);
@@ -265,7 +265,7 @@ namespace FF8
         {
             if (IGM_NonParty_Size != null && pos < IGM_NonParty_Size.Length)
             {
-                Rectangle r = Memory.font.RenderBasicText(Memory.Strings.GetName((Faces.ID)character), IGM_NonParty_Size[pos].Location, TextScale, 1, Fade: fade);
+                Rectangle r = Memory.font.RenderBasicText(Memory.Strings.GetName((Faces.ID)character), IGM_NonParty_Size[pos].Location, TextScale, Fade: fade, lineSpacing: 1);
                 Rectangle rbak = r;
                 float yoff = 39 ;
                 r.Offset(7 , yoff);

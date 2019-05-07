@@ -621,9 +621,11 @@ namespace FF8
                 }
 
             Memory.SpriteBatchStartAlpha();
-            Memory.font.RenderBasicText(new FF8String($"Encounter ready at: {Memory.battle_encounter}"), 0, 0, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe}"), 20, 30 * 1, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {1000/Memory.gameTime.ElapsedGameTime.Milliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(
+                $"Encounter ready at: {Memory.battle_encounter}\n" +
+                $"Debug variable: {DEBUGframe}\n" +
+                $"1000/deltaTime milliseconds: {Math.Round((double)1000 / Memory.gameTime.ElapsedGameTime.Milliseconds,2)}",
+                30,20,lineSpacing: 5);
             Memory.SpriteBatchEnd();
         }
 

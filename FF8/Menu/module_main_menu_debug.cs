@@ -13,7 +13,6 @@ namespace FF8
         private static bool LastActive = false;
 
         private static MainMenuStates State = 0;
-        private static int vpHeight, vpWidth;
         private static Vector2 vp_per;
         private static Vector2 vp;
         private static bool blinkstate;
@@ -62,8 +61,8 @@ namespace FF8
         {
             Memory.graphics.GraphicsDevice.Clear(Color.Black);
             lastfade = fade;
-            vpSpace = vpHeight * 0.09f * Memory.Scale().X;
-            DFontPos = new Vector2(vpWidth * .10f * Memory.Scale().X, vpHeight * .05f * Memory.Scale().Y) + Offset;
+            vpSpace = vp_per.Y * 0.09f * Memory.Scale().X;
+            DFontPos = new Vector2(vp_per.X * .10f * Memory.Scale().X, vp_per.Y * .05f * Memory.Scale().Y) + Offset;
             switch (State)
             {
                 //case MainMenuStates.Init:
@@ -145,10 +144,14 @@ namespace FF8
                 Fade += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 3;
             }
 
-            vpWidth = Memory.PreferredViewportWidth;//Memory.graphics.GraphicsDevice.Viewport.Width;
-            vpHeight = Memory.PreferredViewportHeight;//Memory.graphics.GraphicsDevice.Viewport.Width;
+            vp_per.X = Memory.PreferredViewportWidth;//Memory.graphics.GraphicsDevice.Viewport.Width;
+            vp_per.Y = Memory.PreferredViewportHeight;//Memory.graphics.GraphicsDevice.Viewport.Width;
             vp_per = new Vector2(Memory.PreferredViewportWidth, Memory.PreferredViewportHeight);
             vp = new Vector2(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height);
+
+
+            General_focus = Matrix.CreateTranslation((vp_per.X / 2), (vp_per.Y / 2), 0) * Matrix.CreateScale(new Vector3(scale.X, scale.Y, 1)) * Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
+
             switch (State)
             {
                 //case MainMenuStates.Init:

@@ -138,7 +138,13 @@ namespace FF8
 
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
             Memory.Icons.Draw(icon, pallet, dst, scale);
-            Memory.font.RenderBasicText(new FF8String($"{(icon).ToString().Replace('_', ' ')}\nid: {(ushort)icon}\n\npallet: {pallet}\n\nwidth: {Memory.Icons[icon].Width}\nheight: {Memory.Icons[icon].Height}"), (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), 1f, 2f, 0, 1);
+            Memory.font.RenderBasicText(
+                $"{(icon).ToString().Replace('_', ' ')}\n" +
+                $"id: {(ushort)icon}\n\n" +
+                $"pallet: {pallet}\n\n" +
+                $"width: {Memory.Icons[icon].Width}\n" +
+                $"height: {Memory.Icons[icon].Height}",
+                (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f),lineSpacing: 0);
             Memory.SpriteBatchEnd();
         }
         static public void SaveStringToFile()

@@ -161,19 +161,19 @@ namespace FF8
             }
             if (mainchar > -1 &&  d!=null && d.charactersportraits != null && d.charactersportraits[mainchar] != Faces.ID.Blank)
             {
-                Point detailsLoc = (new Point
+                Vector2 detailsLoc = new Vector2
                 {
                     X = (int)(OffScreenBuffer.Width * 0.408333333333333f),
                     Y = (int)(OffScreenBuffer.Height * 0.0251572327044026f),
-                }.ToVector2() + offset).ToPoint();
+                } + offset;
                 FF8String name = Memory.Strings.GetName((Faces.ID)d.charactersportraits[mainchar],d);
                 FF8String lv_ = new FF8String($"LV.   {d.firstcharacterslevel}");
                 TextScale = new Vector2(OffScreenBuffer.Width * 0.0030303030297619f, OffScreenBuffer.Height * 0.00636792452830189f);
-                Memory.font.RenderBasicText(name, detailsLoc, TextScale, 1, 0, fade, true);
+                Memory.font.RenderBasicText(name, detailsLoc, TextScale,Fade: fade);
 
-                int playy = detailsLoc.Y;
+                int playy = (int)detailsLoc.Y;
                 detailsLoc.Y += (int)(OffScreenBuffer.Height * 0.0817610062893082f);
-                Rectangle disc = Memory.font.RenderBasicText(lv_, detailsLoc, TextScale, 1, 0, fade, true);
+                Rectangle disc = Memory.font.RenderBasicText(lv_, detailsLoc, TextScale, Fade: fade);
                 disc.Offset(0, (int)(OffScreenBuffer.Height * 0.0125786163522013f));
                 disc.X = (int)(OffScreenBuffer.Width * 0.583333333333333f);
                 Vector2 DiscScale = new Vector2(OffScreenBuffer.Height * 0.0060987230787661f);
@@ -212,14 +212,14 @@ namespace FF8
                 DrawBox(locbox,indent: false);
                 FF8String loc = Memory.Strings.Read(Strings.FileID.AREAMES, 0, d.LocationID).ReplaceRegion();
                 locbox.Offset(0.0297619047619048f * OffScreenBuffer.Width, 0.0440251572327044f * OffScreenBuffer.Height);
-                Memory.font.RenderBasicText(loc, locbox.Location, TextScale, 1, 0, fade, true);
+                Memory.font.RenderBasicText(loc, locbox.Location, TextScale, Fade: fade);
 
             }
 
-            dst.X = (int)(vpWidth * 0f);
-            dst.Y = (int)(vpHeight * 0.220833333333333f * ((block - 1) % 3));
-            dst.Width = (int)(vpWidth * 0.65625f);
-            dst.Height = (int)(vpHeight * 0.220833333333333f);
+            dst.X = (int)(vp_per.X * 0f);
+            dst.Y = (int)(vp_per.Y * 0.220833333333333f * ((block - 1) % 3));
+            dst.Width = (int)(vp_per.X * 0.65625f);
+            dst.Height = (int)(vp_per.Y * 0.220833333333333f);
             return new Tuple<Rectangle, Point>(dst, (dst.Location.ToVector2() + new Vector2(25f, dst.Height / 2)).ToPoint());
         }
 
@@ -244,12 +244,12 @@ namespace FF8
             if (buffer != null && buffer.Length > 0)
             {
                 if (indent)
-                    dst.Offset(0.0546875f * vpWidth, 0.0291666666666667f * vpHeight);
+                    dst.Offset(0.0546875f * vp_per.X, 0.0291666666666667f * vp_per.Y);
                 else if (bottom)
-                    dst.Offset(0.01953125f * vpWidth, dst.Height - 0.066666667f * vpHeight);
+                    dst.Offset(0.01953125f * vp_per.X, dst.Height - 0.066666667f * vp_per.Y);
                 else
-                    dst.Offset(0.01953125f * vpWidth, 0.0291666666666667f * vpHeight);
-                font = Memory.font.RenderBasicText(buffer, dst.Location, new Vector2(2.545454545f, 3.0375f), 1, 0, fade);
+                    dst.Offset(0.01953125f * vp_per.X, 0.0291666666666667f * vp_per.Y);
+                font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), new Vector2(2.545454545f, 3.0375f), Fade: fade);
                 cursor = dst.Location;
                 cursor.Y += (int)(18.225f); // 12 * (3.0375/2)
             }
@@ -277,10 +277,10 @@ namespace FF8
         {
             Rectangle dst = new Rectangle
             {
-                X = (int)(vpWidth * 0.171875f),
-                Y = (int)(vpHeight * 0.266666666666667f),
-                Width = (int)(vpWidth * 0.65625f),
-                Height = (int)(vpHeight * 0.6625f),
+                X = (int)(vp_per.X * 0.171875f),
+                Y = (int)(vp_per.Y * 0.266666666666667f),
+                Width = (int)(vp_per.X * 0.65625f),
+                Height = (int)(vp_per.Y * 0.6625f),
             };
 
             if (OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)
@@ -368,18 +368,18 @@ namespace FF8
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
             DrawLGSGHeader(strLoadScreen[Litems.GameFolder].Text, topright, help);
             SlotLocs[0] = DrawLGSGSlot(Vector2.Zero, strLoadScreen[Litems.Slot1].Text, strLoadScreen[Litems.FF8].Text);
-            SlotLocs[1] = DrawLGSGSlot(new Vector2(0, vpHeight * 0.216666667f), strLoadScreen[Litems.Slot2].Text, strLoadScreen[Litems.FF8].Text);
+            SlotLocs[1] = DrawLGSGSlot(new Vector2(0, vp_per.Y * 0.216666667f), strLoadScreen[Litems.Slot2].Text, strLoadScreen[Litems.FF8].Text);
             DrawPointer(SlotLocs[SlotLoc].Item2);
             Memory.SpriteBatchEnd();
         }
 
         private static Rectangle DrawLGSGHeader(FF8String info, FF8String name, FF8String help)
         {
-            Rectangle dst = new Rectangle((int)(vpWidth * 0.82421875f), (int)(vpHeight * 0.0583333333333333f), (int)(vpWidth * 0.17578125f), (int)(vpHeight * 0.0916666666666667f));
+            Rectangle dst = new Rectangle((int)(vp_per.X * 0.82421875f), (int)(vp_per.Y * 0.0583333333333333f), (int)(vp_per.X * 0.17578125f), (int)(vp_per.Y * 0.0916666666666667f));
             DrawBox(dst, name, null, false);
-            dst = new Rectangle(0, dst.Y, (int)(vpWidth * 0.8203125f), dst.Height);
+            dst = new Rectangle(0, dst.Y, (int)(vp_per.X * 0.8203125f), dst.Height);
             DrawBox(dst, info, Icons.ID.INFO);
-            dst = new Rectangle((int)(vpWidth * 0.0282101167315175f), (int)(dst.Height + dst.Y + vpHeight * 0.0041666666666667f), (int)(vpWidth * 0.943579766536965f), dst.Height);
+            dst = new Rectangle((int)(vp_per.X * 0.0282101167315175f), (int)(dst.Height + dst.Y + vp_per.Y * 0.0041666666666667f), (int)(vp_per.X * 0.943579766536965f), dst.Height);
             DrawBox(dst, help, Icons.ID.HELP, false);
             return dst;
         }
@@ -388,22 +388,22 @@ namespace FF8
         {
             Rectangle dst = new Rectangle
             {
-                X = (int)(vpWidth * 0.328125f),
-                Y = (int)(vpHeight * 0.45f),
-                Width = (int)(vpWidth * 0.34375f),
-                Height = (int)(vpHeight * 0.1f),
+                X = (int)(vp_per.X * 0.328125f),
+                Y = (int)(vp_per.Y * 0.45f),
+                Width = (int)(vp_per.X * 0.34375f),
+                Height = (int)(vp_per.Y * 0.1f),
             };
             dst = DrawBox(dst, null, Icons.ID.INFO).Item1;
             
             dst.Offset(new Vector2
             {
-                X = (vpWidth * 0.01328125f),
-                Y = (vpHeight * 0.0333333333333333f),
+                X = (vp_per.X * 0.01328125f),
+                Y = (vp_per.Y * 0.0333333333333333f),
             } );
             dst.Size = (new Point
             {
-                X = (int)(vpWidth * 0.3171875f),
-                Y = (int)(vpHeight * 0.0333333333333333f),
+                X = (int)(vp_per.X * 0.3171875f),
+                Y = (int)(vp_per.Y * 0.0333333333333333f),
             }.ToVector2() ).ToPoint();
             Memory.Icons.Draw(Icons.ID.Bar_BG, -1, dst, Vector2.UnitY, fade);
             dst.Width = (int)(dst.Width * PercentLoaded);
@@ -412,9 +412,9 @@ namespace FF8
 
         private static Tuple<Rectangle, Point,Rectangle> DrawLGSGSlot(Vector2 offset, FF8String title, FF8String main)
         {
-            Rectangle dst = new Rectangle((int)(vpWidth * 0.3703125f), (int)(vpHeight * 0.386111111f), (int)(vpWidth * 0.259375f), (int)(vpHeight * 0.141666667f));
-            Rectangle slot = new Rectangle(dst.Location, new Point((int)(vpWidth * 0.1f), (int)(vpHeight * 0.0875f)));
-            slot.Offset(vpWidth * -0.00859375f, vpHeight * -0.033333333f);
+            Rectangle dst = new Rectangle((int)(vp_per.X * 0.3703125f), (int)(vp_per.Y * 0.386111111f), (int)(vp_per.X * 0.259375f), (int)(vp_per.Y * 0.141666667f));
+            Rectangle slot = new Rectangle(dst.Location, new Point((int)(vp_per.X * 0.1f), (int)(vp_per.Y * 0.0875f)));
+            slot.Offset(vp_per.X * -0.00859375f, vp_per.Y * -0.033333333f);
             slot.Offset(offset);
             dst.Offset(offset);
             Tuple<Rectangle, Point, Rectangle> location = DrawBox(dst, main, null, false, true);
@@ -563,7 +563,7 @@ namespace FF8
             if (OffScreenBuffer == null || OffScreenBuffer.IsDisposed)
                 //if you make these with out disposing enough times gfx driver crashes.
                 //happened many times if i left this running and had this just ran every draw call. heh.
-                OffScreenBuffer = new RenderTarget2D(Memory.graphics.GraphicsDevice, (int)(vpWidth * 0.65625f *scale.X), (int)(vpHeight * 0.6625f*scale.Y), false, SurfaceFormat.Color, DepthFormat.None);
+                OffScreenBuffer = new RenderTarget2D(Memory.graphics.GraphicsDevice, (int)(vp_per.X * 0.65625f *scale.X), (int)(vp_per.Y * 0.6625f*scale.Y), false, SurfaceFormat.Color, DepthFormat.None);
             return ret;
         }
 
@@ -587,7 +587,7 @@ namespace FF8
                         OffScreenBuffer.GetData(texdata);
                         LastPage.SetData(texdata);
                         LastPageTarget = new Vector2(-PageSize.X, CurrentPageLoc.Y);
-                        CurrentPageLoc = new Vector2(vpWidth, CurrentPageLoc.Y);
+                        CurrentPageLoc = new Vector2(vp_per.X, CurrentPageLoc.Y);
                     }
                 }
             }
@@ -613,7 +613,7 @@ namespace FF8
                         Color[] texdata = new Color[OffScreenBuffer.Width * OffScreenBuffer.Height];
                         OffScreenBuffer.GetData(texdata);
                         LastPage.SetData(texdata);
-                        LastPageTarget = new Vector2(vpWidth, CurrentPageLoc.Y);
+                        LastPageTarget = new Vector2(vp_per.X, CurrentPageLoc.Y);
                         CurrentPageLoc = new Vector2(-PageSize.X, CurrentPageLoc.Y);
                     }
                 }

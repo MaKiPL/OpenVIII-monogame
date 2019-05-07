@@ -91,11 +91,19 @@ namespace FF8
                 float scale = vp.Height / Memory.Faces.GetEntry(id).Height;
                 Rectangle dst = new Rectangle(new Point(0), (Memory.Faces.GetEntry(id).Size * scale).ToPoint());
                 dst.Offset(vp.Width / 2 - dst.Center.X, 0);
-                Memory.SpriteBatchStartStencil();
+                Memory.SpriteBatchStartAlpha();
                 Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
                 Memory.Faces.Draw(id, dst);
-                Memory.font.RenderBasicText(new FF8String($"{FaceValue[pointer].ToString().Replace('_', ' ')}\npos: {pos}\nfile: {i}\ncol: {col}\nrow: {row}\nx: {Memory.Faces.GetEntry(id).X}\ny: {Memory.Faces.GetEntry(id).Y}\nwidth: {Memory.Faces.GetEntry(id).Width}\nheight: {Memory.Faces.GetEntry(id).Height}"),
-                (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), 1f, 2f, 0, 1);
+                Memory.font.RenderBasicText($"{FaceValue[pointer].ToString().Replace('_', ' ')}\n" +
+                    $"pos: {pos}\n" +
+                    $"file: {i}\n" +
+                    $"col: {col}\n" +
+                    $"row: {row}\n" +
+                    $"x: {Memory.Faces.GetEntry(id).X}\n" +
+                    $"y: {Memory.Faces.GetEntry(id).Y}\n" +
+                    $"width: {Memory.Faces.GetEntry(id).Width}\n" +
+                    $"height: {Memory.Faces.GetEntry(id).Height}",
+                    (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), lineSpacing: 1);
                 Memory.SpriteBatchEnd();
             }
         }

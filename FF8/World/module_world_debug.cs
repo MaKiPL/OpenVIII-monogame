@@ -458,13 +458,13 @@ namespace FF8
                     break;
             }
 
-
             Memory.SpriteBatchStartAlpha();
-            Memory.font.RenderBasicText(new FF8String($"World map MapState: {MapState}"), 0, 0, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"World Map Camera: X={camPosition}"), 0, 30, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Segment Position: ={segmentPosition}"), 0, 30 * 2, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"FPS camera deegress: ={degrees}"), 0, 30 * 3, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"var1: ={FOV}"), 0, 30 * 4, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(
+                $"World map MapState: {MapState}\n" +
+                $"World Map Camera: ={camPosition}\n" +
+                $"Segment Position: ={segmentPosition}\n" +
+                $"FPS camera degrees: ={degrees}°\n" +
+                $"FOV: ={FOV}", 30,20,lineSpacing:5);
             Memory.SpriteBatchEnd();
 
 

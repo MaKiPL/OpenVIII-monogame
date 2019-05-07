@@ -55,7 +55,17 @@ namespace FF8
 
         public override string ToString() => Memory.DirtyEncoding.GetString(Value);
 
-        public bool MoveNext() => ++position <= Length;
+        public bool MoveNext()
+        {
+            if(++position <= Length)
+            return true;
+            else
+            {
+                Reset();
+                return false;
+            }
+        }
+
         public void Reset() => position = 0;
         public IEnumerator GetEnumerator() => this;
         public FF8String Append(FF8String end)

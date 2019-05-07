@@ -66,8 +66,6 @@ namespace FF8
         /// </summary>
         private static void DrawMainLobby()
         {
-            
-            Vector2 vp = (new Vector2(vpWidth, vpHeight)) * scale;
             float item = 0;
             Vector2 textSize = new Vector2(2.545454545f, 3.0375f);// scaled in render function.
             Vector2 textStart = new Vector2(vp.X * 0.45078125f, vp.Y * .65f);
@@ -84,7 +82,7 @@ namespace FF8
             {
                 Item c = strMainLobby[i];
                 c.Loc = (Memory.font.RenderBasicText(c.Text,
-                    (int)(textStart.X), (int)(textStart.Y + ((textSize.Y + vpSpace) * item++)), textSize.X, textSize.Y, 1, 0, Fade));
+                    (int)(textStart.X), (int)(textStart.Y + ((textSize.Y + vpSpace) * item++)), textSize.X, textSize.Y, 0, Fade, lineSpacing: 1));
                 strMainLobby[i] = c;
             }
             DrawPointer(new Point((int)(textStart.X), (int)((((textSize.Y + vpSpace) * (float)Mchoose)+textStart.Y+(6*textSize.Y)))));

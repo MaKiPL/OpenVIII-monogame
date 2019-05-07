@@ -130,8 +130,8 @@ namespace FF8
             foreach (Enum i in Enum.GetValues(typeof(T)))
             {
                 Item c = dict[i];
-                c.Loc = Memory.font.CalcBasicTextArea(FF8String.Combine(strDebugLobby[i].Text, InfoForLobby<Ditems>(i)),
-                (int)DFontPos.X, (int)(DFontPos.Y + vpSpace * item++), 2.545454545f, 3.0375f, 0);
+                c.Loc = Memory.font.RenderBasicText(FF8String.Combine(strDebugLobby[i].Text, InfoForLobby<Ditems>(i)),
+                (int)DFontPos.X, (int)(DFontPos.Y + vpSpace * item++), 2.545454545f, 3.0375f,skipdraw:true);
                 if (dst.X == 0 || dst.Y == 0)
                     dst.Location = c.Loc.Location;
                 if (c.Loc.Width > dst.Width)
@@ -140,7 +140,7 @@ namespace FF8
                 dict[i] = c;
             }
             
-            dst.Inflate(vpWidth * .06f * scale.X, vpHeight * .035f * scale.Y);
+            dst.Inflate(vp_per.X * .06f , vp_per.Y * .035f );
             return dst;
         }
         /// <summary>
@@ -149,7 +149,7 @@ namespace FF8
         private static void DrawDebugLobby()
         {
             
-            vpSpace = vpHeight * 0.05f * scale.X;
+            vpSpace = vp_per.Y * 0.05f ;
             float item = 0;
             Rectangle dst = FontBoxCalc<Ditems>(strDebugLobby);
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
@@ -157,13 +157,13 @@ namespace FF8
             //Memory.Icons.Draw(Icons.ID.Menu_BG_256, 0, dst, new Vector2(2f), Fade);
             item = 0;
             dst.Offset(4 * 3.5f, 0);
-            dst.Size = (Memory.Icons[Icons.ID.DEBUG].GetRectangle.Size.ToVector2() * scale * 3.5f).ToPoint();
+            dst.Size = (Memory.Icons[Icons.ID.DEBUG].GetRectangle.Size.ToVector2()  * 3.5f).ToPoint();
             Memory.Icons.Draw(Icons.ID.DEBUG, 2, dst, Vector2.Zero, fade);
             dst.Location = DFontPos.ToPoint();
-            dst.Size = new Point((int)(24 * 2 * scale.X), (int)(16 * 2 * scale.Y));
-            dst.Offset(-(dst.Width + 10 * scale.X), 6 * scale.Y + vpSpace * ((float)Dchoose));
+            dst.Size = new Point((int)(24 * 2 ), (int)(16 * 2 ));
+            dst.Offset(-(dst.Width + 10 ), 6  + vpSpace * ((float)Dchoose));
             //want to use new function brain hurts on this screen lol
-            //DrawPointer(new Point((int)(textStart.X), (int)((((textSize.Y + vpSpace) * (float)Mchoose) + textStart.Y + (6 * textSize.Y)) * scale.Y)));
+            //DrawPointer(new Point((int)(textStart.X), (int)((((textSize.Y + vpSpace) * (float)Mchoose) + textStart.Y + (6 * textSize.Y)) )));
             Memory.Icons.Draw(Icons.ID.Finger_Right, 2, dst, Vector2.Zero, fade);
             //Memory.SpriteBatchEnd();
             //pointclamp looks bad on default fonts.
@@ -171,7 +171,7 @@ namespace FF8
             foreach (Ditems i in (Ditems[])Enum.GetValues(typeof(Ditems)))
             {
                 Memory.font.RenderBasicText(FF8String.Combine(strDebugLobby[i].Text, InfoForLobby<Ditems>(i)),
-                    (int)(DFontPos.X), (int)(DFontPos.Y + vpSpace * item++), 2.545454545f, 3.0375f, 1, 0, Fade);
+                    (int)(DFontPos.X), (int)(DFontPos.Y + vpSpace * item++), 2.545454545f, 3.0375f, 0, Fade, lineSpacing: 1);
             }
             //Memory.spriteBatch.Draw(Memory.iconsTex[2], dst,
             //    new Rectangle(232, 0, 23, 15), Color.White * Fade);

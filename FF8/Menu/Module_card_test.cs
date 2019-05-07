@@ -88,11 +88,19 @@ namespace FF8
                 float scale = vp.Height / Memory.Cards.GetEntry(id).Height;
                 Rectangle dst = new Rectangle(new Point(0), (Memory.Cards.GetEntry(id).Size * scale).ToPoint());
                 dst.Offset(vp.Width / 2 - dst.Center.X, 0);
-                Memory.SpriteBatchStartStencil();
+                Memory.SpriteBatchStartAlpha();
                 Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
                 Memory.Cards.Draw(id, dst);
-                Memory.font.RenderBasicText(new FF8String($"{CardValue[pointer].ToString().Replace('_', ' ')}\npos: {pos}\ncol: {col}\nrow: {row}\nx: {Memory.Cards.GetEntry(id).X}\ny: {Memory.Cards.GetEntry(id).Y}\nwidth: {Memory.Cards.GetEntry(id).Width}\nheight: {Memory.Cards.GetEntry(id).Height}"),
-                (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), 1f, 2f, 0, 1);
+                Memory.font.RenderBasicText(
+                    $"{CardValue[pointer].ToString().Replace('_', ' ')}\n" +
+                    $"pos: {pos}\n" +
+                    $"col: {col}\n" +
+                    $"row: {row}\n" +
+                    $"x: {Memory.Cards.GetEntry(id).X}\n" +
+                    $"y: {Memory.Cards.GetEntry(id).Y}\n" +
+                    $"width: {Memory.Cards.GetEntry(id).Width}\n" +
+                    $"height: {Memory.Cards.GetEntry(id).Height}",
+                    (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), lineSpacing: 1);
                 Memory.SpriteBatchEnd();
             }
         }

@@ -291,15 +291,23 @@ namespace FF8
             {0xFF, "ag"},// pos:223, col:0, row:0 --
         };
 
-        public static readonly Dictionary<char, byte> ChartoByte = BytetoChar.Reverse();
-        public static readonly Dictionary<string, byte> StrtoByte = BytetoStr.Reverse();
+        public static Dictionary<char, byte> ChartoByte;
+        public static Dictionary<string, byte> StrtoByte;
 
         #endregion Fields
 
         #region Constructors
 
+
         public DirtyEncoding()
         {
+            ChartoByte = BytetoChar.Reverse();
+            StrtoByte = BytetoStr.Reverse();
+            if (!ChartoByte.ContainsKey('{'))
+            ChartoByte.Add('{',0xB2);
+            if (!ChartoByte.ContainsKey('}'))
+            ChartoByte.Add('}',0xB3);
+
             //reverse key and value pairs for dictionarys for the reverse lookup
             SpecialCharacters = new byte[256 - BytetoChar.Count() - BytetoStr.Count];
             int i = 0;
@@ -341,7 +349,7 @@ namespace FF8
                 //So why not just only do SCB
                 foreach (char c in s)
                 {
-                    byte b = ChartoByte.ContainsKey(c) ? ChartoByte[c] : byte.Parse(c.ToString());
+                    byte b = ChartoByte.ContainsKey(c) ? ChartoByte[c] : (byte)(c);
                     bw.Write(b);
                 }
                 return ms.ToArray();
