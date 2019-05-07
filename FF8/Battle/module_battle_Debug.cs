@@ -1163,33 +1163,36 @@ namespace FF8
         public struct CameraStruct
         {
             public byte unkbyte000; //000
-            public byte unkbyte001; //001 keyframe count?
-            public ushort control_word; //002
-            public ushort unkword004; //004
-            public ushort unkword006; //006
-            public ushort unkword008; //008
-            public ushort unkword00A; //00A
-            public ushort unkword00C; //00C
-            public ushort unkword00E; //00E total frame count/time?
+            public byte keyframeCount;
+            public ushort control_word;
+            public ushort startingFOV; //usually ~280
+            public ushort endingFOV; //006
+            public ushort startingCameraRoll; //usually 0 unless you're aiming for some wicked animation
+            public ushort endingCameraRoll; //
+            public ushort startingTime; //usually 0, that's pretty logical
+            /// <summary>
+            /// Time is calculated from number of frames. You basically set starting position World+lookat and ending position, then mark number of frames to interpolate between them. Every frame is one drawcall and it costs 16.
+            /// </summary>
+            public ushort time; //starting time needs to be equal or higher for next animation frame to be read; If next frame==0xFFFF then it's all done
             [MarshalAs(UnmanagedType.ByValArray, SizeConst =20)]
             public byte[] unk; //010
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
             public ushort[] unkword024; //024 - start frames for each key frame?
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            public ushort[] unkword064; //064
+            public short[] Camera_World_Z_s16; //064
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            public ushort[] unkword0A4; //0A4
+            public short[] Camera_World_X_s16; //0A4
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            public ushort[] unkword0E4; //0E4
+            public short[] Camera_World_Y_s16; //0E4
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
             public byte[] unkbyte124; //124
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            public ushort[] unkword144; //144
+            public short[] Camera_Lookat_Z_s16; //144
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            public ushort[] unkword184; //184
+            public short[] Camera_Lookat_X_s16; //184
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            public ushort[] unkword1C4; //1C4
+            public short[] Camera_Lookat_Y_s16; //1C4
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
             public byte[] unkbyte204; //204
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
@@ -1353,41 +1356,41 @@ namespace FF8
             switch((battleCamera.cam.control_word >> 6) & 3)
             {
                 case 1:
-                    battleCamera.cam.unkword004 = 0x200;
-                    battleCamera.cam.unkword006 = 0x200;
+                    battleCamera.cam.startingFOV = 0x200;
+                    battleCamera.cam.endingFOV = 0x200;
                     break;
                 case 2:
-                    battleCamera.cam.unkword004 = current_position;
-                    battleCamera.cam.unkword006 = current_position;
+                    battleCamera.cam.startingFOV = current_position;
+                    battleCamera.cam.endingFOV = current_position;
                     br.ReadUInt16(); //current_position++
                     break;
                 case 3:
-                    battleCamera.cam.unkword004 = current_position;
+                    battleCamera.cam.startingFOV = current_position;
                     current_position = br.ReadUInt16();
-                    battleCamera.cam.unkword006 = current_position;
+                    battleCamera.cam.endingFOV = current_position;
                     ms.Seek(2, SeekOrigin.Current); //skipping WORD, because we already rolled back one WORD above this switch
                     break;
             }
             switch ((battleCamera.cam.control_word >> 8) & 3)
             {
                 case 0: //TODO!!
-                    battleCamera.cam.unkword008 = 00000000; //TODO, what's ff8vars.unkword1D977A2?
-                    battleCamera.cam.unkword00A = 00000000; //same as above; cam->unkword00A = ff8vars.unkword1D977A2;
+                    battleCamera.cam.startingCameraRoll = 00000000; //TODO, what's ff8vars.unkword1D977A2?
+                    battleCamera.cam.endingCameraRoll = 00000000; //same as above; cam->unkword00A = ff8vars.unkword1D977A2;
                     break;
                 case 1:
-                    battleCamera.cam.unkword008 = 0;
-                    battleCamera.cam.unkword00A = 0;
+                    battleCamera.cam.startingCameraRoll = 0;
+                    battleCamera.cam.endingCameraRoll = 0;
                     break;
                 case 2:
                     current_position = br.ReadUInt16(); //* + current_position++;
-                    battleCamera.cam.unkword008 = current_position;
-                    battleCamera.cam.unkword00A = current_position;
+                    battleCamera.cam.startingCameraRoll = current_position;
+                    battleCamera.cam.endingCameraRoll = current_position;
                     break;
                 case 3:
                     current_position = br.ReadUInt16(); //* + current_position++;
-                    battleCamera.cam.unkword008 = current_position;
+                    battleCamera.cam.startingCameraRoll = current_position;
                     current_position = br.ReadUInt16(); //* + current_position++;
-                    battleCamera.cam.unkword00A = current_position;
+                    battleCamera.cam.endingCameraRoll = current_position;
                     break;
             }
 
@@ -1404,13 +1407,13 @@ namespace FF8
                                 break;
                             totalframecount += (ushort)(current_position * 16); //here is increment of short*, but I already did that above
                             battleCamera.cam.unkbyte124[keyframecount] = (byte)(current_position =  br.ReadUInt16()); //cam->unkbyte124[keyframecount] = *current_position++; - looks like we are wasting one byte due to integer sizes
-                            battleCamera.cam.unkword064[keyframecount] = current_position = br.ReadUInt16();
-                            battleCamera.cam.unkword0A4[keyframecount] = current_position = br.ReadUInt16();
-                            battleCamera.cam.unkword0E4[keyframecount] = current_position = br.ReadUInt16();
+                            battleCamera.cam.Camera_World_Z_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
+                            battleCamera.cam.Camera_World_X_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
+                            battleCamera.cam.Camera_World_Y_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
                             battleCamera.cam.unkbyte204[keyframecount] = (byte)(current_position = br.ReadUInt16()); //m->unkbyte204[keyframecount] = *current_position++;
-                            battleCamera.cam.unkword144[keyframecount] = current_position = br.ReadUInt16();
-                            battleCamera.cam.unkword184[keyframecount] = current_position = br.ReadUInt16();
-                            battleCamera.cam.unkword1C4[keyframecount] = current_position = br.ReadUInt16();
+                            battleCamera.cam.Camera_Lookat_Z_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
+                            battleCamera.cam.Camera_Lookat_X_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
+                            battleCamera.cam.Camera_Lookat_Y_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
                             keyframecount++;
                         }
 
@@ -1460,9 +1463,9 @@ namespace FF8
             {
                 //ff8funcs.Sub503300();
             }
-            battleCamera.cam.unkbyte001 = keyframecount;
-            battleCamera.cam.unkword00E = totalframecount;
-            battleCamera.cam.unkword00C = 0;
+            battleCamera.cam.keyframeCount = keyframecount;
+            battleCamera.cam.time = totalframecount;
+            battleCamera.cam.startingTime = 0;
             return (uint)(ms.Position+2);
         }
 
