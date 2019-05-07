@@ -35,11 +35,11 @@ namespace FF8
 
         private static int battleModule = 0;
 
-        private const int BATTLEMODULE_INIT = 0;
-        private const int BATTLEMODULE_READDATA = 1;
-        private const int BATTLEMODULE_DRAWGEOMETRY = 2;
-        private const int BATTLEMODULE_CAMERAINTRO = 3;
-        private const int BATTLEMODULE_ACTIVE = 4;
+        //This should be enum btw
+        private const int BATTLEMODULE_INIT = 0; //basic init stuff; renderer; core
+        private const int BATTLEMODULE_READDATA = 1; //parses battle stage and all monsters
+        private const int BATTLEMODULE_DRAWGEOMETRY = 2; //draw geometry also supports updateCamera
+        private const int BATTLEMODULE_ACTIVE = 3;
         private const float FPS = 1000.0f / 15f; //Natively the game we are rewritting works in 15 FPS per second
 
         /// <summary>
@@ -193,14 +193,20 @@ namespace FF8
                     ReadData();
                     break;
                 case BATTLEMODULE_DRAWGEOMETRY:
-                    FPSCamera();
+                    UpdateCamera();
+                    //FPSCamera();
                     break;
             }
+#if DEBUG
             if (Input.Button(Keys.F1))
                 DEBUGframe += 1;
             if (Input.Button(Keys.F2))
                 DEBUGframe--;
+            if (Input.Button(Keys.F3))
+                battleModule = BATTLEMODULE_INIT;
+#endif
         }
+
 
         public static void Draw()
         {
@@ -214,6 +220,46 @@ namespace FF8
                     break;
 
             }
+        }
+
+        //private static System.Windows.Forms.Form quickDebugForm;
+        private static void UpdateCamera()
+        {
+            //TODO - It's all good, but I'm missing which should be negative, which positive, which order X-ZY?
+            //Oh- btw- remember that when we are changing keyframes, then we should not use lerp as this would
+            //create the glitch of 'jumping'. Instead we need to force update camera perspective without blending to make it correct
+            //if (quickDebugForm == null)
+            //{
+            //    quickDebugForm = new System.Windows.Forms.Form();
+            //    System.Windows.Forms.FlowLayoutPanel flp = new System.Windows.Forms.FlowLayoutPanel();
+            //    quickDebugForm.Controls.Add(flp);
+            //    quickDebugForm.Show();
+            //}
+            const float V = 100f;
+            //battleCamera.cam.startingTime = 64;
+            float camWorldX = MathHelper.Lerp(battleCamera.cam.Camera_World_X_s16[0]/V,
+                battleCamera.cam.Camera_World_X_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time) ;
+            float camWorldY = MathHelper.Lerp(battleCamera.cam.Camera_World_Y_s16[0] / V,
+                battleCamera.cam.Camera_World_Y_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time); 
+            float camWorldZ = MathHelper.Lerp(battleCamera.cam.Camera_World_Z_s16[0] / V,
+                battleCamera.cam.Camera_World_Z_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time);
+
+            float camTargetX = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_X_s16[0] / V,
+    battleCamera.cam.Camera_Lookat_X_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time);
+            float camTargetY = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_Y_s16[0] / V,
+battleCamera.cam.Camera_Lookat_Y_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time);
+            float camTargetZ = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_Z_s16[0] / V,
+battleCamera.cam.Camera_Lookat_Z_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time);
+
+            camPosition = new Vector3(-camWorldX, camWorldY, -camWorldZ);
+            camTarget = new Vector3(-camTargetX, camTargetY, -camTargetZ);
+            
+            viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
+                         Vector3.Up);
+
+            if (battleCamera.cam.startingTime >= battleCamera.cam.time)
+                return;
+            battleCamera.cam.startingTime += 4;
         }
 
         /// <summary>
@@ -591,9 +637,12 @@ namespace FF8
                 }
 
             Memory.SpriteBatchStartAlpha();
-            Memory.font.RenderBasicText(Font.CipherDirty($"Encounter ready at: {Memory.battle_encounter}"), 0, 0, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"Debug variable: {DEBUGframe}"), 20, 30 * 1, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"1000/deltaTime milliseconds: {1000/Memory.gameTime.ElapsedGameTime.Milliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Encounter ready at: {Memory.battle_encounter}"), 0, 0, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe}"), 20, 30 * 1, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {1000/Memory.gameTime.ElapsedGameTime.Milliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"camera frame: {battleCamera.cam.startingTime}/{battleCamera.cam.time}"), 20, 30 * 3, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {MakiExtended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 4, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {MakiExtended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 5, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
         }
 
