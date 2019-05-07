@@ -51,6 +51,12 @@ namespace FF8
 
         public static double Distance3D(Vector3 xo, Vector3 xa) => Vector3.Distance(xo, xa);
 
+        /// <summary>
+        /// Some debug text is crashing due to brackets not appearing in chartable. This function removes brackets inside string
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public static string RemoveBrackets(string s) => s.Replace('{', ' ').Replace('}', ' ');
         public static bool GetBit(byte @object, int positionFromRight) => ((@object >> positionFromRight) & 1) > 0;
         public static bool GetBit(int @object, int positionFromRight) => ((@object >> positionFromRight) & 1) > 0;
 
