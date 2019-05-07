@@ -127,7 +127,9 @@ namespace FF8
                 blink -= Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
             lastscale = scale;
             scale = Memory.Scale();
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
             bool forceupdate = false;
+#pragma warning restore CS0219 // Variable is assigned but its value is never used
             Memory.SuppressDraw = true;
             if (LastActive != Memory.IsActive)
             {

@@ -621,9 +621,9 @@ namespace FF8
                 }
 
             Memory.SpriteBatchStartAlpha();
-            Memory.font.RenderBasicText(Font.CipherDirty($"Encounter ready at: {Memory.battle_encounter}"), 0, 0, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"Debug variable: {DEBUGframe}"), 20, 30 * 1, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"1000/deltaTime milliseconds: {1000/Memory.gameTime.ElapsedGameTime.Milliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Encounter ready at: {Memory.battle_encounter}"), 0, 0, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe}"), 20, 30 * 1, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {1000/Memory.gameTime.ElapsedGameTime.Milliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
         }
 
@@ -877,7 +877,9 @@ namespace FF8
             Debug_battleDat weapon;
             if (characterId == 1 || characterId == 9)
                 weapon = new Debug_battleDat(characterId, Debug_battleDat.EntityType.Weapon, weaponId, character);
+#pragma warning disable IDE0045 // Convert to conditional expression
             else if (weaponId != -1) weapon = new Debug_battleDat(characterId, Debug_battleDat.EntityType.Weapon, weaponId);
+#pragma warning restore IDE0045 // Convert to conditional expression
             else weapon = null;
             return new CharacterData()
             {

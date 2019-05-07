@@ -264,10 +264,9 @@ namespace FF8
             if (animationFrame >= animHeader.animations[animationId].animationFrames.Length || animationFrame<0)
                 animationFrame = 0;
             AnimationFrame frame = animHeader.animations[animationId].animationFrames[animationFrame];
-            AnimationFrame nextFrame;
-            if (animationFrame+1 >= animHeader.animations[animationId].animationFrames.Length)
-                nextFrame = animHeader.animations[animationId].animationFrames[0];
-            else nextFrame = animHeader.animations[animationId].animationFrames[animationFrame+1];
+            AnimationFrame nextFrame = animationFrame +1 >= animHeader.animations[animationId].animationFrames.Length
+                ? animHeader.animations[animationId].animationFrames[0]
+                : animHeader.animations[animationId].animationFrames[animationFrame+1];
             List<VertexPositionTexture> vpt = new List<VertexPositionTexture>();
             List<Tuple<Vector3, int>> verts = new List<Tuple<Vector3, int>>();  
 
@@ -723,11 +722,10 @@ namespace FF8
                     float x = bitReader.ReadPositionType()*.01f;
                     float y = bitReader.ReadPositionType() * .01f * -1f;
                     float z = bitReader.ReadPositionType() * .01f;
-                    if (n == 0)
-                        animHeader.animations[i].animationFrames[n] = new AnimationFrame()
-                        {Position = new Vector3(x,y,z)};
-                    else
-                        animHeader.animations[i].animationFrames[n] = new AnimationFrame()
+                    animHeader.animations[i].animationFrames[n] = n == 0
+                        ? new AnimationFrame()
+                        {Position = new Vector3(x,y,z)}
+                        : new AnimationFrame()
                         {Position = new Vector3(
                     animHeader.animations[i].animationFrames[n - 1].Position.X + x,
                     animHeader.animations[i].animationFrames[n - 1].Position.Y + y,

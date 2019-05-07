@@ -114,7 +114,9 @@ namespace FF8
             Vector2 scale;
             if (inscale == Vector2.Zero || inscale == Vector2.UnitX)
                 scale = new Vector2(autoscale.X);
+#pragma warning disable IDE0045 // Convert to conditional expression
             else if (inscale == Vector2.UnitY)
+#pragma warning restore IDE0045 // Convert to conditional expression
                 scale = new Vector2(autoscale.Y);
             else
                 scale = inscale;

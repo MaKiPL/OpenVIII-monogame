@@ -129,7 +129,7 @@ namespace FF8
             };
             Vector2 offset = dst.Location.ToVector2();
 
-            DrawBox(dst, null, null, false, false, true);
+            DrawBox(dst, indent: false);
 
             Vector2 blocknumpos = new Vector2
             {
@@ -209,7 +209,7 @@ namespace FF8
                     Height = (int)(OffScreenBuffer.Height * 0.138364779874214f),
                 };
                 locbox.Offset(offset);
-                DrawBox(locbox, null, null, false, false, true);
+                DrawBox(locbox,indent: false);
                 FF8String loc = Memory.Strings.Read(Strings.FileID.AREAMES, 0, d.LocationID).ReplaceRegion();
                 locbox.Offset(0.0297619047619048f * OffScreenBuffer.Width, 0.0440251572327044f * OffScreenBuffer.Height);
                 Memory.font.RenderBasicText(loc, locbox.Location, TextScale, 1, 0, fade, true);
@@ -223,7 +223,7 @@ namespace FF8
             return new Tuple<Rectangle, Point>(dst, (dst.Location.ToVector2() + new Vector2(25f, dst.Height / 2)).ToPoint());
         }
 
-        private static Tuple<Rectangle, Point, Rectangle> DrawBox(Rectangle dst, FF8String buffer = null, Icons.ID? title = null, bool indent = true, bool bottom = false, bool prescaled = false)
+        private static Tuple<Rectangle, Point, Rectangle> DrawBox(Rectangle dst, FF8String buffer = null, Icons.ID? title = null, bool indent = true, bool bottom = false)
         {
             Point cursor = new Point(0);
             dst.Size = (dst.Size.ToVector2() ).ToPoint();
@@ -249,7 +249,7 @@ namespace FF8
                     dst.Offset(0.01953125f * vpWidth, dst.Height - 0.066666667f * vpHeight);
                 else
                     dst.Offset(0.01953125f * vpWidth, 0.0291666666666667f * vpHeight);
-                font = Memory.font.RenderBasicText(buffer, dst.Location, new Vector2(2.545454545f, 3.0375f), 1, 0, fade, prescaled);
+                font = Memory.font.RenderBasicText(buffer, dst.Location, new Vector2(2.545454545f, 3.0375f), 1, 0, fade);
                 cursor = dst.Location;
                 cursor.Y += (int)(18.225f); // 12 * (3.0375/2)
             }

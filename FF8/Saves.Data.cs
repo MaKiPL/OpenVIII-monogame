@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-
 namespace FF8
 {
 
@@ -82,9 +81,9 @@ namespace FF8
             public byte BattleUNK; //0x0D32 dream/Odin/Phoenix/Gilgamesh/Angelo disabled/Angel Wing enabled/???/???
             public byte[] Tutorialinfos; //0x0D33
             public byte SeeDtestlevel; //0x0D43
-            public uint Unknown; //0x0D44
+            public uint Unknown7; //0x0D44
             public uint Party2; //0x0D48 (last byte always = 255)
-            public uint Unknown7; //0x0D4C
+            public uint Unknown8; //0x0D4C
             public ushort Module; //0x0D50 (1= field, 2= worldmap, 3= battle)
             public ushort Currentfield; //0x0D52
             public ushort Previousfield; //0x0D54
@@ -93,40 +92,19 @@ namespace FF8
             public ushort[] Triangle_ID; //0x0D62  (party1, party2, party3)
             public byte[] Direction; //0x0D68  (party1, party2, party3)
             public byte Padding; //0x0D6B
-            public uint Unknown8; //0x0D6C
+            public uint Unknown9; //0x0D6C
             public FieldVars Fieldvars; //0x0D70 http://wiki.ffrtt.ru/index.php/FF8/Variables
             public Worldmap Worldmap; //0x1270
             public TripleTriad TripleTriad; //0x12F0
             public ChocoboWorld ChocoboWorld; //0x1370
-
-            public Data()
-            {
-                LocationID = 0;
-                firstcharacterscurrentHP = 0;
-                firstcharactersmaxHP = 0;
-                savecount = 0;
-                AmountofGil = 0;
-                timeplayed = new TimeSpan();
-                firstcharacterslevel = 0;
-                charactersportraits = null;
-                Squallsname = null;
-                Rinoasname = null;
-                Angelosname = null;
-                Bokosname = null;
-                CurrentDisk = 0;
-                Currentsave = 0;
-                GFs = new GFData[16];
-                Characters = new CharacterData[8];
-                Shops = null;
-                Configuration = null;
-                Party = null;
-                KnownWeapons = null;
-                Grieversname = null;
-            }
-
+            
             public struct Item { public byte ID; public byte QTY; };
+
             public void Read(BinaryReader br)
             {
+                timeplayed = new TimeSpan();
+                GFs = new GFData[16];
+                Characters = new CharacterData[8];
                 LocationID = br.ReadUInt16();//0x0004
                 firstcharacterscurrentHP = br.ReadUInt16();//0x0006
                 firstcharactersmaxHP = br.ReadUInt16();//0x0008
@@ -160,8 +138,8 @@ namespace FF8
                 KnownWeapons = br.ReadBytes(4); //0x0B08 // 4 bytes
                 Grieversname = br.ReadBytes(12); //0x0B0C // 12 bytes
 
-                Unknown = br.ReadUInt16();//0x0B18  (always 7966?)
-                Unknown = br.ReadUInt16();//0x0B1A 
+                Unknown1 = br.ReadUInt16();//0x0B18  (always 7966?)
+                Unknown2 = br.ReadUInt16();//0x0B1A 
                 AmountofGil2 = br.ReadUInt32();//0x0B1C //dupilicate
                 AmountofGil_Laguna = br.ReadUInt32();//0x0B20 
                 LimitBreakQuistis = br.ReadUInt16();//0x0B24 
@@ -177,14 +155,14 @@ namespace FF8
                     Items[0] = new Item { ID = br.ReadByte(), QTY = br.ReadByte() }; //0x0B54 198 items (Item ID and Quantity)
                 Gametime = new TimeSpan(0, 0, (int)br.ReadUInt32());//0x0CE0 
                 Countdown = br.ReadUInt32();//0x0CE4 
-                Unknown = br.ReadUInt32();//0x0CE8 
+                Unknown3 = br.ReadUInt32();//0x0CE8 
                 Battlevictorycount = br.ReadUInt32();//0x0CEC 
-                Unknown = br.ReadUInt16();//0x0CF0 
+                Unknown4 = br.ReadUInt16();//0x0CF0 
                 Battlebattleescaped = br.ReadUInt16();//0x0CF2 
-                Unknown = br.ReadUInt32();//0x0CF4 
+                Unknown5 = br.ReadUInt32();//0x0CF4 
                 BattleTonberrykilledcount = br.ReadUInt32();//0x0CF8 
                 BattleTonberrySrkilled = br.ReadUInt32()>0;//0x0CFC (yeah, this is a boolean)
-                Unknown = br.ReadUInt32();//0x0D00 
+                Unknown6 = br.ReadUInt32();//0x0D00 
                 BattleR1 = br.ReadUInt32();//0x0D04 First "Bug" battle (R1 tip)
                 BattleELEMENTAL = br.ReadUInt32();//0x0D08 First "Bomb" battle (Elemental tip)
                 BattleMENTAL = br.ReadUInt32();//0x0D0C  First "T-Rex" battle (Mental tip)
@@ -196,9 +174,9 @@ namespace FF8
                 BattleUNK = br.ReadByte();//0x0D32 dream/Odin/Phoenix/Gilgamesh/Angelo disabled/Angel Wing enabled/???/???
                 Tutorialinfos = br.ReadBytes(16);//0x0D33 
                 SeeDtestlevel = br.ReadByte();//0x0D43 
-                Unknown = br.ReadUInt32();//0x0D44 
+                Unknown7 = br.ReadUInt32();//0x0D44 
                 Party2 = br.ReadUInt32();//0x0D48 (last byte always = 255) //dupicate
-                Unknown = br.ReadUInt32();//0x0D4C 
+                Unknown8 = br.ReadUInt32();//0x0D4C 
                 Module = br.ReadUInt16();//0x0D50 (1= field, 2= worldmap, 3= battle)
                 Currentfield = br.ReadUInt16();//0x0D52 
                 Previousfield = br.ReadUInt16();//0x0D54 
@@ -213,7 +191,7 @@ namespace FF8
                     Triangle_ID[i] = br.ReadUInt16();//0x0D62  (party1, party2, party3)
                 Direction = br.ReadBytes(3 * 1);//0x0D68  (party1, party2, party3)
                 Padding = br.ReadByte();//0x0D6B 
-                Unknown = br.ReadUInt32();//0x0D6C 
+                Unknown9 = br.ReadUInt32();//0x0D6C 
                 Fieldvars.Read(br); //0x0D70 http://wiki.ffrtt.ru/index.php/FF8/Variables
                 Worldmap.Read(br);//br.ReadBytes(128);//0x1270 
                 TripleTriad.Read(br); //br.ReadBytes(128);//0x12F0 

@@ -91,7 +91,7 @@ namespace FF8
                 Memory.SpriteBatchStartStencil();
                 Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
                 Memory.Cards.Draw(id, dst);
-                Memory.font.RenderBasicText(Font.CipherDirty($"{CardValue[pointer].ToString().Replace('_', ' ')}\npos: {pos}\ncol: {col}\nrow: {row}\nx: {Memory.Cards.GetEntry(id).X}\ny: {Memory.Cards.GetEntry(id).Y}\nwidth: {Memory.Cards.GetEntry(id).Width}\nheight: {Memory.Cards.GetEntry(id).Height}"),
+                Memory.font.RenderBasicText(new FF8String($"{CardValue[pointer].ToString().Replace('_', ' ')}\npos: {pos}\ncol: {col}\nrow: {row}\nx: {Memory.Cards.GetEntry(id).X}\ny: {Memory.Cards.GetEntry(id).Y}\nwidth: {Memory.Cards.GetEntry(id).Width}\nheight: {Memory.Cards.GetEntry(id).Height}"),
                 (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), 1f, 2f, 0, 1);
                 Memory.SpriteBatchEnd();
             }

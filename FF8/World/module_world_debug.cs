@@ -460,11 +460,11 @@ namespace FF8
 
 
             Memory.SpriteBatchStartAlpha();
-            Memory.font.RenderBasicText(Font.CipherDirty($"World map MapState: {MapState}"), 0, 0, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"World Map Camera: X={camPosition}"), 0, 30, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"Segment Position: ={segmentPosition}"), 0, 30 * 2, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"FPS camera deegress: ={degrees}"), 0, 30 * 3, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(Font.CipherDirty($"var1: ={FOV}"), 0, 30 * 4, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"World map MapState: {MapState}"), 0, 0, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"World Map Camera: X={camPosition}"), 0, 30, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Segment Position: ={segmentPosition}"), 0, 30 * 2, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"FPS camera deegress: ={degrees}"), 0, 30 * 3, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"var1: ={FOV}"), 0, 30 * 4, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
 
 
