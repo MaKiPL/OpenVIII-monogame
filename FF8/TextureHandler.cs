@@ -129,13 +129,21 @@ namespace FF8
             string bn = Path.GetFileNameWithoutExtension(path);
             string prefix = bn.Substring(0, 2);
             string pngpath = Path.Combine(Memory.FF8DIR, "textures", prefix, bn);
+            // this isn't working correctly unless mod authors have the correct pallet for each number.
+            // though might be a tonberry thing as some pallets have values hard coded for reducing collisions.
+            // I don't know exactly what the numbers in the filenames are.
+            // could be the order that they were read when they were used by the game.
+            // where our pallet number is the original order.
+            // TODO extract the hashing function and convert to c#.
             string suffix = pallet > -1 ? $"{pallet + 13}" : "";
             suffix += ".png";
             if (Directory.Exists(pngpath))
             {
                 try
                 {
-                    pngpath = Directory.GetFiles(pngpath).Last(x => (x.IndexOf(bn, StringComparison.OrdinalIgnoreCase) >= 0 && x.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)));
+                    pngpath = Directory.GetFiles(pngpath).Last(x => 
+                    (x.IndexOf(bn, StringComparison.OrdinalIgnoreCase) >= 0 && 
+                    x.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)));
                     using (FileStream fs = File.OpenRead(pngpath))
                     {
                         return Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
