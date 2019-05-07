@@ -57,9 +57,9 @@ namespace FF8
 
         private static void UpdateInGameMenu()
         {
+            scale = new Vector2(1, 1);
             IGM_Size = new Rectangle { Width = 843, Height = 630 }.Scale(scale);
-            IGM_focus = Matrix.CreateTranslation(-IGM_Size.X - (IGM_Size.Width / 2), -IGM_Size.Y - (IGM_Size.Height / 2), 0)
-                * Matrix.CreateTranslation(vpWidth / 2, vpHeight / 2, 0);
+            IGM_focus = Matrix.CreateTranslation(-IGM_Size.X - (IGM_Size.Width / 2), -IGM_Size.Y - (IGM_Size.Height / 2), 0) * Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
 
             IGM_Header_Size = new Rectangle { Width = 610, Height = 75 }.Scale(scale);
             IGM_Footer_Size = new Rectangle { Width = 610, Height = 75, Y = 630 - 75 }.Scale(scale);
@@ -75,7 +75,7 @@ namespace FF8
                     Height = IGM_SideBox_Size.Height / strSideBar.Count(),
                     X = IGM_SideBox_Size.X,
                     Y = IGM_SideBox_Size.Y + (IGM_SideBox_Size.Height / strSideBar.Count()) * i,
-                }.Scale();
+                }.Scale(scale);
                 r.Inflate(-26 * scale.X, -12 * scale.Y);
                 l.Loc = r;
                 l.Point = new Point(l.Loc.X, l.Loc.Center.Y);
@@ -106,6 +106,8 @@ namespace FF8
 
             IGM_Footer_Text = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Memory.State.LocationID).ReplaceRegion();
             IGM_Header_Text = strHeaderText[choSideBar];
+
+            TextScale = new Vector2(2.545455f, 3.0375f) * scale;
             UpdateInGameMenuInput();
         }
 
@@ -171,7 +173,7 @@ namespace FF8
 
         private static void DrawInGameMenu()
         {
-            Memory.SpriteBatchStartAlpha(ss:  SamplerState.PointClamp, tm: IGM_focus);
+            Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: IGM_focus);
 
             Draw_IGM_Header();
             Draw_IGM_SideBar();
@@ -191,22 +193,22 @@ namespace FF8
                 Draw_IGM_PartyStatus_Box(i, Memory.State.Party[i]);
         }
 
-        private static void Draw_IGM_Header() => DrawBox(IGM_Header_Size, IGM_Header_Text, Icons.ID.HELP, false);
+        private static void Draw_IGM_Header() => DrawBox(IGM_Header_Size, IGM_Header_Text, Icons.ID.HELP, false,prescaled:true);
 
         private static void Draw_IGM_SideBar(bool Save = false)
         {
-            DrawBox(IGM_SideBox_Size);
+            DrawBox(IGM_SideBox_Size, prescaled: true);
             for (int i = 0; i < strSideBar.Count; i++)
-                Memory.font.RenderBasicText(strSideBar[(IGMItems)i], strSideBar[(IGMItems)i].Loc.Location, TextScale, 1, Fade: fade);
+                Memory.font.RenderBasicText(strSideBar[(IGMItems)i], strSideBar[(IGMItems)i].Loc.Location, TextScale, 1, Fade: fade, prescaled: true);
         }
 
-        private static void Draw_IGM_ClockBox() => DrawBox(IGM_Clock_Size);
+        private static void Draw_IGM_ClockBox() => DrawBox(IGM_Clock_Size, prescaled: true);
 
-        private static void Draw_IGM_FooterBox() => DrawBox(IGM_Footer_Size, IGM_Footer_Text, indent: false);
+        private static void Draw_IGM_FooterBox() => DrawBox(IGM_Footer_Size, IGM_Footer_Text, indent: false, prescaled: true);
 
         private static void Draw_IGM_NonPartyBox()
         {
-            DrawBox(IGM_NonPartyBox_Size);
+            DrawBox(IGM_NonPartyBox_Size, prescaled: true);
             sbyte pos = 0;
             for (byte i = 0; i <= (byte)Faces.ID.Edea_Kramer && IGM_NonParty_Size != null && pos < IGM_NonParty_Size.Length; i++)
             {
@@ -221,7 +223,7 @@ namespace FF8
             {
                 if (character != Saves.Characters.Blank)
                 {
-                    Tuple<Rectangle, Point, Rectangle> dims = DrawBox(IGM_Party_Size[pos], Memory.Strings.GetName((Faces.ID)character), Icons.ID.STATUS, indent: false);
+                    Tuple<Rectangle, Point, Rectangle> dims = DrawBox(IGM_Party_Size[pos], Memory.Strings.GetName((Faces.ID)character), Icons.ID.STATUS, indent: false, prescaled: true);
                     Rectangle r = dims.Item3;
                     float yoff = 6 * scale.Y;
                     r = dims.Item3;
@@ -254,7 +256,7 @@ namespace FF8
                     Memory.Icons.Draw(lvl, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
                 }
                 else
-                    DrawBox(IGM_Party_Size[pos]);
+                    DrawBox(IGM_Party_Size[pos], prescaled: true);
             }
         }
 
@@ -262,7 +264,7 @@ namespace FF8
         {
             if (IGM_NonParty_Size != null && pos < IGM_NonParty_Size.Length)
             {
-                Rectangle r = Memory.font.RenderBasicText(Memory.Strings.GetName((Faces.ID)character), IGM_NonParty_Size[pos].Location, TextScale, 1, Fade: fade);
+                Rectangle r = Memory.font.RenderBasicText(Memory.Strings.GetName((Faces.ID)character), IGM_NonParty_Size[pos].Location, TextScale, 1, Fade: fade, prescaled: true);
                 Rectangle rbak = r;
                 float yoff = 39 * scale.Y;
                 r.Offset(7 * scale.X, yoff);

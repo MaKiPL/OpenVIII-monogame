@@ -14,6 +14,8 @@ namespace FF8
 
         private static MainMenuStates State = 0;
         private static int vpHeight, vpWidth;
+        private static Vector2 vp_per;
+        private static Vector2 vp;
         private static bool blinkstate;
 
         #endregion Fields
@@ -143,7 +145,8 @@ namespace FF8
 
             vpWidth = Memory.PreferredViewportWidth;//Memory.graphics.GraphicsDevice.Viewport.Width;
             vpHeight = Memory.PreferredViewportHeight;//Memory.graphics.GraphicsDevice.Viewport.Width;
-
+            vp_per = new Vector2(Memory.PreferredViewportWidth, Memory.PreferredViewportHeight);
+            vp = new Vector2(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height);
             switch (State)
             {
                 //case MainMenuStates.Init:
