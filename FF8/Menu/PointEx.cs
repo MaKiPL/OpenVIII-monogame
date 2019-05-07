@@ -21,7 +21,20 @@ namespace FF8
             source = (source.ToVector2() + offset).ToPoint();
             return source;
         }
-
+        public static Point Transform(this Point point, Matrix matrix)
+        {
+            point = Vector2.Transform(point.ToVector2(), Matrix.Invert(matrix)).RoundedPoint();
+            return point;
+        }
+        public static Rectangle Scale(this Rectangle source, Matrix matrix)
+        {
+            Vector2 scale = Memory.Scale();
+            Vector2 loc = source.Location.ToVector2();
+            source.Offset(matrix.Translation.X, matrix.Translation.Y);
+            source.Location = Vector2.Transform(loc, Matrix.Invert(matrix)).RoundedPoint();
+            source.Size = (source.Size.ToVector2() * scale).RoundedPoint();
+            return source;
+        }
         public static Rectangle Scale(this Rectangle source, Vector2 scale)
         {
             source.Location = (source.Location.ToVector2() * scale).RoundedPoint();

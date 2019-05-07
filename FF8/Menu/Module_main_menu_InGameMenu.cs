@@ -58,13 +58,15 @@ namespace FF8
         private static void UpdateInGameMenu()
         {
             scale = new Vector2(1, 1);
-            IGM_Size = new Rectangle { Width = 843, Height = 630 }.Scale(scale);
-            IGM_focus = Matrix.CreateTranslation(-IGM_Size.X - (IGM_Size.Width / 2), -IGM_Size.Y - (IGM_Size.Height / 2), 0) * Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
+            IGM_Size = new Rectangle { Width = 843, Height = 630 };
+            Vector2 Zoom = Memory.Scale();
+            
+            IGM_focus = Matrix.CreateTranslation(-IGM_Size.X - (IGM_Size.Width / 2), -IGM_Size.Y - (IGM_Size.Height / 2), 0) * Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) * Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
 
-            IGM_Header_Size = new Rectangle { Width = 610, Height = 75 }.Scale(scale);
-            IGM_Footer_Size = new Rectangle { Width = 610, Height = 75, Y = 630 - 75 }.Scale(scale);
-            IGM_Clock_Size = new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 }.Scale(scale);
-            IGM_SideBox_Size = new Rectangle { Width = 226, Height = 492, X = 843 - 226 }.Scale(scale);
+            IGM_Header_Size = new Rectangle { Width = 610, Height = 75 };
+            IGM_Footer_Size = new Rectangle { Width = 610, Height = 75, Y = 630 - 75 };
+            IGM_Clock_Size = new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 };
+            IGM_SideBox_Size = new Rectangle { Width = 226, Height = 492, X = 843 - 226 };
 
             for (int i = 0; i < strSideBar.Count; i++)
             {
@@ -75,17 +77,17 @@ namespace FF8
                     Height = IGM_SideBox_Size.Height / strSideBar.Count(),
                     X = IGM_SideBox_Size.X,
                     Y = IGM_SideBox_Size.Y + (IGM_SideBox_Size.Height / strSideBar.Count()) * i,
-                }.Scale(scale);
-                r.Inflate(-26 * scale.X, -12 * scale.Y);
+                };
+                r.Inflate(-26 , -12 );
                 l.Loc = r;
                 l.Point = new Point(l.Loc.X, l.Loc.Center.Y);
                 strSideBar[(IGMItems)i] = l;
             }
             IGM_Party_Size = new Rectangle[3];
             for (int i = 0; i < 3; i++)
-                IGM_Party_Size[i] = new Rectangle { Width = 580, Height = 78, X = 20, Y = 84 + 78 * i }.Scale(scale);
+                IGM_Party_Size[i] = new Rectangle { Width = 580, Height = 78, X = 20, Y = 84 + 78 * i };
 
-            IGM_NonPartyBox_Size = new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 }.Scale(scale);
+            IGM_NonPartyBox_Size = new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 };
             IGM_NonParty_Size = new Rectangle[6];
             int row = 0, col = 0;
             for (int i = 0; i < IGM_NonParty_Size.Length; i++)
@@ -100,8 +102,8 @@ namespace FF8
                     Height = height,
                     X = IGM_NonPartyBox_Size.X + col * width,
                     Y = IGM_NonPartyBox_Size.Y + row * height
-                }.Scale(scale);
-                IGM_NonParty_Size[i].Inflate(-26 * scale.X, -12 * scale.Y);
+                };
+                IGM_NonParty_Size[i].Inflate(-26 , -12 );
             }
 
             IGM_Footer_Text = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Memory.State.LocationID).ReplaceRegion();
@@ -114,14 +116,14 @@ namespace FF8
         private static bool UpdateInGameMenuInput()
         {
             bool ret = false;
-            Point ml = Input.MouseLocation;
+            Point ml = Input.MouseLocation.Transform(IGM_focus);
 
             if (strSideBar != null && strSideBar.Count > 0)
             {
                 foreach (KeyValuePair<Enum, Item> item in strSideBar)
                 {
                     Rectangle r = item.Value.Loc;
-                    r.Offset(IGM_focus.Translation.X, IGM_focus.Translation.Y);
+                    //r.Offset(IGM_focus.Translation.X, IGM_focus.Translation.Y);
                     if (r.Contains(ml))
                     {
                         choSideBar = (IGMItems)item.Key;
@@ -225,25 +227,25 @@ namespace FF8
                 {
                     Tuple<Rectangle, Point, Rectangle> dims = DrawBox(IGM_Party_Size[pos], Memory.Strings.GetName((Faces.ID)character), Icons.ID.STATUS, indent: false, prescaled: true);
                     Rectangle r = dims.Item3;
-                    float yoff = 6 * scale.Y;
+                    float yoff = 6 ;
                     r = dims.Item3;
-                    r.Offset(184 * scale.X, yoff);
+                    r.Offset(184 , yoff);
                     Memory.Icons.Draw(Icons.ID.Lv,13, r, TextScale, fade);
                     r = dims.Item3;
                     int lvl = Memory.State.Characters[(int)character].Level;
                     int spaces = 3-lvl.ToString().Length;
-                    r.Offset((229+spaces*20) * scale.X, yoff);
+                    r.Offset((229+spaces*20) , yoff);
                     Memory.Icons.Draw(lvl, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
                     r = dims.Item3;
-                    r.Offset(304 * scale.X, yoff);
+                    r.Offset(304 , yoff);
                     Memory.Icons.Draw(Icons.ID.HP2, 13, r, TextScale, fade);
                     r = dims.Item3;
                     lvl = Memory.State.Characters[(int)character].CurrentHP;
                     spaces = 4 - lvl.ToString().Length;
-                    r.Offset((354 + spaces * 20) * scale.X, yoff);
+                    r.Offset((354 + spaces * 20) , yoff);
                     Memory.Icons.Draw(lvl, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
                     r = dims.Item3;
-                    r.Offset(437 * scale.X, yoff);
+                    r.Offset(437 , yoff);
                     Memory.Icons.Draw(Icons.ID.Slash_Forward, 13, r, TextScale, fade);
                     r = dims.Item3;
                     
@@ -252,7 +254,7 @@ namespace FF8
                         Memory.State.Party[2] == character && Memory.State.Party[0] == Saves.Characters.Blank && Memory.State.Party[1] == Saves.Characters.Blank
                         ? Memory.State.firstcharactersmaxHP:0;
                     spaces = 4 - lvl.ToString().Length;
-                    r.Offset((459 + spaces * 20) * scale.X, yoff);
+                    r.Offset((459 + spaces * 20) , yoff);
                     Memory.Icons.Draw(lvl, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
                 }
                 else
@@ -266,16 +268,16 @@ namespace FF8
             {
                 Rectangle r = Memory.font.RenderBasicText(Memory.Strings.GetName((Faces.ID)character), IGM_NonParty_Size[pos].Location, TextScale, 1, Fade: fade, prescaled: true);
                 Rectangle rbak = r;
-                float yoff = 39 * scale.Y;
-                r.Offset(7 * scale.X, yoff);
+                float yoff = 39 ;
+                r.Offset(7 , yoff);
                 Memory.Icons.Draw(Icons.ID.Lv, 13, r, TextScale, fade);
                 r = rbak;
                 int lvl = Memory.State.Characters[(int)character].Level;
                 int spaces = 3 - lvl.ToString().Length;
-                r.Offset((49 + spaces * 20) * scale.X, yoff);
+                r.Offset((49 + spaces * 20) , yoff);
                 Memory.Icons.Draw(lvl, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
                 r = rbak;
-                r.Offset(126 * scale.X, yoff);
+                r.Offset(126 , yoff);
                 Memory.Icons.Draw(Icons.ID.HP2, 13, r, TextScale, fade);
                 //r = rbak;
                 //r.Offset(126, yoff -10);
@@ -285,7 +287,7 @@ namespace FF8
                 r = rbak;
                 lvl = Memory.State.Characters[(int)character].CurrentHP;
                 spaces = 4 - lvl.ToString().Length;
-                r.Offset((166 + spaces * 20) * scale.X, yoff);
+                r.Offset((166 + spaces * 20) , yoff);
                 Memory.Icons.Draw(lvl, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
             }
         }

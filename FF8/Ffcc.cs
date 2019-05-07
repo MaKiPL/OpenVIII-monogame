@@ -960,8 +960,14 @@ EOF:
                     //create instance here to set sample_rate and channels dynamicly
                     DynamicSound = new DynamicSoundEffectInstance(ResampleFrame->sample_rate, (AudioChannels)ResampleFrame->channels);
                 }
-
-                DynamicSound.SubmitBuffer(buffer, 0, length);
+                try
+                {
+                    DynamicSound.SubmitBuffer(buffer, 0, length);
+                }
+                catch(ArgumentException)
+                {
+                    //got error saying buffer was too small. makes no sense.
+                }
             }
         }
 
