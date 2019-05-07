@@ -57,7 +57,6 @@ namespace FF8
 
         private static void UpdateInGameMenu()
         {
-            scale = new Vector2(1, 1);
             IGM_Size = new Rectangle { Width = 843, Height = 630 };
             Vector2 Zoom = Memory.Scale();
             
@@ -109,7 +108,7 @@ namespace FF8
             IGM_Footer_Text = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Memory.State.LocationID).ReplaceRegion();
             IGM_Header_Text = strHeaderText[choSideBar];
 
-            TextScale = new Vector2(2.545455f, 3.0375f) * scale;
+            TextScale = new Vector2(2.545455f, 3.0375f);
             UpdateInGameMenuInput();
         }
 
