@@ -24,11 +24,13 @@ namespace FF8
         {
             FFmpeg.AutoGen.Example.FFmpegBinariesHelper.RegisterFFmpegBinaries();
             Memory.Init(graphics, spriteBatch, Content);
-            init_debugger_Audio.DEBUG(); //this initializes the DirectAudio, it's true that it gets loaded AFTER logo, but we will do the opposite
-            init_debugger_Audio.DEBUG_SoundAudio(); //this initalizes the WAVE format audio.dat
-            Init_debugger_fields.DEBUG(); //this initializes the field module, it's worth to have this at the beginning
-            Init_debugger_battle.DEBUG(); //this initializes the encounters
+            init_debugger_Audio.Init(); //this initializes the DirectAudio, it's true that it gets loaded AFTER logo, but we will do the opposite
+            init_debugger_Audio.Init_SoundAudio(); //this initalizes the WAVE format audio.dat
+            Init_debugger_fields.Init(); //this initializes the field module, it's worth to have this at the beginning
+            Init_debugger_battle.Init(); //this initializes the encounters
             Saves.Init(); //loads all savegames from steam or cd2000 directories. first come first serve.
+            Module_movie_test.Init();
+            Module_main_menu_debug.Init();
             base.Initialize();
             //ArchiveSearch s = new ArchiveSearch("Zell\0");//used to find file a string is in. disable if not using.
 

@@ -42,9 +42,9 @@ namespace FF8
 
             public GFData[] GFs; // 0x0060 -> 0x045C //68 bytes per 16 total
             public CharacterData[] Characters; // 0x04A0 -> 0x08C8 //152 bytes per 8 total
-            public byte[] Shops; //0x0960 //400 bytes
+            public Shop[] Shops; //0x0960 //400 bytes
             public byte[] Configuration; //0x0AF0 //20 bytes
-            public Faces.ID[] Party; //0x0B04 // 4 bytes 0xFF terminated.
+            public Characters[] Party; //0x0B04 // 4 bytes 0xFF terminated.
             public byte[] KnownWeapons; //0x0B08 // 4 bytes
             public FF8String Grieversname; //0x0B0C // 12 bytes
 
@@ -94,10 +94,10 @@ namespace FF8
             public byte[] Direction; //0x0D68  (party1, party2, party3)
             public byte Padding; //0x0D6B
             public uint Unknown8; //0x0D6C
-            public byte[] Fieldvars; //0x0D70 http://wiki.ffrtt.ru/index.php/FF8/Variables
-            public byte[] Worldmap; //0x1270
-            public byte[] TripleTriad; //0x12F0
-            public byte[] ChocoboWorld; //0x1370
+            public FieldVars Fieldvars; //0x0D70 http://wiki.ffrtt.ru/index.php/FF8/Variables
+            public Worldmap Worldmap; //0x1270
+            public TripleTriad TripleTriad; //0x12F0
+            public ChocoboWorld ChocoboWorld; //0x1370
 
             public Data()
             {
@@ -150,9 +150,12 @@ namespace FF8
                     Characters[i].Read(br); // 0x04A0 -> 0x08C8 //152 bytes per 8 total
                     Characters[i].Name = Memory.Strings.GetName((Faces.ID)i,this);
                 }
-                Shops = br.ReadBytes(400); //0x0960 //400 bytes
+                int ShopCount = 400 / (16 + 1 + 3);
+                Shops = new Shop[ShopCount]; //0x0960 //400 bytes
+                for (int i = 0; i < ShopCount; i++)
+                    Shops[i].Read(br);
                 Configuration = br.ReadBytes(20); //0x0AF0 //20 bytes
-                Party = charactersportraits;
+                Party = Array.ConvertAll(br.ReadBytes(4), Item => (Characters)Item); ;
                 br.BaseStream.Seek(4, SeekOrigin.Current);//0x0B04 // 4 bytes 0xFF terminated.
                 KnownWeapons = br.ReadBytes(4); //0x0B08 // 4 bytes
                 Grieversname = br.ReadBytes(12); //0x0B0C // 12 bytes
@@ -211,10 +214,10 @@ namespace FF8
                 Direction = br.ReadBytes(3 * 1);//0x0D68  (party1, party2, party3)
                 Padding = br.ReadByte();//0x0D6B 
                 Unknown = br.ReadUInt32();//0x0D6C 
-                //Fieldvars = br.ReadBytes(256 + 1024);//0x0D70 http://wiki.ffrtt.ru/index.php/FF8/Variables
-                //Worldmap = br.ReadBytes(128);//0x1270 
-                //TripleTriad = br.ReadBytes(128);//0x12F0 
-                //ChocoboWorld = br.ReadBytes(64);//0x1370 
+                Fieldvars.Read(br); //0x0D70 http://wiki.ffrtt.ru/index.php/FF8/Variables
+                Worldmap.Read(br);//br.ReadBytes(128);//0x1270 
+                TripleTriad.Read(br); //br.ReadBytes(128);//0x12F0 
+                ChocoboWorld.Read(br); //br.ReadBytes(64);//0x1370 
 
             }
         }

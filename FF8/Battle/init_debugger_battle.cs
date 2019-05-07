@@ -104,7 +104,7 @@ namespace FF8
 
 
 
-        internal static void DEBUG()
+        internal static void Init()
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
             string[] test = aw.GetListOfFiles();

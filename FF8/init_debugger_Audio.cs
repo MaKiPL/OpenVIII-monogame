@@ -134,7 +134,7 @@ namespace FF8
             }
         }
 
-        internal static void DEBUG()
+        internal static void Init()
         {
             string dmusic_pt = "", RaW_ogg_pt = "", music_pt = "", music_wav_pt = "";
             //Roses and Wine V07 moves most of the sgt files to dmusic_backup
@@ -285,7 +285,7 @@ namespace FF8
         }
 
         //I messed around here as figuring out how things worked probably didn't need to mess with this.
-        internal static void DEBUG_SoundAudio()
+        internal static void Init_SoundAudio()
         {
             string path = Path.Combine(Memory.FF8DIRdata, "Sound","audio.fmt");
             if(File.Exists(path))

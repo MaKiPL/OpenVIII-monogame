@@ -25,8 +25,7 @@
             Bahamut,
             Cactuar,
             Tonberry,
-            Eden,
-            Count
+            Eden
         }
     }
 }

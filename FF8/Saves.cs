@@ -13,8 +13,9 @@ namespace FF8
     /// <summary>
     /// parse data from save game files
     /// </summary>
-    /// <seealso cref="http://wiki.ffrtt.ru/index.php/FF8/GameSaveFormat#The_save_format"/>
+    /// <see cref="http://wiki.ffrtt.ru/index.php/FF8/GameSaveFormat#The_save_format"/>
     /// <seealso cref="https://github.com/myst6re/hyne"/>
+    /// <seealso cref="https://github.com/myst6re/hyne/blob/master/SaveData.h"/>
     /// <seealso cref="https://cdn.discordapp.com/attachments/552838120895283210/570733614656913408/ff8_save.zip"/>
     /// <remarks>
     /// antiquechrono was helping. he even wrote a whole class using kaitai. Though I donno if we

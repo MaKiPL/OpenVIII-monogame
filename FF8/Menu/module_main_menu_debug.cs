@@ -25,7 +25,7 @@ namespace FF8
         /// </summary>
         private enum MainMenuStates
         {
-            Init,
+            //Init,
             MainLobby,
             NewGameChoosed,
             LoadGameLoading,
@@ -64,7 +64,7 @@ namespace FF8
             DFontPos = new Vector2(vpWidth * .10f * Memory.Scale().X, vpHeight * .05f * Memory.Scale().Y) + Offset;
             switch (State)
             {
-                case MainMenuStates.Init:
+                //case MainMenuStates.Init:
                 case MainMenuStates.MainLobby:
                     DrawMainLobby();
                     break;
@@ -146,10 +146,10 @@ namespace FF8
 
             switch (State)
             {
-                case MainMenuStates.Init:
-                    State++;
-                    Init();
-                    break;
+                //case MainMenuStates.Init:
+                //    State++;
+                //    Init();
+                //    break;
 
                 case MainMenuStates.MainLobby:
                     Memory.IsMouseVisible = true;
@@ -232,7 +232,7 @@ namespace FF8
         /// <summary>
         /// Init
         /// </summary>
-        private static void Init()
+        public static void Init()
         {
             InitMain();
             InitLoad();

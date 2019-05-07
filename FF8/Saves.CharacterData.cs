@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace FF8
 {
@@ -11,8 +12,10 @@ namespace FF8
         /// <see cref="http://wiki.ffrtt.ru/index.php/FF8/GameSaveFormat#Characters"/>
         public struct CharacterData
         {
+            public int Level => (int)((Experience / 1000) + 1);
+            public int ExperienceToNextLevel => (int)((Level) * 1000 - Experience);
             public FF8String Name; //not saved to file.
-            public ushort CurrentHPS; //0x00 -- forgot this one heh
+            public ushort CurrentHP; //0x00 -- forgot this one heh
             public ushort MaxHPs; //0x02
             public uint Experience; //0x02
             public byte ModelID; //0x04
@@ -44,7 +47,7 @@ namespace FF8
             public uint Junctionelementaldefense; //0x66
             public uint Junctionmentaldefense; //0x67
             public byte Unknown2; //0x6B (padding?)
-            public ushort[] CompatibilitywithGFs; //0x6F
+            public Dictionary<GFs, ushort> CompatibilitywithGFs; //0x6F
             public ushort Numberofkills; //0x70
             public ushort NumberofKOs; //0x90
             public byte Exists; //0x92
@@ -54,7 +57,7 @@ namespace FF8
 
             public void Read(BinaryReader br)
             {
-                CurrentHPS = br.ReadUInt16();//0x00
+                CurrentHP = br.ReadUInt16();//0x00
                 MaxHPs = br.ReadUInt16();//0x02
                 Experience = br.ReadUInt32();//0x04
                 ModelID = br.ReadByte();//0x08
@@ -88,9 +91,9 @@ namespace FF8
                 Junctionelementaldefense = br.ReadUInt32();//0x67
                 Junctionmentaldefense = br.ReadUInt32();//0x6B
                 Unknown2 = br.ReadByte();//0x6F (padding?)
-                CompatibilitywithGFs = new ushort[16];
+                CompatibilitywithGFs = new Dictionary<GFs,ushort>(16);
                 for (int i = 0; i < 16; i++)
-                    CompatibilitywithGFs[i] = br.ReadUInt16();//0x70
+                    CompatibilitywithGFs.Add((GFs)i,br.ReadUInt16());//0x70
                 Numberofkills = br.ReadUInt16();//0x90
                 NumberofKOs = br.ReadUInt16();//0x92
                 Exists = br.ReadByte();//0x94

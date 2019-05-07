@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -170,7 +171,7 @@ namespace FF8
 
         private static void DrawInGameMenu()
         {
-            Memory.SpriteBatchStartAlpha(tm: IGM_focus);
+            Memory.SpriteBatchStartAlpha(ss:  SamplerState.PointClamp, tm: IGM_focus);
 
             Draw_IGM_Header();
             Draw_IGM_SideBar();
@@ -209,32 +210,82 @@ namespace FF8
             sbyte pos = 0;
             for (byte i = 0; i <= (byte)Faces.ID.Edea_Kramer && IGM_NonParty_Size != null && pos < IGM_NonParty_Size.Length; i++)
             {
-                if (!Memory.State.Party.Contains((Faces.ID)i) && Memory.State.Characters[i].Exists != 0 && Memory.State.Characters[i].Exists != 6)//15,9,7,4 shows on menu, 0 locked, 6 hidden
-                    Draw_NonPartyStatus(pos++, (Faces.ID)i);
+                if (!Memory.State.Party.Contains((Saves.Characters)i) && Memory.State.Characters[i].Exists != 0 && Memory.State.Characters[i].Exists != 6)//15,9,7,4 shows on menu, 0 locked, 6 hidden
+                    Draw_NonPartyStatus(pos++, (Saves.Characters)i);
             }
         }
 
-        private static void Draw_IGM_PartyStatus_Box(sbyte pos, Faces.ID character)
+        private static void Draw_IGM_PartyStatus_Box(sbyte pos, Saves.Characters character)
         {
             if (IGM_NonParty_Size != null)
             {
-                if (character != Faces.ID.Blank)
+                if (character != Saves.Characters.Blank)
                 {
-                    var dims = DrawBox(IGM_Party_Size[pos], Memory.Strings.GetName(character), Icons.ID.STATUS, indent: false);
-                    var r = dims.Item3;
-                    r.Offset(184 * scale.X, 6 * scale.Y);
-                    Memory.Icons.Draw(Icons.ID.Lv,2, r, TextScale, fade);
-                    //Memory.Icons.Draw(Memory.State.Characters[(int)character], 2, r, TextScale, fade);
+                    Tuple<Rectangle, Point, Rectangle> dims = DrawBox(IGM_Party_Size[pos], Memory.Strings.GetName((Faces.ID)character), Icons.ID.STATUS, indent: false);
+                    Rectangle r = dims.Item3;
+                    float yoff = 6 * scale.Y;
+                    r = dims.Item3;
+                    r.Offset(184 * scale.X, yoff);
+                    Memory.Icons.Draw(Icons.ID.Lv,13, r, TextScale, fade);
+                    r = dims.Item3;
+                    int lvl = Memory.State.Characters[(int)character].Level;
+                    int spaces = 3-lvl.ToString().Length;
+                    r.Offset((229+spaces*20) * scale.X, yoff);
+                    Memory.Icons.Draw(lvl, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
+                    r = dims.Item3;
+                    r.Offset(304 * scale.X, yoff);
+                    Memory.Icons.Draw(Icons.ID.HP2, 13, r, TextScale, fade);
+                    r = dims.Item3;
+                    lvl = Memory.State.Characters[(int)character].CurrentHP;
+                    spaces = 4 - lvl.ToString().Length;
+                    r.Offset((354 + spaces * 20) * scale.X, yoff);
+                    Memory.Icons.Draw(lvl, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
+                    r = dims.Item3;
+                    r.Offset(437 * scale.X, yoff);
+                    Memory.Icons.Draw(Icons.ID.Slash_Forward, 13, r, TextScale, fade);
+                    r = dims.Item3;
+                    
+                    lvl = Memory.State.Party[0]==character ||
+                        Memory.State.Party[1] == character && Memory.State.Party[0] == Saves.Characters.Blank ||
+                        Memory.State.Party[2] == character && Memory.State.Party[0] == Saves.Characters.Blank && Memory.State.Party[1] == Saves.Characters.Blank
+                        ? Memory.State.firstcharactersmaxHP:0;
+                    spaces = 4 - lvl.ToString().Length;
+                    r.Offset((459 + spaces * 20) * scale.X, yoff);
+                    Memory.Icons.Draw(lvl, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
                 }
                 else
                     DrawBox(IGM_Party_Size[pos]);
             }
         }
 
-        private static void Draw_NonPartyStatus(sbyte pos, Faces.ID character)
+        private static void Draw_NonPartyStatus(sbyte pos, Saves.Characters character)
         {
             if (IGM_NonParty_Size != null && pos < IGM_NonParty_Size.Length)
-                Memory.font.RenderBasicText(Memory.Strings.GetName(character), IGM_NonParty_Size[pos].Location, TextScale, 1, Fade: fade);
+            {
+                Rectangle r = Memory.font.RenderBasicText(Memory.Strings.GetName((Faces.ID)character), IGM_NonParty_Size[pos].Location, TextScale, 1, Fade: fade);
+                Rectangle rbak = r;
+                float yoff = 39 * scale.Y;
+                r.Offset(7 * scale.X, yoff);
+                Memory.Icons.Draw(Icons.ID.Lv, 13, r, TextScale, fade);
+                r = rbak;
+                int lvl = Memory.State.Characters[(int)character].Level;
+                int spaces = 3 - lvl.ToString().Length;
+                r.Offset((49 + spaces * 20) * scale.X, yoff);
+                Memory.Icons.Draw(lvl, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
+                r = rbak;
+                r.Offset(126 * scale.X, yoff);
+                Memory.Icons.Draw(Icons.ID.HP2, 13, r, TextScale, fade);
+                //r = rbak;
+                //r.Offset(126, yoff -10);
+                ////r.Width = (int)(118*scale.X);
+                ////r.Height = (int)8;
+                //Memory.Icons.Draw(Icons.ID.Underline, 5, r, TextScale, fade);
+                r = rbak;
+                lvl = Memory.State.Characters[(int)character].CurrentHP;
+                spaces = 4 - lvl.ToString().Length;
+                r.Offset((166 + spaces * 20) * scale.X, yoff);
+                Memory.Icons.Draw(lvl, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
+            }
         }
     }
 }
