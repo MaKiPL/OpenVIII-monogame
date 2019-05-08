@@ -221,65 +221,28 @@ namespace FF8
 
             }
         }
-#if DEBUG
-        private static System.Windows.Forms.Form quickDebugForm;
-#endif
         private static void UpdateCamera()
         {
-#if DEBUG
-            //TODO - It's all good, but I'm missing which should be negative, which positive, which order X-ZY?
-            //Oh- btw- remember that when we are changing keyframes, then we should not use lerp as this would
-            //create the glitch of 'jumping'. Instead we need to force update camera perspective without blending to make it correct
-            if (quickDebugForm == null)
-            {
-                quickDebugForm = new System.Windows.Forms.Form() { Text="debug test window"};
-                System.Windows.Forms.FlowLayoutPanel flp = new System.Windows.Forms.FlowLayoutPanel
-                {
-                    Dock = System.Windows.Forms.DockStyle.Fill
-                };
-                System.Windows.Forms.NumericUpDown numericUpDownworldX = new System.Windows.Forms.NumericUpDown() { Minimum = -500, Maximum = 500 , AutoSize=true};
-                System.Windows.Forms.NumericUpDown numericUpDownworldY = new System.Windows.Forms.NumericUpDown() { Minimum = -500, Maximum = 500, AutoSize=true };
-                System.Windows.Forms.NumericUpDown numericUpDownworldZ = new System.Windows.Forms.NumericUpDown() { Minimum = -500, Maximum = 500 };
-                System.Windows.Forms.NumericUpDown numericUpDowntargetX = new System.Windows.Forms.NumericUpDown() { Minimum = -500, Maximum = 500 };
-                System.Windows.Forms.NumericUpDown numericUpDowntargetY = new System.Windows.Forms.NumericUpDown() { Minimum = -500, Maximum = 500 };
-                System.Windows.Forms.NumericUpDown numericUpDowntargetZ = new System.Windows.Forms.NumericUpDown() { Minimum = -500, Maximum = 500 };
-                System.Windows.Forms.CheckBox cbNegateWorldX = new System.Windows.Forms.CheckBox() { Checked = false };
-                System.Windows.Forms.CheckBox cbNegateWorldY = new System.Windows.Forms.CheckBox() { Checked = false };
-                System.Windows.Forms.CheckBox cbNegateWorldZ = new System.Windows.Forms.CheckBox() { Checked = false };
-                System.Windows.Forms.CheckBox cbNegateTargetX = new System.Windows.Forms.CheckBox() { Checked = false };
-                System.Windows.Forms.CheckBox cbNegateTargetY = new System.Windows.Forms.CheckBox() { Checked = false };
-                System.Windows.Forms.CheckBox cbNegateTargetZ = new System.Windows.Forms.CheckBox() { Checked = false };
-                System.Windows.Forms.Control[] controls = {
-                    numericUpDownworldX, numericUpDownworldY, numericUpDownworldZ, numericUpDowntargetX, numericUpDowntargetY, numericUpDowntargetZ,
-                    cbNegateWorldX, cbNegateWorldY, cbNegateWorldZ, cbNegateTargetX, cbNegateTargetY, cbNegateTargetZ
-                };
-                flp.Controls.AddRange(controls);
-                flp.AutoSize = true;
-                quickDebugForm.Controls.Add(flp);
-                quickDebugForm.AutoSize = true;
-                quickDebugForm.Refresh();
-                quickDebugForm.Show();
-
-            }
-#endif
             const float V = 100f;
             //battleCamera.cam.startingTime = 64;
-            float camWorldX = MathHelper.Lerp(battleCamera.cam.Camera_World_X_s16[0]/V,
-                battleCamera.cam.Camera_World_X_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time) ;
+            float camWorldX = MathHelper.Lerp(battleCamera.cam.Camera_World_X_s16[0] / V,
+                battleCamera.cam.Camera_World_X_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time) -60;
             float camWorldY = MathHelper.Lerp(battleCamera.cam.Camera_World_Y_s16[0] / V,
                 battleCamera.cam.Camera_World_Y_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time); 
             float camWorldZ = MathHelper.Lerp(battleCamera.cam.Camera_World_Z_s16[0] / V,
-                battleCamera.cam.Camera_World_Z_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time);
+                battleCamera.cam.Camera_World_Z_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time)+40;
 
             float camTargetX = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_X_s16[0] / V,
-    battleCamera.cam.Camera_Lookat_X_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time);
+    battleCamera.cam.Camera_Lookat_X_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time)-20;
             float camTargetY = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_Y_s16[0] / V,
-battleCamera.cam.Camera_Lookat_Y_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time);
+battleCamera.cam.Camera_Lookat_Y_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time)+25;
             float camTargetZ = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_Z_s16[0] / V,
-battleCamera.cam.Camera_Lookat_Z_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time);
+battleCamera.cam.Camera_Lookat_Z_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time)-20;
+
+
 
             camPosition = new Vector3(-camWorldX, camWorldY, -camWorldZ);
-            camTarget = new Vector3(-camTargetX, camTargetY, -camTargetZ);
+            camTarget = new Vector3(camTargetY, -camTargetX, -camTargetZ);
             
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          Vector3.Up);
