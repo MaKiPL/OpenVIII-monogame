@@ -10,7 +10,7 @@ namespace FF8
     {
         private static Dictionary<Enum, Item> strSideBar;
         private static Dictionary<Enum, Item> strHeaderText;
-        private static Rectangle IGM_Size;
+        private static Vector2 IGM_Size;
         private static Rectangle IGM_Header_Size;
         private static Rectangle IGM_Footer_Size;
         private static Rectangle IGM_Clock_Size;
@@ -18,10 +18,11 @@ namespace FF8
         private static Rectangle[] IGM_Party_Size;
         private static Rectangle IGM_NonPartyBox_Size;
         private static Rectangle[] IGM_NonParty_Size;
-        private static Matrix General_focus;
+        private static Matrix IGM_focus;
         private static FF8String IGM_Footer_Text;
         private static FF8String IGM_Header_Text;
         private static IGMItems choSideBar;
+        private static Texture2D SimpleTexture;
 
         private static void Init_InGameMenu()
         {
@@ -53,14 +54,20 @@ namespace FF8
                 { IGMItems.Tutorial, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,68) } },
                 { IGMItems.Save, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,15) } },
             };
+
+            SimpleTexture = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
+            var color = new Color[] { new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, fade) };
+            SimpleTexture.SetData<Color>(color, 0, SimpleTexture.Width * SimpleTexture.Height);
         }
 
         private static void UpdateInGameMenu()
         {
-            IGM_Size = new Rectangle { Width = 843, Height = 630 };
-            Vector2 Zoom = Memory.Scale();
+            IGM_Size = new Vector2 { X = 843, Y = 630 };
+            Vector2 Zoom = Memory.Scale(IGM_Size.X,IGM_Size.Y,Memory.ScaleMode.FitBoth);
             
-            General_focus = Matrix.CreateTranslation(-IGM_Size.X - (IGM_Size.Width / 2), -IGM_Size.Y - (IGM_Size.Height / 2), 0) * Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) * Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
+            IGM_focus = Matrix.CreateTranslation((IGM_Size.X / -2), (IGM_Size.Y / -2), 0) * 
+                Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) * 
+                Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
 
             IGM_Header_Size = new Rectangle { Width = 610, Height = 75 };
             IGM_Footer_Size = new Rectangle { Width = 610, Height = 75, Y = 630 - 75 };
@@ -115,7 +122,7 @@ namespace FF8
         private static bool UpdateInGameMenuInput()
         {
             bool ret = false;
-            Point ml = Input.MouseLocation.Transform(General_focus);
+            ml = Input.MouseLocation.Transform(IGM_focus);
 
             if (strSideBar != null && strSideBar.Count > 0)
             {
@@ -156,7 +163,7 @@ namespace FF8
                 {
                     Input.ResetInputLimit();
                     init_debugger_Audio.PlaySound(8);
-                    init_debugger_Audio.StopAudio();
+                    init_debugger_Audio.StopMusic();
                     Dchoose = 0;
                     Fade = 0.0f;
                     State = MainMenuStates.LoadGameChooseGame;
@@ -174,7 +181,7 @@ namespace FF8
 
         private static void DrawInGameMenu()
         {
-            Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: General_focus);
+            Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: IGM_focus);
 
             Draw_IGM_Header();
             Draw_IGM_SideBar();
@@ -183,7 +190,6 @@ namespace FF8
             Draw_IGM_NonPartyBox();
             Draw_IGM_PartyStatus_Boxes();
             DrawPointer(strSideBar[choSideBar].Point);
-
 
             Memory.SpriteBatchEnd();
         }
@@ -203,7 +209,43 @@ namespace FF8
                 Memory.font.RenderBasicText(strSideBar[(IGMItems)i], strSideBar[(IGMItems)i].Loc.Location, TextScale, Fade: fade, lineSpacing: 1);
         }
 
-        private static void Draw_IGM_ClockBox() => DrawBox(IGM_Clock_Size);
+        private static void Draw_IGM_ClockBox()
+        {
+            var d = DrawBox(IGM_Clock_Size);
+            var r = d.Item1;
+            r.Offset(25, 14);
+            Memory.Icons.Draw(Icons.ID.PLAY, 13, r, TextScale, fade);
+            r = d.Item1;
+            var num = (int)(Memory.State.timeplayed.TotalHours);
+            var spaces = 2-(num).ToString().Length;
+            r.Offset(105 + spaces*20, 14);
+            Memory.Icons.Draw(num,0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
+            r = d.Item1;
+            r.Offset(145, 14);
+            Memory.Icons.Draw(Icons.ID.Colon, 13, r, TextScale, fade);
+            Memory.Icons.Draw(Icons.ID.Colon, 2, r, TextScale, fade*blink*.5f);
+            r = d.Item1;
+            num = (int)(Memory.State.timeplayed.Minutes);
+            spaces = 0;
+            r.Offset(165 + spaces * 20, 14);
+            Memory.Icons.Draw(num, 0, 2, "D2", r.Location.ToVector2(), TextScale, fade);
+            r = d.Item1;
+            r.Offset(25, 48);
+            Memory.Icons.Draw(Icons.ID.SeeD, 13, r, TextScale, fade);
+            r = d.Item1;
+            num = (int)(Memory.State.Fieldvars.SeedRankPts/100);
+            spaces = 5 - (num).ToString().Length;
+            r.Offset(105 + spaces * 20, 48);
+            Memory.Icons.Draw(num, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
+            r = d.Item1;
+            num = (int)(Memory.State.AmountofGil);
+            spaces = 8 - (num).ToString().Length;
+            r.Offset(25 + spaces * 20, 81);
+            Memory.Icons.Draw(num, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
+            r = d.Item1;
+            r.Offset(185, 81);
+            Memory.Icons.Draw(Icons.ID.G, 2, r, TextScale, fade);
+        }
 
         private static void Draw_IGM_FooterBox() => DrawBox(IGM_Footer_Size, IGM_Footer_Text, indent: false);
 
@@ -278,6 +320,13 @@ namespace FF8
                 r = rbak;
                 r.Offset(126 , yoff);
                 Memory.Icons.Draw(Icons.ID.HP2, 13, r, TextScale, fade);
+                r.Offset(0, 28);
+                r.Width = 118;
+                r.Height = 1;
+                var color = new Color(74.5f/100, 12.5f / 100, 11.8f/100,fade*.9f);
+                Memory.spriteBatch.Draw(SimpleTexture, r,null,color);
+                r.Offset(0, 2);
+                Memory.spriteBatch.Draw(SimpleTexture, r, null, color);
                 //r = rbak;
                 //r.Offset(126, yoff -10);
                 ////r.Width = (int)(118*scale.X);

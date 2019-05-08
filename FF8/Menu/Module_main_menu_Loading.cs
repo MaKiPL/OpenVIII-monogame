@@ -35,6 +35,7 @@ namespace FF8
         private static Vector2 lastscale;
         private static Vector2 scale;
         private static Vector2 TextScale;
+        private static Point ml;
 
         #endregion Fields
 
@@ -267,13 +268,95 @@ namespace FF8
 
         private static void DrawLGSGCheckSlot(FF8String topright)
         {
-            Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
             DrawLGSGHeader(strLoadScreen[Litems.GameFolderSlot1 + SlotLoc].Text, topright, strLoadScreen[Litems.CheckGameFolder].Text);
             DrawLGSGLoadBar();
-            Memory.SpriteBatchEnd();
         }
+        private static void DrawLGSG()
+        {
+            DrawLGSGChooseBlocks();
+            Memory.SpriteBatchStartAlpha(tm: IGM_focus);
+            switch (State)
+            {
+                case MainMenuStates.LoadGameChooseSlot:
+                    DrawLGChooseSlot();
+                    break;
 
-        private static void DrawLGSGChooseGame(FF8String topright, FF8String help)
+                case MainMenuStates.LoadGameCheckingSlot:
+                    DrawLGCheckSlot();
+                    break;
+
+                case MainMenuStates.LoadGameChooseGame:
+                    DrawLGChooseGame();
+                    break;
+
+                case MainMenuStates.LoadGameLoading:
+                    DrawLGdata();
+                    break;
+
+                case MainMenuStates.SaveGameChooseSlot:
+                    DrawSGChooseSlot();
+                    break;
+
+                case MainMenuStates.SaveGameCheckingSlot:
+                    DrawSGCheckSlot();
+                    break;
+
+                case MainMenuStates.SaveGameChooseGame:
+                    DrawSGChooseGame();
+                    break;
+
+                case MainMenuStates.SaveGameSaving:
+                    DrawSGdata();
+                    break;
+            }
+            Memory.SpriteBatchEnd();
+            
+        }
+        private static void UpdateLGSG()
+        {
+            Memory.IsMouseVisible = true;
+
+            ml = Input.MouseLocation.Transform(IGM_focus);
+            switch (State)
+            {
+                case MainMenuStates.LoadGameChooseSlot:
+                    UpdateLGChooseSlot();
+                    break;
+
+                case MainMenuStates.LoadGameCheckingSlot:
+                    UpdateLoadingSlot();
+                    Memory.IsMouseVisible = false;
+                    break;
+
+                case MainMenuStates.LoadGameChooseGame:
+                    UpdateLGChooseGame();
+                    break;
+
+                case MainMenuStates.LoadGameLoading:
+                    UpdateLoadingData();
+                    Memory.IsMouseVisible = false;
+                    break;
+
+                case MainMenuStates.SaveGameChooseSlot:
+                    UpdateSGChooseSlot();
+                    break;
+
+                case MainMenuStates.SaveGameCheckingSlot:
+                    UpdateSGCheckSlot();
+                    Memory.IsMouseVisible = false;
+                    break;
+
+                case MainMenuStates.SaveGameChooseGame:
+                    UpdateSGChooseGame();
+                    break;
+
+                case MainMenuStates.SaveGameSaving:
+                    UpdateSGdata();
+                    Memory.IsMouseVisible = false;
+                    break;
+            }
+        }
+        private static void DrawLGSGChooseBlocks()
         {
             Rectangle dst = new Rectangle
             {
@@ -286,8 +369,9 @@ namespace FF8
             if (OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)
             {
                 Memory.graphics.GraphicsDevice.SetRenderTarget(OffScreenBuffer);
-                Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
-                for (int bloc = 0; bloc<3; bloc++)                {
+                Memory.SpriteBatchStartAlpha();
+                for (int bloc = 0; bloc < 3; bloc++)
+                {
                     int block = bloc + 3 * (Blockpage);
                     Saves.Data d = Saves.FileList?[SlotLoc, block];
                     Tuple<Rectangle, Point> b = DrawBlock(block, d);
@@ -303,7 +387,17 @@ namespace FF8
                 Memory.SpriteBatchEnd();
                 Memory.graphics.GraphicsDevice.SetRenderTarget(null);
             }
-            Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
+        }
+        private static void DrawLGSGChooseGame(FF8String topright, FF8String help)
+        {
+            Rectangle dst = new Rectangle
+            {
+                X = (int)(vp_per.X * 0.171875f),
+                Y = (int)(vp_per.Y * 0.266666666666667f),
+                Width = (int)(vp_per.X * 0.65625f),
+                Height = (int)(vp_per.Y * 0.6625f),
+            };
+
             DrawLGSGHeader(strLoadScreen[Litems.GameFolderSlot1 + SlotLoc].Text, topright, help);
 
             
@@ -352,10 +446,9 @@ namespace FF8
             else
             {
                 Point ptr = BlockLocs[BlockLoc].Item2;
-                ptr = ptr.Scale(scale);
                 DrawPointer(ptr);
             }
-            Memory.SpriteBatchEnd();
+            
         }
 
         /// <summary>
@@ -365,12 +458,12 @@ namespace FF8
         /// <param name="help">Text in help box</param>
         private static void DrawLGSGChooseSlot(FF8String topright, FF8String help)
         {
-            Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
+            
             DrawLGSGHeader(strLoadScreen[Litems.GameFolder].Text, topright, help);
             SlotLocs[0] = DrawLGSGSlot(Vector2.Zero, strLoadScreen[Litems.Slot1].Text, strLoadScreen[Litems.FF8].Text);
             SlotLocs[1] = DrawLGSGSlot(new Vector2(0, vp_per.Y * 0.216666667f), strLoadScreen[Litems.Slot2].Text, strLoadScreen[Litems.FF8].Text);
             DrawPointer(SlotLocs[SlotLoc].Item2);
-            Memory.SpriteBatchEnd();
+            
         }
 
         private static Rectangle DrawLGSGHeader(FF8String info, FF8String name, FF8String help)
@@ -425,10 +518,9 @@ namespace FF8
         private static void DrawSGdata() => DrawLGSGdata(strLoadScreen[Litems.Save].Text, strLoadScreen[Litems.Saving].Text);
         private static void DrawLGSGdata(FF8String topright,FF8String help)
         {
-            Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
             DrawLGSGHeader(strLoadScreen[Litems.GameFolderSlot1 + SlotLoc].Text, topright, help);
             DrawLGSGLoadBar();
-            Memory.SpriteBatchEnd();
+            
         }
 
         private static void DrawPointer(Point cursor, sbyte xoffset = -10)
@@ -478,7 +570,6 @@ namespace FF8
         private static bool UpdateLGChooseGame()
         {
             bool ret = false;
-            Point ml = Input.MouseLocation;
 
             if (BlockLocs != null && BlockLocs.Length > 0 && BlockLocs[0] != null)
             {
@@ -545,10 +636,11 @@ namespace FF8
                 {
                     Input.ResetInputLimit();
                     init_debugger_Audio.PlaySound(8);
-                    init_debugger_Audio.StopAudio();
+                    init_debugger_Audio.StopMusic();
                     Dchoose = 0;
                     Fade = 0.0f;
                     State = MainMenuStates.LoadGameChooseSlot;
+                    
                     ret = true;
                 }
                 else if (Input.Button(Buttons.Okay))
@@ -556,6 +648,7 @@ namespace FF8
                     PercentLoaded = 0f;
                     //State = MainMenuStates.LoadGameCheckingSlot;
                     State = MainMenuStates.LoadGameLoading;
+                    
                 }
             }
             if (scale != lastscale && OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)
@@ -624,10 +717,9 @@ namespace FF8
         private static bool UpdateLGChooseSlot()
         {
             bool ret = false;
-            Point ml = Input.MouseLocation;
             for (int i = 0; i < SlotLocs.Length; i++)
             {
-                if (SlotLocs[i].Item1.Contains(ml))
+                if (SlotLocs[i] != null && SlotLocs[i].Item1.Contains(ml))
                 {
                     SlotLoc = (sbyte)i;
                     ret = true;
@@ -657,16 +749,18 @@ namespace FF8
             {
                 Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(8);
-                init_debugger_Audio.StopAudio();
+                init_debugger_Audio.StopMusic();
                 Dchoose = 0;
                 Fade = 0.0f;
                 State = MainMenuStates.MainLobby;
+                
                 ret = true;
             }
             else if (Input.Button(Buttons.Okay))
             {
                 PercentLoaded = 0f;
                 State = MainMenuStates.LoadGameCheckingSlot;
+                
             }
             return ret;
         }
@@ -682,6 +776,7 @@ namespace FF8
                 State = MainMenuStates.InGameMenu; // start loaded game.
                 Memory.State = Saves.FileList[SlotLoc, BlockLoc + blockpage*3];
                 //till we have a game to load i'm going to display ingame menu.
+                
                 init_debugger_Audio.PlaySound(36);
             }
             UpdateLGChooseGame();
@@ -696,6 +791,7 @@ namespace FF8
             else
             {
                 State = MainMenuStates.LoadGameChooseGame;
+                
                 init_debugger_Audio.PlaySound(35);
             }
             UpdateLGChooseGame();

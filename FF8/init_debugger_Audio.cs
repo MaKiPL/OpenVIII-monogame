@@ -424,7 +424,7 @@ namespace FF8
             }
             else
             {
-                StopAudio();
+                StopMusic();
             }
         }
 
@@ -445,7 +445,7 @@ namespace FF8
 
             string pt = Memory.dicMusic[Memory.MusicIndex][0];
 
-            StopAudio();
+            StopMusic();
 
             switch (ext)
             {
@@ -580,7 +580,7 @@ namespace FF8
             }
         }
 
-        public static void StopAudio()
+        public static void StopMusic()
         {
             musicplaying = false;
             if (ffccMusic != null)

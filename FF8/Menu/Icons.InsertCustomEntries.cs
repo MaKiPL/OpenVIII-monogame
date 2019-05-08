@@ -130,7 +130,7 @@ namespace FF8
             {
                 X = 0,
                 Y = 64,
-                Offset = new Vector2(255, 0), //offset should be 256 but i had issue with 1 pixel gap should be able to get away with losing one pixel.
+                Offset = new Vector2(256, 0), //offset should be 256 but i had issue with 1 pixel gap should be able to get away with losing one pixel.
                 Width = 112,
                 Height = 16,
                 CustomPallet = 1,
@@ -139,11 +139,11 @@ namespace FF8
             }, Border_Top, Border_Left, Border_Right, Border_Bottom, Border_TopLeft, Border_TopRight, Border_BottomLeft, Border_BottomRight);
             
             Entries[ID.DEBUG] = new EntryGroup(
-                new Entry { X = 128, Y = 24, Width = 7, Height = 8 },
-                new Entry { X = 65, Y = 8, Width = 6, Height = 8, Offset = new Vector2(7, 0) },
-                new Entry { X = 147, Y = 24, Width = 6, Height = 8, Offset = new Vector2(13, 0) },
-                new Entry { X = 141, Y = 24, Width = 6, Height = 8, Offset = new Vector2(19, 0) },
-                new Entry { X = 104, Y = 16, Width = 6, Height = 8, Offset = new Vector2(25, 0) }
+                new Entry { X = 128, Y = 24, Width = 7, Height = 8, Offset = new Vector2(4,0) },
+                new Entry { X = 65, Y = 8, Width = 6, Height = 8, Offset = new Vector2(7+4, 0) },
+                new Entry { X = 147, Y = 24, Width = 6, Height = 8, Offset = new Vector2(13+4, 0) },
+                new Entry { X = 141, Y = 24, Width = 6, Height = 8, Offset = new Vector2(19+4, 0) },
+                new Entry { X = 104, Y = 16, Width = 6, Height = 8, Offset = new Vector2(25+4, 0) }
                 );
         }
     }

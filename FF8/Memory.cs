@@ -30,7 +30,22 @@ namespace FF8
         public static VertexPositionTexture[] shadowGeometry;
         public enum ScaleMode
         {
-            Vertical, Horizontal, Stretch
+            /// <summary>
+            /// scale object to have the same height as viewport
+            /// </summary>
+            FitVertical,
+            /// <summary>
+            /// scale object to have the same width as viewport
+            /// </summary>
+            FitHorizontal,
+            /// <summary>
+            /// Same as FitVertical unless width is too large, then it becomes FitHorizontal
+            /// </summary>
+            FitBoth,
+            /// <summary>
+            /// fill the entire viewport
+            /// </summary>
+            Stretch
         }
 
         public static Point Center => new Point(graphics.GraphicsDevice.Viewport.Width / 2, graphics.GraphicsDevice.Viewport.Height / 2);
@@ -47,12 +62,13 @@ namespace FF8
             switch (scaleMode)
             {
 #pragma warning disable CS0162 // Unreachable code detected
-                case ScaleMode.Horizontal:
+                case ScaleMode.FitHorizontal:
                     return new Vector2(h, h);
 
-                case ScaleMode.Vertical:
+                case ScaleMode.FitVertical:
                     return new Vector2(v, v);
-
+                case ScaleMode.FitBoth:
+                    return (v * Width > targetX)? new Vector2(h, h): new Vector2(v, v);
                 case ScaleMode.Stretch:
                 default:
                     return new Vector2(h, v);

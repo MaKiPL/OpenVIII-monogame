@@ -12,7 +12,7 @@ namespace FF8
 
         private static bool LastActive = false;
 
-        private static MainMenuStates State = 0;
+        private static MainMenuStates state = 0;
         private static Vector2 vp_per;
         private static Vector2 vp;
         private static bool blinkstate;
@@ -49,6 +49,15 @@ namespace FF8
         private static float Fade { get => fade; set => fade = value; }
 
         private static Dictionary<Enum, Item> strLoadScreen { get; set; }
+        private static MainMenuStates State
+        {
+            get => state; set
+            {
+                // Draw will call before the next update(). This prevents that.
+                Memory.SuppressDraw = true;
+                state = value;
+            }
+        }
 
         #endregion Properties
 
@@ -61,8 +70,6 @@ namespace FF8
         {
             Memory.graphics.GraphicsDevice.Clear(Color.Black);
             lastfade = fade;
-            vpSpace = vp_per.Y * 0.09f * Memory.Scale().X;
-            DFontPos = new Vector2(vp_per.X * .10f * Memory.Scale().X, vp_per.Y * .05f * Memory.Scale().Y) + Offset;
             switch (State)
             {
                 //case MainMenuStates.Init:
@@ -79,35 +86,14 @@ namespace FF8
                     break;
 
                 case MainMenuStates.LoadGameChooseSlot:
-                    DrawLGChooseSlot();
-                    break;
-
                 case MainMenuStates.LoadGameCheckingSlot:
-                    DrawLGCheckSlot();
-                    break;
-
                 case MainMenuStates.LoadGameChooseGame:
-                    DrawLGChooseGame();
-                    break;
-
                 case MainMenuStates.LoadGameLoading:
-                    DrawLGdata();
-                    break;
-
                 case MainMenuStates.SaveGameChooseSlot:
-                    DrawSGChooseSlot();
-                    break;
-
                 case MainMenuStates.SaveGameCheckingSlot:
-                    DrawSGCheckSlot();
-                    break;
-
                 case MainMenuStates.SaveGameChooseGame:
-                    DrawSGChooseGame();
-                    break;
-
                 case MainMenuStates.SaveGameSaving:
-                    DrawSGdata();
+                    DrawLGSG();
                     break;
                 case MainMenuStates.InGameMenu:
                     DrawInGameMenu();
@@ -129,7 +115,7 @@ namespace FF8
 #pragma warning disable CS0219 // Variable is assigned but its value is never used
             bool forceupdate = false;
 #pragma warning restore CS0219 // Variable is assigned but its value is never used
-            Memory.SuppressDraw = true;
+            
             if (LastActive != Memory.IsActive)
             {
                 forceupdate = true;
@@ -149,9 +135,14 @@ namespace FF8
             vp_per = new Vector2(Memory.PreferredViewportWidth, Memory.PreferredViewportHeight);
             vp = new Vector2(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height);
 
+            vpSpace = vp_per.Y * 0.09f;
+            DFontPos = new Vector2(vp_per.X * .10f, vp_per.Y * .05f) + Offset;
 
-            General_focus = Matrix.CreateTranslation((vp_per.X / 2), (vp_per.Y / 2), 0) * Matrix.CreateScale(new Vector3(scale.X, scale.Y, 1)) * Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
+            IGM_focus = Matrix.CreateTranslation((vp_per.X / -2), (vp_per.Y / -2), 0) * 
+                Matrix.CreateScale(new Vector3(scale.X, scale.Y, 1)) * 
+                Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
 
+            ml = Input.MouseLocation.Transform(IGM_focus);
             switch (State)
             {
                 //case MainMenuStates.Init:
@@ -173,7 +164,7 @@ namespace FF8
                     Memory.IsMouseVisible = true;
                     if (Offset != Vector2.Zero)
                     {
-                        Offset = Vector2.SmoothStep(Offset, Vector2.Zero, .15f);
+                        Offset = Vector2.SmoothStep(Offset, Vector2.Zero, .15f).FloorOrCeiling(Vector2.Zero);
                     }
                     if (UpdateDebugLobby() || (lastfade != fade) || Offset != Vector2.Zero)
                     {
@@ -188,39 +179,14 @@ namespace FF8
                     break;
 
                 case MainMenuStates.LoadGameChooseSlot:
-                    UpdateLGChooseSlot();
-                    Memory.IsMouseVisible = true;
-                    break;
-
                 case MainMenuStates.LoadGameCheckingSlot:
-                    UpdateLoadingSlot();
-                    Memory.IsMouseVisible = false;
-                    break;
-
                 case MainMenuStates.LoadGameChooseGame:
-                    UpdateLGChooseGame();
-                    Memory.IsMouseVisible = true;
-                    break;
-
                 case MainMenuStates.LoadGameLoading:
-                    UpdateLoadingData();
-                    Memory.IsMouseVisible = false;
-                    break;
-
                 case MainMenuStates.SaveGameChooseSlot:
-                    UpdateSGChooseSlot();
-                    break;
-
                 case MainMenuStates.SaveGameCheckingSlot:
-                    UpdateSGCheckSlot();
-                    break;
-
                 case MainMenuStates.SaveGameChooseGame:
-                    UpdateSGChooseGame();
-                    break;
-
                 case MainMenuStates.SaveGameSaving:
-                    UpdateSGdata();
+                    UpdateLGSG();
                     break;
                 case MainMenuStates.InGameMenu:
                     Memory.IsMouseVisible = true;
@@ -233,9 +199,11 @@ namespace FF8
             //disabled because if you resize the window the next update call undoes this before drawing happens.
             //need a way to detect if drawing has happened before suppressing draw again.
             //if(forceupdate)
-                Memory.SuppressDraw = false;
+                
 
         }
+
+        
 
         /// <summary>
         /// Init

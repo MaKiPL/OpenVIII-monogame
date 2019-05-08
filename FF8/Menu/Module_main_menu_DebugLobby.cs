@@ -152,13 +152,13 @@ namespace FF8
             vpSpace = vp_per.Y * 0.05f ;
             float item = 0;
             Rectangle dst = FontBoxCalc<Ditems>(strDebugLobby);
-            Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
-            DrawBox(dst, null, null);
+            Memory.SpriteBatchStartAlpha(tm: IGM_focus);
+            DrawBox(dst, title: Icons.ID.DEBUG);
             //Memory.Icons.Draw(Icons.ID.Menu_BG_256, 0, dst, new Vector2(2f), Fade);
             item = 0;
             dst.Offset(4 * 3.5f, 0);
             dst.Size = (Memory.Icons[Icons.ID.DEBUG].GetRectangle.Size.ToVector2()  * 3.5f).ToPoint();
-            Memory.Icons.Draw(Icons.ID.DEBUG, 2, dst, Vector2.Zero, fade);
+            //Memory.Icons.Draw(Icons.ID.DEBUG, 2, dst, Vector2.Zero, fade);
             dst.Location = DFontPos.ToPoint();
             dst.Size = new Point((int)(24 * 2 ), (int)(16 * 2 ));
             dst.Offset(-(dst.Width + 10 ), 6  + vpSpace * ((float)Dchoose));
@@ -245,7 +245,6 @@ namespace FF8
         private static bool UpdateDebugLobby()
         {
             bool ret = false;
-            Point ml = Input.MouseLocation;
             foreach (KeyValuePair<Enum, Item> entry in strDebugLobby)
             {
                 if (entry.Value.Loc.Contains(ml))
@@ -282,7 +281,7 @@ namespace FF8
             {
                 Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(8);
-                init_debugger_Audio.StopAudio();
+                init_debugger_Audio.StopMusic();
                 Dchoose = 0;
                 Fade = 0.0f;
                 State = MainMenuStates.MainLobby;
@@ -375,7 +374,7 @@ namespace FF8
                     Module_overture_debug.ResetModule();
                     Memory.module = Memory.MODULE_OVERTURE_DEBUG;
                     Memory.IsMouseVisible = false;
-                    init_debugger_Audio.PlayStopMusic();
+                    init_debugger_Audio.StopMusic();
                     break;
 
                 case Ditems.Field:

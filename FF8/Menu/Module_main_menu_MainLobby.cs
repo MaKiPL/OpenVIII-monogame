@@ -67,25 +67,23 @@ namespace FF8
         private static void DrawMainLobby()
         {
             float item = 0;
-            Vector2 textSize = new Vector2(2.545454545f, 3.0375f);// scaled in render function.
-            Vector2 textStart = new Vector2(vp.X * 0.45078125f, vp.Y * .65f);
-            Memory.SpriteBatchStartAlpha();
+            TextScale = new Vector2(2.545454545f, 3.0375f);// scaled in render function.
+            Vector2 textStart = new Vector2(0.45078125f, .65f)* vp_per;
+            Memory.SpriteBatchStartAlpha(tm: IGM_focus);
             Rectangle dst = new Rectangle()
             {
                 Location = new Point(0),
-                Size = vp.ToPoint()
+                Size = vp_per.ToPoint()
             };
             start.Draw(dst, null, Color.White * fade);
-            Memory.SpriteBatchEnd();
-            Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
             foreach (Mitems i in (Mitems[])Enum.GetValues(typeof(Mitems)))
             {
                 Item c = strMainLobby[i];
                 c.Loc = (Memory.font.RenderBasicText(c.Text,
-                    (int)(textStart.X), (int)(textStart.Y + ((textSize.Y + vpSpace) * item++)), textSize.X, textSize.Y, 0, Fade, lineSpacing: 1));
+                    (int)(textStart.X), (int)(textStart.Y + ((TextScale.Y + vpSpace) * item++)), TextScale.X, TextScale.Y, 0, Fade));
                 strMainLobby[i] = c;
             }
-            DrawPointer(new Point((int)(textStart.X), (int)((((textSize.Y + vpSpace) * (float)Mchoose)+textStart.Y+(6*textSize.Y)))));
+            DrawPointer(new Point((int)(textStart.X), (int)((((TextScale.Y + vpSpace) * (float)Mchoose)+textStart.Y+(6*TextScale.Y)))));
             Memory.SpriteBatchEnd();
         }
 
@@ -110,7 +108,6 @@ namespace FF8
         private static bool UpdateMainLobby()
         {
             bool ret = false;
-            Point ml = Input.MouseLocation;
             foreach (KeyValuePair<Enum, Item> entry in strMainLobby)
             {
                 if (entry.Value.Loc.Contains(ml))

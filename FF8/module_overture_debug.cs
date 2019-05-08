@@ -38,7 +38,7 @@ namespace FF8
             if (Input.Button(Buttons.Okay) || Input.Button(Buttons.Cancel) || Input.Button(Keys.Space))
             {
                 Input.ResetInputLimit();
-                init_debugger_Audio.StopAudio();
+                init_debugger_Audio.StopMusic();
                 Memory.module = Memory.MODULE_MAINMENU_DEBUG;
 
                 if (splashTex != null && !splashTex.IsDisposed)
@@ -174,7 +174,7 @@ namespace FF8
             Memory.SpriteBatchEnd();
             if (bWaitingSplash && Fade < 0.0f)
             {
-                init_debugger_Audio.StopAudio();
+                init_debugger_Audio.StopMusic();
                 Memory.module = Memory.MODULE_MAINMENU_DEBUG;
                 if (splashTex != null && !splashTex.IsDisposed)
                     splashTex.Dispose();

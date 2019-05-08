@@ -147,7 +147,7 @@ namespace FF8
                 else if (e.Fill.X > 0 && autoscale.X > scale.X)
                 {
                     scale.X = autoscale.X;
-                    dst.Width = (int)Math.Round((src.Width * autoscale.X));
+                    dst.Width = (int)Math.Ceiling((src.Width * autoscale.X+0.5f));
                 }
                 
                 if ((inputdst.Height != 0) && dst.Y + dst.Height > inputdst.Y + inputdst.Height)
@@ -159,7 +159,7 @@ namespace FF8
                 else if (e.Fill.Y > 0 && autoscale.Y > scale.Y)
                 {
                     scale.Y = autoscale.Y;
-                    dst.Height = (int)Math.Round((src.Height * autoscale.Y));
+                    dst.Height = (int)Math.Ceiling((src.Height * autoscale.Y+0.5f));
                  
                 }
 
