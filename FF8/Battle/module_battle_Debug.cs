@@ -1179,25 +1179,6 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, battleCamera.cam.startingTime / (fl
             throw new Exception("0xFFF, unknown pointer!");
         }
 
-        public struct VIII_cameraMemoryStruct
-        {
-            public byte camAnimId; //.data:01D977A8 beginning of struct
-            public byte UNKNOWNpadding; //?
-            public ushort mainController; //so far unknown, probably a controller for animation? .data:01D977AA
-            public ushort secondWordController;
-            public ushort thirdWordController;
-            public byte cameraVar1; //this is later set up after controllers bit-parsing. May be actually camera
-            public byte cameraVar2;
-            public byte cameraVar3;
-            public byte cameraVar4;
-            public byte cameraVar5;
-            public byte cameraVar6;
-            public ushort unknownWord; //.data:01D977B6 unknown, padding? is this struct packed?
-            public uint animationPointer; //.data:01D977B8 always used with animation data + this struct
-        }
-
-        public static VIII_cameraMemoryStruct BS_CameraStruct;
-
         [StructLayout(LayoutKind.Sequential, Pack =1, Size =1092)]
         public struct CameraStruct
         {
@@ -1297,7 +1278,6 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, battleCamera.cam.startingTime / (fl
         /// </summary>
         private static void ReadCamera()
         {
-            BS_CameraStruct = new VIII_cameraMemoryStruct();
             uint cCameraHeaderSector = br.ReadUInt16();
             uint pCameraSetting = br.ReadUInt16();
             uint pCameraAnimationCollection = br.ReadUInt16();
@@ -1338,7 +1318,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, battleCamera.cam.startingTime / (fl
         /// <returns>Either primary or alternative camera from encounter</returns>
         private static int GetRandomCameraN(Init_debugger_battle.Encounter encounter)
         {
-            int camToss = Memory.random.Next(0, 2) < 2 ? 0 : 1; //primary camera has 2/3 chance of beign selected
+            int camToss = Memory.random.Next(0, 3) < 2 ? 0 : 1; //primary camera has 2/3 chance of beign selected
             switch(camToss)
             {
                 case 0:
@@ -1472,25 +1452,25 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, battleCamera.cam.startingTime / (fl
                             local2C = (short)(ms.Position + 7*2);
                             local18 = (short)(ms.Position + 1*2);
                             local1C = (short)(ms.Position + 2*2);
-                            while(current_position >= 0)
+                            while(true)
                             {
-                                /*
-                                 * 					cam->unkword024[keyframecount] = totalframecount;
-					totalframecount += *current_position++ * 16;
-					ff8funcs.Sub503AE0(++local18, ++local1C, ++ebx, *(BYTE*)current_position, &cam->unkword064[keyframecount], &cam->unkword0A4[keyframecount], &cam->unkword0E4[keyframecount]);
-					ff8funcs.Sub503AE0(++local14, ++local10, ++local2C, *(BYTE*)(current_position + 4), &cam->unkword144[keyframecount], &cam->unkword184[keyframecount], &cam->unkword1C4[keyframecount]);
-					cam->unkbyte204[keyframecount] = 0xFB;
-					cam->unkbyte124[keyframecount] = 0xFB;
+                                battleCamera.cam.unkword024[keyframecount] = totalframecount;
+                                current_position = br.ReadUInt16();
+                                if ((short)current_position < 0) //reverse of *current_position >= 0, also cast to signed is important here
+                                    break;
+                                totalframecount += (ushort)(current_position * 16);
+					//ff8funcs.Sub503AE0(++local18, ++local1C, ++ebx, *(BYTE*)current_position, &cam->unkword064[keyframecount], &cam->unkword0A4[keyframecount], &cam->unkword0E4[keyframecount]);
+					//ff8funcs.Sub503AE0(++local14, ++local10, ++local2C, *(BYTE*)(current_position + 4), &cam->unkword144[keyframecount], &cam->unkword184[keyframecount], &cam->unkword1C4[keyframecount]);
+					battleCamera.cam.unkbyte204[keyframecount] = 0xFB;
+					battleCamera.cam.unkbyte124[keyframecount] = 0xFB;
 					local1C += 8;
 					local18 += 8;
 					current_position += 8;
 					local2C += 8;
-					ebx += 8;
+					//ebx += 8;
 					local10 += 8;
 					local14 += 8;
 					keyframecount++;
-                    */
-                                break; //Infinite loop prevention
                             }
                         }
                         break;
