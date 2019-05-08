@@ -145,7 +145,7 @@ namespace FF8
             AlphaBlendFunction = BlendFunction.Add,
         };
 
-        public static int module = MODULE_BATTLE_DEBUG;
+        public static int module = MODULE_OVERTURE_DEBUG;
 
         public static string FF8DIR => GameLocation.Current.DataPath;
         public static string FF8DIRdata { get; private set; }
