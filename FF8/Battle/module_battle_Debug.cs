@@ -198,11 +198,11 @@ namespace FF8
                     break;
             }
 #if DEBUG
-            if (Input.Button(Keys.F1))
+            if (Input.Button(Keys.D1))
                 DEBUGframe += 1;
-            if (Input.Button(Keys.F2))
+            if (Input.Button(Keys.D2))
                 DEBUGframe--;
-            if (Input.Button(Keys.F3))
+            if (Input.Button(Keys.D3))
                 battleModule = BATTLEMODULE_INIT;
 #endif
         }
@@ -221,20 +221,47 @@ namespace FF8
 
             }
         }
-
-        //private static System.Windows.Forms.Form quickDebugForm;
+#if DEBUG
+        private static System.Windows.Forms.Form quickDebugForm;
+#endif
         private static void UpdateCamera()
         {
+#if DEBUG
             //TODO - It's all good, but I'm missing which should be negative, which positive, which order X-ZY?
             //Oh- btw- remember that when we are changing keyframes, then we should not use lerp as this would
             //create the glitch of 'jumping'. Instead we need to force update camera perspective without blending to make it correct
-            //if (quickDebugForm == null)
-            //{
-            //    quickDebugForm = new System.Windows.Forms.Form();
-            //    System.Windows.Forms.FlowLayoutPanel flp = new System.Windows.Forms.FlowLayoutPanel();
-            //    quickDebugForm.Controls.Add(flp);
-            //    quickDebugForm.Show();
-            //}
+            if (quickDebugForm == null)
+            {
+                quickDebugForm = new System.Windows.Forms.Form() { Text="debug test window"};
+                System.Windows.Forms.FlowLayoutPanel flp = new System.Windows.Forms.FlowLayoutPanel
+                {
+                    Dock = System.Windows.Forms.DockStyle.Fill
+                };
+                System.Windows.Forms.NumericUpDown numericUpDownworldX = new System.Windows.Forms.NumericUpDown() { Minimum = -500, Maximum = 500 , AutoSize=true};
+                System.Windows.Forms.NumericUpDown numericUpDownworldY = new System.Windows.Forms.NumericUpDown() { Minimum = -500, Maximum = 500, AutoSize=true };
+                System.Windows.Forms.NumericUpDown numericUpDownworldZ = new System.Windows.Forms.NumericUpDown() { Minimum = -500, Maximum = 500 };
+                System.Windows.Forms.NumericUpDown numericUpDowntargetX = new System.Windows.Forms.NumericUpDown() { Minimum = -500, Maximum = 500 };
+                System.Windows.Forms.NumericUpDown numericUpDowntargetY = new System.Windows.Forms.NumericUpDown() { Minimum = -500, Maximum = 500 };
+                System.Windows.Forms.NumericUpDown numericUpDowntargetZ = new System.Windows.Forms.NumericUpDown() { Minimum = -500, Maximum = 500 };
+                System.Windows.Forms.CheckBox cbNegateWorldX = new System.Windows.Forms.CheckBox() { Checked = false };
+                System.Windows.Forms.CheckBox cbNegateWorldY = new System.Windows.Forms.CheckBox() { Checked = false };
+                System.Windows.Forms.CheckBox cbNegateWorldZ = new System.Windows.Forms.CheckBox() { Checked = false };
+                System.Windows.Forms.CheckBox cbNegateTargetX = new System.Windows.Forms.CheckBox() { Checked = false };
+                System.Windows.Forms.CheckBox cbNegateTargetY = new System.Windows.Forms.CheckBox() { Checked = false };
+                System.Windows.Forms.CheckBox cbNegateTargetZ = new System.Windows.Forms.CheckBox() { Checked = false };
+                System.Windows.Forms.Control[] controls = {
+                    numericUpDownworldX, numericUpDownworldY, numericUpDownworldZ, numericUpDowntargetX, numericUpDowntargetY, numericUpDowntargetZ,
+                    cbNegateWorldX, cbNegateWorldY, cbNegateWorldZ, cbNegateTargetX, cbNegateTargetY, cbNegateTargetZ
+                };
+                flp.Controls.AddRange(controls);
+                flp.AutoSize = true;
+                quickDebugForm.Controls.Add(flp);
+                quickDebugForm.AutoSize = true;
+                quickDebugForm.Refresh();
+                quickDebugForm.Show();
+
+            }
+#endif
             const float V = 100f;
             //battleCamera.cam.startingTime = 64;
             float camWorldX = MathHelper.Lerp(battleCamera.cam.Camera_World_X_s16[0]/V,
