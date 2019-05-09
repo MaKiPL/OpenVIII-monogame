@@ -27,7 +27,68 @@ namespace FF8
         private static Texture2D IGM_Red_Pixel;
         private static Dictionary<Enum, Item> strHeaderText;
         private static Dictionary<Enum, Item> strSideBar;
-        private static int IGM_choChar;
+        private static int _IGM_choChar;
+
+        public static int IGM_choChar
+        {
+            get
+            {
+                if (_IGM_choChar >= 0 && _IGM_choChar < IGM_PartyStatus.Count)
+                {
+                    if (IGM_PartyStatus.BLANKS[_IGM_choChar])
+                        return IMG_choCharSet(_IGM_choChar+1);
+                }
+                else if (_IGM_choChar < IGM_NonPartyStatus.Count + IGM_PartyStatus.Count && _IGM_choChar >= IGM_PartyStatus.Count)
+                {
+                    if (IGM_NonPartyStatus.BLANKS[_IGM_choChar - IGM_PartyStatus.Count])
+                        return IMG_choCharSet(_IGM_choChar+1);
+                }
+                return _IGM_choChar;
+            }
+
+            set
+            {
+                IMG_choCharSet(value);
+            }
+        }
+        private static int IMG_choCharSet(int value)
+        {
+            while (true)
+            {
+                if (value >= 0 && value < IGM_PartyStatus.Count)
+                {
+                    if (IGM_PartyStatus.BLANKS[value])
+                    {
+                        if (_IGM_choChar > value) value--;
+                        else if (_IGM_choChar < value) value++;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                else if (value < IGM_NonPartyStatus.Count + IGM_PartyStatus.Count && value >= IGM_PartyStatus.Count)
+                {
+                    if (IGM_NonPartyStatus.BLANKS[value - IGM_PartyStatus.Count])
+                    {
+                        if (_IGM_choChar > value) value--;
+                        else if (_IGM_choChar < value) value++;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                if (value < 0)
+                    value = IGM_NonPartyStatus.Count + IGM_PartyStatus.Count - 1;
+                else if (value >= IGM_NonPartyStatus.Count + IGM_PartyStatus.Count)
+                    value = 0;
+            }
+
+
+            _IGM_choChar = value;
+            return value;
+        }
 
         #endregion Fields
 
@@ -98,12 +159,20 @@ namespace FF8
             for (byte i = 0; i <= (byte)Faces.ID.Edea_Kramer && IGM_NonPartyStatus.SIZE != null && pos < IGM_NonPartyStatus.SIZE.Length; i++)
             {
                 if (!Memory.State.Party.Contains((Saves.Characters)i) && Memory.State.Characters[i].Exists != 0 && Memory.State.Characters[i].Exists != 6)//15,9,7,4 shows on menu, 0 locked, 6 hidden
+                {
+                    IGM_NonPartyStatus.BLANKS[pos] = true;
                     Draw_NonPartyStatus(pos++);
+                }
+            }
+            for(sbyte i = pos; i< IGM_NonPartyStatus.Count;i++)
+            {
+                IGM_NonPartyStatus.BLANKS[i] = false;
             }
         }
 
         private static void Draw_IGM_PartyStatus_Box(sbyte pos, bool blank = false)
         {
+            IGM_PartyStatus.BLANKS[pos] = blank;
             if (IGM_NonPartyStatus.SIZE != null && !blank)
             {
                 int i = 0;
@@ -583,6 +652,7 @@ namespace FF8
             /// </summary>
             public Rectangle[] SIZE;
             //private byte[] PALLET;
+            public bool[] BLANKS;
 
             #endregion Fields
 
@@ -598,6 +668,7 @@ namespace FF8
 
                 Count = (byte)count;
                 Depth = (byte)depth;
+                BLANKS = new bool[count];
             }
 
             #endregion Constructors
