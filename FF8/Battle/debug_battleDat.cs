@@ -78,7 +78,7 @@ namespace FF8
         {
             ms.Seek(v, SeekOrigin.Begin);
 #if _WINDOWS //looks like Linux Mono doesn't like marshalling structure with LPArray to Bone[]
-            skeleton = MakiExtended.ByteArrayToStructure<Skeleton>(br.ReadBytes(16));
+            skeleton = Extended.ByteArrayToStructure<Skeleton>(br.ReadBytes(16));
 #else
             skeleton = new Skeleton()
             {
@@ -94,7 +94,7 @@ namespace FF8
 #endif
             skeleton.bones = new Bone[skeleton.cBones];
             for (int i = 0; i < skeleton.cBones; i++)
-                skeleton.bones[i] = MakiExtended.ByteArrayToStructure<Bone>(br.ReadBytes(48));
+                skeleton.bones[i] = Extended.ByteArrayToStructure<Bone>(br.ReadBytes(48));
             return;
         }
 
@@ -230,7 +230,7 @@ namespace FF8
                 @object.verticeData[n].cVertices = br.ReadUInt16();
                 @object.verticeData[n].vertices = new Vertex[@object.verticeData[n].cVertices];
                 for (int i = 0; i < @object.verticeData[n].cVertices; i++)
-                    @object.verticeData[n].vertices[i] = MakiExtended.ByteArrayToStructure<Vertex>(br.ReadBytes(6));}
+                    @object.verticeData[n].vertices[i] = Extended.ByteArrayToStructure<Vertex>(br.ReadBytes(6));}
             ms.Seek(4-(ms.Position%4 == 0 ? 4 : ms.Position%4), SeekOrigin.Current);
             @object.cTriangles = br.ReadUInt16();
             @object.cQuads = br.ReadUInt16();
@@ -240,9 +240,9 @@ namespace FF8
                 return @object;
             @object.quads = new Quad[@object.cQuads];
             for (int i = 0; i < @object.cTriangles; i++)
-                @object.triangles[i] = MakiExtended.ByteArrayToStructure<Triangle>(br.ReadBytes(16));
+                @object.triangles[i] = Extended.ByteArrayToStructure<Triangle>(br.ReadBytes(16));
             for (int i = 0; i < @object.cQuads; i++)
-                @object.quads[i] = MakiExtended.ByteArrayToStructure<Quad>(br.ReadBytes(20));
+                @object.quads[i] = Extended.ByteArrayToStructure<Quad>(br.ReadBytes(20));
 
             return @object;
         }
@@ -758,11 +758,11 @@ namespace FF8
                     for(int k = 0; k<skeleton.cBones; k++)
                     {
                         var rad = animHeader.animations[i].animationFrames[n].boneRot.Item1[k];
-                        Matrix xRot = MakiExtended.GetRotationMatrixX(-rad.X);
-                        Matrix yRot = MakiExtended.GetRotationMatrixY(-rad.Y);
-                        Matrix zRot = MakiExtended.GetRotationMatrixZ(-rad.Z);
-                        var MatrixZ = MakiExtended.MatrixMultiply_transpose(yRot, xRot);
-                        MatrixZ = MakiExtended.MatrixMultiply_transpose(zRot, MatrixZ);
+                        Matrix xRot = Extended.GetRotationMatrixX(-rad.X);
+                        Matrix yRot = Extended.GetRotationMatrixY(-rad.Y);
+                        Matrix zRot = Extended.GetRotationMatrixZ(-rad.Z);
+                        var MatrixZ = Extended.MatrixMultiply_transpose(yRot, xRot);
+                        MatrixZ = Extended.MatrixMultiply_transpose(zRot, MatrixZ);
 
                         if (skeleton.bones[k].parentId == 0xFFFF)
                         {
@@ -957,7 +957,7 @@ namespace FF8
                     var drivei = DriveInfo.GetDrives().Where(x => x.Name.IndexOf(Path.GetPathRoot(targetdir),StringComparison.OrdinalIgnoreCase)>=0).ToArray();                    
                     var di = new DirectoryInfo(targetdir);
                     if(!di.Attributes.HasFlag(FileAttributes.ReadOnly) && drivei.Count()==1 && drivei[0].DriveType == DriveType.Fixed)
-                        MakiExtended.DumpBuffer(buffer, Path.Combine(targetdir,"out.dat"));
+                        Extended.DumpBuffer(buffer, Path.Combine(targetdir,"out.dat"));
                 }
             }
             catch(IOException)

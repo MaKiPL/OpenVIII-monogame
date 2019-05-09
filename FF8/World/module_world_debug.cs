@@ -190,7 +190,7 @@ namespace FF8
                 for (int i = 0; i < segments.Length; i++)
                 {
                     ms.Seek(GetSegment(i), SeekOrigin.Begin);
-                    segments[i] = new Segment { segmentId = i, headerData = MakiExtended.ByteArrayToStructure<SegHeader>(br.ReadBytes(68)), block = new Block[16] };
+                    segments[i] = new Segment { segmentId = i, headerData = Extended.ByteArrayToStructure<SegHeader>(br.ReadBytes(68)), block = new Block[16] };
                     ms.Seek(GetSegment(i), SeekOrigin.Begin);
                     for (int n = 0; n < segments[i].block.Length; n++)
                     {
@@ -200,11 +200,11 @@ namespace FF8
                         segments[i].block[n].vertices = new Vertex[segments[i].block[n].vertCount];
                         segments[i].block[n].normals = new Normal[segments[i].block[n].normalCount];
                         for (int k = 0; k < segments[i].block[n].polyCount; k++)
-                            segments[i].block[n].polygons[k] = MakiExtended.ByteArrayToStructure<Polygon>(br.ReadBytes(16));
+                            segments[i].block[n].polygons[k] = Extended.ByteArrayToStructure<Polygon>(br.ReadBytes(16));
                         for (int k = 0; k < segments[i].block[n].vertCount; k++)
-                            segments[i].block[n].vertices[k] = MakiExtended.ByteArrayToStructure<Vertex>(br.ReadBytes(8));
+                            segments[i].block[n].vertices[k] = Extended.ByteArrayToStructure<Vertex>(br.ReadBytes(8));
                         for (int k = 0; k < segments[i].block[n].normalCount; k++)
-                            segments[i].block[n].normals[k] = MakiExtended.ByteArrayToStructure<Normal>(br.ReadBytes(8));
+                            segments[i].block[n].normals[k] = Extended.ByteArrayToStructure<Normal>(br.ReadBytes(8));
                         segments[i].block[n].unkPadd2 = br.ReadInt32();
                     }
                 }
@@ -530,45 +530,45 @@ namespace FF8
 
             #region Interchangable zones
             //esthar
-            if (MakiExtended.In(_i, 373, 380))
+            if (Extended.In(_i, 373, 380))
                 _i += 395;
-            if (MakiExtended.In(_i, 405, 412))
+            if (Extended.In(_i, 405, 412))
                 _i += 371;
-            if (MakiExtended.In(_i, 437, 444))
+            if (Extended.In(_i, 437, 444))
                 _i += 785 - 438;
-            if (MakiExtended.In(_i, 469, 476))
+            if (Extended.In(_i, 469, 476))
                 _i += 793 - 470;
-            if (MakiExtended.In(_i, 501, 508))
+            if (Extended.In(_i, 501, 508))
                 _i += 801 - 502;
-            if (MakiExtended.In(_i, 533, 540))
+            if (Extended.In(_i, 533, 540))
                 _i += 809 - 534;
-            if (MakiExtended.In(_i, 565, 572))
+            if (Extended.In(_i, 565, 572))
                 _i += 817 - 566;
 
             //trabia
-            if (MakiExtended.In(_i, 149, 150))
+            if (Extended.In(_i, 149, 150))
                 _i += 825 - 150;
 
             //galbadia
-            if (MakiExtended.In(_i, 267, 267))
+            if (Extended.In(_i, 267, 267))
                 _i = 826;
 
             ////balamb
-            if (MakiExtended.In(_i, 274, 275))
+            if (Extended.In(_i, 274, 275))
                 _i += 828 - 275;
 
             ////base
-            if (MakiExtended.In(_i, 327, 327))
+            if (Extended.In(_i, 327, 327))
                 _i += 830 - 328;
 
             ////trabia
-            if (MakiExtended.In(_i, 214, 215))
+            if (Extended.In(_i, 214, 215))
                 _i += 831 - 215;
-            if (MakiExtended.In(_i, 246, 247))
+            if (Extended.In(_i, 246, 247))
                 _i += 833 - 247;
 
             ////prison
-            if (MakiExtended.In(_i, 361, 361))
+            if (Extended.In(_i, 361, 361))
                 _i += 835 - 362;
             #endregion
 
@@ -604,7 +604,7 @@ namespace FF8
                         (seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Y + localZ) / WORLD_SCALE_MODEL + baseY),
                         new Vector2(seg.block[i].polygons[k / 3].U3 / 256.0f, seg.block[i].polygons[k / 3].V3 / 256.0f));
 
-                    if (MakiExtended.Distance3D(camPosition, vpc[k].Position) > renderCamDistance)
+                    if (Extended.Distance3D(camPosition, vpc[k].Position) > renderCamDistance)
                         continue;
 
                     float ax, ay, px, py, d1, d2, d3;
@@ -615,10 +615,10 @@ namespace FF8
                     ay = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(degrees)) * -50f;
 
                     Vector3 left=Vector3.Zero,right = Vector3.Zero;
-                    left.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(MakiExtended.ClampOverload(degrees-FOV, 0, 359))) * renderCamDistance*2;
-                    left.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(MakiExtended.ClampOverload(degrees-FOV, 0, 359))) * renderCamDistance*2;
-                    right.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(MakiExtended.ClampOverload(degrees + FOV, 0, 359))) * renderCamDistance*2;
-                    right.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(MakiExtended.ClampOverload(degrees + FOV, 0, 359))) * renderCamDistance*2;
+                    left.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(Extended.ClampOverload(degrees-FOV, 0, 359))) * renderCamDistance*2;
+                    left.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(Extended.ClampOverload(degrees-FOV, 0, 359))) * renderCamDistance*2;
+                    right.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(Extended.ClampOverload(degrees + FOV, 0, 359))) * renderCamDistance*2;
+                    right.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(Extended.ClampOverload(degrees + FOV, 0, 359))) * renderCamDistance*2;
 
                     d1 = px * (ay - left.Z) + py * (left.X - ax) + (ax * left.Z - ay * left.X);
                     d2 = px * (left.Z - right.Z) + py * (right.X - left.X) + (left.X * right.Z - left.Z * right.X);

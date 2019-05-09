@@ -142,6 +142,7 @@
     <Compile Include="ArchiveWorker.cs" />
     <Compile Include="DictionaryEx.cs" />
     <Compile Include="DirtyEncoder.cs" />
+    <Compile Include="Extended.cs" />
     <Compile Include="FF8String.cs" />
     <Compile Include="Menu\Cards.cs" />
     <Compile Include="Menu\Cards.ID.cs" />
@@ -201,7 +202,6 @@
     <Compile Include="Input.cs" />
     <Compile Include="Loc.cs" />
     <Compile Include="LZSS.cs" />
-    <Compile Include="MakiExtended.cs" />
     <Compile Include="Memory.cs" />
     <Compile Include="ModuleHandler.cs" />
     <Compile Include="Battle\module_battle.cs" />

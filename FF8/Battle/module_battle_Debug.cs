@@ -176,7 +176,7 @@ namespace FF8
 
         private static byte GetClutId(ushort clut)
         {
-            ushort bb = MakiExtended.UshortLittleEndian(clut);
+            ushort bb = Extended.UshortLittleEndian(clut);
             return (byte)(((bb >> 14) & 0x03) | (bb << 2) & 0x0C);
         }
 
@@ -656,8 +656,8 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
             Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe}"), 20, 30 * 1, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {1000/Memory.gameTime.ElapsedGameTime.Milliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"camera frame: {battleCamera.cam.startingTime}/{battleCamera.cam.time}"), 20, 30 * 3, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {MakiExtended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 4, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {MakiExtended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 5, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {Extended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 4, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {Extended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 5, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.FOV: {MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, battleCamera.cam.startingTime / (float)battleCamera.cam.time)}"), 20, 30 * 6, 1, 1, 0, 1);
 
             Memory.SpriteBatchEnd();
@@ -953,12 +953,12 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
                 monstersData = new Debug_battleDat[0];
             EnemyInstances = new List<EnemyInstanceInformation>();
             for(int i = 0; i<8; i++)
-                if (MakiExtended.GetBit(enc.EnabledEnemy, 7-i))
+                if (Extended.GetBit(enc.EnabledEnemy, 7-i))
                     EnemyInstances.Add(new EnemyInstanceInformation() { Data = monstersData.Where(x => x.GetId == enc.BEnemies[i] ).First(),
-                        bIsHidden =MakiExtended.GetBit(enc.HiddenEnemies, 7-i),
+                        bIsHidden =Extended.GetBit(enc.HiddenEnemies, 7-i),
                         bIsActive = true,
                         index = (byte)(7-i),
-                        bIsUntargetable = MakiExtended.GetBit(enc.UntargetableEnemy, 7-i),
+                        bIsUntargetable = Extended.GetBit(enc.UntargetableEnemy, 7-i),
                         animationSystem = new AnimationSystem() { AnimationQueue= new List<int>()}}
                         );
             
@@ -1013,7 +1013,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
         {
             bool bSpecial = false;
             ms.Seek(pointer, System.IO.SeekOrigin.Begin);
-            uint header = MakiExtended.UintLittleEndian(br.ReadUInt32());
+            uint header = Extended.UintLittleEndian(br.ReadUInt32());
             if (header != 0x01000100) //those may be some switches, but I don't know what they mean
             {
                 Console.WriteLine("WARNING- THIS STAGE IS DIFFERENT! It has weird object section. INTERESTING, TO REVERSE!");
@@ -1332,7 +1332,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
                 for (int n = 0; n < bcc.battleCameraSet[i].animPointers.Length; n++)
                     bcc.battleCameraSet[i].animPointers[n] = (uint)(ms.Position + br.ReadUInt16() * 2 - n * 2);
             }
-            CameraStruct cam = MakiExtended.ByteArrayToStructure<CameraStruct>(new byte[Marshal.SizeOf(typeof(CameraStruct))]); //what about this kind of trick to initialize struct with a lot amount of fixed sizes in arrays? 
+            CameraStruct cam = Extended.ByteArrayToStructure<CameraStruct>(new byte[Marshal.SizeOf(typeof(CameraStruct))]); //what about this kind of trick to initialize struct with a lot amount of fixed sizes in arrays? 
             battleCamera = new BattleCamera() { battleCameraCollection = bcc, battleCameraSettings = bcs, cam = cam };
 
             ReadAnimation(GetRandomCameraN(Memory.encounters[Memory.battle_encounter]));

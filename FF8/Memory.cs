@@ -170,8 +170,8 @@ namespace FF8
 
         public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
         {
-            FF8DIRdata = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIR, "Data"));
-            string testdir = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIRdata, "lang-en"));
+            FF8DIRdata = Extended.GetUnixFullPath(Path.Combine(FF8DIR, "Data"));
+            string testdir = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata, "lang-en"));
             FF8DIRdata_lang = Directory.Exists(testdir) ? testdir : FF8DIRdata;
 
             Memory.graphics = graphics;
@@ -715,12 +715,12 @@ namespace FF8
 
         public static class Archives
         {
-            public static string A_BATTLE = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "battle"));
-            public static string A_FIELD = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "field"));
-            public static string A_MAGIC = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "magic"));
-            public static string A_MAIN = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "main"));
-            public static string A_MENU = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "menu"));
-            public static string A_WORLD = MakiExtended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "world"));
+            public static string A_BATTLE = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "battle"));
+            public static string A_FIELD = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "field"));
+            public static string A_MAGIC = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "magic"));
+            public static string A_MAIN = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "main"));
+            public static string A_MENU = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "menu"));
+            public static string A_WORLD = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "world"));
 
             public const string B_FileList = ".fl";
             public const string B_FileIndex = ".fi";
