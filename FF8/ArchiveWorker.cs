@@ -38,6 +38,7 @@ namespace FF8
         public static byte[] GetBinaryFile(string archiveName, string fileName)
         {
             byte[] isComp = GetBin(MakiExtended.GetUnixFullPath(archiveName), fileName);
+            if (isComp == null) throw new FileNotFoundException($"Searched {archiveName} and could not find {fileName}.",fileName);
             if(_compressed)
                 isComp = isComp.Skip(4).ToArray();
             return isComp == null ? null : _compressed ? LZSS.DecompressAllNew(isComp) : isComp;
@@ -102,8 +103,8 @@ namespace FF8
             string[] files = locTr.Split((char)0x0a);
             for (int i = 0; i != files.Length - 1; i++)
             {
-                string testme = files[i].Substring(0, files[i].Length - 1).ToUpper();
-                if (testme == fileName.ToUpper())
+                string testme = files[i].Substring(0, files[i].Length - 1);
+                if (testme.IndexOf(fileName,StringComparison.OrdinalIgnoreCase)>=0)
                 {
                     loc = i;
                     break;

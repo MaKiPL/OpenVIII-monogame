@@ -25,6 +25,7 @@ namespace FF8
         public static Faces Faces;
         public static Icons Icons;
         public static Strings Strings;
+        public static Kernel_bin Kernel_Bin;
 
         public static Texture2D shadowTexture;
         public static VertexPositionTexture[] shadowGeometry;
@@ -175,12 +176,13 @@ namespace FF8
             Memory.graphics = graphics;
             Memory.spriteBatch = spriteBatch;
             Memory.content = content;
-
             Memory.DirtyEncoding = new DirtyEncoding();
             Memory.FieldHolder.FieldMemory = new int[1024];
 
             Memory.font = new Font(); //this initializes the fonts and drawing system- holds fonts in-memory
             Memory.Strings = new Strings();
+
+            Kernel_Bin = new Kernel_bin();
 #if DEBUG
             //export the string data so you can find where the string you want is.
             // then you can Memory.Strings.Read() it :)

@@ -37,6 +37,10 @@ namespace FF8
         private uint[] StringsLoc;
         private uint[] StringsPadLoc;
 
+        public Dictionary<FileID, Stringfile> Files { get => files; }
+
+        public string[] Filenames => filenames;
+
         #endregion Fields
 
         #region Constructors
@@ -209,23 +213,13 @@ namespace FF8
         /// <see cref="http://www.balamb.pl/qh/kernel-pointers.htm"/>
         private void Kernel_init(FileID fileID)
         {
+
             files[fileID] = new Stringfile(new Dictionary<uint, List<uint>>(56), new List<Loc>(56));
             using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(
                 aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)fileID], StringComparison.OrdinalIgnoreCase) >= 0))))
             using (BinaryReader br = new BinaryReader(ms))
             {
-                uint count = br.ReadUInt32();
-                while (count-- > 0)
-                {
-                    Loc l = new Loc { seek = br.ReadUInt32() };
-                    if (count <= 0) l.length = (uint)ms.Length - l.seek;
-                    else
-                    {
-                        l.length = br.ReadUInt32() - l.seek;
-                        ms.Seek(-4, SeekOrigin.Current);
-                    }
-                    files[fileID].subPositions.Add(l);
-                }
+                kernel_GetFileLocations(br);
 
                 LocSTR = new Dictionary<uint, Tuple<uint, uint, uint>> {
                     //working
@@ -386,6 +380,22 @@ namespace FF8
                         files[fileID].subPositions.Add(loc);
                     }
                 }
+            }
+        }
+        private void kernel_GetFileLocations(BinaryReader br)
+        {
+            FileID fileID = FileID.KERNEL;
+            uint count = br.ReadUInt32();
+            while (count-- > 0)
+            {
+                Loc l = new Loc { seek = br.ReadUInt32() };
+                if (count <= 0) l.length = (uint)br.BaseStream.Length - l.seek;
+                else
+                {
+                    l.length = br.ReadUInt32() - l.seek;
+                    br.BaseStream.Seek(-4, SeekOrigin.Current);
+                }
+                files[fileID].subPositions.Add(l);
             }
         }
 
