@@ -28,8 +28,8 @@ namespace FF8
         public static void Init()
         {
             movieDirs = new string[] {
-                MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "movies")), //this folder has most movies
-                MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata_lang, "movies")) //this folder has rest of movies
+                Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "movies")), //this folder has most movies
+                Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata_lang, "movies")) //this folder has rest of movies
             };
             _movies = new List<string>();
             foreach (string s in movieDirs)
