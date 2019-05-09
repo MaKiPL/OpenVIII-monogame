@@ -5,7 +5,7 @@ namespace FF8
 {
     internal static class Init_debugger_fields
     {
-        internal static void DEBUG()
+        internal static void Init()
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_FIELD);
             string[] lists = aw.GetListOfFiles();

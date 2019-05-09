@@ -129,13 +129,17 @@ namespace FF8
             string bn = Path.GetFileNameWithoutExtension(path);
             string prefix = bn.Substring(0, 2);
             string pngpath = Path.Combine(Memory.FF8DIR, "textures", prefix, bn);
+            // this isn't working correctly unless mod authors have the this-> 13=0, 14=1... for pallets
+            //https://github.com/MaKiPL/OpenVIII/issues/73
             string suffix = pallet > -1 ? $"{pallet + 13}" : "";
             suffix += ".png";
             if (Directory.Exists(pngpath))
             {
                 try
                 {
-                    pngpath = Directory.GetFiles(pngpath).Last(x => (x.IndexOf(bn, StringComparison.OrdinalIgnoreCase) >= 0 && x.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)));
+                    pngpath = Directory.GetFiles(pngpath).Last(x => 
+                    (x.IndexOf(bn, StringComparison.OrdinalIgnoreCase) >= 0 && 
+                    x.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)));
                     using (FileStream fs = File.OpenRead(pngpath))
                     {
                         return Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);

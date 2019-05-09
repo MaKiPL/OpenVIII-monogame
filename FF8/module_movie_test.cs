@@ -13,7 +13,7 @@ namespace FF8
 {
     internal static class Module_movie_test
     {
-        private const int STATE_INIT = 0;
+        private const int STATE_LOAD = 0;
         private const int STATE_CLEAR = 1;
         private const int STATE_STARTPLAY = 2;
         private const int STATE_PLAYING = 3;
@@ -22,10 +22,28 @@ namespace FF8
         private const int STATE_RETURN = 6;
         private const int STATE_RESET = 7;
 
-        private static readonly string[] movieDirs = {
-            MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "movies")), //this folder has most movies
-            MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata_lang, "movies"))}; //this folder has rest of movies
-        private static List<string> _movies = new List<string>();
+        private static string[] movieDirs;
+
+        private static List<string> _movies;
+        public static void Init()
+        {
+            movieDirs = new string[] {
+                MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "movies")), //this folder has most movies
+                MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata_lang, "movies")) //this folder has rest of movies
+            };
+            _movies = new List<string>();
+            foreach (string s in movieDirs)
+            {
+                if (Directory.Exists(s))
+                {
+                    _movies.AddRange(Directory.GetFiles(s, "*", SearchOption.AllDirectories).Where(x =>
+                      x.EndsWith(".avi", StringComparison.OrdinalIgnoreCase) ||
+                      x.EndsWith(".mkv", StringComparison.OrdinalIgnoreCase) ||
+                      x.EndsWith(".bik", StringComparison.OrdinalIgnoreCase)));
+                }
+            }
+            ReturnState = Memory.MODULE_MAINMENU_DEBUG;
+        }
         /// <summary>
         /// Movie file list
         /// </summary>
@@ -33,28 +51,15 @@ namespace FF8
         {
             get
             {
-                if (_movies.Count == 0)
-                {
-                    foreach (string s in movieDirs)
-                    {
-                        if (Directory.Exists(s))
-                        {
-                            _movies.AddRange(Directory.GetFiles(s,"*",SearchOption.AllDirectories).Where(x => 
-                            x.EndsWith(".avi",StringComparison.OrdinalIgnoreCase) ||
-                            x.EndsWith(".mkv", StringComparison.OrdinalIgnoreCase) ||
-                            x.EndsWith(".bik", StringComparison.OrdinalIgnoreCase)));
-                        }
-                    }
-                }
                 return _movies;
             }
         }
 
         //private static Bitmap Frame { get; set; } = null;
-        private static Ffcc FfccVideo { get; set; } = null;
-        private static Texture2D frameTex { get; set; } = null;
-        private static Ffcc FfccAudio { get; set; } = null;
-        public static int ReturnState { get; set; } = Memory.MODULE_MAINMENU_DEBUG;
+        private static Ffcc FfccVideo { get; set; }
+        private static Texture2D frameTex { get; set; }
+        private static Ffcc FfccAudio { get; set; }
+        public static int ReturnState { get; set; }
         /// <summary>
         /// Index in movie file list
         /// </summary>
@@ -62,7 +67,7 @@ namespace FF8
         private static double FPS { get; set; } = 0;
         private static int FrameRenderingDelay { get; set; } = 0;
         private static int MsElapsed { get; set; } = 0;
-        public static int MovieState { get; set; } = STATE_INIT;
+        public static int MovieState { get; set; } = STATE_LOAD;
 
         internal static void Update()
         {
@@ -92,9 +97,9 @@ namespace FF8
 #endif
             switch (MovieState)
             {
-                case STATE_INIT:
+                case STATE_LOAD:
                     MovieState++;
-                    InitMovie();
+                    LoadMovie();
                     break;
                 case STATE_CLEAR:
                     break;
@@ -173,7 +178,7 @@ namespace FF8
             }
             FfccVideo = null;
 
-            MovieState = STATE_INIT;
+            MovieState = STATE_LOAD;
             if (frameTex != null && !frameTex.IsDisposed)
             {
                 frameTex.Dispose();
@@ -185,7 +190,7 @@ namespace FF8
 
 
         // The flush packet is a non-null packet with size 0 and data null
-        private static void InitMovie()
+        private static void LoadMovie()
         {
             if (Movies != null && Index < Movies.Count)
             {
@@ -206,7 +211,7 @@ namespace FF8
         {
             switch (MovieState)
             {
-                case STATE_INIT:
+                case STATE_LOAD:
                     break;
                 case STATE_CLEAR:
                     MovieState++;

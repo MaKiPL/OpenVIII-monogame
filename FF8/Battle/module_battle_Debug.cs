@@ -647,6 +647,11 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
                 }
 
             Memory.SpriteBatchStartAlpha();
+            /*Memory.font.RenderBasicText(
+                $"Encounter ready at: {Memory.battle_encounter}\n" +
+                $"Debug variable: {DEBUGframe}\n" +
+                $"1000/deltaTime milliseconds: {Math.Round((double)1000 / Memory.gameTime.ElapsedGameTime.Milliseconds,2)}",
+                30,20,lineSpacing: 5);*/
             Memory.font.RenderBasicText(new FF8String($"Encounter ready at: {Memory.battle_encounter}"), 0, 0, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe}"), 20, 30 * 1, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {1000/Memory.gameTime.ElapsedGameTime.Milliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
@@ -654,6 +659,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
             Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {MakiExtended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 4, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {MakiExtended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 5, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.FOV: {MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, battleCamera.cam.startingTime / (float)battleCamera.cam.time)}"), 20, 30 * 6, 1, 1, 0, 1);
+
             Memory.SpriteBatchEnd();
         }
 
@@ -910,7 +916,9 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
             Debug_battleDat weapon;
             if (characterId == 1 || characterId == 9)
                 weapon = new Debug_battleDat(characterId, Debug_battleDat.EntityType.Weapon, weaponId, character);
+#pragma warning disable IDE0045 // Convert to conditional expression
             else if (weaponId != -1) weapon = new Debug_battleDat(characterId, Debug_battleDat.EntityType.Weapon, weaponId);
+#pragma warning restore IDE0045 // Convert to conditional expression
             else weapon = null;
             return new CharacterData()
             {

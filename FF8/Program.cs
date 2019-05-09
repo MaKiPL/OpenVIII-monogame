@@ -16,6 +16,7 @@ namespace FF8
     /// </summary>
     public static class Program
     {
+        public static Game1 Game { get; private set; }
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
@@ -24,8 +25,8 @@ namespace FF8
         {
             MonoGameHooks.Initialize();
 
-            using (var game = new Game1())
-                game.Run();
+            using (Game = new Game1())
+                Game.Run();
         }
     }
 }

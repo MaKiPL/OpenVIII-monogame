@@ -649,48 +649,45 @@ namespace FF8
 
         }
         private byte[] charWidths;
-        public Rectangle CalcBasicTextArea(byte[] buffer, Vector2 pos, Vector2 zoom, int whichFont = 0, int isMenu = 0) => CalcBasicTextArea(buffer, (int)pos.X, (int)pos.Y, zoom.X, zoom.Y);
+        
+        
 
-        public Rectangle CalcBasicTextArea(byte[] buffer, Point pos, Vector2 zoom, int whichFont = 0, int isMenu = 0) => CalcBasicTextArea(buffer, pos.X, pos.Y, zoom.X, zoom.Y);
-
-        public Rectangle CalcBasicTextArea(byte[] buffer, int x, int y, float zoomWidth = 1f, float zoomHeight = 1f, int whichFont = 0, int isMenu = 0) => RenderBasicText(buffer, x, y, zoomWidth, zoomHeight, whichFont, isMenu, 1, true);
-
-        public Rectangle RenderBasicText(byte[] buffer, Vector2 pos, Vector2 zoom, int whichFont = 0, int isMenu = 0, float Fade = 1.0f) => RenderBasicText(buffer, (int)pos.X, (int)pos.Y, zoom.X, zoom.Y, whichFont, isMenu, Fade);
-
-        public Rectangle RenderBasicText(byte[] buffer, Point pos, Vector2 zoom, int whichFont = 0, int isMenu = 0, float Fade = 1.0f, bool prescaled = false) => RenderBasicText(buffer, pos.X, pos.Y, zoom.X, zoom.Y, whichFont, isMenu, Fade,false, prescaled);
-
-        public Rectangle RenderBasicText(byte[] buffer, int x, int y, float zoomWidth = 2.0f, float zoomHeight = 2.7f, int whichFont = 0, int isMenu = 0, float Fade = 1.0f, bool skipdraw =false, bool prescaled = false)
+        public enum Type
+        {
+            sysFntBig,
+            sysfnt,
+            menuFont,
+        }
+        public Rectangle RenderBasicText(FF8String buffer, Vector2 pos, Vector2 zoom, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false)
         {
             if (buffer == null) return new Rectangle();
-            Rectangle ret = new Rectangle(x, y, 0, 0);
-            Point real = new Point(x, y);
+            Rectangle ret = new Rectangle(pos.RoundedPoint(), new Point(0));
+            Point real = pos.RoundedPoint();
             int charCountWidth = 21;
             int charSize = 12; //pixelhandler does the 2x scaling on the fly.
-            Vector2 zoom = new Vector2(zoomWidth, zoomHeight);
-            Vector2 scale = !prescaled? Memory.Scale():Vector2.One;
-            Point size = (new Vector2(0, charSize) * zoom * scale).ToPoint();
+            Point size = (new Vector2(0, charSize) * zoom).RoundedPoint();
             int width;
             foreach (byte c in buffer)
             {
                 if (c == 0) continue;
-                byte deltaChar = (byte)(c - 32);
-                if (deltaChar < charWidths.Length)
+                int deltaChar = (c - 32);
+                if (deltaChar >= 0 && deltaChar < charWidths.Length)
                 {
                     width = charWidths[deltaChar];
-                    size.X = (int)(charWidths[deltaChar] * zoom.X * scale.X);
+                    size.X = (int)(charWidths[deltaChar] * zoom.X);
                 }                
                 else
                 {
                     width = charSize;
-                    size.X = (int)(charSize * zoom.X * scale.X);
+                    size.X = (int)(charSize * zoom.X);
                 }
                 Point curSize = size;
                 int verticalPosition = deltaChar / charCountWidth;
                 //i.e. 1280 is 100%, 640 is 50% and therefore 2560 is 200% which means multiply by 0.5f or 2.0f
                 if (c == 0x02)// \n
                 {
-                    real.X = x;
-                    real.Y += size.Y;
+                    real.X = (int)pos.X;
+                    real.Y += (int)(size.Y + lineSpacing);
                     continue;
                 }
                 Rectangle destRect = new Rectangle(real, size);
@@ -703,36 +700,42 @@ namespace FF8
                         width,
                         charSize);
 
-                    if (whichFont == 0 || isMenu == 1)
+
+                    switch (whichFont)
                     {
+                        case Type.menuFont:
+                        case Type.sysfnt:
                         //trim pixels to remove texture filtering artifacts.
                         sourceRect.Width -= 1;
                         sourceRect.Height -= 1;
-                        Memory.spriteBatch.Draw(isMenu == 1 ? menuFont : sysfnt,
+                        Memory.spriteBatch.Draw(whichFont == Type.menuFont? menuFont : sysfnt,
                             destRect,
                             sourceRect,
                         Color.White * Fade);
-                    }
-                    else
-                    {
-                        if (!sysfntbig.Modded)
-                        {
-                            Rectangle ShadowdestRect = new Rectangle(destRect.Location, destRect.Size);
-                            ShadowdestRect.Offset(1 * zoomWidth, 1 * zoomHeight);
-                            sysfntbig.Draw(ShadowdestRect, sourceRect, Color.Black * Fade * .5f);
-                        }
-                        sysfntbig.Draw(destRect, sourceRect, Color.White * Fade);
+                            break;
+                        case Type.sysFntBig:
+                            if (!sysfntbig.Modded)
+                            {
+                                Rectangle ShadowdestRect = new Rectangle(destRect.Location, destRect.Size);
+                                ShadowdestRect.Offset(zoom);
+                                sysfntbig.Draw(ShadowdestRect, sourceRect, Color.Black * Fade * .5f);
+                            }
+                                sysfntbig.Draw(destRect, sourceRect, Color.White * Fade);
+                            break;
                     }
                 }
                 real.X += size.X;
-                int curWidth = real.X - x;
+                int curWidth = real.X - (int)pos.X;
                 if (curWidth > ret.Width)
                     ret.Width = curWidth;
             }
-            ret.Height = size.Y + (real.Y - y);
+            ret.Height = size.Y + (real.Y - (int)pos.Y);
             return ret;
         }
-
+        public Rectangle RenderBasicText(FF8String buffer, Point pos, Vector2 zoom, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false)
+            => RenderBasicText(buffer, pos.ToVector2(), zoom, whichFont, Fade, lineSpacing, skipdraw);
+        public Rectangle RenderBasicText(FF8String buffer, int x, int y, float zoomWidth = 2.545455f, float zoomHeight = 3.0375f, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false)
+            => RenderBasicText(buffer, new Vector2(x, y), new Vector2(zoomWidth, zoomHeight), whichFont, Fade, lineSpacing, skipdraw);
         /// <summary>
         /// Converts clean string into dirty string for drawing.
         /// </summary>
