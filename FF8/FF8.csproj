@@ -140,7 +140,9 @@
   <ItemGroup>
     <Compile Include="ArchiveSearch.cs" />
     <Compile Include="ArchiveWorker.cs" />
+    <Compile Include="DictionaryEx.cs" />
     <Compile Include="DirtyEncoder.cs" />
+    <Compile Include="FF8String.cs" />
     <Compile Include="Menu\Cards.cs" />
     <Compile Include="Menu\Cards.ID.cs" />
     <Compile Include="EntryGroup.cs" />
@@ -214,8 +216,8 @@
     <Reference Include="FFmpeg.AutoGen, Version=4.1.0.4, Culture=neutral, PublicKeyToken=9b7632533a381715, processorArchitecture=MSIL">
       <HintPath>..\packages\FFmpeg.AutoGen.4.1.0.4\lib\net45\FFmpeg.AutoGen.dll</HintPath>
     </Reference>
-    <Reference Include="NAudio, Version=1.8.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NAudio.1.8.5\lib\net35\NAudio.dll</HintPath>
+    <Reference Include="NAudio, Version=1.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NAudio.1.9.0\lib\net35\NAudio.dll</HintPath>
     </Reference>
     <Reference Include="NAudio.Vorbis, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\NAudio.Vorbis.1.0.0.0\lib\net35\NAudio.Vorbis.dll</HintPath>
