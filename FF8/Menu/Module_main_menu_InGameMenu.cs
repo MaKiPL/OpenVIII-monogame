@@ -59,19 +59,10 @@ namespace FF8
             SimpleTexture = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
             Color[] color = new Color[] { new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, fade) };
             SimpleTexture.SetData<Color>(color, 0, SimpleTexture.Width * SimpleTexture.Height);
-        }
 
-        private static void UpdateInGameMenu()
-        {
             IGM_Size = new Vector2 { X = 843, Y = 630 };
-            Vector2 Zoom = Memory.Scale(IGM_Size.X, IGM_Size.Y, Memory.ScaleMode.FitBoth);
-
-            IGM_focus = Matrix.CreateTranslation((IGM_Size.X / -2), (IGM_Size.Y / -2), 0) *
-                Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) *
-                Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
             IGM_Header_Size = new Rectangle { Width = 610, Height = 75 };
             IGM_Footer_Size = new Rectangle { Width = 610, Height = 75, Y = 630 - 75 };
-            IGM_Clock_Size = new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 };
             IGM_SideBox_Size = new Rectangle { Width = 226, Height = 492, X = 843 - 226 };
 
             for (int i = 0; i < strSideBar.Count; i++)
@@ -112,10 +103,23 @@ namespace FF8
                 IGM_NonParty_Size[i].Inflate(-26, -12);
             }
 
-            IGM_Footer_Text = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Memory.State.LocationID).ReplaceRegion();
-            IGM_Header_Text = strHeaderText[IGM_choSideBar];
+            Init_IGMClockBox();
+
+            UpdateInGameMenu();
+        }
+
+        private static void UpdateInGameMenu()
+        {
+            Vector2 Zoom = Memory.Scale(IGM_Size.X, IGM_Size.Y, Memory.ScaleMode.FitBoth);
+
+            IGM_focus = Matrix.CreateTranslation((IGM_Size.X / -2), (IGM_Size.Y / -2), 0) *
+                Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) *
+                Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
 
             TextScale = new Vector2(2.545455f, 3.0375f);
+
+            IGM_Footer_Text = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Memory.State.LocationID).ReplaceRegion();
+            IGM_Header_Text = strHeaderText[IGM_choSideBar];
             Update_IGMClockBox();
             UpdateInGameMenuInput();
         }
@@ -263,76 +267,85 @@ namespace FF8
         }
 
         private static Rectangle[] IGM_Clock_DIMs;
-
+        private static object[] IGM_Clock_Vals;
+        private static void Init_IGMClockBox()
+        {
+            IGM_Clock_Size = new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 };
+            IGM_Clock_DIMs = new Rectangle[8];
+            IGM_Clock_Vals = new object[8];
+            Rectangle r;
+            r = IGM_Clock_Size;
+            r.Offset(25, 14);
+            IGM_Clock_Vals[0] = Icons.ID.PLAY;
+            IGM_Clock_DIMs[0] = r;
+            r = IGM_Clock_Size;
+            r.Offset(145, 14);
+            IGM_Clock_Vals[2] = Icons.ID.Colon;
+            IGM_Clock_DIMs[2] = r;
+            r = IGM_Clock_Size;
+            r.Offset(25, 48);
+            IGM_Clock_Vals[4] = Icons.ID.SeeD;
+            IGM_Clock_DIMs[4] = r;
+            r = IGM_Clock_Size;
+            r.Offset(185, 81);
+            IGM_Clock_Vals[7] = Icons.ID.G;
+            IGM_Clock_DIMs[7] = r;
+        }
         private static void Update_IGMClockBox()
         {
-            int i = 0;
             int num;
             int spaces;
             Rectangle r;
-            if (IGM_Clock_DIMs == null || IGM_Clock_DIMs.Length == 0)
-            {
-                IGM_Clock_DIMs = new Rectangle[8];
-            }
 
             r = IGM_Clock_Size;
-            r.Offset(25, 14);
-            IGM_Clock_DIMs[i++] = r;
-
-            r = IGM_Clock_Size;
-            num = (int)(Memory.State.timeplayed.TotalHours);
+            num = Memory.State.timeplayed.TotalHours < 99 ? (int)(Memory.State.timeplayed.TotalHours) : 99;
             spaces = 2 - (num).ToString().Length;
             r.Offset(105 + spaces * 20, 14);
-            IGM_Clock_DIMs[i++] = r;
+            IGM_Clock_Vals[1] = num;
+            IGM_Clock_DIMs[1] = r;
+
 
             r = IGM_Clock_Size;
-            r.Offset(145, 14);
-            IGM_Clock_DIMs[i++] = r;
-
-            r = IGM_Clock_Size;
-            num = Memory.State.timeplayed.Minutes;
+            num = num >= 99 ? 99 : Memory.State.timeplayed.Minutes;
             spaces = 0;
             r.Offset(165 + spaces * 20, 14);
-            IGM_Clock_DIMs[i++] = r;
+            IGM_Clock_Vals[3] = num;
+            IGM_Clock_DIMs[3] = r;
 
-            r = IGM_Clock_Size;
-            r.Offset(25, 48);
-            IGM_Clock_DIMs[i++] = r;
 
             r = IGM_Clock_Size;
             num = Memory.State.Fieldvars.SeedRankPts / 100;
+            num = num < 99999 ? num : 99999;
             spaces = 5 - (num).ToString().Length;
             r.Offset(105 + spaces * 20, 48);
-            IGM_Clock_DIMs[i++] = r;
+            IGM_Clock_Vals[5] = num;
+            IGM_Clock_DIMs[5] = r;
 
             r = IGM_Clock_Size;
-            num = (int)(Memory.State.AmountofGil);
+            num = Memory.State.AmountofGil < 99999999 ? (int)(Memory.State.AmountofGil) : 99999999;
             spaces = 8 - (num).ToString().Length;
             r.Offset(25 + spaces * 20, 81);
-            IGM_Clock_DIMs[i++] = r;
+            IGM_Clock_Vals[6] = num;
+            IGM_Clock_DIMs[6] = r;
 
-            r = IGM_Clock_Size;
-            r.Offset(185, 81);
-            IGM_Clock_DIMs[i++] = r;
         }
 
         private static void Draw_IGM_ClockBox()
         {
-            int i = 0;
-            Tuple<Rectangle, Point, Rectangle> d = DrawBox(IGM_Clock_Size);
-            Memory.Icons.Draw(Icons.ID.PLAY, 13, IGM_Clock_DIMs[i++], TextScale, fade);
-            int num = (int)(Memory.State.timeplayed.TotalHours);
-            Memory.Icons.Draw(num, 0, 2, "D1", IGM_Clock_DIMs[i++].Location.ToVector2(), TextScale, fade);
-            Memory.Icons.Draw(Icons.ID.Colon, 13, IGM_Clock_DIMs[i], TextScale, fade);
-            Memory.Icons.Draw(Icons.ID.Colon, 2, IGM_Clock_DIMs[i++], TextScale, fade * blink * .5f);
-            num = Memory.State.timeplayed.Minutes;
-            Memory.Icons.Draw(num, 0, 2, "D2", IGM_Clock_DIMs[i++].Location.ToVector2(), TextScale, fade);
-            Memory.Icons.Draw(Icons.ID.SeeD, 13, IGM_Clock_DIMs[i++], TextScale, fade);
-            num = Memory.State.Fieldvars.SeedRankPts / 100;
-            Memory.Icons.Draw(num, 0, 2, "D1", IGM_Clock_DIMs[i++].Location.ToVector2(), TextScale, fade);
-            num = (int)(Memory.State.AmountofGil);
-            Memory.Icons.Draw(num, 0, 2, "D1", IGM_Clock_DIMs[i++].Location.ToVector2(), TextScale, fade);
-            Memory.Icons.Draw(Icons.ID.G, 2, IGM_Clock_DIMs[i++], TextScale, fade);
+            if (IGM_Clock_DIMs != null && IGM_Clock_DIMs.Length > 0 && IGM_Clock_Vals != null && IGM_Clock_Vals.Length > 0)
+            {
+                int i = 0;
+                DrawBox(IGM_Clock_Size);
+                Memory.Icons.Draw((Icons.ID)IGM_Clock_Vals[i], 13, IGM_Clock_DIMs[i++], TextScale, fade);
+                Memory.Icons.Draw((int)IGM_Clock_Vals[i], 0, 2, "D1", IGM_Clock_DIMs[i++].Location.ToVector2(), TextScale, fade);
+                Memory.Icons.Draw((Icons.ID)IGM_Clock_Vals[i], 13, IGM_Clock_DIMs[i], TextScale, fade);
+                Memory.Icons.Draw((Icons.ID)IGM_Clock_Vals[i], 2, IGM_Clock_DIMs[i++], TextScale, fade * blink * .5f);
+                Memory.Icons.Draw((int)IGM_Clock_Vals[i], 0, 2, "D2", IGM_Clock_DIMs[i++].Location.ToVector2(), TextScale, fade);
+                Memory.Icons.Draw((Icons.ID)IGM_Clock_Vals[i], 13, IGM_Clock_DIMs[i++], TextScale, fade);
+                Memory.Icons.Draw((int)IGM_Clock_Vals[i], 0, 2, "D1", IGM_Clock_DIMs[i++].Location.ToVector2(), TextScale, fade);
+                Memory.Icons.Draw((int)IGM_Clock_Vals[i], 0, 2, "D1", IGM_Clock_DIMs[i++].Location.ToVector2(), TextScale, fade);
+                Memory.Icons.Draw((Icons.ID)IGM_Clock_Vals[i], 2, IGM_Clock_DIMs[i++], TextScale, fade);
+            }
         }
 
         private static void Draw_IGM_FooterBox() => DrawBox(IGM_Footer_Size, IGM_Footer_Text, indent: false);
