@@ -17,11 +17,11 @@ namespace FF8
 
         public ArchiveWorker(string path)
         {
-            _path = Extended.GetUnixFullPath(path);
+            _path = MakiExtended.GetUnixFullPath(path);
             string root = Path.GetDirectoryName(_path);
             string file = Path.GetFileNameWithoutExtension(_path);
-            string fi = Extended.GetUnixFullPath($"{Path.Combine(root, file)}{Memory.Archives.B_FileIndex}");
-            string fl = Extended.GetUnixFullPath($"{Path.Combine(root, file)}{Memory.Archives.B_FileList}");
+            string fi = MakiExtended.GetUnixFullPath($"{Path.Combine(root, file)}{Memory.Archives.B_FileIndex}");
+            string fl = MakiExtended.GetUnixFullPath($"{Path.Combine(root, file)}{Memory.Archives.B_FileList}");
             if (!File.Exists(fi)) throw new Exception($"There is no {file}.fi file!\nExiting...");
             if (!File.Exists(fl)) throw new Exception($"There is no {file}.fl file!\nExiting...");
             FileList = ProduceFileLists();
@@ -37,7 +37,7 @@ namespace FF8
         public byte[] GetBinaryFile(string fileName) => GetBinaryFile(_path, fileName);
         public static byte[] GetBinaryFile(string archiveName, string fileName)
         {
-            byte[] isComp = GetBin(Extended.GetUnixFullPath(archiveName), fileName);
+            byte[] isComp = GetBin(MakiExtended.GetUnixFullPath(archiveName), fileName);
             if (isComp == null) throw new FileNotFoundException($"Searched {archiveName} and could not find {fileName}.",fileName);
             if(_compressed)
                 isComp = isComp.Skip(4).ToArray();

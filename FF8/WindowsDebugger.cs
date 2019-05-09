@@ -28,7 +28,7 @@ namespace FF8
         {
             listBox1.Items.Clear();
             foreach(var c in 
-            Extended.DebuggerFood)
+            MakiExtended.DebuggerFood)
             {
                 //int controller = FindControllerId(c.DeclaringType.FullName);
                 //if (controller == -1)
@@ -36,7 +36,7 @@ namespace FF8
                 //    listBox1.Items.Add(new ListViewItem(c.DeclaringType.FullName));
                 //    controller = listBox1.Items.Count - 1;
                 //}
-                listBox1.Items.Add($"{Extended.DebuggerFood.IndexOf(c)}:{c.ReflectedType.FullName}:{c.Name}");
+                listBox1.Items.Add($"{MakiExtended.DebuggerFood.IndexOf(c)}:{c.ReflectedType.FullName}:{c.Name}");
             }
         }
 
@@ -50,7 +50,7 @@ namespace FF8
             if (listBox1.Items.Count == 0 || listBox1.SelectedItem == null)
                 return;
             string[] parentDividor = (listBox1.SelectedItem as string).Split(':');
-            var field = Extended.DebuggerFood[int.Parse(parentDividor[0])];
+            var field = MakiExtended.DebuggerFood[int.Parse(parentDividor[0])];
             TypeBeautizer(field);
 
         }
@@ -66,9 +66,9 @@ namespace FF8
             }
             catch //selected type is not accesible due to non-static modifier
             {
-                for(int i = 0;i<Extended.DebuggerInstanceProvider.Count; i++)
+                for(int i = 0;i<MakiExtended.DebuggerInstanceProvider.Count; i++)
                 {
-                    try { value = field.GetValue(Extended.DebuggerInstanceProvider[i]); if (value != null) { instanceProvider = Extended.DebuggerInstanceProvider[i]; break; } }
+                    try { value = field.GetValue(MakiExtended.DebuggerInstanceProvider[i]); if (value != null) { instanceProvider = MakiExtended.DebuggerInstanceProvider[i]; break; } }
                     catch { continue; }
                 }
             }

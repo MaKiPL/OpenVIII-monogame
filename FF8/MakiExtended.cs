@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace FF8
 {
     //Class that provides language extensions made by Maki
-    static class Extended
+    static class MakiExtended
     {
         //https://stackoverflow.com/a/2887/4509036
         public static T ByteArrayToStructure<T>(byte[] bytes) where T : struct

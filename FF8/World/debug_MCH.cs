@@ -128,7 +128,7 @@ namespace FF8
 
             bones = new Bone[cSkeletonBones];
             for (int i = 0; i < cSkeletonBones; i++)
-                bones[i] = Extended.ByteArrayToStructure<Bone>(br.ReadBytes(64));
+                bones[i] = MakiExtended.ByteArrayToStructure<Bone>(br.ReadBytes(64));
 
             return;
         }
@@ -144,7 +144,7 @@ namespace FF8
             ms.Seek(pBase + pFaces, SeekOrigin.Begin);
             List<Face> face = new List<Face>();
             for(int i = 0; i<cFaces; i++)
-                face.Add(Extended.ByteArrayToStructure<Face>(br.ReadBytes(64)));
+                face.Add(MakiExtended.ByteArrayToStructure<Face>(br.ReadBytes(64)));
             faces = face.ToArray();
             return;
         }
