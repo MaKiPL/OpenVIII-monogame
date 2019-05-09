@@ -66,30 +66,33 @@ namespace FF8
 
         #region Methods
 
-        private static Tuple<Rectangle, Point, Rectangle> DrawBox(Rectangle dst, FF8String buffer = null, Icons.ID? title = null, bool indent = true, bool bottom = false, Vector2? textScale = null, Vector2? boxScale = null)
+        private static Tuple<Rectangle, Point, Rectangle> DrawBox(Rectangle dst, FF8String buffer = null, Icons.ID? title = null, bool indent = true, bool bottom = false, Vector2? textScale = null, Vector2? boxScale = null, bool skipdraw = false)
         {
             if (textScale == null) textScale = Vector2.One;
             if (boxScale == null) boxScale = Vector2.One;
-            Point cursor = new Point(0);
+            Point cursor = Point.Zero;
             dst.Size = (dst.Size.ToVector2()).ToPoint();
             dst.Location = (dst.Location.ToVector2()).ToPoint();
             Vector2 bgscale = new Vector2(2f) * textScale.Value;
             Rectangle box = dst.Scale(boxScale.Value);
             Rectangle backup = dst;
-            if (dst.Width > 256 * bgscale.X)
-                Memory.Icons.Draw(Icons.ID.Menu_BG_368, 0, box, bgscale, Fade);
-            else
-                Memory.Icons.Draw(Icons.ID.Menu_BG_256, 0, box, bgscale, Fade);
             Rectangle hotspot = new Rectangle(dst.Location, dst.Size);
-            if (title != null)
-            {
-                //dst.Size = (Memory.Icons[title.Value].GetRectangle.Size.ToVector2()  * 2.823317308f).ToPoint();
-                dst.Offset(15, 0);
-                dst.Y = (int)(dst.Y * boxScale.Value.Y);
-                Memory.Icons.Draw(title.Value, 2, dst, (bgscale + new Vector2(.5f)), fade);
-            }
             Rectangle font = new Rectangle();
-            dst = backup;
+            if (!skipdraw)
+            {
+                if (dst.Width > 256 * bgscale.X)
+                    Memory.Icons.Draw(Icons.ID.Menu_BG_368, 0, box, bgscale, Fade);
+                else
+                    Memory.Icons.Draw(Icons.ID.Menu_BG_256, 0, box, bgscale, Fade);
+                if (title != null)
+                {
+                    //dst.Size = (Memory.Icons[title.Value].GetRectangle.Size.ToVector2()  * 2.823317308f).ToPoint();
+                    dst.Offset(15, 0);
+                    dst.Y = (int)(dst.Y * boxScale.Value.Y);
+                    Memory.Icons.Draw(title.Value, 2, dst, (bgscale + new Vector2(.5f)), fade);
+                }
+                dst = backup;
+            }
             if (buffer != null && buffer.Length > 0)
             {
                 if (indent)
@@ -103,9 +106,9 @@ namespace FF8
                     dst.Offset(0, 21);
 
                 dst.Y = (int)(dst.Y * boxScale.Value.Y);
-                font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), new Vector2(2.545454545f, 3.0375f) * textScale.Value, Fade: fade);
+                font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: fade,skipdraw: skipdraw);
                 cursor = dst.Location;
-                cursor.Y += (int)(18.225f); // 12 * (3.0375/2)
+                cursor.Y += (int)(TextScale.Y*6); // 12 * (3.0375/2)
             }
             return new Tuple<Rectangle, Point, Rectangle>(hotspot, cursor, font);
         }

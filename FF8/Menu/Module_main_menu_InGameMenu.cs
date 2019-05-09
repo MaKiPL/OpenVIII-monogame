@@ -85,27 +85,9 @@ namespace FF8
                 IGM_Party_Size[i] = new Rectangle { Width = 580, Height = 78, X = 20, Y = 84 + 78 * i };
 
             IGM_NonPartyBox_Size = new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 };
-            IGM_NonParty_Size = new Rectangle[6];
-            int row = 0, col = 0;
-            for (int i = 0; i < IGM_NonParty_Size.Length; i++)
-            {
-                int width = IGM_NonPartyBox_Size.Width / 2;
-                int height = IGM_NonPartyBox_Size.Height / 3;
-                row = i / 2;
-                col = i % 2;
-                IGM_NonParty_Size[i] = new Rectangle
-                {
-                    Width = width,
-                    Height = height,
-                    X = IGM_NonPartyBox_Size.X + col * width,
-                    Y = IGM_NonPartyBox_Size.Y + row * height
-                };
-                IGM_NonParty_Size[i].Inflate(-26, -8);
-                if (i > 1) IGM_NonParty_Size[i].Y -= 8;
-            }
 
             Init_IGMClockBox();
-
+            Init_NonPartyStatus();
             UpdateInGameMenu();
         }
 
@@ -122,6 +104,7 @@ namespace FF8
             IGM_Footer_Text = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Memory.State.LocationID).ReplaceRegion();
             IGM_Header_Text = strHeaderText[IGM_choSideBar];
             Update_IGMClockBox();
+            Update_NonPartyStatus();
             UpdateInGameMenuInput();
         }
 
@@ -269,6 +252,7 @@ namespace FF8
 
         private static Rectangle[] IGM_Clock_DIMs;
         private static object[] IGM_Clock_Vals;
+
         private static void Init_IGMClockBox()
         {
             IGM_Clock_Size = new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 };
@@ -292,6 +276,7 @@ namespace FF8
             IGM_Clock_Vals[7] = Icons.ID.G;
             IGM_Clock_DIMs[7] = r;
         }
+
         private static void Update_IGMClockBox()
         {
             int num;
@@ -305,14 +290,12 @@ namespace FF8
             IGM_Clock_Vals[1] = num;
             IGM_Clock_DIMs[1] = r;
 
-
             r = IGM_Clock_Size;
             num = num >= 99 ? 99 : Memory.State.timeplayed.Minutes;
             spaces = 0;
             r.Offset(165 + spaces * 20, 14);
             IGM_Clock_Vals[3] = num;
             IGM_Clock_DIMs[3] = r;
-
 
             r = IGM_Clock_Size;
             num = Memory.State.Fieldvars.SeedRankPts / 100;
@@ -328,7 +311,6 @@ namespace FF8
             r.Offset(25 + spaces * 20, 81);
             IGM_Clock_Vals[6] = num;
             IGM_Clock_DIMs[6] = r;
-
         }
 
         private static void Draw_IGM_ClockBox()
@@ -358,7 +340,7 @@ namespace FF8
             for (byte i = 0; i <= (byte)Faces.ID.Edea_Kramer && IGM_NonParty_Size != null && pos < IGM_NonParty_Size.Length; i++)
             {
                 if (!Memory.State.Party.Contains((Saves.Characters)i) && Memory.State.Characters[i].Exists != 0 && Memory.State.Characters[i].Exists != 6)//15,9,7,4 shows on menu, 0 locked, 6 hidden
-                    Draw_NonPartyStatus(pos++, (Saves.Characters)i);
+                    Draw_NonPartyStatus(pos++);
             }
         }
 
@@ -405,59 +387,164 @@ namespace FF8
             }
         }
 
-        private static void Draw_NonPartyStatus(sbyte pos, Saves.Characters character)
+        private static void Update_IGM_PartyStatus_Box(sbyte pos, Saves.Characters character)
+        {
+            if (IGM_NonParty_Size != null)
+            {
+                if (character != Saves.Characters.Blank)
+                {
+                    Tuple<Rectangle, Point, Rectangle> dims = DrawBox(IGM_Party_Size[pos], Memory.Strings.GetName((Faces.ID)character), Icons.ID.STATUS, indent: false);
+                    Rectangle r = dims.Item3;
+                    float yoff = 6;
+                    r = dims.Item3;
+                    r.Offset(184, yoff);
+                    Memory.Icons.Draw(Icons.ID.Lv, 13, r, TextScale, fade);
+                    r = dims.Item3;
+                    int lvl = Memory.State.Characters[(int)character].Level;
+                    int spaces = 3 - lvl.ToString().Length;
+                    r.Offset((229 + spaces * 20), yoff);
+                    Memory.Icons.Draw(lvl, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
+                    r = dims.Item3;
+                    r.Offset(304, yoff);
+                    Memory.Icons.Draw(Icons.ID.HP2, 13, r, TextScale, fade);
+                    r = dims.Item3;
+                    lvl = Memory.State.Characters[(int)character].CurrentHP;
+                    spaces = 4 - lvl.ToString().Length;
+                    r.Offset((354 + spaces * 20), yoff);
+                    Memory.Icons.Draw(lvl, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
+                    r = dims.Item3;
+                    r.Offset(437, yoff);
+                    Memory.Icons.Draw(Icons.ID.Slash_Forward, 13, r, TextScale, fade);
+                    r = dims.Item3;
+
+                    lvl = Memory.State.Party[0] == character ||
+                        Memory.State.Party[1] == character && Memory.State.Party[0] == Saves.Characters.Blank ||
+                        Memory.State.Party[2] == character && Memory.State.Party[0] == Saves.Characters.Blank && Memory.State.Party[1] == Saves.Characters.Blank
+                        ? Memory.State.firstcharactersmaxHP : 0;
+                    spaces = 4 - lvl.ToString().Length;
+                    r.Offset((459 + spaces * 20), yoff);
+                    Memory.Icons.Draw(lvl, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
+                }
+                else
+                    DrawBox(IGM_Party_Size[pos]);
+            }
+        }
+
+        private static Rectangle[,] Update_NonPartyStatus_POS;
+        private static Point[] Update_NonPartyStatus_CURSOR;
+        private static object[,] Update_NonPartyStatus_DATA;
+
+        private static void Init_NonPartyStatus()
+        {
+            IGM_NonParty_Size = new Rectangle[6];
+            Update_NonPartyStatus_POS = new Rectangle[IGM_NonParty_Size.Length, 7];
+            Update_NonPartyStatus_DATA = new object[IGM_NonParty_Size.Length, 7];
+            Update_NonPartyStatus_CURSOR = new Point[IGM_NonParty_Size.Length];
+        }
+
+        private static void Update_NonPartyStatus()
+        {
+            int row = 0, col = 0;
+            for (int i = 0; i < IGM_NonParty_Size.Length; i++)
+            {
+                int width = IGM_NonPartyBox_Size.Width / 2;
+                int height = IGM_NonPartyBox_Size.Height / 3;
+                row = i / 2;
+                col = i % 2;
+                IGM_NonParty_Size[i] = new Rectangle
+                {
+                    Width = width,
+                    Height = height,
+                    X = IGM_NonPartyBox_Size.X + col * width,
+                    Y = IGM_NonPartyBox_Size.Y + row * height
+                };
+                IGM_NonParty_Size[i].Inflate(-26, -8);
+                if (i > 1) IGM_NonParty_Size[i].Y -= 8;
+            }
+            sbyte pos = 0;
+            for (byte i = 0; Memory.State.Party != null && i <= (byte)Faces.ID.Edea_Kramer && IGM_NonParty_Size != null && pos < IGM_NonParty_Size.Length; i++)
+            {
+                if (!Memory.State.Party.Contains((Saves.Characters)i) && Memory.State.Characters[i].Exists != 0 && Memory.State.Characters[i].Exists != 6)//15,9,7,4 shows on menu, 0 locked, 6 hidden
+                    Update_NonPartyStatus(pos++, (Saves.Characters)i);
+            }
+        }
+
+        private static void Update_NonPartyStatus(sbyte pos, Saves.Characters character)
+        {
+            float yoff = 39;
+            int num = 0;
+            int spaces = 0;
+            Rectangle rbak = IGM_NonParty_Size[pos];
+
+            Update_NonPartyStatus_POS[pos, 0] = rbak;
+            Update_NonPartyStatus_DATA[pos, 0] = Memory.Strings.GetName((Faces.ID)character);
+            Update_NonPartyStatus_CURSOR[pos] = new Point(0, (int)(rbak.Y + (3 * TextScale.Y)));
+
+            Rectangle r = rbak;
+            r.Offset(7, yoff);
+            Update_NonPartyStatus_POS[pos, 1] = r;
+            Update_NonPartyStatus_DATA[pos, 1] = Icons.ID.Lv;
+
+            r = rbak;
+            num = Memory.State.Characters[(int)character].Level;
+            spaces = 3 - num.ToString().Length;
+            r.Offset((49 + spaces * 20), yoff);
+            Update_NonPartyStatus_POS[pos, 2] = r;
+            Update_NonPartyStatus_DATA[pos, 2] = num;
+
+            r = rbak;
+            r.Offset(126, yoff);
+            Update_NonPartyStatus_POS[pos, 3] = r;
+            Update_NonPartyStatus_DATA[pos, 3] = Icons.ID.HP2;
+
+            r.Offset(0, 28);
+            r.Width = 118;
+            r.Height = 1;
+            Update_NonPartyStatus_POS[pos, 4] = r;
+            Update_NonPartyStatus_DATA[pos, 4] = SimpleTexture;
+
+            r.Offset(0, 2);
+            Update_NonPartyStatus_POS[pos, 5] = r;
+            Update_NonPartyStatus_DATA[pos, 5] = SimpleTexture;
+
+            r = rbak;
+            num = Memory.State.Characters[(int)character].CurrentHP;
+            spaces = 4 - num.ToString().Length;
+            r.Offset((166 + spaces * 20), yoff);
+            Update_NonPartyStatus_POS[pos, 6] = r;
+            Update_NonPartyStatus_DATA[pos, 6] = num;
+        }
+
+        private static void Draw_NonPartyStatus(sbyte pos)
         {
             if (IGM_NonParty_Size != null && pos < IGM_NonParty_Size.Length)
             {
-                Rectangle r = Memory.font.RenderBasicText(Memory.Strings.GetName((Faces.ID)character), IGM_NonParty_Size[pos].Location, TextScale, Fade: fade, lineSpacing: 1);
-                Rectangle rbak = r;
-                float yoff = 39;
-                r.Offset(7, yoff);
-                Memory.Icons.Draw(Icons.ID.Lv, 13, r, TextScale, fade);
-                r = rbak;
-                int lvl = Memory.State.Characters[(int)character].Level;
-                int spaces = 3 - lvl.ToString().Length;
-                r.Offset((49 + spaces * 20), yoff);
-                Memory.Icons.Draw(lvl, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
-                r = rbak;
-                r.Offset(126, yoff);
-                Memory.Icons.Draw(Icons.ID.HP2, 13, r, TextScale, fade);
-                r.Offset(0, 28);
-                r.Width = 118;
-                r.Height = 1;
+                int i = 0;
                 Color color = new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, fade * .9f);
-                Memory.spriteBatch.Draw(SimpleTexture, r, null, color);
-                r.Offset(0, 2);
-                Memory.spriteBatch.Draw(SimpleTexture, r, null, color);
-                //r = rbak;
-                //r.Offset(126, yoff -10);
-                ////r.Width = (int)(118*scale.X);
-                ////r.Height = (int)8;
-                //Memory.Icons.Draw(Icons.ID.Underline, 5, r, TextScale, fade);
-                r = rbak;
-                lvl = Memory.State.Characters[(int)character].CurrentHP;
-                spaces = 4 - lvl.ToString().Length;
-                r.Offset((166 + spaces * 20), yoff);
-                Memory.Icons.Draw(lvl, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
+
+                Memory.font.RenderBasicText((FF8String)Update_NonPartyStatus_DATA[pos, i], Update_NonPartyStatus_POS[pos, i++].Location, TextScale, Fade: fade);//0
+                Memory.Icons.Draw((Icons.ID)Update_NonPartyStatus_DATA[pos, i], 13, Update_NonPartyStatus_POS[pos, i++], TextScale, fade);//1
+                Memory.Icons.Draw((int)Update_NonPartyStatus_DATA[pos, i], 0, 2, "D1", Update_NonPartyStatus_POS[pos, i++].Location.ToVector2(), TextScale, fade);//2
+                Memory.Icons.Draw((Icons.ID)Update_NonPartyStatus_DATA[pos, i], 13, Update_NonPartyStatus_POS[pos, i++], TextScale, fade);//3
+                Memory.spriteBatch.Draw((Texture2D)Update_NonPartyStatus_DATA[pos, i], Update_NonPartyStatus_POS[pos, i++], null, color);//4
+                Memory.spriteBatch.Draw((Texture2D)Update_NonPartyStatus_DATA[pos, i], Update_NonPartyStatus_POS[pos, i++], null, color);//5
+                Memory.Icons.Draw((int)Update_NonPartyStatus_DATA[pos, i], 0, 2, "D1", Update_NonPartyStatus_POS[pos, i++].Location.ToVector2(), TextScale, fade);//6
             }
         }
-    }
-}
 
-namespace FF8
-{
-    public enum IGMItems
-    {
-        Junction,
-        Item,
-        Magic,
-        Status,
-        GF,
-        Ability,
-        Switch,
-        Card,
-        Config,
-        Tutorial,
-        Save
+        public enum IGMItems
+        {
+            Junction,
+            Item,
+            Magic,
+            Status,
+            GF,
+            Ability,
+            Switch,
+            Card,
+            Config,
+            Tutorial,
+            Save
+        }
     }
 }
