@@ -1,141 +1,10 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 
 namespace FF8
 {
-    /// <summary>
-    /// class to add function to dictionary
-    /// </summary>
-    /// <see cref="https://stackoverflow.com/questions/22595655/how-to-do-a-dictionary-reverse-lookup"/>
-    public static class DictionaryEx
-    {
-        #region Methods
-
-        /// <summary>
-        /// Reverses Key and Value of dictionary.
-        /// </summary>
-        /// <typeparam name="TKey"></typeparam>
-        /// <typeparam name="TValue"></typeparam>
-        /// <param name="source"></param>
-        /// <returns></returns>
-        public static Dictionary<TValue, TKey> Reverse<TKey, TValue>(this IDictionary<TKey, TValue> source)
-        {
-            Dictionary<TValue, TKey> dictionary = new Dictionary<TValue, TKey>();
-            foreach (KeyValuePair<TKey, TValue> entry in source)
-            {
-                if (!dictionary.ContainsKey(entry.Value))
-                    dictionary.Add(entry.Value, entry.Key);
-            }
-            return dictionary;
-        }
-
-        #endregion Methods
-    }
-
-    /// <summary>
-    /// This holds the encoded bytes and provides implict casts to string and byte[]
-    /// </summary>
-    public class FF8String : IEnumerator, IEnumerable
-    {
-        #region Fields
-
-        private byte[] value;
-        private int position = 0;
-
-        #endregion Fields
-
-        #region Constructors
-
-        public FF8String()
-        {
-        }
-
-        public FF8String(byte[] @value) => Value = @value;
-
-        public FF8String(string @value) => Value = Memory.DirtyEncoding.GetBytes(@value);
-
-        #endregion Constructors
-
-        #region Properties
-
-        public byte[] Value { get => value; set => this.value = value; }
-        public string Value_str => ToString();
-        public int Length => value==null? 0:value.Length;
-        public object Current { get => Value[position-1] ; }
-
-        #endregion Properties
-
-        #region Indexers
-
-        public byte this[int index] => value[index];
-
-        #endregion Indexers
-
-        #region Methods
-
-        public static implicit operator byte[] (FF8String input) => input?.Value;
-
-        public static implicit operator FF8String(string input) => new FF8String(input);
-
-        public static implicit operator FF8String(byte[] input) => new FF8String(input);
-
-        public static implicit operator string(FF8String input) => input?.ToString();
-
-        public override string ToString() => Memory.DirtyEncoding.GetString(Value);
-
-        public bool MoveNext() => ++position <= Length;
-        public void Reset() => position = 0;
-        public IEnumerator GetEnumerator() => this;
-        public FF8String Append(FF8String end)
-        {
-            if (end != null && end.Length > 0)
-            {
-                Array.Resize(ref value, Length + end.Length);
-                Array.Copy(end, 0, value, Length, end.Length);
-            }
-            return this;
-        }
-
-        public static FF8String Combine(FF8String start,FF8String end)
-        {
-            if (end != null && end.Length > 0)
-            {
-                byte[] combine = new byte[start.Length + end.Length];
-                Array.Copy(start, 0, combine, 0, start.Length);
-                Array.Copy(end, 0, combine, start.Length, end.Length);
-                return combine;
-            }
-            else
-            return start;
-        }
-        public FF8String ReplaceRegion()
-        {
-            int i = 0;
-            do
-            {
-                i = Array.FindIndex(value, i, Length - i, x => x == 0x0E);
-                if (i >= 0)
-                {
-                    byte id = (byte)(value[i + 1] - 0x20);
-                    //byte[] start = value.Take(i).ToArray();
-                    byte[] newdata = Memory.Strings.Read(Strings.FileID.NAMEDIC, 0, id);
-                    byte[] end = value.Skip(2 + i).ToArray();
-
-                    Array.Resize(ref value, Length + newdata.Length - 2);
-                    Array.Copy(newdata,0,value,i,newdata.Length);
-                    Array.Copy(end, 0, value, i+newdata.Length, end.Length);
-                    i+=newdata.Length;
-                }
-            }
-            while (i >= 0&& i < Length);
-            return this;
-        }
-        #endregion Methods
-    }
 
     /// <summary>
     /// Goal is to improve conversion from FF8 byte[] to string and back. possible 0 to 4 ratio on
@@ -422,15 +291,23 @@ namespace FF8
             {0xFF, "ag"},// pos:223, col:0, row:0 --
         };
 
-        public static readonly Dictionary<char, byte> ChartoByte = BytetoChar.Reverse();
-        public static readonly Dictionary<string, byte> StrtoByte = BytetoStr.Reverse();
+        public static Dictionary<char, byte> ChartoByte;
+        public static Dictionary<string, byte> StrtoByte;
 
         #endregion Fields
 
         #region Constructors
 
+
         public DirtyEncoding()
         {
+            ChartoByte = BytetoChar.Reverse();
+            StrtoByte = BytetoStr.Reverse();
+            if (!ChartoByte.ContainsKey('{'))
+            ChartoByte.Add('{',0xB2);
+            if (!ChartoByte.ContainsKey('}'))
+            ChartoByte.Add('}',0xB3);
+
             //reverse key and value pairs for dictionarys for the reverse lookup
             SpecialCharacters = new byte[256 - BytetoChar.Count() - BytetoStr.Count];
             int i = 0;
@@ -472,7 +349,7 @@ namespace FF8
                 //So why not just only do SCB
                 foreach (char c in s)
                 {
-                    byte b = ChartoByte.ContainsKey(c) ? ChartoByte[c] : byte.Parse(c.ToString());
+                    byte b = ChartoByte.ContainsKey(c) ? ChartoByte[c] : (byte)(c);
                     bw.Write(b);
                 }
                 return ms.ToArray();

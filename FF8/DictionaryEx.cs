@@ -1,0 +1,33 @@
+﻿using System.Collections.Generic;
+
+namespace FF8
+{
+    /// <summary>
+    /// class to add function to dictionary
+    /// </summary>
+    /// <see cref="https://stackoverflow.com/questions/22595655/how-to-do-a-dictionary-reverse-lookup"/>
+    public static class DictionaryEx
+    {
+        #region Methods
+
+        /// <summary>
+        /// Reverses Key and Value of dictionary.
+        /// </summary>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static Dictionary<TValue, TKey> Reverse<TKey, TValue>(this IDictionary<TKey, TValue> source)
+        {
+            Dictionary<TValue, TKey> dictionary = new Dictionary<TValue, TKey>();
+            foreach (KeyValuePair<TKey, TValue> entry in source)
+            {
+                if (!dictionary.ContainsKey(entry.Value))
+                    dictionary.Add(entry.Value, entry.Key);
+            }
+            return dictionary;
+        }
+
+        #endregion Methods
+    }
+}
