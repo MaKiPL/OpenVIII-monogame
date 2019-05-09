@@ -566,11 +566,11 @@ namespace FF8
             DrawLGSGLoadBar();
         }
 
-        private static void DrawPointer(Point cursor, sbyte xoffset = -10)
+        private static void DrawPointer(Point cursor, sbyte xoffset = -10,bool blink = false)
         {
             Rectangle dst = new Rectangle(cursor, new Point(24 * 2, 16 * 2));
             dst.Offset(-(dst.Width) + xoffset, -(dst.Height * .25f));
-            Memory.Icons.Draw(Icons.ID.Finger_Right, 2, dst, new Vector2(2f), fade);
+            Memory.Icons.Draw(Icons.ID.Finger_Right, 2, dst, new Vector2(2f), blink?fade*s_blink:fade);
         }
 
         private static void DrawSGCheckSlot() => DrawLGSGCheckSlot(strLoadScreen[Litems.Save].Text);

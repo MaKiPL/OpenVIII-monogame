@@ -21,8 +21,9 @@ namespace FF8
         private static Matrix IGM_focus;
         private static FF8String IGM_Footer_Text;
         private static FF8String IGM_Header_Text;
-        private static IGMItems choSideBar;
+        private static IGMItems IGM_choSideBar;
         private static Texture2D SimpleTexture;
+        private static IGMMode IGM_mode;
 
         private static void Init_InGameMenu()
         {
@@ -56,19 +57,18 @@ namespace FF8
             };
 
             SimpleTexture = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
-            var color = new Color[] { new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, fade) };
+            Color[] color = new Color[] { new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, fade) };
             SimpleTexture.SetData<Color>(color, 0, SimpleTexture.Width * SimpleTexture.Height);
         }
 
         private static void UpdateInGameMenu()
         {
             IGM_Size = new Vector2 { X = 843, Y = 630 };
-            Vector2 Zoom = Memory.Scale(IGM_Size.X,IGM_Size.Y,Memory.ScaleMode.FitBoth);
-            
-            IGM_focus = Matrix.CreateTranslation((IGM_Size.X / -2), (IGM_Size.Y / -2), 0) * 
-                Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) * 
-                Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
+            Vector2 Zoom = Memory.Scale(IGM_Size.X, IGM_Size.Y, Memory.ScaleMode.FitBoth);
 
+            IGM_focus = Matrix.CreateTranslation((IGM_Size.X / -2), (IGM_Size.Y / -2), 0) *
+                Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) *
+                Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
             IGM_Header_Size = new Rectangle { Width = 610, Height = 75 };
             IGM_Footer_Size = new Rectangle { Width = 610, Height = 75, Y = 630 - 75 };
             IGM_Clock_Size = new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 };
@@ -84,7 +84,7 @@ namespace FF8
                     X = IGM_SideBox_Size.X,
                     Y = IGM_SideBox_Size.Y + (IGM_SideBox_Size.Height / strSideBar.Count()) * i,
                 };
-                r.Inflate(-26 , -12 );
+                r.Inflate(-26, -12);
                 l.Loc = r;
                 l.Point = new Point(l.Loc.X, l.Loc.Center.Y);
                 strSideBar[(IGMItems)i] = l;
@@ -109,13 +109,14 @@ namespace FF8
                     X = IGM_NonPartyBox_Size.X + col * width,
                     Y = IGM_NonPartyBox_Size.Y + row * height
                 };
-                IGM_NonParty_Size[i].Inflate(-26 , -12 );
+                IGM_NonParty_Size[i].Inflate(-26, -12);
             }
 
             IGM_Footer_Text = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Memory.State.LocationID).ReplaceRegion();
-            IGM_Header_Text = strHeaderText[choSideBar];
+            IGM_Header_Text = strHeaderText[IGM_choSideBar];
 
             TextScale = new Vector2(2.545455f, 3.0375f);
+            Update_IGMClockBox();
             UpdateInGameMenuInput();
         }
 
@@ -124,73 +125,125 @@ namespace FF8
             bool ret = false;
             ml = Input.MouseLocation.Transform(IGM_focus);
 
-            if (strSideBar != null && strSideBar.Count > 0)
+            if (IGM_mode == IGMMode.ChooseItem)
             {
-                foreach (KeyValuePair<Enum, Item> item in strSideBar)
+                if (strSideBar != null && strSideBar.Count > 0)
                 {
-                    Rectangle r = item.Value.Loc;
-                    //r.Offset(IGM_focus.Translation.X, IGM_focus.Translation.Y);
-                    if (r.Contains(ml))
+                    foreach (KeyValuePair<Enum, Item> item in strSideBar)
                     {
-                        choSideBar = (IGMItems)item.Key;
-                        ret = true;
-
-                        if (Input.Button(Buttons.MouseWheelup) || Input.Button(Buttons.MouseWheeldown))
+                        Rectangle r = item.Value.Loc;
+                        //r.Offset(IGM_focus.Translation.X, IGM_focus.Translation.Y);
+                        if (r.Contains(ml))
                         {
-                            return ret;
+                            IGM_choSideBar = (IGMItems)item.Key;
+                            ret = true;
+
+                            if (Input.Button(Buttons.MouseWheelup) || Input.Button(Buttons.MouseWheeldown))
+                            {
+                                return ret;
+                            }
+                            break;
                         }
-                        break;
+                    }
+
+                    if (Input.Button(Buttons.Down))
+                    {
+                        Input.ResetInputLimit();
+                        init_debugger_Audio.PlaySound(0);
+                        if (++IGM_choSideBar > Enum.GetValues(typeof(IGMItems)).Cast<IGMItems>().Max())
+                            IGM_choSideBar = Enum.GetValues(typeof(IGMItems)).Cast<IGMItems>().Min();
+                        ret = true;
+                    }
+                    else if (Input.Button(Buttons.Up))
+                    {
+                        Input.ResetInputLimit();
+                        init_debugger_Audio.PlaySound(0);
+                        if (--IGM_choSideBar < 0)
+                            IGM_choSideBar = Enum.GetValues(typeof(IGMItems)).Cast<IGMItems>().Max();
+                        ret = true;
+                    }
+                    else if (Input.Button(Buttons.Cancel))
+                    {
+                        Input.ResetInputLimit();
+                        init_debugger_Audio.PlaySound(8);
+                        Fade = 0.0f;
+                        State = MainMenuStates.LoadGameChooseGame;
+                        ret = true;
+                    }
+                    else if (Input.Button(Buttons.Okay))
+                    {
+                        Input.ResetInputLimit();
+                        init_debugger_Audio.PlaySound(0);
+                        ret = true;
+                        switch (IGM_choSideBar)
+                        {
+                            //Select Char Mode
+                            case IGMItems.Junction:
+                            case IGMItems.Magic:
+                            case IGMItems.Status:
+                                IGM_mode = IGMMode.ChooseChar;
+                                break;
+                        }
                     }
                 }
-
-                if (Input.Button(Buttons.Down))
+            }
+            else if (IGM_mode == IGMMode.ChooseChar)
+            {
+                if (Input.Button(Buttons.Cancel))
                 {
                     Input.ResetInputLimit();
-                    init_debugger_Audio.PlaySound(0);
-                    if (++choSideBar > Enum.GetValues(typeof(IGMItems)).Cast<IGMItems>().Max())
-                        choSideBar = Enum.GetValues(typeof(IGMItems)).Cast<IGMItems>().Min();
                     ret = true;
-                }
-                else if (Input.Button(Buttons.Up))
-                {
-                    Input.ResetInputLimit();
-                    init_debugger_Audio.PlaySound(0);
-                    if (--choSideBar < 0)
-                        choSideBar = Enum.GetValues(typeof(IGMItems)).Cast<IGMItems>().Max();
-                    ret = true;
-                }
-                else if (Input.Button(Buttons.Cancel))
-                {
-                    Input.ResetInputLimit();
                     init_debugger_Audio.PlaySound(8);
-                    init_debugger_Audio.StopMusic();
-                    Dchoose = 0;
-                    Fade = 0.0f;
-                    State = MainMenuStates.LoadGameChooseGame;
-                    ret = true;
-                }
-                else if (Input.Button(Buttons.Okay))
-                {
-                    //PercentLoaded = 0f;
-                    ////State = MainMenuStates.LoadGameCheckingSlot;
-                    //State = MainMenuStates.LoadGameLoading;
+                    IGM_mode = IGMMode.ChooseItem;
                 }
             }
             return ret;
+        }
+
+        private enum IGMMode
+        {
+            ChooseItem,
+            ChooseChar,
+            Junction,
+            Item,
+            Magic,
+            Status,
+            GF,
+            Ability,
+            Switch,
+            Card,
+            Config,
+            Tutorial,
+            Save
         }
 
         private static void DrawInGameMenu()
         {
             Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: IGM_focus);
 
-            Draw_IGM_Header();
-            Draw_IGM_SideBar();
-            Draw_IGM_ClockBox();
-            Draw_IGM_FooterBox();
-            Draw_IGM_NonPartyBox();
-            Draw_IGM_PartyStatus_Boxes();
-            DrawPointer(strSideBar[choSideBar].Point);
+            switch (IGM_mode)
+            {
+                case IGMMode.ChooseChar:
+                case IGMMode.ChooseItem:
+                default:
+                    Draw_IGM_Header();
+                    Draw_IGM_SideBar();
+                    Draw_IGM_ClockBox();
+                    Draw_IGM_FooterBox();
+                    Draw_IGM_NonPartyBox();
+                    Draw_IGM_PartyStatus_Boxes();
+                    break;
+            }
+            switch (IGM_mode)
+            {
+                case IGMMode.ChooseChar:
+                    DrawPointer(strSideBar[IGM_choSideBar].Point, blink: true);
+                    break;
 
+                default:
+                    DrawPointer(strSideBar[IGM_choSideBar].Point);
+                    break;
+            }
             Memory.SpriteBatchEnd();
         }
 
@@ -209,42 +262,77 @@ namespace FF8
                 Memory.font.RenderBasicText(strSideBar[(IGMItems)i], strSideBar[(IGMItems)i].Loc.Location, TextScale, Fade: fade, lineSpacing: 1);
         }
 
-        private static void Draw_IGM_ClockBox()
+        private static Rectangle[] IGM_Clock_DIMs;
+
+        private static void Update_IGMClockBox()
         {
-            var d = DrawBox(IGM_Clock_Size);
-            var r = d.Item1;
+            int i = 0;
+            int num;
+            int spaces;
+            Rectangle r;
+            if (IGM_Clock_DIMs == null || IGM_Clock_DIMs.Length == 0)
+            {
+                IGM_Clock_DIMs = new Rectangle[8];
+            }
+
+            r = IGM_Clock_Size;
             r.Offset(25, 14);
-            Memory.Icons.Draw(Icons.ID.PLAY, 13, r, TextScale, fade);
-            r = d.Item1;
-            var num = (int)(Memory.State.timeplayed.TotalHours);
-            var spaces = 2-(num).ToString().Length;
-            r.Offset(105 + spaces*20, 14);
-            Memory.Icons.Draw(num,0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
-            r = d.Item1;
+            IGM_Clock_DIMs[i++] = r;
+
+            r = IGM_Clock_Size;
+            num = (int)(Memory.State.timeplayed.TotalHours);
+            spaces = 2 - (num).ToString().Length;
+            r.Offset(105 + spaces * 20, 14);
+            IGM_Clock_DIMs[i++] = r;
+
+            r = IGM_Clock_Size;
             r.Offset(145, 14);
-            Memory.Icons.Draw(Icons.ID.Colon, 13, r, TextScale, fade);
-            Memory.Icons.Draw(Icons.ID.Colon, 2, r, TextScale, fade*blink*.5f);
-            r = d.Item1;
-            num = (int)(Memory.State.timeplayed.Minutes);
+            IGM_Clock_DIMs[i++] = r;
+
+            r = IGM_Clock_Size;
+            num = Memory.State.timeplayed.Minutes;
             spaces = 0;
             r.Offset(165 + spaces * 20, 14);
-            Memory.Icons.Draw(num, 0, 2, "D2", r.Location.ToVector2(), TextScale, fade);
-            r = d.Item1;
+            IGM_Clock_DIMs[i++] = r;
+
+            r = IGM_Clock_Size;
             r.Offset(25, 48);
-            Memory.Icons.Draw(Icons.ID.SeeD, 13, r, TextScale, fade);
-            r = d.Item1;
-            num = (int)(Memory.State.Fieldvars.SeedRankPts/100);
+            IGM_Clock_DIMs[i++] = r;
+
+            r = IGM_Clock_Size;
+            num = Memory.State.Fieldvars.SeedRankPts / 100;
             spaces = 5 - (num).ToString().Length;
             r.Offset(105 + spaces * 20, 48);
-            Memory.Icons.Draw(num, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
-            r = d.Item1;
+            IGM_Clock_DIMs[i++] = r;
+
+            r = IGM_Clock_Size;
             num = (int)(Memory.State.AmountofGil);
             spaces = 8 - (num).ToString().Length;
             r.Offset(25 + spaces * 20, 81);
-            Memory.Icons.Draw(num, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
-            r = d.Item1;
+            IGM_Clock_DIMs[i++] = r;
+
+            r = IGM_Clock_Size;
             r.Offset(185, 81);
-            Memory.Icons.Draw(Icons.ID.G, 2, r, TextScale, fade);
+            IGM_Clock_DIMs[i++] = r;
+        }
+
+        private static void Draw_IGM_ClockBox()
+        {
+            int i = 0;
+            Tuple<Rectangle, Point, Rectangle> d = DrawBox(IGM_Clock_Size);
+            Memory.Icons.Draw(Icons.ID.PLAY, 13, IGM_Clock_DIMs[i++], TextScale, fade);
+            int num = (int)(Memory.State.timeplayed.TotalHours);
+            Memory.Icons.Draw(num, 0, 2, "D1", IGM_Clock_DIMs[i++].Location.ToVector2(), TextScale, fade);
+            Memory.Icons.Draw(Icons.ID.Colon, 13, IGM_Clock_DIMs[i], TextScale, fade);
+            Memory.Icons.Draw(Icons.ID.Colon, 2, IGM_Clock_DIMs[i++], TextScale, fade * blink * .5f);
+            num = Memory.State.timeplayed.Minutes;
+            Memory.Icons.Draw(num, 0, 2, "D2", IGM_Clock_DIMs[i++].Location.ToVector2(), TextScale, fade);
+            Memory.Icons.Draw(Icons.ID.SeeD, 13, IGM_Clock_DIMs[i++], TextScale, fade);
+            num = Memory.State.Fieldvars.SeedRankPts / 100;
+            Memory.Icons.Draw(num, 0, 2, "D1", IGM_Clock_DIMs[i++].Location.ToVector2(), TextScale, fade);
+            num = (int)(Memory.State.AmountofGil);
+            Memory.Icons.Draw(num, 0, 2, "D1", IGM_Clock_DIMs[i++].Location.ToVector2(), TextScale, fade);
+            Memory.Icons.Draw(Icons.ID.G, 2, IGM_Clock_DIMs[i++], TextScale, fade);
         }
 
         private static void Draw_IGM_FooterBox() => DrawBox(IGM_Footer_Size, IGM_Footer_Text, indent: false);
@@ -268,34 +356,34 @@ namespace FF8
                 {
                     Tuple<Rectangle, Point, Rectangle> dims = DrawBox(IGM_Party_Size[pos], Memory.Strings.GetName((Faces.ID)character), Icons.ID.STATUS, indent: false);
                     Rectangle r = dims.Item3;
-                    float yoff = 6 ;
+                    float yoff = 6;
                     r = dims.Item3;
-                    r.Offset(184 , yoff);
-                    Memory.Icons.Draw(Icons.ID.Lv,13, r, TextScale, fade);
+                    r.Offset(184, yoff);
+                    Memory.Icons.Draw(Icons.ID.Lv, 13, r, TextScale, fade);
                     r = dims.Item3;
                     int lvl = Memory.State.Characters[(int)character].Level;
-                    int spaces = 3-lvl.ToString().Length;
-                    r.Offset((229+spaces*20) , yoff);
+                    int spaces = 3 - lvl.ToString().Length;
+                    r.Offset((229 + spaces * 20), yoff);
                     Memory.Icons.Draw(lvl, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
                     r = dims.Item3;
-                    r.Offset(304 , yoff);
+                    r.Offset(304, yoff);
                     Memory.Icons.Draw(Icons.ID.HP2, 13, r, TextScale, fade);
                     r = dims.Item3;
                     lvl = Memory.State.Characters[(int)character].CurrentHP;
                     spaces = 4 - lvl.ToString().Length;
-                    r.Offset((354 + spaces * 20) , yoff);
+                    r.Offset((354 + spaces * 20), yoff);
                     Memory.Icons.Draw(lvl, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
                     r = dims.Item3;
-                    r.Offset(437 , yoff);
+                    r.Offset(437, yoff);
                     Memory.Icons.Draw(Icons.ID.Slash_Forward, 13, r, TextScale, fade);
                     r = dims.Item3;
-                    
-                    lvl = Memory.State.Party[0]==character ||
+
+                    lvl = Memory.State.Party[0] == character ||
                         Memory.State.Party[1] == character && Memory.State.Party[0] == Saves.Characters.Blank ||
                         Memory.State.Party[2] == character && Memory.State.Party[0] == Saves.Characters.Blank && Memory.State.Party[1] == Saves.Characters.Blank
-                        ? Memory.State.firstcharactersmaxHP:0;
+                        ? Memory.State.firstcharactersmaxHP : 0;
                     spaces = 4 - lvl.ToString().Length;
-                    r.Offset((459 + spaces * 20) , yoff);
+                    r.Offset((459 + spaces * 20), yoff);
                     Memory.Icons.Draw(lvl, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
                 }
                 else
@@ -309,22 +397,22 @@ namespace FF8
             {
                 Rectangle r = Memory.font.RenderBasicText(Memory.Strings.GetName((Faces.ID)character), IGM_NonParty_Size[pos].Location, TextScale, Fade: fade, lineSpacing: 1);
                 Rectangle rbak = r;
-                float yoff = 39 ;
-                r.Offset(7 , yoff);
+                float yoff = 39;
+                r.Offset(7, yoff);
                 Memory.Icons.Draw(Icons.ID.Lv, 13, r, TextScale, fade);
                 r = rbak;
                 int lvl = Memory.State.Characters[(int)character].Level;
                 int spaces = 3 - lvl.ToString().Length;
-                r.Offset((49 + spaces * 20) , yoff);
+                r.Offset((49 + spaces * 20), yoff);
                 Memory.Icons.Draw(lvl, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
                 r = rbak;
-                r.Offset(126 , yoff);
+                r.Offset(126, yoff);
                 Memory.Icons.Draw(Icons.ID.HP2, 13, r, TextScale, fade);
                 r.Offset(0, 28);
                 r.Width = 118;
                 r.Height = 1;
-                var color = new Color(74.5f/100, 12.5f / 100, 11.8f/100,fade*.9f);
-                Memory.spriteBatch.Draw(SimpleTexture, r,null,color);
+                Color color = new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, fade * .9f);
+                Memory.spriteBatch.Draw(SimpleTexture, r, null, color);
                 r.Offset(0, 2);
                 Memory.spriteBatch.Draw(SimpleTexture, r, null, color);
                 //r = rbak;
@@ -335,7 +423,7 @@ namespace FF8
                 r = rbak;
                 lvl = Memory.State.Characters[(int)character].CurrentHP;
                 spaces = 4 - lvl.ToString().Length;
-                r.Offset((166 + spaces * 20) , yoff);
+                r.Offset((166 + spaces * 20), yoff);
                 Memory.Icons.Draw(lvl, 0, 2, "D1", r.Location.ToVector2(), TextScale, fade);
             }
         }
