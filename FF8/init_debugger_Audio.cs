@@ -140,7 +140,7 @@ namespace FF8
             //Roses and Wine V07 moves most of the sgt files to dmusic_backup
             //it leaves a few files behind. I think because RaW doesn't replace everything.
             //ogg files stored in:
-            RaW_ogg_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "RaW/GLOBAL/Music"));
+            RaW_ogg_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "RaW/GLOBAL/Music"));
             if (!Directory.Exists(RaW_ogg_pt))
             {
                 RaW_ogg_pt = null;
@@ -148,19 +148,19 @@ namespace FF8
             // From what I gather the OGG files and the sgt files have the same numerical prefix. I
             // might try to add the functionality to the debug screen monday.
 
-            dmusic_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music","dmusic_backup"));
+            dmusic_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music","dmusic_backup"));
             if (!Directory.Exists(dmusic_pt))
             {
                 dmusic_pt = null;
             }
 
-            music_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music","dmusic"));
+            music_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music","dmusic"));
             if (!Directory.Exists(music_pt))
             {
                 music_pt = null;
             }
 
-            music_wav_pt = MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music"));
+            music_wav_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music"));
             if (!Directory.Exists(music_wav_pt))
             {
                 music_wav_pt = null;
@@ -458,12 +458,12 @@ namespace FF8
                     break;
 
                 case ".sgt":
-                    if(MakiExtended.IsLinux || bFakeLinux)
+                    if(Extended.IsLinux || bFakeLinux)
                     {
                         ReadSegmentFileManually(pt);
                         break;
                     }
-                    if (!MakiExtended.IsLinux)
+                    if (!Extended.IsLinux)
                     {
 #if _WINDOWS && !_X64
                         if (cdm == null)
@@ -562,7 +562,7 @@ namespace FF8
 
             try
             {
-                if (MakiExtended.IsLinux)
+                if (Extended.IsLinux)
                 {
 #if _WINDOWS && !_X64
                     cport.StopAll();
@@ -672,7 +672,7 @@ namespace FF8
             uint chunkSize = br.ReadUInt32();
             if (chunkSize != Marshal.SizeOf(segh))
                 { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: chunkSize={chunkSize} is different than DMUS_IO_SEGMENT_HEADER sizeof={Marshal.SizeOf(segh)}");return;}
-            segh = MakiExtended.ByteArrayToStructure<DMUS_IO_SEGMENT_HEADER>(br.ReadBytes((int)chunkSize));
+            segh = Extended.ByteArrayToStructure<DMUS_IO_SEGMENT_HEADER>(br.ReadBytes((int)chunkSize));
             if((fourCc = ReadFourCc(br)) != "guid")
                 {Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected guid, got={fourCc}");return;}
             byte[] guid = br.ReadBytes(br.ReadInt32());
@@ -684,7 +684,7 @@ namespace FF8
                 { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected vers, got={fourCc}"); return;}
             if ((chunkSize = br.ReadUInt32()) != Marshal.SizeOf(vers))
                 { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: vers expected sizeof={Marshal.SizeOf(vers)}, got={chunkSize}");return;}
-            vers = MakiExtended.ByteArrayToStructure<DMUS_IO_VERSION>(br.ReadBytes((int)chunkSize));
+            vers = Extended.ByteArrayToStructure<DMUS_IO_VERSION>(br.ReadBytes((int)chunkSize));
             if ((fourCc = ReadFourCc(br)) != "LIST")
                 { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected LIST, got={fourCc}");return;}
             //this list should now contain metadata like name, authors and etc. It's completely useless in this project scope
@@ -703,7 +703,7 @@ namespace FF8
                 chunkSize = br.ReadUInt32();
                 long skipTell = fs.Position;
                 Console.WriteLine($"RIFF entry: {ReadFourCc(br)}/{ReadFourCc(br)}");
-                trkh.Add(MakiExtended.ByteArrayToStructure<DMUS_IO_TRACK_HEADER>(br.ReadBytes((int)br.ReadUInt32())));
+                trkh.Add(Extended.ByteArrayToStructure<DMUS_IO_TRACK_HEADER>(br.ReadBytes((int)br.ReadUInt32())));
                 //TODO HERE
                 //this seek below is to ensure that no critical behaviour happens and every RIFF header is read correctly
                 fs.Seek(skipTell+chunkSize, SeekOrigin.Begin);
