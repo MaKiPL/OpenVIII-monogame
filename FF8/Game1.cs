@@ -29,8 +29,12 @@ namespace FF8
             Init_debugger_fields.Init(); //this initializes the field module, it's worth to have this at the beginning
             Init_debugger_battle.Init(); //this initializes the encounters
             Saves.Init(); //loads all savegames from steam or cd2000 directories. first come first serve.
+
             Module_movie_test.Init();
             Module_main_menu_debug.Init();
+
+            Memory.random = new Random(); //creates global random class for all sort of things
+
             base.Initialize();
             //ArchiveSearch s = new ArchiveSearch("Zell\0");//used to find file a string is in. disable if not using.
 

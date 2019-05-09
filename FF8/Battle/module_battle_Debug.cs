@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -27,18 +29,17 @@ namespace FF8
 
         public static BasicEffect effect;
         public static AlphaTestEffect ate;
-        private static BattleCamera battleCamera;
 
         private static string battlename = "a0stg000.x";
         private static byte[] stageBuffer;
 
         private static int battleModule = 0;
 
-        private const int BATTLEMODULE_INIT = 0;
-        private const int BATTLEMODULE_READDATA = 1;
-        private const int BATTLEMODULE_DRAWGEOMETRY = 2;
-        private const int BATTLEMODULE_CAMERAINTRO = 3;
-        private const int BATTLEMODULE_ACTIVE = 4;
+        //This should be enum btw
+        private const int BATTLEMODULE_INIT = 0; //basic init stuff; renderer; core
+        private const int BATTLEMODULE_READDATA = 1; //parses battle stage and all monsters
+        private const int BATTLEMODULE_DRAWGEOMETRY = 2; //draw geometry also supports updateCamera
+        private const int BATTLEMODULE_ACTIVE = 3;
         private const float FPS = 1000.0f / 15f; //Natively the game we are rewritting works in 15 FPS per second
 
         /// <summary>
@@ -75,38 +76,6 @@ namespace FF8
             public int characterId; //0 is Whatever guy
             public bool bIsHidden; //GF sequences, magic...
             public AnimationSystem animationSystem;
-        }
-
-
-        private struct BattleCamera
-        {
-            public BattleCameraSettings battleCameraSettings;
-            public BattleCameraCollection battleCameraCollection;
-        }
-
-        private struct BattleCameraSettings
-        {
-            public byte[] unk;
-        }
-
-        private struct BattleCameraCollection
-        {
-            public uint cAnimCollectionCount;
-            public uint pCameraEOF;
-            public BattleCameraSet[] battleCameraSet;
-        }
-
-        private struct BattleCameraSet
-        {
-            public uint[] animPointers;
-            public uint globalSetPointer;
-            public CameraAnimation[] cameraAnimation;
-        }
-
-        private struct CameraAnimation
-        {
-            public ushort header;
-
         }
 
         private struct Triangle
@@ -200,7 +169,8 @@ namespace FF8
             public Debug_battleDat character, weapon;
         };
 
-        private static PseudoBufferedStream pbs;
+        private static MemoryStream ms;
+        private static BinaryReader br;
 
         private static byte GetTexturePage(byte texturepage) => (byte)(texturepage & 0x0F);
 
@@ -223,14 +193,25 @@ namespace FF8
                     ReadData();
                     break;
                 case BATTLEMODULE_DRAWGEOMETRY:
-                    FPSCamera();
+                    UpdateCamera();
+                    //FPSCamera();
                     break;
             }
-            if (Input.Button(Keys.F1))
+#if DEBUG
+            if (Input.Button(Keys.D1))
                 DEBUGframe += 1;
-            if (Input.Button(Keys.F2))
+            if (Input.Button(Keys.D2))
                 DEBUGframe--;
+            if (Input.Button(Keys.D3))
+                battleModule = BATTLEMODULE_INIT;
+            if(Input.Button(Keys.D4))
+            {
+                battleModule = BATTLEMODULE_INIT;
+                Memory.battle_encounter++;
+            }
+#endif
         }
+
 
         public static void Draw()
         {
@@ -244,6 +225,51 @@ namespace FF8
                     break;
 
             }
+        }
+        private static void UpdateCamera()
+        {
+            const float V = 100f;
+            //battleCamera.cam.startingTime = 64;
+            float step = battleCamera.cam.startingTime / (float)battleCamera.cam.time;
+            float camWorldX = MathHelper.Lerp(battleCamera.cam.Camera_World_X_s16[0] / V,
+                battleCamera.cam.Camera_World_X_s16[1] / V, step) -60;
+            float camWorldY = MathHelper.Lerp(battleCamera.cam.Camera_World_Y_s16[0] / V,
+                battleCamera.cam.Camera_World_Y_s16[1] / V, step); 
+            float camWorldZ = MathHelper.Lerp(battleCamera.cam.Camera_World_Z_s16[0] / V,
+                battleCamera.cam.Camera_World_Z_s16[1] / V, step) +40;
+
+            float camTargetX = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_X_s16[0] / V,
+    battleCamera.cam.Camera_Lookat_X_s16[1] / V, step) -20;
+            float camTargetY = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_Y_s16[0] / V,
+battleCamera.cam.Camera_Lookat_Y_s16[1] / V, step) +25;
+            float camTargetZ = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_Z_s16[0] / V,
+battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
+
+
+
+            camPosition = new Vector3(-camWorldX, camWorldY, -camWorldZ);
+            camTarget = new Vector3(camTargetY, -camTargetX, -camTargetZ);
+
+
+            float fovDirector = MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, step);
+            
+            viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
+                         Vector3.Up);
+            projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
+                   MathHelper.ToRadians(fovDirector/6),
+                   Memory.graphics.GraphicsDevice.DisplayMode.AspectRatio,
+    1f, 1000f);
+
+            //ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
+            //{
+            //    Projection = projectionMatrix,
+            //    View = viewMatrix,
+            //    World = worldMatrix
+            //};
+
+            if (battleCamera.cam.startingTime >= battleCamera.cam.time)
+                return;
+            battleCamera.cam.startingTime += 4;
         }
 
         /// <summary>
@@ -621,11 +647,19 @@ namespace FF8
                 }
 
             Memory.SpriteBatchStartAlpha();
-            Memory.font.RenderBasicText(
+            /*Memory.font.RenderBasicText(
                 $"Encounter ready at: {Memory.battle_encounter}\n" +
                 $"Debug variable: {DEBUGframe}\n" +
                 $"1000/deltaTime milliseconds: {Math.Round((double)1000 / Memory.gameTime.ElapsedGameTime.Milliseconds,2)}",
-                30,20,lineSpacing: 5);
+                30,20,lineSpacing: 5);*/
+            Memory.font.RenderBasicText(new FF8String($"Encounter ready at: {Memory.battle_encounter}"), 0, 0, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe}"), 20, 30 * 1, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {1000/Memory.gameTime.ElapsedGameTime.Milliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"camera frame: {battleCamera.cam.startingTime}/{battleCamera.cam.time}"), 20, 30 * 3, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {MakiExtended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 4, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {MakiExtended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 5, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Camera.FOV: {MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, battleCamera.cam.startingTime / (float)battleCamera.cam.time)}"), 20, 30 * 6, 1, 1, 0, 1);
+
             Memory.SpriteBatchEnd();
         }
 
@@ -760,14 +794,15 @@ namespace FF8
             string[] test = aw.GetListOfFiles();
             battlename = test.First(x => x.ToLower().Contains(battlename));
             stageBuffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, battlename);
-            pbs = new PseudoBufferedStream(stageBuffer);
+            ms = new MemoryStream(stageBuffer);
+            br = new BinaryReader(ms);
             bs_cameraPointer = GetCameraPointer();
-            pbs.Seek(bs_cameraPointer, 0);
+            ms.Seek(bs_cameraPointer, 0);
             ReadCamera();
-            uint sectionCounter = pbs.ReadUInt();
+            uint sectionCounter = br.ReadUInt32();
             if (sectionCounter != 6)
             {
-                Console.WriteLine($"BS_PARSER_PRE_OBJECTSECTION: Main geometry section has no 6 pointers at: {pbs.Tell()}");
+                Console.WriteLine($"BS_PARSER_PRE_OBJECTSECTION: Main geometry section has no 6 pointers at: {ms.Position}");
                 battleModule++;
                 return;
             }
@@ -789,7 +824,9 @@ namespace FF8
             };
 
             ReadTexture(MainSection.TexturePointer);
-
+            br.Close();
+            ms.Close();
+            ms.Dispose();
 
             ReadCharacters();
             ReadMonster();
@@ -956,12 +993,12 @@ namespace FF8
         /// <returns></returns>
         private static ModelGroup ReadModelGroup(uint pointer)
         {
-            pbs.Seek(pointer, System.IO.SeekOrigin.Begin);
-            uint modelsCount = pbs.ReadUInt();
+            ms.Seek(pointer, SeekOrigin.Begin);
+            uint modelsCount = br.ReadUInt32();
             Model[] models = new Model[modelsCount];
             uint[] modelPointers = new uint[modelsCount];
             for (int i = 0; i < modelsCount; i++)
-                modelPointers[i] = pointer + pbs.ReadUInt();
+                modelPointers[i] = pointer + br.ReadUInt32();
             for (int i = 0; i < modelsCount; i++)
                 models[i] = ReadModel(modelPointers[i]);
             return new ModelGroup() { models = models };
@@ -970,28 +1007,28 @@ namespace FF8
         /// <summary>
         /// This is the main class that reads given Stage geometry group. It stores the data into Model structure
         /// </summary>
-        /// <param name="pointer">absolute pointer in pbs[deprecated] buffer for given Stage geometry group</param>
+        /// <param name="pointer">absolute pointer in buffer for given Stage geometry group</param>
         /// <returns></returns>
         private static Model ReadModel(uint pointer)
         {
             bool bSpecial = false;
-            pbs.Seek(pointer, System.IO.SeekOrigin.Begin);
-            uint header = MakiExtended.UintLittleEndian(pbs.ReadUInt());
+            ms.Seek(pointer, System.IO.SeekOrigin.Begin);
+            uint header = MakiExtended.UintLittleEndian(br.ReadUInt32());
             if (header != 0x01000100) //those may be some switches, but I don't know what they mean
             {
                 Console.WriteLine("WARNING- THIS STAGE IS DIFFERENT! It has weird object section. INTERESTING, TO REVERSE!");
                 bSpecial = true;
             }
-            ushort verticesCount = pbs.ReadUShort();
+            ushort verticesCount = br.ReadUInt16();
             Vertex[] vertices = new Vertex[verticesCount];
             for (int i = 0; i < verticesCount; i++)
                 vertices[i] = ReadVertex();
             if (bSpecial && Memory.encounters[Memory.battle_encounter].Scenario == 20)
                 return new Model();
-            pbs.Seek((pbs.Tell() % 4) + 4, System.IO.SeekOrigin.Current);
-            ushort trianglesCount = pbs.ReadUShort();
-            ushort quadsCount = pbs.ReadUShort();
-            pbs.Seek(4, System.IO.SeekOrigin.Current);
+            ms.Seek((ms.Position % 4) + 4, SeekOrigin.Current);
+            ushort trianglesCount = br.ReadUInt16();
+            ushort quadsCount = br.ReadUInt16();
+            ms.Seek(4, SeekOrigin.Current);
             Triangle[] triangles = new Triangle[trianglesCount];
             Quad[] quads = new Quad[quadsCount];
             if (trianglesCount > 0)
@@ -1012,81 +1049,81 @@ namespace FF8
         =>
             new Triangle()
             {
-                A = pbs.ReadUShort(),
-                B = pbs.ReadUShort(),
-                C = pbs.ReadUShort(),
-                U1 = pbs.ReadByte(),
-                V1 = pbs.ReadByte(),
-                U2 = pbs.ReadByte(),
-                V2 = pbs.ReadByte(),
-                clut = GetClutId(pbs.ReadUShort()),
-                U3 = pbs.ReadByte(),
-                V3 = pbs.ReadByte(),
-                TexturePage = GetTexturePage(pbs.ReadByte()),
-                bHide = pbs.ReadByte(),
-                Red = pbs.ReadByte(),
-                Green = pbs.ReadByte(),
-                Blue = pbs.ReadByte(),
-                GPU = pbs.ReadByte()
+                A = br.ReadUInt16(),
+                B = br.ReadUInt16(),
+                C = br.ReadUInt16(),
+                U1 = br.ReadByte(),
+                V1 = br.ReadByte(),
+                U2 = br.ReadByte(),
+                V2 = br.ReadByte(),
+                clut = GetClutId(br.ReadUInt16()),
+                U3 = br.ReadByte(),
+                V3 = br.ReadByte(),
+                TexturePage = GetTexturePage(br.ReadByte()),
+                bHide = br.ReadByte(),
+                Red = br.ReadByte(),
+                Green = br.ReadByte(),
+                Blue = br.ReadByte(),
+                GPU = br.ReadByte(),
             };
 
         private static Quad ReadQuad()
         => new Quad()
         {
-            A = pbs.ReadUShort(),
-            B = pbs.ReadUShort(),
-            C = pbs.ReadUShort(),
-            D = pbs.ReadUShort(),
-            U1 = pbs.ReadByte(),
-            V1 = pbs.ReadByte(),
-            clut = GetClutId(pbs.ReadUShort()),
-            U2 = pbs.ReadByte(),
-            V2 = pbs.ReadByte(),
-            TexturePage = GetTexturePage(pbs.ReadByte()),
-            bHide = pbs.ReadByte(),
-            U3 = pbs.ReadByte(),
-            V3 = pbs.ReadByte(),
-            U4 = pbs.ReadByte(),
-            V4 = pbs.ReadByte(),
-            Red = pbs.ReadByte(),
-            Green = pbs.ReadByte(),
-            Blue = pbs.ReadByte(),
-            GPU = pbs.ReadByte()
+            A = br.ReadUInt16(),
+            B = br.ReadUInt16(),
+            C = br.ReadUInt16(),
+            D = br.ReadUInt16(),
+            U1 = br.ReadByte(),
+            V1 = br.ReadByte(),
+            clut = GetClutId(br.ReadUInt16()),
+            U2 = br.ReadByte(),
+            V2 = br.ReadByte(),
+            TexturePage = GetTexturePage(br.ReadByte()),
+            bHide = br.ReadByte(),
+            U3 = br.ReadByte(),
+            V3 = br.ReadByte(),
+            U4 = br.ReadByte(),
+            V4 = br.ReadByte(),
+            Red = br.ReadByte(),
+            Green = br.ReadByte(),
+            Blue = br.ReadByte(),
+            GPU = br.ReadByte()
         };
 
         private static Vertex ReadVertex()
         => new Vertex()
         {
-            X = pbs.ReadShort(),
-            Y = pbs.ReadShort(),
-            Z = pbs.ReadShort()
+            X = br.ReadInt16(),
+            Y = br.ReadInt16(),
+            Z = br.ReadInt16(),
         };
 
 
         private static ObjectsGroup ReadObjectsGroup(uint pointer)
         {
-            pbs.Seek(pointer, System.IO.SeekOrigin.Begin);
+            ms.Seek(pointer, System.IO.SeekOrigin.Begin);
             return new ObjectsGroup()
             {
-                numberOfSections = pbs.ReadUInt(),
-                settings1Pointer = pointer + pbs.ReadUInt(),
-                objectListPointer = pointer + pbs.ReadUInt(),
-                settings2Pointer = pointer + pbs.ReadUInt(),
-                relativeEOF = pointer + pbs.ReadUInt()
+                numberOfSections = br.ReadUInt32(),
+                settings1Pointer = pointer + br.ReadUInt32(),
+                objectListPointer = pointer + br.ReadUInt32(),
+                settings2Pointer = pointer + br.ReadUInt32(),
+                relativeEOF = pointer + br.ReadUInt32(),
             };
         }
 
         private static MainGeometrySection ReadObjectGroupPointers()
         {
-            int basePointer = (int)pbs.Tell() - 4;
-            uint objectGroup_1 = (uint)basePointer + pbs.ReadUInt();
-            uint objectGroup_2 = (uint)basePointer + pbs.ReadUInt();
-            uint objectGroup_3 = (uint)basePointer + pbs.ReadUInt();
-            uint objectGroup_4 = (uint)basePointer + pbs.ReadUInt();
-            uint TextureUnused = (uint)basePointer + pbs.ReadUInt();
-            uint Texture = (uint)basePointer + pbs.ReadUInt();
-            uint EOF = (uint)basePointer + pbs.ReadUInt();
-            if (EOF != pbs.Length)
+            int basePointer = (int)ms.Position - 4;
+            uint objectGroup_1 = (uint)basePointer + br.ReadUInt32();
+            uint objectGroup_2 = (uint)basePointer + br.ReadUInt32();
+            uint objectGroup_3 = (uint)basePointer + br.ReadUInt32();
+            uint objectGroup_4 = (uint)basePointer + br.ReadUInt32();
+            uint TextureUnused = (uint)basePointer + br.ReadUInt32();
+            uint Texture = (uint)basePointer + br.ReadUInt32();
+            uint EOF = (uint)basePointer + br.ReadUInt32();
+            if (EOF != ms.Length)
                 throw new Exception("BS_PARSER_ERROR_LENGTH: Geometry EOF pointer is other than buffered filesize");
 
             return new MainGeometrySection()
@@ -1171,109 +1208,311 @@ namespace FF8
             throw new Exception("0xFFF, unknown pointer!");
         }
 
-        //TODO
+        [StructLayout(LayoutKind.Sequential, Pack =1, Size =1092)]
+        public struct CameraStruct
+        {
+            public byte unkbyte000; //000
+            public byte keyframeCount;
+            public ushort control_word;
+            public ushort startingFOV; //usually ~280
+            public ushort endingFOV; //006
+            public ushort startingCameraRoll; //usually 0 unless you're aiming for some wicked animation
+            public ushort endingCameraRoll; //
+            public ushort startingTime; //usually 0, that's pretty logical
+            /// <summary>
+            /// Time is calculated from number of frames. You basically set starting position World+lookat and ending position, then mark number of frames to interpolate between them. Every frame is one drawcall and it costs 16.
+            /// </summary>
+            public ushort time; //starting time needs to be equal or higher for next animation frame to be read; If next frame==0xFFFF then it's all done
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst =20)]
+            public byte[] unk; //010
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+            public ushort[] unkword024; //024 - start frames for each key frame?
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+            public short[] Camera_World_Z_s16; //064
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+            public short[] Camera_World_X_s16; //0A4
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+            public short[] Camera_World_Y_s16; //0E4
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+            public byte[] unkbyte124; //124
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+            public short[] Camera_Lookat_Z_s16; //144
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+            public short[] Camera_Lookat_X_s16; //184
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+            public short[] Camera_Lookat_Y_s16; //1C4
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+            public byte[] unkbyte204; //204
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
+            public byte[] unkbyte224; //224
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
+            public byte[] unkbyte2A4; //2A4
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
+            public byte[] unkbyte324; //324
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
+            public byte[] unkbyte3A4; //3A4
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
+            public byte[] unkbyte424; //424
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
+            public byte[] unkbyte4A4; //4A4
+        };
+
+        /// <summary>
+        /// Main battle camera struct. It holds data for camera settings, camera collections and main CameraStruct used as a final result of camera parsing
+        /// </summary>
+        private struct BattleCamera
+        {
+            public BattleCameraSettings battleCameraSettings;
+            public BattleCameraCollection battleCameraCollection;
+            public CameraStruct cam;
+        }
+
+        private static BattleCamera battleCamera;
+
+        /// <summary>
+        /// Battle camera settings are about 32 bytes of unknown flags and variables used in whole stage including geometry
+        /// </summary>
+        private struct BattleCameraSettings
+        {
+            public byte[] unk;
+        }
+
+        /// <summary>
+        /// Main struct for collection of camera animations. Every BattleCameraSet hold 8 animations no matter what
+        /// </summary>
+        private struct BattleCameraCollection
+        {
+            public uint cAnimCollectionCount;
+            public uint pCameraEOF;
+            public BattleCameraSet[] battleCameraSet;
+        }
+
+        /// <summary>
+        /// Struct for battle camera animation set. Animation set always contain 8 animations.
+        /// This struct does not contain a data for pre-readed information. Therefore you have to call ReadAnimation(index)
+        /// to actually read the animation to BattleCamera.cam(CameraStruct). That is because there are extreme amount
+        /// of cases where the camera is changing and reading again and again not including the battle stage.
+        /// Also reading all camera animations is waste of time and resources
+        /// </summary>
+        private struct BattleCameraSet
+        {
+            public uint[] animPointers;
+            public uint globalSetPointer;
+        }
+
+        /// <summary>
+        /// Parses camera data into BattleCamera struct. Main purpouse of this function is to actually read all the offsets and pointers to human readable form of struct.
+        /// This function later calls ReadAnimation(n) where n is animation Id (i.e. 9 is camCollection=1 and cameraAnim=0)
+        /// </summary>
         private static void ReadCamera()
         {
-            Memory.BS_CameraStruct = new Memory.VIII_cameraMemoryStruct();
-            uint cCameraHeaderSector = pbs.ReadUShort();
-            //if (cCameraHeaderSector != 0x2)
-            //    ; //error handler?
-            uint pCameraSetting = pbs.ReadUShort();
-            uint pCameraAnimationCollection = pbs.ReadUShort();
-            uint sCameraDataSize = pbs.ReadUShort();
+            uint cCameraHeaderSector = br.ReadUInt16();
+            uint pCameraSetting = br.ReadUInt16();
+            uint pCameraAnimationCollection = br.ReadUInt16();
+            uint sCameraDataSize = br.ReadUInt16();
 
             //Camera settings parsing?
-            BattleCameraSettings bcs = new BattleCameraSettings() { unk = pbs.ReadBytes(24) };
+            BattleCameraSettings bcs = new BattleCameraSettings() { unk = br.ReadBytes(24) };
             //end of camera settings parsing
 
-
-
-            pbs.Seek(bs_cameraPointer, 0);
-            pbs.Seek(pCameraAnimationCollection, System.IO.SeekOrigin.Current);
-            BattleCameraCollection bcc = new BattleCameraCollection { cAnimCollectionCount = pbs.ReadUShort() };
+            ms.Seek(bs_cameraPointer, 0);
+            ms.Seek(pCameraAnimationCollection, SeekOrigin.Current);
+            BattleCameraCollection bcc = new BattleCameraCollection { cAnimCollectionCount = br.ReadUInt16() };
             BattleCameraSet[] bcset = new BattleCameraSet[bcc.cAnimCollectionCount];
             bcc.battleCameraSet = bcset;
             for (int i = 0; i < bcc.cAnimCollectionCount; i++)
-                bcset[i] = new BattleCameraSet() { globalSetPointer = (uint)(pbs.Tell() + pbs.ReadUShort() - i * 2 - 2) };
-            bcc.pCameraEOF = pbs.ReadUShort();
+                bcset[i] = new BattleCameraSet() { globalSetPointer = (uint)(ms.Position + br.ReadUInt16() - i * 2 - 2) };
+            bcc.pCameraEOF = br.ReadUInt16();
 
             for (int i = 0; i < bcc.cAnimCollectionCount; i++)
             {
-                pbs.Seek(bcc.battleCameraSet[i].globalSetPointer, 0);
+                ms.Seek(bcc.battleCameraSet[i].globalSetPointer, 0);
                 bcc.battleCameraSet[i].animPointers = new uint[8];
                 for (int n = 0; n < bcc.battleCameraSet[i].animPointers.Length; n++)
-                    bcc.battleCameraSet[i].animPointers[n] = (uint)(pbs.Tell() + pbs.ReadUShort() * 2 - n * 2);
-                bcc.battleCameraSet[i].cameraAnimation = new CameraAnimation[bcc.battleCameraSet[i].animPointers.Length];
-                for (int n = 0; n < bcc.battleCameraSet[i].animPointers.Length; n++)
-                {
-                    pbs.Seek(bcc.battleCameraSet[i].animPointers[n], 0);
-                    bcc.battleCameraSet[i].cameraAnimation[n] = new CameraAnimation() { header = pbs.ReadUShort() };
-                }
+                    bcc.battleCameraSet[i].animPointers[n] = (uint)(ms.Position + br.ReadUInt16() * 2 - n * 2);
             }
+            CameraStruct cam = MakiExtended.ByteArrayToStructure<CameraStruct>(new byte[Marshal.SizeOf(typeof(CameraStruct))]); //what about this kind of trick to initialize struct with a lot amount of fixed sizes in arrays? 
+            battleCamera = new BattleCamera() { battleCameraCollection = bcc, battleCameraSettings = bcs, cam = cam };
 
-            battleCamera = new BattleCamera() { battleCameraCollection = bcc, battleCameraSettings = bcs };
+            ReadAnimation(GetRandomCameraN(Memory.encounters[Memory.battle_encounter]));
 
-            //DEBUG DELETE ME
-            ReadAnimation(7);
-            //END OF DEBUG
+            ms.Seek(bs_cameraPointer + sCameraDataSize, 0); //step out
+        }
 
-            pbs.Seek(bs_cameraPointer + sCameraDataSize, 0); //debug out
+        /// <summary>
+        /// Gets random camera from available from encounter- primary or secondary
+        /// </summary>
+        /// <param name="encounter">instance of current encounter</param>
+        /// <returns>Either primary or alternative camera from encounter</returns>
+        private static int GetRandomCameraN(Init_debugger_battle.Encounter encounter)
+        {
+            int camToss = Memory.random.Next(0, 3) < 2 ? 0 : 1; //primary camera has 2/3 chance of beign selected
+            switch(camToss)
+            {
+                case 0:
+                    return encounter.PrimaryCamera;
+                case 1:
+                    return encounter.AlternativeCamera;
+                default:
+                    goto case 0;
+            }
+        }
+
+        /// <summary>
+        /// Returns tuple containing camera animation set pointer and camera animation in that set
+        /// </summary>
+        /// <param name="animId">6bit variable containing camera pointer</param>
+        /// <returns>Tuple with CameraSetPointer, CameraSetPointer[CameraAnimationPointer]</returns>
+        private static Tuple<int, int> GetCameraCollectionPointers(int animId)
+        {
+            var enc = Memory.encounters[Memory.battle_encounter];
+            int pSet = enc.ResolveCameraSet((byte)animId);
+            int pAnim = enc.ResolveCameraAnimation((byte)animId);
+            return new Tuple<int, int>(pSet, pAnim);
         }
 
 
-        //WIP debug only, used for reverse engineering TODO
-        private static void ReadAnimation(int animId)
+        /// <summary>
+        /// Method that provides reading of real animation data based on 6bit camera pointer. In future do overload on this function
+        /// to support GF and magic reading
+        /// </summary>
+        /// <param name="animId"></param>
+        private static uint ReadAnimation(int animId)
         {
-            Memory.BS_CameraStruct.camAnimId = (byte)animId;
-            if ((animId >> 4) >= battleCamera.battleCameraCollection.cAnimCollectionCount)
-                return;
-            var pointer = battleCamera.battleCameraCollection.battleCameraSet[animId >> 4].animPointers[animId & 0xF];
-            pbs.Seek(pointer, 0);
-            ushort eax = pbs.ReadUShort();
-            Memory.BS_CameraStruct.mainController = eax; //[esi+2], ax 
-            if (eax == 0xFFFF)
-                return;
-            ushort ebx = eax;
-            eax = (ushort)((eax >> 6) & 3);
-            eax--;
-            if (eax == 0)
-            {
-                eax = 0x200;
-                Memory.BS_CameraStruct.thirdWordController = Memory.BS_CameraStruct.secondWordController = eax;
-                goto structFullfiled; 
-            }
-            eax--;
-            if (eax == 0)
-            {
-                eax = pbs.ReadUShort();
-                Memory.BS_CameraStruct.thirdWordController = Memory.BS_CameraStruct.secondWordController = eax;
-                goto structFullfiled;
-            }
-            eax--;
-            if (eax != 0)
-                goto structFullfiled;
-            Memory.BS_CameraStruct.secondWordController = pbs.ReadUShort(); //esi+4
-            Memory.BS_CameraStruct.thirdWordController = pbs.ReadUShort(); //esi+6 
+            short local2C;
+            byte keyframecount =0;
+            ushort totalframecount = 0;
+            short local1C;
+            short local18;
+            short local14;
+            short local10;
 
 
-        structFullfiled:
-            eax = ebx;
-            eax = (ushort)((eax >> 8) & 3);
-            switch (eax)
+            var tpGetter = GetCameraCollectionPointers(animId);
+            uint cameraAnimationGlobalPointer = battleCamera.battleCameraCollection.battleCameraSet[tpGetter.Item1].animPointers[tpGetter.Item2];
+            ms.Seek(cameraAnimationGlobalPointer, SeekOrigin.Begin);
+            battleCamera.cam.control_word = br.ReadUInt16(); 
+            if (battleCamera.cam.control_word == 0xFFFF)
+                return 0; //return NULL
+
+            var current_position = br.ReadUInt16(); //getter for *current_position
+            ms.Seek(-2, SeekOrigin.Current); //roll back one WORD because no increment
+
+            switch((battleCamera.cam.control_word >> 6) & 3)
             {
-                case 0:
-                    break;
                 case 1:
+                    battleCamera.cam.startingFOV = 0x200;
+                    battleCamera.cam.endingFOV = 0x200;
                     break;
                 case 2:
+                    battleCamera.cam.startingFOV = current_position;
+                    battleCamera.cam.endingFOV = current_position;
+                    br.ReadUInt16(); //current_position++
                     break;
                 case 3:
+                    battleCamera.cam.startingFOV = current_position;
+                    current_position = br.ReadUInt16();
+                    battleCamera.cam.endingFOV = current_position;
+                    ms.Seek(2, SeekOrigin.Current); //skipping WORD, because we already rolled back one WORD above this switch
+                    break;
+            }
+            switch ((battleCamera.cam.control_word >> 8) & 3)
+            {
+                case 0: //TODO!!
+                    battleCamera.cam.startingCameraRoll = 00000000; //TODO, what's ff8vars.unkword1D977A2?
+                    battleCamera.cam.endingCameraRoll = 00000000; //same as above; cam->unkword00A = ff8vars.unkword1D977A2;
+                    break;
+                case 1:
+                    battleCamera.cam.startingCameraRoll = 0;
+                    battleCamera.cam.endingCameraRoll = 0;
+                    break;
+                case 2:
+                    current_position = br.ReadUInt16(); //* + current_position++;
+                    battleCamera.cam.startingCameraRoll = current_position;
+                    battleCamera.cam.endingCameraRoll = current_position;
+                    break;
+                case 3:
+                    current_position = br.ReadUInt16(); //* + current_position++;
+                    battleCamera.cam.startingCameraRoll = current_position;
+                    current_position = br.ReadUInt16(); //* + current_position++;
+                    battleCamera.cam.endingCameraRoll = current_position;
                     break;
             }
 
-            //default here
-            //there's now some operations to copy next vars
-            //see BS_Camera_ReadAnimation+CC 00103B8C
+            switch (battleCamera.cam.control_word & 1)
+            {
+                case 0:
+                    if(current_position >= 0)
+                    {
+                        while(true) //I'm setting this to true and breaking in code as this works on peeking on next variable via pointer and that's not possible here without unsafe block
+                        {
+                            battleCamera.cam.unkword024[keyframecount] = totalframecount;
+                            current_position = br.ReadUInt16();
+                            if ((short)current_position < 0) //reverse of *current_position >= 0, also cast to signed is important here
+                                break;
+                            totalframecount += (ushort)(current_position * 16); //here is increment of short*, but I already did that above
+                            battleCamera.cam.unkbyte124[keyframecount] = (byte)(current_position =  br.ReadUInt16()); //cam->unkbyte124[keyframecount] = *current_position++; - looks like we are wasting one byte due to integer sizes
+                            battleCamera.cam.Camera_World_Z_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
+                            battleCamera.cam.Camera_World_X_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
+                            battleCamera.cam.Camera_World_Y_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
+                            battleCamera.cam.unkbyte204[keyframecount] = (byte)(current_position = br.ReadUInt16()); //m->unkbyte204[keyframecount] = *current_position++;
+                            battleCamera.cam.Camera_Lookat_Z_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
+                            battleCamera.cam.Camera_Lookat_X_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
+                            battleCamera.cam.Camera_Lookat_Y_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
+                            keyframecount++;
+                        }
+
+                        if(keyframecount>2)
+                        {
+                            //ff8funcs.Sub50D010(cam->unkword024, cam->unkword064, cam->unkword0A4, cam->unkword0E4, keyframecount, cam->unkbyte224, cam->unkbyte2A4, cam->unkbyte324);
+                            //ff8funcs.Sub50D010(cam->unkword024, cam->unkword144, cam->unkword184, cam->unkword1C4, keyframecount, cam->unkbyte3A4, cam->unkbyte424, cam->unkbyte4A4);
+                        }
+                    }
+                    break;
+                case 1:
+                    {
+                        if(current_position >= 0)
+                        {
+                            local14 = (short)(ms.Position + 5*2); //current_position + 5; but current_position is WORD, so multiply by two
+                            local10 = (short)(ms.Position + 6*2);
+                            local2C = (short)(ms.Position + 7*2);
+                            local18 = (short)(ms.Position + 1*2);
+                            local1C = (short)(ms.Position + 2*2);
+                            while(true)
+                            {
+                                battleCamera.cam.unkword024[keyframecount] = totalframecount;
+                                current_position = br.ReadUInt16();
+                                if ((short)current_position < 0) //reverse of *current_position >= 0, also cast to signed is important here
+                                    break;
+                                totalframecount += (ushort)(current_position * 16);
+					//ff8funcs.Sub503AE0(++local18, ++local1C, ++ebx, *(BYTE*)current_position, &cam->unkword064[keyframecount], &cam->unkword0A4[keyframecount], &cam->unkword0E4[keyframecount]);
+					//ff8funcs.Sub503AE0(++local14, ++local10, ++local2C, *(BYTE*)(current_position + 4), &cam->unkword144[keyframecount], &cam->unkword184[keyframecount], &cam->unkword1C4[keyframecount]);
+					battleCamera.cam.unkbyte204[keyframecount] = 0xFB;
+					battleCamera.cam.unkbyte124[keyframecount] = 0xFB;
+					local1C += 8;
+					local18 += 8;
+					current_position += 8;
+					local2C += 8;
+					//ebx += 8;
+					local10 += 8;
+					local14 += 8;
+					keyframecount++;
+                            }
+                        }
+                        break;
+                    }
+
+            }
+
+            if((battleCamera.cam.control_word & 0x3E) == 0x1E)
+            {
+                //ff8funcs.Sub503300();
+            }
+            battleCamera.cam.keyframeCount = keyframecount;
+            battleCamera.cam.time = totalframecount;
+            battleCamera.cam.startingTime = 0;
+            return (uint)(ms.Position+2);
         }
 
 

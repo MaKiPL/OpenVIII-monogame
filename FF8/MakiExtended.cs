@@ -51,6 +51,12 @@ namespace FF8
 
         public static double Distance3D(Vector3 xo, Vector3 xa) => Vector3.Distance(xo, xa);
 
+        /// <summary>
+        /// Some debug text is crashing due to brackets not appearing in chartable. This function removes brackets inside string
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public static string RemoveBrackets(string s) => s.Replace('{', ' ').Replace('}', ' ');
         public static bool GetBit(byte @object, int positionFromRight) => ((@object >> positionFromRight) & 1) > 0;
         public static bool GetBit(int @object, int positionFromRight) => ((@object >> positionFromRight) & 1) > 0;
 
@@ -136,44 +142,5 @@ namespace FF8
 
         public static float ClampOverload(float a, float min, float max)
             => a < min ? max - Math.Abs(a) : a > max ? a - max : a;
-
-        private static MakiDebugger DebuggerWindow;
-        public static List<System.Reflection.FieldInfo> DebuggerFood;
-        public static List<object> DebuggerInstanceProvider;
-        public static void Debugger_Spawn()
-        {
-            if (DebuggerWindow == null)
-                DebuggerWindow = new MakiDebugger();
-            else
-            {
-                DebuggerWindow.Close();
-                DebuggerWindow.Dispose();
-                DebuggerWindow = new MakiDebugger();
-                DebuggerFood.Clear();
-                DebuggerInstanceProvider.Clear();
-            }
-            if (DebuggerFood == null)
-                DebuggerFood = new List<System.Reflection.FieldInfo>();
-            if (DebuggerInstanceProvider == null)
-                DebuggerInstanceProvider = new List<object>();
-            DebuggerFood.Clear();
-            DebuggerWindow.Show();
-        }
-
-        public static void Debugger_Feed(Type b, params System.Reflection.BindingFlags[] flags)
-        {
-            System.Reflection.BindingFlags fg = System.Reflection.BindingFlags.Default;
-            foreach (var g in flags)
-                fg |= g;
-            var a = b.GetFields(fg);
-            DebuggerFood.AddRange(a);
-            DebuggerWindow.UpdateWindow();
-        }
-
-        public static void Debugger_Update()
-        {
-            if(DebuggerWindow!=null)
-                DebuggerWindow._Refresh();
-        }
     }
 }

@@ -49,6 +49,8 @@ namespace FF8
             public byte[] bLevels; //sizeof 8
 
             public byte[] BEnemies { get => Enemies.Select(x => (byte)(x - 0x10)).ToArray(); set => Enemies = value; }
+            public int ResolveCameraAnimation(byte cameraPointerValue) => cameraPointerValue & 0b1111;
+            public int ResolveCameraSet(byte cameraPointerValue) => (cameraPointerValue >> 4) & 0b1111;
         }
 
         internal struct EnemyCoordinates

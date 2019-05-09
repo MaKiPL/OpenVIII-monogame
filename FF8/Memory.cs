@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -237,31 +238,12 @@ namespace FF8
         /// <summary>
         /// Active battle encounter. Set by field or battle module. You shouldn't change it in-battle. 
         /// </summary>
-        public static int battle_encounter = 38;
+        public static int battle_encounter = 0;
         /// <summary>
         /// Battle music pointer. Set by SETBATTLEMUSIC in field module or by world module. Default=6
         /// </summary>
         public static int SetBattleMusic = 6;
         public static Init_debugger_battle.Encounter[] encounters;
-
-        public struct VIII_cameraMemoryStruct
-        {
-            public byte camAnimId; //.data:01D977A8 beginning of struct
-            public byte UNKNOWNpadding; //?
-            public ushort mainController; //so far unknown, probably a controller for animation? .data:01D977AA
-            public ushort secondWordController;
-            public ushort thirdWordController;
-            public byte cameraVar1; //this is later set up after controllers bit-parsing. May be actually camera
-            public byte cameraVar2;
-            public byte cameraVar3;
-            public byte cameraVar4;
-            public byte cameraVar5;
-            public byte cameraVar6;
-            public ushort unknownWord; //.data:01D977B6 unknown, padding? is this struct packed?
-            public uint animationPointer; //.data:01D977B8 always used with animation data + this struct
-        }
-
-        public static VIII_cameraMemoryStruct BS_CameraStruct;
 
         #endregion battleProvider
 
@@ -726,6 +708,7 @@ namespace FF8
             {254, "Ultima"},
             {255, "Scan"}
         };
+        internal static Random random;
 
         #endregion DrawPointMagic
 

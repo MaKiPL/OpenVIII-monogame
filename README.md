@@ -65,6 +65,9 @@ Requirements: MonoGame + Visual Studio
 3. Download and install **development build** of MonoGame:
 [MonoGame for Visual Studio](http://teamcity.monogame.net/repository/download/MonoGame_PackagingWindows/latest.lastSuccessful/MonoGameSetup.exe?guest=1)
 
+4. If you get "Unable to load DLL 'FreeImage'", Download and install:
+[Visual C++ Redistributable Packages for Visual Studio 2013](https://www.microsoft.com/en-us/download/details.aspx?id=40784)
+
 ## Getting started (Linux/Mono) [Tested on Ubuntu]
 
 1. Make sure your Linux is up to date. Due to FFmpeg dependency we require Ubuntu Cosmos
