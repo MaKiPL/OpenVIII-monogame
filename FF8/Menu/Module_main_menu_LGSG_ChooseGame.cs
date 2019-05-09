@@ -98,7 +98,7 @@ namespace FF8
                     Memory.spriteBatch.Draw(LastPage, dst, Color.White * fade);
                 }
             }
-            else
+            else //if(BlockLocs[BlockLoc] != null)
             {
                 Point ptr = BlockLocs[BlockLoc].Item2;
                 DrawPointer(ptr);
@@ -359,5 +359,34 @@ namespace FF8
             dst.Height = (int)(vp_per.Y * 0.220833333333333f);
             return new Tuple<Rectangle, Point>(dst, (dst.Location.ToVector2() + new Vector2(25f, dst.Height / 2)).ToPoint());
         }
+
+        private static sbyte BlockLoc
+        {
+            get => _blockLoc; set
+            {
+                if (value >= BlockLocs.Length)
+                    value = 0;
+                else if (value < 0)
+                    value = (sbyte)(BlockLocs.Length - 1);
+                _blockLoc = value;
+            }
+        }
+        private static sbyte _blockLoc;
+
+        private static sbyte blockpage;
+        public static sbyte Blockpage
+        {
+            get => blockpage; set
+            {
+                if (value >= 10)
+                    value = 0;
+                else if (value < 0)
+                    value = 9;
+                blockpage = value;
+            }
+        }
+        private static Tuple<Rectangle, Point, Rectangle>[] BlockLocs = new Tuple<Rectangle, Point, Rectangle>[3];
+        private static Texture2D LastPage;
     }
+
 }

@@ -28,15 +28,15 @@ namespace FF8
         {
             //Init,
             MainLobby,
-            NewGameChoosed,
-            LoadGameLoading,
-            LoadGameChooseSlot,
-            LoadGameChooseGame,
             DebugScreen,
-            LoadGameCheckingSlot,
+            NewGameChoosed,
+            LoadGameChooseSlot,
             SaveGameChooseSlot,
-            SaveGameCheckingSlot,
+            LoadGameChooseGame,
             SaveGameChooseGame,
+            LoadGameCheckingSlot,
+            SaveGameCheckingSlot,
+            LoadGameLoading,
             SaveGameSaving,
             InGameMenu
         }
@@ -85,10 +85,10 @@ namespace FF8
                     DrawMainLobby();
                     break;
 
+                case MainMenuStates.LoadGameLoading:
                 case MainMenuStates.LoadGameChooseSlot:
                 case MainMenuStates.LoadGameCheckingSlot:
                 case MainMenuStates.LoadGameChooseGame:
-                case MainMenuStates.LoadGameLoading:
                 case MainMenuStates.SaveGameChooseSlot:
                 case MainMenuStates.SaveGameCheckingSlot:
                 case MainMenuStates.SaveGameChooseGame:

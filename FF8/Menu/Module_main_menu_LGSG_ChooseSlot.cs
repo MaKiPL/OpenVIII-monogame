@@ -82,5 +82,22 @@ namespace FF8
             }
             return ret;
         }
+
+        /// <summary>
+        /// Rectangle is hotspot for mouse, Point is where the finger points
+        /// </summary>
+        private static Tuple<Rectangle, Point, Rectangle>[] SlotLocs = new Tuple<Rectangle, Point, Rectangle>[2];
+        private static sbyte _slotLoc;
+        private static sbyte SlotLoc
+        {
+            get => _slotLoc; set
+            {
+                if (value >= SlotLocs.Length)
+                    value = 0;
+                else if (value < 0)
+                    value = (sbyte)(SlotLocs.Length - 1);
+                _slotLoc = value;
+            }
+        }
     }
 }

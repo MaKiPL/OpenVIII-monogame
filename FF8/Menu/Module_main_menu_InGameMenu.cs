@@ -100,7 +100,8 @@ namespace FF8
                     X = IGM_NonPartyBox_Size.X + col * width,
                     Y = IGM_NonPartyBox_Size.Y + row * height
                 };
-                IGM_NonParty_Size[i].Inflate(-26, -12);
+                IGM_NonParty_Size[i].Inflate(-26, -8);
+                if (i > 1) IGM_NonParty_Size[i].Y -= 8;
             }
 
             Init_IGMClockBox();
@@ -336,15 +337,15 @@ namespace FF8
             {
                 int i = 0;
                 DrawBox(IGM_Clock_Size);
-                Memory.Icons.Draw((Icons.ID)IGM_Clock_Vals[i], 13, IGM_Clock_DIMs[i++], TextScale, fade);
-                Memory.Icons.Draw((int)IGM_Clock_Vals[i], 0, 2, "D1", IGM_Clock_DIMs[i++].Location.ToVector2(), TextScale, fade);
-                Memory.Icons.Draw((Icons.ID)IGM_Clock_Vals[i], 13, IGM_Clock_DIMs[i], TextScale, fade);
-                Memory.Icons.Draw((Icons.ID)IGM_Clock_Vals[i], 2, IGM_Clock_DIMs[i++], TextScale, fade * blink * .5f);
-                Memory.Icons.Draw((int)IGM_Clock_Vals[i], 0, 2, "D2", IGM_Clock_DIMs[i++].Location.ToVector2(), TextScale, fade);
-                Memory.Icons.Draw((Icons.ID)IGM_Clock_Vals[i], 13, IGM_Clock_DIMs[i++], TextScale, fade);
-                Memory.Icons.Draw((int)IGM_Clock_Vals[i], 0, 2, "D1", IGM_Clock_DIMs[i++].Location.ToVector2(), TextScale, fade);
-                Memory.Icons.Draw((int)IGM_Clock_Vals[i], 0, 2, "D1", IGM_Clock_DIMs[i++].Location.ToVector2(), TextScale, fade);
-                Memory.Icons.Draw((Icons.ID)IGM_Clock_Vals[i], 2, IGM_Clock_DIMs[i++], TextScale, fade);
+                Memory.Icons.Draw((Icons.ID)IGM_Clock_Vals[i], 13, IGM_Clock_DIMs[i++], TextScale, fade);//0
+                Memory.Icons.Draw((int)IGM_Clock_Vals[i], 0, 2, "D1", IGM_Clock_DIMs[i++].Location.ToVector2(), TextScale, fade);//1
+                Memory.Icons.Draw((Icons.ID)IGM_Clock_Vals[i], 13, IGM_Clock_DIMs[i], TextScale, fade);//2
+                Memory.Icons.Draw((Icons.ID)IGM_Clock_Vals[i], 2, IGM_Clock_DIMs[i++], TextScale, fade * blink * .5f);//2
+                Memory.Icons.Draw((int)IGM_Clock_Vals[i], 0, 2, "D2", IGM_Clock_DIMs[i++].Location.ToVector2(), TextScale, fade);//3
+                Memory.Icons.Draw((Icons.ID)IGM_Clock_Vals[i], 13, IGM_Clock_DIMs[i++], TextScale, fade);//4
+                Memory.Icons.Draw((int)IGM_Clock_Vals[i], 0, 2, "D1", IGM_Clock_DIMs[i++].Location.ToVector2(), TextScale, fade);//5
+                Memory.Icons.Draw((int)IGM_Clock_Vals[i], 0, 2, "D1", IGM_Clock_DIMs[i++].Location.ToVector2(), TextScale, fade);//6
+                Memory.Icons.Draw((Icons.ID)IGM_Clock_Vals[i], 2, IGM_Clock_DIMs[i++], TextScale, fade);//7
             }
         }
 
