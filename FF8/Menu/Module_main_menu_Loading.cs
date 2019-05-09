@@ -6,13 +6,11 @@ using System.Collections.Generic;
 
 namespace FF8
 {
-
     internal static partial class Module_main_menu_debug
     {
         #region Fields
 
         private static sbyte _slotLoc, _blockLoc;
-
 
         private static int blockpage;
 
@@ -36,6 +34,7 @@ namespace FF8
         private static Vector2 scale;
         private static Vector2 TextScale;
         private static Point ml;
+        private static Tuple<FF8String, FF8String, FF8String> LGSGHEADER;
 
         #endregion Fields
 
@@ -124,9 +123,9 @@ namespace FF8
             Rectangle dst = new Rectangle
             {
                 X = 0,
-                Y = (OffScreenBuffer.Height/3 * ((block - 1) % 3)),
+                Y = (OffScreenBuffer.Height / 3 * ((block - 1) % 3)),
                 Width = (OffScreenBuffer.Width),
-                Height = OffScreenBuffer.Height/3,
+                Height = OffScreenBuffer.Height / 3,
             };
             Vector2 offset = dst.Location.ToVector2();
 
@@ -155,22 +154,22 @@ namespace FF8
                     faceRect.Offset(faceRect.Width, 0);
                 if (d.charactersportraits[face] != Faces.ID.Blank)
                 {
-                    Memory.Faces.Draw((Faces.ID)d.charactersportraits[face], faceRect, Vector2.UnitY, fade);
+                    Memory.Faces.Draw(d.charactersportraits[face], faceRect, Vector2.UnitY, fade);
                     Memory.Icons.Draw(Icons.ID.MenuBorder, 2, faceRect, new Vector2(1f), fade);
                     if (mainchar == -1) mainchar = (sbyte)face;
                 }
             }
-            if (mainchar > -1 &&  d!=null && d.charactersportraits != null && d.charactersportraits[mainchar] != Faces.ID.Blank)
+            if (mainchar > -1 && d != null && d.charactersportraits != null && d.charactersportraits[mainchar] != Faces.ID.Blank)
             {
                 Vector2 detailsLoc = new Vector2
                 {
                     X = (int)(OffScreenBuffer.Width * 0.408333333333333f),
                     Y = (int)(OffScreenBuffer.Height * 0.0251572327044026f),
                 } + offset;
-                FF8String name = Memory.Strings.GetName((Faces.ID)d.charactersportraits[mainchar],d);
+                FF8String name = Memory.Strings.GetName(d.charactersportraits[mainchar], d);
                 FF8String lv_ = new FF8String($"LV.   {d.firstcharacterslevel}");
                 TextScale = new Vector2(OffScreenBuffer.Width * 0.0030303030297619f, OffScreenBuffer.Height * 0.00636792452830189f);
-                Memory.font.RenderBasicText(name, detailsLoc, TextScale,Fade: fade);
+                Memory.font.RenderBasicText(name, detailsLoc, TextScale, Fade: fade);
 
                 int playy = (int)detailsLoc.Y;
                 detailsLoc.Y += (int)(OffScreenBuffer.Height * 0.0817610062893082f);
@@ -180,27 +179,27 @@ namespace FF8
                 Vector2 DiscScale = new Vector2(OffScreenBuffer.Height * 0.0060987230787661f);
                 Memory.Icons.Draw(Icons.ID.DISC, 2, disc, DiscScale, fade);
                 Vector2 CurrDiscLoc = new Vector2(disc.X + (0.119047619047619f * OffScreenBuffer.Width), disc.Y);
-                Memory.Icons.Draw((int)d.CurrentDisk+1, 0, 2, "D1", CurrDiscLoc, DiscScale, fade);
+                Memory.Icons.Draw((int)d.CurrentDisk + 1, 0, 2, "D1", CurrDiscLoc, DiscScale, fade);
                 float X1 = OffScreenBuffer.Width * 0.952380952380952f;
                 float X2 = OffScreenBuffer.Width * -0.0238095238095238f;
                 float X3 = OffScreenBuffer.Width * -0.0952380952380952f;
                 disc.Location = new Vector2 { X = X1, Y = disc.Y }.ToPoint();
                 Memory.Icons.Draw(Icons.ID.G, 2, disc, DiscScale, fade);
                 double digits = Math.Floor(Math.Log10(d.AmountofGil) + 2);
-                disc.Offset(new Vector2 { X = (float)(digits *X2) });
+                disc.Offset(new Vector2 { X = (float)(digits * X2) });
                 Memory.Icons.Draw((int)d.AmountofGil, 0, 2, "D1", disc.Location.ToVector2(), DiscScale, fade);
                 disc.Location = new Vector2 { X = X1, Y = playy }.ToPoint();
-                disc.Offset(new Vector2 { X =X2 });
+                disc.Offset(new Vector2 { X = X2 });
                 Memory.Icons.Draw(d.timeplayed.Minutes, 0, 2, "D2", disc.Location.ToVector2(), DiscScale, fade);
 
                 if ((int)d.timeplayed.TotalHours > 0)
                 {
-                    disc.Offset(new Vector2 { X = 1 *X2 });
+                    disc.Offset(new Vector2 { X = 1 * X2 });
                     Memory.Icons.Draw(Icons.ID.Colon, 13, disc, DiscScale, fade);
-                    disc.Offset(new Vector2 { X = (float)Math.Floor(Math.Log10((int)d.timeplayed.TotalHours) + 1) *X2 });
+                    disc.Offset(new Vector2 { X = (float)Math.Floor(Math.Log10((int)d.timeplayed.TotalHours) + 1) * X2 });
                     Memory.Icons.Draw((int)d.timeplayed.TotalHours, 0, 2, "D1", disc.Location.ToVector2(), DiscScale, fade);
                 }
-                disc.Offset(new Vector2 { X = X3+X2 });
+                disc.Offset(new Vector2 { X = X3 + X2 });
                 Memory.Icons.Draw(Icons.ID.PLAY, 13, disc, DiscScale, fade);
                 Rectangle locbox = new Rectangle
                 {
@@ -210,11 +209,10 @@ namespace FF8
                     Height = (int)(OffScreenBuffer.Height * 0.138364779874214f),
                 };
                 locbox.Offset(offset);
-                DrawBox(locbox,indent: false);
+                DrawBox(locbox, indent: false);
                 FF8String loc = Memory.Strings.Read(Strings.FileID.AREAMES, 0, d.LocationID).ReplaceRegion();
                 locbox.Offset(0.0297619047619048f * OffScreenBuffer.Width, 0.0440251572327044f * OffScreenBuffer.Height);
                 Memory.font.RenderBasicText(loc, locbox.Location, TextScale, Fade: fade);
-
             }
 
             dst.X = (int)(vp_per.X * 0f);
@@ -224,33 +222,44 @@ namespace FF8
             return new Tuple<Rectangle, Point>(dst, (dst.Location.ToVector2() + new Vector2(25f, dst.Height / 2)).ToPoint());
         }
 
-        private static Tuple<Rectangle, Point, Rectangle> DrawBox(Rectangle dst, FF8String buffer = null, Icons.ID? title = null, bool indent = true, bool bottom = false)
+        private static Tuple<Rectangle, Point, Rectangle> DrawBox(Rectangle dst, FF8String buffer = null, Icons.ID? title = null, bool indent = true, bool bottom = false,Vector2? textScale=null,Vector2? boxScale = null)
         {
+            if (textScale == null) textScale = Vector2.One;
+            if (boxScale == null) boxScale = Vector2.One;
             Point cursor = new Point(0);
-            dst.Size = (dst.Size.ToVector2() ).ToPoint();
-            dst.Location = (dst.Location.ToVector2() ).ToPoint();
-            Vector2 bgscale = new Vector2(2f) ;
+            dst.Size = (dst.Size.ToVector2()).ToPoint();
+            dst.Location = (dst.Location.ToVector2()).ToPoint();
+            Vector2 bgscale = new Vector2(2f)*textScale.Value;
+            var box = dst.Scale(boxScale.Value);
+            var backup = dst;
             if (dst.Width > 256 * bgscale.X)
-                Memory.Icons.Draw(Icons.ID.Menu_BG_368, 0, dst, bgscale, Fade);
+                Memory.Icons.Draw(Icons.ID.Menu_BG_368, 0, box, bgscale, Fade);
             else
-                Memory.Icons.Draw(Icons.ID.Menu_BG_256, 0, dst, bgscale, Fade);
+                Memory.Icons.Draw(Icons.ID.Menu_BG_256, 0, box, bgscale, Fade);
             Rectangle hotspot = new Rectangle(dst.Location, dst.Size);
-            dst.Offset(0.01171875f, 0);
             if (title != null)
             {
                 //dst.Size = (Memory.Icons[title.Value].GetRectangle.Size.ToVector2()  * 2.823317308f).ToPoint();
-                Memory.Icons.Draw(title.Value, 2, dst, bgscale + new Vector2(.5f), fade);
+                dst.Offset(15, 0);
+                dst.Y = (int)(dst.Y * boxScale.Value.Y);
+                Memory.Icons.Draw(title.Value, 2, dst, (bgscale + new Vector2(.5f)), fade);
             }
             Rectangle font = new Rectangle();
+            dst = backup;
             if (buffer != null && buffer.Length > 0)
             {
                 if (indent)
-                    dst.Offset(0.0546875f * vp_per.X, 0.0291666666666667f * vp_per.Y);
-                else if (bottom)
-                    dst.Offset(0.01953125f * vp_per.X, dst.Height - 0.066666667f * vp_per.Y);
+                    dst.Offset(70*textScale.Value.X, 0);//0.0546875f * vp_per.X
                 else
-                    dst.Offset(0.01953125f * vp_per.X, 0.0291666666666667f * vp_per.Y);
-                font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), new Vector2(2.545454545f, 3.0375f), Fade: fade);
+                    dst.Offset(25 * textScale.Value.X, 0);//0.01953125f * vp_per.X
+
+                if (bottom)
+                    dst.Offset(0,(dst.Height - 48));
+                else
+                    dst.Offset(0, 21);
+
+                dst.Y = (int)(dst.Y * boxScale.Value.Y);
+                font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), new Vector2(2.545454545f, 3.0375f)*textScale.Value, Fade: fade);
                 cursor = dst.Location;
                 cursor.Y += (int)(18.225f); // 12 * (3.0375/2)
             }
@@ -271,51 +280,72 @@ namespace FF8
             DrawLGSGHeader(strLoadScreen[Litems.GameFolderSlot1 + SlotLoc].Text, topright, strLoadScreen[Litems.CheckGameFolder].Text);
             DrawLGSGLoadBar();
         }
+
         private static void DrawLGSG()
         {
-            DrawLGSGChooseBlocks();
-            Memory.SpriteBatchStartAlpha(tm: IGM_focus);
-            switch (State)
+            if (State >= MainMenuStates.LoadGameChooseSlot && State <= MainMenuStates.SaveGameSaving)
             {
-                case MainMenuStates.LoadGameChooseSlot:
-                    DrawLGChooseSlot();
-                    break;
+                DrawLGSGChooseBlocks();
+                Memory.SpriteBatchStartAlpha(tm: IGM_focus);
 
-                case MainMenuStates.LoadGameCheckingSlot:
-                    DrawLGCheckSlot();
-                    break;
+                switch (State)
+                {
+                    case MainMenuStates.LoadGameChooseSlot:
+                        DrawLGChooseSlot();
+                        break;
 
-                case MainMenuStates.LoadGameChooseGame:
-                    DrawLGChooseGame();
-                    break;
+                    case MainMenuStates.LoadGameCheckingSlot:
+                        DrawLGCheckSlot();
+                        break;
 
-                case MainMenuStates.LoadGameLoading:
-                    DrawLGdata();
-                    break;
+                    case MainMenuStates.LoadGameChooseGame:
+                        DrawLGChooseGame();
+                        break;
 
-                case MainMenuStates.SaveGameChooseSlot:
-                    DrawSGChooseSlot();
-                    break;
+                    case MainMenuStates.LoadGameLoading:
+                        DrawLGdata();
+                        break;
 
-                case MainMenuStates.SaveGameCheckingSlot:
-                    DrawSGCheckSlot();
-                    break;
+                    case MainMenuStates.SaveGameChooseSlot:
+                        DrawSGChooseSlot();
+                        break;
 
-                case MainMenuStates.SaveGameChooseGame:
-                    DrawSGChooseGame();
-                    break;
+                    case MainMenuStates.SaveGameCheckingSlot:
+                        DrawSGCheckSlot();
+                        break;
 
-                case MainMenuStates.SaveGameSaving:
-                    DrawSGdata();
-                    break;
+                    case MainMenuStates.SaveGameChooseGame:
+                        DrawSGChooseGame();
+                        break;
+
+                    case MainMenuStates.SaveGameSaving:
+                        DrawSGdata();
+                        break;
+                }
+                Memory.SpriteBatchEnd();
+
+                Memory.SpriteBatchStartAlpha();
+                DrawLGSGHeader();
+                Memory.SpriteBatchEnd();
             }
-            Memory.SpriteBatchEnd();
-            
         }
+
         private static void UpdateLGSG()
         {
-            Memory.IsMouseVisible = true;
+            Rectangle dst = new Rectangle
+            {
+                X = 220,
+                Y = 42,
+                Width = 840,
+                Height = 477,
+            };
+            IGM_Size = new Vector2 { X = 843, Y = 630 };
+            Vector2 Zoom = Memory.Scale(IGM_Size.X, IGM_Size.Y, Memory.ScaleMode.FitBoth);
 
+            IGM_focus = Matrix.CreateTranslation(-dst.X + (IGM_Size.X / -2), -dst.Y + (IGM_Size.Y / -2), 0) *
+                Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) *
+                Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
+            Memory.IsMouseVisible = true;
             ml = Input.MouseLocation.Transform(IGM_focus);
             switch (State)
             {
@@ -356,6 +386,7 @@ namespace FF8
                     break;
             }
         }
+
         private static void DrawLGSGChooseBlocks()
         {
             Rectangle dst = new Rectangle
@@ -369,6 +400,8 @@ namespace FF8
             if (OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)
             {
                 Memory.graphics.GraphicsDevice.SetRenderTarget(OffScreenBuffer);
+
+                // Matrix osbMatrix = Matrix.CreateScale(new Vector3())
                 Memory.SpriteBatchStartAlpha();
                 for (int bloc = 0; bloc < 3; bloc++)
                 {
@@ -388,6 +421,7 @@ namespace FF8
                 Memory.graphics.GraphicsDevice.SetRenderTarget(null);
             }
         }
+
         private static void DrawLGSGChooseGame(FF8String topright, FF8String help)
         {
             Rectangle dst = new Rectangle
@@ -400,14 +434,13 @@ namespace FF8
 
             DrawLGSGHeader(strLoadScreen[Litems.GameFolderSlot1 + SlotLoc].Text, topright, help);
 
-            
             if (LastPage == null || LastPage.IsDisposed)
             {
                 Entry e = Memory.Icons.GetEntry(Icons.ID.Arrow_Left);
                 Rectangle arrow = new Rectangle
                 {
                     X = (int)(dst.X - ((e.Width - 2) * 3f)),
-                    Y = (int)((dst.Y + dst.Height / 2))
+                    Y = (dst.Y + dst.Height / 2)
                 };
                 Memory.Icons.Draw(Icons.ID.Arrow_Left, 1, arrow, new Vector2(3f), fade);
                 Memory.Icons.Draw(Icons.ID.Arrow_Left, 2, arrow, new Vector2(3f), fade * blink);
@@ -422,9 +455,9 @@ namespace FF8
             float speed = .17f;
             if (OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)
             {
-                dst.Location = (dst.Location.ToVector2() ).ToPoint();
+                dst.Location = (dst.Location.ToVector2()).ToPoint();
                 PageTarget = dst.Location.ToVector2();
-                dst.Size = (dst.Size.ToVector2() ).ToPoint();
+                dst.Size = (dst.Size.ToVector2()).ToPoint();
                 PageSize = dst.Size.ToVector2();
                 CurrentPageLoc = CurrentPageLoc == Vector2.Zero ? PageTarget : Vector2.SmoothStep(CurrentPageLoc, PageTarget, speed).FloorOrCeiling(PageTarget);
                 dst.Location = CurrentPageLoc.RoundedPoint();
@@ -448,7 +481,6 @@ namespace FF8
                 Point ptr = BlockLocs[BlockLoc].Item2;
                 DrawPointer(ptr);
             }
-            
         }
 
         /// <summary>
@@ -458,22 +490,31 @@ namespace FF8
         /// <param name="help">Text in help box</param>
         private static void DrawLGSGChooseSlot(FF8String topright, FF8String help)
         {
-            
             DrawLGSGHeader(strLoadScreen[Litems.GameFolder].Text, topright, help);
             SlotLocs[0] = DrawLGSGSlot(Vector2.Zero, strLoadScreen[Litems.Slot1].Text, strLoadScreen[Litems.FF8].Text);
             SlotLocs[1] = DrawLGSGSlot(new Vector2(0, vp_per.Y * 0.216666667f), strLoadScreen[Litems.Slot2].Text, strLoadScreen[Litems.FF8].Text);
             DrawPointer(SlotLocs[SlotLoc].Item2);
-            
         }
 
-        private static Rectangle DrawLGSGHeader(FF8String info, FF8String name, FF8String help)
+
+        private static void DrawLGSGHeader(FF8String info, FF8String name, FF8String help) => LGSGHEADER = new Tuple<FF8String, FF8String, FF8String>(info, name, help);
+
+        private static Rectangle DrawLGSGHeader() => LGSGHEADER != null ? DrawLGSGHeader(LGSGHEADER) : Rectangle.Empty;
+
+        private static Rectangle DrawLGSGHeader(Tuple<FF8String, FF8String, FF8String> tuple)
         {
-            Rectangle dst = new Rectangle((int)(vp_per.X * 0.82421875f), (int)(vp_per.Y * 0.0583333333333333f), (int)(vp_per.X * 0.17578125f), (int)(vp_per.Y * 0.0916666666666667f));
-            DrawBox(dst, name, null, false);
-            dst = new Rectangle(0, dst.Y, (int)(vp_per.X * 0.8203125f), dst.Height);
-            DrawBox(dst, info, Icons.ID.INFO);
-            dst = new Rectangle((int)(vp_per.X * 0.0282101167315175f), (int)(dst.Height + dst.Y + vp_per.Y * 0.0041666666666667f), (int)(vp_per.X * 0.943579766536965f), dst.Height);
-            DrawBox(dst, help, Icons.ID.HELP, false);
+            FF8String info = tuple.Item1;
+            FF8String name = tuple.Item2;
+            FF8String help = tuple.Item3;
+            Vector2 TextZoom = Memory.Scale(Width: 960, scaleMode: Memory.ScaleMode.FitBoth);
+            Vector2 BoxZoom = new Vector2(1,TextZoom.Y);
+
+            Rectangle dst = new Rectangle((int)(vp.X * 0.82421875f), 0, (int)(vp.X * 0.17578125f), (int)(vp_per.Y * 0.0916666666666667f));
+            DrawBox(dst, name, indent:false,boxScale:BoxZoom,textScale:TextZoom);
+            dst = new Rectangle(0, dst.Y, (int)(vp.X * 0.8203125f), dst.Height);
+            DrawBox(dst, info, Icons.ID.INFO, boxScale: BoxZoom, textScale: TextZoom);
+            dst = new Rectangle((int)(vp.X * 0.0282101167315175f), (int)(dst.Height + dst.Y + vp_per.Y * 0.0041666666666667f), (int)(vp.X * 0.943579766536965f), dst.Height);
+            DrawBox(dst, help, Icons.ID.HELP,indent: false, boxScale: BoxZoom, textScale: TextZoom);
             return dst;
         }
 
@@ -487,23 +528,23 @@ namespace FF8
                 Height = (int)(vp_per.Y * 0.1f),
             };
             dst = DrawBox(dst, null, Icons.ID.INFO).Item1;
-            
+
             dst.Offset(new Vector2
             {
                 X = (vp_per.X * 0.01328125f),
                 Y = (vp_per.Y * 0.0333333333333333f),
-            } );
+            });
             dst.Size = (new Point
             {
                 X = (int)(vp_per.X * 0.3171875f),
                 Y = (int)(vp_per.Y * 0.0333333333333333f),
-            }.ToVector2() ).ToPoint();
+            }.ToVector2()).ToPoint();
             Memory.Icons.Draw(Icons.ID.Bar_BG, -1, dst, Vector2.UnitY, fade);
             dst.Width = (int)(dst.Width * PercentLoaded);
             Memory.Icons.Draw(Icons.ID.Bar_Fill, -1, dst, Vector2.UnitY, fade);
         }
 
-        private static Tuple<Rectangle, Point,Rectangle> DrawLGSGSlot(Vector2 offset, FF8String title, FF8String main)
+        private static Tuple<Rectangle, Point, Rectangle> DrawLGSGSlot(Vector2 offset, FF8String title, FF8String main)
         {
             Rectangle dst = new Rectangle((int)(vp_per.X * 0.3703125f), (int)(vp_per.Y * 0.386111111f), (int)(vp_per.X * 0.259375f), (int)(vp_per.Y * 0.141666667f));
             Rectangle slot = new Rectangle(dst.Location, new Point((int)(vp_per.X * 0.1f), (int)(vp_per.Y * 0.0875f)));
@@ -514,21 +555,22 @@ namespace FF8
             DrawBox(slot, title, null, false, false);
             return location;
         }
+
         private static void DrawLGdata() => DrawLGSGdata(strLoadScreen[Litems.Load].Text, strLoadScreen[Litems.Loading].Text);
+
         private static void DrawSGdata() => DrawLGSGdata(strLoadScreen[Litems.Save].Text, strLoadScreen[Litems.Saving].Text);
-        private static void DrawLGSGdata(FF8String topright,FF8String help)
+
+        private static void DrawLGSGdata(FF8String topright, FF8String help)
         {
             DrawLGSGHeader(strLoadScreen[Litems.GameFolderSlot1 + SlotLoc].Text, topright, help);
             DrawLGSGLoadBar();
-            
         }
 
         private static void DrawPointer(Point cursor, sbyte xoffset = -10)
         {
-            
-            Rectangle dst = new Rectangle(cursor, new Point((int)(24 * 2), (int)(16 * 2)));
+            Rectangle dst = new Rectangle(cursor, new Point(24 * 2, 16 * 2));
             dst.Offset(-(dst.Width) + xoffset, -(dst.Height * .25f));
-            Memory.Icons.Draw(Icons.ID.Finger_Right, 2, dst, new Vector2(2f) , fade);
+            Memory.Icons.Draw(Icons.ID.Finger_Right, 2, dst, new Vector2(2f), fade);
         }
 
         private static void DrawSGCheckSlot() => DrawLGSGCheckSlot(strLoadScreen[Litems.Save].Text);
@@ -565,7 +607,7 @@ namespace FF8
 
             SlotLocs = new Tuple<Rectangle, Point, Rectangle>[2];
             BlockLocs = new Tuple<Rectangle, Point, Rectangle>[3];
-    }
+        }
 
         private static bool UpdateLGChooseGame()
         {
@@ -575,7 +617,7 @@ namespace FF8
             {
                 for (int i = 0; i < BlockLocs.Length && BlockLocs[i] != null; i++)
                 {
-                    if (BlockLocs[i].Item1.Scale(scale).Contains(ml))
+                    if (BlockLocs[i].Item1.Contains(ml))
                     {
                         BlockLoc = (sbyte)i;
                         ret = true;
@@ -585,7 +627,7 @@ namespace FF8
                             UpdateLGChooseGameLEFT();
                             return true;
                         }
-                        else if(Input.Button(Buttons.MouseWheeldown))
+                        else if (Input.Button(Buttons.MouseWheeldown))
                         {
                             UpdateLGChooseGameRIGHT();
                             return true;
@@ -640,7 +682,7 @@ namespace FF8
                     Dchoose = 0;
                     Fade = 0.0f;
                     State = MainMenuStates.LoadGameChooseSlot;
-                    
+
                     ret = true;
                 }
                 else if (Input.Button(Buttons.Okay))
@@ -648,7 +690,6 @@ namespace FF8
                     PercentLoaded = 0f;
                     //State = MainMenuStates.LoadGameCheckingSlot;
                     State = MainMenuStates.LoadGameLoading;
-                    
                 }
             }
             if (scale != lastscale && OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)
@@ -656,7 +697,7 @@ namespace FF8
             if (OffScreenBuffer == null || OffScreenBuffer.IsDisposed)
                 //if you make these with out disposing enough times gfx driver crashes.
                 //happened many times if i left this running and had this just ran every draw call. heh.
-                OffScreenBuffer = new RenderTarget2D(Memory.graphics.GraphicsDevice, (int)(vp_per.X * 0.65625f *scale.X), (int)(vp_per.Y * 0.6625f*scale.Y), false, SurfaceFormat.Color, DepthFormat.None);
+                OffScreenBuffer = new RenderTarget2D(Memory.graphics.GraphicsDevice, (int)(vp_per.X * 0.65625f), (int)(vp_per.Y * 0.6625f), false, SurfaceFormat.Color, DepthFormat.None);
             return ret;
         }
 
@@ -753,14 +794,13 @@ namespace FF8
                 Dchoose = 0;
                 Fade = 0.0f;
                 State = MainMenuStates.MainLobby;
-                
+
                 ret = true;
             }
             else if (Input.Button(Buttons.Okay))
             {
                 PercentLoaded = 0f;
                 State = MainMenuStates.LoadGameCheckingSlot;
-                
             }
             return ret;
         }
@@ -774,9 +814,9 @@ namespace FF8
             else
             {
                 State = MainMenuStates.InGameMenu; // start loaded game.
-                Memory.State = Saves.FileList[SlotLoc, BlockLoc + blockpage*3];
+                Memory.State = Saves.FileList[SlotLoc, BlockLoc + blockpage * 3];
                 //till we have a game to load i'm going to display ingame menu.
-                
+
                 init_debugger_Audio.PlaySound(36);
             }
             UpdateLGChooseGame();
@@ -791,16 +831,20 @@ namespace FF8
             else
             {
                 State = MainMenuStates.LoadGameChooseGame;
-                
+
                 init_debugger_Audio.PlaySound(35);
             }
             UpdateLGChooseGame();
         }
 
         private static void UpdateSGChooseSlot() => throw new NotImplementedException();
+
         private static void UpdateSGCheckSlot() => throw new NotImplementedException();
+
         private static void UpdateSGChooseGame() => throw new NotImplementedException();
+
         private static void UpdateSGdata() => throw new NotImplementedException();
+
         #endregion Methods
     }
 }
