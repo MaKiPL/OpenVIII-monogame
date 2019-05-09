@@ -158,7 +158,7 @@
     <Compile Include="Menu\Strings.cs" />
     <Compile Include="Menu\Module_card_test.cs" />
     <Compile Include="Menu\Module_main_menu_debug.Item.cs" />
-    <Compile Include="Menu\Module_main_menu_Loading.cs" />
+    <Compile Include="Menu\Module_main_menu_LGSG.cs" />
     <Compile Include="Menu\Module_main_menu_MainLobby.cs" />
     <Compile Include="Menu\Module_main_menu_DebugLobby.cs" />
     <Compile Include="Saves.CharacterData.cs" />
