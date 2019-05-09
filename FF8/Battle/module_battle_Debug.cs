@@ -204,6 +204,11 @@ namespace FF8
                 DEBUGframe--;
             if (Input.Button(Keys.D3))
                 battleModule = BATTLEMODULE_INIT;
+            if(Input.Button(Keys.D4))
+            {
+                battleModule = BATTLEMODULE_INIT;
+                Memory.battle_encounter++;
+            }
 #endif
         }
 
@@ -225,27 +230,42 @@ namespace FF8
         {
             const float V = 100f;
             //battleCamera.cam.startingTime = 64;
+            float step = battleCamera.cam.startingTime / (float)battleCamera.cam.time;
             float camWorldX = MathHelper.Lerp(battleCamera.cam.Camera_World_X_s16[0] / V,
-                battleCamera.cam.Camera_World_X_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time) -60;
+                battleCamera.cam.Camera_World_X_s16[1] / V, step) -60;
             float camWorldY = MathHelper.Lerp(battleCamera.cam.Camera_World_Y_s16[0] / V,
-                battleCamera.cam.Camera_World_Y_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time); 
+                battleCamera.cam.Camera_World_Y_s16[1] / V, step); 
             float camWorldZ = MathHelper.Lerp(battleCamera.cam.Camera_World_Z_s16[0] / V,
-                battleCamera.cam.Camera_World_Z_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time)+40;
+                battleCamera.cam.Camera_World_Z_s16[1] / V, step) +40;
 
             float camTargetX = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_X_s16[0] / V,
-    battleCamera.cam.Camera_Lookat_X_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time)-20;
+    battleCamera.cam.Camera_Lookat_X_s16[1] / V, step) -20;
             float camTargetY = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_Y_s16[0] / V,
-battleCamera.cam.Camera_Lookat_Y_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time)+25;
+battleCamera.cam.Camera_Lookat_Y_s16[1] / V, step) +25;
             float camTargetZ = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_Z_s16[0] / V,
-battleCamera.cam.Camera_Lookat_Z_s16[1] / V, battleCamera.cam.startingTime / (float)battleCamera.cam.time)-20;
+battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
 
 
 
             camPosition = new Vector3(-camWorldX, camWorldY, -camWorldZ);
             camTarget = new Vector3(camTargetY, -camTargetX, -camTargetZ);
+
+
+            float fovDirector = MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, step);
             
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          Vector3.Up);
+            projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
+                   MathHelper.ToRadians(fovDirector/6),
+                   Memory.graphics.GraphicsDevice.DisplayMode.AspectRatio,
+    1f, 1000f);
+
+            //ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
+            //{
+            //    Projection = projectionMatrix,
+            //    View = viewMatrix,
+            //    World = worldMatrix
+            //};
 
             if (battleCamera.cam.startingTime >= battleCamera.cam.time)
                 return;
@@ -633,6 +653,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, battleCamera.cam.startingTime / (fl
             Memory.font.RenderBasicText(new FF8String($"camera frame: {battleCamera.cam.startingTime}/{battleCamera.cam.time}"), 20, 30 * 3, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {MakiExtended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 4, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {MakiExtended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 5, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Camera.FOV: {MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, battleCamera.cam.startingTime / (float)battleCamera.cam.time)}"), 20, 30 * 6, 1, 1, 0, 1);
             Memory.SpriteBatchEnd();
         }
 
@@ -1351,8 +1372,6 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, battleCamera.cam.startingTime / (fl
         /// <param name="animId"></param>
         private static uint ReadAnimation(int animId)
         {
-            //DEBUG- Ok, so I tested it with real assembler of viii and control_word &1 case 0 works perfectly!
-            //phew! well, that's something. I'm not quite sure how does it still work, but at least I parse it 1:1 correctly
             short local2C;
             byte keyframecount =0;
             ushort totalframecount = 0;
