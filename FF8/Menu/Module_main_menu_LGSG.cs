@@ -1,6 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 
@@ -10,11 +9,11 @@ namespace FF8
     {
         #region Fields
 
-        private static sbyte _slotLoc, _blockLoc;
+        private static sbyte _slotLoc;
+        private static sbyte _blockLoc;
 
-        private static int blockpage;
+        private static sbyte blockpage;
 
-        private static RenderTarget2D OffScreenBuffer;
 
         private static float s_blink;
 
@@ -101,7 +100,7 @@ namespace FF8
             }
         }
 
-        public static int Blockpage
+        public static sbyte Blockpage
         {
             get => blockpage; set
             {
@@ -117,110 +116,7 @@ namespace FF8
 
         #region Methods
 
-        private static Tuple<Rectangle, Point> DrawBlock(int block, Saves.Data d)
-        {
-            block++;
-            Rectangle dst = new Rectangle
-            {
-                X = 0,
-                Y = (OffScreenBuffer.Height / 3 * ((block - 1) % 3)),
-                Width = (OffScreenBuffer.Width),
-                Height = OffScreenBuffer.Height / 3,
-            };
-            Vector2 offset = dst.Location.ToVector2();
-
-            DrawBox(dst, indent: false);
-
-            Vector2 blocknumpos = new Vector2
-            {
-                X = (OffScreenBuffer.Width * 0.00952381f),
-                Y = 0,
-            } + offset;
-            Vector2 blocknumsize = new Vector2(OffScreenBuffer.Height * 0.00628930817610063f);
-            Memory.Icons.Draw(block, 4, 2, "D2", blocknumpos, blocknumsize, fade); // 2,2 looks close
-
-            Rectangle faceRect = new Rectangle
-            {
-                X = (int)(OffScreenBuffer.Width * 0.0654761904761905f),
-                Y = (int)(OffScreenBuffer.Height * 0.0157232704402516f),
-                Width = (int)(OffScreenBuffer.Width * 0.113095238095238f),
-                Height = (int)(OffScreenBuffer.Height * 0.30188679245283f),
-            };
-            faceRect.Offset(offset);
-            sbyte mainchar = -1;
-            for (byte face = 0; d != null && d.charactersportraits != null && face < d.charactersportraits.Length; face++)
-            {
-                if (face != 0)
-                    faceRect.Offset(faceRect.Width, 0);
-                if (d.charactersportraits[face] != Faces.ID.Blank)
-                {
-                    Memory.Faces.Draw(d.charactersportraits[face], faceRect, Vector2.UnitY, fade);
-                    Memory.Icons.Draw(Icons.ID.MenuBorder, 2, faceRect, new Vector2(1f), fade);
-                    if (mainchar == -1) mainchar = (sbyte)face;
-                }
-            }
-            if (mainchar > -1 && d != null && d.charactersportraits != null && d.charactersportraits[mainchar] != Faces.ID.Blank)
-            {
-                Vector2 detailsLoc = new Vector2
-                {
-                    X = (int)(OffScreenBuffer.Width * 0.408333333333333f),
-                    Y = (int)(OffScreenBuffer.Height * 0.0251572327044026f),
-                } + offset;
-                FF8String name = Memory.Strings.GetName(d.charactersportraits[mainchar], d);
-                FF8String lv_ = new FF8String($"LV.   {d.firstcharacterslevel}");
-                TextScale = new Vector2(OffScreenBuffer.Width * 0.0030303030297619f, OffScreenBuffer.Height * 0.00636792452830189f);
-                Memory.font.RenderBasicText(name, detailsLoc, TextScale, Fade: fade);
-
-                int playy = (int)detailsLoc.Y;
-                detailsLoc.Y += (int)(OffScreenBuffer.Height * 0.0817610062893082f);
-                Rectangle disc = Memory.font.RenderBasicText(lv_, detailsLoc, TextScale, Fade: fade);
-                disc.Offset(0, (int)(OffScreenBuffer.Height * 0.0125786163522013f));
-                disc.X = (int)(OffScreenBuffer.Width * 0.583333333333333f);
-                Vector2 DiscScale = new Vector2(OffScreenBuffer.Height * 0.0060987230787661f);
-                Memory.Icons.Draw(Icons.ID.DISC, 2, disc, DiscScale, fade);
-                Vector2 CurrDiscLoc = new Vector2(disc.X + (0.119047619047619f * OffScreenBuffer.Width), disc.Y);
-                Memory.Icons.Draw((int)d.CurrentDisk + 1, 0, 2, "D1", CurrDiscLoc, DiscScale, fade);
-                float X1 = OffScreenBuffer.Width * 0.952380952380952f;
-                float X2 = OffScreenBuffer.Width * -0.0238095238095238f;
-                float X3 = OffScreenBuffer.Width * -0.0952380952380952f;
-                disc.Location = new Vector2 { X = X1, Y = disc.Y }.ToPoint();
-                Memory.Icons.Draw(Icons.ID.G, 2, disc, DiscScale, fade);
-                double digits = Math.Floor(Math.Log10(d.AmountofGil) + 2);
-                disc.Offset(new Vector2 { X = (float)(digits * X2) });
-                Memory.Icons.Draw((int)d.AmountofGil, 0, 2, "D1", disc.Location.ToVector2(), DiscScale, fade);
-                disc.Location = new Vector2 { X = X1, Y = playy }.ToPoint();
-                disc.Offset(new Vector2 { X = X2 });
-                Memory.Icons.Draw(d.timeplayed.Minutes, 0, 2, "D2", disc.Location.ToVector2(), DiscScale, fade);
-
-                if ((int)d.timeplayed.TotalHours > 0)
-                {
-                    disc.Offset(new Vector2 { X = 1 * X2 });
-                    Memory.Icons.Draw(Icons.ID.Colon, 13, disc, DiscScale, fade);
-                    disc.Offset(new Vector2 { X = (float)Math.Floor(Math.Log10((int)d.timeplayed.TotalHours) + 1) * X2 });
-                    Memory.Icons.Draw((int)d.timeplayed.TotalHours, 0, 2, "D1", disc.Location.ToVector2(), DiscScale, fade);
-                }
-                disc.Offset(new Vector2 { X = X3 + X2 });
-                Memory.Icons.Draw(Icons.ID.PLAY, 13, disc, DiscScale, fade);
-                Rectangle locbox = new Rectangle
-                {
-                    X = faceRect.Width + faceRect.X,
-                    Y = (int)(OffScreenBuffer.Height * 0.19496855345912f),
-                    Width = OffScreenBuffer.Width - faceRect.Width - faceRect.X,
-                    Height = (int)(OffScreenBuffer.Height * 0.138364779874214f),
-                };
-                locbox.Offset(offset);
-                DrawBox(locbox, indent: false);
-                FF8String loc = Memory.Strings.Read(Strings.FileID.AREAMES, 0, d.LocationID).ReplaceRegion();
-                locbox.Offset(0.0297619047619048f * OffScreenBuffer.Width, 0.0440251572327044f * OffScreenBuffer.Height);
-                Memory.font.RenderBasicText(loc, locbox.Location, TextScale, Fade: fade);
-            }
-
-            dst.X = (int)(vp_per.X * 0f);
-            dst.Y = (int)(vp_per.Y * 0.220833333333333f * ((block - 1) % 3));
-            dst.Width = (int)(vp_per.X * 0.65625f);
-            dst.Height = (int)(vp_per.Y * 0.220833333333333f);
-            return new Tuple<Rectangle, Point>(dst, (dst.Location.ToVector2() + new Vector2(25f, dst.Height / 2)).ToPoint());
-        }
+        
 
         private static Tuple<Rectangle, Point, Rectangle> DrawBox(Rectangle dst, FF8String buffer = null, Icons.ID? title = null, bool indent = true, bool bottom = false,Vector2? textScale=null,Vector2? boxScale = null)
         {
@@ -266,20 +162,8 @@ namespace FF8
             return new Tuple<Rectangle, Point, Rectangle>(hotspot, cursor, font);
         }
 
-        private static void DrawLGCheckSlot() => DrawLGSGCheckSlot(strLoadScreen[Litems.Load].Text);
 
-        private static void DrawLGChooseGame() => DrawLGSGChooseGame(strLoadScreen[Litems.Load].Text, strLoadScreen[Litems.BlockToLoad].Text);
 
-        /// <summary>
-        /// Draw Loading Choose Slot Screen
-        /// </summary>
-        private static void DrawLGChooseSlot() => DrawLGSGChooseSlot(strLoadScreen[Litems.Load].Text, strLoadScreen[Litems.LoadFF8].Text);
-
-        private static void DrawLGSGCheckSlot(FF8String topright)
-        {
-            DrawLGSGHeader(strLoadScreen[Litems.GameFolderSlot1 + SlotLoc].Text, topright, strLoadScreen[Litems.CheckGameFolder].Text);
-            DrawLGSGLoadBar();
-        }
 
         private static void DrawLGSG()
         {
@@ -303,7 +187,7 @@ namespace FF8
                         break;
 
                     case MainMenuStates.LoadGameLoading:
-                        DrawLGdata();
+                        DrawLG_Loading();
                         break;
 
                     case MainMenuStates.SaveGameChooseSlot:
@@ -319,7 +203,7 @@ namespace FF8
                         break;
 
                     case MainMenuStates.SaveGameSaving:
-                        DrawSGdata();
+                        DrawSG_Saving();
                         break;
                 }
                 Memory.SpriteBatchEnd();
@@ -354,7 +238,7 @@ namespace FF8
                     break;
 
                 case MainMenuStates.LoadGameCheckingSlot:
-                    UpdateLoadingSlot();
+                    UpdateLGCheckSlot();
                     Memory.IsMouseVisible = false;
                     break;
 
@@ -363,7 +247,7 @@ namespace FF8
                     break;
 
                 case MainMenuStates.LoadGameLoading:
-                    UpdateLoadingData();
+                    UpdateLG_Loading();
                     Memory.IsMouseVisible = false;
                     break;
 
@@ -381,120 +265,12 @@ namespace FF8
                     break;
 
                 case MainMenuStates.SaveGameSaving:
-                    UpdateSGdata();
+                    UpdateSG_Saving();
                     Memory.IsMouseVisible = false;
                     break;
             }
         }
 
-        private static void DrawLGSGChooseBlocks()
-        {
-            Rectangle dst = new Rectangle
-            {
-                X = (int)(vp_per.X * 0.171875f),
-                Y = (int)(vp_per.Y * 0.266666666666667f),
-                Width = (int)(vp_per.X * 0.65625f),
-                Height = (int)(vp_per.Y * 0.6625f),
-            };
-
-            if (OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)
-            {
-                Memory.graphics.GraphicsDevice.SetRenderTarget(OffScreenBuffer);
-
-                // Matrix osbMatrix = Matrix.CreateScale(new Vector3())
-                Memory.SpriteBatchStartAlpha();
-                for (int bloc = 0; bloc < 3; bloc++)
-                {
-                    int block = bloc + 3 * (Blockpage);
-                    Saves.Data d = Saves.FileList?[SlotLoc, block];
-                    Tuple<Rectangle, Point> b = DrawBlock(block, d);
-                    //cords returned by drawblock assume being in the offscreen buffer.
-                    //Which is the size of the 3 blocks. So we need to offset
-                    //everything by the draw location.
-                    Rectangle r = b.Item1;
-                    r.Offset(dst.Location);
-                    Point p = b.Item2;
-                    p.Offset(dst.Location);
-                    BlockLocs[bloc] = new Tuple<Rectangle, Point, Rectangle>(r, p, new Rectangle());
-                }
-                Memory.SpriteBatchEnd();
-                Memory.graphics.GraphicsDevice.SetRenderTarget(null);
-            }
-        }
-
-        private static void DrawLGSGChooseGame(FF8String topright, FF8String help)
-        {
-            Rectangle dst = new Rectangle
-            {
-                X = (int)(vp_per.X * 0.171875f),
-                Y = (int)(vp_per.Y * 0.266666666666667f),
-                Width = (int)(vp_per.X * 0.65625f),
-                Height = (int)(vp_per.Y * 0.6625f),
-            };
-
-            DrawLGSGHeader(strLoadScreen[Litems.GameFolderSlot1 + SlotLoc].Text, topright, help);
-
-            if (LastPage == null || LastPage.IsDisposed)
-            {
-                Entry e = Memory.Icons.GetEntry(Icons.ID.Arrow_Left);
-                Rectangle arrow = new Rectangle
-                {
-                    X = (int)(dst.X - ((e.Width - 2) * 3f)),
-                    Y = (dst.Y + dst.Height / 2)
-                };
-                Memory.Icons.Draw(Icons.ID.Arrow_Left, 1, arrow, new Vector2(3f), fade);
-                Memory.Icons.Draw(Icons.ID.Arrow_Left, 2, arrow, new Vector2(3f), fade * blink);
-                arrow = new Rectangle
-                {
-                    X = (int)((dst.X + dst.Width) + -2 * 3f),
-                    Y = arrow.Y
-                };
-                Memory.Icons.Draw(Icons.ID.Arrow_Right2, 1, arrow, new Vector2(3f), fade);
-                Memory.Icons.Draw(Icons.ID.Arrow_Right2, 2, arrow, new Vector2(3f), fade * blink);
-            }
-            float speed = .17f;
-            if (OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)
-            {
-                dst.Location = (dst.Location.ToVector2()).ToPoint();
-                PageTarget = dst.Location.ToVector2();
-                dst.Size = (dst.Size.ToVector2()).ToPoint();
-                PageSize = dst.Size.ToVector2();
-                CurrentPageLoc = CurrentPageLoc == Vector2.Zero ? PageTarget : Vector2.SmoothStep(CurrentPageLoc, PageTarget, speed).FloorOrCeiling(PageTarget);
-                dst.Location = CurrentPageLoc.RoundedPoint();
-                Memory.spriteBatch.Draw(OffScreenBuffer, dst, Color.White * fade);
-            }
-            if (LastPage != null && !LastPage.IsDisposed)
-            {
-                CurrentLastPageLoc = CurrentLastPageLoc == Vector2.Zero ? PageTarget : Vector2.SmoothStep(CurrentLastPageLoc, LastPageTarget, speed).FloorOrCeiling(LastPageTarget);
-                if (LastPageTarget == CurrentLastPageLoc)
-                {
-                    LastPage.Dispose(); CurrentLastPageLoc = Vector2.Zero;
-                }
-                else
-                {
-                    dst.Location = CurrentLastPageLoc.RoundedPoint();
-                    Memory.spriteBatch.Draw(LastPage, dst, Color.White * fade);
-                }
-            }
-            else
-            {
-                Point ptr = BlockLocs[BlockLoc].Item2;
-                DrawPointer(ptr);
-            }
-        }
-
-        /// <summary>
-        /// Draw Save or Loading Slot Screen
-        /// </summary>
-        /// <param name="topright">Text in top right box</param>
-        /// <param name="help">Text in help box</param>
-        private static void DrawLGSGChooseSlot(FF8String topright, FF8String help)
-        {
-            DrawLGSGHeader(strLoadScreen[Litems.GameFolder].Text, topright, help);
-            SlotLocs[0] = DrawLGSGSlot(Vector2.Zero, strLoadScreen[Litems.Slot1].Text, strLoadScreen[Litems.FF8].Text);
-            SlotLocs[1] = DrawLGSGSlot(new Vector2(0, vp_per.Y * 0.216666667f), strLoadScreen[Litems.Slot2].Text, strLoadScreen[Litems.FF8].Text);
-            DrawPointer(SlotLocs[SlotLoc].Item2);
-        }
 
 
         private static void DrawLGSGHeader(FF8String info, FF8String name, FF8String help) => LGSGHEADER = new Tuple<FF8String, FF8String, FF8String>(info, name, help);
@@ -556,16 +332,6 @@ namespace FF8
             return location;
         }
 
-        private static void DrawLGdata() => DrawLGSGdata(strLoadScreen[Litems.Load].Text, strLoadScreen[Litems.Loading].Text);
-
-        private static void DrawSGdata() => DrawLGSGdata(strLoadScreen[Litems.Save].Text, strLoadScreen[Litems.Saving].Text);
-
-        private static void DrawLGSGdata(FF8String topright, FF8String help)
-        {
-            DrawLGSGHeader(strLoadScreen[Litems.GameFolderSlot1 + SlotLoc].Text, topright, help);
-            DrawLGSGLoadBar();
-        }
-
         private static void DrawPointer(Point cursor, sbyte xoffset = -10,bool blink = false)
         {
             Rectangle dst = new Rectangle(cursor, new Point(24 * 2, 16 * 2));
@@ -573,14 +339,6 @@ namespace FF8
             Memory.Icons.Draw(Icons.ID.Finger_Right, 2, dst, new Vector2(2f), blink?fade*s_blink:fade);
         }
 
-        private static void DrawSGCheckSlot() => DrawLGSGCheckSlot(strLoadScreen[Litems.Save].Text);
-
-        private static void DrawSGChooseGame() => DrawLGSGChooseGame(strLoadScreen[Litems.Save].Text, strLoadScreen[Litems.BlockToSave].Text);
-
-        /// <summary>
-        /// Draw Save Choose Slot Screen
-        /// </summary>
-        private static void DrawSGChooseSlot() => DrawLGSGChooseSlot(strLoadScreen[Litems.Save].Text, strLoadScreen[Litems.SaveFF8].Text);
 
         private static void InitLoad()
         {
@@ -609,241 +367,7 @@ namespace FF8
             BlockLocs = new Tuple<Rectangle, Point, Rectangle>[3];
         }
 
-        private static bool UpdateLGChooseGame()
-        {
-            bool ret = false;
 
-            if (BlockLocs != null && BlockLocs.Length > 0 && BlockLocs[0] != null)
-            {
-                for (int i = 0; i < BlockLocs.Length && BlockLocs[i] != null; i++)
-                {
-                    if (BlockLocs[i].Item1.Contains(ml))
-                    {
-                        BlockLoc = (sbyte)i;
-                        ret = true;
-
-                        if (Input.Button(Buttons.MouseWheelup))
-                        {
-                            UpdateLGChooseGameLEFT();
-                            return true;
-                        }
-                        else if (Input.Button(Buttons.MouseWheeldown))
-                        {
-                            UpdateLGChooseGameRIGHT();
-                            return true;
-                        }
-                        break;
-                    }
-                }
-
-                if (Input.Button(Buttons.Down))
-                {
-                    Input.ResetInputLimit();
-                    init_debugger_Audio.PlaySound(0);
-                    BlockLoc++;
-                    ret = true;
-                }
-                else if (Input.Button(Buttons.Left))
-                {
-                    UpdateLGChooseGameLEFT();
-                    ret = true;
-                }
-                else if (Input.Button(Buttons.Right))
-                {
-                    UpdateLGChooseGameRIGHT();
-                    ret = true;
-                }
-                else if (Input.Button(Buttons.Up))
-                {
-                    Input.ResetInputLimit();
-                    init_debugger_Audio.PlaySound(0);
-                    BlockLoc--;
-                    ret = true;
-                }
-                else if (Input.Button(Keys.PageDown))
-                {
-                    Input.ResetInputLimit();
-                    init_debugger_Audio.PlaySound(0);
-                    SlotLoc++;
-                    ret = true;
-                }
-                else if (Input.Button(Keys.PageUp))
-                {
-                    Input.ResetInputLimit();
-                    init_debugger_Audio.PlaySound(0);
-                    SlotLoc--;
-                    ret = true;
-                }
-                else if (Input.Button(Buttons.Cancel))
-                {
-                    Input.ResetInputLimit();
-                    init_debugger_Audio.PlaySound(8);
-                    init_debugger_Audio.StopMusic();
-                    Dchoose = 0;
-                    Fade = 0.0f;
-                    State = MainMenuStates.LoadGameChooseSlot;
-
-                    ret = true;
-                }
-                else if (Input.Button(Buttons.Okay))
-                {
-                    PercentLoaded = 0f;
-                    //State = MainMenuStates.LoadGameCheckingSlot;
-                    State = MainMenuStates.LoadGameLoading;
-                }
-            }
-            if (scale != lastscale && OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)
-                OffScreenBuffer.Dispose();
-            if (OffScreenBuffer == null || OffScreenBuffer.IsDisposed)
-                //if you make these with out disposing enough times gfx driver crashes.
-                //happened many times if i left this running and had this just ran every draw call. heh.
-                OffScreenBuffer = new RenderTarget2D(Memory.graphics.GraphicsDevice, (int)(vp_per.X * 0.65625f), (int)(vp_per.Y * 0.6625f), false, SurfaceFormat.Color, DepthFormat.None);
-            return ret;
-        }
-
-        private static void UpdateLGChooseGameRIGHT()
-        {
-            Input.ResetInputLimit();
-            init_debugger_Audio.PlaySound(0);
-            if (LastPage != null && !LastPage.IsDisposed)
-            {
-                LastPage.Dispose();
-                CurrentLastPageLoc = Vector2.Zero;
-            }
-            if (OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)
-            {
-                lock (OffScreenBuffer)
-                {
-                    LastPage = new Texture2D(Memory.graphics.GraphicsDevice, OffScreenBuffer.Width, OffScreenBuffer.Height);
-                    lock (LastPage)
-                    {
-                        Color[] texdata = new Color[OffScreenBuffer.Width * OffScreenBuffer.Height];
-                        OffScreenBuffer.GetData(texdata);
-                        LastPage.SetData(texdata);
-                        LastPageTarget = new Vector2(-PageSize.X, CurrentPageLoc.Y);
-                        CurrentPageLoc = new Vector2(vp_per.X, CurrentPageLoc.Y);
-                    }
-                }
-            }
-            Blockpage++;
-        }
-
-        private static void UpdateLGChooseGameLEFT()
-        {
-            Input.ResetInputLimit();
-            init_debugger_Audio.PlaySound(0);
-            if (LastPage != null && !LastPage.IsDisposed)
-            {
-                LastPage.Dispose();
-                CurrentLastPageLoc = Vector2.Zero;
-            }
-            if (OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)
-            {
-                lock (OffScreenBuffer)
-                {
-                    LastPage = new Texture2D(Memory.graphics.GraphicsDevice, OffScreenBuffer.Width, OffScreenBuffer.Height);
-                    lock (LastPage)
-                    {
-                        Color[] texdata = new Color[OffScreenBuffer.Width * OffScreenBuffer.Height];
-                        OffScreenBuffer.GetData(texdata);
-                        LastPage.SetData(texdata);
-                        LastPageTarget = new Vector2(vp_per.X, CurrentPageLoc.Y);
-                        CurrentPageLoc = new Vector2(-PageSize.X, CurrentPageLoc.Y);
-                    }
-                }
-            }
-            Blockpage--;
-        }
-
-        private static bool UpdateLGChooseSlot()
-        {
-            bool ret = false;
-            for (int i = 0; i < SlotLocs.Length; i++)
-            {
-                if (SlotLocs[i] != null && SlotLocs[i].Item1.Contains(ml))
-                {
-                    SlotLoc = (sbyte)i;
-                    ret = true;
-
-                    if (Input.Button(Buttons.MouseWheelup) || Input.Button(Buttons.MouseWheeldown))
-                    {
-                        return ret;
-                    }
-                    break;
-                }
-            }
-            if (Input.Button(Buttons.Down))
-            {
-                Input.ResetInputLimit();
-                init_debugger_Audio.PlaySound(0);
-                SlotLoc++;
-                ret = true;
-            }
-            else if (Input.Button(Buttons.Up))
-            {
-                Input.ResetInputLimit();
-                init_debugger_Audio.PlaySound(0);
-                SlotLoc--;
-                ret = true;
-            }
-            if (Input.Button(Buttons.Cancel))
-            {
-                Input.ResetInputLimit();
-                init_debugger_Audio.PlaySound(8);
-                init_debugger_Audio.StopMusic();
-                Dchoose = 0;
-                Fade = 0.0f;
-                State = MainMenuStates.MainLobby;
-
-                ret = true;
-            }
-            else if (Input.Button(Buttons.Okay))
-            {
-                PercentLoaded = 0f;
-                State = MainMenuStates.LoadGameCheckingSlot;
-            }
-            return ret;
-        }
-
-        private static void UpdateLoadingData()
-        {
-            if (PercentLoaded < 1.0f)
-            {
-                PercentLoaded += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 3;
-            }
-            else
-            {
-                State = MainMenuStates.InGameMenu; // start loaded game.
-                Memory.State = Saves.FileList[SlotLoc, BlockLoc + blockpage * 3];
-                //till we have a game to load i'm going to display ingame menu.
-
-                init_debugger_Audio.PlaySound(36);
-            }
-            UpdateLGChooseGame();
-        }
-
-        private static void UpdateLoadingSlot()
-        {
-            if (PercentLoaded < 1.0f)
-            {
-                PercentLoaded += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 3;
-            }
-            else
-            {
-                State = MainMenuStates.LoadGameChooseGame;
-
-                init_debugger_Audio.PlaySound(35);
-            }
-            UpdateLGChooseGame();
-        }
-
-        private static void UpdateSGChooseSlot() => throw new NotImplementedException();
-
-        private static void UpdateSGCheckSlot() => throw new NotImplementedException();
-
-        private static void UpdateSGChooseGame() => throw new NotImplementedException();
-
-        private static void UpdateSGdata() => throw new NotImplementedException();
 
         #endregion Methods
     }

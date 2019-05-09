@@ -153,6 +153,10 @@
     <Compile Include="Menu\Magazine.InsertCustomEntries.cs" />
     <Compile Include="Menu\Magazine.ID.cs" />
     <Compile Include="Menu\Module_main_menu_InGameMenu.cs" />
+    <Compile Include="Menu\Module_main_menu_LGSG_CheckingSlot.cs" />
+    <Compile Include="Menu\Module_main_menu_LGSG_ChooseGame.cs" />
+    <Compile Include="Menu\Module_main_menu_LGSG_ChooseSlot.cs" />
+    <Compile Include="Menu\Module_main_menu_LGSG_ing.cs" />
     <Compile Include="Menu\PointEx.cs" />
     <Compile Include="Menu\Stringfile.cs" />
     <Compile Include="Menu\Strings.cs" />
