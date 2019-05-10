@@ -592,7 +592,7 @@ namespace FF8
 #if _WINDOWS && !_X64
             try
             {
-                if (!MakiExtended.IsLinux)
+                if (!Extended.IsLinux)
                 {
                     cport.StopAll();
                 }
