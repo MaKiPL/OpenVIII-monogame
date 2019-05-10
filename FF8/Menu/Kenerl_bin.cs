@@ -1,4 +1,5 @@
 ﻿using FF8.Menu;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -45,7 +46,11 @@ namespace FF8
                 _SPD = br.ReadBytes(4); //0x001C; 4 bytes; SPD
                 _LUCK = br.ReadBytes(4); //0x0020; 4 bytes; LUCK
             }
-            //public uint HP()
+            private const double _percent_mod = (double)52900 / 531;
+            public int HP(byte lvl, byte magic_J_val=0,byte magic_count=0, byte stat_bonus=0, double percent_mod= _percent_mod)
+            {
+                return (int)Math.Ceiling(((magic_J_val * magic_count + stat_bonus + lvl * _HP[0] - (10 * lvl ^ 2) / _HP[1] + _HP[2]) * percent_mod) / 100);
+            }
         }
 
         private ArchiveWorker aw;
