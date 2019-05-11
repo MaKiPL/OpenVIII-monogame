@@ -11,6 +11,7 @@ namespace FF8
         /// Character Stats from Kernel
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Characters"/>
+        /// <seealso cref="http://forums.qhimm.com/index.php?topic=16923.msg240609#msg240609"/>
         public struct Character_Stats
         {
             public ushort Offset; //0x0000; 2 bytes; Offset to character name
@@ -45,17 +46,28 @@ namespace FF8
                 _SPR = br.ReadBytes(4); //0x0018; 4 bytes; SPR
                 _SPD = br.ReadBytes(4); //0x001C; 4 bytes; SPD
                 _LUCK = br.ReadBytes(4); //0x0020; 4 bytes; LUCK
+                int hp = HP(8);
             }
-            private const double _percent_mod = (double)52900 / 531;
-            public int HP(byte lvl, byte magic_J_val=0,byte magic_count=0, byte stat_bonus=0, double percent_mod= _percent_mod)
+            private const int _percent_mod = 100;
+            public int HP(int lvl, int magic_J_val=0,int magic_count=0, int stat_bonus=0, int percent_mod= _percent_mod)
             {
-                return (int)Math.Ceiling(((magic_J_val * magic_count + stat_bonus + lvl * _HP[0] - (10 * lvl ^ 2) / _HP[1] + _HP[2]) * percent_mod) / 100);
+                int magic = (magic_J_val * magic_count);
+                int a = (lvl * _HP[0]);
+                int b = ((10 * lvl * lvl) / _HP[1]);
+                int c = _HP[2];
+                return ((magic + stat_bonus + a - b + c) * percent_mod) / 100;
             }
         }
 
         private ArchiveWorker aw;
         private string ArchiveString = Memory.Archives.A_MAIN;
         Character_Stats[] CharacterStats;
+        /// <summary>
+        /// Read binary data from into structures and arrays
+        /// </summary>
+        /// <see cref="http://forums.qhimm.com/index.php?topic=16923.msg240609#msg240609"/>
+        /// <seealso cref="https://github.com/alexfilth/doomtrain"/>
+        /// <seealso cref="https://github.com/alexfilth/doomtrain/wiki/Kernel.bin"/>
         public Kernel_bin()
         {
             aw = new ArchiveWorker(ArchiveString);
