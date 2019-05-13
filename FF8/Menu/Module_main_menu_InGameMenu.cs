@@ -8,67 +8,60 @@ namespace FF8
 {
     internal partial class Module_main_menu_debug
     {
-        class IGM : Menu
+        private class IGM : Menu
         {
-
             #region Fields
-            private IGMItems IGM_choSideBar;
-            private IGMData IGM_Clock;
-            private IGMData IGM_NonPartyStatus;
-            private IGMData IGM_PartyStatus;
-            private IGMData IGM_SideMenu;
-            private IGMData IGM_Header;
-            private IGMData IGM_Footer;
-            private Matrix IGM_focus;
-            private IGMMode IGM_mode;
-            private Vector2 IGM_Size;
-            private Texture2D IGM_Red_Pixel;
+
+            private Items choSideBar;
+            private Matrix focus;
+            private Mode mode;
+            private Vector2 Size;
+            private Texture2D _red_pixel;
             private Dictionary<Enum, Item> strHeaderText;
-            private int _IGM_choChar;
+            private int _choChar;
 
-
-            public int IGM_choChar
+            public int choChar
             {
                 get
                 {
-                    if (_IGM_choChar >= 0 && _IGM_choChar < IGM_PartyStatus.Count)
+                    if (_choChar >= 0 && _choChar < Data[SectionName.Non_Party].Count)
                     {
-                        if (IGM_PartyStatus.BLANKS[_IGM_choChar])
-                            return IGM_choCharSet(_IGM_choChar + 1);
+                        if (Data[SectionName.Party].BLANKS[_choChar])
+                            return choCharSet(_choChar + 1);
                     }
-                    else if (_IGM_choChar < IGM_NonPartyStatus.Count + IGM_PartyStatus.Count && _IGM_choChar >= IGM_PartyStatus.Count)
+                    else if (_choChar < Data[SectionName.Non_Party].Count + Data[SectionName.Party].Count && _choChar >= Data[SectionName.Party].Count)
                     {
-                        if (IGM_NonPartyStatus.BLANKS[_IGM_choChar - IGM_PartyStatus.Count])
-                            return IGM_choCharSet(_IGM_choChar + 1);
+                        if (Data[SectionName.Non_Party].BLANKS[_choChar - Data[SectionName.Party].Count])
+                            return choCharSet(_choChar + 1);
                     }
-                    return _IGM_choChar;
+                    return _choChar;
                 }
 
-                set => IGM_choCharSet(value);
+                set => choCharSet(value);
             }
 
-            private int IGM_choCharSet(int value)
+            private int choCharSet(int value)
             {
                 while (true)
                 {
-                    if (value >= 0 && value < IGM_PartyStatus.Count)
+                    if (value >= 0 && value < Data[SectionName.Party].Count)
                     {
-                        if (IGM_PartyStatus.BLANKS[value])
+                        if (Data[SectionName.Party].BLANKS[value])
                         {
-                            if (_IGM_choChar > value) value--;
-                            else if (_IGM_choChar < value) value++;
+                            if (_choChar > value) value--;
+                            else if (_choChar < value) value++;
                         }
                         else
                         {
                             break;
                         }
                     }
-                    else if (value < IGM_NonPartyStatus.Count + IGM_PartyStatus.Count && value >= IGM_PartyStatus.Count)
+                    else if (value < Data[SectionName.Non_Party].Count + Data[SectionName.Party].Count && value >= Data[SectionName.Party].Count)
                     {
-                        if (IGM_NonPartyStatus.BLANKS[value - IGM_PartyStatus.Count])
+                        if (Data[SectionName.Non_Party].BLANKS[value - Data[SectionName.Party].Count])
                         {
-                            if (_IGM_choChar > value) value--;
-                            else if (_IGM_choChar < value) value++;
+                            if (_choChar > value) value--;
+                            else if (_choChar < value) value++;
                         }
                         else
                         {
@@ -77,17 +70,17 @@ namespace FF8
                     }
                     if (value < 0)
                     {
-                        value = IGM_NonPartyStatus.Count + IGM_PartyStatus.Count - 1;
-                        _IGM_choChar = int.MaxValue;
+                        value = Data[SectionName.Non_Party].Count + Data[SectionName.Party].Count - 1;
+                        _choChar = int.MaxValue;
                     }
-                    else if (value >= IGM_NonPartyStatus.Count + IGM_PartyStatus.Count)
+                    else if (value >= Data[SectionName.Non_Party].Count + Data[SectionName.Party].Count)
                     {
                         value = 0;
-                        _IGM_choChar = int.MinValue;
+                        _choChar = int.MinValue;
                     }
                 }
 
-                _IGM_choChar = value;
+                _choChar = value;
                 return value;
             }
 
@@ -95,7 +88,7 @@ namespace FF8
 
             #region Enums
 
-            public enum IGMItems
+            public enum Items
             {
                 Junction,
                 Item,
@@ -110,7 +103,7 @@ namespace FF8
                 Save
             }
 
-            private enum IGMMode
+            private enum Mode
             {
                 ChooseItem,
                 ChooseChar,
@@ -133,246 +126,266 @@ namespace FF8
 
             public override void Draw()
             {
-                Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: IGM_focus);
+                Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: focus);
 
-                switch (IGM_mode)
+                switch (mode)
                 {
-                    case IGMMode.ChooseChar:
-                    case IGMMode.ChooseItem:
+                    case Mode.ChooseChar:
+                    case Mode.ChooseItem:
                     default:
-                        IGM_Header.Draw();
-                        IGM_SideMenu.Draw();
-                        IGM_Clock.Draw();
-                        IGM_Footer.Draw();
-                        IGM_NonPartyStatus.Draw();
-                        IGM_PartyStatus.Draw();
-
+                        foreach (var i in Data)
+                            i.Value.Draw();
                         break;
                 }
-                switch (IGM_mode)
+                switch (mode)
                 {
-                    case IGMMode.ChooseChar:
-                        DrawPointer(IGM_SideMenu.CURSOR[(int)IGM_choSideBar], blink: true);
+                    case Mode.ChooseChar:
+                        DrawPointer(Data[SectionName.SideMenu].CURSOR[(int)choSideBar], blink: true);
 
-                        if (IGM_choChar < IGM_PartyStatus.Count && IGM_choChar >= 0)
-                            DrawPointer(IGM_PartyStatus.CURSOR[IGM_choChar]);
-                        else if (IGM_choChar < IGM_NonPartyStatus.Count + IGM_PartyStatus.Count && IGM_choChar >= IGM_PartyStatus.Count)
-                            DrawPointer(IGM_NonPartyStatus.CURSOR[IGM_choChar - IGM_PartyStatus.Count]);
+                        if (choChar < Data[SectionName.Party].Count && choChar >= 0)
+                            DrawPointer(Data[SectionName.Party].CURSOR[choChar]);
+                        else if (choChar < Data[SectionName.Non_Party].Count + Data[SectionName.Party].Count && choChar >= Data[SectionName.Party].Count)
+                            DrawPointer(Data[SectionName.Non_Party].CURSOR[choChar - Data[SectionName.Party].Count]);
 
                         break;
 
                     default:
-                        DrawPointer(IGM_SideMenu.CURSOR[(int)IGM_choSideBar]);
+                        DrawPointer(Data[SectionName.SideMenu].CURSOR[(int)choSideBar]);
                         break;
                 }
                 Memory.SpriteBatchEnd();
             }
 
-            private void Init_IGM_NonPartyStatus()
+            private void Init_NonPartyStatus(ref IGMData non_Party)
             {
-                IGM_NonPartyStatus = new IGMData(6, 7, new IGMDataItem_Box(pos: new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 }));
+                
 
                 int row = 0, col = 0;
-                for (int i = 0; i < IGM_NonPartyStatus.SIZE.Length; i++)
+                for (int i = 0; i < non_Party.SIZE.Length; i++)
                 {
-                    int width = IGM_NonPartyStatus.Width / 2;
-                    int height = IGM_NonPartyStatus.Height / 3;
+                    int width = non_Party.Width / 2;
+                    int height = non_Party.Height / 3;
                     row = i / 2;
                     col = i % 2;
-                    IGM_NonPartyStatus.SIZE[i] = new Rectangle
+                    non_Party.SIZE[i] = new Rectangle
                     {
                         Width = width,
                         Height = height,
-                        X = IGM_NonPartyStatus.X + col * width,
-                        Y = IGM_NonPartyStatus.Y + row * height
+                        X = non_Party.X + col * width,
+                        Y = non_Party.Y + row * height
                     };
-                    IGM_NonPartyStatus.SIZE[i].Inflate(-26, -8);
-                    if (i > 1) IGM_NonPartyStatus.SIZE[i].Y -= 8;
+                    non_Party.SIZE[i].Inflate(-26, -8);
+                    if (i > 1) non_Party.SIZE[i].Y -= 8;
                 }
             }
 
-            private void Init_IGM_PartyStatus()
+            private void Init_PartyStatus(ref IGMData party)
             {
-                IGM_PartyStatus = new IGMData(3, 7);
                 for (int i = 0; i < 3; i++)
-                    IGM_PartyStatus.SIZE[i] = new Rectangle { Width = 580, Height = 78, X = 20, Y = 84 + 78 * i };
+                    party.SIZE[i] = new Rectangle { Width = 580, Height = 78, X = 20, Y = 84 + 78 * i };
             }
 
-            private void Init_IGMClockBox()
+            private void Init_IGMClockBox(ref IGMData clock)
             {
-                IGM_Clock = new IGMData(1, 8, new IGMDataItem_Box(pos: new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 }));
                 Rectangle r;
-                r = IGM_Clock;
+                r = clock;
 
-                r= IGM_Clock;
+                r = clock;
                 r.Offset(25, 14);
-                IGM_Clock.ITEM[0, 0] = new IGMDataItem_Icon(Icons.ID.PLAY, r, 13);
+                clock.ITEM[0, 0] = new IGMDataItem_Icon(Icons.ID.PLAY, r, 13);
 
-                r= IGM_Clock;
+                r = clock;
                 r.Offset(145, 14);
-                IGM_Clock.ITEM[0, 2] = new IGMDataItem_Icon(Icons.ID.Colon, r, 13, 2, .5f);
+                clock.ITEM[0, 2] = new IGMDataItem_Icon(Icons.ID.Colon, r, 13, 2, .5f);
 
-                r= IGM_Clock;
+                r = clock;
                 r.Offset(25, 48);
-                IGM_Clock.ITEM[0, 4] = new IGMDataItem_Icon(Icons.ID.SeeD, r, 13);
+                clock.ITEM[0, 4] = new IGMDataItem_Icon(Icons.ID.SeeD, r, 13);
 
-                r= IGM_Clock;
+                r = clock;
                 r.Offset(185, 81);
-                IGM_Clock.ITEM[0, 7] = new IGMDataItem_Icon(Icons.ID.G, r, 2);
+                clock.ITEM[0, 7] = new IGMDataItem_Icon(Icons.ID.G, r, 2);
+            }
+
+            public enum SectionName
+            {
+                Header,
+                Footer,
+                SideMenu,
+                Clock,
+                Party,
+                Non_Party
             }
 
             protected override void Init()
             {
+                Size = new Vector2 { X = 843, Y = 630 };
+
+
+                TextScale = new Vector2(2.545455f, 3.0375f);
+
                 strHeaderText = new Dictionary<Enum, Item>()
-            {
-                { IGMItems.Junction, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,1) } },
-                { IGMItems.Item, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,3) } },
-                { IGMItems.Magic, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,5) } },
-                { IGMItems.Status, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,9) } },
-                { IGMItems.GF, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,7) } },
-                { IGMItems.Ability, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,63) } },
-                { IGMItems.Switch, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,65) } },
-                { IGMItems.Card, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,11) } },
-                { IGMItems.Config, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,17) } },
-                { IGMItems.Tutorial, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,68) } },
-                { IGMItems.Save, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,15) } },
-            };
+                {
+                { Items.Junction, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,1) } },
+                { Items.Item, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,3) } },
+                { Items.Magic, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,5) } },
+                { Items.Status, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,9) } },
+                { Items.GF, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,7) } },
+                { Items.Ability, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,63) } },
+                { Items.Switch, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,65) } },
+                { Items.Card, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,11) } },
+                { Items.Config, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,17) } },
+                { Items.Tutorial, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,68) } },
+                { Items.Save, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,15) } },
+                };
 
-                IGM_Red_Pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
+                _red_pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
                 Color[] color = new Color[] { new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, fade) };
-                IGM_Red_Pixel.SetData<Color>(color, 0, IGM_Red_Pixel.Width * IGM_Red_Pixel.Height);
+                _red_pixel.SetData<Color>(color, 0, _red_pixel.Width * _red_pixel.Height);
 
-                IGM_Size = new Vector2 { X = 843, Y = 630 };
-                IGM_Header = new IGMData(0, 0, new IGMDataItem_Box(pos: new Rectangle { Width = 610, Height = 75 }, title: Icons.ID.HELP));
-                IGM_Footer = new IGMData(0, 0, new IGMDataItem_Box(pos: new Rectangle { Width = 610, Height = 75, Y = 630 - 75 }));
-
-                IGM_SideMenu = new IGMData(11, 1, new IGMDataItem_Box(pos: new Rectangle { Width = 226, Height = 492, X = 843 - 226 }));
-                IGM_SideMenu.ITEM[0, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 0));
-                IGM_SideMenu.ITEM[1, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2));
-                IGM_SideMenu.ITEM[2, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 4));
-                IGM_SideMenu.ITEM[3, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 8));
-                IGM_SideMenu.ITEM[4, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 6));
-                IGM_SideMenu.ITEM[5, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 62));
-                IGM_SideMenu.ITEM[6, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 64));
-                IGM_SideMenu.ITEM[7, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 10));
-                IGM_SideMenu.ITEM[8, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 16));
-                IGM_SideMenu.ITEM[9, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 67));
-                IGM_SideMenu.ITEM[10, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 14));
-
-                Init_IGMClockBox();
-                Init_IGM_NonPartyStatus();
-                Init_IGM_PartyStatus();
+                IGMData Header = new IGMData(0, 0, new IGMDataItem_Box(pos: new Rectangle { Width = 610, Height = 75 }, title: Icons.ID.HELP));
+                IGMData Footer = new IGMData(0, 0, new IGMDataItem_Box(pos: new Rectangle { Width = 610, Height = 75, Y = 630 - 75 }));
+                IGMData SideMenu = new IGMData(11, 1, new IGMDataItem_Box(pos: new Rectangle { Width = 226, Height = 492, X = 843 - 226 }));
+                Init_SideMenu(ref SideMenu);
+                IGMData Clock = new IGMData(1, 8, new IGMDataItem_Box(pos: new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 }));
+                Init_IGMClockBox(ref Clock);
+                IGMData Non_Party = new IGMData(6, 7, new IGMDataItem_Box(pos: new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 }));
+                Init_NonPartyStatus(ref Non_Party);
+                IGMData Party = new IGMData(3, 7);
+                Init_PartyStatus(ref Party);
+                Data.Add(SectionName.Header, Header);
+                Data.Add(SectionName.Footer, Footer);
+                Data.Add(SectionName.Clock, Clock);
+                Data.Add(SectionName.SideMenu, SideMenu);
+                Data.Add(SectionName.Party, Party);
+                Data.Add(SectionName.Non_Party, Non_Party);
                 Update();
-                for (int i = 0; i < IGM_SideMenu.Count; i++)
+            }
+
+            private void Init_SideMenu(ref IGMData sideMenu)
+            {
+
+                sideMenu.ITEM[0, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 0));
+                sideMenu.ITEM[1, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2));
+                sideMenu.ITEM[2, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 4));
+                sideMenu.ITEM[3, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 8));
+                sideMenu.ITEM[4, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 6));
+                sideMenu.ITEM[5, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 62));
+                sideMenu.ITEM[6, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 64));
+                sideMenu.ITEM[7, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 10));
+                sideMenu.ITEM[8, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 16));
+                sideMenu.ITEM[9, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 67));
+                sideMenu.ITEM[10, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 14));
+                for (int i = 0; i < sideMenu.Count; i++)
                 {
                     Rectangle r = new Rectangle
                     {
-                        Width = IGM_SideMenu.Width,
-                        Height = IGM_SideMenu.Height / IGM_SideMenu.Count,
-                        X = IGM_SideMenu.X,
-                        Y = IGM_SideMenu.Y + (IGM_SideMenu.Height / IGM_SideMenu.Count) * i,
+                        Width = sideMenu.Width,
+                        Height = sideMenu.Height / sideMenu.Count,
+                        X = sideMenu.X,
+                        Y = sideMenu.Y + (sideMenu.Height / sideMenu.Count) * i,
                     };
                     r.Inflate(-26, -12);
-                    IGM_SideMenu.ITEM[i, 0].Pos = r;
-                    IGM_SideMenu.CURSOR[i] = new Point(r.X, (int)(r.Y + 6 * TextScale.Y));
+                    sideMenu.ITEM[i, 0].Pos = r;
+                    sideMenu.CURSOR[i] = new Point(r.X, (int)(r.Y + 6 * TextScale.Y));
                 }
             }
 
-            private void Update_IGM_ClockBox()
+            private void Update_ClockBox()
             {
                 int num;
                 int spaces;
                 Rectangle r;
 
-                r= IGM_Clock;
+                r = Data[SectionName.Clock];
                 num = Memory.State.timeplayed.TotalHours < 99 ? (int)(Memory.State.timeplayed.TotalHours) : 99;
                 spaces = 2 - (num).ToString().Length;
                 r.Offset(105 + spaces * 20, 14);
-                IGM_Clock.ITEM[0, 1] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                Data[SectionName.Clock].ITEM[0, 1] = new IGMDataItem_Int(num, r, 2, 0, 1);
 
-                r= IGM_Clock;
+                r = Data[SectionName.Clock];
                 num = num >= 99 ? 99 : Memory.State.timeplayed.Minutes;
                 spaces = 0;
                 r.Offset(165 + spaces * 20, 14);
-                IGM_Clock.ITEM[0, 3] = new IGMDataItem_Int(num, r, 2, 0, 2);
+                Data[SectionName.Clock].ITEM[0, 3] = new IGMDataItem_Int(num, r, 2, 0, 2);
 
-                r= IGM_Clock;
+                r = Data[SectionName.Clock];
                 num = Memory.State.Fieldvars.SeedRankPts / 100;
                 num = num < 99999 ? num : 99999;
                 spaces = 5 - (num).ToString().Length;
                 r.Offset(105 + spaces * 20, 48);
-                IGM_Clock.ITEM[0, 5] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                Data[SectionName.Clock].ITEM[0, 5] = new IGMDataItem_Int(num, r, 2, 0, 1);
 
-                r= IGM_Clock;
+                r = Data[SectionName.Clock];
                 num = Memory.State.AmountofGil < 99999999 ? (int)(Memory.State.AmountofGil) : 99999999;
                 spaces = 8 - (num).ToString().Length;
                 r.Offset(25 + spaces * 20, 81);
-                IGM_Clock.ITEM[0, 6] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                Data[SectionName.Clock].ITEM[0, 6] = new IGMDataItem_Int(num, r, 2, 0, 1);
             }
 
-            private void Update_IGM_NonPartyStatus()
+            private void Update_NonPartyStatus()
             {
                 sbyte pos = 0;
-                for (byte i = 0; Memory.State.Party != null && i <= (byte)Faces.ID.Edea_Kramer && IGM_NonPartyStatus.SIZE != null && pos < IGM_NonPartyStatus.SIZE.Length; i++)
+                for (byte i = 0; Memory.State.Party != null && i <= (byte)Faces.ID.Edea_Kramer && Data[SectionName.Non_Party].SIZE != null && pos < Data[SectionName.Non_Party].SIZE.Length; i++)
                 {
                     if (!Memory.State.Party.Contains((Saves.Characters)i) && Memory.State.Characters[i].Exists != 0 && Memory.State.Characters[i].Exists != 6)//15,9,7,4 shows on menu, 0 locked, 6 hidden
                     {
-                        IGM_NonPartyStatus.BLANKS[pos] = false;
-                        Update_IGM_NonPartyStatus(pos++, (Saves.Characters)i);
+                        Data[SectionName.Non_Party].BLANKS[pos] = false;
+                        Update_NonPartyStatus(pos++, (Saves.Characters)i);
                     }
                 }
-                for (; pos < IGM_NonPartyStatus.Count; pos++)
+                for (; pos < Data[SectionName.Non_Party].Count; pos++)
                 {
-                    for (int i = 0; i < IGM_NonPartyStatus.Depth; i++)
+                    for (int i = 0; i < Data[SectionName.Non_Party].Depth; i++)
                     {
-                        IGM_NonPartyStatus.BLANKS[pos] = true;
-                        IGM_NonPartyStatus.ITEM[pos, i] = null;
+                        Data[SectionName.Non_Party].BLANKS[pos] = true;
+                        Data[SectionName.Non_Party].ITEM[pos, i] = null;
                     }
                 }
             }
 
-            private void Update_IGM_NonPartyStatus(sbyte pos, Saves.Characters character)
+            private void Update_NonPartyStatus(sbyte pos, Saves.Characters character)
             {
                 float yoff = 39;
                 int num = 0;
                 int spaces = 0;
-                Rectangle rbak = IGM_NonPartyStatus.SIZE[pos];
+                Rectangle rbak = Data[SectionName.Non_Party].SIZE[pos];
                 Rectangle r = rbak;
                 Color color = new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, .9f);
-                IGM_NonPartyStatus.ITEM[pos, 0] = new IGMDataItem_String(Memory.Strings.GetName((Faces.ID)character), rbak);
-                IGM_NonPartyStatus.CURSOR[pos] = new Point(rbak.X, (int)(rbak.Y + (6 * TextScale.Y)));
+                Data[SectionName.Non_Party].ITEM[pos, 0] = new IGMDataItem_String(Memory.Strings.GetName((Faces.ID)character), rbak);
+                Data[SectionName.Non_Party].CURSOR[pos] = new Point(rbak.X, (int)(rbak.Y + (6 * TextScale.Y)));
 
                 r.Offset(7, yoff);
-                IGM_NonPartyStatus.ITEM[pos, 1] = new IGMDataItem_Icon(Icons.ID.Lv, r, 13);
+                Data[SectionName.Non_Party].ITEM[pos, 1] = new IGMDataItem_Icon(Icons.ID.Lv, r, 13);
 
                 r = rbak;
                 num = Memory.State.Characters[(int)character].Level;
                 spaces = 3 - num.ToString().Length;
                 r.Offset((49 + spaces * 20), yoff);
-                IGM_NonPartyStatus.ITEM[pos, 2] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                Data[SectionName.Non_Party].ITEM[pos, 2] = new IGMDataItem_Int(num, r, 2, 0, 1);
 
                 r = rbak;
                 r.Offset(126, yoff);
-                IGM_NonPartyStatus.ITEM[pos, 3] = new IGMDataItem_Icon(Icons.ID.HP2, r, 13);
+                Data[SectionName.Non_Party].ITEM[pos, 3] = new IGMDataItem_Icon(Icons.ID.HP2, r, 13);
 
                 r.Offset(0, 28);
                 r.Width = 118;
                 r.Height = 1;
-                IGM_NonPartyStatus.ITEM[pos, 4] = new IGMDataItem_Texture(IGM_Red_Pixel, r) { Color = color };
+                Data[SectionName.Non_Party].ITEM[pos, 4] = new IGMDataItem_Texture(_red_pixel, r) { Color = color };
 
                 r.Offset(0, 2);
-                IGM_NonPartyStatus.ITEM[pos, 5] = new IGMDataItem_Texture(IGM_Red_Pixel, r) { Color = color };
+                Data[SectionName.Non_Party].ITEM[pos, 5] = new IGMDataItem_Texture(_red_pixel, r) { Color = color };
 
                 r = rbak;
                 num = Memory.State.Characters[(int)character].CurrentHP;
                 spaces = 4 - num.ToString().Length;
                 r.Offset((166 + spaces * 20), yoff);
-                IGM_NonPartyStatus.ITEM[pos, 6] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                Data[SectionName.Non_Party].ITEM[pos, 6] = new IGMDataItem_Int(num, r, 2, 0, 1);
             }
 
-            private void Update_IGM_PartyStatus_Box(sbyte pos, Saves.Characters character)
+            private void Update_PartyStatus_Box(sbyte pos, Saves.Characters character)
             {
-                if (IGM_NonPartyStatus.SIZE != null)
+                if (Data[SectionName.Non_Party].SIZE != null)
                 {
                     if (character != Saves.Characters.Blank)
                     {
@@ -380,35 +393,35 @@ namespace FF8
                         int num = 0;
                         int spaces = 0;
 
-                        IGM_PartyStatus.ITEM[pos, 0] = new IGMDataItem_Box(Memory.Strings.GetName((Faces.ID)character), title: Icons.ID.STATUS);
-                        Tuple<Rectangle, Point, Rectangle> dims = DrawBox(IGM_PartyStatus.SIZE[pos], ((IGMDataItem_Box)IGM_PartyStatus.ITEM[pos, 0]).Data, indent: false, skipdraw: true);
+                        Data[SectionName.Party].ITEM[pos, 0] = new IGMDataItem_Box(Memory.Strings.GetName((Faces.ID)character), title: Icons.ID.STATUS);
+                        Tuple<Rectangle, Point, Rectangle> dims = DrawBox(Data[SectionName.Party].SIZE[pos], ((IGMDataItem_Box)Data[SectionName.Party].ITEM[pos, 0]).Data, indent: false, skipdraw: true);
                         Rectangle r = dims.Item3;
-                        IGM_PartyStatus.ITEM[pos, 0].Pos = dims.Item1;
-                        IGM_PartyStatus.CURSOR[pos] = dims.Item2;
+                        Data[SectionName.Party].ITEM[pos, 0].Pos = dims.Item1;
+                        Data[SectionName.Party].CURSOR[pos] = dims.Item2;
 
                         r = dims.Item3;
                         r.Offset(184, yoff);
-                        IGM_PartyStatus.ITEM[pos, 1] = new IGMDataItem_Icon(Icons.ID.Lv, r, 13);
+                        Data[SectionName.Party].ITEM[pos, 1] = new IGMDataItem_Icon(Icons.ID.Lv, r, 13);
 
                         r = dims.Item3;
                         num = Memory.State.Characters[(int)character].Level;
                         spaces = 3 - num.ToString().Length;
                         r.Offset((229 + spaces * 20), yoff);
-                        IGM_PartyStatus.ITEM[pos, 2] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                        Data[SectionName.Party].ITEM[pos, 2] = new IGMDataItem_Int(num, r, 2, 0, 1);
 
                         r = dims.Item3;
                         r.Offset(304, yoff);
-                        IGM_PartyStatus.ITEM[pos, 3] = new IGMDataItem_Icon(Icons.ID.HP2, r, 13);
+                        Data[SectionName.Party].ITEM[pos, 3] = new IGMDataItem_Icon(Icons.ID.HP2, r, 13);
 
                         r = dims.Item3;
                         num = Memory.State.Characters[(int)character].CurrentHP;
                         spaces = 4 - num.ToString().Length;
                         r.Offset((354 + spaces * 20), yoff);
-                        IGM_PartyStatus.ITEM[pos, 4] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                        Data[SectionName.Party].ITEM[pos, 4] = new IGMDataItem_Int(num, r, 2, 0, 1);
 
                         r = dims.Item3;
                         r.Offset(437, yoff);
-                        IGM_PartyStatus.ITEM[pos, 5] = new IGMDataItem_Icon(Icons.ID.Slash_Forward, r, 13);
+                        Data[SectionName.Party].ITEM[pos, 5] = new IGMDataItem_Icon(Icons.ID.Slash_Forward, r, 13);
 
                         r = dims.Item3;
 
@@ -418,64 +431,62 @@ namespace FF8
                             ? Memory.State.firstcharactersmaxHP : 0;
                         spaces = 4 - num.ToString().Length;
                         r.Offset((459 + spaces * 20), yoff);
-                        IGM_PartyStatus.ITEM[pos, 6] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                        Data[SectionName.Party].ITEM[pos, 6] = new IGMDataItem_Int(num, r, 2, 0, 1);
 
-                        IGM_NonPartyStatus.BLANKS[pos] = false;
+                        Data[SectionName.Non_Party].BLANKS[pos] = false;
                     }
                     else
                     {
-                        IGM_PartyStatus.ITEM[pos, 0] = new IGMDataItem_Box(pos: IGM_PartyStatus.SIZE[pos]);
-                        IGM_NonPartyStatus.BLANKS[pos] = true;
-                        for (int i = 1; i < IGM_PartyStatus.Depth; i++)
+                        Data[SectionName.Party].ITEM[pos, 0] = new IGMDataItem_Box(pos: Data[SectionName.Party].SIZE[pos]);
+                        Data[SectionName.Non_Party].BLANKS[pos] = true;
+                        for (int i = 1; i < Data[SectionName.Party].Depth; i++)
                         {
-                            IGM_PartyStatus.ITEM[pos, i] = null;
+                            Data[SectionName.Party].ITEM[pos, i] = null;
                         }
                     }
                 }
             }
 
-            private void Update_IGM_PartyStatus_Boxes()
+            private void Update_PartyStatus_Boxes()
             {
-                for (sbyte i = 0; Memory.State.Party != null && i < IGM_PartyStatus.SIZE.Length; i++)
-                    Update_IGM_PartyStatus_Box(i, Memory.State.Party[i]);
+                for (sbyte i = 0; Memory.State.Party != null && i < Data[SectionName.Party].SIZE.Length; i++)
+                    Update_PartyStatus_Box(i, Memory.State.Party[i]);
             }
 
             public override bool Update()
             {
-                Vector2 Zoom = Memory.Scale(IGM_Size.X, IGM_Size.Y, Memory.ScaleMode.FitBoth);
+                Vector2 Zoom = Memory.Scale(Size.X, Size.Y, Memory.ScaleMode.FitBoth);
 
-                IGM_focus = Matrix.CreateTranslation((IGM_Size.X / -2), (IGM_Size.Y / -2), 0) *
+                focus = Matrix.CreateTranslation((Size.X / -2), (Size.Y / -2), 0) *
                     Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) *
                     Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
-
-                TextScale = new Vector2(2.545455f, 3.0375f);
                 //todo detect when there is no saves detected.
                 //check for null
-                ((IGMDataItem_Box)IGM_Footer.CONTAINER).Data = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Memory.State.LocationID).ReplaceRegion();
-                ((IGMDataItem_Box)IGM_Header.CONTAINER).Data = strHeaderText[IGM_choSideBar];
-                Update_IGM_ClockBox();
-                Update_IGM_NonPartyStatus();
-                Update_IGM_PartyStatus_Boxes();
-                
+                ((IGMDataItem_Box)Data[SectionName.Footer].CONTAINER).Data = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Memory.State.LocationID).ReplaceRegion();
+                ((IGMDataItem_Box)Data[SectionName.Header].CONTAINER).Data = strHeaderText[choSideBar];
+                Update_ClockBox();
+                Update_NonPartyStatus();
+                Update_PartyStatus_Boxes();
+
                 return Inputs();
             }
 
             protected override bool Inputs()
             {
                 bool ret = false;
-                ml = Input.MouseLocation.Transform(IGM_focus);
+                ml = Input.MouseLocation.Transform(focus);
 
-                if (IGM_mode == IGMMode.ChooseItem)
+                if (mode == Mode.ChooseItem)
                 {
-                    if (IGM_SideMenu != null && IGM_SideMenu.Count > 0)
+                    if (Data[SectionName.SideMenu] != null && Data[SectionName.SideMenu].Count > 0)
                     {
-                        for (int pos = 0; pos < IGM_SideMenu.Count; pos++)
+                        for (int pos = 0; pos < Data[SectionName.SideMenu].Count; pos++)
                         {
-                            Rectangle r = IGM_SideMenu.ITEM[pos, 0];
-                            //r.Offset(IGM_focus.Translation.X, IGM_focus.Translation.Y);
+                            Rectangle r = Data[SectionName.SideMenu].ITEM[pos, 0];
+                            //r.Offset(focus.Translation.X, focus.Translation.Y);
                             if (r.Contains(ml))
                             {
-                                IGM_choSideBar = (IGMItems)pos;
+                                choSideBar = (Items)pos;
                                 ret = true;
 
                                 if (Input.Button(Buttons.MouseWheelup) || Input.Button(Buttons.MouseWheeldown))
@@ -490,16 +501,16 @@ namespace FF8
                         {
                             Input.ResetInputLimit();
                             init_debugger_Audio.PlaySound(0);
-                            if (++IGM_choSideBar > Enum.GetValues(typeof(IGMItems)).Cast<IGMItems>().Max())
-                                IGM_choSideBar = Enum.GetValues(typeof(IGMItems)).Cast<IGMItems>().Min();
+                            if (++choSideBar > Enum.GetValues(typeof(Items)).Cast<Items>().Max())
+                                choSideBar = Enum.GetValues(typeof(Items)).Cast<Items>().Min();
                             ret = true;
                         }
                         else if (Input.Button(Buttons.Up))
                         {
                             Input.ResetInputLimit();
                             init_debugger_Audio.PlaySound(0);
-                            if (--IGM_choSideBar < 0)
-                                IGM_choSideBar = Enum.GetValues(typeof(IGMItems)).Cast<IGMItems>().Max();
+                            if (--choSideBar < 0)
+                                choSideBar = Enum.GetValues(typeof(Items)).Cast<Items>().Max();
                             ret = true;
                         }
                         else if (Input.Button(Buttons.Cancel))
@@ -515,28 +526,28 @@ namespace FF8
                             Input.ResetInputLimit();
                             init_debugger_Audio.PlaySound(0);
                             ret = true;
-                            switch (IGM_choSideBar)
+                            switch (choSideBar)
                             {
                                 //Select Char Mode
-                                case IGMItems.Junction:
-                                case IGMItems.Magic:
-                                case IGMItems.Status:
-                                    IGM_mode = IGMMode.ChooseChar;
+                                case Items.Junction:
+                                case Items.Magic:
+                                case Items.Status:
+                                    mode = Mode.ChooseChar;
                                     break;
                             }
                         }
                     }
                 }
-                else if (IGM_mode == IGMMode.ChooseChar)
+                else if (mode == Mode.ChooseChar)
                 {
-                    for (int i = 0; i < IGM_PartyStatus.Count; i++)
+                    for (int i = 0; i < Data[SectionName.Party].Count; i++)
                     {
-                        if (IGM_PartyStatus.BLANKS[i]) continue;
-                        Rectangle r = IGM_PartyStatus.SIZE[i];
-                        //r.Offset(IGM_focus.Translation.X, IGM_focus.Translation.Y);
+                        if (Data[SectionName.Party].BLANKS[i]) continue;
+                        Rectangle r = Data[SectionName.Party].SIZE[i];
+                        //r.Offset(focus.Translation.X, focus.Translation.Y);
                         if (r.Contains(ml))
                         {
-                            IGM_choChar = i;
+                            choChar = i;
                             ret = true;
 
                             if (Input.Button(Buttons.MouseWheelup) || Input.Button(Buttons.MouseWheeldown))
@@ -546,14 +557,14 @@ namespace FF8
                             break;
                         }
                     }
-                    for (int i = IGM_PartyStatus.Count; i < IGM_NonPartyStatus.Count + IGM_PartyStatus.Count; i++)
+                    for (int i = Data[SectionName.Party].Count; i < Data[SectionName.Non_Party].Count + Data[SectionName.Party].Count; i++)
                     {
-                        if (IGM_NonPartyStatus.BLANKS[i - IGM_PartyStatus.Count]) continue;
-                        Rectangle r = IGM_NonPartyStatus.SIZE[i - IGM_PartyStatus.Count];
-                        //r.Offset(IGM_focus.Translation.X, IGM_focus.Translation.Y);
+                        if (Data[SectionName.Non_Party].BLANKS[i - Data[SectionName.Party].Count]) continue;
+                        Rectangle r = Data[SectionName.Non_Party].SIZE[i - Data[SectionName.Party].Count];
+                        //r.Offset(focus.Translation.X, focus.Translation.Y);
                         if (r.Contains(ml))
                         {
-                            IGM_choChar = i;
+                            choChar = i;
                             ret = true;
 
                             if (Input.Button(Buttons.MouseWheelup) || Input.Button(Buttons.MouseWheeldown))
@@ -567,14 +578,14 @@ namespace FF8
                     {
                         Input.ResetInputLimit();
                         init_debugger_Audio.PlaySound(0);
-                        IGM_choChar++;
+                        choChar++;
                         ret = true;
                     }
                     else if (Input.Button(Buttons.Up))
                     {
                         Input.ResetInputLimit();
                         init_debugger_Audio.PlaySound(0);
-                        IGM_choChar--;
+                        choChar--;
                         ret = true;
                     }
                     else if (Input.Button(Buttons.Cancel))
@@ -582,7 +593,7 @@ namespace FF8
                         Input.ResetInputLimit();
                         ret = true;
                         init_debugger_Audio.PlaySound(8);
-                        IGM_mode = IGMMode.ChooseItem;
+                        mode = Mode.ChooseItem;
                     }
                 }
                 return ret;
@@ -627,7 +638,9 @@ namespace FF8
                 BLANKS = new bool[count];
                 CONTAINER = container;
             }
+
             public IGMDataItem this[int pos, int i] { get => ITEM[pos, i]; set => ITEM[pos, i] = value; }
+
             public void Draw()
             {
                 if (CONTAINER != null)
@@ -650,7 +663,7 @@ namespace FF8
             public int X => CONTAINER != null ? CONTAINER.Pos.X : 0;
             public int Y => CONTAINER != null ? CONTAINER.Pos.Y : 0;
 
-            public static implicit operator Rectangle(IGMData v) => v.CONTAINER??Rectangle.Empty;
+            public static implicit operator Rectangle(IGMData v) => v.CONTAINER ?? Rectangle.Empty;
 
             #endregion Properties
         }
@@ -798,21 +811,24 @@ namespace FF8
         }
 
         #endregion Classes
-    
 
-    abstract class Menu
-    {
-        protected List<IGMData> Data;
-        public Menu()
+        private abstract class Menu
         {
-            Data = new List<IGMData>();
-            Init();
-        }
+            protected Dictionary<Enum, IGMData> Data;
 
-        protected abstract void Init();
-        public abstract void Draw();
-        public abstract bool Update();
-        protected abstract bool Inputs();
-    }
+            public Menu()
+            {
+                Data = new Dictionary<Enum, IGMData>();
+                Init();
+            }
+
+            protected abstract void Init();
+
+            public abstract void Draw();
+
+            public abstract bool Update();
+
+            protected abstract bool Inputs();
+        }
     }
 }
