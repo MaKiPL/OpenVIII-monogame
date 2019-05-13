@@ -275,7 +275,7 @@ namespace FF8
                 Y = 0,
             } + offset;
             Vector2 blocknumsize = new Vector2(OffScreenBuffer.Height * 0.00628930817610063f);
-            Memory.Icons.Draw(block, (Icons.NumType) 4, 2, "D2", blocknumpos, blocknumsize, fade); // 2,2 looks close
+            Memory.Icons.Draw(block, Icons.NumType.Num_8x16_0, 2, "D2", blocknumpos, blocknumsize, fade); // 2,2 looks close
 
             Rectangle faceRect = new Rectangle
             {
