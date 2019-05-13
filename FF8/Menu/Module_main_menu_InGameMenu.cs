@@ -411,26 +411,26 @@ namespace FF8
             num = Memory.State.timeplayed.TotalHours < 99 ? (int)(Memory.State.timeplayed.TotalHours) : 99;
             spaces = 2 - (num).ToString().Length;
             r.Offset(105 + spaces * 20, 14);
-            IGM_Clock.ITEM[0, 2] = new IGMDataItem_Int(num, r,1,2,0);
+            IGM_Clock.ITEM[0, 2] = new IGMDataItem_Int(num, r, 2, 0, 1);
 
             r = IGM_ClockBox;
             num = num >= 99 ? 99 : Memory.State.timeplayed.Minutes;
             spaces = 0;
             r.Offset(165 + spaces * 20, 14);
-            IGM_Clock.ITEM[0, 4] = new IGMDataItem_Int(num, r, 2, 2, 0);
+            IGM_Clock.ITEM[0, 4] = new IGMDataItem_Int(num, r, 2, 0, 2);
 
             r = IGM_ClockBox;
             num = Memory.State.Fieldvars.SeedRankPts / 100;
             num = num < 99999 ? num : 99999;
             spaces = 5 - (num).ToString().Length;
             r.Offset(105 + spaces * 20, 48);
-            IGM_Clock.ITEM[0, 6] = new IGMDataItem_Int(num, r, 1, 2, 0);
+            IGM_Clock.ITEM[0, 6] = new IGMDataItem_Int(num, r, 2, 0, 1);
 
             r = IGM_ClockBox;
             num = Memory.State.AmountofGil < 99999999 ? (int)(Memory.State.AmountofGil) : 99999999;
             spaces = 8 - (num).ToString().Length;
             r.Offset(25 + spaces * 20, 81);
-            IGM_Clock.ITEM[0, 7] = new IGMDataItem_Int(num, r, 1, 2, 0);
+            IGM_Clock.ITEM[0, 7] = new IGMDataItem_Int(num, r, 2, 0, 1);
         }
 
         private static void Update_IGM_NonPartyStatus()
@@ -467,7 +467,7 @@ namespace FF8
             num = Memory.State.Characters[(int)character].Level;
             spaces = 3 - num.ToString().Length;
             r.Offset((49 + spaces * 20), yoff);
-            IGM_NonPartyStatus.ITEM[pos, 2] = new IGMDataItem_Int(num, r,1,2,0);
+            IGM_NonPartyStatus.ITEM[pos, 2] = new IGMDataItem_Int(num, r, 2, 0, 1);
 
             r = rbak;
             r.Offset(126, yoff);
@@ -485,7 +485,7 @@ namespace FF8
             num = Memory.State.Characters[(int)character].CurrentHP;
             spaces = 4 - num.ToString().Length;
             r.Offset((166 + spaces * 20), yoff);
-            IGM_NonPartyStatus.ITEM[pos, 6] = new IGMDataItem_Int(num, r, 1, 2, 0);
+            IGM_NonPartyStatus.ITEM[pos, 6] = new IGMDataItem_Int(num, r, 2, 0, 1);
         }
 
         private static void Update_IGM_PartyStatus_Box(sbyte pos, Saves.Characters character)
@@ -512,7 +512,7 @@ namespace FF8
                     num = Memory.State.Characters[(int)character].Level;
                     spaces = 3 - num.ToString().Length;
                     r.Offset((229 + spaces * 20), yoff);
-                    IGM_PartyStatus.ITEM[pos, 2] = new IGMDataItem_Int(num, r, 1, 2, 0);
+                    IGM_PartyStatus.ITEM[pos, 2] = new IGMDataItem_Int(num, r, 2, 0, 1);
 
                     r = dims.Item3;
                     r.Offset(304, yoff);
@@ -522,7 +522,7 @@ namespace FF8
                     num = Memory.State.Characters[(int)character].CurrentHP;
                     spaces = 4 - num.ToString().Length;
                     r.Offset((354 + spaces * 20), yoff);
-                    IGM_PartyStatus.ITEM[pos, 4] = new IGMDataItem_Int(num, r, 1, 2, 0);
+                    IGM_PartyStatus.ITEM[pos, 4] = new IGMDataItem_Int(num, r, 2, 0, 1);
 
                     r = dims.Item3;
                     r.Offset(437, yoff);
@@ -536,7 +536,7 @@ namespace FF8
                         ? Memory.State.firstcharactersmaxHP : 0;
                     spaces = 4 - num.ToString().Length;
                     r.Offset((459 + spaces * 20), yoff);
-                    IGM_PartyStatus.ITEM[pos, 6] = new IGMDataItem_Int(num, r, 1, 2, 0);
+                    IGM_PartyStatus.ITEM[pos, 6] = new IGMDataItem_Int(num, r, 2, 0, 1);
                 }
                 else
                 {
@@ -851,10 +851,10 @@ namespace FF8
             }
             public Icons.NumType NumType { get; set; }
 
-            public IGMDataItem_Int(int data, Rectangle? pos = null, byte? padding = null, byte? pallet = null, Icons.NumType? numtype = null) : base(pos)
+            public IGMDataItem_Int(int data, Rectangle? pos = null, byte? pallet = null, Icons.NumType? numtype = null, byte? padding = null) : base(pos)
             {
                 Data = data;
-                Padding = padding ?? 0;
+                Padding = padding ?? 1;
                 Pallet = pallet ?? 2;
                 NumType = numtype ?? 0;
             }
