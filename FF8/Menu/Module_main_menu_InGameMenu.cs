@@ -184,9 +184,9 @@ namespace FF8
             IGM_NonPartyStatus.Draw();
         }
 
-        private static void Draw_IGM_PartyStatus_Box(sbyte pos, bool blank = false)
+        private static void Draw_IGM_PartyStatus_Box(sbyte pos)
         {
-            //IGM_PartyStatus.BLANKS[pos] = blank;
+            
             //if (IGM_PartyStatus.SIZE != null && !blank)
             //{
             //    int i = 0;
@@ -213,7 +213,7 @@ namespace FF8
         private static void Draw_IGM_PartyStatus_Boxes()
         {
             for (sbyte i = 0; i < IGM_PartyStatus.SIZE.Length; i++)
-                Draw_IGM_PartyStatus_Box(i, (byte)Memory.State.Party[i] == 0xFF);
+                Draw_IGM_PartyStatus_Box(i/*, (byte)Memory.State.Party[i] == 0xFF*/);
         }
 
         private static void Draw_IGM_SideBar(bool Save = false)
@@ -439,12 +439,18 @@ namespace FF8
             for (byte i = 0; Memory.State.Party != null && i <= (byte)Faces.ID.Edea_Kramer && IGM_NonPartyStatus.SIZE != null && pos < IGM_NonPartyStatus.SIZE.Length; i++)
             {
                 if (!Memory.State.Party.Contains((Saves.Characters)i) && Memory.State.Characters[i].Exists != 0 && Memory.State.Characters[i].Exists != 6)//15,9,7,4 shows on menu, 0 locked, 6 hidden
+                {
+                    IGM_NonPartyStatus.BLANKS[pos] = false;
                     Update_IGM_NonPartyStatus(pos++, (Saves.Characters)i);
+                }
             }
             for (;pos<IGM_NonPartyStatus.Count;pos++)
             {
                 for (int i = 0; i < IGM_NonPartyStatus.Depth; i++)
+                {
+                    IGM_NonPartyStatus.BLANKS[pos] = true;
                     IGM_NonPartyStatus.ITEM[pos, i] = null;
+                }
             }
 
         }
@@ -537,12 +543,17 @@ namespace FF8
                     spaces = 4 - num.ToString().Length;
                     r.Offset((459 + spaces * 20), yoff);
                     IGM_PartyStatus.ITEM[pos, 6] = new IGMDataItem_Int(num, r, 2, 0, 1);
+
+                    IGM_NonPartyStatus.BLANKS[pos] = false;
                 }
                 else
                 {
                     IGM_PartyStatus.ITEM[pos, 0] = new IGMDataItem_Box(pos:IGM_PartyStatus.SIZE[pos]);
+                    IGM_NonPartyStatus.BLANKS[pos] = true;
                     for (int i = 1; i < IGM_PartyStatus.Depth; i++)
+                    {
                         IGM_PartyStatus.ITEM[pos, i] = null;
+                    }
                 }
                 
             }
