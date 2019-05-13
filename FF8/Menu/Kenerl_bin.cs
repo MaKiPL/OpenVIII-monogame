@@ -1,4 +1,4 @@
-﻿using FF8.Menu;
+﻿using FF8;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -89,7 +89,7 @@ namespace FF8
     }
 }
 
-namespace FF8.Menu
+namespace FF8
 {
     public enum Gender
     {
