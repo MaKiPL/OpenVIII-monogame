@@ -100,7 +100,16 @@ namespace FF8
                 }
             }
         }
-        public void Draw(int number,byte type, int pallet, string format, Vector2 location, Vector2 scale, float fade = 1f)
+        public enum NumType
+        {
+            Size_08x08,
+            Size_08x08_ALT,
+            Size_08x08_ALT2,
+            Size_08x16,
+            Size_08x16_ALT,
+            Size_16x16,
+        }
+        public void Draw(int number, NumType type, int pallet, string format, Vector2 location, Vector2 scale, float fade = 1f)
         {
             ID[] numberstarts = { ID.Size_08x08_0, ID.Size_08x08_ALT_0,ID.Size_08x08_ALT2_0, ID.Size_08x16_0, ID.Size_08x16_ALT_0, ID.Size_16x16_0 };
             List<ID>[] nums = new List<ID>[numberstarts.Length];
@@ -118,8 +127,8 @@ namespace FF8
             var dst = new Rectangle { Location = location.ToPoint() };
             foreach (int i in intList)
             {
-                Draw(nums[type][i], pallet,dst, scale, fade);
-                dst.Offset(Entries[nums[type][i]].GetRectangle.Width* scale.X, 0);
+                Draw(nums[(int)type][i], pallet,dst, scale, fade);
+                dst.Offset(Entries[nums[(int)type][i]].GetRectangle.Width* scale.X, 0);
             }
         }
 

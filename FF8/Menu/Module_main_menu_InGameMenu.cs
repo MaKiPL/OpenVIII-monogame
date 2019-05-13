@@ -78,9 +78,15 @@ namespace FF8
                     }
                 }
                 if (value < 0)
+                {
                     value = IGM_NonPartyStatus.Count + IGM_PartyStatus.Count - 1;
+                    _IGM_choChar = int.MaxValue;
+                }
                 else if (value >= IGM_NonPartyStatus.Count + IGM_PartyStatus.Count)
+                {
                     value = 0;
+                    _IGM_choChar = int.MinValue;
+                }
             }
 
             _IGM_choChar = value;
@@ -129,20 +135,30 @@ namespace FF8
 
         private static void Draw_IGM_ClockBox()
         {
-            if (IGM_Clock.POS != null && IGM_Clock.POS.Length > 0 && IGM_Clock.DATA != null && IGM_Clock.DATA.Length > 0)
-            {
-                int i = 0;
-                DrawBox(IGM_ClockBox);
-                Memory.Icons.Draw((Icons.ID)IGM_Clock.DATA[0, i], 13, IGM_Clock.POS[0, i++], TextScale, fade);//0
-                Memory.Icons.Draw((int)IGM_Clock.DATA[0, i], 0, 2, "D1", IGM_Clock.POS[0, i++].Location.ToVector2(), TextScale, fade);//1
-                Memory.Icons.Draw((Icons.ID)IGM_Clock.DATA[0, i], 13, IGM_Clock.POS[0, i], TextScale, fade);//2
-                Memory.Icons.Draw((Icons.ID)IGM_Clock.DATA[0, i], 2, IGM_Clock.POS[0, i++], TextScale, fade * blink * .5f);//2
-                Memory.Icons.Draw((int)IGM_Clock.DATA[0, i], 0, 2, "D2", IGM_Clock.POS[0, i++].Location.ToVector2(), TextScale, fade);//3
-                Memory.Icons.Draw((Icons.ID)IGM_Clock.DATA[0, i], 13, IGM_Clock.POS[0, i++], TextScale, fade);//4
-                Memory.Icons.Draw((int)IGM_Clock.DATA[0, i], 0, 2, "D1", IGM_Clock.POS[0, i++].Location.ToVector2(), TextScale, fade);//5
-                Memory.Icons.Draw((int)IGM_Clock.DATA[0, i], 0, 2, "D1", IGM_Clock.POS[0, i++].Location.ToVector2(), TextScale, fade);//6
-                Memory.Icons.Draw((Icons.ID)IGM_Clock.DATA[0, i], 2, IGM_Clock.POS[0, i++], TextScale, fade);//7
-            }
+            //if (IGM_Clock.ITEM != null && IGM_Clock.ITEM.Length > 0)
+            //{
+                //int i = 0;
+                //int pos = 0;
+                //DrawBox(IGM_ClockBox);
+                IGM_Clock.Draw();
+                //IGM_Clock.ITEM[pos, i++].Draw();//0
+                ////Memory.Icons.Draw((Icons.ID)IGM_Clock.ITEM[0, i].Data, 13, IGM_Clock.ITEM[0, i++].Pos, TextScale, fade);//0
+                //IGM_Clock.ITEM[pos, i++].Draw();//1
+                ////Memory.Icons.Draw((int)IGM_Clock.ITEM[0, i].Data, 0, 2, "D1", IGM_Clock.ITEM[0, i++].Pos.Location.ToVector2(), TextScale, fade);//1
+                //IGM_Clock.ITEM[pos, i++].Draw();//2
+                ////Memory.Icons.Draw((Icons.ID)IGM_Clock.ITEM[0, i].Data, 13, IGM_Clock.ITEM[0, i].Pos, TextScale, fade);//2
+                ////Memory.Icons.Draw((Icons.ID)IGM_Clock.ITEM[0, i].Data, 2, IGM_Clock.ITEM[0, i++].Pos, TextScale, fade * blink_Amount * .5f);//2
+                //IGM_Clock.ITEM[pos, i++].Draw();//3
+                ////Memory.Icons.Draw((int)IGM_Clock.ITEM[0, i].Data, 0, 2, "D2", IGM_Clock.ITEM[0, i++].Pos.Location.ToVector2(), TextScale, fade);//3
+                //IGM_Clock.ITEM[pos, i++].Draw();//4
+                ////Memory.Icons.Draw((Icons.ID)IGM_Clock.ITEM[0, i].Data, 13, IGM_Clock.ITEM[0, i++].Pos, TextScale, fade);//4
+                //IGM_Clock.ITEM[pos, i++].Draw();//5
+                ////Memory.Icons.Draw((int)IGM_Clock.ITEM[0, i].Data, 0, 2, "D1", IGM_Clock.ITEM[0, i++].Pos.Location.ToVector2(), TextScale, fade);//5
+                //IGM_Clock.ITEM[pos, i++].Draw();//6
+                ////Memory.Icons.Draw((int)IGM_Clock.ITEM[0, i].Data, 0, 2, "D1", IGM_Clock.ITEM[0, i++].Pos.Location.ToVector2(), TextScale, fade);//6
+                //IGM_Clock.ITEM[pos, i++].Draw();//7
+                ////Memory.Icons.Draw((Icons.ID)IGM_Clock.ITEM[0, i].Data, 2, IGM_Clock.ITEM[0, i++].Pos, TextScale, fade);//7
+            //}
         }
 
         private static void Draw_IGM_FooterBox() => DrawBox(IGM_Footer_Size, IGM_Footer_Text, indent: false);
@@ -151,38 +167,47 @@ namespace FF8
 
         private static void Draw_IGM_NonPartyBox()
         {
-            DrawBox(IGM_NonPartyBox);
-            sbyte pos = 0;
-            for (byte i = 0; i <= (byte)Faces.ID.Edea_Kramer && IGM_NonPartyStatus.SIZE != null && pos < IGM_NonPartyStatus.SIZE.Length; i++)
-            {
-                if (!Memory.State.Party.Contains((Saves.Characters)i) && Memory.State.Characters[i].Exists != 0 && Memory.State.Characters[i].Exists != 6)//15,9,7,4 shows on menu, 0 locked, 6 hidden
-                {
-                    IGM_NonPartyStatus.BLANKS[pos] = false;
-                    Draw_NonPartyStatus(pos++);
-                }
-            }
-            for (sbyte i = pos; i < IGM_NonPartyStatus.Count; i++)
-            {
-                IGM_NonPartyStatus.BLANKS[i] = true;
-            }
+            //DrawBox(IGM_NonPartyBox);
+            //sbyte pos = 0;
+            //for (byte i = 0; i <= (byte)Faces.ID.Edea_Kramer && IGM_NonPartyStatus.SIZE != null && pos < IGM_NonPartyStatus.SIZE.Length; i++)
+            //{
+            //    if (!Memory.State.Party.Contains((Saves.Characters)i) && Memory.State.Characters[i].Exists != 0 && Memory.State.Characters[i].Exists != 6)//15,9,7,4 shows on menu, 0 locked, 6 hidden
+            //    {
+            //        IGM_NonPartyStatus.BLANKS[pos] = false;
+            //        Draw_NonPartyStatus(pos++);
+            //    }
+            //}
+            //for (sbyte i = pos; i < IGM_NonPartyStatus.Count; i++)
+            //{
+            //    IGM_NonPartyStatus.BLANKS[i] = true;
+            //}
+            IGM_NonPartyStatus.Draw();
         }
 
         private static void Draw_IGM_PartyStatus_Box(sbyte pos, bool blank = false)
         {
-            IGM_PartyStatus.BLANKS[pos] = blank;
-            if (IGM_NonPartyStatus.SIZE != null && !blank)
-            {
-                int i = 0;
-                DrawBox(IGM_PartyStatus.POS[pos, i], (FF8String)IGM_PartyStatus.DATA[pos, i++], Icons.ID.STATUS, indent: false);
-                Memory.Icons.Draw((Icons.ID)IGM_PartyStatus.DATA[pos, i], 13, IGM_PartyStatus.POS[pos, i++], TextScale, fade);
-                Memory.Icons.Draw((int)IGM_PartyStatus.DATA[pos, i], 0, 2, "D1", IGM_PartyStatus.POS[pos, i++].Location.ToVector2(), TextScale, fade);
-                Memory.Icons.Draw((Icons.ID)IGM_PartyStatus.DATA[pos, i], 13, IGM_PartyStatus.POS[pos, i++], TextScale, fade);
-                Memory.Icons.Draw((int)IGM_PartyStatus.DATA[pos, i], 0, 2, "D1", IGM_PartyStatus.POS[pos, i++].Location.ToVector2(), TextScale, fade);
-                Memory.Icons.Draw((Icons.ID)IGM_PartyStatus.DATA[pos, i], 13, IGM_PartyStatus.POS[pos, i++], TextScale, fade);
-                Memory.Icons.Draw((int)IGM_PartyStatus.DATA[pos, i], 0, 2, "D1", IGM_PartyStatus.POS[pos, i++].Location.ToVector2(), TextScale, fade);
-            }
-            else
-                DrawBox(IGM_PartyStatus.SIZE[pos]);
+            //IGM_PartyStatus.BLANKS[pos] = blank;
+            //if (IGM_PartyStatus.SIZE != null && !blank)
+            //{
+            //    int i = 0;
+            //    //DrawBox(IGM_PartyStatus.ITEM[pos, i].Pos, (FF8String)IGM_PartyStatus.ITEM[pos, i++].Data, Icons.ID.STATUS, indent: false);
+            //    IGM_PartyStatus.ITEM[pos, i++].Draw();//0
+            //    //Memory.Icons.Draw((Icons.ID)IGM_PartyStatus.ITEM[pos, i].Data, 13, IGM_PartyStatus.ITEM[pos, i++].Pos, TextScale, fade);
+            //    IGM_PartyStatus.ITEM[pos, i++].Draw();//1
+            //    //Memory.Icons.Draw((int)IGM_PartyStatus.ITEM[pos, i].Data, 0, 2, "D1", IGM_PartyStatus.ITEM[pos, i++].Pos.Location.ToVector2(), TextScale, fade);
+            //    IGM_PartyStatus.ITEM[pos, i++].Draw();//2
+            //    //Memory.Icons.Draw((Icons.ID)IGM_PartyStatus.ITEM[pos, i].Data, 13, IGM_PartyStatus.ITEM[pos, i++].Pos, TextScale, fade);
+            //    IGM_PartyStatus.ITEM[pos, i++].Draw();//3
+            //    //Memory.Icons.Draw((int)IGM_PartyStatus.ITEM[pos, i].Data, 0, 2, "D1", IGM_PartyStatus.ITEM[pos, i++].Pos.Location.ToVector2(), TextScale, fade);
+            //    IGM_PartyStatus.ITEM[pos, i++].Draw();//4
+            //    //Memory.Icons.Draw((Icons.ID)IGM_PartyStatus.ITEM[pos, i].Data, 13, IGM_PartyStatus.ITEM[pos, i++].Pos, TextScale, fade);
+            //    IGM_PartyStatus.ITEM[pos, i++].Draw();//5
+            //    //Memory.Icons.Draw((int)IGM_PartyStatus.ITEM[pos, i].Data, 0, 2, "D1", IGM_PartyStatus.ITEM[pos, i++].Pos.Location.ToVector2(), TextScale, fade);
+            //    IGM_PartyStatus.ITEM[pos, i++].Draw();//6
+            //}
+            //else
+            //    DrawBox(IGM_PartyStatus.SIZE[pos]);
+            IGM_PartyStatus.Draw();
         }
 
         private static void Draw_IGM_PartyStatus_Boxes()
@@ -203,15 +228,21 @@ namespace FF8
             if (IGM_NonPartyStatus.SIZE != null && pos < IGM_NonPartyStatus.SIZE.Length)
             {
                 int i = 0;
-                Color color = new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, fade * .9f);
 
-                Memory.font.RenderBasicText((FF8String)IGM_NonPartyStatus.DATA[pos, i], IGM_NonPartyStatus.POS[pos, i++].Location, TextScale, Fade: fade);//0
-                Memory.Icons.Draw((Icons.ID)IGM_NonPartyStatus.DATA[pos, i], 13, IGM_NonPartyStatus.POS[pos, i++], TextScale, fade);//1
-                Memory.Icons.Draw((int)IGM_NonPartyStatus.DATA[pos, i], 0, 2, "D1", IGM_NonPartyStatus.POS[pos, i++].Location.ToVector2(), TextScale, fade);//2
-                Memory.Icons.Draw((Icons.ID)IGM_NonPartyStatus.DATA[pos, i], 13, IGM_NonPartyStatus.POS[pos, i++], TextScale, fade);//3
-                Memory.spriteBatch.Draw((Texture2D)IGM_NonPartyStatus.DATA[pos, i], IGM_NonPartyStatus.POS[pos, i++], null, color);//4
-                Memory.spriteBatch.Draw((Texture2D)IGM_NonPartyStatus.DATA[pos, i], IGM_NonPartyStatus.POS[pos, i++], null, color);//5
-                Memory.Icons.Draw((int)IGM_NonPartyStatus.DATA[pos, i], 0, 2, "D1", IGM_NonPartyStatus.POS[pos, i++].Location.ToVector2(), TextScale, fade);//6
+                //Memory.font.RenderBasicText((FF8String)IGM_NonPartyStatus.ITEM[pos, i].Data, IGM_NonPartyStatus.ITEM[pos, i++].Pos.Location, TextScale, Fade: fade);//0
+                IGM_NonPartyStatus.ITEM[pos, i++].Draw();//0
+                //Memory.Icons.Draw((Icons.ID)IGM_NonPartyStatus.ITEM[pos, i].Data, 13, IGM_NonPartyStatus.ITEM[pos, i++].Pos, TextScale, fade);//1
+                IGM_NonPartyStatus.ITEM[pos, i++].Draw();//1
+                //Memory.Icons.Draw((int)IGM_NonPartyStatus.ITEM[pos, i].Data, 0, 2, "D1", IGM_NonPartyStatus.ITEM[pos, i++].Pos.Location.ToVector2(), TextScale, fade);//2
+                IGM_NonPartyStatus.ITEM[pos, i++].Draw();//2
+                //Memory.Icons.Draw((Icons.ID)IGM_NonPartyStatus.ITEM[pos, i].Data, 13, IGM_NonPartyStatus.ITEM[pos, i++].Pos, TextScale, fade);//3
+                IGM_NonPartyStatus.ITEM[pos, i++].Draw();//3
+                //Memory.spriteBatch.Draw((Texture2D)IGM_NonPartyStatus.ITEM[pos, i].Data, IGM_NonPartyStatus.ITEM[pos, i++].Pos, null, color);//4
+                IGM_NonPartyStatus.ITEM[pos, i++].Draw();//4
+                //Memory.spriteBatch.Draw((Texture2D)IGM_NonPartyStatus.ITEM[pos, i].Data, IGM_NonPartyStatus.ITEM[pos, i++].Pos, null, color);//5
+                IGM_NonPartyStatus.ITEM[pos, i++].Draw();//5
+                //Memory.Icons.Draw((int)IGM_NonPartyStatus.ITEM[pos, i].Data, 0, 2, "D1", IGM_NonPartyStatus.ITEM[pos, i++].Pos.Location.ToVector2(), TextScale, fade);//6
+                IGM_NonPartyStatus.ITEM[pos, i++].Draw();//6
             }
         }
 
@@ -251,7 +282,29 @@ namespace FF8
             Memory.SpriteBatchEnd();
         }
 
-        private static void Init_IGM_NonPartyStatus() => IGM_NonPartyStatus = new IGMData(6, 7);
+        private static void Init_IGM_NonPartyStatus()
+        {
+            IGM_NonPartyBox = new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 };
+            IGM_NonPartyStatus = new IGMData(6, 7, new IGMDataItem_Box(pos: IGM_NonPartyBox));
+
+            int row = 0, col = 0;
+            for (int i = 0; i < IGM_NonPartyStatus.SIZE.Length; i++)
+            {
+                int width = IGM_NonPartyBox.Width / 2;
+                int height = IGM_NonPartyBox.Height / 3;
+                row = i / 2;
+                col = i % 2;
+                IGM_NonPartyStatus.SIZE[i] = new Rectangle
+                {
+                    Width = width,
+                    Height = height,
+                    X = IGM_NonPartyBox.X + col * width,
+                    Y = IGM_NonPartyBox.Y + row * height
+                };
+                IGM_NonPartyStatus.SIZE[i].Inflate(-26, -8);
+                if (i > 1) IGM_NonPartyStatus.SIZE[i].Y -= 8;
+            }
+        }
 
         private static void Init_IGM_PartyStatus()
         {
@@ -263,24 +316,27 @@ namespace FF8
         private static void Init_IGMClockBox()
         {
             IGM_ClockBox = new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 };
-            IGM_Clock = new IGMData(1, 8);
+            IGM_Clock = new IGMData(1, 9);
             Rectangle r;
             r = IGM_ClockBox;
+            IGM_Clock.ITEM[0, 0] = new IGMDataItem_Box(pos: r);
+
+            r = IGM_ClockBox;
             r.Offset(25, 14);
-            IGM_Clock.DATA[0, 0] = Icons.ID.PLAY;
-            IGM_Clock.POS[0, 0] = r;
+            IGM_Clock.ITEM[0, 1] = new IGMDataItem_Icon(Icons.ID.PLAY, r,13);
+
             r = IGM_ClockBox;
             r.Offset(145, 14);
-            IGM_Clock.DATA[0, 2] = Icons.ID.Colon;
-            IGM_Clock.POS[0, 2] = r;
+            IGM_Clock.ITEM[0, 3] = new IGMDataItem_Icon(Icons.ID.Colon, r,13, 2, .5f);
+
             r = IGM_ClockBox;
             r.Offset(25, 48);
-            IGM_Clock.DATA[0, 4] = Icons.ID.SeeD;
-            IGM_Clock.POS[0, 4] = r;
+            IGM_Clock.ITEM[0, 5] = new IGMDataItem_Icon(Icons.ID.SeeD, r,13);
+
             r = IGM_ClockBox;
             r.Offset(185, 81);
-            IGM_Clock.DATA[0, 7] = Icons.ID.G;
-            IGM_Clock.POS[0, 7] = r;
+            IGM_Clock.ITEM[0, 8] = new IGMDataItem_Icon(Icons.ID.G, r,2);
+
         }
 
         private static void Init_InGameMenu()
@@ -350,63 +406,47 @@ namespace FF8
             int num;
             int spaces;
             Rectangle r;
-
+            
             r = IGM_ClockBox;
             num = Memory.State.timeplayed.TotalHours < 99 ? (int)(Memory.State.timeplayed.TotalHours) : 99;
             spaces = 2 - (num).ToString().Length;
             r.Offset(105 + spaces * 20, 14);
-            IGM_Clock.DATA[0, 1] = num;
-            IGM_Clock.POS[0, 1] = r;
+            IGM_Clock.ITEM[0, 2] = new IGMDataItem_Int(num, r,1,2,0);
 
             r = IGM_ClockBox;
             num = num >= 99 ? 99 : Memory.State.timeplayed.Minutes;
             spaces = 0;
             r.Offset(165 + spaces * 20, 14);
-            IGM_Clock.DATA[0, 3] = num;
-            IGM_Clock.POS[0, 3] = r;
+            IGM_Clock.ITEM[0, 4] = new IGMDataItem_Int(num, r, 2, 2, 0);
 
             r = IGM_ClockBox;
             num = Memory.State.Fieldvars.SeedRankPts / 100;
             num = num < 99999 ? num : 99999;
             spaces = 5 - (num).ToString().Length;
             r.Offset(105 + spaces * 20, 48);
-            IGM_Clock.DATA[0, 5] = num;
-            IGM_Clock.POS[0, 5] = r;
+            IGM_Clock.ITEM[0, 6] = new IGMDataItem_Int(num, r, 1, 2, 0);
 
             r = IGM_ClockBox;
             num = Memory.State.AmountofGil < 99999999 ? (int)(Memory.State.AmountofGil) : 99999999;
             spaces = 8 - (num).ToString().Length;
             r.Offset(25 + spaces * 20, 81);
-            IGM_Clock.DATA[0, 6] = num;
-            IGM_Clock.POS[0, 6] = r;
+            IGM_Clock.ITEM[0, 7] = new IGMDataItem_Int(num, r, 1, 2, 0);
         }
 
         private static void Update_IGM_NonPartyStatus()
         {
-            int row = 0, col = 0;
-            IGM_NonPartyBox = new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 };
-            for (int i = 0; i < IGM_NonPartyStatus.SIZE.Length; i++)
-            {
-                int width = IGM_NonPartyBox.Width / 2;
-                int height = IGM_NonPartyBox.Height / 3;
-                row = i / 2;
-                col = i % 2;
-                IGM_NonPartyStatus.SIZE[i] = new Rectangle
-                {
-                    Width = width,
-                    Height = height,
-                    X = IGM_NonPartyBox.X + col * width,
-                    Y = IGM_NonPartyBox.Y + row * height
-                };
-                IGM_NonPartyStatus.SIZE[i].Inflate(-26, -8);
-                if (i > 1) IGM_NonPartyStatus.SIZE[i].Y -= 8;
-            }
             sbyte pos = 0;
             for (byte i = 0; Memory.State.Party != null && i <= (byte)Faces.ID.Edea_Kramer && IGM_NonPartyStatus.SIZE != null && pos < IGM_NonPartyStatus.SIZE.Length; i++)
             {
                 if (!Memory.State.Party.Contains((Saves.Characters)i) && Memory.State.Characters[i].Exists != 0 && Memory.State.Characters[i].Exists != 6)//15,9,7,4 shows on menu, 0 locked, 6 hidden
                     Update_IGM_NonPartyStatus(pos++, (Saves.Characters)i);
             }
+            for (;pos<IGM_NonPartyStatus.Count;pos++)
+            {
+                for (int i = 0; i < IGM_NonPartyStatus.Depth; i++)
+                    IGM_NonPartyStatus.ITEM[pos, i] = null;
+            }
+
         }
 
         private static void Update_IGM_NonPartyStatus(sbyte pos, Saves.Characters character)
@@ -415,44 +455,37 @@ namespace FF8
             int num = 0;
             int spaces = 0;
             Rectangle rbak = IGM_NonPartyStatus.SIZE[pos];
-
-            IGM_NonPartyStatus.POS[pos, 0] = rbak;
-            IGM_NonPartyStatus.DATA[pos, 0] = Memory.Strings.GetName((Faces.ID)character);
+            Rectangle r = rbak;
+            Color color = new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, .9f);
+            IGM_NonPartyStatus.ITEM[pos, 0] = new IGMDataItem_String(Memory.Strings.GetName((Faces.ID)character), rbak);
             IGM_NonPartyStatus.CURSOR[pos] = new Point(rbak.X, (int)(rbak.Y + (6 * TextScale.Y)));
 
-            Rectangle r = rbak;
             r.Offset(7, yoff);
-            IGM_NonPartyStatus.POS[pos, 1] = r;
-            IGM_NonPartyStatus.DATA[pos, 1] = Icons.ID.Lv;
+            IGM_NonPartyStatus.ITEM[pos, 1] = new IGMDataItem_Icon(Icons.ID.Lv, r,13);
 
             r = rbak;
             num = Memory.State.Characters[(int)character].Level;
             spaces = 3 - num.ToString().Length;
             r.Offset((49 + spaces * 20), yoff);
-            IGM_NonPartyStatus.POS[pos, 2] = r;
-            IGM_NonPartyStatus.DATA[pos, 2] = num;
+            IGM_NonPartyStatus.ITEM[pos, 2] = new IGMDataItem_Int(num, r,1,2,0);
 
             r = rbak;
             r.Offset(126, yoff);
-            IGM_NonPartyStatus.POS[pos, 3] = r;
-            IGM_NonPartyStatus.DATA[pos, 3] = Icons.ID.HP2;
+            IGM_NonPartyStatus.ITEM[pos, 3] = new IGMDataItem_Icon(Icons.ID.HP2, r,13);
 
             r.Offset(0, 28);
             r.Width = 118;
             r.Height = 1;
-            IGM_NonPartyStatus.POS[pos, 4] = r;
-            IGM_NonPartyStatus.DATA[pos, 4] = IGM_Red_Pixel;
+            IGM_NonPartyStatus.ITEM[pos, 4] = new IGMDataItem_Texture(IGM_Red_Pixel, r) { Color = color };
 
             r.Offset(0, 2);
-            IGM_NonPartyStatus.POS[pos, 5] = r;
-            IGM_NonPartyStatus.DATA[pos, 5] = IGM_Red_Pixel;
+            IGM_NonPartyStatus.ITEM[pos, 5] = new IGMDataItem_Texture(IGM_Red_Pixel, r) { Color = color };
 
             r = rbak;
             num = Memory.State.Characters[(int)character].CurrentHP;
             spaces = 4 - num.ToString().Length;
             r.Offset((166 + spaces * 20), yoff);
-            IGM_NonPartyStatus.POS[pos, 6] = r;
-            IGM_NonPartyStatus.DATA[pos, 6] = num;
+            IGM_NonPartyStatus.ITEM[pos, 6] = new IGMDataItem_Int(num, r, 1, 2, 0);
         }
 
         private static void Update_IGM_PartyStatus_Box(sbyte pos, Saves.Characters character)
@@ -465,40 +498,35 @@ namespace FF8
                     int num = 0;
                     int spaces = 0;
 
-                    IGM_PartyStatus.DATA[pos, 0] = Memory.Strings.GetName((Faces.ID)character);
-                    Tuple<Rectangle, Point, Rectangle> dims = DrawBox(IGM_PartyStatus.SIZE[pos], (FF8String)IGM_PartyStatus.DATA[pos, 0], indent: false, skipdraw: true);
+                    IGM_PartyStatus.ITEM[pos, 0] = new IGMDataItem_Box(Memory.Strings.GetName((Faces.ID)character), title: Icons.ID.STATUS);
+                    Tuple<Rectangle, Point, Rectangle> dims = DrawBox(IGM_PartyStatus.SIZE[pos], ((IGMDataItem_Box)IGM_PartyStatus.ITEM[pos, 0]).Data, indent: false, skipdraw: true);
                     Rectangle r = dims.Item3;
-                    IGM_PartyStatus.POS[pos, 0] = dims.Item1;
+                    IGM_PartyStatus.ITEM[pos, 0].Pos = dims.Item1;
                     IGM_PartyStatus.CURSOR[pos] = dims.Item2;
 
                     r = dims.Item3;
                     r.Offset(184, yoff);
-                    IGM_PartyStatus.POS[pos, 1] = r;
-                    IGM_PartyStatus.DATA[pos, 1] = Icons.ID.Lv;
+                    IGM_PartyStatus.ITEM[pos, 1] = new IGMDataItem_Icon(Icons.ID.Lv, r, 13);
 
                     r = dims.Item3;
                     num = Memory.State.Characters[(int)character].Level;
                     spaces = 3 - num.ToString().Length;
                     r.Offset((229 + spaces * 20), yoff);
-                    IGM_PartyStatus.POS[pos, 2] = r;
-                    IGM_PartyStatus.DATA[pos, 2] = num;
+                    IGM_PartyStatus.ITEM[pos, 2] = new IGMDataItem_Int(num, r, 1, 2, 0);
 
                     r = dims.Item3;
                     r.Offset(304, yoff);
-                    IGM_PartyStatus.POS[pos, 3] = r;
-                    IGM_PartyStatus.DATA[pos, 3] = Icons.ID.HP2;
+                    IGM_PartyStatus.ITEM[pos, 3] = new IGMDataItem_Icon(Icons.ID.HP2, r, 13);
 
                     r = dims.Item3;
                     num = Memory.State.Characters[(int)character].CurrentHP;
                     spaces = 4 - num.ToString().Length;
                     r.Offset((354 + spaces * 20), yoff);
-                    IGM_PartyStatus.POS[pos, 4] = r;
-                    IGM_PartyStatus.DATA[pos, 4] = num;
+                    IGM_PartyStatus.ITEM[pos, 4] = new IGMDataItem_Int(num, r, 1, 2, 0);
 
                     r = dims.Item3;
                     r.Offset(437, yoff);
-                    IGM_PartyStatus.POS[pos, 5] = r;
-                    IGM_PartyStatus.DATA[pos, 5] = Icons.ID.Slash_Forward;
+                    IGM_PartyStatus.ITEM[pos, 5] = new IGMDataItem_Icon(Icons.ID.Slash_Forward, r, 13);
 
                     r = dims.Item3;
 
@@ -508,10 +536,15 @@ namespace FF8
                         ? Memory.State.firstcharactersmaxHP : 0;
                     spaces = 4 - num.ToString().Length;
                     r.Offset((459 + spaces * 20), yoff);
-
-                    IGM_PartyStatus.POS[pos, 6] = r;
-                    IGM_PartyStatus.DATA[pos, 6] = num;
+                    IGM_PartyStatus.ITEM[pos, 6] = new IGMDataItem_Int(num, r, 1, 2, 0);
                 }
+                else
+                {
+                    IGM_PartyStatus.ITEM[pos, 0] = new IGMDataItem_Box(pos:IGM_PartyStatus.SIZE[pos]);
+                    for (int i = 1; i < IGM_PartyStatus.Depth; i++)
+                        IGM_PartyStatus.ITEM[pos, i] = null;
+                }
+                
             }
         }
 
@@ -530,7 +563,8 @@ namespace FF8
                 Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
 
             TextScale = new Vector2(2.545455f, 3.0375f);
-
+            //todo detect when there is no saves detected.
+            //check for null
             IGM_Footer_Text = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Memory.State.LocationID).ReplaceRegion();
             IGM_Header_Text = strHeaderText[IGM_choSideBar];
             Update_IGM_ClockBox();
@@ -627,8 +661,8 @@ namespace FF8
                 }
                 for (int i = IGM_PartyStatus.Count; i < IGM_NonPartyStatus.Count + IGM_PartyStatus.Count; i++)
                 {
-                    if (IGM_NonPartyStatus.BLANKS[i- IGM_PartyStatus.Count]) continue;
-                    Rectangle r = IGM_NonPartyStatus.SIZE[i- IGM_PartyStatus.Count];
+                    if (IGM_NonPartyStatus.BLANKS[i - IGM_PartyStatus.Count]) continue;
+                    Rectangle r = IGM_NonPartyStatus.SIZE[i - IGM_PartyStatus.Count];
                     //r.Offset(IGM_focus.Translation.X, IGM_focus.Translation.Y);
                     if (r.Contains(ml))
                     {
@@ -680,15 +714,7 @@ namespace FF8
             /// </summary>
             public Point[] CURSOR;
 
-            /// <summary>
-            /// Dynamic data that is passed from update to draw. (type must be cast to)
-            /// </summary>
-            public object[,] DATA;
-
-            /// <summary>
-            /// Where to draw this item.
-            /// </summary>
-            public Rectangle[,] POS;
+            public IGMDataItem[,] ITEM;
 
             /// <summary>
             /// Size of the entire area
@@ -697,22 +723,35 @@ namespace FF8
 
             //private byte[] PALLET;
             public bool[] BLANKS;
+            public IGMDataItem CONTAINER;
 
             #endregion Fields
 
             #region Constructors
 
-            public IGMData(int count, int depth)
+            public IGMData(int count, int depth,IGMDataItem container=null)
             {
                 SIZE = new Rectangle[count];
-                POS = new Rectangle[count, depth];
-                DATA = new object[count, depth];
+                //POS = new Rectangle[count, depth];
+                //DATA = new object[count, depth];
+                ITEM = new IGMDataItem[count, depth];
                 CURSOR = new Point[count];
                 //PALLET = new byte[count];
 
                 Count = (byte)count;
                 Depth = (byte)depth;
                 BLANKS = new bool[count];
+                CONTAINER = container;
+            }
+            public void Draw()
+            {
+                if (CONTAINER != null)
+                    CONTAINER.Draw();
+                foreach(IGMDataItem i in ITEM)
+                {
+                    if(i!=null)
+                        i.Draw();
+                }
             }
 
             #endregion Constructors
@@ -723,6 +762,138 @@ namespace FF8
             public byte Depth { get; private set; }
 
             #endregion Properties
+        }
+
+        public abstract class IGMDataItem//<T>
+        {
+            //protected T _data;
+            protected Rectangle _pos;
+
+            public IGMDataItem(Rectangle? pos = null) =>
+                //_data = data;
+                _pos = pos ?? Rectangle.Empty;
+
+            /// <summary>
+            /// Dynamic data that is passed from update to draw.
+            /// </summary>
+            //public virtual T Data { get => _data; set => _data = value; }
+            /// <summary>
+            /// Where to draw this item.
+            /// </summary>
+            public virtual Rectangle Pos
+            {
+                get => _pos; set => _pos = value;
+
+                //public static implicit operator IGMDataItem<T>(IGMDataItem_Icon v) => throw new NotImplementedException();
+            }
+            public Color Color { get; internal set; } = Color.White;
+
+            //public virtual object Data { get; internal set; }
+            //public virtual FF8String Data { get; internal set; }
+            public abstract void Draw();
+        }
+
+        public class IGMDataItem_Icon : IGMDataItem//<Icons.ID>
+        {
+            private byte _pallet;
+            private byte _faded_pallet;
+
+            public Icons.ID Data { get; set; }
+            public byte Pallet
+            {
+                get => _pallet; set
+                {
+                    if (value >= 16) value = 2;
+                    _pallet = value;
+                }
+            }
+            public byte Faded_Pallet
+            {
+                get => _faded_pallet; set
+                {
+                    if (value >= 16) value = 2;
+                    _faded_pallet = value;
+                }
+            }
+
+            public bool Blink => Faded_Pallet!=Pallet;
+            public float Blink_Adjustment { get; set; }
+
+            public IGMDataItem_Icon(Icons.ID data, Rectangle? pos = null, byte? pallet = null, byte? faded_pallet = null, float blink_adjustment = 1f) : base(pos)
+            {
+                Data = data;
+                Pallet = pallet ?? 2;
+                Faded_Pallet = faded_pallet ?? Pallet;
+                Blink_Adjustment = blink_adjustment;
+            }
+
+            public override void Draw()
+            {
+                Memory.Icons.Draw(Data, Pallet, Pos, TextScale, fade);
+                if (Blink)
+                    Memory.Icons.Draw(Data, Faded_Pallet, Pos, TextScale, fade * blink_Amount * Blink_Adjustment);
+            }
+        }
+
+        public class IGMDataItem_Int : IGMDataItem//<Int>
+        {
+            private byte _pallet;
+
+            public int Data { get; set; }
+            public byte Padding { get; set; }
+            public byte Pallet
+            {
+                get => _pallet; set
+                {
+                    if (value >= 16) value = 2;
+                    _pallet = value;
+                }
+            }
+            public Icons.NumType NumType { get; set; }
+
+            public IGMDataItem_Int(int data, Rectangle? pos = null, byte? padding = null, byte? pallet = null, Icons.NumType? numtype = null) : base(pos)
+            {
+                Data = data;
+                Padding = padding ?? 0;
+                Pallet = pallet ?? 2;
+                NumType = numtype ?? 0;
+            }
+
+            public override void Draw() => Memory.Icons.Draw(Data, NumType, Pallet, $"D{Padding}", Pos.Location.ToVector2(), TextScale, fade);
+        }
+
+        private class IGMDataItem_String : IGMDataItem
+        {
+            public FF8String Data { get; set; }
+
+            public IGMDataItem_String(FF8String data, Rectangle? pos = null) : base(pos) => this.Data = data;
+
+            public override void Draw() => Memory.font.RenderBasicText(Data, Pos.Location, TextScale, Fade: fade);
+        }
+        private class IGMDataItem_Box : IGMDataItem
+        {
+            public FF8String Data { get; set; }
+            public Icons.ID? Title { get; set; }
+            public bool Indent { get; set; }
+
+            public IGMDataItem_Box(FF8String data = null, Rectangle? pos = null, Icons.ID? title = null, bool indent = false) : base(pos)
+            {
+                Data = data;
+                Title = title;
+                Indent = indent;
+            }
+
+            public override void Draw() =>
+                    DrawBox(Pos, Data, Title, indent: Indent);
+        }
+
+        private class IGMDataItem_Texture : IGMDataItem
+        {
+            public Texture2D Data { get; set; }
+
+            public IGMDataItem_Texture(Texture2D data, Rectangle? pos = null) : base(pos) => this.Data = data;
+
+            public override void Draw() => Memory.spriteBatch.Draw(Data, Pos, null, base.Color * fade);//4
         }
 
         #endregion Classes

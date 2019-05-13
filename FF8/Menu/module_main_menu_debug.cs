@@ -107,9 +107,9 @@ namespace FF8
         internal static void Update()
         {
             if (blinkstate)
-                blink += Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
+                blink_Amount += Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
             else
-                blink -= Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
+                blink_Amount -= Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
             lastscale = scale;
             scale = Memory.Scale();
 #pragma warning disable CS0219 // Variable is assigned but its value is never used
