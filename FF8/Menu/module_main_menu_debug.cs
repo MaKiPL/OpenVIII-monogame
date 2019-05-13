@@ -16,6 +16,7 @@ namespace FF8
         private static Vector2 vp_per;
         private static Vector2 vp;
         private static bool blinkstate;
+        private static IGM InGameMenu;
 
         #endregion Fields
 
@@ -96,7 +97,7 @@ namespace FF8
                     DrawLGSG();
                     break;
                 case MainMenuStates.InGameMenu:
-                    DrawInGameMenu();
+                    InGameMenu.Draw();
                     break;
             }
         }
@@ -190,7 +191,7 @@ namespace FF8
                     break;
                 case MainMenuStates.InGameMenu:
                     Memory.IsMouseVisible = true;
-                    UpdateIGM();
+                    InGameMenu.Update();
                     break;
 
                 default:
@@ -213,7 +214,8 @@ namespace FF8
             InitMain();
             InitLoad();
             InitDebug();
-            Init_InGameMenu();
+
+            InGameMenu = new IGM();
             Memory.Strings.Close();
         }
 

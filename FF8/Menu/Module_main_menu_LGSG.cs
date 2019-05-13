@@ -20,6 +20,8 @@ namespace FF8
         private static Vector2 TextScale;
         private static Point ml;
         private static Tuple<FF8String, FF8String, FF8String> LGSGHEADER;
+        private static Vector2 IGM_Size;
+        private static Matrix IGM_focus;
 
         #endregion Fields
 
