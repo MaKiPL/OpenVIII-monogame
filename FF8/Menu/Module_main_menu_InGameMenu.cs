@@ -382,7 +382,7 @@ namespace FF8
             Init_IGMClockBox();
             Init_IGM_NonPartyStatus();
             Init_IGM_PartyStatus();
-            UpdateInGameMenu();
+            UpdateIGM();
             for (int i = 0; i < strSideBar.Count; i++)
             {
                 Item l = strSideBar[(IGMItems)i];
@@ -565,7 +565,7 @@ namespace FF8
                 Update_IGM_PartyStatus_Box(i, Memory.State.Party[i]);
         }
 
-        private static void UpdateInGameMenu()
+        private static void UpdateIGM()
         {
             Vector2 Zoom = Memory.Scale(IGM_Size.X, IGM_Size.Y, Memory.ScaleMode.FitBoth);
 
@@ -581,10 +581,10 @@ namespace FF8
             Update_IGM_ClockBox();
             Update_IGM_NonPartyStatus();
             Update_IGM_PartyStatus_Boxes();
-            UpdateInGameMenuInput();
+            InputIGM();
         }
 
-        private static bool UpdateInGameMenuInput()
+        private static bool InputIGM()
         {
             bool ret = false;
             ml = Input.MouseLocation.Transform(IGM_focus);

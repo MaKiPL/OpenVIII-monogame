@@ -190,7 +190,7 @@ namespace FF8
                     break;
                 case MainMenuStates.InGameMenu:
                     Memory.IsMouseVisible = true;
-                    UpdateInGameMenu();
+                    UpdateIGM();
                     break;
 
                 default:
