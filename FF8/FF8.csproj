@@ -154,6 +154,7 @@
     <Compile Include="Menu\Kernel_bin.Character_Stats.cs" />
     <Compile Include="Menu\Kernel_bin.cs" />
     <Compile Include="Menu\Kernel_bin.Gender.cs" />
+    <Compile Include="Menu\Kernel_bin.Magic_Data.cs" />
     <Compile Include="Menu\Magazine.cs" />
     <Compile Include="Menu\Magazine.InsertCustomEntries.cs" />
     <Compile Include="Menu\Magazine.ID.cs" />
