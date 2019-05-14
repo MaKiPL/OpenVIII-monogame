@@ -16,7 +16,6 @@ namespace FF8
             private Matrix focus;
             private Mode mode;
             private Vector2 Size;
-            private Texture2D _red_pixel;
             private int _choChar;
 
             public int choChar
