@@ -1,6 +1,6 @@
 ﻿namespace FF8
 {
-    internal static partial class Saves
+    public static partial class Saves
     {
         public enum Costume
         {

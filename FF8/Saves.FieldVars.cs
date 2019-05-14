@@ -4,9 +4,9 @@ using System.Text;
 
 namespace FF8
 {
-    internal static partial class Saves
+    public static partial class Saves
     {
-        internal struct FieldVars
+        public struct FieldVars
         {
             public string byte03; //[0-3]unused in fields (always "FF-8")
             public ulong Steps; //[4]Steps (used to generate random encounters)

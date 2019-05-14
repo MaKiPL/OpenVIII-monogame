@@ -8,12 +8,14 @@ namespace FF8
     {
 
         private ArchiveWorker aw;
-        private string ArchiveString = Memory.Archives.A_MAIN;
-        public static Character_Stats[] CharacterStats;
-        public static Magic_Data[] MagicData;
-        public static Junctionable_GFs_Data[] JunctionableGFsData;
-        public static Enemy_Attacks_Data[] EnemyAttacksData;
-        public static Battle_Commands[] BattleCommands;
+        private readonly string ArchiveString = Memory.Archives.A_MAIN;
+        public static Magic_Data[] MagicData { get; private set; }//0
+        public static Junctionable_GFs_Data[] JunctionableGFsData { get; private set; }//1
+        public static Enemy_Attacks_Data[] EnemyAttacksData { get; private set; }//2
+        public static Battle_Commands[] BattleCommands { get; private set; }//3
+        public static Weapons_Data[] WeaponsData { get; private set; }//4
+
+        public static Character_Stats[] CharacterStats { get; private set; }//6
 
         /// <summary>
         /// Read binary data from into structures and arrays
@@ -61,6 +63,14 @@ namespace FF8
                     EnemyAttacksData[i].Read(br);
                 }
 
+                //Weapons Data
+                WeaponsData = new Weapons_Data[Weapons_Data.count];
+                ms.Seek(subPositions[Weapons_Data.id], SeekOrigin.Begin);
+                for (int i = 0; i < Weapons_Data.count; i++)
+                {
+                    WeaponsData[i].Read(br,i);
+                }
+
                 //Characters                
                 CharacterStats = new Character_Stats[Character_Stats.count];
                 ms.Seek(subPositions[Character_Stats.id], SeekOrigin.Begin);
@@ -68,6 +78,38 @@ namespace FF8
                 {
                     CharacterStats[i].Read(br);
                 }
+            }
+        }
+
+        public class Weapons_Data
+        {
+            public const int count =33;
+            public const int id=4;
+            public FF8String Name { get; private set; }
+            public override string ToString() => Name;
+
+            //0x0000	2 bytes Offset to weapon name
+            //0x0002	1 byte Renzokuken finishers
+
+            //0x01 = Rough Divide
+            //0x02 = Fated Circle
+            //0x04 = Blasting Zone
+            //0x08 = Lion Heart
+            //0x0003	1 byte Unknown
+            public Saves.Characters Character;//0x0004	1 byte Character ID
+
+            //0x0005	1 bytes Attack Type
+            //0x0006	1 byte Attack Power
+            //0x0007	1 byte Attack Parameter
+            //0x0008	1 byte STR Bonus
+            //0x0009	1 byte Weapon Tier
+            //0x000A	1 byte Crit Bonus
+            //0x000B	1 byte Melee Weapon?
+
+            internal void Read(BinaryReader br,int string_id = 0)
+            {
+                Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, string_id);
+                br.BaseStream.Seek(2, SeekOrigin.Current);
             }
         }
     }

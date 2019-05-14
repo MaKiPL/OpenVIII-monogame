@@ -1,6 +1,6 @@
 ﻿namespace FF8
 {
-    internal partial class Faces
+    public partial class Faces
     {
         #region Enums
 
