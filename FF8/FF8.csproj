@@ -150,7 +150,9 @@
     <Compile Include="Menu\Faces.ID.cs" />
     <Compile Include="Menu\Icons.ID.cs" />
     <Compile Include="Menu\Icons.InsertCustomEntries.cs" />
-    <Compile Include="Menu\Kenerl_bin.cs" />
+    <Compile Include="Menu\Kernel_bin.Character_Stats.cs" />
+    <Compile Include="Menu\Kernel_bin.cs" />
+    <Compile Include="Menu\Kernel_bin.Gender.cs" />
     <Compile Include="Menu\Magazine.cs" />
     <Compile Include="Menu\Magazine.InsertCustomEntries.cs" />
     <Compile Include="Menu\Magazine.ID.cs" />
