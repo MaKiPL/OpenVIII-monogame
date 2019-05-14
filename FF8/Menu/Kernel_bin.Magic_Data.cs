@@ -10,6 +10,9 @@ namespace FF8
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Magic-data"/>
         public struct Magic_Data
         {
+
+            public const int id = 1;
+            public const int count = 57;
             //0x0000	2 bytes Offset to spell name
             //0x0002	2 bytes Offset to spell description
             public ushort MagicID;     //0x0004	2 bytes Magic ID

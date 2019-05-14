@@ -11,9 +11,10 @@ namespace FF8
         /// <seealso cref="http://forums.qhimm.com/index.php?topic=16923.msg240609#msg240609"/>
         public struct Character_Stats
         {
+            public const int id = 6;
+            public const int count = 11;
             //public ushort Offset; //0x0000; 2 bytes; Offset to character name
             //Squall and Rinoa have name offsets of 0xFFFF because their name is in the save game data rather than kernel.bin.
-
             /// <summary>
             /// Crisis level modifier
             /// </summary>

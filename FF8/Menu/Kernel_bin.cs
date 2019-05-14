@@ -26,53 +26,45 @@ namespace FF8
             aw = new ArchiveWorker(ArchiveString);
             byte[] buffer = aw.GetBinaryFile(Memory.Strings.Filenames[(int)Strings.FileID.KERNEL]);
             List<Loc> subPositions = Memory.Strings.Files[Strings.FileID.KERNEL].subPositions;
-            int id; //6 is characters
-            int count;
+
 
             using (MemoryStream ms = new MemoryStream(buffer))
             using (BinaryReader br = new BinaryReader(ms))
             {
-                id = 0; //Battle commands
-                count = 39;
-                BattleCommands = new Battle_Commands[count];
-                ms.Seek(subPositions[id], SeekOrigin.Begin);
-                for (int i = 0; i < count; i++)
+                //Battle commands
+                BattleCommands = new Battle_Commands[Battle_Commands.count];
+                ms.Seek(subPositions[Battle_Commands.id], SeekOrigin.Begin);
+                for (int i = 0; i < Battle_Commands.count; i++)
                 {
                     BattleCommands[i].Read(br);
                 }
-
-                id = 1; //Magic data
-                count = 57;
-                MagicData = new Magic_Data[count];
-                ms.Seek(subPositions[id], SeekOrigin.Begin);
-                for (int i = 0; i < count; i++)
+                //Magic data
+                MagicData = new Magic_Data[Magic_Data.count];
+                ms.Seek(subPositions[Magic_Data.id], SeekOrigin.Begin);
+                for (int i = 0; i < Magic_Data.count; i++)
                 {
                     MagicData[i].Read(br);
                 }
-
-                id = 2; //Junctionable GFs data
-                count = 16;
-                JunctionableGFsData = new Junctionable_GFs_Data[count];
-                ms.Seek(subPositions[id], SeekOrigin.Begin);
-                for (int i = 0; i < count; i++)
+                //Junctionable GFs data
+                JunctionableGFsData = new Junctionable_GFs_Data[Junctionable_GFs_Data.count];
+                ms.Seek(subPositions[Junctionable_GFs_Data.id], SeekOrigin.Begin);
+                for (int i = 0; i < Junctionable_GFs_Data.count; i++)
                 {
                     JunctionableGFsData[i].Read(br);
                 }
 
-                id = 3; //Enemy Attacks data
-                count = 384;
-                EnemyAttacksData = new Enemy_Attacks_Data[count];
-                ms.Seek(subPositions[id], SeekOrigin.Begin);
-                for (int i = 0; i < count; i++)
+                //Enemy Attacks data
+                EnemyAttacksData = new Enemy_Attacks_Data[Enemy_Attacks_Data.count];
+                ms.Seek(subPositions[Enemy_Attacks_Data.id], SeekOrigin.Begin);
+                for (int i = 0; i < Enemy_Attacks_Data.count; i++)
                 {
                     EnemyAttacksData[i].Read(br);
                 }
 
-                id = 6; //Characters
-                count = 11;
-                CharacterStats = new Character_Stats[count];
-                ms.Seek(subPositions[id], SeekOrigin.Begin);
-                for (int i = 0; i < count; i++)
+                //Characters                
+                CharacterStats = new Character_Stats[Character_Stats.count];
+                ms.Seek(subPositions[Character_Stats.id], SeekOrigin.Begin);
+                for (int i = 0; i < Character_Stats.count; i++)
                 {
                     CharacterStats[i].Read(br);
                 }

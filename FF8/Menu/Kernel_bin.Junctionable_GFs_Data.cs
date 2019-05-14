@@ -10,21 +10,23 @@ namespace FF8
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Junctionable-GFs"/>
         public class Junctionable_GFs_Data
         {
+            public const int id = 2;
+            public const int count = 16;
             //0x0000  2 bytes Offset to GF attack name
             //0x0002  2 bytes Offset to GF attack description
-            byte[] MagicID;             //0x0004  2 bytes[[Magic ID
-            byte Attack_type;           //0x0006  1 byte  Attack type
-            byte GF_power;              //0x0007  1 byte  GF power(used in damage formula)
-            byte[] Unknown0;            //0x0008  2 bytes Unknown
-            byte Attack_flags;          //0x000A  1 byte  Attack Flags
-            byte[] Unknown1;            //0x000B  2 bytes Unknown
-            byte Element;               //0x000D  1 byte[[Element
+            public byte[] MagicID;             //0x0004  2 bytes[[Magic ID
+            public byte Attack_type;           //0x0006  1 byte  Attack type
+            public byte GF_power;              //0x0007  1 byte  GF power(used in damage formula)
+            public byte[] Unknown0;            //0x0008  2 bytes Unknown
+            public byte Attack_flags;          //0x000A  1 byte  Attack Flags
+            public byte[] Unknown1;            //0x000B  2 bytes Unknown
+            public byte Element;               //0x000D  1 byte[[Element
             public byte[] Statuses0;    //0x000E  2 bytes[[Statuses 0
             public byte[] Statuses1;    //0x0010  4 bytes[[Statuses 1
-            byte GFHP_modifier;         //0x0014  1 byte  GF HP Modifier(used in GF HP formula)
-            byte[] Unknown2;            //0x0015  6 bytes Unknown
-            byte Status_attack;         //0x001B  1 byte  Status attack enabler
-            byte[][] Ability;            
+            public byte GFHP_modifier;         //0x0014  1 byte  GF HP Modifier(used in GF HP formula)
+            public byte[] Unknown2;            //0x0015  6 bytes Unknown
+            public byte Status_attack;         //0x001B  1 byte  Status attack enabler
+            public byte[][] Ability;            
             //0x001C  1 byte[[Ability 1 Unlocker
             //0x001D  1 byte  Unknown
             //0x001E  1 byte[[Ability 1
@@ -126,9 +128,9 @@ namespace FF8
             //0x007D  1 byte  Cactuar compatibility
             //0x007E  1 byte  Tonberry compatibility
             //0x007F  1 byte  Eden compatibility
-            byte[] Unknown3;            //0x0080  2 bytes Unknown
-            byte PowerMod;              //0x0082  1 byte  Power Mod(used in damage formula)
-            byte LevelMod;              //0x0083  1 byte  Level Mod(used in damage formula)
+            public byte[] Unknown3;            //0x0080  2 bytes Unknown
+            public byte PowerMod;              //0x0082  1 byte  Power Mod(used in damage formula)
+            public byte LevelMod;              //0x0083  1 byte  Level Mod(used in damage formula)
             internal void Read(BinaryReader br)
             {
                 br.BaseStream.Seek(4, SeekOrigin.Current);

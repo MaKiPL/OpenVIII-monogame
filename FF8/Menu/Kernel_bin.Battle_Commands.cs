@@ -10,6 +10,9 @@ namespace FF8
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Battle-commands"/>
         public struct Battle_Commands
         {
+
+            public const int id = 0;
+            public const int count = 39;
             //public byte[] OffsetName;    //0x0000	2 bytes Offset to ability name
 
             //public byte[] OffsetDesc;    //0x0002	2 bytes Offset to ability description
