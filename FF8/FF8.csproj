@@ -153,6 +153,7 @@
     <Compile Include="Menu\Kernel_bin.Battle_Commands.cs" />
     <Compile Include="Menu\Kernel_bin.Character_Stats.cs" />
     <Compile Include="Menu\Kernel_bin.cs" />
+    <Compile Include="Menu\Kernel_bin.Enemy_Attacks_Data.cs" />
     <Compile Include="Menu\Kernel_bin.Gender.cs" />
     <Compile Include="Menu\Kernel_bin.Junctionable_GFs_Data.cs" />
     <Compile Include="Menu\Kernel_bin.Magic_Data.cs" />

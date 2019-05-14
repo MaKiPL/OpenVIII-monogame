@@ -12,6 +12,7 @@ namespace FF8
         public static Character_Stats[] CharacterStats;
         public static Magic_Data[] MagicData;
         public static Junctionable_GFs_Data[] JunctionableGFsData;
+        public static Enemy_Attacks_Data[] EnemyAttacksData;
         public static Battle_Commands[] BattleCommands;
 
         /// <summary>
@@ -56,6 +57,15 @@ namespace FF8
                 for (int i = 0; i < count; i++)
                 {
                     JunctionableGFsData[i].Read(br);
+                }
+
+                id = 3; //Enemy Attacks data
+                count = 384;
+                EnemyAttacksData = new Enemy_Attacks_Data[count];
+                ms.Seek(subPositions[id], SeekOrigin.Begin);
+                for (int i = 0; i < count; i++)
+                {
+                    EnemyAttacksData[i].Read(br);
                 }
 
                 id = 6; //Characters
