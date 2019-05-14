@@ -562,7 +562,7 @@ namespace FF8
                         if (!Memory.State.Party.Contains((Saves.Characters)i) && Memory.State.Characters[i].Exists != 0 && Memory.State.Characters[i].Exists != 6)//15,9,7,4 shows on menu, 0 locked, 6 hidden
                         {
                             BLANKS[pos] = false;
-                            Update_NonPartyStatus(pos++, (Saves.Characters)i);
+                            Update(pos++, (Saves.Characters)i);
                         }
                     }
                     for (; pos < Count; pos++)
@@ -575,7 +575,7 @@ namespace FF8
                     }
                     return true;
                 }
-                private void Update_NonPartyStatus(sbyte pos, Saves.Characters character)
+                private void Update(sbyte pos, Saves.Characters character)
                 {
                     float yoff = 39;
                     int num = 0;
