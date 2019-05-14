@@ -63,46 +63,48 @@ namespace FF8
             /// <summary>
             /// </summary>
             /// <param name="lvl">Level</param>
-            /// <param name="magic_J_val">Bonus Value of Junctioned Magic</param>
+            /// <param name="MagicID">Bonus Value of Junctioned Magic</param>
             /// <param name="magic_count">Total amount of Magic in slot</param>
             /// <param name="stat_bonus">Bonus integer based HP</param>
             /// <param name="percent_mod">50% = 50, 100%=100, etc</param>
             /// <returns></returns>
-            public int HP(sbyte lvl, int magic_J_val = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod) => (((magic_J_val * magic_count) + stat_bonus + (lvl * _HP[0]) - ((10 * lvl * lvl) / _HP[1]) + _HP[2]) * percent_mod) / 100;
+            public int HP(sbyte lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
+            {
+                return (((MagicData[MagicID].HP_J * magic_count) + stat_bonus + (lvl * _HP[0]) - ((10 * lvl * lvl) / _HP[1]) + _HP[2]) * percent_mod) / 100;
+            }
 
-            public int STR(int lvl, int magic_J_val = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod, int weapon = 0)
-                => STR_VIT_MAG_SPR(_STR[0], _STR[1], _STR[2], _STR[3], lvl, magic_J_val, magic_count, stat_bonus, percent_mod,weapon);
-            public int VIT(int lvl, int magic_J_val = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
-                => STR_VIT_MAG_SPR(_VIT[0], _VIT[1], _VIT[2], _VIT[3], lvl, magic_J_val, magic_count, stat_bonus, percent_mod);
-            public int MAG(int lvl, int magic_J_val = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
-                => STR_VIT_MAG_SPR(_MAG[0], _MAG[1], _MAG[2], _MAG[3], lvl, magic_J_val, magic_count, stat_bonus, percent_mod);
-            public int SPR(int lvl, int magic_J_val = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
-                => STR_VIT_MAG_SPR(_SPR[0], _SPR[1], _SPR[2], _SPR[3], lvl, magic_J_val, magic_count, stat_bonus, percent_mod);
+            public int STR(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod, int weapon = 0)
+                => STR_VIT_MAG_SPR(_STR[0], _STR[1], _STR[2], _STR[3], lvl, MagicData[MagicID].STR_J, magic_count, stat_bonus, percent_mod,weapon);
+            public int VIT(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
+                => STR_VIT_MAG_SPR(_VIT[0], _VIT[1], _VIT[2], _VIT[3], lvl, MagicData[MagicID].VIT_J, magic_count, stat_bonus, percent_mod);
+            public int MAG(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
+                => STR_VIT_MAG_SPR(_MAG[0], _MAG[1], _MAG[2], _MAG[3], lvl, MagicData[MagicID].MAG_J, magic_count, stat_bonus, percent_mod);
+            public int SPR(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
+                => STR_VIT_MAG_SPR(_SPR[0], _SPR[1], _SPR[2], _SPR[3], lvl, MagicData[MagicID].SPR_J, magic_count, stat_bonus, percent_mod);
 
             private int STR_VIT_MAG_SPR(int a, int b, int c, int d, int lvl, int magic_J_val, int magic_count, int stat_bonus, int percent_mod = _percent_mod, int UNK = 0)
             {
                 return ((UNK + (magic_J_val * magic_count) / 100 + stat_bonus + ((lvl * a) / 10 + lvl / b - (lvl * lvl) / d / 2 + c) / 4) * percent_mod) / 100;
             }
 
-            public int SPD(int lvl, int magic_J_val = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
-                => SPD_LUCK(_SPD[0], _SPD[1], _SPD[2], _SPD[3], lvl, magic_J_val, magic_count, stat_bonus, percent_mod);
-            public int LUCK(int lvl, int magic_J_val = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
-                => SPD_LUCK(_LUCK[0], _LUCK[1], _LUCK[2], _LUCK[3], lvl, magic_J_val, magic_count, stat_bonus, percent_mod);
+            public int SPD(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
+                => SPD_LUCK(_SPD[0], _SPD[1], _SPD[2], _SPD[3], lvl, MagicData[MagicID].SPD_J, magic_count, stat_bonus, percent_mod);
+            public int LUCK(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
+                => SPD_LUCK(_LUCK[0], _LUCK[1], _LUCK[2], _LUCK[3], lvl, MagicData[MagicID].LUCK_J, magic_count, stat_bonus, percent_mod);
 
             private int SPD_LUCK(int a, int b, int c, int d, int lvl, int magic_J_val, int magic_count, int stat_bonus, int percent_mod = _percent_mod, int UNK = 0)
             {
                 return ((UNK + (magic_J_val * magic_count) / 100 + stat_bonus + lvl / b - lvl / d + lvl * a + c) * percent_mod) / 100;
             }
 
-            public int EVA(int lvl, int magic_J_val = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
+            public int EVA(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int spd=0, int percent_mod = _percent_mod)
             {
-                int spd = SPD(lvl, magic_J_val, magic_count, stat_bonus, percent_mod);
-                return (((magic_J_val * magic_count) / 100 + spd / 4) * percent_mod) / 100;
+                return (((MagicData[MagicID].EVA_J * magic_count) / 100 + spd / 4) * percent_mod) / 100;
             }
 
-            public int HIT(int magic_J_val = 0, int magic_count = 0, int weapon = 0)
+            public int HIT(int MagicID = 0, int magic_count = 0, int weapon = 0)
             {
-                return magic_J_val * magic_count + weapon;
+                return MagicData[MagicID].HIT_J * magic_count + weapon;
             }
         }
     }

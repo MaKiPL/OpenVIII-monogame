@@ -9,9 +9,9 @@ namespace FF8
 
         private ArchiveWorker aw;
         private string ArchiveString = Memory.Archives.A_MAIN;
-        private Character_Stats[] CharacterStats;
-        private Magic_Data[] MagicData;
-        private Battle_Commands[] BattleCommands;
+        public static Character_Stats[] CharacterStats;
+        public static Magic_Data[] MagicData;
+        public static Battle_Commands[] BattleCommands;
 
         /// <summary>
         /// Read binary data from into structures and arrays
