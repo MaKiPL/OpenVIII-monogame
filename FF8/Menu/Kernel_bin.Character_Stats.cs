@@ -11,7 +11,7 @@ namespace FF8
         /// <seealso cref="http://forums.qhimm.com/index.php?topic=16923.msg240609#msg240609"/>
         public struct Character_Stats
         {
-            public ushort Offset; //0x0000; 2 bytes; Offset to character name
+            //public ushort Offset; //0x0000; 2 bytes; Offset to character name
                                   //Squall and Rinoa have name offsets of 0xFFFF because their name is in the save game data rather than kernel.bin.
 
             public byte Crisis; //0x0002; 1 byte; Crisis level hp multiplier
@@ -29,8 +29,9 @@ namespace FF8
 
             public void Read(BinaryReader br)
             {
-                Offset = br.ReadUInt16(); //0x0000; 2 bytes; Offset to character name
-                                          //Squall and Rinoa have name offsets of 0xFFFF because their name is in the save game data rather than kernel.bin.
+                //Offset = br.ReadUInt16(); //0x0000; 2 bytes; Offset to character name
+                //Squall and Rinoa have name offsets of 0xFFFF because their name is in the save game data rather than kernel.bin.
+                br.BaseStream.Seek(2, SeekOrigin.Current);
                 Crisis = br.ReadByte(); //0x0002; 1 byte; Crisis level hp multiplier
                 Gender = br.ReadByte() == 0 ? Gender.Male : Gender.Female; //0x0003; 1 byte; Gender; 0x00 - Male 0x01 - Female
                 LimitID = br.ReadByte(); //0x0004; 1 byte; Limit Break ID
