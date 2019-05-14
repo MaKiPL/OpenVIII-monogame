@@ -51,7 +51,7 @@ namespace FF8
 
                 id = 2; //Junctionable GFs data
                 count = 16;
-                MagicData = new Magic_Data[count];
+                JunctionableGFsData = new Junctionable_GFs_Data[count];
                 ms.Seek(subPositions[id], SeekOrigin.Begin);
                 for (int i = 0; i < count; i++)
                 {
@@ -70,4 +70,3 @@ namespace FF8
         }
     }
 }
-
