@@ -11,6 +11,7 @@ namespace FF8
         private string ArchiveString = Memory.Archives.A_MAIN;
         public static Character_Stats[] CharacterStats;
         public static Magic_Data[] MagicData;
+        public static Junctionable_GFs_Data[] JunctionableGFsData;
         public static Battle_Commands[] BattleCommands;
 
         /// <summary>
@@ -46,6 +47,15 @@ namespace FF8
                 for (int i = 0; i < count; i++)
                 {
                     MagicData[i].Read(br);
+                }
+
+                id = 2; //Junctionable GFs data
+                count = 16;
+                MagicData = new Magic_Data[count];
+                ms.Seek(subPositions[id], SeekOrigin.Begin);
+                for (int i = 0; i < count; i++)
+                {
+                    JunctionableGFsData[i].Read(br);
                 }
 
                 id = 6; //Characters

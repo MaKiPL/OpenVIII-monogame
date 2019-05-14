@@ -43,7 +43,7 @@ namespace FF8
             public byte Stat_J_def_val;//0x0025  1 byte  Characters J - Status defense value
             public byte[] Stat_J_atk;  //0x0026  2 bytes Characters J - Statuses Attack
             public byte[] Stat_J_def;  //0x0028  2 bytes Characters J - Statuses Defend
-            public byte[] GF_Compat;
+            public byte[] GF_Compatibility;
             //0x002A  1 byte  Quezacolt compatibility
             //0x002B  1 byte  Shiva compatibility
             //0x002C  1 byte  Ifrit compatibility
@@ -94,7 +94,7 @@ namespace FF8
                 Stat_J_def_val = br.ReadByte();
                 Stat_J_atk = br.ReadBytes(2);
                 Stat_J_def = br.ReadBytes(2);
-                GF_Compat = br.ReadBytes(16);
+                GF_Compatibility = br.ReadBytes(16);
                 Unknown4 = br.ReadByte();
             }
         }
