@@ -17,19 +17,18 @@ namespace FF8
             private Mode mode;
             private Vector2 Size;
             private Texture2D _red_pixel;
-            private Dictionary<Enum, Item> strHeaderText;
             private int _choChar;
 
             public int choChar
             {
                 get
                 {
-                    if (_choChar >= 0 && _choChar < Data[SectionName.Non_Party].Count)
+                    if (_choChar >= 0 && _choChar < Data[SectionName.Party].Count)
                     {
                         if (Data[SectionName.Party].BLANKS[_choChar])
                             return choCharSet(_choChar + 1);
                     }
-                    else if (_choChar < Data[SectionName.Non_Party].Count + Data[SectionName.Party].Count && _choChar >= Data[SectionName.Party].Count)
+                    else if (_choChar < Data[SectionName.Non_Party].Count + Data[SectionName.Party].Count && _choChar >= Data[SectionName.Non_Party].Count)
                     {
                         if (Data[SectionName.Non_Party].BLANKS[_choChar - Data[SectionName.Party].Count])
                             return choCharSet(_choChar + 1);
@@ -185,27 +184,6 @@ namespace FF8
                     party.SIZE[i] = new Rectangle { Width = 580, Height = 78, X = 20, Y = 84 + 78 * i };
             }
 
-            private void Init_IGMClockBox(ref IGMData clock)
-            {
-                Rectangle r;
-                r = clock;
-
-                r = clock;
-                r.Offset(25, 14);
-                clock.ITEM[0, 0] = new IGMDataItem_Icon(Icons.ID.PLAY, r, 13);
-
-                r = clock;
-                r.Offset(145, 14);
-                clock.ITEM[0, 2] = new IGMDataItem_Icon(Icons.ID.Colon, r, 13, 2, .5f);
-
-                r = clock;
-                r.Offset(25, 48);
-                clock.ITEM[0, 4] = new IGMDataItem_Icon(Icons.ID.SeeD, r, 13);
-
-                r = clock;
-                r.Offset(185, 81);
-                clock.ITEM[0, 7] = new IGMDataItem_Icon(Icons.ID.G, r, 2);
-            }
 
             public enum SectionName
             {
@@ -224,31 +202,17 @@ namespace FF8
 
                 TextScale = new Vector2(2.545455f, 3.0375f);
 
-                strHeaderText = new Dictionary<Enum, Item>()
-                {
-                { Items.Junction, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,1) } },
-                { Items.Item, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,3) } },
-                { Items.Magic, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,5) } },
-                { Items.Status, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,9) } },
-                { Items.GF, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,7) } },
-                { Items.Ability, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,63) } },
-                { Items.Switch, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,65) } },
-                { Items.Card, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,11) } },
-                { Items.Config, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,17) } },
-                { Items.Tutorial, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,68) } },
-                { Items.Save, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,15) } },
-                };
+               
 
                 _red_pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
                 Color[] color = new Color[] { new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, fade) };
                 _red_pixel.SetData<Color>(color, 0, _red_pixel.Width * _red_pixel.Height);
 
-                IGMData Header = new IGMData(0, 0, new IGMDataItem_Box(pos: new Rectangle { Width = 610, Height = 75 }, title: Icons.ID.HELP));
-                IGMData Footer = new IGMData(0, 0, new IGMDataItem_Box(pos: new Rectangle { Width = 610, Height = 75, Y = 630 - 75 }));
+                IGMData Header = new IGMData_Header(0, 0, new IGMDataItem_Box(pos: new Rectangle { Width = 610, Height = 75 }, title: Icons.ID.HELP));
+                IGMData Footer = new IGMData_Footer(0, 0, new IGMDataItem_Box(pos: new Rectangle { Width = 610, Height = 75, Y = 630 - 75 }));
+                IGMData Clock = new IGMData_Clock(1, 8, new IGMDataItem_Box(pos: new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 }));
                 IGMData SideMenu = new IGMData(11, 1, new IGMDataItem_Box(pos: new Rectangle { Width = 226, Height = 492, X = 843 - 226 }));
                 Init_SideMenu(ref SideMenu);
-                IGMData Clock = new IGMData(1, 8, new IGMDataItem_Box(pos: new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 }));
-                Init_IGMClockBox(ref Clock);
                 IGMData Non_Party = new IGMData(6, 7, new IGMDataItem_Box(pos: new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 }));
                 Init_NonPartyStatus(ref Non_Party);
                 IGMData Party = new IGMData(3, 7);
@@ -291,37 +255,6 @@ namespace FF8
                 }
             }
 
-            private void Update_ClockBox()
-            {
-                int num;
-                int spaces;
-                Rectangle r;
-
-                r = Data[SectionName.Clock];
-                num = Memory.State.timeplayed.TotalHours < 99 ? (int)(Memory.State.timeplayed.TotalHours) : 99;
-                spaces = 2 - (num).ToString().Length;
-                r.Offset(105 + spaces * 20, 14);
-                Data[SectionName.Clock].ITEM[0, 1] = new IGMDataItem_Int(num, r, 2, 0, 1);
-
-                r = Data[SectionName.Clock];
-                num = num >= 99 ? 99 : Memory.State.timeplayed.Minutes;
-                spaces = 0;
-                r.Offset(165 + spaces * 20, 14);
-                Data[SectionName.Clock].ITEM[0, 3] = new IGMDataItem_Int(num, r, 2, 0, 2);
-
-                r = Data[SectionName.Clock];
-                num = Memory.State.Fieldvars.SeedRankPts / 100;
-                num = num < 99999 ? num : 99999;
-                spaces = 5 - (num).ToString().Length;
-                r.Offset(105 + spaces * 20, 48);
-                Data[SectionName.Clock].ITEM[0, 5] = new IGMDataItem_Int(num, r, 2, 0, 1);
-
-                r = Data[SectionName.Clock];
-                num = Memory.State.AmountofGil < 99999999 ? (int)(Memory.State.AmountofGil) : 99999999;
-                spaces = 8 - (num).ToString().Length;
-                r.Offset(25 + spaces * 20, 81);
-                Data[SectionName.Clock].ITEM[0, 6] = new IGMDataItem_Int(num, r, 2, 0, 1);
-            }
 
             private void Update_NonPartyStatus()
             {
@@ -462,9 +395,11 @@ namespace FF8
                     Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
                 //todo detect when there is no saves detected.
                 //check for null
-                ((IGMDataItem_Box)Data[SectionName.Footer].CONTAINER).Data = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Memory.State.LocationID).ReplaceRegion();
-                ((IGMDataItem_Box)Data[SectionName.Header].CONTAINER).Data = strHeaderText[choSideBar];
-                Update_ClockBox();
+                foreach(var i in Data)
+                {
+                    i.Value.Update();
+                }
+                ((IGMData_Header)Data[SectionName.Header]).Update(choSideBar);
                 Update_NonPartyStatus();
                 Update_PartyStatus_Boxes();
 
@@ -599,6 +534,119 @@ namespace FF8
                 return ret;
             }
 
+            protected class IGMData_Header : IGMData
+            {
+                private Dictionary<Enum, Item> strHeaderText;
+
+                public IGMData_Header(int count, int depth, IGMDataItem container = null) : base(count, depth, container)
+                {
+                }
+
+                //public override void Draw() => base.Draw();
+
+                public override void Init()
+                {
+                    strHeaderText = new Dictionary<Enum, Item>()
+                    {
+                    { Items.Junction, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,1) } },
+                    { Items.Item, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,3) } },
+                    { Items.Magic, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,5) } },
+                    { Items.Status, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,9) } },
+                    { Items.GF, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,7) } },
+                    { Items.Ability, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,63) } },
+                    { Items.Switch, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,65) } },
+                    { Items.Card, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,11) } },
+                    { Items.Config, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,17) } },
+                    { Items.Tutorial, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,68) } },
+                    { Items.Save, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,15) } },
+                    };
+                }
+                
+                public bool Update(IGM.Items selection)
+                {
+                    ((IGMDataItem_Box)CONTAINER).Data = strHeaderText[selection];
+                    return true;
+                }
+
+                private new bool Update() => base.Update();
+            }
+
+            private class IGMData_Footer : IGMData
+            {
+                public IGMData_Footer(int count, int depth, IGMDataItem container = null) : base(count, depth, container)
+                {
+                }
+
+                public override bool Update()
+                {
+                    base.Update();
+                    ((IGMDataItem_Box)CONTAINER).Data = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Memory.State.LocationID).ReplaceRegion();
+                    return true;
+                }
+            }
+
+            private class IGMData_Clock : IGMData
+            {
+                public IGMData_Clock(int count, int depth, IGMDataItem container = null) : base(count, depth, container)
+                {
+                }
+
+                public override void Init()
+                {
+                    Rectangle r;
+                    r = CONTAINER;
+                    r.Offset(25, 14);
+                    ITEM[0, 0] = new IGMDataItem_Icon(Icons.ID.PLAY, r, 13);
+
+                    r = CONTAINER;
+                    r.Offset(145, 14);
+                    ITEM[0, 2] = new IGMDataItem_Icon(Icons.ID.Colon, r, 13, 2, .5f);
+
+                    r = CONTAINER;
+                    r.Offset(25, 48);
+                    ITEM[0, 4] = new IGMDataItem_Icon(Icons.ID.SeeD, r, 13);
+
+                    r = CONTAINER;
+                    r.Offset(185, 81);
+                    ITEM[0, 7] = new IGMDataItem_Icon(Icons.ID.G, r, 2);
+                    base.Init();
+                }
+
+                public override bool Update()
+                {
+                    bool ret = base.Update();
+                    int num;
+                    int spaces;
+                    Rectangle r;
+
+                    r = CONTAINER;
+                    num = Memory.State.timeplayed.TotalHours < 99 ? (int)(Memory.State.timeplayed.TotalHours) : 99;
+                    spaces = 2 - (num).ToString().Length;
+                    r.Offset(105 + spaces * 20, 14);
+                    ITEM[0, 1] = new IGMDataItem_Int(num, r, 2, 0, 1);
+
+                    r = CONTAINER;
+                    num = num >= 99 ? 99 : Memory.State.timeplayed.Minutes;
+                    spaces = 0;
+                    r.Offset(165 + spaces * 20, 14);
+                    ITEM[0, 3] = new IGMDataItem_Int(num, r, 2, 0, 2);
+
+                    r = CONTAINER;
+                    num = Memory.State.Fieldvars.SeedRankPts / 100;
+                    num = num < 99999 ? num : 99999;
+                    spaces = 5 - (num).ToString().Length;
+                    r.Offset(105 + spaces * 20, 48);
+                    ITEM[0, 5] = new IGMDataItem_Int(num, r, 2, 0, 1);
+
+                    r = CONTAINER;
+                    num = Memory.State.AmountofGil < 99999999 ? (int)(Memory.State.AmountofGil) : 99999999;
+                    spaces = 8 - (num).ToString().Length;
+                    r.Offset(25 + spaces * 20, 81);
+                    ITEM[0, 6] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                    return true;
+                }
+            }
+
             #endregion Methods
         }
 
@@ -637,11 +685,12 @@ namespace FF8
                 Depth = (byte)depth;
                 BLANKS = new bool[count];
                 CONTAINER = container;
+                Init();
             }
 
             public IGMDataItem this[int pos, int i] { get => ITEM[pos, i]; set => ITEM[pos, i] = value; }
 
-            public void Draw()
+            public virtual void Draw()
             {
                 if (CONTAINER != null)
                     CONTAINER.Draw();
@@ -664,6 +713,14 @@ namespace FF8
             public int Y => CONTAINER != null ? CONTAINER.Pos.Y : 0;
 
             public static implicit operator Rectangle(IGMData v) => v.CONTAINER ?? Rectangle.Empty;
+
+            public virtual bool Update() { return false; }
+            public virtual bool Inputs()
+            {
+                return false;
+            }
+            public virtual void Init()
+            { }
 
             #endregion Properties
         }
