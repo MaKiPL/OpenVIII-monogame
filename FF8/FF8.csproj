@@ -161,6 +161,7 @@
     <Compile Include="Menu\Kernel_bin.Junctionable_GFs_Data.cs" />
     <Compile Include="Menu\Kernel_bin.Magic_Data.cs" />
     <Compile Include="Menu\Kernel_bin.Magic_ID.cs" />
+    <Compile Include="Menu\Kernel_bin.Non_Junctionable_GFs_Attacks_Data.cs" />
     <Compile Include="Menu\Kernel_bin.Renzokuken_Finishers_Data.cs" />
     <Compile Include="Menu\Kernel_bin.Statuses0.cs" />
     <Compile Include="Menu\Kernel_bin.Statuses1.cs" />
