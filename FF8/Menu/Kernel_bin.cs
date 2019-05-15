@@ -16,6 +16,7 @@ namespace FF8
         internal static Weapons_Data[] WeaponsData { get; private set; }//4
         internal static Dictionary<Renzokeken_Level, Renzokuken_Finishers_Data> RenzokukenFinishersData; //5
         internal static Dictionary<Saves.Characters,Character_Stats> CharacterStats { get; private set; }//6
+        internal static Battle_Items_Data[] BattleItemsData { get; private set; }//7
 
         /// <summary>
         /// Read binary data from into structures and arrays
@@ -92,6 +93,15 @@ namespace FF8
                     tmp.Read(br, (Saves.Characters)i);
                     CharacterStats.Add((Saves.Characters)i, tmp);
                 }
+
+                //Battle_Items_Data
+                BattleItemsData = new Battle_Items_Data[Battle_Items_Data.count];
+                ms.Seek(subPositions[Battle_Items_Data.id], SeekOrigin.Begin);
+                for (int i = 0; i < Battle_Items_Data.count; i++)
+                {
+                    BattleItemsData[i].Read(br, i);
+                }
+
             }
         }
     }

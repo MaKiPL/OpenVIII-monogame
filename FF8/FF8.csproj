@@ -152,6 +152,7 @@
     <Compile Include="Menu\Icons.InsertCustomEntries.cs" />
     <Compile Include="Menu\Kernel_bin.Attack_Flags.cs" />
     <Compile Include="Menu\Kernel_bin.Battle_Commands.cs" />
+    <Compile Include="Menu\Kernel_bin.Battle_Items.cs" />
     <Compile Include="Menu\Kernel_bin.Character_Stats.cs" />
     <Compile Include="Menu\Kernel_bin.cs" />
     <Compile Include="Menu\Kernel_bin.Element.cs" />
