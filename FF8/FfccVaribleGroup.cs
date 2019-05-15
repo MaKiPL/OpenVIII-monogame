@@ -10,18 +10,18 @@ namespace FF8
 
         #region Fields
 
-        public unsafe AVCodec* _codec;
-        public unsafe AVCodecContext* _codecContext;
-        public unsafe AVFormatContext* _format;
-        public unsafe AVFrame* _frame;
-        public unsafe AVPacket* _packet;
+        internal unsafe AVCodec* _codec;
+        internal unsafe AVCodecContext* _codecContext;
+        internal unsafe AVFormatContext* _format;
+        internal unsafe AVFrame* _frame;
+        internal unsafe AVPacket* _packet;
         private bool disposedValue = false;
 
         #endregion Fields
 
         #region Constructors
 
-        public unsafe FfccVaribleGroup()
+        internal unsafe FfccVaribleGroup()
         {
             Format = ffmpeg.avformat_alloc_context();
             Packet = ffmpeg.av_packet_alloc();
@@ -46,39 +46,39 @@ namespace FF8
         /// <summary>
         /// Codec 
         /// </summary>
-        public unsafe AVCodec* Codec { get => _codec; set => _codec = value; }
+        internal unsafe AVCodec* Codec { get => _codec; set => _codec = value; }
 
         /// <summary>
         /// CodecContext 
         /// </summary>
-        public unsafe AVCodecContext* CodecContext { get => _codecContext; set => _codecContext = value; }
+        internal unsafe AVCodecContext* CodecContext { get => _codecContext; set => _codecContext = value; }
 
         /// <summary>
         /// Format holds alot of file info. File is opened and data about it is stored here.
         /// </summary>
-        public unsafe AVFormatContext* Format { get => _format; set => _format = value; }
+        internal unsafe AVFormatContext* Format { get => _format; set => _format = value; }
         /// <summary>
         /// Frame holds a chunk of data related to the current stream. 
         /// </summary>
-        public unsafe AVFrame* Frame { get => _frame; set => _frame = value; }
+        internal unsafe AVFrame* Frame { get => _frame; set => _frame = value; }
 
         /// <summary>
         /// Packet of data can contain 1 or more frames.
         /// </summary>
-        public unsafe AVPacket* Packet { get => _packet; set => _packet = value; }
+        internal unsafe AVPacket* Packet { get => _packet; set => _packet = value; }
         /// <summary>
         /// Current Stream based on index
         /// </summary>
-        public unsafe AVStream* Stream => StreamIndex >= 0 && Format != null ? Format->streams[StreamIndex] : null;
+        internal unsafe AVStream* Stream => StreamIndex >= 0 && Format != null ? Format->streams[StreamIndex] : null;
 
         /// <summary>
         /// Set Stream Index typically 0 is video 1 is audio, unless no video then 0 is audio. -1 for no stream of type.
         /// </summary>
-        public int StreamIndex { get; internal set; }
+        internal int StreamIndex { get; set; }
         /// <summary>
         /// Type of current Stream.
         /// </summary>
-        public unsafe AVMediaType Type => Stream != null ? Stream->codec->codec_type : AVMediaType.AVMEDIA_TYPE_UNKNOWN;
+        internal unsafe AVMediaType Type => Stream != null ? Stream->codec->codec_type : AVMediaType.AVMEDIA_TYPE_UNKNOWN;
 
         #endregion Properties
 

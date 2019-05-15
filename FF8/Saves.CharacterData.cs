@@ -4,58 +4,58 @@ using System.IO;
 namespace FF8
 {
 
-    public static partial class Saves
+    internal static partial class Saves
     {
         /// <summary>
         /// Data for each Character
         /// </summary>
         /// <see cref="http://wiki.ffrtt.ru/index.php/FF8/GameSaveFormat#Characters"/>
-        public struct CharacterData
+        internal struct CharacterData
         {
-            public int Level => (int)((Experience / 1000) + 1);
-            public int ExperienceToNextLevel => (int)((Level) * 1000 - Experience);
-            public FF8String Name; //not saved to file.
-            public ushort CurrentHP; //0x00 -- forgot this one heh
-            public ushort MaxHPs; //0x02
-            public uint Experience; //0x02
-            public byte ModelID; //0x04
-            public byte WeaponID; //0x08
-            public byte STR; //0x09
-            public byte VIT; //0x0A
-            public byte MAG; //0x0B
-            public byte SPR; //0x0C
-            public byte SPD; //0x0D
-            public byte LCK; //0x0E
-            public ushort[] Magics; //0x0F
-            public byte[] Commands; //0x10
-            public byte Paddingorunusedcommand; //0x50
-            public uint Abilities; //0x53
-            public ushort JunctionnedGFs; //0x54
-            public byte Unknown1; //0x58
-            public byte Alternativemodel; //0x5A (Normal, SeeD, Soldier...)
-            public byte JunctionHP; //0x5B
-            public byte JunctionSTR; //0x5C
-            public byte JunctionVIT; //0x5D
-            public byte JunctionMAG; //0x5E
-            public byte JunctionSPR; //0x5F
-            public byte JunctionSPD; //0x60
-            public byte JunctionEVA; //0x61
-            public byte JunctionHIT; //0x62
-            public byte JunctionLCK; //0x63
-            public byte Junctionelementalattack; //0x64
-            public byte Junctionmentalattack; //0x65
-            public uint Junctionelementaldefense; //0x66
-            public uint Junctionmentaldefense; //0x67
-            public byte Unknown2; //0x6B (padding?)
-            public Dictionary<GFs, ushort> CompatibilitywithGFs; //0x6F
-            public ushort Numberofkills; //0x70
-            public ushort NumberofKOs; //0x90
-            public byte Exists; //0x92
-            public byte Unknown3; //0x94
-            public byte MentalStatus; //0x95
-            public byte Unknown4; //0x96
+            internal int Level => (int)((Experience / 1000) + 1);
+            internal int ExperienceToNextLevel => (int)((Level) * 1000 - Experience);
+            internal FF8String Name; //not saved to file.
+            internal ushort CurrentHP; //0x00 -- forgot this one heh
+            internal ushort MaxHPs; //0x02
+            internal uint Experience; //0x02
+            internal byte ModelID; //0x04
+            internal byte WeaponID; //0x08
+            internal byte STR; //0x09
+            internal byte VIT; //0x0A
+            internal byte MAG; //0x0B
+            internal byte SPR; //0x0C
+            internal byte SPD; //0x0D
+            internal byte LCK; //0x0E
+            internal ushort[] Magics; //0x0F
+            internal byte[] Commands; //0x10
+            internal byte Paddingorunusedcommand; //0x50
+            internal uint Abilities; //0x53
+            internal ushort JunctionnedGFs; //0x54
+            internal byte Unknown1; //0x58
+            internal byte Alternativemodel; //0x5A (Normal, SeeD, Soldier...)
+            internal byte JunctionHP; //0x5B
+            internal byte JunctionSTR; //0x5C
+            internal byte JunctionVIT; //0x5D
+            internal byte JunctionMAG; //0x5E
+            internal byte JunctionSPR; //0x5F
+            internal byte JunctionSPD; //0x60
+            internal byte JunctionEVA; //0x61
+            internal byte JunctionHIT; //0x62
+            internal byte JunctionLCK; //0x63
+            internal byte Junctionelementalattack; //0x64
+            internal byte Junctionmentalattack; //0x65
+            internal uint Junctionelementaldefense; //0x66
+            internal uint Junctionmentaldefense; //0x67
+            internal byte Unknown2; //0x6B (padding?)
+            internal Dictionary<GFs, ushort> CompatibilitywithGFs; //0x6F
+            internal ushort Numberofkills; //0x70
+            internal ushort NumberofKOs; //0x90
+            internal byte Exists; //0x92
+            internal byte Unknown3; //0x94
+            internal byte MentalStatus; //0x95
+            internal byte Unknown4; //0x96
 
-            public void Read(BinaryReader br)
+            internal void Read(BinaryReader br)
             {
                 CurrentHP = br.ReadUInt16();//0x00
                 MaxHPs = br.ReadUInt16();//0x02

@@ -4,7 +4,7 @@ using Microsoft.Win32;
 
 namespace FF8
 {
-    public sealed class WindowsGameLocationProvider : IGameLocationProvider
+    internal sealed class WindowsGameLocationProvider : IGameLocationProvider
     {
         private const String SteamRegistyPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 39150";
         private const String SteamGamePathTag = @"InstallLocation";

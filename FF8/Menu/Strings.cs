@@ -37,15 +37,15 @@ namespace FF8
         private uint[] StringsLoc;
         private uint[] StringsPadLoc;
 
-        public Dictionary<FileID, Stringfile> Files { get => files; }
+        internal Dictionary<FileID, Stringfile> Files { get => files; }
 
-        public string[] Filenames => filenames;
+        internal string[] Filenames => filenames;
 
         #endregion Fields
 
         #region Constructors
 
-        public Strings() => init();
+        internal Strings() => init();
 
         #endregion Constructors
 
@@ -54,7 +54,7 @@ namespace FF8
         /// <summary>
         /// filenames of files with strings and id's for structs that hold the data.
         /// </summary>
-        public enum FileID : uint
+        internal enum FileID : uint
         {
             MNGRP = 0,
 
@@ -71,7 +71,7 @@ namespace FF8
         /// <summary>
         /// Todo make an enum to id every section.
         /// </summary>
-        public enum SectionID : uint
+        internal enum SectionID : uint
         {
             tkmnmes1 = 0,
             tkmnmes2 = 1,
@@ -82,7 +82,7 @@ namespace FF8
 
         #region Methods
 
-        public void Close()
+        internal void Close()
         {
             if (opened)
             {
@@ -92,7 +92,7 @@ namespace FF8
             }
         }
 
-        public void Dump(FileID fileID, string path)
+        internal void Dump(FileID fileID, string path)
         {
             GetAW(fileID);
             using (FileStream fs = File.Create(path))
@@ -132,7 +132,7 @@ namespace FF8
             }
         }
 
-        public void GetAW(FileID fileID, bool force = false)
+        internal void GetAW(FileID fileID, bool force = false)
         {
             switch (fileID)
             {
@@ -152,7 +152,7 @@ namespace FF8
                 aw = new ArchiveWorker(ArchiveString);
         }
 
-        public void Open(FileID fileID)
+        internal void Open(FileID fileID)
         {
             if (opened)
                 throw new Exception("Must close before opening again");
@@ -173,7 +173,7 @@ namespace FF8
             last = fileID;
         }
 
-        //public byte[] Read(FileID fileID, SectionID sectionID, int stringID) => Read(fileID, (int)sectionID, stringID);
+        //internal byte[] Read(FileID fileID, SectionID sectionID, int stringID) => Read(fileID, (int)sectionID, stringID);
         /// <summary>
         /// Remember to Close() if done using
         /// </summary>
@@ -181,7 +181,7 @@ namespace FF8
         /// <param name="sectionID"></param>
         /// <param name="stringID"></param>
         /// <returns></returns>
-        public FF8String Read(FileID fileID, int sectionID, int stringID)
+        internal FF8String Read(FileID fileID, int sectionID, int stringID)
         {
             switch (fileID)
             {
@@ -512,7 +512,7 @@ namespace FF8
                 mngrp_get_string_offsets(br, fileID, 0);
             }
         }
-        public FF8String GetName(Faces.ID id, Saves.Data d = null )
+        internal FF8String GetName(Faces.ID id, Saves.Data d = null )
         {
             if (d == null)
                 d = Memory.State;

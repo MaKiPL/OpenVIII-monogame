@@ -5,20 +5,20 @@ using System.Collections.Generic;
 
 namespace FF8
 {
-    public class EntryGroup : IEnumerator, IEnumerable
+    internal class EntryGroup : IEnumerator, IEnumerable
     {
         #region Fields
 
         private List<Entry> list;
         private Rectangle rectangle;
 
-        public EntryGroup(int capacity = 1)
+        internal EntryGroup(int capacity = 1)
         {
             list = new List<Entry>(capacity);
             rectangle = new Rectangle();
         }
 
-        public EntryGroup(params Entry[] entries)
+        internal EntryGroup(params Entry[] entries)
         {
             list = new List<Entry>(entries.Length);
             rectangle = new Rectangle();
@@ -27,12 +27,12 @@ namespace FF8
         #endregion Fields
 
         #region Properties
-        public int Count => list.Count;
-        public int Height { get => rectangle.Height; private set => rectangle.Height = value; }
+        internal int Count => list.Count;
+        internal int Height { get => rectangle.Height; private set => rectangle.Height = value; }
 
-        public int Width { get => rectangle.Width; private set => rectangle.Width = value; }
+        internal int Width { get => rectangle.Width; private set => rectangle.Width = value; }
 
-        public Rectangle GetRectangle => rectangle;
+        internal Rectangle GetRectangle => rectangle;
 
         public object Current
         {
@@ -48,7 +48,7 @@ namespace FF8
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public Entry this[int id] => list[id]; /*set { if (list.Count - 1 < id) Add(value); else list[id] = value; }*/
+        internal Entry this[int id] => list[id]; /*set { if (list.Count - 1 < id) Add(value); else list[id] = value; }*/
 
         #endregion Indexers
 
@@ -57,7 +57,7 @@ namespace FF8
         private Vector2 nag_Offset = new Vector2();
         private Vector2 pos_Offset = new Vector2();
 
-        public void Add(params Entry[] entries)
+        internal void Add(params Entry[] entries)
         {
             foreach (Entry entry in entries)
             {

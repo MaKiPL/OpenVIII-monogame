@@ -2,18 +2,18 @@
 
 namespace FF8
 {
-    public class Stringfile
+    internal class Stringfile
     {
         #region Fields
 
-        public Dictionary<uint, List<uint>> sPositions;
-        public List<Loc> subPositions;
+        internal Dictionary<uint, List<uint>> sPositions;
+        internal List<Loc> subPositions;
 
         #endregion Fields
 
         #region Constructors
 
-        public Stringfile(Dictionary<uint, List<uint>> sPositions, List<Loc> subPositions)
+        internal Stringfile(Dictionary<uint, List<uint>> sPositions, List<Loc> subPositions)
         {
             this.sPositions = sPositions;
             this.subPositions = subPositions;

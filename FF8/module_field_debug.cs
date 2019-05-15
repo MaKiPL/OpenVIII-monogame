@@ -18,30 +18,30 @@ namespace FF8
 
         private struct Tile
         {
-            public short x, y;
-            public ushort z;
-            public byte texID; // 4 bits
-            public byte pallID; //[6-10]
-            public byte srcx, srcy;
-            public byte layId;
-            public byte blendType;
-            public byte state;
-            public byte parameter;
-            public byte blend1;
-            public byte blend2;
+            internal short x, y;
+            internal ushort z;
+            internal byte texID; // 4 bits
+            internal byte pallID; //[6-10]
+            internal byte srcx, srcy;
+            internal byte layId;
+            internal byte blendType;
+            internal byte state;
+            internal byte parameter;
+            internal byte blend1;
+            internal byte blend2;
         }
 
         private struct SJSM
         {
-            public byte cDoorEntity;
-            public byte cWalkmeshEntity;
-            public byte cBackgroundEntity;
-            public byte cOtherEntity;
-            public ushort offsetSecOne;
-            public ushort offsetScriptData;
-            public EntryPointEntity[] EntityEntryPoints;
-            public EntryPointScript[] entryPointScripts;
-            public int[] ScriptData;
+            internal byte cDoorEntity;
+            internal byte cWalkmeshEntity;
+            internal byte cBackgroundEntity;
+            internal byte cOtherEntity;
+            internal ushort offsetSecOne;
+            internal ushort offsetScriptData;
+            internal EntryPointEntity[] EntityEntryPoints;
+            internal EntryPointScript[] entryPointScripts;
+            internal int[] ScriptData;
         }
 
         private static List<ScriptEntry> ScriptSystem;
@@ -51,32 +51,32 @@ namespace FF8
 
         private struct EntryPointEntity
         {
-            public byte scriptCount;
-            public byte label;
-            public string labelASM;
+            internal byte scriptCount;
+            internal byte label;
+            internal string labelASM;
         }
 
         private struct EntryPointScript
         {
-            public ushort position;
-            public byte flag;
+            internal ushort position;
+            internal byte flag;
         }
 
         private struct ScriptOpcode
         {
-            public ushort opcodeBinary;
-            public string opcodeASM;
-            public JSMopcodes opcode;
-            public ushort parameter;
+            internal ushort opcodeBinary;
+            internal string opcodeASM;
+            internal JSMopcodes opcode;
+            internal ushort parameter;
         }
 
         private struct ScriptEntry //final struct
         {
-            public ushort Entity;
-            public string ScriptName;
-            public ushort ID;
-            public ushort localID;
-            public ScriptOpcode[] Scripts;
+            internal ushort Entity;
+            internal string ScriptName;
+            internal ushort ID;
+            internal ushort localID;
+            internal ScriptOpcode[] Scripts;
         }
 
         private static SJSM jsm;
@@ -482,7 +482,7 @@ namespace FF8
             }
         }
 
-        public static void ResetField()
+        internal static void ResetField()
         {
             mod = Field_mods.INIT;
             if (ScriptSystem != null)

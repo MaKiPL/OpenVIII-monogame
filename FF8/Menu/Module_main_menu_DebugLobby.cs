@@ -48,12 +48,12 @@ namespace FF8
 
         #region Properties
 
-        public static Vector2 DFontPos { get; private set; }
+        internal static Vector2 DFontPos { get; private set; }
 
         /// <summary>
         /// Currently selected Field
         /// </summary>
-        public static int FieldPointer
+        internal static int FieldPointer
         {
             get => debug_fieldPointer;
             set
@@ -76,7 +76,7 @@ namespace FF8
         /// <summary>
         /// Currently selected Movie
         /// </summary>
-        public static int MoviePointer
+        internal static int MoviePointer
         {
             get => debug_moviePointer;
             set

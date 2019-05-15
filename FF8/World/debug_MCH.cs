@@ -18,72 +18,72 @@ namespace FF8
         private MemoryStream ms;
         private BinaryReader br;
 
-        public uint cSkeletonBones;
-        public uint cVertices;
-        public uint cTexAnimations;
-        public uint cFaces;
-        public uint cUnk;
-        public uint cSkinObjects;
-        public uint Unk;
-        public ushort cTris;
-        public ushort cQuads;
-        public uint pBones;
-        public uint pVertices;
-        public uint pTexAnimations;
-        public uint pFaces;
-        public uint pUnk;
-        public uint pSkinObjects;
-        public uint pAnimation;
-        public uint Unk2;
+        internal uint cSkeletonBones;
+        internal uint cVertices;
+        internal uint cTexAnimations;
+        internal uint cFaces;
+        internal uint cUnk;
+        internal uint cSkinObjects;
+        internal uint Unk;
+        internal ushort cTris;
+        internal ushort cQuads;
+        internal uint pBones;
+        internal uint pVertices;
+        internal uint pTexAnimations;
+        internal uint pFaces;
+        internal uint pUnk;
+        internal uint pSkinObjects;
+        internal uint pAnimation;
+        internal uint Unk2;
 
         private struct AnimationKeypoint
         {
-            public short X;
-            public short Y;
-            public short Z;
-            public Vector3[] rot;
+            internal short X;
+            internal short Y;
+            internal short Z;
+            internal Vector3[] rot;
         }
 
         [StructLayout(LayoutKind.Sequential, Size = 64, Pack = 1)]
         private struct Face
         {
-            public int polygonType;
+            internal int polygonType;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public byte[] unk;
-            public short unknown;
+            internal byte[] unk;
+            internal short unknown;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
-            public byte[] unk2;
+            internal byte[] unk2;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public short[] verticesA;
+            internal short[] verticesA;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public short[] verticesB;
+            internal short[] verticesB;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public int[] vertColor;
+            internal int[] vertColor;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public TextureMap[] TextureMap;
-            public ushort padding;
-            public ushort texIndex;
-            public ulong padding2;
+            internal TextureMap[] TextureMap;
+            internal ushort padding;
+            internal ushort texIndex;
+            internal ulong padding2;
 
-            public bool BIsQuad => polygonType == 0x2d010709;
+            internal bool BIsQuad => polygonType == 0x2d010709;
         }
 
         [StructLayout(LayoutKind.Sequential, Size = 0x40, Pack = 1)]
         private struct Bone
         {
-            public ushort parentBone;
-            public ushort unk;
-            public uint unk2;
-            public short size;
+            internal ushort parentBone;
+            internal ushort unk;
+            internal uint unk2;
+            internal short size;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst =54)]
-            public byte[] unkBuffer;
+            internal byte[] unkBuffer;
         }
 
         [StructLayout(LayoutKind.Sequential, Size = 2, Pack = 1)]
         private struct TextureMap
         {
-            public byte u;
-            public byte v;
+            internal byte u;
+            internal byte v;
         }
 
         private AnimationKeypoint[] animationKeypoints;
@@ -91,7 +91,7 @@ namespace FF8
         private Face[] faces;
         private Vector4[] vertices;
 
-        public Debug_MCH(MemoryStream ms, BinaryReader br)
+        internal Debug_MCH(MemoryStream ms, BinaryReader br)
         {
             this.ms = ms;
             this.br = br;
@@ -177,7 +177,7 @@ namespace FF8
             return;
         }
 
-        public Tuple<VertexPositionColorTexture[], byte[]> GetVertexPositions(int baseX =0, int baseY=0, int baseZ=0)
+        internal Tuple<VertexPositionColorTexture[], byte[]> GetVertexPositions(int baseX =0, int baseY=0, int baseZ=0)
         {
             List<VertexPositionColorTexture> facesVertices = new List<VertexPositionColorTexture>();
             List<byte> texIndexes = new List<byte>();

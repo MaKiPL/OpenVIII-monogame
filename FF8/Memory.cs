@@ -13,24 +13,24 @@ namespace FF8
     internal static class Memory
     {
         //monogame
-        public static GraphicsDeviceManager graphics;
+        internal static GraphicsDeviceManager graphics;
 
-        public static SpriteBatch spriteBatch;
-        public static ContentManager content;
+        internal static SpriteBatch spriteBatch;
+        internal static ContentManager content;
 
-        public static bool IsActive = true;
-        public static Font font;
-        //public static Texture2D[] iconsTex;
+        internal static bool IsActive = true;
+        internal static Font font;
+        //internal static Texture2D[] iconsTex;
 
-        public static Cards Cards;
-        public static Faces Faces;
-        public static Icons Icons;
-        public static Strings Strings;
-        public static Kernel_bin Kernel_Bin;
+        internal static Cards Cards;
+        internal static Faces Faces;
+        internal static Icons Icons;
+        internal static Strings Strings;
+        internal static Kernel_bin Kernel_Bin;
 
-        public static Texture2D shadowTexture;
-        public static VertexPositionTexture[] shadowGeometry;
-        public enum ScaleMode
+        internal static Texture2D shadowTexture;
+        internal static VertexPositionTexture[] shadowGeometry;
+        internal enum ScaleMode
         {
             /// <summary>
             /// scale object to have the same height as viewport
@@ -50,10 +50,10 @@ namespace FF8
             Stretch
         }
 
-        public static Point Center => new Point(graphics.GraphicsDevice.Viewport.Width / 2, graphics.GraphicsDevice.Viewport.Height / 2);
-        public const ScaleMode _scaleMode = ScaleMode.Stretch;
+        internal static Point Center => new Point(graphics.GraphicsDevice.Viewport.Width / 2, graphics.GraphicsDevice.Viewport.Height / 2);
+        internal const ScaleMode _scaleMode = ScaleMode.Stretch;
 
-        public static Vector2 Scale(float Width = PreferredViewportWidth, float Height = PreferredViewportHeight, ScaleMode scaleMode = _scaleMode, int targetX = 0, int targetY = 0)
+        internal static Vector2 Scale(float Width = PreferredViewportWidth, float Height = PreferredViewportHeight, ScaleMode scaleMode = _scaleMode, int targetX = 0, int targetY = 0)
         {
             if (targetX == 0)
                 targetX = graphics.GraphicsDevice.Viewport.Width;
@@ -79,18 +79,18 @@ namespace FF8
         }
 
         //original resolution I am working on, therefore if user scales it we need to propertially scale everything
-        public const int PreferredViewportWidth = 1280;
+        internal const int PreferredViewportWidth = 1280;
 
-        public const int PreferredViewportHeight = 720;
+        internal const int PreferredViewportHeight = 720;
 
-        public static GameTime gameTime;
+        internal static GameTime gameTime;
 
         private static ushort prevmusic = 0;
         private static ushort currmusic = 0;
         /// <summary>
         /// Stores current savestate. When you save this is wrote. When you load this is replaced.
         /// </summary>
-        public static Saves.Data State = new Saves.Data();
+        internal static Saves.Data State = new Saves.Data();
         internal static ushort MusicIndex
         {
             get
@@ -131,16 +131,16 @@ namespace FF8
             }
         }
 
-        public static string[] musices;
-        public static readonly Dictionary<ushort, List<string>> dicMusic = new Dictionary<ushort, List<string>>(); //ogg and sgt files have same 3 digit prefix.
+        internal static string[] musices;
+        internal static readonly Dictionary<ushort, List<string>> dicMusic = new Dictionary<ushort, List<string>>(); //ogg and sgt files have same 3 digit prefix.
 
-        public static void SpriteBatchStartStencil(SamplerState ss = null) => spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, ss, graphics.GraphicsDevice.DepthStencilState);
+        internal static void SpriteBatchStartStencil(SamplerState ss = null) => spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, ss, graphics.GraphicsDevice.DepthStencilState);
 
-        public static void SpriteBatchStartAlpha(SamplerState ss = null, Matrix? tm = null) => spriteBatch.Begin(sortMode: SpriteSortMode.Deferred, blendState: BlendState.AlphaBlend, samplerState: ss ?? SamplerState.PointClamp, transformMatrix: tm);
+        internal static void SpriteBatchStartAlpha(SamplerState ss = null, Matrix? tm = null) => spriteBatch.Begin(sortMode: SpriteSortMode.Deferred, blendState: BlendState.AlphaBlend, samplerState: ss ?? SamplerState.PointClamp, transformMatrix: tm);
 
-        public static void SpriteBatchEnd() => spriteBatch.End();
+        internal static void SpriteBatchEnd() => spriteBatch.End();
 
-        public static readonly BlendState blendState_BasicAdd = new BlendState()
+        internal static readonly BlendState blendState_BasicAdd = new BlendState()
         {
             ColorSourceBlend = Blend.SourceColor,
             ColorDestinationBlend = Blend.DestinationColor,
@@ -151,7 +151,7 @@ namespace FF8
             AlphaBlendFunction = BlendFunction.Add
         };
 
-        public static readonly BlendState blendState_forceDraw = new BlendState()
+        internal static readonly BlendState blendState_forceDraw = new BlendState()
         {
             ColorSourceBlend = Blend.SourceColor,
             ColorDestinationBlend = Blend.SourceColor,
@@ -162,13 +162,13 @@ namespace FF8
             AlphaBlendFunction = BlendFunction.Add,
         };
 
-        public static int module = MODULE_OVERTURE_DEBUG;
+        internal static int module = MODULE_OVERTURE_DEBUG;
 
-        public static string FF8DIR => GameLocation.Current.DataPath;
-        public static string FF8DIRdata { get; private set; }
-        public static string FF8DIRdata_lang { get; private set; }
+        internal static string FF8DIR => GameLocation.Current.DataPath;
+        internal static string FF8DIRdata { get; private set; }
+        internal static string FF8DIRdata_lang { get; private set; }
 
-        public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
+        internal static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
         {
             FF8DIRdata = Extended.GetUnixFullPath(Path.Combine(FF8DIR, "Data"));
             string testdir = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata, "lang-en"));
@@ -212,24 +212,24 @@ namespace FF8
         /// <summary>
         /// If true by the end of Update() will skip the next Draw()
         /// </summary>
-        public static bool SuppressDraw { get; internal set; }
+        internal static bool SuppressDraw { get; set; }
 
-        public static bool IsMouseVisible { get; internal set; } = false;
-        public static DirtyEncoding DirtyEncoding;
+        internal static bool IsMouseVisible { get; set; } = false;
+        internal static DirtyEncoding DirtyEncoding;
 
         #region modules
 
-        public const int MODULE_BATTLE = 3;
-        public const int MODULE_FIELD = 5;
-        public const int MODULE_FIELD_DEBUG = -5;
-        public const int MODULE_BATTLE_DEBUG = -3;
-        public const int MODULE_MOVIETEST = -9;
-        public const int MODULE_OVERTURE_DEBUG = -12;
-        public const int MODULE_MAINMENU_DEBUG = -13;
-        public const int MODULE_WORLD_DEBUG = -17;
-        public const int MODULE_FACE_TEST = -20;
-        public const int MODULE_ICON_TEST = -21;
-        public const int MODULE_CARD_TEST = -22;
+        internal const int MODULE_BATTLE = 3;
+        internal const int MODULE_FIELD = 5;
+        internal const int MODULE_FIELD_DEBUG = -5;
+        internal const int MODULE_BATTLE_DEBUG = -3;
+        internal const int MODULE_MOVIETEST = -9;
+        internal const int MODULE_OVERTURE_DEBUG = -12;
+        internal const int MODULE_MAINMENU_DEBUG = -13;
+        internal const int MODULE_WORLD_DEBUG = -17;
+        internal const int MODULE_FACE_TEST = -20;
+        internal const int MODULE_ICON_TEST = -21;
+        internal const int MODULE_CARD_TEST = -22;
 
         #endregion modules
 
@@ -238,18 +238,18 @@ namespace FF8
         /// <summary>
         /// Active battle encounter. Set by field or battle module. You shouldn't change it in-battle. 
         /// </summary>
-        public static int battle_encounter = 0;
+        internal static int battle_encounter = 0;
         /// <summary>
         /// Battle music pointer. Set by SETBATTLEMUSIC in field module or by world module. Default=6
         /// </summary>
-        public static int SetBattleMusic = 6;
-        public static Init_debugger_battle.Encounter[] encounters;
+        internal static int SetBattleMusic = 6;
+        internal static Init_debugger_battle.Encounter[] encounters;
 
         #endregion battleProvider
 
         #region MusicDataMidi
 
-        public static Dictionary<ushort, string> Songssgt = new Dictionary<ushort, string>()
+        internal static Dictionary<ushort, string> Songssgt = new Dictionary<ushort, string>()
         {
             {0, "Lose" },
             {1, "Win" },
@@ -355,7 +355,7 @@ namespace FF8
 
         #region MusicDataOGG
 
-        public static Dictionary<ushort, string> Songsogg = new Dictionary<ushort, string>()
+        internal static Dictionary<ushort, string> Songsogg = new Dictionary<ushort, string>()
         {
             {0,"Lose" },
 {1,"The Winner" },
@@ -449,7 +449,7 @@ namespace FF8
 
         #region DrawPointMagic
 
-        public static Dictionary<byte, string> DrawPointMagic = new Dictionary<byte, string>()
+        internal static Dictionary<byte, string> DrawPointMagic = new Dictionary<byte, string>()
         {
             {0, "Cure - Balamb Garden courtyard"},
             {1, "Blizzard - Balamb Garden training center"},
@@ -713,27 +713,27 @@ namespace FF8
         #endregion DrawPointMagic
 
 
-        public static class Archives
+        internal static class Archives
         {
-            public static string A_BATTLE = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "battle"));
-            public static string A_FIELD = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "field"));
-            public static string A_MAGIC = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "magic"));
-            public static string A_MAIN = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "main"));
-            public static string A_MENU = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "menu"));
-            public static string A_WORLD = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "world"));
+            internal static string A_BATTLE = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "battle"));
+            internal static string A_FIELD = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "field"));
+            internal static string A_MAGIC = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "magic"));
+            internal static string A_MAIN = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "main"));
+            internal static string A_MENU = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "menu"));
+            internal static string A_WORLD = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "world"));
 
-            public const string B_FileList = ".fl";
-            public const string B_FileIndex = ".fi";
-            public const string B_FileArchive = ".fs";
+            internal const string B_FileList = ".fl";
+            internal const string B_FileIndex = ".fi";
+            internal const string B_FileArchive = ".fs";
         }
 
-        public static class FieldHolder
+        internal static class FieldHolder
         {
-            //public static string[] MapList;
-            public static ushort FieldID = 161;
+            //internal static string[] MapList;
+            internal static ushort FieldID = 161;
 
-            public static string[] fields;
-            public static int[] FieldMemory;
+            internal static string[] fields;
+            internal static int[] FieldMemory;
         }
     }
 }

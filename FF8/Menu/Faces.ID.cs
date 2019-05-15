@@ -1,13 +1,13 @@
 ﻿namespace FF8
 {
-    public partial class Faces
+    internal partial class Faces
     {
         #region Enums
 
         /// <summary>
         /// First half in faces1.tex, second half in faces2.tex, 8 cols 2 rows per file.
         /// </summary>
-        public new enum ID
+        internal new enum ID
         {
             Squall_Leonhart = 0,
             Zell_Dincht,

@@ -50,7 +50,7 @@ namespace FF8
 
         #region Properties
 
-        public static float blink_Amount
+        internal static float blink_Amount
         {
             get => s_blink; private set
             {

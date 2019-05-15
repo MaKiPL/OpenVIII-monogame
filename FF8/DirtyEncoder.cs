@@ -14,7 +14,7 @@ namespace FF8
     {
         #region Fields
 
-        public static readonly Dictionary<byte, char> BytetoChar = new Dictionary<byte, char>
+        internal static readonly Dictionary<byte, char> BytetoChar = new Dictionary<byte, char>
         {
             //Commented out special bytes so they are passed through and I can see them in the dump file. Then I can figure out what to do with them.
             {0x00, '\0'},// pos:-32, col:0, row:-1 -- is end of a string. MSG files have more than one string sepperated by \0
@@ -225,7 +225,7 @@ namespace FF8
         /// <summary>
         /// multi characters bytes and double character bytes
         /// </summary>
-        public static readonly Dictionary<byte, string> BytetoStr = new Dictionary<byte, string>
+        internal static readonly Dictionary<byte, string> BytetoStr = new Dictionary<byte, string>
         {
             //{0x01, "" },
             {0xC6, "VI"},// pos:166, col:20, row:9 --
@@ -291,15 +291,15 @@ namespace FF8
             {0xFF, "ag"},// pos:223, col:0, row:0 --
         };
 
-        public static Dictionary<char, byte> ChartoByte;
-        public static Dictionary<string, byte> StrtoByte;
+        internal static Dictionary<char, byte> ChartoByte;
+        internal static Dictionary<string, byte> StrtoByte;
 
         #endregion Fields
 
         #region Constructors
 
 
-        public DirtyEncoding()
+        internal DirtyEncoding()
         {
             ChartoByte = BytetoChar.Reverse();
             StrtoByte = BytetoStr.Reverse();
@@ -326,7 +326,7 @@ namespace FF8
         /// Lists all bytes directly passed through unalterd. Functions are expected to handle or
         /// skip these.
         /// </summary>
-        public byte[] SpecialCharacters { get; private set; }
+        internal byte[] SpecialCharacters { get; private set; }
 
         #endregion Properties
 

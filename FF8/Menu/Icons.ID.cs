@@ -4,7 +4,7 @@
     {
         #region Enums
 
-        public new enum ID : ushort
+        internal new enum ID : ushort
         {
             Finger_Right,
             Finger_Left,

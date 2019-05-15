@@ -8,7 +8,7 @@ using System.Text;
 
 namespace FF8
 {
-    public static class Module_icon_test
+    internal static class Module_icon_test
     {
         #region Fields
 
@@ -33,7 +33,7 @@ namespace FF8
 
         #region Methods
 
-        public static void Draw()
+        internal static void Draw()
         {
             switch (currentMode)
             {
@@ -47,7 +47,7 @@ namespace FF8
             }
         }
 
-        public static void Update()
+        internal static void Update()
         {
             if (Input.Button(Keys.Up))
             {
@@ -147,7 +147,7 @@ namespace FF8
                 (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f),lineSpacing: 0);
             Memory.SpriteBatchEnd();
         }
-        static public void SaveStringToFile()
+        static internal void SaveStringToFile()
         {
             using (FileStream fs = File.Create("D:\\iconsdatadump.csv"))
             using (BinaryWriter bw = new BinaryWriter(fs))
@@ -155,7 +155,7 @@ namespace FF8
                 bw.Write(Encoding.UTF8.GetBytes(ToString()));
             }
         }
-        static public new string ToString()
+        static internal new string ToString()
         {
             string output = "{Enum Name},{Enum ID}," + Memory.Icons.GetEntry(Icons.ID.Finger_Right).ToStringHeader;
             for(uint i = 0; i < Memory.Icons.Count; i++)

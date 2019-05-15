@@ -8,7 +8,7 @@ using System.Text;
 
 namespace FF8
 {
-    public class Font
+    internal class Font
     {
         private Texture2D sysfnt; //21x10 characters; char is always 12x12
         private TextureHandler sysfntbig; //21x10 characters; char is always 24x24; 2 files side by side; sysfnt00 is same as sysfld00, but sysfnt00 is missing sysfnt01
@@ -419,7 +419,7 @@ namespace FF8
 
         #endregion CharTable
 
-        public enum ColorID
+        internal enum ColorID
         {
             Dark_Gray, Grey, Yellow, Red, Green, Blue, Purple, White
         }
@@ -603,7 +603,7 @@ namespace FF8
 
         };
 
-        public Font() => LoadFonts();
+        internal Font() => LoadFonts();
         internal void LoadFonts()
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
@@ -652,13 +652,13 @@ namespace FF8
         
         
 
-        public enum Type
+        internal enum Type
         {
             sysFntBig,
             sysfnt,
             menuFont,
         }
-        public Rectangle RenderBasicText(FF8String buffer, Vector2 pos, Vector2 zoom, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false)
+        internal Rectangle RenderBasicText(FF8String buffer, Vector2 pos, Vector2 zoom, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false)
         {
             if (buffer == null) return new Rectangle();
             Rectangle ret = new Rectangle(pos.RoundedPoint(), new Point(0));
@@ -732,9 +732,9 @@ namespace FF8
             ret.Height = size.Y + (real.Y - (int)pos.Y);
             return ret;
         }
-        public Rectangle RenderBasicText(FF8String buffer, Point pos, Vector2 zoom, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false)
+        internal Rectangle RenderBasicText(FF8String buffer, Point pos, Vector2 zoom, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false)
             => RenderBasicText(buffer, pos.ToVector2(), zoom, whichFont, Fade, lineSpacing, skipdraw);
-        public Rectangle RenderBasicText(FF8String buffer, int x, int y, float zoomWidth = 2.545455f, float zoomHeight = 3.0375f, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false)
+        internal Rectangle RenderBasicText(FF8String buffer, int x, int y, float zoomWidth = 2.545455f, float zoomHeight = 3.0375f, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false)
             => RenderBasicText(buffer, new Vector2(x, y), new Vector2(zoomWidth, zoomHeight), whichFont, Fade, lineSpacing, skipdraw);
         /// <summary>
         /// Converts clean string into dirty string for drawing.
@@ -747,7 +747,7 @@ namespace FF8
         /// But anything 128-256 may get messed up as c# stores it's strings as 16-bit unicode
         /// </remarks>
         [Obsolete("use 'Memory.DirtyEncoding.GetBytes(s)' or 'new FF8String(s)'")]
-        public static byte[] CipherDirty(string s) => Memory.DirtyEncoding.GetBytes(s);
+        internal static byte[] CipherDirty(string s) => Memory.DirtyEncoding.GetBytes(s);
         //{
         //    using (MemoryStream ms = new MemoryStream(s.Length))
         //    {
@@ -770,7 +770,7 @@ namespace FF8
         /// </summary>
         /// <param name="s">Dirty String</param>
         /// <returns>Clean UTF8 String in byte[] form with some XML</returns>
-        public static byte[] DumpDirtyString(byte[] s)
+        internal static byte[] DumpDirtyString(byte[] s)
         {
             if (s != null)
                 using (MemoryStream os = new MemoryStream(s.Length))

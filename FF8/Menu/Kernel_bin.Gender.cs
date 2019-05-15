@@ -1,8 +1,8 @@
 ﻿namespace FF8
 {
-    public partial class Kernel_bin
+    internal partial class Kernel_bin
     {
-        public enum Gender
+        internal enum Gender
         {
             Male,
             Female

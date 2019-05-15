@@ -31,7 +31,7 @@ namespace FF8
 
         #region Methods
 
-        public static void Draw()
+        internal static void Draw()
         {
             switch (currentMode)
             {
@@ -45,7 +45,7 @@ namespace FF8
             }
         }
 
-        public static void Update()
+        internal static void Update()
         {
             switch (currentMode)
             {

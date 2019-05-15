@@ -3,9 +3,9 @@ using System.Runtime.InteropServices;
 
 namespace FF8
 {
-    public static class RuntimeEnvironment
+    internal static class RuntimeEnvironment
     {
-        public static RuntimePlatform Platform { get; } = Init();
+        internal static RuntimePlatform Platform { get; } = Init();
 
         private static RuntimePlatform Init()
         {

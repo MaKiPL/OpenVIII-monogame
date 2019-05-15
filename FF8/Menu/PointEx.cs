@@ -6,27 +6,27 @@ namespace FF8
     /// <summary>
     /// class to add offset to point
     /// </summary>
-    public static class PointEx
+    internal static class PointEx
     {
         #region Methods
 
-        public static Point Offset(this ref Point source, Point offset)
+        internal static Point Offset(this ref Point source, Point offset)
         {
             source = (source.ToVector2() + offset.ToVector2()).ToPoint();
             return source;
         }
 
-        public static Point Offset(this ref Point source, Vector2 offset)
+        internal static Point Offset(this ref Point source, Vector2 offset)
         {
             source = (source.ToVector2() + offset).ToPoint();
             return source;
         }
-        public static Point Transform(this Point point, Matrix matrix)
+        internal static Point Transform(this Point point, Matrix matrix)
         {
             point = Vector2.Transform(point.ToVector2(), Matrix.Invert(matrix)).RoundedPoint();
             return point;
         }
-        public static Rectangle Scale(this Rectangle source, Matrix matrix)
+        internal static Rectangle Scale(this Rectangle source, Matrix matrix)
         {
             Vector2 scale = Memory.Scale();
             Vector2 loc = source.Location.ToVector2();
@@ -35,13 +35,13 @@ namespace FF8
             source.Size = (source.Size.ToVector2() * scale).RoundedPoint();
             return source;
         }
-        public static Rectangle Scale(this Rectangle source, Vector2 scale)
+        internal static Rectangle Scale(this Rectangle source, Vector2 scale)
         {
             source.Location = (source.Location.ToVector2() * scale).RoundedPoint();
             source.Size = (source.Size.ToVector2() * scale).RoundedPoint();
             return source;
         }
-        public static Rectangle Scale(this Rectangle source)
+        internal static Rectangle Scale(this Rectangle source)
         {
             Vector2 scale = Memory.Scale();
             source.Location = (source.Location.ToVector2() * scale).RoundedPoint();
@@ -49,26 +49,26 @@ namespace FF8
             return source;
         }
 
-        public static Point Scale(this Point source, Vector2 scale)
+        internal static Point Scale(this Point source, Vector2 scale)
         {
             source = (source.ToVector2() * scale).RoundedPoint();
             return source;
         }
-        public static Point Scale(this Point source)
+        internal static Point Scale(this Point source)
         {
             Vector2 scale = Memory.Scale();
             source = (source.ToVector2() * scale).RoundedPoint();
             return source;
         }
 
-        public static Point RoundedPoint(this Vector2 v) => new Point((int)Math.Round(v.X), (int)Math.Round(v.Y));
+        internal static Point RoundedPoint(this Vector2 v) => new Point((int)Math.Round(v.X), (int)Math.Round(v.Y));
 
-        public static Point CeilingPoint(this Vector2 v) => v.Ceiling().ToPoint();
-        public static Point FloorPoint(this Vector2 v) => v.Floor().ToPoint();
-        public static Vector2 Round(this Vector2 v) => new Vector2 ((float)Math.Round(v.X), (float)Math.Round(v.Y));
-        public static Vector2 Ceiling(this Vector2 v) => new Vector2((float)Math.Ceiling(v.X), (float)Math.Ceiling(v.Y));
-        public static Vector2 Floor(this Vector2 v) => new Vector2((float)Math.Floor(v.X), (float)Math.Floor(v.Y));
-        public static Vector2 FloorOrCeiling(this Vector2 v, Vector2 target)
+        internal static Point CeilingPoint(this Vector2 v) => v.Ceiling().ToPoint();
+        internal static Point FloorPoint(this Vector2 v) => v.Floor().ToPoint();
+        internal static Vector2 Round(this Vector2 v) => new Vector2 ((float)Math.Round(v.X), (float)Math.Round(v.Y));
+        internal static Vector2 Ceiling(this Vector2 v) => new Vector2((float)Math.Ceiling(v.X), (float)Math.Ceiling(v.Y));
+        internal static Vector2 Floor(this Vector2 v) => new Vector2((float)Math.Floor(v.X), (float)Math.Floor(v.Y));
+        internal static Vector2 FloorOrCeiling(this Vector2 v, Vector2 target)
         {
             float X, Y;
             X = v.X < target.X ? (float)Math.Ceiling(v.X) : (float)Math.Floor(v.X);

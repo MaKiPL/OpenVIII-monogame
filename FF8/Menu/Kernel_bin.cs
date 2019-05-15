@@ -4,18 +4,18 @@ using System.IO;
 
 namespace FF8
 {
-    public partial class Kernel_bin
+    internal partial class Kernel_bin
     {
 
         private ArchiveWorker aw;
         private readonly string ArchiveString = Memory.Archives.A_MAIN;
-        public static Magic_Data[] MagicData { get; private set; }//0
-        public static Junctionable_GFs_Data[] JunctionableGFsData { get; private set; }//1
-        public static Enemy_Attacks_Data[] EnemyAttacksData { get; private set; }//2
-        public static Battle_Commands[] BattleCommands { get; private set; }//3
-        public static Weapons_Data[] WeaponsData { get; private set; }//4
+        internal static Magic_Data[] MagicData { get; private set; }//0
+        internal static Junctionable_GFs_Data[] JunctionableGFsData { get; private set; }//1
+        internal static Enemy_Attacks_Data[] EnemyAttacksData { get; private set; }//2
+        internal static Battle_Commands[] BattleCommands { get; private set; }//3
+        internal static Weapons_Data[] WeaponsData { get; private set; }//4
 
-        public static Character_Stats[] CharacterStats { get; private set; }//6
+        internal static Character_Stats[] CharacterStats { get; private set; }//6
 
         /// <summary>
         /// Read binary data from into structures and arrays
@@ -23,7 +23,7 @@ namespace FF8
         /// <see cref="http://forums.qhimm.com/index.php?topic=16923.msg240609#msg240609"/>
         /// <seealso cref="https://github.com/alexfilth/doomtrain"/>
         /// <seealso cref="https://github.com/alexfilth/doomtrain/wiki/Kernel.bin"/>
-        public Kernel_bin()
+        internal Kernel_bin()
         {
             aw = new ArchiveWorker(ArchiveString);
             byte[] buffer = aw.GetBinaryFile(Memory.Strings.Filenames[(int)Strings.FileID.KERNEL]);
@@ -38,21 +38,21 @@ namespace FF8
                 ms.Seek(subPositions[Battle_Commands.id], SeekOrigin.Begin);
                 for (int i = 0; i < Battle_Commands.count; i++)
                 {
-                    BattleCommands[i].Read(br);
+                    BattleCommands[i].Read(br,i);
                 }
                 //Magic data
                 MagicData = new Magic_Data[Magic_Data.count];
                 ms.Seek(subPositions[Magic_Data.id], SeekOrigin.Begin);
                 for (int i = 0; i < Magic_Data.count; i++)
                 {
-                    MagicData[i].Read(br);
+                    MagicData[i].Read(br,i);
                 }
                 //Junctionable GFs data
                 JunctionableGFsData = new Junctionable_GFs_Data[Junctionable_GFs_Data.count];
                 ms.Seek(subPositions[Junctionable_GFs_Data.id], SeekOrigin.Begin);
                 for (int i = 0; i < Junctionable_GFs_Data.count; i++)
                 {
-                    JunctionableGFsData[i].Read(br);
+                    JunctionableGFsData[i].Read(br,i);
                 }
 
                 //Enemy Attacks data
@@ -60,7 +60,7 @@ namespace FF8
                 ms.Seek(subPositions[Enemy_Attacks_Data.id], SeekOrigin.Begin);
                 for (int i = 0; i < Enemy_Attacks_Data.count; i++)
                 {
-                    EnemyAttacksData[i].Read(br);
+                    EnemyAttacksData[i].Read(br,i);
                 }
 
                 //Weapons Data
@@ -76,7 +76,7 @@ namespace FF8
                 ms.Seek(subPositions[Character_Stats.id], SeekOrigin.Begin);
                 for (int i = 0; i < Character_Stats.count; i++)
                 {
-                    CharacterStats[i].Read(br);
+                    CharacterStats[i].Read(br,(Saves.Characters)i);
                 }
             }
         }

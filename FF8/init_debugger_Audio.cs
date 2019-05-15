@@ -25,7 +25,7 @@ namespace FF8
         private static CDLSLoader loader;
         private static CSegment segment;
         private static CAPathPerformance path;
-        public static CPortPerformance cport; //public explicit
+        internal static CPortPerformance cport; //internal explicit
         private static COutputPort outport;
         private static CCollection ccollection;
         private static CInstrument[] instruments;
@@ -47,20 +47,20 @@ namespace FF8
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         private struct SoundEntry
         {
-            public UInt32 Size;
-            public UInt32 Offset;
+            internal UInt32 Size;
+            internal UInt32 Offset;
             private UInt32 output_TotalSize => Size + 70; // Total bytes of file -8 because for some reason 8 bytes don't count
             private const UInt32 output_HeaderSize = 50; //Total bytes of Header
             private UInt32 output_DataSize => Size; //Total bytes of Data Section
 
-            //public byte[] UNK; //12
-            //public WAVEFORMATEX WAVFORMATEX; //18 header starts here
-            //public ushort SamplesPerBlock; //2
-            //public ushort ADPCM; //2
-            //public ADPCMCOEFSET[] ADPCMCoefSets; //array should be of [ADPCM] size //7*4 = 28
-            public byte[] HeaderData;
+            //internal byte[] UNK; //12
+            //internal WAVEFORMATEX WAVFORMATEX; //18 header starts here
+            //internal ushort SamplesPerBlock; //2
+            //internal ushort ADPCM; //2
+            //internal ADPCMCOEFSET[] ADPCMCoefSets; //array should be of [ADPCM] size //7*4 = 28
+            internal byte[] HeaderData;
 
-            public void fillHeader(BinaryReader br)
+            internal void fillHeader(BinaryReader br)
             {
                 if (HeaderData == null)
                 {
@@ -82,31 +82,31 @@ namespace FF8
 #pragma warning disable CS0649
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
-        public struct WAVEFORMATEX
+        internal struct WAVEFORMATEX
         {
-            public ushort wFormatTag;
-            public ushort nChannels;
-            public uint nSamplesPerSec;
-            public uint nAvgBytesPerSec;
-            public ushort nBlockAlign;
-            public ushort wBitsPerSample;
-            public ushort cbSize;
+            internal ushort wFormatTag;
+            internal ushort nChannels;
+            internal uint nSamplesPerSec;
+            internal uint nAvgBytesPerSec;
+            internal ushort nBlockAlign;
+            internal ushort wBitsPerSample;
+            internal ushort cbSize;
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         private struct ADPCMCOEFSET
         {
-            public short iCoef1;
-            public short iCoef2;
+            internal short iCoef1;
+            internal short iCoef2;
         };
 
 #pragma warning restore CS0649
 
         private static SoundEntry[] soundEntries;
-        public static int soundEntriesCount;
+        internal static int soundEntriesCount;
 
-        public const int S_OK = 0x00000000;
-        public const int MaxSoundChannels = 20;
+        internal const int S_OK = 0x00000000;
+        internal const int MaxSoundChannels = 20;
 
         /// <summary>
         /// This is for short lived sound effects. The Larger the array is the more sounds can be
@@ -114,9 +114,9 @@ namespace FF8
         /// SoundEffectInstance added to ffcc, and have those sounds be played like music where they
         /// loop in the background till stop.
         /// </summary>
-        public static Ffcc[] SoundChannels { get; } = new Ffcc[MaxSoundChannels];
+        internal static Ffcc[] SoundChannels { get; } = new Ffcc[MaxSoundChannels];
 
-        public static int CurrentSoundChannel
+        internal static int CurrentSoundChannel
         {
             get => _currentSoundChannel;
             set
@@ -328,7 +328,7 @@ namespace FF8
             SoundChannels[CurrentSoundChannel++].Play();
         }
 
-        public static void StopSound()
+        internal static void StopSound()
         {
             //waveout.Stop();
         }
@@ -345,7 +345,7 @@ namespace FF8
 
         //callable test
 
-        public static byte[] ReadFullyByte(Stream stream)
+        internal static byte[] ReadFullyByte(Stream stream)
         {
             // following formula goal is to calculate the number of bytes to make buffer. might be wrong.
             long size = stream.Length; // stream.Length should be in bytes. will error later if short.
@@ -371,7 +371,7 @@ namespace FF8
             return buffer;
         }
 
-        public static byte[] ReadFullyFloat(VorbisWaveReader stream)
+        internal static byte[] ReadFullyFloat(VorbisWaveReader stream)
         {
             // following formula goal is to calculate the number of bytes to make buffer. might be wrong.
             long size = (stream.Length / sizeof(float)) + 100; //unsure why but read was > than size so added 100; will error if the size is too small.
@@ -382,7 +382,7 @@ namespace FF8
             return GetSamplesWaveData(buffer, read);
         }
 
-        public static byte[] GetSamplesWaveData(byte[] samples, int samplesCount)
+        internal static byte[] GetSamplesWaveData(byte[] samples, int samplesCount)
         {
             float[] f = new float[(samplesCount / sizeof(float))];
             int i = 0;
@@ -393,7 +393,7 @@ namespace FF8
             return GetSamplesWaveData(f, samplesCount / sizeof(float));
         }
 
-        public static byte[] GetSamplesWaveData(float[] samples, int samplesCount)
+        internal static byte[] GetSamplesWaveData(float[] samples, int samplesCount)
         { // converts 32 bit float samples to 16 bit pcm. I think :P
             // https://stackoverflow.com/questions/31957211/how-to-convert-an-array-of-int16-sound-samples-to-a-byte-array-to-use-in-monogam/42151979#42151979
             byte[] pcm = new byte[samplesCount * 2];
@@ -416,7 +416,7 @@ namespace FF8
         private static bool musicplaying = false;
         private static int lastplayed = -1;
 
-        public static void PlayStopMusic()
+        internal static void PlayStopMusic()
         {
             if (!musicplaying || lastplayed != Memory.MusicIndex)
             {
@@ -431,7 +431,7 @@ namespace FF8
         private static Ffcc ffccMusic = null; // testing using class to play music instead of Naudio / Nvorbis
         private static int _currentSoundChannel;
 
-        public static void PlayMusic()
+        internal static void PlayMusic()
         {
             string ext = "";
             bool bFakeLinux = false; //set to force linux behaviour on windows; To delete after Linux music playable
@@ -545,7 +545,7 @@ namespace FF8
         }
 
 
-        public static void KillAudio()
+        internal static void KillAudio()
         {
             //if (Sound != null && !Sound.IsDisposed)
             //{
@@ -580,7 +580,7 @@ namespace FF8
             }
         }
 
-        public static void StopMusic()
+        internal static void StopMusic()
         {
             musicplaying = false;
             if (ffccMusic != null)
@@ -604,12 +604,12 @@ namespace FF8
         [StructLayout(LayoutKind.Sequential, Pack =1, Size =24)]
         struct DMUS_IO_SEGMENT_HEADER
         {
-            public uint dwRepeats;
-            public int mtLength;
-            public int mtPlayStart;
-            public int mtLoopStart;
-            public int mtLoopEnd;
-            public uint dwResolution;
+            internal uint dwRepeats;
+            internal int mtLength;
+            internal int mtPlayStart;
+            internal int mtLoopStart;
+            internal int mtLoopEnd;
+            internal uint dwResolution;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack =1, Size =8)]
@@ -631,8 +631,8 @@ namespace FF8
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
             char[] _fccType;
 
-            public string ckid { get => new string(_ckid); }
-            public string fccType { get => new string(_fccType); }
+            internal string ckid { get => new string(_ckid); }
+            internal string fccType { get => new string(_fccType); }
 
         }
 

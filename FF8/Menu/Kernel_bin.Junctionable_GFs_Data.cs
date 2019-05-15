@@ -2,31 +2,34 @@
 
 namespace FF8
 {
-    public partial class Kernel_bin
+    internal partial class Kernel_bin
     {
         /// <summary>
         /// Junctionable GFs Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Junctionable-GFs"/>
-        public class Junctionable_GFs_Data
+        internal class Junctionable_GFs_Data
         {
-            public const int id = 2;
-            public const int count = 16;
+            internal const int id = 2;
+            internal const int count = 16;
+            internal FF8String Name { get; private set; }
+            internal FF8String Description { get; private set; }
+            public override string ToString() => Name;
             //0x0000  2 bytes Offset to GF attack name
             //0x0002  2 bytes Offset to GF attack description
-            public byte[] MagicID;             //0x0004  2 bytes[[Magic ID
-            public byte Attack_type;           //0x0006  1 byte  Attack type
-            public byte GF_power;              //0x0007  1 byte  GF power(used in damage formula)
-            public byte[] Unknown0;            //0x0008  2 bytes Unknown
-            public byte Attack_flags;          //0x000A  1 byte  Attack Flags
-            public byte[] Unknown1;            //0x000B  2 bytes Unknown
-            public byte Element;               //0x000D  1 byte[[Element
-            public byte[] Statuses0;    //0x000E  2 bytes[[Statuses 0
-            public byte[] Statuses1;    //0x0010  4 bytes[[Statuses 1
-            public byte GFHP_modifier;         //0x0014  1 byte  GF HP Modifier(used in GF HP formula)
-            public byte[] Unknown2;            //0x0015  6 bytes Unknown
-            public byte Status_attack;         //0x001B  1 byte  Status attack enabler
-            public byte[][] Ability;            
+            internal byte[] MagicID;             //0x0004  2 bytes[[Magic ID
+            internal byte Attack_type;           //0x0006  1 byte  Attack type
+            internal byte GF_power;              //0x0007  1 byte  GF power(used in damage formula)
+            internal byte[] Unknown0;            //0x0008  2 bytes Unknown
+            internal byte Attack_flags;          //0x000A  1 byte  Attack Flags
+            internal byte[] Unknown1;            //0x000B  2 bytes Unknown
+            internal byte Element;               //0x000D  1 byte[[Element
+            internal byte[] Statuses0;           //0x000E  2 bytes[[Statuses 0
+            internal byte[] Statuses1;           //0x0010  4 bytes[[Statuses 1
+            internal byte GFHP_modifier;         //0x0014  1 byte  GF HP Modifier(used in GF HP formula)
+            internal byte[] Unknown2;            //0x0015  6 bytes Unknown
+            internal byte Status_attack;         //0x001B  1 byte  Status attack enabler
+            internal byte[][] Ability;            
             //0x001C  1 byte[[Ability 1 Unlocker
             //0x001D  1 byte  Unknown
             //0x001E  1 byte[[Ability 1
@@ -111,7 +114,7 @@ namespace FF8
             //0x006D  1 byte  Unknown
             //0x006E  1 byte[[Ability 21
             //0x006F  1 byte  Unknown
-            public byte[] GF_Compatibility;
+            internal byte[] GF_Compatibility;
             //0x0070  1 byte  Quezacolt compatibility
             //0x0071  1 byte  Shiva compatibility
             //0x0072  1 byte  Ifrit compatibility
@@ -128,11 +131,14 @@ namespace FF8
             //0x007D  1 byte  Cactuar compatibility
             //0x007E  1 byte  Tonberry compatibility
             //0x007F  1 byte  Eden compatibility
-            public byte[] Unknown3;            //0x0080  2 bytes Unknown
-            public byte PowerMod;              //0x0082  1 byte  Power Mod(used in damage formula)
-            public byte LevelMod;              //0x0083  1 byte  Level Mod(used in damage formula)
-            internal void Read(BinaryReader br)
+            internal byte[] Unknown3;            //0x0080  2 bytes Unknown
+            internal byte PowerMod;              //0x0082  1 byte  Power Mod(used in damage formula)
+            internal byte LevelMod;              //0x0083  1 byte  Level Mod(used in damage formula)
+            internal void Read(BinaryReader br, int i)
             {
+                Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
+                Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
+
                 br.BaseStream.Seek(4, SeekOrigin.Current);
 
                 MagicID = br.ReadBytes(2);             //0x0004  2 bytes[[Magic ID
@@ -148,7 +154,7 @@ namespace FF8
                 Unknown2 = br.ReadBytes(6);            //0x0015  6 bytes Unknown
                 Status_attack = br.ReadByte();         //0x001B  1 byte  Status attack enabler
                 Ability = new byte[21][];
-                for (int i = 0; i < 21; i++)
+                for (i = 0; i < 21; i++)
                     Ability[i] = br.ReadBytes(2);
                 GF_Compatibility = br.ReadBytes(16);
                 Unknown3 = br.ReadBytes(2);            //0x0080  2 bytes Unknown

@@ -21,17 +21,17 @@ namespace FF8
     /// antiquechrono was helping. he even wrote a whole class using kaitai. Though I donno if we
     /// wanna use kaitai.
     /// </remarks>
-    public static partial class Saves
+    internal static partial class Saves
     {
 
         //C:\Users\[user]\OneDrive\Documents\Square Enix\FINAL FANTASY VIII Steam\user_#######
         // might crash linux. just trying to get something working.
-        public static string SteamFolder { get; private set; }
-        public static string CD2000Folder { get; private set; }
+        internal static string SteamFolder { get; private set; }
+        internal static string CD2000Folder { get; private set; }
 
-        public static Data[,] FileList { get; private set; }
+        internal static Data[,] FileList { get; private set; }
 
-        public static void Init()
+        internal static void Init()
         {
             FileList = new Data[2, 30];
             CD2000Folder = Path.Combine(Memory.FF8DIR, "Save");

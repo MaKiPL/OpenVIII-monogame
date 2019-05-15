@@ -374,7 +374,7 @@ namespace FF8
         private static sbyte _blockLoc;
 
         private static sbyte blockpage;
-        public static sbyte Blockpage
+        internal static sbyte Blockpage
         {
             get => blockpage; set
             {

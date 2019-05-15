@@ -7,12 +7,12 @@ using System.Linq;
 
 namespace FF8
 {
-    public class Game1 : Game
+    internal class Game1 : Game
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        public Game1()
+        internal Game1()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";

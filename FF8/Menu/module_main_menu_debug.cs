@@ -46,7 +46,7 @@ namespace FF8
 
         #region Properties
 
-        public static float vpSpace { get; private set; }
+        internal static float vpSpace { get; private set; }
         private static float Fade { get => fade; set => fade = value; }
 
         private static Dictionary<Enum, Item> strLoadScreen { get; set; }
@@ -209,7 +209,7 @@ namespace FF8
         /// <summary>
         /// Init
         /// </summary>
-        public static void Init()
+        internal static void Init()
         {
             InitMain();
             InitLoad();

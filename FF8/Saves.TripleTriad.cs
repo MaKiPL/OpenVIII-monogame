@@ -3,13 +3,13 @@ using System.IO;
 
 namespace FF8
 {
-    public static partial class Saves
+    internal static partial class Saves
     {
         /// <summary>
         /// TT vars.
         /// </summary>
         /// <see cref="https://github.com/myst6re/hyne/blob/master/SaveData.h"/>
-        public struct TripleTriad //128
+        internal struct TripleTriad //128
         {
             byte[] cards;
             byte[] card_locations;

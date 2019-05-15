@@ -3,28 +3,28 @@
 namespace FF8
 {
 
-    public static partial class Saves
+    internal static partial class Saves
     {
         /// <summary>
         /// Data for each GF
         /// </summary>
         /// <see cref="http://wiki.ffrtt.ru/index.php/FF8/GameSaveFormat#Guardian_Forces"/>
-        public struct GFData
+        internal struct GFData
         {
             
-            public FF8String Name; //Offset (0x00 terminated)
-            public uint Experience; //0x00
-            public byte Unknown; //0x0C
-            public byte Exists; //0x10
-            public ushort HP; //0x11
-            public byte[] Complete; //0x12 abilities (1 bit = 1 ability completed, 9 bits unused)
-            public byte[] APs; //0x14 (1 byte = 1 ability of the GF, 2 bytes unused)
-            public ushort NumberKills; //0x24 of kills
-            public ushort NumberKOs; //0x3C of KOs
-            public byte Learning; //0x3E ability
-            public byte[] Forgotten; //0x41 abilities (1 bit = 1 ability of the GF forgotten, 2 bits unused)
+            internal FF8String Name; //Offset (0x00 terminated)
+            internal uint Experience; //0x00
+            internal byte Unknown; //0x0C
+            internal byte Exists; //0x10
+            internal ushort HP; //0x11
+            internal byte[] Complete; //0x12 abilities (1 bit = 1 ability completed, 9 bits unused)
+            internal byte[] APs; //0x14 (1 byte = 1 ability of the GF, 2 bytes unused)
+            internal ushort NumberKills; //0x24 of kills
+            internal ushort NumberKOs; //0x3C of KOs
+            internal byte Learning; //0x3E ability
+            internal byte[] Forgotten; //0x41 abilities (1 bit = 1 ability of the GF forgotten, 2 bits unused)
 
-            public void Read(BinaryReader br)
+            internal void Read(BinaryReader br)
             {
                 Name = br.ReadBytes(12);//0x00 (0x00 terminated)
                 Experience = br.ReadUInt32();//0x0C

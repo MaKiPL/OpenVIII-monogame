@@ -4,21 +4,21 @@ using System.Text;
 
 namespace FF8
 {
-    public static partial class Saves
+    internal static partial class Saves
     {
-        public struct FieldVars
+        internal struct FieldVars
         {
-            public string byte03; //[0-3]unused in fields (always "FF-8")
-            public ulong Steps; //[4]Steps (used to generate random encounters)
+            internal string byte03; //[0-3]unused in fields (always "FF-8")
+            internal ulong Steps; //[4]Steps (used to generate random encounters)
 
-            public ulong Payslip; //[8]Payslip
-            public byte[] byte1215; //[12-15]unused in fields
-            public short SeedRankPts; //[16]SeeD rank points?
-            public byte[] byte1819; //[18-19]unused in fields
-            public ulong BattlesWon; //[20]Battles won. (Fun fact: this affects the basketball shot in Trabia.)
-            public byte[] byte2425; //[24-25]unused in fields
-            public ushort EscapedBattles; //[26]Battles escaped.
-            public Dictionary<Characters,ushort> EnemiesKilled;
+            internal ulong Payslip; //[8]Payslip
+            internal byte[] byte1215; //[12-15]unused in fields
+            internal short SeedRankPts; //[16]SeeD rank points?
+            internal byte[] byte1819; //[18-19]unused in fields
+            internal ulong BattlesWon; //[20]Battles won. (Fun fact: this affects the basketball shot in Trabia.)
+            internal byte[] byte2425; //[24-25]unused in fields
+            internal ushort EscapedBattles; //[26]Battles escaped.
+            internal Dictionary<Characters,ushort> EnemiesKilled;
 
             //ushort ushort28; //[28]Enemies killed by Squall
             //ushort ushort30; //[30]Enemies killed by Zell
@@ -29,7 +29,7 @@ namespace FF8
             //ushort ushort40; //[40]Enemies killed by Seifer
             //ushort ushort42; //[42]Enemies killed by Edea
 
-            public Dictionary<Characters, ushort> DeathCounter;
+            internal Dictionary<Characters, ushort> DeathCounter;
 
             //ushort ushort44; //[44]Squall death count
             //ushort ushort46; //[46]Zell death count
@@ -40,237 +40,237 @@ namespace FF8
             //ushort ushort56; //[56]Seifer death count
             //ushort ushort58; //[58]Edea death count
 
-            public byte[] byte6067; //[60-67]unused in fields
-            public ulong EnemiesKilledTotal; //[68]Enemies killed
-            public ulong Gill; //[72]Amount of Gil the party currently has
-            public ulong GillLaguna; //[76]Amount of Gil Laguna's party has
-            public ulong FMVFrames; //[80]Counts the number of frames since the current movie started playing. (default fps is 15?)
-            public ushort LastArea; //[84]Last area visited.
-            public sbyte CurrentCarRent; //[86]Current car rent.
-            public sbyte sbyte87; //[87]Built-in engine variable. No idea what it does. Scripts always check if it's equal to 0 or 10. Related to music.
-            public sbyte sbyte88; //[88]Built-in engine variable. Used exclusively on save points. Never written to with field scripts. Related to Siren's Move-Find ability.
-            public byte[] byte89103; //[89-103]unused in fields
-            public ulong ulong104; //[104]Seems related to SARALYDISPON/SARALYON/MUSICLOAD/PHSPOWER opcodes
-            public ulong ulong108; //[108]Music related
-            public ulong ulong112; //[112]unused in fields
-            public byte[] DrawPtsFeild; //[116-147]Draw points in field
-            public byte[] DrawPtsWorld; //[148-179]Draw points in worldmap
-            public byte[] byte180255; //[180-255]unused in fields
-            public ushort StoryQuestprogress; //[256]Main Story quest progress.
-            public byte byte258; //[258]not investigated
-            public byte[] byte259260; //[259-260]unused in fields
-            public byte byte261; //[261]not investigated
-            public byte[] byte262263; //[262-263]unused in fields
-            public byte byte264; //[264]not investigated
-            public byte byte265; //[265]not investigated
-            public byte WorldMapVersion; //[266]World map version? (3=Esthar locations unlocked)
-            public byte byte267; //[267]unused in fields
-            public byte byte268; //[268]not investigated
-            public byte byte269; //[269]not investigated
-            public byte byte270; //[270]not investigated
-            public byte byte271; //[271]unused in fields
-            public byte[] byte272299; //[272-299]SO MANY F***ING CARD GAME VARIABLES
-            public byte CardQueenrecards; //[300]Card Queen re-cards.
-            public byte[] byte301303; //[301-303]unused in fields
-            public byte[] TimberManiacsIssues; //[304-305]Timber Maniacs issues found.
-            public byte[] Hacktuar; //[306-319]Reserved for Hacktuar / FF8Voice
-            public byte[] UltimeciaGallery; //[320-332]Ultimecia Gallery related (pictures viewed?)
-            public byte UltimeciaArmory; //[333]Ultimecia Armory chest flags
-            public byte UltimeciaCastle; //[334]Ultimecia Castle seals. See SEALEDOFF for details.
-            public byte Card; //[335]Card related
-            public byte BusRelated; //[336]Deling City bus related
-            public byte[] GatesOpened; //[338-340]Deling Sewer gates opened
-            public byte byte341; //[341]Does lots of things.5
-            public byte BusSystem; //[342]Deling City bus system
-            public byte byte343; //[343]G-Garden door/event flags.
-            public byte byte344; //[344]B-Garden / G-Garden event flags (during GvG)
-            public byte byte345; //[345]G-Garden door/event flags.
-            public byte[] byte346349; //[346-349]FH Instrument (346 Zell, 347 Irvine, 348 Selphie, 349 Quistis)
-            public ushort[] ushort350356; //[350-356]Health Bars (Garden mech fight)
-            public byte byte358; //[358]Space station talk flags, Centra ruins related (beat odin?).
-            public byte byte359; //[359]Centra ruins related (beat odin?).
-            public ulong ulong360; //[360]Choice of FH music.
-            public byte[] byte364368; //[364-368]Randomly generated code for Centra Ruins.
-            public byte[] byte369370; //[369-370]Ultimecia Castle flags
-            public byte byte371; //[371]unused in fields
-            public byte[] byte372376; //[372-376]Ultimecia boss/timer/item flags
-            public byte byte377; //[377]Ultimecia organ note controller
-            public byte byte378; //[378]Centra Ruins timer (controls blackout messages from Odin)
-            public byte byte379; //[379]unused in fields
-            public ushort ushort380; //[380]Squall health during mech fight.
-            public byte[] byte382383; //[382-383]unused in fields
-            public byte byte384; //[384]Something about Laguna's time periods and GFs.
-            public byte byte385; //[385]Laguna dialogue in pub. Only the +2 bit is ever set. Don't change the +1 bit.
-            public byte byte387; //[387]Winhill progress?
-            public byte byte388; //[388]Timber Maniacs HQ talk flags (main lobby)
-            public byte byte389; //[389]Timber Maniacs HQ talk flags (office room)
-            public byte byte390; //[390]Edea talk flags at her house
-            public byte byte391; //[391]Laguna talk flags (in his office, disc 3)
-            public byte byte392; //[392]unknown (used in Edea's house and in the Balamb Garden computer system)
-            public byte[] byte393399; //[393-399]unused in fields
-            public ulong[] ulong400and404; //[400 and 404]Related to monsters killed in Winhill, but I don't think it actually does anything. Will investigate.
-            public byte byte408; //[408]unused in fields
-            public byte byte409; //[409]Balamb Garden computer system
-            public byte[] byte410431; //[410-431]unused in fields
-            public byte byte432; //[432]BG Main hall flags
-            public byte byte433; //[433]Flags. Switches are assigned all over BG. No idea what any of them control.
-            public byte byte434; //[434]Flags. Switches are assigned all over BG. No idea what any of them control.
-            public byte byte435; //[435]Flags. Switches are assigned all over BG. No idea what any of them control.
-            public byte byte436; //[436]Moomba friendship level in the prison? Some actions cause these flags to be set.
-            public byte byte437; //[437]In BG on Disc 2, keeps track of who's in your party. In the prison, it's the current floor you're on.
-            public byte byte438; //[438]Cid vs Norg event flags
-            public byte byte439; //[439]Cid vs Norg event flags
-            public byte byte440; //[440]Event flags. (+1 Quad ambush, +2 quad item giver, +4/+8 Infirmary helped, +16 Nida, +64 Kadowaki Elixir, +128 Training center)
-            public byte byte441; //[441]Cid vs Norg event flags
-            public byte byte442; //[442]Rinoa Garden tour flags
-            public ushort ushort443; //[443]Zell Health in Prison (Hacktuar)
-            public byte[] byte445447; //[445-447]Propagator defeated flags
-            public ushort ushort448; //[448]Unknown
-            public byte[] byte450451; //[450-451]Various magazine/talk flags
-            public byte byte452; //[452]Lunatic Pandora areas visited?
-            public byte[] byte453455; //[453-455]Moomba teleport variables
-            public byte[] byte456457; //[456-457]unused in fields
-            public byte[] byte458459; //[458-459]Used with MUSICSKIP in some Balamb Garden areas
-            public byte byte460; //[460]Random flags (some used for Card Club)
-            public byte[] byte461473; //[461-473]unused in fields
-            public byte byte474; //[474]Random flags (some used for Card Club)
-            public byte[] byte475478; //[475-478]CC Group variables
-            public byte byte479; //[479]If set to 0, disables all random battles during area loading.
-            public byte byte480; //[480]State of students in classroom (what they're doing).
-            public byte byte481; //[481]Controls a conversation in the cafeteria.
-            public short short482; //[482]Error ratio of missiles
-            public byte byte484; //[484]Missile Base progression?
-            public byte byte485; //[485]ToUK Progression (initially 0b111010101, +2 on finish quest. No other pops)
-            public byte byte486; //[486]ToUK room? (used to control map jumps in the maze)
-            public byte byte487; //[487]Missile base progression (also does something in BG2F classroom)
-            public byte byte488; //[488]Alternate Party Flags. Irvine +1/+16, Quistis +2/+32, Rinoa +4/+64, Zell +8/+128.1
-            public byte byte489; //[489]Random talk flags?
-            public byte byte490; //[490]Cafeteria cutscene
-            public byte byte491; //[491]ToUK stuff
-            public byte byte492; //[492]I think this is a door opener for the missile base if you choose a short time limit.
-            public byte byte493; //[493]Missile base timer related?
-            public byte[] byte494527; //[494-527]unused in fields
-            public short short528; //[528]Sub-story progression (it's a progression variable for individual segments of the game)
-            public byte byte530; //[530]X-ATM related (defeated it in battle?)
-            public byte byte531; //[531]Functionally unused. Read from at dollet, only manipulated in debug rooms.
-            public byte byte532; //[532]Controls footstep sounds at dollet (sand to concrete)
-            public byte byte533; //[533]not investigated
-            public byte byte534; //[534]not investigated
-            public byte byte535; //[535]not investigated
-            public byte byte536; //[536]not investigated
-            public byte byte537; //[537]not investigated
-            public byte byte538; //[538]not investigated
-            public byte byte539; //[539]not investigated
-            public byte[] byte540591; //[540-591]unused in fields
-            public byte[] byte592593; //[592-593]Seems to control angles and character facing.
-            public byte byte594; //[594]unused in fields
-            public byte byte595; //[595]not investigated
-            public byte byte596; //[596]not investigated
-            public byte byte597; //[597]not investigated
-            public byte byte598; //[598]not investigated
-            public byte byte599; //[599]not investigated
-            public byte byte600; //[600]not investigated
-            public byte byte601; //[601]not investigated
-            public byte byte602; //[602]not investigated
-            public byte byte603; //[603]not investigated
-            public byte byte604; //[604]not investigated
-            public byte byte605; //[605]not investigated
-            public byte byte606; //[606]not investigated
-            public byte byte607; //[607]not investigated
-            public byte byte608; //[608]not investigated
-            public byte byte609; //[609]not investigated
-            public byte byte610; //[610]not investigated
-            public byte byte611; //[611]not investigated
-            public byte byte612; //[612]not investigated
-            public byte byte613; //[613]not investigated
-            public byte byte614; //[614]not investigated
-            public byte byte615; //[615]not investigated
-            public byte byte616; //[616]not investigated
-            public byte byte617; //[617]not investigated
-            public byte byte618; //[618]not investigated
-            public byte byte619; //[619]not investigated
-            public byte byte620; //[620]not investigated
-            public byte byte621; //[621]not investigated
-            public byte byte622; //[622]not investigated
-            public byte byte623; //[623]not investigated
-            public byte byte624; //[624]not investigated
-            public byte byte625; //[625]Balamb visited flags (+8 Zell's room)
-            public byte byte626; //[626]not investigated
-            public byte byte627; //[627]not investigated
-            public byte byte628; //[628]unused in fields
-            public byte byte629; //[629]not investigated
-            public byte byte630; //[630]not investigated
-            public byte byte631; //[631]not investigated
-            public byte byte632; //[632]not investigated
-            public byte byte633; //[633]not investigated
-            public ushort ushort634; //[634]not investigated
-            public byte byte636; //[636]not investigated
-            public byte byte637; //[637]unused in fields
-            public byte byte638; //[638]not investigated
-            public byte byte639; //[639]unused in fields
-            public byte byte640; //[640]not investigated
-            public byte byte641; //[641]not investigated
-            public byte byte642; //[642]not investigated
-            public byte byte643; //[643]not investigated
-            public byte byte644; //[644]not investigated
-            public byte byte645; //[645]not investigated
-            public byte byte646; //[646]not investigated
-            public byte byte647; //[647]not investigated
-            public byte byte648; //[648]not investigated
-            public byte byte649; //[649]not investigated
-            public byte[] byte650655; //[650-655]unused in fields
-            public ushort ushort656; //[656]not investigated
-            public byte byte658; //[658]not investigated
-            public byte byte659; //[659]not investigated
-            public byte byte660; //[660]not investigated
-            public byte byte661; //[661]not investigated
-            public byte byte662; //[662]not investigated
-            public byte byte663; //[663]not investigated
-            public byte byte664; //[664]not investigated
-            public byte byte665; //[665]not investigated
-            public ushort ushort666; //[666]not investigated
-            public byte byte668; //[668]not investigated
-            public byte[] byte669671; //[669-671]unused in fields
-            public ushort ushort672; //[672]not investigated
-            public byte byte674; //[674]unused in fields
-            public byte byte675; //[675]not investigated
-            public byte byte676; //[676]unused in fields
-            public byte byte677; //[677]not investigated
-            public byte byte678; //[678]not investigated
-            public byte byte679; //[679]unused in fields
-            public byte byte680; //[680]not investigated
-            public byte byte681; //[681]not investigated
-            public byte byte682; //[682]not investigated
-            public byte byte683; //[683]not investigated
-            public byte byte684; //[684]not investigated
-            public byte byte685; //[685]not investigated
-            public byte byte686; //[686]not investigated
-            public byte byte687; //[687]not investigated
-            public byte byte688; //[688]not investigated
-            public byte byte689; //[689]not investigated
-            public byte byte690; //[690]not investigated
-            public byte byte691; //[691]not investigated
-            public byte[] byte692719; //[692-719]unused in fields
-            public Dictionary<Characters,Costume> Costumes;
-            //public byte byte720; //[720]Squall's costume (0=normal, 1=student, 2=SeeD, 3=Bandage on forehead)
-            //public byte byte721; //[721]Zell's Costume (0=normal, 1=student, 2=SeeD)
-            //public byte byte722; //[722]Selphie's costume (0=normal, 1=student, 2=SeeD)
-            //public byte byte723; //[723]Quistis' Costume (0=normal, 1=SeeD)
-            public ushort ushort724; //[724]Dollet mission time
-            public ushort ushort726; //[726]not investigated
-            public byte byte728; //[728]Does lots of things.3
-            public byte byte729; //[729]not investigated
-            public byte byte730; //[730]Flags (+1 Joined Garden Festival Committee, +4 Gave Selphie tour of BG, +16 Kadowaki asks for Cid, +32 and +64 Tomb of Unknown Kind hints?, +128 Beat all card people?)
-            public byte byte731; //[731]unused in fields
-            public ushort ushort732; //[732]not investigated
-            public byte byte734; //[734]Split Party Flags (+1 Zell, +2 Irvine, +4 Rinoa, +8 Quistis, +16 Selphie).2
-            public byte byte735; //[735]not investigated
-            public byte[] byte736751; //[736-751]unused in fields
-            public byte byte752; //[752]not investigated
-            public byte[] byte7531023; //[753-1023]unused in fields
-            public byte[] byteAbove1023; //[Above 1023]Temporary variables used pretty much everywhere.
+            internal byte[] byte6067; //[60-67]unused in fields
+            internal ulong EnemiesKilledTotal; //[68]Enemies killed
+            internal ulong Gill; //[72]Amount of Gil the party currently has
+            internal ulong GillLaguna; //[76]Amount of Gil Laguna's party has
+            internal ulong FMVFrames; //[80]Counts the number of frames since the current movie started playing. (default fps is 15?)
+            internal ushort LastArea; //[84]Last area visited.
+            internal sbyte CurrentCarRent; //[86]Current car rent.
+            internal sbyte sbyte87; //[87]Built-in engine variable. No idea what it does. Scripts always check if it's equal to 0 or 10. Related to music.
+            internal sbyte sbyte88; //[88]Built-in engine variable. Used exclusively on save points. Never written to with field scripts. Related to Siren's Move-Find ability.
+            internal byte[] byte89103; //[89-103]unused in fields
+            internal ulong ulong104; //[104]Seems related to SARALYDISPON/SARALYON/MUSICLOAD/PHSPOWER opcodes
+            internal ulong ulong108; //[108]Music related
+            internal ulong ulong112; //[112]unused in fields
+            internal byte[] DrawPtsFeild; //[116-147]Draw points in field
+            internal byte[] DrawPtsWorld; //[148-179]Draw points in worldmap
+            internal byte[] byte180255; //[180-255]unused in fields
+            internal ushort StoryQuestprogress; //[256]Main Story quest progress.
+            internal byte byte258; //[258]not investigated
+            internal byte[] byte259260; //[259-260]unused in fields
+            internal byte byte261; //[261]not investigated
+            internal byte[] byte262263; //[262-263]unused in fields
+            internal byte byte264; //[264]not investigated
+            internal byte byte265; //[265]not investigated
+            internal byte WorldMapVersion; //[266]World map version? (3=Esthar locations unlocked)
+            internal byte byte267; //[267]unused in fields
+            internal byte byte268; //[268]not investigated
+            internal byte byte269; //[269]not investigated
+            internal byte byte270; //[270]not investigated
+            internal byte byte271; //[271]unused in fields
+            internal byte[] byte272299; //[272-299]SO MANY F***ING CARD GAME VARIABLES
+            internal byte CardQueenrecards; //[300]Card Queen re-cards.
+            internal byte[] byte301303; //[301-303]unused in fields
+            internal byte[] TimberManiacsIssues; //[304-305]Timber Maniacs issues found.
+            internal byte[] Hacktuar; //[306-319]Reserved for Hacktuar / FF8Voice
+            internal byte[] UltimeciaGallery; //[320-332]Ultimecia Gallery related (pictures viewed?)
+            internal byte UltimeciaArmory; //[333]Ultimecia Armory chest flags
+            internal byte UltimeciaCastle; //[334]Ultimecia Castle seals. See SEALEDOFF for details.
+            internal byte Card; //[335]Card related
+            internal byte BusRelated; //[336]Deling City bus related
+            internal byte[] GatesOpened; //[338-340]Deling Sewer gates opened
+            internal byte byte341; //[341]Does lots of things.5
+            internal byte BusSystem; //[342]Deling City bus system
+            internal byte byte343; //[343]G-Garden door/event flags.
+            internal byte byte344; //[344]B-Garden / G-Garden event flags (during GvG)
+            internal byte byte345; //[345]G-Garden door/event flags.
+            internal byte[] byte346349; //[346-349]FH Instrument (346 Zell, 347 Irvine, 348 Selphie, 349 Quistis)
+            internal ushort[] ushort350356; //[350-356]Health Bars (Garden mech fight)
+            internal byte byte358; //[358]Space station talk flags, Centra ruins related (beat odin?).
+            internal byte byte359; //[359]Centra ruins related (beat odin?).
+            internal ulong ulong360; //[360]Choice of FH music.
+            internal byte[] byte364368; //[364-368]Randomly generated code for Centra Ruins.
+            internal byte[] byte369370; //[369-370]Ultimecia Castle flags
+            internal byte byte371; //[371]unused in fields
+            internal byte[] byte372376; //[372-376]Ultimecia boss/timer/item flags
+            internal byte byte377; //[377]Ultimecia organ note controller
+            internal byte byte378; //[378]Centra Ruins timer (controls blackout messages from Odin)
+            internal byte byte379; //[379]unused in fields
+            internal ushort ushort380; //[380]Squall health during mech fight.
+            internal byte[] byte382383; //[382-383]unused in fields
+            internal byte byte384; //[384]Something about Laguna's time periods and GFs.
+            internal byte byte385; //[385]Laguna dialogue in pub. Only the +2 bit is ever set. Don't change the +1 bit.
+            internal byte byte387; //[387]Winhill progress?
+            internal byte byte388; //[388]Timber Maniacs HQ talk flags (main lobby)
+            internal byte byte389; //[389]Timber Maniacs HQ talk flags (office room)
+            internal byte byte390; //[390]Edea talk flags at her house
+            internal byte byte391; //[391]Laguna talk flags (in his office, disc 3)
+            internal byte byte392; //[392]unknown (used in Edea's house and in the Balamb Garden computer system)
+            internal byte[] byte393399; //[393-399]unused in fields
+            internal ulong[] ulong400and404; //[400 and 404]Related to monsters killed in Winhill, but I don't think it actually does anything. Will investigate.
+            internal byte byte408; //[408]unused in fields
+            internal byte byte409; //[409]Balamb Garden computer system
+            internal byte[] byte410431; //[410-431]unused in fields
+            internal byte byte432; //[432]BG Main hall flags
+            internal byte byte433; //[433]Flags. Switches are assigned all over BG. No idea what any of them control.
+            internal byte byte434; //[434]Flags. Switches are assigned all over BG. No idea what any of them control.
+            internal byte byte435; //[435]Flags. Switches are assigned all over BG. No idea what any of them control.
+            internal byte byte436; //[436]Moomba friendship level in the prison? Some actions cause these flags to be set.
+            internal byte byte437; //[437]In BG on Disc 2, keeps track of who's in your party. In the prison, it's the current floor you're on.
+            internal byte byte438; //[438]Cid vs Norg event flags
+            internal byte byte439; //[439]Cid vs Norg event flags
+            internal byte byte440; //[440]Event flags. (+1 Quad ambush, +2 quad item giver, +4/+8 Infirmary helped, +16 Nida, +64 Kadowaki Elixir, +128 Training center)
+            internal byte byte441; //[441]Cid vs Norg event flags
+            internal byte byte442; //[442]Rinoa Garden tour flags
+            internal ushort ushort443; //[443]Zell Health in Prison (Hacktuar)
+            internal byte[] byte445447; //[445-447]Propagator defeated flags
+            internal ushort ushort448; //[448]Unknown
+            internal byte[] byte450451; //[450-451]Various magazine/talk flags
+            internal byte byte452; //[452]Lunatic Pandora areas visited?
+            internal byte[] byte453455; //[453-455]Moomba teleport variables
+            internal byte[] byte456457; //[456-457]unused in fields
+            internal byte[] byte458459; //[458-459]Used with MUSICSKIP in some Balamb Garden areas
+            internal byte byte460; //[460]Random flags (some used for Card Club)
+            internal byte[] byte461473; //[461-473]unused in fields
+            internal byte byte474; //[474]Random flags (some used for Card Club)
+            internal byte[] byte475478; //[475-478]CC Group variables
+            internal byte byte479; //[479]If set to 0, disables all random battles during area loading.
+            internal byte byte480; //[480]State of students in classroom (what they're doing).
+            internal byte byte481; //[481]Controls a conversation in the cafeteria.
+            internal short short482; //[482]Error ratio of missiles
+            internal byte byte484; //[484]Missile Base progression?
+            internal byte byte485; //[485]ToUK Progression (initially 0b111010101, +2 on finish quest. No other pops)
+            internal byte byte486; //[486]ToUK room? (used to control map jumps in the maze)
+            internal byte byte487; //[487]Missile base progression (also does something in BG2F classroom)
+            internal byte byte488; //[488]Alternate Party Flags. Irvine +1/+16, Quistis +2/+32, Rinoa +4/+64, Zell +8/+128.1
+            internal byte byte489; //[489]Random talk flags?
+            internal byte byte490; //[490]Cafeteria cutscene
+            internal byte byte491; //[491]ToUK stuff
+            internal byte byte492; //[492]I think this is a door opener for the missile base if you choose a short time limit.
+            internal byte byte493; //[493]Missile base timer related?
+            internal byte[] byte494527; //[494-527]unused in fields
+            internal short short528; //[528]Sub-story progression (it's a progression variable for individual segments of the game)
+            internal byte byte530; //[530]X-ATM related (defeated it in battle?)
+            internal byte byte531; //[531]Functionally unused. Read from at dollet, only manipulated in debug rooms.
+            internal byte byte532; //[532]Controls footstep sounds at dollet (sand to concrete)
+            internal byte byte533; //[533]not investigated
+            internal byte byte534; //[534]not investigated
+            internal byte byte535; //[535]not investigated
+            internal byte byte536; //[536]not investigated
+            internal byte byte537; //[537]not investigated
+            internal byte byte538; //[538]not investigated
+            internal byte byte539; //[539]not investigated
+            internal byte[] byte540591; //[540-591]unused in fields
+            internal byte[] byte592593; //[592-593]Seems to control angles and character facing.
+            internal byte byte594; //[594]unused in fields
+            internal byte byte595; //[595]not investigated
+            internal byte byte596; //[596]not investigated
+            internal byte byte597; //[597]not investigated
+            internal byte byte598; //[598]not investigated
+            internal byte byte599; //[599]not investigated
+            internal byte byte600; //[600]not investigated
+            internal byte byte601; //[601]not investigated
+            internal byte byte602; //[602]not investigated
+            internal byte byte603; //[603]not investigated
+            internal byte byte604; //[604]not investigated
+            internal byte byte605; //[605]not investigated
+            internal byte byte606; //[606]not investigated
+            internal byte byte607; //[607]not investigated
+            internal byte byte608; //[608]not investigated
+            internal byte byte609; //[609]not investigated
+            internal byte byte610; //[610]not investigated
+            internal byte byte611; //[611]not investigated
+            internal byte byte612; //[612]not investigated
+            internal byte byte613; //[613]not investigated
+            internal byte byte614; //[614]not investigated
+            internal byte byte615; //[615]not investigated
+            internal byte byte616; //[616]not investigated
+            internal byte byte617; //[617]not investigated
+            internal byte byte618; //[618]not investigated
+            internal byte byte619; //[619]not investigated
+            internal byte byte620; //[620]not investigated
+            internal byte byte621; //[621]not investigated
+            internal byte byte622; //[622]not investigated
+            internal byte byte623; //[623]not investigated
+            internal byte byte624; //[624]not investigated
+            internal byte byte625; //[625]Balamb visited flags (+8 Zell's room)
+            internal byte byte626; //[626]not investigated
+            internal byte byte627; //[627]not investigated
+            internal byte byte628; //[628]unused in fields
+            internal byte byte629; //[629]not investigated
+            internal byte byte630; //[630]not investigated
+            internal byte byte631; //[631]not investigated
+            internal byte byte632; //[632]not investigated
+            internal byte byte633; //[633]not investigated
+            internal ushort ushort634; //[634]not investigated
+            internal byte byte636; //[636]not investigated
+            internal byte byte637; //[637]unused in fields
+            internal byte byte638; //[638]not investigated
+            internal byte byte639; //[639]unused in fields
+            internal byte byte640; //[640]not investigated
+            internal byte byte641; //[641]not investigated
+            internal byte byte642; //[642]not investigated
+            internal byte byte643; //[643]not investigated
+            internal byte byte644; //[644]not investigated
+            internal byte byte645; //[645]not investigated
+            internal byte byte646; //[646]not investigated
+            internal byte byte647; //[647]not investigated
+            internal byte byte648; //[648]not investigated
+            internal byte byte649; //[649]not investigated
+            internal byte[] byte650655; //[650-655]unused in fields
+            internal ushort ushort656; //[656]not investigated
+            internal byte byte658; //[658]not investigated
+            internal byte byte659; //[659]not investigated
+            internal byte byte660; //[660]not investigated
+            internal byte byte661; //[661]not investigated
+            internal byte byte662; //[662]not investigated
+            internal byte byte663; //[663]not investigated
+            internal byte byte664; //[664]not investigated
+            internal byte byte665; //[665]not investigated
+            internal ushort ushort666; //[666]not investigated
+            internal byte byte668; //[668]not investigated
+            internal byte[] byte669671; //[669-671]unused in fields
+            internal ushort ushort672; //[672]not investigated
+            internal byte byte674; //[674]unused in fields
+            internal byte byte675; //[675]not investigated
+            internal byte byte676; //[676]unused in fields
+            internal byte byte677; //[677]not investigated
+            internal byte byte678; //[678]not investigated
+            internal byte byte679; //[679]unused in fields
+            internal byte byte680; //[680]not investigated
+            internal byte byte681; //[681]not investigated
+            internal byte byte682; //[682]not investigated
+            internal byte byte683; //[683]not investigated
+            internal byte byte684; //[684]not investigated
+            internal byte byte685; //[685]not investigated
+            internal byte byte686; //[686]not investigated
+            internal byte byte687; //[687]not investigated
+            internal byte byte688; //[688]not investigated
+            internal byte byte689; //[689]not investigated
+            internal byte byte690; //[690]not investigated
+            internal byte byte691; //[691]not investigated
+            internal byte[] byte692719; //[692-719]unused in fields
+            internal Dictionary<Characters,Costume> Costumes;
+            //internal byte byte720; //[720]Squall's costume (0=normal, 1=student, 2=SeeD, 3=Bandage on forehead)
+            //internal byte byte721; //[721]Zell's Costume (0=normal, 1=student, 2=SeeD)
+            //internal byte byte722; //[722]Selphie's costume (0=normal, 1=student, 2=SeeD)
+            //internal byte byte723; //[723]Quistis' Costume (0=normal, 1=SeeD)
+            internal ushort ushort724; //[724]Dollet mission time
+            internal ushort ushort726; //[726]not investigated
+            internal byte byte728; //[728]Does lots of things.3
+            internal byte byte729; //[729]not investigated
+            internal byte byte730; //[730]Flags (+1 Joined Garden Festival Committee, +4 Gave Selphie tour of BG, +16 Kadowaki asks for Cid, +32 and +64 Tomb of Unknown Kind hints?, +128 Beat all card people?)
+            internal byte byte731; //[731]unused in fields
+            internal ushort ushort732; //[732]not investigated
+            internal byte byte734; //[734]Split Party Flags (+1 Zell, +2 Irvine, +4 Rinoa, +8 Quistis, +16 Selphie).2
+            internal byte byte735; //[735]not investigated
+            internal byte[] byte736751; //[736-751]unused in fields
+            internal byte byte752; //[752]not investigated
+            internal byte[] byte7531023; //[753-1023]unused in fields
+            internal byte[] byteAbove1023; //[Above 1023]Temporary variables used pretty much everywhere.
 
-            public void Read(BinaryReader br)
+            internal void Read(BinaryReader br)
             {
                 byte03 = Encoding.UTF8.GetString(br.ReadBytes(4)); //[0-3]unused in fields (always "FF-8")
                 Steps = br.ReadUInt32(); //[4]Steps (used to generate random encounters)

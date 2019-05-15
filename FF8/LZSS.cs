@@ -35,7 +35,7 @@ CompuServe	74050,1022
 
         static MemoryStream infile;
         static List<byte> outfile;
-        public static byte[] DecompressAllNew(byte[] data)
+        internal static byte[] DecompressAllNew(byte[] data)
         {
             infile = new MemoryStream(data);
             outfile = new List<byte>();
@@ -86,7 +86,7 @@ CompuServe	74050,1022
         /// <param name="size">Filesize of final file</param>
         /// <returns>Byte array</returns>
         [Obsolete("This method proved to be broken. Please use DecompressAllNew")]
-        public static byte[] DecompressAll(byte[] data, uint fileSize, int size = 0)
+        internal static byte[] DecompressAll(byte[] data, uint fileSize, int size = 0)
         {
             try
             {

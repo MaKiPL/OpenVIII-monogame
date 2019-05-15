@@ -7,7 +7,7 @@
         /// <summary>
         /// Face images used in menus / save / load screens.
         /// </summary>
-        public Faces()
+        internal Faces()
         {
             TextureBigFilename = new string[] { "Face_b{0:00}.TEX", "Gf_big{0:00}.TEX" };
             TextureBigSplit = new uint[] { 2, 2 };

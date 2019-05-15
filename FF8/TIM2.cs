@@ -5,28 +5,28 @@ using System.Collections.Generic;
 namespace FF8
 {
     //upgraded TIM class, because that first one is a trash
-    public class TIM2
+    internal class TIM2
     {
-        public struct Texture
+        internal struct Texture
         {
-            public ushort PaletteX;
-            public ushort PaletteY;
-            public ushort NumOfColours;
-            public ushort NumOfCluts;
-            public uint clutSize;
-            public byte[] ClutData;
-            public ushort ImageOrgX;
-            public ushort ImageOrgY;
-            public ushort Width;
-            public ushort Height;
+            internal ushort PaletteX;
+            internal ushort PaletteY;
+            internal ushort NumOfColours;
+            internal ushort NumOfCluts;
+            internal uint clutSize;
+            internal byte[] ClutData;
+            internal ushort ImageOrgX;
+            internal ushort ImageOrgY;
+            internal ushort Width;
+            internal ushort Height;
         }
 
-        public struct Color
+        internal struct Color
         {
-            public byte Red;
-            public byte Green;
-            public byte Blue;
-            public byte Alpha;
+            internal byte Red;
+            internal byte Green;
+            internal byte Blue;
+            internal byte Alpha;
         }
 
         private int bpp = -1;
@@ -36,7 +36,7 @@ namespace FF8
         private uint textureDataPointer;
         private uint timOffset;
 
-        public TIM2(byte[] buffer, uint offset = 0)
+        internal TIM2(byte[] buffer, uint offset = 0)
         {
             pbs = new PseudoBufferedStream(buffer);
             timOffset = offset;
@@ -52,7 +52,7 @@ namespace FF8
             ReadParameters(bppIndicator);
         }
 
-        public void KillStreams() => pbs.DisposeAll();
+        internal void KillStreams() => pbs.DisposeAll();
 
         private void ReadParameters(byte _bpp)
         {
@@ -122,11 +122,11 @@ namespace FF8
 
         
 
-        public Color[] GetClutColors(Font.ColorID clut) => GetClutColors((ushort)clut);
+        internal Color[] GetClutColors(Font.ColorID clut) => GetClutColors((ushort)clut);
 
-        public Color[] GetClutColors(int clut) => GetClutColors((ushort)clut);
+        internal Color[] GetClutColors(int clut) => GetClutColors((ushort)clut);
 
-        public Color[] GetClutColors(ushort clut)
+        internal Color[] GetClutColors(ushort clut)
         {
             if (clut > texture.NumOfCluts)
                 throw new Exception("TIM_v2::GetClutColors::given clut is bigger than texture number of cluts");
@@ -166,7 +166,7 @@ namespace FF8
             return colorPixels.ToArray();
         }
 
-        public byte[] CreateImageBuffer(Color[] palette = null, bool bIgnoreSize = false)
+        internal byte[] CreateImageBuffer(Color[] palette = null, bool bIgnoreSize = false)
         {
             pbs.Seek(textureDataPointer, System.IO.SeekOrigin.Begin);
             byte[] buffer = new byte[texture.Width * texture.Height * 4]; //ARGB
@@ -213,10 +213,10 @@ namespace FF8
             return buffer;
         }
 
-        public int GetClutCount => texture.NumOfCluts;
+        internal int GetClutCount => texture.NumOfCluts;
 
-        public int GetWidth => texture.Width;
+        internal int GetWidth => texture.Width;
 
-        public int GetHeight => texture.Height;
+        internal int GetHeight => texture.Height;
     }
 }

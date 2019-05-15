@@ -2,13 +2,13 @@
 
 namespace FF8
 {
-    public static partial class Saves
+    internal static partial class Saves
     {
         /// <summary>
         /// Worldmap vars for savegame
         /// </summary>
         /// <see cref="https://github.com/myst6re/hyne/blob/master/SaveData.h"/>
-        public struct Worldmap
+        internal struct Worldmap
         {
             private short[] char_pos;// x z y ? ? rot(0->4095)
             private short[] uknown_pos1;

@@ -12,12 +12,12 @@ namespace FF8
     {
         BinaryReader br;
 
-        public PseudoBufferedStream(byte[] buffer) : base(buffer)
+        internal PseudoBufferedStream(byte[] buffer) : base(buffer)
         {
             br = new BinaryReader(this);
         }
 
-        public void DisposeAll()
+        internal void DisposeAll()
         {
             br.Close();
             br.Dispose();
@@ -25,20 +25,20 @@ namespace FF8
             Dispose();
         }
 
-        public ushort ReadUShort() => br.ReadUInt16();
+        internal ushort ReadUShort() => br.ReadUInt16();
 
-        public byte[] ReadBytes(uint count) => br.ReadBytes((int)count);
+        internal byte[] ReadBytes(uint count) => br.ReadBytes((int)count);
 
 #pragma warning disable 0114
-        public byte ReadByte()  => br.ReadByte(); //ms readbyte returns int
+        internal byte ReadByte()  => br.ReadByte(); //ms readbyte returns int
 #pragma warning restore 0114
 
-        public short ReadShort() => br.ReadInt16();
+        internal short ReadShort() => br.ReadInt16();
 
-        public uint ReadUInt() => br.ReadUInt32();
+        internal uint ReadUInt() => br.ReadUInt32();
 
-        public int ReadInt() => br.ReadInt32();
+        internal int ReadInt() => br.ReadInt32();
 
-        public long Tell() => Position;
+        internal long Tell() => Position;
     }
 }

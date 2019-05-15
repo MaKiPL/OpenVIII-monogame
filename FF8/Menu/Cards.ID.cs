@@ -4,7 +4,7 @@
     {
         #region Enums
 
-        public new enum ID
+        internal new enum ID
         {
             //Level 1
             Geezard,

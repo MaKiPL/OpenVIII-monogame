@@ -25,7 +25,7 @@ namespace FF8
         private static string[] movieDirs;
 
         private static List<string> _movies;
-        public static void Init()
+        internal static void Init()
         {
             movieDirs = new string[] {
                 Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "movies")), //this folder has most movies
@@ -47,7 +47,7 @@ namespace FF8
         /// <summary>
         /// Movie file list
         /// </summary>
-        public static List<string> Movies
+        internal static List<string> Movies
         {
             get
             {
@@ -59,15 +59,15 @@ namespace FF8
         private static Ffcc FfccVideo { get; set; }
         private static Texture2D frameTex { get; set; }
         private static Ffcc FfccAudio { get; set; }
-        public static int ReturnState { get; set; }
+        internal static int ReturnState { get; set; }
         /// <summary>
         /// Index in movie file list
         /// </summary>
-        public static int Index { get; set; } = 0;
+        internal static int Index { get; set; } = 0;
         private static double FPS { get; set; } = 0;
         private static int FrameRenderingDelay { get; set; } = 0;
         private static int MsElapsed { get; set; } = 0;
-        public static int MovieState { get; set; } = STATE_LOAD;
+        internal static int MovieState { get; set; } = STATE_LOAD;
 
         internal static void Update()
         {

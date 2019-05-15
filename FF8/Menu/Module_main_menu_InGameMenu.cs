@@ -18,7 +18,7 @@ namespace FF8
             private Vector2 Size;
             private int _choChar;
 
-            public int choChar
+            internal int choChar
             {
                 get
                 {
@@ -86,7 +86,7 @@ namespace FF8
 
             #region Enums
 
-            public enum Items
+            internal enum Items
             {
                 Junction,
                 Item,
@@ -122,7 +122,7 @@ namespace FF8
 
             #region Methods
 
-            public override void Draw()
+            internal override void Draw()
             {
                 Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: focus);
                 switch (mode)
@@ -154,7 +154,7 @@ namespace FF8
 
 
 
-            public enum SectionName
+            internal enum SectionName
             {
                 Header,
                 Footer,
@@ -184,11 +184,11 @@ namespace FF8
             }
 
 
-            
 
-            
 
-            public override bool Update()
+
+
+            internal override bool Update()
             {
                 Vector2 Zoom = Memory.Scale(Size.X, Size.Y, Memory.ScaleMode.FitBoth);
                 focus = Matrix.CreateTranslation((Size.X / -2), (Size.Y / -2), 0) *
@@ -339,16 +339,16 @@ namespace FF8
             {
                 private Dictionary<Enum, Item> strHeaderText;
 
-                public IGMData_Header()  : this(0, 0, new IGMDataItem_Box(pos: new Rectangle { Width = 610, Height = 75 }, title: Icons.ID.HELP))
+                internal IGMData_Header()  : this(0, 0, new IGMDataItem_Box(pos: new Rectangle { Width = 610, Height = 75 }, title: Icons.ID.HELP))
                 { }
 
-                public IGMData_Header(int count, int depth, IGMDataItem container = null) : base(count, depth, container)
+                internal IGMData_Header(int count, int depth, IGMDataItem container = null) : base(count, depth, container)
                 {
                 }
 
                 //public override void Draw() => base.Draw();
 
-                public override void Init()
+                internal override void Init()
                 {
                     base.Init();
                     strHeaderText = new Dictionary<Enum, Item>()
@@ -366,7 +366,7 @@ namespace FF8
                     { Items.Save, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,15) } },
                     };
                 }
-                public bool Update(IGM.Items selection)
+                internal bool Update(IGM.Items selection)
                 {
                     ((IGMDataItem_Box)CONTAINER).Data = strHeaderText[selection];
                     return true;
@@ -377,15 +377,15 @@ namespace FF8
 
             private class IGMData_Footer : IGMData
             {
-                public IGMData_Footer() : this(0, 0, new IGMDataItem_Box(pos: new Rectangle { Width = 610, Height = 75, Y = 630 - 75 }))
+                internal IGMData_Footer() : this(0, 0, new IGMDataItem_Box(pos: new Rectangle { Width = 610, Height = 75, Y = 630 - 75 }))
                 {
                 }
 
-                public IGMData_Footer(int count, int depth, IGMDataItem container = null) : base(count, depth, container)
+                internal IGMData_Footer(int count, int depth, IGMDataItem container = null) : base(count, depth, container)
                 {
                 }
 
-                public override bool Update()
+                internal override bool Update()
                 {
                     base.Update();
                     ((IGMDataItem_Box)CONTAINER).Data = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Memory.State.LocationID).ReplaceRegion();
@@ -395,15 +395,15 @@ namespace FF8
 
             private class IGMData_Clock : IGMData
             {
-                public IGMData_Clock(): this(1, 8, new IGMDataItem_Box(pos: new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 }))
+                internal IGMData_Clock(): this(1, 8, new IGMDataItem_Box(pos: new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 }))
                 {
                 }
 
-                public IGMData_Clock(int count, int depth, IGMDataItem container = null) : base(count, depth, container)
+                internal IGMData_Clock(int count, int depth, IGMDataItem container = null) : base(count, depth, container)
                 {
                 }
 
-                public override void Init()
+                internal override void Init()
                 {
                     base.Init();
                     Rectangle r;
@@ -424,7 +424,7 @@ namespace FF8
                     ITEM[0, 7] = new IGMDataItem_Icon(Icons.ID.G, r, 2);
                 }
 
-                public override bool Update()
+                internal override bool Update()
                 {
                     bool ret = base.Update();
                     int num;
@@ -463,15 +463,15 @@ namespace FF8
             {
                 private Texture2D _red_pixel;
 
-                public IGMData_NonParty():this(6, 9, new IGMDataItem_Box(pos: new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 }))
+                internal IGMData_NonParty():this(6, 9, new IGMDataItem_Box(pos: new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 }))
                 {
                 }
 
-                public IGMData_NonParty(int count, int depth, IGMDataItem container = null) : base(count, depth, container)
+                internal IGMData_NonParty(int count, int depth, IGMDataItem container = null) : base(count, depth, container)
                 {
                 }
 
-                public override void Init()
+                internal override void Init()
                 {
                     base.Init();
                     _red_pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
@@ -497,7 +497,7 @@ namespace FF8
                     }
                 }
 
-                public override bool Update()
+                internal override bool Update()
                 {
                     sbyte pos = 0;
                     bool ret = base.Update();
@@ -565,15 +565,15 @@ namespace FF8
 
             private class IGMData_Party : IGMData
             {
-                public IGMData_Party(): this(3, 7, new IGMDataItem_Empty(pos: new Rectangle { Width = 580, Height = 234, X = 20, Y = 84 }))
+                internal IGMData_Party(): this(3, 7, new IGMDataItem_Empty(pos: new Rectangle { Width = 580, Height = 234, X = 20, Y = 84 }))
                 {
                 }
 
-                public IGMData_Party(int count, int depth, IGMDataItem container = null) : base(count, depth, container)
+                internal IGMData_Party(int count, int depth, IGMDataItem container = null) : base(count, depth, container)
                 {
                 }
 
-                public override void Init()
+                internal override void Init()
                 {
 
                     base.Init();
@@ -581,7 +581,7 @@ namespace FF8
                         SIZE[i] = new Rectangle { Width = 580, Height = 78, X = 20, Y = 84 + 78 * i };
                 }
 
-                public override bool Update()
+                internal override bool Update()
                 {
                     bool ret = base.Update();
                     for (sbyte i = 0; Memory.State.Party != null && i < SIZE.Length; i++)
@@ -655,24 +655,24 @@ namespace FF8
 
             private class IGMDataItem_Empty : IGMDataItem
             {
-                public IGMDataItem_Empty(Rectangle? pos = null) : base(pos)
+                internal IGMDataItem_Empty(Rectangle? pos = null) : base(pos)
                 {
                 }
 
-                public override void Draw() { }
+                internal override void Draw() { }
             }
 
             private class IGMData_SideMenu : IGMData
             {
-                public IGMData_SideMenu() : this(11, 1, new IGMDataItem_Box(pos: new Rectangle { Width = 226, Height = 492, X = 843 - 226 }))
+                internal IGMData_SideMenu() : this(11, 1, new IGMDataItem_Box(pos: new Rectangle { Width = 226, Height = 492, X = 843 - 226 }))
                 {
                 }
 
-                public IGMData_SideMenu(int count, int depth, IGMDataItem container = null) : base(count, depth, container)
+                internal IGMData_SideMenu(int count, int depth, IGMDataItem container = null) : base(count, depth, container)
                 {
                 }
 
-                public override void Init()
+                internal override void Init()
                 {
                     base.Init();
                     ITEM[0, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 0));
@@ -701,12 +701,12 @@ namespace FF8
                     }
                 }
 
-                public override bool Inputs()
+                internal override bool Inputs()
                 {
                     return base.Inputs();
                 }
 
-                public override bool Update()
+                internal override bool Update()
                 {
                     return base.Update();
                 }
@@ -717,30 +717,30 @@ namespace FF8
 
         #region Classes
 
-        public class IGMData
+        internal class IGMData
         {
             #region Fields
 
             /// <summary>
             /// location of where pointer finger will point.
             /// </summary>
-            public Point[] CURSOR;
+            internal Point[] CURSOR;
 
-            public IGMDataItem[,] ITEM;
+            internal IGMDataItem[,] ITEM;
 
             /// <summary>
             /// Size of the entire area
             /// </summary>
-            public Rectangle[] SIZE;
+            internal Rectangle[] SIZE;
 
-            public bool[] BLANKS;
-            public IGMDataItem CONTAINER;
+            internal bool[] BLANKS;
+            internal IGMDataItem CONTAINER;
 
             #endregion Fields
 
             #region Constructors
 
-            public IGMData(int count, int depth, IGMDataItem container = null)
+            internal IGMData(int count, int depth, IGMDataItem container = null)
             {
                 SIZE = new Rectangle[count];
                 ITEM = new IGMDataItem[count, depth];
@@ -753,9 +753,9 @@ namespace FF8
                 Init();
             }
 
-            public IGMDataItem this[int pos, int i] { get => ITEM[pos, i]; set => ITEM[pos, i] = value; }
+            internal IGMDataItem this[int pos, int i] { get => ITEM[pos, i]; set => ITEM[pos, i] = value; }
 
-            public virtual void Draw()
+            internal virtual void Draw()
             {
                 if (CONTAINER != null)
                     CONTAINER.Draw();
@@ -770,68 +770,68 @@ namespace FF8
 
             #region Properties
 
-            public byte Count { get; private set; }
-            public byte Depth { get; private set; }
-            public int Width => CONTAINER != null ? CONTAINER.Pos.Width : 0;
-            public int Height => CONTAINER != null ? CONTAINER.Pos.Height : 0;
-            public int X => CONTAINER != null ? CONTAINER.Pos.X : 0;
-            public int Y => CONTAINER != null ? CONTAINER.Pos.Y : 0;
+            internal byte Count { get; private set; }
+            internal byte Depth { get; private set; }
+            internal int Width => CONTAINER != null ? CONTAINER.Pos.Width : 0;
+            internal int Height => CONTAINER != null ? CONTAINER.Pos.Height : 0;
+            internal int X => CONTAINER != null ? CONTAINER.Pos.X : 0;
+            internal int Y => CONTAINER != null ? CONTAINER.Pos.Y : 0;
 
             public static implicit operator Rectangle(IGMData v) => v.CONTAINER ?? Rectangle.Empty;
 
-            public virtual bool Update() { return false; }
-            public virtual bool Inputs()
+            internal virtual bool Update() { return false; }
+            internal virtual bool Inputs()
             {
                 return false;
             }
-            public virtual void Init()
+            internal virtual void Init()
             { }
 
             #endregion Properties
         }
 
-        public abstract class IGMDataItem//<T>
+        internal abstract class IGMDataItem//<T>
         {
             //protected T _data;
             protected Rectangle _pos;
 
-            public IGMDataItem(Rectangle? pos = null) =>
+            internal IGMDataItem(Rectangle? pos = null) =>
                 //_data = data;
                 _pos = pos ?? Rectangle.Empty;
 
             /// <summary>
             /// Dynamic data that is passed from update to draw.
             /// </summary>
-            //public virtual T Data { get => _data; set => _data = value; }
+            //internal virtual T Data { get => _data; set => _data = value; }
             /// <summary>
             /// Where to draw this item.
             /// </summary>
-            public virtual Rectangle Pos
+            internal virtual Rectangle Pos
             {
                 get => _pos; set => _pos = value;
 
-                //public implicit operator IGMDataItem<T>(IGMDataItem_Icon v) => throw new NotImplementedException();
+                //internal implicit operator IGMDataItem<T>(IGMDataItem_Icon v) => throw new NotImplementedException();
             }
 
-            public Color Color { get; internal set; } = Color.White;
+            internal Color Color { get; set; } = Color.White;
 
-            //public virtual object Data { get; internal set; }
-            //public virtual FF8String Data { get; internal set; }
-            public abstract void Draw();
+            //internal virtual object Data { get; internal set; }
+            //internal virtual FF8String Data { get; internal set; }
+            internal abstract void Draw();
 
             public static implicit operator Rectangle(IGMDataItem v) => v.Pos;
 
             public static implicit operator Color(IGMDataItem v) => v.Color;
         }
 
-        public class IGMDataItem_Icon : IGMDataItem//<Icons.ID>
+        internal class IGMDataItem_Icon : IGMDataItem//<Icons.ID>
         {
             private byte _pallet;
             private byte _faded_pallet;
 
-            public Icons.ID Data { get; set; }
+            internal Icons.ID Data { get; set; }
 
-            public byte Pallet
+            internal byte Pallet
             {
                 get => _pallet; set
                 {
@@ -840,7 +840,7 @@ namespace FF8
                 }
             }
 
-            public byte Faded_Pallet
+            internal byte Faded_Pallet
             {
                 get => _faded_pallet; set
                 {
@@ -849,10 +849,10 @@ namespace FF8
                 }
             }
 
-            public bool Blink => Faded_Pallet != Pallet;
-            public float Blink_Adjustment { get; set; }
+            internal bool Blink => Faded_Pallet != Pallet;
+            internal float Blink_Adjustment { get; set; }
 
-            public IGMDataItem_Icon(Icons.ID data, Rectangle? pos = null, byte? pallet = null, byte? faded_pallet = null, float blink_adjustment = 1f) : base(pos)
+            internal IGMDataItem_Icon(Icons.ID data, Rectangle? pos = null, byte? pallet = null, byte? faded_pallet = null, float blink_adjustment = 1f) : base(pos)
             {
                 Data = data;
                 Pallet = pallet ?? 2;
@@ -860,7 +860,7 @@ namespace FF8
                 Blink_Adjustment = blink_adjustment;
             }
 
-            public override void Draw()
+            internal override void Draw()
             {
                 Memory.Icons.Draw(Data, Pallet, Pos, TextScale, fade);
                 if (Blink)
@@ -868,14 +868,14 @@ namespace FF8
             }
         }
 
-        public class IGMDataItem_Int : IGMDataItem//<Int>
+        internal class IGMDataItem_Int : IGMDataItem//<Int>
         {
             private byte _pallet;
 
-            public int Data { get; set; }
-            public byte Padding { get; set; }
+            internal int Data { get; set; }
+            internal byte Padding { get; set; }
 
-            public byte Pallet
+            internal byte Pallet
             {
                 get => _pallet; set
                 {
@@ -884,9 +884,9 @@ namespace FF8
                 }
             }
 
-            public Icons.NumType NumType { get; set; }
+            internal Icons.NumType NumType { get; set; }
 
-            public IGMDataItem_Int(int data, Rectangle? pos = null, byte? pallet = null, Icons.NumType? numtype = null, byte? padding = null) : base(pos)
+            internal IGMDataItem_Int(int data, Rectangle? pos = null, byte? pallet = null, Icons.NumType? numtype = null, byte? padding = null) : base(pos)
             {
                 Data = data;
                 Padding = padding ?? 1;
@@ -894,42 +894,42 @@ namespace FF8
                 NumType = numtype ?? 0;
             }
 
-            public override void Draw() => Memory.Icons.Draw(Data, NumType, Pallet, $"D{Padding}", Pos.Location.ToVector2(), TextScale, fade);
+            internal override void Draw() => Memory.Icons.Draw(Data, NumType, Pallet, $"D{Padding}", Pos.Location.ToVector2(), TextScale, fade);
         }
 
         private class IGMDataItem_String : IGMDataItem
         {
-            public FF8String Data { get; set; }
+            internal FF8String Data { get; set; }
 
-            public IGMDataItem_String(FF8String data, Rectangle? pos = null) : base(pos) => this.Data = data;
+            internal IGMDataItem_String(FF8String data, Rectangle? pos = null) : base(pos) => this.Data = data;
 
-            public override void Draw() => Memory.font.RenderBasicText(Data, Pos.Location, TextScale, Fade: fade);
+            internal override void Draw() => Memory.font.RenderBasicText(Data, Pos.Location, TextScale, Fade: fade);
         }
 
         private class IGMDataItem_Box : IGMDataItem
         {
-            public FF8String Data { get; set; }
-            public Icons.ID? Title { get; set; }
-            public bool Indent { get; set; }
+            internal FF8String Data { get; set; }
+            internal Icons.ID? Title { get; set; }
+            internal bool Indent { get; set; }
 
-            public IGMDataItem_Box(FF8String data = null, Rectangle? pos = null, Icons.ID? title = null, bool indent = false) : base(pos)
+            internal IGMDataItem_Box(FF8String data = null, Rectangle? pos = null, Icons.ID? title = null, bool indent = false) : base(pos)
             {
                 Data = data;
                 Title = title;
                 Indent = indent;
             }
 
-            public override void Draw() =>
+            internal override void Draw() =>
                     DrawBox(Pos, Data, Title, indent: Indent);
         }
 
         private class IGMDataItem_Texture : IGMDataItem
         {
-            public Texture2D Data { get; set; }
+            internal Texture2D Data { get; set; }
 
-            public IGMDataItem_Texture(Texture2D data, Rectangle? pos = null) : base(pos) => this.Data = data;
+            internal IGMDataItem_Texture(Texture2D data, Rectangle? pos = null) : base(pos) => this.Data = data;
 
-            public override void Draw() => Memory.spriteBatch.Draw(Data, Pos, null, base.Color * fade);//4
+            internal override void Draw() => Memory.spriteBatch.Draw(Data, Pos, null, base.Color * fade);//4
         }
 
         #endregion Classes
@@ -938,7 +938,7 @@ namespace FF8
         {
             protected Dictionary<Enum, IGMData> Data;
 
-            public Menu()
+            internal Menu()
             {
                 Data = new Dictionary<Enum, IGMData>();
                 Init();
@@ -946,9 +946,9 @@ namespace FF8
 
             protected abstract void Init();
 
-            public abstract void Draw();
+            internal abstract void Draw();
 
-            public abstract bool Update();
+            internal abstract bool Update();
 
             protected abstract bool Inputs();
         }

@@ -19,7 +19,7 @@ namespace FF8
 
         #region Constructors
 
-        public Icons()
+        internal Icons()
         {
             //FORCE_ORIGINAL = true;
             TextureBigFilename = new string[] { "iconfl{0:00}.TEX" };
@@ -33,17 +33,17 @@ namespace FF8
 
         #region Properties
 
-        public new uint Count => (uint)Entries.Count();
-        public new uint PalletCount => (uint)Textures.Count();
-        public new uint TextureCount => 1;
+        internal new uint Count => (uint)Entries.Count();
+        internal new uint PalletCount => (uint)Textures.Count();
+        internal new uint TextureCount => 1;
         private new uint TextureStartOffset => 0;// this really isn't improtant to icons.
-        public new uint EntriesPerTexture => (uint)Enum.GetValues(typeof(Icons.ID)).Cast<Icons.ID>().Max(); // this really isn't improtant to icons.
+        internal new uint EntriesPerTexture => (uint)Enum.GetValues(typeof(Icons.ID)).Cast<Icons.ID>().Max(); // this really isn't improtant to icons.
 
         #endregion Properties
 
         #region Indexers
 
-        public new EntryGroup this[Enum id] => GetEntryGroup(id);
+        internal new EntryGroup this[Enum id] => GetEntryGroup(id);
 
         #endregion Indexers
 
@@ -100,7 +100,7 @@ namespace FF8
                 }
             }
         }
-        public enum NumType
+        internal enum NumType
         {
             Num_8x8_0,
             Num_8x8_1,
@@ -109,7 +109,7 @@ namespace FF8
             Num_8x16_1,
             Num_16x16_0,
         }
-        public void Draw(int number, NumType type, int pallet, string format, Vector2 location, Vector2 scale, float fade = 1f)
+        internal void Draw(int number, NumType type, int pallet, string format, Vector2 location, Vector2 scale, float fade = 1f)
         {
             ID[] numberstarts = { ID.Num_8x8_0_0, ID.Num_8x8_1_0,ID.Num_8x8_2_0, ID.Num_8x16_0_0, ID.Num_8x16_1_0, ID.Num_16x16_0_0 };
             List<ID>[] nums = new List<ID>[numberstarts.Length];
@@ -132,15 +132,15 @@ namespace FF8
             }
         }
 
-        public void Draw(Enum id, int pallet, Rectangle dst, Vector2 scale, float fade = 1f) => Entries[(ID)id].Draw(Textures, pallet, dst, scale, fade);
+        internal void Draw(Enum id, int pallet, Rectangle dst, Vector2 scale, float fade = 1f) => Entries[(ID)id].Draw(Textures, pallet, dst, scale, fade);
 
         public override void Draw(Enum id, Rectangle dst, float fade = 1) => Draw((ID)id, 2, dst, Vector2.One,fade);
 
-        public Entry GetEntry(Enum id, int index) => Entries[(ID)id][index] ?? null;
+        internal Entry GetEntry(Enum id, int index) => Entries[(ID)id][index] ?? null;
 
-        public override Entry GetEntry(Enum id) => Entries[(ID)id][0] ?? null;
+        public overrideEntry GetEntry(Enum id) => Entries[(ID)id][0] ?? null;
 
-        public EntryGroup GetEntryGroup(Enum id) => Entries[(ID)id] ?? null;
+        internal EntryGroup GetEntryGroup(Enum id) => Entries[(ID)id] ?? null;
 
         #endregion Methods
     }

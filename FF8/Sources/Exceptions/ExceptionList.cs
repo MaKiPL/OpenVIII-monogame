@@ -5,16 +5,16 @@ using System.Text;
 
 namespace FF8
 {
-    public sealed class ExceptionList : IDisposable
+    internal sealed class ExceptionList : IDisposable
     {
         private readonly List<Exception> _exceptions = new List<Exception>();
 
-        public void Add(Exception ex)
+        internal void Add(Exception ex)
         {
             _exceptions.Add(ex);
         }
 
-        public void Clear()
+        internal void Clear()
         {
             _exceptions.Clear();
         }

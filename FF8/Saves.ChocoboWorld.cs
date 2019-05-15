@@ -4,13 +4,13 @@ using System.IO;
 namespace FF8
 {
 
-    public static partial class Saves
+    internal static partial class Saves
     {
         /// <see cref="https://github.com/myst6re/hyne/blob/master/SaveData.h"/>
         /// <summary>
         /// ChocoboWorld Save Data
         /// </summary>
-        public struct ChocoboWorld//64
+        internal struct ChocoboWorld//64
         {
             byte enabled;// Enabled|In world|MiniMog found|Demon King defeated|Koko kidnapped|Hurry!|Koko met|Event Wait off
             byte level;

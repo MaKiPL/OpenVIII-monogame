@@ -8,11 +8,11 @@ namespace FF8
 {
     class module_battle
     {
-        public static void Update()
+        internal static void Update()
         {
             ;
         }
-        public static void Draw()
+        internal static void Draw()
         {
             ;
         }

@@ -7,20 +7,20 @@ namespace FF8
 {
     internal static class Init_debugger_battle
     {
-        public struct EncounterFlag
+        internal struct EncounterFlag
         {
-            public bool CantEspace;
-            public bool NoVictorySequence;
-            public bool ShowTimer;
-            public bool NoEXP;
-            public bool SkipEXPScreen;
-            public bool SurpriseAttack;
-            public bool BackAttacked;
-            public bool isScriptedBattle;
+            internal bool CantEspace;
+            internal bool NoVictorySequence;
+            internal bool ShowTimer;
+            internal bool NoEXP;
+            internal bool SkipEXPScreen;
+            internal bool SurpriseAttack;
+            internal bool BackAttacked;
+            internal bool isScriptedBattle;
 
-            public byte Switch { set => SetFlags(value); }
+            internal byte Switch { set => SetFlags(value); }
 
-            public void SetFlags(byte @switch)
+            internal void SetFlags(byte @switch)
             {
                 CantEspace = (@switch & 1) == 1;
                 NoVictorySequence = (@switch>>1 & 1) == 1;
@@ -33,38 +33,38 @@ namespace FF8
             }
         }
 
-        public struct Encounter
+        internal struct Encounter
         {
-            public byte Scenario;
-            public EncounterFlag BattleFlags;
-            public byte PrimaryCamera;
-            public byte AlternativeCamera;
-            public byte HiddenEnemies;
-            public byte UnloadedEnemy;
-            public byte UntargetableEnemy;
-            public byte EnabledEnemy;
-            public EnemyCoordinates enemyCoordinates;
+            internal byte Scenario;
+            internal EncounterFlag BattleFlags;
+            internal byte PrimaryCamera;
+            internal byte AlternativeCamera;
+            internal byte HiddenEnemies;
+            internal byte UnloadedEnemy;
+            internal byte UntargetableEnemy;
+            internal byte EnabledEnemy;
+            internal EnemyCoordinates enemyCoordinates;
             private byte[] Enemies; //sizeof 8
-            public byte[] bUnk2; //sizeof 16*3 + 8
-            public byte[] bLevels; //sizeof 8
+            internal byte[] bUnk2; //sizeof 16*3 + 8
+            internal byte[] bLevels; //sizeof 8
 
-            public byte[] BEnemies { get => Enemies.Select(x => (byte)(x - 0x10)).ToArray(); set => Enemies = value; }
-            public int ResolveCameraAnimation(byte cameraPointerValue) => cameraPointerValue & 0b1111;
-            public int ResolveCameraSet(byte cameraPointerValue) => (cameraPointerValue >> 4) & 0b1111;
+            internal byte[] BEnemies { get => Enemies.Select(x => (byte)(x - 0x10)).ToArray(); set => Enemies = value; }
+            internal int ResolveCameraAnimation(byte cameraPointerValue) => cameraPointerValue & 0b1111;
+            internal int ResolveCameraSet(byte cameraPointerValue) => (cameraPointerValue >> 4) & 0b1111;
         }
 
         internal struct EnemyCoordinates
         {
-            public Coordinate cEnemy1;
-            public Coordinate cEnemy2;
-            public Coordinate cEnemy3;
-            public Coordinate cEnemy4;
-            public Coordinate cEnemy5;
-            public Coordinate cEnemy6;
-            public Coordinate cEnemy7;
-            public Coordinate cEnemy8;
+            internal Coordinate cEnemy1;
+            internal Coordinate cEnemy2;
+            internal Coordinate cEnemy3;
+            internal Coordinate cEnemy4;
+            internal Coordinate cEnemy5;
+            internal Coordinate cEnemy6;
+            internal Coordinate cEnemy7;
+            internal Coordinate cEnemy8;
 
-            public Coordinate GetEnemyCoordinateByIndex(byte index)
+            internal Coordinate GetEnemyCoordinateByIndex(byte index)
             {
                 switch (index)
                 {
@@ -92,11 +92,11 @@ namespace FF8
 
         internal struct Coordinate
         {
-            public short x;
-            public short y;
-            public short z;
+            internal short x;
+            internal short y;
+            internal short z;
 
-            public Vector3 GetVector() => new Vector3(
+            internal Vector3 GetVector() => new Vector3(
                 x /100,
                 y /100 ,
                 -z /100 );

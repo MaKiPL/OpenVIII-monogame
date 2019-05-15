@@ -18,8 +18,8 @@ namespace FF8
         #endregion Fields
 
         #region Constructors
-        public bool Modded { get; private set; } = false;
-        public TextureHandler(string filename, uint cols = 1, uint rows = 1, int pallet = -1)
+        internal bool Modded { get; private set; } = false;
+        internal TextureHandler(string filename, uint cols = 1, uint rows = 1, int pallet = -1)
         {
             if (cols == 1 && rows == 1)
             {
@@ -32,9 +32,9 @@ namespace FF8
                 Init(filename, null, cols, rows);
         }
 
-        public TextureHandler(string filename, TEX classic, uint cols = 1, uint rows = 1, int pallet = -1) => Init(filename, classic, cols, rows, pallet);
+        internal TextureHandler(string filename, TEX classic, uint cols = 1, uint rows = 1, int pallet = -1) => Init(filename, classic, cols, rows, pallet);
 
-        public void Init(string filename, TEX classic, uint cols = 1, uint rows = 1, int pallet = -1)
+        internal void Init(string filename, TEX classic, uint cols = 1, uint rows = 1, int pallet = -1)
         {
             Classic = classic;
             Size = Vector2.Zero;
@@ -59,28 +59,28 @@ namespace FF8
         /// <summary>
         /// Original sub 256x265 texture, required for fallback when issues happen.
         /// </summary>
-        public TEX Classic { get => _classic; private set { _classic = value; if (value != null) ClassicSize = new Vector2(value.TextureData.Width, value.TextureData.Height); } }
+        internal TEX Classic { get => _classic; private set { _classic = value; if (value != null) ClassicSize = new Vector2(value.TextureData.Width, value.TextureData.Height); } }
 
         /// <summary>
         /// X = width and Y = height. The Size of original texture. Will be used in scaling
         /// </summary>
-        public Vector2 ClassicSize { get; private set; }
+        internal Vector2 ClassicSize { get; private set; }
 
-        public uint Count { get; protected set; }
+        protected internal uint Count { get; protected set; }
 
         /// <summary>
         /// Scale vector from original to big
         /// </summary>
-        public Vector2 ScaleFactor => Size == Vector2.Zero || ClassicSize == Vector2.Zero ? Vector2.One : Size / ClassicSize;
+        internal Vector2 ScaleFactor => Size == Vector2.Zero || ClassicSize == Vector2.Zero ? Vector2.One : Size / ClassicSize;
 
         /// <summary>
         /// X = width and Y = height. The Size of big version texture. Will be used in scaling
         /// </summary>
-        public Vector2 Size { get; private set; }
+        internal Vector2 Size { get; private set; }
 
         protected uint Cols { get; set; }
         protected string Filename { get; set; }
-        public int Pallet { get; protected set; }
+        protected internal int Pallet { get; protected set; }
         protected uint Rows { get; set; }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace FF8
 
         #region Indexers
 
-        public Texture2D this[int c, int r] => Textures[c, r];
+        internal Texture2D this[int c, int r] => Textures[c, r];
 
         #endregion Indexers
 
@@ -111,20 +111,20 @@ namespace FF8
 
         public static implicit operator Rectangle(TextureHandler v) => new Rectangle(new Point(0), v.Size.ToPoint());
 
-        public static Vector2 GetScale(Vector2 _old, Vector2 _new) => _new / _old;
+        internal static Vector2 GetScale(Vector2 _old, Vector2 _new) => _new / _old;
 
-        public static Vector2 GetScale(Vector2 _old, Texture2D _new) => new Vector2(_new.Width / _old.X, _new.Height / _old.Y);
+        internal static Vector2 GetScale(Vector2 _old, Texture2D _new) => new Vector2(_new.Width / _old.X, _new.Height / _old.Y);
 
-        public static Vector2 GetScale(TEX _old, Texture2D _new) => new Vector2((float)_new.Width / _old.TextureData.Width, (float)_new.Height / _old.TextureData.Height);
+        internal static Vector2 GetScale(TEX _old, Texture2D _new) => new Vector2((float)_new.Width / _old.TextureData.Width, (float)_new.Height / _old.TextureData.Height);
 
-        public static Vector2 GetScale(Texture2D _old, Texture2D _new) => new Vector2((float)_new.Width / _old.Width, (float)_new.Height / _old.Height);
+        internal static Vector2 GetScale(Texture2D _old, Texture2D _new) => new Vector2((float)_new.Width / _old.Width, (float)_new.Height / _old.Height);
 
         /// <summary>
         /// Load Texture from a mod
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        public static Texture2D LoadPNG(string path, int pallet = -1)
+        internal static Texture2D LoadPNG(string path, int pallet = -1)
         {
             string bn = Path.GetFileNameWithoutExtension(path);
             string prefix = bn.Substring(0, 2);
@@ -153,26 +153,26 @@ namespace FF8
             return null;
         }
 
-        public static Rectangle Scale(Rectangle mat1, Vector2 mat2)
+        internal static Rectangle Scale(Rectangle mat1, Vector2 mat2)
         {
             mat1.Location = (mat1.Location.ToVector2() * mat2).ToPoint();
             mat1.Size = (mat1.Size.ToVector2() * mat2).ToPoint();
             return mat1;
         }
 
-        public static Vector2 ToVector2(Texture2D t) => new Vector2(t.Width, t.Height);
+        internal static Vector2 ToVector2(Texture2D t) => new Vector2(t.Width, t.Height);
 
-        public static Vector2 ToVector2(TextureHandler t) => new Vector2(t.ClassicSize.X, t.ClassicSize.Y);
+        internal static Vector2 ToVector2(TextureHandler t) => new Vector2(t.ClassicSize.X, t.ClassicSize.Y);
 
-        public static Rectangle ToRectangle(Texture2D t) => new Rectangle(0, 0, t.Width, t.Height);
+        internal static Rectangle ToRectangle(Texture2D t) => new Rectangle(0, 0, t.Width, t.Height);
 
-        public static Rectangle ToRectangle(TextureHandler t) => new Rectangle(0, 0, (int)t.ClassicSize.X, (int)t.ClassicSize.Y);
+        internal static Rectangle ToRectangle(TextureHandler t) => new Rectangle(0, 0, (int)t.ClassicSize.X, (int)t.ClassicSize.Y);
 
-        public static Rectangle ToRectangle(Vector2 loc, Vector2 size) => new Rectangle(loc.ToPoint(), size.ToPoint());
+        internal static Rectangle ToRectangle(Vector2 loc, Vector2 size) => new Rectangle(loc.ToPoint(), size.ToPoint());
 
-        public static Texture2D UseBest(Texture2D _old, Texture2D _new) => UseBest(_old, _new, out Vector2 scale);
+        internal static Texture2D UseBest(Texture2D _old, Texture2D _new) => UseBest(_old, _new, out Vector2 scale);
 
-        public static Texture2D UseBest(Texture2D _old, Texture2D _new, out Vector2 scale)
+        internal static Texture2D UseBest(Texture2D _old, Texture2D _new, out Vector2 scale)
         {
             if (_new == null)
             {
@@ -187,9 +187,9 @@ namespace FF8
             }
         }
 
-        public static Texture2D UseBest(TEX _old, Texture2D _new, int pallet = 0) => UseBest(_old, _new, out Vector2 scale, pallet);
+        internal static Texture2D UseBest(TEX _old, Texture2D _new, int pallet = 0) => UseBest(_old, _new, out Vector2 scale, pallet);
 
-        public static Texture2D UseBest(TEX _old, Texture2D _new, out Vector2 scale, int pallet = 0)
+        internal static Texture2D UseBest(TEX _old, Texture2D _new, out Vector2 scale, int pallet = 0)
         {
             Texture2D tex;
             if (_new == null)
@@ -207,7 +207,7 @@ namespace FF8
             }
         }
 
-        public void Draw(Rectangle dst, Rectangle? src, Color color)
+        internal void Draw(Rectangle dst, Rectangle? src, Color color)
         {
             Vector2 dstOffset = Vector2.Zero;
             if (src != null)
@@ -275,7 +275,7 @@ namespace FF8
             }
         }
 
-        public Vector2 GetScale(int cols = 0, int rows = 0) => ScaleFactor;
+        internal Vector2 GetScale(int cols = 0, int rows = 0) => ScaleFactor;
 
         protected void Init()
         {
@@ -304,13 +304,13 @@ namespace FF8
             if (Classic == null) ClassicSize = oldsize;
         }
 
-        public static Vector2 GetOffset(Rectangle old, Rectangle @new) => GetOffset(old.Location.ToVector2(), @new.Location.ToVector2());
+        internal static Vector2 GetOffset(Rectangle old, Rectangle @new) => GetOffset(old.Location.ToVector2(), @new.Location.ToVector2());
 
-        public static Vector2 GetOffset(Point oldLoc, Point newLoc) => GetOffset(oldLoc.ToVector2(), newLoc.ToVector2());
-        public static Vector2 Abs(Vector2 v) => new Vector2(Math.Abs(v.X), Math.Abs(v.Y));
-        public static Vector2 GetOffset(Vector2 oldLoc, Vector2 newLoc) => Abs(oldLoc-newLoc);
+        internal static Vector2 GetOffset(Point oldLoc, Point newLoc) => GetOffset(oldLoc.ToVector2(), newLoc.ToVector2());
+        internal static Vector2 Abs(Vector2 v) => new Vector2(Math.Abs(v.X), Math.Abs(v.Y));
+        internal static Vector2 GetOffset(Vector2 oldLoc, Vector2 newLoc) => Abs(oldLoc-newLoc);
 
-        public static Vector2 GetScale(Point oldSize, Point newSize) => GetScale(oldSize.ToVector2(), newSize.ToVector2());
+        internal static Vector2 GetScale(Point oldSize, Point newSize) => GetScale(oldSize.ToVector2(), newSize.ToVector2());
 
         #endregion Methods
     }

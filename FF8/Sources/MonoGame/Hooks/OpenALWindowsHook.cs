@@ -93,7 +93,7 @@ namespace FF8.MonoGame
             return library;
         }
 
-        public static Object RequireFunction(IntPtr library, String function, Type delegateType)
+        internal static Object RequireFunction(IntPtr library, String function, Type delegateType)
         {
             IntPtr ptr = WinAPI.GetProcAddress(library, function);
             if (ptr == IntPtr.Zero)
@@ -105,10 +105,10 @@ namespace FF8.MonoGame
         private static class WinAPI
         {
             [DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
-            public static extern IntPtr LoadLibraryW(String lpszLib);
+            internal static extern IntPtr LoadLibraryW(String lpszLib);
 
             [DllImport("kernel32", CharSet = CharSet.Ansi /* GetProcAddress doesn't have an Unicode version. */, SetLastError = true)]
-            public static extern IntPtr GetProcAddress(IntPtr hModule, String procName);
+            internal static extern IntPtr GetProcAddress(IntPtr hModule, String procName);
         }
 
         // ReSharper disable StringLiteralTypo

@@ -13,12 +13,10 @@ namespace FF8
         {
             #region Properties
 
-            public Rectangle Loc { get; set; }
-            public Point Point { get; set; }
-            public FF8String Text { get; set; }
+            internal Rectangle Loc { get; set; }
+            internal Point Point { get; set; }
+            internal FF8String Text { get; set; }
 
-            public override bool Equals(object obj) => base.Equals(obj);
-            public override int GetHashCode() => base.GetHashCode();
             public override string ToString() => Text.ToString();
 
             #endregion Properties

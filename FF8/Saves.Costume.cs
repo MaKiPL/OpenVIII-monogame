@@ -1,8 +1,8 @@
 ﻿namespace FF8
 {
-    public static partial class Saves
+    internal static partial class Saves
     {
-        public enum Costume
+        internal enum Costume
         {
             /// <summary>
             /// Squall, Zell, Selphie, Quistis

@@ -13,7 +13,7 @@ namespace FF8
         private static int module = Memory.module;
         private static int lastModule = Memory.module;
 
-        public static void Update(GameTime gameTime)
+        internal static void Update(GameTime gameTime)
         {
             if (lastModule != module)
             {
@@ -69,7 +69,7 @@ namespace FF8
             }
         }
 
-        public static void Draw(GameTime gameTime)
+        internal static void Draw(GameTime gameTime)
         {
             switch (module)
             {

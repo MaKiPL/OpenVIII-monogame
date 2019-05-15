@@ -6,9 +6,9 @@
 
 
 
-    public static partial class Saves
+    internal static partial class Saves
     {
-        public enum Characters
+        internal enum Characters
         {
             // I noticed some values were in order of these characters so I made those values into arrays
             // and put the character names into an enum.

@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace FFmpeg.AutoGen.Example
 {
-    public class FFmpegBinariesHelper
+    internal class FFmpegBinariesHelper
     {
         private const string LD_LIBRARY_PATH = "LD_LIBRARY_PATH";
 

@@ -11,11 +11,11 @@ namespace FF8
         static uint _locationInFs;
         static bool _compressed;
         private string _path;
-        public string GetPath() => _path;
-        public static string[] FileList;
+        internal string GetPath() => _path;
+        internal static string[] FileList;
 
 
-        public ArchiveWorker(string path)
+        internal ArchiveWorker(string path)
         {
             _path = Extended.GetUnixFullPath(path);
             string root = Path.GetDirectoryName(_path);
@@ -32,10 +32,10 @@ namespace FF8
                     $"{Path.Combine(Path.GetDirectoryName(_path), Path.GetFileNameWithoutExtension(_path))}{Memory.Archives.B_FileList}"
                     );
 
-        public static string[] GetBinaryFileList(byte[] fl) =>System.Text.Encoding.ASCII.GetString(fl).Replace("\r", "").Replace("\0", "").Split('\n');
+        internal static string[] GetBinaryFileList(byte[] fl) =>System.Text.Encoding.ASCII.GetString(fl).Replace("\r", "").Replace("\0", "").Split('\n');
 
-        public byte[] GetBinaryFile(string fileName) => GetBinaryFile(_path, fileName);
-        public static byte[] GetBinaryFile(string archiveName, string fileName)
+        internal byte[] GetBinaryFile(string fileName) => GetBinaryFile(_path, fileName);
+        internal static byte[] GetBinaryFile(string archiveName, string fileName)
         {
             byte[] isComp = GetBin(Extended.GetUnixFullPath(archiveName), fileName);
             if (isComp == null) throw new FileNotFoundException($"Searched {archiveName} and could not find {fileName}.",fileName);
@@ -51,7 +51,7 @@ namespace FF8
         /// <param name="FL">FileList</param>
         /// <param name="filename">Filename of the file to get</param>
         /// <returns></returns>
-        public static byte[] FileInTwoArchives(byte[] FI, byte[] FS, byte[] FL, string filename)
+        internal static byte[] FileInTwoArchives(byte[] FI, byte[] FS, byte[] FL, string filename)
         {
             string a = filename.TrimEnd('\0');
 
@@ -147,16 +147,16 @@ namespace FF8
             return temp;
         }
 
-        public string[] GetListOfFiles() => FileList;
+        internal string[] GetListOfFiles() => FileList;
 
-        public struct FI
+        internal struct FI
         {
-            public uint LengthOfUnpackedFile;
-            public uint LocationInFS;
-            public uint LZSS;
+            internal uint LengthOfUnpackedFile;
+            internal uint LocationInFS;
+            internal uint LZSS;
         }
 
-        public FI[] GetFI()
+        internal FI[] GetFI()
         {
             FI[] FileIndex = new FI[FileList.Length];
             string flPath = $"{Path.GetDirectoryName(_path)}\\{Path.GetFileNameWithoutExtension(_path)}.fi";

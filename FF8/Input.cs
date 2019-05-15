@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace FF8
 {
-    public enum Buttons { Up, Down, Left, Right, Okay, Cancel, Exit, Switch, Menu, Back, Start, X, Y, B, A, L1, L2, L3, R1, R2, R3, Select, LeftStickX, LeftStickY, RightStickX, RightStickY, MouseX, MouseY, MouseXjoy, MouseYjoy, MouseLeft, MouseMiddle, MouseRight, Mouse4, Mouse5, MouseWheelup, MouseWheeldown }
+    internal enum Buttons { Up, Down, Left, Right, Okay, Cancel, Exit, Switch, Menu, Back, Start, X, Y, B, A, L1, L2, L3, R1, R2, R3, Select, LeftStickX, LeftStickY, RightStickX, RightStickY, MouseX, MouseY, MouseXjoy, MouseYjoy, MouseLeft, MouseMiddle, MouseRight, Mouse4, Mouse5, MouseWheelup, MouseWheeldown }
 
     internal class Input
     {
@@ -25,7 +25,7 @@ namespace FF8
         private static readonly int msDelayLimit = 100;
 
 
-        public static bool GetInputDelayed(Keys key)
+        internal static bool GetInputDelayed(Keys key)
         {
             //if (bLimitInput)
             //    bLimitInput = (msDelay += Memory.gameTime.ElapsedGameTime.Milliseconds) < msDelayLimit;
@@ -36,7 +36,7 @@ namespace FF8
             }
             return false;
         }
-        public static void Update()
+        internal static void Update()
         {
             CurrentGPState = GamePad.GetState(PlayerIndex.One, GamePadDeadZone.Circular);
             CurrentKBState = Keyboard.GetState();
@@ -51,7 +51,7 @@ namespace FF8
                 bLimitInput = (msDelay += Memory.gameTime.ElapsedGameTime.Milliseconds) < msDelayLimit;
             }
         }
-        public static void ResetInputLimit()
+        internal static void ResetInputLimit()
         {
             msDelay = 0;
             bLimitInput = true;
@@ -262,20 +262,20 @@ namespace FF8
             }
             return boolRT;
         }
-        public static float Distance(float speed)
+        internal static float Distance(float speed)
         {
             // no input throttle but still take the max speed * time;
             // for non analog controls
             return speed * Memory.gameTime.ElapsedGameTime.Milliseconds;
         }
-        public static float Distance(Buttons b, float speed, bool last = false)
+        internal static float Distance(Buttons b, float speed, bool last = false)
         {
             // (speed * stickvalue) * time = distance
             // idea is you get the distance traveled per ms value
             // the speed being the max speed. your sticks value being the throttle.
             return (speed * Analog(b, last)) * Memory.gameTime.ElapsedGameTime.Milliseconds;
         }
-        public static float Analog(Buttons b, bool last = false)
+        internal static float Analog(Buttons b, bool last = false)
         {
             //get output from analog controls
             //mousexjoy and mouseyjoy attempt to convert mouse input to a joystick like input 1.0f to -1.0f
@@ -350,16 +350,16 @@ namespace FF8
             }
             return 0.0f;
         }
-        public static MouseLockMode CurrentMode;
+        internal static MouseLockMode CurrentMode;
 
-        public static bool OverrideLockMouse { get; set; } = false;
+        internal static bool OverrideLockMouse { get; set; } = false;
 
-        public enum MouseLockMode
+        internal enum MouseLockMode
         {
             Center,
             Screen
         }
-        public static void LockMouse()
+        internal static void LockMouse()
         {
             if (Memory.IsActive && OverrideLockMouse) // check for focus to allow for tabbing out with out taking over mouse.
             {
@@ -376,12 +376,12 @@ namespace FF8
                 }
             }
         }
-        public static Point MouseLocation { get => new Point(CurrentMState.X, CurrentMState.Y); }
-        public static bool Button(Keys k, bool dblinput = false)
+        internal static Point MouseLocation { get => new Point(CurrentMState.X, CurrentMState.Y); }
+        internal static bool Button(Keys k, bool dblinput = false)
         {
             return IsPressed(k, dblinput); // fail over to IsPressed
         }
-        public static bool Button(Buttons b, bool dblinput = false)
+        internal static bool Button(Buttons b, bool dblinput = false)
         {
             // To add support for controller I was extracting the boolean bits from the if statements.
             // Maybe it could be a scheme in future. When these are configureable.

@@ -62,7 +62,7 @@ namespace FF8
         }
 
 
-        public static void ResetModule()
+        internal static void ResetModule()
         {
             internalModule = 0;
             internalTimer = 0.0f;
