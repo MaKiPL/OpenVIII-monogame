@@ -294,6 +294,8 @@ namespace FF8
                             files[fileID].sPositions[key].Add(b + msgPos);
                             last = b;
                         }
+                        else
+                            files[fileID].sPositions[key].Add(0);
                         if (grab > 0 && ++g > grab)
                         {
                             br.BaseStream.Seek(skip, SeekOrigin.Current);
@@ -475,6 +477,8 @@ namespace FF8
 
         private FF8String Read(BinaryReader br, FileID fid, uint pos)
         {
+            if (pos == 0)
+                return new FF8String("");
             if (pos < br.BaseStream.Length)
                 using (MemoryStream os = new MemoryStream(50))
                 {
@@ -529,14 +533,13 @@ namespace FF8
                 case Faces.ID.Zell_Dincht:
                 case Faces.ID.Irvine_Kinneas:
                 case Faces.ID.Quistis_Trepe:
-                    return Read(FileID.KERNEL, 6, (int)id - 1);
                 case Faces.ID.Selphie_Tilmitt:
                 case Faces.ID.Seifer_Almasy:
                 case Faces.ID.Edea_Kramer:
                 case Faces.ID.Laguna_Loire:
                 case Faces.ID.Kiros_Seagill:
                 case Faces.ID.Ward_Zabac:
-                    return Read(FileID.KERNEL, 6, (int)id - 2);
+                    return Read(FileID.KERNEL, 6, (int)id);
                 case Faces.ID.Quezacotl:
                 case Faces.ID.Shiva:
                 case Faces.ID.Ifrit:

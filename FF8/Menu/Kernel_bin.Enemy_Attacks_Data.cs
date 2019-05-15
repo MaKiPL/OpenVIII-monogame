@@ -8,7 +8,7 @@ namespace FF8
         /// Enemy Attacks Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Enemy-attacks"/>
-        internal class Enemy_Attacks_Data
+        internal struct Enemy_Attacks_Data
         {
             internal const int id = 3;
             internal const int count = 384;

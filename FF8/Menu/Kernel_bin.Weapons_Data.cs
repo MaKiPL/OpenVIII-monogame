@@ -4,7 +4,7 @@ namespace FF8
 {
     internal partial class Kernel_bin
     {
-        internal class Weapons_Data
+        internal struct Weapons_Data
         {
             internal const int count =33;
             internal const int id=4;

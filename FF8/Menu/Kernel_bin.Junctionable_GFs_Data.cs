@@ -8,7 +8,7 @@ namespace FF8
         /// Junctionable GFs Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Junctionable-GFs"/>
-        internal class Junctionable_GFs_Data
+        internal struct Junctionable_GFs_Data
         {
             internal const int id = 2;
             internal const int count = 16;
