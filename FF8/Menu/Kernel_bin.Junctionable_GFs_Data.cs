@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
 
 namespace FF8
 {
@@ -17,15 +20,15 @@ namespace FF8
             public override string ToString() => Name;
             //0x0000  2 bytes Offset to GF attack name
             //0x0002  2 bytes Offset to GF attack description
-            internal byte[] MagicID;             //0x0004  2 bytes[[Magic ID
-            internal byte Attack_type;           //0x0006  1 byte  Attack type
+            internal Magic_ID MagicID;             //0x0004  2 bytes[[Magic ID
+            internal Attack_Type Attack_type;           //0x0006  1 byte  Attack type
             internal byte GF_power;              //0x0007  1 byte  GF power(used in damage formula)
             internal byte[] Unknown0;            //0x0008  2 bytes Unknown
-            internal byte Attack_flags;          //0x000A  1 byte  Attack Flags
+            internal Attack_Flags Attack_flags;          //0x000A  1 byte  Attack Flags
             internal byte[] Unknown1;            //0x000B  2 bytes Unknown
-            internal byte Element;               //0x000D  1 byte[[Element
-            internal byte[] Statuses0;           //0x000E  2 bytes[[Statuses 0
-            internal byte[] Statuses1;           //0x0010  4 bytes[[Statuses 1
+            internal Element Element;               //0x000D  1 byte[[Element
+            internal Statuses0 Statuses0;           //0x000E  2 bytes[[Statuses 0
+            internal Statuses1 Statuses1;           //0x0010  4 bytes[[Statuses 1
             internal byte GFHP_modifier;         //0x0014  1 byte  GF HP Modifier(used in GF HP formula)
             internal byte[] Unknown2;            //0x0015  6 bytes Unknown
             internal byte Status_attack;         //0x001B  1 byte  Status attack enabler
@@ -114,7 +117,7 @@ namespace FF8
             //0x006D  1 byte  Unknown
             //0x006E  1 byte[[Ability 21
             //0x006F  1 byte  Unknown
-            internal byte[] GF_Compatibility;
+            internal Dictionary <Saves.GFs,decimal> GF_Compatibility;
             //0x0070  1 byte  Quezacolt compatibility
             //0x0071  1 byte  Shiva compatibility
             //0x0072  1 byte  Ifrit compatibility
@@ -141,22 +144,24 @@ namespace FF8
 
                 br.BaseStream.Seek(4, SeekOrigin.Current);
 
-                MagicID = br.ReadBytes(2);             //0x0004  2 bytes[[Magic ID
-                Attack_type = br.ReadByte();           //0x0006  1 byte  Attack type
+                MagicID = (Magic_ID)br.ReadUInt16();             //0x0004  2 bytes[[Magic ID
+                Attack_type = (Attack_Type)br.ReadByte();           //0x0006  1 byte  Attack type
                 GF_power = br.ReadByte();              //0x0007  1 byte  GF power(used in damage formula)
                 Unknown0 = br.ReadBytes(2);            //0x0008  2 bytes Unknown
-                Attack_flags = br.ReadByte();          //0x000A  1 byte  Attack Flags
+                Attack_flags = (Attack_Flags)( br.ReadByte());          //0x000A  1 byte  Attack Flags
                 Unknown1 = br.ReadBytes(2);            //0x000B  2 bytes Unknown
-                Element = br.ReadByte();               //0x000D  1 byte[[Element
-                Statuses0 = br.ReadBytes(2);           //0x000E  2 bytes[[Statuses 0
-                Statuses1 = br.ReadBytes(4);           //0x0010  4 bytes[[Statuses 1
+                Element = (Element)br.ReadByte();               //0x000D  1 byte[[Element
+                Statuses0 = (Statuses0)br.ReadUInt16();           //0x000E  2 bytes[[Statuses 0
+                Statuses1 = (Statuses1)br.ReadUInt32();           //0x0010  4 bytes[[Statuses 1
                 GFHP_modifier = br.ReadByte();         //0x0014  1 byte  GF HP Modifier(used in GF HP formula)
                 Unknown2 = br.ReadBytes(6);            //0x0015  6 bytes Unknown
                 Status_attack = br.ReadByte();         //0x001B  1 byte  Status attack enabler
                 Ability = new byte[21][];
                 for (i = 0; i < 21; i++)
                     Ability[i] = br.ReadBytes(2);
-                GF_Compatibility = br.ReadBytes(16);
+                GF_Compatibility = new Dictionary<Saves.GFs, decimal>(16);
+                for(i=0; i < 16; i++)
+                    GF_Compatibility.Add((Saves.GFs)i,(100 - Convert.ToDecimal(br.ReadByte())) / 5); //doomtrain shows this is a decimal number. i got formula from code.
                 Unknown3 = br.ReadBytes(2);            //0x0080  2 bytes Unknown
                 PowerMod = br.ReadByte();              //0x0082  1 byte  Power Mod(used in damage formula)
                 LevelMod = br.ReadByte();              //0x0083  1 byte  Level Mod(used in damage formula)

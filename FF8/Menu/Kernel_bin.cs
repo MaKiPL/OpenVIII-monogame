@@ -10,12 +10,12 @@ namespace FF8
         private ArchiveWorker aw;
         private readonly string ArchiveString = Memory.Archives.A_MAIN;
         internal static Magic_Data[] MagicData { get; private set; }//0
-        internal static Junctionable_GFs_Data[] JunctionableGFsData { get; private set; }//1
+        internal static Dictionary<Saves.GFs,Junctionable_GFs_Data> JunctionableGFsData { get; private set; }//1
         internal static Enemy_Attacks_Data[] EnemyAttacksData { get; private set; }//2
         internal static Battle_Commands[] BattleCommands { get; private set; }//3
         internal static Weapons_Data[] WeaponsData { get; private set; }//4
-
-        internal static Character_Stats[] CharacterStats { get; private set; }//6
+        internal static Dictionary<Renzokeken_Level, Renzokuken_Finishers_Data> RenzokukenFinishersData; //5
+        internal static Dictionary<Saves.Characters,Character_Stats> CharacterStats { get; private set; }//6
 
         /// <summary>
         /// Read binary data from into structures and arrays
@@ -48,11 +48,13 @@ namespace FF8
                     MagicData[i].Read(br,i);
                 }
                 //Junctionable GFs data
-                JunctionableGFsData = new Junctionable_GFs_Data[Junctionable_GFs_Data.count];
+                JunctionableGFsData = new Dictionary<Saves.GFs, Junctionable_GFs_Data>(Junctionable_GFs_Data.count);
                 ms.Seek(subPositions[Junctionable_GFs_Data.id], SeekOrigin.Begin);
                 for (int i = 0; i < Junctionable_GFs_Data.count; i++)
                 {
-                    JunctionableGFsData[i].Read(br,i);
+                    var tmp = new Junctionable_GFs_Data();
+                    tmp.Read(br, i);
+                    JunctionableGFsData.Add((Saves.GFs)i,tmp);
                 }
 
                 //Enemy Attacks data
@@ -71,12 +73,24 @@ namespace FF8
                     WeaponsData[i].Read(br,i);
                 }
 
+                //Renzokuken Finishers Data
+                RenzokukenFinishersData = new Dictionary<Renzokeken_Level, Renzokuken_Finishers_Data>(Renzokuken_Finishers_Data.count);
+                ms.Seek(subPositions[Renzokuken_Finishers_Data.id], SeekOrigin.Begin);
+                for (int i = 0; i < Renzokuken_Finishers_Data.count; i++)
+                {
+                    var tmp = new Renzokuken_Finishers_Data();
+                    tmp.Read(br, i);
+                    RenzokukenFinishersData.Add((Renzokeken_Level)i, tmp);
+                }
+
                 //Characters                
-                CharacterStats = new Character_Stats[Character_Stats.count];
+                CharacterStats = new Dictionary<Saves.Characters, Character_Stats>(Character_Stats.count);
                 ms.Seek(subPositions[Character_Stats.id], SeekOrigin.Begin);
                 for (int i = 0; i < Character_Stats.count; i++)
                 {
-                    CharacterStats[i].Read(br,(Saves.Characters)i);
+                    var tmp = new Character_Stats();
+                    tmp.Read(br, (Saves.Characters)i);
+                    CharacterStats.Add((Saves.Characters)i, tmp);
                 }
             }
         }

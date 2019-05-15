@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections;
+using System.IO;
 
 namespace FF8
 {
@@ -27,7 +28,7 @@ namespace FF8
             /// <summary>
             /// Unknown Flags
             /// </summary>
-            internal byte Flags;             //0x0005	1 byte Unknown Flags
+            internal BitArray Flags;             //0x0005	1 byte Unknown Flags
             /// <summary>
             /// Target
             /// </summary>
@@ -43,7 +44,7 @@ namespace FF8
                 Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2+1);
                 br.BaseStream.Seek(4, SeekOrigin.Current);
                 Ability = br.ReadByte();
-                Flags = br.ReadByte();
+                Flags = new BitArray(br.ReadBytes(1));
                 Target = br.ReadByte();
                 Unknown = br.ReadByte();
             }

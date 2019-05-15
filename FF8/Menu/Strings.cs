@@ -523,13 +523,13 @@ namespace FF8
             switch (id)
             {
                 case Faces.ID.Squall_Leonhart:
-                    return d.Squallsname;
+                    return d.Squallsname?? Read(FileID.MNGRP,2,92);
                 case Faces.ID.Rinoa_Heartilly:
-                    return d.Rinoasname;
+                    return d.Rinoasname ?? Read(FileID.MNGRP, 2, 93);
                 case Faces.ID.Angelo:
-                    return d.Angelosname;
+                    return d.Angelosname ?? Read(FileID.MNGRP, 2, 94);
                 case Faces.ID.Boko:
-                    return d.Bokosname;
+                    return d.Bokosname ?? Read(FileID.MNGRP, 2, 135);
                 case Faces.ID.Zell_Dincht:
                 case Faces.ID.Irvine_Kinneas:
                 case Faces.ID.Quistis_Trepe:
@@ -556,9 +556,9 @@ namespace FF8
                 case Faces.ID.Cactuar:
                 case Faces.ID.Tonberry:
                 case Faces.ID.Eden:
-                    return d.GFs[(int)id - 16].Name;
+                    return d.GFs[(int)id - 16].Name ?? Read(FileID.MNGRP, 2, 95-16 + (int)id);
                 case Faces.ID.Griever:
-                    return d.Grieversname;
+                    return d.Grieversname?? Read(FileID.MNGRP, 2, 135);
                 case Faces.ID.MiniMog:
                     return Read(FileID.KERNEL, 0, 72); // also in KERNEL, 12, 36
                 default:
