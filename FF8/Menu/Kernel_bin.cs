@@ -694,39 +694,6 @@ namespace FF8
             internal const int count = 10;
             internal const int id = 22;
             internal const int size = 32;
-
-            private static readonly Dictionary<ushort, Buttons> convert = new Dictionary<ushort, Buttons>()
-            {
-                //Buttons is
-                //finisher = 0x0001
-                //up = 0x0010
-                //-> = 0x0020
-                //do = 0x0040
-                //< - = 0x0080
-                //L2 = 0x0100
-                //R2 = 0x0200
-                //L1 = 0x0400
-                //R1 = 0x0800
-                // /\ = 0x1000
-                //O = 0x2000
-                //X = 0x4000
-                //| _ |= 0x8000
-                //None = 0xFFFF
-
-                {0x10,Buttons.Up},
-                {0x20,Buttons.Right },
-                {0x40,Buttons.Down },
-                {0x80,Buttons.Left },
-                {0x100,Buttons.L2 },
-                {0x200,Buttons.R2 },
-                {0x400,Buttons.L1 },
-                {0x800,Buttons.R1 },
-                {0x1000,Buttons.Triangle},
-                {0x2000,Buttons.Circle },
-                {0x4000,Buttons.Cross },
-                {0x8000,Buttons.Square }
-            };
-
             public FF8String Name { get; private set; }
             public FF8String Description { get; private set; }
             public Magic_ID MagicID { get; private set; }
@@ -776,9 +743,9 @@ namespace FF8
                 Button_Combo = new Buttons[5];
                 for (int b = 0; b < Button_Combo.Length; b++)
                 {
-                    ushort key = br.ReadUInt16();
-                    if (convert.ContainsKey(key))
-                        Button_Combo[b] = convert[key];
+                    Button_Flags key = (Button_Flags)br.ReadUInt16();
+                    if (Input.Convert_Button.ContainsKey(key))
+                        Button_Combo[b] = Input.Convert_Button[key];
                 }
                 //0x0010  2 bytes Sequence Button 1
                 //0x0012  2 bytes Sequence Button 2
@@ -799,7 +766,7 @@ namespace FF8
         {
             internal const int count = 24;
             internal const int id = 23;
-            internal const int size = 64;
+            internal const int size = 4;
 
             public byte[] Moves { get; private set; }
 
@@ -812,24 +779,97 @@ namespace FF8
                 //0x0003  1 byte  Next Sequence 0_3
             }
         }
-
+        /// <summary>
+        /// Rinoa limit breaks (part 1)
+        /// </summary>
+        /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Rinoa-limit-breaks-%28part-1%29"/>
         internal class Rinoa_limit_breaks_part_1
         {
-            internal const int count = 12;
+            internal const int count = 2;
             internal const int id = 24;
+            internal const int size = 8;
+
+            public FF8String Name { get; private set; }
+            public FF8String Description { get; private set; }
+            public BitArray Unknown0 { get; private set; }
+            public Target Target { get; private set; }
+            public byte AbilityID { get; private set; }
+            public byte Unknown1 { get; private set; }
 
             internal void Read(BinaryReader br, int i)
             {
+                Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
+                //0x0000	2 bytes Offset to name
+                Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
+                //0x0002	2 bytes Offset to description
+                br.BaseStream.Seek(4, SeekOrigin.Current);
+                Unknown0 = new BitArray(br.ReadBytes(1));
+                //0x0004  1 byte Unknown Flags
+                Target = (Target) br.ReadByte();
+                //0x0005  1 byte Target
+                AbilityID = br.ReadByte();
+                //0x0006  1 byte Ability data ID
+                Unknown1 = br.ReadByte();
+                //0x0007  1 byte Unknown / Unused
             }
         }
 
+        /// <summary>
+        /// Rinoa limit breaks (part 2)
+        /// </summary>
+        /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Rinoa-limit-breaks-%28part-2%29"/>
         internal class Rinoa_limit_breaks_part_2
         {
-            internal const int count = 12;
+            internal const int count = 33;
             internal const int id = 25;
+            internal const int size = 20;
+
+            public FF8String Name { get; private set; }
+            public Magic_ID MagicID { get; private set; }
+            public Attack_Type Attack_Type { get; private set; }
+            public byte Attack_Power { get; private set; }
+            public Attack_Flags Attack_Flags { get; private set; }
+            public byte Unknown0 { get; private set; }
+            public Target Target { get; private set; }
+            public byte Unknown1 { get; private set; }
+            public byte Hit_Count { get; private set; }
+            public Element Element { get; private set; }
+            public byte Element_Percent { get; private set; }
+            public byte Status_Attack { get; private set; }
+            public Statuses0 Statuses0 { get; private set; }
+            public Statuses1 Statuses1 { get; private set; }
 
             internal void Read(BinaryReader br, int i)
             {
+                Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i);
+                //0x0000	2 bytes Offset to name
+                br.BaseStream.Seek(2, SeekOrigin.Current);
+                MagicID = (Magic_ID)br.ReadUInt16();
+                //0x0002  2 bytes Magic ID
+                Attack_Type = (Attack_Type)br.ReadByte();
+                //0x0004  1 byte Attack type
+                Attack_Power= br.ReadByte();
+                //0x0005  1 byte Attack power
+                Attack_Flags = (Attack_Flags)br.ReadByte();
+                //0x0006  1 byte Attack flags
+                Unknown0 = br.ReadByte();
+                //0x0007  1 byte Unknown
+                Target = (Target)br.ReadByte();
+                //0x0008  1 byte Target info
+                Unknown1 = br.ReadByte();
+                //0x0009  1 byte Unknown
+                Hit_Count = br.ReadByte();
+                //0x000A  1 byte Hit Count
+                Element = (Element)br.ReadByte();
+                //0x000B  1 byte Element Attack
+                Element_Percent = br.ReadByte();
+                //0x000C  1 byte Element Attack %
+                Status_Attack=br.ReadByte();
+                //0x000D  1 byte Status Attack Enabler
+                Statuses0 = (Statuses0)br.ReadUInt16();
+                //0x000E  2 bytes status_0; //statuses 0-7
+                Statuses1 = (Statuses1)br.ReadUInt32();
+                //0x0010  4 bytes status_1; //statuses 8-39
             }
         }
 
