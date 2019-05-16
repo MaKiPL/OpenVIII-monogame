@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
@@ -37,7 +38,7 @@ namespace FF8
         internal static Slot_array[] Slotarray { get; private set; }//26
         internal static Selphie_limit_break_sets[] Selphielimitbreaksets { get; private set; }//27
         internal static Devour[] Devour_ { get; private set; }//28
-        internal static Misc_section[] Miscsection { get; private set; }//29
+        internal static Misc_section[] Miscsection { get; private set; }//29 //only_strings
         internal static Misc_text_pointers[] Misctextpointers { get; private set; }//30
 
         /// <summary>
@@ -127,7 +128,7 @@ namespace FF8
                 //ms.Seek(subPositions[Non_battle_Items_Data.id], SeekOrigin.Begin);
                 for (int i = 0; i < Non_battle_Items_Data.count; i++)
                 {
-                    NonbattleItemsData[i].Read(br, i);
+                    NonbattleItemsData[i].Read(i);
                 }
 
                 //Non-Junctionable GFs Attacks Data
@@ -158,7 +159,7 @@ namespace FF8
 
             //0x0002	2 bytes Offset to item description
 
-            internal void Read(BinaryReader br, int i)
+            internal void Read(int i)
             {
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 //0x0000	2 bytes Offset to item name
@@ -304,6 +305,7 @@ namespace FF8
             internal const int count = 19;
             internal const int id = 13;
 
+            public override string ToString() => Name;
             public FF8String Name { get; private set; }
             public FF8String Description { get; private set; }
             public byte AP { get; private set; }
@@ -337,6 +339,7 @@ namespace FF8
             internal const int count = 20;
             internal const int id = 14;
 
+            public override string ToString() => Name;
             public FF8String Name { get; private set; }
             public FF8String Description { get; private set; }
             public byte AP { get; private set; }
@@ -365,6 +368,7 @@ namespace FF8
             internal const int count = 5;
             internal const int id = 15;
 
+            public override string ToString() => Name;
             public FF8String Name { get; private set; }
             public FF8String Description { get; private set; }
             public byte AP { get; private set; }
@@ -409,6 +413,7 @@ namespace FF8
             internal const int count = 9;
             internal const int id = 16;
 
+            public override string ToString() => Name;
             public FF8String Name { get; private set; }
             public FF8String Description { get; private set; }
             public byte AP { get; private set; }
@@ -443,6 +448,7 @@ namespace FF8
             internal const int count = 24;
             internal const int id = 17;
 
+            public override string ToString() => Name;
             public FF8String Name { get; private set; }
             public FF8String Description { get; private set; }
             public byte AP { get; private set; }
@@ -478,6 +484,7 @@ namespace FF8
             internal const int count = 5;
             internal const int id = 18;
 
+            public override string ToString() => Name;
             public FF8String Name { get; private set; }
             public FF8String Description { get; private set; }
             public Magic_ID MagicID { get; private set; }
@@ -539,6 +546,7 @@ namespace FF8
             internal const int count = 16;
             internal const int id = 19;
 
+            public override string ToString() => Name;
             public FF8String Name { get; private set; }
             public FF8String Description { get; private set; }
             public Magic_ID MagicID { get; private set; }
@@ -629,6 +637,7 @@ namespace FF8
             internal const int id = 21;
             internal const int size = 24;
 
+            public override string ToString() => Name;
             public FF8String Name { get; private set; }
             public FF8String Description { get; private set; }
             public Magic_ID MagicID { get; private set; }
@@ -694,6 +703,7 @@ namespace FF8
             internal const int count = 10;
             internal const int id = 22;
             internal const int size = 32;
+            public override string ToString() => Name;
             public FF8String Name { get; private set; }
             public FF8String Description { get; private set; }
             public Magic_ID MagicID { get; private set; }
@@ -789,6 +799,7 @@ namespace FF8
             internal const int id = 24;
             internal const int size = 8;
 
+            public override string ToString() => Name;
             public FF8String Name { get; private set; }
             public FF8String Description { get; private set; }
             public BitArray Unknown0 { get; private set; }
@@ -824,6 +835,7 @@ namespace FF8
             internal const int id = 25;
             internal const int size = 20;
 
+            public override string ToString() => Name;
             public FF8String Name { get; private set; }
             public Magic_ID MagicID { get; private set; }
             public Attack_Type Attack_Type { get; private set; }
@@ -872,54 +884,196 @@ namespace FF8
                 //0x0010  4 bytes status_1; //statuses 8-39
             }
         }
-
+        /// <summary>
+        /// Slot Array Data
+        /// </summary>
+        /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Slot-array"/>
         internal class Slot_array
         {
-            internal const int count = 12;
+            internal const int count = 60;
             internal const int id = 26;
+            internal const int size = 1;
+
+            public byte SlotID { get; private set; }
 
             internal void Read(BinaryReader br, int i)
             {
+                SlotID = br.ReadByte();
             }
         }
-
+        /// <summary>
+        /// Slot Sets Data
+        /// </summary>
+        /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Selphie-limit-break-sets"/>
+        /// <seealso cref="https://finalfantasy.fandom.com/wiki/Slots_(ability_type)#Final_Fantasy_VIII"/>
         internal class Selphie_limit_break_sets
         {
-            internal const int count = 12;
+            internal const int count = 16;
             internal const int id = 27;
-
+            internal const int size = 16;
+            internal Slot[] Slots { get; private set; }
             internal void Read(BinaryReader br, int i)
             {
+                Slots = new Slot[8];
+                for (int s=0; s< 8; s++)
+                {
+                    Slots[s].Read(br, s);
+                }
+            }
+        }
+        /// <summary>
+        /// Slot Magic Data
+        /// </summary>
+        /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Selphie-limit-break-sets"/>
+        internal struct Slot
+        {
+            internal byte MagicID { get; private set; }
+            internal byte Count { get; private set; }
+
+            internal void Read(BinaryReader br, int i=0)
+            {
+                MagicID = br.ReadByte();
+                Count = br.ReadByte();
             }
         }
 
+        [Flags]
+        enum StatFlags
+        {
+            None = 0x00,
+            STR = 0x01,
+            VIT = 0x02,
+            MAG = 0x04,
+            SPR = 0x08,
+            SPD = 0x10,
+        }
+        [Flags]
+        enum Quanity
+        {
+            //0% = 0x00,
+            //6.25% = 0x01,
+            //12.50% = 0x02,
+            //25% = 0x04,
+            //50% = 0x08,
+            //100% = 0x10,
+            _0f = 0x00,
+            _0625f = 0x01,
+            _1250f = 0x02,
+            _25f = 0x04,
+            _50f = 0x08,
+            _1f = 0x10,
+        }
+        /// <summary>
+        /// Devour Data
+        /// </summary>
+        /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Devour"/>
         internal class Devour
         {
-            internal const int count = 12;
+            internal const int count = 16;
             internal const int id = 28;
+            internal const int size = 12;
+            public override string ToString() => Description;
+
+            public FF8String Description { get; private set; }
+            public float Amount { get; private set; }
+            /// <summary>
+            /// True for heal, False for damage
+            /// </summary>
+            public bool DMGorHEAL { get; private set; }
+            public Statuses1 Statuses1 { get; private set; }
+            public Statuses0 Statuses0 { get; private set; }
+            private StatFlags StatFlags { get; set; }
+            public byte HP { get; private set; }
 
             internal void Read(BinaryReader br, int i)
             {
+                Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i);
+                br.BaseStream.Seek(2, SeekOrigin.Current);
+                //0x0000  2 bytes Offset to devour description
+                DMGorHEAL = br.ReadByte() == 0x1E ? true : false;
+                //0x0002  1 byte Damage or heal HP and Status
+
+                //0x1E - Cure
+                //0x1F - Damage
+                var val = (Quanity)br.ReadByte();
+                Amount = 0f;
+                if ((val & Quanity._0625f)!=0) Amount += .0625f;
+                if ((val & Quanity._1250f) != 0) Amount += .1250f;
+                if ((val & Quanity._1f) != 0) Amount += 1f;
+                if ((val & Quanity._25f) != 0) Amount += .25f;
+                if ((val & Quanity._50f) != 0) Amount += .50f;
+                //0x0003  1 byte HP Heal / DMG Quantity Flag
+
+                //0x00 - 0 %
+                //0x01 - 6.25 %
+                //0x02 - 12.50 %
+                //0x04 - 25 %
+                //0x08 - 50 %
+                //0x10 - 100 %
+                Statuses1 = (Statuses1)br.ReadUInt32();
+                //0x0004  4 bytes status_1; //statuses 8-39
+                Statuses0 = (Statuses0)br.ReadUInt16();
+                //0x0008  2 bytes status_0; //statuses 0-7
+
+                StatFlags = (StatFlags)br.ReadByte();
+                //0x000A  1 byte Raised Stat Flag
+
+                //0x00 - None
+                //0x01 - STR
+                //0x02 - VIT
+                //0x04 - MAG
+                //0x08 - SPR
+                //0x10 - SPD
+                HP = br.ReadByte();
+                //0x000B  1 byte Raised Stat HP Quantity
             }
         }
-
+        /// <summary>
+        /// Misc Data
+        /// </summary>
+        /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Misc-section"/>
         internal class Misc_section
         {
-            internal const int count = 12;
+            internal const int count = 1;
             internal const int id = 29;
 
+            public byte[] Status_Timers { get; private set; }
+            public byte ATB_Speed_Multiplier { get; private set; }
+            public byte Dead_Timer { get; private set; }
+            public byte[] Status_Limit_Effects { get; private set; }
+            public byte[] Duel_Timers_and_Start_Moves { get; private set; }
+            public byte[] Shot_Timers { get; private set; }
+
             internal void Read(BinaryReader br, int i)
             {
+                Status_Timers = br.ReadBytes(14);
+                ATB_Speed_Multiplier = br.ReadByte();
+                Dead_Timer = br.ReadByte();
+                Status_Limit_Effects = br.ReadBytes(32);
+                Duel_Timers_and_Start_Moves = br.ReadBytes(8);
+                Shot_Timers = br.ReadBytes(4);
             }
         }
-
+        /// <summary>
+        /// Misc Text Pointers Data
+        /// </summary>
+        /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Misc-text-pointers"/>
         internal class Misc_text_pointers
         {
-            internal const int count = 12;
+            internal const int count = 128;
             internal const int id = 30;
+            internal const int size = 2;
 
-            internal void Read(BinaryReader br, int i)
+            public override string ToString() => Value;
+            public static explicit operator FF8String(Misc_text_pointers v) => v.Value;
+            internal FF8String Value { get; private set; }
+
+            //0x0000	2 bytes Offset to item name
+
+            internal void Read(int i)
             {
+                Value = Memory.Strings.Read(Strings.FileID.KERNEL, id, i);
+                //0x0000	2 bytes Offset to item name
             }
         }
     }

@@ -12,7 +12,7 @@ namespace FF8
     }
 
     [Flags]
-    internal enum Button_Flags
+    internal enum Button_Flags : ushort
     {
         Up = 0x10,
         Right = 0x20,
