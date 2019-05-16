@@ -36,7 +36,7 @@ namespace FF8
             Memory.random = new Random(); //creates global random class for all sort of things
 
             base.Initialize();
-            //ArchiveSearch s = new ArchiveSearch("Zell\0");//used to find file a string is in. disable if not using.
+            //ArchiveSearch s = new ArchiveSearch(new byte[] { 0xc8,0xc9,0xca,0xcb,0xcc,0xcd,0xce,0xcf });//used to find file a string is in. disable if not using.
 
         }
         protected override void LoadContent()

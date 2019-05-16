@@ -132,6 +132,7 @@ namespace FF8
                 {
                     NonbattleItemsData[i].Read(br, i);
                 }
+
                 //Non-Junctionable GFs Attacks Data
                 NonJunctionableGFsAttacksData = new Non_Junctionable_GFs_Attacks_Data[Non_Junctionable_GFs_Attacks_Data.count];
                 ms.Seek(subPositions[Non_Junctionable_GFs_Attacks_Data.id], SeekOrigin.Begin);
@@ -145,7 +146,7 @@ namespace FF8
         /// Non battle Items Mame and Description Offsets Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Non-battle-item-name-and-description-offsets"/>
-        internal class Non_battle_Items_Data
+        internal struct Non_battle_Items_Data
         {
             internal static readonly int count = 166;
             internal static readonly int id = 8;
@@ -424,40 +425,183 @@ namespace FF8
                 //0x0007  1 byte Increase value
             }
         }
-
+        /// <summary>
+        /// Menu Abilities Data
+        /// </summary>
+        /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Menu-abilities"/>
         internal class Menu_abilities
         {
-            internal const int count = 12;
+            internal const int count = 24;
             internal const int id = 17;
+
+            public FF8String Name { get; private set; }
+            public FF8String Description { get; private set; }
+            public byte AP { get; private set; }
+            public byte Index { get; private set; }
+            public byte Start { get; private set; }
+            public byte End { get; private set; }
+
             internal void Read(BinaryReader br, int i)
             {
+
+                Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
+                //0x0000	2 bytes Offset to name
+                Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
+                //0x0002	2 bytes Offset to description
+                AP = br.ReadByte();
+                //0x0004  1 byte AP Required to learn ability
+                Index = br.ReadByte();
+                //0x0005  1 byte Index to m00X files in menu.fs
+                //(first 3 sections are treated as special cases)
+                Start = br.ReadByte();
+                //0x0006  1 byte Start offset
+                End = br.ReadByte();
+                //0x0007  1 byte End offset
             }
         }
-
+        /// <summary>
+        /// Temporary Characters Limit Breaks
+        /// </summary>
+        /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Temporary-character-limit-breaks"/>
         internal class Temporary_character_limit_breaks
         {
-            internal const int count = 12;
+            internal const int count = 5;
             internal const int id = 18;
+
+            public FF8String Name { get; private set; }
+            public FF8String Description { get; private set; }
+            public Magic_ID MagicID { get; private set; }
+            public Attack_Type Attack_Type { get; private set; }
+            public byte Attack_Power { get; private set; }
+            public byte[] Unknown0 { get; private set; }
+            public Target Target { get; private set; }
+            public Attack_Flags Attack_Flags { get; private set; }
+            public byte Hit_Count { get; private set; }
+            public Element Element { get; private set; }
+            public byte Element_Percent { get; private set; }
+            public byte Status_Attack { get; private set; }
+            public Statuses0 Statuses0 { get; private set; }
+            public byte[] Unknown1 { get; private set; }
+            public Statuses1 Statuses1 { get; private set; }
+
             internal void Read(BinaryReader br, int i)
             {
+                Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
+                //0x0000	2 bytes Offset to name
+                Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
+                //0x0002	2 bytes Offset to description
+                MagicID = (Magic_ID)br.ReadUInt16();
+                //0x0004  2 bytes Magic ID
+                Attack_Type = (Attack_Type)br.ReadByte();
+                //0x0006  1 byte Attack Type
+                Attack_Power = br.ReadByte();
+                //0x0007  1 byte Attack Power
+                Unknown0 = br.ReadBytes(2);
+                //0x0008  2 bytes Unknown
+                Target = (Target)br.ReadByte();
+                //0x000A  1 byte Target Info
+                Attack_Flags = (Attack_Flags)br.ReadByte();
+                //0x000B  1 byte Attack Flags
+                Hit_Count = br.ReadByte();
+                //0x000C  1 byte Hit Count
+                Element = (Element)br.ReadByte();
+                //0x000D  1 byte Element Attack
+                Element_Percent = br.ReadByte();
+                //0x000E  1 byte Element Attack %
+                Status_Attack = br.ReadByte();
+                //0x000F  1 byte Status Attack Enabler
+                Statuses0 = (Statuses0)br.ReadUInt16();
+                //0x0010  2 bytes status_0; //statuses 0-7
+                Unknown1 = br.ReadBytes(2);
+                //0x0012  2 bytes Unknown
+                Statuses1 = (Statuses1)br.ReadUInt32();
+                //0x0014  4 bytes status_1; //statuses 8-39
             }
         }
-
+        /// <summary>
+        /// Blue magic (Quistis limit break)
+        /// </summary>
+        /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Blue-magic-%28Quistis-limit-break%29"/>
         internal class Blue_magic_Quistis_limit_break
         {
-            internal const int count = 12;
+            internal const int count = 16;
             internal const int id = 19;
+
+            public FF8String Name { get; private set; }
+            public FF8String Description { get; private set; }
+            public Magic_ID MagicID { get; private set; }
+            public byte Unknown0 { get; private set; }
+            public Attack_Type Attack_Type { get; private set; }
+            public byte[] Unknown1 { get; private set; }
+            public Attack_Flags Attack_Flags { get; private set; }
+            public byte Unknown2 { get; private set; }
+            public Element Element { get; private set; }
+            public byte Status_Attack { get; private set; }
+            public byte Crit { get; private set; }
+            public byte Unknown3 { get; private set; }
+            public Quistis_limit_break_parameters[] Crisis_Levels { get; private set; }
+
             internal void Read(BinaryReader br, int i)
             {
+                Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
+                //0x0000	2 bytes Offset to name
+                Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
+                //0x0002	2 bytes Offset to description
+                MagicID = (Magic_ID)br.ReadUInt16();
+                //0x0004  2 bytes Magic ID
+                Unknown0 = br.ReadByte();
+                //0x0006  1 byte Unknown
+                Attack_Type = (Attack_Type) br.ReadByte();
+                //0x0007  1 byte Attack Type
+                Unknown1 = br.ReadBytes(2);
+                //0x0008  2 bytes Unknown
+                Attack_Flags = (Attack_Flags) br.ReadByte();
+                //0x000A  1 byte Attack Flags
+                Unknown2 = br.ReadByte();
+                //0x000B  1 byte Unknown
+                Element = (Element) br.ReadByte();
+                //0x000C  1 byte Element
+                Status_Attack = br.ReadByte();
+                //0x000D  1 byte Status Attack
+                Crit = br.ReadByte();
+                //0x000E  1 byte Crit Bonus
+                Unknown3 = br.ReadByte();
+                //0x000F  1 byte Unknown
+                var current = br.BaseStream.Position;
+
+                br.BaseStream.Seek(Memory.Strings.Files[Strings.FileID.KERNEL].subPositions[Quistis_limit_break_parameters.id + Quistis_limit_break_parameters.size * i], SeekOrigin.Begin);
+                Crisis_Levels = new Quistis_limit_break_parameters[Quistis_limit_break_parameters.size];
+                for(i=0; i< Quistis_limit_break_parameters.count; i++)
+                    Crisis_Levels[i].Read(br,i);
+                br.BaseStream.Seek(current, SeekOrigin.Begin);
             }
         }
-
-        internal class Quistis_limit_break_parameters
+        /// <summary>
+        /// Blue Magic Parameters - 4 for each spell for crisis level.
+        /// </summary>
+        /// <see cref="https://finalfantasy.fandom.com/wiki/Blue_Magic_(Final_Fantasy_VIII)"/>
+        /// <seealso cref="https://github.com/alexfilth/doomtrain/wiki/Quistis-limit-break-parameters"/>
+        internal struct Quistis_limit_break_parameters
         {
-            internal const int count = 12;
+            internal const int count = 4;//64 total but I want to add these to the Blue_magic_Quistis_limit_break in an array
             internal const int id = 20;
+            internal const int size = 8;
+
+            public Statuses1 Statuses1 { get; private set; }
+            public Statuses0 Statuses0 { get; private set; }
+            public byte Attack_Power { get; private set; }
+            public byte Attack_Param { get; private set; }
+
             internal void Read(BinaryReader br, int i)
             {
+                Statuses1 = (Statuses1)br.ReadUInt32();
+                //0x0000  4 bytes Status 1
+                Statuses0 = (Statuses0)br.ReadUInt16();
+                //0x0004  2 bytes Status 0
+                Attack_Power = br.ReadByte();
+                //0x0006  1 bytes Attack Power
+                Attack_Param = br.ReadByte();
+                //0x0007  1 byte Attack Param
             }
         }
 
