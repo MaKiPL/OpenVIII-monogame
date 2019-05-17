@@ -30,37 +30,8 @@ namespace FF8
 
     internal class Input
     {
-        internal static readonly Dictionary<Button_Flags, Buttons> Convert_Button = new Dictionary<Button_Flags, Buttons>()
-            {
-                //Buttons is
-                //finisher = 0x0001
-                //up = 0x0010
-                //-> = 0x0020
-                //do = 0x0040
-                //< - = 0x0080
-                //L2 = 0x0100
-                //R2 = 0x0200
-                //L1 = 0x0400
-                //R1 = 0x0800
-                // /\ = 0x1000
-                //O = 0x2000
-                //X = 0x4000
-                //| _ |= 0x8000
-                //None = 0xFFFF
-
-                {Button_Flags.Up,Buttons.Up},
-                {Button_Flags.Right,Buttons.Right },
-                {Button_Flags.Down,Buttons.Down },
-                {Button_Flags.Left,Buttons.Left },
-                {Button_Flags.Right,Buttons.L2 },
-                {Button_Flags.R2,Buttons.R2 },
-                {Button_Flags.L1,Buttons.L1 },
-                {Button_Flags.R1,Buttons.R1 },
-                {Button_Flags.Triangle,Buttons.Triangle},
-                {Button_Flags.Circle,Buttons.Circle },
-                {Button_Flags.Cross,Buttons.Cross },
-                {Button_Flags.Square,Buttons.Square }
-            };
+        internal static Dictionary<Button_Flags, Buttons> Convert_Button { get; private set; }
+       
 
         //store current input states;
         private static GamePadState m_gp_state = new GamePadState();
@@ -95,7 +66,41 @@ namespace FF8
             }
             return false;
         }
+        internal static void Init()
+        {
+            Convert_Button = new Dictionary<Button_Flags, Buttons>()
+            {
+                //Buttons is
+                //finisher = 0x0001
+                //up = 0x0010
+                //-> = 0x0020
+                //do = 0x0040
+                //< - = 0x0080
+                //L2 = 0x0100
+                //R2 = 0x0200
+                //L1 = 0x0400
+                //R1 = 0x0800
+                // /\ = 0x1000
+                //O = 0x2000
+                //X = 0x4000
+                //| _ |= 0x8000
+                //None = 0xFFFF
 
+                {Button_Flags.Up,Buttons.Up},
+                {Button_Flags.Right,Buttons.Right },
+                {Button_Flags.Down,Buttons.Down },
+                {Button_Flags.Left,Buttons.Left },
+                {Button_Flags.L2,Buttons.L2 },
+                {Button_Flags.R2,Buttons.R2 },
+                {Button_Flags.L1,Buttons.L1 },
+                {Button_Flags.R1,Buttons.R1 },
+                {Button_Flags.Triangle,Buttons.Triangle},
+                {Button_Flags.Circle,Buttons.Circle },
+                {Button_Flags.Cross,Buttons.Cross },
+                {Button_Flags.Square,Buttons.Square }
+            };
+            Update();
+        }
         internal static void Update()
         {
             CurrentGPState = GamePad.GetState(PlayerIndex.One, GamePadDeadZone.Circular);

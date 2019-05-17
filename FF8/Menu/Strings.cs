@@ -31,7 +31,8 @@ namespace FF8
         /// Colly's list of string pointers. Adapted. Some strings might be missing.
         /// </summary>
         /// <see cref="http://www.balamb.pl/qh/kernel-pointers.htm"/>
-        private Dictionary<uint, Tuple<uint, uint, uint>> LocSTR;
+        internal Dictionary<uint, Tuple<uint, uint, uint>> Kernel_LocSTR
+        { get; private set; }
 
         private bool opened = false;
         private uint[] StringsLoc;
@@ -221,7 +222,7 @@ namespace FF8
             {
                 kernel_GetFileLocations(br);
 
-                LocSTR = new Dictionary<uint, Tuple<uint, uint, uint>> {
+                Kernel_LocSTR = new Dictionary<uint, Tuple<uint, uint, uint>> {
                     //working
                     {0, new Tuple<uint, uint, uint>(31,2,4) },
                     {1, new Tuple<uint, uint, uint>(32,2,56) },
@@ -257,9 +258,9 @@ namespace FF8
                     //if (pad || Array.IndexOf(StringsLoc, key) >= 0)
                     //    mngrp_get_string_offsets(br, fileID, key, pad);
                     //else
-                    if (LocSTR.ContainsKey(key))
+                    if (Kernel_LocSTR.ContainsKey(key))
                     {
-                        mngrp_get_string_BinMSG(br, fileID, key, files[fileID].subPositions[(int)(LocSTR[key].Item1)].seek, LocSTR[key].Item2, LocSTR[key].Item3);
+                        mngrp_get_string_BinMSG(br, fileID, key, files[fileID].subPositions[(int)(Kernel_LocSTR[key].Item1)].seek, Kernel_LocSTR[key].Item2, Kernel_LocSTR[key].Item3);
                     }
                     //else if (ComplexStr.ContainsKey(key))
                     //{
@@ -465,7 +466,7 @@ namespace FF8
             return fPaddings;
         }
 
-        private FF8String Read(FileID fileID, uint pos)
+        internal FF8String Read(FileID fileID, uint pos)
         {
             //switching archive make sure we are closed before opening another.
             if (aw != null || aw.GetPath() != ArchiveString || last != fileID)
@@ -475,7 +476,7 @@ namespace FF8
             return Read(localbr, fileID, pos);
         }
 
-        private FF8String Read(BinaryReader br, FileID fid, uint pos)
+        internal FF8String Read(BinaryReader br, FileID fid, uint pos)
         {
             if (pos == 0)
                 return new FF8String("");

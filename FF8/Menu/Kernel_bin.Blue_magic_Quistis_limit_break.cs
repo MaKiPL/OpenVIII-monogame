@@ -58,7 +58,7 @@ namespace FF8
                 //0x000F  1 byte Unknown
                 long current = br.BaseStream.Position;
 
-                br.BaseStream.Seek(Memory.Strings.Files[Strings.FileID.KERNEL].subPositions[Quistis_limit_break_parameters.id + Quistis_limit_break_parameters.size * i], SeekOrigin.Begin);
+                br.BaseStream.Seek(Memory.Strings.Files[Strings.FileID.KERNEL].subPositions[Quistis_limit_break_parameters.id] + Quistis_limit_break_parameters.size * i, SeekOrigin.Begin);
                 Crisis_Levels = new Quistis_limit_break_parameters[Quistis_limit_break_parameters.size];
                 for (i = 0; i < Quistis_limit_break_parameters.count; i++)
                     Crisis_Levels[i].Read(br, i);

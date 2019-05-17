@@ -158,8 +158,8 @@ namespace FF8
                 ms.Seek(subPositions[Blue_magic_Quistis_limit_break.id], SeekOrigin.Begin);
                 BluemagicQuistislimitbreak = Blue_magic_Quistis_limit_break.Read(br);
                 ms.Seek(subPositions[Quistis_limit_break_parameters.id], SeekOrigin.Begin);
-                Quistislimitbreakparameters = Quistis_limit_break_parameters.Read(br);
-                ms.Seek(subPositions[Shot_Irvine_limit_break.id], SeekOrigin.Begin);
+                //Quistislimitbreakparameters = Quistis_limit_break_parameters.Read(br);
+                //ms.Seek(subPositions[Shot_Irvine_limit_break.id], SeekOrigin.Begin);
                 ShotIrvinelimitbreak = Shot_Irvine_limit_break.Read(br);
                 ms.Seek(subPositions[Duel_Zell_limit_break.id], SeekOrigin.Begin);
                 DuelZelllimitbreak = Duel_Zell_limit_break.Read(br);
@@ -180,6 +180,6 @@ namespace FF8
                 ms.Seek(subPositions[Misc_text_pointers.id], SeekOrigin.Begin);
                 Misctextpointers = Misc_text_pointers.Read();
             }
-}
+        }
     }
 }

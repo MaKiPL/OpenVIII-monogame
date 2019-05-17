@@ -125,7 +125,7 @@ namespace FF8
                 }
                 for (int i = 0; i <= (int)Faces.ID.Edea_Kramer; i++)
                 {
-                    Characters[i].Read(br); // 0x04A0 -> 0x08C8 //152 bytes per 8 total
+                    Characters[i].Read(br,(Characters)i); // 0x04A0 -> 0x08C8 //152 bytes per 8 total
                     Characters[i].Name = Memory.Strings.GetName((Faces.ID)i,this);
                 }
                 int ShopCount = 400 / (16 + 1 + 3);

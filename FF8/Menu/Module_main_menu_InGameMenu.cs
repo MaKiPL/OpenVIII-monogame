@@ -547,11 +547,13 @@ namespace FF8
                     r.Width = 118;
                     r.Height = 1;
                     ITEM[pos, 4] = new IGMDataItem_Texture(_red_pixel, r) { Color = Color.Black };
+                    r.Width = (int)(r.Width * Memory.State.Characters[(int)character].PercentFullHP);
                     ITEM[pos, 5] = new IGMDataItem_Texture(_red_pixel, r) { Color = color };
 
                     r.Width = 118;
                     r.Offset(0, 2);
                     ITEM[pos, 6] = new IGMDataItem_Texture(_red_pixel, r) { Color = Color.Black };
+                    r.Width = (int)(r.Width* Memory.State.Characters[(int)character].PercentFullHP);
                     ITEM[pos, 7] = new IGMDataItem_Texture(_red_pixel, r) { Color = color };
                     //TODO red bar resizes based on current/max hp
 
@@ -630,10 +632,11 @@ namespace FF8
 
                             r = dims.Item3;
 
-                            num = Memory.State.Party[0] == character ||
-                                Memory.State.Party[1] == character && Memory.State.Party[0] == Saves.Characters.Blank ||
-                                Memory.State.Party[2] == character && Memory.State.Party[0] == Saves.Characters.Blank && Memory.State.Party[1] == Saves.Characters.Blank
-                                ? Memory.State.firstcharactersmaxHP : 0;
+                            //num = Memory.State.Party[0] == character ||
+                            //    Memory.State.Party[1] == character && Memory.State.Party[0] == Saves.Characters.Blank ||
+                            //    Memory.State.Party[2] == character && Memory.State.Party[0] == Saves.Characters.Blank && Memory.State.Party[1] == Saves.Characters.Blank
+                            //    ? Memory.State.firstcharactersmaxHP : 0;
+                            num = Memory.State.Characters[(int)character].MaxHP;
                             spaces = 4 - num.ToString().Length;
                             r.Offset((459 + spaces * 20), yoff);
                             ITEM[pos, 6] = new IGMDataItem_Int(num, r, 2, 0, 1);

@@ -28,6 +28,7 @@ namespace FF8
                 //0x0000	2 bytes Offset to name
                 Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
                 //0x0002	2 bytes Offset to description
+                br.BaseStream.Seek(4, SeekOrigin.Current);
                 AP = br.ReadByte();
                 //0x0004  1 byte AP needed to learn the ability
                 Stat = (Stat)br.ReadByte();
@@ -37,13 +38,14 @@ namespace FF8
                 Unknown0 = br.ReadByte();
                 //0x0007  1 byte Unknown/ Unused
             }
+
             internal static Stat_percent_abilities[] Read(BinaryReader br)
             {
-                var ret = new Stat_percent_abilities[count];
+                Stat_percent_abilities[] ret = new Stat_percent_abilities[count];
 
                 for (int i = 0; i < count; i++)
                 {
-                    var tmp = new Stat_percent_abilities();
+                    Stat_percent_abilities tmp = new Stat_percent_abilities();
                     tmp.Read(br, i);
                     ret[i] = tmp;
                 }

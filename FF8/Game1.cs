@@ -23,6 +23,7 @@ namespace FF8
         protected override void Initialize()
         {
             FFmpeg.AutoGen.Example.FFmpegBinariesHelper.RegisterFFmpegBinaries();
+            Input.Init();
             Memory.Init(graphics, spriteBatch, Content);
             init_debugger_Audio.Init(); //this initializes the DirectAudio, it's true that it gets loaded AFTER logo, but we will do the opposite
             init_debugger_Audio.Init_SoundAudio(); //this initalizes the WAVE format audio.dat

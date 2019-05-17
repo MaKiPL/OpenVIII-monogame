@@ -15,7 +15,9 @@ namespace FF8
             internal const int count = 11;
             private Saves.Characters char_id;
             internal FF8String Name => Memory.Strings.GetName((Faces.ID)char_id);
+
             public override string ToString() => Name;
+
             //internal ushort Offset; //0x0000; 2 bytes; Offset to character name
             //Squall and Rinoa have name offsets of 0xFFFF because their name is in the save game data rather than kernel.bin.
             /// <summary>
@@ -23,6 +25,7 @@ namespace FF8
             /// </summary>
             /// <see cref="https://finalfantasy.fandom.com/wiki/Crisis_Level#Crisis_Level"/>
             internal byte Crisis; //0x0002; 1 byte; Crisis level hp multiplier
+
             internal Gender Gender; //0x0003; 1 byte; Gender; 0x00 - Male 0x01 - Female
             internal byte LimitID; //0x0004; 1 byte; Limit Break ID
             internal byte LimitParam; //0x0005; 1 byte; Limit Break Param used for the power of each renzokuken hit before finisher
@@ -73,44 +76,37 @@ namespace FF8
             /// <param name="stat_bonus">Bonus integer based HP</param>
             /// <param name="percent_mod">50% = 50, 100%=100, etc</param>
             /// <returns></returns>
-            internal int HP(sbyte lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
-            {
-                return (((MagicData[MagicID].HP_J * magic_count) + stat_bonus + (lvl * _HP[0]) - ((10 * lvl * lvl) / _HP[1]) + _HP[2]) * percent_mod) / 100;
-            }
+            internal int HP(sbyte lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = 0) => 
+                (((MagicData[MagicID].HP_J * magic_count) + stat_bonus + (lvl * _HP[0]) - ((10 * lvl * lvl) / _HP[1]) + _HP[2]) * (percent_mod + _percent_mod)) / 100;
 
             internal int STR(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod, int weapon = 0)
-                => STR_VIT_MAG_SPR(_STR[0], _STR[1], _STR[2], _STR[3], lvl, MagicData[MagicID].STR_J, magic_count, stat_bonus, percent_mod,weapon);
+                => STR_VIT_MAG_SPR(_STR[0], _STR[1], _STR[2], _STR[3], lvl, MagicData[MagicID].STR_J, magic_count, stat_bonus, percent_mod, weapon);
+
             internal int VIT(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
                 => STR_VIT_MAG_SPR(_VIT[0], _VIT[1], _VIT[2], _VIT[3], lvl, MagicData[MagicID].VIT_J, magic_count, stat_bonus, percent_mod);
+
             internal int MAG(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
                 => STR_VIT_MAG_SPR(_MAG[0], _MAG[1], _MAG[2], _MAG[3], lvl, MagicData[MagicID].MAG_J, magic_count, stat_bonus, percent_mod);
+
             internal int SPR(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
                 => STR_VIT_MAG_SPR(_SPR[0], _SPR[1], _SPR[2], _SPR[3], lvl, MagicData[MagicID].SPR_J, magic_count, stat_bonus, percent_mod);
 
-            private int STR_VIT_MAG_SPR(int a, int b, int c, int d, int lvl, int magic_J_val, int magic_count, int stat_bonus, int percent_mod = _percent_mod, int UNK = 0)
-            {
-                return ((UNK + (magic_J_val * magic_count) / 100 + stat_bonus + ((lvl * a) / 10 + lvl / b - (lvl * lvl) / d / 2 + c) / 4) * percent_mod) / 100;
-            }
+            private int STR_VIT_MAG_SPR(int a, int b, int c, int d, int lvl, int magic_J_val, int magic_count, int stat_bonus, int percent_mod = 0, int UNK = 0) =>
+                ((UNK + (magic_J_val * magic_count) / 100 + stat_bonus + ((lvl * a) / 10 + lvl / b - (lvl * lvl) / d / 2 + c) / 4) * (percent_mod + _percent_mod)) / 100;
 
             internal int SPD(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
                 => SPD_LUCK(_SPD[0], _SPD[1], _SPD[2], _SPD[3], lvl, MagicData[MagicID].SPD_J, magic_count, stat_bonus, percent_mod);
+
             internal int LUCK(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
                 => SPD_LUCK(_LUCK[0], _LUCK[1], _LUCK[2], _LUCK[3], lvl, MagicData[MagicID].LUCK_J, magic_count, stat_bonus, percent_mod);
 
-            private int SPD_LUCK(int a, int b, int c, int d, int lvl, int magic_J_val, int magic_count, int stat_bonus, int percent_mod = _percent_mod, int UNK = 0)
-            {
-                return ((UNK + (magic_J_val * magic_count) / 100 + stat_bonus + lvl / b - lvl / d + lvl * a + c) * percent_mod) / 100;
-            }
+            private int SPD_LUCK(int a, int b, int c, int d, int lvl, int magic_J_val, int magic_count, int stat_bonus, int percent_mod = 0, int UNK = 0) =>
+                ((UNK + (magic_J_val * magic_count) / 100 + stat_bonus + lvl / b - lvl / d + lvl * a + c) * (percent_mod + _percent_mod)) / 100;
 
-            internal int EVA(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int spd=0, int percent_mod = _percent_mod)
-            {
-                return (((MagicData[MagicID].EVA_J * magic_count) / 100 + spd / 4) * percent_mod) / 100;
-            }
+            internal int EVA(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int spd = 0, int percent_mod = 0) =>
+                (((MagicData[MagicID].EVA_J * magic_count) / 100 + spd / 4) * (percent_mod + _percent_mod)) / 100;
 
-            internal int HIT(int MagicID = 0, int magic_count = 0, int weapon = 0)
-            {
-                return MagicData[MagicID].HIT_J * magic_count + weapon;
-            }
+            internal int HIT(int MagicID = 0, int magic_count = 0, int weapon = 0) => MagicData[MagicID].HIT_J * magic_count + weapon;
         }
     }
 }
