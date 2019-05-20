@@ -19,7 +19,7 @@
     /// Code bits mostly converted to c# from c++ It uses bits of code from FFmpeg examples, Aforge,
     /// FFmpeg.autogen, stackoverflow
     /// </remarks>
-    internal unsafe class Ffcc : IDisposable
+    public unsafe class Ffcc : IDisposable
     {
         #region Fields
 
@@ -55,7 +55,7 @@
         //private IntPtr _intPtr;
         private int _loopstart;
 
-        internal static string DataFileName;
+        public static string DataFileName;
 
         #endregion Fields
 
@@ -64,7 +64,7 @@
         /// <summary>
         /// Opens filename and init class.
         /// </summary>
-        internal Ffcc(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH, int loopstart = -1)
+        public Ffcc(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH, int loopstart = -1)
         {
             Init(filename, mediatype, mode, loopstart);
             if (mode == FfccMode.PROCESS_ALL)
@@ -81,20 +81,20 @@
         /// https://stackoverflow.com/questions/24758386/intptr-to-callback-function probably could
         /// be wrote better theres alot of hoops to jump threw
         /// </remarks>
-        //internal Ffcc(byte[] data, int length, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.PROCESS_ALL, int loopstart = -1)
+        //public Ffcc(byte[] data, int length, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.PROCESS_ALL, int loopstart = -1)
         //{
         //LoadFromRAM(data, length);
         //Init(null, mediatype, mode, loopstart);
         //}
 
-        //internal Ffcc(Buffer_Data* buffer_Data, string datafilename, AVMediaType mediatype, FfccMode mode, int loopstart = -1)
+        //public Ffcc(Buffer_Data* buffer_Data, string datafilename, AVMediaType mediatype, FfccMode mode, int loopstart = -1)
         //{
         //    DataFileName = datafilename;
         //    LoadFromRAM(buffer_Data);
         //    Init(null, mediatype, mode, loopstart);
         //}
 
-        internal Ffcc(Buffer_Data buffer_Data, byte[] headerData, string datafilename, int loopstart = -1)
+        public Ffcc(Buffer_Data buffer_Data, byte[] headerData, string datafilename, int loopstart = -1)
         {
             fixed (byte* tmp = &headerData[0])
             {
@@ -125,8 +125,8 @@
 
         #region Enums
 
-        //internal FileStream DecodeFileStream { get => _decodeFileStream; set => _decodeFileStream = value; }
-        internal enum FfccMode
+        //public FileStream DecodeFileStream { get => _decodeFileStream; set => _decodeFileStream = value; }
+        public enum FfccMode
         {
             /// <summary>
             /// Processes entire file at once and does something with output
@@ -145,7 +145,7 @@
             NOTINIT
         }
 
-        internal enum FfccState
+        public enum FfccState
         {
             OPEN,
 
@@ -208,7 +208,7 @@
         /// Are you ahead of target frame
         /// </summary>
         /// <returns>true if ahead</returns>
-        internal bool Ahead
+        public bool Ahead
         {
             get
             {
@@ -234,13 +234,13 @@
         /// Are you behind target frame
         /// </summary>
         /// <returns>true if behind</returns>
-        internal bool Behind => !Ahead && !Current;
+        public bool Behind => !Ahead && !Current;
 
         /// <summary>
         /// Are you on target frame
         /// </summary>
         /// <returns>true if correct frame</returns>
-        internal bool Current
+        public bool Current
         {
             get
             {
@@ -269,17 +269,17 @@
         /// <summary>
         /// Path and filename of file.
         /// </summary>
-        internal string DecodedFileName { get; private set; }
+        public string DecodedFileName { get; private set; }
 
         /// <summary>
         /// Dynamic Sound Effect Interface for class allows control out of class. Mode must be in STATE_MACH
         /// </summary>
-        internal DynamicSoundEffectInstance DynamicSound { get; private set; }
+        public DynamicSoundEffectInstance DynamicSound { get; private set; }
 
         /// <summary>
         /// True if file is open.
         /// </summary>
-        internal bool FileOpened { get; private set; }
+        public bool FileOpened { get; private set; }
 
         /// <summary>
         /// returns Frames per second or if that is 0. it will return the Time_Base ratio. This is
@@ -288,7 +288,7 @@
         /// example 1/44100. video files audio stream might be 1/100 or 1/1000. these can make for
         /// large durrations.
         /// </summary>
-        internal double FPS
+        public double FPS
         {
             get
             {
@@ -316,42 +316,42 @@
         /// <summary>
         /// When getting video frames if behind it goes to next frame. disabled for debugging purposes.
         /// </summary>
-        internal bool FrameSkip { get => MediaType == AVMediaType.AVMEDIA_TYPE_VIDEO ? _frameSkip : false; set => _frameSkip = value; }
+        public bool FrameSkip { get => MediaType == AVMediaType.AVMEDIA_TYPE_VIDEO ? _frameSkip : false; set => _frameSkip = value; }
 
         /// <summary>
         /// Is the class disposed of. If true calling Dispose() does nothing.
         /// </summary>
-        internal bool isDisposed { get; private set; } = false;
+        public bool isDisposed { get; private set; } = false;
 
         /// <summary>
         /// Sample count that loop starts from.
         /// </summary>
-        internal int LOOPSTART { get => _loopstart; set => _loopstart = value; }
+        public int LOOPSTART { get => _loopstart; set => _loopstart = value; }
 
         /// <summary>
         /// Current media type being processed.
         /// </summary>
-        internal AVMediaType MediaType { get; private set; }
+        public AVMediaType MediaType { get; private set; }
 
         /// <summary>
         /// Metadata container for tags.
         /// </summary>
-        internal Dictionary<String, String> Metadata { get; private set; } = new Dictionary<string, string>();
+        public Dictionary<String, String> Metadata { get; private set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// SoundEffect for class allows control out of class. Mode must be in PROCESS_ALL
         /// </summary>
-        internal SoundEffect SoundEffect { get; private set; }
+        public SoundEffect SoundEffect { get; private set; }
 
         /// <summary>
         /// SoundEffectInterface for class. allows for more control than just playing the above soundeffect.
         /// </summary>
-        internal SoundEffectInstance SoundEffectInstance { get; private set; }
+        public SoundEffectInstance SoundEffectInstance { get; private set; }
 
         /// <summary>
         /// Stopwatch tracks the time audio has played so video can sync or loops can be looped.
         /// </summary>
-        internal Stopwatch timer { get; } = new Stopwatch();
+        public Stopwatch timer { get; } = new Stopwatch();
 
         /// <summary>
         /// if there is no stream it returns false. only checked when trying to process audio
@@ -446,7 +446,7 @@
         /// <param name="avctx">Decoder Codec Context</param>
         /// <param name="avpkt">Decoder Packet</param>
         /// <returns>0 on success, less than 0 on error</returns>
-        internal static int DecodeFlush(ref AVCodecContext* avctx, ref AVPacket avpkt)
+        public static int DecodeFlush(ref AVCodecContext* avctx, ref AVPacket avpkt)
         {
             avpkt.data = null;
             avpkt.size = 0;
@@ -462,7 +462,7 @@
         /// </summary>
         /// <param name="frame">Current Decoded Frame</param>
         /// <returns>false if EOF, or true if grabbed frame</returns>
-        internal bool Decode(out AVFrame frame)
+        public bool Decode(out AVFrame frame)
         {
             do
             {
@@ -527,7 +527,7 @@ EOF:
         /// <summary>
         /// Same as Play but with a thread. Thread is terminated on Stop() or Dispose().
         /// </summary>
-        internal void PlayInTask(float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f)
+        public void PlayInTask(float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f)
         {
             if (sourceToken == null)
                 sourceToken = new CancellationTokenSource();
@@ -576,7 +576,7 @@ EOF:
         /// Attempts to get 1 frame of Video, or refill Audio buffer.
         /// </summary>
         /// <returns>Returns -1 if missing stream or returns AVERROR or returns 0 if no problem.</returns>
-        internal int Next()
+        public int Next()
         {
             //if stream doesn't exist or stream is done, end
             if (Decoder.StreamIndex == -1 || State == FfccState.DONE)
@@ -593,7 +593,7 @@ EOF:
         /// <summary>
         /// Pause or Resume timer. WIP
         /// </summary>
-        internal void Pause()
+        public void Pause()
         {
             if (Decoder.StreamIndex > -1)
             {
@@ -624,7 +624,7 @@ EOF:
         /// <param name="pan">
         /// Panning, ranging from -1.0 (left speaker) to 0.0 (centered), 1.0 (right speaker).
         /// </param>
-        internal void Play(float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f) // there are some videos without sound meh.
+        public void Play(float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f) // there are some videos without sound meh.
         {
             if (Decoder.StreamIndex > -1)
             {
@@ -653,7 +653,7 @@ EOF:
         /// <summary>
         /// Stop playing Sound or Stop the FPS timer for Video , and Dispose of Varibles
         /// </summary>
-        internal void Stop()
+        public void Stop()
         {
             if (stopped)
                 return;
@@ -693,7 +693,7 @@ EOF:
         /// Converts Frame to Texture with correct colorspace
         /// </summary>
         /// <returns>Texture2D</returns>
-        internal Texture2D Texture2D()
+        public Texture2D Texture2D()
         {
             lock (Decoder)
             {
@@ -1388,19 +1388,19 @@ EOF:
         /// <summary>
         /// Used only when reading ADPCM data from memory.
         /// </summary>
-        internal struct Buffer_Data
+        public struct Buffer_Data
         {
             #region Fields
 
-            internal IntPtr Header;
-            internal UInt32 HeaderSize;
+            public IntPtr Header;
+            public UInt32 HeaderSize;
 
-            internal void SetHeader(IntPtr value) => Header = value;
+            public void SetHeader(IntPtr value) => Header = value;
 
-            internal void SetHeader(byte* value) => Header = (IntPtr)value;
+            public void SetHeader(byte* value) => Header = (IntPtr)value;
 
-            internal UInt32 DataSeekLoc;
-            internal UInt32 DataSize;
+            public UInt32 DataSeekLoc;
+            public UInt32 DataSize;
 
             private unsafe int ReadHeader(byte* buf, int buf_size)
             {
@@ -1411,7 +1411,7 @@ EOF:
                     return ffmpeg.AVERROR_EOF;
                 }
 
-                // copy internal buffer data to buf
+                // copy public buffer data to buf
                 Buffer.MemoryCopy((void*)Header, (void*)buf, buf_size, buf_size);
                 Header += buf_size;
                 HeaderSize -= (uint)buf_size;
@@ -1434,7 +1434,7 @@ EOF:
                     {
                         using (UnmanagedMemoryStream ums = new UnmanagedMemoryStream(buf, buf_size, buf_size, FileAccess.Write))
                         {
-                            // copy internal buffer data to buf
+                            // copy public buffer data to buf
                             ums.Write(br.ReadBytes(buf_size), 0, buf_size);
                             DataSeekLoc += (uint)buf_size;
                             DataSize -= (uint)buf_size;
@@ -1445,7 +1445,7 @@ EOF:
                 }
             }
 
-            internal unsafe int Read(byte* buf, int buf_size)
+            public unsafe int Read(byte* buf, int buf_size)
             {
                 int ret;
                 if ((ret = ReadHeader(buf, buf_size)) != ffmpeg.AVERROR_EOF)

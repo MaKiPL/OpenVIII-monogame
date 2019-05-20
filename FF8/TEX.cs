@@ -12,7 +12,7 @@ namespace FF8
     /// </remarks>
     /// <see cref="https://github.com/MaKiPL/FF8-Rinoa-s-Toolset/blob/master/SerahToolkit_SharpGL/FF8_Core/TEX.cs"/>
     /// <seealso cref="https://github.com/myst6re/vincent-tim/blob/master/TexFile.cpp"/>
-    internal class TEX
+    public class TEX
     {
         #region Fields
 
@@ -20,7 +20,7 @@ namespace FF8
         /// Ratio needed to convert 16 bit to 32 bit color
         /// </summary>
         /// <seealso cref="https://github.com/myst6re/vincent-tim/blob/master/PsColor.h"/>
-        internal const double COEFF_COLOR = (double)255 / 31;
+        public const double COEFF_COLOR = (double)255 / 31;
 
         /// <summary>
         /// Raw data of TEX file
@@ -33,7 +33,7 @@ namespace FF8
 
         #region Constructors
 
-        internal TEX(byte[] buffer)
+        public TEX(byte[] buffer)
         {
             texture = new Texture();
             this.buffer = buffer;
@@ -47,7 +47,7 @@ namespace FF8
         /// <summary>
         /// Contains header info and Palette data of TEX file.
         /// </summary>
-        internal Texture TextureData => texture;  //added to get texturedata outside of class.
+        public Texture TextureData => texture;  //added to get texturedata outside of class.
 
         /// <summary>
         /// start of texture section
@@ -95,7 +95,7 @@ namespace FF8
         /// </summary>
         /// <param name="forcePalette">Desired Palette, see texture.NumOfPalettes. -1 is default.</param>
         /// <returns>32bit Texture2D</returns>
-        internal Texture2D GetTexture(int forcePalette = -1)
+        public Texture2D GetTexture(int forcePalette = -1)
         {
             uint ImageSizeBytes = texture.Width * texture.Height * 4;
             if (texture.PaletteFlag != 0)
@@ -185,7 +185,7 @@ namespace FF8
         /// <param name="useAlpha">area is visable or not</param>
         /// <returns>byte[4] red green blue alpha, i think</returns>
         /// <see cref="https://github.com/myst6re/vincent-tim/blob/master/PsColor.cpp"/>
-        internal static byte[] FromPsColor(ushort color, bool useAlpha = false) => new byte[] { (byte)Math.Round((color & 31) * COEFF_COLOR), (byte)Math.Round(((color >> 5) & 31) * COEFF_COLOR), (byte)Math.Round(((color >> 10) & 31) * COEFF_COLOR), (byte)(color == 0 && useAlpha ? 0 : 255) };
+        public static byte[] FromPsColor(ushort color, bool useAlpha = false) => new byte[] { (byte)Math.Round((color & 31) * COEFF_COLOR), (byte)Math.Round(((color >> 5) & 31) * COEFF_COLOR), (byte)Math.Round(((color >> 10) & 31) * COEFF_COLOR), (byte)(color == 0 && useAlpha ? 0 : 255) };
         #endregion Methods
 
         #region Structs
@@ -195,49 +195,49 @@ namespace FF8
         /// </summary>
         /// <see cref="https://github.com/MaKiPL/FF8-Rinoa-s-Toolset/blob/master/SerahToolkit_SharpGL/FF8_Core/TEX.cs"/>
         /// <seealso cref="https://github.com/myst6re/vincent-tim/blob/master/TexFile.h"/>
-        internal struct Texture
+        public struct Texture
         {
             #region Fields
             /// <summary>
             /// 0x68
             /// </summary>
-            internal byte bytesPerPixel;
+            public byte bytesPerPixel;
             /// <summary>
             /// 0x40
             /// </summary>
-            internal uint Height;
+            public uint Height;
             /// <summary>
             /// 0x30
             /// </summary>
-            internal byte NumOfPalettes;
+            public byte NumOfPalettes;
             /// <summary>
             /// 0xF0 for ff8;0xEC for ff7; size = PaletteSize * 4;
             /// </summary>
-            internal byte[] paletteData;
+            public byte[] paletteData;
             /// <summary>
             /// 0x4C
             /// </summary>
-            internal byte PaletteFlag;
+            public byte PaletteFlag;
             /// <summary>
             /// 0x58
             /// </summary>
-            internal uint PaletteSize;
+            public uint PaletteSize;
             /// <summary>
             /// 0x3C
             /// </summary>
-            internal uint Width;
+            public uint Width;
             /// <summary>
             /// 0x38
             /// </summary>
-            internal uint bitDepth;
+            public uint bitDepth;
             /// <summary>
             /// 0x34
             /// </summary>
-            internal uint NumOfColorsPerPalette;
+            public uint NumOfColorsPerPalette;
             /// <summary>
             /// 0x00; 1=FF7 | 2=FF8
             /// </summary>
-            internal uint Version;
+            public uint Version;
 
             #endregion Fields
         }
@@ -246,10 +246,10 @@ namespace FF8
         {
             #region Fields
 
-            internal byte Alpha;
-            internal byte Blue;
-            internal byte Green;
-            internal byte Red;
+            public byte Alpha;
+            public byte Blue;
+            public byte Green;
+            public byte Red;
 
             #endregion Fields
         }

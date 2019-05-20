@@ -1,10 +1,10 @@
 ﻿namespace FF8
 {
-    internal partial class Icons
+    public partial class Icons
     {
         #region Enums
 
-        internal new enum ID : ushort
+        public new enum ID : ushort
         {
             Finger_Right,
             Finger_Left,

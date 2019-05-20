@@ -16,7 +16,7 @@ namespace FF8
         /// <seealso cref="https://finalfantasy.fandom.com/wiki/Weapons_Monthly"/>
         /// <seealso cref="https://finalfantasy.fandom.com/wiki/Pet_Pals"/>
         /// <seealso cref="https://finalfantasy.fandom.com/wiki/Occult_Fan"/>
-        internal new enum ID
+        public new enum ID
         {
             //Weapons Monthly, 1st Issue
             Lion_Heart,

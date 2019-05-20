@@ -1,14 +1,14 @@
 ﻿namespace FF8
 {
 
-    internal struct Loc
+    public struct Loc
     {
-        internal uint seek;
+        public uint seek;
         /// <summary>
         /// sometimes there is more than one entry at a location each is 8 bytes
         /// </summary>
-        internal uint length;
-        internal uint max => seek + length;
+        public uint length;
+        public uint max => seek + length;
 
         public static bool operator !=(Loc a, Loc b) => a.seek != b.seek && a.length != b.length;
         public static bool operator ==(Loc a, Loc b) => a.seek == b.seek && a.length == b.length;

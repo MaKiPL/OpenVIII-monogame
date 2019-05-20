@@ -2,7 +2,7 @@
 
 namespace FF8
 {
-    internal sealed class LinuxGameLocationProvider : IGameLocationProvider
+    public sealed class LinuxGameLocationProvider : IGameLocationProvider
     {
         public GameLocation GetGameLocation()
         {

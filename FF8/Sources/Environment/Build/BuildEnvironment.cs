@@ -2,9 +2,9 @@
 
 namespace FF8
 {
-    internal static class BuildEnvironment
+    public static class BuildEnvironment
     {
-        internal static Boolean IsWindows
+        public static Boolean IsWindows
         {
             get
             {

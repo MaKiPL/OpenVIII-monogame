@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace FF8
 {
-    internal static partial class Module_main_menu_debug
+    public static partial class Module_main_menu_debug
     {
         #region Fields
 
@@ -50,7 +50,7 @@ namespace FF8
 
         #region Properties
 
-        internal static float blink_Amount
+        public static float blink_Amount
         {
             get => s_blink; private set
             {

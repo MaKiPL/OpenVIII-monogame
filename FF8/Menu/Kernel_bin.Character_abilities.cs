@@ -3,16 +3,16 @@ using System.IO;
 
 namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         /// <summary>
         /// Characters Abilities Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Character-abilities"/>
-        internal class Character_abilities
+        public class Character_abilities
         {
-            internal const int count = 20;
-            internal const int id = 14;
+            public const int count = 20;
+            public const int id = 14;
 
             public override string ToString() => Name;
 
@@ -21,7 +21,7 @@ namespace FF8
             public byte AP { get; private set; }
             public BitArray Flags { get; private set; }
 
-            internal void Read(BinaryReader br, int i)
+            public void Read(BinaryReader br, int i)
             {
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 //0x0000	2 bytes Offset to name
@@ -33,7 +33,7 @@ namespace FF8
                 Flags = new BitArray(br.ReadBytes(3));
                 //0x0005  3 byte Flags
             }
-            internal static Character_abilities[] Read(BinaryReader br)
+            public static Character_abilities[] Read(BinaryReader br)
             {
                 var ret = new Character_abilities[count];
 

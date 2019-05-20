@@ -2,16 +2,16 @@
 
 namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         /// <summary>
         /// Blue magic (Quistis limit break)
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Blue-magic-%28Quistis-limit-break%29"/>
-        internal class Blue_magic_Quistis_limit_break
+        public class Blue_magic_Quistis_limit_break
         {
-            internal const int count = 16;
-            internal const int id = 19;
+            public const int count = 16;
+            public const int id = 19;
 
             public override string ToString() => Name;
 
@@ -29,7 +29,7 @@ namespace FF8
             public byte Unknown3 { get; private set; }
             public Quistis_limit_break_parameters[] Crisis_Levels { get; private set; }
 
-            internal void Read(BinaryReader br, int i)
+            public void Read(BinaryReader br, int i)
             {
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 //0x0000	2 bytes Offset to name
@@ -64,7 +64,7 @@ namespace FF8
                     Crisis_Levels[i].Read(br, i);
                 br.BaseStream.Seek(current, SeekOrigin.Begin);
             }
-            internal static Blue_magic_Quistis_limit_break[] Read(BinaryReader br)
+            public static Blue_magic_Quistis_limit_break[] Read(BinaryReader br)
             {
                 var ret = new Blue_magic_Quistis_limit_break[count];
 

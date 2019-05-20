@@ -1,12 +1,12 @@
 ﻿namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         /// <summary>
         /// Command Ability
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Command-ability-data"/>
-        internal enum Command_ability
+        public enum Command_ability
         {
             Recover,
             Revive,

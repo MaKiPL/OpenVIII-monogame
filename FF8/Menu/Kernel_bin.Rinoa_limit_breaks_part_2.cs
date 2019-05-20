@@ -2,17 +2,17 @@
 
 namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         /// <summary>
         /// Rinoa limit breaks (part 2)
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Rinoa-limit-breaks-%28part-2%29"/>
-        internal class Rinoa_limit_breaks_part_2
+        public class Rinoa_limit_breaks_part_2
         {
-            internal const int count = 5; //wiki says 33
-            internal const int id = 25;
-            internal const int size = 20;
+            public const int count = 5; //wiki says 33
+            public const int id = 25;
+            public const int size = 20;
 
             public override string ToString() => Name;
 
@@ -31,7 +31,7 @@ namespace FF8
             public Statuses0 Statuses0 { get; private set; }
             public Statuses1 Statuses1 { get; private set; }
 
-            internal void Read(BinaryReader br,int i)
+            public void Read(BinaryReader br,int i)
             {
                 var offset = br.ReadUInt16();
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, Memory.Strings.Files[Strings.FileID.KERNEL].subPositions[(int)Memory.Strings.Kernel_LocSTR[id].Item1]+offset);
@@ -64,7 +64,7 @@ namespace FF8
                 Statuses1 = (Statuses1)br.ReadUInt32();
                 //0x0010  4 bytes status_1; //statuses 8-39
             }
-            internal static Rinoa_limit_breaks_part_2[] Read(BinaryReader br)
+            public static Rinoa_limit_breaks_part_2[] Read(BinaryReader br)
             {
                 var ret = new Rinoa_limit_breaks_part_2[count];
 

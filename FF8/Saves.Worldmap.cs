@@ -2,13 +2,13 @@
 
 namespace FF8
 {
-    internal static partial class Saves
+    public static partial class Saves
     {
         /// <summary>
         /// Worldmap vars for savegame
         /// </summary>
         /// <see cref="https://github.com/myst6re/hyne/blob/master/SaveData.h"/>
-        internal struct Worldmap
+        public struct Worldmap
         {
             private short[] char_pos;// x z y ? ? rot(0->4095)
             private short[] uknown_pos1;
@@ -44,7 +44,7 @@ namespace FF8
              */
             private byte[] u6;
 
-            internal void Read(BinaryReader br)
+            public void Read(BinaryReader br)
             {
                 char_pos = new short[6]; for (int i = 0; i < char_pos.Length; i++) char_pos[i] = br.ReadInt16();// x z y ? ? rot(0->4095)
                 uknown_pos1 = new short[6]; for (int i = 0; i < uknown_pos1.Length; i++) uknown_pos1[i] = br.ReadInt16();

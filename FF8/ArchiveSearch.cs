@@ -9,7 +9,7 @@ namespace FF8
 {
     class ArchiveSearch
     {
-        internal List<Tuple<string, string, long>> results = new List<Tuple<string, string, long>>();
+        public List<Tuple<string, string, long>> results = new List<Tuple<string, string, long>>();
         static readonly string[] ArchiveList = new string[]
         {
             Memory.Archives.A_MENU,
@@ -19,7 +19,7 @@ namespace FF8
             //Memory.Archives.A_WORLD,
             //Memory.Archives.A_BATTLE,
         };
-        internal ArchiveSearch(FF8String searchstring)
+        public ArchiveSearch(FF8String searchstring)
         {
             byte[] s = searchstring;
             foreach (string a in ArchiveList)

@@ -5,20 +5,20 @@ using System.Collections.Generic;
 
 namespace FF8
 {
-    internal class EntryGroup : IEnumerator, IEnumerable
+    public class EntryGroup : IEnumerator, IEnumerable
     {
         #region Fields
 
         private List<Entry> list;
         private Rectangle rectangle;
 
-        internal EntryGroup(int capacity = 1)
+        public EntryGroup(int capacity = 1)
         {
             list = new List<Entry>(capacity);
             rectangle = new Rectangle();
         }
 
-        internal EntryGroup(params Entry[] entries)
+        public EntryGroup(params Entry[] entries)
         {
             list = new List<Entry>(entries.Length);
             rectangle = new Rectangle();
@@ -27,12 +27,12 @@ namespace FF8
         #endregion Fields
 
         #region Properties
-        internal int Count => list.Count;
-        internal int Height { get => rectangle.Height; private set => rectangle.Height = value; }
+        public int Count => list.Count;
+        public int Height { get => rectangle.Height; private set => rectangle.Height = value; }
 
-        internal int Width { get => rectangle.Width; private set => rectangle.Width = value; }
+        public int Width { get => rectangle.Width; private set => rectangle.Width = value; }
 
-        internal Rectangle GetRectangle => rectangle;
+        public Rectangle GetRectangle => rectangle;
 
         public object Current
         {
@@ -48,7 +48,7 @@ namespace FF8
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        internal Entry this[int id] => list[id]; /*set { if (list.Count - 1 < id) Add(value); else list[id] = value; }*/
+        public Entry this[int id] => list[id]; /*set { if (list.Count - 1 < id) Add(value); else list[id] = value; }*/
 
         #endregion Indexers
 
@@ -57,7 +57,7 @@ namespace FF8
         private Vector2 nag_Offset = new Vector2();
         private Vector2 pos_Offset = new Vector2();
 
-        internal void Add(params Entry[] entries)
+        public void Add(params Entry[] entries)
         {
             foreach (Entry entry in entries)
             {
@@ -92,17 +92,17 @@ namespace FF8
             }
         }
 
-        internal static Vector2 Abs(Vector2 v2) => new Vector2(Math.Abs(v2.X), Math.Abs(v2.Y));
+        public static Vector2 Abs(Vector2 v2) => new Vector2(Math.Abs(v2.X), Math.Abs(v2.Y));
 
-        internal static Point RoundedPoint(Vector2 v) => v.RoundedPoint();
+        public static Point RoundedPoint(Vector2 v) => v.RoundedPoint();
 
-        internal void Draw(List<TextureHandler> textures, int pallet, Rectangle inputdst, Vector2 inscale, float fade = 1f) =>
+        public void Draw(List<TextureHandler> textures, int pallet, Rectangle inputdst, Vector2 inscale, float fade = 1f) =>
             Draw(textures, list, pallet, inputdst, inscale, fade, new Point(Width, Height));
-        internal static int GetChange(int tot,int goal, float scale = 1f)
+        public static int GetChange(int tot,int goal, float scale = 1f)
         {
            return (int) Math.Round(Math.Abs(tot* scale - goal));
         }
-        internal static void Draw(List<TextureHandler> textures,List<Entry> elist, int pallet, Rectangle inputdst, Vector2 inscale, float fade, Point totalSize)
+        public static void Draw(List<TextureHandler> textures,List<Entry> elist, int pallet, Rectangle inputdst, Vector2 inscale, float fade, Point totalSize)
         {
             Rectangle dst;
             inscale = Abs(inscale);

@@ -6,9 +6,9 @@ using System.Linq;
 
 namespace FF8
 {
-    internal static class Module_overture_debug
+    public static class Module_overture_debug
     {
-        private static OvertureInternalModule internalModule = OvertureInternalModule._4Squaresoft;
+        private static OverturepublicModule publicModule = OverturepublicModule._4Squaresoft;
         private static ArchiveWorker aw;
         private const string names = "name";
         private const string loops = "loop";
@@ -16,7 +16,7 @@ namespace FF8
         private static Texture2D splashTex = null;
         private static Texture2D white=null;
 
-        enum OvertureInternalModule
+        enum OverturepublicModule
         {
             _0InitSound,
             _1WaitBeforeFirst,
@@ -25,7 +25,7 @@ namespace FF8
             _4Squaresoft
         }
 
-        private static double internalTimer;
+        private static double publicTimer;
         private static bool bNames = true; //by default we are starting with names
         private static int splashIndex, splashName = 1, splashLoop = 1;
 
@@ -33,7 +33,7 @@ namespace FF8
         private static bool bWaitingSplash, bFadingOut;
         private static float fSplashWait, Fade;
 
-        internal static void Update()
+        public static void Update()
         {
             if (Input.Button(Buttons.Okay) || Input.Button(Buttons.Cancel) || Input.Button(Keys.Space))
             {
@@ -46,26 +46,26 @@ namespace FF8
                 if (white != null && !white.IsDisposed)
                     white.Dispose();
             }
-            switch (internalModule)
+            switch (publicModule)
             {
-                case OvertureInternalModule._0InitSound:
+                case OverturepublicModule._0InitSound:
                     InitSound();
                     break;
-                case OvertureInternalModule._1WaitBeforeFirst:
+                case OverturepublicModule._1WaitBeforeFirst:
                     Memory.SuppressDraw = true;
                     WaitForFirst();
                     break;
-                case OvertureInternalModule._2PlaySequence:
+                case OverturepublicModule._2PlaySequence:
                     SplashUpdate(ref splashIndex);
                     break;
             }
         }
 
 
-        internal static void ResetModule()
+        public static void ResetModule()
         {
-            internalModule = 0;
-            internalTimer = 0.0f;
+            publicModule = 0;
+            publicTimer = 0.0f;
             bFadingIn = true;
             bWaitingSplash = false;
             fSplashWait = 0.0f;
@@ -73,18 +73,18 @@ namespace FF8
             Fade = 0;
             Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
             Memory.module = Memory.MODULE_OVERTURE_DEBUG;
-            internalModule = OvertureInternalModule._4Squaresoft;
+            publicModule = OverturepublicModule._4Squaresoft;
             Module_movie_test.ReturnState = Memory.MODULE_OVERTURE_DEBUG;
             aw = null; // was getting exception when running the overture again as the aw target changed.
         }
         private static void WaitForFirst()
         {
-            if (internalTimer > 6.0f)
+            if (publicTimer > 6.0f)
             {
-                internalModule++;
+                publicModule++;
                 Console.WriteLine("MODULE_OVERTURE: DEBUG MODULE 2");
             }
-            internalTimer += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0d;
+            publicTimer += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0d;
 
         }
         private static void InitSound()
@@ -103,25 +103,25 @@ namespace FF8
                 whiteBuffer[i] = 255;
             }
 
-            internalModule++;
+            publicModule++;
         }
-        internal static void Draw()
+        public static void Draw()
         {
-            switch (internalModule)
+            switch (publicModule)
             {
-                case OvertureInternalModule._0InitSound:
-                case OvertureInternalModule._1WaitBeforeFirst:
+                case OverturepublicModule._0InitSound:
+                case OverturepublicModule._1WaitBeforeFirst:
                     Memory.graphics.GraphicsDevice.Clear(Color.Black);
                     break;
-                case OvertureInternalModule._2PlaySequence:
+                case OverturepublicModule._2PlaySequence:
                     Memory.graphics.GraphicsDevice.Clear(Color.Black);
                     DrawSplash();
                     break; //actually this is our entry point for draw;
-                case OvertureInternalModule._3SequenceFinishedPlayMainMenu:
+                case OverturepublicModule._3SequenceFinishedPlayMainMenu:
                     DrawLogo(); //after this ends, jump into main menu module
                     break;
-                case OvertureInternalModule._4Squaresoft:
-                    internalModule = OvertureInternalModule._0InitSound;
+                case OverturepublicModule._4Squaresoft:
+                    publicModule = OverturepublicModule._0InitSound;
                     Module_movie_test.Index = 103;//103;
                     Module_movie_test.ReturnState = Memory.MODULE_OVERTURE_DEBUG;
                     Memory.module = Memory.MODULE_MOVIETEST;
@@ -163,10 +163,10 @@ namespace FF8
             }
             if (bFadingIn && Fade > 1.0f && !bWaitingSplash)
             {
-                internalTimer += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
+                publicTimer += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
             }
 
-            if (internalTimer > 5.0f)
+            if (publicTimer > 5.0f)
             {
                 bWaitingSplash = true;
                 bFadingOut = true;
@@ -199,7 +199,7 @@ namespace FF8
             Memory.SpriteBatchEnd();
         }
 
-        internal static void SplashUpdate(ref int _splashIndex)
+        public static void SplashUpdate(ref int _splashIndex)
         {
             if (aw == null)
             {
@@ -228,9 +228,9 @@ namespace FF8
                     bFadingIn = false;
                     bFadingOut = true;
                     bWaitingSplash = false;
-                    internalTimer = 0.0f;
+                    publicTimer = 0.0f;
                     Fade = 1.0f;
-                    internalModule++;
+                    publicModule++;
                     return;
                 }
                 Fade -= Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 2f;
@@ -286,7 +286,7 @@ namespace FF8
 
 
         //Splash is 640x400 16BPP typical TIM with palette of ggg bbbbb a rrrrr gg
-        internal static void ReadSplash(bool bLogo = false)
+        public static void ReadSplash(bool bLogo = false)
         {
             if (!bLogo)
             {

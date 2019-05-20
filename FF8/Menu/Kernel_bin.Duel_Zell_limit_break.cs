@@ -2,18 +2,18 @@
 
 namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         /// <summary>
         /// Duel (Zell limit break)
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Duel-%28Zell-limit-break%29"/>
         /// <seealso cref="https://finalfantasy.fandom.com/wiki/Duel"/>
-        internal class Duel_Zell_limit_break
+        public class Duel_Zell_limit_break
         {
-            internal const int count = 10;
-            internal const int id = 22;
-            internal const int size = 32;
+            public const int count = 10;
+            public const int id = 22;
+            public const int size = 32;
 
             public override string ToString() => Name;
 
@@ -34,7 +34,7 @@ namespace FF8
             public Statuses0 Statuses0 { get; private set; }
             public Statuses1 Statuses1 { get; private set; }
 
-            internal void Read(BinaryReader br, int i)
+            public void Read(BinaryReader br, int i)
             {
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 //0x0000	2 bytes Offset to name
@@ -80,7 +80,7 @@ namespace FF8
                 Statuses1 = (Statuses1)br.ReadUInt32();
                 //0x001C  4 bytes status_1; //statuses 8-39
             }
-            internal static Duel_Zell_limit_break[] Read(BinaryReader br)
+            public static Duel_Zell_limit_break[] Read(BinaryReader br)
             {
                 var ret = new Duel_Zell_limit_break[count];
 

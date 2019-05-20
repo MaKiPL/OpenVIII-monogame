@@ -2,17 +2,17 @@
 
 namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         /// <summary>
         /// Devour Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Devour"/>
-        internal class Devour
+        public class Devour
         {
-            internal const int count = 16;
-            internal const int id = 28;
-            internal const int size = 12;
+            public const int count = 16;
+            public const int id = 28;
+            public const int size = 12;
 
             public override string ToString() => Description;
 
@@ -29,7 +29,7 @@ namespace FF8
             private StatFlags StatFlags { get; set; }
             public byte HP { get; private set; }
 
-            internal void Read(BinaryReader br, int i)
+            public void Read(BinaryReader br, int i)
             {
                 Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i);
                 br.BaseStream.Seek(2, SeekOrigin.Current);
@@ -71,7 +71,7 @@ namespace FF8
                 HP = br.ReadByte();
                 //0x000B  1 byte Raised Stat HP Quantity
             }
-            internal static Devour[] Read(BinaryReader br)
+            public static Devour[] Read(BinaryReader br)
             {
                 var ret = new Devour[count];
 

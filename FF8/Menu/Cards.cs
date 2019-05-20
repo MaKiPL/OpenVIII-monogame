@@ -1,6 +1,6 @@
 ﻿namespace FF8
 {
-    internal partial class Cards : SP2
+    public partial class Cards : SP2
     {
         #region Constructors
 
@@ -9,7 +9,7 @@
         /// tim files.
         /// </summary>
         /// <seealso cref="http://forums.qhimm.com/index.php?topic=11084.0"/>
-        internal Cards()
+        public Cards()
         {
             TextureCount[0] = 10;
             TextureFilename[0] = "mc{0:00}.tex";

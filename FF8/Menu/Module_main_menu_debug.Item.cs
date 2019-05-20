@@ -2,7 +2,7 @@
 
 namespace FF8
 {
-    internal static partial class Module_main_menu_debug
+    public static partial class Module_main_menu_debug
     {
         #region Structs
 
@@ -13,9 +13,9 @@ namespace FF8
         {
             #region Properties
 
-            internal Rectangle Loc { get; set; }
-            internal Point Point { get; set; }
-            internal FF8String Text { get; set; }
+            public Rectangle Loc { get; set; }
+            public Point Point { get; set; }
+            public FF8String Text { get; set; }
 
             public override string ToString() => Text.ToString();
 

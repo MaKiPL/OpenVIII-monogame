@@ -2,14 +2,14 @@
 
 namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         /// <summary>
         /// Target info
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/blob/master/Doomtrain/MainForm.cs"/>
         [Flags]
-        internal enum Target
+        public enum Target
         {
             Dead = 0x01,
             UNK02 = 02,

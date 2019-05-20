@@ -37,7 +37,7 @@ namespace FF8.MonoGame
                at FF8.Game1..ctor()
                at FF8.Program.Main()
      */
-    internal sealed class OpenALWindowsHook : IMonoGameHook
+    public sealed class OpenALWindowsHook : IMonoGameHook
     {
         public void Initialize()
         {
@@ -93,7 +93,7 @@ namespace FF8.MonoGame
             return library;
         }
 
-        internal static Object RequireFunction(IntPtr library, String function, Type delegateType)
+        public static Object RequireFunction(IntPtr library, String function, Type delegateType)
         {
             IntPtr ptr = WinAPI.GetProcAddress(library, function);
             if (ptr == IntPtr.Zero)
@@ -105,10 +105,10 @@ namespace FF8.MonoGame
         private static class WinAPI
         {
             [DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
-            internal static extern IntPtr LoadLibraryW(String lpszLib);
+            public static extern IntPtr LoadLibraryW(String lpszLib);
 
             [DllImport("kernel32", CharSet = CharSet.Ansi /* GetProcAddress doesn't have an Unicode version. */, SetLastError = true)]
-            internal static extern IntPtr GetProcAddress(IntPtr hModule, String procName);
+            public static extern IntPtr GetProcAddress(IntPtr hModule, String procName);
         }
 
         // ReSharper disable StringLiteralTypo

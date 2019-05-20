@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace FF8
 {
-    internal static partial class Module_main_menu_debug
+    public static partial class Module_main_menu_debug
     {
         #region Fields
 

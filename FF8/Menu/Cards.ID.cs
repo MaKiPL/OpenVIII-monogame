@@ -1,10 +1,10 @@
 ﻿namespace FF8
 {
-    internal partial class Cards
+    public partial class Cards
     {
         #region Enums
 
-        internal new enum ID
+        public new enum ID
         {
             //Level 1
             Geezard,

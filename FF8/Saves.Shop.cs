@@ -2,9 +2,9 @@
 
 namespace FF8
 {
-    internal static partial class Saves
+    public static partial class Saves
     {
-        internal struct Shop
+        public struct Shop
         {
             #region Fields
 
@@ -20,7 +20,7 @@ namespace FF8
 
             #region Methods
 
-            internal void Read(BinaryReader br)
+            public void Read(BinaryReader br)
             {//20
                 items = br.ReadBytes(16);
                 visited = br.ReadByte();

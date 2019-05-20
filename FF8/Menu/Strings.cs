@@ -10,7 +10,7 @@ namespace FF8
     /// <summary>
     /// Loads strings from FF8 files
     /// </summary>
-    internal class Strings
+    public class Strings
     {
         #region Fields
 
@@ -31,22 +31,22 @@ namespace FF8
         /// Colly's list of string pointers. Adapted. Some strings might be missing.
         /// </summary>
         /// <see cref="http://www.balamb.pl/qh/kernel-pointers.htm"/>
-        internal Dictionary<uint, Tuple<uint, uint, uint>> Kernel_LocSTR
+        public Dictionary<uint, Tuple<uint, uint, uint>> Kernel_LocSTR
         { get; private set; }
 
         private bool opened = false;
         private uint[] StringsLoc;
         private uint[] StringsPadLoc;
 
-        internal Dictionary<FileID, Stringfile> Files { get => files; }
+        public Dictionary<FileID, Stringfile> Files { get => files; }
 
-        internal string[] Filenames => filenames;
+        public string[] Filenames => filenames;
 
         #endregion Fields
 
         #region Constructors
 
-        internal Strings() => init();
+        public Strings() => init();
 
         #endregion Constructors
 
@@ -55,7 +55,7 @@ namespace FF8
         /// <summary>
         /// filenames of files with strings and id's for structs that hold the data.
         /// </summary>
-        internal enum FileID : uint
+        public enum FileID : uint
         {
             MNGRP = 0,
 
@@ -72,7 +72,7 @@ namespace FF8
         /// <summary>
         /// Todo make an enum to id every section.
         /// </summary>
-        internal enum SectionID : uint
+        public enum SectionID : uint
         {
             tkmnmes1 = 0,
             tkmnmes2 = 1,
@@ -83,7 +83,7 @@ namespace FF8
 
         #region Methods
 
-        internal void Close()
+        public void Close()
         {
             if (opened)
             {
@@ -93,7 +93,7 @@ namespace FF8
             }
         }
 
-        internal void Dump(FileID fileID, string path)
+        public void Dump(FileID fileID, string path)
         {
             GetAW(fileID);
             using (FileStream fs = File.Create(path))
@@ -133,7 +133,7 @@ namespace FF8
             }
         }
 
-        internal void GetAW(FileID fileID, bool force = false)
+        public void GetAW(FileID fileID, bool force = false)
         {
             switch (fileID)
             {
@@ -153,7 +153,7 @@ namespace FF8
                 aw = new ArchiveWorker(ArchiveString);
         }
 
-        internal void Open(FileID fileID)
+        public void Open(FileID fileID)
         {
             if (opened)
                 throw new Exception("Must close before opening again");
@@ -174,7 +174,7 @@ namespace FF8
             last = fileID;
         }
 
-        //internal byte[] Read(FileID fileID, SectionID sectionID, int stringID) => Read(fileID, (int)sectionID, stringID);
+        //public byte[] Read(FileID fileID, SectionID sectionID, int stringID) => Read(fileID, (int)sectionID, stringID);
         /// <summary>
         /// Remember to Close() if done using
         /// </summary>
@@ -182,7 +182,7 @@ namespace FF8
         /// <param name="sectionID"></param>
         /// <param name="stringID"></param>
         /// <returns></returns>
-        internal FF8String Read(FileID fileID, int sectionID, int stringID)
+        public FF8String Read(FileID fileID, int sectionID, int stringID)
         {
             switch (fileID)
             {
@@ -466,7 +466,7 @@ namespace FF8
             return fPaddings;
         }
 
-        internal FF8String Read(FileID fileID, uint pos)
+        public FF8String Read(FileID fileID, uint pos)
         {
             //switching archive make sure we are closed before opening another.
             if (aw != null || aw.GetPath() != ArchiveString || last != fileID)
@@ -476,7 +476,7 @@ namespace FF8
             return Read(localbr, fileID, pos);
         }
 
-        internal FF8String Read(BinaryReader br, FileID fid, uint pos)
+        public FF8String Read(BinaryReader br, FileID fid, uint pos)
         {
             if (pos == 0)
                 return new FF8String("");
@@ -517,7 +517,7 @@ namespace FF8
                 mngrp_get_string_offsets(br, fileID, 0);
             }
         }
-        internal FF8String GetName(Faces.ID id, Saves.Data d = null )
+        public FF8String GetName(Faces.ID id, Saves.Data d = null )
         {
             if (d == null)
                 d = Memory.State;

@@ -7,7 +7,7 @@ namespace FF8
     /// <summary>
     /// This holds the encoded bytes and provides implict casts to string and byte[]
     /// </summary>
-    internal class FF8String : IEnumerator, IEnumerable
+    public class FF8String : IEnumerator, IEnumerable
     {
         #region Fields
 
@@ -18,28 +18,28 @@ namespace FF8
 
         #region Constructors
 
-        internal FF8String()
+        public FF8String()
         {
         }
 
-        internal FF8String(byte[] @value) => Value = @value;
+        public FF8String(byte[] @value) => Value = @value;
 
-        internal FF8String(string @value) => Value = Memory.DirtyEncoding.GetBytes(@value);
+        public FF8String(string @value) => Value = Memory.DirtyEncoding.GetBytes(@value);
 
         #endregion Constructors
 
         #region Properties
 
-        internal byte[] Value { get => value; set => this.value = value; }
-        internal string Value_str => ToString();
-        internal int Length => value==null? 0:value.Length;
+        public byte[] Value { get => value; set => this.value = value; }
+        public string Value_str => ToString();
+        public int Length => value==null? 0:value.Length;
         public object Current { get => Value[position-1] ; }
 
         #endregion Properties
 
         #region Indexers
 
-        internal byte this[int index] => value[index];
+        public byte this[int index] => value[index];
 
         #endregion Indexers
 
@@ -68,7 +68,7 @@ namespace FF8
 
         public void Reset() => position = 0;
         public IEnumerator GetEnumerator() => this;
-        internal FF8String Append(FF8String end)
+        public FF8String Append(FF8String end)
         {
             if (end != null && end.Length > 0)
             {
@@ -78,7 +78,7 @@ namespace FF8
             return this;
         }
 
-        internal static FF8String Combine(FF8String start,FF8String end)
+        public static FF8String Combine(FF8String start,FF8String end)
         {
             if (end != null && end.Length > 0)
             {
@@ -90,7 +90,7 @@ namespace FF8
             else
             return start;
         }
-        internal FF8String ReplaceRegion()
+        public FF8String ReplaceRegion()
         {
             int i = 0;
             do

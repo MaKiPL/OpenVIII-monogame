@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace FF8
 {
-    internal static class ModuleHandler
+    public static class ModuleHandler
     {
         private static int module = Memory.module;
         private static int lastModule = Memory.module;
 
-        internal static void Update(GameTime gameTime)
+        public static void Update(GameTime gameTime)
         {
             if (lastModule != module)
             {
@@ -69,7 +69,7 @@ namespace FF8
             }
         }
 
-        internal static void Draw(GameTime gameTime)
+        public static void Draw(GameTime gameTime)
         {
             switch (module)
             {
@@ -106,7 +106,7 @@ namespace FF8
             }
         }
 
-        internal static void ResetBS()
+        public static void ResetBS()
             => Module_battle_debug.ResetState();
     }
 }

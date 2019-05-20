@@ -3,16 +3,16 @@ using System.IO;
 
 namespace FF8
 {
-    internal sealed class HardcodedGameLocationProvider
+    public sealed class HardcodedGameLocationProvider
     {
         private readonly String[] _knownPaths;
 
-        internal HardcodedGameLocationProvider(String[] knownPaths)
+        public HardcodedGameLocationProvider(String[] knownPaths)
         {
             _knownPaths = knownPaths ?? throw new ArgumentNullException(nameof(knownPaths));
         }
 
-        internal Boolean FindGameLocation(out GameLocation gameLocation)
+        public Boolean FindGameLocation(out GameLocation gameLocation)
         {
             using (var errors = new ExceptionList())
             {

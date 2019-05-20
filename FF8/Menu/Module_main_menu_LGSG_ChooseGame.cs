@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace FF8
 {
-    internal static partial class Module_main_menu_debug
+    public static partial class Module_main_menu_debug
     {
 
         private static void DrawLGSGChooseBlocks()
@@ -374,7 +374,7 @@ namespace FF8
         private static sbyte _blockLoc;
 
         private static sbyte blockpage;
-        internal static sbyte Blockpage
+        public static sbyte Blockpage
         {
             get => blockpage; set
             {

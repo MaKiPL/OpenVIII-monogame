@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace FF8
 {
-    internal static partial class Module_main_menu_debug
+    public static partial class Module_main_menu_debug
     {
         #region Fields
 
@@ -46,7 +46,7 @@ namespace FF8
 
         #region Properties
 
-        internal static float vpSpace { get; private set; }
+        public static float vpSpace { get; private set; }
         private static float Fade { get => fade; set => fade = value; }
 
         private static Dictionary<Enum, Item> strLoadScreen { get; set; }
@@ -67,7 +67,7 @@ namespace FF8
         /// <summary>
         /// Trigger required draw function.
         /// </summary>
-        internal static void Draw()
+        public static void Draw()
         {
             Memory.graphics.GraphicsDevice.Clear(Color.Black);
             lastfade = fade;
@@ -105,7 +105,7 @@ namespace FF8
         /// <summary>
         /// Triggers functions depending on state
         /// </summary>
-        internal static void Update()
+        public static void Update()
         {
             if (blinkstate)
                 blink_Amount += Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
@@ -209,7 +209,7 @@ namespace FF8
         /// <summary>
         /// Init
         /// </summary>
-        internal static void Init()
+        public static void Init()
         {
             InitMain();
             InitLoad();

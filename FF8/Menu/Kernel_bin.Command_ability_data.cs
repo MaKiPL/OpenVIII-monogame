@@ -3,16 +3,16 @@ using System.IO;
 
 namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         /// <summary>
         /// Command Abilities Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Command-ability-data"/>
-        internal class Command_ability_data
+        public class Command_ability_data
         {
-            internal const int count = 12;
-            internal const int id = 10;
+            public const int count = 12;
+            public const int id = 10;
 
             public Magic_ID MagicID { get; private set; }
             public byte[] Unknown0 { get; private set; }
@@ -25,7 +25,7 @@ namespace FF8
             public Statuses0 Statuses0 { get; private set; }
             public Statuses1 Statuses1 { get; private set; }
 
-            internal static Dictionary<Command_ability, Command_ability_data> Read(BinaryReader br)
+            public static Dictionary<Command_ability, Command_ability_data> Read(BinaryReader br)
             {
                 var ret = new Dictionary<Command_ability, Command_ability_data>(count);
 
@@ -38,7 +38,7 @@ namespace FF8
                 return ret;
             }
 
-            internal void Read(BinaryReader br, int i)
+            public void Read(BinaryReader br, int i)
             {
                 MagicID = (Magic_ID)br.ReadUInt16();
                 //0x0000  2 bytes Magic ID

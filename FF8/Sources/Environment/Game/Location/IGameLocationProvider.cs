@@ -1,6 +1,6 @@
 ﻿namespace FF8
 {
-    internal interface IGameLocationProvider
+    public interface IGameLocationProvider
     {
         GameLocation GetGameLocation();
     }

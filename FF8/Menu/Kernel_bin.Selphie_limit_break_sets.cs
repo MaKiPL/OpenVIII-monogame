@@ -2,21 +2,21 @@
 
 namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         /// <summary>
         /// Slot Sets Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Selphie-limit-break-sets"/>
         /// <seealso cref="https://finalfantasy.fandom.com/wiki/Slots_(ability_type)#Final_Fantasy_VIII"/>
-        internal class Selphie_limit_break_sets
+        public class Selphie_limit_break_sets
         {
-            internal const int count = 16;
-            internal const int id = 27;
-            internal const int size = 16;
-            internal Slot[] Slots { get; private set; }
+            public const int count = 16;
+            public const int id = 27;
+            public const int size = 16;
+            public Slot[] Slots { get; private set; }
 
-            internal void Read(BinaryReader br, int i)
+            public void Read(BinaryReader br, int i)
             {
                 Slots = new Slot[8];
                 for (int s = 0; s < 8; s++)
@@ -24,7 +24,7 @@ namespace FF8
                     Slots[s].Read(br, s);
                 }
             }
-            internal static Selphie_limit_break_sets[] Read(BinaryReader br)
+            public static Selphie_limit_break_sets[] Read(BinaryReader br)
             {
                 var ret = new Selphie_limit_break_sets[count];
 

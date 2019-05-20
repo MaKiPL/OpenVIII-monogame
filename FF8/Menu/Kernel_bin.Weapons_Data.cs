@@ -3,11 +3,11 @@ using System.IO;
 
 namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
 
         [Flags]
-        internal enum Renzokeken_Level : byte
+        public enum Renzokeken_Level : byte
         {
             Rough_Divide = 0x01,
             Fated_Circle = 0x02,
@@ -18,7 +18,7 @@ namespace FF8
         /// Attack Type
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/blob/master/Doomtrain/Resources/Attack_Type_List.txt"/>
-        internal enum Attack_Type
+        public enum Attack_Type
         {
             None,
             Physical_Attack,
@@ -58,26 +58,26 @@ namespace FF8
             _1_HP_Damage,
             Physical_AttackIgnore_Target_VIT
         }
-        internal struct Weapons_Data
+        public struct Weapons_Data
         {
-            internal const int count =33;
-            internal const int id=4;
-            internal FF8String Name { get; private set; }
+            public const int count =33;
+            public const int id=4;
+            public FF8String Name { get; private set; }
             public override string ToString() => Name;
 
             //0x0000	2 bytes Offset to weapon name
-            internal Renzokeken_Level Renzokuken; //0x0002	1 byte Renzokuken finishers
-            internal byte Unknown0; //0x0003	1 byte Unknown
-            internal Saves.Characters Character;//0x0004	1 byte Character ID
-            internal Attack_Type Attack_type;//0x0005	1 bytes Attack Type
-            internal byte Attack_power;//0x0006	1 byte Attack Power
-            internal byte HIT;//0x0007	1 byte Attack Parameter
-            internal byte STR;//0x0008	1 byte STR Bonus
-            internal byte Tier;//0x0009	1 byte Weapon Tier
-            internal byte CRIT;//0x000A	1 byte Crit Bonus
-            internal bool Melee;//0x000B	1 byte Melee Weapon?
+            public Renzokeken_Level Renzokuken; //0x0002	1 byte Renzokuken finishers
+            public byte Unknown0; //0x0003	1 byte Unknown
+            public Saves.Characters Character;//0x0004	1 byte Character ID
+            public Attack_Type Attack_type;//0x0005	1 bytes Attack Type
+            public byte Attack_power;//0x0006	1 byte Attack Power
+            public byte HIT;//0x0007	1 byte Attack Parameter
+            public byte STR;//0x0008	1 byte STR Bonus
+            public byte Tier;//0x0009	1 byte Weapon Tier
+            public byte CRIT;//0x000A	1 byte Crit Bonus
+            public bool Melee;//0x000B	1 byte Melee Weapon?
 
-            internal void Read(BinaryReader br,int string_id = 0)
+            public void Read(BinaryReader br,int string_id = 0)
             {
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, string_id);
                 br.BaseStream.Seek(2, SeekOrigin.Current);

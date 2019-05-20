@@ -3,13 +3,13 @@ using System.IO;
 
 namespace FF8
 {
-    internal static partial class Saves
+    public static partial class Saves
     {
         /// <summary>
         /// TT vars.
         /// </summary>
         /// <see cref="https://github.com/myst6re/hyne/blob/master/SaveData.h"/>
-        internal struct TripleTriad //128
+        public struct TripleTriad //128
         {
             byte[] cards;
             byte[] card_locations;
@@ -20,7 +20,7 @@ namespace FF8
             ushort tt_egality_count;
             ushort u2;
             ulong u3;
-            internal void Read(BinaryReader br)
+            public void Read(BinaryReader br)
             {
                 cards = br.ReadBytes(77);
                 card_locations = br.ReadBytes(33);

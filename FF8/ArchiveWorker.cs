@@ -5,17 +5,17 @@ using System.Linq;
 
 namespace FF8
 {
-    internal class ArchiveWorker
+    public class ArchiveWorker
     {
         static uint _unpackedFileSize;
         static uint _locationInFs;
         static bool _compressed;
         private string _path;
-        internal string GetPath() => _path;
-        internal static string[] FileList;
+        public string GetPath() => _path;
+        public static string[] FileList;
 
 
-        internal ArchiveWorker(string path)
+        public ArchiveWorker(string path)
         {
             _path = Extended.GetUnixFullPath(path);
             string root = Path.GetDirectoryName(_path);
@@ -32,10 +32,10 @@ namespace FF8
                     $"{Path.Combine(Path.GetDirectoryName(_path), Path.GetFileNameWithoutExtension(_path))}{Memory.Archives.B_FileList}"
                     );
 
-        internal static string[] GetBinaryFileList(byte[] fl) =>System.Text.Encoding.ASCII.GetString(fl).Replace("\r", "").Replace("\0", "").Split('\n');
+        public static string[] GetBinaryFileList(byte[] fl) =>System.Text.Encoding.ASCII.GetString(fl).Replace("\r", "").Replace("\0", "").Split('\n');
 
-        internal byte[] GetBinaryFile(string fileName) => GetBinaryFile(_path, fileName);
-        internal static byte[] GetBinaryFile(string archiveName, string fileName)
+        public byte[] GetBinaryFile(string fileName) => GetBinaryFile(_path, fileName);
+        public static byte[] GetBinaryFile(string archiveName, string fileName)
         {
             byte[] isComp = GetBin(Extended.GetUnixFullPath(archiveName), fileName);
             if (isComp == null) throw new FileNotFoundException($"Searched {archiveName} and could not find {fileName}.",fileName);
@@ -51,7 +51,7 @@ namespace FF8
         /// <param name="FL">FileList</param>
         /// <param name="filename">Filename of the file to get</param>
         /// <returns></returns>
-        internal static byte[] FileInTwoArchives(byte[] FI, byte[] FS, byte[] FL, string filename)
+        public static byte[] FileInTwoArchives(byte[] FI, byte[] FS, byte[] FL, string filename)
         {
             string a = filename.TrimEnd('\0');
 
@@ -147,16 +147,16 @@ namespace FF8
             return temp;
         }
 
-        internal string[] GetListOfFiles() => FileList;
+        public string[] GetListOfFiles() => FileList;
 
-        internal struct FI
+        public struct FI
         {
-            internal uint LengthOfUnpackedFile;
-            internal uint LocationInFS;
-            internal uint LZSS;
+            public uint LengthOfUnpackedFile;
+            public uint LocationInFS;
+            public uint LZSS;
         }
 
-        internal FI[] GetFI()
+        public FI[] GetFI()
         {
             FI[] FileIndex = new FI[FileList.Length];
             string flPath = $"{Path.GetDirectoryName(_path)}\\{Path.GetFileNameWithoutExtension(_path)}.fi";

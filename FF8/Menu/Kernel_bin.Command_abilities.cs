@@ -2,26 +2,26 @@
 
 namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         /// <summary>
         /// Command Abilities
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Command-abilities"/>
-        internal class Command_abilities
+        public class Command_abilities
         {
-            internal const int count = 19;
-            internal const int id = 12;
+            public const int count = 19;
+            public const int id = 12;
 
             public override string ToString() => Name;
 
-            internal FF8String Name { get; private set; }
-            internal FF8String Description { get; private set; }
+            public FF8String Name { get; private set; }
+            public FF8String Description { get; private set; }
             public byte AP { get; private set; }
             public byte Index { get; private set; }
             public byte[] Unknown0 { get; private set; }
 
-            internal void Read(BinaryReader br, int i)
+            public void Read(BinaryReader br, int i)
             {
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 //0x0000	2 bytes Offset to name
@@ -35,7 +35,7 @@ namespace FF8
                 Unknown0 = br.ReadBytes(2);
                 //0x0006  2 bytes Unknown/ Unused
             }
-            internal static Command_abilities[] Read(BinaryReader br)
+            public static Command_abilities[] Read(BinaryReader br)
             {
                 var ret = new Command_abilities[count];
 

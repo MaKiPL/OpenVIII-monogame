@@ -2,22 +2,22 @@
 
 namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         /// <summary>
         /// Slot Array Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Slot-array"/>
-        internal class Slot_array
+        public class Slot_array
         {
-            internal const int count = 60;
-            internal const int id = 26;
-            internal const int size = 1;
+            public const int count = 60;
+            public const int id = 26;
+            public const int size = 1;
 
             public byte SlotID { get; private set; }
 
-            internal void Read(BinaryReader br, int i) => SlotID = br.ReadByte();
-            internal static Slot_array[] Read(BinaryReader br)
+            public void Read(BinaryReader br, int i) => SlotID = br.ReadByte();
+            public static Slot_array[] Read(BinaryReader br)
             {
                 var ret = new Slot_array[count];
 

@@ -2,42 +2,42 @@
 
 namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         /// <summary>
         /// Non-Junctionable GFs Attacks data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Non-junctionable-GF-attacks"/>
-        internal struct Non_Junctionable_GFs_Attacks_Data
+        public struct Non_Junctionable_GFs_Attacks_Data
         {
-            internal const int count = 16;
-            internal const int id = 9;
+            public const int count = 16;
+            public const int id = 9;
 
             public FF8String Name { get; private set; }
 
             //0x0000	2 bytes Offset to GF attack name
-            internal Magic_ID MagicID;
+            public Magic_ID MagicID;
 
             //0x0002	2 bytes Magic ID(decides what animation to play)
-            internal Attack_Type Attack_Type;
+            public Attack_Type Attack_Type;
 
             //0x0004	1 byte Attack type
-            internal byte GF_Power;
+            public byte GF_Power;
 
             //0x0005	1 byte GF power(used in damage formula)
-            internal byte Status_Attack;
+            public byte Status_Attack;
 
             //0x0006	1 byte Status attack enabler
-            internal byte Unknown0;
+            public byte Unknown0;
 
             //0x0007	1 byte Unknown
-            internal byte Status_flags;
+            public byte Status_flags;
 
             //0x0008	1 byte Status flags ?
-            internal byte[] Unknown1;
+            public byte[] Unknown1;
 
             //0x0009	2 bytes Unknown
-            internal Element Element;
+            public Element Element;
 
             //0x000B	1 byte Element
 
@@ -50,7 +50,7 @@ namespace FF8
             //0x20 - Wind
             //0x40 - Water
             //0x80 - Holy
-            internal Statuses1 Statuses1;
+            public Statuses1 Statuses1;
 
             //0x000C	1 byte Status 1
 
@@ -96,7 +96,7 @@ namespace FF8
             //0x20 - ???
             //0x40 - ???
             //0x80 - ???
-            internal Statuses0 Statuses0;
+            public Statuses0 Statuses0;
 
             //0x0010	1 byte Status 5
 
@@ -109,16 +109,16 @@ namespace FF8
             //0x20 - Berserk
             //0x40 - Zombie
             //0x80 - ???
-            //internal byte Unknown2;
+            //public byte Unknown2;
             //0x0011	1 byte Unknown
-            internal byte Power_Mod;
+            public byte Power_Mod;
 
             //0x0012	1 byte Power Mod(used in damage formula)
-            internal byte Level_Mod;
+            public byte Level_Mod;
 
             //0x0013	1 byte Level Mod(used in damage formula)
 
-            internal void Read(BinaryReader br, int i)
+            public void Read(BinaryReader br, int i)
             {
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i);
                 br.BaseStream.Seek(2, SeekOrigin.Current);

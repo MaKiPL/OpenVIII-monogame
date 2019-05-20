@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace FF8
 {
-    internal static class Module_movie_test
+    public static class Module_movie_test
     {
         private const int STATE_LOAD = 0;
         private const int STATE_CLEAR = 1;
@@ -25,7 +25,7 @@ namespace FF8
         private static string[] movieDirs;
 
         private static List<string> _movies;
-        internal static void Init()
+        public static void Init()
         {
             movieDirs = new string[] {
                 Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "movies")), //this folder has most movies
@@ -47,7 +47,7 @@ namespace FF8
         /// <summary>
         /// Movie file list
         /// </summary>
-        internal static List<string> Movies
+        public static List<string> Movies
         {
             get
             {
@@ -59,17 +59,17 @@ namespace FF8
         private static Ffcc FfccVideo { get; set; }
         private static Texture2D frameTex { get; set; }
         private static Ffcc FfccAudio { get; set; }
-        internal static int ReturnState { get; set; }
+        public static int ReturnState { get; set; }
         /// <summary>
         /// Index in movie file list
         /// </summary>
-        internal static int Index { get; set; } = 0;
+        public static int Index { get; set; } = 0;
         private static double FPS { get; set; } = 0;
         private static int FrameRenderingDelay { get; set; } = 0;
         private static int MsElapsed { get; set; } = 0;
-        internal static int MovieState { get; set; } = STATE_LOAD;
+        public static int MovieState { get; set; } = STATE_LOAD;
 
-        internal static void Update()
+        public static void Update()
         {
             if (Input.Button(Buttons.Okay) || Input.Button(Buttons.Cancel) || Input.Button(Keys.Space))
             {
@@ -207,7 +207,7 @@ namespace FF8
             }
         }
 
-        internal static void Draw()
+        public static void Draw()
         {
             switch (MovieState)
             {

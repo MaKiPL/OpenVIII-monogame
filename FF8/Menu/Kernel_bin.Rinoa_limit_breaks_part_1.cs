@@ -3,17 +3,17 @@ using System.IO;
 
 namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         /// <summary>
         /// Rinoa limit breaks (part 1)
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Rinoa-limit-breaks-%28part-1%29"/>
-        internal class Rinoa_limit_breaks_part_1
+        public class Rinoa_limit_breaks_part_1
         {
-            internal const int count = 2;
-            internal const int id = 24;
-            internal const int size = 8;
+            public const int count = 2;
+            public const int id = 24;
+            public const int size = 8;
 
             public override string ToString() => Name;
 
@@ -24,7 +24,7 @@ namespace FF8
             public byte AbilityID { get; private set; }
             public byte Unknown1 { get; private set; }
 
-            internal void Read(BinaryReader br, int i)
+            public void Read(BinaryReader br, int i)
             {
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 //0x0000	2 bytes Offset to name
@@ -40,7 +40,7 @@ namespace FF8
                 Unknown1 = br.ReadByte();
                 //0x0007  1 byte Unknown / Unused
             }
-            internal static Rinoa_limit_breaks_part_1[] Read(BinaryReader br)
+            public static Rinoa_limit_breaks_part_1[] Read(BinaryReader br)
             {
                 var ret = new Rinoa_limit_breaks_part_1[count];
 

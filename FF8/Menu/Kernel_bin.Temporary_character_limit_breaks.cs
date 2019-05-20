@@ -2,16 +2,16 @@
 
 namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         /// <summary>
         /// Temporary Characters Limit Breaks
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Temporary-character-limit-breaks"/>
-        internal class Temporary_character_limit_breaks
+        public class Temporary_character_limit_breaks
         {
-            internal const int count = 5;
-            internal const int id = 18;
+            public const int count = 5;
+            public const int id = 18;
 
             public override string ToString() => Name;
 
@@ -31,7 +31,7 @@ namespace FF8
             public byte[] Unknown1 { get; private set; }
             public Statuses1 Statuses1 { get; private set; }
 
-            internal void Read(BinaryReader br, int i)
+            public void Read(BinaryReader br, int i)
             {
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 //0x0000	2 bytes Offset to name
@@ -65,7 +65,7 @@ namespace FF8
                 Statuses1 = (Statuses1)br.ReadUInt32();
                 //0x0014  4 bytes status_1; //statuses 8-39
             }
-            internal static Temporary_character_limit_breaks[] Read(BinaryReader br)
+            public static Temporary_character_limit_breaks[] Read(BinaryReader br)
             {
                 var ret = new Temporary_character_limit_breaks[count];
 

@@ -3,41 +3,41 @@ using System.IO;
 
 namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         private ArchiveWorker aw;
         private readonly string ArchiveString = Memory.Archives.A_MAIN;
-        internal static Magic_Data[] MagicData { get; private set; }//0
-        internal static Dictionary<Saves.GFs, Junctionable_GFs_Data> JunctionableGFsData { get; private set; }//1
-        internal static Enemy_Attacks_Data[] EnemyAttacksData { get; private set; }//2
-        internal static Battle_Commands[] BattleCommands { get; private set; }//3
-        internal static Weapons_Data[] WeaponsData { get; private set; }//4
-        internal static Dictionary<Renzokeken_Level, Renzokuken_Finishers_Data> RenzokukenFinishersData; //5
-        internal static Dictionary<Saves.Characters, Character_Stats> CharacterStats { get; private set; }//6
-        internal static Battle_Items_Data[] BattleItemsData { get; private set; }//7
-        internal static Non_battle_Items_Data[] NonbattleItemsData { get; private set; } //8 //only strings
-        internal static Non_Junctionable_GFs_Attacks_Data[] NonJunctionableGFsAttacksData { get; private set; } //9
-        internal static Dictionary<Command_ability, Command_ability_data> Commandabilitydata { get; private set; }//10
-        internal static Junction_abilities[] Junctionabilities { get; private set; }//11
-        internal static Command_abilities[] Commandabilities { get; private set; }//12
-        internal static Stat_percent_abilities[] Statpercentabilities { get; private set; }//13
-        internal static Character_abilities[] Characterabilities { get; private set; }//14
-        internal static Party_abilities[] Partyabilities { get; private set; }//15
-        internal static GF_abilities[] GFabilities { get; private set; }//16
-        internal static Menu_abilities[] Menuabilities { get; private set; }//17
-        internal static Temporary_character_limit_breaks[] Temporarycharacterlimitbreaks { get; private set; }//18
-        internal static Blue_magic_Quistis_limit_break[] BluemagicQuistislimitbreak { get; private set; }//19
-        internal static Quistis_limit_break_parameters[] Quistislimitbreakparameters { get; private set; }//20
-        internal static Shot_Irvine_limit_break[] ShotIrvinelimitbreak { get; private set; }//21
-        internal static Duel_Zell_limit_break[] DuelZelllimitbreak { get; private set; }//22
-        internal static Zell_limit_break_parameters[] Zelllimitbreakparameters { get; private set; }//23
-        internal static Rinoa_limit_breaks_part_1[] Rinoalimitbreakspart1 { get; private set; }//24
-        internal static Rinoa_limit_breaks_part_2[] Rinoalimitbreakspart2 { get; private set; }//25
-        internal static Slot_array[] Slotarray { get; private set; }//26
-        internal static Selphie_limit_break_sets[] Selphielimitbreaksets { get; private set; }//27
-        internal static Devour[] Devour_ { get; private set; }//28
-        internal static Misc_section[] Miscsection { get; private set; }//29 //only_strings
-        internal static Misc_text_pointers[] Misctextpointers { get; private set; }//30
+        public static Magic_Data[] MagicData { get; private set; }//0
+        public static Dictionary<Saves.GFs, Junctionable_GFs_Data> JunctionableGFsData { get; private set; }//1
+        public static Enemy_Attacks_Data[] EnemyAttacksData { get; private set; }//2
+        public static Battle_Commands[] BattleCommands { get; private set; }//3
+        public static Weapons_Data[] WeaponsData { get; private set; }//4
+        public static Dictionary<Renzokeken_Level, Renzokuken_Finishers_Data> RenzokukenFinishersData; //5
+        public static Dictionary<Saves.Characters, Character_Stats> CharacterStats { get; private set; }//6
+        public static Battle_Items_Data[] BattleItemsData { get; private set; }//7
+        public static Non_battle_Items_Data[] NonbattleItemsData { get; private set; } //8 //only strings
+        public static Non_Junctionable_GFs_Attacks_Data[] NonJunctionableGFsAttacksData { get; private set; } //9
+        public static Dictionary<Command_ability, Command_ability_data> Commandabilitydata { get; private set; }//10
+        public static Junction_abilities[] Junctionabilities { get; private set; }//11
+        public static Command_abilities[] Commandabilities { get; private set; }//12
+        public static Stat_percent_abilities[] Statpercentabilities { get; private set; }//13
+        public static Character_abilities[] Characterabilities { get; private set; }//14
+        public static Party_abilities[] Partyabilities { get; private set; }//15
+        public static GF_abilities[] GFabilities { get; private set; }//16
+        public static Menu_abilities[] Menuabilities { get; private set; }//17
+        public static Temporary_character_limit_breaks[] Temporarycharacterlimitbreaks { get; private set; }//18
+        public static Blue_magic_Quistis_limit_break[] BluemagicQuistislimitbreak { get; private set; }//19
+        public static Quistis_limit_break_parameters[] Quistislimitbreakparameters { get; private set; }//20
+        public static Shot_Irvine_limit_break[] ShotIrvinelimitbreak { get; private set; }//21
+        public static Duel_Zell_limit_break[] DuelZelllimitbreak { get; private set; }//22
+        public static Zell_limit_break_parameters[] Zelllimitbreakparameters { get; private set; }//23
+        public static Rinoa_limit_breaks_part_1[] Rinoalimitbreakspart1 { get; private set; }//24
+        public static Rinoa_limit_breaks_part_2[] Rinoalimitbreakspart2 { get; private set; }//25
+        public static Slot_array[] Slotarray { get; private set; }//26
+        public static Selphie_limit_break_sets[] Selphielimitbreaksets { get; private set; }//27
+        public static Devour[] Devour_ { get; private set; }//28
+        public static Misc_section[] Miscsection { get; private set; }//29 //only_strings
+        public static Misc_text_pointers[] Misctextpointers { get; private set; }//30
 
         /// <summary>
         /// Read binary data from into structures and arrays
@@ -45,7 +45,7 @@ namespace FF8
         /// <see cref="http://forums.qhimm.com/index.php?topic=16923.msg240609#msg240609"/>
         /// <seealso cref="https://github.com/alexfilth/doomtrain"/>
         /// <seealso cref="https://github.com/alexfilth/doomtrain/wiki/Kernel.bin"/>
-        internal Kernel_bin()
+        public Kernel_bin()
         {
             aw = new ArchiveWorker(ArchiveString);
             byte[] buffer = aw.GetBinaryFile(Memory.Strings.Filenames[(int)Strings.FileID.KERNEL]);

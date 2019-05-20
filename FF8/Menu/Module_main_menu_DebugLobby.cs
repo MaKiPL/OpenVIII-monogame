@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace FF8
 {
-    internal static partial class Module_main_menu_debug
+    public static partial class Module_main_menu_debug
     {
         #region Fields
 
@@ -48,12 +48,12 @@ namespace FF8
 
         #region Properties
 
-        internal static Vector2 DFontPos { get; private set; }
+        public static Vector2 DFontPos { get; private set; }
 
         /// <summary>
         /// Currently selected Field
         /// </summary>
-        internal static int FieldPointer
+        public static int FieldPointer
         {
             get => debug_fieldPointer;
             set
@@ -76,7 +76,7 @@ namespace FF8
         /// <summary>
         /// Currently selected Movie
         /// </summary>
-        internal static int MoviePointer
+        public static int MoviePointer
         {
             get => debug_moviePointer;
             set

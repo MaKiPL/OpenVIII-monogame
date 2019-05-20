@@ -2,16 +2,16 @@
 
 namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         /// <summary>
         /// GF Abilities Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/GF-abilities"/>
-        internal class GF_abilities
+        public class GF_abilities
         {
-            internal const int count = 9;
-            internal const int id = 16;
+            public const int count = 9;
+            public const int id = 16;
 
             public override string ToString() => Name;
 
@@ -22,7 +22,7 @@ namespace FF8
             public Stat Stat { get; private set; }
             public byte Value { get; private set; }
 
-            internal void Read(BinaryReader br, int i)
+            public void Read(BinaryReader br, int i)
             {
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 //0x0000	2 bytes Offset to name
@@ -38,7 +38,7 @@ namespace FF8
                 Value = br.ReadByte();
                 //0x0007  1 byte Increase value
             }
-            internal static GF_abilities[] Read(BinaryReader br)
+            public static GF_abilities[] Read(BinaryReader br)
             {
                 var ret = new GF_abilities[count];
 

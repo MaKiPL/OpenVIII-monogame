@@ -2,10 +2,10 @@
 
 namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         [Flags]
-        internal enum Quanity
+        public enum Quanity
         {
             //0% = 0x00,
             //6.25% = 0x01,

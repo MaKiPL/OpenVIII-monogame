@@ -14,9 +14,9 @@ namespace FF8
     /// <summary>
     /// The main class.
     /// </summary>
-    internal static class Program
+    public static class Program
     {
-        internal static Game1 Game { get; private set; }
+        public static Game1 Game { get; private set; }
         /// <summary>
         /// The main entry point for the application.
         /// </summary>

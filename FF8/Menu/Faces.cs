@@ -1,13 +1,13 @@
 ﻿namespace FF8
 {
-    internal partial class Faces : SP2
+    public partial class Faces : SP2
     {
         #region Constructors
 
         /// <summary>
         /// Face images used in menus / save / load screens.
         /// </summary>
-        internal Faces()
+        public Faces()
         {
             TextureBigFilename = new string[] { "Face_b{0:00}.TEX", "Gf_big{0:00}.TEX" };
             TextureBigSplit = new uint[] { 2, 2 };

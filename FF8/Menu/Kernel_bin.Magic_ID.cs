@@ -1,13 +1,13 @@
 ﻿namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         /// <summary>
         /// Magic ID
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/blob/master/Doomtrain/Resources/Magic_ID_List.txt"/>
         /// <seealso cref="https://github.com/alexfilth/doomtrain/wiki/MagicID"/>
-        internal enum Magic_ID
+        public enum Magic_ID
         {
             None = 000,
             Cure = 001,

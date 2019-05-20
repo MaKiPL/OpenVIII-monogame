@@ -3,35 +3,35 @@ using System.IO;
 
 namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         /// <summary>
         /// Enemy Attacks Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Enemy-attacks"/>
-        internal struct Enemy_Attacks_Data
+        public struct Enemy_Attacks_Data
         {
-            internal const int id = 3;
-            internal const int count = 384;
+            public const int id = 3;
+            public const int count = 384;
 
-            internal FF8String Name { get; private set; }
+            public FF8String Name { get; private set; }
             public override string ToString() => Name;
             //0x00	2 bytes Offset to attack name
-            internal Magic_ID MagicID; //0x02	2 bytes Magic ID
-            internal byte CameraChange; //0x04	1 byte Camera Change
-            internal byte Unknown0; //0x05	1 byte Unknown
-            internal Attack_Type Attack_type;//0x06	1 byte Attack type
-            internal byte Attack_power;//0x07	1 byte Attack power
-            internal Attack_Flags Attack_flags;//0x08	1 byte Attack flags
-            internal byte Unknown1;//0x09	1 byte Unknown
-            internal Element Element;//0x0A	1 byte Element
-            internal byte Unknown2;//0x0B	1 byte Unknown
-            internal byte StatusAttack;//0x0C	1 byte Status attack enabler
-            internal byte Attack_parameter;//0x0D	1 byte Attack Parameter, HIT?
-            //internal BitArray Statuses;
-            internal Statuses0 Statuses0;//0x0E	2 bytes status_0; //statuses 0-7
-            internal Statuses1 Statuses1;//0x10	4 bytes status_1; //statuses 8-31
-            internal void Read(BinaryReader br, int i)
+            public Magic_ID MagicID; //0x02	2 bytes Magic ID
+            public byte CameraChange; //0x04	1 byte Camera Change
+            public byte Unknown0; //0x05	1 byte Unknown
+            public Attack_Type Attack_type;//0x06	1 byte Attack type
+            public byte Attack_power;//0x07	1 byte Attack power
+            public Attack_Flags Attack_flags;//0x08	1 byte Attack flags
+            public byte Unknown1;//0x09	1 byte Unknown
+            public Element Element;//0x0A	1 byte Element
+            public byte Unknown2;//0x0B	1 byte Unknown
+            public byte StatusAttack;//0x0C	1 byte Status attack enabler
+            public byte Attack_parameter;//0x0D	1 byte Attack Parameter, HIT?
+            //public BitArray Statuses;
+            public Statuses0 Statuses0;//0x0E	2 bytes status_0; //statuses 0-7
+            public Statuses1 Statuses1;//0x10	4 bytes status_1; //statuses 8-31
+            public void Read(BinaryReader br, int i)
             {
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i);
                 br.BaseStream.Seek(2, SeekOrigin.Current);

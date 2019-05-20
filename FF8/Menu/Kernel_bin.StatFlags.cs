@@ -2,7 +2,7 @@
 
 namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         [Flags]
         private enum StatFlags

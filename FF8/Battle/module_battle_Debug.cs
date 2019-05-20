@@ -27,8 +27,8 @@ namespace FF8
         static float localRotator = 0.0f; //a rotator is a float that holds current axis rotation for sky. May be malformed by skyRotators or TimeCompression magic
 
 
-        internal static BasicEffect effect;
-        internal static AlphaTestEffect ate;
+        public static BasicEffect effect;
+        public static AlphaTestEffect ate;
 
         private static string battlename = "a0stg000.x";
         private static byte[] stageBuffer;
@@ -47,22 +47,22 @@ namespace FF8
         /// </summary>
         private struct Stage_GeometryInfoSupplier
         {
-            internal bool bQuad;
-            internal byte clut;
-            internal byte texPage;
+            public bool bQuad;
+            public byte clut;
+            public byte texPage;
         }
 
         private struct EnemyInstanceInformation
         {
-            internal Debug_battleDat Data;
+            public Debug_battleDat Data;
             /// <summary>
             /// bit position of the enemy in encounter data. Use to pair the information with encounter data
             /// </summary>
-            internal byte index;
-            internal bool bIsHidden;
-            internal bool bIsActive;
-            internal bool bIsUntargetable;
-            internal AnimationSystem animationSystem;
+            public byte index;
+            public bool bIsHidden;
+            public bool bIsActive;
+            public bool bIsUntargetable;
+            public AnimationSystem animationSystem;
         }
 
         /// <summary>
@@ -72,92 +72,92 @@ namespace FF8
         /// </summary>
         private struct CharacterInstanceInformation
         {
-            internal CharacterData Data;
-            internal int characterId; //0 is Whatever guy
-            internal bool bIsHidden; //GF sequences, magic...
-            internal AnimationSystem animationSystem;
+            public CharacterData Data;
+            public int characterId; //0 is Whatever guy
+            public bool bIsHidden; //GF sequences, magic...
+            public AnimationSystem animationSystem;
         }
 
         private struct Triangle
         {
-            internal ushort A;
-            internal ushort B;
-            internal ushort C;
-            internal byte U1;
-            internal byte V1;
-            internal byte U2;
-            internal byte V2;
-            internal byte clut;
-            internal byte U3;
-            internal byte V3;
-            internal byte TexturePage;
-            internal byte bHide;
-            internal byte Red;
-            internal byte Green;
-            internal byte Blue;
-            internal byte GPU;
+            public ushort A;
+            public ushort B;
+            public ushort C;
+            public byte U1;
+            public byte V1;
+            public byte U2;
+            public byte V2;
+            public byte clut;
+            public byte U3;
+            public byte V3;
+            public byte TexturePage;
+            public byte bHide;
+            public byte Red;
+            public byte Green;
+            public byte Blue;
+            public byte GPU;
         }
 
         private struct Quad
         {
-            internal ushort A;
-            internal ushort B;
-            internal ushort C;
-            internal ushort D;
-            internal byte U1;
-            internal byte V1;
-            internal byte clut;
-            internal byte U2;
-            internal byte V2;
-            internal byte TexturePage;
-            internal byte bHide;
-            internal byte U3;
-            internal byte V3;
-            internal byte U4;
-            internal byte V4;
-            internal byte Red;
-            internal byte Green;
-            internal byte Blue;
-            internal byte GPU;
+            public ushort A;
+            public ushort B;
+            public ushort C;
+            public ushort D;
+            public byte U1;
+            public byte V1;
+            public byte clut;
+            public byte U2;
+            public byte V2;
+            public byte TexturePage;
+            public byte bHide;
+            public byte U3;
+            public byte V3;
+            public byte U4;
+            public byte V4;
+            public byte Red;
+            public byte Green;
+            public byte Blue;
+            public byte GPU;
         }
 
         private struct MainGeometrySection
         {
-            internal uint Group1Pointer;
-            internal uint Group2Pointer;
-            internal uint Group3Pointer;
-            internal uint Group4Pointer;
-            internal uint TextureUNUSEDPointer;
-            internal uint TexturePointer;
-            internal uint EOF;
+            public uint Group1Pointer;
+            public uint Group2Pointer;
+            public uint Group3Pointer;
+            public uint Group4Pointer;
+            public uint TextureUNUSEDPointer;
+            public uint TexturePointer;
+            public uint EOF;
         }
 
         private struct ObjectsGroup
         {
-            internal uint numberOfSections;
-            internal uint settings1Pointer;
-            internal uint objectListPointer;
-            internal uint settings2Pointer;
-            internal uint relativeEOF;
+            public uint numberOfSections;
+            public uint settings1Pointer;
+            public uint objectListPointer;
+            public uint settings2Pointer;
+            public uint relativeEOF;
         }
 
         private struct Vertex
         {
-            internal short X;
-            internal short Y;
-            internal short Z;
+            public short X;
+            public short Y;
+            public short Z;
         }
 
         private struct Model
         {
-            internal Vertex[] vertices;
-            internal Triangle[] triangles;
-            internal Quad[] quads;
+            public Vertex[] vertices;
+            public Triangle[] triangles;
+            public Quad[] quads;
         }
 
         private struct ModelGroup
         {
-            internal Model[] models;
+            public Model[] models;
         }
 
         private static ModelGroup[] modelGroups;
@@ -166,7 +166,7 @@ namespace FF8
 
         private struct CharacterData
         {
-            internal Debug_battleDat character, weapon;
+            public Debug_battleDat character, weapon;
         };
 
         private static MemoryStream ms;
@@ -180,9 +180,9 @@ namespace FF8
             return (byte)(((bb >> 14) & 0x03) | (bb << 2) & 0x0C);
         }
 
-        internal static void ResetState() { battleModule = BATTLEMODULE_INIT; }
+        public static void ResetState() { battleModule = BATTLEMODULE_INIT; }
 
-        internal static void Update()
+        public static void Update()
         {
             switch (battleModule)
             {
@@ -213,7 +213,7 @@ namespace FF8
         }
 
 
-        internal static void Draw()
+        public static void Draw()
         {
             switch (battleModule)
             {
@@ -378,15 +378,15 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
         /// </summary>
         private struct AnimationSystem
         {
-            internal int animationId;
-            internal int animationFrame;
-            internal bool bStopAnimation; //pertification placeholder? 
-            internal List<int> AnimationQueue;
+            public int animationId;
+            public int animationFrame;
+            public bool bStopAnimation; //pertification placeholder? 
+            public List<int> AnimationQueue;
         }
 
         
 
-        internal static int DEBUGframe = 0;
+        public static int DEBUGframe = 0;
         private static void DrawMonsters()
         {
             Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
@@ -485,7 +485,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
         /// <param name="entityType">Provide either Monster or Character/weapon</param>
         /// <param name="nIndex">Index of entityTypeInstance. Monster is monsterInstances, character is CharacterInstances</param>
         /// <param name="newAnimId">self explanatory</param>
-        internal static void PlayAnimationImmidiately(Debug_battleDat.EntityType entityType, int nIndex, int newAnimId)
+        public static void PlayAnimationImmidiately(Debug_battleDat.EntityType entityType, int nIndex, int newAnimId)
         {
 
             switch(entityType)
@@ -508,7 +508,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
             }
         }
 
-        internal static void AddAnimationToQueue(Debug_battleDat.EntityType entityType, int nIndex, int newAnimId)
+        public static void AddAnimationToQueue(Debug_battleDat.EntityType entityType, int nIndex, int newAnimId)
         {
             switch (entityType)
             {
@@ -532,7 +532,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
         const float MoveSpeedChange = 1f;
         static float maxMoveSpeed = defaultmaxMoveSpeed;
         const float maxLookSpeed = 0.25f;
-        internal static void FPSCamera()
+        public static void FPSCamera()
         {
             #region FPScamera
             //speedcontrols
@@ -834,7 +834,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
             battleModule++;
         }
 
-        internal static int DEBUG = 0;
+        public static int DEBUG = 0;
         private static float frameperFPS = 0.0f;
 
         private static void ReadCharacters()
@@ -1209,53 +1209,53 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack =1, Size =1092)]
-        internal struct CameraStruct
+        public struct CameraStruct
         {
-            internal byte unkbyte000; //000
-            internal byte keyframeCount;
-            internal ushort control_word;
-            internal ushort startingFOV; //usually ~280
-            internal ushort endingFOV; //006
-            internal ushort startingCameraRoll; //usually 0 unless you're aiming for some wicked animation
-            internal ushort endingCameraRoll; //
-            internal ushort startingTime; //usually 0, that's pretty logical
+            public byte unkbyte000; //000
+            public byte keyframeCount;
+            public ushort control_word;
+            public ushort startingFOV; //usually ~280
+            public ushort endingFOV; //006
+            public ushort startingCameraRoll; //usually 0 unless you're aiming for some wicked animation
+            public ushort endingCameraRoll; //
+            public ushort startingTime; //usually 0, that's pretty logical
             /// <summary>
             /// Time is calculated from number of frames. You basically set starting position World+lookat and ending position, then mark number of frames to interpolate between them. Every frame is one drawcall and it costs 16.
             /// </summary>
-            internal ushort time; //starting time needs to be equal or higher for next animation frame to be read; If next frame==0xFFFF then it's all done
+            public ushort time; //starting time needs to be equal or higher for next animation frame to be read; If next frame==0xFFFF then it's all done
             [MarshalAs(UnmanagedType.ByValArray, SizeConst =20)]
-            internal byte[] unk; //010
+            public byte[] unk; //010
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            internal ushort[] unkword024; //024 - start frames for each key frame?
+            public ushort[] unkword024; //024 - start frames for each key frame?
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            internal short[] Camera_World_Z_s16; //064
+            public short[] Camera_World_Z_s16; //064
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            internal short[] Camera_World_X_s16; //0A4
+            public short[] Camera_World_X_s16; //0A4
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            internal short[] Camera_World_Y_s16; //0E4
+            public short[] Camera_World_Y_s16; //0E4
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            internal byte[] unkbyte124; //124
+            public byte[] unkbyte124; //124
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            internal short[] Camera_Lookat_Z_s16; //144
+            public short[] Camera_Lookat_Z_s16; //144
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            internal short[] Camera_Lookat_X_s16; //184
+            public short[] Camera_Lookat_X_s16; //184
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            internal short[] Camera_Lookat_Y_s16; //1C4
+            public short[] Camera_Lookat_Y_s16; //1C4
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            internal byte[] unkbyte204; //204
+            public byte[] unkbyte204; //204
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
-            internal byte[] unkbyte224; //224
+            public byte[] unkbyte224; //224
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
-            internal byte[] unkbyte2A4; //2A4
+            public byte[] unkbyte2A4; //2A4
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
-            internal byte[] unkbyte324; //324
+            public byte[] unkbyte324; //324
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
-            internal byte[] unkbyte3A4; //3A4
+            public byte[] unkbyte3A4; //3A4
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
-            internal byte[] unkbyte424; //424
+            public byte[] unkbyte424; //424
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
-            internal byte[] unkbyte4A4; //4A4
+            public byte[] unkbyte4A4; //4A4
         };
 
         /// <summary>
@@ -1263,9 +1263,9 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
         /// </summary>
         private struct BattleCamera
         {
-            internal BattleCameraSettings battleCameraSettings;
-            internal BattleCameraCollection battleCameraCollection;
-            internal CameraStruct cam;
+            public BattleCameraSettings battleCameraSettings;
+            public BattleCameraCollection battleCameraCollection;
+            public CameraStruct cam;
         }
 
         private static BattleCamera battleCamera;
@@ -1275,7 +1275,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
         /// </summary>
         private struct BattleCameraSettings
         {
-            internal byte[] unk;
+            public byte[] unk;
         }
 
         /// <summary>
@@ -1283,9 +1283,9 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
         /// </summary>
         private struct BattleCameraCollection
         {
-            internal uint cAnimCollectionCount;
-            internal uint pCameraEOF;
-            internal BattleCameraSet[] battleCameraSet;
+            public uint cAnimCollectionCount;
+            public uint pCameraEOF;
+            public BattleCameraSet[] battleCameraSet;
         }
 
         /// <summary>
@@ -1297,8 +1297,8 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
         /// </summary>
         private struct BattleCameraSet
         {
-            internal uint[] animPointers;
-            internal uint globalSetPointer;
+            public uint[] animPointers;
+            public uint globalSetPointer;
         }
 
         /// <summary>

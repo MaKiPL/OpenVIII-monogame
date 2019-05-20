@@ -6,7 +6,7 @@ namespace FF8
     /// class to add function to dictionary
     /// </summary>
     /// <see cref="https://stackoverflow.com/questions/22595655/how-to-do-a-dictionary-reverse-lookup"/>
-    internal static class DictionaryEx
+    public static class DictionaryEx
     {
         #region Methods
 
@@ -17,7 +17,7 @@ namespace FF8
         /// <typeparam name="TValue"></typeparam>
         /// <param name="source"></param>
         /// <returns></returns>
-        internal static Dictionary<TValue, TKey> Reverse<TKey, TValue>(this IDictionary<TKey, TValue> source)
+        public static Dictionary<TValue, TKey> Reverse<TKey, TValue>(this IDictionary<TKey, TValue> source)
         {
             Dictionary<TValue, TKey> dictionary = new Dictionary<TValue, TKey>();
             foreach (KeyValuePair<TKey, TValue> entry in source)

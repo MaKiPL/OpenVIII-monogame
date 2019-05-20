@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace FF8
 {
-    internal abstract class SP2
+    public abstract class SP2
     {
         #region Constructors
 
@@ -35,7 +35,7 @@ namespace FF8
         /// <summary>
         /// enum to be added to class when implemented
         /// </summary>
-        internal enum ID { NotImplemented }
+        public enum ID { NotImplemented }
 
         #endregion Enums
 
@@ -49,7 +49,7 @@ namespace FF8
         /// <summary>
         /// Number of Entries
         /// </summary>
-        protected internal uint Count { get; protected set; }
+        public uint Count { get; protected set; }
 
         /// <summary>
         /// Entries per texture,ID MOD EntriesPerTexture to get current entry to use on this texture
@@ -59,12 +59,12 @@ namespace FF8
         /// <summary>
         /// Number of Pallets
         /// </summary>
-        protected internal uint PalletCount { get; protected set; }
+        public uint PalletCount { get; protected set; }
 
         /// <summary>
         /// Number of Textures
         /// </summary>
-        protected internal int[] TextureCount { get; protected set; }
+        public int[] TextureCount { get; protected set; }
 
         /// <summary>
         /// Dictionary of Entries
@@ -116,7 +116,7 @@ namespace FF8
 
         #region Indexers
 
-        internal Entry this[Enum id] => GetEntry(id);
+        public Entry this[Enum id] => GetEntry(id);
 
         #endregion Indexers
 
@@ -128,13 +128,13 @@ namespace FF8
         /// <param name="id"></param>
         /// <param name="dst"></param>
         /// <param name="fade"></param>
-        internal virtual void Draw(Enum id, Rectangle dst, float fade = 1)
+        public virtual void Draw(Enum id, Rectangle dst, float fade = 1)
         {
             Rectangle src = GetEntry(id).GetRectangle;
             TextureHandler tex = GetTexture(id);
             tex.Draw(dst, src, Color.White * fade);
         }
-        internal virtual void Draw(Enum id, Rectangle dst, Vector2 fill, float fade = 1)
+        public virtual void Draw(Enum id, Rectangle dst, Vector2 fill, float fade = 1)
         {
             Rectangle src = GetEntry(id).GetRectangle;
             if (fill == Vector2.UnitX)
@@ -153,7 +153,7 @@ namespace FF8
 
         private TextureHandler GetTexture(Enum id) => GetTexture(id,out Vector2 scale);
 
-        internal virtual Entry GetEntry(Enum id)
+        public virtual Entry GetEntry(Enum id)
         {
             if (Entries.ContainsKey(Convert.ToUInt32(id)))
                 return Entries[Convert.ToUInt32(id)];
@@ -162,7 +162,7 @@ namespace FF8
             return null;
         }
 
-        internal virtual TextureHandler GetTexture(Enum id, out Vector2 scale)
+        public virtual TextureHandler GetTexture(Enum id, out Vector2 scale)
         {
             uint pos = Convert.ToUInt32(id);
             uint File = GetEntry(id).File;

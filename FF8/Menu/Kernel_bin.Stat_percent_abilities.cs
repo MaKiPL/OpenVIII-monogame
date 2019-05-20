@@ -2,16 +2,16 @@
 
 namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         /// <summary>
         /// Stat Percentage Increasing Abilities Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Stat-percentage-increasing-abilities"/>
-        internal class Stat_percent_abilities
+        public class Stat_percent_abilities
         {
-            internal const int count = 19;
-            internal const int id = 13;
+            public const int count = 19;
+            public const int id = 13;
 
             public override string ToString() => Name;
 
@@ -22,7 +22,7 @@ namespace FF8
             public byte Value { get; private set; }
             public byte Unknown0 { get; private set; }
 
-            internal void Read(BinaryReader br, int i)
+            public void Read(BinaryReader br, int i)
             {
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 //0x0000	2 bytes Offset to name
@@ -39,7 +39,7 @@ namespace FF8
                 //0x0007  1 byte Unknown/ Unused
             }
 
-            internal static Stat_percent_abilities[] Read(BinaryReader br)
+            public static Stat_percent_abilities[] Read(BinaryReader br)
             {
                 Stat_percent_abilities[] ret = new Stat_percent_abilities[count];
 

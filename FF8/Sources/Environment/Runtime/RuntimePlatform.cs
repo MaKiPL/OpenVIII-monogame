@@ -1,6 +1,6 @@
 ﻿namespace FF8
 {
-    internal enum RuntimePlatform
+    public enum RuntimePlatform
     {
         Windows = 1,
         Linux = 2,

@@ -2,14 +2,14 @@
 
 namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         /// <summary>
         /// Status Flags 2
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Statuses-1"/>
         [Flags]
-        internal enum Statuses1 : uint
+        public enum Statuses1 : uint
         {
             None = 0x0,
             Sleep = 0x1,

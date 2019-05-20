@@ -18,8 +18,8 @@ namespace FF8
         private static readonly float camDistance = 10.0f;
         private static readonly float renderCamDistance = 1200.0f;
         private static Vector3 camPosition, camTarget;
-        internal static BasicEffect effect;
-        internal static AlphaTestEffect ate;
+        public static BasicEffect effect;
+        public static AlphaTestEffect ate;
         private enum _worldState
         {
             _0init,
@@ -58,63 +58,63 @@ namespace FF8
 
         private struct Segment
         {
-            internal int segmentId;
-            internal SegHeader headerData;
-            internal Block[] block;
+            public int segmentId;
+            public SegHeader headerData;
+            public Block[] block;
         }
 
         private struct Block
         {
-            internal byte polyCount;
-            internal byte vertCount;
-            internal byte normalCount;
-            internal byte unkPadd;
-            internal Polygon[] polygons;
-            internal Vertex[] vertices;
-            internal Normal[] normals;
-            internal int unkPadd2;
+            public byte polyCount;
+            public byte vertCount;
+            public byte normalCount;
+            public byte unkPadd;
+            public Polygon[] polygons;
+            public Vertex[] vertices;
+            public Normal[] normals;
+            public int unkPadd2;
         }
 
         [StructLayout(LayoutKind.Sequential, Size = 68, Pack = 1)]
         private struct SegHeader
         {
-            internal uint groupId;
+            public uint groupId;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-            internal uint[] blockOffsets;
+            public uint[] blockOffsets;
         }
 
         private struct Polygon
         {
-            internal byte F1, F2, F3, N1, N2, N3, U1, V1, U2, V2, U3, V3, TPage_clut, groundtype, TextureSwitch, unk2;
+            public byte F1, F2, F3, N1, N2, N3, U1, V1, U2, V2, U3, V3, TPage_clut, groundtype, TextureSwitch, unk2;
 
-            internal byte TPage { get => (byte)((TPage_clut >> 4) & 0x0F); }
-            internal byte Clut { get => (byte)(TPage_clut & 0x0F); }
-            //internal byte TPage_clut1 { set => TPage_clut = value; }
+            public byte TPage { get => (byte)((TPage_clut >> 4) & 0x0F); }
+            public byte Clut { get => (byte)(TPage_clut & 0x0F); }
+            //public byte TPage_clut1 { set => TPage_clut = value; }
         }
         private struct Vertex
         {
-            internal short X;
+            public short X;
             private short Z;
-            internal short Y;
+            public short Y;
             private short W;
 
-            internal short Z1 { get => (short)(Z * -1); set => Z = value; }
+            public short Z1 { get => (short)(Z * -1); set => Z = value; }
         }
 
         private struct Normal /*: Vertex we can't inherit struct in C#*/
         {
-            internal short X;
+            public short X;
             private short Z;
             private short Y;
             private short W;
 
-            internal short Z1 { get => (short)(Z * -1); set => Z = value; }
+            public short Z1 { get => (short)(Z * -1); set => Z = value; }
         }
 
         private static _worldState worldState;
         private static MiniMapState MapState = MiniMapState.rectangle;
 
-        internal static void Update()
+        public static void Update()
         {
             switch (worldState)
             {
@@ -333,7 +333,7 @@ namespace FF8
         const float MoveSpeedChange = 1f;
         static float maxMoveSpeed = defaultmaxMoveSpeed;
         const float maxLookSpeed = 0.25f;
-        internal static void FPSCamera()
+        public static void FPSCamera()
         {
             #region FPScamera
             float x_shift = 0.0f, y_shift = 0.0f, leftdistX = 0.0f, leftdistY = 0.0f;
@@ -403,7 +403,7 @@ namespace FF8
             #endregion
         }
 
-        internal static void Draw()
+        public static void Draw()
         {
             Memory.spriteBatch.GraphicsDevice.Clear(Color.CornflowerBlue);
 

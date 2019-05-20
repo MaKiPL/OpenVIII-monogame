@@ -2,9 +2,9 @@
 
 namespace FF8.MonoGame
 {
-    internal static class MonoGameHooks
+    public static class MonoGameHooks
     {
-        internal static void Initialize()
+        public static void Initialize()
         {
             foreach (IMonoGameHook hook in EnumerateHooks())
                 hook.Initialize();

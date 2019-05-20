@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace FF8
 {
-    internal class Debug_battleDat
+    public class Debug_battleDat
     {
         int id;
         readonly EntityType entityType;
@@ -17,39 +17,39 @@ namespace FF8
         /// <summary>
         /// V is the scale dividor. For now in Battle and World modules I'm dividing native f16 to 2048f
         /// </summary>
-        internal const float V = 2048.0f;
+        public const float V = 2048.0f;
 
-        internal struct DatFile
+        public struct DatFile
         {
-            internal uint cSections;
-            internal uint[] pSections;
-            internal uint eof;
+            public uint cSections;
+            public uint[] pSections;
+            public uint eof;
         }
 
-        internal DatFile datFile;        
+        public DatFile datFile;        
 
         #region section 1 Skeleton
         [StructLayout(LayoutKind.Sequential,Pack = 1,Size =16)]
-        internal struct Skeleton
+        public struct Skeleton
         {
-            internal ushort cBones;
-            internal ushort scale;
-            internal ushort unk2;
-            internal ushort unk3;
-            internal ushort unk4;
-            internal ushort unk5;
-            internal ushort unk6;
-            internal ushort unk7;
-            internal Bone[] bones;
+            public ushort cBones;
+            public ushort scale;
+            public ushort unk2;
+            public ushort unk3;
+            public ushort unk4;
+            public ushort unk5;
+            public ushort unk6;
+            public ushort unk7;
+            public Bone[] bones;
 
-            internal Vector3 GetScale => new Vector3(scale/V*12, scale/V*12, scale/V*12);
+            public Vector3 GetScale => new Vector3(scale/V*12, scale/V*12, scale/V*12);
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 48)]
-        internal struct Bone
+        public struct Bone
         {
-            internal ushort parentId;
-            internal short boneSize;
+            public ushort parentId;
+            public short boneSize;
             private short unk1; //360
             private short unk2; //360
             private short unk3; //360
@@ -57,15 +57,15 @@ namespace FF8
             private short unk5;
             private short unk6;
             [MarshalAs(UnmanagedType.ByValArray,SizeConst = 28 )]
-            internal byte[] Unk;
+            public byte[] Unk;
 
-            internal float Size { get => boneSize / V; }
-            internal float Unk1 { get => unk1 / 4096.0f * 360.0f; }
-            internal float Unk2 { get => unk2 / 4096.0f * 360.0f; }
-            internal float Unk3 { get => unk3 / 4096.0f * 360.0f; }
-            internal float Unk4 { get => unk4 / 4096.0f; }
-            internal float Unk5 { get => unk5 / 4096.0f; }
-            internal float Unk6 { get => unk6 / 4096.0f; }
+            public float Size { get => boneSize / V; }
+            public float Unk1 { get => unk1 / 4096.0f * 360.0f; }
+            public float Unk2 { get => unk2 / 4096.0f * 360.0f; }
+            public float Unk3 { get => unk3 / 4096.0f * 360.0f; }
+            public float Unk4 { get => unk4 / 4096.0f; }
+            public float Unk5 { get => unk5 / 4096.0f; }
+            public float Unk6 { get => unk6 / 4096.0f; }
         }
 
         /// <summary>
@@ -98,94 +98,94 @@ namespace FF8
             return;
         }
 
-        internal Skeleton skeleton;
+        public Skeleton skeleton;
 
 #endregion
 
 #region section 2 Geometry
-        internal struct Geometry
+        public struct Geometry
         {
-            internal uint cObjects;
-            internal uint[] pObjects;
-            internal Object[] objects;
-            internal uint cTotalVert;
+            public uint cObjects;
+            public uint[] pObjects;
+            public Object[] objects;
+            public uint cTotalVert;
         }
 
-        internal struct Object
+        public struct Object
         {
-            internal ushort cVertices;
-            internal VerticeData[] verticeData;
-            internal ushort cTriangles;
-            internal ushort cQuads;
-            internal ulong padding;
-            internal Triangle[] triangles;
-            internal Quad[] quads;
+            public ushort cVertices;
+            public VerticeData[] verticeData;
+            public ushort cTriangles;
+            public ushort cQuads;
+            public ulong padding;
+            public Triangle[] triangles;
+            public Quad[] quads;
         }
 
-        internal struct VerticeData
+        public struct VerticeData
         {
-            internal ushort boneId;
-            internal ushort cVertices;
-            internal Vertex[] vertices;
+            public ushort boneId;
+            public ushort cVertices;
+            public Vertex[] vertices;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
-        internal struct Vertex
+        public struct Vertex
         {
-            internal short x;
-            internal short y;
-            internal short z;
+            public short x;
+            public short y;
+            public short z;
 
-            internal Vector3 GetVector => new Vector3(-x/ V, -z/V, -y/V);
+            public Vector3 GetVector => new Vector3(-x/ V, -z/V, -y/V);
         }
 
         [StructLayout(LayoutKind.Sequential, Pack =1, Size =16)]
-        internal struct Triangle
+        public struct Triangle
         {
             private ushort A;
             private ushort B;
             private ushort C;
-            internal UV vta;
-            internal UV vtb;
-            internal ushort texUnk;
-            internal UV vtc;
-            internal ushort u;
+            public UV vta;
+            public UV vtb;
+            public ushort texUnk;
+            public UV vtc;
+            public ushort u;
 
-            internal ushort A1 { get => (ushort)(A & 0xFFF); set => A = value; }
-            internal ushort B1 { get => (ushort)(B & 0xFFF); set => B = value; }
-            internal ushort C1 { get => (ushort)(C & 0xFFF); set => C = value; }
-            internal byte textureIndex { get => (byte)((texUnk >> 6) & 0b111); }
+            public ushort A1 { get => (ushort)(A & 0xFFF); set => A = value; }
+            public ushort B1 { get => (ushort)(B & 0xFFF); set => B = value; }
+            public ushort C1 { get => (ushort)(C & 0xFFF); set => C = value; }
+            public byte textureIndex { get => (byte)((texUnk >> 6) & 0b111); }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 20)]
-        internal struct Quad
+        public struct Quad
         {
             private ushort A;
             private ushort B;
             private ushort C;
             private ushort D;
-            internal UV vta;
-            internal ushort texUnk;
-            internal UV vtb;
-            internal ushort u;
-            internal UV vtc;
-            internal UV vtd;
+            public UV vta;
+            public ushort texUnk;
+            public UV vtb;
+            public ushort u;
+            public UV vtc;
+            public UV vtd;
 
-            internal ushort A1 { get => (ushort)(A & 0xFFF); set => A = value; }
-            internal ushort B1 { get => (ushort)(B & 0xFFF); set => B = value; }
-            internal ushort C1 { get => (ushort)(C & 0xFFF); set => C = value; }
-            internal ushort D1 { get => (ushort)(D & 0xFFF); set => D = value; }
-            internal byte textureIndex { get => (byte)((texUnk >> 6) & 0b111); }
+            public ushort A1 { get => (ushort)(A & 0xFFF); set => A = value; }
+            public ushort B1 { get => (ushort)(B & 0xFFF); set => B = value; }
+            public ushort C1 { get => (ushort)(C & 0xFFF); set => C = value; }
+            public ushort D1 { get => (ushort)(D & 0xFFF); set => D = value; }
+            public byte textureIndex { get => (byte)((texUnk >> 6) & 0b111); }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack =1,Size =2)]
-        internal struct UV
+        public struct UV
         {
-            internal byte U;
-            internal byte V;
+            public byte U;
+            public byte V;
 
-            internal float U1(float h=128f) { return U / h; }
-            internal float V1(float w=128f) { return V > 128 ? //if bigger than 128, then multitexture index to odd
+            public float U1(float h=128f) { return U / h; }
+            public float V1(float w=128f) { return V > 128 ? //if bigger than 128, then multitexture index to odd
                     (V - 128f)/w 
                     : w==32 ?  //if equals 32, then it's weapon texture and should be in range of 96-128
                         (V-96)/w 
@@ -197,7 +197,7 @@ namespace FF8
             }
         }
 
-        internal Geometry geometry;
+        public Geometry geometry;
 
         /// <summary>
         /// Geometry section
@@ -258,7 +258,7 @@ namespace FF8
         /// <param name="animationFrame">an animation frame from animation id. You should pass incrementing frame and reset to 0 when frameCount max is hit</param>
         /// <param name="step">FEATURE: This float (0.0 - 1.0) is used in Linear interpolation in animation frames blending. 0.0 means frameN, 1.0 means FrameN+1. Usually this should be a result of deltaTime to see if computer is capable of rendering smooth animations rather than constant 15 FPS</param>
         /// <returns></returns>
-        internal Tuple<VertexPositionTexture[],byte[]> GetVertexPositions(int objectId, Vector3 position,Quaternion rotation, int animationId, int animationFrame, float step)
+        public Tuple<VertexPositionTexture[],byte[]> GetVertexPositions(int objectId, Vector3 position,Quaternion rotation, int animationId, int animationFrame, float step)
         {
             Object obj = geometry.objects[objectId];
             if (animationFrame >= animHeader.animations[animationId].animationFrames.Length || animationFrame<0)
@@ -669,32 +669,32 @@ namespace FF8
         #endregion
 
         #region section 3 Animation
-        internal struct AnimationData
+        public struct AnimationData
         {
-            internal uint cAnimations;
-            internal uint[] pAnimations;
-            internal Animation[] animations;
+            public uint cAnimations;
+            public uint[] pAnimations;
+            public Animation[] animations;
         }
 
-        internal struct Animation
+        public struct Animation
         {
-            internal byte cFrames;
-            internal AnimationFrame[] animationFrames;
+            public byte cFrames;
+            public AnimationFrame[] animationFrames;
         }
 
-        internal struct AnimationFrame
+        public struct AnimationFrame
         {
             private Vector3 position;
-            internal Tuple<Vector3[], ShortVector[],Matrix[]> boneRot;
+            public Tuple<Vector3[], ShortVector[],Matrix[]> boneRot;
 
-            internal Vector3 Position { get => position; set => position = value; }
+            public Vector3 Position { get => position; set => position = value; }
         }
 
-        internal struct ShortVector
+        public struct ShortVector
         {
-            internal short x;
-            internal short y;
-            internal short z;
+            public short x;
+            public short y;
+            public short z;
         }
 
         /// <summary>
@@ -790,94 +790,94 @@ namespace FF8
                 }
             }
         }
-        internal AnimationData animHeader;
-        internal int frame;
-        internal float frameperFPS = 0.0f;
+        public AnimationData animHeader;
+        public int frame;
+        public float frameperFPS = 0.0f;
 #endregion
 
 #region section 7 Information
         [StructLayout(LayoutKind.Sequential, Pack =1, Size =380)]
-        internal struct Information
+        public struct Information
         {
             [MarshalAs(UnmanagedType.ByValArray,SizeConst =24)]
             private char[] monsterName;
-            internal uint hp;
-            internal uint str;
-            internal uint vit;
-            internal uint mag;
-            internal uint spr;
-            internal uint spd;
-            internal uint eva;
-            internal Abilities abilitiesLow;
-            internal Abilities abilitiesMed;
-            internal Abilities abilitiesHigh;
-            internal byte medLevelStart;
-            internal byte highLevelStart;
-            internal byte unk;
-            internal byte bitSwitch;
-            internal byte cardLow;
-            internal byte cardMed;
-            internal byte cardHigh;
-            internal byte devourLow;
-            internal byte devourMed;
-            internal byte devourHigh;
-            internal byte bitSwitch2;
-            internal byte unk2;
-            internal ushort extraExp;
-            internal ushort exp;
-            internal ulong drawLow;
-            internal ulong drawMed;
-            internal ulong drawHigh;
-            internal ulong mugLow;
-            internal ulong mugMed;
-            internal ulong mugHigh;
-            internal ulong dropLow;
-            internal ulong dropMed;
-            internal ulong dropHigh;
-            internal byte mugRate;
-            internal byte dropRate;
-            internal byte padding;
-            internal byte ap;
+            public uint hp;
+            public uint str;
+            public uint vit;
+            public uint mag;
+            public uint spr;
+            public uint spd;
+            public uint eva;
+            public Abilities abilitiesLow;
+            public Abilities abilitiesMed;
+            public Abilities abilitiesHigh;
+            public byte medLevelStart;
+            public byte highLevelStart;
+            public byte unk;
+            public byte bitSwitch;
+            public byte cardLow;
+            public byte cardMed;
+            public byte cardHigh;
+            public byte devourLow;
+            public byte devourMed;
+            public byte devourHigh;
+            public byte bitSwitch2;
+            public byte unk2;
+            public ushort extraExp;
+            public ushort exp;
+            public ulong drawLow;
+            public ulong drawMed;
+            public ulong drawHigh;
+            public ulong mugLow;
+            public ulong mugMed;
+            public ulong mugHigh;
+            public ulong dropLow;
+            public ulong dropMed;
+            public ulong dropHigh;
+            public byte mugRate;
+            public byte dropRate;
+            public byte padding;
+            public byte ap;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst =16)]
-            internal byte[] unk3;
-            internal byte fireResistance;
-            internal byte iceResistance;
-            internal byte thunderResistance;
-            internal byte earthResistance;
-            internal byte poisonResistance;
-            internal byte windResistance;
-            internal byte waterResistance;
-            internal byte holyResistance;
+            public byte[] unk3;
+            public byte fireResistance;
+            public byte iceResistance;
+            public byte thunderResistance;
+            public byte earthResistance;
+            public byte poisonResistance;
+            public byte windResistance;
+            public byte waterResistance;
+            public byte holyResistance;
 
-            internal byte deathResistanceMental;
-            internal byte poisonResistanceMental;
-            internal byte petrifyResistanceMental;
-            internal byte darknessResistanceMental;
-            internal byte silenceResistanceMental;
-            internal byte berserkResistanceMental;
-            internal byte zombieResistanceMental;
-            internal byte sleepResistanceMental;
-            internal byte hasteResistanceMental;
-            internal byte slowResistanceMental;
-            internal byte stopResistanceMental;
-            internal byte regenResistanceMental;
-            internal byte reflectResistanceMental;
-            internal byte doomResistanceMental;
-            internal byte slowPetrifyResistanceMental;
-            internal byte floatResistanceMental;
-            internal byte confuseResistanceMental;
-            internal byte drainResistanceMental;
-            internal byte explusionResistanceMental;
-            internal byte unkResistanceMental;
+            public byte deathResistanceMental;
+            public byte poisonResistanceMental;
+            public byte petrifyResistanceMental;
+            public byte darknessResistanceMental;
+            public byte silenceResistanceMental;
+            public byte berserkResistanceMental;
+            public byte zombieResistanceMental;
+            public byte sleepResistanceMental;
+            public byte hasteResistanceMental;
+            public byte slowResistanceMental;
+            public byte stopResistanceMental;
+            public byte regenResistanceMental;
+            public byte reflectResistanceMental;
+            public byte doomResistanceMental;
+            public byte slowPetrifyResistanceMental;
+            public byte floatResistanceMental;
+            public byte confuseResistanceMental;
+            public byte drainResistanceMental;
+            public byte explusionResistanceMental;
+            public byte unkResistanceMental;
 
-            internal string GetNameNormal => new string(monsterName);
+            public string GetNameNormal => new string(monsterName);
         }
 
-        internal struct Abilities
+        public struct Abilities
         {
-            internal byte kernelId; //0x2 magic, 0x4 item, 0x8 mosterAbility;
-            internal byte unk;
-            internal ushort abilityId;
+            public byte kernelId; //0x2 magic, 0x4 item, 0x8 mosterAbility;
+            public byte unk;
+            public ushort abilityId;
 
         }
 
@@ -886,16 +886,16 @@ namespace FF8
             ms.Seek(v, SeekOrigin.Begin);
         }
 
-        internal Information information;
+        public Information information;
 #endregion
 
 #region section 11 Textures
-        internal struct Textures
+        public struct Textures
         {
-            internal uint cTims;
-            internal uint[] pTims;
-            internal uint Eof;
-            internal Texture2D[] textures;
+            public uint cTims;
+            public uint[] pTims;
+            public uint Eof;
+            public Texture2D[] textures;
         }
 
         private void ReadSection11(uint v, MemoryStream ms, BinaryReader br)
@@ -917,11 +917,11 @@ namespace FF8
                 tm.KillStreams();
             }
         }
-        internal Textures textures;
+        public Textures textures;
 #endregion
 
 
-        internal enum EntityType
+        public enum EntityType
         {
             Monster,
             Character,
@@ -934,7 +934,7 @@ namespace FF8
         /// <param name="fileId">This number is used in c0m(fileId) or d(fileId)cXYZ</param>
         /// <param name="entityType">Supply Monster, character or weapon (0,1,2)</param>
         /// <param name="additionalFileId">Used only in character or weapon to supply for d(fileId)[c/w](additionalFileId)</param>
-        internal Debug_battleDat(int fileId, EntityType entityType, int additionalFileId = -1, Debug_battleDat skeletonReference = null)
+        public Debug_battleDat(int fileId, EntityType entityType, int additionalFileId = -1, Debug_battleDat skeletonReference = null)
         {
             id = fileId;
             Console.WriteLine($"DEBUG: Creating new BattleDat with {fileId},{entityType},{additionalFileId}");
@@ -1018,6 +1018,6 @@ namespace FF8
             }
         }
 
-        internal int GetId => id;
+        public int GetId => id;
     }
 }

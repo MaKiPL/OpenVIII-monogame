@@ -2,14 +2,14 @@
 
 namespace FF8
 {
-    internal partial class Kernel_bin
+    public partial class Kernel_bin
     {
         /// <summary>
         /// Attack Flags
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/blob/master/Doomtrain/MainForm.cs"/>
         [Flags]
-        internal enum Attack_Flags
+        public enum Attack_Flags
         {
             None = 0x0,
             Shelled = 0x1,

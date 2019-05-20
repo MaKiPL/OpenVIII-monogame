@@ -12,7 +12,7 @@ namespace FF8
         /// Contains Magazines and parts of tutorials; some tutorial images are in Icons.
         /// </summary>
         /// TODO test this.
-        internal Magazine()
+        public Magazine()
         {
             TextureFilename = new string[] { "mag{0:00}.tex", "magita.TEX" };
             TextureCount = new int[] { 20, 1 };

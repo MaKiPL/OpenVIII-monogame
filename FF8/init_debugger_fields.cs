@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace FF8
 {
-    internal static class Init_debugger_fields
+    public static class Init_debugger_fields
     {
-        internal static void Init()
+        public static void Init()
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_FIELD);
             string[] lists = aw.GetListOfFiles();

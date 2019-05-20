@@ -4,13 +4,13 @@ using System.IO;
 namespace FF8
 {
 
-    internal static partial class Saves
+    public static partial class Saves
     {
         /// <see cref="https://github.com/myst6re/hyne/blob/master/SaveData.h"/>
         /// <summary>
         /// ChocoboWorld Save Data
         /// </summary>
-        internal struct ChocoboWorld//64
+        public struct ChocoboWorld//64
         {
             byte enabled;// Enabled|In world|MiniMog found|Demon King defeated|Koko kidnapped|Hurry!|Koko met|Event Wait off
             byte level;
@@ -33,7 +33,7 @@ namespace FF8
             byte u4;
             byte home_walking;
             byte[] u5;
-            internal void Read(BinaryReader br)
+            public void Read(BinaryReader br)
             {
                 enabled = br.ReadByte();// Enabled|In world|MiniMog found|Demon King defeated|Koko kidnapped|Hurry!|Koko met|Event Wait off
                 level = br.ReadByte();

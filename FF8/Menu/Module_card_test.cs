@@ -4,7 +4,7 @@ using System;
 
 namespace FF8
 {
-    internal class Module_card_test
+    public class Module_card_test
     {
         #region Fields
 
@@ -31,7 +31,7 @@ namespace FF8
 
         #region Methods
 
-        internal static void Draw()
+        public static void Draw()
         {
             switch (currentMode)
             {
@@ -45,7 +45,7 @@ namespace FF8
             }
         }
 
-        internal static void Update()
+        public static void Update()
         {
             switch (currentMode)
             {

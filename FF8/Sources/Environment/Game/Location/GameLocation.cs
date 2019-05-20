@@ -2,16 +2,16 @@
 
 namespace FF8
 {
-    internal sealed class GameLocation
+    public sealed class GameLocation
     {
-        internal String DataPath { get; }
+        public String DataPath { get; }
 
-        internal GameLocation(String dataPath)
+        public GameLocation(String dataPath)
         {
             DataPath = dataPath;
         }
 
-        internal static GameLocation Current { get; } = GetCurrentLocation();
+        public static GameLocation Current { get; } = GetCurrentLocation();
 
         private static GameLocation GetCurrentLocation()
         {
