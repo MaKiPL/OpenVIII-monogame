@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace FF8
 {
-    internal static class Memory
+    public static class Memory
     {
         //monogame
         public static GraphicsDeviceManager graphics;
@@ -91,7 +91,7 @@ namespace FF8
         /// Stores current savestate. When you save this is wrote. When you load this is replaced.
         /// </summary>
         public static Saves.Data State = new Saves.Data();
-        internal static ushort MusicIndex
+        public static ushort MusicIndex
         {
             get
             {
@@ -212,9 +212,9 @@ namespace FF8
         /// <summary>
         /// If true by the end of Update() will skip the next Draw()
         /// </summary>
-        public static bool SuppressDraw { get; internal set; }
+        public static bool SuppressDraw { get; set; }
 
-        public static bool IsMouseVisible { get; internal set; } = false;
+        public static bool IsMouseVisible { get; set; } = false;
         public static DirtyEncoding DirtyEncoding;
 
         #region modules
@@ -708,7 +708,7 @@ namespace FF8
             {254, "Ultima"},
             {255, "Scan"}
         };
-        internal static Random random;
+        public static Random random;
 
         #endregion DrawPointMagic
 

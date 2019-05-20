@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace FF8
 {
-    internal class ArchiveWorker
+    public class ArchiveWorker
     {
         static uint _unpackedFileSize;
         static uint _locationInFs;

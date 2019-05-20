@@ -4,9 +4,9 @@ using System.Text;
 
 namespace FF8
 {
-    internal static partial class Saves
+    public static partial class Saves
     {
-        internal struct FieldVars
+        public struct FieldVars
         {
             public string byte03; //[0-3]unused in fields (always "FF-8")
             public ulong Steps; //[4]Steps (used to generate random encounters)
@@ -51,7 +51,7 @@ namespace FF8
             public sbyte sbyte88; //[88]Built-in engine variable. Used exclusively on save points. Never written to with field scripts. Related to Siren's Move-Find ability.
             public byte[] byte89103; //[89-103]unused in fields
             public ulong ulong104; //[104]Seems related to SARALYDISPON/SARALYON/MUSICLOAD/PHSPOWER opcodes
-            public ulong ulong108; //[108]Music related
+            public ulong music; //[108]Music related
             public ulong ulong112; //[112]unused in fields
             public byte[] DrawPtsFeild; //[116-147]Draw points in field
             public byte[] DrawPtsWorld; //[148-179]Draw points in worldmap
@@ -318,7 +318,7 @@ namespace FF8
                 sbyte88 = br.ReadSByte(); //[88]Built-in engine variable. Used exclusively on save points. Never written to with field scripts. Related to Siren's Move-Find ability.
                 byte89103 = br.ReadBytes(15); //[89-103]unused in fields
                 ulong104 = br.ReadUInt32(); //[104]Seems related to SARALYDISPON/SARALYON/MUSICLOAD/PHSPOWER opcodes
-                ulong108 = br.ReadUInt32(); //[108]Music related
+                music = br.ReadUInt32(); //[108]Music related
                 ulong112 = br.ReadUInt32(); //[112]unused in fields
                 DrawPtsFeild = br.ReadBytes(32); //[116-147]Draw points in field
                 DrawPtsWorld = br.ReadBytes(31); //[148-179]Draw points in worldmap

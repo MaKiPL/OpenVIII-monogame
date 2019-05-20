@@ -3,7 +3,7 @@ using System.IO;
 
 namespace FF8
 {
-    internal sealed class HardcodedGameLocationProvider
+    public sealed class HardcodedGameLocationProvider
     {
         private readonly String[] _knownPaths;
 

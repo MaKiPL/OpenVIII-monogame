@@ -10,7 +10,7 @@ namespace FF8
     /// Goal is to improve conversion from FF8 byte[] to string and back. possible 0 to 4 ratio on
     /// special chracters.
     /// </summary>
-    internal class DirtyEncoding : Encoding
+    public class DirtyEncoding : Encoding
     {
         #region Fields
 

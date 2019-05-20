@@ -604,7 +604,7 @@ namespace FF8
         };
 
         public Font() => LoadFonts();
-        internal void LoadFonts()
+        public void LoadFonts()
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
             string sysfntTdwFilepath = aw.GetListOfFiles().First(x => x.ToLower().Contains("sysfnt.tdw"));
@@ -616,7 +616,7 @@ namespace FF8
             ReadTdw(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, sysfntTdwFilepath));
         }
 
-        internal void ReadTdw(byte[] Tdw)
+        public void ReadTdw(byte[] Tdw)
         {
             uint widthPointer = BitConverter.ToUInt32(Tdw, 0);
             uint dataPointer = BitConverter.ToUInt32(Tdw, 4);
@@ -627,7 +627,7 @@ namespace FF8
             menuFont.SetData(tim.CreateImageBuffer(tim.GetClutColors(ColorID.White)));
         }
 
-        internal void getWidths(byte[] Tdw,uint offset, uint length)
+        public void getWidths(byte[] Tdw,uint offset, uint length)
         {
             using (MemoryStream os = new MemoryStream((int)length * 2))
             using (BinaryWriter bw = new BinaryWriter(os))

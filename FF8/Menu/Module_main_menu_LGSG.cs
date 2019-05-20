@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace FF8
 {
-    internal static partial class Module_main_menu_debug
+    public static partial class Module_main_menu_debug
     {
         #region Fields
 
@@ -20,6 +20,8 @@ namespace FF8
         private static Vector2 TextScale;
         private static Point ml;
         private static Tuple<FF8String, FF8String, FF8String> LGSGHEADER;
+        private static Vector2 IGM_Size;
+        private static Matrix IGM_focus;
 
         #endregion Fields
 
@@ -48,7 +50,7 @@ namespace FF8
 
         #region Properties
 
-        public static float blink
+        public static float blink_Amount
         {
             get => s_blink; private set
             {

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace FF8
 {
-    internal static partial class Module_main_menu_debug
+    public static partial class Module_main_menu_debug
     {
 
         private static void DrawLGSGChooseBlocks()
@@ -65,14 +65,14 @@ namespace FF8
                     Y = (dst.Y + dst.Height / 2)
                 };
                 Memory.Icons.Draw(Icons.ID.Arrow_Left, 1, arrow, new Vector2(3f), fade);
-                Memory.Icons.Draw(Icons.ID.Arrow_Left, 2, arrow, new Vector2(3f), fade * blink);
+                Memory.Icons.Draw(Icons.ID.Arrow_Left, 2, arrow, new Vector2(3f), fade * blink_Amount);
                 arrow = new Rectangle
                 {
                     X = (int)((dst.X + dst.Width) + -2 * 3f),
                     Y = arrow.Y
                 };
                 Memory.Icons.Draw(Icons.ID.Arrow_Right2, 1, arrow, new Vector2(3f), fade);
-                Memory.Icons.Draw(Icons.ID.Arrow_Right2, 2, arrow, new Vector2(3f), fade * blink);
+                Memory.Icons.Draw(Icons.ID.Arrow_Right2, 2, arrow, new Vector2(3f), fade * blink_Amount);
             }
             float speed = .17f;
             if (OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)
@@ -275,7 +275,7 @@ namespace FF8
                 Y = 0,
             } + offset;
             Vector2 blocknumsize = new Vector2(OffScreenBuffer.Height * 0.00628930817610063f);
-            Memory.Icons.Draw(block, 4, 2, "D2", blocknumpos, blocknumsize, fade); // 2,2 looks close
+            Memory.Icons.Draw(block, Icons.NumType.Num_8x16_0, 2, "D2", blocknumpos, blocknumsize, fade); // 2,2 looks close
 
             Rectangle faceRect = new Rectangle
             {

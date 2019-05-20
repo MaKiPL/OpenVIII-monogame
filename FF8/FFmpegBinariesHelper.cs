@@ -8,7 +8,7 @@ namespace FFmpeg.AutoGen.Example
     {
         private const string LD_LIBRARY_PATH = "LD_LIBRARY_PATH";
 
-        internal static void RegisterFFmpegBinaries()
+        public static void RegisterFFmpegBinaries()
         {
             var libraryPath = "";
             switch (Environment.OSVersion.Platform)

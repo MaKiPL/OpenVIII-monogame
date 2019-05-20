@@ -1,6 +1,6 @@
 ﻿namespace FF8
 {
-    internal partial class Cards : SP2
+    public partial class Cards : SP2
     {
         #region Constructors
 

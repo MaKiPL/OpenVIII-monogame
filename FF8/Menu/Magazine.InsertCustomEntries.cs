@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace FF8
 {
-    internal partial class Magazine
+    public partial class Magazine
     {
         #region Fields
 

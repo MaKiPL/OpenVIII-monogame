@@ -9,7 +9,7 @@ namespace FF8
     /// <summary>
     /// This contains functions to Load Highres mod versions of textures and get scale vector.
     /// </summary>
-    internal class TextureHandler
+    public class TextureHandler
     {
         #region Fields
 

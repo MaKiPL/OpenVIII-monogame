@@ -17,7 +17,7 @@ namespace FF8
 {
 #pragma warning disable IDE1006 // Naming Styles
 
-    internal static class init_debugger_Audio
+    public static class init_debugger_Audio
 #pragma warning restore IDE1006 // Naming Styles
     {
 #if _WINDOWS && !_X64
@@ -134,7 +134,7 @@ namespace FF8
             }
         }
 
-        internal static void Init()
+        public static void Init()
         {
             string dmusic_pt = "", RaW_ogg_pt = "", music_pt = "", music_wav_pt = "";
             //Roses and Wine V07 moves most of the sgt files to dmusic_backup
@@ -285,7 +285,7 @@ namespace FF8
         }
 
         //I messed around here as figuring out how things worked probably didn't need to mess with this.
-        internal static void Init_SoundAudio()
+        public static void Init_SoundAudio()
         {
             string path = Path.Combine(Memory.FF8DIRdata, "Sound","audio.fmt");
             if(File.Exists(path))
@@ -315,7 +315,7 @@ namespace FF8
             soundEntriesCount = soundEntries ==null ? 0: soundEntries.Length;
         }
 
-        internal static void PlaySound(int soundID)
+        public static void PlaySound(int soundID)
         {
             if (soundEntries == null || soundEntries[soundID].Size == 0)
             {
@@ -333,7 +333,7 @@ namespace FF8
             //waveout.Stop();
         }
 
-        internal static void Update()
+        public static void Update()
         {
             //checks to see if music buffer is running low and getframe triggers a refill.
             //if (ffccMusic != null && !ffccMusic.Ahead)

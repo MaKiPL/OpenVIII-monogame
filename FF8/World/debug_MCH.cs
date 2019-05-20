@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace FF8
 {
-    internal class Debug_MCH
+    public class Debug_MCH
     {
         const float MODEL_SCALE = 1f;
 

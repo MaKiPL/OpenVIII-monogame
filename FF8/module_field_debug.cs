@@ -8,7 +8,7 @@ using System.IO;
 
 namespace FF8
 {
-    internal static class Module_field_debug
+    public static class Module_field_debug
     {
         private static Field_mods mod = 0;
         private static Texture2D tex;
@@ -470,7 +470,7 @@ namespace FF8
             DEBUGRENDER
         };
 
-        internal static void Draw()
+        public static void Draw()
         {
             switch (mod)
             {
@@ -505,7 +505,7 @@ namespace FF8
             Memory.SpriteBatchEnd();
         }
 
-        internal static void Update()
+        public static void Update()
         {
 #if DEBUG
             // lets you move through all the feilds just holding left or right. it will just loop when it runs out.

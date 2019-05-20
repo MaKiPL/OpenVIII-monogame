@@ -1,6 +1,6 @@
 ﻿namespace FF8
 {
-    internal partial class Faces : SP2
+    public partial class Faces : SP2
     {
         #region Constructors
 

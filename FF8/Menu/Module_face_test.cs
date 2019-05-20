@@ -4,7 +4,7 @@ using System;
 
 namespace FF8
 {
-    internal static class Module_face_test
+    public static class Module_face_test
     {
         #region Fields
 

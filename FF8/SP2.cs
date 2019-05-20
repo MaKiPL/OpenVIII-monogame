@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace FF8
 {
-    internal abstract class SP2
+    public abstract class SP2
     {
         #region Constructors
 

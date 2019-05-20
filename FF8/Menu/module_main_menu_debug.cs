@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace FF8
 {
-    internal static partial class Module_main_menu_debug
+    public static partial class Module_main_menu_debug
     {
         #region Fields
 
@@ -16,6 +16,7 @@ namespace FF8
         private static Vector2 vp_per;
         private static Vector2 vp;
         private static bool blinkstate;
+        private static IGM InGameMenu;
 
         #endregion Fields
 
@@ -66,7 +67,7 @@ namespace FF8
         /// <summary>
         /// Trigger required draw function.
         /// </summary>
-        internal static void Draw()
+        public static void Draw()
         {
             Memory.graphics.GraphicsDevice.Clear(Color.Black);
             lastfade = fade;
@@ -96,7 +97,7 @@ namespace FF8
                     DrawLGSG();
                     break;
                 case MainMenuStates.InGameMenu:
-                    DrawInGameMenu();
+                    InGameMenu.Draw();
                     break;
             }
         }
@@ -104,12 +105,12 @@ namespace FF8
         /// <summary>
         /// Triggers functions depending on state
         /// </summary>
-        internal static void Update()
+        public static void Update()
         {
             if (blinkstate)
-                blink += Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
+                blink_Amount += Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
             else
-                blink -= Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
+                blink_Amount -= Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
             lastscale = scale;
             scale = Memory.Scale();
 #pragma warning disable CS0219 // Variable is assigned but its value is never used
@@ -190,7 +191,7 @@ namespace FF8
                     break;
                 case MainMenuStates.InGameMenu:
                     Memory.IsMouseVisible = true;
-                    UpdateInGameMenu();
+                    InGameMenu.Update();
                     break;
 
                 default:
@@ -213,7 +214,8 @@ namespace FF8
             InitMain();
             InitLoad();
             InitDebug();
-            Init_InGameMenu();
+
+            InGameMenu = new IGM();
             Memory.Strings.Close();
         }
 

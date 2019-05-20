@@ -12,7 +12,7 @@ namespace FF8
     /// </remarks>
     /// <see cref="https://github.com/MaKiPL/FF8-Rinoa-s-Toolset/blob/master/SerahToolkit_SharpGL/FF8_Core/TEX.cs"/>
     /// <seealso cref="https://github.com/myst6re/vincent-tim/blob/master/TexFile.cpp"/>
-    internal class TEX
+    public class TEX
     {
         #region Fields
 

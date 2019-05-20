@@ -2,7 +2,7 @@
 
 namespace FF8
 {
-    internal static partial class Module_main_menu_debug
+    public static partial class Module_main_menu_debug
     {
         #region Structs
 
@@ -17,8 +17,6 @@ namespace FF8
             public Point Point { get; set; }
             public FF8String Text { get; set; }
 
-            public override bool Equals(object obj) => base.Equals(obj);
-            public override int GetHashCode() => base.GetHashCode();
             public override string ToString() => Text.ToString();
 
             #endregion Properties

@@ -1,6 +1,6 @@
 ﻿namespace FF8.MonoGame
 {
-    internal interface IMonoGameHook
+    public interface IMonoGameHook
     {
         void Initialize();
     }

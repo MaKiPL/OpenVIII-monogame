@@ -10,7 +10,7 @@ namespace FF8
     /// <summary>
     /// Loads strings from FF8 files
     /// </summary>
-    internal class Strings
+    public class Strings
     {
         #region Fields
 
@@ -31,7 +31,8 @@ namespace FF8
         /// Colly's list of string pointers. Adapted. Some strings might be missing.
         /// </summary>
         /// <see cref="http://www.balamb.pl/qh/kernel-pointers.htm"/>
-        private Dictionary<uint, Tuple<uint, uint, uint>> LocSTR;
+        public Dictionary<uint, Tuple<uint, uint, uint>> Kernel_LocSTR
+        { get; private set; }
 
         private bool opened = false;
         private uint[] StringsLoc;
@@ -221,7 +222,7 @@ namespace FF8
             {
                 kernel_GetFileLocations(br);
 
-                LocSTR = new Dictionary<uint, Tuple<uint, uint, uint>> {
+                Kernel_LocSTR = new Dictionary<uint, Tuple<uint, uint, uint>> {
                     //working
                     {0, new Tuple<uint, uint, uint>(31,2,4) },
                     {1, new Tuple<uint, uint, uint>(32,2,56) },
@@ -257,9 +258,9 @@ namespace FF8
                     //if (pad || Array.IndexOf(StringsLoc, key) >= 0)
                     //    mngrp_get_string_offsets(br, fileID, key, pad);
                     //else
-                    if (LocSTR.ContainsKey(key))
+                    if (Kernel_LocSTR.ContainsKey(key))
                     {
-                        mngrp_get_string_BinMSG(br, fileID, key, files[fileID].subPositions[(int)(LocSTR[key].Item1)].seek, LocSTR[key].Item2, LocSTR[key].Item3);
+                        mngrp_get_string_BinMSG(br, fileID, key, files[fileID].subPositions[(int)(Kernel_LocSTR[key].Item1)].seek, Kernel_LocSTR[key].Item2, Kernel_LocSTR[key].Item3);
                     }
                     //else if (ComplexStr.ContainsKey(key))
                     //{
@@ -294,6 +295,8 @@ namespace FF8
                             files[fileID].sPositions[key].Add(b + msgPos);
                             last = b;
                         }
+                        else
+                            files[fileID].sPositions[key].Add(0);
                         if (grab > 0 && ++g > grab)
                         {
                             br.BaseStream.Seek(skip, SeekOrigin.Current);
@@ -463,7 +466,7 @@ namespace FF8
             return fPaddings;
         }
 
-        private FF8String Read(FileID fileID, uint pos)
+        public FF8String Read(FileID fileID, uint pos)
         {
             //switching archive make sure we are closed before opening another.
             if (aw != null || aw.GetPath() != ArchiveString || last != fileID)
@@ -473,8 +476,10 @@ namespace FF8
             return Read(localbr, fileID, pos);
         }
 
-        private FF8String Read(BinaryReader br, FileID fid, uint pos)
+        public FF8String Read(BinaryReader br, FileID fid, uint pos)
         {
+            if (pos == 0)
+                return new FF8String("");
             if (pos < br.BaseStream.Length)
                 using (MemoryStream os = new MemoryStream(50))
                 {
@@ -519,24 +524,23 @@ namespace FF8
             switch (id)
             {
                 case Faces.ID.Squall_Leonhart:
-                    return d.Squallsname;
+                    return d.Squallsname?? Read(FileID.MNGRP,2,92);
                 case Faces.ID.Rinoa_Heartilly:
-                    return d.Rinoasname;
+                    return d.Rinoasname ?? Read(FileID.MNGRP, 2, 93);
                 case Faces.ID.Angelo:
-                    return d.Angelosname;
+                    return d.Angelosname ?? Read(FileID.MNGRP, 2, 94);
                 case Faces.ID.Boko:
-                    return d.Bokosname;
+                    return d.Bokosname ?? Read(FileID.MNGRP, 2, 135);
                 case Faces.ID.Zell_Dincht:
                 case Faces.ID.Irvine_Kinneas:
                 case Faces.ID.Quistis_Trepe:
-                    return Read(FileID.KERNEL, 6, (int)id - 1);
                 case Faces.ID.Selphie_Tilmitt:
                 case Faces.ID.Seifer_Almasy:
                 case Faces.ID.Edea_Kramer:
                 case Faces.ID.Laguna_Loire:
                 case Faces.ID.Kiros_Seagill:
                 case Faces.ID.Ward_Zabac:
-                    return Read(FileID.KERNEL, 6, (int)id - 2);
+                    return Read(FileID.KERNEL, 6, (int)id);
                 case Faces.ID.Quezacotl:
                 case Faces.ID.Shiva:
                 case Faces.ID.Ifrit:
@@ -553,9 +557,9 @@ namespace FF8
                 case Faces.ID.Cactuar:
                 case Faces.ID.Tonberry:
                 case Faces.ID.Eden:
-                    return d.GFs[(int)id - 16].Name;
+                    return d.GFs[(int)id - 16].Name ?? Read(FileID.MNGRP, 2, 95-16 + (int)id);
                 case Faces.ID.Griever:
-                    return d.Grieversname;
+                    return d.Grieversname?? Read(FileID.MNGRP, 2, 135);
                 case Faces.ID.MiniMog:
                     return Read(FileID.KERNEL, 0, 72); // also in KERNEL, 12, 36
                 default:

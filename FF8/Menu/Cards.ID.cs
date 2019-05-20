@@ -1,6 +1,6 @@
 ﻿namespace FF8
 {
-    internal partial class Cards
+    public partial class Cards
     {
         #region Enums
 

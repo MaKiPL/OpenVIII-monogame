@@ -15,13 +15,13 @@ namespace FF8
             Memory.Archives.A_MENU,
             Memory.Archives.A_MAIN,
             //Memory.Archives.A_FIELD,
-            Memory.Archives.A_MAGIC,
-            Memory.Archives.A_WORLD,
+            //Memory.Archives.A_MAGIC,
+            //Memory.Archives.A_WORLD,
             //Memory.Archives.A_BATTLE,
         };
-        public ArchiveSearch(string searchstring)
+        public ArchiveSearch(FF8String searchstring)
         {
-            byte[] s = Memory.DirtyEncoding.GetBytes(searchstring);
+            byte[] s = searchstring;
             foreach (string a in ArchiveList)
             {
                 ArchiveWorker aw = new ArchiveWorker(a);

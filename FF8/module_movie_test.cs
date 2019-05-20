@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace FF8
 {
-    internal static class Module_movie_test
+    public static class Module_movie_test
     {
         private const int STATE_LOAD = 0;
         private const int STATE_CLEAR = 1;
@@ -69,7 +69,7 @@ namespace FF8
         private static int MsElapsed { get; set; } = 0;
         public static int MovieState { get; set; } = STATE_LOAD;
 
-        internal static void Update()
+        public static void Update()
         {
             if (Input.Button(Buttons.Okay) || Input.Button(Buttons.Cancel) || Input.Button(Keys.Space))
             {
@@ -207,7 +207,7 @@ namespace FF8
             }
         }
 
-        internal static void Draw()
+        public static void Draw()
         {
             switch (MovieState)
             {

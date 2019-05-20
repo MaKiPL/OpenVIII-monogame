@@ -5,7 +5,7 @@ using System;
 
 namespace FF8
 {
-    internal class FfccVaribleGroup : IDisposable
+    public class FfccVaribleGroup : IDisposable
     {
 
         #region Fields
@@ -74,7 +74,7 @@ namespace FF8
         /// <summary>
         /// Set Stream Index typically 0 is video 1 is audio, unless no video then 0 is audio. -1 for no stream of type.
         /// </summary>
-        public int StreamIndex { get; internal set; }
+        public int StreamIndex { get; set; }
         /// <summary>
         /// Type of current Stream.
         /// </summary>

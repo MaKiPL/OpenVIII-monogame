@@ -92,17 +92,17 @@ namespace FF8
             }
         }
 
-        internal static Vector2 Abs(Vector2 v2) => new Vector2(Math.Abs(v2.X), Math.Abs(v2.Y));
+        public static Vector2 Abs(Vector2 v2) => new Vector2(Math.Abs(v2.X), Math.Abs(v2.Y));
 
-        internal static Point RoundedPoint(Vector2 v) => v.RoundedPoint();
+        public static Point RoundedPoint(Vector2 v) => v.RoundedPoint();
 
-        internal void Draw(List<TextureHandler> textures, int pallet, Rectangle inputdst, Vector2 inscale, float fade = 1f) =>
+        public void Draw(List<TextureHandler> textures, int pallet, Rectangle inputdst, Vector2 inscale, float fade = 1f) =>
             Draw(textures, list, pallet, inputdst, inscale, fade, new Point(Width, Height));
-        internal static int GetChange(int tot,int goal, float scale = 1f)
+        public static int GetChange(int tot,int goal, float scale = 1f)
         {
            return (int) Math.Round(Math.Abs(tot* scale - goal));
         }
-        internal static void Draw(List<TextureHandler> textures,List<Entry> elist, int pallet, Rectangle inputdst, Vector2 inscale, float fade, Point totalSize)
+        public static void Draw(List<TextureHandler> textures,List<Entry> elist, int pallet, Rectangle inputdst, Vector2 inscale, float fade, Point totalSize)
         {
             Rectangle dst;
             inscale = Abs(inscale);

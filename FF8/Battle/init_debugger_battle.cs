@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace FF8
 {
-    internal static class Init_debugger_battle
+    public static class Init_debugger_battle
     {
         public struct EncounterFlag
         {
@@ -53,7 +53,7 @@ namespace FF8
             public int ResolveCameraSet(byte cameraPointerValue) => (cameraPointerValue >> 4) & 0b1111;
         }
 
-        internal struct EnemyCoordinates
+        public struct EnemyCoordinates
         {
             public Coordinate cEnemy1;
             public Coordinate cEnemy2;
@@ -90,7 +90,7 @@ namespace FF8
             }
         }
 
-        internal struct Coordinate
+        public struct Coordinate
         {
             public short x;
             public short y;
@@ -106,7 +106,7 @@ namespace FF8
 
 
 
-        internal static void Init()
+        public static void Init()
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
             string[] test = aw.GetListOfFiles();

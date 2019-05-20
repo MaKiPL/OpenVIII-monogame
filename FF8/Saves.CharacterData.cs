@@ -4,7 +4,7 @@ using System.IO;
 namespace FF8
 {
 
-    internal static partial class Saves
+    public static partial class Saves
     {
         /// <summary>
         /// Data for each Character
@@ -12,24 +12,23 @@ namespace FF8
         /// <see cref="http://wiki.ffrtt.ru/index.php/FF8/GameSaveFormat#Characters"/>
         public struct CharacterData
         {
-            public int Level => (int)((Experience / 1000) + 1);
-            public int ExperienceToNextLevel => (int)((Level) * 1000 - Experience);
+           
             public FF8String Name; //not saved to file.
             public ushort CurrentHP; //0x00 -- forgot this one heh
-            public ushort MaxHPs; //0x02
+            public ushort _HP; //0x02
             public uint Experience; //0x02
             public byte ModelID; //0x04
             public byte WeaponID; //0x08
-            public byte STR; //0x09
-            public byte VIT; //0x0A
-            public byte MAG; //0x0B
-            public byte SPR; //0x0C
-            public byte SPD; //0x0D
-            public byte LCK; //0x0E
-            public ushort[] Magics; //0x0F
+            public byte _STR; //0x09
+            public byte _VIT; //0x0A
+            public byte _MAG; //0x0B
+            public byte _SPR; //0x0C
+            public byte _SPD; //0x0D
+            public byte _LCK; //0x0E
+            public Dictionary<byte,byte> Magics; //0x0F
             public byte[] Commands; //0x10
             public byte Paddingorunusedcommand; //0x50
-            public uint Abilities; //0x53
+            public byte[] Abilities; //0x53
             public ushort JunctionnedGFs; //0x54
             public byte Unknown1; //0x58
             public byte Alternativemodel; //0x5A (Normal, SeeD, Soldier...)
@@ -54,26 +53,32 @@ namespace FF8
             public byte Unknown3; //0x94
             public byte MentalStatus; //0x95
             public byte Unknown4; //0x96
-
-            public void Read(BinaryReader br)
+            public Characters ID { get; private set; }
+            public void Read(BinaryReader br,Characters c)
             {
+                ID = c;
                 CurrentHP = br.ReadUInt16();//0x00
-                MaxHPs = br.ReadUInt16();//0x02
+                _HP = br.ReadUInt16();//0x02
                 Experience = br.ReadUInt32();//0x04
                 ModelID = br.ReadByte();//0x08
                 WeaponID = br.ReadByte();//0x09
-                STR = br.ReadByte();//0x0A
-                VIT = br.ReadByte();//0x0B
-                MAG = br.ReadByte();//0x0C
-                SPR = br.ReadByte();//0x0D
-                SPD = br.ReadByte();//0x0E
-                LCK = br.ReadByte();//0x0F
-                Magics = new ushort[32];
+                _STR = br.ReadByte();//0x0A
+                _VIT = br.ReadByte();//0x0B
+                _MAG = br.ReadByte();//0x0C
+                _SPR = br.ReadByte();//0x0D
+                _SPD = br.ReadByte();//0x0E
+                _LCK = br.ReadByte();//0x0F
+                Magics = new Dictionary<byte, byte>(32);
                 for (int i = 0; i < 32; i++)
-                    Magics[i] = br.ReadUInt16();//0x10
+                {
+                    var key = br.ReadByte();
+                    var val = br.ReadByte();
+                    if(key >= 0 && !Magics.ContainsKey(key))
+                    Magics.Add(key, val);//0x10                    
+                }
                 Commands = br.ReadBytes(3);//0x50
                 Paddingorunusedcommand = br.ReadByte();//0x53
-                Abilities = br.ReadUInt32();//0x54
+                Abilities = br.ReadBytes(4);//0x54
                 JunctionnedGFs = br.ReadUInt16();//0x58
                 Unknown1 = br.ReadByte();//0x5A
                 Alternativemodel = br.ReadByte();//0x5B (Normal, SeeD, Soldier...)
@@ -101,7 +106,24 @@ namespace FF8
                 MentalStatus = br.ReadByte();//0x96
                 Unknown4 = br.ReadByte();//0x97
             }
+            public int Level => (int)((Experience / 1000) + 1);
+            public int ExperienceToNextLevel => (int)((Level) * 1000 - Experience);
+            public ushort MaxHP
+            {
+                get
+                {
+                    int total = 0;
+                    foreach (var i in Abilities)
+                    {
+                        int key = i - 0x27;
+                        if (key >= 0 && key < Kernel_bin.Statpercentabilities.Length && Kernel_bin.Statpercentabilities[key].Stat == Kernel_bin.Stat.HP)
+                            total += Kernel_bin.Statpercentabilities[key].Value;
+                    }
 
+                    return (ushort)Kernel_bin.CharacterStats[ID].HP((sbyte)Level, JunctionHP, Magics[JunctionHP], _HP, total);
+                }
+            }
+            public float PercentFullHP => (float)CurrentHP / MaxHP;
             public override string ToString() => Name.Length>0?Name.ToString():base.ToString();
         }
     }

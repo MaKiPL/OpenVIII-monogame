@@ -19,7 +19,7 @@
     /// Code bits mostly converted to c# from c++ It uses bits of code from FFmpeg examples, Aforge,
     /// FFmpeg.autogen, stackoverflow
     /// </remarks>
-    internal unsafe class Ffcc : IDisposable
+    public unsafe class Ffcc : IDisposable
     {
         #region Fields
 
@@ -1411,7 +1411,7 @@ EOF:
                     return ffmpeg.AVERROR_EOF;
                 }
 
-                // copy internal buffer data to buf
+                // copy public buffer data to buf
                 Buffer.MemoryCopy((void*)Header, (void*)buf, buf_size, buf_size);
                 Header += buf_size;
                 HeaderSize -= (uint)buf_size;
@@ -1434,7 +1434,7 @@ EOF:
                     {
                         using (UnmanagedMemoryStream ums = new UnmanagedMemoryStream(buf, buf_size, buf_size, FileAccess.Write))
                         {
-                            // copy internal buffer data to buf
+                            // copy public buffer data to buf
                             ums.Write(br.ReadBytes(buf_size), 0, buf_size);
                             DataSeekLoc += (uint)buf_size;
                             DataSize -= (uint)buf_size;

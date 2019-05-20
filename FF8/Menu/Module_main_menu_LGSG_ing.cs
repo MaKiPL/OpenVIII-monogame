@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace FF8
 {
-    internal static partial class Module_main_menu_debug
+    public static partial class Module_main_menu_debug
     {
         private static void DrawLG_Loading() => DrawLGSG_ing(strLoadScreen[Litems.Load].Text, strLoadScreen[Litems.Loading].Text);
         private static void DrawSG_Saving() => DrawLGSG_ing(strLoadScreen[Litems.Save].Text, strLoadScreen[Litems.Saving].Text);

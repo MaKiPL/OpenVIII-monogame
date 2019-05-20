@@ -38,7 +38,7 @@ namespace FF8
         #region Properties
 
         public ushort CurrentPos { get; set; }
-        public sbyte CustomPallet { get; internal set; } = -1;
+        public sbyte CustomPallet { get; set; } = -1;
         public byte File { get; set; }
         //public Loc GetLoc => loc;
         public Rectangle GetRectangle => new Rectangle(Location.ToPoint(),Size.ToPoint());
@@ -46,26 +46,26 @@ namespace FF8
         /// <summary>
         /// point where you want to stop drawing from right side so -8 would stop 8*scale pixels from edge
         /// </summary>
-        //public sbyte Offset_X2 { get; internal set; }
+        //public sbyte Offset_X2 { get; set; }
 
         /// <summary>
         /// point where you want to stop drawing from bottom side so -8 would stop 8*scale pixels
         /// from edge
         /// </summary>
-        //public sbyte Offset_Y2 { get; internal set; }
+        //public sbyte Offset_Y2 { get; set; }
 
         public byte Part { get; set; } = 1;
-        public bool Snap_Bottom { get; internal set; } = false;
-        public bool Snap_Right { get; internal set; } = false;
+        public bool Snap_Bottom { get; set; } = false;
+        public bool Snap_Right { get; set; } = false;
         /// <summary>
         /// Vector2.Zero = no tile, Vector2.One = tile x & y, Vector.UnitX = tile x, Vector.UnitY = tile y
         /// </summary>
-        public Vector2 Tile { get; internal set; } = Vector2.Zero;
-        public float Height { get =>Size.Y; internal set=> Size.Y=value; }
-        public float Width { get=>Size.X; internal set=> Size.X=value; }
-        public float Y { get => Location.Y; internal set => Location.Y = value; }
-        public float X { get => Location.X; internal set => Location.X = value; }
-        public Vector2 Fill { get; internal set; }
+        public Vector2 Tile { get; set; } = Vector2.Zero;
+        public float Height { get =>Size.Y; set=> Size.Y=value; }
+        public float Width { get=>Size.X; set=> Size.X=value; }
+        public float Y { get => Location.Y; set => Location.Y = value; }
+        public float X { get => Location.X; set => Location.X = value; }
+        public Vector2 Fill { get; set; }
 
         #endregion Properties
 
@@ -90,7 +90,7 @@ namespace FF8
 
         public void SetLoc(Loc value) => loc = value;
 
-        internal void LoadfromStreamSP1(BinaryReader br)
+        public void LoadfromStreamSP1(BinaryReader br)
         {
             CurrentPos = (ushort)br.BaseStream.Position;
             Location.X = br.ReadByte();

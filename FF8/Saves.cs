@@ -21,7 +21,7 @@ namespace FF8
     /// antiquechrono was helping. he even wrote a whole class using kaitai. Though I donno if we
     /// wanna use kaitai.
     /// </remarks>
-    internal static partial class Saves
+    public static partial class Saves
     {
 
         //C:\Users\[user]\OneDrive\Documents\Square Enix\FINAL FANTASY VIII Steam\user_#######

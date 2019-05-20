@@ -6,9 +6,9 @@
 
 
 
-    internal static partial class Saves
+    public static partial class Saves
     {
-        internal enum GFs
+        public enum GFs
         {
             Quezacotl,
             Shiva,

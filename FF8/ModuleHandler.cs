@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace FF8
 {
-    internal static class ModuleHandler
+    public static class ModuleHandler
     {
         private static int module = Memory.module;
         private static int lastModule = Memory.module;
@@ -106,7 +106,7 @@ namespace FF8
             }
         }
 
-        internal static void ResetBS()
+        public static void ResetBS()
             => Module_battle_debug.ResetState();
     }
 }

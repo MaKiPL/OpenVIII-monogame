@@ -3,7 +3,7 @@ using System.IO;
 namespace FF8
 {
 
-    internal static partial class Saves
+    public static partial class Saves
     {
         public class Data
         {
@@ -82,7 +82,7 @@ namespace FF8
             public byte[] Tutorialinfos; //0x0D33
             public byte SeeDtestlevel; //0x0D43
             public uint Unknown7; //0x0D44
-            public uint Party2; //0x0D48 (last byte always = 255)
+            public Characters[] Party2; //0x0D48 (last byte always = 255)
             public uint Unknown8; //0x0D4C
             public ushort Module; //0x0D50 (1= field, 2= worldmap, 3= battle)
             public ushort Currentfield; //0x0D52
@@ -125,7 +125,7 @@ namespace FF8
                 }
                 for (int i = 0; i <= (int)Faces.ID.Edea_Kramer; i++)
                 {
-                    Characters[i].Read(br); // 0x04A0 -> 0x08C8 //152 bytes per 8 total
+                    Characters[i].Read(br,(Characters)i); // 0x04A0 -> 0x08C8 //152 bytes per 8 total
                     Characters[i].Name = Memory.Strings.GetName((Faces.ID)i,this);
                 }
                 int ShopCount = 400 / (16 + 1 + 3);
@@ -133,8 +133,7 @@ namespace FF8
                 for (int i = 0; i < ShopCount; i++)
                     Shops[i].Read(br);
                 Configuration = br.ReadBytes(20); //0x0AF0 //20 bytes
-                Party = Array.ConvertAll(br.ReadBytes(4), Item => (Characters)Item); ;
-                br.BaseStream.Seek(4, SeekOrigin.Current);//0x0B04 // 4 bytes 0xFF terminated.
+                Party = Array.ConvertAll(br.ReadBytes(4), Item => (Characters)Item); //0x0B04 // 4 bytes 0xFF terminated.
                 KnownWeapons = br.ReadBytes(4); //0x0B08 // 4 bytes
                 Grieversname = br.ReadBytes(12); //0x0B0C // 12 bytes
 
@@ -175,7 +174,7 @@ namespace FF8
                 Tutorialinfos = br.ReadBytes(16);//0x0D33 
                 SeeDtestlevel = br.ReadByte();//0x0D43 
                 Unknown7 = br.ReadUInt32();//0x0D44 
-                Party2 = br.ReadUInt32();//0x0D48 (last byte always = 255) //dupicate
+                Party2 = Array.ConvertAll(br.ReadBytes(4), Item => (Characters)Item); //0x0D48 (last byte always = 255) //dupicate?
                 Unknown8 = br.ReadUInt32();//0x0D4C 
                 Module = br.ReadUInt16();//0x0D50 (1= field, 2= worldmap, 3= battle)
                 Currentfield = br.ReadUInt16();//0x0D52 

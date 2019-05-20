@@ -4,7 +4,7 @@ using System;
 
 namespace FF8
 {
-    internal class Module_card_test
+    public class Module_card_test
     {
         #region Fields
 

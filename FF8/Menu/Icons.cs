@@ -9,7 +9,7 @@ namespace FF8
     /// <summary>
     /// Images of parts of most of the menus and ui.
     /// </summary>
-    internal partial class Icons : SP2
+    public partial class Icons : SP2
     {
         #region Fields
 
@@ -100,9 +100,18 @@ namespace FF8
                 }
             }
         }
-        public void Draw(int number,byte type, int pallet, string format, Vector2 location, Vector2 scale, float fade = 1f)
+        public enum NumType
         {
-            ID[] numberstarts = { ID.Size_08x08_0, ID.Size_08x08_ALT_0,ID.Size_08x08_ALT2_0, ID.Size_08x16_0, ID.Size_08x16_ALT_0, ID.Size_16x16_0 };
+            Num_8x8_0,
+            Num_8x8_1,
+            Num_8x8_2,
+            Num_8x16_0,
+            Num_8x16_1,
+            Num_16x16_0,
+        }
+        public void Draw(int number, NumType type, int pallet, string format, Vector2 location, Vector2 scale, float fade = 1f)
+        {
+            ID[] numberstarts = { ID.Num_8x8_0_0, ID.Num_8x8_1_0,ID.Num_8x8_2_0, ID.Num_8x16_0_0, ID.Num_8x16_1_0, ID.Num_16x16_0_0 };
             List<ID>[] nums = new List<ID>[numberstarts.Length];
             int j = 0;
             foreach (ID id in numberstarts)
@@ -118,8 +127,8 @@ namespace FF8
             var dst = new Rectangle { Location = location.ToPoint() };
             foreach (int i in intList)
             {
-                Draw(nums[type][i], pallet,dst, scale, fade);
-                dst.Offset(Entries[nums[type][i]].GetRectangle.Width* scale.X, 0);
+                Draw(nums[(int)type][i], pallet,dst, scale, fade);
+                dst.Offset(Entries[nums[(int)type][i]].GetRectangle.Width* scale.X, 0);
             }
         }
 

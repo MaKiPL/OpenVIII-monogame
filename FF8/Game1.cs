@@ -23,6 +23,7 @@ namespace FF8
         protected override void Initialize()
         {
             FFmpeg.AutoGen.Example.FFmpegBinariesHelper.RegisterFFmpegBinaries();
+            Input.Init();
             Memory.Init(graphics, spriteBatch, Content);
             init_debugger_Audio.Init(); //this initializes the DirectAudio, it's true that it gets loaded AFTER logo, but we will do the opposite
             init_debugger_Audio.Init_SoundAudio(); //this initalizes the WAVE format audio.dat
@@ -36,7 +37,7 @@ namespace FF8
             Memory.random = new Random(); //creates global random class for all sort of things
 
             base.Initialize();
-            //ArchiveSearch s = new ArchiveSearch("Zell\0");//used to find file a string is in. disable if not using.
+            //ArchiveSearch s = new ArchiveSearch(new byte[] { 0xc8,0xc9,0xca,0xcb,0xcc,0xcd,0xce,0xcf });//used to find file a string is in. disable if not using.
 
         }
         protected override void LoadContent()
