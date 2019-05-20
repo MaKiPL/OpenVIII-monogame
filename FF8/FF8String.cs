@@ -53,7 +53,7 @@ namespace FF8
 
         public static implicit operator string(FF8String input) => input?.ToString();
 
-        public override string ToString() => Memory.DirtyEncoding.GetString(Value);
+        public override string ToString() => Memory.DirtyEncoding.GetString(Value).TrimEnd('\0');
 
         public bool MoveNext()
         {
