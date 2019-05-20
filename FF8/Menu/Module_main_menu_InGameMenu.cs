@@ -432,13 +432,13 @@ namespace FF8
                     Rectangle r;
 
                     r = CONTAINER;
-                    num = Memory.State.timeplayed.TotalHours < 99 ? (int)(Memory.State.timeplayed.TotalHours) : 99;
+                    num = Memory.State.Timeplayed.TotalHours < 99 ? (int)(Memory.State.Timeplayed.TotalHours) : 99;
                     spaces = 2 - (num).ToString().Length;
                     r.Offset(105 + spaces * 20, 14);
                     ITEM[0, 1] = new IGMDataItem_Int(num, r, 2, 0, 1);
 
                     r = CONTAINER;
-                    num = num >= 99 ? 99 : Memory.State.timeplayed.Minutes;
+                    num = num >= 99 ? 99 : Memory.State.Timeplayed.Minutes;
                     spaces = 0;
                     r.Offset(165 + spaces * 20, 14);
                     ITEM[0, 3] = new IGMDataItem_Int(num, r, 2, 0, 2);
@@ -471,6 +471,13 @@ namespace FF8
                 {
                 }
 
+                public override void Draw()
+                {
+
+                    if(!Memory.State.TeamLaguna)
+                    base.Draw();
+                }
+
                 public override void Init()
                 {
                     base.Init();
@@ -501,12 +508,17 @@ namespace FF8
                 {
                     sbyte pos = 0;
                     bool ret = base.Update();
-                    for (byte i = 0; Memory.State.Party != null && i <= (byte)Faces.ID.Edea_Kramer && SIZE != null && pos < SIZE.Length; i++)
+                    if (!Memory.State.TeamLaguna)
                     {
-                        if (!Memory.State.Party.Contains((Saves.Characters)i) && Memory.State.Characters[i].Exists != 0 && Memory.State.Characters[i].Exists != 6)//15,9,7,4 shows on menu, 0 locked, 6 hidden
+                        for (byte i = 0; Memory.State.Party != null && i < Memory.State.Characters.Length && SIZE != null && pos < SIZE.Length; i++)
                         {
-                            BLANKS[pos] = false;
-                            Update(pos++, (Saves.Characters)i);
+
+                            if (!Memory.State.Party.Contains((Saves.Characters)i) && Memory.State.Characters[i].Exists != 0 && Memory.State.Characters[i].Exists != 6)//15,9,7,4,1 shows on menu, 0 locked, 6 hidden // I think
+                            {
+                                BLANKS[pos] = false;
+                                Update(pos++, (Saves.Characters)i);
+                            }
+
                         }
                     }
                     for (; pos < Count; pos++)
@@ -527,7 +539,7 @@ namespace FF8
                     Rectangle rbak = SIZE[pos];
                     Rectangle r = rbak;
                     Color color = new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, .9f);
-                    ITEM[pos, 0] = new IGMDataItem_String(Memory.Strings.GetName((Faces.ID)character), rbak);
+                    ITEM[pos, 0] = new IGMDataItem_String(Memory.Strings.GetName(character), rbak);
                     CURSOR[pos] = new Point(rbak.X, (int)(rbak.Y + (6 * TextScale.Y)));
 
                     r.Offset(7, yoff);
@@ -586,11 +598,11 @@ namespace FF8
                 public override bool Update()
                 {
                     bool ret = base.Update();
-                    for (sbyte i = 0; Memory.State.Party != null && i < SIZE.Length; i++)
-                        Update(i, Memory.State.Party[i]);
+                    for (sbyte i = 0; Memory.State.PartyData != null && i < SIZE.Length; i++)
+                        Update(i, Memory.State.PartyData[i],Memory.State.Party[i]);
                     return true;
                 }
-                private void Update(sbyte pos, Saves.Characters character)
+                private void Update(sbyte pos, Saves.Characters character, Saves.Characters visableCharacter)
                 {
                     if (SIZE != null)
                     {
@@ -600,7 +612,7 @@ namespace FF8
                             int num = 0;
                             int spaces = 0;
 
-                            ITEM[pos, 0] = new IGMDataItem_Box(Memory.Strings.GetName((Faces.ID)character), title: Icons.ID.STATUS);
+                            ITEM[pos, 0] = new IGMDataItem_Box(Memory.Strings.GetName(visableCharacter), title: Icons.ID.STATUS);
                             Tuple<Rectangle, Point, Rectangle> dims = DrawBox(SIZE[pos], ((IGMDataItem_Box)ITEM[pos, 0]).Data, indent: false, skipdraw: true);
                             Rectangle r = dims.Item3;
                             ITEM[pos, 0].Pos = dims.Item1;
@@ -636,7 +648,7 @@ namespace FF8
                             //    Memory.State.Party[1] == character && Memory.State.Party[0] == Saves.Characters.Blank ||
                             //    Memory.State.Party[2] == character && Memory.State.Party[0] == Saves.Characters.Blank && Memory.State.Party[1] == Saves.Characters.Blank
                             //    ? Memory.State.firstcharactersmaxHP : 0;
-                            num = Memory.State.Characters[(int)character].MaxHP;
+                            num = Memory.State.Characters[(int)character].MaxHP(visableCharacter);
                             spaces = 4 - num.ToString().Length;
                             r.Offset((459 + spaces * 20), yoff);
                             ITEM[pos, 6] = new IGMDataItem_Int(num, r, 2, 0, 1);

@@ -108,22 +108,27 @@ namespace FF8
             }
             public int Level => (int)((Experience / 1000) + 1);
             public int ExperienceToNextLevel => (int)((Level) * 1000 - Experience);
-            public ushort MaxHP
-            {
-                get
-                {
-                    int total = 0;
-                    foreach (var i in Abilities)
-                    {
-                        int key = i - 0x27;
-                        if (key >= 0 && key < Kernel_bin.Statpercentabilities.Length && Kernel_bin.Statpercentabilities[key].Stat == Kernel_bin.Stat.HP)
-                            total += Kernel_bin.Statpercentabilities[key].Value;
-                    }
 
-                    return (ushort)Kernel_bin.CharacterStats[ID].HP((sbyte)Level, JunctionHP, Magics[JunctionHP], _HP, total);
+            /// <summary>
+            /// Max HP
+            /// </summary>
+            /// <param name="c">Force another character's HP calculation</param>
+            /// <returns></returns>
+            public ushort MaxHP(Characters c = Characters.Blank)
+            {
+                if (c == Characters.Blank)
+                    c = ID;
+                int total = 0;
+                foreach (var i in Abilities)
+                {
+                    int key = i - 0x27;
+                    if (key >= 0 && key < Kernel_bin.Statpercentabilities.Length && Kernel_bin.Statpercentabilities[key].Stat == Kernel_bin.Stat.HP)
+                        total += Kernel_bin.Statpercentabilities[key].Value;
                 }
+
+                return (ushort)Kernel_bin.CharacterStats[c].HP((sbyte)Level, JunctionHP, Magics[JunctionHP], _HP, total);
             }
-            public float PercentFullHP => (float)CurrentHP / MaxHP;
+            public float PercentFullHP => (float)CurrentHP / MaxHP();
             public override string ToString() => Name.Length>0?Name.ToString():base.ToString();
         }
     }

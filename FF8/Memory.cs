@@ -90,7 +90,7 @@ namespace FF8
         /// <summary>
         /// Stores current savestate. When you save this is wrote. When you load this is replaced.
         /// </summary>
-        public static Saves.Data State = new Saves.Data();
+        private static Saves.Data _state = new Saves.Data();
         public static ushort MusicIndex
         {
             get
@@ -215,6 +215,15 @@ namespace FF8
         public static bool SuppressDraw { get; set; }
 
         public static bool IsMouseVisible { get; set; } = false;
+        public static Saves.Data State
+        {
+            get => _state; set
+            {
+                _state = value;
+                _state.Loadtime = Memory.gameTime.TotalGameTime;
+            }
+        }
+
         public static DirtyEncoding DirtyEncoding;
 
         #region modules
