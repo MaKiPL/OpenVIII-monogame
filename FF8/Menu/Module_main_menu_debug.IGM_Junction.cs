@@ -77,7 +77,11 @@ namespace FF8
             public static Dictionary<Items, FF8String> Descriptions { get; private set; }
             public static Saves.Characters Character { get; private set; }
 
-            public override bool Update() => Inputs();
+            public override bool Update()
+            {
+                base.Update();
+                return Inputs();
+            }
 
             protected override void Init()
             {
@@ -191,31 +195,75 @@ namespace FF8
 
             protected override bool Inputs() => false;
 
+
+            public override void Draw()
+            {
+                StartDraw();
+                //switch (mode)
+                //{
+                //    case Mode.ChooseChar:
+                ////    case Mode.ChooseItem:
+                //    default:
+                        base.Draw();
+                        //break;
+                //}
+                //switch (mode)
+                //{
+                //    case Mode.ChooseChar:
+                //        DrawPointer(Data[SectionName.SideMenu].CURSOR[(int)choSideBar], blink: true);
+
+                //        if (choChar < Data[SectionName.Party].Count && choChar >= 0)
+                //            DrawPointer(Data[SectionName.Party].CURSOR[choChar]);
+                //        else if (choChar < Data[SectionName.Non_Party].Count + Data[SectionName.Party].Count && choChar >= Data[SectionName.Party].Count)
+                //            DrawPointer(Data[SectionName.Non_Party].CURSOR[choChar - Data[SectionName.Party].Count]);
+                //        break;
+
+                //    default:
+                //        DrawPointer(Data[SectionName.SideMenu].CURSOR[(int)choSideBar]);
+                //        break;
+                //}
+                EndDraw();
+            }
+
             private class IGMData_CharacterInfo : IGMData
             {
                 public IGMData_CharacterInfo(): base(1,15,new IGMDataItem_Empty(new Rectangle(20,153,395,255)))
                 {
                 }
-                public override void ReInit()
+                public override bool Update()
                 {
-                    base.ReInit();
+                    base.Update();
                     ITEM[0, 1] = new IGMDataItem_Face((Faces.ID)Character, new Rectangle(X + 20, Y, 80, 144));
                     ITEM[0, 2] = new IGMDataItem_String(Memory.Strings.GetName(Character), new Rectangle(X + 117, Y + 0, 0, 0));
-                    ITEM[0, 3] = new IGMDataItem_Icon(Icons.ID.Lv, new Rectangle(X + 117, Y + 54, 0, 0),13);
-                    ITEM[0, 4] = new IGMDataItem_Int(Memory.State.Characters[(int)Character].Level, new Rectangle(X + 117, Y + 54, 0, 0), 13,padding:1,spaces:6);
-                    if (Memory.State.Party.Contains(Character))
+                    ITEM[0, 3] = new IGMDataItem_Icon(Icons.ID.Lv, new Rectangle(X + 117, Y + 54, 0, 0), 13);
+
+                    if (Memory.State.Characters != null)
+                        ITEM[0, 4] = new IGMDataItem_Int(Memory.State.Characters[(int)Character].Level, new Rectangle(X + 117 + 35, Y + 54, 0, 0), 13,numtype:Icons.NumType.Num_8x8_2, padding: 1, spaces: 6);
+                    if (Memory.State.Party != null && Memory.State.Party.Contains(Character))
                         ITEM[0, 5] = new IGMDataItem_Icon(Icons.ID.InParty, new Rectangle(X + 278, Y + 48, 0, 0), 6);
                     else
                         ITEM[0, 5] = null;
                     ITEM[0, 6] = new IGMDataItem_Icon(Icons.ID.HP2, new Rectangle(X + 117, Y + 108, 0, 0), 13);
-                    ITEM[0, 7] = new IGMDataItem_Int(Memory.State.Characters[(int)Character].CurrentHP, new Rectangle(X + 117, Y + 108, 0, 0), 13, padding: 1, spaces: 6);
+                    if (Memory.State.Characters != null)
+                        ITEM[0, 7] = new IGMDataItem_Int(Memory.State.Characters[(int)Character].CurrentHP, new Rectangle(X + 117, Y + 108, 0, 0), 13, numtype: Icons.NumType.Num_8x8_2, padding: 1, spaces: 6);
                     ITEM[0, 8] = new IGMDataItem_Icon(Icons.ID.Size_08x08_Forward_Slash, new Rectangle(X + 153, Y + 108, 0, 0), 13);
-                    ITEM[0, 9] = new IGMDataItem_Int(Memory.State.Characters[(int)Character].MaxHP(), new Rectangle(X + 117, Y + 108, 0, 0), 13, padding: 1, spaces: 5);
+                    if (Memory.State.Characters != null)
+                        ITEM[0, 9] = new IGMDataItem_Int(Memory.State.Characters[(int)Character].MaxHP(), new Rectangle(X + 153+20, Y + 108, 0, 0), 13, numtype: Icons.NumType.Num_8x8_2, padding: 1, spaces: 5);
                     ITEM[0, 10] = new IGMDataItem_String(Titles[Items.CurrentEXP] + new FF8String("\n") + Titles[Items.NextLEVEL], new Rectangle(X, Y + 153, 0, 0));
-                    ITEM[0, 11] = new IGMDataItem_Int((int)Memory.State.Characters[(int)Character].Experience, new Rectangle(X + 192, Y + 198, 0, 0), 13, padding: 1, spaces: 9);
+                    if (Memory.State.Characters != null)
+                        ITEM[0, 11] = new IGMDataItem_Int((int)Memory.State.Characters[(int)Character].Experience, new Rectangle(X + 192, Y + 198, 0, 0), 13, numtype: Icons.NumType.Num_8x8_2, padding: 1, spaces: 9);
                     ITEM[0, 12] = new IGMDataItem_Icon(Icons.ID.P, new Rectangle(X + 372, Y + 198, 0, 0), 13);
-                    ITEM[0, 13] = new IGMDataItem_Int(Memory.State.Characters[(int)Character].ExperienceToNextLevel, new Rectangle(X + 192, Y + 231, 0, 0), 13, padding: 1, spaces: 9);
+                    if (Memory.State.Characters != null)
+                        ITEM[0, 13] = new IGMDataItem_Int(Memory.State.Characters[(int)Character].ExperienceToNextLevel, new Rectangle(X + 192, Y + 231, 0, 0), 13, numtype: Icons.NumType.Num_8x8_2, padding: 1, spaces: 9);
                     ITEM[0, 14] = new IGMDataItem_Icon(Icons.ID.P, new Rectangle(X + 372, Y + 231, 0, 0), 13);
+                    return false;
+                }
+
+                public override void ReInit()
+                {
+                    base.ReInit();
+
+                    
                 }
             }
 
@@ -223,6 +271,28 @@ namespace FF8
             {
                 public IGMData_Stats() : base (10,4,new IGMDataItem_Empty(new Rectangle(0,414,840,216)))
                 {
+                }
+
+                public override void ReInit()
+                {
+                    base.ReInit();
+                    //ITEM[0, 1] = new IGMDataItem_Face((Faces.ID)Character, new Rectangle(X + 20, Y, 80, 144));
+                    //ITEM[0, 2] = new IGMDataItem_String(Memory.Strings.GetName(Character), new Rectangle(X + 117, Y + 0, 0, 0));
+                    //ITEM[0, 3] = new IGMDataItem_Icon(Icons.ID.Lv, new Rectangle(X + 117, Y + 54, 0, 0), 13); if (Memory.State.Characters != null)
+                    //    ITEM[0, 4] = new IGMDataItem_Int(Memory.State.Characters[(int)Character].Level, new Rectangle(X + 117, Y + 54, 0, 0), 13, padding: 1, spaces: 6);
+                    //if (Memory.State.Party.Contains(Character))
+                    //    ITEM[0, 5] = new IGMDataItem_Icon(Icons.ID.InParty, new Rectangle(X + 278, Y + 48, 0, 0), 6);
+                    //else
+                    //    ITEM[0, 5] = null;
+                    //ITEM[0, 6] = new IGMDataItem_Icon(Icons.ID.HP2, new Rectangle(X + 117, Y + 108, 0, 0), 13);
+                    //ITEM[0, 7] = new IGMDataItem_Int(Memory.State.Characters[(int)Character].CurrentHP, new Rectangle(X + 117, Y + 108, 0, 0), 13, padding: 1, spaces: 6);
+                    //ITEM[0, 8] = new IGMDataItem_Icon(Icons.ID.Size_08x08_Forward_Slash, new Rectangle(X + 153, Y + 108, 0, 0), 13);
+                    //ITEM[0, 9] = new IGMDataItem_Int(Memory.State.Characters[(int)Character].MaxHP(), new Rectangle(X + 117, Y + 108, 0, 0), 13, padding: 1, spaces: 5);
+                    //ITEM[0, 10] = new IGMDataItem_String(Titles[Items.CurrentEXP] + new FF8String("\n") + Titles[Items.NextLEVEL], new Rectangle(X, Y + 153, 0, 0));
+                    //ITEM[0, 11] = new IGMDataItem_Int((int)Memory.State.Characters[(int)Character].Experience, new Rectangle(X + 192, Y + 198, 0, 0), 13, padding: 1, spaces: 9);
+                    //ITEM[0, 12] = new IGMDataItem_Icon(Icons.ID.P, new Rectangle(X + 372, Y + 198, 0, 0), 13);
+                    //ITEM[0, 13] = new IGMDataItem_Int(Memory.State.Characters[(int)Character].ExperienceToNextLevel, new Rectangle(X + 192, Y + 231, 0, 0), 13, padding: 1, spaces: 9);
+                    //ITEM[0, 14] = new IGMDataItem_Icon(Icons.ID.P, new Rectangle(X + 372, Y + 231, 0, 0), 13);
                 }
             }
         }

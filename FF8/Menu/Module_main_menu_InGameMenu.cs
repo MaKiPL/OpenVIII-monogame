@@ -13,7 +13,6 @@ namespace FF8
             #region Fields
 
             private Items choSideBar;
-            private Matrix focus;
             private Mode mode;
             private int _choChar;
 
@@ -183,16 +182,7 @@ namespace FF8
 
             public override bool Update()
             {
-                Vector2 Zoom = Memory.Scale(Size.X, Size.Y, Memory.ScaleMode.FitBoth);
-                focus = Matrix.CreateTranslation((Size.X / -2), (Size.Y / -2), 0) *
-                    Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) *
-                    Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
-                //todo detect when there is no saves detected.
-                //check for null
-                foreach (KeyValuePair<Enum, IGMData> i in Data)
-                {
-                    i.Value.Update();
-                }
+                base.Update();
                 ((IGMData_Header)Data[SectionName.Header]).Update(choSideBar);
 
                 return Inputs();
@@ -336,6 +326,8 @@ namespace FF8
                                 //case Items.Magic:
                                 //case Items.Status:
                                 State = MainMenuStates.IGM_Junction;
+                                InGameMenu_Junction.ReInit(Memory.State.Party[choChar]);
+                                //TODO support nonparty characters
                                 break;
                         }
                     }
@@ -353,8 +345,6 @@ namespace FF8
                 public IGMData_Header(int count, int depth, IGMDataItem container = null) : base(count, depth, container)
                 {
                 }
-
-                //public override void Draw() => base.Draw();
 
                 protected override void Init()
                 {
@@ -997,7 +987,6 @@ namespace FF8
         public class IGMDataItem_Face : IGMDataItem
         {
             private byte _pallet;
-            private byte _faded_pallet;
 
             public Faces.ID Data { get; set; }
 
@@ -1060,7 +1049,7 @@ namespace FF8
                 Digits = data.ToString().Length;
                 Spaces = spaces??1;
                 SpaceWidth = spacewidth??20;
-                Pos.Offset(SpaceWidth * (Spaces - Digits), 0);
+                _pos.Offset(SpaceWidth * (Spaces - Digits), 0);
             }
 
             public override void Draw() => Memory.Icons.Draw(Data, NumType, Pallet, $"D{Padding}", Pos.Location.ToVector2(), TextScale, fade);
@@ -1106,10 +1095,11 @@ namespace FF8
         private abstract class Menu
         {
             protected Dictionary<Enum, IGMData> Data;
-            private Vector2 size;
+            private Vector2 _size;
             static protected Vector2 TextScale;
+            protected Matrix focus;
 
-            public Vector2 Size { get => size; protected set => size = value; }
+            public Vector2 Size { get => _size; protected set => _size = value; }
 
             public Menu()
             {
@@ -1126,13 +1116,34 @@ namespace FF8
                 Update();
             }
 
+            public virtual void StartDraw()
+            {
+                Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: focus);
+            }
             public virtual void Draw()
             {
                 foreach (KeyValuePair<Enum, IGMData> i in Data)
                     i.Value.Draw();
             }
 
-            public abstract bool Update();
+            public virtual void EndDraw()
+            {
+                Memory.SpriteBatchEnd();
+            }
+            public virtual bool Update()
+            {
+                Vector2 Zoom = Memory.Scale(Size.X, Size.Y, Memory.ScaleMode.FitBoth);
+                focus = Matrix.CreateTranslation((Size.X / -2), (Size.Y / -2), 0) *
+                    Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) *
+                    Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
+                //todo detect when there is no saves detected.
+                //check for null
+                foreach (KeyValuePair<Enum, IGMData> i in Data)
+                {
+                    i.Value.Update();
+                }
+                return false;
+            }
 
             protected abstract bool Inputs();
         }
