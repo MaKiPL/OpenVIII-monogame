@@ -32,15 +32,16 @@ namespace FF8
             public ushort JunctionnedGFs; //0x54
             public byte Unknown1; //0x58
             public byte Alternativemodel; //0x5A (Normal, SeeD, Soldier...)
-            public byte JunctionHP; //0x5B
-            public byte JunctionSTR; //0x5C
-            public byte JunctionVIT; //0x5D
-            public byte JunctionMAG; //0x5E
-            public byte JunctionSPR; //0x5F
-            public byte JunctionSPD; //0x60
-            public byte JunctionEVA; //0x61
-            public byte JunctionHIT; //0x62
-            public byte JunctionLCK; //0x63
+            public Dictionary<Kernel_bin.Stat,byte> JunctionStat;
+            //public byte JunctionHP; //0x5B
+            //public byte JunctionSTR; //0x5C
+            //public byte JunctionVIT; //0x5D
+            //public byte JunctionMAG; //0x5E
+            //public byte JunctionSPR; //0x5F
+            //public byte JunctionSPD; //0x60
+            //public byte JunctionEVA; //0x61
+            //public byte JunctionHIT; //0x62
+            //public byte JunctionLCK; //0x63
             public byte Junctionelementalattack; //0x64
             public byte Junctionmentalattack; //0x65
             public uint Junctionelementaldefense; //0x66
@@ -84,15 +85,23 @@ namespace FF8
                 JunctionnedGFs = br.ReadUInt16();//0x58
                 Unknown1 = br.ReadByte();//0x5A
                 Alternativemodel = br.ReadByte();//0x5B (Normal, SeeD, Soldier...)
-                JunctionHP = br.ReadByte();//0x5C
-                JunctionSTR = br.ReadByte();//0x5D
-                JunctionVIT = br.ReadByte();//0x5E
-                JunctionMAG = br.ReadByte();//0x5F
-                JunctionSPR = br.ReadByte();//0x60
-                JunctionSPD = br.ReadByte();//0x61
-                JunctionEVA = br.ReadByte();//0x62
-                JunctionHIT = br.ReadByte();//0x63
-                JunctionLCK = br.ReadByte();//0x64
+                JunctionStat = new Dictionary<Kernel_bin.Stat, byte>(9);
+                for (int i = 0; i < 9; i++)
+                {
+                    var key = (Kernel_bin.Stat)i;
+                    var val = br.ReadByte();
+                    if (!JunctionStat.ContainsKey(key))
+                        JunctionStat.Add(key, val);                   
+                }
+                //JunctionHP = br.ReadByte();//0x5C
+                //JunctionSTR = br.ReadByte();//0x5D
+                //JunctionVIT = br.ReadByte();//0x5E
+                //JunctionMAG = br.ReadByte();//0x5F
+                //JunctionSPR = br.ReadByte();//0x60
+                //JunctionSPD = br.ReadByte();//0x61
+                //JunctionEVA = br.ReadByte();//0x62
+                //JunctionHIT = br.ReadByte();//0x63
+                //JunctionLCK = br.ReadByte();//0x64
                 Junctionelementalattack = br.ReadByte();//0x65
                 Junctionmentalattack = br.ReadByte();//0x66
                 Junctionelementaldefense = br.ReadUInt32();//0x67
@@ -128,9 +137,45 @@ namespace FF8
                         total += Kernel_bin.Statpercentabilities[key].Value;
                 }
 
-                return (ushort)Kernel_bin.CharacterStats[c].HP((sbyte)Level, JunctionHP, Magics[JunctionHP], _HP, total);
+                return (ushort)Kernel_bin.CharacterStats[c].HP((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], Magics[JunctionStat[Kernel_bin.Stat.HP]], _HP, total);
             }
-            public float PercentFullHP => (float)CurrentHP / MaxHP();
+            public ushort TotalStat(Kernel_bin.Stat s, Characters c = Characters.Blank)
+            {
+                if (c == Characters.Blank)
+                    c = ID;
+                int total = 0;
+                foreach (var i in Abilities)
+                {
+                    int key = i - 0x27;
+                    if (key >= 0 && key < Kernel_bin.Statpercentabilities.Length && Kernel_bin.Statpercentabilities[key].Stat == s)
+                        total += Kernel_bin.Statpercentabilities[key].Value;
+                }
+                switch (s)
+                {
+                    case Kernel_bin.Stat.HP:
+                        return (ushort)Kernel_bin.CharacterStats[c].HP((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], Magics[JunctionStat[s]], _HP, total);
+                    case Kernel_bin.Stat.EVA:
+                        //TODO confirm if there is no flat stat buff for eva. If there isn't then remove from function.
+                        return (ushort)Kernel_bin.CharacterStats[c].EVA((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], Magics[JunctionStat[s]],0, TotalStat(Kernel_bin.Stat.SPD,c), total);
+                    case Kernel_bin.Stat.SPD:
+                        return (ushort)Kernel_bin.CharacterStats[c].SPD((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], Magics[JunctionStat[s]], _SPD, total);
+                    case Kernel_bin.Stat.HIT:
+                        return (ushort)Kernel_bin.CharacterStats[c].HIT(JunctionStat[Kernel_bin.Stat.HP], Magics[JunctionStat[s]], WeaponID);
+                    case Kernel_bin.Stat.LUCK:
+                        return (ushort)Kernel_bin.CharacterStats[c].LUCK((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], Magics[JunctionStat[s]], _LCK, total);
+                    case Kernel_bin.Stat.MAG:
+                        return (ushort)Kernel_bin.CharacterStats[c].MAG((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], Magics[JunctionStat[s]], _MAG, total);
+                    case Kernel_bin.Stat.SPR:
+                        return (ushort)Kernel_bin.CharacterStats[c].SPR((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], Magics[JunctionStat[s]], _SPR, total);
+                    case Kernel_bin.Stat.STR:
+                        return (ushort)Kernel_bin.CharacterStats[c].STR((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], Magics[JunctionStat[s]], _STR, total,WeaponID);
+                    case Kernel_bin.Stat.VIT:
+                        return (ushort)Kernel_bin.CharacterStats[c].VIT((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], Magics[JunctionStat[s]], _VIT, total);
+
+                }
+                return 0;
+            }
+            public float PercentFullHP(Characters c = Characters.Blank) => (float)CurrentHP / MaxHP(c);
             public override string ToString() => Name.Length>0?Name.ToString():base.ToString();
         }
     }

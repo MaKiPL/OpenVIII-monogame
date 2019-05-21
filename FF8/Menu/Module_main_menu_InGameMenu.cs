@@ -555,13 +555,13 @@ namespace FF8
                     r.Width = 118;
                     r.Height = 1;
                     ITEM[pos, 4] = new IGMDataItem_Texture(_red_pixel, r) { Color = Color.Black };
-                    r.Width = (int)(r.Width * Memory.State.Characters[(int)character].PercentFullHP);
+                    r.Width = (int)(r.Width * Memory.State.Characters[(int)character].PercentFullHP());
                     ITEM[pos, 5] = new IGMDataItem_Texture(_red_pixel, r) { Color = color };
 
                     r.Width = 118;
                     r.Offset(0, 2);
                     ITEM[pos, 6] = new IGMDataItem_Texture(_red_pixel, r) { Color = Color.Black };
-                    r.Width = (int)(r.Width * Memory.State.Characters[(int)character].PercentFullHP);
+                    r.Width = (int)(r.Width * Memory.State.Characters[(int)character].PercentFullHP());
                     ITEM[pos, 7] = new IGMDataItem_Texture(_red_pixel, r) { Color = color };
                     //TODO red bar resizes based on current/max hp
 
@@ -874,10 +874,12 @@ namespace FF8
             //protected T _data;
             protected Rectangle _pos;
 
-            public IGMDataItem(Rectangle? pos = null) =>
-                //_data = data;
+            public Vector2 Scale { get; set; }
+            public IGMDataItem(Rectangle? pos = null, Vector2? scale = null)
+            {
                 _pos = pos ?? Rectangle.Empty;
-
+                Scale = scale ?? Menu.TextScale;
+            }
             /// <summary>
             /// Where to draw this item.
             /// </summary>
@@ -936,7 +938,7 @@ namespace FF8
             public bool Blink => Faded_Pallet != Pallet;
             public float Blink_Adjustment { get; set; }
 
-            public IGMDataItem_Icon(Icons.ID data, Rectangle? pos = null, byte? pallet = null, byte? faded_pallet = null, float blink_adjustment = 1f) : base(pos)
+            public IGMDataItem_Icon(Icons.ID data, Rectangle? pos = null, byte? pallet = null, byte? faded_pallet = null, float blink_adjustment = 1f,Vector2? scale = null) : base(pos,scale)
             {
                 Data = data;
                 Pallet = pallet ?? 2;
@@ -946,9 +948,9 @@ namespace FF8
 
             public override void Draw()
             {
-                Memory.Icons.Draw(Data, Pallet, Pos, TextScale, fade);
+                Memory.Icons.Draw(Data, Pallet, Pos, Scale, fade);
                 if (Blink)
-                    Memory.Icons.Draw(Data, Faded_Pallet, Pos, TextScale, fade * blink_Amount * Blink_Adjustment);
+                    Memory.Icons.Draw(Data, Faded_Pallet, Pos, Scale, fade * blink_Amount * Blink_Adjustment);
             }
         }
 
@@ -1015,12 +1017,13 @@ namespace FF8
                 Pallet = pallet ?? 2;
                 NumType = numtype ?? 0;
                 Digits = data.ToString().Length;
+                if (Digits < padding) Digits = (int)padding;
                 Spaces = spaces??1;
                 SpaceWidth = spacewidth??20;
                 _pos.Offset(SpaceWidth * (Spaces - Digits), 0);
             }
 
-            public override void Draw() => Memory.Icons.Draw(Data, NumType, Pallet, $"D{Padding}", Pos.Location.ToVector2(), TextScale, fade);
+            public override void Draw() => Memory.Icons.Draw(Data, NumType, Pallet, $"D{Padding}", Pos.Location.ToVector2(), Scale, fade);
         }
 
         private class IGMDataItem_String : IGMDataItem
@@ -1029,7 +1032,7 @@ namespace FF8
 
             public IGMDataItem_String(FF8String data, Rectangle? pos = null) : base(pos) => this.Data = data;
 
-            public override void Draw() => Memory.font.RenderBasicText(Data, Pos.Location, TextScale, Fade: fade);
+            public override void Draw() => Memory.font.RenderBasicText(Data, Pos.Location, Scale, Fade: fade);
         }
 
         private class IGMDataItem_Box : IGMDataItem
@@ -1064,7 +1067,7 @@ namespace FF8
         {
             protected Dictionary<Enum, IGMData> Data;
             private Vector2 _size;
-            static protected Vector2 TextScale;
+            static public Vector2 TextScale { get; protected set; }
             protected Matrix focus;
 
             public Vector2 Size { get => _size; protected set => _size = value; }
