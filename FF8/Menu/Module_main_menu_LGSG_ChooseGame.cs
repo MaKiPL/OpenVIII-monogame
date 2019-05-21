@@ -323,7 +323,8 @@ namespace FF8
                 float X3 = OffScreenBuffer.Width * -0.0952380952380952f;
                 disc.Location = new Vector2 { X = X1, Y = disc.Y }.ToPoint();
                 Memory.Icons.Draw(Icons.ID.G, 2, disc, DiscScale, fade);
-                double digits = Math.Floor(Math.Log10(d.AmountofGil) + 2);
+                double digits = (d.AmountofGil==0?1:Math.Floor(Math.Log10(d.AmountofGil)+2));
+                
                 disc.Offset(new Vector2 { X = (float)(digits * X2) });
                 Memory.Icons.Draw((int)d.AmountofGil, 0, 2, "D1", disc.Location.ToVector2(), DiscScale, fade);
                 disc.Location = new Vector2 { X = X1, Y = playy }.ToPoint();

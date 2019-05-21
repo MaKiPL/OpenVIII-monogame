@@ -221,7 +221,7 @@
             Elemental_Defense,
             Size_08_Alt_Num_0,
             Star2,
-            Rank,
+            InParty,
             Item_Card,
             Ability_Junction,
             Ability_Command,

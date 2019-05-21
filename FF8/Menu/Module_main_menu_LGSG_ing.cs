@@ -25,6 +25,8 @@ namespace FF8
             {
                 State = MainMenuStates.InGameMenu; // start loaded game.
                 Memory.State = Saves.FileList[SlotLoc, BlockLoc + blockpage * 3];
+
+                InGameMenu.ReInit();
                 //till we have a game to load i'm going to display ingame menu.
 
                 init_debugger_Audio.PlaySound(36);

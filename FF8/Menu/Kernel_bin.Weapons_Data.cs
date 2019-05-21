@@ -58,6 +58,10 @@ namespace FF8
             _1_HP_Damage,
             Physical_AttackIgnore_Target_VIT
         }
+        /// <summary>
+        /// Weapon Data
+        /// </summary>
+        /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Weapons"/>
         public struct Weapons_Data
         {
             public const int count =33;

@@ -49,7 +49,9 @@ namespace FF8
             public Dictionary<GFs, ushort> CompatibilitywithGFs; //0x6F
             public ushort Numberofkills; //0x70
             public ushort NumberofKOs; //0x90
-            public byte Exists; //0x92
+            public byte Exists; //0x92 //15,9,7,4,1 shows on menu, 0 locked, 6 hidden // I think
+            public bool VisibleInMenu => Exists != 0 && Exists != 6;
+            public bool CanAddToParty => true; // I'm sure one of the Exists values determines this but I donno yet.
             public byte Unknown3; //0x94
             public byte MentalStatus; //0x95
             public byte Unknown4; //0x96
