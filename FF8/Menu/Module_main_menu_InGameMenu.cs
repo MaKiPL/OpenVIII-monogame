@@ -421,21 +421,15 @@ namespace FF8
                 public override void ReInit()
                 {
                     base.ReInit();
-                    int num;
-                    int spaces;
                     Rectangle r;
 
                     r = CONTAINER;
-                    num = Memory.State.Timeplayed.TotalHours < 99 ? (int)(Memory.State.Timeplayed.TotalHours) : 99;
-                    spaces = 2 - (num).ToString().Length;
-                    r.Offset(105 + spaces * 20, 14);
-                    ITEM[0, 1] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                    r.Offset(105, 14);
+                    ITEM[0, 1] = new IGMDataItem_Int(Memory.State.Timeplayed.TotalHours < 99 ? (int)(Memory.State.Timeplayed.TotalHours) : 99, r, 2, 0, 1, 2);
 
                     r = CONTAINER;
-                    num = num >= 99 ? 99 : Memory.State.Timeplayed.Minutes;
-                    spaces = 0;
-                    r.Offset(165 + spaces * 20, 14);
-                    ITEM[0, 3] = new IGMDataItem_Int(num, r, 2, 0, 2);
+                    r.Offset(165, 14);
+                    ITEM[0, 3] = new IGMDataItem_Int(Memory.State.Timeplayed.TotalHours < 99 ? Memory.State.Timeplayed.Minutes : 99, r, 2, 0, 2, 2);
                     if (!Memory.State.TeamLaguna)
                     {
                         r = CONTAINER;
@@ -443,11 +437,8 @@ namespace FF8
                         ITEM[0, 4] = new IGMDataItem_Icon(Icons.ID.SeeD, r, 13);
 
                         r = CONTAINER;
-                        num = Memory.State.Fieldvars.SeedRankPts / 100;
-                        num = num < 99999 ? num : 99999;
-                        spaces = 5 - (num).ToString().Length;
-                        r.Offset(105 + spaces * 20, 48);
-                        ITEM[0, 5] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                        r.Offset(105, 48);
+                        ITEM[0, 5] = new IGMDataItem_Int(Memory.State.Fieldvars.SeedRankPts / 100 < 99999 ? Memory.State.Fieldvars.SeedRankPts / 100 : 99999, r, 2, 0, 1,5);
                     }
                     else
                     {
@@ -456,18 +447,13 @@ namespace FF8
                     }
 
                     r = CONTAINER;
-                    num = Memory.State.AmountofGil < 99999999 ? (int)(Memory.State.AmountofGil) : 99999999;
-                    spaces = 8 - (num).ToString().Length;
-                    r.Offset(25 + spaces * 20, 81);
-                    ITEM[0, 6] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                    r.Offset(25, 81);
+                    ITEM[0, 6] = new IGMDataItem_Int(Memory.State.AmountofGil < 99999999 ? (int)(Memory.State.AmountofGil) : 99999999, r, 2, 0, 1,8);
 
                 }
                 public override bool Update()
                 {
                     bool ret = base.Update();
-                    //int num;
-                    //int spaces;
-                    //Rectangle r;
 
 
 
@@ -548,8 +534,6 @@ namespace FF8
                 private void Update(sbyte pos, Saves.Characters character)
                 {
                     float yoff = 39;
-                    int num = 0;
-                    int spaces = 0;
                     Rectangle rbak = SIZE[pos];
                     Rectangle r = rbak;
                     Color color = new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, .9f);
@@ -560,10 +544,8 @@ namespace FF8
                     ITEM[pos, 1] = new IGMDataItem_Icon(Icons.ID.Lv, r, 13);
 
                     r = rbak;
-                    num = Memory.State.Characters[(int)character].Level;
-                    spaces = 3 - num.ToString().Length;
-                    r.Offset((49 + spaces * 20), yoff);
-                    ITEM[pos, 2] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                    r.Offset((49), yoff);
+                    ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[(int)character].Level, r, 2, 0, 1,3);
 
                     r = rbak;
                     r.Offset(126, yoff);
@@ -584,10 +566,8 @@ namespace FF8
                     //TODO red bar resizes based on current/max hp
 
                     r = rbak;
-                    num = Memory.State.Characters[(int)character].CurrentHP;
-                    spaces = 4 - num.ToString().Length;
-                    r.Offset((166 + spaces * 20), yoff);
-                    ITEM[pos, 8] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                    r.Offset((166), yoff);
+                    ITEM[pos, 8] = new IGMDataItem_Int(Memory.State.Characters[(int)character].CurrentHP, r, 2, 0, 1,4);
                 }
             }
 
@@ -647,8 +627,6 @@ namespace FF8
                         if (character != Saves.Characters.Blank)
                         {
                             float yoff = 6;
-                            int num = 0;
-                            int spaces = 0;
 
                             ITEM[pos, 0] = new IGMDataItem_Box(Memory.Strings.GetName(visableCharacter), title: Icons.ID.STATUS);
                             Tuple<Rectangle, Point, Rectangle> dims = DrawBox(SIZE[pos], ((IGMDataItem_Box)ITEM[pos, 0]).Data, indent: false, skipdraw: true);
@@ -661,20 +639,16 @@ namespace FF8
                             ITEM[pos, 1] = new IGMDataItem_Icon(Icons.ID.Lv, r, 13);
 
                             r = dims.Item3;
-                            num = Memory.State.Characters[(int)character].Level;
-                            spaces = 3 - num.ToString().Length;
-                            r.Offset((229 + spaces * 20), yoff);
-                            ITEM[pos, 2] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                            r.Offset((229), yoff);
+                            ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[(int)character].Level, r, 2, 0, 1,3);
 
                             r = dims.Item3;
                             r.Offset(304, yoff);
                             ITEM[pos, 3] = new IGMDataItem_Icon(Icons.ID.HP2, r, 13);
 
                             r = dims.Item3;
-                            num = Memory.State.Characters[(int)character].CurrentHP;
-                            spaces = 4 - num.ToString().Length;
-                            r.Offset((354 + spaces * 20), yoff);
-                            ITEM[pos, 4] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                            r.Offset((354), yoff);
+                            ITEM[pos, 4] = new IGMDataItem_Int(Memory.State.Characters[(int)character].CurrentHP, r, 2, 0, 1,4);
 
                             r = dims.Item3;
                             r.Offset(437, yoff);
@@ -682,10 +656,8 @@ namespace FF8
 
                             r = dims.Item3;
 
-                            num = Memory.State.Characters[(int)character].MaxHP(visableCharacter);
-                            spaces = 4 - num.ToString().Length;
-                            r.Offset((459 + spaces * 20), yoff);
-                            ITEM[pos, 6] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                            r.Offset((459), yoff);
+                            ITEM[pos, 6] = new IGMDataItem_Int(Memory.State.Characters[(int)character].MaxHP(visableCharacter), r, 2, 0,1,4);
 
                             if (Memory.State.TeamLaguna || Memory.State.SmallTeam)
                             {
@@ -695,20 +667,16 @@ namespace FF8
                                 ITEM[pos, 7] = new IGMDataItem_String(strings[Items.CurrentEXP] + new FF8String("\n") + strings[Items.NextLEVEL], r);
 
                                 r = dims.Item3;
-                                num = (int)Memory.State.Characters[(int)character].Experience;
-                                spaces = 9 - num.ToString().Length;
-                                r.Offset((340 + spaces * 20), 42);
-                                ITEM[pos, 8] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                                r.Offset((340), 42);
+                                ITEM[pos, 8] = new IGMDataItem_Int((int)Memory.State.Characters[(int)character].Experience, r, 2, 0, 1,9);
 
                                 r = dims.Item3;
                                 r.Offset(520, 42);
                                 ITEM[pos, 9] = new IGMDataItem_Icon(Icons.ID.P, r, 2);
 
                                 r = dims.Item3;
-                                num = Memory.State.Characters[(int)character].ExperienceToNextLevel;
-                                spaces = 9 - num.ToString().Length;
-                                r.Offset((340 + spaces * 20), 75);
-                                ITEM[pos, 10] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                                r.Offset((340), 75);
+                                ITEM[pos, 10] = new IGMDataItem_Int(Memory.State.Characters[(int)character].ExperienceToNextLevel, r, 2, 0, 1,9);
 
                                 r = dims.Item3;
                                 r.Offset(520, 75);
