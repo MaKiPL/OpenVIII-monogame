@@ -222,17 +222,19 @@ namespace FF8
         /// Splash is 640x400 16BPP typical TIM with palette of ggg bbbbb a rrrrr gg
         /// </summary>
         /// <param name="buffer">raw 16bpp image</param>
-        /// <param name="Width">Should be 640</param>
-        /// <param name="Height">Should be 400</param>
-        /// <param name="Skip">8 bytes of unknown data at start of image</param>
         /// <returns>Texture2D</returns>
-        public static Texture2D Overture(byte[] buffer, int Width = 640, int Height = 400, byte Skip = 8)
+        /// <remarks>These files are just the image data with no header and no clut data. So above doesn't work with this.</remarks>
+        public static Texture2D Overture(byte[] buffer)
         {
+            var ImageOrgX = BitConverter.ToUInt16(buffer, 0x00);
+            var ImageOrgY = BitConverter.ToUInt16(buffer, 0x02);
+            var Width = BitConverter.ToUInt16(buffer, 0x04);
+            var Height = BitConverter.ToUInt16(buffer, 0x06);
             Texture2D splashTex = new Texture2D(Memory.graphics.GraphicsDevice, Width, Height, false, SurfaceFormat.Color);
             lock (splashTex)
             {
                 byte[] rgbBuffer = new byte[splashTex.Width * splashTex.Height * 4];
-                int innerBufferIndex = Skip;
+                int innerBufferIndex = 0x08;
                 for (int i = 0; i < rgbBuffer.Length && innerBufferIndex < buffer.Length; i += 4)
                 {
                     if (innerBufferIndex + 1 >= buffer.Length)
