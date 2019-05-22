@@ -288,12 +288,15 @@ namespace FF8
 
             private class IGMData_Stats : IGMData
             {
+                /// <summary>
+                /// Convert stat to stat junction
+                /// </summary>
                 private static Dictionary<Kernel_bin.Stat, Kernel_bin.Abilities> Stat2Ability = new Dictionary<Kernel_bin.Stat, Kernel_bin.Abilities>
                 {
                     { Kernel_bin.Stat.HP, Kernel_bin.Abilities.HP_J },
                     { Kernel_bin.Stat.STR, Kernel_bin.Abilities.Str_J },
-                    { Kernel_bin.Stat.VIT,Kernel_bin.Abilities.Vit_J},
-                    { Kernel_bin.Stat.MAG,Kernel_bin.Abilities.Mag_J},
+                    { Kernel_bin.Stat.VIT, Kernel_bin.Abilities.Vit_J},
+                    { Kernel_bin.Stat.MAG, Kernel_bin.Abilities.Mag_J},
                     { Kernel_bin.Stat.SPR, Kernel_bin.Abilities.Spr_J },
                     { Kernel_bin.Stat.SPD, Kernel_bin.Abilities.Spd_J },
                     { Kernel_bin.Stat.EVA, Kernel_bin.Abilities.Eva_J },
@@ -304,7 +307,9 @@ namespace FF8
                 public IGMData_Stats() : base(10, 4, new IGMDataItem_Box(pos: new Rectangle(0, 414, 840, 216)))
                 {
                 }
-
+                /// <summary>
+                /// Convert stat to correct icon id.
+                /// </summary>
                 private static Dictionary<Kernel_bin.Stat, Icons.ID> Stat2Icon = new Dictionary<Kernel_bin.Stat, Icons.ID>
                 {
                     { Kernel_bin.Stat.HP, Icons.ID.Stats_Hit_Points },
@@ -318,6 +323,9 @@ namespace FF8
                     { Kernel_bin.Stat.HIT, Icons.ID.Stats_Hit_Percent },
                 };
 
+                /// <summary>
+                /// Things that may of changed before screen loads or junction is changed.
+                /// </summary>
                 public override void ReInit()
                 {
                     base.ReInit();
@@ -359,6 +367,9 @@ namespace FF8
                     }
                 }
 
+                /// <summary>
+                /// Things fixed at startup.
+                /// </summary>
                 protected override void Init()
                 {
                     base.Init();
