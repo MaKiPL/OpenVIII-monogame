@@ -226,8 +226,8 @@ namespace FF8
         /// <remarks>These files are just the image data with no header and no clut data. So above doesn't work with this.</remarks>
         public static Texture2D Overture(byte[] buffer)
         {
-            var ImageOrgX = BitConverter.ToUInt16(buffer, 0x00);
-            var ImageOrgY = BitConverter.ToUInt16(buffer, 0x02);
+            //var ImageOrgX = BitConverter.ToUInt16(buffer, 0x00);
+            //var ImageOrgY = BitConverter.ToUInt16(buffer, 0x02);
             var Width = BitConverter.ToUInt16(buffer, 0x04);
             var Height = BitConverter.ToUInt16(buffer, 0x06);
             Texture2D splashTex = new Texture2D(Memory.graphics.GraphicsDevice, Width, Height, false, SurfaceFormat.Color);
