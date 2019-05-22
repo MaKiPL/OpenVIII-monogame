@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 
@@ -120,8 +121,6 @@ namespace FF8
             textureDataPointer = (uint)pbs.Tell();
         }
 
-        
-
         public Color[] GetClutColors(Font.ColorID clut) => GetClutColors((ushort)clut);
 
         public Color[] GetClutColors(int clut) => GetClutColors((ushort)clut);
@@ -218,5 +217,45 @@ namespace FF8
         public int GetWidth => texture.Width;
 
         public int GetHeight => texture.Height;
+
+        /// <summary>
+        /// Splash is 640x400 16BPP typical TIM with palette of ggg bbbbb a rrrrr gg
+        /// </summary>
+        /// <param name="buffer">raw 16bpp image</param>
+        /// <param name="Width">Should be 640</param>
+        /// <param name="Height">Should be 400</param>
+        /// <param name="Skip">8 bytes of unknown data at start of image</param>
+        /// <returns>Texture2D</returns>
+        public static Texture2D Overture(byte[] buffer, int Width = 640, int Height = 400, byte Skip = 8)
+        {
+            Texture2D splashTex = new Texture2D(Memory.graphics.GraphicsDevice, Width, Height, false, SurfaceFormat.Color);
+            lock (splashTex)
+            {
+                byte[] rgbBuffer = new byte[splashTex.Width * splashTex.Height * 4];
+                int innerBufferIndex = Skip;
+                for (int i = 0; i < rgbBuffer.Length && innerBufferIndex < buffer.Length; i += 4)
+                {
+                    if (innerBufferIndex + 1 >= buffer.Length)
+                    {
+                        break;
+                    }
+
+                    ushort pixel = (ushort)((buffer[innerBufferIndex + 1] << 8) | buffer[innerBufferIndex]);
+                    byte red = (byte)((pixel) & 0x1F);
+                    byte green = (byte)((pixel >> 5) & 0x1F);
+                    byte blue = (byte)((pixel >> 10) & 0x1F);
+                    red = (byte)MathHelper.Clamp((red * 8), 0, 255);
+                    green = (byte)MathHelper.Clamp((green * 8), 0, 255);
+                    blue = (byte)MathHelper.Clamp((blue * 8), 0, 255);
+                    rgbBuffer[i] = red;
+                    rgbBuffer[i + 1] = green;
+                    rgbBuffer[i + 2] = blue;
+                    rgbBuffer[i + 3] = 255;//(byte)(((pixel >> 7) & 0x1) == 1 ? 255 : 0);
+                    innerBufferIndex += 2;
+                }
+                splashTex.SetData(rgbBuffer);
+            }
+            return splashTex;
+        }
     }
 }
