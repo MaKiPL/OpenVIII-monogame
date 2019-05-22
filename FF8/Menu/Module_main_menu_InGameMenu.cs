@@ -326,8 +326,28 @@ namespace FF8
                                 //case Items.Magic:
                                 //case Items.Status:
                                 State = MainMenuStates.IGM_Junction;
-                                InGameMenu_Junction.ReInit(Memory.State.Party[choChar]);
-                                //TODO support nonparty characters
+                                if (choChar < 3)
+                                    InGameMenu_Junction.ReInit(Memory.State.PartyData[choChar], Memory.State.Party[choChar]);
+                                else
+                                {
+                                    int pos = 0;
+                                    if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
+                                    {
+                                        for (byte i = 0; Memory.State.Party != null && i < Memory.State.Characters.Length; i++)
+                                        {
+                                            if (!Memory.State.PartyData.Contains((Saves.Characters)i) && Memory.State.Characters[i].VisibleInMenu)
+                                            {
+                                                if (pos++ + 3 == choChar)
+                                                {
+                                                    InGameMenu_Junction.ReInit((Saves.Characters)i, (Saves.Characters)i);
+                                                    break;
+                                                }
+                                            }
+                                        }
+
+                                    }
+
+                                }
                                 break;
                         }
                     }

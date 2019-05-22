@@ -88,6 +88,7 @@ namespace FF8
             public static Dictionary<Items, FF8String> Misc { get; private set; }
             public static Dictionary<Items, FF8String> Descriptions { get; private set; }
             public static Saves.Characters Character { get; private set; }
+            public static Saves.Characters VisableCharacter { get; private set; }
 
             public override bool Update()
             {
@@ -203,9 +204,10 @@ namespace FF8
                 base.Init();
             }
 
-            public void ReInit(Saves.Characters c)
+            public void ReInit(Saves.Characters c, Saves.Characters vc)
             {
                 Character = c;
+                VisableCharacter = vc;
                 ReInit();
             }
 
@@ -253,12 +255,13 @@ namespace FF8
                 public override void ReInit()
                 {
                     base.ReInit();
+                    ITEM[0, 0] = new IGMDataItem_Face((Faces.ID)VisableCharacter, new Rectangle(X + 12, Y, 96, 144));
+                    ITEM[0, 2] = new IGMDataItem_String(Memory.Strings.GetName(VisableCharacter), new Rectangle(X + 117, Y + 0, 0, 0));
 
-                    ITEM[0, 0] = new IGMDataItem_Face((Faces.ID)Character, new Rectangle(X + 12, Y, 96, 144));
-                    ITEM[0, 2] = new IGMDataItem_String(Memory.Strings.GetName(Character), new Rectangle(X + 117, Y + 0, 0, 0));
 
                     if (Memory.State.Characters != null)
                     {
+
                         ITEM[0, 4] = new IGMDataItem_Int(Memory.State.Characters[(int)Character].Level, new Rectangle(X + 117 + 35, Y + 54, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 6);
                         ITEM[0, 5] = Memory.State.Party != null && Memory.State.Party.Contains(Character)
                             ? new IGMDataItem_Icon(Icons.ID.InParty, new Rectangle(X + 278, Y + 48, 0, 0), 6)
