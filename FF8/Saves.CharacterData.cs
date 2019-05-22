@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace FF8
 {
@@ -29,7 +32,7 @@ namespace FF8
             public byte[] Commands; //0x10
             public byte Paddingorunusedcommand; //0x50
             public byte[] Abilities; //0x53
-            public ushort JunctionnedGFs; //0x54
+            public GFflags JunctionnedGFs; //0x54
             public byte Unknown1; //0x58
             public byte Alternativemodel; //0x5A (Normal, SeeD, Soldier...)
             public Dictionary<Kernel_bin.Stat,byte> JunctionStat;
@@ -50,13 +53,35 @@ namespace FF8
             public Dictionary<GFs, ushort> CompatibilitywithGFs; //0x6F
             public ushort Numberofkills; //0x70
             public ushort NumberofKOs; //0x90
-            public byte Exists; //0x92 //15,9,7,4,1 shows on menu, 0 locked, 6 hidden // I think
+            public byte Exists; //0x92 //15,9,7,4,1 shows on menu, 0 locked, 6 hidden // I think I wonder if this is a flags value.
             public bool VisibleInMenu => Exists != 0 && Exists != 6;
             public bool CanAddToParty => true; // I'm sure one of the Exists values determines this but I donno yet.
             public byte Unknown3; //0x94
             public byte MentalStatus; //0x95
             public byte Unknown4; //0x96
             public Characters ID { get; private set; }
+            public Kernel_bin.Abilities[] UnlockedGFAbilities
+            {
+                get
+                {
+                    BitArray total = new BitArray(16*8);
+                    List<Kernel_bin.Abilities> abilities = new List<Kernel_bin.Abilities>();
+                    var availableFlags = Enum.GetValues(typeof(GFflags)).Cast<Enum>();
+                    foreach (var flag in availableFlags.Where(JunctionnedGFs.HasFlag))
+                    {
+                        if ((GFflags)flag == GFflags.None) continue;
+                        var gf = ConvertGFEnum[(GFflags)flag];
+                        total.Or(Memory.State.GFs[(int)gf].Complete);
+                    }
+                    for(var i=1; i< total.Length; i++)//0 is none so skipping it.
+                    {
+                        if(total[i])
+                            abilities.Add((Kernel_bin.Abilities)i);
+                    }
+
+                    return abilities.ToArray();
+                }
+            }
             public void Read(BinaryReader br,Characters c)
             {
                 ID = c;
@@ -82,7 +107,7 @@ namespace FF8
                 Commands = br.ReadBytes(3);//0x50
                 Paddingorunusedcommand = br.ReadByte();//0x53
                 Abilities = br.ReadBytes(4);//0x54
-                JunctionnedGFs = br.ReadUInt16();//0x58
+                JunctionnedGFs = (GFflags)br.ReadUInt16();//0x58
                 Unknown1 = br.ReadByte();//0x5A
                 Alternativemodel = br.ReadByte();//0x5B (Normal, SeeD, Soldier...)
                 JunctionStat = new Dictionary<Kernel_bin.Stat, byte>(9);

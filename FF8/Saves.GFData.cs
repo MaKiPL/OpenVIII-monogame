@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections;
+using System.IO;
 
 namespace FF8
 {
@@ -17,7 +18,7 @@ namespace FF8
             public byte Unknown; //0x0C
             public byte Exists; //0x10
             public ushort HP; //0x11
-            public byte[] Complete; //0x12 abilities (1 bit = 1 ability completed, 9 bits unused)
+            public BitArray Complete; //0x12 abilities (1 bit = 1 ability completed, 9 bits unused)
             public byte[] APs; //0x14 (1 byte = 1 ability of the GF, 2 bytes unused)
             public ushort NumberKills; //0x24 of kills
             public ushort NumberKOs; //0x3C of KOs
@@ -31,7 +32,7 @@ namespace FF8
                 Unknown = br.ReadByte();//0x10
                 Exists = br.ReadByte();//0x11
                 HP = br.ReadUInt16();//0x12
-                Complete = br.ReadBytes(16);//0x14 abilities (1 bit = 1 ability completed, 9 bits unused)
+                Complete = new BitArray(br.ReadBytes(16));//0x14 abilities (1 bit = 1 ability completed, 9 bits unused)
                 APs = br.ReadBytes(24);//0x24 (1 byte = 1 ability of the GF, 2 bytes unused)
                 NumberKills = br.ReadUInt16();//0x3C of kills
                 NumberKOs = br.ReadUInt16();//0x3E of KOs

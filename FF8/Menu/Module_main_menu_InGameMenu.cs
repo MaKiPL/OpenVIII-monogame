@@ -883,12 +883,7 @@ namespace FF8
             /// <summary>
             /// Where to draw this item.
             /// </summary>
-            public virtual Rectangle Pos
-            {
-                get => _pos; set => _pos = value;
-
-                //public implicit operator IGMDataItem<T>(IGMDataItem_Icon v) => throw new NotImplementedException();
-            }
+            public virtual Rectangle Pos { get => _pos; set => _pos = value; }
 
             public Color Color { get; set; } = Color.White;
 
@@ -1029,10 +1024,15 @@ namespace FF8
         private class IGMDataItem_String : IGMDataItem
         {
             public FF8String Data { get; set; }
+            public Font.ColorID Colorid { get; set; }
 
-            public IGMDataItem_String(FF8String data, Rectangle? pos = null) : base(pos) => this.Data = data;
+            public IGMDataItem_String(FF8String data, Rectangle? pos = null,Font.ColorID? color = null): base(pos)
+            {
+                Data = data;
+                Colorid = color??Font.ColorID.White;
+            }
 
-            public override void Draw() => Memory.font.RenderBasicText(Data, Pos.Location, Scale, Fade: fade);
+            public override void Draw() => Memory.font.RenderBasicText(Data, Pos.Location, Scale, Fade: fade,color: Colorid);
         }
 
         private class IGMDataItem_Box : IGMDataItem

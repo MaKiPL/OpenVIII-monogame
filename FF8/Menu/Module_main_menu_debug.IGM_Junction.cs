@@ -246,6 +246,7 @@ namespace FF8
                 public IGMData_CharacterInfo() : base(1, 15, new IGMDataItem_Empty(new Rectangle(20, 153, 395, 255)))
                 {
                 }
+
                 /// <summary>
                 /// Things that may of changed before screen loads or junction is changed.
                 /// </summary>
@@ -268,6 +269,7 @@ namespace FF8
                         ITEM[0, 13] = new IGMDataItem_Int(Memory.State.Characters[(int)Character].ExperienceToNextLevel, new Rectangle(X + 192, Y + 231, 0, 0), 13, numtype: Icons.NumType.Num_8x8_2, padding: 1, spaces: 9);
                     }
                 }
+
                 /// <summary>
                 /// Things fixed at startup.
                 /// </summary>
@@ -286,10 +288,24 @@ namespace FF8
 
             private class IGMData_Stats : IGMData
             {
-                public IGMData_Stats() : base(10, 4, new IGMDataItem_Box(pos:new Rectangle(0, 414, 840, 216)))
+                private static Dictionary<Kernel_bin.Stat, Kernel_bin.Abilities> Stat2Ability = new Dictionary<Kernel_bin.Stat, Kernel_bin.Abilities>
+                {
+                    { Kernel_bin.Stat.HP, Kernel_bin.Abilities.HP_J },
+                    { Kernel_bin.Stat.STR, Kernel_bin.Abilities.Str_J },
+                    { Kernel_bin.Stat.VIT,Kernel_bin.Abilities.Vit_J},
+                    { Kernel_bin.Stat.MAG,Kernel_bin.Abilities.Mag_J},
+                    { Kernel_bin.Stat.SPR, Kernel_bin.Abilities.Spr_J },
+                    { Kernel_bin.Stat.SPD, Kernel_bin.Abilities.Spd_J },
+                    { Kernel_bin.Stat.EVA, Kernel_bin.Abilities.Eva_J },
+                    { Kernel_bin.Stat.LUCK, Kernel_bin.Abilities.Luck_J },
+                    { Kernel_bin.Stat.HIT, Kernel_bin.Abilities.Hit_J },
+                };
+
+                public IGMData_Stats() : base(10, 4, new IGMDataItem_Box(pos: new Rectangle(0, 414, 840, 216)))
                 {
                 }
-                public static Dictionary<Kernel_bin.Stat, Icons.ID> Convert = new Dictionary<Kernel_bin.Stat, Icons.ID>
+
+                private static Dictionary<Kernel_bin.Stat, Icons.ID> Stat2Icon = new Dictionary<Kernel_bin.Stat, Icons.ID>
                 {
                     { Kernel_bin.Stat.HP, Icons.ID.Stats_Hit_Points },
                     { Kernel_bin.Stat.STR, Icons.ID.Stats_Strength },
@@ -301,27 +317,46 @@ namespace FF8
                     { Kernel_bin.Stat.LUCK, Icons.ID.Stats_Luck },
                     { Kernel_bin.Stat.HIT, Icons.ID.Stats_Hit_Percent },
                 };
-                public override bool Update()
+
+                public override void ReInit()
                 {
-                    base.Update();
-                    foreach (Kernel_bin.Stat stat in (Kernel_bin.Stat[])Enum.GetValues(typeof(Kernel_bin.Stat)))
+                    base.ReInit();
+
+                    if (Memory.State.Characters != null)
                     {
-                        int pos = (int)stat;
-                        if (pos >= 5) pos++;
-                        ITEM[pos, 0] = new IGMDataItem_Icon(Convert[stat], new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), 2);
-                        if (Memory.State.Characters != null)
+                        Kernel_bin.Abilities[] unlocked = Memory.State.Characters[(int)Character].UnlockedGFAbilities;
+                        ITEM[5, 0] = new IGMDataItem_Icon(Icons.ID.Icon_Status_Attack, new Rectangle(SIZE[5].X + 200, SIZE[5].Y, 0, 0),
+                            (byte)(unlocked.Contains(Kernel_bin.Abilities.ST_Atk_J) ? 2 : 7));
+                        ITEM[5, 1] = new IGMDataItem_Icon(Icons.ID.Icon_Status_Defense, new Rectangle(SIZE[5].X + 240, SIZE[5].Y, 0, 0),
+                            (byte)(unlocked.Contains(Kernel_bin.Abilities.ST_Def_J) ||
+                            unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx2) ||
+                            unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4) ? 2 : 7));
+                        ITEM[5, 2] = new IGMDataItem_Icon(Icons.ID.Icon_Elemental_Attack, new Rectangle(SIZE[5].X + 280, SIZE[5].Y, 0, 0),
+                            (byte)(unlocked.Contains(Kernel_bin.Abilities.Elem_Atk_J) ? 2 : 7));
+                        ITEM[5, 3] = new IGMDataItem_Icon(Icons.ID.Icon_Elemental_Defense, new Rectangle(SIZE[5].X + 320, SIZE[5].Y, 0, 0),
+                            (byte)(unlocked.Contains(Kernel_bin.Abilities.Elem_Def_J) ||
+                            unlocked.Contains(Kernel_bin.Abilities.Elem_Defx2) ||
+                            unlocked.Contains(Kernel_bin.Abilities.Elem_Defx4) ? 2 : 7));
+                        foreach (Kernel_bin.Stat stat in (Kernel_bin.Stat[])Enum.GetValues(typeof(Kernel_bin.Stat)))
                         {
-                            var name = Kernel_bin.MagicData[Memory.State.Characters[(int)Character].JunctionStat[stat]].Name;
+                            int pos = (int)stat;
+                            if (pos >= 5) pos++;
+                            FF8String name = Kernel_bin.MagicData[Memory.State.Characters[(int)Character].JunctionStat[stat]].Name;
                             if (name.Length == 0) name = Misc[Items._];
+
+                            ITEM[pos, 0] = new IGMDataItem_Icon(Stat2Icon[stat], new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), 2);
                             ITEM[pos, 1] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X + 80, SIZE[pos].Y, 0, 0));
-                            ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[(int)Character].TotalStat(stat,Character), new Rectangle(SIZE[pos].X + 72 + 80, SIZE[pos].Y, 0, 0), 2,Icons.NumType.sysFntBig,spaces:10);
-                            if (stat == Kernel_bin.Stat.HIT || stat == Kernel_bin.Stat.EVA)
-                                ITEM[pos, 3] = new IGMDataItem_String(Misc[Items.Percent], new Rectangle(SIZE[pos].X + 192 + 72 + 80, SIZE[pos].Y, 0, 0));
-                            else
-                                ITEM[pos, 3] = null;
+                            if (!unlocked.Contains(Stat2Ability[stat]))
+                            {
+                                ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 7;
+                                ((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Grey;
+                            }
+                            ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[(int)Character].TotalStat(stat, Character), new Rectangle(SIZE[pos].X + 72 + 80, SIZE[pos].Y, 0, 0), 2, Icons.NumType.sysFntBig, spaces: 10);
+                            ITEM[pos, 3] = stat == Kernel_bin.Stat.HIT || stat == Kernel_bin.Stat.EVA
+                                ? new IGMDataItem_String(Misc[Items.Percent], new Rectangle(SIZE[pos].X + 192 + 72 + 80, SIZE[pos].Y, 0, 0))
+                                : null;
                         }
                     }
-                    return false;
                 }
 
                 protected override void Init()
@@ -335,12 +370,13 @@ namespace FF8
                         int row = i % rows;
                         SIZE[i] = new Rectangle
                         {
-                            X = X+(Width * col) / cols,
-                            Y = Y+(Height * row) / rows,
+                            X = X + (Width * col) / cols,
+                            Y = Y + (Height * row) / rows,
                             Width = Width / cols,
                             Height = Height / rows,
                         };
-                        SIZE[i].Inflate(-8,-8);
+                        SIZE[i].Inflate(-22, -8);
+                        SIZE[i].Offset(0, 4 + (-2 * row));
                     }
                 }
             }
