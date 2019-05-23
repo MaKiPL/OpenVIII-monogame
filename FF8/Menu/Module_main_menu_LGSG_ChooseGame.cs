@@ -267,7 +267,7 @@ namespace FF8
             };
             Vector2 offset = dst.Location.ToVector2();
 
-            DrawBox(dst, indent: false);
+            DrawBox(dst);
 
             Vector2 blocknumpos = new Vector2
             {
@@ -348,7 +348,7 @@ namespace FF8
                     Height = (int)(OffScreenBuffer.Height * 0.138364779874214f),
                 };
                 locbox.Offset(offset);
-                DrawBox(locbox, indent: false);
+                DrawBox(locbox);
                 FF8String loc = Memory.Strings.Read(Strings.FileID.AREAMES, 0, d.LocationID).ReplaceRegion();
                 locbox.Offset(0.0297619047619048f * OffScreenBuffer.Width, 0.0440251572327044f * OffScreenBuffer.Height);
                 Memory.font.RenderBasicText(loc, locbox.Location, TextScale, Fade: fade);

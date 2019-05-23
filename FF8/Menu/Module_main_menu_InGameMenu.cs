@@ -473,43 +473,30 @@ namespace FF8
             {
                 private Texture2D _red_pixel;
 
-                public IGMData_NonParty() : this(6, 9, new IGMDataItem_Box(pos: new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 }))
+                public IGMData_NonParty() : base(6, 9, new IGMDataItem_Box(pos: new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 }),2,3)
                 {
                 }
 
-                public IGMData_NonParty(int count, int depth, IGMDataItem container = null) : base(count, depth, container)
-                {
-                }
 
                 public override void Draw()
                 {
                     if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
                         base.Draw();
                 }
+                protected override void InitShift(int i, int col, int row)
+                {
+                    base.InitShift(i, col, row);
+                    SIZE[i].Inflate(-26, -8);
+                    if (row >= 1) SIZE[i].Y -= 4;
+                    if (row >= 2) SIZE[i].Y -= 4;
+                }
 
                 protected override void Init()
-                {                    
+                {
+                    Table_Options |= Table_Options.FillRows;
                     _red_pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
                     Color[] color = new Color[] { new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, 100) };
                     _red_pixel.SetData<Color>(color, 0, _red_pixel.Width * _red_pixel.Height);
-                    int row = 0, col = 0;
-                    for (int i = 0; i < SIZE.Length; i++)
-                    {
-                        int width = Width / 2;
-                        int height = Height / 3;
-                        row = i / 2;
-                        col = i % 2;
-                        SIZE[i] = new Rectangle
-                        {
-                            Width = width,
-                            Height = height,
-                            X = X + col * width,
-                            Y = Y + row * height
-                        };
-                        SIZE[i].Inflate(-26, -8);
-                        if (i > 1) SIZE[i].Y -= 4;
-                        if (i > 3) SIZE[i].Y -= 4;
-                    }
                     base.Init();
                 }
 
@@ -636,7 +623,7 @@ namespace FF8
                             float yoff = 6;
 
                             ITEM[pos, 0] = new IGMDataItem_Box(Memory.Strings.GetName(visableCharacter), title: Icons.ID.STATUS);
-                            Tuple<Rectangle, Point, Rectangle> dims = DrawBox(SIZE[pos], ((IGMDataItem_Box)ITEM[pos, 0]).Data, indent: false, skipdraw: true);
+                            Tuple<Rectangle, Point, Rectangle> dims = DrawBox(SIZE[pos], ((IGMDataItem_Box)ITEM[pos, 0]).Data, options: Box_Options.SkipDraw);
                             Rectangle r = dims.Item3;
                             ITEM[pos, 0].Pos = dims.Item1;
                             CURSOR[pos] = dims.Item2;
@@ -710,12 +697,15 @@ namespace FF8
 
             private class IGMData_SideMenu : IGMData
             {
-                public IGMData_SideMenu() : this(11, 1, new IGMDataItem_Box(pos: new Rectangle { Width = 226, Height = 492, X = 843 - 226 }))
+                public IGMData_SideMenu() : base(11, 1, new IGMDataItem_Box(pos: new Rectangle { Width = 226, Height = 492, X = 843 - 226 }),1,11)
                 {
                 }
 
-                public IGMData_SideMenu(int count, int depth, IGMDataItem container = null) : base(count, depth, container)
+                protected override void InitShift(int i, int col, int row)
                 {
+                    base.InitShift(i, col, row);
+                    SIZE[i].Inflate(-26, -12);
+                    ITEM[i, 0].Pos = SIZE[i];
                 }
 
                 protected override void Init()
@@ -732,20 +722,6 @@ namespace FF8
                     ITEM[8, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 16));
                     ITEM[9, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 67));
                     ITEM[10, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 14));
-                    for (int i = 0; i < Count; i++)
-                    {
-                        Rectangle r = new Rectangle
-                        {
-                            Width = Width,
-                            Height = Height / Count,
-                            X = X,
-                            Y = Y + (Height / Count) * i,
-                        };
-                        r.Inflate(-26, -12);
-                        ITEM[i, 0].Pos = r;
-                        SIZE[i] = r;
-                        //CURSOR[i] = new Point(r.X, (int)(r.Y + 6 * TextScale.Y));
-                    }
                     base.Init();
                 }
 
@@ -786,6 +762,18 @@ namespace FF8
             /// </summary>
             Vertical = 0x8,
         }
+        [Flags]
+        public enum Table_Options
+        {
+            /// <summary>
+            /// No flags set.
+            /// </summary>
+            Default = 0x0,
+            /// <summary>
+            /// Default fills 1 col at a time. This will make it fill 1 row at a time.
+            /// </summary>
+            FillRows = 0x1,
+        }
         public class IGMData
         {
             #region Fields
@@ -802,13 +790,8 @@ namespace FF8
                     _enabled = value;
                 }
             }
-            public Cursor_Status Cursor_Status
-            {
-                get => _cursor_Status; set
-                {
-                    _cursor_Status = value;
-                }
-            }
+            public Table_Options Table_Options { get; set; } = Table_Options.Default;
+            public Cursor_Status Cursor_Status { get; set; } = Cursor_Status.Disabled;
             public int CURSOR_SELECT
             {
                 get => _cursor_select; set
@@ -857,7 +840,6 @@ namespace FF8
             public bool[] BLANKS;
             private int _cursor_select;
             private bool _enabled = true;
-            private Cursor_Status _cursor_Status = Cursor_Status.Disabled;
 
             public IGMDataItem CONTAINER { get; protected set; }
 
@@ -865,7 +847,7 @@ namespace FF8
 
             #region Constructors
 
-            public IGMData(int count, int depth, IGMDataItem container = null)
+            public IGMData(int count, int depth, IGMDataItem container = null, int? cols = null, int? rows = null)
             {
                 SIZE = new Rectangle[count];
                 ITEM = new IGMDataItem[count, depth];
@@ -877,6 +859,8 @@ namespace FF8
                 if (container != null)
                     CONTAINER = container;
                 CURSOR_SELECT = 0;
+                this.cols = cols ?? 1;
+                this.rows = rows ?? 1;
                 Init();
                 ReInit();
                 Update();
@@ -938,6 +922,9 @@ namespace FF8
             /// Container's Y Position
             /// </summary>
             public int Y => CONTAINER != null ? CONTAINER.Pos.Y : 0;
+
+            public int rows { get; private set; }
+            public int cols { get; private set; }
 
 
             /// <summary>
@@ -1032,16 +1019,45 @@ namespace FF8
                 Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(8);
             }
+            protected virtual void InitShift(int i, int col, int row)
+            {
 
+            }
             /// <summary>
             /// Things that are fixed values at startup.
             /// </summary>
             protected virtual void Init()
             {
-                if (SIZE.Length < 0 && SIZE[0].IsEmpty)
+                if (SIZE.Length>0 && SIZE[0].IsEmpty)
                 {
+                    for (int i = 0; i < SIZE.Length; i++)
+                    {
+                        int col = (Table_Options & Table_Options.FillRows) != 0 ? i % cols : i / rows;
+                        int row = (Table_Options & Table_Options.FillRows) != 0 ? i / cols : i % rows;
+                        if (col < cols && row < rows)
+                        {
+                            SIZE[i] = new Rectangle
+                            {
+                                X = X + (Width * col) / cols,
+                                Y = Y + (Height * row) / rows,
+                                Width = Width / cols,
+                                Height = Height / rows,
+                            };
+                            InitShift(i, col, row);
+                        }
+
+                    }
+                }
+                if (SIZE.Length == 0 || SIZE[0].IsEmpty)
+                {
+                    if (CURSOR.Length == 0 || SIZE.Length == 0)
+                    {
+                        CURSOR = new Point[1];
+                        SIZE = new Rectangle[1];
+                    }
                     CURSOR[0].Y = (int)(Y + Height / 2 - 6 * TextScale.Y);
                     CURSOR[0].X = X;
+                    SIZE[0] = new Rectangle(X, Y, Width, Height);
                 }
                 else
                     for (int i = 0; i < CURSOR.Length; i++)
@@ -1089,6 +1105,44 @@ namespace FF8
             public static implicit operator Rectangle(IGMDataItem v) => v.Pos;
 
             public static implicit operator Color(IGMDataItem v) => v.Color;
+            public static implicit operator IGMDataItem(IGMData v)
+            {
+                return new IGMDataItem_IGMData(v);
+            }
+            public virtual void ReInit()
+            { }
+            public virtual bool Update()
+            { return false; }
+            public virtual bool Inputs()
+            { return false; }
+        }
+        public class IGMDataItem_IGMData : IGMDataItem
+        {
+            public IGMData Data { get; set; }
+            public IGMDataItem_IGMData(IGMData data, Rectangle? pos = null) : base(pos)
+            {
+                Data = data;
+            }
+
+            public override void Draw()
+            {
+                Data.Draw();
+            }
+            public override bool Update()
+            {
+                bool ret = base.Update();
+                return ret || Data.Update();
+            }
+            public override bool Inputs()
+            {
+                bool ret = base.Inputs();
+                return ret || Data.Inputs();
+            }
+            public override void ReInit()
+            {
+                base.ReInit();
+                Data.ReInit();
+            }
         }
         public class IGMDataItem_Empty : IGMDataItem
         {
@@ -1141,6 +1195,16 @@ namespace FF8
                 Memory.Icons.Draw(Data, Pallet, Pos, Scale, fade);
                 if (Blink)
                     Memory.Icons.Draw(Data, Faded_Pallet, Pos, Scale, fade * blink_Amount * Blink_Adjustment);
+            }
+        }
+
+        /// <summary>
+        /// Contains only one IGMDataItem.
+        /// </summary>
+        public class IGMData_Container : IGMData
+        {
+            public IGMData_Container(IGMDataItem container) : base(0, 0, container)
+            {
             }
         }
 
@@ -1234,17 +1298,17 @@ namespace FF8
         {
             public FF8String Data { get; set; }
             public Icons.ID? Title { get; set; }
-            public bool Indent { get; set; }
+            public Box_Options Options { get; set; }
 
-            public IGMDataItem_Box(FF8String data = null, Rectangle? pos = null, Icons.ID? title = null, bool indent = false) : base(pos)
+            public IGMDataItem_Box(FF8String data = null, Rectangle? pos = null, Icons.ID? title = null, Box_Options options = Box_Options.Default) : base(pos)
             {
                 Data = data;
                 Title = title;
-                Indent = indent;
+                Options = options;
             }
 
             public override void Draw() =>
-                    DrawBox(Pos, Data, Title, indent: Indent);
+                    DrawBox(Pos, Data, Title, options: Options);
         }
 
         private class IGMDataItem_Texture : IGMDataItem
@@ -1330,6 +1394,47 @@ namespace FF8
                 return false;
             }
 
+            public class IGMData_Group : IGMData
+            {
+                public IGMData_Group(params IGMData[] d) : base(d.Length, 1)
+                {
+                    for (int i = 0; i < d.Length; i++)
+                    {
+                        ITEM[i, 0] = d[i];
+                    }
+                }
+
+                public override bool Inputs()
+                {
+                    bool ret = base.Inputs();
+                    foreach (var i in ITEM)
+                    {
+                        ret = ret || i.Inputs();
+                    }
+                    return ret;
+                }
+
+                public override void ReInit()
+                {
+                    base.ReInit();
+                    foreach (var i in ITEM)
+                    {
+                        if (i != null)
+                            i.ReInit();
+                    }
+                }
+
+                public override bool Update()
+                {
+                    bool ret = base.Update();
+                    foreach (var i in ITEM)
+                    {
+                        if (i != null)
+                            ret = ret || i.Update();
+                    }
+                    return ret;
+                }
+            }
             protected abstract bool Inputs();
         }
     }
