@@ -19,7 +19,7 @@ namespace FF8
             public FF8String Name { get; private set; }
             public FF8String Description { get; private set; }
             public byte AP { get; private set; }
-            public BitArray Flags { get; private set; }
+            public CharacterAbilityFlags Flags { get; private set; }
 
             public void Read(BinaryReader br, int i)
             {
@@ -30,7 +30,10 @@ namespace FF8
                 br.BaseStream.Seek(4, SeekOrigin.Current);
                 AP = br.ReadByte();
                 //0x0004  1 byte AP Required to learn ability
-                Flags = new BitArray(br.ReadBytes(3));
+                byte[] tmp = br.ReadBytes(3);
+                int shift =0;
+                Flags = (CharacterAbilityFlags)(tmp[2] << (16+ shift) | tmp[1] << (8+ shift) | tmp[0]<<(shift));
+                //Flags = new BitArray(br.ReadBytes(3));
                 //0x0005  3 byte Flags
             }
             public static Character_abilities[] Read(BinaryReader br)

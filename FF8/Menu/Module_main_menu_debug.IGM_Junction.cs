@@ -82,12 +82,19 @@ namespace FF8
                 /// Portrait Name HP EXP Rank?
                 /// </summary>
                 CharacterInfo,
+                TopMenu_Junction,
             }
 
             public static Dictionary<Items, FF8String> Titles { get; private set; }
             public static Dictionary<Items, FF8String> Misc { get; private set; }
             public static Dictionary<Items, FF8String> Descriptions { get; private set; }
+            /// <summary>
+            /// Character who has the junctions and inventory. Same as VisableCharacter unless TeamLaguna.
+            /// </summary>
             public static Saves.Characters Character { get; private set; }
+            /// <summary>
+            /// Required to support Laguna's Party. They have unique stats but share junctions and inventory.
+            /// </summary>
             public static Saves.Characters VisableCharacter { get; private set; }
 
             public override bool Update()
@@ -201,6 +208,11 @@ namespace FF8
 
                 Data.Add(SectionName.CharacterInfo, new IGMData_CharacterInfo());
                 Data.Add(SectionName.Stats, new IGMData_Stats());
+                Data.Add(SectionName.Commands, new IGMData_Commands());
+                Data.Add(SectionName.Help, new IGMData_Help());
+                Data.Add(SectionName.TopMenu, new IGMData_TopMenu());
+                Data.Add(SectionName.Title, new IGMData_Title());
+                Data.Add(SectionName.TopMenu_Junction, new IGMData_TopMenu_Junction());
                 base.Init();
             }
 
@@ -210,8 +222,29 @@ namespace FF8
                 VisableCharacter = vc;
                 ReInit();
             }
-
-            protected override bool Inputs() => false;
+            public new enum Mode
+            {
+                TopMenu,
+                TopMenu_Junction
+            }
+            public new Mode mode;
+            protected override bool Inputs()
+            {
+                bool ret = false;
+                switch(mode)
+                {
+                    case Mode.TopMenu:
+                        ret = ((IGMData_TopMenu)Data[SectionName.TopMenu]).Inputs();
+                        break;
+                    case Mode.TopMenu_Junction:
+                        ret = ((IGMData_TopMenu_Junction)Data[SectionName.TopMenu_Junction]).Inputs();
+                        break;
+                    default:
+                        break;
+                        
+                }
+                return ret;
+            }
 
             public override void Draw()
             {
@@ -278,7 +311,6 @@ namespace FF8
                 /// </summary>
                 protected override void Init()
                 {
-                    base.Init();
                     ITEM[0, 1] = new IGMDataItem_Icon(Icons.ID.MenuBorder, new Rectangle(X + 10, Y - 2, 100, 148), scale: new Vector2(1f));
                     ITEM[0, 3] = new IGMDataItem_String(Misc[Items.LV], new Rectangle(X + 117, Y + 54, 0, 0));
                     ITEM[0, 6] = new IGMDataItem_String(Misc[Items.HP], new Rectangle(X + 117, Y + 108, 0, 0));
@@ -286,6 +318,7 @@ namespace FF8
                     ITEM[0, 10] = new IGMDataItem_String(Misc[Items.CurrentEXP] + new FF8String("\n") + Misc[Items.NextLEVEL], new Rectangle(X, Y + 192, 0, 0));
                     ITEM[0, 12] = new IGMDataItem_Icon(Icons.ID.P, new Rectangle(X + 372, Y + 198, 0, 0), 2);
                     ITEM[0, 14] = new IGMDataItem_Icon(Icons.ID.P, new Rectangle(X + 372, Y + 231, 0, 0), 2);
+                    base.Init();
                 }
             }
 
@@ -362,9 +395,9 @@ namespace FF8
                                 ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 7;
                                 ((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Grey;
                             }
-                            ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[(int)Character].TotalStat(stat, VisableCharacter), new Rectangle(SIZE[pos].X + 72 + 80, SIZE[pos].Y, 0, 0), 2, Icons.NumType.sysFntBig, spaces: 10);
+                            ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[(int)Character].TotalStat(stat, VisableCharacter), new Rectangle(SIZE[pos].X + 152, SIZE[pos].Y, 0, 0), 2, Icons.NumType.sysFntBig, spaces: 10);
                             ITEM[pos, 3] = stat == Kernel_bin.Stat.HIT || stat == Kernel_bin.Stat.EVA
-                                ? new IGMDataItem_String(Misc[Items.Percent], new Rectangle(SIZE[pos].X + 192 + 72 + 80, SIZE[pos].Y, 0, 0))
+                                ? new IGMDataItem_String(Misc[Items.Percent], new Rectangle(SIZE[pos].X + 350, SIZE[pos].Y, 0, 0))
                                 : null;
                         }
                     }
@@ -375,7 +408,6 @@ namespace FF8
                 /// </summary>
                 protected override void Init()
                 {
-                    base.Init();
                     int rows = 5;
                     int cols = 2;
                     for (int i = 0; i < SIZE.Length; i++)
@@ -389,9 +421,191 @@ namespace FF8
                             Width = Width / cols,
                             Height = Height / rows,
                         };
+
                         SIZE[i].Inflate(-22, -8);
                         SIZE[i].Offset(0, 4 + (-2 * row));
                     }
+                    base.Init();
+                }
+            }
+
+            private class IGMData_Commands : IGMData
+            {
+                public IGMData_Commands(): base (4,1, new IGMDataItem_Box(pos:new Rectangle(615,150,210,192),title: Icons.ID.COMMAND))
+                {
+                }
+
+                /// <summary>
+                /// Things that may of changed before screen loads or junction is changed.
+                /// </summary>
+                public override void ReInit()
+                {
+                    base.ReInit();
+
+                    if (Memory.State.Characters != null)
+                    {
+                        ITEM[0,0]= new IGMDataItem_String(
+                                Kernel_bin.BattleCommands[
+                                    Memory.State.Characters[(int)Character].Abilities.Contains(Kernel_bin.Abilities.Mug)?
+                                    13:
+                                    1].Name,
+                                SIZE[0]);
+                        
+                        for (int pos=1; pos < SIZE.Length; pos++)
+                        {
+
+                            ITEM[pos, 0] = Memory.State.Characters[(int)Character].Commands[pos - 1] != Kernel_bin.Abilities.None? new IGMDataItem_String(
+                                Kernel_bin.Commandabilities[-0x14+(int)(Memory.State.Characters[(int)Character].Commands[pos - 1])].Name,
+                                SIZE[pos]):null;
+                        }
+                    }
+                }
+
+                /// <summary>
+                /// Things fixed at startup.
+                /// </summary>
+                protected override void Init()
+                {
+                    int rows = 4;
+                    int cols = 1;
+                    for (int i = 0; i < SIZE.Length; i++)
+                    {
+                        int col = i / rows;
+                        int row = i % rows;
+                        SIZE[i] = new Rectangle
+                        {
+                            X = X + (Width * col) / cols,
+                            Y = Y + (Height * row) / rows,
+                            Width = Width / cols,
+                            Height = Height / rows,
+                        };
+                        SIZE[i].Inflate(-22, -8);
+                        SIZE[i].Offset(0, 12 + (-8 * row));
+                    }
+                    base.Init();
+                }
+            }
+
+            private class IGMData_Help : IGMData
+            {
+                public FF8String Data { get => ((IGMDataItem_Box)CONTAINER).Data; set => ((IGMDataItem_Box)CONTAINER).Data = value; }
+                public IGMData_Help():base(0,0,new IGMDataItem_Box(Descriptions[Items.Junction], pos: new Rectangle(15,69,810,78),title:Icons.ID.HELP))
+                {
+                }
+            }
+
+            private class IGMData_TopMenu : IGMData
+            {
+                public IGMData_TopMenu():base(4,1,new IGMDataItem_Box(pos: new Rectangle(0,12,610,54)))
+                {
+                }
+
+
+                protected override void Init()
+                {
+                    int rows = 1;
+                    int cols = 4;
+                    for (int i = 0; i < SIZE.Length; i++)
+                    {
+                        int col = i / rows;
+                        int row = i % rows;
+                        SIZE[i] = new Rectangle
+                        {
+                            X = X + (Width * col) / cols,
+                            Y = Y + (Height * row) / rows,
+                            Width = Width / cols,
+                            Height = Height / rows,
+                        };
+                        SIZE[i].Inflate(-40, -12);
+                        SIZE[i].Offset(20+ (-20 * (col>1?col:0)), 0);
+                    }
+                    ITEM[0, 0] = new IGMDataItem_String(Titles[Items.Junction], SIZE[0]);
+                    ITEM[1, 0] = new IGMDataItem_String(Titles[Items.Off], SIZE[1]);
+                    ITEM[2, 0] = new IGMDataItem_String(Titles[Items.Auto], SIZE[2]);
+                    ITEM[3, 0] = new IGMDataItem_String(Titles[Items.Ability], SIZE[3]);
+                    Cursor_Status |= Cursor_Status.Enabled;
+                    Cursor_Status |= Cursor_Status.Horizontal;
+                    Cursor_Status |= Cursor_Status.Vertical;
+                    base.Init();
+                }
+                public override void Inputs_CANCEL()
+                {
+                    base.Inputs_CANCEL();
+                    if (State == MainMenuStates.IGM_Junction)
+                    {
+                        State = MainMenuStates.InGameMenu;
+                        Fade = 0.0f;
+                    }
+                }
+
+                public override void Inputs_OKAY()
+                {
+                    switch(CURSOR_SELECT)
+                    {
+                        case 0:
+                            InGameMenu_Junction.Data[SectionName.TopMenu_Junction].Enabled = true;
+                            Cursor_Status |= Cursor_Status.Blinking;
+                            InGameMenu_Junction.mode = Mode.TopMenu_Junction;
+                            break;
+                    }
+                    base.Inputs_OKAY();
+                }
+
+                public override void Draw() => base.Draw();
+            }
+
+            private class IGMData_Title : IGMData
+            {
+                public IGMData_Title():base(0,0,new IGMDataItem_Box(Titles[Items.Junction], pos: new Rectangle(615,0,225,66)))
+                {
+                }
+
+            }
+
+            private class IGMData_TopMenu_Junction : IGMData
+            {
+                public override void Inputs_CANCEL()
+                {
+                    base.Inputs_CANCEL();
+                    InGameMenu_Junction.mode = Mode.TopMenu;
+                    Enabled = false;
+                }
+
+                public IGMData_TopMenu_Junction() : base(2, 1, new IGMDataItem_Box(pos: new Rectangle(210, 12, 400, 54)))
+                {
+                }
+                public override void ReInit()
+                {
+                    Enabled = false;
+                    base.ReInit();
+                }
+
+                public override void Draw() => base.Draw();
+
+                protected override void Init()
+                {
+                    int rows = 1;
+                    int cols = 2;
+                    for (int i = 0; i < SIZE.Length; i++)
+                    {
+                        int col = i / rows;
+                        int row = i % rows;
+                        SIZE[i] = new Rectangle
+                        {
+                            X = X + (Width * col) / cols,
+                            Y = Y + (Height * row) / rows,
+                            Width = Width / cols,
+                            Height = Height / rows,
+                        };
+                        SIZE[i].Inflate(-40, -12);
+                        SIZE[i].Offset(20 + (-20 * (col > 1 ? col : 0)), 0);
+                    }
+                    ITEM[0, 0] = new IGMDataItem_String(Titles[Items.GF], SIZE[0]);
+                    ITEM[1, 0] = new IGMDataItem_String(Titles[Items.Magic], SIZE[1]);
+                    Cursor_Status |= Cursor_Status.Enabled;
+                    Cursor_Status |= Cursor_Status.Horizontal;
+                    Cursor_Status |= Cursor_Status.Vertical;
+                    base.Init();
                 }
             }
         }

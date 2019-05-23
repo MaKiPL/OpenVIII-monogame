@@ -150,6 +150,8 @@
     <Compile Include="Menu\Faces.ID.cs" />
     <Compile Include="Menu\Icons.ID.cs" />
     <Compile Include="Menu\Icons.InsertCustomEntries.cs" />
+    <Compile Include="Menu\Kernel_bin.Abilities.cs" />
+    <Compile Include="Menu\Kernel_bin.AbilityFlags2.cs" />
     <Compile Include="Menu\Kernel_bin.Attack_Flags.cs" />
     <Compile Include="Menu\Kernel_bin.Battle_Commands.cs" />
     <Compile Include="Menu\Kernel_bin.Battle_Items.cs" />
@@ -166,6 +168,7 @@
     <Compile Include="Menu\Kernel_bin.Enemy_Attacks_Data.cs" />
     <Compile Include="Menu\Kernel_bin.Gender.cs" />
     <Compile Include="Menu\Kernel_bin.GF_abilities.cs" />
+    <Compile Include="Menu\Kernel_bin.JunctionAbilityFlags.cs" />
     <Compile Include="Menu\Kernel_bin.Junctionable_GFs_Data.cs" />
     <Compile Include="Menu\Kernel_bin.Junction_abilities.cs" />
     <Compile Include="Menu\Kernel_bin.Magic_Data.cs" />
@@ -369,6 +372,9 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Menu\Kernel\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />

@@ -29,9 +29,9 @@ namespace FF8
             public byte _SPD; //0x0D
             public byte _LCK; //0x0E
             public Dictionary<byte,byte> Magics; //0x0F
-            public byte[] Commands; //0x10
+            public Kernel_bin.Abilities[] Commands; //0x10
             public byte Paddingorunusedcommand; //0x50
-            public byte[] Abilities; //0x53
+            public Kernel_bin.Abilities[] Abilities; //0x53
             public GFflags JunctionnedGFs; //0x54
             public byte Unknown1; //0x58
             public byte Alternativemodel; //0x5A (Normal, SeeD, Soldier...)
@@ -96,7 +96,7 @@ namespace FF8
                 _SPR = br.ReadByte();//0x0D
                 _SPD = br.ReadByte();//0x0E
                 _LCK = br.ReadByte();//0x0F
-                Magics = new Dictionary<byte, byte>(32);
+                Magics = new Dictionary<byte, byte>(33);
                 for (int i = 0; i < 32; i++)
                 {
                     var key = br.ReadByte();
@@ -104,9 +104,9 @@ namespace FF8
                     if(key >= 0 && !Magics.ContainsKey(key))
                     Magics.Add(key, val);//0x10                    
                 }
-                Commands = br.ReadBytes(3);//0x50
+                Commands = Array.ConvertAll(br.ReadBytes(3), Item => (Kernel_bin.Abilities)Item);//0x50
                 Paddingorunusedcommand = br.ReadByte();//0x53
-                Abilities = br.ReadBytes(4);//0x54
+                Abilities = Array.ConvertAll(br.ReadBytes(4), Item => (Kernel_bin.Abilities)Item);//0x54
                 JunctionnedGFs = (GFflags)br.ReadUInt16();//0x58
                 Unknown1 = br.ReadByte();//0x5A
                 Alternativemodel = br.ReadByte();//0x5B (Normal, SeeD, Soldier...)
@@ -157,7 +157,7 @@ namespace FF8
                 int total = 0;
                 foreach (var i in Abilities)
                 {
-                    int key = i - 0x27;
+                    int key = (int)i - 0x27;
                     if (key >= 0 && key < Kernel_bin.Statpercentabilities.Length && Kernel_bin.Statpercentabilities[key].Stat == Kernel_bin.Stat.HP)
                         total += Kernel_bin.Statpercentabilities[key].Value;
                 }
@@ -171,31 +171,31 @@ namespace FF8
                 int total = 0;
                 foreach (var i in Abilities)
                 {
-                    int key = i - 0x27;
+                    int key = (int)i - 0x27;
                     if (key >= 0 && key < Kernel_bin.Statpercentabilities.Length && Kernel_bin.Statpercentabilities[key].Stat == s)
                         total += Kernel_bin.Statpercentabilities[key].Value;
                 }
                 switch (s)
                 {
                     case Kernel_bin.Stat.HP:
-                        return (ushort)Kernel_bin.CharacterStats[c].HP((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], Magics[JunctionStat[s]], _HP, total);
+                        return (ushort)Kernel_bin.CharacterStats[c].HP((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], _HP, total);
                     case Kernel_bin.Stat.EVA:
                         //TODO confirm if there is no flat stat buff for eva. If there isn't then remove from function.
-                        return (ushort)Kernel_bin.CharacterStats[c].EVA((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], Magics[JunctionStat[s]],0, TotalStat(Kernel_bin.Stat.SPD,c), total);
+                        return (ushort)Kernel_bin.CharacterStats[c].EVA((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]],0, TotalStat(Kernel_bin.Stat.SPD,c), total);
                     case Kernel_bin.Stat.SPD:
-                        return (ushort)Kernel_bin.CharacterStats[c].SPD((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], Magics[JunctionStat[s]], _SPD, total);
+                        return (ushort)Kernel_bin.CharacterStats[c].SPD((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], _SPD, total);
                     case Kernel_bin.Stat.HIT:
-                        return (ushort)Kernel_bin.CharacterStats[c].HIT(JunctionStat[Kernel_bin.Stat.HP], Magics[JunctionStat[s]], WeaponID);
+                        return (ushort)Kernel_bin.CharacterStats[c].HIT(JunctionStat[Kernel_bin.Stat.HP], JunctionStat[s] == 0 ? 0:Magics[JunctionStat[s]], WeaponID);
                     case Kernel_bin.Stat.LUCK:
-                        return (ushort)Kernel_bin.CharacterStats[c].LUCK((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], Magics[JunctionStat[s]], _LCK, total);
+                        return (ushort)Kernel_bin.CharacterStats[c].LUCK((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], _LCK, total);
                     case Kernel_bin.Stat.MAG:
-                        return (ushort)Kernel_bin.CharacterStats[c].MAG((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], Magics[JunctionStat[s]], _MAG, total);
+                        return (ushort)Kernel_bin.CharacterStats[c].MAG((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], _MAG, total);
                     case Kernel_bin.Stat.SPR:
-                        return (ushort)Kernel_bin.CharacterStats[c].SPR((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], Magics[JunctionStat[s]], _SPR, total);
+                        return (ushort)Kernel_bin.CharacterStats[c].SPR((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], _SPR, total);
                     case Kernel_bin.Stat.STR:
-                        return (ushort)Kernel_bin.CharacterStats[c].STR((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], Magics[JunctionStat[s]], _STR, total,WeaponID);
+                        return (ushort)Kernel_bin.CharacterStats[c].STR((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], _STR, total,WeaponID);
                     case Kernel_bin.Stat.VIT:
-                        return (ushort)Kernel_bin.CharacterStats[c].VIT((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], Magics[JunctionStat[s]], _VIT, total);
+                        return (ushort)Kernel_bin.CharacterStats[c].VIT((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], _VIT, total);
 
                 }
                 return 0;

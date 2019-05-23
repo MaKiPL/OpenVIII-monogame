@@ -13,9 +13,8 @@ namespace FF8
             #region Fields
 
             private Items choSideBar;
-            private Mode mode;
             private int _choChar;
-
+            protected new Mode mode=0;
             public int choChar
             {
                 get
@@ -101,21 +100,10 @@ namespace FF8
                 NextLEVEL
             }
 
-            private enum Mode
+            protected new enum Mode
             {
                 ChooseItem,
                 ChooseChar,
-                Junction,
-                Item,
-                Magic,
-                Status,
-                GF,
-                Ability,
-                Switch,
-                Card,
-                Config,
-                Tutorial,
-                Save
             }
 
             #endregion Enums
@@ -124,7 +112,7 @@ namespace FF8
 
             public override void Draw()
             {
-                Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: focus);
+                Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: Focus);
                 switch (mode)
                 {
                     case Mode.ChooseChar:
@@ -195,7 +183,7 @@ namespace FF8
                 {
                     i.Value.Inputs();
                 }
-                ml = Input.MouseLocation.Transform(focus);
+                ml = Input.MouseLocation.Transform(Focus);
 
                 if (mode == Mode.ChooseItem)
                 {
@@ -221,8 +209,8 @@ namespace FF8
                         {
                             Input.ResetInputLimit();
                             init_debugger_Audio.PlaySound(0);
-                            if (++choSideBar > Enum.GetValues(typeof(Items)).Cast<Items>().Max())
-                                choSideBar = Enum.GetValues(typeof(Items)).Cast<Items>().Min();
+                            if ((int)++choSideBar >= ((IGMData_SideMenu)Data[SectionName.SideMenu]).Count)
+                                choSideBar = 0;
                             ret = true;
                         }
                         else if (Input.Button(Buttons.Up))
@@ -230,7 +218,7 @@ namespace FF8
                             Input.ResetInputLimit();
                             init_debugger_Audio.PlaySound(0);
                             if (--choSideBar < 0)
-                                choSideBar = Enum.GetValues(typeof(Items)).Cast<Items>().Max();
+                                choSideBar = (Items)((IGMData_SideMenu)Data[SectionName.SideMenu]).Count-1;
                             ret = true;
                         }
                         else if (Input.Button(Buttons.Cancel))
@@ -368,7 +356,6 @@ namespace FF8
 
                 protected override void Init()
                 {
-                    base.Init();
                     strHeaderText = new Dictionary<Enum, Item>()
                     {
                     { Items.Junction, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,1) } },
@@ -383,6 +370,7 @@ namespace FF8
                     { Items.Tutorial, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,68) } },
                     { Items.Save, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,15) } },
                     };
+                    base.Init();
                 }
 
                 public bool Update(IGM.Items selection)
@@ -424,7 +412,6 @@ namespace FF8
 
                 protected override void Init()
                 {
-                    base.Init();
                     Rectangle r;
                     r = CONTAINER;
                     r.Offset(25, 14);
@@ -437,6 +424,7 @@ namespace FF8
                     r = CONTAINER;
                     r.Offset(185, 81);
                     ITEM[0, 7] = new IGMDataItem_Icon(Icons.ID.G, r, 2);
+                    base.Init();
                 }
                 public override void ReInit()
                 {
@@ -500,8 +488,7 @@ namespace FF8
                 }
 
                 protected override void Init()
-                {
-                    base.Init();
+                {                    
                     _red_pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
                     Color[] color = new Color[] { new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, 100) };
                     _red_pixel.SetData<Color>(color, 0, _red_pixel.Width * _red_pixel.Height);
@@ -523,6 +510,7 @@ namespace FF8
                         if (i > 1) SIZE[i].Y -= 4;
                         if (i > 3) SIZE[i].Y -= 4;
                     }
+                    base.Init();
                 }
 
                 public override bool Update()
@@ -631,7 +619,6 @@ namespace FF8
 
                 protected override void Init()
                 {
-                    base.Init();
                     strings = new Dictionary<Enum, FF8String>()
                     {
                         { Items.CurrentEXP, Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,23)  },
@@ -733,7 +720,7 @@ namespace FF8
 
                 protected override void Init()
                 {
-                    base.Init();
+                    
                     ITEM[0, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 0));
                     ITEM[1, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2));
                     ITEM[2, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 4));
@@ -756,8 +743,10 @@ namespace FF8
                         };
                         r.Inflate(-26, -12);
                         ITEM[i, 0].Pos = r;
-                        CURSOR[i] = new Point(r.X, (int)(r.Y + 6 * TextScale.Y));
+                        SIZE[i] = r;
+                        //CURSOR[i] = new Point(r.X, (int)(r.Y + 6 * TextScale.Y));
                     }
+                    base.Init();
                 }
 
                 public override bool Inputs() => base.Inputs();
@@ -769,7 +758,34 @@ namespace FF8
         }
 
         #region Classes
-
+        /// <summary>
+        /// Flags for cursor behavior
+        /// </summary>
+        /// <remarks>Defaults to disabled. </remarks>
+        [Flags]
+        public enum Cursor_Status
+        {
+            /// <summary>
+            /// Hide Cursor and disable all code that uses it.
+            /// </summary>
+            Disabled = 0x0,
+            /// <summary>
+            /// Show Cursor
+            /// </summary>
+            Enabled = 0x1,
+            /// <summary>
+            /// Triggers blinking
+            /// </summary>
+            Blinking = 0x2,
+            /// <summary>
+            /// Makes it react to left and right instead of up and down.
+            /// </summary>
+            Horizontal = 0x4,
+            /// <summary>
+            /// This is the default but if you want both directions you need to set the flag.
+            /// </summary>
+            Vertical = 0x8,
+        }
         public class IGMData
         {
             #region Fields
@@ -778,7 +794,59 @@ namespace FF8
             /// location of where pointer finger will point.
             /// </summary>
             public Point[] CURSOR;
-
+            public bool Enabled
+            {
+                get => _enabled;
+                set
+                {
+                    _enabled = value;
+                }
+            }
+            public Cursor_Status Cursor_Status
+            {
+                get => _cursor_Status; set
+                {
+                    _cursor_Status = value;
+                }
+            }
+            public int CURSOR_SELECT
+            {
+                get => _cursor_select; set
+                {
+                    if ((Cursor_Status & Cursor_Status.Enabled) != 0 && value >= 0 && value < CURSOR.Length && CURSOR[value] != Point.Zero)
+                        _cursor_select = value;
+                }
+            }
+            public int CURSOR_NEXT()
+            {
+                if ((Cursor_Status & Cursor_Status.Enabled) != 0)
+                {
+                    int value = _cursor_select;
+                    while (true)
+                    {
+                        if (++value >= CURSOR.Length)
+                            value = 0;
+                        if (CURSOR[value] != Point.Zero || value == 0) break;
+                    }
+                    _cursor_select = value;
+                }
+                return _cursor_select;
+            }
+            public int CURSOR_PREV()
+            {
+                if ((Cursor_Status & Cursor_Status.Enabled) != 0)
+                {
+                    int value = _cursor_select;
+                    while (true)
+                    {
+                        if (--value < 0)
+                            value = CURSOR.Length - 1;
+                        if (CURSOR[value] != Point.Zero || value == 0) break;
+                    }
+                    _cursor_select = value;
+                }
+                return _cursor_select;
+            }
             public IGMDataItem[,] ITEM;
 
             /// <summary>
@@ -787,6 +855,10 @@ namespace FF8
             public Rectangle[] SIZE;
 
             public bool[] BLANKS;
+            private int _cursor_select;
+            private bool _enabled = true;
+            private Cursor_Status _cursor_Status = Cursor_Status.Disabled;
+
             public IGMDataItem CONTAINER { get; protected set; }
 
             #endregion Fields
@@ -804,7 +876,10 @@ namespace FF8
                 BLANKS = new bool[count];
                 if (container != null)
                     CONTAINER = container;
+                CURSOR_SELECT = 0;
                 Init();
+                ReInit();
+                Update();
             }
 
             public IGMDataItem this[int pos, int i] { get => ITEM[pos, i]; set => ITEM[pos, i] = value; }
@@ -814,12 +889,19 @@ namespace FF8
             /// </summary>
             public virtual void Draw()
             {
-                if (CONTAINER != null)
-                    CONTAINER.Draw();
-                foreach (IGMDataItem i in ITEM)
+                if (Enabled)
                 {
-                    if (i != null)
-                        i.Draw();
+                    if (CONTAINER != null)
+                        CONTAINER.Draw();
+                    foreach (IGMDataItem i in ITEM)
+                    {
+                        if (i != null)
+                            i.Draw();
+                    }
+                    if ((Cursor_Status & Cursor_Status.Enabled) != 0)
+                    {
+                        DrawPointer(CURSOR[CURSOR_SELECT], blink: ((Cursor_Status & Cursor_Status.Blinking) != 0));
+                    }
                 }
             }
 
@@ -857,6 +939,7 @@ namespace FF8
             /// </summary>
             public int Y => CONTAINER != null ? CONTAINER.Pos.Y : 0;
 
+
             /// <summary>
             /// Convert to rectangle based on container.
             /// </summary>
@@ -873,18 +956,110 @@ namespace FF8
             /// Check inputs
             /// </summary>
             /// <returns>True = input detected</returns>
-            public virtual bool Inputs() => false;
+            public virtual bool Inputs()
+            {
+                bool ret = false;
+                bool mouse = false;
+
+                if ((Cursor_Status & Cursor_Status.Enabled) != 0)
+                {
+                    Cursor_Status &= ~Cursor_Status.Blinking;
+                    ml = Input.MouseLocation.Transform(Menu.Focus);
+                    for (int i = 0; i < SIZE.Length; i++)
+                    {
+                        if (SIZE[i].Contains(ml))
+                        {
+                            CURSOR_SELECT = i;
+                            ret = true;
+                            mouse = true;
+                        }
+                    }
+                    if (!ret && (Cursor_Status & Cursor_Status.Horizontal) != 0)
+                    {
+                        if (Input.Button(Buttons.Left))
+                        {
+                            CURSOR_PREV();
+                            ret = true;
+                        }
+                        else if (Input.Button(Buttons.Right))
+                        {
+                            CURSOR_NEXT();
+                            ret = true;
+                        }
+                    }
+                    if (!ret && (Cursor_Status & Cursor_Status.Horizontal) == 0 || (Cursor_Status & Cursor_Status.Vertical) != 0)
+                    {
+                        if (Input.Button(Buttons.Up))
+                        {
+                            CURSOR_PREV();
+                            ret = true;
+                        }
+                        else if (Input.Button(Buttons.Down))
+                        {
+                            CURSOR_NEXT();
+                            ret = true;
+                        }
+                    }
+                    if (!ret || mouse)
+                    {
+                        if (Input.Button(Buttons.Okay))
+                        {
+                            Inputs_OKAY();
+                            return true;
+                        }
+                        if (Input.Button(Buttons.Cancel))
+                        {
+                            Inputs_CANCEL();
+                            return true;
+                        }
+                    }
+                    if (ret && !mouse)
+                    {
+                        Input.ResetInputLimit();
+                        init_debugger_Audio.PlaySound(0);
+                    }
+                }
+                return ret;
+            }
+
+            public virtual void Inputs_OKAY()
+            {
+                Input.ResetInputLimit();
+                init_debugger_Audio.PlaySound(0);
+            }
+            public virtual void Inputs_CANCEL()
+            {
+                Input.ResetInputLimit();
+                init_debugger_Audio.PlaySound(8);
+            }
 
             /// <summary>
             /// Things that are fixed values at startup.
             /// </summary>
-            protected virtual void Init() => ReInit();
+            protected virtual void Init()
+            {
+                if (SIZE.Length < 0 && SIZE[0].IsEmpty)
+                {
+                    CURSOR[0].Y = (int)(Y + Height / 2 - 6 * TextScale.Y);
+                    CURSOR[0].X = X;
+                }
+                else
+                    for (int i = 0; i < CURSOR.Length; i++)
+                    {
+                        if (!SIZE[i].IsEmpty)
+                        {
+                            CURSOR[i].Y = (int)(SIZE[i].Y + SIZE[i].Height / 2 - 6 * TextScale.Y);
+                            CURSOR[i].X = SIZE[i].X;
+                        }
+                    }
+            }
 
             /// <summary>
             /// Things that change rarely. Like a party member changes or Laguna dream happens.
             /// </summary>
             public virtual void ReInit()
-            { }
+            {
+            }
 
             #endregion Properties
         }
@@ -1085,10 +1260,23 @@ namespace FF8
 
         private abstract class Menu
         {
-            protected Dictionary<Enum, IGMData> Data;
+            /// <summary>
+            /// replace me with new keyword
+            /// </summary>
+            protected enum Mode
+            {
+                UNDEFINDED
+            }
+
+            public Dictionary<Enum, IGMData> Data;
+            /// <summary>
+            /// replace me with new keyword or cast me to your new enum.
+            /// </summary>
+            protected Enum mode=(Mode)0;
             private Vector2 _size;
             static public Vector2 TextScale { get; protected set; }
-            protected Matrix focus;
+            static public Matrix Focus;
+            private bool skipdata;
 
             public Vector2 Size { get => _size; protected set => _size = value; }
 
@@ -1096,20 +1284,24 @@ namespace FF8
             {
                 Data = new Dictionary<Enum, IGMData>();
                 Init();
+                skipdata = true;
+                ReInit();
+                skipdata = false;
             }
 
-            protected virtual void Init() => ReInit();
+            protected virtual void Init() { }
 
             public virtual void ReInit()
             {
+                if(!skipdata)
                 foreach (KeyValuePair<Enum, IGMData> i in Data)
                     i.Value.ReInit();
-                Update();
+                //Update();
             }
 
             public virtual void StartDraw()
             {
-                Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: focus);
+                Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: Focus);
             }
             public virtual void Draw()
             {
@@ -1124,11 +1316,13 @@ namespace FF8
             public virtual bool Update()
             {
                 Vector2 Zoom = Memory.Scale(Size.X, Size.Y, Memory.ScaleMode.FitBoth);
-                focus = Matrix.CreateTranslation((Size.X / -2), (Size.Y / -2), 0) *
+                Focus = Matrix.CreateTranslation((Size.X / -2), (Size.Y / -2), 0) *
                     Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) *
                     Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
+
                 //todo detect when there is no saves detected.
                 //check for null
+                if(!skipdata)
                 foreach (KeyValuePair<Enum, IGMData> i in Data)
                 {
                     i.Value.Update();
