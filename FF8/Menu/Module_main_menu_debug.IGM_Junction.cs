@@ -192,7 +192,7 @@ namespace FF8
                 Data.Add(SectionName.TopMenu_Junction, new IGMData_TopMenu_Junction());
                 Data.Add(SectionName.TopMenu_Off, new IGMData_TopMenu_Off_Group(
                     new IGMData_Container(
-                        new IGMDataItem_Box(Titles[Items.Off], pos: new Rectangle(0, 12, 169, 54))),
+                        new IGMDataItem_Box(Titles[Items.Off], pos: new Rectangle(0, 12, 169, 54),options: Box_Options.Center | Box_Options.Middle)),
                     new IGMData_TopMenu_Off()
                     ));
                 Data.Add(SectionName.TopMenu_Auto, new IGMData_TopMenu_Auto_Group(
@@ -673,7 +673,7 @@ namespace FF8
 
             private class IGMData_TopMenu_Off : IGMData
             {
-                public IGMData_TopMenu_Off() : base(2, 1, new IGMDataItem_Box(pos: new Rectangle(210, 12, 400, 54)))
+                public IGMData_TopMenu_Off() : base(2, 1, new IGMDataItem_Box(pos: new Rectangle(165, 12, 445, 54)),2,1)
                 {
                 }
 
@@ -697,6 +697,14 @@ namespace FF8
                             ((IGMDataItem_Box)InGameMenu_Junction.Data[SectionName.Help].CONTAINER).Data = Changed;
                     }
                 }
+
+                protected override void InitShift(int i, int col, int row)
+                {
+                    base.InitShift(i, col, row);
+                    SIZE[i].Inflate(-40, -12);
+                    SIZE[i].Offset(20 + (-20 * (col > 1 ? col : 0)), 0);
+                }
+
                 public override bool Update()
                 {
                     bool ret= base.Update();
@@ -707,6 +715,11 @@ namespace FF8
                 protected override void Init()
                 {
                     base.Init();
+                    ITEM[0, 0] = new IGMDataItem_String(Titles[Items.RemMag], SIZE[0]);
+                    ITEM[1, 0] = new IGMDataItem_String(Titles[Items.RemAll], SIZE[1]);
+                    Cursor_Status |= Cursor_Status.Enabled;
+                    Cursor_Status |= Cursor_Status.Horizontal;
+                    Cursor_Status |= Cursor_Status.Vertical;
                     Descriptions = new Dictionary<Items, FF8String> {
                         //{Items.HP, Memory.Strings.Read(Strings.FileID.MNGRP,2,226) },
                         //{Items.Str, Memory.Strings.Read(Strings.FileID.MNGRP,2,228) },
@@ -742,7 +755,7 @@ namespace FF8
 
             private class IGMData_TopMenu_Auto : IGMData
             {
-                public IGMData_TopMenu_Auto() : base(3, 1, new IGMDataItem_Box(pos: new Rectangle(210, 12, 400, 54)))
+                public IGMData_TopMenu_Auto() : base(3, 1, new IGMDataItem_Box(pos: new Rectangle(165, 12, 445, 54)),3,1)
                 {
                 }
 
@@ -766,8 +779,21 @@ namespace FF8
             }
             private class IGMData_TopMenu_Off_Group : IGMData_Group
             {
+                
                 public IGMData_TopMenu_Off_Group(params IGMData[] d) : base(d)
                 {
+                }
+
+                public override void Draw()
+                {
+                    if(Enabled)
+                    {
+                        Cursor_Status |= (Cursor_Status.Draw | Cursor_Status.Blinking);
+                        base.Draw();
+                        Tuple<Rectangle, Point, Rectangle> i = ((IGMDataItem_Box)(((IGMData_Container)(((IGMDataItem_IGMData)ITEM[0, 0]).Data)).CONTAINER)).Dims;
+                        if(i != null)
+                            CURSOR[0] = i.Item2;
+                    }
                 }
 
                 protected override void Init()
@@ -775,6 +801,8 @@ namespace FF8
                     base.Init();
                     Enabled = false;
                 }
+
+                protected override void InitShift(int i, int col, int row) => base.InitShift(i, col, row);
             }
             private class IGMData_TopMenu_Auto_Group : IGMData_Group
             {

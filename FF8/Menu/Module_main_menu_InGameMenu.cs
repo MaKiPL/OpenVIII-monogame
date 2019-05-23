@@ -761,6 +761,10 @@ namespace FF8
             /// This is the default but if you want both directions you need to set the flag.
             /// </summary>
             Vertical = 0x8,
+            /// <summary>
+            /// Just draw.
+            /// </summary>
+            Draw = 0x10,
         }
         [Flags]
         public enum Table_Options
@@ -882,7 +886,7 @@ namespace FF8
                         if (i != null)
                             i.Draw();
                     }
-                    if ((Cursor_Status & Cursor_Status.Enabled) != 0)
+                    if ((Cursor_Status & (Cursor_Status.Enabled | Cursor_Status.Draw)) != 0)
                     {
                         DrawPointer(CURSOR[CURSOR_SELECT], blink: ((Cursor_Status & Cursor_Status.Blinking) != 0));
                     }
@@ -1299,6 +1303,7 @@ namespace FF8
             public FF8String Data { get; set; }
             public Icons.ID? Title { get; set; }
             public Box_Options Options { get; set; }
+            public Tuple<Rectangle, Point, Rectangle> Dims { get; private set; }
 
             public IGMDataItem_Box(FF8String data = null, Rectangle? pos = null, Icons.ID? title = null, Box_Options options = Box_Options.Default) : base(pos)
             {
@@ -1308,7 +1313,7 @@ namespace FF8
             }
 
             public override void Draw() =>
-                    DrawBox(Pos, Data, Title, options: Options);
+                    Dims = DrawBox(Pos, Data, Title, options: Options);
         }
 
         private class IGMDataItem_Texture : IGMDataItem
