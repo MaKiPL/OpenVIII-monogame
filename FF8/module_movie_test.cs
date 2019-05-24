@@ -261,7 +261,7 @@ namespace FF8
             }
             //draw frame;
             Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
-            Memory.SpriteBatchStartStencil();//by default xna filters all textures SamplerState.PointClamp disables that. so video is being filtered why playing.
+            Memory.SpriteBatchStartStencil(ss: SamplerState.AnisotropicClamp);//by default xna filters all textures SamplerState.PointClamp disables that. so video is being filtered why playing.
             ClearScreen();
             Rectangle dst = new Rectangle(new Point(0), (new Vector2(frameTex.Width, frameTex.Height) * Memory.Scale(frameTex.Width, frameTex.Height)).ToPoint());
             dst.Offset(Memory.Center.X - dst.Center.X,Memory.Center.Y - dst.Center.Y);

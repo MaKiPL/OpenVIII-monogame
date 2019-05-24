@@ -11,15 +11,8 @@ namespace FF8
         [Flags]
         public enum Statuses0 : ushort
         {
-            None = 0x00,
-            Death = 0x01,
-            Poison = 0x02,
-            Petrify = 0x04,
-            Darkness = 0x08,
-            Silence = 0x10,
-            Berserk = 0x20,
-            Zombie = 0x40,
-            UNK0x80 = 0x80,
+            None = 0x00, Death = 0x01, Poison = 0x02, Petrify = 0x04,
+            Darkness = 0x08, Silence = 0x10, Berserk = 0x20, Zombie = 0x40, UNK0x80 = 0x80,
             UNK0x0100 = 0x0100,
             UNK0x0200 = 0x0200,
             UNK0x0400 = 0x0400,

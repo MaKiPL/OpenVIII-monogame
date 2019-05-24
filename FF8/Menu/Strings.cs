@@ -517,6 +517,8 @@ namespace FF8
                 mngrp_get_string_offsets(br, fileID, 0);
             }
         }
+        public FF8String GetName(Saves.Characters c, Saves.Data d = null) => GetName((Faces.ID)c, d);
+        public FF8String GetName(Saves.GFs gf, Saves.Data d = null) => GetName((Faces.ID)((int)gf+16), d);
         public FF8String GetName(Faces.ID id, Saves.Data d = null )
         {
             if (d == null)

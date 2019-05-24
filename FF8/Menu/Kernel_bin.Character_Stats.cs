@@ -106,7 +106,11 @@ namespace FF8
             public int EVA(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int spd = 0, int percent_mod = 0) =>
                 (((MagicData[MagicID].EVA_J * magic_count) / 100 + spd / 4) * (percent_mod + _percent_mod)) / 100;
 
-            public int HIT(int MagicID = 0, int magic_count = 0, int weapon = 0) => MagicData[MagicID].HIT_J * magic_count + weapon;
+            public byte HIT(int MagicID = 0, int magic_count = 0, int weapon = 0)
+            {
+                int value = MagicData[MagicID].HIT_J * magic_count + weapon;
+                return (byte)(value>255?255:value);
+            }
         }
     }
 }

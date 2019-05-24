@@ -13,11 +13,8 @@ namespace FF8
             #region Fields
 
             private Items choSideBar;
-            private Matrix focus;
-            private Mode mode;
-            private Vector2 Size;
             private int _choChar;
-
+            protected new Mode mode=0;
             public int choChar
             {
                 get
@@ -98,24 +95,15 @@ namespace FF8
                 Card,
                 Config,
                 Tutorial,
-                Save
+                Save,
+                CurrentEXP,
+                NextLEVEL
             }
 
-            private enum Mode
+            protected new enum Mode
             {
                 ChooseItem,
                 ChooseChar,
-                Junction,
-                Item,
-                Magic,
-                Status,
-                GF,
-                Ability,
-                Switch,
-                Card,
-                Config,
-                Tutorial,
-                Save
             }
 
             #endregion Enums
@@ -124,14 +112,13 @@ namespace FF8
 
             public override void Draw()
             {
-                Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: focus);
+                Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: Focus);
                 switch (mode)
                 {
                     case Mode.ChooseChar:
                     case Mode.ChooseItem:
                     default:
-                        foreach (var i in Data)
-                            i.Value.Draw();
+                        base.Draw();
                         break;
                 }
                 switch (mode)
@@ -151,8 +138,6 @@ namespace FF8
                 }
                 Memory.SpriteBatchEnd();
             }
-
-
 
             public enum SectionName
             {
@@ -180,26 +165,12 @@ namespace FF8
                 Data.Add(SectionName.SideMenu, SideMenu);
                 Data.Add(SectionName.Party, Party);
                 Data.Add(SectionName.Non_Party, Non_Party);
-                Update();
+                base.Init();
             }
-
-
-
-
-
 
             public override bool Update()
             {
-                Vector2 Zoom = Memory.Scale(Size.X, Size.Y, Memory.ScaleMode.FitBoth);
-                focus = Matrix.CreateTranslation((Size.X / -2), (Size.Y / -2), 0) *
-                    Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) *
-                    Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
-                //todo detect when there is no saves detected.
-                //check for null
-                foreach(var i in Data)
-                {
-                    i.Value.Update();
-                }
+                base.Update();
                 ((IGMData_Header)Data[SectionName.Header]).Update(choSideBar);
 
                 return Inputs();
@@ -208,11 +179,11 @@ namespace FF8
             protected override bool Inputs()
             {
                 bool ret = false;
-                foreach (var i in Data)
+                foreach (KeyValuePair<Enum, IGMData> i in Data)
                 {
                     i.Value.Inputs();
                 }
-                ml = Input.MouseLocation.Transform(focus);
+                ml = Input.MouseLocation.Transform(Focus);
 
                 if (mode == Mode.ChooseItem)
                 {
@@ -238,8 +209,8 @@ namespace FF8
                         {
                             Input.ResetInputLimit();
                             init_debugger_Audio.PlaySound(0);
-                            if (++choSideBar > Enum.GetValues(typeof(Items)).Cast<Items>().Max())
-                                choSideBar = Enum.GetValues(typeof(Items)).Cast<Items>().Min();
+                            if ((int)++choSideBar >= ((IGMData_SideMenu)Data[SectionName.SideMenu]).Count)
+                                choSideBar = 0;
                             ret = true;
                         }
                         else if (Input.Button(Buttons.Up))
@@ -247,7 +218,7 @@ namespace FF8
                             Input.ResetInputLimit();
                             init_debugger_Audio.PlaySound(0);
                             if (--choSideBar < 0)
-                                choSideBar = Enum.GetValues(typeof(Items)).Cast<Items>().Max();
+                                choSideBar = (Items)((IGMData_SideMenu)Data[SectionName.SideMenu]).Count-1;
                             ret = true;
                         }
                         else if (Input.Button(Buttons.Cancel))
@@ -331,6 +302,43 @@ namespace FF8
                         init_debugger_Audio.PlaySound(8);
                         mode = Mode.ChooseItem;
                     }
+                    else if (Input.Button(Buttons.Okay))
+                    {
+                        Input.ResetInputLimit();
+                        init_debugger_Audio.PlaySound(0);
+                        ret = true;
+                        switch (choSideBar)
+                        {
+                            //Select Char Mode
+                            case Items.Junction:
+                                //case Items.Magic:
+                                //case Items.Status:
+                                State = MainMenuStates.IGM_Junction;
+                                if (choChar < 3)
+                                    InGameMenu_Junction.ReInit(Memory.State.PartyData[choChar], Memory.State.Party[choChar]);
+                                else
+                                {
+                                    int pos = 0;
+                                    if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
+                                    {
+                                        for (byte i = 0; Memory.State.Party != null && i < Memory.State.Characters.Length; i++)
+                                        {
+                                            if (!Memory.State.PartyData.Contains((Saves.Characters)i) && Memory.State.Characters[i].VisibleInMenu)
+                                            {
+                                                if (pos++ + 3 == choChar)
+                                                {
+                                                    InGameMenu_Junction.ReInit((Saves.Characters)i, (Saves.Characters)i);
+                                                    break;
+                                                }
+                                            }
+                                        }
+
+                                    }
+
+                                }
+                                break;
+                        }
+                    }
                 }
                 return ret;
             }
@@ -339,18 +347,15 @@ namespace FF8
             {
                 private Dictionary<Enum, Item> strHeaderText;
 
-                public IGMData_Header()  : this(0, 0, new IGMDataItem_Box(pos: new Rectangle { Width = 610, Height = 75 }, title: Icons.ID.HELP))
+                public IGMData_Header() : this(0, 0, new IGMDataItem_Box(pos: new Rectangle { Width = 610, Height = 75 }, title: Icons.ID.HELP))
                 { }
 
                 public IGMData_Header(int count, int depth, IGMDataItem container = null) : base(count, depth, container)
                 {
                 }
 
-                //public override void Draw() => base.Draw();
-
-                public override void Init()
+                protected override void Init()
                 {
-                    base.Init();
                     strHeaderText = new Dictionary<Enum, Item>()
                     {
                     { Items.Junction, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,1) } },
@@ -365,7 +370,9 @@ namespace FF8
                     { Items.Tutorial, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,68) } },
                     { Items.Save, new Item{Text=Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,15) } },
                     };
+                    base.Init();
                 }
+
                 public bool Update(IGM.Items selection)
                 {
                     ((IGMDataItem_Box)CONTAINER).Data = strHeaderText[selection];
@@ -395,7 +402,7 @@ namespace FF8
 
             private class IGMData_Clock : IGMData
             {
-                public IGMData_Clock(): this(1, 8, new IGMDataItem_Box(pos: new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 }))
+                public IGMData_Clock() : this(1, 8, new IGMDataItem_Box(pos: new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 }))
                 {
                 }
 
@@ -403,9 +410,8 @@ namespace FF8
                 {
                 }
 
-                public override void Init()
+                protected override void Init()
                 {
-                    base.Init();
                     Rectangle r;
                     r = CONTAINER;
                     r.Offset(25, 14);
@@ -414,48 +420,52 @@ namespace FF8
                     r = CONTAINER;
                     r.Offset(145, 14);
                     ITEM[0, 2] = new IGMDataItem_Icon(Icons.ID.Colon, r, 13, 2, .5f);
-
-                    r = CONTAINER;
-                    r.Offset(25, 48);
-                    ITEM[0, 4] = new IGMDataItem_Icon(Icons.ID.SeeD, r, 13);
-
+                    
                     r = CONTAINER;
                     r.Offset(185, 81);
                     ITEM[0, 7] = new IGMDataItem_Icon(Icons.ID.G, r, 2);
+                    base.Init();
                 }
-
-                public override bool Update()
+                public override void ReInit()
                 {
-                    bool ret = base.Update();
-                    int num;
-                    int spaces;
+                    base.ReInit();
                     Rectangle r;
 
                     r = CONTAINER;
-                    num = Memory.State.timeplayed.TotalHours < 99 ? (int)(Memory.State.timeplayed.TotalHours) : 99;
-                    spaces = 2 - (num).ToString().Length;
-                    r.Offset(105 + spaces * 20, 14);
-                    ITEM[0, 1] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                    r.Offset(105, 14);
+                    ITEM[0, 1] = new IGMDataItem_Int(Memory.State.Timeplayed.TotalHours < 99 ? (int)(Memory.State.Timeplayed.TotalHours) : 99, r, 2, 0, 1, 2);
 
                     r = CONTAINER;
-                    num = num >= 99 ? 99 : Memory.State.timeplayed.Minutes;
-                    spaces = 0;
-                    r.Offset(165 + spaces * 20, 14);
-                    ITEM[0, 3] = new IGMDataItem_Int(num, r, 2, 0, 2);
+                    r.Offset(165, 14);
+                    ITEM[0, 3] = new IGMDataItem_Int(Memory.State.Timeplayed.TotalHours < 99 ? Memory.State.Timeplayed.Minutes : 99, r, 2, 0, 2, 2);
+                    if (!Memory.State.TeamLaguna)
+                    {
+                        r = CONTAINER;
+                        r.Offset(25, 48);
+                        ITEM[0, 4] = new IGMDataItem_Icon(Icons.ID.SeeD, r, 13);
+
+                        r = CONTAINER;
+                        r.Offset(105, 48);
+                        ITEM[0, 5] = new IGMDataItem_Int(Memory.State.Fieldvars.SeedRankPts / 100 < 99999 ? Memory.State.Fieldvars.SeedRankPts / 100 : 99999, r, 2, 0, 1,5);
+                    }
+                    else
+                    {
+                        ITEM[0, 4] = null;
+                        ITEM[0, 5] = null;
+                    }
 
                     r = CONTAINER;
-                    num = Memory.State.Fieldvars.SeedRankPts / 100;
-                    num = num < 99999 ? num : 99999;
-                    spaces = 5 - (num).ToString().Length;
-                    r.Offset(105 + spaces * 20, 48);
-                    ITEM[0, 5] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                    r.Offset(25, 81);
+                    ITEM[0, 6] = new IGMDataItem_Int(Memory.State.AmountofGil < 99999999 ? (int)(Memory.State.AmountofGil) : 99999999, r, 2, 0, 1,8);
 
-                    r = CONTAINER;
-                    num = Memory.State.AmountofGil < 99999999 ? (int)(Memory.State.AmountofGil) : 99999999;
-                    spaces = 8 - (num).ToString().Length;
-                    r.Offset(25 + spaces * 20, 81);
-                    ITEM[0, 6] = new IGMDataItem_Int(num, r, 2, 0, 1);
-                    return true;
+                }
+                public override bool Update()
+                {
+                    bool ret = base.Update();
+
+
+
+                    return ret;
                 }
             }
 
@@ -463,50 +473,46 @@ namespace FF8
             {
                 private Texture2D _red_pixel;
 
-                public IGMData_NonParty():this(6, 9, new IGMDataItem_Box(pos: new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 }))
+                public IGMData_NonParty() : base(6, 9, new IGMDataItem_Box(pos: new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 }),2,3)
                 {
                 }
 
-                public IGMData_NonParty(int count, int depth, IGMDataItem container = null) : base(count, depth, container)
+
+                public override void Draw()
                 {
+                    if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
+                        base.Draw();
+                }
+                protected override void InitShift(int i, int col, int row)
+                {
+                    base.InitShift(i, col, row);
+                    SIZE[i].Inflate(-26, -8);
+                    if (row >= 1) SIZE[i].Y -= 4;
+                    if (row >= 2) SIZE[i].Y -= 4;
                 }
 
-                public override void Init()
+                protected override void Init()
                 {
-                    base.Init();
+                    Table_Options |= Table_Options.FillRows;
                     _red_pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
                     Color[] color = new Color[] { new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, 100) };
                     _red_pixel.SetData<Color>(color, 0, _red_pixel.Width * _red_pixel.Height);
-                    int row = 0, col = 0;
-                    for (int i = 0; i < SIZE.Length; i++)
-                    {
-                        int width = Width / 2;
-                        int height = Height / 3;
-                        row = i / 2;
-                        col = i % 2;
-                        SIZE[i] = new Rectangle
-                        {
-                            Width = width,
-                            Height = height,
-                            X = X + col * width,
-                            Y = Y + row * height
-                        };
-                        SIZE[i].Inflate(-26, -8);
-                        if (i > 1) SIZE[i].Y -= 4;
-                        if (i > 3) SIZE[i].Y -= 4;
-                    }
+                    base.Init();
                 }
 
                 public override bool Update()
                 {
                     sbyte pos = 0;
                     bool ret = base.Update();
-                    for (byte i = 0; Memory.State.Party != null && i <= (byte)Faces.ID.Edea_Kramer && SIZE != null && pos < SIZE.Length; i++)
+                    if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
                     {
-                        if (!Memory.State.Party.Contains((Saves.Characters)i) && Memory.State.Characters[i].Exists != 0 && Memory.State.Characters[i].Exists != 6)//15,9,7,4 shows on menu, 0 locked, 6 hidden
+                        for (byte i = 0; Memory.State.Party != null && i < Memory.State.Characters.Length && SIZE != null && pos < SIZE.Length; i++)
                         {
-                            BLANKS[pos] = false;
-                            Update(pos++, (Saves.Characters)i);
+                            if (!Memory.State.Party.Contains((Saves.Characters)i) && Memory.State.Characters[i].VisibleInMenu)
+                            {
+                                BLANKS[pos] = false;
+                                Update(pos++, (Saves.Characters)i);
+                            }
                         }
                     }
                     for (; pos < Count; pos++)
@@ -519,25 +525,22 @@ namespace FF8
                     }
                     return true;
                 }
+
                 private void Update(sbyte pos, Saves.Characters character)
                 {
                     float yoff = 39;
-                    int num = 0;
-                    int spaces = 0;
                     Rectangle rbak = SIZE[pos];
                     Rectangle r = rbak;
                     Color color = new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, .9f);
-                    ITEM[pos, 0] = new IGMDataItem_String(Memory.Strings.GetName((Faces.ID)character), rbak);
+                    ITEM[pos, 0] = new IGMDataItem_String(Memory.Strings.GetName(character), rbak);
                     CURSOR[pos] = new Point(rbak.X, (int)(rbak.Y + (6 * TextScale.Y)));
 
                     r.Offset(7, yoff);
                     ITEM[pos, 1] = new IGMDataItem_Icon(Icons.ID.Lv, r, 13);
 
                     r = rbak;
-                    num = Memory.State.Characters[(int)character].Level;
-                    spaces = 3 - num.ToString().Length;
-                    r.Offset((49 + spaces * 20), yoff);
-                    ITEM[pos, 2] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                    r.Offset((49), yoff);
+                    ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[(int)character].Level, r, 2, 0, 1,3);
 
                     r = rbak;
                     r.Offset(126, yoff);
@@ -547,27 +550,28 @@ namespace FF8
                     r.Width = 118;
                     r.Height = 1;
                     ITEM[pos, 4] = new IGMDataItem_Texture(_red_pixel, r) { Color = Color.Black };
-                    r.Width = (int)(r.Width * Memory.State.Characters[(int)character].PercentFullHP);
+                    r.Width = (int)(r.Width * Memory.State.Characters[(int)character].PercentFullHP());
                     ITEM[pos, 5] = new IGMDataItem_Texture(_red_pixel, r) { Color = color };
 
                     r.Width = 118;
                     r.Offset(0, 2);
                     ITEM[pos, 6] = new IGMDataItem_Texture(_red_pixel, r) { Color = Color.Black };
-                    r.Width = (int)(r.Width* Memory.State.Characters[(int)character].PercentFullHP);
+                    r.Width = (int)(r.Width * Memory.State.Characters[(int)character].PercentFullHP());
                     ITEM[pos, 7] = new IGMDataItem_Texture(_red_pixel, r) { Color = color };
                     //TODO red bar resizes based on current/max hp
 
                     r = rbak;
-                    num = Memory.State.Characters[(int)character].CurrentHP;
-                    spaces = 4 - num.ToString().Length;
-                    r.Offset((166 + spaces * 20), yoff);
-                    ITEM[pos, 8] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                    r.Offset((166), yoff);
+                    ITEM[pos, 8] = new IGMDataItem_Int(Memory.State.Characters[(int)character].CurrentHP, r, 2, 0, 1,4);
                 }
             }
 
             private class IGMData_Party : IGMData
             {
-                public IGMData_Party(): this(3, 7, new IGMDataItem_Empty(pos: new Rectangle { Width = 580, Height = 234, X = 20, Y = 84 }))
+                private int vSpace;
+                private Dictionary<Enum, FF8String> strings;
+
+                public IGMData_Party() : base(3, 12)
                 {
                 }
 
@@ -575,33 +579,51 @@ namespace FF8
                 {
                 }
 
-                public override void Init()
+                public override void ReInit()
                 {
-
-                    base.Init();
+                    base.ReInit();
+                    if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
+                    {
+                        CONTAINER = new IGMDataItem_Empty(pos: new Rectangle { Width = 580, Height = 234, X = 20, Y = 84 });
+                        vSpace = 0;
+                    }
+                    else
+                    {
+                        CONTAINER = new IGMDataItem_Empty(pos: new Rectangle { Width = 580, Height = 462, X = 20, Y = 84 });
+                        vSpace = 6;
+                    }
                     for (int i = 0; i < 3; i++)
-                        SIZE[i] = new Rectangle { Width = 580, Height = 78, X = 20, Y = 84 + 78 * i };
+                        SIZE[i] = new Rectangle { Width = Width, Height = (Height / 3) - vSpace, X = X, Y = Y + (Height / 3 * i) };
                 }
 
                 public override bool Update()
                 {
                     bool ret = base.Update();
-                    for (sbyte i = 0; Memory.State.Party != null && i < SIZE.Length; i++)
-                        Update(i, Memory.State.Party[i]);
+                    for (sbyte i = 0; Memory.State.PartyData != null && i < SIZE.Length; i++)
+                        Update(i, Memory.State.PartyData[i], Memory.State.Party[i]);
                     return true;
                 }
-                private void Update(sbyte pos, Saves.Characters character)
+
+                protected override void Init()
+                {
+                    strings = new Dictionary<Enum, FF8String>()
+                    {
+                        { Items.CurrentEXP, Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,23)  },
+                        { Items.NextLEVEL, Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,24)  },
+                    };
+                    base.Init();
+                }
+
+                private void Update(sbyte pos, Saves.Characters character, Saves.Characters visableCharacter)
                 {
                     if (SIZE != null)
                     {
                         if (character != Saves.Characters.Blank)
                         {
                             float yoff = 6;
-                            int num = 0;
-                            int spaces = 0;
 
-                            ITEM[pos, 0] = new IGMDataItem_Box(Memory.Strings.GetName((Faces.ID)character), title: Icons.ID.STATUS);
-                            Tuple<Rectangle, Point, Rectangle> dims = DrawBox(SIZE[pos], ((IGMDataItem_Box)ITEM[pos, 0]).Data, indent: false, skipdraw: true);
+                            ITEM[pos, 0] = new IGMDataItem_Box(Memory.Strings.GetName(visableCharacter), title: Icons.ID.STATUS);
+                            Tuple<Rectangle, Point, Rectangle> dims = DrawBox(SIZE[pos], ((IGMDataItem_Box)ITEM[pos, 0]).Data, options: Box_Options.SkipDraw);
                             Rectangle r = dims.Item3;
                             ITEM[pos, 0].Pos = dims.Item1;
                             CURSOR[pos] = dims.Item2;
@@ -611,20 +633,16 @@ namespace FF8
                             ITEM[pos, 1] = new IGMDataItem_Icon(Icons.ID.Lv, r, 13);
 
                             r = dims.Item3;
-                            num = Memory.State.Characters[(int)character].Level;
-                            spaces = 3 - num.ToString().Length;
-                            r.Offset((229 + spaces * 20), yoff);
-                            ITEM[pos, 2] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                            r.Offset((229), yoff);
+                            ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[(int)character].Level, r, 2, 0, 1,3);
 
                             r = dims.Item3;
                             r.Offset(304, yoff);
                             ITEM[pos, 3] = new IGMDataItem_Icon(Icons.ID.HP2, r, 13);
 
                             r = dims.Item3;
-                            num = Memory.State.Characters[(int)character].CurrentHP;
-                            spaces = 4 - num.ToString().Length;
-                            r.Offset((354 + spaces * 20), yoff);
-                            ITEM[pos, 4] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                            r.Offset((354), yoff);
+                            ITEM[pos, 4] = new IGMDataItem_Int(Memory.State.Characters[(int)character].CurrentHP, r, 2, 0, 1,4);
 
                             r = dims.Item3;
                             r.Offset(437, yoff);
@@ -632,16 +650,35 @@ namespace FF8
 
                             r = dims.Item3;
 
-                            //num = Memory.State.Party[0] == character ||
-                            //    Memory.State.Party[1] == character && Memory.State.Party[0] == Saves.Characters.Blank ||
-                            //    Memory.State.Party[2] == character && Memory.State.Party[0] == Saves.Characters.Blank && Memory.State.Party[1] == Saves.Characters.Blank
-                            //    ? Memory.State.firstcharactersmaxHP : 0;
-                            num = Memory.State.Characters[(int)character].MaxHP;
-                            spaces = 4 - num.ToString().Length;
-                            r.Offset((459 + spaces * 20), yoff);
-                            ITEM[pos, 6] = new IGMDataItem_Int(num, r, 2, 0, 1);
+                            r.Offset((459), yoff);
+                            ITEM[pos, 6] = new IGMDataItem_Int(Memory.State.Characters[(int)character].MaxHP(visableCharacter), r, 2, 0,1,4);
 
-                            BLANKS[pos] = false;
+                            if (Memory.State.TeamLaguna || Memory.State.SmallTeam)
+                            {
+                                BLANKS[pos] = false;
+                                r = dims.Item3;
+                                r.Offset(145, 36);
+                                ITEM[pos, 7] = new IGMDataItem_String(strings[Items.CurrentEXP] + new FF8String("\n") + strings[Items.NextLEVEL], r);
+
+                                r = dims.Item3;
+                                r.Offset((340), 42);
+                                ITEM[pos, 8] = new IGMDataItem_Int((int)Memory.State.Characters[(int)character].Experience, r, 2, 0, 1,9);
+
+                                r = dims.Item3;
+                                r.Offset(520, 42);
+                                ITEM[pos, 9] = new IGMDataItem_Icon(Icons.ID.P, r, 2);
+
+                                r = dims.Item3;
+                                r.Offset((340), 75);
+                                ITEM[pos, 10] = new IGMDataItem_Int(Memory.State.Characters[(int)character].ExperienceToNextLevel, r, 2, 0, 1,9);
+
+                                r = dims.Item3;
+                                r.Offset(520, 75);
+                                ITEM[pos, 11] = new IGMDataItem_Icon(Icons.ID.P, r, 2);
+                            }
+                            else
+                                for (int i = 7; i < Depth; i++)
+                                    ITEM[pos, i] = null;
                         }
                         else
                         {
@@ -656,28 +693,24 @@ namespace FF8
                 }
             }
 
-            private class IGMDataItem_Empty : IGMDataItem
-            {
-                public IGMDataItem_Empty(Rectangle? pos = null) : base(pos)
-                {
-                }
-
-                public override void Draw() { }
-            }
+            
 
             private class IGMData_SideMenu : IGMData
             {
-                public IGMData_SideMenu() : this(11, 1, new IGMDataItem_Box(pos: new Rectangle { Width = 226, Height = 492, X = 843 - 226 }))
+                public IGMData_SideMenu() : base(11, 1, new IGMDataItem_Box(pos: new Rectangle { Width = 226, Height = 492, X = 843 - 226 }),1,11)
                 {
                 }
 
-                public IGMData_SideMenu(int count, int depth, IGMDataItem container = null) : base(count, depth, container)
+                protected override void InitShift(int i, int col, int row)
                 {
+                    base.InitShift(i, col, row);
+                    SIZE[i].Inflate(-26, -12);
+                    ITEM[i, 0].Pos = SIZE[i];
                 }
 
-                public override void Init()
+                protected override void Init()
                 {
-                    base.Init();
+                    
                     ITEM[0, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 0));
                     ITEM[1, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2));
                     ITEM[2, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 4));
@@ -689,37 +722,62 @@ namespace FF8
                     ITEM[8, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 16));
                     ITEM[9, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 67));
                     ITEM[10, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 14));
-                    for (int i = 0; i < Count; i++)
-                    {
-                        Rectangle r = new Rectangle
-                        {
-                            Width = Width,
-                            Height = Height / Count,
-                            X = X,
-                            Y = Y + (Height / Count) * i,
-                        };
-                        r.Inflate(-26, -12);
-                        ITEM[i, 0].Pos = r;
-                        CURSOR[i] = new Point(r.X, (int)(r.Y + 6 * TextScale.Y));
-                    }
+                    base.Init();
                 }
 
-                public override bool Inputs()
-                {
-                    return base.Inputs();
-                }
+                public override bool Inputs() => base.Inputs();
 
-                public override bool Update()
-                {
-                    return base.Update();
-                }
+                public override bool Update() => base.Update();
             }
 
             #endregion Methods
         }
 
         #region Classes
-
+        /// <summary>
+        /// Flags for cursor behavior
+        /// </summary>
+        /// <remarks>Defaults to disabled. </remarks>
+        [Flags]
+        public enum Cursor_Status
+        {
+            /// <summary>
+            /// Hide Cursor and disable all code that uses it.
+            /// </summary>
+            Disabled = 0x0,
+            /// <summary>
+            /// Show Cursor
+            /// </summary>
+            Enabled = 0x1,
+            /// <summary>
+            /// Triggers blinking
+            /// </summary>
+            Blinking = 0x2,
+            /// <summary>
+            /// Makes it react to left and right instead of up and down.
+            /// </summary>
+            Horizontal = 0x4,
+            /// <summary>
+            /// This is the default but if you want both directions you need to set the flag.
+            /// </summary>
+            Vertical = 0x8,
+            /// <summary>
+            /// Just draw.
+            /// </summary>
+            Draw = 0x10,
+        }
+        [Flags]
+        public enum Table_Options
+        {
+            /// <summary>
+            /// No flags set.
+            /// </summary>
+            Default = 0x0,
+            /// <summary>
+            /// Default fills 1 col at a time. This will make it fill 1 row at a time.
+            /// </summary>
+            FillRows = 0x1,
+        }
         public class IGMData
         {
             #region Fields
@@ -728,7 +786,54 @@ namespace FF8
             /// location of where pointer finger will point.
             /// </summary>
             public Point[] CURSOR;
-
+            public bool Enabled
+            {
+                get => _enabled;
+                set
+                {
+                    _enabled = value;
+                }
+            }
+            public Table_Options Table_Options { get; set; } = Table_Options.Default;
+            public Cursor_Status Cursor_Status { get; set; } = Cursor_Status.Disabled;
+            public int CURSOR_SELECT
+            {
+                get => _cursor_select; set
+                {
+                    if ((Cursor_Status & Cursor_Status.Enabled) != 0 && value >= 0 && value < CURSOR.Length && CURSOR[value] != Point.Zero)
+                        _cursor_select = value;
+                }
+            }
+            public int CURSOR_NEXT()
+            {
+                if ((Cursor_Status & Cursor_Status.Enabled) != 0)
+                {
+                    int value = _cursor_select;
+                    while (true)
+                    {
+                        if (++value >= CURSOR.Length)
+                            value = 0;
+                        if (CURSOR[value] != Point.Zero || value == 0) break;
+                    }
+                    _cursor_select = value;
+                }
+                return _cursor_select;
+            }
+            public int CURSOR_PREV()
+            {
+                if ((Cursor_Status & Cursor_Status.Enabled) != 0)
+                {
+                    int value = _cursor_select;
+                    while (true)
+                    {
+                        if (--value < 0)
+                            value = CURSOR.Length - 1;
+                        if (CURSOR[value] != Point.Zero || value == 0) break;
+                    }
+                    _cursor_select = value;
+                }
+                return _cursor_select;
+            }
             public IGMDataItem[,] ITEM;
 
             /// <summary>
@@ -737,13 +842,16 @@ namespace FF8
             public Rectangle[] SIZE;
 
             public bool[] BLANKS;
-            public IGMDataItem CONTAINER;
+            private int _cursor_select;
+            private bool _enabled = true;
+
+            public IGMDataItem CONTAINER { get; protected set; }
 
             #endregion Fields
 
             #region Constructors
 
-            public IGMData(int count, int depth, IGMDataItem container = null)
+            public IGMData(int count, int depth, IGMDataItem container = null, int? cols = null, int? rows = null)
             {
                 SIZE = new Rectangle[count];
                 ITEM = new IGMDataItem[count, depth];
@@ -752,20 +860,36 @@ namespace FF8
                 Count = (byte)count;
                 Depth = (byte)depth;
                 BLANKS = new bool[count];
-                CONTAINER = container;
+                if (container != null)
+                    CONTAINER = container;
+                CURSOR_SELECT = 0;
+                this.cols = cols ?? 1;
+                this.rows = rows ?? 1;
                 Init();
+                ReInit();
+                Update();
             }
 
             public IGMDataItem this[int pos, int i] { get => ITEM[pos, i]; set => ITEM[pos, i] = value; }
 
+            /// <summary>
+            /// Draw all items
+            /// </summary>
             public virtual void Draw()
             {
-                if (CONTAINER != null)
-                    CONTAINER.Draw();
-                foreach (IGMDataItem i in ITEM)
+                if (Enabled)
                 {
-                    if (i != null)
-                        i.Draw();
+                    if (CONTAINER != null)
+                        CONTAINER.Draw();
+                    foreach (IGMDataItem i in ITEM)
+                    {
+                        if (i != null)
+                            i.Draw();
+                    }
+                    if ((Cursor_Status & (Cursor_Status.Enabled | Cursor_Status.Draw)) != 0)
+                    {
+                        DrawPointer(CURSOR[CURSOR_SELECT], blink: ((Cursor_Status & Cursor_Status.Blinking) != 0));
+                    }
                 }
             }
 
@@ -773,22 +897,189 @@ namespace FF8
 
             #region Properties
 
+            /// <summary>
+            /// Total number of items
+            /// </summary>
             public byte Count { get; private set; }
+
+            /// <summary>
+            /// How many Peices per Item. Example 1 box could have 9 things to draw in it.
+            /// </summary>
             public byte Depth { get; private set; }
+
+            /// <summary>
+            /// Container's Width
+            /// </summary>
             public int Width => CONTAINER != null ? CONTAINER.Pos.Width : 0;
+
+            /// <summary>
+            /// Container's Height
+            /// </summary>
             public int Height => CONTAINER != null ? CONTAINER.Pos.Height : 0;
+
+            /// <summary>
+            /// Container's X Position
+            /// </summary>
             public int X => CONTAINER != null ? CONTAINER.Pos.X : 0;
+
+            /// <summary>
+            /// Container's Y Position
+            /// </summary>
             public int Y => CONTAINER != null ? CONTAINER.Pos.Y : 0;
 
+            public int rows { get; private set; }
+            public int cols { get; private set; }
+
+
+            /// <summary>
+            /// Convert to rectangle based on container.
+            /// </summary>
+            /// <param name="v">Input data</param>
             public static implicit operator Rectangle(IGMData v) => v.CONTAINER ?? Rectangle.Empty;
 
-            public virtual bool Update() { return false; }
+            /// <summary>
+            /// Things that change on every update.
+            /// </summary>
+            /// <returns>True = signifigant change</returns>
+            public virtual bool Update() => false;
+
+            /// <summary>
+            /// Check inputs
+            /// </summary>
+            /// <returns>True = input detected</returns>
             public virtual bool Inputs()
             {
-                return false;
+                bool ret = false;
+                bool mouse = false;
+
+                if ((Cursor_Status & Cursor_Status.Enabled) != 0)
+                {
+                    Cursor_Status &= ~Cursor_Status.Blinking;
+                    ml = Input.MouseLocation.Transform(Menu.Focus);
+                    for (int i = 0; i < SIZE.Length; i++)
+                    {
+                        if (SIZE[i].Contains(ml))
+                        {
+                            CURSOR_SELECT = i;
+                            ret = true;
+                            mouse = true;
+                        }
+                    }
+                    if (!ret && (Cursor_Status & Cursor_Status.Horizontal) != 0)
+                    {
+                        if (Input.Button(Buttons.Left))
+                        {
+                            CURSOR_PREV();
+                            ret = true;
+                        }
+                        else if (Input.Button(Buttons.Right))
+                        {
+                            CURSOR_NEXT();
+                            ret = true;
+                        }
+                    }
+                    if (!ret && (Cursor_Status & Cursor_Status.Horizontal) == 0 || (Cursor_Status & Cursor_Status.Vertical) != 0)
+                    {
+                        if (Input.Button(Buttons.Up))
+                        {
+                            CURSOR_PREV();
+                            ret = true;
+                        }
+                        else if (Input.Button(Buttons.Down))
+                        {
+                            CURSOR_NEXT();
+                            ret = true;
+                        }
+                    }
+                    if (!ret || mouse)
+                    {
+                        if (Input.Button(Buttons.Okay))
+                        {
+                            Inputs_OKAY();
+                            return true;
+                        }
+                        if (Input.Button(Buttons.Cancel))
+                        {
+                            Inputs_CANCEL();
+                            return true;
+                        }
+                    }
+                    if (ret && !mouse)
+                    {
+                        Input.ResetInputLimit();
+                        init_debugger_Audio.PlaySound(0);
+                    }
+                }
+                return ret;
             }
-            public virtual void Init()
-            { }
+
+            public virtual void Inputs_OKAY()
+            {
+                Input.ResetInputLimit();
+                init_debugger_Audio.PlaySound(0);
+            }
+            public virtual void Inputs_CANCEL()
+            {
+                Input.ResetInputLimit();
+                init_debugger_Audio.PlaySound(8);
+            }
+            protected virtual void InitShift(int i, int col, int row)
+            {
+
+            }
+            /// <summary>
+            /// Things that are fixed values at startup.
+            /// </summary>
+            protected virtual void Init()
+            {
+                if (SIZE.Length>0 && SIZE[0].IsEmpty)
+                {
+                    for (int i = 0; i < SIZE.Length; i++)
+                    {
+                        int col = (Table_Options & Table_Options.FillRows) != 0 ? i % cols : i / rows;
+                        int row = (Table_Options & Table_Options.FillRows) != 0 ? i / cols : i % rows;
+                        if (col < cols && row < rows)
+                        {
+                            SIZE[i] = new Rectangle
+                            {
+                                X = X + (Width * col) / cols,
+                                Y = Y + (Height * row) / rows,
+                                Width = Width / cols,
+                                Height = Height / rows,
+                            };
+                            InitShift(i, col, row);
+                        }
+
+                    }
+                }
+                if (SIZE.Length == 0 || SIZE[0].IsEmpty)
+                {
+                    if (CURSOR.Length == 0 || SIZE.Length == 0)
+                    {
+                        CURSOR = new Point[1];
+                        SIZE = new Rectangle[1];
+                    }
+                    CURSOR[0].Y = (int)(Y + Height / 2 - 6 * TextScale.Y);
+                    CURSOR[0].X = X;
+                    SIZE[0] = new Rectangle(X, Y, Width, Height);
+                }
+                else
+                    for (int i = 0; i < CURSOR.Length; i++)
+                    {
+                        if (!SIZE[i].IsEmpty)
+                        {
+                            CURSOR[i].Y = (int)(SIZE[i].Y + SIZE[i].Height / 2 - 6 * TextScale.Y);
+                            CURSOR[i].X = SIZE[i].X;
+                        }
+                    }
+            }
+
+            /// <summary>
+            /// Things that change rarely. Like a party member changes or Laguna dream happens.
+            /// </summary>
+            public virtual void ReInit()
+            {
+            }
 
             #endregion Properties
         }
@@ -798,23 +1089,16 @@ namespace FF8
             //protected T _data;
             protected Rectangle _pos;
 
-            public IGMDataItem(Rectangle? pos = null) =>
-                //_data = data;
+            public Vector2 Scale { get; set; }
+            public IGMDataItem(Rectangle? pos = null, Vector2? scale = null)
+            {
                 _pos = pos ?? Rectangle.Empty;
-
-            /// <summary>
-            /// Dynamic data that is passed from update to draw.
-            /// </summary>
-            //public virtual T Data { get => _data; set => _data = value; }
+                Scale = scale ?? Menu.TextScale;
+            }
             /// <summary>
             /// Where to draw this item.
             /// </summary>
-            public virtual Rectangle Pos
-            {
-                get => _pos; set => _pos = value;
-
-                //public implicit operator IGMDataItem<T>(IGMDataItem_Icon v) => throw new NotImplementedException();
-            }
+            public virtual Rectangle Pos { get => _pos; set => _pos = value; }
 
             public Color Color { get; set; } = Color.White;
 
@@ -825,8 +1109,55 @@ namespace FF8
             public static implicit operator Rectangle(IGMDataItem v) => v.Pos;
 
             public static implicit operator Color(IGMDataItem v) => v.Color;
+            public static implicit operator IGMDataItem(IGMData v)
+            {
+                return new IGMDataItem_IGMData(v);
+            }
+            public virtual void ReInit()
+            { }
+            public virtual bool Update()
+            { return false; }
+            public virtual bool Inputs()
+            { return false; }
         }
+        public class IGMDataItem_IGMData : IGMDataItem
+        {
+            public IGMData Data { get; set; }
+            public IGMDataItem_IGMData(IGMData data, Rectangle? pos = null) : base(pos)
+            {
+                Data = data;
+            }
 
+            public override void Draw()
+            {
+                Data.Draw();
+            }
+            public override bool Update()
+            {
+                bool ret = base.Update();
+                return ret || Data.Update();
+            }
+            public override bool Inputs()
+            {
+                bool ret = base.Inputs();
+                return ret || Data.Inputs();
+            }
+            public override void ReInit()
+            {
+                base.ReInit();
+                Data.ReInit();
+            }
+        }
+        public class IGMDataItem_Empty : IGMDataItem
+        {
+            public IGMDataItem_Empty(Rectangle? pos = null) : base(pos)
+            {
+            }
+
+            public override void Draw()
+            {
+            }
+        }
         public class IGMDataItem_Icon : IGMDataItem//<Icons.ID>
         {
             private byte _pallet;
@@ -855,7 +1186,7 @@ namespace FF8
             public bool Blink => Faded_Pallet != Pallet;
             public float Blink_Adjustment { get; set; }
 
-            public IGMDataItem_Icon(Icons.ID data, Rectangle? pos = null, byte? pallet = null, byte? faded_pallet = null, float blink_adjustment = 1f) : base(pos)
+            public IGMDataItem_Icon(Icons.ID data, Rectangle? pos = null, byte? pallet = null, byte? faded_pallet = null, float blink_adjustment = 1f,Vector2? scale = null) : base(pos,scale)
             {
                 Data = data;
                 Pallet = pallet ?? 2;
@@ -865,15 +1196,61 @@ namespace FF8
 
             public override void Draw()
             {
-                Memory.Icons.Draw(Data, Pallet, Pos, TextScale, fade);
+                Memory.Icons.Draw(Data, Pallet, Pos, Scale, fade);
                 if (Blink)
-                    Memory.Icons.Draw(Data, Faded_Pallet, Pos, TextScale, fade * blink_Amount * Blink_Adjustment);
+                    Memory.Icons.Draw(Data, Faded_Pallet, Pos, Scale, fade * blink_Amount * Blink_Adjustment);
+            }
+        }
+
+        /// <summary>
+        /// Contains only one IGMDataItem.
+        /// </summary>
+        public class IGMData_Container : IGMData
+        {
+            public IGMData_Container(IGMDataItem container) : base(0, 0, container)
+            {
+            }
+        }
+
+        public class IGMDataItem_Face : IGMDataItem
+        {
+            private byte _pallet;
+
+            public Faces.ID Data { get; set; }
+
+            public byte Pallet
+            {
+                get => _pallet; set
+                {
+                    if (value >= 16) value = 2;
+                    _pallet = value;
+                }
+            }
+
+
+            public bool Blink { get; private set; }
+            public float Blink_Adjustment { get; set; }
+
+            public IGMDataItem_Face(Faces.ID data, Rectangle? pos = null, bool blink=false, float blink_adjustment = 1f) : base(pos)
+            {
+                Data = data;
+                Blink = blink;
+                Blink_Adjustment = blink_adjustment;
+            }
+
+            public override void Draw()
+            {
+                Memory.Faces.Draw(Data, Pos, Vector2.UnitY, fade);
+                if (Blink)
+                    Memory.Faces.Draw(Data, Pos, Vector2.UnitY, fade * blink_Amount * Blink_Adjustment);
             }
         }
 
         public class IGMDataItem_Int : IGMDataItem//<Int>
         {
             private byte _pallet;
+            private int Spaces;
+            private int SpaceWidth;
 
             public int Data { get; set; }
             public byte Padding { get; set; }
@@ -889,41 +1266,54 @@ namespace FF8
 
             public Icons.NumType NumType { get; set; }
 
-            public IGMDataItem_Int(int data, Rectangle? pos = null, byte? pallet = null, Icons.NumType? numtype = null, byte? padding = null) : base(pos)
+            private int Digits;
+
+            public IGMDataItem_Int(int data, Rectangle? pos = null, byte? pallet = null, Icons.NumType? numtype = null, byte? padding = null, int? spaces = null, int? spacewidth = null) : base(pos)
             {
                 Data = data;
                 Padding = padding ?? 1;
                 Pallet = pallet ?? 2;
                 NumType = numtype ?? 0;
+                Digits = data.ToString().Length;
+                if (Digits < padding) Digits = (int)padding;
+                Spaces = spaces??1;
+                SpaceWidth = spacewidth??20;
+                _pos.Offset(SpaceWidth * (Spaces - Digits), 0);
             }
 
-            public override void Draw() => Memory.Icons.Draw(Data, NumType, Pallet, $"D{Padding}", Pos.Location.ToVector2(), TextScale, fade);
+            public override void Draw() => Memory.Icons.Draw(Data, NumType, Pallet, $"D{Padding}", Pos.Location.ToVector2(), Scale, fade);
         }
 
         private class IGMDataItem_String : IGMDataItem
         {
             public FF8String Data { get; set; }
+            public Font.ColorID Colorid { get; set; }
 
-            public IGMDataItem_String(FF8String data, Rectangle? pos = null) : base(pos) => this.Data = data;
+            public IGMDataItem_String(FF8String data, Rectangle? pos = null,Font.ColorID? color = null): base(pos)
+            {
+                Data = data;
+                Colorid = color??Font.ColorID.White;
+            }
 
-            public override void Draw() => Memory.font.RenderBasicText(Data, Pos.Location, TextScale, Fade: fade);
+            public override void Draw() => Memory.font.RenderBasicText(Data, Pos.Location, Scale, Fade: fade,color: Colorid);
         }
 
         private class IGMDataItem_Box : IGMDataItem
         {
             public FF8String Data { get; set; }
             public Icons.ID? Title { get; set; }
-            public bool Indent { get; set; }
+            public Box_Options Options { get; set; }
+            public Tuple<Rectangle, Point, Rectangle> Dims { get; private set; }
 
-            public IGMDataItem_Box(FF8String data = null, Rectangle? pos = null, Icons.ID? title = null, bool indent = false) : base(pos)
+            public IGMDataItem_Box(FF8String data = null, Rectangle? pos = null, Icons.ID? title = null, Box_Options options = Box_Options.Default) : base(pos)
             {
                 Data = data;
                 Title = title;
-                Indent = indent;
+                Options = options;
             }
 
             public override void Draw() =>
-                    DrawBox(Pos, Data, Title, indent: Indent);
+                    Dims = DrawBox(Pos, Data, Title, options: Options);
         }
 
         private class IGMDataItem_Texture : IGMDataItem
@@ -939,20 +1329,117 @@ namespace FF8
 
         private abstract class Menu
         {
-            protected Dictionary<Enum, IGMData> Data;
+            /// <summary>
+            /// replace me with new keyword
+            /// </summary>
+            protected enum Mode
+            {
+                UNDEFINDED
+            }
+
+            public Dictionary<Enum, IGMData> Data;
+            /// <summary>
+            /// replace me with new keyword or cast me to your new enum.
+            /// </summary>
+            protected Enum mode=(Mode)0;
+            private Vector2 _size;
+            static public Vector2 TextScale { get; protected set; }
+            static public Matrix Focus;
+            private bool skipdata;
+
+            public Vector2 Size { get => _size; protected set => _size = value; }
 
             public Menu()
             {
                 Data = new Dictionary<Enum, IGMData>();
                 Init();
+                skipdata = true;
+                ReInit();
+                skipdata = false;
             }
 
-            protected abstract void Init();
+            protected virtual void Init() { }
 
-            public abstract void Draw();
+            public virtual void ReInit()
+            {
+                if(!skipdata)
+                foreach (KeyValuePair<Enum, IGMData> i in Data)
+                    i.Value.ReInit();
+                //Update();
+            }
 
-            public abstract bool Update();
+            public virtual void StartDraw()
+            {
+                Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: Focus);
+            }
+            public virtual void Draw()
+            {
+                foreach (KeyValuePair<Enum, IGMData> i in Data)
+                    i.Value.Draw();
+            }
 
+            public virtual void EndDraw()
+            {
+                Memory.SpriteBatchEnd();
+            }
+            public virtual bool Update()
+            {
+                Vector2 Zoom = Memory.Scale(Size.X, Size.Y, Memory.ScaleMode.FitBoth);
+                Focus = Matrix.CreateTranslation((Size.X / -2), (Size.Y / -2), 0) *
+                    Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) *
+                    Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
+
+                //todo detect when there is no saves detected.
+                //check for null
+                if(!skipdata)
+                foreach (KeyValuePair<Enum, IGMData> i in Data)
+                {
+                    i.Value.Update();
+                }
+                return false;
+            }
+
+            public class IGMData_Group : IGMData
+            {
+                public IGMData_Group(params IGMData[] d) : base(d.Length, 1)
+                {
+                    for (int i = 0; i < d.Length; i++)
+                    {
+                        ITEM[i, 0] = d[i];
+                    }
+                }
+
+                public override bool Inputs()
+                {
+                    bool ret = base.Inputs();
+                    foreach (var i in ITEM)
+                    {
+                        ret = ret || i.Inputs();
+                    }
+                    return ret;
+                }
+
+                public override void ReInit()
+                {
+                    base.ReInit();
+                    foreach (var i in ITEM)
+                    {
+                        if (i != null)
+                            i.ReInit();
+                    }
+                }
+
+                public override bool Update()
+                {
+                    bool ret = base.Update();
+                    foreach (var i in ITEM)
+                    {
+                        if (i != null)
+                            ret = ret || i.Update();
+                    }
+                    return ret;
+                }
+            }
             protected abstract bool Inputs();
         }
     }

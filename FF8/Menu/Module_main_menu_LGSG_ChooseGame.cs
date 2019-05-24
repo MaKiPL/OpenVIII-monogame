@@ -267,7 +267,7 @@ namespace FF8
             };
             Vector2 offset = dst.Location.ToVector2();
 
-            DrawBox(dst, indent: false);
+            DrawBox(dst);
 
             Vector2 blocknumpos = new Vector2
             {
@@ -286,25 +286,25 @@ namespace FF8
             };
             faceRect.Offset(offset);
             sbyte mainchar = -1;
-            for (byte face = 0; d != null && d.charactersportraits != null && face < d.charactersportraits.Length; face++)
+            for (byte face = 0; d != null && d.Party != null && face < d.Party.Length; face++)
             {
                 if (face != 0)
                     faceRect.Offset(faceRect.Width, 0);
-                if (d.charactersportraits[face] != Faces.ID.Blank)
+                if (d.Party[face] != Saves.Characters.Blank)
                 {
-                    Memory.Faces.Draw(d.charactersportraits[face], faceRect, Vector2.UnitY, fade);
+                    Memory.Faces.Draw(d.Party[face], faceRect, Vector2.UnitY, fade);
                     Memory.Icons.Draw(Icons.ID.MenuBorder, 2, faceRect, new Vector2(1f), fade);
                     if (mainchar == -1) mainchar = (sbyte)face;
                 }
             }
-            if (mainchar > -1 && d != null && d.charactersportraits != null && d.charactersportraits[mainchar] != Faces.ID.Blank)
+            if (mainchar > -1 && d != null && d.Party != null && d.Party[mainchar] != Saves.Characters.Blank)
             {
                 Vector2 detailsLoc = new Vector2
                 {
                     X = (int)(OffScreenBuffer.Width * 0.408333333333333f),
                     Y = (int)(OffScreenBuffer.Height * 0.0251572327044026f),
                 } + offset;
-                FF8String name = Memory.Strings.GetName(d.charactersportraits[mainchar], d);
+                FF8String name = Memory.Strings.GetName(d.Party[mainchar], d);
                 FF8String lv_ = new FF8String($"LV.   {d.firstcharacterslevel}");
                 TextScale = new Vector2(OffScreenBuffer.Width * 0.0030303030297619f, OffScreenBuffer.Height * 0.00636792452830189f);
                 Memory.font.RenderBasicText(name, detailsLoc, TextScale, Fade: fade);
@@ -323,19 +323,20 @@ namespace FF8
                 float X3 = OffScreenBuffer.Width * -0.0952380952380952f;
                 disc.Location = new Vector2 { X = X1, Y = disc.Y }.ToPoint();
                 Memory.Icons.Draw(Icons.ID.G, 2, disc, DiscScale, fade);
-                double digits = Math.Floor(Math.Log10(d.AmountofGil) + 2);
+                double digits = (d.AmountofGil==0?1:Math.Floor(Math.Log10(d.AmountofGil)+2));
+                
                 disc.Offset(new Vector2 { X = (float)(digits * X2) });
                 Memory.Icons.Draw((int)d.AmountofGil, 0, 2, "D1", disc.Location.ToVector2(), DiscScale, fade);
                 disc.Location = new Vector2 { X = X1, Y = playy }.ToPoint();
                 disc.Offset(new Vector2 { X = X2 });
-                Memory.Icons.Draw(d.timeplayed.Minutes, 0, 2, "D2", disc.Location.ToVector2(), DiscScale, fade);
+                Memory.Icons.Draw(d.Timeplayed.Minutes, 0, 2, "D2", disc.Location.ToVector2(), DiscScale, fade);
 
-                if ((int)d.timeplayed.TotalHours > 0)
+                if ((int)d.Timeplayed.TotalHours > 0)
                 {
                     disc.Offset(new Vector2 { X = 1 * X2 });
                     Memory.Icons.Draw(Icons.ID.Colon, 13, disc, DiscScale, fade);
-                    disc.Offset(new Vector2 { X = (float)Math.Floor(Math.Log10((int)d.timeplayed.TotalHours) + 1) * X2 });
-                    Memory.Icons.Draw((int)d.timeplayed.TotalHours, 0, 2, "D1", disc.Location.ToVector2(), DiscScale, fade);
+                    disc.Offset(new Vector2 { X = (float)Math.Floor(Math.Log10((int)d.Timeplayed.TotalHours) + 1) * X2 });
+                    Memory.Icons.Draw((int)d.Timeplayed.TotalHours, 0, 2, "D1", disc.Location.ToVector2(), DiscScale, fade);
                 }
                 disc.Offset(new Vector2 { X = X3 + X2 });
                 Memory.Icons.Draw(Icons.ID.PLAY, 13, disc, DiscScale, fade);
@@ -347,7 +348,7 @@ namespace FF8
                     Height = (int)(OffScreenBuffer.Height * 0.138364779874214f),
                 };
                 locbox.Offset(offset);
-                DrawBox(locbox, indent: false);
+                DrawBox(locbox);
                 FF8String loc = Memory.Strings.Read(Strings.FileID.AREAMES, 0, d.LocationID).ReplaceRegion();
                 locbox.Offset(0.0297619047619048f * OffScreenBuffer.Width, 0.0440251572327044f * OffScreenBuffer.Height);
                 Memory.font.RenderBasicText(loc, locbox.Location, TextScale, Fade: fade);

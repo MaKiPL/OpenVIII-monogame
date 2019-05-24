@@ -423,6 +423,19 @@ namespace FF8
         {
             Dark_Gray, Grey, Yellow, Red, Green, Blue, Purple, White
         }
+
+        public static Dictionary<ColorID, Color> ColorID2Color = new Dictionary<ColorID, Color>
+        {
+            { ColorID.Dark_Gray, new Color(41,49,41,255) },
+            { ColorID.Grey, new Color(148,148,164,255) },
+            { ColorID.Yellow, new Color(222,222,8,255) },
+            { ColorID.Red, new Color(255,24,24,255) },
+            { ColorID.Green, new Color(0,255,0,255) },
+            { ColorID.Blue, new Color(106,180,238,255) },
+            { ColorID.Purple, new Color(255,0,255,255) },
+            { ColorID.White, Color.White }
+        };
+
         /// <summary>
         /// Change colors of text following this.
         /// </summary>
@@ -440,7 +453,7 @@ namespace FF8
         {
             //on pc it puts a green letter for the keyboard key
             //two lefts and two rights doesn't make sense.
-            
+
             //buttons
             {0x052F, "Left" },
             {0x052D, "Right" },
@@ -497,7 +510,8 @@ namespace FF8
         };
 
         /// <summary>
-        /// Place holders for various things. The 0A values change depending on what section/string you are in. 0B values can be 2 or 3 bytes total.
+        /// Place holders for various things. The 0A values change depending on what section/string
+        /// you are in. 0B values can be 2 or 3 bytes total.
         /// </summary>
         private static Dictionary<int, string> Special = new Dictionary<int, string>()
         {
@@ -599,11 +613,10 @@ namespace FF8
             {0xC6D,"Cactuar" },
             {0xC6E,"Tonberry" },
             {0xC6F,"Eden" }
-
-
         };
 
         public Font() => LoadFonts();
+
         public void LoadFonts()
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
@@ -627,7 +640,7 @@ namespace FF8
             menuFont.SetData(tim.CreateImageBuffer(tim.GetClutColors(ColorID.White)));
         }
 
-        public void getWidths(byte[] Tdw,uint offset, uint length)
+        public void getWidths(byte[] Tdw, uint offset, uint length)
         {
             using (MemoryStream os = new MemoryStream((int)length * 2))
             using (BinaryWriter bw = new BinaryWriter(os))
@@ -646,11 +659,9 @@ namespace FF8
                 }
                 charWidths = os.ToArray();
             }
-
         }
+
         private byte[] charWidths;
-        
-        
 
         public enum Type
         {
@@ -658,7 +669,8 @@ namespace FF8
             sysfnt,
             menuFont,
         }
-        public Rectangle RenderBasicText(FF8String buffer, Vector2 pos, Vector2 zoom, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false)
+
+        public Rectangle RenderBasicText(FF8String buffer, Vector2 pos, Vector2 zoom, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false, ColorID color = ColorID.White)
         {
             if (buffer == null) return new Rectangle();
             Rectangle ret = new Rectangle(pos.RoundedPoint(), new Point(0));
@@ -675,7 +687,7 @@ namespace FF8
                 {
                     width = charWidths[deltaChar];
                     size.X = (int)(charWidths[deltaChar] * zoom.X);
-                }                
+                }
                 else
                 {
                     width = charSize;
@@ -687,7 +699,7 @@ namespace FF8
                 if (c == 0x02)// \n
                 {
                     real.X = (int)pos.X;
-                    real.Y += (int)(size.Y + lineSpacing);
+                    real.Y += size.Y + lineSpacing;
                     continue;
                 }
                 Rectangle destRect = new Rectangle(real, size);
@@ -700,19 +712,19 @@ namespace FF8
                         width,
                         charSize);
 
-
                     switch (whichFont)
                     {
                         case Type.menuFont:
                         case Type.sysfnt:
-                        //trim pixels to remove texture filtering artifacts.
-                        sourceRect.Width -= 1;
-                        sourceRect.Height -= 1;
-                        Memory.spriteBatch.Draw(whichFont == Type.menuFont? menuFont : sysfnt,
-                            destRect,
-                            sourceRect,
-                        Color.White * Fade);
+                            //trim pixels to remove texture filtering artifacts.
+                            sourceRect.Width -= 1;
+                            sourceRect.Height -= 1;
+                            Memory.spriteBatch.Draw(whichFont == Type.menuFont ? menuFont : sysfnt,
+                                destRect,
+                                sourceRect,
+                            ColorID2Color[color] * Fade);
                             break;
+
                         case Type.sysFntBig:
                             if (!sysfntbig.Modded)
                             {
@@ -720,7 +732,7 @@ namespace FF8
                                 ShadowdestRect.Offset(zoom);
                                 sysfntbig.Draw(ShadowdestRect, sourceRect, Color.Black * Fade * .5f);
                             }
-                                sysfntbig.Draw(destRect, sourceRect, Color.White * Fade);
+                            sysfntbig.Draw(destRect, sourceRect, ColorID2Color[color] * Fade);
                             break;
                     }
                 }
@@ -732,22 +744,26 @@ namespace FF8
             ret.Height = size.Y + (real.Y - (int)pos.Y);
             return ret;
         }
-        public Rectangle RenderBasicText(FF8String buffer, Point pos, Vector2 zoom, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false)
-            => RenderBasicText(buffer, pos.ToVector2(), zoom, whichFont, Fade, lineSpacing, skipdraw);
-        public Rectangle RenderBasicText(FF8String buffer, int x, int y, float zoomWidth = 2.545455f, float zoomHeight = 3.0375f, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false)
-            => RenderBasicText(buffer, new Vector2(x, y), new Vector2(zoomWidth, zoomHeight), whichFont, Fade, lineSpacing, skipdraw);
+
+        public Rectangle RenderBasicText(FF8String buffer, Point pos, Vector2 zoom, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false, ColorID color = ColorID.White)
+            => RenderBasicText(buffer, pos.ToVector2(), zoom, whichFont, Fade, lineSpacing, skipdraw, color);
+
+        public Rectangle RenderBasicText(FF8String buffer, int x, int y, float zoomWidth = 2.545455f, float zoomHeight = 3.0375f, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false, ColorID color = ColorID.White)
+            => RenderBasicText(buffer, new Vector2(x, y), new Vector2(zoomWidth, zoomHeight), whichFont, Fade, lineSpacing, skipdraw, color);
+
         /// <summary>
         /// Converts clean string into dirty string for drawing.
         /// </summary>
         /// <param name="s">Clean String</param>
         /// <returns>Dirty String</returns>
         /// <remarks>
-        /// dirty, do not use for anything else than translating for your own purpouses. I'm just lazy
-        /// Anything from 0-127 should be able to convert back and forth.
-        /// But anything 128-256 may get messed up as c# stores it's strings as 16-bit unicode
+        /// dirty, do not use for anything else than translating for your own purpouses. I'm just
+        /// lazy Anything from 0-127 should be able to convert back and forth. But anything 128-256
+        /// may get messed up as c# stores it's strings as 16-bit unicode
         /// </remarks>
         [Obsolete("use 'Memory.DirtyEncoding.GetBytes(s)' or 'new FF8String(s)'")]
         public static byte[] CipherDirty(string s) => Memory.DirtyEncoding.GetBytes(s);
+
         //{
         //    using (MemoryStream ms = new MemoryStream(s.Length))
         //    {
@@ -774,7 +790,7 @@ namespace FF8
         {
             if (s != null)
                 using (MemoryStream os = new MemoryStream(s.Length))
-                using (BinaryWriter bw = new BinaryWriter(os)) 
+                using (BinaryWriter bw = new BinaryWriter(os))
                 using (MemoryStream ms = new MemoryStream(s))
                 using (BinaryReader br = new BinaryReader(ms))
                 {
@@ -792,10 +808,10 @@ namespace FF8
                             byte[] c = Encoding.UTF8.GetBytes(DirtyEncoding.BytetoChar[b].ToString());
                             os.Write(c, 0, c.Length);
                         }
-                        else if(ms.Position < ms.Length)
+                        else if (ms.Position < ms.Length)
                         {
                             byte c = br.ReadByte();
-                            ushort i = BitConverter.ToUInt16(new byte[] { c,b }, 0);
+                            ushort i = BitConverter.ToUInt16(new byte[] { c, b }, 0);
                             switch (b)
                             {
                                 case 0x06:
@@ -825,6 +841,7 @@ namespace FF8
                                     else
                                         bw.Write(Encoding.UTF8.GetBytes($"<Spell_GF: {string.Format("0x{0:X2}", i)}>"));
                                     break;
+
                                 case 0x0A:
                                 case 0x0B://0x0B can be 2 or 3 bytes only grabbing 2 so might have extra rando character near
                                     if (Special.ContainsKey(i))
@@ -832,10 +849,12 @@ namespace FF8
                                     else
                                         bw.Write(Encoding.UTF8.GetBytes($"<Special: {string.Format("0x{0:X2}", i)}>"));
                                     break;
+
                                 case 0xC4:
-                                        ms.Seek(-1, SeekOrigin.Current);
-                                        bw.Write(Encoding.UTF8.GetBytes(string.Format("0x{0:X2}", (int)b)));
+                                    ms.Seek(-1, SeekOrigin.Current);
+                                    bw.Write(Encoding.UTF8.GetBytes(string.Format("0x{0:X2}", (int)b)));
                                     break;
+
                                 default:
                                     bw.Write(Encoding.UTF8.GetBytes(string.Format("0x{0:X2}", i)));
                                     break;

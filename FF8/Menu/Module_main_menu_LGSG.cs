@@ -68,7 +68,18 @@ namespace FF8
 
         #region Methods
 
-        private static Tuple<Rectangle, Point, Rectangle> DrawBox(Rectangle dst, FF8String buffer = null, Icons.ID? title = null, bool indent = true, bool bottom = false, Vector2? textScale = null, Vector2? boxScale = null, bool skipdraw = false)
+        [Flags]
+        public enum Box_Options
+        {
+            Default = 0x0,
+            Indent = 0x1,
+            Buttom = 0x2,
+            SkipDraw = 0x4,
+            Center = 0x8,
+            Middle = 0x10,
+        }
+
+        private static Tuple<Rectangle, Point, Rectangle> DrawBox(Rectangle dst, FF8String buffer = null, Icons.ID? title = null, Vector2? textScale = null, Vector2? boxScale = null, Box_Options options = Box_Options.Default)
         {
             if (textScale == null) textScale = Vector2.One;
             if (boxScale == null) boxScale = Vector2.One;
@@ -80,7 +91,7 @@ namespace FF8
             Rectangle backup = dst;
             Rectangle hotspot = new Rectangle(dst.Location, dst.Size);
             Rectangle font = new Rectangle();
-            if (!skipdraw)
+            if ((options & Box_Options.SkipDraw) == 0)
             {
                 if (dst.Width > 256 * bgscale.X)
                     Memory.Icons.Draw(Icons.ID.Menu_BG_368, 0, box, bgscale, Fade);
@@ -97,20 +108,25 @@ namespace FF8
             }
             if (buffer != null && buffer.Length > 0)
             {
-                if (indent)
-                    dst.Offset(70 * textScale.Value.X, 0);//0.0546875f * vp_per.X
+                font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: fade, skipdraw: true);
+                if ((options & Box_Options.Indent) != 0)
+                    dst.Offset(70 * textScale.Value.X, 0);
+                else if ((options & Box_Options.Center) != 0)
+                    dst.Offset(dst.Width/2 - font.Width/2, 0);
                 else
-                    dst.Offset(25 * textScale.Value.X, 0);//0.01953125f * vp_per.X
+                    dst.Offset(25 * textScale.Value.X, 0);
 
-                if (bottom)
+                if ((options & Box_Options.Buttom) != 0)
                     dst.Offset(0, (dst.Height - 48));
+                else if ((options & Box_Options.Middle) != 0)
+                    dst.Offset (0, dst.Height/2 - font.Height/2);
                 else
                     dst.Offset(0, 21);
 
                 dst.Y = (int)(dst.Y * boxScale.Value.Y);
-                font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: fade,skipdraw: skipdraw);
+                font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: fade, skipdraw: (options & Box_Options.SkipDraw) != 0);
                 cursor = dst.Location;
-                cursor.Y += (int)(TextScale.Y*6); // 12 * (3.0375/2)
+                cursor.Y += (int)(TextScale.Y * 6); // 12 * (3.0375/2)
             }
             return new Tuple<Rectangle, Point, Rectangle>(hotspot, cursor, font);
         }
@@ -232,11 +248,11 @@ namespace FF8
             Vector2 BoxZoom = new Vector2(1, TextZoom.Y);
 
             Rectangle dst = new Rectangle((int)(vp.X * 0.82421875f), 0, (int)(vp.X * 0.17578125f), (int)(vp_per.Y * 0.0916666666666667f));
-            DrawBox(dst, name, indent: false, boxScale: BoxZoom, textScale: TextZoom);
+            DrawBox(dst, name, boxScale: BoxZoom, textScale: TextZoom);
             dst = new Rectangle(0, dst.Y, (int)(vp.X * 0.8203125f), dst.Height);
-            DrawBox(dst, info, Icons.ID.INFO, boxScale: BoxZoom, textScale: TextZoom);
+            DrawBox(dst, info, Icons.ID.INFO, boxScale: BoxZoom, textScale: TextZoom, options: Box_Options.Indent);
             dst = new Rectangle((int)(vp.X * 0.0282101167315175f), (int)(dst.Height + dst.Y + vp_per.Y * 0.0041666666666667f), (int)(vp.X * 0.943579766536965f), dst.Height);
-            DrawBox(dst, help, Icons.ID.HELP, indent: false, boxScale: BoxZoom, textScale: TextZoom);
+            DrawBox(dst, help, Icons.ID.HELP, boxScale: BoxZoom, textScale: TextZoom);
             return dst;
         }
 
@@ -273,8 +289,8 @@ namespace FF8
             slot.Offset(vp_per.X * -0.00859375f, vp_per.Y * -0.033333333f);
             slot.Offset(offset);
             dst.Offset(offset);
-            Tuple<Rectangle, Point, Rectangle> location = DrawBox(dst, main, null, false, true);
-            DrawBox(slot, title, null, false, false);
+            Tuple<Rectangle, Point, Rectangle> location = DrawBox(dst, main, options: Box_Options.Buttom);
+            DrawBox(slot, title);
             return location;
         }
 
@@ -282,7 +298,7 @@ namespace FF8
         {
             Rectangle dst = new Rectangle(cursor, new Point(24 * 2, 16 * 2));
             dst.Offset(-(dst.Width) + xoffset, -(dst.Height * .25f));
-            if(blink)
+            if (blink)
             {
                 Memory.Icons.Draw(Icons.ID.Finger_Right, 7, dst, new Vector2(2f), fade);
             }
