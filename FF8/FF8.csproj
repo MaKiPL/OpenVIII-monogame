@@ -166,6 +166,7 @@
     <Compile Include="Menu\Kernel\Kernel_bin.Duel_Zell_limit_break.cs" />
     <Compile Include="Menu\Kernel\Kernel_bin.Element.cs" />
     <Compile Include="Menu\Kernel\Kernel_bin.Enemy_Attacks_Data.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Equipable_Abilities.cs" />
     <Compile Include="Menu\Kernel\Kernel_bin.Gender.cs" />
     <Compile Include="Menu\Kernel\Kernel_bin.GF_abilities.cs" />
     <Compile Include="Menu\Kernel\Kernel_bin.JunctionAbilityFlags.cs" />

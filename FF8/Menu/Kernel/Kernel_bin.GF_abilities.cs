@@ -8,16 +8,12 @@ namespace FF8
         /// GF Abilities Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/GF-abilities"/>
-        public class GF_abilities
+        public class GF_abilities : Equipable_Abilities
         {
-            public const int count = 9;
-            public const int id = 16;
+            public new const int count = 9;
+            public new const int id = 16;
 
-            public override string ToString() => Name;
-
-            public FF8String Name { get; private set; }
-            public FF8String Description { get; private set; }
-            public byte AP { get; private set; }
+            
             public byte Boost { get; private set; }
             public Stat Stat { get; private set; }
             public byte Value { get; private set; }

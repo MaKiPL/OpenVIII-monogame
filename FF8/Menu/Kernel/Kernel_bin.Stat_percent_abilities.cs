@@ -8,16 +8,11 @@ namespace FF8
         /// Stat Percentage Increasing Abilities Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Stat-percentage-increasing-abilities"/>
-        public class Stat_percent_abilities
+        public class Stat_percent_abilities : Equipable_Abilities
         {
-            public const int count = 19;
-            public const int id = 13;
+            public new const int count = 19;
+            public new const int id = 13;
 
-            public override string ToString() => Name;
-
-            public FF8String Name { get; private set; }
-            public FF8String Description { get; private set; }
-            public byte AP { get; private set; }
             public Stat Stat { get; private set; }
             public byte Value { get; private set; }
             public byte Unknown0 { get; private set; }

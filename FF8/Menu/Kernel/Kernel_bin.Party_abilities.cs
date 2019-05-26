@@ -9,16 +9,11 @@ namespace FF8
         /// Party Abilities Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Party-abilities"/>
-        public class Party_abilities
+        public class Party_abilities : Equipable_Abilities
         {
-            public const int count = 5;
-            public const int id = 15;
+            public new const int count = 5;
+            public new const int id = 15;
 
-            public override string ToString() => Name;
-
-            public FF8String Name { get; private set; }
-            public FF8String Description { get; private set; }
-            public byte AP { get; private set; }
             public BitArray Flags { get; private set; }
             public byte[] Unknown0 { get; private set; }
 

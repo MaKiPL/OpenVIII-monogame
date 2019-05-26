@@ -39,6 +39,8 @@ namespace FF8
         public static Misc_section[] Miscsection { get; private set; }//29 //only_strings
         public static Misc_text_pointers[] Misctextpointers { get; private set; }//30
 
+        public static List<Equipable_Abilities> EquipableAbilities; // contains 4 types;
+
         /// <summary>
         /// Read binary data from into structures and arrays
         /// </summary>
@@ -179,6 +181,16 @@ namespace FF8
                 Miscsection = Misc_section.Read(br);
                 ms.Seek(subPositions[Misc_text_pointers.id], SeekOrigin.Begin);
                 Misctextpointers = Misc_text_pointers.Read();
+
+                EquipableAbilities = new List<Equipable_Abilities>(
+                    Stat_percent_abilities.count +
+                    Character_abilities.count +
+                    Party_abilities.count +
+                    GF_abilities.count);
+                EquipableAbilities.AddRange(Statpercentabilities);
+                EquipableAbilities.AddRange(Characterabilities);
+                EquipableAbilities.AddRange(Partyabilities);
+                EquipableAbilities.AddRange(GFabilities);
             }
         }
     }

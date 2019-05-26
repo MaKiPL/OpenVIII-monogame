@@ -960,13 +960,29 @@ namespace FF8
                     {
                         for (int i = 0; i < Count; i++)
                         {
-                            ITEM[i, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right2, SIZE[i], 9);
-                            //if (Memory.State.Characters[(int)Character].Abilities[i] != Kernel_bin.Abilities.None)
-                            //    ITEM[i, 1] = new IGMDataItem_String(
-                            //        Icons.ID.Ability_Command, 9,
-                            //    Kernel_bin.Junctionabilities[(int)(Memory.State.Characters[(int)Character].Abilities[i])].Name,
-                            //    new Rectangle(SIZE[i].X + 40, SIZE[i].Y, 0, 0));
-                            //else ITEM[i, 1] = null;
+                            int slots = 2;
+                            if (Memory.State.Characters[(int)Character].UnlockedGFAbilities.Contains(Kernel_bin.Abilities.Abilityx3))
+                                slots = 3;
+                            if (Memory.State.Characters[(int)Character].UnlockedGFAbilities.Contains(Kernel_bin.Abilities.Abilityx4))
+                                slots = 4;
+                            if (i < slots)
+                            {
+                                ITEM[i, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right2, SIZE[i], 9);
+                                if (Memory.State.Characters[(int)Character].Abilities[i] != Kernel_bin.Abilities.None)
+                                    ITEM[i, 1] = new IGMDataItem_String(
+                                        Icons.ID.Ability_Command, 9,
+                                    Kernel_bin.EquipableAbilities[-39 + (int)(Memory.State.Characters[(int)Character].Abilities[i])].Name,
+                                    new Rectangle(SIZE[i].X + 40, SIZE[i].Y, 0, 0));
+                                else ITEM[i, 1] = null;
+                                BLANKS[i] = false;
+                            }
+                            else
+                            {
+                                ITEM[i, 0] = null;
+                                ITEM[i, 1] = null;
+                                BLANKS[i] = true;
+                            }
+                                
                         }
                     }
                 }

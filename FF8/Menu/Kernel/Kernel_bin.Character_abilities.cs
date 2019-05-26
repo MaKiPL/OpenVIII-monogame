@@ -9,16 +9,12 @@ namespace FF8
         /// Characters Abilities Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Character-abilities"/>
-        public class Character_abilities
+        public class Character_abilities : Equipable_Abilities
         {
-            public const int count = 20;
-            public const int id = 14;
+            public new const int count = 20;
+            public new const int id = 14;
 
-            public override string ToString() => Name;
 
-            public FF8String Name { get; private set; }
-            public FF8String Description { get; private set; }
-            public byte AP { get; private set; }
             public CharacterAbilityFlags Flags { get; private set; }
 
             public void Read(BinaryReader br, int i)
@@ -50,4 +46,5 @@ namespace FF8
             }
         }
     }
+
 }
