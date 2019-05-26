@@ -813,7 +813,7 @@ namespace FF8
                     {
                         if (++value >= CURSOR.Length)
                             value = 0;
-                        if (CURSOR[value] != Point.Zero || value == 0) break;
+                        if ((CURSOR[value] != Point.Zero && !BLANKS[value]) || value == 0) break;
                     }
                     _cursor_select = value;
                 }
@@ -828,7 +828,7 @@ namespace FF8
                     {
                         if (--value < 0)
                             value = CURSOR.Length - 1;
-                        if (CURSOR[value] != Point.Zero || value == 0) break;
+                        if ((CURSOR[value] != Point.Zero && !BLANKS[value]) || value == 0) break;
                     }
                     _cursor_select = value;
                 }
@@ -958,7 +958,7 @@ namespace FF8
                     ml = Input.MouseLocation.Transform(Menu.Focus);
                     for (int i = 0; i < SIZE.Length; i++)
                     {
-                        if (SIZE[i].Contains(ml))
+                        if (SIZE[i].Contains(ml) && !SIZE[i].IsEmpty && CURSOR[i] != Point.Zero && !BLANKS[i])
                         {
                             CURSOR_SELECT = i;
                             ret = true;
@@ -1288,6 +1288,8 @@ namespace FF8
         {
             public FF8String Data { get; set; }
             public Font.ColorID Colorid { get; set; }
+            public Icons.ID? Icon { get; set; }
+            public int Pallet { get; set; }
 
             public IGMDataItem_String(FF8String data, Rectangle? pos = null,Font.ColorID? color = null): base(pos)
             {
@@ -1295,7 +1297,26 @@ namespace FF8
                 Colorid = color??Font.ColorID.White;
             }
 
-            public override void Draw() => Memory.font.RenderBasicText(Data, Pos.Location, Scale, Fade: fade,color: Colorid);
+            public IGMDataItem_String(Icons.ID? icon, int pallet, FF8String data, Rectangle? pos = null, Font.ColorID? color = null) : base(pos)
+            {
+                Icon = icon;
+                Pallet = pallet;
+                Data = data;
+                Colorid = color ?? Font.ColorID.White;
+            }
+
+            public override void Draw()
+            {
+                Rectangle r = Pos;
+                if (Icon != null)
+                {
+                    Rectangle r2 = r;
+                    r2.Size = Point.Zero;
+                    Memory.Icons.Draw(Icon, Pallet, r2, new Vector2(Scale.X), fade);
+                    r.Offset(Memory.Icons.GetEntryGroup(Icon).Width*Scale.X, 0);
+                }
+                Memory.font.RenderBasicText(Data, r.Location, Scale, Fade: fade, color: Colorid);
+            }
         }
 
         private class IGMDataItem_Box : IGMDataItem

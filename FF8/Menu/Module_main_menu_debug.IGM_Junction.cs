@@ -832,6 +832,14 @@ namespace FF8
                     Cursor_Status |= Cursor_Status.Enabled;
                     Enabled = false;
                 }
+                public override void ReInit()
+                {
+                    base.ReInit();
+                    var i = ((IGMDataItem_IGMData)ITEM[0, 0]);
+                    if(i != null && i.Data != null)
+                    CURSOR =i.Data.CURSOR;
+                    CURSOR_SELECT = 1;
+                }
             }
             private class IGMData_TopMenu_Off_Group : IGMData_Group
             {
@@ -887,8 +895,49 @@ namespace FF8
 
             private class IGMData_Abilities_Command : IGMData
             {
-                public IGMData_Abilities_Command() : base(4, 2, new IGMDataItem_Box(pos: new Rectangle(0, 198, 435, 216), title: Icons.ID.COMMAND),1,3)
+                public IGMData_Abilities_Command() : base(4, 2, new IGMDataItem_Box(pos: new Rectangle(0, 198, 435, 216), title: Icons.ID.COMMAND),1,4)
                 {
+                }
+                protected override void Init()
+                {
+                    base.Init();
+                    CURSOR[0] = Point.Zero; //disable this cursor location
+                }
+
+                protected override void InitShift(int i, int col, int row)
+                {
+                    base.InitShift(i, col, row);
+                    SIZE[i].Inflate(-22, -8);
+                    SIZE[i].Offset(0, 12 + (-8 * row));
+                }
+
+                public override void ReInit()
+                {
+                    base.ReInit();
+
+                    if (Memory.State.Characters != null)
+                    {
+                        for (int i = 0; i < Count; i++)
+                        {
+                            if (i == 0)
+                            {
+                                ITEM[i, 1] = new IGMDataItem_String(
+                                        Kernel_bin.BattleCommands[
+                                            Memory.State.Characters[(int)Character].Abilities.Contains(Kernel_bin.Abilities.Mug) ?
+                                            13 :
+                                            1].Name,
+                                        new Rectangle(SIZE[i].X + 80, SIZE[i].Y, 0, 0));
+                            }
+                            else
+                            {
+                                ITEM[i, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right2, SIZE[i], 9);
+                                ITEM[i, 1] = Memory.State.Characters[(int)Character].Commands[i - 1] != Kernel_bin.Abilities.None ? new IGMDataItem_String(
+                                    Icons.ID.Ability_Command, 9,
+                                Kernel_bin.Commandabilities[-0x14 + (int)(Memory.State.Characters[(int)Character].Commands[i - 1])].Name,
+                                new Rectangle(SIZE[i].X+40, SIZE[i].Y,0,0)) : null;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -896,6 +945,30 @@ namespace FF8
             {
                 public IGMData_Abilities_AbilitySlots() : base(4, 2, new IGMDataItem_Box(pos: new Rectangle(0, 414, 435, 216), title: Icons.ID.ABILITY),1,4)
                 {
+                }
+                protected override void InitShift(int i, int col, int row)
+                {
+                    base.InitShift(i, col, row);
+                    SIZE[i].Inflate(-22, -8);
+                    SIZE[i].Offset(80, 12 + (-8 * row));
+                }
+                public override void ReInit()
+                {
+                    base.ReInit();
+
+                    if (Memory.State.Characters != null)
+                    {
+                        for (int i = 0; i < Count; i++)
+                        {
+                            ITEM[i, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right2, SIZE[i], 9);
+                            //if (Memory.State.Characters[(int)Character].Abilities[i] != Kernel_bin.Abilities.None)
+                            //    ITEM[i, 1] = new IGMDataItem_String(
+                            //        Icons.ID.Ability_Command, 9,
+                            //    Kernel_bin.Junctionabilities[(int)(Memory.State.Characters[(int)Character].Abilities[i])].Name,
+                            //    new Rectangle(SIZE[i].X + 40, SIZE[i].Y, 0, 0));
+                            //else ITEM[i, 1] = null;
+                        }
+                    }
                 }
             }
 
