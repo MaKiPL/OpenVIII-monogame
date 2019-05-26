@@ -61,6 +61,11 @@ namespace FF8
             string[] files = flText.Split((char)0x0a);
             for (int i = 0; i != files.Length; i++) //check archive for filename
             {
+                if(string.IsNullOrWhiteSpace(files[i]))
+                {
+                    Debug.WriteLine("ArchiveWorker::File entry is null. Returning null");
+                    return null;
+                }
                 string testme = files[i].Substring(0, files[i].Length - 1).ToUpper().TrimEnd('\0');
                 if (testme != a.ToUpper()) continue;
                 loc = i;
