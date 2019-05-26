@@ -202,6 +202,7 @@ namespace FF8
                 Data.Add(SectionName.TopMenu_Abilities, new IGMData_Abilities_Group(
                     new IGMData_Abilities_Command(),
                     new IGMData_Abilities_AbilitySlots(),
+                    new IGMData_Abilities_CommandPool(),
                     new IGMData_Abilities_AbilityPool()
                     ));
                 base.Init();
@@ -220,7 +221,9 @@ namespace FF8
                 TopMenu_Junction,
                 TopMenu_Off,
                 TopMenu_Auto,
-                Abilities
+                Abilities,
+                Abilities_Commands,
+                Abilities_Abilities
             }
 
             public new Mode mode;
@@ -248,6 +251,12 @@ namespace FF8
 
                     case Mode.Abilities:
                         ret = ((IGMData_Abilities_Group)Data[SectionName.TopMenu_Abilities]).Inputs();
+                        break;
+                    case Mode.Abilities_Commands:
+                        ret = ((IGMData_Abilities_Group)Data[SectionName.TopMenu_Abilities]).ITEM[2,0].Inputs();
+                        break;
+                    case Mode.Abilities_Abilities:
+                        ret = ((IGMData_Abilities_Group)Data[SectionName.TopMenu_Abilities]).ITEM[3,0].Inputs();
                         break;
                     default:
                         break;
@@ -822,7 +831,9 @@ namespace FF8
 
                 public override void Inputs_CANCEL()
                 {
+                    skipdata = true;
                     base.Inputs_CANCEL();
+                    skipdata = false;
                     InGameMenu_Junction.Data[SectionName.TopMenu_Abilities].Enabled = false;
                     InGameMenu_Junction.mode = Mode.TopMenu;
                 }
@@ -850,6 +861,40 @@ namespace FF8
                         Array.Copy(i2.Data.BLANKS, 0, BLANKS, i.Data.Count, i2.Data.Count);
                     }
                     CURSOR_SELECT = 1;
+                }
+                public override bool Inputs()
+                {
+                    skipdata = true;
+                    bool ret = base.Inputs();
+                    skipdata = false;
+                    var i = ((IGMDataItem_IGMData)ITEM[0, 0]);
+                    var i2 = ((IGMDataItem_IGMData)ITEM[3, 0]);
+                    if (ret && i!= null && i.Data != null)
+                    {
+                        if (CURSOR_SELECT >= i.Data.Count)
+                            i2.Data.Enabled = true;
+                        else
+                            i2.Data.Enabled = false;
+                    }
+                    return ret;
+                }
+
+                public override void Inputs_OKAY()
+                {
+
+                    skipdata = true;
+                    base.Inputs_OKAY();
+                    skipdata = false;
+
+                    var i = ((IGMDataItem_IGMData)ITEM[0, 0]);
+                    var i2 = ((IGMDataItem_IGMData)ITEM[3, 0]);
+                    if (i != null && i.Data != null)
+                    {
+                        if (CURSOR_SELECT >= i.Data.Count)
+                            InGameMenu_Junction.mode = Mode.Abilities_Abilities;
+                        else
+                            InGameMenu_Junction.mode = Mode.Abilities_Commands;
+                    }
                 }
             }
             private class IGMData_TopMenu_Off_Group : IGMData_Group
@@ -999,11 +1044,43 @@ namespace FF8
                     }
                 }
             }
-
+            private class IGMData_Abilities_CommandPool : IGMData
+            {
+                public IGMData_Abilities_CommandPool() : base(13, 1, new IGMDataItem_Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.COMMAND), 1, 11)
+                {
+                }
+                protected override void Init()
+                {
+                    base.Init();
+                    Cursor_Status |= Cursor_Status.Enabled;
+                    Cursor_Status |= Cursor_Status.Horizontal;
+                    Cursor_Status |= Cursor_Status.Vertical;
+                }
+                public override void Inputs_CANCEL()
+                {
+                    base.Inputs_CANCEL();
+                    InGameMenu_Junction.mode = Mode.Abilities;
+                }
+            }
             private class IGMData_Abilities_AbilityPool : IGMData
             {
                 public IGMData_Abilities_AbilityPool() : base(13, 1, new IGMDataItem_Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.ABILITY),1,11)
                 {
+                }
+                protected override void Init()
+                {
+
+                        base.Init();
+                    Enabled = false;
+                    Cursor_Status |= Cursor_Status.Enabled;
+                    Cursor_Status |= Cursor_Status.Horizontal;
+                    Cursor_Status |= Cursor_Status.Vertical;
+                }
+
+                public override void Inputs_CANCEL()
+                {
+                    base.Inputs_CANCEL();
+                    InGameMenu_Junction.mode = Mode.Abilities;
                 }
             }
         }
