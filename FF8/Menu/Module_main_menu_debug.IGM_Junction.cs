@@ -862,6 +862,18 @@ namespace FF8
                     }
                     CURSOR_SELECT = 1;
                 }
+                public override bool Update()
+                {
+                    bool ret = base.Update();
+
+                    if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.Abilities)
+                        Cursor_Status &= ~Cursor_Status.Blinking;
+                    else
+                        Cursor_Status |= Cursor_Status.Blinking;
+
+                    return ret;
+                }
+
                 public override bool Inputs()
                 {
                     skipdata = true;
@@ -1061,6 +1073,17 @@ namespace FF8
                     base.Inputs_CANCEL();
                     InGameMenu_Junction.mode = Mode.Abilities;
                 }
+                public override bool Update()
+                {
+                    bool ret = base.Update();
+
+                    if (InGameMenu_Junction != null && InGameMenu_Junction.mode != Mode.Abilities_Commands)
+                        Cursor_Status &= ~Cursor_Status.Enabled;
+                    else
+                        Cursor_Status |= Cursor_Status.Enabled;
+
+                    return ret;
+                }
             }
             private class IGMData_Abilities_AbilityPool : IGMData
             {
@@ -1081,6 +1104,17 @@ namespace FF8
                 {
                     base.Inputs_CANCEL();
                     InGameMenu_Junction.mode = Mode.Abilities;
+                }
+                public override bool Update()
+                {
+                    bool ret = base.Update();
+
+                    if (InGameMenu_Junction != null && InGameMenu_Junction.mode != Mode.Abilities_Abilities)
+                        Cursor_Status &= ~Cursor_Status.Enabled;
+                    else
+                        Cursor_Status |= Cursor_Status.Enabled;
+
+                    return ret;
                 }
             }
         }
