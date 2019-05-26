@@ -13,12 +13,15 @@ namespace FF8
             public new const int count = 19;
             public new const int id = 13;
 
+            
+
             public Stat Stat { get; private set; }
             public byte Value { get; private set; }
             public byte Unknown0 { get; private set; }
 
             public void Read(BinaryReader br, int i)
             {
+                icon = Icons.ID.Ability_Character;
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 //0x0000	2 bytes Offset to name
                 Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);

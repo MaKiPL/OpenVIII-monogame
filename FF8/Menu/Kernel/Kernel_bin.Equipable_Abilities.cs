@@ -14,6 +14,8 @@
             public const int count=0;
             public const int id=0;
 
+            public Icons.ID icon { get; protected set; } = Icons.ID.None;
+
             public override string ToString() => Name;
 
             public FF8String Name { get; protected set; }

@@ -970,7 +970,8 @@ namespace FF8
                                 ITEM[i, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right2, SIZE[i], 9);
                                 if (Memory.State.Characters[(int)Character].Abilities[i] != Kernel_bin.Abilities.None)
                                     ITEM[i, 1] = new IGMDataItem_String(
-                                        Icons.ID.Ability_Command, 9,
+
+                                    Kernel_bin.EquipableAbilities[-39 + (int)(Memory.State.Characters[(int)Character].Abilities[i])].icon, 9,
                                     Kernel_bin.EquipableAbilities[-39 + (int)(Memory.State.Characters[(int)Character].Abilities[i])].Name,
                                     new Rectangle(SIZE[i].X + 40, SIZE[i].Y, 0, 0));
                                 else ITEM[i, 1] = null;

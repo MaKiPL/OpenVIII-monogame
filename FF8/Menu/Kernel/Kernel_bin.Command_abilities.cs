@@ -12,6 +12,7 @@ namespace FF8
         {
             public const int count = 19;
             public const int id = 12;
+            public Icons.ID icon { get; protected set; } = Icons.ID.Ability_Command;
 
             public override string ToString() => Name;
 

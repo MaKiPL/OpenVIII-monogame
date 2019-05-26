@@ -4,8 +4,9 @@
     {
         #region Enums
 
-        public new enum ID : ushort
+        public new enum ID : short
         {
+            None = -1,
             Finger_Right,
             Finger_Left,
 

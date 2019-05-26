@@ -1308,7 +1308,7 @@ namespace FF8
             public override void Draw()
             {
                 Rectangle r = Pos;
-                if (Icon != null)
+                if (Icon != null && Icon != Icons.ID.None)
                 {
                     Rectangle r2 = r;
                     r2.Size = Point.Zero;
