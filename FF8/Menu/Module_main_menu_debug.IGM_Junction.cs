@@ -836,8 +836,19 @@ namespace FF8
                 {
                     base.ReInit();
                     var i = ((IGMDataItem_IGMData)ITEM[0, 0]);
-                    if(i != null && i.Data != null)
-                    CURSOR =i.Data.CURSOR;
+                    var i2 = ((IGMDataItem_IGMData)ITEM[1, 0]);
+                    if (i != null && i.Data != null && i2 != null && i2.Data != null)
+                    {
+                        SIZE = new Rectangle[i.Data.Count + i2.Data.Count];
+                        Array.Copy(i.Data.SIZE, SIZE, i.Data.Count);
+                        Array.Copy(i2.Data.SIZE, 0, SIZE, i.Data.Count, i2.Data.Count);
+                        CURSOR = new Point[i.Data.Count + i2.Data.Count];
+                        Array.Copy(i.Data.CURSOR, CURSOR, i.Data.Count);
+                        Array.Copy(i2.Data.CURSOR,0, CURSOR, i.Data.Count, i2.Data.Count);
+                        BLANKS = new bool[i.Data.Count + i2.Data.Count];
+                        Array.Copy(i.Data.BLANKS, BLANKS, i.Data.Count);
+                        Array.Copy(i2.Data.BLANKS, 0, BLANKS, i.Data.Count, i2.Data.Count);
+                    }
                     CURSOR_SELECT = 1;
                 }
             }

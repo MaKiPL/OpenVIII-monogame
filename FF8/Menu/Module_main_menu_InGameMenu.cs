@@ -809,11 +809,16 @@ namespace FF8
                 if ((Cursor_Status & Cursor_Status.Enabled) != 0)
                 {
                     int value = _cursor_select;
+                    int loop = 0;
                     while (true)
                     {
                         if (++value >= CURSOR.Length)
+                        {
                             value = 0;
-                        if ((CURSOR[value] != Point.Zero && !BLANKS[value]) || value == 0) break;
+                            if (loop++ > 1) break;
+                        }
+                        if ((CURSOR[value] != Point.Zero && !BLANKS[value])) break;
+                        
                     }
                     _cursor_select = value;
                 }
@@ -824,11 +829,15 @@ namespace FF8
                 if ((Cursor_Status & Cursor_Status.Enabled) != 0)
                 {
                     int value = _cursor_select;
+                    int loop = 0;
                     while (true)
                     {
                         if (--value < 0)
+                        {
                             value = CURSOR.Length - 1;
-                        if ((CURSOR[value] != Point.Zero && !BLANKS[value]) || value == 0) break;
+                            if (loop++ > 1) break;
+                        }
+                        if ((CURSOR[value] != Point.Zero && !BLANKS[value])) break;
                     }
                     _cursor_select = value;
                 }
