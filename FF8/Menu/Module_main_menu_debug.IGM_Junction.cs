@@ -469,7 +469,7 @@ namespace FF8
 
             private class IGMData_TopMenu : IGMData
             {
-                public Dictionary<Items, FF8String> Descriptions { get; private set; }
+                public new Dictionary<Items, FF8String> Descriptions { get; private set; }
 
                 public IGMData_TopMenu() : base(4, 1, new IGMDataItem_Box(pos: new Rectangle(0, 12, 610, 54)), 4, 1)
                 {
@@ -574,7 +574,7 @@ namespace FF8
 
             private class IGMData_TopMenu_Junction : IGMData
             {
-                public Dictionary<Items, FF8String> Descriptions { get; private set; }
+                public new Dictionary<Items, FF8String> Descriptions { get; private set; }
 
                 public override void Inputs_CANCEL()
                 {
@@ -650,7 +650,7 @@ namespace FF8
                 {
                 }
 
-                public Dictionary<Items, FF8String> Descriptions { get; private set; }
+                public new Dictionary<Items, FF8String> Descriptions { get; private set; }
 
                 private void Update_String()
                 {
@@ -723,7 +723,7 @@ namespace FF8
                     SIZE[i].Offset(20 + (-20 * (col > 1 ? col : 0)), 0);
                 }
 
-                public Dictionary<Items, FF8String> Descriptions { get; private set; }
+                public new Dictionary<Items, FF8String> Descriptions { get; private set; }
 
                 private void Update_String()
                 {
