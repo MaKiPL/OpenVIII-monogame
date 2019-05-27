@@ -133,29 +133,6 @@ namespace FF8
                     else if (Characterabilities.ContainsKey(ability))
                         EquipableAbilities[ability] = Characterabilities[ability];
                 }
-                var AbilityToCommand = new Dictionary<Abilities, Battle_Commands>
-                {
-                    { Abilities.Magic, BattleCommands[2] },
-                    { Abilities.GF, BattleCommands[3] },
-                    { Abilities.Item, BattleCommands[4] },
-                    { Abilities.Draw, BattleCommands[6] },
-                    //Draw,
-                    //Empty,
-                    //Card,
-                    //Doom,
-                    //MadRush,
-                    //Treatment,
-                    //Defend,
-                    //Darkside,
-                    //Recover,
-                    //Absorb,
-                    //Revive,
-                    //LVDown,
-                    //LVUp,
-                    //Kamikaze,
-                    //Devour,
-                    //MiniMog,
-                };
             }
         }
     }
