@@ -192,12 +192,12 @@ namespace FF8
                 Data.Add(SectionName.TopMenu_Junction, new IGMData_TopMenu_Junction());
                 Data.Add(SectionName.TopMenu_Off, new IGMData_TopMenu_Off_Group(
                     new IGMData_Container(
-                        new IGMDataItem_Box(Titles[Items.Off], pos: new Rectangle(0, 12, 169, 54),options: Box_Options.Center | Box_Options.Middle)),
+                        new IGMDataItem_Box(Titles[Items.Off], pos: new Rectangle(0, 12, 169, 54), options: Box_Options.Center | Box_Options.Middle)),
                     new IGMData_TopMenu_Off()
                     ));
                 Data.Add(SectionName.TopMenu_Auto, new IGMData_TopMenu_Auto_Group(
                     new IGMData_Container(
-                        new IGMDataItem_Box(Titles[Items.Auto], pos: new Rectangle(0, 12, 169, 54),options: Box_Options.Center | Box_Options.Middle)), 
+                        new IGMDataItem_Box(Titles[Items.Auto], pos: new Rectangle(0, 12, 169, 54), options: Box_Options.Center | Box_Options.Middle)),
                     new IGMData_TopMenu_Auto()));
                 Data.Add(SectionName.TopMenu_Abilities, new IGMData_Abilities_Group(
                     new IGMData_Abilities_Command(),
@@ -252,12 +252,15 @@ namespace FF8
                     case Mode.Abilities:
                         ret = ((IGMData_Abilities_Group)Data[SectionName.TopMenu_Abilities]).Inputs();
                         break;
+
                     case Mode.Abilities_Commands:
-                        ret = ((IGMData_Abilities_Group)Data[SectionName.TopMenu_Abilities]).ITEM[2,0].Inputs();
+                        ret = ((IGMData_Abilities_Group)Data[SectionName.TopMenu_Abilities]).ITEM[2, 0].Inputs();
                         break;
+
                     case Mode.Abilities_Abilities:
-                        ret = ((IGMData_Abilities_Group)Data[SectionName.TopMenu_Abilities]).ITEM[3,0].Inputs();
+                        ret = ((IGMData_Abilities_Group)Data[SectionName.TopMenu_Abilities]).ITEM[3, 0].Inputs();
                         break;
+
                     default:
                         break;
                 }
@@ -267,30 +270,8 @@ namespace FF8
             public override void Draw()
             {
                 StartDraw();
-                //switch (mode)
-                //{
-                //    case Mode.ChooseChar:
-                ////    case Mode.ChooseItem:
-                // default:
+
                 base.Draw();
-                //break;
-                //}
-                //switch (mode)
-                //{
-                //    case Mode.ChooseChar:
-                //        DrawPointer(Data[SectionName.SideMenu].CURSOR[(int)choSideBar], blink: true);
-
-                // if (choChar < Data[SectionName.Party].Count && choChar >= 0)
-                // DrawPointer(Data[SectionName.Party].CURSOR[choChar]); else if (choChar <
-                // Data[SectionName.Non_Party].Count + Data[SectionName.Party].Count && choChar >=
-                // Data[SectionName.Party].Count)
-                // DrawPointer(Data[SectionName.Non_Party].CURSOR[choChar -
-                // Data[SectionName.Party].Count]); break;
-
-                //    default:
-                //        DrawPointer(Data[SectionName.SideMenu].CURSOR[(int)choSideBar]);
-                //        break;
-                //}
                 EndDraw();
             }
 
@@ -538,16 +519,19 @@ namespace FF8
                             Cursor_Status |= Cursor_Status.Blinking;
                             InGameMenu_Junction.mode = Mode.TopMenu_Junction;
                             break;
+
                         case 1:
                             InGameMenu_Junction.Data[SectionName.TopMenu_Off].Enabled = true;
                             Cursor_Status |= Cursor_Status.Blinking;
                             InGameMenu_Junction.mode = Mode.TopMenu_Off;
                             break;
+
                         case 2:
                             InGameMenu_Junction.Data[SectionName.TopMenu_Auto].Enabled = true;
                             Cursor_Status |= Cursor_Status.Blinking;
                             InGameMenu_Junction.mode = Mode.TopMenu_Auto;
                             break;
+
                         case 3:
                             InGameMenu_Junction.Data[SectionName.TopMenu_Abilities].Enabled = true;
                             Cursor_Status |= Cursor_Status.Blinking;
@@ -587,8 +571,6 @@ namespace FF8
                     return ret;
                 }
             }
-
-
 
             private class IGMData_TopMenu_Junction : IGMData
             {
@@ -664,11 +646,12 @@ namespace FF8
 
             private class IGMData_TopMenu_Off : IGMData
             {
-                public IGMData_TopMenu_Off() : base(2, 1, new IGMDataItem_Box(pos: new Rectangle(165, 12, 445, 54)),2,1)
+                public IGMData_TopMenu_Off() : base(2, 1, new IGMDataItem_Box(pos: new Rectangle(165, 12, 445, 54)), 2, 1)
                 {
                 }
 
                 public Dictionary<Items, FF8String> Descriptions { get; private set; }
+
                 private void Update_String()
                 {
                     if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.TopMenu_Off && Enabled)
@@ -698,7 +681,7 @@ namespace FF8
 
                 public override bool Update()
                 {
-                    bool ret= base.Update();
+                    bool ret = base.Update();
                     Update_String();
                     return ret;
                 }
@@ -717,10 +700,7 @@ namespace FF8
                     };
                 }
 
-                public override void Inputs_OKAY()
-                {
-                    base.Inputs_OKAY();
-                }
+                public override void Inputs_OKAY() => base.Inputs_OKAY();
 
                 public override void Inputs_CANCEL()
                 {
@@ -732,10 +712,9 @@ namespace FF8
 
             private class IGMData_TopMenu_Auto : IGMData
             {
-                public IGMData_TopMenu_Auto() : base(3, 1, new IGMDataItem_Box(pos: new Rectangle(165, 12, 445, 54)),3,1)
+                public IGMData_TopMenu_Auto() : base(3, 1, new IGMDataItem_Box(pos: new Rectangle(165, 12, 445, 54)), 3, 1)
                 {
                 }
-
 
                 protected override void InitShift(int i, int col, int row)
                 {
@@ -769,12 +748,14 @@ namespace FF8
                             ((IGMDataItem_Box)InGameMenu_Junction.Data[SectionName.Help].CONTAINER).Data = Changed;
                     }
                 }
+
                 public override bool Update()
                 {
                     bool ret = base.Update();
                     Update_String();
                     return ret;
                 }
+
                 protected override void Init()
                 {
                     base.Init();
@@ -823,6 +804,7 @@ namespace FF8
                     InGameMenu_Junction.mode = Mode.TopMenu;
                 }
             }
+
             private class IGMData_Abilities_Group : IGMData_Group
             {
                 public IGMData_Abilities_Group(params IGMData[] d) : base(d)
@@ -837,17 +819,19 @@ namespace FF8
                     InGameMenu_Junction.Data[SectionName.TopMenu_Abilities].Enabled = false;
                     InGameMenu_Junction.mode = Mode.TopMenu;
                 }
+
                 protected override void Init()
                 {
                     base.Init();
                     Cursor_Status |= Cursor_Status.Enabled;
                     Enabled = false;
                 }
+
                 public override void ReInit()
                 {
                     base.ReInit();
-                    var i = ((IGMDataItem_IGMData)ITEM[0, 0]);
-                    var i2 = ((IGMDataItem_IGMData)ITEM[1, 0]);
+                    IGMDataItem_IGMData i = ((IGMDataItem_IGMData)ITEM[0, 0]);
+                    IGMDataItem_IGMData i2 = ((IGMDataItem_IGMData)ITEM[1, 0]);
                     if (i != null && i.Data != null && i2 != null && i2.Data != null)
                     {
                         SIZE = new Rectangle[i.Data.Count + i2.Data.Count];
@@ -855,13 +839,14 @@ namespace FF8
                         Array.Copy(i2.Data.SIZE, 0, SIZE, i.Data.Count, i2.Data.Count);
                         CURSOR = new Point[i.Data.Count + i2.Data.Count];
                         Array.Copy(i.Data.CURSOR, CURSOR, i.Data.Count);
-                        Array.Copy(i2.Data.CURSOR,0, CURSOR, i.Data.Count, i2.Data.Count);
+                        Array.Copy(i2.Data.CURSOR, 0, CURSOR, i.Data.Count, i2.Data.Count);
                         BLANKS = new bool[i.Data.Count + i2.Data.Count];
                         Array.Copy(i.Data.BLANKS, BLANKS, i.Data.Count);
                         Array.Copy(i2.Data.BLANKS, 0, BLANKS, i.Data.Count, i2.Data.Count);
                     }
                     CURSOR_SELECT = 1;
                 }
+
                 public override bool Update()
                 {
                     bool ret = base.Update();
@@ -879,9 +864,9 @@ namespace FF8
                     skipdata = true;
                     bool ret = base.Inputs();
                     skipdata = false;
-                    var i = ((IGMDataItem_IGMData)ITEM[0, 0]);
-                    var i2 = ((IGMDataItem_IGMData)ITEM[3, 0]);
-                    if (ret && i!= null && i.Data != null)
+                    IGMDataItem_IGMData i = ((IGMDataItem_IGMData)ITEM[0, 0]);
+                    IGMDataItem_IGMData i2 = ((IGMDataItem_IGMData)ITEM[3, 0]);
+                    if (ret && i != null && i.Data != null)
                     {
                         if (CURSOR_SELECT >= i.Data.Count)
                             i2.Data.Enabled = true;
@@ -893,13 +878,12 @@ namespace FF8
 
                 public override void Inputs_OKAY()
                 {
-
                     skipdata = true;
                     base.Inputs_OKAY();
                     skipdata = false;
 
-                    var i = ((IGMDataItem_IGMData)ITEM[0, 0]);
-                    var i2 = ((IGMDataItem_IGMData)ITEM[3, 0]);
+                    IGMDataItem_IGMData i = ((IGMDataItem_IGMData)ITEM[0, 0]);
+                    IGMDataItem_IGMData i2 = ((IGMDataItem_IGMData)ITEM[3, 0]);
                     if (i != null && i.Data != null)
                     {
                         if (CURSOR_SELECT >= i.Data.Count)
@@ -909,21 +893,21 @@ namespace FF8
                     }
                 }
             }
+
             private class IGMData_TopMenu_Off_Group : IGMData_Group
             {
-                
                 public IGMData_TopMenu_Off_Group(params IGMData[] d) : base(d)
                 {
                 }
 
                 public override void Draw()
                 {
-                    if(Enabled)
+                    if (Enabled)
                     {
                         Cursor_Status |= (Cursor_Status.Draw | Cursor_Status.Blinking);
                         base.Draw();
                         Tuple<Rectangle, Point, Rectangle> i = ((IGMDataItem_Box)(((IGMData_Container)(((IGMDataItem_IGMData)ITEM[0, 0]).Data)).CONTAINER)).Dims;
-                        if(i != null)
+                        if (i != null)
                             CURSOR[0] = i.Item2;
                     }
                 }
@@ -936,6 +920,7 @@ namespace FF8
 
                 protected override void InitShift(int i, int col, int row) => base.InitShift(i, col, row);
             }
+
             private class IGMData_TopMenu_Auto_Group : IGMData_Group
             {
                 public IGMData_TopMenu_Auto_Group(params IGMData[] d) : base(d)
@@ -963,9 +948,10 @@ namespace FF8
 
             private class IGMData_Abilities_Command : IGMData
             {
-                public IGMData_Abilities_Command() : base(4, 2, new IGMDataItem_Box(pos: new Rectangle(0, 198, 435, 216), title: Icons.ID.COMMAND),1,4)
+                public IGMData_Abilities_Command() : base(4, 2, new IGMDataItem_Box(pos: new Rectangle(0, 198, 435, 216), title: Icons.ID.COMMAND), 1, 4)
                 {
                 }
+
                 protected override void Init()
                 {
                     base.Init();
@@ -977,6 +963,7 @@ namespace FF8
                     base.InitShift(i, col, row);
                     SIZE[i].Inflate(-22, -8);
                     SIZE[i].Offset(0, 12 + (-8 * row));
+                    CURSOR[i].X += 40;
                 }
 
                 public override void ReInit()
@@ -1002,7 +989,7 @@ namespace FF8
                                 ITEM[i, 1] = Memory.State.Characters[(int)Character].Commands[i - 1] != Kernel_bin.Abilities.None ? new IGMDataItem_String(
                                     Icons.ID.Ability_Command, 9,
                                 Kernel_bin.Commandabilities[-0x14 + (int)(Memory.State.Characters[(int)Character].Commands[i - 1])].Name,
-                                new Rectangle(SIZE[i].X+40, SIZE[i].Y,0,0)) : null;
+                                new Rectangle(SIZE[i].X + 40, SIZE[i].Y, 0, 0)) : null;
                             }
                         }
                     }
@@ -1011,15 +998,18 @@ namespace FF8
 
             private class IGMData_Abilities_AbilitySlots : IGMData
             {
-                public IGMData_Abilities_AbilitySlots() : base(4, 2, new IGMDataItem_Box(pos: new Rectangle(0, 414, 435, 216), title: Icons.ID.ABILITY),1,4)
+                public IGMData_Abilities_AbilitySlots() : base(4, 2, new IGMDataItem_Box(pos: new Rectangle(0, 414, 435, 216), title: Icons.ID.ABILITY), 1, 4)
                 {
                 }
+
                 protected override void InitShift(int i, int col, int row)
                 {
                     base.InitShift(i, col, row);
                     SIZE[i].Inflate(-22, -8);
                     SIZE[i].Offset(80, 12 + (-8 * row));
+                    CURSOR[i].X += 40;
                 }
+
                 public override void ReInit()
                 {
                     base.ReInit();
@@ -1039,7 +1029,7 @@ namespace FF8
                                 if (Memory.State.Characters[(int)Character].Abilities[i] != Kernel_bin.Abilities.None)
                                     ITEM[i, 1] = new IGMDataItem_String(
 
-                                    Kernel_bin.EquipableAbilities[-39 + (int)(Memory.State.Characters[(int)Character].Abilities[i])].icon, 9,
+                                    Kernel_bin.EquipableAbilities[-39 + (int)(Memory.State.Characters[(int)Character].Abilities[i])].Icon, 9,
                                     Kernel_bin.EquipableAbilities[-39 + (int)(Memory.State.Characters[(int)Character].Abilities[i])].Name,
                                     new Rectangle(SIZE[i].X + 40, SIZE[i].Y, 0, 0));
                                 else ITEM[i, 1] = null;
@@ -1051,16 +1041,17 @@ namespace FF8
                                 ITEM[i, 1] = null;
                                 BLANKS[i] = true;
                             }
-                                
                         }
                     }
                 }
             }
+
             private class IGMData_Abilities_CommandPool : IGMData
             {
                 public IGMData_Abilities_CommandPool() : base(13, 1, new IGMDataItem_Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.COMMAND), 1, 11)
                 {
                 }
+
                 protected override void Init()
                 {
                     base.Init();
@@ -1068,11 +1059,20 @@ namespace FF8
                     Cursor_Status |= Cursor_Status.Horizontal;
                     Cursor_Status |= Cursor_Status.Vertical;
                 }
+
+                protected override void InitShift(int i, int col, int row)
+                {
+                    base.InitShift(i, col, row);
+                    SIZE[i].Inflate(-22, -8);
+                    SIZE[i].Offset(60, 12 + (-4 * row));
+                }
+
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
                     InGameMenu_Junction.mode = Mode.Abilities;
                 }
+
                 public override bool Update()
                 {
                     bool ret = base.Update();
@@ -1080,24 +1080,59 @@ namespace FF8
                     if (InGameMenu_Junction != null && InGameMenu_Junction.mode != Mode.Abilities_Commands)
                         Cursor_Status &= ~Cursor_Status.Enabled;
                     else
+                    {
                         Cursor_Status |= Cursor_Status.Enabled;
+                    }
+                    int pos = 0;
+                    for (int i = 0; 
+                        Memory.State.Characters != null &&
+                        i < Memory.State.Characters[(int)Character].UnlockedGFAbilities.Length && 
+                        pos < rows; i++)
+                    {
+                        if (Memory.State.Characters[(int)Character].UnlockedGFAbilities[i] != Kernel_bin.Abilities.None)
+                        {
+                            int j = -0x14 + (int)(Memory.State.Characters[(int)Character].UnlockedGFAbilities[i]);
+                            if (j < Kernel_bin.Commandabilities.Length && j >= 0)
+                            {
+                                ITEM[pos, 0] = new IGMDataItem_String(
+                                    Icons.ID.Ability_Command, 9,
+                                Kernel_bin.Commandabilities[j].Name,
+                                new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0));
+                                BLANKS[pos] = false;
+                                pos++;
+                            }
+                        }
+                    }
+                    for (; pos < rows; pos++)
+                    {
+                        ITEM[pos, 0] = null;
+                        BLANKS[pos] = true;
+                    }
 
                     return ret;
                 }
             }
+
             private class IGMData_Abilities_AbilityPool : IGMData
             {
-                public IGMData_Abilities_AbilityPool() : base(13, 1, new IGMDataItem_Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.ABILITY),1,11)
+                public IGMData_Abilities_AbilityPool() : base(13, 1, new IGMDataItem_Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.ABILITY), 1, 11)
                 {
                 }
+
                 protected override void Init()
                 {
-
-                        base.Init();
+                    base.Init();
                     Enabled = false;
                     Cursor_Status |= Cursor_Status.Enabled;
                     Cursor_Status |= Cursor_Status.Horizontal;
                     Cursor_Status |= Cursor_Status.Vertical;
+                }
+
+                protected override void InitShift(int i, int col, int row)
+                {
+                    base.InitShift(i, col, row);
+                    SIZE[i].Inflate(-22, -8);
+                    SIZE[i].Offset(60, 12 + (-8 * row));
                 }
 
                 public override void Inputs_CANCEL()
@@ -1105,6 +1140,7 @@ namespace FF8
                     base.Inputs_CANCEL();
                     InGameMenu_Junction.mode = Mode.Abilities;
                 }
+
                 public override bool Update()
                 {
                     bool ret = base.Update();
@@ -1113,6 +1149,26 @@ namespace FF8
                         Cursor_Status &= ~Cursor_Status.Enabled;
                     else
                         Cursor_Status |= Cursor_Status.Enabled;
+                    int pos = 0;
+                    for (int i = 0;
+                        Memory.State.Characters != null &&
+                        i < Memory.State.Characters[(int)Character].UnlockedGFAbilities.Length &&
+                        pos < rows; i++)
+                    {
+                        if (Memory.State.Characters[(int)Character].UnlockedGFAbilities[i] != Kernel_bin.Abilities.None)
+                        {
+                            int j = -39 + (int)(Memory.State.Characters[(int)Character].UnlockedGFAbilities[i]);
+                            if (j < Kernel_bin.EquipableAbilities.Count && j >= 0)
+                            {
+                                ITEM[pos, 0] = new IGMDataItem_String(
+                                    Kernel_bin.EquipableAbilities[j].Icon, 9,
+                                Kernel_bin.EquipableAbilities[j].Name,
+                                new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0));
+                                pos++;
+                            }
+
+                        }
+                    }
 
                     return ret;
                 }

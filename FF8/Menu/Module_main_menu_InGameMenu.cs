@@ -1054,7 +1054,7 @@ namespace FF8
             /// </summary>
             protected virtual void Init()
             {
-                if (SIZE.Length>0 && SIZE[0].IsEmpty)
+                if (SIZE.Length > 0 && SIZE[0].IsEmpty)
                 {
                     for (int i = 0; i < SIZE.Length; i++)
                     {
@@ -1069,6 +1069,8 @@ namespace FF8
                                 Width = Width / cols,
                                 Height = Height / rows,
                             };
+                            CURSOR[i].Y = (int)(SIZE[i].Y + SIZE[i].Height / 2 - 6 * TextScale.Y);
+                            CURSOR[i].X = SIZE[i].X;
                             InitShift(i, col, row);
                         }
                     }
@@ -1084,15 +1086,6 @@ namespace FF8
                     CURSOR[0].X = X;
                     SIZE[0] = new Rectangle(X, Y, Width, Height);
                 }
-                else
-                    for (int i = 0; i < CURSOR.Length; i++)
-                    {
-                        if (!SIZE[i].IsEmpty)
-                        {
-                            CURSOR[i].Y = (int)(SIZE[i].Y + SIZE[i].Height / 2 - 6 * TextScale.Y);
-                            CURSOR[i].X = SIZE[i].X;
-                        }
-                    }
             }
 
             /// <summary>

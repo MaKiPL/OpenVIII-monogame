@@ -1,7 +1,11 @@
-﻿namespace FF8
+﻿using System.IO;
+
+namespace FF8
 {
     public partial class Kernel_bin
     {
+        #region Classes
+
         /// <summary>
         /// Equipable Abilities that don't go in the 3 command slots.
         /// </summary>
@@ -11,17 +15,31 @@
         /// <seealso cref="https://github.com/alexfilth/doomtrain/wiki/GF-abilities"/>
         public abstract class Equipable_Abilities
         {
-            public const int count=0;
-            public const int id=0;
+            #region Fields
 
-            public Icons.ID icon { get; protected set; } = Icons.ID.None;
+            public const int count = 0;
+            public const int id = 0;
+
+            #endregion Fields
+
+            #region Properties
+
+            public byte AP { get; protected set; }
+            public FF8String Description { get; protected set; }
+            public Icons.ID Icon { get; protected set; } = Icons.ID.None;
+            public FF8String Name { get; protected set; }
+
+            #endregion Properties
+
+            #region Methods
+
+            public abstract void Read(BinaryReader br, int i);
 
             public override string ToString() => Name;
 
-            public FF8String Name { get; protected set; }
-            public FF8String Description { get; protected set; }
-            public byte AP { get; protected set; }
+            #endregion Methods
         }
-    }
 
+        #endregion Classes
+    }
 }

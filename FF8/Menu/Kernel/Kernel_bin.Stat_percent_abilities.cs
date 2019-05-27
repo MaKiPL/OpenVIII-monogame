@@ -21,7 +21,7 @@ namespace FF8
 
             public void Read(BinaryReader br, int i)
             {
-                icon = Icons.ID.Ability_Character;
+                Icon = Icons.ID.Ability_Character;
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 //0x0000	2 bytes Offset to name
                 Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
