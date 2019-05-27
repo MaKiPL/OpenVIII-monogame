@@ -1169,7 +1169,7 @@ namespace FF8
                 {
                     base.InitShift(i, col, row);
                     SIZE[i].Inflate(-22, -8);
-                    SIZE[i].Offset(60, 12 + (-8 * row));
+                    SIZE[i].Offset(60, 12 + (-4 * row));
                 }
 
                 public override void Inputs_CANCEL()
