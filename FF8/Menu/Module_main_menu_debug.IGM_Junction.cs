@@ -870,7 +870,7 @@ namespace FF8
                             {
                                 if (i.Data.Descriptions != null && i.Data.Descriptions.ContainsKey(CURSOR_SELECT))
                                 {
-                                    ((IGMDataItem_Box)InGameMenu_Junction.Data[SectionName.Help].CONTAINER).Data = i2.Data.Descriptions[CURSOR_SELECT];
+                                    ((IGMDataItem_Box)InGameMenu_Junction.Data[SectionName.Help].CONTAINER).Data = i.Data.Descriptions[CURSOR_SELECT];
                                 }
                             }
                         }
@@ -1012,7 +1012,7 @@ namespace FF8
                                     Icons.ID.Ability_Command, 9,
                                 Kernel_bin.Commandabilities[Memory.State.Characters[(int)Character].Commands[i - 1]].Name,
                                 new Rectangle(SIZE[i].X + 40, SIZE[i].Y, 0, 0)) : null;
-                                Descriptions[i] = Kernel_bin.Commandabilities[Memory.State.Characters[(int)Character].Commands[i - 1]].Description;
+                                Descriptions[i] = Kernel_bin.Commandabilities[Memory.State.Characters[(int)Character].Commands[i - 1]].BattleCommand.Description;
                             }
                         }
                     }
@@ -1056,12 +1056,12 @@ namespace FF8
                                     Kernel_bin.EquipableAbilities[Memory.State.Characters[(int)Character].Abilities[i]].Icon, 9,
                                     Kernel_bin.EquipableAbilities[Memory.State.Characters[(int)Character].Abilities[i]].Name,
                                     new Rectangle(SIZE[i].X + 40, SIZE[i].Y, 0, 0));
-                                    Descriptions[i] = Kernel_bin.EquipableAbilities[Memory.State.Characters[(int)Character].Abilities[i]].Description;
+                                    //Descriptions[i] = Kernel_bin.EquipableAbilities[Memory.State.Characters[(int)Character].Abilities[i]].Description;
                                 }
                                 else
                                 {
                                     ITEM[i, 1] = null;
-                                    Descriptions[i] = "";
+                                    //Descriptions[i] = "";
                                 }
                                 BLANKS[i] = false;
                             }
@@ -1070,7 +1070,7 @@ namespace FF8
                                 ITEM[i, 0] = null;
                                 ITEM[i, 1] = null;
                                 BLANKS[i] = true;
-                                Descriptions[i] = "";
+                                //Descriptions[i] = "";
                             }
                         }
                     }
