@@ -11,7 +11,7 @@ namespace FF8
         /// Junctionable GFs Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Junctionable-GFs"/>
-        public struct Junctionable_GFs_Data
+        public class Junctionable_GFs_Data
         {
             public const int id = 2;
             public const int count = 16;
@@ -165,6 +165,18 @@ namespace FF8
                 Unknown3 = br.ReadBytes(2);            //0x0080  2 bytes Unknown
                 PowerMod = br.ReadByte();              //0x0082  1 byte  Power Mod(used in damage formula)
                 LevelMod = br.ReadByte();              //0x0083  1 byte  Level Mod(used in damage formula)
+            }
+            public static Dictionary<Saves.GFs, Junctionable_GFs_Data> Read(BinaryReader br)
+            {
+                var ret = new Dictionary<Saves.GFs, Junctionable_GFs_Data>(count);
+
+                for (int i = 0; i < count; i++)
+                {
+                    var tmp = new Junctionable_GFs_Data();
+                    tmp.Read(br, i);
+                    ret[(Saves.GFs)i] = tmp;
+                }
+                return ret;
             }
         }
     }

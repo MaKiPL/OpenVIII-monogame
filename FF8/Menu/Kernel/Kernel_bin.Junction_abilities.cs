@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace FF8
 {
@@ -8,21 +9,15 @@ namespace FF8
         /// Junction Abilities Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Junction-abilities"/>
-        public class Junction_abilities
+        public class Junction_abilities : Ability
         {
-            public const int count = 20;
-            public const int id = 11;
-
-            public override string ToString() => Name;
-
-            public FF8String Name { get; private set; }
-            public FF8String Description { get; private set; }
-            public byte AP { get; private set; }
+            public new const int count = 20;
+            public new const int id = 11;
 
             //public BitArray J_Flags { get; private set; }
             public JunctionAbilityFlags J_Flags { get; private set; }
 
-            public void Read(BinaryReader br, int i)
+            public override void Read(BinaryReader br, int i)
             {
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 //0x0000	2 bytes Offset to name
@@ -38,15 +33,15 @@ namespace FF8
                 //0x0005  3 byte J_Flag
             }
 
-            public static Junction_abilities[] Read(BinaryReader br)
+            public static Dictionary<Abilities,Junction_abilities> Read(BinaryReader br)
             {
-                Junction_abilities[] ret = new Junction_abilities[count];
+                Dictionary<Abilities, Junction_abilities> ret = new Dictionary<Abilities, Junction_abilities>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     Junction_abilities tmp = new Junction_abilities();
                     tmp.Read(br, i);
-                    ret[i] = tmp;
+                    ret[(Abilities)i] = tmp;
                 }
                 return ret;
             }

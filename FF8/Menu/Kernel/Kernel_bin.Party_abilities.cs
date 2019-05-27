@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 
 namespace FF8
@@ -9,7 +10,7 @@ namespace FF8
         /// Party Abilities Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Party-abilities"/>
-        public class Party_abilities : Equipable_Abilities
+        public class Party_abilities : Equipable_Ability
         {
             public new const int count = 5;
             public new const int id = 15;
@@ -32,15 +33,15 @@ namespace FF8
                 Unknown0 = br.ReadBytes(2);
                 //0x0006  2 byte Unknown/ Unused
             }
-            public static Party_abilities[] Read(BinaryReader br)
+            public static Dictionary<Abilities,Party_abilities> Read(BinaryReader br)
             {
-                var ret = new Party_abilities[count];
+                Dictionary<Abilities, Party_abilities> ret = new Dictionary<Abilities, Party_abilities>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     var tmp = new Party_abilities();
                     tmp.Read(br, i);
-                    ret[i] = tmp;
+                    ret[(Abilities)(i+(int)Abilities.Alert)] = tmp;
                 }
                 return ret;
             }

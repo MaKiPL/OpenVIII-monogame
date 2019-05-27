@@ -9,7 +9,7 @@ namespace FF8
         /// Enemy Attacks Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Enemy-attacks"/>
-        public struct Enemy_Attacks_Data
+        public class Enemy_Attacks_Data
         {
             public const int id = 3;
             public const int count = 384;
@@ -49,6 +49,18 @@ namespace FF8
                 //Statuses = new BitArray(br.ReadBytes(6));
                 Statuses0 = (Statuses0)br.ReadUInt16();//0x0E	2 bytes status_0; //statuses 0-7
                 Statuses1 = (Statuses1)br.ReadUInt32();//0x10	4 bytes status_1; //statuses 8-31
+            }
+            public static Enemy_Attacks_Data[] Read(BinaryReader br)
+            {
+                var ret = new Enemy_Attacks_Data[count];
+
+                for (int i = 0; i < count; i++)
+                {
+                    var tmp = new Enemy_Attacks_Data();
+                    tmp.Read(br, i);
+                    ret[i] = tmp;
+                }
+                return ret;
             }
         }
     }

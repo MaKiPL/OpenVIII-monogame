@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 
 namespace FF8
@@ -9,12 +10,13 @@ namespace FF8
         /// Characters Abilities Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Character-abilities"/>
-        public class Character_abilities : Equipable_Abilities
+        public class Character_abilities : Equipable_Ability
         {
             public new const int count = 20;
             public new const int id = 14;
             
             public CharacterAbilityFlags Flags { get; private set; }
+            public Battle_Commands BattleCommand { get; set; } = null;
 
             public override void Read(BinaryReader br, int i)
             {
@@ -32,15 +34,15 @@ namespace FF8
                 //Flags = new BitArray(br.ReadBytes(3));
                 //0x0005  3 byte Flags
             }
-            public static Character_abilities[] Read(BinaryReader br)
+            public static Dictionary<Abilities,Character_abilities> Read(BinaryReader br)
             {
-                var ret = new Character_abilities[count];
+                Dictionary<Abilities, Character_abilities> ret = new Dictionary<Abilities, Character_abilities>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     var tmp = new Character_abilities();
                     tmp.Read(br, i);
-                    ret[i] = tmp;
+                    ret[(Abilities)(i+(int)Abilities.Mug)] = tmp;
                 }
                 return ret;
             }

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace FF8
 {
@@ -8,7 +9,7 @@ namespace FF8
         /// GF Abilities Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/GF-abilities"/>
-        public class GF_abilities : Equipable_Abilities
+        public class GF_abilities : Equipable_Ability
         {
             public new const int count = 9;
             public new const int id = 16;
@@ -34,15 +35,15 @@ namespace FF8
                 Value = br.ReadByte();
                 //0x0007  1 byte Increase value
             }
-            public static GF_abilities[] Read(BinaryReader br)
+            public static Dictionary<Abilities, GF_abilities> Read(BinaryReader br)
             {
-                var ret = new GF_abilities[count];
+                Dictionary<Abilities, GF_abilities> ret = new Dictionary<Abilities, GF_abilities>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     var tmp = new GF_abilities();
                     tmp.Read(br, i);
-                    ret[i] = tmp;
+                    ret[(Abilities)(i+(int)Abilities.SumMag_10)] = tmp;
                 }
                 return ret;
             }

@@ -439,7 +439,7 @@ namespace FF8
                         for (int pos = 1; pos < SIZE.Length; pos++)
                         {
                             ITEM[pos, 0] = Memory.State.Characters[(int)Character].Commands[pos - 1] != Kernel_bin.Abilities.None ? new IGMDataItem_String(
-                                Kernel_bin.Commandabilities[-0x14 + (int)(Memory.State.Characters[(int)Character].Commands[pos - 1])].Name,
+                                Kernel_bin.Commandabilities[Memory.State.Characters[(int)Character].Commands[pos - 1]].Name,
                                 SIZE[pos]) : null;
                         }
                     }
@@ -462,7 +462,7 @@ namespace FF8
             {
                 public FF8String Data { get => ((IGMDataItem_Box)CONTAINER).Data; set => ((IGMDataItem_Box)CONTAINER).Data = value; }
 
-                public IGMData_Help() : base(0, 0, new IGMDataItem_Box(Descriptions[Items.Junction], pos: new Rectangle(15, 69, 810, 78), title: Icons.ID.HELP))
+                public IGMData_Help() : base(0, 0, new IGMDataItem_Box(IGM_Junction.Descriptions[Items.Junction], pos: new Rectangle(15, 69, 810, 78), title: Icons.ID.HELP))
                 {
                 }
             }
@@ -852,7 +852,29 @@ namespace FF8
                     bool ret = base.Update();
 
                     if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.Abilities)
+                    {
                         Cursor_Status &= ~Cursor_Status.Blinking;
+
+                        IGMDataItem_IGMData i = ((IGMDataItem_IGMData)ITEM[0, 0]);
+                        IGMDataItem_IGMData i2 = ((IGMDataItem_IGMData)ITEM[1, 0]);
+                        if (i != null && i.Data != null && i2 != null && i2.Data != null)
+                        {
+                            if (CURSOR_SELECT >= i.Data.Count)
+                            {
+                                if (i2.Data.Descriptions != null && i2.Data.Descriptions.ContainsKey(CURSOR_SELECT))
+                                {
+                                    ((IGMDataItem_Box)InGameMenu_Junction.Data[SectionName.Help].CONTAINER).Data = i2.Data.Descriptions[CURSOR_SELECT];
+                                }
+                            }
+                            else
+                            {
+                                if (i.Data.Descriptions != null && i.Data.Descriptions.ContainsKey(CURSOR_SELECT))
+                                {
+                                    ((IGMDataItem_Box)InGameMenu_Junction.Data[SectionName.Help].CONTAINER).Data = i2.Data.Descriptions[CURSOR_SELECT];
+                                }
+                            }
+                        }
+                    }
                     else
                         Cursor_Status |= Cursor_Status.Blinking;
 
@@ -988,8 +1010,9 @@ namespace FF8
                                 ITEM[i, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right2, SIZE[i], 9);
                                 ITEM[i, 1] = Memory.State.Characters[(int)Character].Commands[i - 1] != Kernel_bin.Abilities.None ? new IGMDataItem_String(
                                     Icons.ID.Ability_Command, 9,
-                                Kernel_bin.Commandabilities[-0x14 + (int)(Memory.State.Characters[(int)Character].Commands[i - 1])].Name,
+                                Kernel_bin.Commandabilities[Memory.State.Characters[(int)Character].Commands[i - 1]].Name,
                                 new Rectangle(SIZE[i].X + 40, SIZE[i].Y, 0, 0)) : null;
+                                Descriptions[i] = Kernel_bin.Commandabilities[Memory.State.Characters[(int)Character].Commands[i - 1]].Description;
                             }
                         }
                     }
@@ -1027,12 +1050,19 @@ namespace FF8
                             {
                                 ITEM[i, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right2, SIZE[i], 9);
                                 if (Memory.State.Characters[(int)Character].Abilities[i] != Kernel_bin.Abilities.None)
+                                {
                                     ITEM[i, 1] = new IGMDataItem_String(
 
-                                    Kernel_bin.EquipableAbilities[-39 + (int)(Memory.State.Characters[(int)Character].Abilities[i])].Icon, 9,
-                                    Kernel_bin.EquipableAbilities[-39 + (int)(Memory.State.Characters[(int)Character].Abilities[i])].Name,
+                                    Kernel_bin.EquipableAbilities[Memory.State.Characters[(int)Character].Abilities[i]].Icon, 9,
+                                    Kernel_bin.EquipableAbilities[Memory.State.Characters[(int)Character].Abilities[i]].Name,
                                     new Rectangle(SIZE[i].X + 40, SIZE[i].Y, 0, 0));
-                                else ITEM[i, 1] = null;
+                                    Descriptions[i] = Kernel_bin.EquipableAbilities[Memory.State.Characters[(int)Character].Abilities[i]].Description;
+                                }
+                                else
+                                {
+                                    ITEM[i, 1] = null;
+                                    Descriptions[i] = "";
+                                }
                                 BLANKS[i] = false;
                             }
                             else
@@ -1040,6 +1070,7 @@ namespace FF8
                                 ITEM[i, 0] = null;
                                 ITEM[i, 1] = null;
                                 BLANKS[i] = true;
+                                Descriptions[i] = "";
                             }
                         }
                     }
@@ -1084,15 +1115,15 @@ namespace FF8
                         Cursor_Status |= Cursor_Status.Enabled;
                     }
                     int pos = 0;
-                    for (int i = 0; 
+                    for (int i = 0;
                         Memory.State.Characters != null &&
-                        i < Memory.State.Characters[(int)Character].UnlockedGFAbilities.Length && 
+                        i < Memory.State.Characters[(int)Character].UnlockedGFAbilities.Length &&
                         pos < rows; i++)
                     {
                         if (Memory.State.Characters[(int)Character].UnlockedGFAbilities[i] != Kernel_bin.Abilities.None)
                         {
-                            int j = -0x14 + (int)(Memory.State.Characters[(int)Character].UnlockedGFAbilities[i]);
-                            if (j < Kernel_bin.Commandabilities.Length && j >= 0)
+                            Kernel_bin.Abilities j = (Memory.State.Characters[(int)Character].UnlockedGFAbilities[i]);
+                            if (Kernel_bin.Commandabilities.ContainsKey(j))
                             {
                                 ITEM[pos, 0] = new IGMDataItem_String(
                                     Icons.ID.Ability_Command, 9,
@@ -1157,8 +1188,8 @@ namespace FF8
                     {
                         if (Memory.State.Characters[(int)Character].UnlockedGFAbilities[i] != Kernel_bin.Abilities.None)
                         {
-                            int j = -39 + (int)(Memory.State.Characters[(int)Character].UnlockedGFAbilities[i]);
-                            if (j < Kernel_bin.EquipableAbilities.Count && j >= 0)
+                            var j = Memory.State.Characters[(int)Character].UnlockedGFAbilities[i];
+                            if (Kernel_bin.EquipableAbilities.ContainsKey(j))
                             {
                                 ITEM[pos, 0] = new IGMDataItem_String(
                                     Kernel_bin.EquipableAbilities[j].Icon, 9,
@@ -1166,7 +1197,6 @@ namespace FF8
                                 new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0));
                                 pos++;
                             }
-
                         }
                     }
 

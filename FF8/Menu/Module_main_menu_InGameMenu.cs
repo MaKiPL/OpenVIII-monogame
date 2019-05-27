@@ -786,6 +786,7 @@ namespace FF8
         {
             #region Fields
 
+            public Dictionary<int, FF8String> Descriptions { get; protected set; }
             protected bool skipdata = false;
 
             /// <summary>
@@ -885,6 +886,7 @@ namespace FF8
                 CURSOR_SELECT = 0;
                 this.cols = cols ?? 1;
                 this.rows = rows ?? 1;
+                Descriptions = new Dictionary<int, FF8String>(count);
                 Init();
                 ReInit();
                 Update();
@@ -1144,6 +1146,7 @@ namespace FF8
         public class IGMDataItem_IGMData : IGMDataItem
         {
             public IGMData Data { get; set; }
+
 
             public IGMDataItem_IGMData(IGMData data, Rectangle? pos = null) : base(pos)
             {

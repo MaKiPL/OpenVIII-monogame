@@ -150,9 +150,11 @@
     <Compile Include="Menu\Faces.ID.cs" />
     <Compile Include="Menu\Icons.ID.cs" />
     <Compile Include="Menu\Icons.InsertCustomEntries.cs" />
+    <Compile Include="Menu\Kernel\Ability.cs" />
     <Compile Include="Menu\Kernel\Kernel_bin.Abilities.cs" />
     <Compile Include="Menu\Kernel\Kernel_bin.AbilityFlags2.cs" />
     <Compile Include="Menu\Kernel\Kernel_bin.Attack_Flags.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Attack_Type.cs" />
     <Compile Include="Menu\Kernel\Kernel_bin.Battle_Commands.cs" />
     <Compile Include="Menu\Kernel\Kernel_bin.Battle_Items.cs" />
     <Compile Include="Menu\Kernel\Kernel_bin.Blue_magic_Quistis_limit_break.cs" />
@@ -182,6 +184,7 @@
     <Compile Include="Menu\Kernel\Kernel_bin.Party_abilities.cs" />
     <Compile Include="Menu\Kernel\Kernel_bin.Quanity.cs" />
     <Compile Include="Menu\Kernel\Kernel_bin.Quistis_limit_break_parameters.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Renzokeken_Level.cs" />
     <Compile Include="Menu\Kernel\Kernel_bin.Renzokuken_Finishers_Data.cs" />
     <Compile Include="Menu\Kernel\Kernel_bin.Rinoa_limit_breaks_part_1.cs" />
     <Compile Include="Menu\Kernel\Kernel_bin.Rinoa_limit_breaks_part_2.cs" />

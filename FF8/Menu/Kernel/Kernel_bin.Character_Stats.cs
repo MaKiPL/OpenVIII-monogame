@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace FF8
 {
@@ -9,7 +10,7 @@ namespace FF8
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Characters"/>
         /// <seealso cref="http://forums.qhimm.com/index.php?topic=16923.msg240609#msg240609"/>
-        public struct Character_Stats
+        public class Character_Stats
         {
             public const int id = 6;
             public const int count = 11;
@@ -59,6 +60,32 @@ namespace FF8
                 int hp = HP(8);
             }
 
+            public static Dictionary<Saves.Characters, Character_Stats> Read(BinaryReader br)
+            {
+                Dictionary<Saves.Characters, Character_Stats> ret = new Dictionary<Saves.Characters, Character_Stats>(count);
+
+                for (int i = 0; i < count; i++)
+                {
+                    Character_Stats tmp = new Character_Stats();
+                    tmp.Read(br, (Saves.Characters)i);
+                    ret[(Saves.Characters)i] = tmp;
+                }
+                return ret;
+            }
+
+            //public static Character_Stats[] Read(BinaryReader br)
+            //{
+            //    Character_Stats[] ret = new Character_Stats[count];
+
+            //    for (int i = 0; i < count; i++)
+            //    {
+            //        Character_Stats tmp = new Character_Stats();
+            //        tmp.Read(br, (Saves.Characters)i);
+            //        ret[i] = tmp;
+            //    }
+            //    return ret;
+            //}
+
             private const int _percent_mod = 100;
 
             /// <summary>
@@ -76,7 +103,7 @@ namespace FF8
             /// <param name="stat_bonus">Bonus integer based HP</param>
             /// <param name="percent_mod">50% = 50, 100%=100, etc</param>
             /// <returns></returns>
-            public int HP(sbyte lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = 0) => 
+            public int HP(sbyte lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = 0) =>
                 (((MagicData[MagicID].HP_J * magic_count) + stat_bonus + (lvl * _HP[0]) - ((10 * lvl * lvl) / _HP[1]) + _HP[2]) * (percent_mod + _percent_mod)) / 100;
 
             public int STR(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod, int weapon = 0)
@@ -109,7 +136,7 @@ namespace FF8
             public byte HIT(int MagicID = 0, int magic_count = 0, int weapon = 0)
             {
                 int value = MagicData[MagicID].HIT_J * magic_count + weapon;
-                return (byte)(value>255?255:value);
+                return (byte)(value > 255 ? 255 : value);
             }
         }
     }

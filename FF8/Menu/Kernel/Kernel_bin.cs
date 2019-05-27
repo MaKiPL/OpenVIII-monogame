@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace FF8
@@ -18,16 +19,16 @@ namespace FF8
         public static Non_battle_Items_Data[] NonbattleItemsData { get; private set; } //8 //only strings
         public static Non_Junctionable_GFs_Attacks_Data[] NonJunctionableGFsAttacksData { get; private set; } //9
         public static Dictionary<Command_ability, Command_ability_data> Commandabilitydata { get; private set; }//10
-        public static Junction_abilities[] Junctionabilities { get; private set; }//11
-        public static Command_abilities[] Commandabilities { get; private set; }//12
-        public static Stat_percent_abilities[] Statpercentabilities { get; private set; }//13
-        public static Character_abilities[] Characterabilities { get; private set; }//14
-        public static Party_abilities[] Partyabilities { get; private set; }//15
-        public static GF_abilities[] GFabilities { get; private set; }//16
-        public static Menu_abilities[] Menuabilities { get; private set; }//17
+        public static Dictionary<Abilities,Junction_abilities> Junctionabilities { get; private set; }//11
+        public static Dictionary<Abilities, Command_abilities> Commandabilities { get; private set; }//12
+        public static Dictionary<Abilities, Stat_percent_abilities> Statpercentabilities { get; private set; }//13
+        public static Dictionary<Abilities, Character_abilities> Characterabilities { get; private set; }//14
+        public static Dictionary<Abilities, Party_abilities> Partyabilities { get; private set; }//15
+        public static Dictionary<Abilities, GF_abilities> GFabilities { get; private set; }//16
+        public static Dictionary<Abilities, Menu_abilities> Menuabilities { get; private set; }//17
         public static Temporary_character_limit_breaks[] Temporarycharacterlimitbreaks { get; private set; }//18
         public static Blue_magic_Quistis_limit_break[] BluemagicQuistislimitbreak { get; private set; }//19
-        public static Quistis_limit_break_parameters[] Quistislimitbreakparameters { get; private set; }//20
+        //public static Quistis_limit_break_parameters[] Quistislimitbreakparameters { get; private set; }//20
         public static Shot_Irvine_limit_break[] ShotIrvinelimitbreak { get; private set; }//21
         public static Duel_Zell_limit_break[] DuelZelllimitbreak { get; private set; }//22
         public static Zell_limit_break_parameters[] Zelllimitbreakparameters { get; private set; }//23
@@ -39,7 +40,7 @@ namespace FF8
         public static Misc_section[] Miscsection { get; private set; }//29 //only_strings
         public static Misc_text_pointers[] Misctextpointers { get; private set; }//30
 
-        public static List<Equipable_Abilities> EquipableAbilities; // contains 4 types;
+        public static Dictionary<Abilities, Equipable_Ability> EquipableAbilities; // contains 4 types;
 
         /// <summary>
         /// Read binary data from into structures and arrays
@@ -56,89 +57,24 @@ namespace FF8
             using (MemoryStream ms = new MemoryStream(buffer))
             using (BinaryReader br = new BinaryReader(ms))
             {
-                //Battle commands
-                BattleCommands = new Battle_Commands[Battle_Commands.count];
-                ms.Seek(subPositions[Battle_Commands.id], SeekOrigin.Begin);
-                for (int i = 0; i < Battle_Commands.count; i++)
-                {
-                    BattleCommands[i].Read(br, i);
-                }
-                //Magic data
-                MagicData = new Magic_Data[Magic_Data.count];
+                BattleCommands = Battle_Commands.Read(br);
                 ms.Seek(subPositions[Magic_Data.id], SeekOrigin.Begin);
-                for (int i = 0; i < Magic_Data.count; i++)
-                {
-                    MagicData[i].Read(br, i);
-                }
-                //Junctionable GFs data
-                JunctionableGFsData = new Dictionary<Saves.GFs, Junctionable_GFs_Data>(Junctionable_GFs_Data.count);
+                MagicData = Magic_Data.Read(br);
                 ms.Seek(subPositions[Junctionable_GFs_Data.id], SeekOrigin.Begin);
-                for (int i = 0; i < Junctionable_GFs_Data.count; i++)
-                {
-                    Junctionable_GFs_Data tmp = new Junctionable_GFs_Data();
-                    tmp.Read(br, i);
-                    JunctionableGFsData.Add((Saves.GFs)i, tmp);
-                }
-
-                //Enemy Attacks data
-                EnemyAttacksData = new Enemy_Attacks_Data[Enemy_Attacks_Data.count];
+                JunctionableGFsData = Junctionable_GFs_Data.Read(br);
                 ms.Seek(subPositions[Enemy_Attacks_Data.id], SeekOrigin.Begin);
-                for (int i = 0; i < Enemy_Attacks_Data.count; i++)
-                {
-                    EnemyAttacksData[i].Read(br, i);
-                }
-
-                //Weapons Data
-                WeaponsData = new Weapons_Data[Weapons_Data.count];
+                EnemyAttacksData = Enemy_Attacks_Data.Read(br);
                 ms.Seek(subPositions[Weapons_Data.id], SeekOrigin.Begin);
-                for (int i = 0; i < Weapons_Data.count; i++)
-                {
-                    WeaponsData[i].Read(br, i);
-                }
-
-                //Renzokuken Finishers Data
-                RenzokukenFinishersData = new Dictionary<Renzokeken_Level, Renzokuken_Finishers_Data>(Renzokuken_Finishers_Data.count);
+                WeaponsData = Weapons_Data.Read(br);
                 ms.Seek(subPositions[Renzokuken_Finishers_Data.id], SeekOrigin.Begin);
-                for (int i = 0; i < Renzokuken_Finishers_Data.count; i++)
-                {
-                    Renzokuken_Finishers_Data tmp = new Renzokuken_Finishers_Data();
-                    tmp.Read(br, i);
-                    RenzokukenFinishersData.Add((Renzokeken_Level)i, tmp);
-                }
-
-                //Characters
-                CharacterStats = new Dictionary<Saves.Characters, Character_Stats>(Character_Stats.count);
+                RenzokukenFinishersData = Renzokuken_Finishers_Data.Read(br);
                 ms.Seek(subPositions[Character_Stats.id], SeekOrigin.Begin);
-                for (int i = 0; i < Character_Stats.count; i++)
-                {
-                    Character_Stats tmp = new Character_Stats();
-                    tmp.Read(br, (Saves.Characters)i);
-                    CharacterStats.Add((Saves.Characters)i, tmp);
-                }
-
-                //Battle_Items_Data
-                BattleItemsData = new Battle_Items_Data[Battle_Items_Data.count];
+                CharacterStats = Character_Stats.Read(br);
                 ms.Seek(subPositions[Battle_Items_Data.id], SeekOrigin.Begin);
-                for (int i = 0; i < Battle_Items_Data.count; i++)
-                {
-                    BattleItemsData[i].Read(br, i);
-                }
-
-                NonbattleItemsData = new Non_battle_Items_Data[Non_battle_Items_Data.count];//8 //only strings
-                //ms.Seek(subPositions[Non_battle_Items_Data.id], SeekOrigin.Begin);
-                for (int i = 0; i < Non_battle_Items_Data.count; i++)
-                {
-                    NonbattleItemsData[i].Read(i);
-                }
-
-                //Non-Junctionable GFs Attacks Data
-                NonJunctionableGFsAttacksData = new Non_Junctionable_GFs_Attacks_Data[Non_Junctionable_GFs_Attacks_Data.count];
+                BattleItemsData = Battle_Items_Data.Read(br);
+                NonbattleItemsData = Non_battle_Items_Data.Read();
                 ms.Seek(subPositions[Non_Junctionable_GFs_Attacks_Data.id], SeekOrigin.Begin);
-                for (int i = 0; i < Non_Junctionable_GFs_Attacks_Data.count; i++)
-                {
-                    NonJunctionableGFsAttacksData[i].Read(br, i);
-                }
-
+                NonJunctionableGFsAttacksData = Non_Junctionable_GFs_Attacks_Data.Read(br);
                 ms.Seek(subPositions[Command_ability_data.id], SeekOrigin.Begin);
                 Commandabilitydata = Command_ability_data.Read(br);
                 ms.Seek(subPositions[Junction_abilities.id], SeekOrigin.Begin);
@@ -159,9 +95,9 @@ namespace FF8
                 Temporarycharacterlimitbreaks = Temporary_character_limit_breaks.Read(br);
                 ms.Seek(subPositions[Blue_magic_Quistis_limit_break.id], SeekOrigin.Begin);
                 BluemagicQuistislimitbreak = Blue_magic_Quistis_limit_break.Read(br);
-                ms.Seek(subPositions[Quistis_limit_break_parameters.id], SeekOrigin.Begin);
+                //ms.Seek(subPositions[Quistis_limit_break_parameters.id], SeekOrigin.Begin);
                 //Quistislimitbreakparameters = Quistis_limit_break_parameters.Read(br);
-                //ms.Seek(subPositions[Shot_Irvine_limit_break.id], SeekOrigin.Begin);
+                ms.Seek(subPositions[Shot_Irvine_limit_break.id], SeekOrigin.Begin);
                 ShotIrvinelimitbreak = Shot_Irvine_limit_break.Read(br);
                 ms.Seek(subPositions[Duel_Zell_limit_break.id], SeekOrigin.Begin);
                 DuelZelllimitbreak = Duel_Zell_limit_break.Read(br);
@@ -179,18 +115,47 @@ namespace FF8
                 Devour_ = Devour.Read(br);
                 ms.Seek(subPositions[Misc_section.id], SeekOrigin.Begin);
                 Miscsection = Misc_section.Read(br);
-                ms.Seek(subPositions[Misc_text_pointers.id], SeekOrigin.Begin);
                 Misctextpointers = Misc_text_pointers.Read();
 
-                EquipableAbilities = new List<Equipable_Abilities>(
+                EquipableAbilities = new Dictionary<Abilities,Equipable_Ability>(
                     Stat_percent_abilities.count +
                     Character_abilities.count +
                     Party_abilities.count +
                     GF_abilities.count);
-                EquipableAbilities.AddRange(Statpercentabilities);
-                EquipableAbilities.AddRange(Characterabilities);
-                EquipableAbilities.AddRange(Partyabilities);
-                EquipableAbilities.AddRange(GFabilities);
+                foreach (Abilities ability in (Abilities[])Enum.GetValues(typeof(Abilities)))
+                {
+                    if (Statpercentabilities.ContainsKey(ability))
+                        EquipableAbilities[ability] = Statpercentabilities[ability];
+                    else if (Characterabilities.ContainsKey(ability))
+                        EquipableAbilities[ability] = Characterabilities[ability];
+                    else if (Partyabilities.ContainsKey(ability))
+                        EquipableAbilities[ability] = Partyabilities[ability];
+                    else if (Characterabilities.ContainsKey(ability))
+                        EquipableAbilities[ability] = Characterabilities[ability];
+                }
+                var AbilityToCommand = new Dictionary<Abilities, Battle_Commands>
+                {
+                    { Abilities.Magic, BattleCommands[2] },
+                    { Abilities.GF, BattleCommands[3] },
+                    { Abilities.Item, BattleCommands[4] },
+                    { Abilities.Draw, BattleCommands[6] },
+                    //Draw,
+                    //Empty,
+                    //Card,
+                    //Doom,
+                    //MadRush,
+                    //Treatment,
+                    //Defend,
+                    //Darkside,
+                    //Recover,
+                    //Absorb,
+                    //Revive,
+                    //LVDown,
+                    //LVUp,
+                    //Kamikaze,
+                    //Devour,
+                    //MiniMog,
+                };
             }
         }
     }

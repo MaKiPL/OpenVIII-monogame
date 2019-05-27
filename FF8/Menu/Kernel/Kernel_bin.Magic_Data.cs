@@ -8,7 +8,7 @@ namespace FF8
         /// Magic Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Magic-data"/>
-        public struct Magic_Data
+        public class Magic_Data
         {
             public const int id = 1;
             public const int count = 57;
@@ -109,6 +109,20 @@ namespace FF8
                 Stat_J_def = br.ReadBytes(2);
                 GF_Compatibility = br.ReadBytes(16);
                 Unknown4 = br.ReadBytes(2);
+            }
+
+
+            public static Magic_Data[] Read(BinaryReader br)
+            {
+                var ret = new Magic_Data[count];
+
+                for (int i = 0; i < count; i++)
+                {
+                    var tmp = new Magic_Data();
+                    tmp.Read(br, i);
+                    ret[i] = tmp;
+                }
+                return ret;
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace FF8
 {
@@ -8,7 +9,7 @@ namespace FF8
         /// Stat Percentage Increasing Abilities Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Stat-percentage-increasing-abilities"/>
-        public class Stat_percent_abilities : Equipable_Abilities
+        public class Stat_percent_abilities : Equipable_Ability
         {
             public new const int count = 19;
             public new const int id = 13;
@@ -37,15 +38,15 @@ namespace FF8
                 //0x0007  1 byte Unknown/ Unused
             }
 
-            public static Stat_percent_abilities[] Read(BinaryReader br)
+            public static Dictionary<Abilities, Stat_percent_abilities> Read(BinaryReader br)
             {
-                Stat_percent_abilities[] ret = new Stat_percent_abilities[count];
+                Dictionary<Abilities, Stat_percent_abilities> ret = new Dictionary<Abilities, Stat_percent_abilities>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     Stat_percent_abilities tmp = new Stat_percent_abilities();
                     tmp.Read(br, i);
-                    ret[i] = tmp;
+                    ret[(Abilities)(i+ (int)Abilities.HP_20)] = tmp;
                 }
                 return ret;
             }
