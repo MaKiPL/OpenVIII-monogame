@@ -8,7 +8,7 @@ namespace FF8
         /// Renzokuken Finishers Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Renzokuken-finishers"/>
-        public struct Battle_Items_Data
+        public class Battle_Items_Data
         {
             public const int id = 7;
             public const int count = 33;
@@ -105,6 +105,19 @@ namespace FF8
                 //0x0016	1 bytes Hit Count
                 Element = (Element)br.ReadByte();
                 //0x0017	1 bytes Element
+            }
+
+            public static Battle_Items_Data[] Read(BinaryReader br)
+            {
+                Battle_Items_Data[] ret = new Battle_Items_Data[count];
+
+                for (int i = 0; i < count; i++)
+                {
+                    Battle_Items_Data tmp = new Battle_Items_Data();
+                    tmp.Read(br, i);
+                    ret[i] = tmp;
+                }
+                return ret;
             }
         }
     }

@@ -15,6 +15,7 @@ namespace FF8
             private Items choSideBar;
             private int _choChar;
             protected new Mode mode=0;
+
             public int choChar
             {
                 get
@@ -332,9 +333,7 @@ namespace FF8
                                                 }
                                             }
                                         }
-
                                     }
-
                                 }
                                 break;
                         }
@@ -420,12 +419,13 @@ namespace FF8
                     r = CONTAINER;
                     r.Offset(145, 14);
                     ITEM[0, 2] = new IGMDataItem_Icon(Icons.ID.Colon, r, 13, 2, .5f);
-                    
+
                     r = CONTAINER;
                     r.Offset(185, 81);
                     ITEM[0, 7] = new IGMDataItem_Icon(Icons.ID.G, r, 2);
                     base.Init();
                 }
+
                 public override void ReInit()
                 {
                     base.ReInit();
@@ -457,13 +457,11 @@ namespace FF8
                     r = CONTAINER;
                     r.Offset(25, 81);
                     ITEM[0, 6] = new IGMDataItem_Int(Memory.State.AmountofGil < 99999999 ? (int)(Memory.State.AmountofGil) : 99999999, r, 2, 0, 1,8);
-
                 }
+
                 public override bool Update()
                 {
                     bool ret = base.Update();
-
-
 
                     return ret;
                 }
@@ -477,12 +475,12 @@ namespace FF8
                 {
                 }
 
-
                 public override void Draw()
                 {
                     if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
                         base.Draw();
                 }
+
                 protected override void InitShift(int i, int col, int row)
                 {
                     base.InitShift(i, col, row);
@@ -693,8 +691,6 @@ namespace FF8
                 }
             }
 
-            
-
             private class IGMData_SideMenu : IGMData
             {
                 public IGMData_SideMenu() : base(11, 1, new IGMDataItem_Box(pos: new Rectangle { Width = 226, Height = 492, X = 843 - 226 }),1,11)
@@ -710,7 +706,6 @@ namespace FF8
 
                 protected override void Init()
                 {
-                    
                     ITEM[0, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 0));
                     ITEM[1, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2));
                     ITEM[2, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 4));
@@ -734,10 +729,11 @@ namespace FF8
         }
 
         #region Classes
+
         /// <summary>
         /// Flags for cursor behavior
         /// </summary>
-        /// <remarks>Defaults to disabled. </remarks>
+        /// <remarks>Defaults to disabled.</remarks>
         [Flags]
         public enum Cursor_Status
         {
@@ -745,27 +741,33 @@ namespace FF8
             /// Hide Cursor and disable all code that uses it.
             /// </summary>
             Disabled = 0x0,
+
             /// <summary>
             /// Show Cursor
             /// </summary>
             Enabled = 0x1,
+
             /// <summary>
             /// Triggers blinking
             /// </summary>
             Blinking = 0x2,
+
             /// <summary>
             /// Makes it react to left and right instead of up and down.
             /// </summary>
             Horizontal = 0x4,
+
             /// <summary>
             /// This is the default but if you want both directions you need to set the flag.
             /// </summary>
             Vertical = 0x8,
+
             /// <summary>
             /// Just draw.
             /// </summary>
             Draw = 0x10,
         }
+
         [Flags]
         public enum Table_Options
         {
@@ -773,19 +775,25 @@ namespace FF8
             /// No flags set.
             /// </summary>
             Default = 0x0,
+
             /// <summary>
             /// Default fills 1 col at a time. This will make it fill 1 row at a time.
             /// </summary>
             FillRows = 0x1,
         }
+
         public class IGMData
         {
             #region Fields
+
+            public Dictionary<int, FF8String> Descriptions { get; protected set; }
+            protected bool skipdata = false;
 
             /// <summary>
             /// location of where pointer finger will point.
             /// </summary>
             public Point[] CURSOR;
+
             public bool Enabled
             {
                 get => _enabled;
@@ -794,8 +802,10 @@ namespace FF8
                     _enabled = value;
                 }
             }
+
             public Table_Options Table_Options { get; set; } = Table_Options.Default;
             public Cursor_Status Cursor_Status { get; set; } = Cursor_Status.Disabled;
+
             public int CURSOR_SELECT
             {
                 get => _cursor_select; set
@@ -804,36 +814,47 @@ namespace FF8
                         _cursor_select = value;
                 }
             }
+
             public int CURSOR_NEXT()
             {
                 if ((Cursor_Status & Cursor_Status.Enabled) != 0)
                 {
                     int value = _cursor_select;
+                    int loop = 0;
                     while (true)
                     {
                         if (++value >= CURSOR.Length)
+                        {
                             value = 0;
-                        if (CURSOR[value] != Point.Zero || value == 0) break;
+                            if (loop++ > 1) break;
+                        }
+                        if ((CURSOR[value] != Point.Zero && !BLANKS[value])) break;
                     }
                     _cursor_select = value;
                 }
                 return _cursor_select;
             }
+
             public int CURSOR_PREV()
             {
                 if ((Cursor_Status & Cursor_Status.Enabled) != 0)
                 {
                     int value = _cursor_select;
+                    int loop = 0;
                     while (true)
                     {
                         if (--value < 0)
+                        {
                             value = CURSOR.Length - 1;
-                        if (CURSOR[value] != Point.Zero || value == 0) break;
+                            if (loop++ > 1) break;
+                        }
+                        if ((CURSOR[value] != Point.Zero && !BLANKS[value])) break;
                     }
                     _cursor_select = value;
                 }
                 return _cursor_select;
             }
+
             public IGMDataItem[,] ITEM;
 
             /// <summary>
@@ -865,6 +886,7 @@ namespace FF8
                 CURSOR_SELECT = 0;
                 this.cols = cols ?? 1;
                 this.rows = rows ?? 1;
+                Descriptions = new Dictionary<int, FF8String>(count);
                 Init();
                 ReInit();
                 Update();
@@ -881,6 +903,7 @@ namespace FF8
                 {
                     if (CONTAINER != null)
                         CONTAINER.Draw();
+                    if(!skipdata)
                     foreach (IGMDataItem i in ITEM)
                     {
                         if (i != null)
@@ -930,7 +953,6 @@ namespace FF8
             public int rows { get; private set; }
             public int cols { get; private set; }
 
-
             /// <summary>
             /// Convert to rectangle based on container.
             /// </summary>
@@ -958,7 +980,7 @@ namespace FF8
                     ml = Input.MouseLocation.Transform(Menu.Focus);
                     for (int i = 0; i < SIZE.Length; i++)
                     {
-                        if (SIZE[i].Contains(ml))
+                        if (SIZE[i].Contains(ml) && !SIZE[i].IsEmpty && CURSOR[i] != Point.Zero && !BLANKS[i])
                         {
                             CURSOR_SELECT = i;
                             ret = true;
@@ -1018,21 +1040,23 @@ namespace FF8
                 Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
             }
+
             public virtual void Inputs_CANCEL()
             {
                 Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(8);
             }
+
             protected virtual void InitShift(int i, int col, int row)
             {
-
             }
+
             /// <summary>
             /// Things that are fixed values at startup.
             /// </summary>
             protected virtual void Init()
             {
-                if (SIZE.Length>0 && SIZE[0].IsEmpty)
+                if (SIZE.Length > 0 && SIZE[0].IsEmpty)
                 {
                     for (int i = 0; i < SIZE.Length; i++)
                     {
@@ -1047,9 +1071,10 @@ namespace FF8
                                 Width = Width / cols,
                                 Height = Height / rows,
                             };
+                            CURSOR[i].Y = (int)(SIZE[i].Y + SIZE[i].Height / 2 - 6 * TextScale.Y);
+                            CURSOR[i].X = SIZE[i].X;
                             InitShift(i, col, row);
                         }
-
                     }
                 }
                 if (SIZE.Length == 0 || SIZE[0].IsEmpty)
@@ -1063,15 +1088,6 @@ namespace FF8
                     CURSOR[0].X = X;
                     SIZE[0] = new Rectangle(X, Y, Width, Height);
                 }
-                else
-                    for (int i = 0; i < CURSOR.Length; i++)
-                    {
-                        if (!SIZE[i].IsEmpty)
-                        {
-                            CURSOR[i].Y = (int)(SIZE[i].Y + SIZE[i].Height / 2 - 6 * TextScale.Y);
-                            CURSOR[i].X = SIZE[i].X;
-                        }
-                    }
             }
 
             /// <summary>
@@ -1090,11 +1106,13 @@ namespace FF8
             protected Rectangle _pos;
 
             public Vector2 Scale { get; set; }
+
             public IGMDataItem(Rectangle? pos = null, Vector2? scale = null)
             {
                 _pos = pos ?? Rectangle.Empty;
                 Scale = scale ?? Menu.TextScale;
             }
+
             /// <summary>
             /// Where to draw this item.
             /// </summary>
@@ -1109,20 +1127,27 @@ namespace FF8
             public static implicit operator Rectangle(IGMDataItem v) => v.Pos;
 
             public static implicit operator Color(IGMDataItem v) => v.Color;
+
             public static implicit operator IGMDataItem(IGMData v)
             {
                 return new IGMDataItem_IGMData(v);
             }
+
             public virtual void ReInit()
             { }
+
             public virtual bool Update()
             { return false; }
+
             public virtual bool Inputs()
             { return false; }
         }
+
         public class IGMDataItem_IGMData : IGMDataItem
         {
             public IGMData Data { get; set; }
+
+
             public IGMDataItem_IGMData(IGMData data, Rectangle? pos = null) : base(pos)
             {
                 Data = data;
@@ -1132,22 +1157,26 @@ namespace FF8
             {
                 Data.Draw();
             }
+
             public override bool Update()
             {
                 bool ret = base.Update();
                 return ret || Data.Update();
             }
+
             public override bool Inputs()
             {
                 bool ret = base.Inputs();
                 return ret || Data.Inputs();
             }
+
             public override void ReInit()
             {
                 base.ReInit();
                 Data.ReInit();
             }
         }
+
         public class IGMDataItem_Empty : IGMDataItem
         {
             public IGMDataItem_Empty(Rectangle? pos = null) : base(pos)
@@ -1158,6 +1187,7 @@ namespace FF8
             {
             }
         }
+
         public class IGMDataItem_Icon : IGMDataItem//<Icons.ID>
         {
             private byte _pallet;
@@ -1227,7 +1257,6 @@ namespace FF8
                 }
             }
 
-
             public bool Blink { get; private set; }
             public float Blink_Adjustment { get; set; }
 
@@ -1288,6 +1317,8 @@ namespace FF8
         {
             public FF8String Data { get; set; }
             public Font.ColorID Colorid { get; set; }
+            public Icons.ID? Icon { get; set; }
+            public int Pallet { get; set; }
 
             public IGMDataItem_String(FF8String data, Rectangle? pos = null,Font.ColorID? color = null): base(pos)
             {
@@ -1295,7 +1326,26 @@ namespace FF8
                 Colorid = color??Font.ColorID.White;
             }
 
-            public override void Draw() => Memory.font.RenderBasicText(Data, Pos.Location, Scale, Fade: fade,color: Colorid);
+            public IGMDataItem_String(Icons.ID? icon, int pallet, FF8String data, Rectangle? pos = null, Font.ColorID? color = null) : base(pos)
+            {
+                Icon = icon;
+                Pallet = pallet;
+                Data = data;
+                Colorid = color ?? Font.ColorID.White;
+            }
+
+            public override void Draw()
+            {
+                Rectangle r = Pos;
+                if (Icon != null && Icon != Icons.ID.None)
+                {
+                    Rectangle r2 = r;
+                    r2.Size = Point.Zero;
+                    Memory.Icons.Draw(Icon, Pallet, r2, new Vector2(Scale.X), fade);
+                    r.Offset(Memory.Icons.GetEntryGroup(Icon).Width*Scale.X, 0);
+                }
+                Memory.font.RenderBasicText(Data, r.Location, Scale, Fade: fade, color: Colorid);
+            }
         }
 
         private class IGMDataItem_Box : IGMDataItem
@@ -1338,10 +1388,12 @@ namespace FF8
             }
 
             public Dictionary<Enum, IGMData> Data;
+
             /// <summary>
             /// replace me with new keyword or cast me to your new enum.
             /// </summary>
             protected Enum mode=(Mode)0;
+
             private Vector2 _size;
             static public Vector2 TextScale { get; protected set; }
             static public Matrix Focus;
@@ -1358,7 +1410,9 @@ namespace FF8
                 skipdata = false;
             }
 
-            protected virtual void Init() { }
+            protected virtual void Init()
+            {
+            }
 
             public virtual void ReInit()
             {
@@ -1372,9 +1426,11 @@ namespace FF8
             {
                 Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: Focus);
             }
+
             public virtual void Draw()
             {
-                foreach (KeyValuePair<Enum, IGMData> i in Data)
+                if (!skipdata)
+                    foreach (KeyValuePair<Enum, IGMData> i in Data)
                     i.Value.Draw();
             }
 
@@ -1382,6 +1438,7 @@ namespace FF8
             {
                 Memory.SpriteBatchEnd();
             }
+
             public virtual bool Update()
             {
                 Vector2 Zoom = Memory.Scale(Size.X, Size.Y, Memory.ScaleMode.FitBoth);
@@ -1412,7 +1469,8 @@ namespace FF8
                 public override bool Inputs()
                 {
                     bool ret = base.Inputs();
-                    foreach (var i in ITEM)
+                    if (!skipdata)
+                        foreach (var i in ITEM)
                     {
                         ret = ret || i.Inputs();
                     }
@@ -1422,7 +1480,8 @@ namespace FF8
                 public override void ReInit()
                 {
                     base.ReInit();
-                    foreach (var i in ITEM)
+                    if (!skipdata)
+                        foreach (var i in ITEM)
                     {
                         if (i != null)
                             i.ReInit();
@@ -1432,7 +1491,8 @@ namespace FF8
                 public override bool Update()
                 {
                     bool ret = base.Update();
-                    foreach (var i in ITEM)
+                    if (!skipdata)
+                        foreach (var i in ITEM)
                     {
                         if (i != null)
                             ret = ret || i.Update();
@@ -1440,6 +1500,7 @@ namespace FF8
                     return ret;
                 }
             }
+
             protected abstract bool Inputs();
         }
     }

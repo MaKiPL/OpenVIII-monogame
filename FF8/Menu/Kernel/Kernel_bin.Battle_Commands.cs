@@ -9,7 +9,7 @@ namespace FF8
         /// Battle Commands
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Battle-commands"/>
-        public struct Battle_Commands
+        public class Battle_Commands
         {
 
             public const int id = 0;
@@ -47,6 +47,19 @@ namespace FF8
                 Flags = new BitArray(br.ReadBytes(1));
                 Target = br.ReadByte();
                 Unknown = br.ReadByte();
+            }
+
+            public static Battle_Commands[] Read(BinaryReader br)
+            {
+                var ret = new Battle_Commands[count];
+
+                for (int i = 0; i < count; i++)
+                {
+                    var tmp = new Battle_Commands();
+                    tmp.Read(br, i);
+                    ret[i] = tmp;
+                }
+                return ret;
             }
         }
     }

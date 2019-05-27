@@ -29,10 +29,8 @@ namespace FF8
             init_debugger_Audio.Init_SoundAudio(); //this initalizes the WAVE format audio.dat
             Init_debugger_fields.Init(); //this initializes the field module, it's worth to have this at the beginning
             Init_debugger_battle.Init(); //this initializes the encounters
-            Saves.Init(); //loads all savegames from steam or cd2000 directories. first come first serve.
 
             Module_movie_test.Init();
-            Module_main_menu_debug.Init();
 
             Memory.random = new Random(); //creates global random class for all sort of things
 

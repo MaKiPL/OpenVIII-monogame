@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace FF8
 {
@@ -8,22 +9,20 @@ namespace FF8
         /// Stat Percentage Increasing Abilities Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Stat-percentage-increasing-abilities"/>
-        public class Stat_percent_abilities
+        public class Stat_percent_abilities : Equipable_Ability
         {
-            public const int count = 19;
-            public const int id = 13;
+            public new const int count = 19;
+            public new const int id = 13;
 
-            public override string ToString() => Name;
+            
 
-            public FF8String Name { get; private set; }
-            public FF8String Description { get; private set; }
-            public byte AP { get; private set; }
             public Stat Stat { get; private set; }
             public byte Value { get; private set; }
             public byte Unknown0 { get; private set; }
 
-            public void Read(BinaryReader br, int i)
+            public override void Read(BinaryReader br, int i)
             {
+                Icon = Icons.ID.Ability_Character;
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 //0x0000	2 bytes Offset to name
                 Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
@@ -39,15 +38,15 @@ namespace FF8
                 //0x0007  1 byte Unknown/ Unused
             }
 
-            public static Stat_percent_abilities[] Read(BinaryReader br)
+            public static Dictionary<Abilities, Stat_percent_abilities> Read(BinaryReader br)
             {
-                Stat_percent_abilities[] ret = new Stat_percent_abilities[count];
+                Dictionary<Abilities, Stat_percent_abilities> ret = new Dictionary<Abilities, Stat_percent_abilities>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     Stat_percent_abilities tmp = new Stat_percent_abilities();
                     tmp.Read(br, i);
-                    ret[i] = tmp;
+                    ret[(Abilities)(i+ (int)Abilities.HP_20)] = tmp;
                 }
                 return ret;
             }

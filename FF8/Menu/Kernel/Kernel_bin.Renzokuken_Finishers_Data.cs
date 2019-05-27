@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace FF8
 {
@@ -8,7 +9,7 @@ namespace FF8
         /// Renzokuken Finishers Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Renzokuken-finishers"/>
-        public struct Renzokuken_Finishers_Data
+        public class Renzokuken_Finishers_Data
         {
             public const int id = 5;
             public const int count = 4;
@@ -51,6 +52,19 @@ namespace FF8
                 Unknown2 = br.ReadBytes(2);             //0x0010	2 bytes Unknown
                 Statuses0 = (Statuses0)br.ReadUInt16();       //0x0012	2 bytes status_0; //statuses 0-7
                 Statuses1 = (Statuses1)br.ReadUInt32();       //0x0014	4 bytes status_1; //statuses 8-39
+            }
+
+            public static Dictionary<Renzokeken_Level, Renzokuken_Finishers_Data> Read(BinaryReader br)
+            {
+                var ret = new Dictionary<Renzokeken_Level, Renzokuken_Finishers_Data>(count);
+
+                for (int i = 0; i < count; i++)
+                {
+                    Renzokuken_Finishers_Data tmp = new Renzokuken_Finishers_Data();
+                    tmp.Read(br, i);
+                    ret[(Renzokeken_Level)i] = tmp;
+                }
+                return ret;
             }
         }
     }

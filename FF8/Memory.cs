@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 #pragma warning disable CS0649
 
@@ -20,6 +21,8 @@ namespace FF8
 
         public static bool IsActive = true;
         public static Font font;
+
+        public static Task InitTask;
         //public static Texture2D[] iconsTex;
 
         public static Cards Cards;
@@ -167,18 +170,8 @@ namespace FF8
         public static string FF8DIR => GameLocation.Current.DataPath;
         public static string FF8DIRdata { get; private set; }
         public static string FF8DIRdata_lang { get; private set; }
-
-        public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
+        public static void InitTaskMethod()
         {
-            FF8DIRdata = Extended.GetUnixFullPath(Path.Combine(FF8DIR, "Data"));
-            string testdir = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata, "lang-en"));
-            FF8DIRdata_lang = Directory.Exists(testdir) ? testdir : FF8DIRdata;
-
-            Memory.graphics = graphics;
-            Memory.spriteBatch = spriteBatch;
-            Memory.content = content;
-            Memory.DirtyEncoding = new DirtyEncoding();
-            Memory.FieldHolder.FieldMemory = new int[1024];
 
             Memory.font = new Font(); //this initializes the fonts and drawing system- holds fonts in-memory
             Memory.Strings = new Strings();
@@ -202,12 +195,27 @@ namespace FF8
             {
 
             }
-
+#endif
             Memory.Cards = new Cards();
             Memory.Faces = new Faces();
             Memory.Icons = new Icons();
+            Saves.Init(); //loads all savegames from steam or cd2000 directories. first come first serve.
+            Module_main_menu_debug.Init();
 
-#endif
+        }
+        public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
+        {
+            FF8DIRdata = Extended.GetUnixFullPath(Path.Combine(FF8DIR, "Data"));
+            string testdir = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata, "lang-en"));
+            FF8DIRdata_lang = Directory.Exists(testdir) ? testdir : FF8DIRdata;
+
+            Memory.graphics = graphics;
+            Memory.spriteBatch = spriteBatch;
+            Memory.content = content;
+            Memory.DirtyEncoding = new DirtyEncoding();
+            Memory.FieldHolder.FieldMemory = new int[1024];
+            InitTask = new Task(InitTaskMethod);
+            InitTask.Start();
         }
         /// <summary>
         /// If true by the end of Update() will skip the next Draw()

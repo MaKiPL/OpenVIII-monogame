@@ -152,17 +152,7 @@ namespace FF8
             /// <returns></returns>
             public ushort MaxHP(Characters c = Characters.Blank)
             {
-                if (c == Characters.Blank)
-                    c = ID;
-                int total = 0;
-                foreach (var i in Abilities)
-                {
-                    int key = (int)i - 0x27;
-                    if (key >= 0 && key < Kernel_bin.Statpercentabilities.Length && Kernel_bin.Statpercentabilities[key].Stat == Kernel_bin.Stat.HP)
-                        total += Kernel_bin.Statpercentabilities[key].Value;
-                }
-
-                return (ushort)Kernel_bin.CharacterStats[c].HP((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], Magics[JunctionStat[Kernel_bin.Stat.HP]], _HP, total);
+                return TotalStat(Kernel_bin.Stat.HP, c);
             }
             public ushort TotalStat(Kernel_bin.Stat s, Characters c = Characters.Blank)
             {
@@ -171,9 +161,8 @@ namespace FF8
                 int total = 0;
                 foreach (var i in Abilities)
                 {
-                    int key = (int)i - 0x27;
-                    if (key >= 0 && key < Kernel_bin.Statpercentabilities.Length && Kernel_bin.Statpercentabilities[key].Stat == s)
-                        total += Kernel_bin.Statpercentabilities[key].Value;
+                    if (Kernel_bin.Statpercentabilities.ContainsKey(i) && Kernel_bin.Statpercentabilities[i].Stat == s)
+                        total += Kernel_bin.Statpercentabilities[i].Value;
                 }
                 switch (s)
                 {

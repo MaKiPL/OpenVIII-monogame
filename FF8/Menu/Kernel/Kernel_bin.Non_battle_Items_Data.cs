@@ -6,7 +6,7 @@
         /// Non battle Items Mame and Description Offsets Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Non-battle-item-name-and-description-offsets"/>
-        public struct Non_battle_Items_Data
+        public class Non_battle_Items_Data
         {
             public static readonly int count = 166;
             public static readonly int id = 8;
@@ -27,6 +27,19 @@
                 Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
                 //0x0002	2 bytes Offset to item description
                 //br.BaseStream.Seek(4,SeekOrigin.Current);
+            }
+
+            public static Non_battle_Items_Data[] Read()
+            {
+                Non_battle_Items_Data[] ret = new Non_battle_Items_Data[count];
+
+                for (int i = 0; i < count; i++)
+                {
+                    Non_battle_Items_Data tmp = new Non_battle_Items_Data();
+                    tmp.Read(i);
+                    ret[i] = tmp;
+                }
+                return ret;
             }
         }
     }

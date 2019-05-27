@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace FF8
 {
@@ -8,21 +9,18 @@ namespace FF8
         /// Menu Abilities Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Menu-abilities"/>
-        public class Menu_abilities
+        public class Menu_abilities :Ability
         {
-            public const int count = 24;
-            public const int id = 17;
+            public new const int count = 24;
+            public new const int id = 17;
 
             public override string ToString() => Name;
 
-            public FF8String Name { get; private set; }
-            public FF8String Description { get; private set; }
-            public byte AP { get; private set; }
             public byte Index { get; private set; }
             public byte Start { get; private set; }
             public byte End { get; private set; }
 
-            public void Read(BinaryReader br, int i)
+            public override void Read(BinaryReader br, int i)
             {
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 //0x0000	2 bytes Offset to name
@@ -39,15 +37,15 @@ namespace FF8
                 End = br.ReadByte();
                 //0x0007  1 byte End offset
             }
-            public static Menu_abilities[] Read(BinaryReader br)
+            public static Dictionary<Abilities,Menu_abilities> Read(BinaryReader br)
             {
-                var ret = new Menu_abilities[count];
+                Dictionary<Abilities, Menu_abilities> ret = new Dictionary<Abilities, Menu_abilities>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     var tmp = new Menu_abilities();
                     tmp.Read(br, i);
-                    ret[i] = tmp;
+                    ret[(Abilities)(i+(int)Abilities.Haggle)] = tmp;
                 }
                 return ret;
             }

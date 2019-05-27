@@ -8,7 +8,7 @@ namespace FF8
         /// Non-Junctionable GFs Attacks data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Non-junctionable-GF-attacks"/>
-        public struct Non_Junctionable_GFs_Attacks_Data
+        public class Non_Junctionable_GFs_Attacks_Data
         {
             public const int count = 16;
             public const int id = 9;
@@ -151,6 +151,19 @@ namespace FF8
                 //0x0012	1 byte Power Mod(used in damage formula)
                 Level_Mod = br.ReadByte();
                 //0x0013	1 byte Level Mod(used in damage formula)
+            }
+
+            public static Non_Junctionable_GFs_Attacks_Data[] Read(BinaryReader br)
+            {
+                Non_Junctionable_GFs_Attacks_Data[] ret = new Non_Junctionable_GFs_Attacks_Data[count];
+
+                for (int i = 0; i < count; i++)
+                {
+                    Non_Junctionable_GFs_Attacks_Data tmp = new Non_Junctionable_GFs_Attacks_Data();
+                    tmp.Read(br, i);
+                    ret[i] = tmp;
+                }
+                return ret;
             }
         }
     }
