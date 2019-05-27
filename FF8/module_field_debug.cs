@@ -8,7 +8,7 @@ using System.IO;
 
 namespace FF8
 {
-    internal static class Module_field_debug
+    public static class Module_field_debug
     {
         private static Field_mods mod = 0;
         private static Texture2D tex;
@@ -470,7 +470,7 @@ namespace FF8
             DEBUGRENDER
         };
 
-        internal static void Draw()
+        public static void Draw()
         {
             switch (mod)
             {
@@ -493,14 +493,19 @@ namespace FF8
         {
             Memory.graphics.GraphicsDevice.Clear(Color.Black);
             Memory.SpriteBatchStartStencil();
-            Memory.spriteBatch.Draw(tex,
-                new Microsoft.Xna.Framework.Rectangle(0, 0, 1280 + (width - 320), 720 + (height - 224)),
-                new Microsoft.Xna.Framework.Rectangle(0, 0, tex.Width, tex.Height)
-                , Microsoft.Xna.Framework.Color.White);
+            Rectangle src = new Rectangle(0, 0, tex.Width, tex.Height);
+            Rectangle dst = src;
+            dst.Size = (dst.Size.ToVector2() * Memory.Scale(tex.Width, tex.Height)).ToPoint();
+            //In game I think we'd keep the field from leaving the screen edge but would center on the Squall and the party when it can.
+            //I setup scaling after noticing the field didn't size with the screen. I set it to center on screen.
+            dst.Offset(Memory.Center.X - dst.Center.X, Memory.Center.Y - dst.Center.Y);
+            Memory.spriteBatch.Draw(tex,dst, src, Color.White);
+            //new Microsoft.Xna.Framework.Rectangle(0, 0, 1280 + (width - 320), 720 + (height - 224)),
+            //new Microsoft.Xna.Framework.Rectangle(0, 0, tex.Width, tex.Height)
             Memory.SpriteBatchEnd();
         }
 
-        internal static void Update()
+        public static void Update()
         {
 #if DEBUG
             // lets you move through all the feilds just holding left or right. it will just loop when it runs out.
@@ -508,7 +513,7 @@ namespace FF8
             {
                 Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
-                Module_main_menu_debug.FieldPointer--;               
+                Module_main_menu_debug.FieldPointer--;
                 ResetField();
             }
             if (Input.Button(Buttons.Right) )
@@ -646,7 +651,7 @@ namespace FF8
 
         private static void Init()
         {
-            ArchiveWorker aw = new ArchiveWorker(Path.Combine(Memory.FF8DIR, "field.fs"));
+            ArchiveWorker aw = new ArchiveWorker($"{Memory.Archives.A_FIELD}.fs");
             string[] test = aw.GetListOfFiles();
             if (Memory.FieldHolder.FieldID >= Memory.FieldHolder.fields.Length ||
                 Memory.FieldHolder.FieldID < 0)
@@ -656,9 +661,9 @@ namespace FF8
             string fieldArchive = CollectionEntry.First();
             int fieldLen = fieldArchive.Length - 2;
             fieldArchive = fieldArchive.Substring(0, fieldLen);
-            byte[] fs = ArchiveWorker.GetBinaryFile(Path.Combine(Memory.FF8DIR, "field"), $"{fieldArchive}fs");
-            byte[] fi = ArchiveWorker.GetBinaryFile(Path.Combine(Memory.FF8DIR, "field"), $"{fieldArchive}fi");
-            byte[] fl = ArchiveWorker.GetBinaryFile(Path.Combine(Memory.FF8DIR, "field"), $"{fieldArchive}fl");
+            byte[] fs = ArchiveWorker.GetBinaryFile(Memory.Archives.A_FIELD, $"{fieldArchive}fs");
+            byte[] fi = ArchiveWorker.GetBinaryFile(Memory.Archives.A_FIELD, $"{fieldArchive}fi");
+            byte[] fl = ArchiveWorker.GetBinaryFile(Memory.Archives.A_FIELD, $"{fieldArchive}fl");
             if (fs == null || fi == null || fl == null) return;
             string[] test_ = ArchiveWorker.GetBinaryFileList(fl);
             string mim = null;
@@ -782,9 +787,7 @@ namespace FF8
                     epe[i].scriptCount = (byte)((bb & 0x7F) + 1);
                     epe[i].label = (byte)(bb >> 7);
                     // was throwing exception
-                    if (symbolNames != null && epe[i].label < symbolNames.Length)
-                        epe[i].labelASM = symbolNames[epe[i].label];
-                    else epe[i].labelASM = "";
+                    epe[i].labelASM = symbolNames != null && epe[i].label < symbolNames.Length ? symbolNames[epe[i].label] : "";
                 }
                 int SYMscriptNameStartingPoint = jsm.cDoorEntity + jsm.cOtherEntity + jsm.cWalkmeshEntity + jsm.cBackgroundEntity;
                 jsm.EntityEntryPoints = epe;

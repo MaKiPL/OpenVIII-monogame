@@ -37,7 +37,7 @@ namespace FF8.MonoGame
                at FF8.Game1..ctor()
                at FF8.Program.Main()
      */
-    internal sealed class OpenALWindowsHook : IMonoGameHook
+    public sealed class OpenALWindowsHook : IMonoGameHook
     {
         public void Initialize()
         {

@@ -2,21 +2,22 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.IO;
 using System.Linq;
 
 namespace FF8
 {
-    internal static class Module_overture_debug
+    public static class Module_overture_debug
     {
-        private static OvertureInternalModule internalModule = OvertureInternalModule._4Squaresoft;
+        private static OverturepublicModule publicModule = OverturepublicModule._4Squaresoft;
         private static ArchiveWorker aw;
         private const string names = "name";
         private const string loops = "loop";
 
         private static Texture2D splashTex = null;
-        private static Texture2D white=null;
+        private static Texture2D white = null;
 
-        enum OvertureInternalModule
+        private enum OverturepublicModule
         {
             _0InitSound,
             _1WaitBeforeFirst,
@@ -25,7 +26,7 @@ namespace FF8
             _4Squaresoft
         }
 
-        private static double internalTimer;
+        private static double publicTimer;
         private static bool bNames = true; //by default we are starting with names
         private static int splashIndex, splashName = 1, splashLoop = 1;
 
@@ -33,12 +34,12 @@ namespace FF8
         private static bool bWaitingSplash, bFadingOut;
         private static float fSplashWait, Fade;
 
-        internal static void Update()
+        public static void Update()
         {
             if (Input.Button(Buttons.Okay) || Input.Button(Buttons.Cancel) || Input.Button(Keys.Space))
             {
                 Input.ResetInputLimit();
-                init_debugger_Audio.StopAudio();
+                init_debugger_Audio.StopMusic();
                 Memory.module = Memory.MODULE_MAINMENU_DEBUG;
 
                 if (splashTex != null && !splashTex.IsDisposed)
@@ -46,26 +47,27 @@ namespace FF8
                 if (white != null && !white.IsDisposed)
                     white.Dispose();
             }
-            switch (internalModule)
+            switch (publicModule)
             {
-                case OvertureInternalModule._0InitSound:
+                case OverturepublicModule._0InitSound:
                     InitSound();
                     break;
-                case OvertureInternalModule._1WaitBeforeFirst:
+
+                case OverturepublicModule._1WaitBeforeFirst:
                     Memory.SuppressDraw = true;
                     WaitForFirst();
                     break;
-                case OvertureInternalModule._2PlaySequence:
+
+                case OverturepublicModule._2PlaySequence:
                     SplashUpdate(ref splashIndex);
                     break;
             }
         }
 
-
         public static void ResetModule()
         {
-            internalModule = 0;
-            internalTimer = 0.0f;
+            publicModule = 0;
+            publicTimer = 0.0f;
             bFadingIn = true;
             bWaitingSplash = false;
             fSplashWait = 0.0f;
@@ -73,26 +75,26 @@ namespace FF8
             Fade = 0;
             Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
             Memory.module = Memory.MODULE_OVERTURE_DEBUG;
-            internalModule = OvertureInternalModule._4Squaresoft;
+            publicModule = OverturepublicModule._4Squaresoft;
             Module_movie_test.ReturnState = Memory.MODULE_OVERTURE_DEBUG;
             aw = null; // was getting exception when running the overture again as the aw target changed.
         }
+
         private static void WaitForFirst()
         {
-            if (internalTimer > 6.0f)
+            if (publicTimer > 6.0f)
             {
-                internalModule++;
+                publicModule++;
                 Console.WriteLine("MODULE_OVERTURE: DEBUG MODULE 2");
             }
-            internalTimer += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0d;
-
+            publicTimer += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0d;
         }
+
         private static void InitSound()
         {
             Memory.MusicIndex = 79;//79; //Overture
             init_debugger_Audio.PlayMusic();
             Memory.MusicIndex = ushort.MaxValue; // reset pos after playing overture; will loop back to start if push next
-
 
             if (white != null && !white.IsDisposed)
                 white.Dispose();
@@ -103,25 +105,28 @@ namespace FF8
                 whiteBuffer[i] = 255;
             }
 
-            internalModule++;
+            publicModule++;
         }
-        internal static void Draw()
+
+        public static void Draw()
         {
-            switch (internalModule)
+            switch (publicModule)
             {
-                case OvertureInternalModule._0InitSound:
-                case OvertureInternalModule._1WaitBeforeFirst:
+                case OverturepublicModule._0InitSound:
+                case OverturepublicModule._1WaitBeforeFirst:
                     Memory.graphics.GraphicsDevice.Clear(Color.Black);
                     break;
-                case OvertureInternalModule._2PlaySequence:
+
+                case OverturepublicModule._2PlaySequence:
                     Memory.graphics.GraphicsDevice.Clear(Color.Black);
                     DrawSplash();
                     break; //actually this is our entry point for draw;
-                case OvertureInternalModule._3SequenceFinishedPlayMainMenu:
+                case OverturepublicModule._3SequenceFinishedPlayMainMenu:
                     DrawLogo(); //after this ends, jump into main menu module
                     break;
-                case OvertureInternalModule._4Squaresoft:
-                    internalModule = OvertureInternalModule._0InitSound;
+
+                case OverturepublicModule._4Squaresoft:
+                    publicModule = OverturepublicModule._0InitSound;
                     Module_movie_test.Index = 103;//103;
                     Module_movie_test.ReturnState = Memory.MODULE_OVERTURE_DEBUG;
                     Memory.module = Memory.MODULE_MOVIETEST;
@@ -141,9 +146,10 @@ namespace FF8
                 Memory.graphics.GraphicsDevice.Clear(Color.Black);
             }
 
-            Memory.SpriteBatchStartAlpha();
-            Memory.spriteBatch.Draw(splashTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
-                new Microsoft.Xna.Framework.Rectangle(0, 0, splashTex.Width, splashTex.Height)
+            Memory.SpriteBatchStartAlpha(ss: SamplerState.AnisotropicClamp);
+            Memory.spriteBatch.Draw(splashTex,
+                new Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
+                new Rectangle(0, 0, splashTex.Width, splashTex.Height)
                 , Color.White * Fade);
             if (bFadingIn)
             {
@@ -163,10 +169,10 @@ namespace FF8
             }
             if (bFadingIn && Fade > 1.0f && !bWaitingSplash)
             {
-                internalTimer += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
+                publicTimer += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
             }
 
-            if (internalTimer > 5.0f)
+            if (publicTimer > 5.0f)
             {
                 bWaitingSplash = true;
                 bFadingOut = true;
@@ -174,15 +180,13 @@ namespace FF8
             Memory.SpriteBatchEnd();
             if (bWaitingSplash && Fade < 0.0f)
             {
-                init_debugger_Audio.StopAudio();
+                init_debugger_Audio.StopMusic();
                 Memory.module = Memory.MODULE_MAINMENU_DEBUG;
                 if (splashTex != null && !splashTex.IsDisposed)
                     splashTex.Dispose();
                 if (white != null && !white.IsDisposed)
                     white.Dispose();
-
             }
-
         }
 
         private static void DrawSplash()
@@ -192,14 +196,15 @@ namespace FF8
                 return;
             }
 
-            Memory.SpriteBatchStartAlpha();
-            Memory.spriteBatch.Draw(splashTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
-                new Microsoft.Xna.Framework.Rectangle(0, 0, splashTex.Width, splashTex.Height)
+            Memory.SpriteBatchStartAlpha(ss: SamplerState.AnisotropicClamp);
+            Memory.spriteBatch.Draw(splashTex,
+                new Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
+                new Rectangle(0, 0, splashTex.Width, splashTex.Height)
                 , Color.White * Fade);
             Memory.SpriteBatchEnd();
         }
 
-        internal static void SplashUpdate(ref int _splashIndex)
+        public static void SplashUpdate(ref int _splashIndex)
         {
             if (aw == null)
             {
@@ -228,9 +233,9 @@ namespace FF8
                     bFadingIn = false;
                     bFadingOut = true;
                     bWaitingSplash = false;
-                    internalTimer = 0.0f;
+                    publicTimer = 0.0f;
                     Fade = 1.0f;
-                    internalModule++;
+                    publicModule++;
                     return;
                 }
                 Fade -= Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 2f;
@@ -284,98 +289,35 @@ namespace FF8
             //loop 01-14 + name01-14;
         }
 
-
         //Splash is 640x400 16BPP typical TIM with palette of ggg bbbbb a rrrrr gg
-        internal static void ReadSplash(bool bLogo = false)
+        public static void ReadSplash(bool bLogo = false)
         {
-            if (!bLogo)
+            string[] lof = aw.GetListOfFiles();
+            string filename;
+            if (splashName > 0x0f)
             {
-                if (splashName > 0x0f)
-                {
-                    return;
-                }
-
-                string[] lof = aw.GetListOfFiles();
-                string fileName;
-                if (bNames)
-                {
-                    fileName = lof.First(x => x.ToLower().Contains($"{names}{splashName.ToString("D2")}"));
-                }
-                else
-                {
-                    fileName = lof.First(x => x.ToLower().Contains($"{loops}{splashLoop.ToString("D2")}"));
-                }
-
-                byte[] buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_MAIN, fileName);
-                uint uncompSize = BitConverter.ToUInt32(buffer, 0);
-                buffer = LZSS.DecompressAll(buffer, (uint)buffer.Length);
-
-                if (splashTex != null && !splashTex.IsDisposed)
-                    splashTex.Dispose();
-                splashTex = new Texture2D(Memory.graphics.GraphicsDevice, 640, 400, false, SurfaceFormat.Color);
-                byte[] rgbBuffer = new byte[splashTex.Width * splashTex.Height * 4];
-                int innerBufferIndex = 0;
-                for (int i = 0; i < rgbBuffer.Length; i += 4)
-                {
-                    if (innerBufferIndex + 1 >= buffer.Length)
-                    {
-                        break;
-                    }
-
-                    ushort pixel = (ushort)((buffer[innerBufferIndex + 1] << 8) | buffer[innerBufferIndex]);
-                    byte red = (byte)((pixel) & 0x1F);
-                    byte green = (byte)((pixel >> 5) & 0x1F);
-                    byte blue = (byte)((pixel >> 10) & 0x1F);
-                    red = (byte)MathHelper.Clamp((red * 8), 0, 255);
-                    green = (byte)MathHelper.Clamp((green * 8), 0, 255);
-                    blue = (byte)MathHelper.Clamp((blue * 8), 0, 255);
-                    rgbBuffer[i] = red;
-                    rgbBuffer[i + 1] = green;
-                    rgbBuffer[i + 2] = blue;
-                    rgbBuffer[i + 3] = 255;//(byte)(((pixel >> 7) & 0x1) == 1 ? 255 : 0);
-                    innerBufferIndex += 2;
-                }
-                splashTex.SetData(rgbBuffer);
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
+                return;
             }
-            else
-            {
-                string[] lof = aw.GetListOfFiles();
-                string fileName = lof.First(x => x.ToLower().Contains($"ff8.lzs"));
+            filename = !bLogo
+                ? bNames
+                    ? lof.First(x => x.ToLower().Contains($"{names}{splashName.ToString("D2")}"))
+                    : lof.First(x => x.ToLower().Contains($"{loops}{splashLoop.ToString("D2")}"))
+                : lof.First(x => x.ToLower().Contains($"ff8.lzs"));
 
-                byte[] buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_MAIN, fileName);
-                uint uncompSize = BitConverter.ToUInt32(buffer, 0);
-                buffer = LZSS.DecompressAll(buffer, (uint)buffer.Length);
-                if (splashTex != null && !splashTex.IsDisposed)
-                    splashTex.Dispose();
-                splashTex = new Texture2D(Memory.graphics.GraphicsDevice, 640, 400, false, SurfaceFormat.Color);
-                byte[] rgbBuffer = new byte[splashTex.Width * splashTex.Height * 4];
-                int innerBufferIndex = 0;
-                for (int i = 0; i < rgbBuffer.Length; i += 4)
-                {
-                    if (innerBufferIndex + 1 >= buffer.Length)
-                    {
-                        break;
-                    }
+            byte[] buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_MAIN, filename);
+            uint uncompSize = BitConverter.ToUInt32(buffer, 0);
+            buffer = buffer.Skip(4).ToArray(); //hotfix for new LZSS
+            buffer = LZSS.DecompressAllNew(buffer);
 
-                    ushort pixel = (ushort)((buffer[innerBufferIndex + 1] << 8) | buffer[innerBufferIndex]);
-                    byte red = (byte)((pixel) & 0x1F);
-                    byte green = (byte)((pixel >> 5) & 0x1F);
-                    byte blue = (byte)((pixel >> 10) & 0x1F);
-                    red = (byte)MathHelper.Clamp((red * 8), 0, 255);
-                    green = (byte)MathHelper.Clamp((green * 8), 0, 255);
-                    blue = (byte)MathHelper.Clamp((blue * 8), 0, 255);
-                    rgbBuffer[i] = red;
-                    rgbBuffer[i + 1] = green;
-                    rgbBuffer[i + 2] = blue;
-                    rgbBuffer[i + 3] = 255;//(byte)(((pixel >> 7) & 0x1) == 1 ? 255 : 0);
-                    innerBufferIndex += 2;
-                }
-                splashTex.SetData(rgbBuffer);
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-            }
+            if (splashTex != null && !splashTex.IsDisposed)
+                splashTex.Dispose();
+
+            splashTex = TIM2.Overture(buffer);
+            //using (FileStream fs = File.Create(Path.Combine("D:\\main", Path.GetFileNameWithoutExtension(filename) + ".png")))
+            //    splashTex.SaveAsPng(fs, splashTex.Width, splashTex.Height);
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
     }
 }

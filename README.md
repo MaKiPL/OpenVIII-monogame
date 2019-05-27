@@ -29,11 +29,11 @@ MODULE MAIN MENU
 
 MODULE IN-GAME MENU
 
-⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0%   -> EVERYTHING
+⬛⬜⬜⬜⬜⬜⬜⬜⬜⬜ 10%   -> EVERYTHING
 
 MODULE BATTLE
 
-⬛⬛⬛⬛⬜⬜⬜⬜⬜⬜ 40%  -> CAMERA SEQUENCE;ENTITY RENDERING; AI; WHOLE BATTLE CODE
+⬛⬛⬛⬛⬛⬜⬜⬜⬜⬜ 50%  -> CAMERA SEQUENCE; AI; WHOLE BATTLE CODE
 
 MODULE TRIPLE TRIAD
 
@@ -45,7 +45,7 @@ MODULE FIELD
 
 MODULE FMV
 
-⬛⬛⬛⬛⬜⬜⬜⬜⬜⬜ 45%  -> AUDIO; BINK IMPLEMENTATION
+⬛⬛⬛⬛⬛⬛⬛⬛⬜⬜ 80%  -> BINK IMPLEMENTATION(?)
 
 MODULE WORLD MAP
 
@@ -65,21 +65,12 @@ Requirements: MonoGame + Visual Studio
 3. Download and install **development build** of MonoGame:
 [MonoGame for Visual Studio](http://teamcity.monogame.net/repository/download/MonoGame_PackagingWindows/latest.lastSuccessful/MonoGameSetup.exe?guest=1)
 
-4. Open solution FF8.sln
-
-5. Edit game path (so far you have to type it manually)
-	at `WindowsGameLocationProvider.cs:34`:
-	at `LinuxGameLocationProvider.cs:16`:
-
-`private readonly HardcodedGameLocationProvider _hardcoded = ...`
-
-`@"D:\SteamLibrary\steamapps\common\FINAL FANTASY VIII\Data\lang-en\";`
-
-6. That's all. You can proceed with compilation. 
+4. If you get "Unable to load DLL 'FreeImage'", Download and install:
+[Visual C++ Redistributable Packages for Visual Studio 2013](https://www.microsoft.com/en-us/download/details.aspx?id=40784)
 
 ## Getting started (Linux/Mono) [Tested on Ubuntu]
 
-1. Make sure your Linux is up to date
+1. Make sure your Linux is up to date. Due to FFmpeg dependency we require Ubuntu Cosmos
 
 `sudo apt-get update`
 
@@ -117,7 +108,7 @@ Requirements: MonoGame + Visual Studio
 
 `MonoGame.Framework.OpenGL`
 
-9. That's all. You can now compile the executable. Make sure you type path at `Memory:cs:67`
+9. That's all. You can now compile the executable. Make sure you add path to array at `WindowsGameLocationProvider.cs:36` or `LinuxGameLocationProvider.cs:18`
 
 ## Development guidelines
 
@@ -125,7 +116,7 @@ Requirements: MonoGame + Visual Studio
 
 2. ??
 
-PS. Required FFmpeg dlls.
+PS. Required FFmpeg dlls. (available on Ubuntu Cosmos via apt-get install ffmpeg)
 avcodec-58.dll
 avdevice-58.dll
 avfilter-7.dll
@@ -135,3 +126,4 @@ postproc-55.dll
 swresample-3.dll
 swscale-5.dll
 
+I'd like to thanks everyone involved in this project!

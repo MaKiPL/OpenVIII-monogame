@@ -1,16 +1,19 @@
 ﻿
 using FFmpeg.AutoGen;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Threading;
 
 namespace FF8
 {
-    internal static class Module_movie_test
+    public static class Module_movie_test
     {
-        private const int STATE_INIT = 0;
+        private const int STATE_LOAD = 0;
         private const int STATE_CLEAR = 1;
         private const int STATE_STARTPLAY = 2;
         private const int STATE_PLAYING = 3;
@@ -19,10 +22,28 @@ namespace FF8
         private const int STATE_RETURN = 6;
         private const int STATE_RESET = 7;
 
-        private static readonly string[] movieDirs = {
-            MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "../movies")), //this folder has most movies
-            MakiExtended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "movies"))}; //this folder has rest of movies
-        private static List<string> _movies = new List<string>();
+        private static string[] movieDirs;
+
+        private static List<string> _movies;
+        public static void Init()
+        {
+            movieDirs = new string[] {
+                Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "movies")), //this folder has most movies
+                Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata_lang, "movies")) //this folder has rest of movies
+            };
+            _movies = new List<string>();
+            foreach (string s in movieDirs)
+            {
+                if (Directory.Exists(s))
+                {
+                    _movies.AddRange(Directory.GetFiles(s, "*", SearchOption.AllDirectories).Where(x =>
+                      x.EndsWith(".avi", StringComparison.OrdinalIgnoreCase) ||
+                      x.EndsWith(".mkv", StringComparison.OrdinalIgnoreCase) ||
+                      x.EndsWith(".bik", StringComparison.OrdinalIgnoreCase)));
+                }
+            }
+            ReturnState = Memory.MODULE_MAINMENU_DEBUG;
+        }
         /// <summary>
         /// Movie file list
         /// </summary>
@@ -30,22 +51,15 @@ namespace FF8
         {
             get
             {
-                if (_movies.Count == 0)
-                {
-                    foreach (string s in movieDirs)
-                    {
-                        _movies.AddRange(Directory.GetFiles(s, "*.avi"));
-                    }
-                }
                 return _movies;
             }
         }
 
         //private static Bitmap Frame { get; set; } = null;
-        private static Ffcc Ffccvideo { get; set; } = null;
-        private static Texture2D frameTex { get; set; } = null;
-        private static Ffcc Ffccaudio { get; set; } = null;
-        public static int ReturnState { get; set; } = Memory.MODULE_MAINMENU_DEBUG;
+        private static Ffcc FfccVideo { get; set; }
+        private static Texture2D frameTex { get; set; }
+        private static Ffcc FfccAudio { get; set; }
+        public static int ReturnState { get; set; }
         /// <summary>
         /// Index in movie file list
         /// </summary>
@@ -53,9 +67,9 @@ namespace FF8
         private static double FPS { get; set; } = 0;
         private static int FrameRenderingDelay { get; set; } = 0;
         private static int MsElapsed { get; set; } = 0;
-        public static int MovieState { get; set; } = STATE_INIT;
+        public static int MovieState { get; set; } = STATE_LOAD;
 
-        internal static void Update()
+        public static void Update()
         {
             if (Input.Button(Buttons.Okay) || Input.Button(Buttons.Cancel) || Input.Button(Keys.Space))
             {
@@ -83,35 +97,37 @@ namespace FF8
 #endif
             switch (MovieState)
             {
-                case STATE_INIT:
+                case STATE_LOAD:
                     MovieState++;
-                    InitMovie();
+                    LoadMovie();
                     break;
                 case STATE_CLEAR:
                     break;
                 case STATE_STARTPLAY:
                     MovieState++;
-                    if (Ffccaudio != null)
+                    if (FfccAudio != null)
                     {
-                        Ffccaudio.Play();
+                        FfccAudio.PlayInTask();
                     }
-                    if (Ffccvideo != null)
+                    if (FfccVideo != null)
                     {
-                        Ffccvideo.Play();
+                        FfccVideo.Play();
                     }
                     break;
                 case STATE_PLAYING:
-                    if (Ffccaudio != null && !Ffccaudio.Ahead)
+                    //if (FfccAudio != null && !FfccAudio.Ahead)
+                    //{
+                    //    // if we are behind the timer get the next frame of audio.
+                    //    FfccAudio.Next();
+                    //}
+                    if (FfccVideo==null)
+                        MovieState = STATE_FINISHED;
+                    else if (FfccVideo.Behind)
                     {
-                        // if we are behind the timer get the next frame of audio.
-                        Ffccaudio.Next();
-                    }
-                    if (Ffccvideo.Behind)
-                    {
-                        if (Ffccvideo.Next() < 0)
+                        if (FfccVideo.Next() < 0)
                         {
                             MovieState = STATE_FINISHED;
-                            Memory.SuppressDraw = true;
+                            //Memory.SuppressDraw = true;
                             break;
                         }
                         else if (frameTex != null)
@@ -128,7 +144,8 @@ namespace FF8
                     }
                     if (frameTex == null)
                     {
-                        frameTex = Ffccvideo.Texture2D();
+                        if(FfccVideo!=null)
+                            frameTex = FfccVideo.Texture2D();
                     }
                     break;
                 case STATE_PAUSED:
@@ -150,18 +167,18 @@ namespace FF8
         }
         private static void Reset()
         {
-            if (Ffccaudio != null)
+            if (FfccAudio != null)
             {
-                Ffccaudio.Dispose();
+                FfccAudio.Dispose();
             }
-            Ffccaudio = null;
-            if (Ffccvideo != null)
+            FfccAudio = null;
+            if (FfccVideo != null)
             {
-                Ffccvideo.Dispose();
+                FfccVideo.Dispose();
             }
-            Ffccvideo = null;
+            FfccVideo = null;
 
-            MovieState = STATE_INIT;
+            MovieState = STATE_LOAD;
             if (frameTex != null && !frameTex.IsDisposed)
             {
                 frameTex.Dispose();
@@ -173,27 +190,28 @@ namespace FF8
 
 
         // The flush packet is a non-null packet with size 0 and data null
-        private static void InitMovie()
+        private static void LoadMovie()
         {
-
-            Ffccaudio = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
-            Ffccvideo = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_VIDEO, Ffcc.FfccMode.STATE_MACH);
-
-            FPS = Ffccvideo.FPS;
-            if (FPS == 0)
+            if (Movies != null && Index < Movies.Count)
             {
-                TextWriter errorWriter = Console.Error;
-                errorWriter.WriteLine("Can not calc FPS, possibly FFMPEG dlls are missing or an error has occured");
-                MovieState = STATE_RETURN;
-            }
+                FfccAudio = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
+                FfccVideo = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_VIDEO, Ffcc.FfccMode.STATE_MACH);
 
+                FPS = FfccVideo.FPS;
+                if (Math.Abs(FPS) < double.Epsilon)
+                {
+                    TextWriter errorWriter = Console.Error;
+                    errorWriter.WriteLine("Can not calc FPS, possibly FFMPEG dlls are missing or an error has occured");
+                    MovieState = STATE_RETURN;
+                }
+            }
         }
 
-        internal static void Draw()
+        public static void Draw()
         {
             switch (MovieState)
             {
-                case STATE_INIT:
+                case STATE_LOAD:
                     break;
                 case STATE_CLEAR:
                     MovieState++;
@@ -227,7 +245,7 @@ namespace FF8
             if (frameTex != null)
             {
                 Memory.SpriteBatchStartStencil();
-                Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
+                Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height), Microsoft.Xna.Framework.Color.White);
                 Memory.SpriteBatchEnd();
             }
             //movieState = STATE_INIT;
@@ -242,8 +260,12 @@ namespace FF8
                 return;
             }
             //draw frame;
-            Memory.SpriteBatchStartStencil();
-            Memory.spriteBatch.Draw(frameTex, new Microsoft.Xna.Framework.Rectangle(0, 0, Memory.graphics.PreferredBackBufferWidth, Memory.graphics.PreferredBackBufferHeight), Microsoft.Xna.Framework.Color.White);
+            Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
+            Memory.SpriteBatchStartStencil(ss: SamplerState.AnisotropicClamp);//by default xna filters all textures SamplerState.PointClamp disables that. so video is being filtered why playing.
+            ClearScreen();
+            Rectangle dst = new Rectangle(new Point(0), (new Vector2(frameTex.Width, frameTex.Height) * Memory.Scale(frameTex.Width, frameTex.Height)).ToPoint());
+            dst.Offset(Memory.Center.X - dst.Center.X,Memory.Center.Y - dst.Center.Y);
+            Memory.spriteBatch.Draw(frameTex,dst, Microsoft.Xna.Framework.Color.White);
             Memory.SpriteBatchEnd();
             
         }

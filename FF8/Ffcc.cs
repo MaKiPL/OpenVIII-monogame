@@ -9,6 +9,8 @@
     using System.IO;
     using System.Runtime.InteropServices;
     using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Ffcc is a front end for processing Audio and Video using ffmpeg.autogen
@@ -17,29 +19,43 @@
     /// Code bits mostly converted to c# from c++ It uses bits of code from FFmpeg examples, Aforge,
     /// FFmpeg.autogen, stackoverflow
     /// </remarks>
-    internal unsafe class Ffcc : IDisposable
+    public unsafe class Ffcc : IDisposable
     {
         #region Fields
 
         /// <summary>
         /// If you have sound skipping increase this number and it'll go away. might decrease sync or
-        /// increase memory load The goal is to keep the dynamicsoundeffectinterface fed. if it plays
+        /// increase memory load The goal is to keep the dynamicsoundeffectinterface fed. If it plays
         /// the audio before you give it more, then you get sound skips.
         /// </summary>
         /// <value>The goal buffer count.</value>
-        /// <remarks>Will want to be as low as possible without sound skipping</remarks>
-        private const int GoalBufferCount = 75;
+        /// <remarks>
+        /// Will want to be as low as possible without sound skipping. 91.875 is 1 second of audio at
+        /// 44100 hz @ 15 fps; 99.9001 is 1 second of audio at 48000 hz @ 15 fps;
+        /// </remarks>
+        private const int GoalBufferCount = 100;
+
+        /// <summary>
+        /// NextAsync sleeps when filling buffer. If set too high buffer will empty before filling it again.
+        /// </summary>
+        private const int NextAsyncSleep = 10;
 
         private readonly AVDictionary* _dict;
+        private avio_alloc_context_read_packet rf;
         private AVIOContext* _avio_ctx;
         private byte* _avio_ctx_buffer;
         private int _avio_ctx_buffer_size;
-        private Buffer_data _bufferData;
-        private byte* _convertedData;
+        private byte[] _convertedData;
+
+        //private byte* _convertedData;
         private MemoryStream _decodedMemoryStream;
+
         private bool _frameSkip = true;
-        private IntPtr _intPtr;
+
+        //private IntPtr _intPtr;
         private int _loopstart;
+
+        public static string DataFileName;
 
         #endregion Fields
 
@@ -51,6 +67,8 @@
         public Ffcc(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH, int loopstart = -1)
         {
             Init(filename, mediatype, mode, loopstart);
+            if (mode == FfccMode.PROCESS_ALL)
+                Dispose(false);
         }
 
         /// <summary>
@@ -63,10 +81,35 @@
         /// https://stackoverflow.com/questions/24758386/intptr-to-callback-function probably could
         /// be wrote better theres alot of hoops to jump threw
         /// </remarks>
-        public Ffcc(byte[] data, int length, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.PROCESS_ALL, int loopstart = -1)
+        //public Ffcc(byte[] data, int length, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.PROCESS_ALL, int loopstart = -1)
+        //{
+        //LoadFromRAM(data, length);
+        //Init(null, mediatype, mode, loopstart);
+        //}
+
+        //public Ffcc(Buffer_Data* buffer_Data, string datafilename, AVMediaType mediatype, FfccMode mode, int loopstart = -1)
+        //{
+        //    DataFileName = datafilename;
+        //    LoadFromRAM(buffer_Data);
+        //    Init(null, mediatype, mode, loopstart);
+        //}
+
+        public Ffcc(Buffer_Data buffer_Data, byte[] headerData, string datafilename, int loopstart = -1)
         {
-            LoadFromRAM(data, length);
-            Init(null, mediatype, mode, loopstart);
+            fixed (byte* tmp = &headerData[0])
+            {
+                lock (Decoder)
+                {
+                    buffer_Data.SetHeader(tmp);
+                    DataFileName = datafilename;
+                    LoadFromRAM(&buffer_Data);
+                    Init(null, AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode.PROCESS_ALL, loopstart);
+                    ffmpeg.avformat_free_context(Decoder.Format);
+                    //ffmpeg.avio_context_free(&Decoder._format->pb); //CTD
+                    Decoder.Format = null;
+                }
+                Dispose(false);
+            }
         }
 
         #endregion Constructors
@@ -315,7 +358,8 @@
         /// </summary>
         private bool AudioEnabled => Decoder.StreamIndex >= 0;
 
-        private byte* ConvertedData { get => _convertedData; set => _convertedData = value; }
+        //private byte* ConvertedData { get => _convertedData; set => _convertedData = value; }
+        private byte[] ConvertedData { get => _convertedData; set => _convertedData = value; }
 
         /// <summary>
         /// Current frame number
@@ -391,7 +435,7 @@
         /// State ffcc is in.
         /// </summary>
         private FfccState State { get; set; }
-        
+
         #endregion Properties
 
         #region Methods
@@ -420,59 +464,112 @@
         /// <returns>false if EOF, or true if grabbed frame</returns>
         public bool Decode(out AVFrame frame)
         {
-            Return = ffmpeg.avcodec_receive_frame(Decoder.CodecContext, Decoder.Frame);
-            if (Return == ffmpeg.AVERROR(ffmpeg.EAGAIN))
+            do
             {
-                do
+                //need this extra receive frame for when decoding audio with >1 frame per packet
+                Return = ffmpeg.avcodec_receive_frame(Decoder.CodecContext, Decoder.Frame);
+                if (Return == ffmpeg.AVERROR(ffmpeg.EAGAIN))
                 {
                     do
                     {
+                        do
+                        {
+                            //make sure packet is unref before getting a new one.
+                            ffmpeg.av_packet_unref(Decoder.Packet);
+                            Return = ffmpeg.av_read_frame(Decoder.Format, Decoder.Packet);
+                            if (Return == ffmpeg.AVERROR_EOF)
+                            {
+                                goto EOF;
+                            }
+                            else
+                            {
+                                CheckReturn();
+                            }
+                        }
+                        //check for correct stream.
+                        while (Decoder.Packet->stream_index != Decoder.StreamIndex);
+                        Return = ffmpeg.avcodec_send_packet(Decoder.CodecContext, Decoder.Packet);
                         ffmpeg.av_packet_unref(Decoder.Packet);
-                        Return = ffmpeg.av_read_frame(Decoder.Format, Decoder.Packet);
-                        if (Return == ffmpeg.AVERROR_EOF)
-                        {
-                            goto EOF;
-                        }
-                        else
-                        {
-                            CheckReturn();
-                        }
+                        CheckReturn();
+                        Return = ffmpeg.avcodec_receive_frame(Decoder.CodecContext, Decoder.Frame);
                     }
-                    while (Decoder.Packet->stream_index != Decoder.StreamIndex);
-                    Return = ffmpeg.avcodec_send_packet(Decoder.CodecContext, Decoder.Packet);
-                    ffmpeg.av_packet_unref(Decoder.Packet);
+                    while (Return == ffmpeg.AVERROR(ffmpeg.EAGAIN));
                     CheckReturn();
-                    Return = ffmpeg.avcodec_receive_frame(Decoder.CodecContext, Decoder.Frame);
                 }
-                while (Return == ffmpeg.AVERROR(ffmpeg.EAGAIN));
-                CheckReturn();
+                else if (Return == ffmpeg.AVERROR_EOF)
+                {
+                    goto EOF;
+                }
+                else
+                {
+                    CheckReturn();
+                }
             }
-            else if (Return == ffmpeg.AVERROR_EOF)
-            {
-                goto EOF;
-            }
-            else
-            {
-                CheckReturn();
-            }
-
+            //check for frameskip, if enabled check if behind.
+            while (FrameSkip && Behind);
             frame = *Decoder.Frame;
             return true;
 
-            EOF:
+//end of file, check for loop and end.
+EOF:
             Loop();
             frame = *Decoder.Frame;
             return false;
         }
 
+        private Task task;
+
         /// <summary>
         /// Dispose of all leaky varibles.
         /// </summary>
-        public void Dispose()
+        public void Dispose() => Dispose(true);
+
+        /// <summary>
+        /// Same as Play but with a thread. Thread is terminated on Stop() or Dispose().
+        /// </summary>
+        public void PlayInTask(float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f)
         {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above. GC.SuppressFinalize(this);
+            if (sourceToken == null)
+                sourceToken = new CancellationTokenSource();
+            if (cancellationToken == null)
+                cancellationToken = sourceToken.Token;
+            Play(volume, pitch, pan);
+            task = new Task(NextinTask);
+            task.Start();
+        }
+
+        private CancellationTokenSource sourceToken;
+        private CancellationToken cancellationToken;
+
+        /// <summary>
+        /// For use in threads runs Next till done. To keep audio buffer fed. Or really good timing
+        /// on video frames.
+        /// </summary>
+        private void NextinTask()
+        {
+            try
+            {
+                while (Mode == FfccMode.STATE_MACH && !cancellationToken.IsCancellationRequested && State != FfccState.DONE && !isDisposed)
+                {
+                    lock (Decoder) //make the main thread wait if it accesses this class.
+                    {
+                        while (!isDisposed && !Ahead)
+                        {
+                            if (Next() < 0)
+                                break;
+                        }
+                    }
+                    Thread.Sleep(NextAsyncSleep); //delay checks
+                }
+            }
+            //catch (ThreadAbortException)
+            //{
+            //    disposeAll = true;//stop playing
+            //}
+            finally
+            {
+                Dispose(cancellationToken.IsCancellationRequested); // dispose of everything except audio encase it's still playing.
+            }
         }
 
         /// <summary>
@@ -481,10 +578,12 @@
         /// <returns>Returns -1 if missing stream or returns AVERROR or returns 0 if no problem.</returns>
         public int Next()
         {
+            //if stream doesn't exist or stream is done, end
             if (Decoder.StreamIndex == -1 || State == FfccState.DONE)
             {
                 return -1;
             }
+            // read next frame(s)
             else
             {
                 return Update(FfccState.READONE);
@@ -556,6 +655,8 @@
         /// </summary>
         public void Stop()
         {
+            if (stopped)
+                return;
             if (timer.IsRunning)
             {
                 timer.Stop();
@@ -582,6 +683,10 @@
             {
                 SoundEffect.Dispose();
             }
+            if (task != null)
+            {
+                sourceToken.Cancel();
+            }
         }
 
         /// <summary>
@@ -590,64 +695,78 @@
         /// <returns>Texture2D</returns>
         public Texture2D Texture2D()
         {
-            Texture2D frameTex = new Texture2D(Memory.spriteBatch.GraphicsDevice, Decoder.CodecContext->width, Decoder.CodecContext->height, false, SurfaceFormat.Color);
-            const int bpp = 4;
-            byte[] texBuffer = new byte[Decoder.CodecContext->width * Decoder.CodecContext->height * bpp];
-            fixed (byte* ptr = &texBuffer[0])
+            lock (Decoder)
             {
-                byte*[] srcData = { ptr, null, null, null };
-                int[] srcLinesize = { Decoder.CodecContext->width * bpp, 0, 0, 0 };
-                // convert video frame to the RGB data
-                ffmpeg.sws_scale(ScalerContext, Decoder.Frame->data, Decoder.Frame->linesize, 0, Decoder.CodecContext->height, srcData, srcLinesize);
+                Texture2D frameTex = new Texture2D(Memory.spriteBatch.GraphicsDevice, Decoder.CodecContext->width, Decoder.CodecContext->height, false, SurfaceFormat.Color);
+                const int bpp = 4;
+                byte[] texBuffer = new byte[Decoder.CodecContext->width * Decoder.CodecContext->height * bpp];
+                fixed (byte* ptr = &texBuffer[0])
+                {
+                    byte*[] srcData = { ptr, null, null, null };
+                    int[] srcLinesize = { Decoder.CodecContext->width * bpp, 0, 0, 0 };
+                    // convert video frame to the RGB data
+                    ffmpeg.sws_scale(ScalerContext, Decoder.Frame->data, Decoder.Frame->linesize, 0, Decoder.CodecContext->height, srcData, srcLinesize);
+                }
+                frameTex.SetData(texBuffer);
+                return frameTex;
             }
-            frameTex.SetData(texBuffer);
-            return frameTex;
         }
+
+        private bool stopped = false;
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!isDisposed)
+            lock (Decoder)
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects).
+                    Stop();
                 }
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-                if (DecodedMemoryStream != null)
+                if (!isDisposed)
                 {
-                    DecodedMemoryStream.Dispose();
-                }
-                Stop();
-                if (ConvertedData != null)
-                {
-                    Marshal.FreeHGlobal((IntPtr)ConvertedData);
-                }
-                if (_intPtr != null)
-                {
-                    Marshal.FreeHGlobal(_intPtr);
-                }
-                ffmpeg.sws_freeContext(ScalerContext);
-                if (ResampleContext != null)
-                {
-                    ffmpeg.swr_close(ResampleContext);
-                    SwrContext* pResampleContext = ResampleContext;
-                    ffmpeg.swr_free(&pResampleContext);
-                }
-                ffmpeg.av_frame_unref(ResampleFrame);
-                ffmpeg.av_free(ResampleFrame);
-                if (_avio_ctx != null)
-                {
-                    //ffmpeg.avio_close(avio_ctx); //CTD
-                    ffmpeg.av_free(_avio_ctx);
-                }
+                    State = FfccState.DONE;
+                    Mode = FfccMode.NOTINIT;
+                    if (disposing)
+                    {
+                        //Stop();
+                        // TODO: dispose managed state (managed objects).
+                    }
+                    // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                    // TODO: set large fields to null.
+                    if (DecodedMemoryStream != null)
+                    {
+                        DecodedMemoryStream.Dispose();
+                    }
+                    if (ConvertedData != null)
+                    {
+                        //Marshal.FreeHGlobal((IntPtr)ConvertedData);
+                    }
+                    //if (_intPtr != null)
+                    //{
+                    //    Marshal.FreeHGlobal(_intPtr);
+                    //}
+                    ffmpeg.sws_freeContext(ScalerContext);
+                    if (ResampleContext != null)
+                    {
+                        ffmpeg.swr_close(ResampleContext);
+                        SwrContext* pResampleContext = ResampleContext;
+                        ffmpeg.swr_free(&pResampleContext);
+                    }
+                    ffmpeg.av_frame_unref(ResampleFrame);
+                    ffmpeg.av_free(ResampleFrame);
+                    if (_avio_ctx != null)
+                    {
+                        //ffmpeg.avio_close(avio_ctx); //CTD
+                        ffmpeg.av_free(_avio_ctx);
+                    }
 
-                //if (avio_ctx_buffer != null)
-                //    ffmpeg.av_freep(avio_ctx_buffer); //throws exception
+                    //if (avio_ctx_buffer != null)
+                    //    ffmpeg.av_freep(avio_ctx_buffer); //throws exception
 
-                // set to true to prevent multiple disposings
-                isDisposed = true;
-                GC.Collect(); // donno if this really does much. was trying to make sure the memory i'm watching is what is really there.
+                    // set to true to prevent multiple disposings
+                    isDisposed = true;
+                    //GC.Collect(); // donno if this really does much. was trying to make sure the memory i'm watching is what is really there.
+                }
             }
         }
 
@@ -655,10 +774,7 @@
         /// throw new exception
         /// </summary>
         /// <param name="v">string of message</param>
-        private static void die(string v)
-        {
-            throw new Exception(v.Trim('\0'));
-        }
+        private static void die(string v) => throw new Exception(v.Trim('\0'));
 
         /// <summary>
         /// Compairs two numbers and returns the smallest
@@ -666,10 +782,7 @@
         /// <param name="a">number a</param>
         /// <param name="b">number b</param>
         /// <returns>smaller of two numbers</returns>
-        private static int FFMIN(int a, int b)
-        {
-            return a < b ? a : b;
-        }
+        private static int FFMIN(int a, int b) => a < b ? a : b;
 
         /// <summary>
         /// For reading data from a memory pointer as if it's a file.
@@ -680,20 +793,9 @@
         /// <returns>Total bytes read, or EOF</returns>
         private static int Read_packet(void* opaque, byte* buf, int buf_size)
         {
-            Buffer_data* bd = (Buffer_data*)opaque;
-            buf_size = FFMIN(buf_size, bd->size);
+            Buffer_Data* bd = (Buffer_Data*)opaque;
 
-            if (buf_size <= 0)
-            {
-                return ffmpeg.AVERROR_EOF;
-            }
-
-            // copy internal buffer data to buf
-            Buffer.MemoryCopy((void*)bd->ptr, (void*)buf, buf_size, buf_size);
-            bd->ptr += buf_size;
-            bd->size -= buf_size;
-
-            return buf_size;
+            return bd->Read(buf, buf_size);
         }
 
         /// <summary>
@@ -784,19 +886,17 @@
         /// <summary>
         /// Sets up AVFormatContext to be able from the memory buffer.
         /// </summary>
-        /// <param name="buffer">Pointer to data</param>
-        /// <param name="buffer_size">Size of data</param>
-        private void LoadFromRAM(IntPtr buffer, int buffer_size)
+        private void LoadFromRAM(Buffer_Data* bd)
         {
             _avio_ctx = null;
 
             _avio_ctx_buffer_size = 4096;
             int ret = 0;
-            _bufferData = new Buffer_data
-            {
-                ptr = buffer,
-                size = buffer_size
-            };
+            //_bufferData = new Buffer_Data
+            //{
+            //    Header = buffer,
+            //    HeaderSize = buffer_size
+            //};
 
             _avio_ctx_buffer = (byte*)ffmpeg.av_malloc((ulong)_avio_ctx_buffer_size);
             if (_avio_ctx_buffer == null)
@@ -804,11 +904,8 @@
                 ret = ffmpeg.AVERROR(ffmpeg.ENOMEM);
                 return;
             }
-            avio_alloc_context_read_packet rf = new avio_alloc_context_read_packet(Read_packet);
-            fixed (Buffer_data* tmp = &_bufferData)
-            {
-                _avio_ctx = ffmpeg.avio_alloc_context(_avio_ctx_buffer, _avio_ctx_buffer_size, 0, tmp, rf, null, null);
-            }
+            rf = new avio_alloc_context_read_packet(Read_packet);
+            _avio_ctx = ffmpeg.avio_alloc_context(_avio_ctx_buffer, _avio_ctx_buffer_size, 0, bd, rf, null, null);
 
             if (_avio_ctx == null)
             {
@@ -823,12 +920,12 @@
         /// </summary>
         /// <param name="data">incoming data</param>
         /// <param name="length">size of data</param>
-        private void LoadFromRAM(byte[] data, int length)
-        {
-            _intPtr = Marshal.AllocHGlobal(length);
-            Marshal.Copy(data, 0, _intPtr, length);
-            LoadFromRAM(_intPtr, length);
-        }
+        //private void LoadFromRAM(byte[] data, int length)
+        //{
+        //    _intPtr = Marshal.AllocHGlobal(length);
+        //    Marshal.Copy(data, 0, _intPtr, length);
+        //    LoadFromRAM(_intPtr, length);
+        //}
 
         /// <summary>
         /// Load sound from Memorystream into a SoundEFFect
@@ -863,18 +960,21 @@
                     //create instance here to set sample_rate and channels dynamicly
                     DynamicSound = new DynamicSoundEffectInstance(ResampleFrame->sample_rate, (AudioChannels)ResampleFrame->channels);
                 }
-
-                DynamicSound.SubmitBuffer(buffer, 0, length);
+                try
+                {
+                    DynamicSound.SubmitBuffer(buffer, 0, length);
+                }
+                catch(ArgumentException)
+                {
+                    //got error saying buffer was too small. makes no sense.
+                }
             }
         }
 
         /// <summary>
         /// Load sound from memory stream by default.
         /// </summary>
-        private void LoadSoundFromStream()
-        {
-            LoadSoundFromStream(ref _decodedMemoryStream);
-        }
+        private void LoadSoundFromStream() => LoadSoundFromStream(ref _decodedMemoryStream);
 
         /// <summary>
         /// If looping seek back to LOOPSTART
@@ -1046,7 +1146,8 @@
                                                  ResampleFrame->nb_samples,
                                                  (AVSampleFormat)ResampleFrame->format, 0);
 
-            ConvertedData = (byte*)Marshal.AllocHGlobal(convertedFrameBufferSize);
+            //ConvertedData = (byte*)Marshal.AllocHGlobal(convertedFrameBufferSize);
+            ConvertedData = new byte[convertedFrameBufferSize];
         }
 
         /// <summary>
@@ -1076,17 +1177,12 @@
         {
             while (Decode(out AVFrame _DecodedFrame))
             {
-                if (FrameSkip && Behind)
-                {
-                    continue;
-                }
-
                 if (MediaType == AVMediaType.AVMEDIA_TYPE_VIDEO)
                 {
                     if (Mode == FfccMode.STATE_MACH)
                     {
                         State = FfccState.WAITING;
-                        return;
+                        break;
                     }
                     // do something with video here.
                     else if (Mode == FfccMode.PROCESS_ALL)
@@ -1096,10 +1192,10 @@
                 else if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
                 {
                     Resample(ref _DecodedFrame);
-                    if (Mode == FfccMode.STATE_MACH && !Behind)
+                    if (Mode == FfccMode.STATE_MACH && !Behind) //still behind stay here.
                     {
                         State = FfccState.WAITING;
-                        return;
+                        break;
                     }
                 }
             }
@@ -1137,11 +1233,10 @@
                 {
                     break;
                 }
-                fixed (byte** tmp = &_convertedData)
+                //fixed (byte** tmp = &_convertedData)
+                fixed (byte* tmp = &_convertedData[0])
                 {
-                    outSamples = ffmpeg.swr_convert(ResampleContext,
-                                                tmp,
-                                                ResampleFrame->nb_samples, null, 0);
+                    outSamples = ffmpeg.swr_convert(ResampleContext, &tmp, ResampleFrame->nb_samples, null, 0);
                 }
                 int buffer_size = ffmpeg.av_samples_get_buffer_size(null,
                     ResampleFrame->channels,
@@ -1219,13 +1314,15 @@
 
                     case FfccState.READONE:
                         PrepareProcess();
-                        if (State == FfccState.WAITING)
+                        switch (State)
                         {
-                            ret = 0;
-                        }
-                        else
-                        {
-                            ret = -1;
+                            case FfccState.WAITING:
+                                ret = 0;
+                                break;
+
+                            default:
+                                ret = -1;
+                                break;
                         }
                         break;
 
@@ -1236,6 +1333,19 @@
             }
             while (!((Mode == FfccMode.PROCESS_ALL && State == FfccState.DONE) || (State == FfccState.DONE || State == FfccState.WAITING)));
             return ret;
+        }
+
+        private int WritetoMs(ref byte[] output, int start, ref int length)
+        {
+            if (Mode == FfccMode.STATE_MACH)
+            {
+                LoadSoundFromStream(ref output, start, ref length);
+            }
+            else
+            {
+                DecodedMemoryStream.Write(output, start, length);
+            }
+            return length - start;
         }
 
         /// <summary>
@@ -1278,12 +1388,80 @@
         /// <summary>
         /// Used only when reading ADPCM data from memory.
         /// </summary>
-        private struct Buffer_data
+        public struct Buffer_Data
         {
             #region Fields
 
-            public IntPtr ptr;
-            public int size;
+            public IntPtr Header;
+            public UInt32 HeaderSize;
+
+            public void SetHeader(IntPtr value) => Header = value;
+
+            public void SetHeader(byte* value) => Header = (IntPtr)value;
+
+            public UInt32 DataSeekLoc;
+            public UInt32 DataSize;
+
+            private unsafe int ReadHeader(byte* buf, int buf_size)
+            {
+                buf_size = FFMIN(buf_size, (int)HeaderSize);
+
+                if (buf_size == 0)
+                {
+                    return ffmpeg.AVERROR_EOF;
+                }
+
+                // copy public buffer data to buf
+                Buffer.MemoryCopy((void*)Header, (void*)buf, buf_size, buf_size);
+                Header += buf_size;
+                HeaderSize -= (uint)buf_size;
+
+                return buf_size;
+            }
+
+            private unsafe int ReadData(byte* buf, int buf_size)
+            {
+                buf_size = FFMIN(buf_size, (int)DataSize);
+
+                if (buf_size == 0)
+                {
+                    return ffmpeg.AVERROR_EOF;
+                }
+                using (FileStream fs = File.OpenRead(DataFileName))
+                {
+                    fs.Seek(DataSeekLoc, SeekOrigin.Begin);
+                    using (BinaryReader br = new BinaryReader(fs))
+                    {
+                        using (UnmanagedMemoryStream ums = new UnmanagedMemoryStream(buf, buf_size, buf_size, FileAccess.Write))
+                        {
+                            // copy public buffer data to buf
+                            ums.Write(br.ReadBytes(buf_size), 0, buf_size);
+                            DataSeekLoc += (uint)buf_size;
+                            DataSize -= (uint)buf_size;
+
+                            return buf_size;
+                        }
+                    }
+                }
+            }
+
+            public unsafe int Read(byte* buf, int buf_size)
+            {
+                int ret;
+                if ((ret = ReadHeader(buf, buf_size)) != ffmpeg.AVERROR_EOF)
+                    return ret;
+                else
+                    return ReadData(buf, buf_size);
+            }
+
+            //can't do this because soon as fixed block ends the pointer is no good.
+            //private void SetHeader(byte[] value)
+            //{
+            //    fixed (byte* tmp = &value[0])
+            //    {
+            //        Header = (IntPtr)tmp;
+            //    }
+            //}
 
             #endregion Fields
 

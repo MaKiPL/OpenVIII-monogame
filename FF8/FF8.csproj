@@ -138,7 +138,98 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ArchiveSearch.cs" />
     <Compile Include="ArchiveWorker.cs" />
+    <Compile Include="DictionaryEx.cs" />
+    <Compile Include="DirtyEncoder.cs" />
+    <Compile Include="Extended.cs" />
+    <Compile Include="FF8String.cs" />
+    <Compile Include="Menu\Cards.cs" />
+    <Compile Include="Menu\Cards.ID.cs" />
+    <Compile Include="EntryGroup.cs" />
+    <Compile Include="Menu\Faces.ID.cs" />
+    <Compile Include="Menu\Icons.ID.cs" />
+    <Compile Include="Menu\Icons.InsertCustomEntries.cs" />
+    <Compile Include="Menu\Kernel\Ability.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Abilities.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.AbilityFlags2.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Attack_Flags.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Attack_Type.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Battle_Commands.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Battle_Items.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Blue_magic_Quistis_limit_break.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Character_abilities.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Character_Stats.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Command_abilities.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Command_ability.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Command_ability_data.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Devour.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Duel_Zell_limit_break.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Element.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Enemy_Attacks_Data.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Equipable_Abilities.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Gender.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.GF_abilities.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.JunctionAbilityFlags.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Junctionable_GFs_Data.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Junction_abilities.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Magic_Data.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Magic_ID.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Menu_abilities.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Misc_section.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Misc_text_pointers.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Non_battle_Items_Data.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Non_Junctionable_GFs_Attacks_Data.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Party_abilities.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Quanity.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Quistis_limit_break_parameters.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Renzokeken_Level.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Renzokuken_Finishers_Data.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Rinoa_limit_breaks_part_1.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Rinoa_limit_breaks_part_2.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Selphie_limit_break_sets.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Shot_Irvine_limit_break.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Slot.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Slot_array.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Stat.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.StatFlags.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Statuses0.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Statuses1.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Stat_percent_abilities.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Target.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Temporary_character_limit_breaks.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Weapons_Data.cs" />
+    <Compile Include="Menu\Kernel\Kernel_bin.Zell_limit_break_parameters.cs" />
+    <Compile Include="Menu\Magazine.cs" />
+    <Compile Include="Menu\Magazine.InsertCustomEntries.cs" />
+    <Compile Include="Menu\Magazine.ID.cs" />
+    <Compile Include="Menu\Module_main_menu_debug.IGM_Junction.cs" />
+    <Compile Include="Menu\Module_main_menu_InGameMenu.cs" />
+    <Compile Include="Menu\Module_main_menu_LGSG_CheckingSlot.cs" />
+    <Compile Include="Menu\Module_main_menu_LGSG_ChooseGame.cs" />
+    <Compile Include="Menu\Module_main_menu_LGSG_ChooseSlot.cs" />
+    <Compile Include="Menu\Module_main_menu_LGSG_ing.cs" />
+    <Compile Include="Menu\PointEx.cs" />
+    <Compile Include="Menu\Stringfile.cs" />
+    <Compile Include="Menu\Strings.cs" />
+    <Compile Include="Menu\Module_card_test.cs" />
+    <Compile Include="Menu\Module_main_menu_debug.Item.cs" />
+    <Compile Include="Menu\Module_main_menu_LGSG.cs" />
+    <Compile Include="Menu\Module_main_menu_MainLobby.cs" />
+    <Compile Include="Menu\Module_main_menu_DebugLobby.cs" />
+    <Compile Include="Saves.CharacterData.cs" />
+    <Compile Include="Saves.Characters.cs" />
+    <Compile Include="Saves.ChocoboWorld.cs" />
+    <Compile Include="Saves.Costume.cs" />
+    <Compile Include="Saves.cs" />
+    <Compile Include="Saves.Data.cs" />
+    <Compile Include="Saves.FieldVars.cs" />
+    <Compile Include="Saves.GFData.cs" />
+    <Compile Include="Saves.GFs.cs" />
+    <Compile Include="Saves.Shop.cs" />
+    <Compile Include="Saves.TripleTriad.cs" />
+    <Compile Include="Saves.Worldmap.cs" />
     <Compile Include="Sources\Environment\Game\Location\GameLocation.cs" />
     <Compile Include="Sources\Environment\Game\Location\IGameLocationProvider.cs" />
     <Compile Include="Sources\Environment\Game\Location\LinuxGameLocationProvider.cs" />
@@ -146,28 +237,33 @@
     <Compile Include="Sources\Environment\Runtime\RuntimeEnvironment.cs" />
     <Compile Include="Sources\Environment\Runtime\RuntimePlatform.cs" />
     <Compile Include="Sources\Environment\Build\BuildEnvironment.cs" />
-    <Compile Include="debug_MCH.cs" />
+    <Compile Include="World\debug_MCH.cs" />
+    <Compile Include="Entry.cs" />
     <Compile Include="ExtapathyExtended.cs" />
+    <Compile Include="Menu\Faces.cs" />
     <Compile Include="Ffcc.cs" />
     <Compile Include="FfccVaribleGroup.cs" />
     <Compile Include="FFmpegBinariesHelper.cs" />
     <Compile Include="Font.cs" />
     <Compile Include="Game1.cs" />
+    <Compile Include="Menu\Icons.cs" />
     <Compile Include="init_debugger_Audio.cs" />
-    <Compile Include="init_debugger_battle.cs" />
+    <Compile Include="Battle\init_debugger_battle.cs" />
     <Compile Include="init_debugger_fields.cs" />
     <Compile Include="Input.cs" />
+    <Compile Include="Loc.cs" />
     <Compile Include="LZSS.cs" />
-    <Compile Include="MakiExtended.cs" />
     <Compile Include="Memory.cs" />
     <Compile Include="ModuleHandler.cs" />
-    <Compile Include="module_battle.cs" />
-    <Compile Include="module_battle_Debug.cs" />
+    <Compile Include="Battle\module_battle.cs" />
+    <Compile Include="Battle\module_battle_Debug.cs" />
+    <Compile Include="Menu\Module_face_test.cs" />
     <Compile Include="module_field_debug.cs" />
-    <Compile Include="module_main_menu_debug.cs" />
+    <Compile Include="Menu\Module_icon_test.cs" />
+    <Compile Include="Menu\module_main_menu_debug.cs" />
     <Compile Include="module_movie_test.cs" />
     <Compile Include="module_overture_debug.cs" />
-    <Compile Include="module_world_debug.cs" />
+    <Compile Include="World\module_world_debug.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PseudoBufferedStream.cs" />
@@ -177,25 +273,21 @@
     <Compile Include="Sources\MonoGame\Hooks\MonoGameHooks.cs" />
     <Compile Include="Sources\MonoGame\Hooks\OpenALWindowsHook.cs" />
     <Compile Include="Sources\NetFramework\TypeExtensionMethods.cs" />
+    <Compile Include="SP2.cs" />
     <Compile Include="TEX.cs" />
+    <Compile Include="TextureHandler.cs" />
     <Compile Include="TIM2.cs" />
-    <Compile Include="debug_battleDat.cs" />
-    <Compile Include="WindowsDebugger.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="WindowsDebugger.Designer.cs">
-      <DependentUpon>WindowsDebugger.cs</DependentUpon>
-    </Compile>
+    <Compile Include="Battle\debug_battleDat.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="DirectMidiNet">
       <HintPath>..\DirectMidiNet.dll</HintPath>
     </Reference>
-    <Reference Include="FFmpeg.AutoGen, Version=4.1.0.2, Culture=neutral, PublicKeyToken=9b7632533a381715, processorArchitecture=MSIL">
-      <HintPath>..\packages\FFmpeg.AutoGen.4.1.0.2\lib\net45\FFmpeg.AutoGen.dll</HintPath>
+    <Reference Include="FFmpeg.AutoGen, Version=4.1.0.4, Culture=neutral, PublicKeyToken=9b7632533a381715, processorArchitecture=MSIL">
+      <HintPath>..\packages\FFmpeg.AutoGen.4.1.0.4\lib\net45\FFmpeg.AutoGen.dll</HintPath>
     </Reference>
-    <Reference Include="NAudio, Version=1.8.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NAudio.1.8.5\lib\net35\NAudio.dll</HintPath>
+    <Reference Include="NAudio, Version=1.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NAudio.1.9.0\lib\net35\NAudio.dll</HintPath>
     </Reference>
     <Reference Include="NAudio.Vorbis, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\NAudio.Vorbis.1.0.0.0\lib\net35\NAudio.Vorbis.dll</HintPath>
@@ -285,11 +377,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="WindowsDebugger.resx">
-      <DependentUpon>WindowsDebugger.cs</DependentUpon>
-    </EmbeddedResource>
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

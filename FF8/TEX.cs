@@ -1,38 +1,37 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 
 namespace FF8
 {
-    //I borrowed this from my Rinoa's toolset, but modified to aim for buffer rather than file-work
-    class TEX
+    /// <summary>
+    /// TEX file handler class. TEX files are packages of textures and Palettes.
+    /// </summary>
+    /// <remarks>
+    /// I borrowed this from my Rinoa's toolset, but modified to aim for buffer rather than file-work
+    /// </remarks>
+    /// <see cref="https://github.com/MaKiPL/FF8-Rinoa-s-Toolset/blob/master/SerahToolkit_SharpGL/FF8_Core/TEX.cs"/>
+    /// <seealso cref="https://github.com/myst6re/vincent-tim/blob/master/TexFile.cpp"/>
+    public class TEX
     {
-        private Texture texture;
+        #region Fields
+
+        /// <summary>
+        /// Ratio needed to convert 16 bit to 32 bit color
+        /// </summary>
+        /// <seealso cref="https://github.com/myst6re/vincent-tim/blob/master/PsColor.h"/>
+        public const double COEFF_COLOR = (double)255 / 31;
+
+        /// <summary>
+        /// Raw data of TEX file
+        /// </summary>
         private byte[] buffer;
-        private int textureLocator;
 
+        private Texture texture;
 
-        struct Texture //RawImage after paletteData
-        {
-            public uint Width; //0x3C
-            public uint Height; //0x40
-            public byte NumOfPalettes; //0x30
-            public byte PaletteFlag; //0x4C
-            public uint PaletteSize; //0x58
-            public byte[] paletteData; //0xEC
-        }
+        #endregion Fields
 
-        struct Color
-        {
-            public byte Red;
-            public byte Green;
-            public byte Blue;
-            public byte Alpha;
-        }
-
+        #region Constructors
 
         public TEX(byte[] buffer)
         {
@@ -41,29 +40,71 @@ namespace FF8
             ReadParameters();
         }
 
-        public void ReadParameters()
-        {
+        #endregion Constructors
 
+        #region Properties
+
+        /// <summary>
+        /// Contains header info and Palette data of TEX file.
+        /// </summary>
+        public Texture TextureData => texture;  //added to get texturedata outside of class.
+
+        /// <summary>
+        /// start of texture section
+        /// </summary>
+        private int TextureLocator => Headersize + PaletteSectionSize;
+
+        /// <summary>
+        /// size of palette section
+        /// </summary>
+        private int PaletteSectionSize => (int)(texture.PaletteSize * 4);
+
+        /// <summary>
+        /// size of header section
+        /// </summary>
+        private int Headersize => texture.Version <= 1 ? 0xEC : 0xF0;
+
+        #endregion Properties
+
+        #region Methods
+
+        /// <summary>
+        /// Read header data from TEX file.
+        /// </summary>
+        /// <see cref="https://github.com/MaKiPL/FF8-Rinoa-s-Toolset/blob/master/SerahToolkit_SharpGL/FF8_Core/TEX.cs"/>
+        /// <seealso cref="https://github.com/myst6re/vincent-tim/blob/master/TexFile.h"/>
+        private void ReadParameters()
+        {
+            texture.Version = BitConverter.ToUInt32(buffer, 0x00);
             texture.Width = BitConverter.ToUInt32(buffer, 0x3C);
             texture.Height = BitConverter.ToUInt32(buffer, 0x40);
+            texture.bytesPerPixel = buffer[0x68];
             texture.NumOfPalettes = buffer[0x30];
+            texture.NumOfColorsPerPalette = BitConverter.ToUInt32(buffer, 0x34);
+            texture.bitDepth = BitConverter.ToUInt32(buffer, 0x38);
             texture.PaletteFlag = buffer[0x4C];
             texture.PaletteSize = BitConverter.ToUInt32(buffer, 0x58);
             if (texture.PaletteFlag != 0)
             {
-                texture.paletteData = new byte[texture.PaletteSize * 4];
-                Buffer.BlockCopy(buffer, 0xF0, texture.paletteData, 0, (int)(texture.PaletteSize * 4));
+                texture.paletteData = new byte[PaletteSectionSize];
+                Buffer.BlockCopy(buffer, 0xF0, texture.paletteData, 0, PaletteSectionSize);
             }
-            textureLocator = 0xEC + (int)(texture.PaletteSize * 4) + 4;
         }
-
+        /// <summary>
+        /// Get Texture2D converted to 32bit color
+        /// </summary>
+        /// <param name="forcePalette">Desired Palette, see texture.NumOfPalettes. -1 is default.</param>
+        /// <returns>32bit Texture2D</returns>
         public Texture2D GetTexture(int forcePalette = -1)
         {
-            int localTextureLocator = textureLocator;
-            Color[] colors;
+            uint ImageSizeBytes = texture.Width * texture.Height * 4;
             if (texture.PaletteFlag != 0)
             {
-                colors = new Color[texture.paletteData.Length / 4];
+                if (forcePalette >= texture.NumOfPalettes) //prevents exception for forcing a palette that doesn't exist.
+                    return null;
+
+                int localTextureLocator = TextureLocator;
+                Color[] colors = new Color[texture.paletteData.Length / 4];
                 int k = 0;
                 for (int i = 0; i < texture.paletteData.Length; i += 4)
                 {
@@ -74,25 +115,145 @@ namespace FF8
                     k++;
                 }
                 Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
-                byte[] convertBuffer = new byte[texture.Width * texture.Height * 4];
+
+                byte[] convertBuffer = new byte[ImageSizeBytes];
                 for (int i = 0; i < convertBuffer.Length; i += 4)
                 {
                     byte colorkey = buffer[localTextureLocator++];
-                    convertBuffer[i] = colors[forcePalette == -1 ? colorkey : (forcePalette * 16) + colorkey].Blue;
-                    convertBuffer[i + 1] = colors[forcePalette == -1 ? colorkey : (forcePalette*16) + colorkey].Green;
-                    convertBuffer[i + 2] = colors[forcePalette == -1 ? colorkey : (forcePalette * 16) + colorkey].Red;
-                    convertBuffer[i + 3] = colors[forcePalette == -1 ? colorkey : (forcePalette * 16) + colorkey].Alpha;
+                    convertBuffer[i] = colors[forcePalette == -1 ? colorkey : (forcePalette * texture.NumOfColorsPerPalette) + colorkey].Blue;
+                    convertBuffer[i + 1] = colors[forcePalette == -1 ? colorkey : (forcePalette * texture.NumOfColorsPerPalette) + colorkey].Green;
+                    convertBuffer[i + 2] = colors[forcePalette == -1 ? colorkey : (forcePalette * texture.NumOfColorsPerPalette) + colorkey].Red;
+                    convertBuffer[i + 3] = colors[forcePalette == -1 ? colorkey : (forcePalette * texture.NumOfColorsPerPalette) + colorkey].Alpha;
                 }
                 bmp.SetData(convertBuffer);
                 return bmp;
             }
             else
             {
-                Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Bgra5551); //cool, mongame has already BRGA 5551 mode!                
-                bmp.SetData(buffer, localTextureLocator, buffer.Length - localTextureLocator);
+                if (texture.bytesPerPixel == 2)
+                {
+                    //working code
+                    Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
+                    using (MemoryStream os = new MemoryStream((int)(ImageSizeBytes)))
+                    using (BinaryWriter bw = new BinaryWriter(os))
+                    {
+                        using (MemoryStream ms = new MemoryStream(buffer))
+                        using (BinaryReader br = new BinaryReader(ms))
+                        {
+                            ms.Seek(TextureLocator, SeekOrigin.Begin);
+                            while (ms.Position < ms.Length)
+                                bw.Write(FromPsColor(br.ReadUInt16()), 0, 4);
+                        }
+                        bmp.SetData(os.GetBuffer(), 0, (int)os.Length);
+                    }
+                    return bmp;
+                }
+                if (texture.bytesPerPixel == 3)
+                {
+                    // not tested but vincent tim had support for it so i guess it's possible RGB or
+                    // BGR is a thing.
+                    Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
+                    using (MemoryStream os = new MemoryStream((int)(ImageSizeBytes)))
+                    using (BinaryWriter bw = new BinaryWriter(os))
+                    {
+                        using (MemoryStream ms = new MemoryStream(buffer))
+                        using (BinaryReader br = new BinaryReader(ms))
+                        {
+                            ms.Seek(TextureLocator, SeekOrigin.Begin);
+                            while (ms.Position < ms.Length)
+                            {
+                                //RGB or BGR so might need to reorder things to RGB
+                                bw.Write(br.ReadBytes(3), 0, 3);
+                                //ALPHA
+                                bw.Write((byte)0xFF);
+                            }
+                        }
+                        bmp.SetData(os.GetBuffer(), 0, (int)os.Length);
+                    }
+                    return bmp;
+                }
 
-                return bmp;
+                return null;
             }
         }
+
+        /// <summary>
+        /// converts 16 bit color to 32bit with alpha. alpha needs to be set true manually per pixel
+        /// unless you know the color value.
+        /// </summary>
+        /// <param name="color">16 bit color</param>
+        /// <param name="useAlpha">area is visable or not</param>
+        /// <returns>byte[4] red green blue alpha, i think</returns>
+        /// <see cref="https://github.com/myst6re/vincent-tim/blob/master/PsColor.cpp"/>
+        public static byte[] FromPsColor(ushort color, bool useAlpha = false) => new byte[] { (byte)Math.Round((color & 31) * COEFF_COLOR), (byte)Math.Round(((color >> 5) & 31) * COEFF_COLOR), (byte)Math.Round(((color >> 10) & 31) * COEFF_COLOR), (byte)(color == 0 && useAlpha ? 0 : 255) };
+        #endregion Methods
+
+        #region Structs
+
+        /// <summary>
+        /// Contains Header info and Palette data of TEX file.
+        /// </summary>
+        /// <see cref="https://github.com/MaKiPL/FF8-Rinoa-s-Toolset/blob/master/SerahToolkit_SharpGL/FF8_Core/TEX.cs"/>
+        /// <seealso cref="https://github.com/myst6re/vincent-tim/blob/master/TexFile.h"/>
+        public struct Texture
+        {
+            #region Fields
+            /// <summary>
+            /// 0x68
+            /// </summary>
+            public byte bytesPerPixel;
+            /// <summary>
+            /// 0x40
+            /// </summary>
+            public uint Height;
+            /// <summary>
+            /// 0x30
+            /// </summary>
+            public byte NumOfPalettes;
+            /// <summary>
+            /// 0xF0 for ff8;0xEC for ff7; size = PaletteSize * 4;
+            /// </summary>
+            public byte[] paletteData;
+            /// <summary>
+            /// 0x4C
+            /// </summary>
+            public byte PaletteFlag;
+            /// <summary>
+            /// 0x58
+            /// </summary>
+            public uint PaletteSize;
+            /// <summary>
+            /// 0x3C
+            /// </summary>
+            public uint Width;
+            /// <summary>
+            /// 0x38
+            /// </summary>
+            public uint bitDepth;
+            /// <summary>
+            /// 0x34
+            /// </summary>
+            public uint NumOfColorsPerPalette;
+            /// <summary>
+            /// 0x00; 1=FF7 | 2=FF8
+            /// </summary>
+            public uint Version;
+
+            #endregion Fields
+        }
+
+        private struct Color
+        {
+            #region Fields
+
+            public byte Alpha;
+            public byte Blue;
+            public byte Green;
+            public byte Red;
+
+            #endregion Fields
+        }
+
+        #endregion Structs
     }
 }
