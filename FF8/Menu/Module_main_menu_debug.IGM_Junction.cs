@@ -1089,7 +1089,6 @@ namespace FF8
                 {
                     base.Init();
                     Cursor_Status |= Cursor_Status.Enabled;
-                    Cursor_Status |= Cursor_Status.Horizontal;
                     Cursor_Status |= Cursor_Status.Vertical;
                     Pages = Kernel_bin.Commandabilities.Count / rows;
                 }
@@ -1160,7 +1159,6 @@ namespace FF8
                     base.Init();
                     Enabled = false;
                     Cursor_Status |= Cursor_Status.Enabled;
-                    Cursor_Status |= Cursor_Status.Horizontal;
                     Cursor_Status |= Cursor_Status.Vertical;
                     Pages = Kernel_bin.EquipableAbilities.Count / rows;
                 }
