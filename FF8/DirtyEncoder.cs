@@ -5,7 +5,6 @@ using System.Text;
 
 namespace FF8
 {
-
     /// <summary>
     /// Goal is to improve conversion from FF8 byte[] to string and back. possible 0 to 4 ratio on
     /// special chracters.
@@ -298,15 +297,14 @@ namespace FF8
 
         #region Constructors
 
-
         public DirtyEncoding()
         {
             ChartoByte = BytetoChar.Reverse();
             StrtoByte = BytetoStr.Reverse();
             if (!ChartoByte.ContainsKey('{'))
-            ChartoByte.Add('{',0xB2);
+                ChartoByte.Add('{', 0xB2);
             if (!ChartoByte.ContainsKey('}'))
-            ChartoByte.Add('}',0xB3);
+                ChartoByte.Add('}', 0xB3);
 
             //reverse key and value pairs for dictionarys for the reverse lookup
             SpecialCharacters = new byte[256 - BytetoChar.Count() - BytetoStr.Count];

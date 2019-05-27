@@ -861,9 +861,9 @@ namespace FF8
                         {
                             if (CURSOR_SELECT >= i.Data.Count)
                             {
-                                if (i2.Data.Descriptions != null && i2.Data.Descriptions.ContainsKey(CURSOR_SELECT))
+                                if (i2.Data.Descriptions != null && i2.Data.Descriptions.ContainsKey(CURSOR_SELECT- i.Data.Count))
                                 {
-                                    ((IGMDataItem_Box)InGameMenu_Junction.Data[SectionName.Help].CONTAINER).Data = i2.Data.Descriptions[CURSOR_SELECT];
+                                    ((IGMDataItem_Box)InGameMenu_Junction.Data[SectionName.Help].CONTAINER).Data = i2.Data.Descriptions[CURSOR_SELECT- i.Data.Count];
                                 }
                             }
                             else
@@ -1056,7 +1056,7 @@ namespace FF8
                                     Kernel_bin.EquipableAbilities[Memory.State.Characters[(int)Character].Abilities[i]].Icon, 9,
                                     Kernel_bin.EquipableAbilities[Memory.State.Characters[(int)Character].Abilities[i]].Name,
                                     new Rectangle(SIZE[i].X + 40, SIZE[i].Y, 0, 0));
-                                    //Descriptions[i] = Kernel_bin.EquipableAbilities[Memory.State.Characters[(int)Character].Abilities[i]].Description;
+                                    Descriptions[i] = Kernel_bin.EquipableAbilities[Memory.State.Characters[(int)Character].Abilities[i]].Description.ReplaceRegion();
                                 }
                                 else
                                 {
