@@ -825,6 +825,7 @@ namespace FF8
                     base.Init();
                     Cursor_Status |= Cursor_Status.Enabled;
                     Enabled = false;
+                    CURSOR_SELECT = 1;
                 }
 
                 public override void ReInit()
@@ -844,7 +845,6 @@ namespace FF8
                         Array.Copy(i.Data.BLANKS, BLANKS, i.Data.Count);
                         Array.Copy(i2.Data.BLANKS, 0, BLANKS, i.Data.Count, i2.Data.Count);
                     }
-                    CURSOR_SELECT = 1;
                 }
 
                 public override bool Update()
@@ -861,9 +861,9 @@ namespace FF8
                         {
                             if (CURSOR_SELECT >= i.Data.Count)
                             {
-                                if (i2.Data.Descriptions != null && i2.Data.Descriptions.ContainsKey(CURSOR_SELECT- i.Data.Count))
+                                if (i2.Data.Descriptions != null && i2.Data.Descriptions.ContainsKey(CURSOR_SELECT - i.Data.Count))
                                 {
-                                    ((IGMDataItem_Box)InGameMenu_Junction.Data[SectionName.Help].CONTAINER).Data = i2.Data.Descriptions[CURSOR_SELECT- i.Data.Count];
+                                    ((IGMDataItem_Box)InGameMenu_Junction.Data[SectionName.Help].CONTAINER).Data = i2.Data.Descriptions[CURSOR_SELECT - i.Data.Count];
                                 }
                             }
                             else
@@ -1081,6 +1081,7 @@ namespace FF8
             {
                 public int Pages { get; private set; }
                 public int Page { get; private set; }
+                public Kernel_bin.Abilities[] Contents { get; private set; }
 
                 public IGMData_Abilities_CommandPool() : base(13, 1, new IGMDataItem_Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.COMMAND), 1, 11)
                 {
@@ -1091,9 +1092,213 @@ namespace FF8
                     base.Init();
                     Cursor_Status |= Cursor_Status.Enabled;
                     Cursor_Status |= Cursor_Status.Vertical;
-                    Pages = Kernel_bin.Commandabilities.Count / rows + (Kernel_bin.Commandabilities.Count % rows>0?1:0);
                     Page = 0;
 
+                    SIZE[11].X = X + 6;
+                    SIZE[11].Y = Y - SIZE[10].Height + Height - 2;
+                    SIZE[12].X = X + Width - 24;
+                    SIZE[12].Y = Y - SIZE[10].Height + Height - 2;
+                    Contents = new Kernel_bin.Abilities[rows];
+                }
+
+                public override void ReInit()
+                {
+                    base.ReInit();
+                    Pages = Kernel_bin.Commandabilities.Count / rows + (Kernel_bin.Commandabilities.Count % rows > 0 ? 1 : 0);
+                    ITEM[11, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Left, SIZE[11], 2, 7);
+                    ITEM[12, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right2, SIZE[12], 2, 7);
+                }
+                protected override void InitShift(int i, int col, int row)
+                {
+                    base.InitShift(i, col, row);
+                    SIZE[i].Inflate(-22, -8);
+                    SIZE[i].Offset(60, 12 + (-4 * row));
+                }
+
+                public override bool Inputs()
+                {
+                    bool ret = false;
+                    if (Pages >1 && CONTAINER.Pos.Contains(Input.MouseLocation.Transform(Focus)))
+                    {
+                        if (Input.Button(Buttons.MouseWheelup))
+                        {
+                            PAGE_PREV();
+                            ret = true;
+                        }
+                        else if (Input.Button(Buttons.MouseWheeldown))
+                        {
+                            PAGE_NEXT();
+                            ret = true;
+                        }
+                        if (ret)
+                        {
+                            Input.ResetInputLimit();
+                            if (!skipsnd)
+                                init_debugger_Audio.PlaySound(0);
+                            return ret;
+                        }
+                    }
+                    ret = base.Inputs();
+                    if (Pages > 1 && !ret)
+                    {
+                        if (Input.Button(Buttons.Left))
+                        {
+                            PAGE_PREV();
+                            ret = true;
+                        }
+                        else if (Input.Button(Buttons.Right))
+                        {
+                            PAGE_NEXT();
+                            ret = true;
+                        }
+                        if (ret)
+                        {
+                            Input.ResetInputLimit();
+                            if (!skipsnd)
+                                init_debugger_Audio.PlaySound(0);
+                        }
+                    }
+                    return ret;
+                }
+
+                private void PAGE_NEXT()
+                {
+                    Page++;
+                    if (Page >= Pages)
+                        Page = 0;
+                }
+
+                private void PAGE_PREV()
+                {
+                    Page--;
+                    if (Page < 0)
+                        Page = Pages - 1;
+                }
+
+                public override void Inputs_CANCEL()
+                {
+                    base.Inputs_CANCEL();
+                    InGameMenu_Junction.mode = Mode.Abilities;
+                }
+
+                public override void Inputs_OKAY()
+                {
+                    base.Inputs_OKAY();
+                    if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && !BLANKS[CURSOR_SELECT])
+                    {
+                        int target = InGameMenu_Junction.Data[SectionName.TopMenu_Abilities].CURSOR_SELECT - 1;
+                        Memory.State.Characters[(int)Character].Commands[target] = Contents[CURSOR_SELECT];
+                        skipsnd = true;
+                        Inputs_CANCEL();
+                        skipsnd = false;
+                        InGameMenu_Junction.Data[SectionName.TopMenu_Abilities].ReInit();
+                    }
+                }
+
+                public override bool Update()
+                {
+                    bool ret = base.Update();
+                    if (Pages == 1)
+                    { 
+                        ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.COMMAND;
+                        ITEM[11, 0] = ITEM[12, 0] = null;
+                    }
+                    else
+                        switch (Page)
+                        {
+                            case 0:
+                                ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.COMMAND_PG1;
+                                break;
+
+                            case 1:
+                                ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.COMMAND_PG2;
+                                break;
+                        }
+                    if (InGameMenu_Junction != null && InGameMenu_Junction.mode != Mode.Abilities_Commands)
+                        Cursor_Status &= ~Cursor_Status.Enabled;
+                    else
+                    {
+                        Cursor_Status |= Cursor_Status.Enabled;
+                    }
+                    int pos = 0;
+                    int skip = Page * rows;
+                    for (int i = 0;
+                        Memory.State.Characters != null &&
+                        i < Memory.State.Characters[(int)Character].UnlockedGFAbilities.Length &&
+                        pos < rows; i++)
+                    {
+                        if (Memory.State.Characters[(int)Character].UnlockedGFAbilities[i] != Kernel_bin.Abilities.None)
+                        {
+                            Kernel_bin.Abilities j = (Memory.State.Characters[(int)Character].UnlockedGFAbilities[i]);
+                            if (Kernel_bin.Commandabilities.ContainsKey(j) && skip-- <= 0)
+                            {
+                                Font.ColorID cid = Memory.State.Characters[(int)Character].Commands.Contains(j) ? Font.ColorID.Grey : Font.ColorID.White;
+                                BLANKS[pos] = cid == Font.ColorID.Grey ? true : false;
+                                ITEM[pos, 0] = new IGMDataItem_String(
+                                    Icons.ID.Ability_Command, 9,
+                                Kernel_bin.Commandabilities[j].Name,
+                                new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), cid);
+                                Contents[pos] = j;
+                                pos++;
+                            }
+                        }
+                    }
+                    for (; pos < rows; pos++)
+                    {
+                        ITEM[pos, 0] = null;
+                        BLANKS[pos] = true;
+                        Contents[pos] = Kernel_bin.Abilities.None;
+                    }
+
+                    if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && InGameMenu_Junction.mode == Mode.Abilities_Commands)
+                        ((IGMDataItem_Box)InGameMenu_Junction.Data[SectionName.Help].CONTAINER).Data = Kernel_bin.Commandabilities[Contents[CURSOR_SELECT]].Description.ReplaceRegion();
+                    if (Pages > 1)
+                    {
+                        if (Contents[0] == Kernel_bin.Abilities.None)
+                        {
+                            Pages = Page;
+                            PAGE_NEXT();
+                            return ret || Update();
+                        }
+                        else if (Contents[rows - 1] == Kernel_bin.Abilities.None)
+                            Pages = Page + 1;
+                    }
+                    return ret;
+                }
+            }
+
+            private class IGMData_Abilities_AbilityPool : IGMData
+            {
+                public int Pages { get; private set; }
+                public int Page { get; private set; }
+
+                public IGMData_Abilities_AbilityPool() : base(13, 1, new IGMDataItem_Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.ABILITY), 1, 11)
+                {
+                }
+
+                protected override void Init()
+                {
+                    base.Init();
+                    Enabled = false;
+                    Cursor_Status |= Cursor_Status.Enabled;
+                    Cursor_Status |= Cursor_Status.Vertical;
+                    Page = 0;
+
+                    SIZE[11].X = X + 6;
+                    SIZE[11].Y = Y - SIZE[10].Height + Height - 2;
+                    SIZE[12].X = X + Width - 24;
+                    SIZE[12].Y = Y - SIZE[10].Height + Height - 2;
+                    ITEM[11, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Left, SIZE[11], 2, 7);
+                    ITEM[12, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right2, SIZE[12], 2, 7);
+                    Contents = new Kernel_bin.Abilities[rows];
+                }
+
+                public override void ReInit()
+                {
+                    base.ReInit();
+                    Pages = Kernel_bin.EquipableAbilities.Count / rows + (Kernel_bin.EquipableAbilities.Count % rows > 0 ? 1 : 0);
+                    ITEM[11, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Left, SIZE[11], 2, 7);
+                    ITEM[12, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right2, SIZE[12], 2, 7);
                 }
 
                 protected override void InitShift(int i, int col, int row)
@@ -1102,19 +1307,50 @@ namespace FF8
                     SIZE[i].Inflate(-22, -8);
                     SIZE[i].Offset(60, 12 + (-4 * row));
                 }
+
                 public override bool Inputs()
                 {
-                    bool ret = base.Inputs();
-
-                    if (Input.Button(Buttons.Left))
+                    bool ret = false;
+                    if (CONTAINER.Pos.Contains(Input.MouseLocation.Transform(Focus)))
                     {
-                        PAGE_PREV();
-                        ret = true;
+                        if (Input.Button(Buttons.MouseWheelup))
+                        {
+                            PAGE_PREV();
+                            ret = true;
+                        }
+                        else if (Input.Button(Buttons.MouseWheeldown))
+                        {
+                            PAGE_NEXT();
+                            ret = true;
+                        }
+                        if (ret)
+                        {
+                            Input.ResetInputLimit();
+                            if (!skipsnd)
+                                init_debugger_Audio.PlaySound(0);
+                            return ret;
+                        }
                     }
-                    else if (Input.Button(Buttons.Right))
+                    ret = base.Inputs();
+                    if (!ret)
                     {
-                        PAGE_NEXT();
-                        ret = true;
+                        if (Input.Button(Buttons.Left))
+                        {
+                            PAGE_PREV();
+                            ret = true;
+                        }
+                        else if (Input.Button(Buttons.Right))
+                        {
+                            PAGE_NEXT();
+                            ret = true;
+                        }
+
+                        if (ret)
+                        {
+                            Input.ResetInputLimit();
+                            if (!skipsnd)
+                                init_debugger_Audio.PlaySound(0);
+                        }
                     }
 
                     return ret;
@@ -1140,146 +1376,50 @@ namespace FF8
                     InGameMenu_Junction.mode = Mode.Abilities;
                 }
 
+                public override void Inputs_OKAY()
+                {
+                    base.Inputs_OKAY();
+                    if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && !BLANKS[CURSOR_SELECT])
+                    {
+                        int target = InGameMenu_Junction.Data[SectionName.TopMenu_Abilities].CURSOR_SELECT - 4;
+                        Memory.State.Characters[(int)Character].Abilities[target] = Contents[CURSOR_SELECT];
+                        skipsnd = true;
+                        Inputs_CANCEL();
+                        skipsnd = false;
+                        InGameMenu_Junction.Data[SectionName.TopMenu_Abilities].ReInit();
+                    }
+                }
+
+                private Kernel_bin.Abilities[] Contents;
+
                 public override bool Update()
                 {
                     bool ret = base.Update();
-                    switch (Page)
+                    if (Pages == 1)
                     {
-                        case 0:
-                            ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.COMMAND_PG1;
-                            break;
-                        case 1:
-                            ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.COMMAND_PG2;
-                            break;
+                        ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.ABILITY;
+                        ITEM[11, 0] = ITEM[12, 0] = null;
                     }
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.mode != Mode.Abilities_Commands)
-                        Cursor_Status &= ~Cursor_Status.Enabled;
                     else
-                    {
-                        Cursor_Status |= Cursor_Status.Enabled;
-                    }
-                    int pos = 0;
-                    int skip = Page * rows;
-                    for (int i = 0;
-                        Memory.State.Characters != null &&
-                        i < Memory.State.Characters[(int)Character].UnlockedGFAbilities.Length &&
-                        pos < rows; i++)
-                    {
-                        if (Memory.State.Characters[(int)Character].UnlockedGFAbilities[i] != Kernel_bin.Abilities.None)
+                        switch (Page)
                         {
-                            Kernel_bin.Abilities j = (Memory.State.Characters[(int)Character].UnlockedGFAbilities[i]);
-                            if (Kernel_bin.Commandabilities.ContainsKey(j) && skip--<=0)
-                            {
-                                Font.ColorID cid = Memory.State.Characters[(int)Character].Commands.Contains(j) ? Font.ColorID.Grey : Font.ColorID.White;
-                                BLANKS[pos] = cid == Font.ColorID.Grey ? true : false;
-                                ITEM[pos, 0] = new IGMDataItem_String(
-                                    Icons.ID.Ability_Command, 9,
-                                Kernel_bin.Commandabilities[j].Name,
-                                new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0),cid);
-                                pos++;
-                            }
-                        }
-                    }
-                    for (; pos < rows; pos++)
-                    {
-                        ITEM[pos, 0] = null;
-                        BLANKS[pos] = true;
-                    }
+                            case 0:
+                                ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.ABILITY_PG1;
+                                break;
 
-                    return ret;
-                }
-            }
+                            case 1:
+                                ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.ABILITY_PG2;
+                                break;
 
-            private class IGMData_Abilities_AbilityPool : IGMData
-            {
-                public int Pages { get; private set; }
-                public int Page { get; private set; }
+                            case 2:
+                                ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.ABILITY_PG3;
+                                break;
 
-                public IGMData_Abilities_AbilityPool() : base(13, 1, new IGMDataItem_Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.ABILITY), 1, 11)
-                {
-                }
-
-                protected override void Init()
-                {
-                    base.Init();
-                    Enabled = false;
-                    Cursor_Status |= Cursor_Status.Enabled;
-                    Cursor_Status |= Cursor_Status.Vertical;
-                    Pages = Kernel_bin.EquipableAbilities.Count / rows + (Kernel_bin.EquipableAbilities.Count % rows > 0 ? 1 : 0);
-                    Page = 0;
-                }
-
-                protected override void InitShift(int i, int col, int row)
-                {
-                    base.InitShift(i, col, row);
-                    SIZE[i].Inflate(-22, -8);
-                    SIZE[i].Offset(60, 12 + (-4 * row));
-                }
-                public override bool Inputs()
-                {
-                    bool ret = base.Inputs();
-                    if (!ret)
-                    {
-                        if (Input.Button(Buttons.Left))
-                        {
-                            PAGE_PREV();
-                            ret = true;
-                        }
-                        else if (Input.Button(Buttons.Right))
-                        {
-                            PAGE_NEXT();
-                            ret = true;
+                            case 3:
+                                ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.ABILITY_PG4;
+                                break;
                         }
 
-                        if (ret)
-                        {
-                            Input.ResetInputLimit();
-                            init_debugger_Audio.PlaySound(0);
-                        }
-                    }
-
-                    return ret;
-                }
-
-                private void PAGE_NEXT()
-                {
-                    Page++;
-                    if (Page >= Pages)
-                        Page = 0;
-                }
-
-                private void PAGE_PREV()
-                {
-                    Page--;
-                    if (Page < 0)
-                        Page = Pages-1;
-                }
-
-                public override void Inputs_CANCEL()
-                {
-                    base.Inputs_CANCEL();
-                    InGameMenu_Junction.mode = Mode.Abilities;
-                }
-
-                public override bool Update()
-                {
-                    bool ret = base.Update();
-
-                    switch (Page)
-                    {
-                        case 0:
-                            ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.ABILITY_PG1;
-                            break;
-                        case 1:
-                            ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.ABILITY_PG2;
-                            break;
-                        case 2:
-                            ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.ABILITY_PG3;
-                            break;
-                        case 3:
-                            ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.ABILITY_PG4;
-                            break;
-                    }
                     if (InGameMenu_Junction != null && InGameMenu_Junction.mode != Mode.Abilities_Abilities)
                         Cursor_Status &= ~Cursor_Status.Enabled;
                     else
@@ -1293,10 +1433,10 @@ namespace FF8
                     {
                         if (Memory.State.Characters[(int)Character].UnlockedGFAbilities[i] != Kernel_bin.Abilities.None)
                         {
-                            var j = Memory.State.Characters[(int)Character].UnlockedGFAbilities[i];
+                            Kernel_bin.Abilities j = Memory.State.Characters[(int)Character].UnlockedGFAbilities[i];
                             if (Kernel_bin.EquipableAbilities.ContainsKey(j))
                             {
-                                if(skip>0)
+                                if (skip > 0)
                                 {
                                     skip--;
                                     continue;
@@ -1307,7 +1447,8 @@ namespace FF8
                                 ITEM[pos, 0] = new IGMDataItem_String(
                                     Kernel_bin.EquipableAbilities[j].Icon, 9,
                                 Kernel_bin.EquipableAbilities[j].Name,
-                                new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0),cid);
+                                new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), cid);
+                                Contents[pos] = j;
                                 pos++;
                             }
                         }
@@ -1316,8 +1457,21 @@ namespace FF8
                     {
                         ITEM[pos, 0] = null;
                         BLANKS[pos] = true;
+                        Contents[pos] = Kernel_bin.Abilities.None;
                     }
-
+                    if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && InGameMenu_Junction.mode == Mode.Abilities_Abilities)
+                        ((IGMDataItem_Box)InGameMenu_Junction.Data[SectionName.Help].CONTAINER).Data = Kernel_bin.EquipableAbilities[Contents[CURSOR_SELECT]].Description.ReplaceRegion();
+                    if (Pages > 1)
+                    {
+                        if (Contents[0] == Kernel_bin.Abilities.None)
+                        {
+                            Pages = Page;
+                            PAGE_NEXT();
+                            return ret || Update();
+                        }
+                        else if (Contents[rows - 1] == Kernel_bin.Abilities.None)
+                            Pages = Page + 1;
+                    }
                     return ret;
                 }
             }

@@ -865,6 +865,7 @@ namespace FF8
             public bool[] BLANKS;
             private int _cursor_select;
             private bool _enabled = true;
+            protected bool skipsnd = false;
 
             public IGMDataItem CONTAINER { get; protected set; }
 
@@ -1029,7 +1030,8 @@ namespace FF8
                     if (ret && !mouse)
                     {
                         Input.ResetInputLimit();
-                        init_debugger_Audio.PlaySound(0);
+                        if (!skipsnd)
+                            init_debugger_Audio.PlaySound(0);
                     }
                 }
                 return ret;
@@ -1038,13 +1040,15 @@ namespace FF8
             public virtual void Inputs_OKAY()
             {
                 Input.ResetInputLimit();
-                init_debugger_Audio.PlaySound(0);
+                if (!skipsnd)
+                    init_debugger_Audio.PlaySound(0);
             }
 
             public virtual void Inputs_CANCEL()
             {
                 Input.ResetInputLimit();
-                init_debugger_Audio.PlaySound(8);
+                if (!skipsnd)
+                    init_debugger_Audio.PlaySound(8);
             }
 
             protected virtual void InitShift(int i, int col, int row)
@@ -1071,9 +1075,9 @@ namespace FF8
                                 Width = Width / cols,
                                 Height = Height / rows,
                             };
-                            CURSOR[i].Y = (int)(SIZE[i].Y + SIZE[i].Height / 2 - 6 * TextScale.Y);
-                            CURSOR[i].X = SIZE[i].X;
                             InitShift(i, col, row);
+                            CURSOR[i].Y += (int)(SIZE[i].Y + SIZE[i].Height / 2 - 6 * TextScale.Y);
+                            CURSOR[i].X += SIZE[i].X;
                         }
                     }
                 }
