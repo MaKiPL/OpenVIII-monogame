@@ -16,7 +16,7 @@ namespace FF8
             
             public CharacterAbilityFlags Flags { get; private set; }
 
-            public void Read(BinaryReader br, int i)
+            public override void Read(BinaryReader br, int i)
             {
                 Icon = Icons.ID.Ability_Character2;
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);

@@ -17,7 +17,7 @@ namespace FF8
             public BitArray Flags { get; private set; }
             public byte[] Unknown0 { get; private set; }
 
-            public void Read(BinaryReader br, int i)
+            public override void Read(BinaryReader br, int i)
             {
                 Icon = Icons.ID.Ability_Party;
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);

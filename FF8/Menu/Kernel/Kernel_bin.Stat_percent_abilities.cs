@@ -19,7 +19,7 @@ namespace FF8
             public byte Value { get; private set; }
             public byte Unknown0 { get; private set; }
 
-            public void Read(BinaryReader br, int i)
+            public override void Read(BinaryReader br, int i)
             {
                 Icon = Icons.ID.Ability_Character;
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
