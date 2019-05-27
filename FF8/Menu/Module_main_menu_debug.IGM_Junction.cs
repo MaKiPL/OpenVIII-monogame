@@ -1080,6 +1080,7 @@ namespace FF8
             private class IGMData_Abilities_CommandPool : IGMData
             {
                 public int Pages { get; private set; }
+                public int Page { get; private set; }
 
                 public IGMData_Abilities_CommandPool() : base(13, 1, new IGMDataItem_Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.COMMAND), 1, 11)
                 {
@@ -1091,6 +1092,8 @@ namespace FF8
                     Cursor_Status |= Cursor_Status.Enabled;
                     Cursor_Status |= Cursor_Status.Vertical;
                     Pages = Kernel_bin.Commandabilities.Count / rows;
+                    Page = 0;
+
                 }
 
                 protected override void InitShift(int i, int col, int row)
@@ -1149,6 +1152,7 @@ namespace FF8
             private class IGMData_Abilities_AbilityPool : IGMData
             {
                 public int Pages { get; private set; }
+                public int Page { get; private set; }
 
                 public IGMData_Abilities_AbilityPool() : base(13, 1, new IGMDataItem_Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.ABILITY), 1, 11)
                 {
@@ -1161,6 +1165,7 @@ namespace FF8
                     Cursor_Status |= Cursor_Status.Enabled;
                     Cursor_Status |= Cursor_Status.Vertical;
                     Pages = Kernel_bin.EquipableAbilities.Count / rows;
+                    Page = 0;
                 }
 
                 protected override void InitShift(int i, int col, int row)
