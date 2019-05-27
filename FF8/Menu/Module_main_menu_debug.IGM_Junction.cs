@@ -1091,7 +1091,7 @@ namespace FF8
                     base.Init();
                     Cursor_Status |= Cursor_Status.Enabled;
                     Cursor_Status |= Cursor_Status.Vertical;
-                    Pages = Kernel_bin.Commandabilities.Count / rows;
+                    Pages = Kernel_bin.Commandabilities.Count / rows + (Kernel_bin.Commandabilities.Count % rows>0?1:0);
                     Page = 0;
 
                 }
@@ -1101,6 +1101,37 @@ namespace FF8
                     base.InitShift(i, col, row);
                     SIZE[i].Inflate(-22, -8);
                     SIZE[i].Offset(60, 12 + (-4 * row));
+                }
+                public override bool Inputs()
+                {
+                    bool ret = base.Inputs();
+
+                    if (Input.Button(Buttons.Left))
+                    {
+                        PAGE_PREV();
+                        ret = true;
+                    }
+                    else if (Input.Button(Buttons.Right))
+                    {
+                        PAGE_NEXT();
+                        ret = true;
+                    }
+
+                    return ret;
+                }
+
+                private void PAGE_NEXT()
+                {
+                    Page++;
+                    if (Page >= Pages)
+                        Page = 0;
+                }
+
+                private void PAGE_PREV()
+                {
+                    Page--;
+                    if (Page < 0)
+                        Page = Pages - 1;
                 }
 
                 public override void Inputs_CANCEL()
@@ -1112,7 +1143,15 @@ namespace FF8
                 public override bool Update()
                 {
                     bool ret = base.Update();
-
+                    switch (Page)
+                    {
+                        case 0:
+                            ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.COMMAND_PG1;
+                            break;
+                        case 1:
+                            ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.COMMAND_PG2;
+                            break;
+                    }
                     if (InGameMenu_Junction != null && InGameMenu_Junction.mode != Mode.Abilities_Commands)
                         Cursor_Status &= ~Cursor_Status.Enabled;
                     else
@@ -1120,6 +1159,7 @@ namespace FF8
                         Cursor_Status |= Cursor_Status.Enabled;
                     }
                     int pos = 0;
+                    int skip = Page * rows;
                     for (int i = 0;
                         Memory.State.Characters != null &&
                         i < Memory.State.Characters[(int)Character].UnlockedGFAbilities.Length &&
@@ -1128,13 +1168,14 @@ namespace FF8
                         if (Memory.State.Characters[(int)Character].UnlockedGFAbilities[i] != Kernel_bin.Abilities.None)
                         {
                             Kernel_bin.Abilities j = (Memory.State.Characters[(int)Character].UnlockedGFAbilities[i]);
-                            if (Kernel_bin.Commandabilities.ContainsKey(j))
+                            if (Kernel_bin.Commandabilities.ContainsKey(j) && skip--<=0)
                             {
+                                Font.ColorID cid = Memory.State.Characters[(int)Character].Commands.Contains(j) ? Font.ColorID.Grey : Font.ColorID.White;
+                                BLANKS[pos] = cid == Font.ColorID.Grey ? true : false;
                                 ITEM[pos, 0] = new IGMDataItem_String(
                                     Icons.ID.Ability_Command, 9,
                                 Kernel_bin.Commandabilities[j].Name,
-                                new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0));
-                                BLANKS[pos] = false;
+                                new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0),cid);
                                 pos++;
                             }
                         }
@@ -1164,7 +1205,7 @@ namespace FF8
                     Enabled = false;
                     Cursor_Status |= Cursor_Status.Enabled;
                     Cursor_Status |= Cursor_Status.Vertical;
-                    Pages = Kernel_bin.EquipableAbilities.Count / rows;
+                    Pages = Kernel_bin.EquipableAbilities.Count / rows + (Kernel_bin.EquipableAbilities.Count % rows > 0 ? 1 : 0);
                     Page = 0;
                 }
 
@@ -1173,6 +1214,45 @@ namespace FF8
                     base.InitShift(i, col, row);
                     SIZE[i].Inflate(-22, -8);
                     SIZE[i].Offset(60, 12 + (-4 * row));
+                }
+                public override bool Inputs()
+                {
+                    bool ret = base.Inputs();
+                    if (!ret)
+                    {
+                        if (Input.Button(Buttons.Left))
+                        {
+                            PAGE_PREV();
+                            ret = true;
+                        }
+                        else if (Input.Button(Buttons.Right))
+                        {
+                            PAGE_NEXT();
+                            ret = true;
+                        }
+
+                        if (ret)
+                        {
+                            Input.ResetInputLimit();
+                            init_debugger_Audio.PlaySound(0);
+                        }
+                    }
+
+                    return ret;
+                }
+
+                private void PAGE_NEXT()
+                {
+                    Page++;
+                    if (Page >= Pages)
+                        Page = 0;
+                }
+
+                private void PAGE_PREV()
+                {
+                    Page--;
+                    if (Page < 0)
+                        Page = Pages-1;
                 }
 
                 public override void Inputs_CANCEL()
@@ -1185,11 +1265,27 @@ namespace FF8
                 {
                     bool ret = base.Update();
 
+                    switch (Page)
+                    {
+                        case 0:
+                            ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.ABILITY_PG1;
+                            break;
+                        case 1:
+                            ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.ABILITY_PG2;
+                            break;
+                        case 2:
+                            ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.ABILITY_PG3;
+                            break;
+                        case 3:
+                            ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.ABILITY_PG4;
+                            break;
+                    }
                     if (InGameMenu_Junction != null && InGameMenu_Junction.mode != Mode.Abilities_Abilities)
                         Cursor_Status &= ~Cursor_Status.Enabled;
                     else
                         Cursor_Status |= Cursor_Status.Enabled;
                     int pos = 0;
+                    int skip = Page * rows;
                     for (int i = 0;
                         Memory.State.Characters != null &&
                         i < Memory.State.Characters[(int)Character].UnlockedGFAbilities.Length &&
@@ -1200,13 +1296,26 @@ namespace FF8
                             var j = Memory.State.Characters[(int)Character].UnlockedGFAbilities[i];
                             if (Kernel_bin.EquipableAbilities.ContainsKey(j))
                             {
+                                if(skip>0)
+                                {
+                                    skip--;
+                                    continue;
+                                }
+                                Font.ColorID cid = Memory.State.Characters[(int)Character].Abilities.Contains(j) ? Font.ColorID.Grey : Font.ColorID.White;
+                                BLANKS[pos] = cid == Font.ColorID.Grey ? true : false;
+
                                 ITEM[pos, 0] = new IGMDataItem_String(
                                     Kernel_bin.EquipableAbilities[j].Icon, 9,
                                 Kernel_bin.EquipableAbilities[j].Name,
-                                new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0));
+                                new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0),cid);
                                 pos++;
                             }
                         }
+                    }
+                    for (; pos < rows; pos++)
+                    {
+                        ITEM[pos, 0] = null;
+                        BLANKS[pos] = true;
                     }
 
                     return ret;
