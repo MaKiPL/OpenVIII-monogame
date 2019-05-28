@@ -1,0 +1,1374 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<file id=0 seek=228 length=312>
+	<string id=2 seek=19976>Attack</string>
+	<string id=3 seek=19983>Attack with equipped weapon</string>
+	<string id=4 seek=20008>Magic</string>
+	<string id=5 seek=20014>Cast magic</string>
+	<string id=6 seek=20024>GF</string>
+	<string id=7 seek=20027>Summons Guardian Force</string>
+	<string id=8 seek=20047>Item</string>
+	<string id=9 seek=20052>Use item</string>
+	<string id=10 seek=20060>Renzokuken</string>
+	<string id=11 seek=20071>Attack with Renzokuken</string>
+	<string id=12 seek=20093>Draw</string>
+	<string id=13 seek=20098>Draw magic</string>
+	<string id=14 seek=20108>Devour</string>
+	<string id=15 seek=20115>Devour monsters</string>
+	<string id=16 seek=20130>nomsg</string>
+	<string id=18 seek=20136>Cast</string>
+	<string id=19 seek=20141>Cast drawn magic</string>
+	<string id=20 seek=20157>Stock</string>
+	<string id=21 seek=20163>Stock drawn magic</string>
+	<string id=22 seek=20179>Duel</string>
+	<string id=23 seek=20184>Combat style attack</string>
+	<string id=24 seek=20203>Mug</string>
+	<string id=25 seek=20207>Attack and steal items</string>
+	<string id=26 seek=20229>nomsg</string>
+	<string id=28 seek=20235>Shot</string>
+	<string id=29 seek=20240>Use ammo to attack</string>
+	<string id=30 seek=20256>Blue Magic</string>
+	<string id=31 seek=20267>Use monster`s skill</string>
+	<string id=32 seek=20283>Slot</string>
+	<string id=33 seek=20288>Attack with magic chosen at random</string>
+	<string id=34 seek=20320>Fire Cross</string>
+	<string id=35 seek=20331>Attack with sword</string>
+	<string id=36 seek=20348>Sorcery</string>
+	<string id=37 seek=20356>Attack with magic</string>
+	<string id=38 seek=20372>Combine</string>
+	<string id=39 seek=20380>Call something</string>
+	<string id=40 seek=20393>Limit</string>
+	<string id=41 seek=20399>Attack with Limit Breaks</string>
+	<string id=42 seek=20422>Limit</string>
+	<string id=43 seek=20428>Attack with Limit Breaks</string>
+	<string id=44 seek=20451>Limit</string>
+	<string id=45 seek=20457>Attack with Limit Breaks</string>
+	<string id=46 seek=20480>Defend</string>
+	<string id=47 seek=20487>Reduce damage until next command</string>
+	<string id=48 seek=20514>Mad Rush</string>
+	<string id=49 seek=20523>Use Haste, Berserk, Protect on all</string>
+	<string id=50 seek=20555>Treatment</string>
+	<string id=51 seek=20565>Remove abnormal status</string>
+	<string id=52 seek=20586>Recover</string>
+	<string id=53 seek=20594>Restore HP</string>
+	<string id=54 seek=20602>Revive</string>
+	<string id=55 seek=20609>Remove KO</string>
+	<string id=56 seek=20618>Darkside</string>
+	<string id=57 seek=20627>Expend HP to attack</string>
+	<string id=58 seek=20645>Card</string>
+	<string id=59 seek=20650>Turn monsters into cards</string>
+	<string id=60 seek=20670>Doom</string>
+	<string id=61 seek=20675>Use Doom on one enemy</string>
+	<string id=62 seek=20692>Kamikaze</string>
+	<string id=63 seek=20701>Damage one enemy before getting KO`d</string>
+	<string id=64 seek=20730>Absorb</string>
+	<string id=65 seek=20737>Absorb HP</string>
+	<string id=66 seek=20746>LV Down</string>
+	<string id=67 seek=20754>Lower monster level</string>
+	<string id=68 seek=20773>LV Up</string>
+	<string id=69 seek=20779>Raise monster level</string>
+	<string id=70 seek=20797>Single</string>
+	<string id=71 seek=20804>Choose once</string>
+	<string id=72 seek=20814>Double</string>
+	<string id=73 seek=20821>Choose twice</string>
+	<string id=74 seek=20832>Triple</string>
+	<string id=75 seek=20839>Choose 3 times</string>
+	<string id=76 seek=20853>MiniMog</string>
+	<string id=77 seek=20861>Call MiniMog</string>
+</file>
+<file id=1 seek=540 length=3420>
+	<string id=2 seek=20872>Fire</string>
+	<string id=3 seek=20877>Fire magic damage/one enemy</string>
+	<string id=4 seek=20899>Fira</string>
+	<string id=5 seek=20904>Fire magic damage/one enemy</string>
+	<string id=6 seek=20926>Firaga</string>
+	<string id=7 seek=20933>Fire magic damage/one enemy</string>
+	<string id=8 seek=20955>Blizzard</string>
+	<string id=9 seek=20964>Ice magic damage/one enemy</string>
+	<string id=10 seek=20985>Blizzara</string>
+	<string id=11 seek=20994>Ice magic damage/one enemy</string>
+	<string id=12 seek=21015>Blizzaga</string>
+	<string id=13 seek=21024>Ice magic damage/one enemy</string>
+	<string id=14 seek=21045>Thunder</string>
+	<string id=15 seek=21053>Thunder magic damage/one enemy</string>
+	<string id=16 seek=21079>Thundara</string>
+	<string id=17 seek=21088>Thunder magic damage/one enemy</string>
+	<string id=18 seek=21114>Thundaga</string>
+	<string id=19 seek=21123>Thunder magic damage/one enemy</string>
+	<string id=20 seek=21149>Water</string>
+	<string id=21 seek=21155>Water magic damage/one enemy</string>
+	<string id=22 seek=21179>Aero</string>
+	<string id=23 seek=21184>Wind magic damage/one enemy</string>
+	<string id=24 seek=21206>Bio</string>
+	<string id=25 seek=21210>Poison damage + status change/one enemy</string>
+	<string id=26 seek=21243>Demi</string>
+	<string id=27 seek=21248>Magic to reduce one enemy`s HP by 1/4</string>
+	<string id=28 seek=21277>Holy</string>
+	<string id=29 seek=21282>Holy magic damage/one enemy</string>
+	<string id=30 seek=21305>Flare</string>
+	<string id=31 seek=21311>Non-elemental magic damage/one enemy</string>
+	<string id=32 seek=21340>Meteor</string>
+	<string id=33 seek=21347>Non-elemental magic damage/all enemies</string>
+	<string id=34 seek=21379>Quake</string>
+	<string id=35 seek=21385>Earth magic damage/all enemies</string>
+	<string id=36 seek=21411>Tornado</string>
+	<string id=37 seek=21419>Wind magic damage/all enemies</string>
+	<string id=38 seek=21444>Ultima</string>
+	<string id=39 seek=21451>Non-elemental magic damage/all enemies</string>
+	<string id=40 seek=21483>Apocalypse</string>
+	<string id=41 seek=21494>Non-elemental magic damage/all enemies</string>
+	<string id=42 seek=21526>Cure</string>
+	<string id=43 seek=21531>Restore HP</string>
+	<string id=44 seek=21539>Cura</string>
+	<string id=45 seek=21544>Restore HP</string>
+	<string id=46 seek=21552>Curaga</string>
+	<string id=47 seek=21559>Restore HP</string>
+	<string id=48 seek=21567>Life</string>
+	<string id=49 seek=21572>Revive from KO</string>
+	<string id=50 seek=21586>Full-life</string>
+	<string id=51 seek=21596>Restore HP fully, revive from KO</string>
+	<string id=52 seek=21623>Regen</string>
+	<string id=53 seek=21629>Restore HP at regular interval</string>
+	<string id=54 seek=21654>Esuna</string>
+	<string id=55 seek=21660>Remove abnormal status</string>
+	<string id=56 seek=21681>Dispel</string>
+	<string id=57 seek=21688>Remove magic effect</string>
+	<string id=58 seek=21705>Protect</string>
+	<string id=59 seek=21713>Reduce physical damage temporarily</string>
+	<string id=60 seek=21742>Shell</string>
+	<string id=61 seek=21748>Reduce magic damage temporarily</string>
+	<string id=62 seek=21774>Reflect</string>
+	<string id=63 seek=21782>Reflect magic temporarily</string>
+	<string id=64 seek=21804>Aura</string>
+	<string id=65 seek=21809>Able to use Limit Breaks more often</string>
+	<string id=66 seek=21839>Double</string>
+	<string id=67 seek=21846>Use magic successively</string>
+	<string id=68 seek=21867>Triple</string>
+	<string id=69 seek=21874>Able to use magic 3 times</string>
+	<string id=70 seek=21896>Haste</string>
+	<string id=71 seek=21902>Increases speed temporarily</string>
+	<string id=72 seek=21926>Slow</string>
+	<string id=73 seek=21931>Reduces speed temporarily</string>
+	<string id=74 seek=21954>Stop</string>
+	<string id=75 seek=21959>Stops temporarily</string>
+	<string id=76 seek=21973>Blind</string>
+	<string id=77 seek=21979>Cause Darkness</string>
+	<string id=78 seek=21991>Confuse</string>
+	<string id=79 seek=21999>Cause Confuse</string>
+	<string id=80 seek=22011>Sleep</string>
+	<string id=81 seek=22017>Cause Sleep</string>
+	<string id=82 seek=22028>Silence</string>
+	<string id=83 seek=22036>Cause Silence</string>
+	<string id=84 seek=22048>Break</string>
+	<string id=85 seek=22054>Cause Petrify</string>
+	<string id=86 seek=22067>Death</string>
+	<string id=87 seek=22073>Cause Death</string>
+	<string id=88 seek=22084>Drain</string>
+	<string id=89 seek=22090>Absorb HP</string>
+	<string id=90 seek=22099>Pain</string>
+	<string id=91 seek=22104>Cause Poison, Darkness, and Silence</string>
+	<string id=92 seek=22134>Berserk</string>
+	<string id=93 seek=22142>Cause Berserk</string>
+	<string id=94 seek=22155>Float</string>
+	<string id=95 seek=22161>Floats</string>
+	<string id=96 seek=22168>Zombie</string>
+	<string id=97 seek=22175>Cause Zombie</string>
+	<string id=98 seek=22187>Meltdown</string>
+	<string id=99 seek=22196>Non-elemental damage + make enemy Vit 0</string>
+	<string id=100 seek=22229>Scan</string>
+	<string id=101 seek=22234>Scan enemy`s HP and weakness</string>
+	<string id=102 seek=22258>Full-cure</string>
+	<string id=103 seek=22268>Restores HP and abnormal status to all</string>
+	<string id=104 seek=22299>Wall</string>
+	<string id=105 seek=22304>Shell and Protect on all party members</string>
+	<string id=106 seek=22339>Rapture</string>
+	<string id=107 seek=22347>Removes enemy</string>
+	<string id=108 seek=22359>Percent</string>
+	<string id=109 seek=22367>Put enemies near death</string>
+	<string id=110 seek=22386>Catastrophe</string>
+	<string id=111 seek=22398>Major damage to all enemies</string>
+	<string id=112 seek=22421>The End</string>
+	<string id=113 seek=22429>Defeats all enemies</string>
+</file>
+<file id=2 seek=3960 length=2112>
+	<string id=0 seek=22448>Thunder Storm</string>
+	<string id=1 seek=22462>Summons Thunder attack GF</string>
+	<string id=2 seek=22485>Diamond Dust</string>
+	<string id=3 seek=22498>Summons Ice attack GF</string>
+	<string id=4 seek=22516>Hell Fire</string>
+	<string id=5 seek=22526>Summons Fire attack GF</string>
+	<string id=6 seek=22545>Silent Voice</string>
+	<string id=7 seek=22558>Summons Silence+damage attack GF</string>
+	<string id=8 seek=22585>Brotherly Love</string>
+	<string id=9 seek=22600>Summons Earth attack GF</string>
+	<string id=10 seek=22620>Dark Messenger</string>
+	<string id=11 seek=22635>Summons non- elemental attack GF</string>
+	<string id=12 seek=22662>Ruby Light</string>
+	<string id=13 seek=22673>Summons Reflect magic GF</string>
+	<string id=14 seek=22693>Tsunami</string>
+	<string id=15 seek=22701>Summons Water attack GF</string>
+	<string id=16 seek=22722>Tornado Zone</string>
+	<string id=17 seek=22735>Summons Wind attack GF</string>
+	<string id=18 seek=22754>Counter Rockets</string>
+	<string id=19 seek=22770>Summons Double/Triple magic GF</string>
+	<string id=20 seek=22796>Holy Judgment</string>
+	<string id=21 seek=22810>Summons Holy attack GF</string>
+	<string id=22 seek=22830>Runaway Train</string>
+	<string id=23 seek=22844>Summons Poison attack GF</string>
+	<string id=24 seek=22865>Mega Flare</string>
+	<string id=25 seek=22876>Summons non-elemental attack GF</string>
+	<string id=26 seek=22902>1,000 Needles</string>
+	<string id=27 seek=22916>Summons non-elemental attack GF</string>
+	<string id=28 seek=22942>Chef`s Knife</string>
+	<string id=29 seek=22955>Summons non-elemental attack GF</string>
+	<string id=30 seek=22981>Eternal Breath</string>
+	<string id=31 seek=22996>Summons non-elemental attack GF</string>
+</file>
+<file id=3 seek=6072 length=7680>
+	<string id=5 seek=23024>Blade Slice</string>
+	<string id=6 seek=23036>Hind Kick</string>
+	<string id=7 seek=23046>Blade Shot</string>
+	<string id=8 seek=23057>Ray-Bomb</string>
+	<string id=9 seek=23066>Storm Breath</string>
+	<string id=10 seek=23079>Dark Mist</string>
+	<string id=11 seek=23089>Squeeze</string>
+	<string id=12 seek=23097>Clash</string>
+	<string id=13 seek=23103>Arm Crush</string>
+	<string id=15 seek=23113>Tail Needle</string>
+	<string id=16 seek=23125>Arm Slash</string>
+	<string id=17 seek=23135>Bad Breath</string>
+	<string id=19 seek=23146>Petrify Stare</string>
+	<string id=20 seek=23160>Vampire</string>
+	<string id=21 seek=23168>Poison Mist</string>
+	<string id=22 seek=23180>Counter Slice</string>
+	<string id=23 seek=23194>Counter Laser-Eye</string>
+	<string id=25 seek=23212>1,000 Needles</string>
+	<string id=26 seek=23226>Heartbreak</string>
+	<string id=27 seek=23237>Upward Kick</string>
+	<string id=28 seek=23249>Electric Discharge</string>
+	<string id=29 seek=23268>Petrify Stare</string>
+	<string id=31 seek=23282>Bite</string>
+	<string id=32 seek=23287>Poison Gas</string>
+	<string id=33 seek=23298>Poison Gas</string>
+	<string id=34 seek=23309>Poison Gas</string>
+	<string id=35 seek=23320>Acid</string>
+	<string id=36 seek=23325>Melt-Eye</string>
+	<string id=37 seek=23334>Breath</string>
+	<string id=38 seek=23341>Ice Breath</string>
+	<string id=39 seek=23352>Sand Storm</string>
+	<string id=48 seek=23363>Draw</string>
+	<string id=49 seek=23368>Earthquake</string>
+	<string id=53 seek=23379>Morph</string>
+	<string id=54 seek=23385>Arm Hug</string>
+	<string id=55 seek=23393>Power Bomb</string>
+	<string id=56 seek=23404>Dribble</string>
+	<string id=57 seek=23412>Shoot</string>
+	<string id=58 seek=23418>Ultrasonic Waves</string>
+	<string id=60 seek=23435>BiteBite</string>
+	<string id=61 seek=23444>Shotgun</string>
+	<string id=62 seek=23452>Suicide</string>
+	<string id=63 seek=23460>Ultrasonic Waves</string>
+	<string id=64 seek=23477>Breath of Death</string>
+	<string id=65 seek=23493>Disease Breath</string>
+	<string id=66 seek=23508>Sticky Icky</string>
+	<string id=67 seek=23520>Shoulder Charge</string>
+	<string id=68 seek=23536>Gatling Gun</string>
+	<string id=69 seek=23548>Cannon Blow</string>
+	<string id=70 seek=23560>Wild Cannon Blow</string>
+	<string id=71 seek=23577>Store</string>
+	<string id=72 seek=23583>Degenerator</string>
+	<string id=73 seek=23595>Telekinesis</string>
+	<string id=76 seek=23607>Hypnotize</string>
+	<string id=77 seek=23617>Gastric Juice</string>
+	<string id=80 seek=23631>Sand Storm</string>
+	<string id=84 seek=23642>Stare</string>
+	<string id=85 seek=23648>Sigh</string>
+	<string id=86 seek=23653>Curse</string>
+	<string id=93 seek=23659>Grab Punch</string>
+	<string id=94 seek=23670>Breath</string>
+	<string id=95 seek=23677>Double Sword</string>
+	<string id=96 seek=23690>Thrust</string>
+	<string id=97 seek=23697>Iai Blow</string>
+	<string id=98 seek=23706>Ultra Waves</string>
+	<string id=100 seek=23718>Sticky Web</string>
+	<string id=102 seek=23729>Breath</string>
+	<string id=103 seek=23736>Tail Blade</string>
+	<string id=106 seek=23747>Mega Spark</string>
+	<string id=107 seek=23758>Onrush</string>
+	<string id=110 seek=23765>Fart</string>
+	<string id=111 seek=23770>Needle</string>
+	<string id=112 seek=23777>Gastric Juice</string>
+	<string id=113 seek=23791>Sleeping Gas</string>
+	<string id=114 seek=23804>Breath</string>
+	<string id=118 seek=23811>Beam Cannon</string>
+	<string id=120 seek=23823>Magma Breath</string>
+	<string id=121 seek=23836>Resonance</string>
+	<string id=122 seek=23846>Blaster</string>
+	<string id=123 seek=23854>Blaster</string>
+	<string id=124 seek=23862>LV5 Death</string>
+	<string id=125 seek=23872>Death Claw</string>
+	<string id=126 seek=23883>Bear Hug</string>
+	<string id=127 seek=23892>Gas</string>
+	<string id=128 seek=23896>Explosion</string>
+	<string id=129 seek=23906>Explosion</string>
+	<string id=130 seek=23916>Explosion</string>
+	<string id=131 seek=23926>”Brrawghh!“</string>
+	<string id=133 seek=23938>Wind Blast</string>
+	<string id=135 seek=23949>Scan</string>
+	<string id=139 seek=23954>Beam Cannon</string>
+	<string id=146 seek=23966>Aqua Breath</string>
+	<string id=152 seek=23978>Evil-Eye</string>
+	<string id=153 seek=23987>Counter Twist</string>
+	<string id=154 seek=24001>Chain Gun</string>
+	<string id=155 seek=24011>Snipe Laser</string>
+	<string id=157 seek=24023>Melting Bubble</string>
+	<string id=158 seek=24038>Super Arm</string>
+	<string id=159 seek=24048>Boomerang Sword</string>
+	<string id=166 seek=24064>Grand Sword</string>
+	<string id=168 seek=24076>Psycho Blast</string>
+	<string id=169 seek=24089>Sticky Web</string>
+	<string id=174 seek=24100>Sand Shake</string>
+	<string id=175 seek=24111>Saliva</string>
+	<string id=176 seek=24118>Beam Laser</string>
+	<string id=177 seek=24129>Reflect Beam</string>
+	<string id=180 seek=24142>Oil Shot</string>
+	<string id=181 seek=24151>Oil Blast</string>
+	<string id=182 seek=24161>Sonic Wave</string>
+	<string id=183 seek=24172>Disolving Acid</string>
+	<string id=184 seek=24187>Bad Breath</string>
+	<string id=185 seek=24198>Eerie Sound Wave</string>
+	<string id=192 seek=24215>Ochu Dance</string>
+	<string id=193 seek=24226>Earthquake</string>
+	<string id=194 seek=24237>Drink Magic</string>
+	<string id=199 seek=24249>Assault Horn</string>
+	<string id=200 seek=24262>Ray-Bomb</string>
+	<string id=201 seek=24271>Micro Missiles</string>
+	<string id=204 seek=24286>Astral Punch</string>
+	<string id=210 seek=24299>Raijin Special</string>
+	<string id=213 seek=24314>Mad Cow Special</string>
+	<string id=214 seek=24330>Zan</string>
+	<string id=215 seek=24334>Metsu</string>
+	<string id=216 seek=24340>Sai</string>
+	<string id=220 seek=24344>Mower</string>
+	<string id=222 seek=24350>Chef`s Knife</string>
+	<string id=223 seek=24363>Everyone`s Grudge</string>
+	<string id=226 seek=24381>Junk</string>
+	<string id=227 seek=24386>It`s sharp!</string>
+	<string id=230 seek=24398>10,000 Needles</string>
+	<string id=231 seek=24413>Ker Plunk</string>
+	<string id=233 seek=24423>Storm Breath</string>
+	<string id=234 seek=24436>Mega Flare</string>
+	<string id=235 seek=24447>Barrier Change</string>
+	<string id=242 seek=24462>Thunder Summon</string>
+	<string id=243 seek=24477>Deadly Horn</string>
+	<string id=257 seek=24489>Gravija</string>
+	<string id=261 seek=24497>Magic Summon</string>
+	<string id=262 seek=24510>Mighty Guard</string>
+	<string id=263 seek=24523>Doom</string>
+	<string id=271 seek=24528>Thunder</string>
+	<string id=272 seek=24536>Thundara</string>
+	<string id=273 seek=24545>Thundaga</string>
+	<string id=274 seek=24554>Zantetsuken</string>
+	<string id=276 seek=24566>White Wind</string>
+	<string id=280 seek=24577>Charge</string>
+	<string id=281 seek=24584>Homing Laser</string>
+	<string id=282 seek=24597>Homing Laser</string>
+	<string id=283 seek=24610>Twin Homing Laser</string>
+	<string id=284 seek=24628>Corona</string>
+	<string id=285 seek=24635>Megido Flame</string>
+	<string id=292 seek=24648>Mega Pulse Cannon</string>
+	<string id=293 seek=24666>Mini Pulse Cannon</string>
+	<string id=295 seek=24684>Mighty Guard</string>
+	<string id=305 seek=24697>Dark Flare</string>
+	<string id=307 seek=24708>Soul Crush</string>
+	<string id=308 seek=24719>Light Pillar</string>
+	<string id=309 seek=24732>Gravija</string>
+	<string id=310 seek=24740>Megido Flame</string>
+	<string id=311 seek=24753>Terra Break</string>
+	<string id=314 seek=24765>Demon Slice</string>
+	<string id=315 seek=24777>Bloodfest</string>
+	<string id=316 seek=24787>Energy Bomber</string>
+	<string id=329 seek=24801>Zantetsuken</string>
+	<string id=338 seek=24813>Maelstrom</string>
+	<string id=357 seek=24823>Draw Apocalypse</string>
+	<string id=358 seek=24839>Hell`s Judgement</string>
+	<string id=359 seek=24856>Drain</string>
+	<string id=360 seek=24862>Great Attractor</string>
+	<string id=362 seek=24878>Shockwave Pulsar</string>
+	<string id=364 seek=24895>Esuna</string>
+	<string id=365 seek=24901>Maelstrom</string>
+	<string id=369 seek=24911>Vacuum Wave</string>
+	<string id=373 seek=24923>Apocalypse</string>
+	<string id=375 seek=24934>Gigantic Sword</string>
+	<string id=378 seek=24949>Ultima</string>
+	<string id=379 seek=24956>Holy</string>
+	<string id=380 seek=24961>Quake</string>
+	<string id=381 seek=24967>Tornado</string>
+	<string id=382 seek=24975>A382</string>
+	<string id=383 seek=24980>A383</string>
+</file>
+<file id=4 seek=13752 length=396>
+	<string id=0 seek=24988>Revolver</string>
+	<string id=1 seek=24997>Shear Trigger</string>
+	<string id=2 seek=25011>Cutting Trigger</string>
+	<string id=3 seek=25027>Flame Saber</string>
+	<string id=4 seek=25039>Twin Lance</string>
+	<string id=5 seek=25050>Punishment</string>
+	<string id=6 seek=25061>Lion Heart</string>
+	<string id=7 seek=25072>Metal Knuckle</string>
+	<string id=8 seek=25086>Maverick</string>
+	<string id=9 seek=25095>Gauntlet</string>
+	<string id=10 seek=25104>Ehrgeiz</string>
+	<string id=11 seek=25112>Valiant</string>
+	<string id=12 seek=25120>Ulysses</string>
+	<string id=13 seek=25128>Bismarck</string>
+	<string id=14 seek=25137>Exeter</string>
+	<string id=15 seek=25144>Chain Whip</string>
+	<string id=16 seek=25155>Slaying Tail</string>
+	<string id=17 seek=25168>Red Scorpion</string>
+	<string id=18 seek=25181>Save the Queen</string>
+	<string id=19 seek=25196>Pinwheel</string>
+	<string id=20 seek=25205>Valkyrie</string>
+	<string id=21 seek=25214>Rising Sun</string>
+	<string id=22 seek=25225>Cardinal</string>
+	<string id=23 seek=25234>Shooting Star</string>
+	<string id=24 seek=25248>Flail</string>
+	<string id=25 seek=25254>Morning Star</string>
+	<string id=26 seek=25267>Crescent Wish</string>
+	<string id=27 seek=25281>Strange Vision</string>
+	<string id=28 seek=25296>Hyperion</string>
+	<string id=29 seek=25305>None</string>
+	<string id=30 seek=25310>Machine Gun</string>
+	<string id=31 seek=25322>Katal</string>
+	<string id=32 seek=25328>Harpoon</string>
+</file>
+<file id=5 seek=14148 length=96>
+	<string id=0 seek=25336>Rough Divide</string>
+	<string id=1 seek=25349>Damage one enemy</string>
+	<string id=2 seek=25361>Fated Circle</string>
+	<string id=3 seek=25374>Damage all enemies</string>
+	<string id=4 seek=25389>Blasting Zone</string>
+	<string id=5 seek=25403>Damage all enemies</string>
+	<string id=6 seek=25418>Lion Heart</string>
+	<string id=7 seek=25429>Damage one enemy</string>
+</file>
+<file id=6 seek=14244 length=396>
+	<string id=1 seek=25444>Zell</string>
+	<string id=2 seek=25449>Irvine</string>
+	<string id=3 seek=25456>Quistis</string>
+	<string id=5 seek=25464>Selphie</string>
+	<string id=6 seek=25472>Seifer</string>
+	<string id=7 seek=25479>Edea</string>
+	<string id=8 seek=25484>Laguna</string>
+	<string id=9 seek=25491>Kiros</string>
+	<string id=10 seek=25497>Ward</string>
+</file>
+<file id=7 seek=14640 length=792>
+	<string id=2 seek=25504>Potion</string>
+	<string id=3 seek=25511>0xE33 HP by 200</string>
+	<string id=4 seek=25523>Potion+</string>
+	<string id=5 seek=25531>0xE33 HP by 400</string>
+	<string id=6 seek=25543>Hi-Potion</string>
+	<string id=7 seek=25553>0xE33 HP by 1000</string>
+	<string id=8 seek=25566>Hi-Potion+</string>
+	<string id=9 seek=25577>0xE33 HP by 2000</string>
+	<string id=10 seek=25590>X-Potion</string>
+	<string id=11 seek=25599>Fully 0xE33 HP</string>
+	<string id=12 seek=25609>Mega-Potion</string>
+	<string id=13 seek=25621>0xE33 HP by 1000 to all members</string>
+	<string id=14 seek=25647>Phoenix Down</string>
+	<string id=15 seek=25660>Removes KO 0xE34</string>
+	<string id=16 seek=25673>Mega Phoenix</string>
+	<string id=17 seek=25686>Removes KO 0xE34 from all members</string>
+	<string id=18 seek=25715>Elixir</string>
+	<string id=19 seek=25722>Fully restores abnormal status and HP</string>
+	<string id=20 seek=25752>Megalixir</string>
+	<string id=21 seek=25762>Fully restores abnormal status and HP to all</string>
+	<string id=22 seek=25797>Antidote</string>
+	<string id=23 seek=25806>Cures Poison</string>
+	<string id=24 seek=25816>Soft</string>
+	<string id=25 seek=25821>Cures Petrify</string>
+	<string id=26 seek=25833>Eye Drops</string>
+	<string id=27 seek=25843>Cures Darkness</string>
+	<string id=28 seek=25854>Echo Screen</string>
+	<string id=29 seek=25866>Cures Silence</string>
+	<string id=30 seek=25877>Holy Water</string>
+	<string id=31 seek=25888>Cures Zombie, Curse</string>
+	<string id=32 seek=25906>Remedy</string>
+	<string id=33 seek=25913>Cures abnormal 0xE34</string>
+	<string id=34 seek=25928>Remedy+</string>
+	<string id=35 seek=25936>Cures abnormal 0xE34 and 0xE37 effects</string>
+	<string id=36 seek=25965>Hero-trial</string>
+	<string id=37 seek=25976>Makes character invincible sometimes</string>
+	<string id=38 seek=26008>Hero</string>
+	<string id=39 seek=26013>Makes character invincible</string>
+	<string id=40 seek=26036>Holy War-trial</string>
+	<string id=41 seek=26051>Makes all party members invincible sometimes</string>
+	<string id=42 seek=26089>Holy War</string>
+	<string id=43 seek=26098>Makes all party members invincible</string>
+	<string id=44 seek=26127>Shell Stone</string>
+	<string id=45 seek=26139>Same effect as Shell</string>
+	<string id=46 seek=26156>Protect Stone</string>
+	<string id=47 seek=26170>Same effect as Protect</string>
+	<string id=48 seek=26190>Aura Stone</string>
+	<string id=49 seek=26201>Same effect as Aura</string>
+	<string id=50 seek=26218>Death Stone</string>
+	<string id=51 seek=26230>Same effect as Death</string>
+	<string id=52 seek=26248>Holy Stone</string>
+	<string id=53 seek=26259>Same effect as Holy</string>
+	<string id=54 seek=26276>Flare Stone</string>
+	<string id=55 seek=26288>Same effect as Flare</string>
+	<string id=56 seek=26305>Meteor Stone</string>
+	<string id=57 seek=26318>Same effect as Meteor</string>
+	<string id=58 seek=26337>Ultima Stone</string>
+	<string id=59 seek=26350>Same effect as Ultima</string>
+	<string id=60 seek=26369>Gysahl Greens</string>
+	<string id=61 seek=26383>Chocobo related...?</string>
+	<string id=62 seek=26401>Phoenix Pinion</string>
+	<string id=63 seek=26416>When used in battle...</string>
+	<string id=64 seek=26438>Friendship</string>
+	<string id=65 seek=26449>When used in battle...</string>
+</file>
+<file id=8 seek=15432 length=664>
+	<string id=0 seek=26472>Tent</string>
+	<string id=1 seek=26477>Fully restores abnormal status and HP to all</string>
+	<string id=2 seek=26512>Pet House</string>
+	<string id=3 seek=26522>0xE33 HP to all GF</string>
+	<string id=4 seek=26534>Cottage</string>
+	<string id=5 seek=26542>Same effect as Tent plus restores all GF</string>
+	<string id=6 seek=26572>G-Potion</string>
+	<string id=7 seek=26581>0xE33 200 HP to GF</string>
+	<string id=8 seek=26594>G-Hi-Potion</string>
+	<string id=9 seek=26606>0xE33 1000 HP to GF</string>
+	<string id=10 seek=26620>G-Mega-Potion</string>
+	<string id=11 seek=26634>0xE33 1000 HP to all GF</string>
+	<string id=12 seek=26651>G-Returner</string>
+	<string id=13 seek=26662>Revives GF from KO</string>
+	<string id=14 seek=26679>Rename Card</string>
+	<string id=15 seek=26691>Changes GF`s name</string>
+	<string id=16 seek=26706>Amnesia Greens</string>
+	<string id=17 seek=26721>Makes GF forget an 0xE36</string>
+	<string id=18 seek=26741>HP-J Scroll</string>
+	<string id=19 seek=26753>GF 0xE35 HP-J 0xE36</string>
+	<string id=20 seek=26765>Str-J Scroll</string>
+	<string id=21 seek=26778>GF 0xE35 Str-J 0xE36</string>
+	<string id=22 seek=26791>Vit-J Scroll</string>
+	<string id=23 seek=26804>GF 0xE35 Vit-J 0xE36</string>
+	<string id=24 seek=26818>Mag-J Scroll</string>
+	<string id=25 seek=26831>GF 0xE35 Mag-J 0xE36</string>
+	<string id=26 seek=26844>Spr-J Scroll</string>
+	<string id=27 seek=26857>GF 0xE35 Spr-J 0xE36</string>
+	<string id=28 seek=26870>Spd-J Scroll</string>
+	<string id=29 seek=26883>GF 0xE35 Spd-J 0xE36</string>
+	<string id=30 seek=26896>Luck-J Scroll</string>
+	<string id=31 seek=26910>GF 0xE35 Luck-J 0xE36</string>
+	<string id=32 seek=26925>Aegis Amulet</string>
+	<string id=33 seek=26938>GF 0xE35 Eva-J 0xE36</string>
+	<string id=34 seek=26952>Elem Atk</string>
+	<string id=35 seek=26961>GF 0xE35 Elem-Atk-J 0xE36</string>
+	<string id=36 seek=26980>Elem Guard</string>
+	<string id=37 seek=26991>GF 0xE35 Elem-Defx4 0xE36</string>
+	<string id=38 seek=27009>Status Atk</string>
+	<string id=39 seek=27020>GF 0xE35 ST-Atk-J 0xE36</string>
+	<string id=40 seek=27036>Status Guard</string>
+	<string id=41 seek=27049>GF 0xE35 ST-Defx4 0xE36</string>
+	<string id=42 seek=27064>Rosetta Stone</string>
+	<string id=43 seek=27078>GF 0xE35 0xE36x4 0xE36</string>
+	<string id=44 seek=27091>Magic Scroll</string>
+	<string id=45 seek=27104>GF 0xE35 0xE37 0xE36</string>
+	<string id=46 seek=27115>GF Scroll</string>
+	<string id=47 seek=27125>GF 0xE35 GF 0xE36</string>
+	<string id=48 seek=27135>Draw Scroll</string>
+	<string id=49 seek=27147>GF 0xE35 Draw 0xE36</string>
+	<string id=50 seek=27160>Item Scroll</string>
+	<string id=51 seek=27172>GF 0xE35 Item 0xE36</string>
+	<string id=52 seek=27185>Gambler Spirit</string>
+	<string id=53 seek=27200>GF 0xE35 Card 0xE36</string>
+	<string id=54 seek=27212>Healing Ring</string>
+	<string id=55 seek=27225>GF 0xE35 Recover 0xE36</string>
+	<string id=56 seek=27241>Phoenix Spirit</string>
+	<string id=57 seek=27256>GF 0xE35 Revive 0xE36</string>
+	<string id=58 seek=27270>Med Kit</string>
+	<string id=59 seek=27278>GF 0xE35 Treatment 0xE36</string>
+	<string id=60 seek=27294>Bomb Spirit</string>
+	<string id=61 seek=27306>GF 0xE35 Kamikaze 0xE36</string>
+	<string id=62 seek=27322>Hungry Cookpot</string>
+	<string id=63 seek=27337>GF 0xE35 Devour 0xE36</string>
+	<string id=64 seek=27352>Mog`s Amulet</string>
+	<string id=65 seek=27365>GF 0xE35 MiniMog 0xE36</string>
+	<string id=66 seek=27380>Steel Pipe</string>
+	<string id=67 seek=27391>GF 0xE35 SumMag+10% 0xE36</string>
+	<string id=68 seek=27408>Star Fragment</string>
+	<string id=69 seek=27422>GF 0xE35 SumMag+20% 0xE36</string>
+	<string id=70 seek=27439>Energy Crystal</string>
+	<string id=71 seek=27454>GF 0xE35 SumMag+30% 0xE36</string>
+	<string id=72 seek=27471>Samantha Soul</string>
+	<string id=73 seek=27485>GF 0xE35 SumMag+40% 0xE36</string>
+	<string id=74 seek=27502>Healing Mail</string>
+	<string id=75 seek=27515>GF 0xE35 GFHP+10% 0xE36</string>
+	<string id=76 seek=27530>Silver Mail</string>
+	<string id=77 seek=27542>GF 0xE35 GFHP+20% 0xE36</string>
+	<string id=78 seek=27557>Gold Armor</string>
+	<string id=79 seek=27568>GF 0xE35 GFHP+30% 0xE36</string>
+	<string id=80 seek=27583>Diamond Armor</string>
+	<string id=81 seek=27597>GF 0xE35 GFHP+40% 0xE36</string>
+	<string id=82 seek=27612>Regen Ring</string>
+	<string id=83 seek=27623>GF 0xE35 HP+20% 0xE36</string>
+	<string id=84 seek=27637>Giant`s Ring</string>
+	<string id=85 seek=27650>GF 0xE35 HP+40% 0xE36</string>
+	<string id=86 seek=27664>Gaea`s Ring</string>
+	<string id=87 seek=27676>GF 0xE35 HP+80% 0xE36</string>
+	<string id=88 seek=27690>Strength Love</string>
+	<string id=89 seek=27704>GF 0xE35 Str+20% 0xE36</string>
+	<string id=90 seek=27719>Power Wrist</string>
+	<string id=91 seek=27731>GF 0xE35 Str+40% 0xE36</string>
+	<string id=92 seek=27746>Hyper Wrist</string>
+	<string id=93 seek=27758>GF 0xE35 Str+60% 0xE36</string>
+	<string id=94 seek=27773>Turtle Shell</string>
+	<string id=95 seek=27786>GF 0xE35 Vit+20% 0xE36</string>
+	<string id=96 seek=27802>Orihalcon</string>
+	<string id=97 seek=27812>GF 0xE35 Vit+40% 0xE36</string>
+	<string id=98 seek=27828>Adamantine</string>
+	<string id=99 seek=27839>GF 0xE35 Vit+60% 0xE36</string>
+	<string id=100 seek=27855>Rune Armlet</string>
+	<string id=101 seek=27867>GF 0xE35 Spr+20% 0xE36</string>
+	<string id=102 seek=27882>Force Armlet</string>
+	<string id=103 seek=27895>GF 0xE35 Spr+40% 0xE36</string>
+	<string id=104 seek=27910>Magic Armlet</string>
+	<string id=105 seek=27923>GF 0xE35 Spr+60% 0xE36</string>
+	<string id=106 seek=27938>Circlet</string>
+	<string id=107 seek=27946>GF 0xE35 Mag+20% 0xE36</string>
+	<string id=108 seek=27961>Hypno Crown</string>
+	<string id=109 seek=27973>GF 0xE35 Mag+40% 0xE36</string>
+	<string id=110 seek=27988>Royal Crown</string>
+	<string id=111 seek=28000>GF 0xE35 Mag+60% 0xE36</string>
+	<string id=112 seek=28015>Jet Engine</string>
+	<string id=113 seek=28026>GF 0xE35 Spd+20% 0xE36</string>
+	<string id=114 seek=28041>Rocket Engine</string>
+	<string id=115 seek=28055>GF 0xE35 Spd+40% 0xE36</string>
+	<string id=116 seek=28070>Moon Curtain</string>
+	<string id=117 seek=28083>GF 0xE35 Auto-Shell 0xE36</string>
+	<string id=118 seek=28100>Steel Curtain</string>
+	<string id=119 seek=28114>GF 0xE35 Auto-Protect 0xE36</string>
+	<string id=120 seek=28134>Glow Curtain</string>
+	<string id=121 seek=28147>GF 0xE35 Auto-Reflect 0xE36</string>
+	<string id=122 seek=28166>Accelerator</string>
+	<string id=123 seek=28178>GF 0xE35 Auto-Haste 0xE36</string>
+	<string id=124 seek=28195>Monk`s Code</string>
+	<string id=125 seek=28207>GF 0xE35 Counter 0xE36</string>
+	<string id=126 seek=28222>Knight`s Code</string>
+	<string id=127 seek=28236>GF 0xE35 Cover 0xE36</string>
+	<string id=128 seek=28250>Doc`s Code</string>
+	<string id=129 seek=28261>GF 0xE35 Med Data 0xE36</string>
+	<string id=130 seek=28278>Hundred Needles</string>
+	<string id=131 seek=28294>GF 0xE35 Return Damage 0xE36</string>
+	<string id=132 seek=28314>Three Stars</string>
+	<string id=133 seek=28326>GF 0xE35 Expendx3-1 0xE36</string>
+	<string id=134 seek=28345>Ribbon</string>
+	<string id=135 seek=28352>GF 0xE35 Ribbon 0xE36</string>
+	<string id=136 seek=28366>Normal Ammo</string>
+	<string id=137 seek=28378>Normal Ammo</string>
+	<string id=138 seek=28389>Shotgun Ammo</string>
+	<string id=139 seek=28402>Ammo that attacks all opponents</string>
+	<string id=140 seek=28429>Dark Ammo</string>
+	<string id=141 seek=28439>Ammo with 0xE34 changing effect</string>
+	<string id=142 seek=28464>Fire Ammo</string>
+	<string id=143 seek=28474>Ammo with Fire element</string>
+	<string id=144 seek=28493>Demolition Ammo</string>
+	<string id=145 seek=28509>Ammo 3 times more powerful than Normal Ammo</string>
+	<string id=146 seek=28548>Fast Ammo</string>
+	<string id=147 seek=28558>Ammo for rapid fire</string>
+	<string id=148 seek=28574>AP Ammo</string>
+	<string id=149 seek=28582>Armor-piercing ammo</string>
+	<string id=150 seek=28601>Pulse Ammo</string>
+	<string id=151 seek=28612>Ammo that contains powerful energy</string>
+	<string id=152 seek=28641>M-Stone Piece</string>
+	<string id=153 seek=28655>Stone with a little 0xE37 power</string>
+	<string id=154 seek=28680>Magic Stone</string>
+	<string id=155 seek=28692>Stone with 0xE37 power</string>
+	<string id=156 seek=28709>Wizard Stone</string>
+	<string id=157 seek=28722>Stone with strong 0xE37 power</string>
+	<string id=158 seek=28745>Ochu Tentacle</string>
+	<string id=159 seek=28759>Strong, flexible tentacle</string>
+	<string id=160 seek=28782>Healing Water</string>
+	<string id=161 seek=28796>Water with life force</string>
+	<string id=162 seek=28816>Cockatrice Pinion</string>
+	<string id=163 seek=28834>Feather with petrifying power</string>
+	<string id=164 seek=28862>Zombie Powder</string>
+	<string id=165 seek=28876>Powder with Zombie effect</string>
+	<string id=166 seek=28899>Lightweight</string>
+	<string id=167 seek=28911>Shoes to make you light on your feet</string>
+	<string id=168 seek=28944>Sharp Spike</string>
+	<string id=169 seek=28956>Long, sharp claw</string>
+	<string id=170 seek=28971>Screw</string>
+	<string id=171 seek=28977>Use to remodel weapons</string>
+	<string id=172 seek=28995>Saw Blade</string>
+	<string id=173 seek=29005>Serrated blade</string>
+	<string id=174 seek=29020>Mesmerize Blade</string>
+	<string id=175 seek=29036>Long, sharp blade</string>
+	<string id=176 seek=29052>Vampire Fang</string>
+	<string id=177 seek=29065>Fang that makes Vampire attack</string>
+	<string id=178 seek=29094>Fury Fragment</string>
+	<string id=179 seek=29108>Stone that contains morale</string>
+	<string id=180 seek=29130>Betrayal Sword</string>
+	<string id=181 seek=29145>Sword that betrays allies</string>
+	<string id=182 seek=29169>Sleep Powder</string>
+	<string id=183 seek=29182>Induces sleep</string>
+	<string id=184 seek=29195>Life Ring</string>
+	<string id=185 seek=29205>Ring with life force</string>
+	<string id=186 seek=29223>Dragon Fang</string>
+	<string id=187 seek=29235>Dragon`s fang with recovery force</string>
+	<string id=188 seek=29264>Spider Web</string>
+	<string id=189 seek=29275>Quistis can learn Blue Magic, Ultra Waves</string>
+	<string id=190 seek=29313>Coral Fragment</string>
+	<string id=191 seek=29328>Quistis can learn Blue Magic, Electrocute</string>
+	<string id=192 seek=29366>Curse Spike</string>
+	<string id=193 seek=29378>Quistis can learn Blue Magic, LV?Death</string>
+	<string id=194 seek=29413>Black Hole</string>
+	<string id=195 seek=29424>Quistis can learn Blue Magic, Degenerator</string>
+	<string id=196 seek=29460>Water Crystal</string>
+	<string id=197 seek=29474>Quistis can learn Blue Magic, Aqua Breath</string>
+	<string id=198 seek=29511>Missile</string>
+	<string id=199 seek=29519>Quistis can learn Blue Magic, Micro Missiles</string>
+	<string id=200 seek=29558>Mystery Fluid</string>
+	<string id=201 seek=29572>Quistis can learn Blue Magic, Acid</string>
+	<string id=202 seek=29603>Running Fire</string>
+	<string id=203 seek=29616>Quistis can learn Blue Magic, Gatling Gun</string>
+	<string id=204 seek=29653>Inferno Fang</string>
+	<string id=205 seek=29666>Quistis can learn Blue Magic, Fire Breath</string>
+	<string id=206 seek=29702>Malboro Tentacle</string>
+	<string id=207 seek=29719>Quistis can learn Blue Magic, Bad Breath</string>
+	<string id=208 seek=29755>Whisper</string>
+	<string id=209 seek=29763>Quistis can learn Blue Magic, White Wind</string>
+	<string id=210 seek=29798>Laser Cannon</string>
+	<string id=211 seek=29811>Quistis can learn Blue Magic, Homing Laser</string>
+	<string id=212 seek=29849>Barrier</string>
+	<string id=213 seek=29857>Quistis can learn Blue Magic, Mighty Guard</string>
+	<string id=214 seek=29895>Power Generator</string>
+	<string id=215 seek=29911>Quistis can learn Blue Magic, Ray-Bomb</string>
+	<string id=216 seek=29946>Dark Matter</string>
+	<string id=217 seek=29958>Quistis can learn Blue Magic, Shockwave Pulsar</string>
+	<string id=218 seek=29998>Bomb Fragment</string>
+	<string id=219 seek=30012>Stone with Fire element</string>
+	<string id=220 seek=30031>Red Fang</string>
+	<string id=221 seek=30040>Dragon`s fang with Fire element</string>
+	<string id=222 seek=30066>Arctic Wind</string>
+	<string id=223 seek=30078>Contains Ice element wind</string>
+	<string id=224 seek=30097>North Wind</string>
+	<string id=225 seek=30108>Contains strong Ice element wind</string>
+	<string id=226 seek=30133>Dynamo Stone</string>
+	<string id=227 seek=30146>Stone with Thunder element</string>
+	<string id=228 seek=30169>Shear Feather</string>
+	<string id=229 seek=30183>Bird`s feather that flies on wind</string>
+	<string id=230 seek=30212>Venom Fang</string>
+	<string id=231 seek=30223>Poisonous monster fang</string>
+	<string id=232 seek=30243>Steel Orb</string>
+	<string id=233 seek=30253>Steel orb with gravitational power</string>
+	<string id=234 seek=30284>Moon Stone</string>
+	<string id=235 seek=30295>Holy moon stone with monsters living inside</string>
+	<string id=236 seek=30331>Dino Bone</string>
+	<string id=237 seek=30341>Large dinosaur bone</string>
+	<string id=238 seek=30357>Windmill</string>
+	<string id=239 seek=30366>Windmill containing wind energy</string>
+	<string id=240 seek=30389>Dragon Skin</string>
+	<string id=241 seek=30401>Durable dragon skin</string>
+	<string id=242 seek=30417>Fish Fin</string>
+	<string id=243 seek=30426>Fish`s fin</string>
+	<string id=244 seek=30435>Dragon Fin</string>
+	<string id=245 seek=30446>Very hard dragon`s scale</string>
+	<string id=246 seek=30467>Silence Powder</string>
+	<string id=247 seek=30482>Powder containing Silence</string>
+	<string id=248 seek=30503>Poison Powder</string>
+	<string id=249 seek=30517>Powder containing Poison</string>
+	<string id=250 seek=30538>Dead Spirit</string>
+	<string id=251 seek=30550>Contains Death</string>
+	<string id=252 seek=30562>Chef`s Knife</string>
+	<string id=253 seek=30575>Tonberry`s knife</string>
+	<string id=254 seek=30590>Cactus Thorn</string>
+	<string id=255 seek=30603>Cactuar`s thorn</string>
+	<string id=256 seek=30617>Shaman Stone</string>
+	<string id=257 seek=30630>Stone with mystical power</string>
+	<string id=258 seek=30652>Fuel</string>
+	<string id=259 seek=30657>Fuel for a rental car</string>
+	<string id=260 seek=30674>Girl Next Door</string>
+	<string id=261 seek=30689>Naughty 0xE3C</string>
+	<string id=262 seek=30700>Sorceress` Letter</string>
+	<string id=263 seek=30718>Edea`s introduction letter</string>
+	<string id=264 seek=30742>Chocobo`s Tag</string>
+	<string id=265 seek=30756>Changes Chocobo`s name</string>
+	<string id=266 seek=30777>Pet Nametag</string>
+	<string id=267 seek=30789>Changes pet`s name</string>
+	<string id=268 seek=30806>Solomon Ring</string>
+	<string id=269 seek=30819>Mysterious old ring</string>
+	<string id=270 seek=30836>Magical Lamp</string>
+	<string id=271 seek=30849>You should Save your game before using it!</string>
+	<string id=272 seek=30886>HP Up</string>
+	<string id=273 seek=30892>0xE3A HP</string>
+	<string id=274 seek=30897>Str Up</string>
+	<string id=275 seek=30904>0xE3A Strength</string>
+	<string id=276 seek=30914>Vit Up</string>
+	<string id=277 seek=30921>0xE3A Vitality</string>
+	<string id=278 seek=30933>Mag Up</string>
+	<string id=279 seek=30940>0xE3A 0xE37</string>
+	<string id=280 seek=30946>Spr Up</string>
+	<string id=281 seek=30953>0xE3A Spirit</string>
+	<string id=282 seek=30962>Spd Up</string>
+	<string id=283 seek=30969>0xE3A Speed</string>
+	<string id=284 seek=30977>Luck Up</string>
+	<string id=285 seek=30985>0xE3A Luck</string>
+	<string id=286 seek=30993>LuvLuv G</string>
+	<string id=287 seek=31002>0xE3A compatibility with all GF</string>
+	<string id=288 seek=31027>Weapons Mon 1st</string>
+	<string id=289 seek=31043>Weapons research 0xE3C</string>
+	<string id=290 seek=31059>Weapons Mon Mar</string>
+	<string id=291 seek=31075>Weapons research 0xE3C</string>
+	<string id=292 seek=31091>Weapons Mon Apr</string>
+	<string id=293 seek=31107>Weapons research 0xE3C</string>
+	<string id=294 seek=31123>Weapons Mon May</string>
+	<string id=295 seek=31139>Weapons research 0xE3C</string>
+	<string id=296 seek=31155>Weapons Mon Jun</string>
+	<string id=297 seek=31171>Weapons research 0xE3C</string>
+	<string id=298 seek=31187>Weapons Mon Jul</string>
+	<string id=299 seek=31203>Weapons research 0xE3C</string>
+	<string id=300 seek=31219>Weapons Mon Aug</string>
+	<string id=301 seek=31235>Weapons research 0xE3C</string>
+	<string id=302 seek=31251>Combat King 001</string>
+	<string id=303 seek=31267>0xE3C for fighters</string>
+	<string id=304 seek=31282>Combat King 002</string>
+	<string id=305 seek=31298>0xE3C for fighters</string>
+	<string id=306 seek=31313>Combat King 003</string>
+	<string id=307 seek=31329>0xE3C for fighters</string>
+	<string id=308 seek=31344>Combat King 004</string>
+	<string id=309 seek=31360>0xE3C for fighters</string>
+	<string id=310 seek=31375>Combat King 005</string>
+	<string id=311 seek=31391>0xE3C for fighters</string>
+	<string id=312 seek=31406>Pet Pals Vol.1</string>
+	<string id=313 seek=31421>0xE3C for dog lovers</string>
+	<string id=314 seek=31439>Pet Pals Vol.2</string>
+	<string id=315 seek=31454>0xE3C for dog lovers</string>
+	<string id=316 seek=31472>Pet Pals Vol.3</string>
+	<string id=317 seek=31487>0xE3C for dog lovers</string>
+	<string id=318 seek=31505>Pet Pals Vol.4</string>
+	<string id=319 seek=31520>0xE3C for dog lovers</string>
+	<string id=320 seek=31538>Pet Pals Vol.5</string>
+	<string id=321 seek=31553>0xE3C for dog lovers</string>
+	<string id=322 seek=31571>Pet Pals Vol.6</string>
+	<string id=323 seek=31586>0xE3C for dog lovers</string>
+	<string id=324 seek=31604>Occult Fan I</string>
+	<string id=325 seek=31617>World`s Mysteries 0xE3C  Scoop Issue</string>
+	<string id=326 seek=31648>Occult Fan II</string>
+	<string id=327 seek=31662>World`s Mysteries 0xE3C  Photo Issue</string>
+	<string id=328 seek=31693>Occult Fan III</string>
+	<string id=329 seek=31708>World`s Mysteries 0xE3C  0xE37 Issue</string>
+	<string id=330 seek=31737>Occult Fan IV</string>
+	<string id=331 seek=31751>World`s Mysteries 0xE3C  Report Issue</string>
+</file>
+<file id=9 seek=16096 length=320>
+	<string id=0 seek=31784>Zantetsuken</string>
+	<string id=1 seek=31796>Rebirth Flame</string>
+	<string id=2 seek=31810>ChocoFire</string>
+	<string id=3 seek=31820>ChocoFlare</string>
+	<string id=4 seek=31831>ChocoMeteor</string>
+	<string id=5 seek=31843>ChocoBocle</string>
+	<string id=6 seek=31854>Moogle Dance</string>
+	<string id=7 seek=31867>Excaliber</string>
+	<string id=8 seek=31877>Excalipoor</string>
+	<string id=9 seek=31888>Masamune</string>
+	<string id=10 seek=31897>Zantetsuken</string>
+	<string id=11 seek=31909><Name: "Angelio"> Rush</string>
+	<string id=12 seek=31917><Name: "Angelio"> Recover</string>
+	<string id=13 seek=31928><Name: "Angelio"> Reverse</string>
+	<string id=14 seek=31939><Name: "Angelio"> Search</string>
+	<string id=15 seek=31949>MoombaMoomba</string>
+</file>
+<file id=11 seek=16608 length=160>
+	<string id=2 seek=31964>HP-J</string>
+	<string id=3 seek=31969>0xE39 0xE37 to HP</string>
+	<string id=4 seek=31979>Str-J</string>
+	<string id=5 seek=31985>0xE39 0xE37 to Strength</string>
+	<string id=6 seek=32000>Vit-J</string>
+	<string id=7 seek=32006>0xE39 0xE37 to Vitality</string>
+	<string id=8 seek=32023>Mag-J</string>
+	<string id=9 seek=32029>0xE39 0xE37 to 0xE37</string>
+	<string id=10 seek=32040>Spr-J</string>
+	<string id=11 seek=32046>0xE39 0xE37 to Spirit</string>
+	<string id=12 seek=32060>Spd-J</string>
+	<string id=13 seek=32066>0xE39 0xE37 to Speed</string>
+	<string id=14 seek=32079>Eva-J</string>
+	<string id=15 seek=32085>0xE39 0xE37 to Evade</string>
+	<string id=16 seek=32099>Hit-J</string>
+	<string id=17 seek=32105>0xE39 0xE37 to Hit</string>
+	<string id=18 seek=32117>Luck-J</string>
+	<string id=19 seek=32124>0xE39 0xE37 to Luck</string>
+	<string id=20 seek=32137>Elem-Atk-J</string>
+	<string id=21 seek=32148>0xE39 0xE37 to Elem-Atk</string>
+	<string id=22 seek=32165>ST-Atk-J</string>
+	<string id=23 seek=32174>0xE39 0xE37 to ST-Atk</string>
+	<string id=24 seek=32188>Elem-Def-J</string>
+	<string id=25 seek=32199>0xE39 0xE37 to Elem-Def</string>
+	<string id=26 seek=32215>ST-Def-J</string>
+	<string id=27 seek=32224>0xE39 0xE37 to ST-Def</string>
+	<string id=28 seek=32237>Elem-Defx2</string>
+	<string id=29 seek=32248>0xE39 2 0xE37 to Elem-Def</string>
+	<string id=30 seek=32266>Elem-Defx4</string>
+	<string id=31 seek=32277>0xE39 4 0xE37 to Elem-Def</string>
+	<string id=32 seek=32295>ST-Def-Jx2</string>
+	<string id=33 seek=32306>0xE39 2 0xE37 to ST-Def</string>
+	<string id=34 seek=32321>ST-Def-Jx4</string>
+	<string id=35 seek=32332>0xE39 4 0xE37 to to ST-Def</string>
+	<string id=36 seek=32349>Abilityx3</string>
+	<string id=37 seek=32359>Set up to 3 abilities</string>
+	<string id=38 seek=32379>Abilityx4</string>
+	<string id=39 seek=32389>Set up to 4 abilities</string>
+</file>
+<file id=12 seek=16768 length=152>
+	<string id=0 seek=32412>Magic</string>
+	<string id=1 seek=32418>Use 0xE37 0xE3B</string>
+	<string id=2 seek=32427>GF</string>
+	<string id=3 seek=32430>Use GF 0xE3B</string>
+	<string id=4 seek=32438>Draw</string>
+	<string id=5 seek=32443>Use Draw 0xE3B</string>
+	<string id=6 seek=32454>Item</string>
+	<string id=7 seek=32459>Use Item 0xE3B</string>
+	<string id=8 seek=32470>Empty</string>
+	<string id=9 seek=32476>Empty</string>
+	<string id=10 seek=32482>Card</string>
+	<string id=11 seek=32487>Use Card 0xE3B</string>
+	<string id=12 seek=32497>Doom</string>
+	<string id=13 seek=32502>Use Doom 0xE3B</string>
+	<string id=14 seek=32513>Mad Rush</string>
+	<string id=15 seek=32522>Use Mad Rush 0xE3B</string>
+	<string id=16 seek=32537>Treatment</string>
+	<string id=17 seek=32547>Use Treatment 0xE3B</string>
+	<string id=18 seek=32561>Defend</string>
+	<string id=19 seek=32568>Use Defend 0xE3B</string>
+	<string id=20 seek=32580>Darkside</string>
+	<string id=21 seek=32589>Use Darkside 0xE3B</string>
+	<string id=22 seek=32602>Recover</string>
+	<string id=23 seek=32610>Use Recover 0xE3B</string>
+	<string id=24 seek=32624>Absorb</string>
+	<string id=25 seek=32631>Use Absorb 0xE3B</string>
+	<string id=26 seek=32644>Revive</string>
+	<string id=27 seek=32651>Use Revive 0xE3B</string>
+	<string id=28 seek=32663>LV Down</string>
+	<string id=29 seek=32671>Use LV Down 0xE3B</string>
+	<string id=30 seek=32685>LV Up</string>
+	<string id=31 seek=32691>Use LV Up 0xE3B</string>
+	<string id=32 seek=32703>Kamikaze</string>
+	<string id=33 seek=32712>Use Kamikaze 0xE3B</string>
+	<string id=34 seek=32726>Devour</string>
+	<string id=35 seek=32733>Use Devour 0xE3B</string>
+	<string id=36 seek=32746>MiniMog</string>
+	<string id=37 seek=32754>Use MiniMog 0xE3B</string>
+</file>
+<file id=13 seek=16920 length=152>
+	<string id=0 seek=32768>HP+20%</string>
+	<string id=1 seek=32775>0xE3A HP by 20%</string>
+	<string id=2 seek=32787>HP+40%</string>
+	<string id=3 seek=32794>0xE3A HP by 40%</string>
+	<string id=4 seek=32806>HP+80%</string>
+	<string id=5 seek=32813>0xE3A HP by 80%</string>
+	<string id=6 seek=32825>Str+20%</string>
+	<string id=7 seek=32833>0xE3A Str by 20%</string>
+	<string id=8 seek=32846>Str+40%</string>
+	<string id=9 seek=32854>0xE3A Str by 40%</string>
+	<string id=10 seek=32867>Str+60%</string>
+	<string id=11 seek=32875>0xE3A Str by 60%</string>
+	<string id=12 seek=32888>Vit+20%</string>
+	<string id=13 seek=32896>0xE3A Vit by 20%</string>
+	<string id=14 seek=32910>Vit+40%</string>
+	<string id=15 seek=32918>0xE3A Vit by 40%</string>
+	<string id=16 seek=32932>Vit+60%</string>
+	<string id=17 seek=32940>0xE3A Vit by 60%</string>
+	<string id=18 seek=32954>Mag+20%</string>
+	<string id=19 seek=32962>0xE3A Magic damage by 20%</string>
+	<string id=20 seek=32982>Mag+40%</string>
+	<string id=21 seek=32990>0xE3A Magic damage by 40%</string>
+	<string id=22 seek=33010>Mag+60%</string>
+	<string id=23 seek=33018>0xE3A Magic damage by 60%</string>
+	<string id=24 seek=33038>Spr+20%</string>
+	<string id=25 seek=33046>0xE3A Spr by 20%</string>
+	<string id=26 seek=33059>Spr+40%</string>
+	<string id=27 seek=33067>0xE3A Spr by 40%</string>
+	<string id=28 seek=33080>Spr+60%</string>
+	<string id=29 seek=33088>0xE3A Spr by 60%</string>
+	<string id=30 seek=33101>Spd+20%</string>
+	<string id=31 seek=33109>0xE3A Spd by 20%</string>
+	<string id=32 seek=33122>Spd+40%</string>
+	<string id=33 seek=33130>0xE3A Spd by 40%</string>
+	<string id=34 seek=33143>Eva+30%</string>
+	<string id=35 seek=33151>0xE3A Eva by 30%</string>
+	<string id=36 seek=33165>Luck+50%</string>
+	<string id=37 seek=33174>0xE3A Luck by 50%</string>
+</file>
+<file id=14 seek=17072 length=160>
+	<string id=0 seek=33192>Mug</string>
+	<string id=1 seek=33196>Change Attack to Mug</string>
+	<string id=2 seek=33215>Med Data</string>
+	<string id=3 seek=33224>Doubles the effect of medicine</string>
+	<string id=4 seek=33251>Counter</string>
+	<string id=5 seek=33259>Counterattacks when attacked</string>
+	<string id=6 seek=33286>Return Damage</string>
+	<string id=7 seek=33300>Returns 1/4 of the damage to the opponent</string>
+	<string id=8 seek=33334>Cover</string>
+	<string id=9 seek=33340>Receives attack in place of a party member</string>
+	<string id=10 seek=33379>Initiative</string>
+	<string id=11 seek=33390>Enables action as soon as battle begins</string>
+	<string id=12 seek=33423>Move-HP Up</string>
+	<string id=13 seek=33434>0xE33 HP by walking</string>
+	<string id=14 seek=33448>HP Bonus</string>
+	<string id=15 seek=33457>+30 Bonus to HP at level up</string>
+	<string id=16 seek=33480>Str Bonus</string>
+	<string id=17 seek=33490>+1 Bonus to Str at level up</string>
+	<string id=18 seek=33513>Vit Bonus</string>
+	<string id=19 seek=33523>+1 Bonus to Vit at level up</string>
+	<string id=20 seek=33547>Mag Bonus</string>
+	<string id=21 seek=33557>+1 Bonus to Mag at level up</string>
+	<string id=22 seek=33580>Spr Bonus</string>
+	<string id=23 seek=33590>+1 Bonus to Spr at level up</string>
+	<string id=24 seek=33613>Auto-Protect</string>
+	<string id=25 seek=33626>Protect activates automatically in battle</string>
+	<string id=26 seek=33664>Auto-Shell</string>
+	<string id=27 seek=33675>Shell activates automatically in battle</string>
+	<string id=28 seek=33710>Auto-Reflect</string>
+	<string id=29 seek=33723>Reflect activates automatically in battle</string>
+	<string id=30 seek=33760>Auto-Haste</string>
+	<string id=31 seek=33771>Haste activates automatically in battle</string>
+	<string id=32 seek=33806>Auto-Potion</string>
+	<string id=33 seek=33818>Use recovery items automatically when hit</string>
+	<string id=34 seek=33854>Expendx2-1</string>
+	<string id=35 seek=33865>Only 1 0xE37 spent while Double</string>
+	<string id=36 seek=33890>Expendx3-1</string>
+	<string id=37 seek=33901>Only 1 0xE37 spent while Triple</string>
+	<string id=38 seek=33926>Ribbon</string>
+	<string id=39 seek=33933>Prevents all 0xE34 abnormality</string>
+</file>
+<file id=15 seek=17232 length=40>
+	<string id=0 seek=33960>Alert</string>
+	<string id=1 seek=33966>Prevents Back Attack</string>
+	<string id=2 seek=33984>Move-Find</string>
+	<string id=3 seek=33994>Finds hidden Save/Draw Points</string>
+	<string id=4 seek=34020>Enc-Half</string>
+	<string id=5 seek=34029>Cuts encounter rate by half</string>
+	<string id=6 seek=34053>Enc-None</string>
+	<string id=7 seek=34062>No encounters</string>
+	<string id=8 seek=34074>Rare Item</string>
+	<string id=9 seek=34084>More likely to receive rare items</string>
+</file>
+<file id=16 seek=17272 length=72>
+	<string id=0 seek=34112>SumMag+10%</string>
+	<string id=1 seek=34123>0xE3A SumMag damage by 10%</string>
+	<string id=2 seek=34143>SumMag+20%</string>
+	<string id=3 seek=34154>0xE3A SumMag damage by 20%</string>
+	<string id=4 seek=34174>SumMag+30%</string>
+	<string id=5 seek=34185>0xE3A SumMag damage by 30%</string>
+	<string id=6 seek=34205>SumMag+40%</string>
+	<string id=7 seek=34216>0xE3A SumMag damage by 40%</string>
+	<string id=8 seek=34236>GFHP+10%</string>
+	<string id=9 seek=34245>0xE3A GF`s HP by 10%</string>
+	<string id=10 seek=34260>GFHP+20%</string>
+	<string id=11 seek=34269>0xE3A GF`s HP by 20%</string>
+	<string id=12 seek=34284>GFHP+30%</string>
+	<string id=13 seek=34293>0xE3A GF`s HP by 30%</string>
+	<string id=14 seek=34308>GFHP+40%</string>
+	<string id=15 seek=34317>0xE3A GF`s HP by 40%</string>
+	<string id=16 seek=34332>Boost</string>
+	<string id=17 seek=34338>Boost GF</string>
+</file>
+<file id=17 seek=17344 length=192>
+	<string id=0 seek=34348>Haggle</string>
+	<string id=1 seek=34355>Receive discounts at shops</string>
+	<string id=2 seek=34379>Sell-High</string>
+	<string id=3 seek=34389>Sell high at shops</string>
+	<string id=4 seek=34407>Familiar</string>
+	<string id=5 seek=34416>Easier to buy rare items</string>
+	<string id=6 seek=34437>Call Shop</string>
+	<string id=7 seek=34447>Call shops from menu screen</string>
+	<string id=8 seek=34472>Junk Shop</string>
+	<string id=9 seek=34482>Call junk shop from menu screen</string>
+	<string id=10 seek=34512>T Mag-RF</string>
+	<string id=11 seek=34521>0xE38 Lightning/Wind 0xE37 from an item</string>
+	<string id=12 seek=34553>I Mag-RF</string>
+	<string id=13 seek=34562>0xE38 Water/Ice 0xE37 from an item</string>
+	<string id=14 seek=34590>F Mag-RF</string>
+	<string id=15 seek=34599>0xE38 Fire 0xE37 from an item</string>
+	<string id=16 seek=34622>L Mag-RF</string>
+	<string id=17 seek=34631>0xE38 Life/Recovery 0xE37 from an item</string>
+	<string id=18 seek=34664>Time Mag-RF</string>
+	<string id=19 seek=34676>0xE38 Time/Space 0xE37 from an item</string>
+	<string id=20 seek=34705>ST Mag-RF</string>
+	<string id=21 seek=34715>0xE38 0xE34 0xE37 from an item</string>
+	<string id=22 seek=34737>Supt Mag-RF</string>
+	<string id=23 seek=34749>0xE38 Support 0xE37 from an item</string>
+	<string id=24 seek=34775>Forbid Mag-RF</string>
+	<string id=25 seek=34789>0xE38 Forbidden 0xE37 from an item</string>
+	<string id=26 seek=34818>Recov Med-RF</string>
+	<string id=27 seek=34831>0xE38 Recovery Medicine from an item</string>
+	<string id=28 seek=34863>ST Med-RF</string>
+	<string id=29 seek=34873>0xE38 0xE34 Recovery Medicine from an item</string>
+	<string id=30 seek=34908>Ammo-RF</string>
+	<string id=31 seek=34916>0xE38 Ammunition from an item</string>
+	<string id=32 seek=34942>Tool-RF</string>
+	<string id=33 seek=34950>0xE38 Tools from an item</string>
+	<string id=34 seek=34971>Forbid Med-RF</string>
+	<string id=35 seek=34985>0xE38 Forbidden Medicine from an item</string>
+	<string id=36 seek=35018>GFRecov Med-RF</string>
+	<string id=37 seek=35033>0xE38 Recovery Medicine for GF from an item</string>
+	<string id=38 seek=35071>GFAbl Med-RF</string>
+	<string id=39 seek=35084>Refine ability learning medicine for GF from items</string>
+	<string id=40 seek=35126>Mid Mag-RF</string>
+	<string id=41 seek=35137>0xE38 Mid-Level 0xE37 from other 0xE37</string>
+	<string id=42 seek=35166>High Mag-RF</string>
+	<string id=43 seek=35178>0xE38 High Level 0xE37 from other 0xE37</string>
+	<string id=44 seek=35208>Med LV Up</string>
+	<string id=45 seek=35218>Levels up medicine</string>
+	<string id=46 seek=35235>Card Mod</string>
+	<string id=47 seek=35244>0xE38 items from cards</string>
+</file>
+<file id=18 seek=17536 length=120>
+	<string id=0 seek=35264>No Mercy</string>
+	<string id=1 seek=35273>Damage all enemies</string>
+	<string id=2 seek=35288>Ice Strike</string>
+	<string id=3 seek=35299>Damage one enemy</string>
+	<string id=4 seek=35311>Desperado</string>
+	<string id=5 seek=35321>Damage all enemies</string>
+	<string id=6 seek=35336>Blood Pain</string>
+	<string id=7 seek=35347>Damage one enemy</string>
+	<string id=8 seek=35359>Massive Anchor</string>
+	<string id=9 seek=35374>Damage all enemies</string>
+</file>
+<file id=19 seek=17656 length=256>
+	<string id=0 seek=35392>Laser Eye</string>
+	<string id=1 seek=35402>Damage one enemy</string>
+	<string id=2 seek=35414>Ultra Waves</string>
+	<string id=3 seek=35426>Damage all enemies</string>
+	<string id=4 seek=35441>Electrocute</string>
+	<string id=5 seek=35453>Thunder damage to all enemies</string>
+	<string id=6 seek=35478>LV?Death</string>
+	<string id=7 seek=35487>Death against certain enemies</string>
+	<string id=8 seek=35513>Degenerator</string>
+	<string id=9 seek=35525>Kill one enemy</string>
+	<string id=10 seek=35535>Aqua Breath</string>
+	<string id=11 seek=35547>Water damage to all enemies</string>
+	<string id=12 seek=35570>Micro Missiles</string>
+	<string id=13 seek=35585>Damage one enemy</string>
+	<string id=14 seek=35597>Acid</string>
+	<string id=15 seek=35602>Status change on one enemy</string>
+	<string id=16 seek=35623>Gatling Gun</string>
+	<string id=17 seek=35635>Damage one enemy</string>
+	<string id=18 seek=35647>Fire Breath</string>
+	<string id=19 seek=35659>Fire damage to all enemies</string>
+	<string id=20 seek=35680>Bad Breath</string>
+	<string id=21 seek=35691>Status change to all enemies</string>
+	<string id=22 seek=35715>White Wind</string>
+	<string id=23 seek=35726>Restores HP to all party members</string>
+	<string id=24 seek=35752>Homing Laser</string>
+	<string id=25 seek=35765>Damage one enemy</string>
+	<string id=26 seek=35777>Mighty Guard</string>
+	<string id=27 seek=35790>Defend all party members</string>
+	<string id=28 seek=35812>Ray-Bomb</string>
+	<string id=29 seek=35821>Damage all enemies</string>
+	<string id=30 seek=35836>Shockwave Pulsar</string>
+	<string id=31 seek=35853>Major damage to all enemies</string>
+</file>
+<file id=21 seek=18424 length=192>
+	<string id=0 seek=35876>Normal Shot</string>
+	<string id=1 seek=35888>Damage one enemy</string>
+	<string id=2 seek=35900>Scatter Shot</string>
+	<string id=3 seek=35913>Damage all enemies</string>
+	<string id=4 seek=35928>Dark Shot</string>
+	<string id=5 seek=35938>Damage and status change one enemy</string>
+	<string id=6 seek=35966>Flame Shot</string>
+	<string id=7 seek=35977>Fire damage all enemies</string>
+	<string id=8 seek=35996>Canister Shot</string>
+	<string id=9 seek=36010>Damage one enemy</string>
+	<string id=10 seek=36022>Quick Shot</string>
+	<string id=11 seek=36033>Damage one enemy</string>
+	<string id=12 seek=36045>Armor Shot</string>
+	<string id=13 seek=36056>Defense-ignoring damage to one enemy</string>
+	<string id=14 seek=36085>Hyper Shot</string>
+	<string id=15 seek=36096>Damage one enemy</string>
+</file>
+<file id=22 seek=18616 length=320>
+	<string id=0 seek=36108>Punch Rush</string>
+	<string id=1 seek=36119>Damage one enemy</string>
+	<string id=2 seek=36131>Booya</string>
+	<string id=3 seek=36137>Damage one enemy</string>
+	<string id=4 seek=36149>Heel Drop</string>
+	<string id=5 seek=36159>Damage one enemy</string>
+	<string id=6 seek=36171>Mach Kick</string>
+	<string id=7 seek=36181>Damage one enemy</string>
+	<string id=8 seek=36193>Dolphin Blow</string>
+	<string id=9 seek=36206>Damage one enemy</string>
+	<string id=10 seek=36218>Meteor Strike</string>
+	<string id=11 seek=36232>Damage one enemy</string>
+	<string id=12 seek=36244>Burning Rave</string>
+	<string id=13 seek=36257>Damage all enemies</string>
+	<string id=14 seek=36272>Meteor Barret</string>
+	<string id=15 seek=36286>Damage one enemy</string>
+	<string id=16 seek=36298>Different Beat</string>
+	<string id=17 seek=36313>Damage one enemy</string>
+	<string id=18 seek=36325>My Final Heaven</string>
+	<string id=19 seek=36341>Damage all enemies</string>
+</file>
+<file id=24 seek=19036 length=16>
+	<string id=0 seek=36356><Name: "Angelio"></string>
+	<string id=1 seek=36359>Fight together with </string>
+	<string id=2 seek=36380>Angel Wing</string>
+	<string id=3 seek=36391>Use Angel Wing</string>
+</file>
+<file id=25 seek=19052 length=100>
+	<string id=0 seek=36408><Name: "Angelio"> Cannon</string>
+	<string id=1 seek=36418><Name: "Angelio"> Strike</string>
+	<string id=2 seek=36428>Invincible Moon</string>
+	<string id=3 seek=36444>Wishing Star</string>
+	<string id=4 seek=36457>Angel Wing</string>
+</file>
+<file id=28 seek=19468 length=192>
+	<string id=0 seek=36468>Tastes okay...</string>
+	<string id=1 seek=36483>Delicious!!!</string>
+	<string id=2 seek=36496>Refreshing!</string>
+	<string id=3 seek=36508>It`s rotten...</string>
+	<string id=4 seek=36523>Tastes funny...</string>
+	<string id=5 seek=36539>Can`t see anything</string>
+	<string id=6 seek=36558>Tastes awful!!!</string>
+	<string id=7 seek=36574>Barf...Bwahhh!!!</string>
+	<string id=8 seek=36591>Shouldn`t have...eaten...it</string>
+	<string id=9 seek=36619>No good!</string>
+	<string id=10 seek=36628>Gained strength</string>
+	<string id=11 seek=36644>Feel healthier</string>
+	<string id=12 seek=36659>Clear head!</string>
+	<string id=13 seek=36671>Increased morale!</string>
+	<string id=14 seek=36689>Light on my feet!</string>
+	<string id=15 seek=36707>All systems go!</string>
+</file>
+<file id=30 seek=19720 length=256>
+	<string id=0 seek=36724>Game over...</string>
+	<string id=1 seek=36737>Escaped</string>
+	<string id=2 seek=36745>GF</string>
+	<string id=3 seek=36748>PAUSE</string>
+	<string id=4 seek=36754>Can`t escape</string>
+	<string id=5 seek=36767>Draw failed!</string>
+	<string id=6 seek=36780>Received <Special: 0xA23></string>
+	<string id=7 seek=36792>learned!</string>
+	<string id=8 seek=36801>s!</string>
+	<string id=9 seek=36804>Received</string>
+	<string id=10 seek=36813>????</string>
+	<string id=11 seek=36818> 0123456789ABCDEF:/·,</string>
+	<string id=12 seek=36840>All enemies</string>
+	<string id=13 seek=36852>All party members</string>
+	<string id=14 seek=36870>All</string>
+	<string id=15 seek=36874>No more space</string>
+	<string id=16 seek=36888>Card]</string>
+	<string id=17 seek=36894>Couldn`t steal</string>
+	<string id=18 seek=36909>Has nothing</string>
+	<string id=19 seek=36921>Stole</string>
+	<string id=20 seek=36927>Can`t select</string>
+	<string id=21 seek=36940>Item received</string>
+	<string id=22 seek=36954>to confirm</string>
+	<string id=23 seek=36965>EXP received</string>
+	<string id=24 seek=36978><Special: 0xA23>
+over 100 was discarded</string>
+	<string id=25 seek=37004>End</string>
+	<string id=26 seek=37008>is</string>
+	<string id=27 seek=37011>`s</string>
+	<string id=28 seek=37014>Couldn`t find any items!</string>
+	<string id=29 seek=37039>EXP Acquired</string>
+	<string id=30 seek=37052>Current EXP</string>
+	<string id=31 seek=37064>Next LEVEL</string>
+	<string id=32 seek=37075>LEVEL UP!</string>
+	<string id=33 seek=37085>LEVEL</string>
+	<string id=34 seek=37091>HP</string>
+	<string id=35 seek=37094>Status</string>
+	<string id=36 seek=37101>Monster</string>
+	<string id=37 seek=37109>Very weak against</string>
+	<string id=38 seek=37127>Weak against</string>
+	<string id=39 seek=37140>Strong against</string>
+	<string id=40 seek=37155>has no effect</string>
+	<string id=41 seek=37169>Absorbs</string>
+	<string id=42 seek=37177>attack ineffective</string>
+	<string id=43 seek=37196>attack effective</string>
+	<string id=44 seek=37213>Chance for first strike!</string>
+	<string id=45 seek=37238>Back attacked!</string>
+	<string id=46 seek=37253>Struck first!</string>
+	<string id=47 seek=37267>Back attack!</string>
+	<string id=48 seek=37280>LEVEL UP!</string>
+	<string id=49 seek=37290>Didn`t receive EXP</string>
+	<string id=50 seek=37309>Can`t turn into a card!</string>
+	<string id=51 seek=37333>Acquired</string>
+	<string id=52 seek=37342>Can`t use on GF</string>
+	<string id=53 seek=37358>Not enough money</string>
+	<string id=54 seek=37375>GF recovered HP!</string>
+	<string id=55 seek=37392>Nothing happened</string>
+	<string id=56 seek=37409>is not here</string>
+	<string id=57 seek=37421>KO</string>
+	<string id=58 seek=37424>Poison</string>
+	<string id=59 seek=37431>Petrify</string>
+	<string id=60 seek=37439>Darkness</string>
+	<string id=61 seek=37448>Silence</string>
+	<string id=62 seek=37456>Berserk</string>
+	<string id=63 seek=37464>Zombie</string>
+	<string id=64 seek=37471>] Found!</string>
+	<string id=65 seek=37480>Times</string>
+	<string id=66 seek=37486>Cast</string>
+	<string id=67 seek=37491>Do over</string>
+	<string id=68 seek=37499>Use indicated magic</string>
+	<string id=69 seek=37519>Turn the slot again</string>
+	<string id=70 seek=37539>AP received</string>
+	<string id=71 seek=37551>[</string>
+	<string id=72 seek=37553>MiniMog is not here</string>
+	<string id=73 seek=37573>Sleep</string>
+	<string id=74 seek=37579>Haste</string>
+	<string id=75 seek=37585>Slow</string>
+	<string id=76 seek=37590>Stop</string>
+	<string id=77 seek=37595>Regen</string>
+	<string id=78 seek=37601>Protect</string>
+	<string id=79 seek=37609>Shell</string>
+	<string id=80 seek=37615>Reflect</string>
+	<string id=81 seek=37623>Aura</string>
+	<string id=82 seek=37628>Curse</string>
+	<string id=83 seek=37634>Doom</string>
+	<string id=84 seek=37639>Invincible</string>
+	<string id=85 seek=37650>Petrifying</string>
+	<string id=86 seek=37661>Float</string>
+	<string id=87 seek=37667>Confuse</string>
+	<string id=88 seek=37675>`s Level went </string>
+	<string id=89 seek=37690>up by</string>
+	<string id=90 seek=37696>Double</string>
+	<string id=91 seek=37703>Triple</string>
+	<string id=92 seek=37710>Defend</string>
+	<string id=93 seek=37717>Physical attack ineffective</string>
+	<string id=94 seek=37745>Magic ineffective</string>
+	<string id=95 seek=37763>down by</string>
+	<string id=96 seek=37771>Back attack</string>
+	<string id=97 seek=37783>Vit 0</string>
+	<string id=98 seek=37789>Angel Wing</string>
+	<string id=99 seek=37800>Fly</string>
+	<string id=100 seek=37804>Can`t use magic</string>
+	<string id=101 seek=37820><Icon_Button: 0x55D></string>
+	<string id=102 seek=37823><Icon_Button: 0x55E></string>
+	<string id=103 seek=37826><Icon_Button: 0x55F></string>
+	<string id=104 seek=37829><Icon_Button: 0x560></string>
+	<string id=105 seek=37832><Icon_Button: 0x561></string>
+	<string id=106 seek=37835><Icon_Button: 0x562></string>
+	<string id=107 seek=37838><Icon_Button: 0x563></string>
+	<string id=108 seek=37841><Icon_Button: 0x564></string>
+	<string id=109 seek=37844>GF received <Special: 0xA20>AP!</string>
+	<string id=110 seek=37862><Special: 0xA23>`s Card</string>
+	<string id=111 seek=37872>Raising GF</string>
+	<string id=112 seek=37883>Couldn`t Devour!</string>
+	<string id=113 seek=37900>?????</string>
+	<string id=114 seek=37906>Undead</string>
+	<string id=115 seek=37913>]</string>
+	<string id=116 seek=37915>wore off!</string>
+	<string id=117 seek=37925>was blown away!</string>
+	<string id=118 seek=37941>!</string>
+	<string id=119 seek=37943>s</string>
+	<string id=120 seek=37945>learned</string>
+	<string id=121 seek=37953>GF </string>
+	<string id=122 seek=37957>Dummy</string>
+	<string id=123 seek=37963>Dummy</string>
+	<string id=124 seek=37969>Dummy</string>
+	<string id=125 seek=37975>Dummy</string>
+	<string id=126 seek=37981>!</string>
+	<string id=127 seek=37983>learned</string>
+</file>
