@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -6,7 +7,7 @@ namespace FF8
 {
     public static partial class Saves
     {
-        public struct FieldVars
+        public class FieldVars : ICloneable
         {
             public string byte03; //[0-3]unused in fields (always "FF-8")
             public ulong Steps; //[4]Steps (used to generate random encounters)
@@ -269,6 +270,13 @@ namespace FF8
             public byte byte752; //[752]not investigated
             public byte[] byte7531023; //[753-1023]unused in fields
             public byte[] byteAbove1023; //[Above 1023]Temporary variables used pretty much everywhere.
+
+            public FieldVars(BinaryReader br)
+            {
+                Read(br);
+            }
+
+            public object Clone() => MemberwiseClone();
 
             public void Read(BinaryReader br)
             {
