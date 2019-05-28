@@ -98,8 +98,8 @@ namespace FF8
 
             foreach (byte cs in buffer)
             {
-                byte[] expanded = cs > 0xE1 ?
-                    (byte[])new FF8String(new FF8String(new byte[] { cs }).Value_str) : new byte[] { cs };
+                byte[] expanded = cs > 0xE1 && FF8String.BytetoStr.ContainsKey(cs)?
+                    FF8String.BytetoStr[cs].Value : new byte[] { cs };
                 foreach (byte c in expanded)
                 {
                     if (c == 0) continue;

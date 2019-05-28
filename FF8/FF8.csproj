@@ -141,7 +141,6 @@
     <Compile Include="ArchiveSearch.cs" />
     <Compile Include="ArchiveWorker.cs" />
     <Compile Include="DictionaryEx.cs" />
-    <Compile Include="DirtyEncoder.cs" />
     <Compile Include="Extended.cs" />
     <Compile Include="FF8String.cs" />
     <Compile Include="Menu\Cards.cs" />

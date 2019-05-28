@@ -172,7 +172,6 @@ namespace FF8
         public static string FF8DIRdata_lang { get; private set; }
         public static void InitTaskMethod()
         {
-
             Memory.font = new Font(); //this initializes the fonts and drawing system- holds fonts in-memory
             Memory.Strings = new Strings();
 
@@ -195,6 +194,8 @@ namespace FF8
             Memory.spriteBatch = spriteBatch;
             Memory.content = content;
             Memory.FieldHolder.FieldMemory = new int[1024];
+
+            FF8String.Init();
             InitTask = new Task(InitTaskMethod);
             InitTask.Start();
         }
