@@ -377,7 +377,40 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\FF8.Core\FF8.Core.csproj">
+      <Project>{1d745740-720f-467c-98bd-ad15fc13923e}</Project>
+      <Name>FF8.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FF8.Encoding\FF8.Encoding.csproj">
+      <Project>{a9b33bf4-9b03-4e3d-bf6a-181521046ee8}</Project>
+      <Name>FF8.Encoding</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FF8.Fields\FF8.Fields.csproj">
+      <Project>{9fb98ce3-6379-4ee7-9a50-0969f73bdc06}</Project>
+      <Name>FF8.Fields</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FF8.Framework\FF8.Framework.csproj">
+      <Project>{aa28ce0d-1a26-47de-b00d-7a085308aef3}</Project>
+      <Name>FF8.Framework</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FF8.JSM\FF8.JSM.csproj">
+      <Project>{53db839c-7756-42ec-bf88-c02ab0efd6a9}</Project>
+      <Name>FF8.JSM</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FF8.MSD\FF8.MSD.csproj">
+      <Project>{e32ffc84-1a34-4b0e-90cf-11cfe4c6d1c0}</Project>
+      <Name>FF8.MSD</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FF8.ScriptFormatter\FF8.ScriptFormatter.csproj">
+      <Project>{d20fb2ff-a27e-4932-aefb-fde54e033a82}</Project>
+      <Name>FF8.ScriptFormatter</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FF8.SYM\FF8.SYM.csproj">
+      <Project>{1eacea33-b551-4fc3-86ad-5a40ca03c06b}</Project>
+      <Name>FF8.SYM</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

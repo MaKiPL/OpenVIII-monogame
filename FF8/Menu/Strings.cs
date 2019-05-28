@@ -110,12 +110,12 @@ namespace FF8
                     if (s.Key == 0)
                     {
                         last = s.Key;
-                        bw.Write(Encoding.UTF8.GetBytes($"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n<file id={s.Key} seek={fpos.seek} length={fpos.length}>\n"));
+                        bw.Write(System.Text.Encoding.UTF8.GetBytes($"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n<file id={s.Key} seek={fpos.seek} length={fpos.length}>\n"));
                     }
                     else
                     {
                         last = s.Key;
-                        bw.Write(Encoding.UTF8.GetBytes($"</file>\n<file id={s.Key} seek={fpos.seek} length={fpos.length}>\n"));
+                        bw.Write(System.Text.Encoding.UTF8.GetBytes($"</file>\n<file id={s.Key} seek={fpos.seek} length={fpos.length}>\n"));
                     }
 
                     for (int j = 0; j < s.Value.Count; j++)
@@ -123,13 +123,13 @@ namespace FF8
                         byte[] b = Font.DumpDirtyString(Read(br, fileID, s.Value[j]));
                         if (b != null)
                         {
-                            bw.Write(Encoding.UTF8.GetBytes($"\t<string id={j} seek={s.Value[j]}>"));
+                            bw.Write(System.Text.Encoding.UTF8.GetBytes($"\t<string id={j} seek={s.Value[j]}>"));
                             bw.Write(b);
-                            bw.Write(Encoding.UTF8.GetBytes("</string>\n"));
+                            bw.Write(System.Text.Encoding.UTF8.GetBytes("</string>\n"));
                         }
                     }
                 }
-                bw.Write(Encoding.UTF8.GetBytes($"</file>"));
+                bw.Write(System.Text.Encoding.UTF8.GetBytes($"</file>"));
             }
         }
 

@@ -152,7 +152,7 @@ namespace FF8
             using (FileStream fs = File.Create("D:\\iconsdatadump.csv"))
             using (BinaryWriter bw = new BinaryWriter(fs))
             {
-                bw.Write(Encoding.UTF8.GetBytes(ToString()));
+                bw.Write(System.Text.Encoding.UTF8.GetBytes(ToString()));
             }
         }
         static public new string ToString()
