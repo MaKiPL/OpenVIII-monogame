@@ -92,11 +92,12 @@ namespace FF8
             public byte[] Direction; //0x0D68  (party1, party2, party3)
             public byte Padding; //0x0D6B
             public uint Unknown9; //0x0D6C
+
             /// <summary>
-            /// 
             /// </summary>
             /// <see cref="http://wiki.ffrtt.ru/index.php/FF8/Variables"/>
-            public FieldVars Fieldvars; //0x0D70 
+            public FieldVars Fieldvars; //0x0D70
+
             public Worldmap Worldmap; //0x1270
             public TripleTriad TripleTriad; //0x12F0
             public ChocoboWorld ChocoboWorld; //0x1370
@@ -111,7 +112,7 @@ namespace FF8
                 {
                     if (this.Characters != null)
                     {
-                        foreach (var i in Characters)
+                        foreach (KeyValuePair<Characters, CharacterData> i in Characters)
                         {
                             if (!Party.Contains(i.Key) && i.Value.VisibleInMenu)
                             {
@@ -132,7 +133,7 @@ namespace FF8
                     if (Characters != null)
                     {
                         c = new List<CharacterData>();
-                        foreach (var i in Characters)
+                        foreach (KeyValuePair<Characters, CharacterData> i in Characters)
                         {
                             if (!Party.Contains(i.Key) && i.Value.VisibleInMenu)
                             {
@@ -283,8 +284,17 @@ namespace FF8
                 Battlevictorycount = Battlevictorycount,
                 Bokosname = Bokosname,
                 Characters = Characters.ToDictionary(entry => entry.Key,
-                    entry => (CharacterData) entry.Value.Clone()),
-                ChocoboWorld = (ChocoboWorld) ChocoboWorld.Clone(),
+                    entry => (CharacterData)entry.Value.Clone()),
+                ChocoboWorld = (ChocoboWorld)ChocoboWorld.Clone(),
+                Configuration = Configuration,
+                CoordX = CoordX,
+                CoordY = CoordY,
+                Countdown = Countdown,
+                CurrentDisk = CurrentDisk,
+                Currentfield = Currentfield,
+                Currentsave = Currentsave,
+                Direction = Direction,
+                Fieldvars = (FieldVars)Fieldvars.Clone(),
             };
         }
     }
