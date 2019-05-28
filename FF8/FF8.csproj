@@ -248,7 +248,7 @@
     <Compile Include="Menu\Icons.cs" />
     <Compile Include="init_debugger_Audio.cs" />
     <Compile Include="Battle\init_debugger_battle.cs" />
-    <Compile Include="init_debugger_fields.cs" />
+    <Compile Include="Field\init_debugger_fields.cs" />
     <Compile Include="Input.cs" />
     <Compile Include="Loc.cs" />
     <Compile Include="LZSS.cs" />
@@ -257,7 +257,7 @@
     <Compile Include="Battle\module_battle.cs" />
     <Compile Include="Battle\module_battle_Debug.cs" />
     <Compile Include="Menu\Module_face_test.cs" />
-    <Compile Include="module_field_debug.cs" />
+    <Compile Include="Field\module_field_debug.cs" />
     <Compile Include="Menu\Module_icon_test.cs" />
     <Compile Include="Menu\module_main_menu_debug.cs" />
     <Compile Include="module_movie_test.cs" />

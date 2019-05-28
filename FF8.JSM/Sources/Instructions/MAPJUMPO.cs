@@ -10,10 +10,10 @@ namespace FF8.JSM.Instructions
     /// </summary>
     internal sealed class MAPJUMPO : JsmInstruction
     {
-        private FieldId _fieldMapId;
+        private int _fieldMapId;
         private Int32 _walkmeshId;
 
-        public MAPJUMPO(FieldId fieldMapId, Int32 walkmeshId)
+        public MAPJUMPO(int fieldMapId, Int32 walkmeshId)
         {
             _fieldMapId = fieldMapId;
             _walkmeshId = walkmeshId;
@@ -22,7 +22,7 @@ namespace FF8.JSM.Instructions
         public MAPJUMPO(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
                 walkmeshId: ((Jsm.Expression.PSHN_L)stack.Pop()).Int32(),
-                fieldMapId: (FieldId)((Jsm.Expression.PSHN_L)stack.Pop()).Int32())
+                fieldMapId: (int)((Jsm.Expression.PSHN_L)stack.Pop()).Int32())
         {
         }
 
