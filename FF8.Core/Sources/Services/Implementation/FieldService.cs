@@ -36,16 +36,16 @@ namespace FF8.Core
             Console.WriteLine($"NotImplemented: {nameof(FieldService)}.{nameof(FadeOut)}()");
         }
 
-        public void PrepareGoTo(FieldId fieldId)
+        public void PrepareGoTo(int fieldId)
         {
             // TODO: Field script
-            Console.WriteLine($"NotImplemented: {nameof(FieldService)}.{nameof(PrepareGoTo)}({nameof(fieldId)}: {fieldId})");
+            Console.WriteLine($"NotImplemented: {nameof(FieldService)}.{nameof(PrepareGoTo)}({FieldId.FieldId_[fieldId]}: {fieldId})");
         }
 
-        public void GoTo(FieldId fieldId, Int32 walkmeshId)
+        public void GoTo(int fieldId, Int32 walkmeshId)
         {
             // TODO: Field script
-            Console.WriteLine($"NotImplemented: {nameof(FieldService)}.{nameof(GoTo)}({nameof(fieldId)}: {fieldId}, {nameof(walkmeshId)}: {walkmeshId})");
+            Console.WriteLine($"NotImplemented: {nameof(FieldService)}.{nameof(GoTo)}({FieldId.FieldId_[fieldId]}: {fieldId}, {nameof(walkmeshId)}: {walkmeshId})");
         }
 
         public void BindArea(Int32 areaId)

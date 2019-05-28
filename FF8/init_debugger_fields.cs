@@ -20,6 +20,7 @@ namespace FF8
                 .Replace("\r", "")
                 .Split('\n');
             Memory.FieldHolder.fields = maplistb;
+            Core.FieldId.FieldId_ = maplistb;
         }
     }
 }

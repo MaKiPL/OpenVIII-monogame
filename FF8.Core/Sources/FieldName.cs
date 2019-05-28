@@ -5,7 +5,7 @@ namespace FF8.Core
 {
     public static class FieldName
     {
-        public static String Get(FieldId id)
+        public static String Get(int id)
         {
             if (_dic.TryGetValue(id, out var name))
                 return name;
@@ -13,9 +13,13 @@ namespace FF8.Core
             return $"Unknown field: {id}";
         }
 
-        private static readonly Dictionary<FieldId, String> _dic = new Dictionary<FieldId, String>()
+        //TODO
+        /// <summary>
+        /// This should be eventually initialized with real location names. Currently I don't know where they are ~Maki
+        /// </summary>
+        private static readonly Dictionary<int, String> _dic = new Dictionary<int, String>()
         {
-            {FieldId.bghoke_2, "B-Garden - Infirmary"}
+            
         };
     }
 }

@@ -7,16 +7,16 @@ namespace FF8.JSM.Instructions
 {
     internal sealed class PREMAPJUMP2 : JsmInstruction
     {
-        private readonly FieldId _fieldMapId;
+        private readonly int _fieldMapId;
 
-        public PREMAPJUMP2(FieldId fieldMapId)
+        public PREMAPJUMP2(int fieldMapId)
         {
             _fieldMapId = fieldMapId;
         }
 
         public PREMAPJUMP2(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
-                fieldMapId: (FieldId)((IConstExpression)stack.Pop()).Int32())
+                fieldMapId: (int)((IConstExpression)stack.Pop()).Int32())
         {
         }
 

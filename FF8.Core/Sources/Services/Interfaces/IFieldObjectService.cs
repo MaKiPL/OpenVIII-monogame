@@ -13,8 +13,8 @@ namespace FF8.Core
         void FadeIn();
         void FadeOut();
 
-        void PrepareGoTo(FieldId fieldId);
-        void GoTo(FieldId fieldId, Int32 walkmeshId);
+        void PrepareGoTo(int fieldId);
+        void GoTo(int fieldId, Int32 walkmeshId);
         void BindArea(Int32 areaId);
     }
 }

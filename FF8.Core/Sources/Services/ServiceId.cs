@@ -35,8 +35,8 @@ namespace FF8.Core
             public void FadeOff() => throw new NotSupportedException();
             public void FadeIn() => throw new NotSupportedException();
             public void FadeOut() => throw new NotSupportedException();
-            public void PrepareGoTo(FieldId fieldId) => throw new NotSupportedException();
-            public void GoTo(FieldId fieldId, Int32 walkmeshId) => throw new NotSupportedException();
+            public void PrepareGoTo(int fieldId) => throw new NotSupportedException();
+            public void GoTo(int fieldId, Int32 walkmeshId) => throw new NotSupportedException();
             public void BindArea(Int32 areaId) => throw new NotSupportedException();
         }
 
