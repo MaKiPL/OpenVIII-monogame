@@ -284,6 +284,7 @@ namespace FF8
                 Bokosname = Bokosname,
                 Characters = Characters.ToDictionary(entry => entry.Key,
                     entry => (CharacterData) entry.Value.Clone()),
+                ChocoboWorld = (ChocoboWorld) ChocoboWorld.Clone(),
             };
         }
     }
