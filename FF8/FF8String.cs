@@ -109,7 +109,7 @@ namespace FF8
         #region Properties
 
         public byte[] Value { get => value; set => this.value = value; }
-        public string Value_str => ToString();
+        public string Value_str => encoding.GetString(Value).TrimEnd('\0');
         public int Length => value==null? 0:value.Length;
         public object Current { get => Value[position-1] ; }
 
@@ -129,9 +129,9 @@ namespace FF8
 
         public static implicit operator FF8String(byte[] input) => new FF8String(input);
 
-        public static implicit operator string(FF8String input) => input?.ToString();
+        public static implicit operator string(FF8String input) => input?.Value_str;
 
-        public override string ToString() => encoding.GetString(Value).TrimEnd('\0');
+        public override string ToString() => Value_str;
 
         public bool MoveNext()
         {
