@@ -145,6 +145,40 @@ namespace FF8
                 new Entry { X = 141, Y = 24, Width = 6, Height = 8, Offset = new Vector2(19+4, 0) },
                 new Entry { X = 104, Y = 16, Width = 6, Height = 8, Offset = new Vector2(25+4, 0) }
                 );
+
+            Entry P_ = (Entry)Entries[ID.Size_08x08_P_][0].Clone();
+            P_.Offset.X += Entries[ID.COMMAND][0].Width + 4;
+            P_.CustomPallet = 2;
+            Entry _1 = (Entry)Entries[ID.Num_8x8_1_1][0].Clone();
+            _1.Offset.X += P_.Offset.X + P_.Width + 2;
+            _1.CustomPallet = 7;
+            Entry _2 = (Entry)Entries[ID.Num_8x8_1_2][0].Clone();
+            _2.Offset.X += P_.Offset.X + P_.Width + 2;
+            _2.CustomPallet = 7;
+            
+            Entries[ID.COMMAND_PG1] = new EntryGroup(Entries[ID.COMMAND][0], P_, _1);
+            Entries[ID.COMMAND_PG2] = new EntryGroup(Entries[ID.COMMAND][0], P_, _2);
+
+            P_ = (Entry)Entries[ID.Size_08x08_P_][0].Clone();
+            P_.Offset.X += Entries[ID.ABILITY][0].Width + 8;
+            P_.CustomPallet = 2;
+            _1 = (Entry)Entries[ID.Num_8x8_1_1][0].Clone();
+            _1.Offset.X += P_.Offset.X + P_.Width + 2;
+            _1.CustomPallet = 7;
+            _2 = (Entry)Entries[ID.Num_8x8_1_2][0].Clone();
+            _2.Offset.X += P_.Offset.X + P_.Width + 2;
+            _2.CustomPallet = 7;
+            Entry _3 = (Entry)Entries[ID.Num_8x8_1_3][0].Clone();
+            _3.Offset.X += P_.Offset.X + P_.Width + 2;
+            _3.CustomPallet = 7;
+            Entry _4 = (Entry)Entries[ID.Num_8x8_1_4][0].Clone();
+            _4.Offset.X += P_.Offset.X + P_.Width + 2;
+            _4.CustomPallet = 7;
+            Entries[ID.ABILITY_PG1] = new EntryGroup(Entries[ID.ABILITY][0], P_, _1);
+            Entries[ID.ABILITY_PG2] = new EntryGroup(Entries[ID.ABILITY][0], P_, _2);
+            Entries[ID.ABILITY_PG3] = new EntryGroup(Entries[ID.ABILITY][0], P_, _3);
+            Entries[ID.ABILITY_PG4] = new EntryGroup(Entries[ID.ABILITY][0], P_, _4);
+
         }
     }
 }

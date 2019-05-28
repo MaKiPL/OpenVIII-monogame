@@ -355,6 +355,12 @@
             /// </summary>
             DEBUG,
             MenuBorder,
+            COMMAND_PG1,
+            COMMAND_PG2,
+            ABILITY_PG1,
+            ABILITY_PG2,
+            ABILITY_PG3,
+            ABILITY_PG4,
         }
 
         #endregion Enums

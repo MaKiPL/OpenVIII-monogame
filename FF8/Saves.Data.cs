@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -6,7 +7,7 @@ namespace FF8
 {
     public static partial class Saves
     {
-        public class Data
+        public class Data : ICloneable
         {
             public ushort LocationID;//0x0004
             public ushort firstcharacterscurrentHP;//0x0006
@@ -38,7 +39,7 @@ namespace FF8
             public uint Currentsave;//0x005C
 
             public GFData[] GFs; // 0x0060 -> 0x045C //68 bytes per 16 total
-            public CharacterData[] Characters; // 0x04A0 -> 0x08C8 //152 bytes per 8 total
+            public Dictionary<Characters, CharacterData> Characters; // 0x04A0 -> 0x08C8 //152 bytes per 8 total
             public Shop[] Shops; //0x0960 //400 bytes
             public byte[] Configuration; //0x0AF0 //20 bytes
             public Characters[] PartyData; //0x0B04 // 4 bytes 0xFF terminated.
@@ -91,7 +92,12 @@ namespace FF8
             public byte[] Direction; //0x0D68  (party1, party2, party3)
             public byte Padding; //0x0D6B
             public uint Unknown9; //0x0D6C
-            public FieldVars Fieldvars; //0x0D70 http://wiki.ffrtt.ru/index.php/FF8/Variables
+
+            /// <summary>
+            /// </summary>
+            /// <see cref="http://wiki.ffrtt.ru/index.php/FF8/Variables"/>
+            public FieldVars Fieldvars; //0x0D70
+
             public Worldmap Worldmap; //0x1270
             public TripleTriad TripleTriad; //0x12F0
             public ChocoboWorld ChocoboWorld; //0x1370
@@ -106,15 +112,36 @@ namespace FF8
                 {
                     if (this.Characters != null)
                     {
-                        foreach (CharacterData i in this.Characters)
+                        foreach (KeyValuePair<Characters, CharacterData> i in Characters)
                         {
-                            if (!Party.Contains(i.ID) && i.VisibleInMenu)
+                            if (!Party.Contains(i.Key) && i.Value.VisibleInMenu)
                             {
                                 return false;
                             }
                         }
                     }
                     return true;
+                }
+            }
+
+            public List<CharacterData> NonPartyMembers
+            {
+                get
+                {
+                    List<CharacterData> c = null;
+
+                    if (Characters != null)
+                    {
+                        c = new List<CharacterData>();
+                        foreach (KeyValuePair<Characters, CharacterData> i in Characters)
+                        {
+                            if (!Party.Contains(i.Key) && i.Value.VisibleInMenu)
+                            {
+                                c.Add(i.Value);
+                            }
+                        }
+                    }
+                    return c;
                 }
             }
 
@@ -142,7 +169,7 @@ namespace FF8
             {
                 Timeplayed = new TimeSpan();
                 GFs = new GFData[16];
-                Characters = new CharacterData[8];
+                Characters = new Dictionary<Characters, CharacterData>(8);
                 LocationID = br.ReadUInt16();//0x0004
                 firstcharacterscurrentHP = br.ReadUInt16();//0x0006
                 firstcharactersmaxHP = br.ReadUInt16();//0x0008
@@ -163,8 +190,10 @@ namespace FF8
                 }
                 for (int i = 0; i <= (int)Saves.Characters.Edea_Kramer; i++)
                 {
-                    Characters[i].Read(br, (Characters)i); // 0x04A0 -> 0x08C8 //152 bytes per 8 total
-                    Characters[i].Name = Memory.Strings.GetName((Faces.ID)i, this);
+                    var tmp = new CharacterData();
+                    tmp.Read(br, (Characters)i);
+                    Characters[(Characters)i]=tmp; // 0x04A0 -> 0x08C8 //152 bytes per 8 total
+                    Characters[(Characters)i].Name = Memory.Strings.GetName((Characters)i, this);
                 }
                 int ShopCount = 400 / (16 + 1 + 3);
                 Shops = new Shop[ShopCount]; //0x0960 //400 bytes
@@ -230,11 +259,45 @@ namespace FF8
                 Direction = br.ReadBytes(3 * 1);//0x0D68  (party1, party2, party3)
                 Padding = br.ReadByte();//0x0D6B
                 Unknown9 = br.ReadUInt32();//0x0D6C
-                Fieldvars.Read(br); //0x0D70 http://wiki.ffrtt.ru/index.php/FF8/Variables
+                Fieldvars = new FieldVars(br); //0x0D70 http://wiki.ffrtt.ru/index.php/FF8/Variables
                 Worldmap.Read(br);//br.ReadBytes(128);//0x1270
                 TripleTriad.Read(br); //br.ReadBytes(128);//0x12F0
-                ChocoboWorld.Read(br); //br.ReadBytes(64);//0x1370
+                ChocoboWorld = new ChocoboWorld(br); //br.ReadBytes(64);//0x1370
             }
+
+            public object Clone() => new Data
+            {
+                AmountofGil = AmountofGil,
+                AmountofGil2 = AmountofGil2,
+                AmountofGil_Laguna = AmountofGil_Laguna,
+                Angelosname = Angelosname,
+                Battlebattleescaped = Battlebattleescaped,
+                BattleELEMENTAL = BattleELEMENTAL,
+                BattleIRVINE = BattleIRVINE,
+                BattleMAGIC = BattleMAGIC,
+                BattleMENTAL = BattleMENTAL,
+                BattleR1 = BattleR1,
+                BattleRAUTO = BattleRAUTO,
+                BattleRINDICATOR = BattleRINDICATOR,
+                BattleSCAN = BattleSCAN,
+                BattleTonberrykilledcount = BattleTonberrykilledcount,
+                BattleTonberrySrkilled = BattleTonberrySrkilled,
+                BattleUNK = BattleUNK,
+                Battlevictorycount = Battlevictorycount,
+                Bokosname = Bokosname,
+                Characters = Characters.ToDictionary(entry => entry.Key,
+                    entry => (CharacterData)entry.Value.Clone()),
+                ChocoboWorld = (ChocoboWorld)ChocoboWorld.Clone(),
+                Configuration = Configuration,
+                CoordX = CoordX,
+                CoordY = CoordY,
+                Countdown = Countdown,
+                CurrentDisk = CurrentDisk,
+                Currentfield = Currentfield,
+                Currentsave = Currentsave,
+                Direction = Direction,
+                Fieldvars = (FieldVars)Fieldvars.Clone(),
+            };
         }
     }
 }

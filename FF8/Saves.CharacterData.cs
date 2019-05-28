@@ -13,21 +13,28 @@ namespace FF8
         /// Data for each Character
         /// </summary>
         /// <see cref="http://wiki.ffrtt.ru/index.php/FF8/GameSaveFormat#Characters"/>
-        public struct CharacterData
+        public class CharacterData : ICloneable
         {
            
             public FF8String Name; //not saved to file.
-            public ushort CurrentHP; //0x00 -- forgot this one heh
+            private ushort _CurrentHP; //0x00 -- forgot this one heh
+            /// <summary>
+            /// Raw HP buff from items.
+            /// </summary>
             public ushort _HP; //0x02
             public uint Experience; //0x02
             public byte ModelID; //0x04
             public byte WeaponID; //0x08
-            public byte _STR; //0x09
-            public byte _VIT; //0x0A
-            public byte _MAG; //0x0B
-            public byte _SPR; //0x0C
-            public byte _SPD; //0x0D
-            public byte _LCK; //0x0E
+            /// <summary>
+            /// Stats that can be incrased via items. Except for HP because it's a ushort not a byte.
+            /// </summary>
+            public Dictionary<Kernel_bin.Stat, byte> RawStats;
+            //public byte _STR; //0x09
+            //public byte _VIT; //0x0A
+            //public byte _MAG; //0x0B
+            //public byte _SPR; //0x0C
+            //public byte _SPD; //0x0D
+            //public byte _LCK; //0x0E
             public Dictionary<byte,byte> Magics; //0x0F
             public Kernel_bin.Abilities[] Commands; //0x10
             public byte Paddingorunusedcommand; //0x50
@@ -85,17 +92,18 @@ namespace FF8
             public void Read(BinaryReader br,Characters c)
             {
                 ID = c;
-                CurrentHP = br.ReadUInt16();//0x00
+                _CurrentHP = br.ReadUInt16();//0x00
                 _HP = br.ReadUInt16();//0x02
                 Experience = br.ReadUInt32();//0x04
                 ModelID = br.ReadByte();//0x08
                 WeaponID = br.ReadByte();//0x09
-                _STR = br.ReadByte();//0x0A
-                _VIT = br.ReadByte();//0x0B
-                _MAG = br.ReadByte();//0x0C
-                _SPR = br.ReadByte();//0x0D
-                _SPD = br.ReadByte();//0x0E
-                _LCK = br.ReadByte();//0x0F
+                RawStats = new Dictionary<Kernel_bin.Stat, byte>(6);
+                RawStats[Kernel_bin.Stat.STR] = br.ReadByte();//0x0A
+                RawStats[Kernel_bin.Stat.VIT] = br.ReadByte();//0x0B
+                RawStats[Kernel_bin.Stat.MAG] = br.ReadByte();//0x0C
+                RawStats[Kernel_bin.Stat.SPR] = br.ReadByte();//0x0D
+                RawStats[Kernel_bin.Stat.SPD] = br.ReadByte();//0x0E
+                RawStats[Kernel_bin.Stat.LUCK] = br.ReadByte();//0x0F
                 Magics = new Dictionary<byte, byte>(33);
                 for (int i = 0; i < 32; i++)
                 {
@@ -167,30 +175,68 @@ namespace FF8
                 switch (s)
                 {
                     case Kernel_bin.Stat.HP:
-                        return (ushort)Kernel_bin.CharacterStats[c].HP((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], _HP, total);
+                        return Kernel_bin.CharacterStats[c].HP((sbyte)Level, JunctionStat[s], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], _HP, total);
                     case Kernel_bin.Stat.EVA:
                         //TODO confirm if there is no flat stat buff for eva. If there isn't then remove from function.
-                        return (ushort)Kernel_bin.CharacterStats[c].EVA((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]],0, TotalStat(Kernel_bin.Stat.SPD,c), total);
+                        return Kernel_bin.CharacterStats[c].EVA((sbyte)Level, JunctionStat[s], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]],0, TotalStat(Kernel_bin.Stat.SPD,c), total);
                     case Kernel_bin.Stat.SPD:
-                        return (ushort)Kernel_bin.CharacterStats[c].SPD((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], _SPD, total);
+                        return Kernel_bin.CharacterStats[c].SPD((sbyte)Level, JunctionStat[s], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], RawStats[s], total);
                     case Kernel_bin.Stat.HIT:
-                        return (ushort)Kernel_bin.CharacterStats[c].HIT(JunctionStat[Kernel_bin.Stat.HP], JunctionStat[s] == 0 ? 0:Magics[JunctionStat[s]], WeaponID);
+                        return Kernel_bin.CharacterStats[c].HIT(JunctionStat[s], JunctionStat[s] == 0 ? 0:Magics[JunctionStat[s]], WeaponID);
                     case Kernel_bin.Stat.LUCK:
-                        return (ushort)Kernel_bin.CharacterStats[c].LUCK((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], _LCK, total);
+                        return Kernel_bin.CharacterStats[c].LUCK((sbyte)Level, JunctionStat[s], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], RawStats[s], total);
                     case Kernel_bin.Stat.MAG:
-                        return (ushort)Kernel_bin.CharacterStats[c].MAG((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], _MAG, total);
+                        return Kernel_bin.CharacterStats[c].MAG((sbyte)Level, JunctionStat[s], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], RawStats[s], total);
                     case Kernel_bin.Stat.SPR:
-                        return (ushort)Kernel_bin.CharacterStats[c].SPR((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], _SPR, total);
+                        return Kernel_bin.CharacterStats[c].SPR((sbyte)Level, JunctionStat[s], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], RawStats[s], total);
                     case Kernel_bin.Stat.STR:
-                        return (ushort)Kernel_bin.CharacterStats[c].STR((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], _STR, total,WeaponID);
+                        return Kernel_bin.CharacterStats[c].STR((sbyte)Level, JunctionStat[s], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], RawStats[s], total,WeaponID);
                     case Kernel_bin.Stat.VIT:
-                        return (ushort)Kernel_bin.CharacterStats[c].VIT((sbyte)Level, JunctionStat[Kernel_bin.Stat.HP], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], _VIT, total);
+                        return Kernel_bin.CharacterStats[c].VIT((sbyte)Level, JunctionStat[s], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], RawStats[s], total);
 
                 }
                 return 0;
             }
-            public float PercentFullHP(Characters c = Characters.Blank) => (float)CurrentHP / MaxHP(c);
+            public ushort CurrentHP(Characters c = Characters.Blank)
+            {
+                ushort max = MaxHP(c);
+                if (max < _CurrentHP) _CurrentHP = max;
+                return _CurrentHP;
+            }
+
+            public float PercentFullHP(Characters c = Characters.Blank) => (float)_CurrentHP / MaxHP(c);
             public override string ToString() => Name.Length>0?Name.ToString():base.ToString();
+            public object Clone() => new CharacterData
+            {
+                Abilities = Abilities,
+                Alternativemodel = Alternativemodel,
+                Commands = Commands,
+                CompatibilitywithGFs = CompatibilitywithGFs.ToDictionary(e => e.Key, e => e.Value),
+                _CurrentHP = _CurrentHP,
+                Exists = Exists,
+                Experience = Experience,
+                ID = ID,
+                Junctionelementalattack = Junctionelementalattack,
+                Junctionelementaldefense = Junctionelementaldefense,
+                Junctionmentalattack = Junctionmentalattack,
+                Junctionmentaldefense = Junctionmentaldefense,
+                JunctionnedGFs = JunctionnedGFs,
+                JunctionStat = JunctionStat.ToDictionary(e => e.Key, e => e.Value),
+                Magics = Magics.ToDictionary(e => e.Key, e => e.Value),
+                MentalStatus = MentalStatus,
+                ModelID = ModelID,
+                Name = (FF8String) Name.Clone(),
+                Numberofkills = Numberofkills,
+                NumberofKOs = NumberofKOs,
+                Paddingorunusedcommand = Paddingorunusedcommand,
+                Unknown1 = Unknown1,
+                Unknown2 = Unknown2,
+                Unknown3 = Unknown3,
+                Unknown4 = Unknown4,
+                WeaponID = WeaponID,
+                _HP = _HP,
+                RawStats = RawStats.ToDictionary(e => e.Key, e => e.Value),
+            };
         }
     }
 }
