@@ -446,7 +446,9 @@ namespace FF8
 
                         r = CONTAINER;
                         r.Offset(105, 48);
-                        ITEM[0, 5] = new IGMDataItem_Int(Memory.State.Fieldvars.SeedRankPts / 100 < 99999 ? Memory.State.Fieldvars.SeedRankPts / 100 : 99999, r, 2, 0, 1,5);
+                        ITEM[0, 5] = Memory.State.Fieldvars != null
+                            ? new IGMDataItem_Int(Memory.State.Fieldvars.SeedRankPts / 100 < 99999 ? Memory.State.Fieldvars.SeedRankPts / 100 : 99999, r, 2, 0, 1, 5)
+                            : null;
                     }
                     else
                     {

@@ -93,46 +93,6 @@ namespace FF8
             }
         }
 
-        public void Dump(FileID fileID, string path)
-        {
-            GetAW(fileID);
-            using (FileStream fs = File.Create(path))
-            using (BinaryWriter bw = new BinaryWriter(fs))
-
-            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(
-                aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)fileID], StringComparison.OrdinalIgnoreCase) >= 0))))
-            using (BinaryReader br = new BinaryReader(ms))
-            {
-                uint last = 0;
-                foreach (KeyValuePair<uint, List<uint>> s in files[fileID].sPositions)
-                {
-                    Loc fpos = files[fileID].subPositions[(int)s.Key];
-                    if (s.Key == 0)
-                    {
-                        last = s.Key;
-                        bw.Write(System.Text.Encoding.UTF8.GetBytes($"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n<file id={s.Key} seek={fpos.seek} length={fpos.length}>\n"));
-                    }
-                    else
-                    {
-                        last = s.Key;
-                        bw.Write(System.Text.Encoding.UTF8.GetBytes($"</file>\n<file id={s.Key} seek={fpos.seek} length={fpos.length}>\n"));
-                    }
-
-                    for (int j = 0; j < s.Value.Count; j++)
-                    {
-                        byte[] b = Font.DumpDirtyString(Read(br, fileID, s.Value[j]));
-                        if (b != null)
-                        {
-                            bw.Write(System.Text.Encoding.UTF8.GetBytes($"\t<string id={j} seek={s.Value[j]}>"));
-                            bw.Write(b);
-                            bw.Write(System.Text.Encoding.UTF8.GetBytes("</string>\n"));
-                        }
-                    }
-                }
-                bw.Write(System.Text.Encoding.UTF8.GetBytes($"</file>"));
-            }
-        }
-
         public void GetAW(FileID fileID, bool force = false)
         {
             switch (fileID)
@@ -143,7 +103,6 @@ namespace FF8
                 default:
                     ArchiveString = Memory.Archives.A_MENU;
                     break;
-
                 case FileID.NAMEDIC:
                 case FileID.KERNEL:
                     ArchiveString = Memory.Archives.A_MAIN;

@@ -271,6 +271,11 @@ namespace FF8
             public byte[] byte7531023; //[753-1023]unused in fields
             public byte[] byteAbove1023; //[Above 1023]Temporary variables used pretty much everywhere.
 
+            public FieldVars(BinaryReader br)
+            {
+                Read(br);
+            }
+
             public object Clone() => MemberwiseClone();
 
             public void Read(BinaryReader br)

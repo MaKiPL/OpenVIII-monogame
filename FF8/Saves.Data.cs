@@ -190,7 +190,9 @@ namespace FF8
                 }
                 for (int i = 0; i <= (int)Saves.Characters.Edea_Kramer; i++)
                 {
-                    Characters[(Characters)i].Read(br, (Characters)i); // 0x04A0 -> 0x08C8 //152 bytes per 8 total
+                    var tmp = new CharacterData();
+                    tmp.Read(br, (Characters)i);
+                    Characters[(Characters)i]=tmp; // 0x04A0 -> 0x08C8 //152 bytes per 8 total
                     Characters[(Characters)i].Name = Memory.Strings.GetName((Characters)i, this);
                 }
                 int ShopCount = 400 / (16 + 1 + 3);
@@ -257,10 +259,10 @@ namespace FF8
                 Direction = br.ReadBytes(3 * 1);//0x0D68  (party1, party2, party3)
                 Padding = br.ReadByte();//0x0D6B
                 Unknown9 = br.ReadUInt32();//0x0D6C
-                Fieldvars.Read(br); //0x0D70 http://wiki.ffrtt.ru/index.php/FF8/Variables
+                Fieldvars = new FieldVars(br); //0x0D70 http://wiki.ffrtt.ru/index.php/FF8/Variables
                 Worldmap.Read(br);//br.ReadBytes(128);//0x1270
                 TripleTriad.Read(br); //br.ReadBytes(128);//0x12F0
-                ChocoboWorld.Read(br); //br.ReadBytes(64);//0x1370
+                ChocoboWorld = new ChocoboWorld(br); //br.ReadBytes(64);//0x1370
             }
 
             public object Clone() => new Data

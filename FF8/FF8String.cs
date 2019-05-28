@@ -23,8 +23,8 @@ namespace FF8
         }
 
         public FF8String(byte[] @value) => Value = @value;
-
-        public FF8String(string @value) => Value = Memory.DirtyEncoding.GetBytes(@value);
+        private static Encoding.FF8TextEncoding encoding = new Encoding.FF8TextEncoding(Encoding.FF8TextEncodingCodepage.Create());
+        public FF8String(string @value) => Value = encoding.GetBytes(@value);
 
         #endregion Constructors
 
@@ -53,7 +53,7 @@ namespace FF8
 
         public static implicit operator string(FF8String input) => input?.ToString();
 
-        public override string ToString() => Memory.DirtyEncoding.GetString(Value).TrimEnd('\0');
+        public override string ToString() => encoding.GetString(Value).TrimEnd('\0');
 
         public bool MoveNext()
         {

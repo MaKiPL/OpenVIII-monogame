@@ -15,21 +15,21 @@ namespace FF8
             public enum EnabledFlags : byte
             {
                 Disabled = 0x0,
-                Enabled=0x1,
-                In_world=0x2,
-                MiniMog_found=0x4,
-                Demon_King_defeated=0x8,
-                Koko_kidnapped=0x10,
-                Hurry=0x20,
-                Koko_met=0x40,
-                Event_Wait_off=0x80,
+                Enabled = 0x1,
+                In_world = 0x2,
+                MiniMog_found = 0x4,
+                Demon_King_defeated = 0x8,
+                Koko_kidnapped = 0x10,
+                Hurry = 0x20,
+                Koko_met = 0x40,
+                Event_Wait_off = 0x80,
             }
             [Flags]
             public enum BokuAttackFlags : byte {
                 chocobraise = 0x1,
-                chocoflammes =0x2,
-                chocométéore =0x4,
-                grochocobo =0x8,
+                chocoflammes = 0x2,
+                chocométéore = 0x4,
+                grochocobo = 0x8,
             }
 
             public EnabledFlags enabled;// Enabled|In world|MiniMog found|Demon King defeated|Koko kidnapped|Hurry!|Koko met|Event Wait off
@@ -53,6 +53,8 @@ namespace FF8
             public byte u4;
             public byte home_walking;
             public byte[] u5;
+            public ChocoboWorld(){}
+            public ChocoboWorld(BinaryReader br) => Read(br);
 
             public object Clone() => new ChocoboWorld
             {
@@ -90,7 +92,7 @@ namespace FF8
                 weapon[0] = (byte)(tmp & 0x000F);
                 weapon[1] = (byte)((tmp & 0x00F0)>>4);     
                 weapon[2] = (byte)((tmp & 0x0F00)>>8);     
-                weapon[4] = (byte)((tmp & 0xF000)>>12);     
+                weapon[3] = (byte)((tmp & 0xF000)>>12);     
                 rank = br.ReadByte();
                 move = br.ReadByte();
                 saveCount = br.ReadUInt32();
