@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<file id=0 seek=0 length=4294967295>
+	<string id=0 seek=66>Galbadia</string>
+	<string id=1 seek=75>Esthar</string>
+	<string id=2 seek=82>Balamb</string>
+	<string id=3 seek=89>Dollet</string>
+	<string id=4 seek=96>Timber</string>
+	<string id=5 seek=103>Trabia</string>
+	<string id=6 seek=110>Centra</string>
+	<string id=7 seek=117>Fishermans Horizon</string>
+	<string id=8 seek=136>East Academy</string>
+	<string id=9 seek=149>Desert Prison</string>
+	<string id=10 seek=163>Trabia Garden</string>
+	<string id=11 seek=177>Lunar Base</string>
+	<string id=12 seek=188>Shumi Village</string>
+	<string id=13 seek=202>Deling City</string>
+	<string id=14 seek=214>Balamb Garden</string>
+	<string id=15 seek=228>East Academy Station</string>
+	<string id=16 seek=249>Dollet Station</string>
+	<string id=17 seek=264>Desert Prison Station</string>
+	<string id=18 seek=286>Lunar Gate</string>
+	<string id=19 seek=297>Restores</string>
+	<string id=20 seek=306>status</string>
+	<string id=21 seek=313>learns</string>
+	<string id=22 seek=320>ability</string>
+	<string id=23 seek=328>Magic</string>
+	<string id=24 seek=334>Refine</string>
+	<string id=25 seek=341>Junctions</string>
+	<string id=26 seek=351>Raises</string>
+	<string id=27 seek=358>command</string>
+	<string id=28 seek=366>Magazine</string>
+	<string id=29 seek=375>Ultimecia Castle</string>
+	<string id=30 seek=392>Garden</string>
+	<string id=31 seek=399>Deling</string>
+</file>
