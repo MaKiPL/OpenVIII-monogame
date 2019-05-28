@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{D20FB2FF-A27E-4932-AEFB-FDE54E033A82}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>FF8.ScriptFormatter</RootNamespace>
+    <AssemblyName>FF8.ScriptFormatter</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\Output\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\Output\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="FieldScriptFormatter.cs" />
+    <Compile Include="FormattedObject.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ScriptFormatterContext.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FF8.Core\FF8.Core.csproj">
+      <Project>{1D745740-720F-467C-98BD-AD15FC13923E}</Project>
+      <Name>FF8.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FF8.Encoding\FF8.Encoding.csproj">
+      <Project>{A9B33BF4-9B03-4E3D-BF6A-181521046EE8}</Project>
+      <Name>FF8.Encoding</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FF8.Fields\FF8.Fields.csproj">
+      <Project>{9FB98CE3-6379-4EE7-9A50-0969F73BDC06}</Project>
+      <Name>FF8.Fields</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FF8.JSM\FF8.JSM.csproj">
+      <Project>{53DB839C-7756-42EC-BF88-C02AB0EFD6A9}</Project>
+      <Name>FF8.JSM</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FF8.MSD\FF8.MSD.csproj">
+      <Project>{E32FFC84-1A34-4B0E-90CF-11CFE4C6D1C0}</Project>
+      <Name>FF8.MSD</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FF8.SYM\FF8.SYM.csproj">
+      <Project>{1EACEA33-B551-4FC3-86AD-5A40CA03C06B}</Project>
+      <Name>FF8.SYM</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
