@@ -825,7 +825,6 @@ namespace FF8
                     base.Init();
                     Cursor_Status |= Cursor_Status.Enabled;
                     Enabled = false;
-                    CURSOR_SELECT = 1;
                 }
 
                 public override void ReInit()
@@ -845,6 +844,8 @@ namespace FF8
                         Array.Copy(i.Data.BLANKS, BLANKS, i.Data.Count);
                         Array.Copy(i2.Data.BLANKS, 0, BLANKS, i.Data.Count, i2.Data.Count);
                     }
+                    if (CURSOR_SELECT == 0)
+                        CURSOR_SELECT = 1; 
                 }
 
                 public override bool Update()
@@ -1077,7 +1078,7 @@ namespace FF8
                 }
             }
 
-            public class IGMData_Pool : IGMData
+            public abstract class IGMData_Pool : IGMData
             {
                 public IGMData_Pool(int count, int depth, IGMDataItem container = null, int? rows = null, int? pages = null) : base(count + 2, depth, container, 1, rows) => DefaultPages = pages ?? 1;
 
@@ -1172,6 +1173,25 @@ namespace FF8
                 {
 
                 }
+                public override bool Update()
+                {
+                    bool ret = base.Update();
+                    UpdateTitle();
+                    if (Contents[CURSOR_SELECT] == Kernel_bin.Abilities.None)
+                        CURSOR_NEXT();
+                    if (Pages > 1)
+                    {
+                        if (Contents[0] == Kernel_bin.Abilities.None)
+                        {
+                            Pages = Page;
+                            PAGE_NEXT();
+                            return ret || Update();
+                        }
+                        else if (Contents[rows - 1] == Kernel_bin.Abilities.None)
+                            Pages = Page + 1;
+                    }
+                    return ret;
+                }
 
                 public override void Inputs_CANCEL()
                 {
@@ -1233,8 +1253,6 @@ namespace FF8
                 }
                 public override bool Update()
                 {
-                    bool ret = base.Update();
-                    UpdateTitle();
                     if (InGameMenu_Junction != null && InGameMenu_Junction.mode != Mode.Abilities_Commands)
                         Cursor_Status &= ~Cursor_Status.Enabled;
                     else
@@ -1273,18 +1291,8 @@ namespace FF8
 
                     if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && InGameMenu_Junction.mode == Mode.Abilities_Commands)
                         ((IGMDataItem_Box)InGameMenu_Junction.Data[SectionName.Help].CONTAINER).Data = Source[Contents[CURSOR_SELECT]].Description.ReplaceRegion();
-                    if (Pages > 1)
-                    {
-                        if (Contents[0] == Kernel_bin.Abilities.None)
-                        {
-                            Pages = Page;
-                            PAGE_NEXT();
-                            return ret || Update();
-                        }
-                        else if (Contents[rows - 1] == Kernel_bin.Abilities.None)
-                            Pages = Page + 1;
-                    }
-                    return ret;
+
+                    return base.Update();
                 }
             }
 
@@ -1295,6 +1303,12 @@ namespace FF8
                 public IGMData_Abilities_AbilityPool() : base(11, 1, new IGMDataItem_Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.ABILITY), 11, Kernel_bin.EquipableAbilities.Count / 11 + (Kernel_bin.EquipableAbilities.Count % 11 > 0 ? 1 : 0))
                 {
                     Source = Kernel_bin.EquipableAbilities;
+                }
+
+                protected override void Init()
+                {
+                    base.Init();
+                    Enabled = false;
                 }
 
                 protected override void InitShift(int i, int col, int row)
@@ -1319,10 +1333,9 @@ namespace FF8
 
                     }
                 }
-
-                public override bool Update()
+                public override void UpdateTitle()
                 {
-                    bool ret = base.Update();
+                    base.UpdateTitle();
                     if (Pages == 1)
                     {
                         ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.ABILITY;
@@ -1347,7 +1360,10 @@ namespace FF8
                                 ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.ABILITY_PG4;
                                 break;
                         }
+                }
 
+                public override bool Update()
+                {
                     if (InGameMenu_Junction != null && InGameMenu_Junction.mode != Mode.Abilities_Abilities)
                         Cursor_Status &= ~Cursor_Status.Enabled;
                     else
@@ -1389,18 +1405,7 @@ namespace FF8
                     }
                     if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && InGameMenu_Junction.mode == Mode.Abilities_Abilities)
                         ((IGMDataItem_Box)InGameMenu_Junction.Data[SectionName.Help].CONTAINER).Data = Source[Contents[CURSOR_SELECT]].Description.ReplaceRegion();
-                    if (Pages > 1)
-                    {
-                        if (Contents[0] == Kernel_bin.Abilities.None)
-                        {
-                            Pages = Page;
-                            PAGE_NEXT();
-                            return ret || Update();
-                        }
-                        else if (Contents[rows - 1] == Kernel_bin.Abilities.None)
-                            Pages = Page + 1;
-                    }
-                    return ret;
+                    return base.Update();
                 }
             }
         }
