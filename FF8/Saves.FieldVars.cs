@@ -275,7 +275,7 @@ namespace FF8
 
             public void Read(BinaryReader br)
             {
-                byte03 = Encoding.UTF8.GetString(br.ReadBytes(4)); //[0-3]unused in fields (always "FF-8")
+                byte03 = System.Text.Encoding.UTF8.GetString(br.ReadBytes(4)); //[0-3]unused in fields (always "FF-8")
                 Steps = br.ReadUInt32(); //[4]Steps (used to generate random encounters)
 
                 Payslip=br.ReadUInt32(); //[8]Payslip

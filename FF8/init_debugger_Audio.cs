@@ -67,12 +67,12 @@ namespace FF8
                     HeaderData = new byte[output_HeaderSize + 28];
                     using (MemoryStream ms = new MemoryStream(HeaderData))
                     {
-                        ms.Write(Encoding.ASCII.GetBytes("RIFF"), 0, 4);
+                        ms.Write(System.Text.Encoding.ASCII.GetBytes("RIFF"), 0, 4);
                         ms.Write(getBytes(output_TotalSize), 0, 4);
-                        ms.Write(Encoding.ASCII.GetBytes("WAVEfmt "), 0, 8);
+                        ms.Write(System.Text.Encoding.ASCII.GetBytes("WAVEfmt "), 0, 8);
                         ms.Write(getBytes(output_HeaderSize), 0, 4);
                         ms.Write(br.ReadBytes((int)output_HeaderSize), 0, (int)output_HeaderSize);
-                        ms.Write(Encoding.ASCII.GetBytes("data"), 0, 4);
+                        ms.Write(System.Text.Encoding.ASCII.GetBytes("data"), 0, 4);
                         ms.Write(getBytes(output_DataSize), 0, 4);
                     }
                 }

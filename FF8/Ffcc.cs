@@ -810,7 +810,7 @@ EOF:
                 ffmpeg.av_strerror(ret, ptr, errbuff_size);
             }
 
-            return Encoding.UTF8.GetString(errbuff).Trim('\0');
+            return System.Text.Encoding.UTF8.GetString(errbuff).Trim('\0');
         }
 
         /// <summary>

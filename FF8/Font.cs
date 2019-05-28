@@ -806,12 +806,12 @@ namespace FF8
 
                         if (DirtyEncoding.BytetoStr.ContainsKey(b))
                         {
-                            byte[] c = Encoding.UTF8.GetBytes(DirtyEncoding.BytetoStr[b]);
+                            byte[] c = System.Text.Encoding.UTF8.GetBytes(DirtyEncoding.BytetoStr[b]);
                             os.Write(c, 0, c.Length);
                         }
                         else if (DirtyEncoding.BytetoChar.ContainsKey(b))
                         {
-                            byte[] c = Encoding.UTF8.GetBytes(DirtyEncoding.BytetoChar[b].ToString());
+                            byte[] c = System.Text.Encoding.UTF8.GetBytes(DirtyEncoding.BytetoChar[b].ToString());
                             os.Write(c, 0, c.Length);
                         }
                         else if (ms.Position < ms.Length)
@@ -822,47 +822,47 @@ namespace FF8
                             {
                                 case 0x06:
                                     if (ColorCode.ContainsKey(i))
-                                        bw.Write(Encoding.UTF8.GetBytes($"<Color: \"{ColorCode[i]}\">"));
+                                        bw.Write(System.Text.Encoding.UTF8.GetBytes($"<Color: \"{ColorCode[i]}\">"));
                                     else
-                                        bw.Write(Encoding.UTF8.GetBytes($"<Color: {string.Format("0x{0:X2}", i)}>"));
+                                        bw.Write(System.Text.Encoding.UTF8.GetBytes($"<Color: {string.Format("0x{0:X2}", i)}>"));
                                     break;
 
                                 case 0x05:
                                     if (Icons.ContainsKey(i))
-                                        bw.Write(Encoding.UTF8.GetBytes($"<Icon_Button: \"{Icons[i]}\">"));
+                                        bw.Write(System.Text.Encoding.UTF8.GetBytes($"<Icon_Button: \"{Icons[i]}\">"));
                                     else
-                                        bw.Write(Encoding.UTF8.GetBytes($"<Icon_Button: {string.Format("0x{0:X2}", i)}>"));
+                                        bw.Write(System.Text.Encoding.UTF8.GetBytes($"<Icon_Button: {string.Format("0x{0:X2}", i)}>"));
                                     break;
 
                                 case 0x03:
                                     if (Names.ContainsKey(i))
-                                        bw.Write(Encoding.UTF8.GetBytes($"<Name: \"{Names[i]}\">"));
+                                        bw.Write(System.Text.Encoding.UTF8.GetBytes($"<Name: \"{Names[i]}\">"));
                                     else
-                                        bw.Write(Encoding.UTF8.GetBytes($"<Name: {string.Format("0x{0:X2}", i)}>"));
+                                        bw.Write(System.Text.Encoding.UTF8.GetBytes($"<Name: {string.Format("0x{0:X2}", i)}>"));
                                     break;
 
                                 case 0x0C:
                                     if (Spell.ContainsKey(i))
-                                        bw.Write(Encoding.UTF8.GetBytes($"<Spell_GF: \"{Spell[i]}\">"));
+                                        bw.Write(System.Text.Encoding.UTF8.GetBytes($"<Spell_GF: \"{Spell[i]}\">"));
                                     else
-                                        bw.Write(Encoding.UTF8.GetBytes($"<Spell_GF: {string.Format("0x{0:X2}", i)}>"));
+                                        bw.Write(System.Text.Encoding.UTF8.GetBytes($"<Spell_GF: {string.Format("0x{0:X2}", i)}>"));
                                     break;
 
                                 case 0x0A:
                                 case 0x0B://0x0B can be 2 or 3 bytes only grabbing 2 so might have extra rando character near
                                     if (Special.ContainsKey(i))
-                                        bw.Write(Encoding.UTF8.GetBytes($"<Special: \"{Special[i]}\">"));
+                                        bw.Write(System.Text.Encoding.UTF8.GetBytes($"<Special: \"{Special[i]}\">"));
                                     else
-                                        bw.Write(Encoding.UTF8.GetBytes($"<Special: {string.Format("0x{0:X2}", i)}>"));
+                                        bw.Write(System.Text.Encoding.UTF8.GetBytes($"<Special: {string.Format("0x{0:X2}", i)}>"));
                                     break;
 
                                 case 0xC4:
                                     ms.Seek(-1, SeekOrigin.Current);
-                                    bw.Write(Encoding.UTF8.GetBytes(string.Format("0x{0:X2}", (int)b)));
+                                    bw.Write(System.Text.Encoding.UTF8.GetBytes(string.Format("0x{0:X2}", (int)b)));
                                     break;
 
                                 default:
-                                    bw.Write(Encoding.UTF8.GetBytes(string.Format("0x{0:X2}", i)));
+                                    bw.Write(System.Text.Encoding.UTF8.GetBytes(string.Format("0x{0:X2}", i)));
                                     break;
                             }
                         }
