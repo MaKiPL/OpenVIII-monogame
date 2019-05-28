@@ -12,7 +12,7 @@ namespace FF8
         public class ChocoboWorld : ICloneable//64
         {
             [Flags]
-            public enum enabledFlags : byte
+            public enum EnabledFlags : byte
             {
                 Disabled = 0x0,
                 Enabled=0x1,
@@ -25,14 +25,14 @@ namespace FF8
                 Event_Wait_off=0x80,
             }
             [Flags]
-            public enum bokuAttackFlags : byte {
+            public enum BokuAttackFlags : byte {
                 chocobraise = 0x1,
                 chocoflammes =0x2,
                 chocométéore =0x4,
                 grochocobo =0x8,
             }
 
-            public enabledFlags enabled;// Enabled|In world|MiniMog found|Demon King defeated|Koko kidnapped|Hurry!|Koko met|Event Wait off
+            public EnabledFlags enabled;// Enabled|In world|MiniMog found|Demon King defeated|Koko kidnapped|Hurry!|Koko met|Event Wait off
             public byte level;
             public byte current_hp;
             public byte max_hp;
@@ -49,7 +49,7 @@ namespace FF8
             public byte[] u2;
             public ulong associatedSaveID;
             public byte u3;
-            public bokuAttackFlags boko_attack;// star count (chocobraise | chocoflammes | chocométéore | grochocobo)
+            public BokuAttackFlags boko_attack;// star count (chocobraise | chocoflammes | chocométéore | grochocobo)
             public byte u4;
             public byte home_walking;
             public byte[] u5;
@@ -81,7 +81,7 @@ namespace FF8
 
             public void Read(BinaryReader br)
             {
-                enabled = (enabledFlags)br.ReadByte();// Enabled|In world|MiniMog found|Demon King defeated|Koko kidnapped|Hurry!|Koko met|Event Wait off
+                enabled = (EnabledFlags)br.ReadByte();// Enabled|In world|MiniMog found|Demon King defeated|Koko kidnapped|Hurry!|Koko met|Event Wait off
                 level = br.ReadByte();
                 current_hp = br.ReadByte();
                 max_hp = br.ReadByte();
@@ -103,7 +103,7 @@ namespace FF8
                 u2 = br.ReadBytes(16);
                 associatedSaveID = br.ReadUInt32();
                 u3 = br.ReadByte();
-                boko_attack = (bokuAttackFlags)br.ReadByte();// star count (chocobraise | chocoflammes | chocométéore | grochocobo)
+                boko_attack = (BokuAttackFlags)br.ReadByte();// star count (chocobraise | chocoflammes | chocométéore | grochocobo)
                 u4 = br.ReadByte();
                 home_walking = br.ReadByte();
                 u5 = br.ReadBytes(16);
