@@ -322,9 +322,9 @@ namespace FF8
                                     int pos = 0;
                                     if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
                                     {
-                                        for (byte i = 0; Memory.State.Party != null && i < Memory.State.Characters.Length; i++)
+                                        for (byte i = 0; Memory.State.Party != null && i < Memory.State.Characters.Count; i++)
                                         {
-                                            if (!Memory.State.PartyData.Contains((Saves.Characters)i) && Memory.State.Characters[i].VisibleInMenu)
+                                            if (!Memory.State.PartyData.Contains((Saves.Characters)i) && Memory.State.Characters[(Saves.Characters)i].VisibleInMenu)
                                             {
                                                 if (pos++ + 3 == choChar)
                                                 {
@@ -504,9 +504,9 @@ namespace FF8
                     bool ret = base.Update();
                     if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
                     {
-                        for (byte i = 0; Memory.State.Party != null && i < Memory.State.Characters.Length && SIZE != null && pos < SIZE.Length; i++)
+                        for (byte i = 0; Memory.State.Party != null && i < Memory.State.Characters.Count && SIZE != null && pos < SIZE.Length; i++)
                         {
-                            if (!Memory.State.Party.Contains((Saves.Characters)i) && Memory.State.Characters[i].VisibleInMenu)
+                            if (!Memory.State.Party.Contains((Saves.Characters)i) && Memory.State.Characters[(Saves.Characters)i].VisibleInMenu)
                             {
                                 BLANKS[pos] = false;
                                 Update(pos++, (Saves.Characters)i);
@@ -538,7 +538,7 @@ namespace FF8
 
                     r = rbak;
                     r.Offset((49), yoff);
-                    ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[(int)character].Level, r, 2, 0, 1,3);
+                    ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[character].Level, r, 2, 0, 1,3);
 
                     r = rbak;
                     r.Offset(126, yoff);
@@ -548,19 +548,19 @@ namespace FF8
                     r.Width = 118;
                     r.Height = 1;
                     ITEM[pos, 4] = new IGMDataItem_Texture(_red_pixel, r) { Color = Color.Black };
-                    r.Width = (int)(r.Width * Memory.State.Characters[(int)character].PercentFullHP());
+                    r.Width = (int)(r.Width * Memory.State.Characters[character].PercentFullHP());
                     ITEM[pos, 5] = new IGMDataItem_Texture(_red_pixel, r) { Color = color };
 
                     r.Width = 118;
                     r.Offset(0, 2);
                     ITEM[pos, 6] = new IGMDataItem_Texture(_red_pixel, r) { Color = Color.Black };
-                    r.Width = (int)(r.Width * Memory.State.Characters[(int)character].PercentFullHP());
+                    r.Width = (int)(r.Width * Memory.State.Characters[character].PercentFullHP());
                     ITEM[pos, 7] = new IGMDataItem_Texture(_red_pixel, r) { Color = color };
                     //TODO red bar resizes based on current/max hp
 
                     r = rbak;
                     r.Offset((166), yoff);
-                    ITEM[pos, 8] = new IGMDataItem_Int(Memory.State.Characters[(int)character].CurrentHP, r, 2, 0, 1,4);
+                    ITEM[pos, 8] = new IGMDataItem_Int(Memory.State.Characters[character].CurrentHP(), r, 2, 0, 1,4);
                 }
             }
 
@@ -632,7 +632,7 @@ namespace FF8
 
                             r = dims.Item3;
                             r.Offset((229), yoff);
-                            ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[(int)character].Level, r, 2, 0, 1,3);
+                            ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[character].Level, r, 2, 0, 1,3);
 
                             r = dims.Item3;
                             r.Offset(304, yoff);
@@ -640,7 +640,7 @@ namespace FF8
 
                             r = dims.Item3;
                             r.Offset((354), yoff);
-                            ITEM[pos, 4] = new IGMDataItem_Int(Memory.State.Characters[(int)character].CurrentHP, r, 2, 0, 1,4);
+                            ITEM[pos, 4] = new IGMDataItem_Int(Memory.State.Characters[character].CurrentHP(visableCharacter), r, 2, 0, 1,4);
 
                             r = dims.Item3;
                             r.Offset(437, yoff);
@@ -649,7 +649,7 @@ namespace FF8
                             r = dims.Item3;
 
                             r.Offset((459), yoff);
-                            ITEM[pos, 6] = new IGMDataItem_Int(Memory.State.Characters[(int)character].MaxHP(visableCharacter), r, 2, 0,1,4);
+                            ITEM[pos, 6] = new IGMDataItem_Int(Memory.State.Characters[character].MaxHP(visableCharacter), r, 2, 0,1,4);
 
                             if (Memory.State.TeamLaguna || Memory.State.SmallTeam)
                             {
@@ -660,7 +660,7 @@ namespace FF8
 
                                 r = dims.Item3;
                                 r.Offset((340), 42);
-                                ITEM[pos, 8] = new IGMDataItem_Int((int)Memory.State.Characters[(int)character].Experience, r, 2, 0, 1,9);
+                                ITEM[pos, 8] = new IGMDataItem_Int((int)Memory.State.Characters[character].Experience, r, 2, 0, 1,9);
 
                                 r = dims.Item3;
                                 r.Offset(520, 42);
@@ -668,7 +668,7 @@ namespace FF8
 
                                 r = dims.Item3;
                                 r.Offset((340), 75);
-                                ITEM[pos, 10] = new IGMDataItem_Int(Memory.State.Characters[(int)character].ExperienceToNextLevel, r, 2, 0, 1,9);
+                                ITEM[pos, 10] = new IGMDataItem_Int(Memory.State.Characters[character].ExperienceToNextLevel, r, 2, 0, 1,9);
 
                                 r = dims.Item3;
                                 r.Offset(520, 75);

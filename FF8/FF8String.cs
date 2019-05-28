@@ -7,7 +7,7 @@ namespace FF8
     /// <summary>
     /// This holds the encoded bytes and provides implict casts to string and byte[]
     /// </summary>
-    public class FF8String : IEnumerator, IEnumerable
+    public class FF8String : IEnumerator, IEnumerable, ICloneable
     {
         #region Fields
 
@@ -112,6 +112,12 @@ namespace FF8
             while (i >= 0&& i < Length);
             return this;
         }
+
+        public object Clone() => new FF8String
+        {
+            //position = position,
+            value = value
+        };
         #endregion Methods
     }
 }
