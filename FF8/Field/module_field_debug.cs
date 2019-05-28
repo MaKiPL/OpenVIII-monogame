@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
 using System.IO;
+using FF8.Core;
 
 namespace FF8
 {
@@ -13,7 +14,8 @@ namespace FF8
         private static Field_mods mod = 0;
         private static Texture2D tex;
         private static Texture2D texOverlap;
-
+        private static EventEngine eventEngine;
+        private static IServices services;
         private static List<Tile> tiles;
 
         private struct Tile
@@ -98,11 +100,16 @@ namespace FF8
                     Init();
                     break;
                 case Field_mods.DEBUGRENDER:
+                    UpdateScript();
                     break; //await events here
             }
         }
 
-
+        private static void UpdateScript()
+        {
+            //We do not know every instruction and it's not possible for now to play field with unknown instruction
+            //eventEngine.Update(services);
+        }
 
         private static void Init()
         {
@@ -141,10 +148,6 @@ namespace FF8
 
                 ParseBackground(mimb, mapb);
             }
-
-#if DEBUG
-            if (Memory.FieldHolder.FieldID == 180) goto safeDebugpoint; //delete me
-#endif
             //let's start with scripts
             byte[] jsm = null;
             byte[] sy = null;
@@ -165,34 +168,46 @@ namespace FF8
                 jsm = ArchiveWorker.FileInTwoArchives(fi, fs, fl, s_jsm);
                 sy = ArchiveWorker.FileInTwoArchives(fi, fs, fl, s_sy);
             }
+            List<JSM.Jsm.GameObject> jsmObjects = JSM.Jsm.File.Read(jsm);
+            SYM.Sym.GameObjects symObjects = SYM.Sym.Reader.FromBytes(sy);
+            services = FieldInitializer.GetServices();
+            eventEngine = ServiceId.Field[services].Engine;
+            eventEngine.Reset();
+            for (var objIndex = 0; objIndex < jsmObjects.Count; objIndex++)
+            {
+                JSM.Jsm.GameObject obj = jsmObjects[objIndex];
+                FieldObject fieldObject = new FieldObject(obj.Id, symObjects.GetObjectOrDefault(objIndex).Name);
 
-        //string mch = test_.Where(x => x.ToLower().Contains(".mch")).First();
-        //string one = test_.Where(x => x.ToLower().Contains(".one")).First();
-        //string msd = test_.Where(x => x.ToLower().Contains(".msd")).First();
-        //string inf = test_.Where(x => x.ToLower().Contains(".inf")).First();
-        //string id = test_.Where(x => x.ToLower().Contains(".id")).First();
-        //string ca = test_.Where(x => x.ToLower().Contains(".ca")).First();
-        //string tdw = test_.Where(x => x.ToLower().Contains(".tdw")).First();
-        //string msk = test_.Where(x => x.ToLower().Contains(".msk")).First();
-        //string rat = test_.Where(x => x.ToLower().Contains(".rat")).First();
-        //string pmd = test_.Where(x => x.ToLower().Contains(".pmd")).First();
-        //string sfx = test_.Where(x => x.ToLower().Contains(".sfx")).First();
+                foreach (JSM.Jsm.GameScript script in obj.Scripts)
+                    fieldObject.Scripts.Add(script.ScriptId, script.Segment.GetExecuter());
 
-        //byte[] mchb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, mch); //Field character models
-        //byte[] oneb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, one); //Field character models container
-        //byte[] msdb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, msd); //dialogs
-        //byte[] infb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, inf); //gateways
-        //byte[] idb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, id); //walkmesh
-        //byte[] cab = ArchiveWorker.FileInTwoArchives(fi, fs, fl, ca); //camera
-        //byte[] tdwb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, tdw); //extra font
-        //byte[] mskb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, msk); //movie cam
-        //byte[] ratb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, rat); //battle on field
-        //byte[] pmdb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, pmd); //particle info
-        //byte[] sfxb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, sfx); //sound effects
+                eventEngine.RegisterObject(fieldObject);
+            }
+            //string mch = test_.Where(x => x.ToLower().Contains(".mch")).First();
+            //string one = test_.Where(x => x.ToLower().Contains(".one")).First();
+            //string msd = test_.Where(x => x.ToLower().Contains(".msd")).First();
+            //string inf = test_.Where(x => x.ToLower().Contains(".inf")).First();
+            //string id = test_.Where(x => x.ToLower().Contains(".id")).First();
+            //string ca = test_.Where(x => x.ToLower().Contains(".ca")).First();
+            //string tdw = test_.Where(x => x.ToLower().Contains(".tdw")).First();
+            //string msk = test_.Where(x => x.ToLower().Contains(".msk")).First();
+            //string rat = test_.Where(x => x.ToLower().Contains(".rat")).First();
+            //string pmd = test_.Where(x => x.ToLower().Contains(".pmd")).First();
+            //string sfx = test_.Where(x => x.ToLower().Contains(".sfx")).First();
+
+            //byte[] mchb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, mch); //Field character models
+            //byte[] oneb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, one); //Field character models container
+            //byte[] msdb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, msd); //dialogs
+            //byte[] infb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, inf); //gateways
+            //byte[] idb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, id); //walkmesh
+            //byte[] cab = ArchiveWorker.FileInTwoArchives(fi, fs, fl, ca); //camera
+            //byte[] tdwb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, tdw); //extra font
+            //byte[] mskb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, msk); //movie cam
+            //byte[] ratb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, rat); //battle on field
+            //byte[] pmdb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, pmd); //particle info
+            //byte[] sfxb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, sfx); //sound effects
 
 
-
-        safeDebugpoint:
             mod++;
             return;
         }
