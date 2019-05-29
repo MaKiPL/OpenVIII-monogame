@@ -87,6 +87,8 @@ namespace FF8
                 TopMenu_Off,
                 TopMenu_Auto,
                 TopMenu_Abilities,
+                RemMag,
+                RemAll,
             }
 
             public static Dictionary<Items, FF8String> Titles { get; private set; }
@@ -205,6 +207,10 @@ namespace FF8
                     new IGMData_Abilities_CommandPool(),
                     new IGMData_Abilities_AbilityPool()
                     ));
+                FF8String Yes = Memory.Strings.Read(Strings.FileID.MNGRP, 0, 57);
+                FF8String No = Memory.Strings.Read(Strings.FileID.MNGRP, 0, 58);
+                Data.Add(SectionName.RemMag, new IGMData_ConfirmRemMag(data:Memory.Strings.Read(Strings.FileID.MNGRP, 2, 280),title: Icons.ID.NOTICE,opt1: Yes, opt2: No, pos: new Rectangle(180, 174, 477, 216)));
+                Data.Add(SectionName.RemAll, new IGMData_ConfirmRemAll(data:Memory.Strings.Read(Strings.FileID.MNGRP, 2, 279),title: Icons.ID.NOTICE,opt1: Yes, opt2: No, pos: new Rectangle(180, 174, 477, 216)));
                 base.Init();
             }
 
@@ -223,7 +229,9 @@ namespace FF8
                 TopMenu_Auto,
                 Abilities,
                 Abilities_Commands,
-                Abilities_Abilities
+                Abilities_Abilities,
+                RemMag,
+                RemAll
             }
 
             public new Mode mode;
@@ -260,7 +268,12 @@ namespace FF8
                     case Mode.Abilities_Abilities:
                         ret = ((IGMData_Abilities_Group)Data[SectionName.TopMenu_Abilities]).ITEM[3, 0].Inputs();
                         break;
-
+                    case Mode.RemMag:
+                        ret = ((IGMData_ConfirmDialog)Data[SectionName.RemMag]).Inputs();
+                        break;
+                    case Mode.RemAll:
+                        ret = ((IGMData_ConfirmDialog)Data[SectionName.RemAll]).Inputs();
+                        break;
                     default:
                         break;
                 }
@@ -1078,7 +1091,7 @@ namespace FF8
                 }
             }
 
-            public abstract class IGMData_Pool : IGMData
+            public abstract class IGMData_Pool<T> : IGMData
             {
                 public IGMData_Pool(int count, int depth, IGMDataItem container = null, int? rows = null, int? pages = null) : base(count + 2, depth, container, 1, rows) => DefaultPages = pages ?? 1;
 
@@ -1086,7 +1099,7 @@ namespace FF8
                 public int Pages { get; protected set; }
                 public int Page { get; protected set; }
                 public Kernel_bin.Abilities[] Contents { get; private set; }
-                protected object Source { get; set; }
+                protected T Source { get; set; }
 
                 protected override void Init()
                 {
@@ -1200,10 +1213,8 @@ namespace FF8
                 }
             }
 
-            private class IGMData_Abilities_CommandPool : IGMData_Pool
+            private class IGMData_Abilities_CommandPool : IGMData_Pool<Dictionary<Kernel_bin.Abilities, Kernel_bin.Command_abilities>>
             {
-
-                protected new Dictionary<Kernel_bin.Abilities, Kernel_bin.Command_abilities> Source { get; set; }
 
                 public IGMData_Abilities_CommandPool() : base(11, 1, new IGMDataItem_Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.COMMAND), 11, Kernel_bin.Commandabilities.Count / 11 + (Kernel_bin.Commandabilities.Count % 11 > 0 ? 1 : 0))
                 {
@@ -1296,9 +1307,8 @@ namespace FF8
                 }
             }
 
-            private class IGMData_Abilities_AbilityPool : IGMData_Pool
+            private class IGMData_Abilities_AbilityPool : IGMData_Pool<Dictionary<Kernel_bin.Abilities, Kernel_bin.Equipable_Ability>>
             {
-                protected new Dictionary<Kernel_bin.Abilities, Kernel_bin.Equipable_Ability> Source { get; set; }
 
                 public IGMData_Abilities_AbilityPool() : base(11, 1, new IGMDataItem_Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.ABILITY), 11, Kernel_bin.EquipableAbilities.Count / 11 + (Kernel_bin.EquipableAbilities.Count % 11 > 0 ? 1 : 0))
                 {
@@ -1406,6 +1416,45 @@ namespace FF8
                     if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && InGameMenu_Junction.mode == Mode.Abilities_Abilities)
                         ((IGMDataItem_Box)InGameMenu_Junction.Data[SectionName.Help].CONTAINER).Data = Source[Contents[CURSOR_SELECT]].Description.ReplaceRegion();
                     return base.Update();
+                }
+            }
+
+            public abstract class IGMData_ConfirmDialog : IGMData
+            {
+                protected int startcursor;
+
+                public IGMData_ConfirmDialog(FF8String data, Icons.ID title, FF8String opt1, FF8String opt2, Rectangle? pos, int startcursor = 0) : base(2, 1, new IGMDataItem_Box(data, pos, title), 1, 2)
+                {
+                    this.startcursor = startcursor;
+                }
+                protected override void Init()
+                {
+                    SIZE[0] = new Rectangle(212 + X, 117 + Y, 52, 30);
+                    SIZE[1] = new Rectangle(212 + X, 156 + Y, 52, 30);
+                    base.Init();
+                    Enabled = false;
+                    Cursor_Status |= Cursor_Status.Enabled;
+                    Cursor_Status |= Cursor_Status.Vertical;
+                    Cursor_Status |= Cursor_Status.Horizontal;
+                }
+                public override void ReInit()
+                {
+                    base.ReInit();
+                    CURSOR_SELECT = startcursor;
+                }
+            }
+            private sealed class IGMData_ConfirmRemMag : IGMData_ConfirmDialog
+            {
+
+                public IGMData_ConfirmRemMag(FF8String data, Icons.ID title, FF8String opt1, FF8String opt2, Rectangle pos) : base(data,title,opt1,opt2,pos)
+                {
+                }
+            }
+            private sealed class IGMData_ConfirmRemAll : IGMData_ConfirmDialog
+            {
+
+                public IGMData_ConfirmRemAll(FF8String data, Icons.ID title, FF8String opt1, FF8String opt2, Rectangle pos) : base(data, title, opt1, opt2, pos)
+                {
                 }
             }
         }

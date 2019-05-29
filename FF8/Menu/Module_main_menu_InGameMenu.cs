@@ -1066,17 +1066,21 @@ namespace FF8
                 {
                     for (int i = 0; i < SIZE.Length; i++)
                     {
+                        
                         int col = (Table_Options & Table_Options.FillRows) != 0 ? i % cols : i / rows;
                         int row = (Table_Options & Table_Options.FillRows) != 0 ? i / cols : i % rows;
                         if (col < cols && row < rows)
                         {
-                            SIZE[i] = new Rectangle
+                            if (SIZE[i].IsEmpty) //allows for override a size value before the loop.
                             {
-                                X = X + (Width * col) / cols,
-                                Y = Y + (Height * row) / rows,
-                                Width = Width / cols,
-                                Height = Height / rows,
-                            };
+                                SIZE[i] = new Rectangle
+                                {
+                                    X = X + (Width * col) / cols,
+                                    Y = Y + (Height * row) / rows,
+                                    Width = Width / cols,
+                                    Height = Height / rows,
+                                };
+                            }
                             InitShift(i, col, row);
                             CURSOR[i].Y += (int)(SIZE[i].Y + SIZE[i].Height / 2 - 6 * TextScale.Y);
                             CURSOR[i].X += SIZE[i].X;
