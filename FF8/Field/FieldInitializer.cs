@@ -1,5 +1,4 @@
-﻿using FF8.Core;
-using System;
+﻿using System;
 using System.Linq;
 
 namespace FF8
@@ -24,7 +23,7 @@ namespace FF8
                 .Replace("\r", "")
                 .Split('\n');
             Memory.FieldHolder.fields = maplistb;
-            Core.FieldId.FieldId_ = maplistb;
+            FieldId.FieldId_ = maplistb;
 
 
         }
