@@ -5,7 +5,6 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
 using System.IO;
-using FF8.Core;
 
 namespace FF8
 {
@@ -167,17 +166,17 @@ namespace FF8
                 jsm = ArchiveWorker.FileInTwoArchives(fi, fs, fl, s_jsm);
                 sy = ArchiveWorker.FileInTwoArchives(fi, fs, fl, s_sy);
             }
-            List<JSM.Jsm.GameObject> jsmObjects = JSM.Jsm.File.Read(jsm);
-            SYM.Sym.GameObjects symObjects = SYM.Sym.Reader.FromBytes(sy);
+            List<Jsm.GameObject> jsmObjects = Jsm.File.Read(jsm);
+            Sym.GameObjects symObjects = Sym.Reader.FromBytes(sy);
             services = FieldInitializer.GetServices();
             eventEngine = ServiceId.Field[services].Engine;
             eventEngine.Reset();
             for (var objIndex = 0; objIndex < jsmObjects.Count; objIndex++)
             {
-                JSM.Jsm.GameObject obj = jsmObjects[objIndex];
+                Jsm.GameObject obj = jsmObjects[objIndex];
                 FieldObject fieldObject = new FieldObject(obj.Id, symObjects.GetObjectOrDefault(objIndex).Name);
 
-                foreach (JSM.Jsm.GameScript script in obj.Scripts)
+                foreach (Jsm.GameScript script in obj.Scripts)
                     fieldObject.Scripts.Add(script.ScriptId, script.Segment.GetExecuter());
 
                 eventEngine.RegisterObject(fieldObject);
