@@ -9,7 +9,7 @@ namespace FF8
         /// TT vars.
         /// </summary>
         /// <see cref="https://github.com/myst6re/hyne/blob/master/SaveData.h"/>
-        public struct TripleTriad //128
+        public class TripleTriad //128
         {
             byte[] cards;
             byte[] card_locations;
@@ -20,6 +20,12 @@ namespace FF8
             ushort tt_egality_count;
             ushort u2;
             ulong u3;
+
+            public TripleTriad()
+            {
+            }
+
+            public TripleTriad(BinaryReader br) => Read(br);
             public void Read(BinaryReader br)
             {
                 cards = br.ReadBytes(77);
@@ -32,6 +38,8 @@ namespace FF8
                 u2 = br.ReadUInt16();
                 u3 = br.ReadUInt32();
             }
+
+            internal TripleTriad Clone() => (TripleTriad) MemberwiseClone();
         }
     }
 }

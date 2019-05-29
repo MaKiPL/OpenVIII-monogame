@@ -20,7 +20,7 @@ namespace FF8
             public Renzokeken_Level Renzokuken; //0x0002	1 byte Renzokuken finishers
 
             public byte Unknown0; //0x0003	1 byte Unknown
-            public Saves.Characters Character;//0x0004	1 byte Character ID
+            public Characters Character;//0x0004	1 byte Character ID
             public Attack_Type Attack_type;//0x0005	1 bytes Attack Type
             public byte Attack_power;//0x0006	1 byte Attack Power
             public byte HIT;//0x0007	1 byte Attack Parameter
@@ -35,7 +35,7 @@ namespace FF8
                 br.BaseStream.Seek(2, SeekOrigin.Current);
                 Renzokuken = (Renzokeken_Level)br.ReadByte(); //0x0002	1 byte Renzokuken finishers
                 Unknown0 = br.ReadByte(); //0x0003	1 byte Unknown
-                Character = (Saves.Characters)br.ReadByte();//0x0004	1 byte Character ID
+                Character = (Characters)br.ReadByte();//0x0004	1 byte Character ID
                 Attack_type = (Attack_Type)br.ReadByte();//0x0005	1 bytes Attack Type
                 Attack_power = br.ReadByte();//0x0006	1 byte Attack Power
                 HIT = br.ReadByte();//0x0007	1 byte Attack Parameter

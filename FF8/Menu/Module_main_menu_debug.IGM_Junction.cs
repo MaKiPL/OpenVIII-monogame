@@ -96,12 +96,12 @@ namespace FF8
             /// <summary>
             /// Character who has the junctions and inventory. Same as VisableCharacter unless TeamLaguna.
             /// </summary>
-            public static Saves.Characters Character { get; private set; }
+            public static Characters Character { get; private set; }
 
             /// <summary>
             /// Required to support Laguna's Party. They have unique stats but share junctions and inventory.
             /// </summary>
-            public static Saves.Characters VisableCharacter { get; private set; }
+            public static Characters VisableCharacter { get; private set; }
 
             public override bool Update()
             {
@@ -208,7 +208,7 @@ namespace FF8
                 base.Init();
             }
 
-            public void ReInit(Saves.Characters c, Saves.Characters vc)
+            public void ReInit(Characters c, Characters vc)
             {
                 Character = c;
                 VisableCharacter = vc;
@@ -366,7 +366,7 @@ namespace FF8
 
                     if (Memory.State.Characters != null)
                     {
-                        Kernel_bin.Abilities[] unlocked = Memory.State.Characters[Character].UnlockedGFAbilities;
+                        List<Kernel_bin.Abilities> unlocked = Memory.State.Characters[Character].UnlockedGFAbilities;
                         ITEM[5, 0] = new IGMDataItem_Icon(Icons.ID.Icon_Status_Attack, new Rectangle(SIZE[5].X + 200, SIZE[5].Y, 0, 0),
                             (byte)(unlocked.Contains(Kernel_bin.Abilities.ST_Atk_J) ? 2 : 7));
                         ITEM[5, 1] = new IGMDataItem_Icon(Icons.ID.Icon_Status_Defense, new Rectangle(SIZE[5].X + 240, SIZE[5].Y, 0, 0),
@@ -1263,7 +1263,7 @@ namespace FF8
                     int skip = Page * rows;
                     for (int i = 0;
                         Memory.State.Characters != null &&
-                        i < Memory.State.Characters[Character].UnlockedGFAbilities.Length &&
+                        i < Memory.State.Characters[Character].UnlockedGFAbilities.Count &&
                         pos < rows; i++)
                     {
                         if (Memory.State.Characters[Character].UnlockedGFAbilities[i] != Kernel_bin.Abilities.None)
@@ -1372,7 +1372,7 @@ namespace FF8
                     int skip = Page * rows;
                     for (int i = 0;
                         Memory.State.Characters != null &&
-                        i < Memory.State.Characters[Character].UnlockedGFAbilities.Length &&
+                        i < Memory.State.Characters[Character].UnlockedGFAbilities.Count &&
                         pos < rows; i++)
                     {
                         if (Memory.State.Characters[Character].UnlockedGFAbilities[i] != Kernel_bin.Abilities.None)

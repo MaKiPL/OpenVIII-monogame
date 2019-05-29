@@ -29,25 +29,6 @@ namespace FF8
             { GFflags.Siren,GFs.Siren },
             { GFflags.Tonberry,GFs.Tonberry },
         };
-        public enum GFs
-        {
-            Quezacotl,
-            Shiva,
-            Ifrit,
-            Siren,
-            Brothers,
-            Diablos,
-            Carbuncle,
-            Leviathan,
-            Pandemona,
-            Cerberus,
-            Alexander,
-            Doomtrain,
-            Bahamut,
-            Cactuar,
-            Tonberry,
-            Eden
-        }
         [Flags]
         public enum GFflags
         {

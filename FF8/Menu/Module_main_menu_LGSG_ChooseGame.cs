@@ -290,14 +290,14 @@ namespace FF8
             {
                 if (face != 0)
                     faceRect.Offset(faceRect.Width, 0);
-                if (d.Party[face] != Saves.Characters.Blank)
+                if (d.Party[face] != Characters.Blank)
                 {
                     Memory.Faces.Draw(d.Party[face], faceRect, Vector2.UnitY, fade);
                     Memory.Icons.Draw(Icons.ID.MenuBorder, 2, faceRect, new Vector2(1f), fade);
                     if (mainchar == -1) mainchar = (sbyte)face;
                 }
             }
-            if (mainchar > -1 && d != null && d.Party != null && d.Party[mainchar] != Saves.Characters.Blank)
+            if (mainchar > -1 && d != null && d.Party != null && d.Party[mainchar] != Characters.Blank)
             {
                 Vector2 detailsLoc = new Vector2
                 {

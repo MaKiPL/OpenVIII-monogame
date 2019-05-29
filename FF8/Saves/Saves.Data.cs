@@ -7,7 +7,7 @@ namespace FF8
 {
     public static partial class Saves
     {
-        public class Data : ICloneable
+        public class Data 
         {
             public ushort LocationID;//0x0004
             public ushort firstcharacterscurrentHP;//0x0006
@@ -38,9 +38,9 @@ namespace FF8
 
             public uint Currentsave;//0x005C
 
-            public GFData[] GFs; // 0x0060 -> 0x045C //68 bytes per 16 total
+            public Dictionary<GFs, GFData> GFs; // 0x0060 -> 0x045C //68 bytes per 16 total
             public Dictionary<Characters, CharacterData> Characters; // 0x04A0 -> 0x08C8 //152 bytes per 8 total
-            public Shop[] Shops; //0x0960 //400 bytes
+            public List<Shop> Shops; //0x0960 //400 bytes
             public byte[] Configuration; //0x0AF0 //20 bytes
             public Characters[] PartyData; //0x0B04 // 4 bytes 0xFF terminated.
             public byte[] KnownWeapons; //0x0B08 // 4 bytes
@@ -102,9 +102,9 @@ namespace FF8
             public TripleTriad TripleTriad; //0x12F0
             public ChocoboWorld ChocoboWorld; //0x1370
 
-            public struct Item { public byte ID; public byte QTY; };
+            
 
-            public bool TeamLaguna => Party != null && (Party[0] == Saves.Characters.Laguna_Loire || Party[1] == Saves.Characters.Laguna_Loire || Party[2] == Saves.Characters.Laguna_Loire);
+            public bool TeamLaguna => Party != null && (Party[0] == FF8.Characters.Laguna_Loire || Party[1] == FF8.Characters.Laguna_Loire || Party[2] == FF8.Characters.Laguna_Loire);
 
             public bool SmallTeam
             {
@@ -168,7 +168,7 @@ namespace FF8
             public void Read(BinaryReader br)
             {
                 Timeplayed = new TimeSpan();
-                GFs = new GFData[16];
+                GFs = new Dictionary<GFs, GFData>(16);
                 Characters = new Dictionary<Characters, CharacterData>(8);
                 LocationID = br.ReadUInt16();//0x0004
                 firstcharacterscurrentHP = br.ReadUInt16();//0x0006
@@ -184,21 +184,20 @@ namespace FF8
                 Bokosname = br.ReadBytes(12);//0x004C
                 CurrentDisk = br.ReadUInt32();//0x0058
                 Currentsave = br.ReadUInt32();//0x005C
-                for (int i = 0; i < GFs.Length; i++)
+                for (int i = 0; i <= (int) FF8.GFs.Eden; i++)
                 {
-                    GFs[i].Read(br);
+                       GFs[(GFs)i]=new GFData(br, (GFs) i);
                 }
-                for (int i = 0; i <= (int)Saves.Characters.Edea_Kramer; i++)
+                for (int i = 0; i <= (int)FF8.Characters.Edea_Kramer; i++)
                 {
-                    var tmp = new CharacterData();
-                    tmp.Read(br, (Characters)i);
-                    Characters[(Characters)i]=tmp; // 0x04A0 -> 0x08C8 //152 bytes per 8 total
+                    
+                    Characters[(Characters)i]=new CharacterData(br, (Characters) i); // 0x04A0 -> 0x08C8 //152 bytes per 8 total
                     Characters[(Characters)i].Name = Memory.Strings.GetName((Characters)i, this);
                 }
                 int ShopCount = 400 / (16 + 1 + 3);
-                Shops = new Shop[ShopCount]; //0x0960 //400 bytes
+                Shops = new List<Shop>(ShopCount); //0x0960 //400 bytes
                 for (int i = 0; i < ShopCount; i++)
-                    Shops[i].Read(br);
+                    Shops.Add(new Shop(br));
                 Configuration = br.ReadBytes(20); //0x0AF0 //20 bytes
 
                 PartyData = Array.ConvertAll(br.ReadBytes(4), Item => (Characters)Item); //0x0B04 // 4 bytes 0xFF terminated.
@@ -260,44 +259,29 @@ namespace FF8
                 Padding = br.ReadByte();//0x0D6B
                 Unknown9 = br.ReadUInt32();//0x0D6C
                 Fieldvars = new FieldVars(br); //0x0D70 http://wiki.ffrtt.ru/index.php/FF8/Variables
-                Worldmap.Read(br);//br.ReadBytes(128);//0x1270
-                TripleTriad.Read(br); //br.ReadBytes(128);//0x12F0
+                Worldmap = new Worldmap(br);//br.ReadBytes(128);//0x1270
+                TripleTriad = new TripleTriad(br); //br.ReadBytes(128);//0x12F0
                 ChocoboWorld = new ChocoboWorld(br); //br.ReadBytes(64);//0x1370
             }
-
-            public object Clone() => new Data
+            /// <summary>
+            /// preforms a Shadow Copy. Then does deep copy on any required objects.
+            /// </summary>
+            /// <returns></returns>
+            public Data Clone()
             {
-                AmountofGil = AmountofGil,
-                AmountofGil2 = AmountofGil2,
-                AmountofGil_Laguna = AmountofGil_Laguna,
-                Angelosname = Angelosname,
-                Battlebattleescaped = Battlebattleescaped,
-                BattleELEMENTAL = BattleELEMENTAL,
-                BattleIRVINE = BattleIRVINE,
-                BattleMAGIC = BattleMAGIC,
-                BattleMENTAL = BattleMENTAL,
-                BattleR1 = BattleR1,
-                BattleRAUTO = BattleRAUTO,
-                BattleRINDICATOR = BattleRINDICATOR,
-                BattleSCAN = BattleSCAN,
-                BattleTonberrykilledcount = BattleTonberrykilledcount,
-                BattleTonberrySrkilled = BattleTonberrySrkilled,
-                BattleUNK = BattleUNK,
-                Battlevictorycount = Battlevictorycount,
-                Bokosname = Bokosname,
-                Characters = Characters.ToDictionary(entry => entry.Key,
-                    entry => (CharacterData)entry.Value.Clone()),
-                ChocoboWorld = (ChocoboWorld)ChocoboWorld.Clone(),
-                Configuration = Configuration,
-                CoordX = CoordX,
-                CoordY = CoordY,
-                Countdown = Countdown,
-                CurrentDisk = CurrentDisk,
-                Currentfield = Currentfield,
-                Currentsave = Currentsave,
-                Direction = Direction,
-                Fieldvars = (FieldVars)Fieldvars.Clone(),
-            };
+                //shadowcopy
+                Data d =(Data) MemberwiseClone();
+                //deepcopy anything that needs it here.
+
+                d.Characters = Characters.ToDictionary(entry => entry.Key,
+                    entry => entry.Value.Clone());
+                d.ChocoboWorld = ChocoboWorld.Clone();
+                d.Fieldvars = Fieldvars.Clone();
+                d.Worldmap = Worldmap.Clone();
+                d.TripleTriad = TripleTriad.Clone();
+                d.Shops.ToList().ForEach(i => i.Clone());
+                return d;
+            }
         }
     }
 }

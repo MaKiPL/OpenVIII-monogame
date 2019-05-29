@@ -16,7 +16,7 @@ namespace FF8
             public const int count = 11;
             public const ushort MAX_HP_VALUE = 9999;
             public const byte MAX_STAT_VALUE = 255;
-            private Saves.Characters char_id;
+            private Characters char_id;
             public FF8String Name => Memory.Strings.GetName((Faces.ID)char_id);
 
             public override string ToString() => Name;
@@ -41,7 +41,7 @@ namespace FF8
             private byte[] _SPD; //0x001C; 4 bytes; SPD
             private byte[] _LUCK; //0x0020; 4 bytes; LUCK
 
-            public void Read(BinaryReader br, Saves.Characters char_id)
+            public void Read(BinaryReader br, Characters char_id)
             {
                 this.char_id = char_id;
                 //Offset = br.ReadUInt16(); //0x0000; 2 bytes; Offset to character name
@@ -62,15 +62,15 @@ namespace FF8
                 int hp = HP(8);
             }
 
-            public static Dictionary<Saves.Characters, Character_Stats> Read(BinaryReader br)
+            public static Dictionary<Characters, Character_Stats> Read(BinaryReader br)
             {
-                Dictionary<Saves.Characters, Character_Stats> ret = new Dictionary<Saves.Characters, Character_Stats>(count);
+                Dictionary<Characters, Character_Stats> ret = new Dictionary<Characters, Character_Stats>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     Character_Stats tmp = new Character_Stats();
-                    tmp.Read(br, (Saves.Characters)i);
-                    ret[(Saves.Characters)i] = tmp;
+                    tmp.Read(br, (Characters)i);
+                    ret[(Characters)i] = tmp;
                 }
                 return ret;
             }
@@ -82,7 +82,7 @@ namespace FF8
             //    for (int i = 0; i < count; i++)
             //    {
             //        Character_Stats tmp = new Character_Stats();
-            //        tmp.Read(br, (Saves.Characters)i);
+            //        tmp.Read(br, (Characters)i);
             //        ret[i] = tmp;
             //    }
             //    return ret;

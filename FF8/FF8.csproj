@@ -217,8 +217,9 @@
     <Compile Include="Menu\Module_main_menu_LGSG.cs" />
     <Compile Include="Menu\Module_main_menu_MainLobby.cs" />
     <Compile Include="Menu\Module_main_menu_DebugLobby.cs" />
+    <Compile Include="Characters.cs" />
+    <Compile Include="GFs.cs" />
     <Compile Include="Saves\Saves.CharacterData.cs" />
-    <Compile Include="Saves\Saves.Characters.cs" />
     <Compile Include="Saves\Saves.ChocoboWorld.cs" />
     <Compile Include="Saves\Saves.Costume.cs" />
     <Compile Include="Saves\Saves.cs" />
@@ -226,6 +227,7 @@
     <Compile Include="Saves\Saves.FieldVars.cs" />
     <Compile Include="Saves\Saves.GFData.cs" />
     <Compile Include="Saves\Saves.GFs.cs" />
+    <Compile Include="Saves\Saves.Item.cs" />
     <Compile Include="Saves\Saves.Shop.cs" />
     <Compile Include="Saves\Saves.TripleTriad.cs" />
     <Compile Include="Saves\Saves.Worldmap.cs" />

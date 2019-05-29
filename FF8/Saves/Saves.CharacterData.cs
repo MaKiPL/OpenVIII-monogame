@@ -13,9 +13,9 @@ namespace FF8
         /// Data for each Character
         /// </summary>
         /// <see cref="http://wiki.ffrtt.ru/index.php/FF8/GameSaveFormat#Characters"/>
-        public class CharacterData : ICloneable
+        public class CharacterData 
         {
-           
+            
             public FF8String Name; //not saved to file.
             private ushort _CurrentHP; //0x00 -- forgot this one heh
             /// <summary>
@@ -36,9 +36,9 @@ namespace FF8
             //public byte _SPD; //0x0D
             //public byte _LCK; //0x0E
             public Dictionary<byte,byte> Magics; //0x0F
-            public Kernel_bin.Abilities[] Commands; //0x10
+            public List<Kernel_bin.Abilities> Commands; //0x10
             public byte Paddingorunusedcommand; //0x50
-            public Kernel_bin.Abilities[] Abilities; //0x53
+            public List<Kernel_bin.Abilities> Abilities; //0x53
             public GFflags JunctionnedGFs; //0x54
             public byte Unknown1; //0x58
             public byte Alternativemodel; //0x5A (Normal, SeeD, Soldier...)
@@ -66,8 +66,14 @@ namespace FF8
             public byte Unknown3; //0x94
             public byte MentalStatus; //0x95
             public byte Unknown4; //0x96
+
+            public CharacterData()
+            {
+            }
+
+            public CharacterData(BinaryReader br, Characters c) => Read(br, c);
             public Characters ID { get; private set; }
-            public Kernel_bin.Abilities[] UnlockedGFAbilities
+            public List<Kernel_bin.Abilities> UnlockedGFAbilities
             {
                 get
                 {
@@ -77,8 +83,7 @@ namespace FF8
                     foreach (var flag in availableFlags.Where(JunctionnedGFs.HasFlag))
                     {
                         if ((GFflags)flag == GFflags.None) continue;
-                        var gf = ConvertGFEnum[(GFflags)flag];
-                        total.Or(Memory.State.GFs[(int)gf].Complete);
+                        total.Or(Memory.State.GFs[ConvertGFEnum[(GFflags)flag]].Complete);
                     }
                     for(var i=1; i< total.Length; i++)//0 is none so skipping it.
                     {
@@ -86,7 +91,7 @@ namespace FF8
                             abilities.Add((Kernel_bin.Abilities)i);
                     }
 
-                    return abilities.ToArray();
+                    return abilities;
                 }
             }
             public void Read(BinaryReader br,Characters c)
@@ -112,9 +117,9 @@ namespace FF8
                     if(key >= 0 && !Magics.ContainsKey(key))
                     Magics.Add(key, val);//0x10                    
                 }
-                Commands = Array.ConvertAll(br.ReadBytes(3), Item => (Kernel_bin.Abilities)Item);//0x50
+                Commands = Array.ConvertAll(br.ReadBytes(3), Item => (Kernel_bin.Abilities)Item).ToList();//0x50
                 Paddingorunusedcommand = br.ReadByte();//0x53
-                Abilities = Array.ConvertAll(br.ReadBytes(4), Item => (Kernel_bin.Abilities)Item);//0x54
+                Abilities = Array.ConvertAll(br.ReadBytes(4), Item => (Kernel_bin.Abilities)Item).ToList();//0x54
                 JunctionnedGFs = (GFflags)br.ReadUInt16();//0x58
                 Unknown1 = br.ReadByte();//0x5A
                 Alternativemodel = br.ReadByte();//0x5B (Normal, SeeD, Soldier...)
@@ -206,37 +211,21 @@ namespace FF8
 
             public float PercentFullHP(Characters c = Characters.Blank) => (float)_CurrentHP / MaxHP(c);
             public override string ToString() => Name.Length>0?Name.ToString():base.ToString();
-            public object Clone() => new CharacterData
+            public CharacterData Clone()
             {
-                Abilities = Abilities,
-                Alternativemodel = Alternativemodel,
-                Commands = Commands,
-                CompatibilitywithGFs = CompatibilitywithGFs.ToDictionary(e => e.Key, e => e.Value),
-                _CurrentHP = _CurrentHP,
-                Exists = Exists,
-                Experience = Experience,
-                ID = ID,
-                Junctionelementalattack = Junctionelementalattack,
-                Junctionelementaldefense = Junctionelementaldefense,
-                Junctionmentalattack = Junctionmentalattack,
-                Junctionmentaldefense = Junctionmentaldefense,
-                JunctionnedGFs = JunctionnedGFs,
-                JunctionStat = JunctionStat.ToDictionary(e => e.Key, e => e.Value),
-                Magics = Magics.ToDictionary(e => e.Key, e => e.Value),
-                MentalStatus = MentalStatus,
-                ModelID = ModelID,
-                Name = (FF8String) Name.Clone(),
-                Numberofkills = Numberofkills,
-                NumberofKOs = NumberofKOs,
-                Paddingorunusedcommand = Paddingorunusedcommand,
-                Unknown1 = Unknown1,
-                Unknown2 = Unknown2,
-                Unknown3 = Unknown3,
-                Unknown4 = Unknown4,
-                WeaponID = WeaponID,
-                _HP = _HP,
-                RawStats = RawStats.ToDictionary(e => e.Key, e => e.Value),
-            };
+                //Shadowcopy
+                CharacterData c = (CharacterData)MemberwiseClone();
+                //Deepcopy
+                c.CompatibilitywithGFs = CompatibilitywithGFs.ToDictionary(e => e.Key, e => e.Value);
+                c.JunctionStat = JunctionStat.ToDictionary(e => e.Key, e => e.Value);
+                c.Magics = Magics.ToDictionary(e => e.Key, e => e.Value);
+                c.JunctionStat = JunctionStat.ToDictionary(e => e.Key, e => e.Value);
+                c.Magics = Magics.ToDictionary(e => e.Key, e => e.Value);
+                c.RawStats = RawStats.ToDictionary(e => e.Key, e => e.Value);
+                c.Commands = Commands.ConvertAll(Item => Item);
+                c.Abilities = Abilities.ConvertAll(Item => Item);
+                return c;
+            }
         }
     }
 }

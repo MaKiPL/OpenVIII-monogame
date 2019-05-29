@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace FF8
 {
@@ -8,7 +9,7 @@ namespace FF8
         /// Worldmap vars for savegame
         /// </summary>
         /// <see cref="https://github.com/myst6re/hyne/blob/master/SaveData.h"/>
-        public struct Worldmap
+        public class Worldmap
         {
             private short[] char_pos;// x z y ? ? rot(0->4095)
             private short[] uknown_pos1;
@@ -44,6 +45,11 @@ namespace FF8
              */
             private byte[] u6;
 
+            public Worldmap()
+            {
+            }
+            public Worldmap(BinaryReader br) => Read(br);
+
             public void Read(BinaryReader br)
             {
                 char_pos = new short[6]; for (int i = 0; i < char_pos.Length; i++) char_pos[i] = br.ReadInt16();// x z y ? ? rot(0->4095)
@@ -78,6 +84,8 @@ namespace FF8
                  */
                 u6 = br.ReadBytes(2);
             }
+
+            internal Worldmap Clone() => (Worldmap) MemberwiseClone();
         }
     }
 }
