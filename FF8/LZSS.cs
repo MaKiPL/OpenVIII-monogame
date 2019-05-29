@@ -33,19 +33,19 @@ CompuServe	74050,1022
         private static readonly int EOF = -1;
         private static int[] text_buf = new int[N + F - 1];    /* ring buffer of size N, with extra F-1 bytes to facilitate string comparison */
 
-        static MemoryStream infile;
         static List<byte> outfile;
         public static byte[] DecompressAllNew(byte[] data)
         {
-            infile = new MemoryStream(data);
-            outfile = new List<byte>();
-            Decode();
-            infile.Close();
+            using (MemoryStream infile = new MemoryStream(data))
+            {
+                outfile = new List<byte>();
+                Decode(infile);
+            }
             return outfile.ToArray();
         }
 
         //Code borrowed from Java's implementation of LZSS by antiquechrono
-        private static void Decode() 
+        private static void Decode(MemoryStream infile) 
         {
         int i, j, k, r, c;
 
