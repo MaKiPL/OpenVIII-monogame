@@ -17,7 +17,6 @@ namespace FF8
         private static EventEngine eventEngine;
         private static IServices services;
         private static List<Tile> tiles;
-
         private struct Tile
         {
             public short x, y;
@@ -170,7 +169,7 @@ namespace FF8
             }
             List<JSM.Jsm.GameObject> jsmObjects = JSM.Jsm.File.Read(jsm);
             SYM.Sym.GameObjects symObjects = SYM.Sym.Reader.FromBytes(sy);
-            //services = FieldInitializer.GetServices();
+            services = FieldInitializer.GetServices();
             eventEngine = ServiceId.Field[services].Engine;
             eventEngine.Reset();
             for (var objIndex = 0; objIndex < jsmObjects.Count; objIndex++)

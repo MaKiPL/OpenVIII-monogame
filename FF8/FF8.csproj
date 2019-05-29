@@ -278,6 +278,7 @@
     <Compile Include="TextureHandler.cs" />
     <Compile Include="TIM2.cs" />
     <Compile Include="Battle\debug_battleDat.cs" />
+    <Compile Include="Field\FieldInitializer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="DirectMidiNet">
