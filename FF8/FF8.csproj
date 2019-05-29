@@ -161,7 +161,6 @@
     <Compile Include="Kernel\Kernel_bin.Character_abilities.cs" />
     <Compile Include="Kernel\Kernel_bin.Character_Stats.cs" />
     <Compile Include="Kernel\Kernel_bin.Command_abilities.cs" />
-    <Compile Include="Kernel\Kernel_bin.Command_ability.cs" />
     <Compile Include="Kernel\Kernel_bin.Command_ability_data.cs" />
     <Compile Include="Kernel\Kernel_bin.cs" />
     <Compile Include="Kernel\Kernel_bin.Devour.cs" />
@@ -877,25 +876,7 @@
       <Name>FF8.Encoding</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Field\SYM\" />
-    <Folder Include="Field\MSD\" />
-    <Folder Include="Field\JSM\" />
-    <Folder Include="Field\JSM\Control\" />
-    <Folder Include="Field\JSM\Execution\" />
-    <Folder Include="Field\JSM\Expressions\" />
-    <Folder Include="Field\JSM\File\" />
-    <Folder Include="Field\JSM\Format\" />
-    <Folder Include="Field\JSM\Instructions\" />
-    <Folder Include="Field\JSM\Types\" />
-    <Folder Include="Field\Core\" />
-    <Folder Include="Field\Core\Services\" />
-    <Folder Include="Field\Fields\" />
-    <Folder Include="Field\Fields\DataProvider\" />
-    <Folder Include="Field\Fields\LookupService\" />
-    <Folder Include="Field\ScriptFormatter\" />
-    <Folder Include="Field\Framework\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

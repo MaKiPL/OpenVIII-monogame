@@ -14,6 +14,7 @@ namespace FF8
             public const int count = 12;
             public const int id = 10;
 
+            public Abilities Ability { get; private set; }
             public Magic_ID MagicID { get; private set; }
             public byte[] Unknown0 { get; private set; }
             public Attack_Type Attack_Type { get; private set; }
@@ -24,22 +25,40 @@ namespace FF8
             public byte Status_Attack { get; private set; }
             public Statuses0 Statuses0 { get; private set; }
             public Statuses1 Statuses1 { get; private set; }
-
-            public static Dictionary<Command_ability, Command_ability_data> Read(BinaryReader br)
+            /// <summary>
+            /// order is different so convertion is requried.
+            /// </summary>
+            private static Dictionary<int, Abilities> ConvertCommandAbilitytoAbility = new Dictionary<int, Abilities>
             {
-                var ret = new Dictionary<Command_ability, Command_ability_data>(count);
+                {0,Abilities.Recover},
+                {1,Abilities.Revive},
+                {2,Abilities.Treatment},
+                {3,Abilities.MadRush},
+                {4,Abilities.Doom},
+                {5,Abilities.Absorb},
+                {6,Abilities.LVDown},
+                {7,Abilities.LVUp},
+                {8,Abilities.Kamikaze},
+                {9,Abilities.Devour},
+                {10,Abilities.Card},
+                {11,Abilities.Defend},
+            };
+            public static Dictionary<Abilities, Command_ability_data> Read(BinaryReader br)
+            {
+                var ret = new Dictionary<Abilities, Command_ability_data>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     var tmp = new Command_ability_data();
-                    tmp.Read(br, i);
-                    ret.Add((Command_ability)i, tmp);
+                    tmp.Read(br, ConvertCommandAbilitytoAbility[i]);
+                    ret.Add(ConvertCommandAbilitytoAbility[i], tmp);
                 }
                 return ret;
             }
 
-            public void Read(BinaryReader br, int i)
+            public void Read(BinaryReader br, Abilities i)
             {
+                Ability = i;
                 MagicID = (Magic_ID)br.ReadUInt16();
                 //0x0000  2 bytes Magic ID
                 Unknown0 = br.ReadBytes(2);
