@@ -1062,7 +1062,7 @@ namespace FF8
             /// </summary>
             protected virtual void Init()
             {
-                if (SIZE.Length > 0 && SIZE[0].IsEmpty)
+                if (SIZE.Length > 0)
                 {
                     for (int i = 0; i < SIZE.Length; i++)
                     {

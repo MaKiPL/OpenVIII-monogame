@@ -361,6 +361,10 @@
             ABILITY_PG2,
             ABILITY_PG3,
             ABILITY_PG4,
+            GF_PG1,
+            GF_PG2,
+            GF_PG3,
+            GF_PG4,
         }
 
         #endregion Enums
