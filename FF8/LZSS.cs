@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace FF8
 {
@@ -29,10 +30,10 @@ CompuServe	74050,1022
         private static readonly int THRESHOLD = 2;
         private static readonly int EOF = -1;
 
-        public static byte[] DecompressAllNew(byte[] data)
+        public static byte[] DecompressAllNew(byte[] data, bool skip = false)
         {
             byte[] outfilearray;
-            using (MemoryStream infile = new MemoryStream(data))
+            using (MemoryStream infile = new MemoryStream(!skip?data:data.Skip(4).ToArray()))
             {
                 Decode(infile, out outfilearray);
             }
