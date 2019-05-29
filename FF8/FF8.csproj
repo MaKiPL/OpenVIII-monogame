@@ -248,7 +248,6 @@
     <Compile Include="Menu\Icons.cs" />
     <Compile Include="init_debugger_Audio.cs" />
     <Compile Include="Battle\init_debugger_battle.cs" />
-    <Compile Include="Field\init_debugger_fields.cs" />
     <Compile Include="Input.cs" />
     <Compile Include="Loc.cs" />
     <Compile Include="LZSS.cs" />

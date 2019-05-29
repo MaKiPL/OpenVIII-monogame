@@ -102,7 +102,7 @@ namespace FF8
 
         public FF8String(byte[] @value) => Value = @value;
         private static Encoding.FF8TextEncoding encoding = new Encoding.FF8TextEncoding(Encoding.FF8TextEncodingCodepage.Create());
-        public FF8String(string @value) => Value = encoding.GetBytes(@value);
+        public FF8String(string @value) => Value = @value != null? encoding.GetBytes(@value):null;
 
         #endregion Constructors
 
