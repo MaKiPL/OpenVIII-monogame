@@ -7,12 +7,12 @@ namespace FF8
 {
     public class ArchiveWorker
     {
-        static uint _unpackedFileSize;
-        static uint _locationInFs;
-        static bool _compressed;
+        uint _unpackedFileSize;
+        uint _locationInFs;
+        bool _compressed;
         private string _path;
         public string GetPath() => _path;
-        public static string[] FileList;
+        public string[] FileList;
 
 
         public ArchiveWorker(string path)
@@ -32,16 +32,20 @@ namespace FF8
                     $"{Path.Combine(Path.GetDirectoryName(_path), Path.GetFileNameWithoutExtension(_path))}{Memory.Archives.B_FileList}"
                     );
 
-        public static string[] GetBinaryFileList(byte[] fl) =>System.Text.Encoding.ASCII.GetString(fl).Replace("\r", "").Replace("\0", "").Split('\n');
+        public string[] GetBinaryFileList(byte[] fl) =>System.Text.Encoding.ASCII.GetString(fl).Replace("\r", "").Replace("\0", "").Split('\n');
 
-        public byte[] GetBinaryFile(string fileName) => GetBinaryFile(_path, fileName);
-        public static byte[] GetBinaryFile(string archiveName, string fileName)
+        public byte[] GetBinaryFile(string fileName)
         {
-            byte[] isComp = GetBin(Extended.GetUnixFullPath(archiveName), fileName);
-            if (isComp == null) throw new FileNotFoundException($"Searched {archiveName} and could not find {fileName}.",fileName);
+            byte[] isComp = GetBin(Extended.GetUnixFullPath(_path), fileName);
+            if (isComp == null) throw new FileNotFoundException($"Searched {_path} and could not find {fileName}.",fileName);
             if(_compressed)
                 isComp = isComp.Skip(4).ToArray();
             return isComp == null ? null : _compressed ? LZSS.DecompressAllNew(isComp) : isComp;
+        }
+        static public byte[] GetBinaryFile(string archiveName, string fileName)
+        {
+            var tmp = new ArchiveWorker(archiveName);
+            return tmp.GetBinaryFile(fileName);
         }
         /// <summary>
         /// Give me three archives as bytes uncompressed please!
@@ -51,7 +55,7 @@ namespace FF8
         /// <param name="FL">FileList</param>
         /// <param name="filename">Filename of the file to get</param>
         /// <returns></returns>
-        public static byte[] FileInTwoArchives(byte[] FI, byte[] FS, byte[] FL, string filename)
+        public byte[] FileInTwoArchives(byte[] FI, byte[] FS, byte[] FL, string filename)
         {
             string a = filename.TrimEnd('\0');
 
@@ -89,7 +93,7 @@ namespace FF8
             return compe ? LZSS.DecompressAllNew(file) : file;
         }
 
-        private static byte[] GetBin(string archiveName, string fileName)
+        private byte[] GetBin(string archiveName, string fileName)
         {
             if (fileName.Length < 1 || archiveName.Length < 1)
                 throw new System.Exception("NO FILENAME OR ARCHIVE!");

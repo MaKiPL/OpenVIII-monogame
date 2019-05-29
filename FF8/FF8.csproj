@@ -138,7 +138,6 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="ArchiveSearch.cs" />
     <Compile Include="ArchiveWorker.cs" />
     <Compile Include="DictionaryEx.cs" />
     <Compile Include="Extended.cs" />

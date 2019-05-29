@@ -14,12 +14,12 @@ namespace FF8
             string[] lists = aw.GetListOfFiles();
             string maplist = lists.First(x => x.ToLower().Contains("mapdata.fs"));
             maplist = maplist.Substring(0,maplist.Length - 3);
-            byte[] fs = ArchiveWorker.GetBinaryFile(Memory.Archives.A_FIELD, $"{maplist}{Memory.Archives.B_FileArchive}");
-            byte[] fl = ArchiveWorker.GetBinaryFile(Memory.Archives.A_FIELD, $"{maplist}{Memory.Archives.B_FileList}");
-            byte[] fi = ArchiveWorker.GetBinaryFile(Memory.Archives.A_FIELD, $"{maplist}{Memory.Archives.B_FileIndex}");
+            byte[] fs = aw.GetBinaryFile($"{maplist}{Memory.Archives.B_FileArchive}");
+            byte[] fl = aw.GetBinaryFile($"{maplist}{Memory.Archives.B_FileList}");
+            byte[] fi = aw.GetBinaryFile($"{maplist}{Memory.Archives.B_FileIndex}");
             string map = System.Text.Encoding.UTF8.GetString(fl).TrimEnd();
             string[] maplistb = System.Text.Encoding.UTF8.GetString(
-                ArchiveWorker.FileInTwoArchives(fi, fs, fl, map))
+                aw.FileInTwoArchives(fi, fs, fl, map))
                 .Replace("\r", "")
                 .Split('\n');
             Memory.FieldHolder.fields = maplistb;
