@@ -1,4 +1,6 @@
-﻿namespace FF8
+﻿using System;
+
+namespace FF8
 {
     public partial class Kernel_bin
     {
@@ -6,7 +8,7 @@
         /// Command Ability
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Command-ability-data"/>
-        /// TODO remove this and replace with abilities
+        [Obsolete("Enum to be replaced with Kernel_Bin.Abilities", true)]
         public enum Command_ability
         {
             Recover,
