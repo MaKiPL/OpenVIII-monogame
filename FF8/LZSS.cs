@@ -31,7 +31,6 @@ CompuServe	74050,1022
         private static readonly int F = 18;
         private static readonly int THRESHOLD = 2;
         private static readonly int EOF = -1;
-        private static int[] text_buf = new int[N + F - 1];    /* ring buffer of size N, with extra F-1 bytes to facilitate string comparison */
 
         static List<byte> outfile;
         public static byte[] DecompressAllNew(byte[] data)
@@ -49,6 +48,8 @@ CompuServe	74050,1022
         {
         int i, j, k, r, c;
 
+
+        int[] text_buf = new int[N + F - 1];    /* ring buffer of size N, with extra F-1 bytes to facilitate string comparison */
         //unsigned int  flags;
         int flags;
 
