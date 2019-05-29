@@ -15,6 +15,7 @@ namespace FF8
                 {
                     fixed (Byte* ptr = data)
                     {
+                        if (ptr == null) return null;
                         Header* header = (Header*)ptr;
                         Group* areas = (Group*)(ptr + sizeof(Header));
                         Group* doors = areas + header->CountAreas;

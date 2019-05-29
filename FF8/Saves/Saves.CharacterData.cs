@@ -54,8 +54,8 @@ namespace FF8
             //public byte JunctionLCK; //0x63
             public byte Junctionelementalattack; //0x64
             public byte Junctionmentalattack; //0x65
-            public uint Junctionelementaldefense; //0x66
-            public uint Junctionmentaldefense; //0x67
+            public List<byte> Junctionelementaldefense; //0x66
+            public List<byte> Junctionmentaldefense; //0x67
             public byte Unknown2; //0x6B (padding?)
             public Dictionary<GFs, ushort> CompatibilitywithGFs; //0x6F
             public ushort Numberofkills; //0x70
@@ -142,8 +142,8 @@ namespace FF8
                 //JunctionLCK = br.ReadByte();//0x64
                 Junctionelementalattack = br.ReadByte();//0x65
                 Junctionmentalattack = br.ReadByte();//0x66
-                Junctionelementaldefense = br.ReadUInt32();//0x67
-                Junctionmentaldefense = br.ReadUInt32();//0x6B
+                Junctionelementaldefense = br.ReadBytes(4).ToList() ;//0x67
+                Junctionmentaldefense = br.ReadBytes(4).ToList();//0x6B
                 Unknown2 = br.ReadByte();//0x6F (padding?)
                 CompatibilitywithGFs = new Dictionary<GFs,ushort>(16);
                 for (int i = 0; i < 16; i++)
@@ -224,6 +224,8 @@ namespace FF8
                 c.RawStats = RawStats.ToDictionary(e => e.Key, e => e.Value);
                 c.Commands = Commands.ConvertAll(Item => Item);
                 c.Abilities = Abilities.ConvertAll(Item => Item);
+                c.Junctionelementaldefense = Junctionelementaldefense.ConvertAll(Item => Item);
+                c.Junctionmentaldefense = Junctionmentaldefense.ConvertAll(Item => Item);
                 return c;
             }
         }

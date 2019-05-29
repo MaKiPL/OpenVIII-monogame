@@ -87,6 +87,8 @@ namespace FF8
                 TopMenu_Off,
                 TopMenu_Auto,
                 TopMenu_Abilities,
+                RemMag,
+                RemAll,
             }
 
             public static Dictionary<Items, FF8String> Titles { get; private set; }
@@ -205,6 +207,10 @@ namespace FF8
                     new IGMData_Abilities_CommandPool(),
                     new IGMData_Abilities_AbilityPool()
                     ));
+                FF8String Yes = Memory.Strings.Read(Strings.FileID.MNGRP, 0, 57);
+                FF8String No = Memory.Strings.Read(Strings.FileID.MNGRP, 0, 58);
+                Data.Add(SectionName.RemMag, new IGMData_ConfirmRemMag(data: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 280), title: Icons.ID.NOTICE, opt1: Yes, opt2: No, pos: new Rectangle(180, 174, 477, 216)));
+                Data.Add(SectionName.RemAll, new IGMData_ConfirmRemAll(data: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 279), title: Icons.ID.NOTICE, opt1: Yes, opt2: No, pos: new Rectangle(180, 174, 477, 216)));
                 base.Init();
             }
 
@@ -223,7 +229,9 @@ namespace FF8
                 TopMenu_Auto,
                 Abilities,
                 Abilities_Commands,
-                Abilities_Abilities
+                Abilities_Abilities,
+                RemMag,
+                RemAll
             }
 
             public new Mode mode;
@@ -259,6 +267,14 @@ namespace FF8
 
                     case Mode.Abilities_Abilities:
                         ret = ((IGMData_Abilities_Group)Data[SectionName.TopMenu_Abilities]).ITEM[3, 0].Inputs();
+                        break;
+
+                    case Mode.RemMag:
+                        ret = ((IGMData_ConfirmDialog)Data[SectionName.RemMag]).Inputs();
+                        break;
+
+                    case Mode.RemAll:
+                        ret = ((IGMData_ConfirmDialog)Data[SectionName.RemAll]).Inputs();
                         break;
 
                     default:
@@ -683,7 +699,15 @@ namespace FF8
                 {
                     bool ret = base.Update();
                     Update_String();
-                    return ret;
+
+                    if (InGameMenu_Junction != null)
+                    {
+                        if(InGameMenu_Junction.mode == Mode.TopMenu_Off)
+                            Cursor_Status &= ~Cursor_Status.Blinking;
+                        else
+                            Cursor_Status |= Cursor_Status.Blinking;
+                    }
+                        return ret;
                 }
 
                 protected override void Init()
@@ -700,7 +724,22 @@ namespace FF8
                     };
                 }
 
-                public override void Inputs_OKAY() => base.Inputs_OKAY();
+                public override void Inputs_OKAY()
+                {
+                    base.Inputs_OKAY();
+                    switch (CURSOR_SELECT)
+                    {
+                        case 0:
+                            InGameMenu_Junction.Data[SectionName.RemMag].Enabled = true;
+                            InGameMenu_Junction.mode = Mode.RemMag;
+                            break;
+
+                        case 1:
+                            InGameMenu_Junction.Data[SectionName.RemAll].Enabled = true;
+                            InGameMenu_Junction.mode = Mode.RemAll;
+                            break;
+                    }
+                }
 
                 public override void Inputs_CANCEL()
                 {
@@ -845,7 +884,7 @@ namespace FF8
                         Array.Copy(i2.Data.BLANKS, 0, BLANKS, i.Data.Count, i2.Data.Count);
                     }
                     if (CURSOR_SELECT == 0)
-                        CURSOR_SELECT = 1; 
+                        CURSOR_SELECT = 1;
                 }
 
                 public override bool Update()
@@ -940,8 +979,6 @@ namespace FF8
                     base.Init();
                     Enabled = false;
                 }
-
-                protected override void InitShift(int i, int col, int row) => base.InitShift(i, col, row);
             }
 
             private class IGMData_TopMenu_Auto_Group : IGMData_Group
@@ -1078,7 +1115,7 @@ namespace FF8
                 }
             }
 
-            public abstract class IGMData_Pool : IGMData
+            public abstract class IGMData_Pool<T> : IGMData
             {
                 public IGMData_Pool(int count, int depth, IGMDataItem container = null, int? rows = null, int? pages = null) : base(count + 2, depth, container, 1, rows) => DefaultPages = pages ?? 1;
 
@@ -1086,7 +1123,7 @@ namespace FF8
                 public int Pages { get; protected set; }
                 public int Page { get; protected set; }
                 public Kernel_bin.Abilities[] Contents { get; private set; }
-                protected object Source { get; set; }
+                protected T Source { get; set; }
 
                 protected override void Init()
                 {
@@ -1171,8 +1208,8 @@ namespace FF8
 
                 public virtual void UpdateTitle()
                 {
-
                 }
+
                 public override bool Update()
                 {
                     bool ret = base.Update();
@@ -1200,15 +1237,9 @@ namespace FF8
                 }
             }
 
-            private class IGMData_Abilities_CommandPool : IGMData_Pool
+            private class IGMData_Abilities_CommandPool : IGMData_Pool<Dictionary<Kernel_bin.Abilities, Kernel_bin.Command_abilities>>
             {
-
-                protected new Dictionary<Kernel_bin.Abilities, Kernel_bin.Command_abilities> Source { get; set; }
-
-                public IGMData_Abilities_CommandPool() : base(11, 1, new IGMDataItem_Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.COMMAND), 11, Kernel_bin.Commandabilities.Count / 11 + (Kernel_bin.Commandabilities.Count % 11 > 0 ? 1 : 0))
-                {
-                     Source = Kernel_bin.Commandabilities;
-                }
+                public IGMData_Abilities_CommandPool() : base(11, 1, new IGMDataItem_Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.COMMAND), 11, Kernel_bin.Commandabilities.Count / 11 + (Kernel_bin.Commandabilities.Count % 11 > 0 ? 1 : 0)) => Source = Kernel_bin.Commandabilities;
 
                 protected override void InitShift(int i, int col, int row)
                 {
@@ -1231,6 +1262,7 @@ namespace FF8
                         InGameMenu_Junction.Data[SectionName.Commands].ReInit();
                     }
                 }
+
                 public override void UpdateTitle()
                 {
                     base.UpdateTitle();
@@ -1251,6 +1283,7 @@ namespace FF8
                                 break;
                         }
                 }
+
                 public override bool Update()
                 {
                     if (InGameMenu_Junction != null && InGameMenu_Junction.mode != Mode.Abilities_Commands)
@@ -1296,14 +1329,9 @@ namespace FF8
                 }
             }
 
-            private class IGMData_Abilities_AbilityPool : IGMData_Pool
+            private class IGMData_Abilities_AbilityPool : IGMData_Pool<Dictionary<Kernel_bin.Abilities, Kernel_bin.Equipable_Ability>>
             {
-                protected new Dictionary<Kernel_bin.Abilities, Kernel_bin.Equipable_Ability> Source { get; set; }
-
-                public IGMData_Abilities_AbilityPool() : base(11, 1, new IGMDataItem_Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.ABILITY), 11, Kernel_bin.EquipableAbilities.Count / 11 + (Kernel_bin.EquipableAbilities.Count % 11 > 0 ? 1 : 0))
-                {
-                    Source = Kernel_bin.EquipableAbilities;
-                }
+                public IGMData_Abilities_AbilityPool() : base(11, 1, new IGMDataItem_Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.ABILITY), 11, Kernel_bin.EquipableAbilities.Count / 11 + (Kernel_bin.EquipableAbilities.Count % 11 > 0 ? 1 : 0)) => Source = Kernel_bin.EquipableAbilities;
 
                 protected override void Init()
                 {
@@ -1330,9 +1358,9 @@ namespace FF8
                         skipsnd = false;
                         InGameMenu_Junction.ReInit(); // can be more specific if you want to find what is being changed.
                         InGameMenu.ReInit();
-
                     }
                 }
+
                 public override void UpdateTitle()
                 {
                     base.UpdateTitle();
@@ -1406,6 +1434,118 @@ namespace FF8
                     if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && InGameMenu_Junction.mode == Mode.Abilities_Abilities)
                         ((IGMDataItem_Box)InGameMenu_Junction.Data[SectionName.Help].CONTAINER).Data = Source[Contents[CURSOR_SELECT]].Description.ReplaceRegion();
                     return base.Update();
+                }
+            }
+
+            public abstract class IGMData_ConfirmDialog : IGMData
+            {
+                protected int startcursor;
+                protected FF8String[] opt;
+
+                public IGMData_ConfirmDialog(FF8String data, Icons.ID title, FF8String opt1, FF8String opt2, Rectangle? pos, int startcursor = 0) : base(2, 1, new IGMDataItem_Box(data, pos, title), 1, 2)
+                {
+                    this.startcursor = startcursor;
+                    opt = new FF8String[Count];
+                    opt[0] = opt1;
+                    opt[1] = opt2;
+                    ITEM[0, 0] = new IGMDataItem_String(opt[0], SIZE[0]);
+                    ITEM[1, 0] = new IGMDataItem_String(opt[1], SIZE[1]);
+                }
+
+                protected override void Init()
+                {
+                    SIZE[0] = new Rectangle(212 + X, 117 + Y, 52, 30);
+                    SIZE[1] = new Rectangle(212 + X, 156 + Y, 52, 30);
+                    base.Init();
+                    Enabled = false;
+
+                }
+
+                public override void ReInit()
+                {
+                    base.ReInit();
+                    CURSOR_SELECT = startcursor;
+                    Cursor_Status |= Cursor_Status.Enabled;
+                    Cursor_Status |= Cursor_Status.Vertical;
+                    Cursor_Status |= Cursor_Status.Horizontal;
+                }
+
+            }
+            private sealed class IGMData_ConfirmRemMag : IGMData_ConfirmDialog
+            {
+                public IGMData_ConfirmRemMag(FF8String data, Icons.ID title, FF8String opt1, FF8String opt2, Rectangle pos) : base(data, title, opt1, opt2, pos)
+                {
+                    startcursor = 1;
+                }
+
+                public override void Inputs_OKAY()
+                {
+                    switch (CURSOR_SELECT)
+                    {
+                        case 0:
+                            base.Inputs_OKAY();
+                            Memory.State.Characters[Character].JunctionStat = Memory.State.Characters[Character].JunctionStat.ToDictionary(e => e.Key, e=> (byte)0);
+                            Memory.State.Characters[Character].Junctionelementalattack = 0;
+                            Memory.State.Characters[Character].Junctionelementaldefense = Memory.State.Characters[Character].Junctionelementaldefense.ConvertAll(Item => (byte)0);
+                            Memory.State.Characters[Character].Junctionmentalattack = 0;
+                            Memory.State.Characters[Character].Junctionmentaldefense = Memory.State.Characters[Character].Junctionmentaldefense.ConvertAll(Item => (byte)0);
+                            skipsnd = true;
+                            Inputs_CANCEL();
+                            skipsnd = false;
+                            InGameMenu_Junction.ReInit();
+                            InGameMenu.ReInit();
+                            break;
+
+                        case 1:
+                            Inputs_CANCEL();
+                            break;
+                    }
+                }
+
+                public override void Inputs_CANCEL()
+                {
+                    base.Inputs_CANCEL();
+                    InGameMenu_Junction.Data[SectionName.RemMag].Enabled = false;
+                    InGameMenu_Junction.mode = Mode.TopMenu_Off;
+                }
+            }
+
+            private sealed class IGMData_ConfirmRemAll : IGMData_ConfirmDialog
+            {
+                public IGMData_ConfirmRemAll(FF8String data, Icons.ID title, FF8String opt1, FF8String opt2, Rectangle pos) : base(data, title, opt1, opt2, pos)
+                {
+                    startcursor = 1;
+                }
+
+                public override void Inputs_OKAY()
+                {
+                    switch (CURSOR_SELECT)
+                    {
+                        case 0:
+                            base.Inputs_OKAY();
+                            Memory.State.Characters[Character].JunctionStat = Memory.State.Characters[Character].JunctionStat.ToDictionary(e => e.Key, e => (byte)0);
+                            Memory.State.Characters[Character].Junctionelementalattack = 0;
+                            Memory.State.Characters[Character].Junctionelementaldefense = Memory.State.Characters[Character].Junctionelementaldefense.ConvertAll(Item => (byte)0);
+                            Memory.State.Characters[Character].Junctionmentalattack = 0;
+                            Memory.State.Characters[Character].Junctionmentaldefense = Memory.State.Characters[Character].Junctionmentaldefense.ConvertAll(Item => (byte)0);
+                            Memory.State.Characters[Character].JunctionnedGFs = Saves.GFflags.None;
+                            skipsnd = true;
+                            Inputs_CANCEL();
+                            skipsnd = false;
+                            InGameMenu_Junction.ReInit();
+                            InGameMenu.ReInit();
+                            break;
+
+                        case 1:
+                            Inputs_CANCEL();
+                            break;
+                    }
+                }
+                public override void Inputs_CANCEL()
+                {
+                    base.Inputs_CANCEL();
+                    InGameMenu_Junction.Data[SectionName.RemAll].Enabled = false;
+                    InGameMenu_Junction.mode = Mode.TopMenu_Off;
                 }
             }
         }

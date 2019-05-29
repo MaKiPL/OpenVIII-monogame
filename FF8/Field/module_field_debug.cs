@@ -113,6 +113,8 @@ namespace FF8
         {
             ArchiveWorker aw = new ArchiveWorker($"{Memory.Archives.A_FIELD}.fs");
             string[] test = aw.GetListOfFiles();
+
+            //TODO fix endless look on FieldID 50.
             if (Memory.FieldHolder.FieldID >= Memory.FieldHolder.fields.Length ||
                 Memory.FieldHolder.FieldID < 0)
                 return;
@@ -166,8 +168,13 @@ namespace FF8
                 jsm = ArchiveWorker.FileInTwoArchives(fi, fs, fl, s_jsm);
                 sy = ArchiveWorker.FileInTwoArchives(fi, fs, fl, s_sy);
             }
+            else return; // one or both values are null
+
             List<Jsm.GameObject> jsmObjects = Jsm.File.Read(jsm);
+            if (sy == null)
+                return;
             Sym.GameObjects symObjects = Sym.Reader.FromBytes(sy);
+            
             services = FieldInitializer.GetServices();
             eventEngine = ServiceId.Field[services].Engine;
             eventEngine.Reset();

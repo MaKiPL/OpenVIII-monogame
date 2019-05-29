@@ -18,7 +18,7 @@ namespace FF8
         public static Battle_Items_Data[] BattleItemsData { get; private set; }//7
         public static Non_battle_Items_Data[] NonbattleItemsData { get; private set; } //8 //only strings
         public static Non_Junctionable_GFs_Attacks_Data[] NonJunctionableGFsAttacksData { get; private set; } //9
-        public static Dictionary<Command_ability, Command_ability_data> Commandabilitydata { get; private set; }//10
+        public static Dictionary<Abilities, Command_ability_data> Commandabilitydata { get; private set; }//10
         public static Dictionary<Abilities,Junction_abilities> Junctionabilities { get; private set; }//11
         public static Dictionary<Abilities, Command_abilities> Commandabilities { get; private set; }//12
         public static Dictionary<Abilities, Stat_percent_abilities> Statpercentabilities { get; private set; }//13

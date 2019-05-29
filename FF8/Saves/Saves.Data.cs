@@ -106,6 +106,36 @@ namespace FF8
 
             public bool TeamLaguna => Party != null && (Party[0] == FF8.Characters.Laguna_Loire || Party[1] == FF8.Characters.Laguna_Loire || Party[2] == FF8.Characters.Laguna_Loire);
 
+            public Dictionary<GFs, Characters> JunctionedGFs()
+            {
+                Dictionary<GFs, Characters> r = new Dictionary<GFs, Characters>(16);
+                foreach(var c in Characters)
+                {
+                    if(c.Value.JunctionnedGFs != GFflags.None)
+                    {
+                        var availableFlags = Enum.GetValues(typeof(GFflags)).Cast<Enum>();
+                        foreach (var flag in availableFlags.Where(c.Value.JunctionnedGFs.HasFlag))
+                        {
+                            if ((GFflags)flag == GFflags.None) continue;
+                            r.Add(ConvertGFEnum[(GFflags)flag], c.Key);
+                        }
+                    }
+                }
+                return r;
+            }
+            public List<GFs> UnlockedGFs()
+            {
+                List<GFs> r = new List<GFs>(16);
+                foreach (var g in GFs)
+                {
+                    if ((g.Value.Exists & 1) !=0) //needs testing could be wrong.
+                    {
+                        r.Add(g.Key);
+                    }
+                }
+                return r;
+            }
+
             public bool SmallTeam
             {
                 get
