@@ -123,11 +123,11 @@ namespace FF8
             string fieldArchive = CollectionEntry.First();
             int fieldLen = fieldArchive.Length - 2;
             fieldArchive = fieldArchive.Substring(0, fieldLen);
-            byte[] fs = ArchiveWorker.GetBinaryFile(Memory.Archives.A_FIELD, $"{fieldArchive}fs");
-            byte[] fi = ArchiveWorker.GetBinaryFile(Memory.Archives.A_FIELD, $"{fieldArchive}fi");
-            byte[] fl = ArchiveWorker.GetBinaryFile(Memory.Archives.A_FIELD, $"{fieldArchive}fl");
+            byte[] fs = aw.GetBinaryFile( $"{fieldArchive}fs");
+            byte[] fi = aw.GetBinaryFile( $"{fieldArchive}fi");
+            byte[] fl = aw.GetBinaryFile( $"{fieldArchive}fl");
             if (fs == null || fi == null || fl == null) return;
-            string[] test_ = ArchiveWorker.GetBinaryFileList(fl);
+            string[] test_ = aw.GetBinaryFileList(fl);
             string mim = null;
             string map = null;
             try
@@ -143,8 +143,8 @@ namespace FF8
 
             if (mim != null && map != null)
             {
-                byte[] mimb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, mim);
-                byte[] mapb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, map);
+                byte[] mimb = aw.FileInTwoArchives(fi, fs, fl, mim);
+                byte[] mapb = aw.FileInTwoArchives(fi, fs, fl, map);
 
                 ParseBackground(mimb, mapb);
             }
@@ -165,8 +165,8 @@ namespace FF8
             catch { }
             if (s_jsm != null && s_sy != null)
             {
-                jsm = ArchiveWorker.FileInTwoArchives(fi, fs, fl, s_jsm);
-                sy = ArchiveWorker.FileInTwoArchives(fi, fs, fl, s_sy);
+                jsm = aw.FileInTwoArchives(fi, fs, fl, s_jsm);
+                sy = aw.FileInTwoArchives(fi, fs, fl, s_sy);
             }
             else return; // one or both values are null
 
