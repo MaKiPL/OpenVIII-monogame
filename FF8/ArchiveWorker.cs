@@ -96,11 +96,12 @@ namespace FF8
         private byte[] GetBin(string archiveName, string fileName)
         {
             if (fileName.Length < 1 || archiveName.Length < 1)
-                throw new System.Exception("NO FILENAME OR ARCHIVE!");
-
-            string archivePath = archiveName + Memory.Archives.B_FileArchive;
-            string archiveIndexPath = archiveName + Memory.Archives.B_FileIndex;
-            string archiveNamesPath = archiveName + Memory.Archives.B_FileList;
+                throw new FileNotFoundException("NO FILENAME OR ARCHIVE!");
+            string path = Path.GetDirectoryName(archiveName);
+            string file = Path.GetFileNameWithoutExtension(archiveName);
+            string archivePath = Path.Combine(path,file + Memory.Archives.B_FileArchive);
+            string archiveIndexPath = Path.Combine(path, file + Memory.Archives.B_FileIndex);
+            string archiveNamesPath = Path.Combine(path, file + Memory.Archives.B_FileList);
             int loc = -1;
 
             FileStream fs = new FileStream(archiveNamesPath, FileMode.Open);
