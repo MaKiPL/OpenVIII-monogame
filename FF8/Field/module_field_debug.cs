@@ -111,7 +111,7 @@ namespace FF8
 
         private static void Init()
         {
-            ArchiveWorker aw = new ArchiveWorker($"{Memory.Archives.A_FIELD}.fs");
+            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_FIELD);
             string[] test = aw.GetListOfFiles();
 
             //TODO fix endless look on FieldID 50.
