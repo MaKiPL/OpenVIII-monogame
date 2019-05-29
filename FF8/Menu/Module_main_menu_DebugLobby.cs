@@ -226,7 +226,7 @@ namespace FF8
                 { Ditems.Icons, new Item{Text=new FF8String("Test Icons")} },
                 { Ditems.Cards, new Item{Text=new FF8String("Test Cards")} },
             };
-            debug_choosedField = Memory.FieldHolder.fields[debug_fieldPointer];
+            //debug_choosedField = Memory.FieldHolder.fields[debug_fieldPointer];
             if(Module_movie_test.Movies.Count>0)
                 debug_choosedMovie = Path.GetFileNameWithoutExtension(Module_movie_test.Movies[debug_moviePointer]);
 
