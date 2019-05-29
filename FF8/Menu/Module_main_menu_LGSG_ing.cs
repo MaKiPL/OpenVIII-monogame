@@ -24,7 +24,7 @@ namespace FF8
             else
             {
                 State = MainMenuStates.InGameMenu; // start loaded game.
-                Memory.State = Saves.FileList[SlotLoc, BlockLoc + blockpage * 3];
+                Memory.State = Saves.FileList[SlotLoc, BlockLoc + blockpage * 3].Clone();
 
                 InGameMenu.ReInit();
                 //till we have a game to load i'm going to display ingame menu.

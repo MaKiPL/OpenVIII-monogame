@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Linq;
 
 namespace FF8
 {
     public static partial class Saves
     {
-        public class FieldVars : ICloneable
+        public class FieldVars
         {
             public string byte03; //[0-3]unused in fields (always "FF-8")
             public ulong Steps; //[4]Steps (used to generate random encounters)
@@ -19,7 +18,7 @@ namespace FF8
             public ulong BattlesWon; //[20]Battles won. (Fun fact: this affects the basketball shot in Trabia.)
             public byte[] byte2425; //[24-25]unused in fields
             public ushort EscapedBattles; //[26]Battles escaped.
-            public Dictionary<Characters,ushort> EnemiesKilled;
+            public Dictionary<Characters, ushort> EnemiesKilled;
 
             //ushort ushort28; //[28]Enemies killed by Squall
             //ushort ushort30; //[30]Enemies killed by Zell
@@ -252,12 +251,14 @@ namespace FF8
             public byte byte690; //[690]not investigated
             public byte byte691; //[691]not investigated
             public byte[] byte692719; //[692-719]unused in fields
-            public Dictionary<Characters,Costume> Costumes;
+            public Dictionary<Characters, Costume> Costumes;
+
             //public byte byte720; //[720]Squall's costume (0=normal, 1=student, 2=SeeD, 3=Bandage on forehead)
             //public byte byte721; //[721]Zell's Costume (0=normal, 1=student, 2=SeeD)
             //public byte byte722; //[722]Selphie's costume (0=normal, 1=student, 2=SeeD)
             //public byte byte723; //[723]Quistis' Costume (0=normal, 1=SeeD)
             public ushort ushort724; //[724]Dollet mission time
+
             public ushort ushort726; //[726]not investigated
             public byte byte728; //[728]Does lots of things.3
             public byte byte729; //[729]not investigated
@@ -271,26 +272,35 @@ namespace FF8
             public byte[] byte7531023; //[753-1023]unused in fields
             public byte[] byteAbove1023; //[Above 1023]Temporary variables used pretty much everywhere.
 
-            public FieldVars(BinaryReader br)
-            {
-                Read(br);
-            }
+            public FieldVars()
+            { }
 
-            public object Clone() => MemberwiseClone();
+            public FieldVars(BinaryReader br) => Read(br);
+
+            public FieldVars Clone()
+            {
+                //shadowcopy
+                FieldVars f = (FieldVars)MemberwiseClone();
+                //deepcopy
+                f.Costumes = Costumes.ToDictionary(e => e.Key, e => e.Value);
+                f.EnemiesKilled = EnemiesKilled.ToDictionary(e => e.Key, e => e.Value);
+                f.DeathCounter = DeathCounter.ToDictionary(e => e.Key, e => e.Value);
+                return f;
+            }
 
             public void Read(BinaryReader br)
             {
                 byte03 = System.Text.Encoding.UTF8.GetString(br.ReadBytes(4)); //[0-3]unused in fields (always "FF-8")
                 Steps = br.ReadUInt32(); //[4]Steps (used to generate random encounters)
 
-                Payslip=br.ReadUInt32(); //[8]Payslip
+                Payslip = br.ReadUInt32(); //[8]Payslip
                 byte1215 = br.ReadBytes(4); //[12-15]unused in fields
                 SeedRankPts = br.ReadInt16(); //[16]SeeD rank points? // i guess seed rank can fall.
-                byte1819= br.ReadBytes(2); //[18-19]unused in fields
+                byte1819 = br.ReadBytes(2); //[18-19]unused in fields
                 BattlesWon = br.ReadUInt32(); //[20]Battles won. (Fun fact: this affects the basketball shot in Trabia.)
                 byte2425 = br.ReadBytes(2); //[24-25]unused in fields
                 EscapedBattles = br.ReadUInt16(); //[26]Battles escaped.
-                EnemiesKilled = new Dictionary<Characters, ushort>((int)Characters.Edea_Kramer+1);
+                EnemiesKilled = new Dictionary<Characters, ushort>((int)Characters.Edea_Kramer + 1);
                 for (int i = 0; i < (int)Characters.Edea_Kramer + 1; i++)
                     EnemiesKilled.Add((Characters)i, br.ReadUInt16());
                 //ushort28 = br.ReadUInt16(); //[28]Enemies killed by Squall

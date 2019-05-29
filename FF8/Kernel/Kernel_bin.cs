@@ -9,12 +9,12 @@ namespace FF8
         private ArchiveWorker aw;
         private readonly string ArchiveString = Memory.Archives.A_MAIN;
         public static Magic_Data[] MagicData { get; private set; }//0
-        public static Dictionary<Saves.GFs, Junctionable_GFs_Data> JunctionableGFsData { get; private set; }//1
+        public static Dictionary<GFs, Junctionable_GFs_Data> JunctionableGFsData { get; private set; }//1
         public static Enemy_Attacks_Data[] EnemyAttacksData { get; private set; }//2
         public static Battle_Commands[] BattleCommands { get; private set; }//3
         public static Weapons_Data[] WeaponsData { get; private set; }//4
         public static Dictionary<Renzokeken_Level, Renzokuken_Finishers_Data> RenzokukenFinishersData; //5
-        public static Dictionary<Saves.Characters, Character_Stats> CharacterStats { get; private set; }//6
+        public static Dictionary<Characters, Character_Stats> CharacterStats { get; private set; }//6
         public static Battle_Items_Data[] BattleItemsData { get; private set; }//7
         public static Non_battle_Items_Data[] NonbattleItemsData { get; private set; } //8 //only strings
         public static Non_Junctionable_GFs_Attacks_Data[] NonJunctionableGFsAttacksData { get; private set; } //9

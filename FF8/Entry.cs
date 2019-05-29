@@ -4,7 +4,7 @@ using System.IO;
 
 namespace FF8
 {
-    public class Entry: ICloneable
+    public class Entry
     {
 
         #region Fields
@@ -70,25 +70,12 @@ namespace FF8
         public float X { get => Location.X; set => Location.X = value; }
 
         public float Y { get => Location.Y; set => Location.Y = value; }
-
-        public object Clone()
-            => new Entry
-            {
-                End = this.End,
-                Location = this.Location,
-                Size = this.Size,
-                Tile = this.Tile,
-                CurrentPos = this.CurrentPos,
-                CustomPallet = this.CustomPallet,
-                File = this.File,
-                Fill = this.Fill,
-                loc = this.loc,
-                Offset = this.Offset,
-                Part = this.Part,
-                Snap_Bottom = this.Snap_Bottom,
-                Snap_Right = this.Snap_Right,
-                UNK = this.UNK
-            };
+        /// <summary>
+        /// Shadowcopy
+        /// </summary>
+        /// <returns>Copy of class</returns>
+        public Entry Clone()
+            => (Entry)MemberwiseClone();
 
         #endregion Properties
 

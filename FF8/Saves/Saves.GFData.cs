@@ -10,9 +10,10 @@ namespace FF8
         /// Data for each GF
         /// </summary>
         /// <see cref="http://wiki.ffrtt.ru/index.php/FF8/GameSaveFormat#Guardian_Forces"/>
-        public struct GFData
+        public class GFData
         {
-            
+            public GFs ID { get; private set; }
+
             public FF8String Name; //Offset (0x00 terminated)
             public uint Experience; //0x00
             public byte Unknown; //0x0C
@@ -25,8 +26,14 @@ namespace FF8
             public byte Learning; //0x3E ability
             public byte[] Forgotten; //0x41 abilities (1 bit = 1 ability of the GF forgotten, 2 bits unused)
 
-            public void Read(BinaryReader br)
+            public GFData()
             {
+            }
+            public GFData(BinaryReader br, GFs g) => Read(br, g);
+
+            public void Read(BinaryReader br, GFs g)
+            {
+                ID = g;
                 Name = br.ReadBytes(12);//0x00 (0x00 terminated)
                 Experience = br.ReadUInt32();//0x0C
                 Unknown = br.ReadByte();//0x10

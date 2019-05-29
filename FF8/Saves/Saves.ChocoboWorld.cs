@@ -9,7 +9,7 @@ namespace FF8
         /// <summary>
         /// ChocoboWorld Save Data
         /// </summary>
-        public class ChocoboWorld : ICloneable//64
+        public class ChocoboWorld //64
         {
             [Flags]
             public enum EnabledFlags : byte
@@ -55,31 +55,11 @@ namespace FF8
             public byte[] u5;
             public ChocoboWorld(){}
             public ChocoboWorld(BinaryReader br) => Read(br);
-
-            public object Clone() => new ChocoboWorld
-            {
-                associatedSaveID = associatedSaveID,
-                boko_attack = boko_attack,
-                current_hp = current_hp,
-                enabled = enabled,
-                home_walking = home_walking,
-                id_related = id_related,
-                itemClassACount = itemClassACount,
-                itemClassBCount = itemClassBCount,
-                itemClassCCount = itemClassCCount,
-                itemClassDCount = itemClassDCount,
-                level = level,
-                max_hp = max_hp,
-                move = move,
-                rank = rank,
-                saveCount = saveCount,
-                u1 = u1,
-                u2 = u2,
-                u3 = u3,
-                u4 = u4,
-                u5 = u5,
-                weapon = weapon,
-            };
+            /// <summary>
+            /// Shadow copy
+            /// </summary>
+            /// <returns></returns>
+            public ChocoboWorld Clone() => (ChocoboWorld) MemberwiseClone();
 
             public void Read(BinaryReader br)
             {

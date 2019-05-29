@@ -193,7 +193,6 @@ namespace FF8
 
         public object Clone() => new FF8String
         {
-            //position = position,
             value = value
         };
         #endregion Methods

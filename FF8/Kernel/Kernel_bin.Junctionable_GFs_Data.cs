@@ -117,7 +117,7 @@ namespace FF8
             //0x006D  1 byte  Unknown
             //0x006E  1 byte[[Ability 21
             //0x006F  1 byte  Unknown
-            public Dictionary <Saves.GFs,decimal> GF_Compatibility;
+            public Dictionary <GFs,decimal> GF_Compatibility;
             //0x0070  1 byte  Quezacolt compatibility
             //0x0071  1 byte  Shiva compatibility
             //0x0072  1 byte  Ifrit compatibility
@@ -159,22 +159,22 @@ namespace FF8
                 Ability = new byte[21][];
                 for (i = 0; i < 21; i++)
                     Ability[i] = br.ReadBytes(2);
-                GF_Compatibility = new Dictionary<Saves.GFs, decimal>(16);
+                GF_Compatibility = new Dictionary<GFs, decimal>(16);
                 for(i=0; i < 16; i++)
-                    GF_Compatibility.Add((Saves.GFs)i,(100 - Convert.ToDecimal(br.ReadByte())) / 5); //doomtrain shows this is a decimal number. i got formula from code.
+                    GF_Compatibility.Add((GFs)i,(100 - Convert.ToDecimal(br.ReadByte())) / 5); //doomtrain shows this is a decimal number. i got formula from code.
                 Unknown3 = br.ReadBytes(2);            //0x0080  2 bytes Unknown
                 PowerMod = br.ReadByte();              //0x0082  1 byte  Power Mod(used in damage formula)
                 LevelMod = br.ReadByte();              //0x0083  1 byte  Level Mod(used in damage formula)
             }
-            public static Dictionary<Saves.GFs, Junctionable_GFs_Data> Read(BinaryReader br)
+            public static Dictionary<GFs, Junctionable_GFs_Data> Read(BinaryReader br)
             {
-                var ret = new Dictionary<Saves.GFs, Junctionable_GFs_Data>(count);
+                var ret = new Dictionary<GFs, Junctionable_GFs_Data>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     var tmp = new Junctionable_GFs_Data();
                     tmp.Read(br, i);
-                    ret[(Saves.GFs)i] = tmp;
+                    ret[(GFs)i] = tmp;
                 }
                 return ret;
             }

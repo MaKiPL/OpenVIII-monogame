@@ -324,11 +324,11 @@ namespace FF8
                                     {
                                         for (byte i = 0; Memory.State.Party != null && i < Memory.State.Characters.Count; i++)
                                         {
-                                            if (!Memory.State.PartyData.Contains((Saves.Characters)i) && Memory.State.Characters[(Saves.Characters)i].VisibleInMenu)
+                                            if (!Memory.State.PartyData.Contains((Characters)i) && Memory.State.Characters[(Characters)i].VisibleInMenu)
                                             {
                                                 if (pos++ + 3 == choChar)
                                                 {
-                                                    InGameMenu_Junction.ReInit((Saves.Characters)i, (Saves.Characters)i);
+                                                    InGameMenu_Junction.ReInit((Characters)i, (Characters)i);
                                                     break;
                                                 }
                                             }
@@ -508,10 +508,10 @@ namespace FF8
                     {
                         for (byte i = 0; Memory.State.Party != null && i < Memory.State.Characters.Count && SIZE != null && pos < SIZE.Length; i++)
                         {
-                            if (!Memory.State.Party.Contains((Saves.Characters)i) && Memory.State.Characters[(Saves.Characters)i].VisibleInMenu)
+                            if (!Memory.State.Party.Contains((Characters)i) && Memory.State.Characters[(Characters)i].VisibleInMenu)
                             {
                                 BLANKS[pos] = false;
-                                Update(pos++, (Saves.Characters)i);
+                                Update(pos++, (Characters)i);
                             }
                         }
                     }
@@ -526,7 +526,7 @@ namespace FF8
                     return true;
                 }
 
-                private void Update(sbyte pos, Saves.Characters character)
+                private void Update(sbyte pos, Characters character)
                 {
                     float yoff = 39;
                     Rectangle rbak = SIZE[pos];
@@ -614,11 +614,11 @@ namespace FF8
                     base.Init();
                 }
 
-                private void Update(sbyte pos, Saves.Characters character, Saves.Characters visableCharacter)
+                private void Update(sbyte pos, Characters character, Characters visableCharacter)
                 {
                     if (SIZE != null)
                     {
-                        if (character != Saves.Characters.Blank)
+                        if (character != Characters.Blank)
                         {
                             float yoff = 6;
 
