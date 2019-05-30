@@ -1,4 +1,6 @@
-﻿namespace FF8
+﻿using System.Collections.Generic;
+
+namespace FF8
 {
     public partial class Cards : SP2
     {
@@ -11,8 +13,10 @@
         /// <seealso cref="http://forums.qhimm.com/index.php?topic=11084.0"/>
         public Cards()
         {
-            TextureCount[0] = 10;
-            TextureFilename[0] = "mc{0:00}.tex";
+            Props = new List<TexProps>()
+            {
+                new TexProps("mc{0:00}.tex",10),
+            };
             TextureStartOffset = 0;
             EntriesPerTexture = 11;
             IndexFilename = "cardanm.sp2";

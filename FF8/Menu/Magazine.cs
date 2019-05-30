@@ -14,8 +14,11 @@ namespace FF8
         /// TODO test this.
         public Magazine()
         {
-            TextureFilename = new string[] { "mag{0:00}.tex", "magita.TEX" };
-            TextureCount = new int[] { 20, 1 };
+            Props = new List<TexProps>()
+            {
+                new TexProps("mag{0:00}.tex",20),
+                new TexProps("magita.TEX",1),
+            };
             TextureStartOffset = 0;
             IndexFilename = "";
             EntriesPerTexture = -1;

@@ -21,25 +21,55 @@ namespace FF8
 
         public Icons()
         {
+            Color[] red = new Color[256];
+            red[15] = new Color(255, 30, 30, 255); //red
+            red[14] = new Color(140, 30, 30, 255); //dark red
+            red[13] = new Color(37, 37, 37, 255); //gray
+            Color[] yellow = new Color[256];
+            yellow[15] = new Color(222, 222, 8, 255); //yellow
+            yellow[14] = new Color(131, 131, 24, 255); //dark yellow
+            yellow[13] = new Color(41, 41, 41, 255); //gray
+
             //FORCE_ORIGINAL = true;
-            TextureBigFilename = new string[] { "iconfl{0:00}.TEX" };
-            TextureBigSplit = new uint[] { 4 };
-            TextureFilename[0] = "icon.tex";
+            Props = new List<TexProps>()
+            {
+                new TexProps("icon.tex",1,new BigTexProps("iconfl{0:00}.TEX",4)), //0-15 pallet
+                new TexProps("icon.tex",1,red, new BigTexProps("iconfl{0:00}.TEX",4,red)),//16 pallet
+                new TexProps("icon.tex",1,yellow, new BigTexProps("iconfl{0:00}.TEX",4,yellow))//17 pallet
+            };
             IndexFilename = "icon.sp1";
             Init();
         }
 
         #endregion Constructors
 
+        #region Enums
+
+        public enum NumType
+        {
+            Num_8x8_0,
+            Num_8x8_1,
+            Num_8x8_2,
+            Num_8x16_0,
+            Num_8x16_1,
+            Num_16x16_0,
+            sysFntBig,
+            sysfnt,
+            menuFont,
+        }
+
+        #endregion Enums
+
         #region Properties
 
-        public new uint Count => (uint)Entries.Count();
+        public new uint EntriesPerTexture => (uint)Enum.GetValues(typeof(Icons.ID)).Cast<Icons.ID>().Max();
         public new uint PalletCount => (uint)Textures.Count();
-        public new uint TextureCount => 1;
-        private new uint TextureStartOffset => 0;// this really isn't improtant to icons.
-        public new uint EntriesPerTexture => (uint)Enum.GetValues(typeof(Icons.ID)).Cast<Icons.ID>().Max(); // this really isn't improtant to icons.
+        public new uint Count => (uint)Entries.Count();
+        private new uint TextureStartOffset => 0;
 
         #endregion Properties
+
+        // this really isn't improtant to icons. this really isn't improtant to icons.
 
         #region Indexers
 
@@ -49,20 +79,63 @@ namespace FF8
 
         #region Methods
 
-        protected override void InitTextures(ArchiveWorker aw = null)
+        public void Draw(int number, NumType type, int pallet, string format, Vector2 location, Vector2 scale, float fade = 1f)
         {
-            TEX tex;
-            tex = new TEX(ArchiveWorker.GetBinaryFile(ArchiveString,
-                aw.GetListOfFiles().First(x => x.IndexOf(TextureFilename[0], StringComparison.OrdinalIgnoreCase) >= 0)));
-            Textures = new List<TextureHandler>(tex.TextureData.NumOfPalettes);
-            for (int i = 0; i < tex.TextureData.NumOfPalettes; i++)
+            if (type == NumType.sysfnt)
             {
-                if (FORCE_ORIGINAL == false && TextureBigFilename != null && TextureBigSplit != null)
-                    Textures.Add(new TextureHandler(TextureBigFilename[0], tex, 2, TextureBigSplit[0] / 2, i));
-                else
-                    Textures.Add(new TextureHandler(TextureFilename[0], tex, 1, 1, i));
+                Memory.font.RenderBasicText(number.ToString(), location, scale, Font.Type.sysfnt, Fade: fade);
+                return;
+            }
+            else if (type == NumType.sysFntBig)
+            {
+                Memory.font.RenderBasicText(number.ToString(), location, scale, Font.Type.sysFntBig, Fade: fade);
+                return;
+            }
+            else if (type == NumType.menuFont)
+            {
+                Memory.font.RenderBasicText(number.ToString(), location, scale, Font.Type.menuFont, Fade: fade);
+                return;
+            }
+            ID[] numberstarts = { ID.Num_8x8_0_0, ID.Num_8x8_1_0, ID.Num_8x8_2_0, ID.Num_8x16_0_0, ID.Num_8x16_1_0, ID.Num_16x16_0_0 };
+            List<ID>[] nums = new List<ID>[numberstarts.Length];
+            int j = 0;
+            foreach (ID id in numberstarts)
+            {
+                nums[j] = new List<ID>(10);
+                for (byte i = 0; i < 10; i++)
+                {
+                    nums[j].Add(id + i);
+                }
+                j++;
+            }
+            IEnumerable<int> intList = number.ToString(format).Select(digit => int.Parse(digit.ToString()));
+            Rectangle dst = new Rectangle { Location = location.ToPoint() };
+            foreach (int i in intList)
+            {
+                Draw(nums[(int)type][i], pallet, dst, scale, fade);
+                dst.Offset(Entries[nums[(int)type][i]].GetRectangle.Width * scale.X, 0);
             }
         }
+
+        public void Draw(Enum id, int pallet, Rectangle dst, Vector2 scale, float fade = 1f)
+        {
+            if ((ID)id != ID.None)
+                Entries[(ID)id].Draw(Textures, pallet, dst, scale, fade);
+        }
+
+        public override void Draw(Enum id, Rectangle dst, float fade = 1) => Draw((ID)id, 2, dst, Vector2.One, fade);
+
+        public Entry GetEntry(Enum id, int index) => Entries[(ID)id][index] ?? null;
+
+        public override Entry GetEntry(Enum id) => Entries[(ID)id][0] ?? null;
+
+        public EntryGroup GetEntryGroup(Enum id)
+        {
+            if ((ID)id != ID.None)
+                return Entries[(ID)id] ?? null;
+            return null;
+        }
+
         protected override void InitEntries(ArchiveWorker aw = null)
         {
             if (Entries == null)
@@ -100,74 +173,33 @@ namespace FF8
                 }
             }
         }
-        public enum NumType
+
+        protected override void InitTextures(ArchiveWorker aw = null)
         {
-            Num_8x8_0,
-            Num_8x8_1,
-            Num_8x8_2,
-            Num_8x16_0,
-            Num_8x16_1,
-            Num_16x16_0,
-            sysFntBig,
-            sysfnt,
-            menuFont,
-        }
-        public void Draw(int number, NumType type, int pallet, string format, Vector2 location, Vector2 scale, float fade = 1f)
-        {
-            if (type == NumType.sysfnt)
+            Textures = new List<TextureHandler>();
+            for (int t = 0; t < Props.Count; t++)
             {
-                Memory.font.RenderBasicText(number.ToString(), location, scale, Font.Type.sysfnt, Fade: fade);
-                return;
-            }
-            else if (type == NumType.sysFntBig)
-            {
-                Memory.font.RenderBasicText(number.ToString(), location, scale, Font.Type.sysFntBig, Fade: fade);
-                return;
-            }
-            else if (type == NumType.menuFont)
-            {
-                Memory.font.RenderBasicText(number.ToString(), location, scale, Font.Type.menuFont, Fade: fade);
-                return;
-            }
-            ID[] numberstarts = { ID.Num_8x8_0_0, ID.Num_8x8_1_0,ID.Num_8x8_2_0, ID.Num_8x16_0_0, ID.Num_8x16_1_0, ID.Num_16x16_0_0 };
-            List<ID>[] nums = new List<ID>[numberstarts.Length];
-            int j = 0;
-            foreach (ID id in numberstarts)
-            {
-                nums[j] = new List<ID>(10);
-                for (byte i = 0; i < 10; i++)
+                TEX tex;
+                tex = new TEX(ArchiveWorker.GetBinaryFile(ArchiveString,
+                    aw.GetListOfFiles().First(x => x.IndexOf(Props[t].Filename, StringComparison.OrdinalIgnoreCase) >= 0)));
+                if (Props[t].Colors == null || Props[t].Colors.Length == 0)
                 {
-                    nums[j].Add(id + i);
+                    for (int i = 0; i < tex.TextureData.NumOfPalettes; i++)
+                    {
+                        if (FORCE_ORIGINAL == false && Props[t].Big != null && Props[t].Big.Count > 0)
+                            Textures.Add(new TextureHandler(Props[t].Big[0].Filename, tex, 2, Props[t].Big[0].Split / 2, i));
+                        else
+                            Textures.Add(new TextureHandler(Props[t].Filename, tex, 1, 1, i));
+                    }
                 }
-                j++;
+                else
+                {
+                    if (FORCE_ORIGINAL == false && Props[t].Big != null && Props[t].Big.Count > 0)
+                        Textures.Add(new TextureHandler(Props[t].Big[0].Filename, tex, 2, Props[t].Big[0].Split / 2, Textures.Count,colors: Props[t].Big[0].Colors ?? Props[t].Colors));
+                    else
+                        Textures.Add(new TextureHandler(Props[t].Filename, tex, 1, 1, Textures.Count, colors: Props[t].Colors));
+                }
             }
-            IEnumerable<int> intList = number.ToString(format).Select(digit => int.Parse(digit.ToString()));
-            var dst = new Rectangle { Location = location.ToPoint() };
-            foreach (int i in intList)
-            {
-                Draw(nums[(int)type][i], pallet,dst, scale, fade);
-                dst.Offset(Entries[nums[(int)type][i]].GetRectangle.Width* scale.X, 0);
-            }
-        }
-
-        public void Draw(Enum id, int pallet, Rectangle dst, Vector2 scale, float fade = 1f)
-        {
-            if((ID)id != ID.None)
-                Entries[(ID)id].Draw(Textures, pallet, dst, scale, fade);
-        }
-
-        public override void Draw(Enum id, Rectangle dst, float fade = 1) => Draw((ID)id, 2, dst, Vector2.One,fade);
-
-        public Entry GetEntry(Enum id, int index) => Entries[(ID)id][index] ?? null;
-
-        public override Entry GetEntry(Enum id) => Entries[(ID)id][0] ?? null;
-
-        public EntryGroup GetEntryGroup(Enum id)
-        {
-
-            if ((ID)id != ID.None)
-                return Entries[(ID)id] ?? null;
-            return null;
         }
 
         #endregion Methods

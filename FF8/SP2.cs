@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,11 +14,7 @@ namespace FF8
         {
             Count = 0;
             PalletCount = 1;
-            TextureCount = new int[] { 1 };
             EntriesPerTexture = 1;
-            TextureFilename = new string [] {""};
-            TextureBigFilename = null;
-            TextureBigSplit = null;
             Scale = null;
             TextureStartOffset = 0;
             IndexFilename = "";
@@ -42,14 +37,21 @@ namespace FF8
         #region Properties
 
         /// <summary>
-        /// If true disable mods and high res textures.
-        /// </summary>
-        protected bool FORCE_ORIGINAL { get; set; } = false;
-
-        /// <summary>
         /// Number of Entries
         /// </summary>
         public uint Count { get; protected set; }
+
+        /// <summary>
+        /// Number of Pallets
+        /// </summary>
+        public uint PalletCount { get; protected set; }
+
+        protected string ArchiveString { get; set; }
+
+        /// <summary>
+        /// Dictionary of Entries
+        /// </summary>
+        protected virtual Dictionary<uint, Entry> Entries { get; set; }
 
         /// <summary>
         /// Entries per texture,ID MOD EntriesPerTexture to get current entry to use on this texture
@@ -57,49 +59,21 @@ namespace FF8
         protected virtual int EntriesPerTexture { get; set; }
 
         /// <summary>
-        /// Number of Pallets
+        /// If true disable mods and high res textures.
         /// </summary>
-        public uint PalletCount { get; protected set; }
-
-        /// <summary>
-        /// Number of Textures
-        /// </summary>
-        public int[] TextureCount { get; protected set; }
-
-        /// <summary>
-        /// Dictionary of Entries
-        /// </summary>
-        protected virtual Dictionary<uint, Entry> Entries { get; set; }
-        protected string ArchiveString { get; set; }
+        protected bool FORCE_ORIGINAL { get; set; } = false;
 
         /// <summary>
         /// *.sp1 or *.sp2 that contains the entries or entrygroups. With Rectangle and offset information.
         /// </summary>
         protected string IndexFilename { get; set; }
 
+        protected List<TexProps> Props { get; set; }
+
         /// <summary>
         /// Should be Vector2.One unless reading a high res version of textures.
         /// </summary>
         protected Dictionary<uint, Vector2> Scale { get; set; }
-
-        /// <summary>
-        /// Texture filename. To match more than one number use {0:00} or {00:00} for ones with
-        /// leading zeros.
-        /// </summary>
-        /// TODO make array maybe to add support for highres versions. the array will need to come
-        /// with a scale factor
-        protected string[] TextureFilename { get; set; }
-
-        /// <summary>
-        /// For big textures.
-        /// </summary>
-        protected string[] TextureBigFilename { get; set; }
-
-        /// <summary>
-        /// Big versions of textures take the file and split it into multiple. How many splits per BigFilename. 
-        /// Value to be interval of 2. As these files are all 2 cols wide. And must be >= 2
-        /// </summary>
-        protected uint[] TextureBigSplit { get; set; }
 
         /// <summary>
         /// List of textures
@@ -134,6 +108,7 @@ namespace FF8
             TextureHandler tex = GetTexture(id);
             tex.Draw(dst, src, Color.White * fade);
         }
+
         public virtual void Draw(Enum id, Rectangle dst, Vector2 fill, float fade = 1)
         {
             Rectangle src = GetEntry(id).GetRectangle;
@@ -150,8 +125,6 @@ namespace FF8
             TextureHandler tex = GetTexture(id);
             tex.Draw(dst, src, Color.White * fade);
         }
-
-        private TextureHandler GetTexture(Enum id) => GetTexture(id,out Vector2 scale);
 
         public virtual Entry GetEntry(Enum id)
         {
@@ -171,27 +144,23 @@ namespace FF8
                 File = (uint)(pos / EntriesPerTexture);
             if (File > 0)
             {
-                uint j = (uint)TextureCount.Sum();
+                uint j = (uint)Props.Sum(x => x.Count);
                 if (File >= j)
                 {
                     File %= j;
                 }
-            }            
+            }
             scale = Scale[File];
             return Textures[(int)File];
         }
 
         protected virtual void Init()
         {
-
-
             ArchiveWorker aw = new ArchiveWorker(ArchiveString);
             InitEntries(aw);
             InitTextures(aw);
             InsertCustomEntries();
         }
-
-        protected virtual void InsertCustomEntries() {}
 
         protected virtual void InitEntries(ArchiveWorker aw = null)
         {
@@ -234,39 +203,140 @@ namespace FF8
                 }
             }
         }
+
         protected virtual void InitTextures(ArchiveWorker aw = null)
         {
+            int count = (int)Props.Sum(x => x.Count);
             if (Textures == null)
-                Textures = new List<TextureHandler>(TextureCount.Sum());
+                Textures = new List<TextureHandler>(count);
             if (Textures.Count <= 0)
             {
                 if (aw == null)
                     aw = new ArchiveWorker(ArchiveString);
                 TEX tex;
-                Scale = new Dictionary<uint, Vector2>(TextureCount.Sum());
+                Scale = new Dictionary<uint, Vector2>(count);
                 int b = 0;
-                for (int j =0; j< TextureCount.Length; j++)
-                for (uint i = 0; i < TextureCount[j]; i++)
-                {
-                    string path = aw.GetListOfFiles().First(x => x.ToLower().Contains(string.Format(TextureFilename[j], i + TextureStartOffset)));
-                    tex = new TEX(ArchiveWorker.GetBinaryFile(ArchiveString, path));
-                    if (TextureBigFilename != null && FORCE_ORIGINAL == false && b< TextureBigFilename.Length && b< TextureBigSplit.Length)
+                for (int j = 0; j < Props.Count; j++)
+                    for (uint i = 0; i < Props[j].Count; i++)
                     {
-                        TextureHandler th = new TextureHandler(TextureBigFilename[b], tex, 2, TextureBigSplit[b++] / 2);
+                        string path = aw.GetListOfFiles().First(x => x.ToLower().Contains(string.Format(Props[j].Filename, i + TextureStartOffset)));
+                        tex = new TEX(aw.GetBinaryFile(path));
+                        if (Props[j].Big != null && FORCE_ORIGINAL == false && b < Props[j].Big.Count)
+                        {
+                            TextureHandler th = new TextureHandler(Props[j].Big[b].Filename, tex, 2, Props[j].Big[b++].Split / 2);
 
-                        Textures.Add(th);
-                        Scale[i] = Vector2.One;//th.GetScale();
+                            Textures.Add(th);
+                            Scale[i] = Vector2.One;
+                        }
+                        else
+                        {
+                            TextureHandler th = new TextureHandler(path, tex);
+                            Textures.Add(th);
+                            Scale[i] = th.GetScale(); //scale might not be used outside of texturehandler.
+                        }
                     }
-                    else
-                    {
-                        TextureHandler th = new TextureHandler(path, tex);
-                        Textures.Add(th);
-                        Scale[i] = th.GetScale();
-                    }
-                }
             }
         }
 
+        protected virtual void InsertCustomEntries()
+        {
+        }
+
+        private TextureHandler GetTexture(Enum id) => GetTexture(id, out Vector2 scale);
+
         #endregion Methods
+
+        #region Classes
+
+        /// <summary>
+        /// For big textures.
+        /// </summary>
+        public class BigTexProps
+        {
+            #region Fields
+
+            /// <summary>
+            /// Filename; To match more than one number use {0:00} or {00:00} for ones with leading zeros.
+            /// </summary>
+            public string Filename;
+
+            /// <summary>
+            /// Big versions of textures take the file and split it into multiple. How many splits
+            /// per BigFilename. Value to be interval of 2. As these files are all 2 cols wide. And
+            /// must be &gt;= 2
+            /// </summary>
+            public uint Split;
+
+
+            /// <summary>
+            /// leave null unless big version has a different custom pallet than normal.
+            /// </summary>
+            public Color[] Colors;
+
+            #endregion Fields
+
+            #region Constructors
+
+            public BigTexProps(string filename, uint split,Color[] colors=null)
+            {
+                Filename = filename;
+                Split = split;
+                Colors = colors;
+            }
+
+            #endregion Constructors
+        }
+
+        public class TexProps
+        {  /// <summary>
+            #region Fields
+
+            /// <summary>
+            /// For big textures.
+            /// </summary>
+            public List<BigTexProps> Big;
+
+            /// <summary>
+            /// Override pallet of texture to this and don't load other pallets. If null ignore.
+            /// </summary>
+            public Color[] Colors;
+
+            /// <summary>
+            /// Number of Textures
+            /// </summary>
+            public uint Count;
+
+            /// Filename. To match more than one number use {0:00} or {00:00} for ones with leading
+            /// zeros. </summary>
+            public string Filename;
+
+            #endregion Fields
+
+            #region Constructors
+
+            public TexProps(string filename, uint count, params BigTexProps[] big)
+            {
+                Filename = filename;
+                Count = count;
+                if (big != null && Count != big.Length && big.Length > 0)
+                    throw new Exception($"Count of big textures should match small ones {Count} != {big.Length}");
+                Big = big.ToList();
+                Colors = null;
+            }
+
+            public TexProps(string filename, uint count, Color[] colors, params BigTexProps[] big)
+            {
+                Filename = filename;
+                Count = count;
+                if (big != null && Count != big.Length && big.Length > 0)
+                    throw new Exception($"Count of big textures should match small ones {Count} != {big.Length}");
+                Big = big.ToList();
+                Colors = colors;
+            }
+
+            #endregion Constructors
+        }
+
+        #endregion Classes
     }
 }

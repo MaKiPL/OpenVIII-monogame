@@ -92,7 +92,7 @@ namespace FF8
             }
         }
 
-        private Color[] GetPallets(int forcePalette)
+        public Color[] GetPallets(int forcePalette)
         {
             if (forcePalette < 0) forcePalette = 0;
 
@@ -100,9 +100,9 @@ namespace FF8
             int k = 0;
             for (uint i = (uint)(forcePalette * texture.NumOfColorsPerPalette * 4); i < texture.paletteData.Length && k < colors.Length; i += 4)
             {
-                colors[k].R = texture.paletteData[i];
+                colors[k].B = texture.paletteData[i];
                 colors[k].G = texture.paletteData[i + 1];
-                colors[k].B = texture.paletteData[i + 2];
+                colors[k].R = texture.paletteData[i + 2];
                 colors[k].A = texture.paletteData[i + 3];
                 k++;
             }
@@ -120,23 +120,21 @@ namespace FF8
             uint ImageSizeBytes = texture.Width * texture.Height * 4;
             if (texture.PaletteFlag != 0)
             {
-                if (forcePalette >= texture.NumOfPalettes) //prevents exception for forcing a palette that doesn't exist.
-                    return null;
-                Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
-                int localTextureLocator = TextureLocator;
-                byte[] convertBuffer = new byte[ImageSizeBytes];
                 if (colors != null && colors.Length != texture.NumOfColorsPerPalette)
                     throw new Exception($" custom colors parameter set but array size to match pallet size: {texture.NumOfColorsPerPalette}");
-                else
+                else if (colors == null)
+                {
+                    if (forcePalette >= texture.NumOfPalettes) //prevents exception for forcing a palette that doesn't exist.
+                        return null;
                     colors = GetPallets(forcePalette);
-
-                for (int i = 0; i < convertBuffer.Length; i += 4)
+                }
+                Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
+                int localTextureLocator = TextureLocator;
+                Color[] convertBuffer = new Color[ImageSizeBytes / 4];
+                for (int i = 0; i < convertBuffer.Length; i++)
                 {
                     byte colorkey = buffer[localTextureLocator++];
-                    convertBuffer[i] = colors[colorkey].B;
-                    convertBuffer[i + 1] = colors[colorkey].G;
-                    convertBuffer[i + 2] = colors[colorkey].R;
-                    convertBuffer[i + 3] = colors[colorkey].A;
+                    convertBuffer[i] = colors[colorkey];
                 }
                 bmp.SetData(convertBuffer);
                 return bmp;

@@ -14,7 +14,7 @@ namespace FF8
 
         private static Mode currentMode;
 
-        private static Icons.ID icon;
+        private static Icons.ID icon = Icons.ID.Arrow_Down;
         private const int DefaultPallet = 2;
         private static int pallet = DefaultPallet;
 

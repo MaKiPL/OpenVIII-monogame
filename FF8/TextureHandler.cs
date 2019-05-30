@@ -18,8 +18,11 @@ namespace FF8
         #endregion Fields
 
         #region Constructors
-        public bool Modded { get; private set; } = false;
-        public TextureHandler(string filename, uint cols) : this(filename, cols, 1) { }
+
+        public TextureHandler(string filename, uint cols) : this(filename, cols, 1)
+        {
+        }
+
         public TextureHandler(string filename, uint cols, uint rows)
         {
             if (cols == 1 && rows == 1)
@@ -32,26 +35,10 @@ namespace FF8
             else
                 Init(filename, null, cols, rows);
         }
-        public TextureHandler(string filename, TEX classic, int pallet = -1, Color[] colors = null) => Init(filename, classic, 1, 1,pallet:pallet,colors:colors);
-        public TextureHandler(string filename, TEX classic, uint cols, uint rows, int pallet = -1, Color[] colors = null) => Init(filename, classic, cols, rows, pallet);
-        private void Init(string filename, TEX classic, uint cols, uint rows, int pallet = -1, Color[] colors = null)
-        {
-            Classic = classic;
-            Size = Vector2.Zero;
-            Count = cols * rows;
-            Textures = new Texture2D[cols, rows];
-            StartOffset = 0;
-            Rows = rows;
-            Cols = cols;
-            Filename = filename;
-            Pallet = pallet;
-            Colors = colors;
 
-            //load textures;
-            Init();
-            //unload Classic
-            Classic = null;
-        }
+        public TextureHandler(string filename, TEX classic, int pallet = -1, Color[] colors = null) => Init(filename, classic, 1, 1, pallet: pallet, colors: colors);
+
+        public TextureHandler(string filename, TEX classic, uint cols, uint rows, int pallet = -1, Color[] colors = null) => Init(filename, classic, cols, rows, pallet, colors);
 
         #endregion Constructors
 
@@ -67,7 +54,10 @@ namespace FF8
         /// </summary>
         public Vector2 ClassicSize { get; private set; }
 
+        public Color[] Colors { get; private set; }
         public uint Count { get; protected set; }
+        public bool Modded { get; private set; } = false;
+        public int Pallet { get; protected set; }
 
         /// <summary>
         /// Scale vector from original to big
@@ -80,17 +70,17 @@ namespace FF8
         public Vector2 Size { get; private set; }
 
         protected uint Cols { get; set; }
+
         protected string Filename { get; set; }
-        public int Pallet { get; protected set; }
-        public Color[] Colors { get; private set; }
+
         protected uint Rows { get; set; }
+
+        protected uint StartOffset { get; set; }
 
         /// <summary>
         /// Scale vector big to modded or orignal to modded.
         /// </summary>
         //protected Vector2[,] Scales { get; private set; }
-
-        protected uint StartOffset { get; set; }
         protected Texture2D[,] Textures { get; private set; }
 
         #endregion Properties
@@ -103,6 +93,8 @@ namespace FF8
 
         #region Methods
 
+        public static Vector2 Abs(Vector2 v) => new Vector2(Math.Abs(v.X), Math.Abs(v.Y));
+
         public static explicit operator Texture2D(TextureHandler t)
         {
             if (t.Count == 1)
@@ -111,7 +103,11 @@ namespace FF8
             //return null;
         }
 
-        public static implicit operator Rectangle(TextureHandler v) => new Rectangle(new Point(0), v.Size.ToPoint());
+        public static Vector2 GetOffset(Rectangle old, Rectangle @new) => GetOffset(old.Location.ToVector2(), @new.Location.ToVector2());
+
+        public static Vector2 GetOffset(Point oldLoc, Point newLoc) => GetOffset(oldLoc.ToVector2(), newLoc.ToVector2());
+
+        public static Vector2 GetOffset(Vector2 oldLoc, Vector2 newLoc) => Abs(oldLoc - newLoc);
 
         public static Vector2 GetScale(Vector2 _old, Vector2 _new) => _new / _old;
 
@@ -120,6 +116,10 @@ namespace FF8
         public static Vector2 GetScale(TEX _old, Texture2D _new) => new Vector2((float)_new.Width / _old.TextureData.Width, (float)_new.Height / _old.TextureData.Height);
 
         public static Vector2 GetScale(Texture2D _old, Texture2D _new) => new Vector2((float)_new.Width / _old.Width, (float)_new.Height / _old.Height);
+
+        public static Vector2 GetScale(Point oldSize, Point newSize) => GetScale(oldSize.ToVector2(), newSize.ToVector2());
+
+        public static implicit operator Rectangle(TextureHandler v) => new Rectangle(new Point(0), v.Size.ToPoint());
 
         /// <summary>
         /// Load Texture from a mod
@@ -139,8 +139,8 @@ namespace FF8
             {
                 try
                 {
-                    pngpath = Directory.GetFiles(pngpath).Last(x => 
-                    (x.IndexOf(bn, StringComparison.OrdinalIgnoreCase) >= 0 && 
+                    pngpath = Directory.GetFiles(pngpath).Last(x =>
+                    (x.IndexOf(bn, StringComparison.OrdinalIgnoreCase) >= 0 &&
                     x.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)));
                     using (FileStream fs = File.OpenRead(pngpath))
                     {
@@ -162,15 +162,15 @@ namespace FF8
             return mat1;
         }
 
-        public static Vector2 ToVector2(Texture2D t) => new Vector2(t.Width, t.Height);
-
-        public static Vector2 ToVector2(TextureHandler t) => new Vector2(t.ClassicSize.X, t.ClassicSize.Y);
-
         public static Rectangle ToRectangle(Texture2D t) => new Rectangle(0, 0, t.Width, t.Height);
 
         public static Rectangle ToRectangle(TextureHandler t) => new Rectangle(0, 0, (int)t.ClassicSize.X, (int)t.ClassicSize.Y);
 
         public static Rectangle ToRectangle(Vector2 loc, Vector2 size) => new Rectangle(loc.ToPoint(), size.ToPoint());
+
+        public static Vector2 ToVector2(Texture2D t) => new Vector2(t.Width, t.Height);
+
+        public static Vector2 ToVector2(TextureHandler t) => new Vector2(t.ClassicSize.X, t.ClassicSize.Y);
 
         public static Texture2D UseBest(Texture2D _old, Texture2D _new) => UseBest(_old, _new, out Vector2 scale);
 
@@ -199,7 +199,7 @@ namespace FF8
                 scale = Vector2.One;
                 if (_old.TextureData.NumOfPalettes <= 1)
                     return _old.GetTexture();
-                tex = _old.GetTexture(pallet,colors);
+                tex = _old.GetTexture(pallet, colors);
                 return tex;
             }
             else
@@ -234,7 +234,7 @@ namespace FF8
                         {
                             //got lucky the whole thing is in this rectangle
                             _src.Location = (GetOffset(cnt, _src)).ToPoint();
-                            Memory.spriteBatch.Draw(Textures[c, r], dst,_src, color);
+                            Memory.spriteBatch.Draw(Textures[c, r], dst, _src, color);
                             return;
                         }
                         else if (cnt.Intersects(_src))
@@ -295,7 +295,7 @@ namespace FF8
                     tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
                     if (Classic == null && c2 < Cols) oldsize.X += tex.TextureData.Width;
                     Texture2D pngTex = LoadPNG(path, Pallet);
-                    Textures[c, r] = (UseBest(tex, pngTex, Pallet,Colors));
+                    Textures[c, r] = (UseBest(tex, pngTex, Pallet, Colors));
                     if (pngTex != null) Modded = true;
                     if (c2 < Cols) size.X += Textures[c2++, r2].Width;
                 }
@@ -306,13 +306,24 @@ namespace FF8
             if (Classic == null) ClassicSize = oldsize;
         }
 
-        public static Vector2 GetOffset(Rectangle old, Rectangle @new) => GetOffset(old.Location.ToVector2(), @new.Location.ToVector2());
+        private void Init(string filename, TEX classic, uint cols, uint rows, int pallet = -1, Color[] colors = null)
+        {
+            Classic = classic;
+            Size = Vector2.Zero;
+            Count = cols * rows;
+            Textures = new Texture2D[cols, rows];
+            StartOffset = 0;
+            Rows = rows;
+            Cols = cols;
+            Filename = filename;
+            Pallet = pallet;
+            Colors = colors;
 
-        public static Vector2 GetOffset(Point oldLoc, Point newLoc) => GetOffset(oldLoc.ToVector2(), newLoc.ToVector2());
-        public static Vector2 Abs(Vector2 v) => new Vector2(Math.Abs(v.X), Math.Abs(v.Y));
-        public static Vector2 GetOffset(Vector2 oldLoc, Vector2 newLoc) => Abs(oldLoc-newLoc);
-
-        public static Vector2 GetScale(Point oldSize, Point newSize) => GetScale(oldSize.ToVector2(), newSize.ToVector2());
+            //load textures;
+            Init();
+            //unload Classic
+            Classic = null;
+        }
 
         #endregion Methods
     }
