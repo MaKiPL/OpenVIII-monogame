@@ -3,7 +3,6 @@ using System.IO;
 
 namespace FF8
 {
-
     public static partial class Saves
     {
         /// <summary>
@@ -29,6 +28,7 @@ namespace FF8
             public GFData()
             {
             }
+
             public GFData(BinaryReader br, GFs g) => Read(br, g);
 
             public void Read(BinaryReader br, GFs g)
@@ -46,6 +46,17 @@ namespace FF8
                 Learning = br.ReadByte();//0x41 ability
                 Forgotten = br.ReadBytes(3);//0x42 abilities (1 bit = 1 ability of the GF forgotten, 2 bits unused)
             }
+
+            public byte Level
+            {
+                get
+                {
+                    uint ret = (Experience / Kernel_bin.JunctionableGFsData[ID].EXPperLevel);
+                    return ret > 100 ? (byte)100 : (byte)ret;
+                }
+            }
+
+            public ushort EXPtoNextLevel => Level >= 100 ? (ushort)0 : (ushort)(Experience - (Level * Kernel_bin.JunctionableGFsData[ID].EXPperLevel));
 
             public override string ToString() => Name.ToString();
         }

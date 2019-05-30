@@ -109,15 +109,18 @@ namespace FF8
             public Dictionary<GFs, Characters> JunctionedGFs()
             {
                 Dictionary<GFs, Characters> r = new Dictionary<GFs, Characters>(16);
-                foreach(var c in Characters)
+                if (Characters != null)
                 {
-                    if(c.Value.JunctionnedGFs != GFflags.None)
+                    foreach (var c in Characters)
                     {
-                        var availableFlags = Enum.GetValues(typeof(GFflags)).Cast<Enum>();
-                        foreach (var flag in availableFlags.Where(c.Value.JunctionnedGFs.HasFlag))
+                        if (c.Value.JunctionnedGFs != GFflags.None)
                         {
-                            if ((GFflags)flag == GFflags.None) continue;
-                            r.Add(ConvertGFEnum[(GFflags)flag], c.Key);
+                            var availableFlags = Enum.GetValues(typeof(GFflags)).Cast<Enum>();
+                            foreach (var flag in availableFlags.Where(c.Value.JunctionnedGFs.HasFlag))
+                            {
+                                if ((GFflags)flag == GFflags.None) continue;
+                                r.Add(ConvertGFEnum[(GFflags)flag], c.Key);
+                            }
                         }
                     }
                 }
@@ -126,11 +129,14 @@ namespace FF8
             public List<GFs> UnlockedGFs()
             {
                 List<GFs> r = new List<GFs>(16);
-                foreach (var g in GFs)
+                if (GFs != null)
                 {
-                    if ((g.Value.Exists & 1) !=0) //needs testing could be wrong.
+                    foreach (var g in GFs)
                     {
-                        r.Add(g.Key);
+                        if ((g.Value.Exists & 1) != 0) //needs testing could be wrong.
+                        {
+                            r.Add(g.Key);
+                        }
                     }
                 }
                 return r;

@@ -114,7 +114,7 @@ namespace FF8
         private static void DrawIcons()
         {
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
-            Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
+            Memory.spriteBatch.GraphicsDevice.Clear(Color.Gray);
             Memory.SpriteBatchEnd();
             Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
 
