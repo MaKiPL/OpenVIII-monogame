@@ -125,7 +125,7 @@ namespace FF8
                 else if (colors == null)
                 {
                     if (forcePalette >= texture.NumOfPalettes) //prevents exception for forcing a palette that doesn't exist.
-                        return null;
+                        throw new Exception($"Desired pallet is incorrect use -1 for default or use a smaller number: {forcePalette} > {texture.NumOfPalettes}");
                     colors = GetPallets(forcePalette);
                 }
                 Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
