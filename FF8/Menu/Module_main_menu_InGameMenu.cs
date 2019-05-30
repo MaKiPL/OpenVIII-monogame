@@ -817,7 +817,7 @@ namespace FF8
                 }
             }
 
-            public int CURSOR_NEXT()
+            public virtual int CURSOR_NEXT()
             {
                 if ((Cursor_Status & Cursor_Status.Enabled) != 0)
                 {
@@ -837,7 +837,7 @@ namespace FF8
                 return _cursor_select;
             }
 
-            public int CURSOR_PREV()
+            public virtual int CURSOR_PREV()
             {
                 if ((Cursor_Status & Cursor_Status.Enabled) != 0)
                 {
@@ -1023,9 +1023,19 @@ namespace FF8
                             Inputs_OKAY();
                             return true;
                         }
-                        if (Input.Button(Buttons.Cancel))
+                        else if (Input.Button(Buttons.Cancel))
                         {
                             Inputs_CANCEL();
+                            return true;
+                        }
+                        else if (Input.Button(Buttons.Triangle))
+                        {
+                            Inputs_Triangle();
+                            return true;
+                        }
+                        else if (Input.Button(Buttons.Square))
+                        {
+                            Inputs_Triangle();
                             return true;
                         }
                     }
@@ -1036,9 +1046,22 @@ namespace FF8
                             init_debugger_Audio.PlaySound(0);
                     }
                 }
+                skipsnd = false;
                 return ret;
             }
 
+            public virtual void Inputs_Triangle()
+            {
+                Input.ResetInputLimit();
+                if (!skipsnd)
+                    init_debugger_Audio.PlaySound(0);
+            }
+            public virtual void Inputs_Square()
+            {
+                Input.ResetInputLimit();
+                if (!skipsnd)
+                    init_debugger_Audio.PlaySound(31);
+            }
             public virtual void Inputs_OKAY()
             {
                 Input.ResetInputLimit();

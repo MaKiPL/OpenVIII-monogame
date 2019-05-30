@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.IO;
 
@@ -90,40 +91,50 @@ namespace FF8
                 Buffer.BlockCopy(buffer, 0xF0, texture.paletteData, 0, PaletteSectionSize);
             }
         }
+
+        public Color[] GetPallets(int forcePalette)
+        {
+            if (forcePalette < 0) forcePalette = 0;
+
+            Color[] colors = new Color[texture.NumOfColorsPerPalette];
+            int k = 0;
+            for (uint i = (uint)(forcePalette * texture.NumOfColorsPerPalette * 4); i < texture.paletteData.Length && k < colors.Length; i += 4)
+            {
+                colors[k].B = texture.paletteData[i];
+                colors[k].G = texture.paletteData[i + 1];
+                colors[k].R = texture.paletteData[i + 2];
+                colors[k].A = texture.paletteData[i + 3];
+                k++;
+            }
+            return colors;
+        }
+
         /// <summary>
         /// Get Texture2D converted to 32bit color
         /// </summary>
         /// <param name="forcePalette">Desired Palette, see texture.NumOfPalettes. -1 is default.</param>
+        /// <param name="colors">Overide colors of pallet; Array size must match texture.NumOfColorsPerPalette</param>
         /// <returns>32bit Texture2D</returns>
-        public Texture2D GetTexture(int forcePalette = -1)
+        public Texture2D GetTexture(int forcePalette = -1, Color[] colors = null)
         {
             uint ImageSizeBytes = texture.Width * texture.Height * 4;
             if (texture.PaletteFlag != 0)
             {
-                if (forcePalette >= texture.NumOfPalettes) //prevents exception for forcing a palette that doesn't exist.
-                    return null;
-
-                int localTextureLocator = TextureLocator;
-                Color[] colors = new Color[texture.paletteData.Length / 4];
-                int k = 0;
-                for (int i = 0; i < texture.paletteData.Length; i += 4)
+                if (colors != null && colors.Length != texture.NumOfColorsPerPalette)
+                    throw new Exception($" custom colors parameter set but array size to match pallet size: {texture.NumOfColorsPerPalette}");
+                else if (colors == null)
                 {
-                    colors[k].Red = texture.paletteData[i];
-                    colors[k].Green = texture.paletteData[i + 1];
-                    colors[k].Blue = texture.paletteData[i + 2];
-                    colors[k].Alpha = texture.paletteData[i + 3];
-                    k++;
+                    if (forcePalette >= texture.NumOfPalettes) //prevents exception for forcing a palette that doesn't exist.
+                        throw new Exception($"Desired pallet is incorrect use -1 for default or use a smaller number: {forcePalette} > {texture.NumOfPalettes}");
+                    colors = GetPallets(forcePalette);
                 }
                 Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
-
-                byte[] convertBuffer = new byte[ImageSizeBytes];
-                for (int i = 0; i < convertBuffer.Length; i += 4)
+                int localTextureLocator = TextureLocator;
+                Color[] convertBuffer = new Color[ImageSizeBytes / 4];
+                for (int i = 0; i < convertBuffer.Length; i++)
                 {
                     byte colorkey = buffer[localTextureLocator++];
-                    convertBuffer[i] = colors[forcePalette == -1 ? colorkey : (forcePalette * texture.NumOfColorsPerPalette) + colorkey].Blue;
-                    convertBuffer[i + 1] = colors[forcePalette == -1 ? colorkey : (forcePalette * texture.NumOfColorsPerPalette) + colorkey].Green;
-                    convertBuffer[i + 2] = colors[forcePalette == -1 ? colorkey : (forcePalette * texture.NumOfColorsPerPalette) + colorkey].Red;
-                    convertBuffer[i + 3] = colors[forcePalette == -1 ? colorkey : (forcePalette * texture.NumOfColorsPerPalette) + colorkey].Alpha;
+                    convertBuffer[i] = colors[colorkey];
                 }
                 bmp.SetData(convertBuffer);
                 return bmp;
@@ -186,6 +197,7 @@ namespace FF8
         /// <returns>byte[4] red green blue alpha, i think</returns>
         /// <see cref="https://github.com/myst6re/vincent-tim/blob/master/PsColor.cpp"/>
         public static byte[] FromPsColor(ushort color, bool useAlpha = false) => new byte[] { (byte)Math.Round((color & 31) * COEFF_COLOR), (byte)Math.Round(((color >> 5) & 31) * COEFF_COLOR), (byte)Math.Round(((color >> 10) & 31) * COEFF_COLOR), (byte)(color == 0 && useAlpha ? 0 : 255) };
+
         #endregion Methods
 
         #region Structs
@@ -198,42 +210,52 @@ namespace FF8
         public struct Texture
         {
             #region Fields
+
             /// <summary>
             /// 0x68
             /// </summary>
             public byte bytesPerPixel;
+
             /// <summary>
             /// 0x40
             /// </summary>
             public uint Height;
+
             /// <summary>
             /// 0x30
             /// </summary>
             public byte NumOfPalettes;
+
             /// <summary>
             /// 0xF0 for ff8;0xEC for ff7; size = PaletteSize * 4;
             /// </summary>
             public byte[] paletteData;
+
             /// <summary>
             /// 0x4C
             /// </summary>
             public byte PaletteFlag;
+
             /// <summary>
             /// 0x58
             /// </summary>
             public uint PaletteSize;
+
             /// <summary>
             /// 0x3C
             /// </summary>
             public uint Width;
+
             /// <summary>
             /// 0x38
             /// </summary>
             public uint bitDepth;
+
             /// <summary>
             /// 0x34
             /// </summary>
             public uint NumOfColorsPerPalette;
+
             /// <summary>
             /// 0x00; 1=FF7 | 2=FF8
             /// </summary>
@@ -242,17 +264,14 @@ namespace FF8
             #endregion Fields
         }
 
-        private struct Color
-        {
-            #region Fields
+        //public struct Color
+        //{
+        //    #region Fields
 
-            public byte Alpha;
-            public byte Blue;
-            public byte Green;
-            public byte Red;
+        // public byte Alpha; public byte Blue; public byte Green; public byte Red;
 
-            #endregion Fields
-        }
+        //    #endregion Fields
+        //}
 
         #endregion Structs
     }

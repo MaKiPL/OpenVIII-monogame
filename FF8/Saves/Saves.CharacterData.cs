@@ -42,7 +42,7 @@ namespace FF8
             public GFflags JunctionnedGFs; //0x54
             public byte Unknown1; //0x58
             public byte Alternativemodel; //0x5A (Normal, SeeD, Soldier...)
-            public Dictionary<Kernel_bin.Stat,byte> JunctionStat;
+            public Dictionary<Kernel_bin.Stat,byte> Stat_J;
             //public byte JunctionHP; //0x5B
             //public byte JunctionSTR; //0x5C
             //public byte JunctionVIT; //0x5D
@@ -52,10 +52,10 @@ namespace FF8
             //public byte JunctionEVA; //0x61
             //public byte JunctionHIT; //0x62
             //public byte JunctionLCK; //0x63
-            public byte Junctionelementalattack; //0x64
-            public byte Junctionmentalattack; //0x65
-            public List<byte> Junctionelementaldefense; //0x66
-            public List<byte> Junctionmentaldefense; //0x67
+            public byte Elem_Atk_J; //0x64
+            public byte ST_Atk_J; //0x65
+            public List<byte> Elem_Def_J; //0x66
+            public List<byte> ST_Def_J; //0x67
             public byte Unknown2; //0x6B (padding?)
             public Dictionary<GFs, ushort> CompatibilitywithGFs; //0x6F
             public ushort Numberofkills; //0x70
@@ -123,13 +123,13 @@ namespace FF8
                 JunctionnedGFs = (GFflags)br.ReadUInt16();//0x58
                 Unknown1 = br.ReadByte();//0x5A
                 Alternativemodel = br.ReadByte();//0x5B (Normal, SeeD, Soldier...)
-                JunctionStat = new Dictionary<Kernel_bin.Stat, byte>(9);
+                Stat_J = new Dictionary<Kernel_bin.Stat, byte>(9);
                 for (int i = 0; i < 9; i++)
                 {
                     var key = (Kernel_bin.Stat)i;
                     var val = br.ReadByte();
-                    if (!JunctionStat.ContainsKey(key))
-                        JunctionStat.Add(key, val);                   
+                    if (!Stat_J.ContainsKey(key))
+                        Stat_J.Add(key, val);                   
                 }
                 //JunctionHP = br.ReadByte();//0x5C
                 //JunctionSTR = br.ReadByte();//0x5D
@@ -140,10 +140,10 @@ namespace FF8
                 //JunctionEVA = br.ReadByte();//0x62
                 //JunctionHIT = br.ReadByte();//0x63
                 //JunctionLCK = br.ReadByte();//0x64
-                Junctionelementalattack = br.ReadByte();//0x65
-                Junctionmentalattack = br.ReadByte();//0x66
-                Junctionelementaldefense = br.ReadBytes(4).ToList() ;//0x67
-                Junctionmentaldefense = br.ReadBytes(4).ToList();//0x6B
+                Elem_Atk_J = br.ReadByte();//0x65
+                ST_Atk_J = br.ReadByte();//0x66
+                Elem_Def_J = br.ReadBytes(4).ToList() ;//0x67
+                ST_Def_J = br.ReadBytes(4).ToList();//0x6B
                 Unknown2 = br.ReadByte();//0x6F (padding?)
                 CompatibilitywithGFs = new Dictionary<GFs,ushort>(16);
                 for (int i = 0; i < 16; i++)
@@ -180,24 +180,24 @@ namespace FF8
                 switch (s)
                 {
                     case Kernel_bin.Stat.HP:
-                        return Kernel_bin.CharacterStats[c].HP((sbyte)Level, JunctionStat[s], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], _HP, total);
+                        return Kernel_bin.CharacterStats[c].HP((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], _HP, total);
                     case Kernel_bin.Stat.EVA:
                         //TODO confirm if there is no flat stat buff for eva. If there isn't then remove from function.
-                        return Kernel_bin.CharacterStats[c].EVA((sbyte)Level, JunctionStat[s], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]],0, TotalStat(Kernel_bin.Stat.SPD,c), total);
+                        return Kernel_bin.CharacterStats[c].EVA((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]],0, TotalStat(Kernel_bin.Stat.SPD,c), total);
                     case Kernel_bin.Stat.SPD:
-                        return Kernel_bin.CharacterStats[c].SPD((sbyte)Level, JunctionStat[s], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], RawStats[s], total);
+                        return Kernel_bin.CharacterStats[c].SPD((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
                     case Kernel_bin.Stat.HIT:
-                        return Kernel_bin.CharacterStats[c].HIT(JunctionStat[s], JunctionStat[s] == 0 ? 0:Magics[JunctionStat[s]], WeaponID);
+                        return Kernel_bin.CharacterStats[c].HIT(Stat_J[s], Stat_J[s] == 0 ? 0:Magics[Stat_J[s]], WeaponID);
                     case Kernel_bin.Stat.LUCK:
-                        return Kernel_bin.CharacterStats[c].LUCK((sbyte)Level, JunctionStat[s], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], RawStats[s], total);
+                        return Kernel_bin.CharacterStats[c].LUCK((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
                     case Kernel_bin.Stat.MAG:
-                        return Kernel_bin.CharacterStats[c].MAG((sbyte)Level, JunctionStat[s], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], RawStats[s], total);
+                        return Kernel_bin.CharacterStats[c].MAG((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
                     case Kernel_bin.Stat.SPR:
-                        return Kernel_bin.CharacterStats[c].SPR((sbyte)Level, JunctionStat[s], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], RawStats[s], total);
+                        return Kernel_bin.CharacterStats[c].SPR((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
                     case Kernel_bin.Stat.STR:
-                        return Kernel_bin.CharacterStats[c].STR((sbyte)Level, JunctionStat[s], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], RawStats[s], total,WeaponID);
+                        return Kernel_bin.CharacterStats[c].STR((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total,WeaponID);
                     case Kernel_bin.Stat.VIT:
-                        return Kernel_bin.CharacterStats[c].VIT((sbyte)Level, JunctionStat[s], JunctionStat[s] == 0 ? 0 : Magics[JunctionStat[s]], RawStats[s], total);
+                        return Kernel_bin.CharacterStats[c].VIT((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
 
                 }
                 return 0;
@@ -217,15 +217,15 @@ namespace FF8
                 CharacterData c = (CharacterData)MemberwiseClone();
                 //Deepcopy
                 c.CompatibilitywithGFs = CompatibilitywithGFs.ToDictionary(e => e.Key, e => e.Value);
-                c.JunctionStat = JunctionStat.ToDictionary(e => e.Key, e => e.Value);
+                c.Stat_J = Stat_J.ToDictionary(e => e.Key, e => e.Value);
                 c.Magics = Magics.ToDictionary(e => e.Key, e => e.Value);
-                c.JunctionStat = JunctionStat.ToDictionary(e => e.Key, e => e.Value);
+                c.Stat_J = Stat_J.ToDictionary(e => e.Key, e => e.Value);
                 c.Magics = Magics.ToDictionary(e => e.Key, e => e.Value);
                 c.RawStats = RawStats.ToDictionary(e => e.Key, e => e.Value);
                 c.Commands = Commands.ConvertAll(Item => Item);
                 c.Abilities = Abilities.ConvertAll(Item => Item);
-                c.Junctionelementaldefense = Junctionelementaldefense.ConvertAll(Item => Item);
-                c.Junctionmentaldefense = Junctionmentaldefense.ConvertAll(Item => Item);
+                c.Elem_Def_J = Elem_Def_J.ConvertAll(Item => Item);
+                c.ST_Def_J = ST_Def_J.ConvertAll(Item => Item);
                 return c;
             }
         }
