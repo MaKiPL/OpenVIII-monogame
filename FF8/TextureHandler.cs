@@ -19,22 +19,22 @@ namespace FF8
 
         #region Constructors
         public bool Modded { get; private set; } = false;
-        public TextureHandler(string filename, uint cols = 1, uint rows = 1, int pallet = -1)
+        public TextureHandler(string filename, uint cols) : this(filename, cols, 1) { }
+        public TextureHandler(string filename, uint cols, uint rows)
         {
             if (cols == 1 && rows == 1)
             {
                 ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
                 filename = aw.GetListOfFiles().First(x => x.IndexOf(filename, StringComparison.OrdinalIgnoreCase) >= 0);
-                TEX tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, filename));
+                TEX tex = new TEX(aw.GetBinaryFile(filename));
                 Init(filename, tex, cols, rows);
             }
             else
                 Init(filename, null, cols, rows);
         }
-
-        public TextureHandler(string filename, TEX classic, uint cols = 1, uint rows = 1, int pallet = -1) => Init(filename, classic, cols, rows, pallet);
-
-        public void Init(string filename, TEX classic, uint cols = 1, uint rows = 1, int pallet = -1)
+        public TextureHandler(string filename, TEX classic, int pallet = -1, Color[] colors = null) => Init(filename, classic, 1, 1,pallet:pallet,colors:colors);
+        public TextureHandler(string filename, TEX classic, uint cols, uint rows, int pallet = -1, Color[] colors = null) => Init(filename, classic, cols, rows, pallet);
+        private void Init(string filename, TEX classic, uint cols, uint rows, int pallet = -1, Color[] colors = null)
         {
             Classic = classic;
             Size = Vector2.Zero;
@@ -45,6 +45,7 @@ namespace FF8
             Cols = cols;
             Filename = filename;
             Pallet = pallet;
+            Colors = colors;
 
             //load textures;
             Init();
@@ -81,6 +82,7 @@ namespace FF8
         protected uint Cols { get; set; }
         protected string Filename { get; set; }
         public int Pallet { get; protected set; }
+        public Color[] Colors { get; private set; }
         protected uint Rows { get; set; }
 
         /// <summary>
@@ -187,9 +189,9 @@ namespace FF8
             }
         }
 
-        public static Texture2D UseBest(TEX _old, Texture2D _new, int pallet = 0) => UseBest(_old, _new, out Vector2 scale, pallet);
+        public static Texture2D UseBest(TEX _old, Texture2D _new, int pallet = 0, Color[] colors = null) => UseBest(_old, _new, out Vector2 scale, pallet, colors);
 
-        public static Texture2D UseBest(TEX _old, Texture2D _new, out Vector2 scale, int pallet = 0)
+        public static Texture2D UseBest(TEX _old, Texture2D _new, out Vector2 scale, int pallet = 0, Color[] colors = null)
         {
             Texture2D tex;
             if (_new == null)
@@ -197,7 +199,7 @@ namespace FF8
                 scale = Vector2.One;
                 if (_old.TextureData.NumOfPalettes <= 1)
                     return _old.GetTexture();
-                tex = _old.GetTexture(pallet);
+                tex = _old.GetTexture(pallet,colors);
                 return tex;
             }
             else
@@ -293,7 +295,7 @@ namespace FF8
                     tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
                     if (Classic == null && c2 < Cols) oldsize.X += tex.TextureData.Width;
                     Texture2D pngTex = LoadPNG(path, Pallet);
-                    Textures[c, r] = (UseBest(tex, pngTex, Pallet));
+                    Textures[c, r] = (UseBest(tex, pngTex, Pallet,Colors));
                     if (pngTex != null) Modded = true;
                     if (c2 < Cols) size.X += Textures[c2++, r2].Width;
                 }
