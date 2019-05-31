@@ -503,7 +503,7 @@ namespace FF8
                             }
                             while ((infoport.dwFlags & DMUS_PC.SOFTWARESYNTH) == 0);
 
-                            outport.SetPortParams(0, 0, 0, SET.REVERB | SET.CHORUS, 44100);
+                            outport.SetPortParams(0, 0, 0, DirectMidi.SET.REVERB | DirectMidi.SET.CHORUS, 44100);
                             outport.ActivatePort(infoport);
 
                             cport.AddPort(outport, 0, 1);
