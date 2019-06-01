@@ -348,7 +348,7 @@ namespace FF8
 
             private class IGMData_Stats : IGMData
             {
-                public IGMData_Stats() : base(10, 4, new IGMDataItem_Box(pos: new Rectangle(0, 414, 840, 216)), 2, 5)
+                public IGMData_Stats() : base(10, 5, new IGMDataItem_Box(pos: new Rectangle(0, 414, 840, 216)), 2, 5)
                 {
                 }
 
@@ -390,6 +390,7 @@ namespace FF8
                             (byte)(unlocked.Contains(Kernel_bin.Abilities.Elem_Def_Jx1) ||
                             unlocked.Contains(Kernel_bin.Abilities.Elem_Def_Jx2) ||
                             unlocked.Contains(Kernel_bin.Abilities.Elem_Def_Jx4) ? 2 : 7));
+                        BLANKS[5] = true;
                         foreach (Kernel_bin.Stat stat in (Kernel_bin.Stat[])Enum.GetValues(typeof(Kernel_bin.Stat)))
                         {
                             int pos = (int)stat;
@@ -408,6 +409,11 @@ namespace FF8
                             ITEM[pos, 3] = stat == Kernel_bin.Stat.HIT || stat == Kernel_bin.Stat.EVA
                                 ? new IGMDataItem_String(Misc[Items.Percent], new Rectangle(SIZE[pos].X + 350, SIZE[pos].Y, 0, 0))
                                 : null;
+
+                            //((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Red;
+                            //ITEM[pos, 4] = new IGMDataItem_Icon(Icons.ID.Arrow_Down, new Rectangle(SIZE[pos].X + 265, SIZE[pos].Y, 0, 0), 16);
+                            //((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Yellow;
+                            //ITEM[pos, 4] = new IGMDataItem_Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos].X + 265, SIZE[pos].Y, 0, 0), 17);
                         }
                     }
                 }
