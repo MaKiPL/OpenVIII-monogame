@@ -32,12 +32,11 @@ namespace FF8
 
         public TIM2(byte[] buffer, uint offset = 0)
         {
-            using (MemoryStream ms = new MemoryStream(buffer))
-            using (BinaryReader br = new BinaryReader(ms))
+            using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
             {
                 this.buffer = buffer;
-                ms.Seek(offset, SeekOrigin.Begin);
-                ms.Seek(4, SeekOrigin.Current);//clutID
+                br.BaseStream.Seek(offset, SeekOrigin.Begin);
+                br.BaseStream.Seek(4, SeekOrigin.Current);//clutID
                 timOffset = offset;
                 byte bppIndicator = br.ReadByte();
                 bppIndicator = (byte)(bppIndicator == 0x08 ? 4 :
@@ -115,15 +114,12 @@ namespace FF8
             texture.Height = br.ReadUInt16();
             textureDataPointer = (uint)br.BaseStream.Position;
         }
-        
-        private Color[] GetClutColors(ushort clut)
+
+        private Color[] GetClutColors(BinaryReader br, ushort clut)
         {
             if (clut > texture.NumOfCluts)
                 throw new Exception("TIM_v2::GetClutColors::given clut is bigger than texture number of cluts");
 
-            using (MemoryStream ms = new MemoryStream(buffer))
-            using (BinaryReader br = new BinaryReader(ms))
-            {
                 List<Color> colorPixels = new List<Color>(GetWidth * GetHeight);
                 if (bpp == 8)
                 {
@@ -157,50 +153,50 @@ namespace FF8
                 else if (bpp > 8) throw new Exception("TIM that has bpp mode higher than 8 has no clut data!");
 
                 return colorPixels.ToArray();
-            }
+            
         }
+
         public Texture2D GetTexture(ushort? clut = null, bool bIgnoreSize = false)
         {
-            Texture2D image = new Texture2D(Memory.graphics.GraphicsDevice, GetWidth, GetHeight, false, SurfaceFormat.Color);
-            image.SetData(CreateImageBuffer(clut==null?null:GetClutColors(clut.Value), bIgnoreSize));
-            return image;
-}
-
-        private Color[] CreateImageBuffer(Color[] palette = null, bool bIgnoreSize = false)
-        {
-            using (MemoryStream ms = new MemoryStream(buffer))
-            using (BinaryReader br = new BinaryReader(ms))
+            using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
             {
-                br.BaseStream.Seek(textureDataPointer, SeekOrigin.Begin);
-                Color[] buffer = new Color[texture.Width * texture.Height]; //ARGB
-                if (bpp == 8)
-                {
-                    if (!bIgnoreSize)
-                        if ((buffer.Length) != ms.Length - br.BaseStream.Position)
-                            throw new Exception("TIM_v2::CreateImageBuffer::TIM texture buffer has size incosistency.");
-                    for (int i = 0; i < buffer.Length; i++)
-                    {
-                        buffer[i] = palette[br.ReadByte()]; //colorkey
-                        if (buffer[i] != Color.TransparentBlack)
-                            buffer[i].A = 0xFF;
-                    }
-                }
-                if (bpp == 4)
-                {
-                    if (!bIgnoreSize)
-                        if ((buffer.Length) / 2 != ms.Length - br.BaseStream.Position)
-                            throw new Exception("TIM_v2::CreateImageBuffer::TIM texture buffer has size incosistency.");
-                    for (int i = 0; i < buffer.Length; i++)
-                    {
-                        byte colorkey = br.ReadByte();
-                        buffer[i] = palette[colorkey & 0xf];
-                        buffer[++i] = palette[colorkey >> 4];
-                    }
-                }
-                //Then in bs debug where ReadTexture store for all cluts
-                //data and then create Texture2D from there. (array of e.g. 15 texture2D)
-                return buffer;
+                Texture2D image = new Texture2D(Memory.graphics.GraphicsDevice, GetWidth, GetHeight, false, SurfaceFormat.Color);
+                image.SetData(CreateImageBuffer(br, clut == null ? null : GetClutColors(br,clut.Value), bIgnoreSize));
+                return image;
             }
+        }
+
+        private Color[] CreateImageBuffer(BinaryReader br, Color[] palette = null, bool bIgnoreSize = false)
+        {
+            br.BaseStream.Seek(textureDataPointer, SeekOrigin.Begin);
+            Color[] buffer = new Color[texture.Width * texture.Height]; //ARGB
+            if (bpp == 8)
+            {
+                if (!bIgnoreSize)
+                    if ((buffer.Length) != br.BaseStream.Length - br.BaseStream.Position)
+                        throw new Exception("TIM_v2::CreateImageBuffer::TIM texture buffer has size incosistency.");
+                for (int i = 0; i < buffer.Length; i++)
+                {
+                    buffer[i] = palette[br.ReadByte()]; //colorkey
+                    if (buffer[i] != Color.TransparentBlack)
+                        buffer[i].A = 0xFF;
+                }
+            }
+            if (bpp == 4)
+            {
+                if (!bIgnoreSize)
+                    if ((buffer.Length) / 2 != br.BaseStream.Length - br.BaseStream.Position)
+                        throw new Exception("TIM_v2::CreateImageBuffer::TIM texture buffer has size incosistency.");
+                for (int i = 0; i < buffer.Length; i++)
+                {
+                    byte colorkey = br.ReadByte();
+                    buffer[i] = palette[colorkey & 0xf];
+                    buffer[++i] = palette[colorkey >> 4];
+                }
+            }
+            //Then in bs debug where ReadTexture store for all cluts
+            //data and then create Texture2D from there. (array of e.g. 15 texture2D)
+            return buffer;
         }
 
         public int GetClutCount => texture.NumOfCluts;
