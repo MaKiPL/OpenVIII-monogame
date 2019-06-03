@@ -200,7 +200,7 @@
             unk0189,
             unk0190,
             unk0191,
-            GF_Junction,
+            JunctionSYM,
             unk0193,
             unk0194,
             unk0195,
@@ -365,6 +365,19 @@
             GF_PG2,
             GF_PG3,
             GF_PG4,
+            MAGIC_PG1,
+            MAGIC_PG2,
+            MAGIC_PG3,
+            MAGIC_PG4,
+            MAGIC_PG5,
+            MAGIC_PG6,
+            MAGIC_PG7,
+            MAGIC_PG8,
+            MAGIC_PG9,
+            MAGIC_PG10,
+            MAGIC_PG11,
+            MAGIC_PG12,
+            MAGIC_PG13,
         }
 
         #endregion Enums
