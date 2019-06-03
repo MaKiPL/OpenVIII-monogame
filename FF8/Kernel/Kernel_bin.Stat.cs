@@ -4,6 +4,8 @@ namespace FF8
 {
     public partial class Kernel_bin
     {
+        #region Fields
+
         /// <summary>
         /// Convert stat to stat junction
         /// </summary>
@@ -18,7 +20,22 @@ namespace FF8
                     { Stat.EVA, Abilities.Eva_J },
                     { Stat.LUCK, Abilities.Luck_J },
                     { Stat.HIT, Abilities.Hit_J },
+                    { Stat.Elem_Atk, Abilities.Elem_Atk_J },
+                    { Stat.ST_Atk, Abilities.ST_Atk_J },
+                    { Stat.Elem_Def_1, Abilities.Elem_Def_Jx1 },//or Elem_Def_Jx2 or Elem_Def_Jx4
+                    { Stat.Elem_Def_2, Abilities.Elem_Def_Jx2 },//or Elem_Def_Jx4
+                    { Stat.Elem_Def_3, Abilities.Elem_Def_Jx4 },
+                    { Stat.Elem_Def_4, Abilities.Elem_Def_Jx4 },
+                    { Stat.ST_Def_1, Abilities.ST_Def_Jx1 },//or ST_Def_Jx2 or ST_Def_Jx4
+                    { Stat.ST_Def_2, Abilities.ST_Def_Jx2 },//or ST_Def_Jx4
+                    { Stat.ST_Def_3, Abilities.ST_Def_Jx4 },
+                    { Stat.ST_Def_4, Abilities.ST_Def_Jx4 },
                 };
+
+        #endregion Fields
+
+        #region Enums
+
         public enum Stat
         {
             HP,
@@ -29,7 +46,19 @@ namespace FF8
             SPD,
             EVA,
             HIT,
-            LUCK
+            LUCK,
+            Elem_Atk,
+            ST_Atk,
+            Elem_Def_1,
+            Elem_Def_2,
+            Elem_Def_3,
+            Elem_Def_4,
+            ST_Def_1,
+            ST_Def_2,
+            ST_Def_3,
+            ST_Def_4,
         }
+
+        #endregion Enums
     }
 }

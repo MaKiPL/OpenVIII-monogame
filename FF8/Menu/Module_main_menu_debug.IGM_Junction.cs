@@ -1542,10 +1542,6 @@ namespace FF8
                         case 0:
                             base.Inputs_OKAY();
                             Memory.State.Characters[Character].Stat_J = Memory.State.Characters[Character].Stat_J.ToDictionary(e => e.Key, e => (byte)0);
-                            Memory.State.Characters[Character].Elem_Atk_J = 0;
-                            Memory.State.Characters[Character].Elem_Def_J = Memory.State.Characters[Character].Elem_Def_J.ConvertAll(Item => (byte)0);
-                            Memory.State.Characters[Character].ST_Atk_J = 0;
-                            Memory.State.Characters[Character].ST_Def_J = Memory.State.Characters[Character].ST_Def_J.ConvertAll(Item => (byte)0);
                             skipsnd = true;
                             Inputs_CANCEL();
                             skipsnd = false;
@@ -1577,10 +1573,6 @@ namespace FF8
                         case 0:
                             base.Inputs_OKAY();
                             Memory.State.Characters[Character].Stat_J = Memory.State.Characters[Character].Stat_J.ToDictionary(e => e.Key, e => (byte)0);
-                            Memory.State.Characters[Character].Elem_Atk_J = 0;
-                            Memory.State.Characters[Character].Elem_Def_J = Memory.State.Characters[Character].Elem_Def_J.ConvertAll(Item => (byte)0);
-                            Memory.State.Characters[Character].ST_Atk_J = 0;
-                            Memory.State.Characters[Character].ST_Def_J = Memory.State.Characters[Character].ST_Def_J.ConvertAll(Item => (byte)0);
                             Memory.State.Characters[Character].Commands = Memory.State.Characters[Character].Commands.ConvertAll(Item => Kernel_bin.Abilities.None);
                             Memory.State.Characters[Character].Abilities = Memory.State.Characters[Character].Abilities.ConvertAll(Item => Kernel_bin.Abilities.None);
                             Memory.State.Characters[Character].JunctionnedGFs = Saves.GFflags.None;
@@ -1658,7 +1650,7 @@ namespace FF8
                 }
             }
 
-            private class IGMData_Mag_Pool : IGMData_Pool<Saves.Data, GFs>
+            private class IGMData_Mag_Pool : IGMData_Pool<Saves.CharacterData, byte>
             {
                 public IGMData_Mag_Pool() : base(5, 3, new IGMDataItem_Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.MAGIC), 4, 13)
                 {
@@ -1671,16 +1663,16 @@ namespace FF8
                     SIZE[i].Offset(0, 12 + (-8 * row));
                 }
 
-                public Dictionary<GFs, Characters> JunctionedGFs { get; private set; }
+               // public Dictionary<GFs, Kernel_bin.Abilities> JunctionedMAG { get; private set; }
                 public List<GFs> UnlockedGFs { get; private set; }
 
-                private void addGF(ref int pos, GFs g, Font.ColorID color = Font.ColorID.White)
+                private void addMagic(ref int pos, byte spell, Font.ColorID color = Font.ColorID.White)
                 {
-                    ITEM[pos, 0] = new IGMDataItem_String(Memory.Strings.GetName(g), SIZE[pos], color);
-                    ITEM[pos, 1] = JunctionedGFs.ContainsKey(g) ? new IGMDataItem_Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 70, SIZE[pos].Y, 0, 0)) : null;
-                    ITEM[pos, 2] = new IGMDataItem_Int(Source.GFs[g].Level, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), spaces: 3);
+                    ITEM[pos, 0] = new IGMDataItem_String(Kernel_bin.MagicData[spell].Name, SIZE[pos], color);
+                    //ITEM[pos, 1] = JunctionedMAG.ContainsKey(g) ? new IGMDataItem_Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 70, SIZE[pos].Y, 0, 0)) : null;
+                    ITEM[pos, 2] = new IGMDataItem_Int(Source.Magics[spell], new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), spaces: 3);
                     BLANKS[pos] = false;
-                    Contents[pos] = g;
+                    Contents[pos] = spell;
                     pos++;
                 }
 
@@ -1689,52 +1681,62 @@ namespace FF8
                     base.Init();
                     SIZE[rows] = SIZE[0];
                     SIZE[rows].Y = Y;
-                    ITEM[rows, 2] = new IGMDataItem_Icon(Icons.ID.NUM_, new Rectangle(SIZE[rows].X + SIZE[rows].Width - 40, SIZE[rows].Y, 0, 0), scale: new Vector2(2.5f));
+                    ITEM[rows, 2] = new IGMDataItem_Icon(Icons.ID.NUM_, new Rectangle(SIZE[rows].X + SIZE[rows].Width - 45, SIZE[rows].Y, 0, 0), scale: new Vector2(2.5f));
                     BLANKS[rows] = true;
                 }
 
                 public override void ReInit()
                 {
-                    Source = Memory.State;
-                    JunctionedGFs = Source.JunctionedGFs();
-                    UnlockedGFs = Source.UnlockedGFs();
+                    if (Memory.State.Characters != null)
+                    {
+                        Source = Memory.State.Characters[Character];
+                        //JunctionedMAG = Source.JunctionedGFs();
+                        //UnlockedGFs = Source.UnlockedGFs();
 
-                    int pos = 0;
-                    int skip = Page * rows;
-                    foreach (GFs g in UnlockedGFs.Where(g => !JunctionedGFs.ContainsKey(g)))
-                    {
-                        if (pos >= rows) break;
-                        if (skip-- <= 0)
+                        int pos = 0;
+                        int skip = Page * rows;
+                        //foreach (GFs g in UnlockedGFs.Where(g => !JunctionedMAG.ContainsKey(g)))
+                        //{
+                        //    if (pos >= rows) break;
+                        //    if (skip-- <= 0)
+                        //    {
+                        //        addMagic(ref pos, g);
+                        //    }
+                        //}
+                        //foreach (GFs g in UnlockedGFs.Where(g => JunctionedMAG.ContainsKey(g) && JunctionedMAG[g] == Character))
+                        //{
+                        //    if (pos >= rows) break;
+                        //    if (skip-- <= 0)
+                        //    {
+                        //        addMagic(ref pos, g, Font.ColorID.Grey);
+                        //    }
+                        //}
+                        //foreach (GFs g in UnlockedGFs.Where(g => JunctionedMAG.ContainsKey(g) && JunctionedMAG[g] != Character))
+                        //{
+                        //    if (pos >= rows) break;
+                        //    if (skip-- <= 0)
+                        //    {
+                        //        addMagic(ref pos, g, Font.ColorID.Dark_Gray);
+                        //    }
+                        //}
+                        for (byte i = 1; i < Kernel_bin.MagicData.Length && pos < rows; i++)
                         {
-                            addGF(ref pos, g);
+                            if (Source.Magics.ContainsKey(i) && skip-- <= 0)
+                            {
+                                addMagic(ref pos, i, Font.ColorID.White);
+                            }
                         }
-                    }
-                    foreach (GFs g in UnlockedGFs.Where(g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] == Character))
-                    {
-                        if (pos >= rows) break;
-                        if (skip-- <= 0)
+                        for (; pos < rows; pos++)
                         {
-                            addGF(ref pos, g, Font.ColorID.Grey);
+                            ITEM[pos, 0] = null;
+                            ITEM[pos, 1] = null;
+                            ITEM[pos, 2] = null;
+                            BLANKS[pos] = true;
                         }
+                        base.ReInit();
+                        UpdateTitle();
+                        UpdateCharacter();
                     }
-                    foreach (GFs g in UnlockedGFs.Where(g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] != Character))
-                    {
-                        if (pos >= rows) break;
-                        if (skip-- <= 0)
-                        {
-                            addGF(ref pos, g, Font.ColorID.Dark_Gray);
-                        }
-                    }
-                    for (; pos < rows; pos++)
-                    {
-                        ITEM[pos, 0] = null;
-                        ITEM[pos, 1] = null;
-                        ITEM[pos, 2] = null;
-                        BLANKS[pos] = true;
-                    }
-                    base.ReInit();
-                    UpdateTitle();
-                    UpdateCharacter();
                 }
 
                 public override void UpdateTitle()
@@ -1754,9 +1756,9 @@ namespace FF8
                 {
                     if (InGameMenu_Junction != null)
                     {
-                        GFs g = Contents[CURSOR_SELECT];
+                        var m = Contents[CURSOR_SELECT];
                         IGMDataItem_IGMData i = (IGMDataItem_IGMData)((IGMData_GF_Group)InGameMenu_Junction.Data[SectionName.TopMenu_GF_Group]).ITEM[2, 0];
-                        ((IGMDataItem_Box)i.Data.CONTAINER).Data = JunctionedGFs.Count > 0 && JunctionedGFs.ContainsKey(g) ? Memory.Strings.GetName(JunctionedGFs[g]) : null;
+                        //((IGMDataItem_Box)i.Data.CONTAINER).Data = JunctionedMAG.Count > 0 && JunctionedMAG.ContainsKey(g) ? Memory.Strings.GetName(JunctionedMAG[g]) : null;
                     }
                 }
 
@@ -1798,90 +1800,90 @@ namespace FF8
                     skipsnd = true;
                     init_debugger_Audio.PlaySound(31);
                     base.Inputs_OKAY();
-                    GFs select = Contents[CURSOR_SELECT];
-                    Characters c = JunctionedGFs.ContainsKey(select) ? JunctionedGFs[select] : Character;
-                    if (c != Characters.Blank)
-                    {
-                        if (c != Character)
-                        {
-                            //show error msg
-                        }
-                        else
-                        {
-                            //Purge everything that you can't have anymore. Because the GF provided for you.
-                            List<Kernel_bin.Abilities> a = (Source.Characters[c]).UnlockedGFAbilities;
-                            Source.Characters[c].JunctionnedGFs ^= Saves.ConvertGFEnum.FirstOrDefault(x => x.Value == select).Key;
-                            List<Kernel_bin.Abilities> b = (Source.Characters[c]).UnlockedGFAbilities;
-                            foreach (Kernel_bin.Abilities r in a.Except(b).Where(v => !Kernel_bin.Junctionabilities.ContainsKey(v)))
-                            {
-                                if (Kernel_bin.Commandabilities.ContainsKey(r))
-                                {
-                                    Source.Characters[c].Commands.Remove(r);
-                                    Source.Characters[c].Commands.Add(Kernel_bin.Abilities.None);
-                                }
-                                else if (Kernel_bin.EquipableAbilities.ContainsKey(r))
-                                {
-                                    Source.Characters[c].Abilities.Remove(r);
-                                    Source.Characters[c].Abilities.Add(Kernel_bin.Abilities.None);
-                                }
-                            }
-                            foreach (Kernel_bin.Abilities r in a.Except(b).Where(v => Kernel_bin.Junctionabilities.ContainsKey(v)))
-                            {
-                                if (Kernel_bin.Stat2Ability.ContainsValue(r))
-                                    Source.Characters[c].Stat_J[Kernel_bin.Stat2Ability.FirstOrDefault(x => x.Value == r).Key] = 0;
-                                else switch (r)
-                                    {
-                                        case Kernel_bin.Abilities.ST_Atk_J:
-                                            Source.Characters[c].ST_Atk_J = 0;
-                                            break;
+                    //GFs select = Contents[CURSOR_SELECT];
+                    //Characters c = JunctionedMAG.ContainsKey(select) ? JunctionedMAG[select] : Character;
+                    //if (c != Characters.Blank)
+                    //{
+                    //    if (c != Character)
+                    //    {
+                    //        //show error msg
+                    //    }
+                    //    else
+                    //    {
+                    //        //Purge everything that you can't have anymore. Because the GF provided for you.
+                    //        List<Kernel_bin.Abilities> a = (Source.Characters[c]).UnlockedGFAbilities;
+                    //        Source.Characters[c].JunctionnedGFs ^= Saves.ConvertGFEnum.FirstOrDefault(x => x.Value == select).Key;
+                    //        List<Kernel_bin.Abilities> b = (Source.Characters[c]).UnlockedGFAbilities;
+                    //        foreach (Kernel_bin.Abilities r in a.Except(b).Where(v => !Kernel_bin.Junctionabilities.ContainsKey(v)))
+                    //        {
+                    //            if (Kernel_bin.Commandabilities.ContainsKey(r))
+                    //            {
+                    //                Source.Characters[c].Commands.Remove(r);
+                    //                Source.Characters[c].Commands.Add(Kernel_bin.Abilities.None);
+                    //            }
+                    //            else if (Kernel_bin.EquipableAbilities.ContainsKey(r))
+                    //            {
+                    //                Source.Characters[c].Abilities.Remove(r);
+                    //                Source.Characters[c].Abilities.Add(Kernel_bin.Abilities.None);
+                    //            }
+                    //        }
+                    //        foreach (Kernel_bin.Abilities r in a.Except(b).Where(v => Kernel_bin.Junctionabilities.ContainsKey(v)))
+                    //        {
+                    //            if (Kernel_bin.Stat2Ability.ContainsValue(r))
+                    //                Source.Characters[c].Stat_J[Kernel_bin.Stat2Ability.FirstOrDefault(x => x.Value == r).Key] = 0;
+                    //            else switch (r)
+                    //                {
+                    //                    case Kernel_bin.Abilities.ST_Atk_J:
+                    //                        Source.Characters[c].ST_Atk_J = 0;
+                    //                        break;
 
-                                        case Kernel_bin.Abilities.Elem_Atk_J:
-                                            Source.Characters[c].Elem_Atk_J = 0;
-                                            break;
+                    //                    case Kernel_bin.Abilities.Elem_Atk_J:
+                    //                        Source.Characters[c].Elem_Atk_J = 0;
+                    //                        break;
 
-                                        case Kernel_bin.Abilities.Elem_Def_Jx1:
-                                        case Kernel_bin.Abilities.Elem_Def_Jx2:
-                                        case Kernel_bin.Abilities.Elem_Def_Jx4:
-                                            int count = 0;
-                                            if (b.Contains(Kernel_bin.Abilities.Elem_Def_Jx4))
-                                                count = 4;
-                                            else if (b.Contains(Kernel_bin.Abilities.Elem_Def_Jx2))
-                                                count = 2;
-                                            else if (b.Contains(Kernel_bin.Abilities.Elem_Def_Jx1))
-                                                count = 1;
-                                            for (; count < Source.Characters[c].Elem_Def_J.Count; count++)
-                                                Source.Characters[c].Elem_Def_J[count] = 0;
-                                            break;
+                    //                    case Kernel_bin.Abilities.Elem_Def_Jx1:
+                    //                    case Kernel_bin.Abilities.Elem_Def_Jx2:
+                    //                    case Kernel_bin.Abilities.Elem_Def_Jx4:
+                    //                        int count = 0;
+                    //                        if (b.Contains(Kernel_bin.Abilities.Elem_Def_Jx4))
+                    //                            count = 4;
+                    //                        else if (b.Contains(Kernel_bin.Abilities.Elem_Def_Jx2))
+                    //                            count = 2;
+                    //                        else if (b.Contains(Kernel_bin.Abilities.Elem_Def_Jx1))
+                    //                            count = 1;
+                    //                        for (; count < Source.Characters[c].Elem_Def_J.Count; count++)
+                    //                            Source.Characters[c].Elem_Def_J[count] = 0;
+                    //                        break;
 
-                                        case Kernel_bin.Abilities.ST_Def_Jx1:
-                                        case Kernel_bin.Abilities.ST_Def_Jx2:
-                                        case Kernel_bin.Abilities.ST_Def_Jx4:
-                                            count = 0;
-                                            if (b.Contains(Kernel_bin.Abilities.ST_Def_Jx4))
-                                                count = 4;
-                                            else if (b.Contains(Kernel_bin.Abilities.ST_Def_Jx2))
-                                                count = 2;
-                                            else if (b.Contains(Kernel_bin.Abilities.ST_Def_Jx1))
-                                                count = 1;
-                                            for (; count < Source.Characters[c].ST_Def_J.Count; count++)
-                                                Source.Characters[c].ST_Def_J[count] = 0;
-                                            break;
+                    //                    case Kernel_bin.Abilities.ST_Def_Jx1:
+                    //                    case Kernel_bin.Abilities.ST_Def_Jx2:
+                    //                    case Kernel_bin.Abilities.ST_Def_Jx4:
+                    //                        count = 0;
+                    //                        if (b.Contains(Kernel_bin.Abilities.ST_Def_Jx4))
+                    //                            count = 4;
+                    //                        else if (b.Contains(Kernel_bin.Abilities.ST_Def_Jx2))
+                    //                            count = 2;
+                    //                        else if (b.Contains(Kernel_bin.Abilities.ST_Def_Jx1))
+                    //                            count = 1;
+                    //                        for (; count < Source.Characters[c].ST_Def_J.Count; count++)
+                    //                            Source.Characters[c].ST_Def_J[count] = 0;
+                    //                        break;
 
-                                        case Kernel_bin.Abilities.Abilityx3:
-                                        case Kernel_bin.Abilities.Abilityx4:
-                                            count = 2;
-                                            if (b.Contains(Kernel_bin.Abilities.Abilityx4))
-                                                count = 4;
-                                            else if (b.Contains(Kernel_bin.Abilities.Abilityx3))
-                                                count = 3;
-                                            for (; count < Source.Characters[c].Abilities.Count; count++)
-                                                Source.Characters[c].Abilities[count] = Kernel_bin.Abilities.None;
-                                            break;
-                                    }
-                            }
+                    //                    case Kernel_bin.Abilities.Abilityx3:
+                    //                    case Kernel_bin.Abilities.Abilityx4:
+                    //                        count = 2;
+                    //                        if (b.Contains(Kernel_bin.Abilities.Abilityx4))
+                    //                            count = 4;
+                    //                        else if (b.Contains(Kernel_bin.Abilities.Abilityx3))
+                    //                            count = 3;
+                    //                        for (; count < Source.Characters[c].Abilities.Count; count++)
+                    //                            Source.Characters[c].Abilities[count] = Kernel_bin.Abilities.None;
+                    //                        break;
+                    //                }
+                    //        }
                             InGameMenu_Junction.ReInit();
-                        }
-                    }
+                    //    }
+                    //}
                 }
             }
 
@@ -2070,15 +2072,14 @@ namespace FF8
                             foreach (Kernel_bin.Abilities r in a.Except(b).Where(v => Kernel_bin.Junctionabilities.ContainsKey(v)))
                             {
                                 if (Kernel_bin.Stat2Ability.ContainsValue(r))
-                                    Source.Characters[c].Stat_J[Kernel_bin.Stat2Ability.FirstOrDefault(x => x.Value == r).Key] = 0;
-                                else switch (r)
+                                    switch (r)
                                     {
                                         case Kernel_bin.Abilities.ST_Atk_J:
-                                            Source.Characters[c].ST_Atk_J = 0;
+                                            Source.Characters[c].Stat_J[Kernel_bin.Stat.ST_Atk] = 0;
                                             break;
 
                                         case Kernel_bin.Abilities.Elem_Atk_J:
-                                            Source.Characters[c].Elem_Atk_J = 0;
+                                            Source.Characters[c].Stat_J[Kernel_bin.Stat.Elem_Atk] = 0;
                                             break;
 
                                         case Kernel_bin.Abilities.Elem_Def_Jx1:
@@ -2091,8 +2092,8 @@ namespace FF8
                                                 count = 2;
                                             else if (b.Contains(Kernel_bin.Abilities.Elem_Def_Jx1))
                                                 count = 1;
-                                            for (; count < Source.Characters[c].Elem_Def_J.Count; count++)
-                                                Source.Characters[c].Elem_Def_J[count] = 0;
+                                            for (; count < 4; count++)
+                                                Source.Characters[c].Stat_J[Kernel_bin.Stat.Elem_Def_1+count] = 0;
                                             break;
 
                                         case Kernel_bin.Abilities.ST_Def_Jx1:
@@ -2105,8 +2106,8 @@ namespace FF8
                                                 count = 2;
                                             else if (b.Contains(Kernel_bin.Abilities.ST_Def_Jx1))
                                                 count = 1;
-                                            for (; count < Source.Characters[c].ST_Def_J.Count; count++)
-                                                Source.Characters[c].ST_Def_J[count] = 0;
+                                            for (; count < 4; count++)
+                                                Source.Characters[c].Stat_J[Kernel_bin.Stat.ST_Def_1 + count] = 0;
                                             break;
 
                                         case Kernel_bin.Abilities.Abilityx3:
@@ -2118,6 +2119,10 @@ namespace FF8
                                                 count = 3;
                                             for (; count < Source.Characters[c].Abilities.Count; count++)
                                                 Source.Characters[c].Abilities[count] = Kernel_bin.Abilities.None;
+                                            break;
+
+                                        default:
+                                            Source.Characters[c].Stat_J[Kernel_bin.Stat2Ability.FirstOrDefault(x => x.Value == r).Key] = 0;
                                             break;
                                     }
                             }

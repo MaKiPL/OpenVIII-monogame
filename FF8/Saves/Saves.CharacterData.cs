@@ -52,10 +52,10 @@ namespace FF8
             //public byte JunctionEVA; //0x61
             //public byte JunctionHIT; //0x62
             //public byte JunctionLCK; //0x63
-            public byte Elem_Atk_J; //0x64
-            public byte ST_Atk_J; //0x65
-            public List<byte> Elem_Def_J; //0x66
-            public List<byte> ST_Def_J; //0x67
+            //public byte Elem_Atk_J; //0x64
+            //public byte ST_Atk_J; //0x65
+            //public List<byte> Elem_Def_J; //0x66
+            //public List<byte> ST_Def_J; //0x67
             public byte Unknown2; //0x6B (padding?)
             public Dictionary<GFs, ushort> CompatibilitywithGFs; //0x6F
             public ushort Numberofkills; //0x70
@@ -124,7 +124,7 @@ namespace FF8
                 Unknown1 = br.ReadByte();//0x5A
                 Alternativemodel = br.ReadByte();//0x5B (Normal, SeeD, Soldier...)
                 Stat_J = new Dictionary<Kernel_bin.Stat, byte>(9);
-                for (int i = 0; i < 9; i++)
+                for (int i = 0; i < 19; i++)
                 {
                     var key = (Kernel_bin.Stat)i;
                     var val = br.ReadByte();
@@ -140,10 +140,10 @@ namespace FF8
                 //JunctionEVA = br.ReadByte();//0x62
                 //JunctionHIT = br.ReadByte();//0x63
                 //JunctionLCK = br.ReadByte();//0x64
-                Elem_Atk_J = br.ReadByte();//0x65
-                ST_Atk_J = br.ReadByte();//0x66
-                Elem_Def_J = br.ReadBytes(4).ToList() ;//0x67
-                ST_Def_J = br.ReadBytes(4).ToList();//0x6B
+                //Elem_Atk_J = br.ReadByte();//0x65
+                //ST_Atk_J = br.ReadByte();//0x66
+                //Elem_Def_J = br.ReadBytes(4).ToList() ;//0x67
+                //ST_Def_J = br.ReadBytes(4).ToList();//0x6B
                 Unknown2 = br.ReadByte();//0x6F (padding?)
                 CompatibilitywithGFs = new Dictionary<GFs,ushort>(16);
                 for (int i = 0; i < 16; i++)
@@ -224,8 +224,6 @@ namespace FF8
                 c.RawStats = RawStats.ToDictionary(e => e.Key, e => e.Value);
                 c.Commands = Commands.ConvertAll(Item => Item);
                 c.Abilities = Abilities.ConvertAll(Item => Item);
-                c.Elem_Def_J = Elem_Def_J.ConvertAll(Item => Item);
-                c.ST_Def_J = ST_Def_J.ConvertAll(Item => Item);
                 return c;
             }
         }
