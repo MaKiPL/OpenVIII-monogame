@@ -618,7 +618,7 @@ namespace FF8
                 {
                     base.Inputs_CANCEL();
                     InGameMenu_Junction.mode = Mode.TopMenu;
-                    Enabled = false;
+                    Hide();
                 }
 
                 public override void Inputs_OKAY()
@@ -666,7 +666,7 @@ namespace FF8
                         {Items.Magic,Memory.Strings.Read(Strings.FileID.MNGRP,2,265)},
                     };
 
-                    Enabled = false;
+                    Hide();
                 }
 
                 private void Update_String()
@@ -917,7 +917,7 @@ namespace FF8
                 {
                     base.Init();
                     Cursor_Status |= Cursor_Status.Enabled;
-                    Enabled = false;
+                    Hide();
                 }
 
                 public override void ReInit()
@@ -1028,7 +1028,7 @@ namespace FF8
                 protected override void Init()
                 {
                     base.Init();
-                    Enabled = false;
+                    Hide();
                 }
             }
 
@@ -1053,7 +1053,7 @@ namespace FF8
                 protected override void Init()
                 {
                     base.Init();
-                    Enabled = false;
+                    Hide();
                 }
             }
 
@@ -1381,7 +1381,7 @@ namespace FF8
                 protected override void Init()
                 {
                     base.Init();
-                    Enabled = false;
+                    Hide();
                 }
 
                 protected override void InitShift(int i, int col, int row)
@@ -1521,7 +1521,7 @@ namespace FF8
                     SIZE[0] = new Rectangle(212 + X, 117 + Y, 52, 30);
                     SIZE[1] = new Rectangle(212 + X, 156 + Y, 52, 30);
                     base.Init();
-                    Enabled = false;
+                    Hide();
                 }
 
                 public override void ReInit()
@@ -1605,24 +1605,29 @@ namespace FF8
             {
                 public IGMData_GF_Group(params IGMData[] d) : base(d)
                 {
-                }
-
-                protected override void Init()
-                {
-                    base.Init();
-                    Enabled = false;
+                    Hide();
                 }
             }
             private class IGMData_Mag_Group : IGMData_Group
             {
                 public IGMData_Mag_Group(params IGMData[] d) : base(d)
                 {
+                    Hide();
+                }
+                public override void Show()
+                {
+                    for (int i = 0; i < Count && ITEM[i, 0] != null; i++)
+                    {
+                        ((IGMDataItem_IGMData)ITEM[i, 0]).Data.Show();
+                    }
                 }
 
-                protected override void Init()
+                public override void Hide()
                 {
-                    base.Init();
-                    Enabled = false;
+                    for(int i =1; i<Count && ITEM[i, 0]!=null; i++)
+                    {
+                        ((IGMDataItem_IGMData)ITEM[i, 0]).Data.Hide();
+                    }
                 }
             }
 

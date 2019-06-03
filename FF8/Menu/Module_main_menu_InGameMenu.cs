@@ -786,8 +786,6 @@ namespace FF8
 
         public class IGMData
         {
-            public virtual void Hide() => Enabled = false;
-            public virtual void Show() => Enabled = true;
             #region Fields
 
             public Dictionary<int, FF8String> Descriptions { get; protected set; }
@@ -798,7 +796,7 @@ namespace FF8
             /// </summary>
             public Point[] CURSOR;
 
-            public bool Enabled { get; protected set; } = true;
+            public bool Enabled { get; private set; } = true;
 
             public Table_Options Table_Options { get; set; } = Table_Options.Default;
             public Cursor_Status Cursor_Status { get; set; } = Cursor_Status.Disabled;
@@ -1117,6 +1115,8 @@ namespace FF8
                 }
             }
 
+            public virtual void Hide() => Enabled = false;
+            public virtual void Show() => Enabled = true;
             /// <summary>
             /// Things that change rarely. Like a party member changes or Laguna dream happens.
             /// </summary>
