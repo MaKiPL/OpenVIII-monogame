@@ -217,7 +217,7 @@ namespace FF8
                     new IGMData_Container(new IGMDataItem_Box(pos: new Rectangle(440, 345, 385, 66)))
                     ));
 
-                Data.Add(SectionName.Mag_Group, new IGMData_Group(
+                Data.Add(SectionName.Mag_Group, new IGMData_Mag_Group(
                     new IGMData_Mag_Stats(),
                     new IGMData_Container(new IGMDataItem_Box(pos: new Rectangle(0, 345, 435, 66))),
                     new IGMData_Mag_Pool()
@@ -398,27 +398,30 @@ namespace FF8
                         BLANKS[5] = true;
                         foreach (Kernel_bin.Stat stat in (Kernel_bin.Stat[])Enum.GetValues(typeof(Kernel_bin.Stat)))
                         {
-                            int pos = (int)stat;
-                            if (pos >= 5) pos++;
-                            FF8String name = Kernel_bin.MagicData[Memory.State.Characters[Character].Stat_J[stat]].Name;
-                            if (name.Length == 0) name = Misc[Items._];
-
-                            ITEM[pos, 0] = new IGMDataItem_Icon(Stat2Icon[stat], new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), 2);
-                            ITEM[pos, 1] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X + 80, SIZE[pos].Y, 0, 0));
-                            if (!unlocked.Contains(Kernel_bin.Stat2Ability[stat]))
+                            if (Stat2Icon.ContainsKey(stat))
                             {
-                                ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 7;
-                                ((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Grey;
-                            }
-                            ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[Character].TotalStat(stat, VisableCharacter), new Rectangle(SIZE[pos].X + 152, SIZE[pos].Y, 0, 0), 2, Icons.NumType.sysFntBig, spaces: 10);
-                            ITEM[pos, 3] = stat == Kernel_bin.Stat.HIT || stat == Kernel_bin.Stat.EVA
-                                ? new IGMDataItem_String(Misc[Items.Percent], new Rectangle(SIZE[pos].X + 350, SIZE[pos].Y, 0, 0))
-                                : null;
+                                int pos = (int)stat;
+                                if (pos >= 5) pos++;
+                                FF8String name = Kernel_bin.MagicData[Memory.State.Characters[Character].Stat_J[stat]].Name;
+                                if (name.Length == 0) name = Misc[Items._];
 
-                            //((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Red;
-                            //ITEM[pos, 4] = new IGMDataItem_Icon(Icons.ID.Arrow_Down, new Rectangle(SIZE[pos].X + 265, SIZE[pos].Y, 0, 0), 16);
-                            //((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Yellow;
-                            //ITEM[pos, 4] = new IGMDataItem_Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos].X + 265, SIZE[pos].Y, 0, 0), 17);
+                                ITEM[pos, 0] = new IGMDataItem_Icon(Stat2Icon[stat], new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), 2);
+                                ITEM[pos, 1] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X + 80, SIZE[pos].Y, 0, 0));
+                                if (!unlocked.Contains(Kernel_bin.Stat2Ability[stat]))
+                                {
+                                    ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 7;
+                                    ((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Grey;
+                                }
+                                ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[Character].TotalStat(stat, VisableCharacter), new Rectangle(SIZE[pos].X + 152, SIZE[pos].Y, 0, 0), 2, Icons.NumType.sysFntBig, spaces: 10);
+                                ITEM[pos, 3] = stat == Kernel_bin.Stat.HIT || stat == Kernel_bin.Stat.EVA
+                                    ? new IGMDataItem_String(Misc[Items.Percent], new Rectangle(SIZE[pos].X + 350, SIZE[pos].Y, 0, 0))
+                                    : null;
+
+                                //((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Red;
+                                //ITEM[pos, 4] = new IGMDataItem_Icon(Icons.ID.Arrow_Down, new Rectangle(SIZE[pos].X + 265, SIZE[pos].Y, 0, 0), 16);
+                                //((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Yellow;
+                                //ITEM[pos, 4] = new IGMDataItem_Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos].X + 265, SIZE[pos].Y, 0, 0), 17);
+                            }
                         }
                     }
                 }
@@ -550,25 +553,25 @@ namespace FF8
                     switch (CURSOR_SELECT)
                     {
                         case 0:
-                            InGameMenu_Junction.Data[SectionName.TopMenu_Junction].Enabled = true;
+                            InGameMenu_Junction.Data[SectionName.TopMenu_Junction].Show();
                             Cursor_Status |= Cursor_Status.Blinking;
                             InGameMenu_Junction.mode = Mode.TopMenu_Junction;
                             break;
 
                         case 1:
-                            InGameMenu_Junction.Data[SectionName.TopMenu_Off].Enabled = true;
+                            InGameMenu_Junction.Data[SectionName.TopMenu_Off].Show();
                             Cursor_Status |= Cursor_Status.Blinking;
                             InGameMenu_Junction.mode = Mode.TopMenu_Off;
                             break;
 
                         case 2:
-                            InGameMenu_Junction.Data[SectionName.TopMenu_Auto].Enabled = true;
+                            InGameMenu_Junction.Data[SectionName.TopMenu_Auto].Show();
                             Cursor_Status |= Cursor_Status.Blinking;
                             InGameMenu_Junction.mode = Mode.TopMenu_Auto;
                             break;
 
                         case 3:
-                            InGameMenu_Junction.Data[SectionName.TopMenu_Abilities].Enabled = true;
+                            InGameMenu_Junction.Data[SectionName.TopMenu_Abilities].Show();
                             Cursor_Status |= Cursor_Status.Blinking;
                             InGameMenu_Junction.mode = Mode.Abilities;
                             break;
@@ -622,7 +625,7 @@ namespace FF8
                 {
                     base.Inputs_OKAY();
                     InGameMenu_Junction.mode = Mode.TopMenu_GF_Group;
-                    InGameMenu_Junction.Data[SectionName.TopMenu_GF_Group].Enabled = true;
+                    InGameMenu_Junction.Data[SectionName.TopMenu_GF_Group].Show();
                 }
 
                 public IGMData_TopMenu_Junction() : base(2, 1, new IGMDataItem_Box(pos: new Rectangle(210, 12, 400, 54)), 2, 1)
@@ -757,12 +760,12 @@ namespace FF8
                     switch (CURSOR_SELECT)
                     {
                         case 0:
-                            InGameMenu_Junction.Data[SectionName.RemMag].Enabled = true;
+                            InGameMenu_Junction.Data[SectionName.RemMag].Show();
                             InGameMenu_Junction.mode = Mode.RemMag;
                             break;
 
                         case 1:
-                            InGameMenu_Junction.Data[SectionName.RemAll].Enabled = true;
+                            InGameMenu_Junction.Data[SectionName.RemAll].Show();
                             InGameMenu_Junction.mode = Mode.RemAll;
                             break;
                     }
@@ -771,7 +774,7 @@ namespace FF8
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
-                    InGameMenu_Junction.Data[SectionName.TopMenu_Off].Enabled = false;
+                    InGameMenu_Junction.Data[SectionName.TopMenu_Off].Hide();
                     InGameMenu_Junction.mode = Mode.TopMenu;
                 }
             }
@@ -866,7 +869,7 @@ namespace FF8
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
-                    InGameMenu_Junction.Data[SectionName.TopMenu_Auto].Enabled = false;
+                    InGameMenu_Junction.Data[SectionName.TopMenu_Auto].Hide();
                     InGameMenu_Junction.mode = Mode.TopMenu;
                 }
             }
@@ -906,7 +909,7 @@ namespace FF8
                     skipdata = true;
                     base.Inputs_CANCEL();
                     skipdata = false;
-                    InGameMenu_Junction.Data[SectionName.TopMenu_Abilities].Enabled = false;
+                    InGameMenu_Junction.Data[SectionName.TopMenu_Abilities].Hide();
                     InGameMenu_Junction.mode = Mode.TopMenu;
                 }
 
@@ -982,9 +985,9 @@ namespace FF8
                     if (ret && i != null && i.Data != null)
                     {
                         if (CURSOR_SELECT >= i.Data.Count)
-                            i2.Data.Enabled = true;
+                            i2.Data.Show();
                         else
-                            i2.Data.Enabled = false;
+                            i2.Data.Hide();
                     }
                     return ret;
                 }
@@ -1557,7 +1560,7 @@ namespace FF8
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
-                    InGameMenu_Junction.Data[SectionName.RemMag].Enabled = false;
+                    InGameMenu_Junction.Data[SectionName.RemMag].Hide();
                     InGameMenu_Junction.mode = Mode.TopMenu_Off;
                 }
             }
@@ -1577,8 +1580,8 @@ namespace FF8
                             Memory.State.Characters[Character].Abilities = Memory.State.Characters[Character].Abilities.ConvertAll(Item => Kernel_bin.Abilities.None);
                             Memory.State.Characters[Character].JunctionnedGFs = Saves.GFflags.None;
 
-                            InGameMenu_Junction.Data[SectionName.RemAll].Enabled = false;
-                            InGameMenu_Junction.Data[SectionName.TopMenu_Off].Enabled = false;
+                            InGameMenu_Junction.Data[SectionName.RemAll].Hide();
+                            InGameMenu_Junction.Data[SectionName.TopMenu_Off].Hide();
                             InGameMenu_Junction.mode = Mode.TopMenu;
                             InGameMenu_Junction.Data[SectionName.TopMenu].CURSOR_SELECT = 0;
                             InGameMenu_Junction.ReInit();
@@ -1593,7 +1596,7 @@ namespace FF8
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
-                    InGameMenu_Junction.Data[SectionName.RemAll].Enabled = false;
+                    InGameMenu_Junction.Data[SectionName.RemAll].Hide();
                     InGameMenu_Junction.mode = Mode.TopMenu_Off;
                 }
             }
@@ -1601,6 +1604,18 @@ namespace FF8
             private class IGMData_GF_Group : IGMData_Group
             {
                 public IGMData_GF_Group(params IGMData[] d) : base(d)
+                {
+                }
+
+                protected override void Init()
+                {
+                    base.Init();
+                    Enabled = false;
+                }
+            }
+            private class IGMData_Mag_Group : IGMData_Group
+            {
+                public IGMData_Mag_Group(params IGMData[] d) : base(d)
                 {
                 }
 
@@ -1791,7 +1806,7 @@ namespace FF8
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
-                    InGameMenu_Junction.Data[SectionName.TopMenu_GF_Group].Enabled = false;
+                    InGameMenu_Junction.Data[SectionName.TopMenu_GF_Group].Hide();
                     InGameMenu_Junction.mode = Mode.TopMenu_Junction;
                 }
 
@@ -2033,7 +2048,7 @@ namespace FF8
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
-                    InGameMenu_Junction.Data[SectionName.TopMenu_GF_Group].Enabled = false;
+                    InGameMenu_Junction.Data[SectionName.TopMenu_GF_Group].Hide();
                     InGameMenu_Junction.mode = Mode.TopMenu_Junction;
                 }
 

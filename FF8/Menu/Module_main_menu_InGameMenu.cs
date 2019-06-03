@@ -786,6 +786,8 @@ namespace FF8
 
         public class IGMData
         {
+            public virtual void Hide() => Enabled = false;
+            public virtual void Show() => Enabled = true;
             #region Fields
 
             public Dictionary<int, FF8String> Descriptions { get; protected set; }
@@ -796,14 +798,7 @@ namespace FF8
             /// </summary>
             public Point[] CURSOR;
 
-            public bool Enabled
-            {
-                get => _enabled;
-                set
-                {
-                    _enabled = value;
-                }
-            }
+            public bool Enabled { get; protected set; } = true;
 
             public Table_Options Table_Options { get; set; } = Table_Options.Default;
             public Cursor_Status Cursor_Status { get; set; } = Cursor_Status.Disabled;
@@ -866,7 +861,6 @@ namespace FF8
 
             public bool[] BLANKS;
             private int _cursor_select;
-            private bool _enabled = true;
             protected bool skipsnd = false;
 
             public IGMDataItem CONTAINER { get; protected set; }
