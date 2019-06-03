@@ -232,8 +232,7 @@ namespace FF8
                         ms.Seek(tim.GetHeight * tim.GetWidth / 2 + 64, SeekOrigin.Current); //i.e. 64*20=1280/2=640 + 64= 704 + eof
                         if (charaOneTextures == null)
                             charaOneTextures = new List<Texture2D[]>();
-                        Texture2D[] _2d = { new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight, false, SurfaceFormat.Color) };
-                        _2d[0].SetData(tim.CreateImageBuffer(tim.GetClutColors(0), true));
+                        Texture2D[] _2d = { tim.GetTexture(0,true) };
 
                         charaOneTextures.Add(_2d);
                     }
@@ -277,8 +276,7 @@ namespace FF8
                 wm39textures.Add(new Texture2D[tim.GetClutCount]);
                 for (ushort k = 0; k < wm39textures[i].Length; k++)
                 {
-                    wm39textures[i][k] = new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight, false, SurfaceFormat.Color);
-                    wm39textures[i][k].SetData(tim.CreateImageBuffer(tim.GetClutColors(k), true));
+                    wm39textures[i][k] = tim.GetTexture(k, true);
                 }
             }
         }
@@ -298,8 +296,7 @@ namespace FF8
                 wm38textures.Add(new Texture2D[tim.GetClutCount]);
                 for (ushort k = 0; k < wm38textures[i].Length; k++)
                 {
-                    wm38textures[i][k] = new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight, false, SurfaceFormat.Color);
-                    wm38textures[i][k].SetData(tim.CreateImageBuffer(tim.GetClutColors(k), true));
+                    wm38textures[i][k] = tim.GetTexture(k, true);
                 }
             }
         }
@@ -319,8 +316,7 @@ namespace FF8
                 textures.Add(new Texture2D[tim.GetClutCount]);
                 for (ushort k = 0; k < textures[i].Length; k++)
                 {
-                    textures[i][k] = new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight, false, SurfaceFormat.Color);
-                    textures[i][k].SetData(tim.CreateImageBuffer(tim.GetClutColors(k), true));
+                    textures[i][k] = tim.GetTexture(k,true);
                 }
             }
 

@@ -79,21 +79,21 @@ namespace FF8
 
         #region Methods
 
-        public void Draw(int number, NumType type, int pallet, string format, Vector2 location, Vector2 scale, float fade = 1f)
+        public void Draw(int number, NumType type, int pallet, string format, Vector2 location, Vector2 scale, float fade = 1f,Font.ColorID color = Font.ColorID.White)
         {
             if (type == NumType.sysfnt)
             {
-                Memory.font.RenderBasicText(number.ToString(), location, scale, Font.Type.sysfnt, Fade: fade);
+                Memory.font.RenderBasicText(number.ToString(), location, scale, Font.Type.sysfnt, Fade: fade,color:color);
                 return;
             }
             else if (type == NumType.sysFntBig)
             {
-                Memory.font.RenderBasicText(number.ToString(), location, scale, Font.Type.sysFntBig, Fade: fade);
+                Memory.font.RenderBasicText(number.ToString(), location, scale, Font.Type.sysFntBig, Fade: fade, color: color);
                 return;
             }
             else if (type == NumType.menuFont)
             {
-                Memory.font.RenderBasicText(number.ToString(), location, scale, Font.Type.menuFont, Fade: fade);
+                Memory.font.RenderBasicText(number.ToString(), location, scale, Font.Type.menuFont, Fade: fade, color: color);
                 return;
             }
             ID[] numberstarts = { ID.Num_8x8_0_0, ID.Num_8x8_1_0, ID.Num_8x8_2_0, ID.Num_8x16_0_0, ID.Num_8x16_1_0, ID.Num_16x16_0_0 };

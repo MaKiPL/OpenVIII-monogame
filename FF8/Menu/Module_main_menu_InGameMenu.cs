@@ -1316,6 +1316,7 @@ namespace FF8
 
             public int Data { get; set; }
             public byte Padding { get; set; }
+            public new Font.ColorID Color;
 
             public byte Pallet
             {
@@ -1330,7 +1331,7 @@ namespace FF8
 
             private int Digits;
 
-            public IGMDataItem_Int(int data, Rectangle? pos = null, byte? pallet = null, Icons.NumType? numtype = null, byte? padding = null, int? spaces = null, int? spacewidth = null) : base(pos)
+            public IGMDataItem_Int(int data, Rectangle? pos = null, byte? pallet = null, Icons.NumType? numtype = null, byte? padding = null, int? spaces = null, int? spacewidth = null, Font.ColorID? color = null) : base(pos)
             {
                 Data = data;
                 Padding = padding ?? 1;
@@ -1341,9 +1342,10 @@ namespace FF8
                 Spaces = spaces??1;
                 SpaceWidth = spacewidth??20;
                 _pos.Offset(SpaceWidth * (Spaces - Digits), 0);
+                Color = color?? Font.ColorID.White;
             }
 
-            public override void Draw() => Memory.Icons.Draw(Data, NumType, Pallet, $"D{Padding}", Pos.Location.ToVector2(), Scale, fade);
+            public override void Draw() => Memory.Icons.Draw(Data, NumType, Pallet, $"D{Padding}", Pos.Location.ToVector2(), Scale, fade,Color);
         }
 
         private class IGMDataItem_String : IGMDataItem

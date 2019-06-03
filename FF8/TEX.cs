@@ -92,7 +92,7 @@ namespace FF8
             }
         }
 
-        public Color[] GetPallets(int forcePalette)
+        public Color[] GetPalette(int forcePalette)
         {
             if (forcePalette < 0) forcePalette = 0;
 
@@ -113,11 +113,15 @@ namespace FF8
         /// Get Texture2D converted to 32bit color
         /// </summary>
         /// <param name="forcePalette">Desired Palette, see texture.NumOfPalettes. -1 is default.</param>
-        /// <param name="colors">Overide colors of pallet; Array size must match texture.NumOfColorsPerPalette</param>
+        /// <param name="colors">Override colors of pallet; Array size must match texture.NumOfColorsPerPalette</param>
         /// <returns>32bit Texture2D</returns>
+        /// <remarks>
+        /// Some paletts are 256 but the game only uses 16 colors might need to make the restriction
+        /// more lax and allow any size array and only throw errors if the colorkey is greater than size of
+        /// array. Or we could treat any of those bad matches as transparent.
+        /// </remarks>
         public Texture2D GetTexture(int forcePalette = -1, Color[] colors = null)
         {
-            uint ImageSizeBytes = texture.Width * texture.Height * 4;
             if (texture.PaletteFlag != 0)
             {
                 if (colors != null && colors.Length != texture.NumOfColorsPerPalette)
@@ -126,66 +130,60 @@ namespace FF8
                 {
                     if (forcePalette >= texture.NumOfPalettes) //prevents exception for forcing a palette that doesn't exist.
                         throw new Exception($"Desired pallet is incorrect use -1 for default or use a smaller number: {forcePalette} > {texture.NumOfPalettes}");
-                    colors = GetPallets(forcePalette);
+                    colors = GetPalette(forcePalette);
                 }
-                Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
-                int localTextureLocator = TextureLocator;
-                Color[] convertBuffer = new Color[ImageSizeBytes / 4];
-                for (int i = 0; i < convertBuffer.Length; i++)
+                using (MemoryStream ms = new MemoryStream(buffer))
+                using (BinaryReader br = new BinaryReader(ms))
                 {
-                    byte colorkey = buffer[localTextureLocator++];
-                    convertBuffer[i] = colors[colorkey];
+                    ms.Seek(TextureLocator, SeekOrigin.Begin);
+                    Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
+                    Color[] convertBuffer = new Color[(int)texture.Width * (int)texture.Height];
+                    for (int i = 0; i < convertBuffer.Length && ms.Position < ms.Length; i++)
+                    {
+                        convertBuffer[i] = colors[br.ReadByte()]; //colorkey
+                    }
+                    bmp.SetData(convertBuffer);
+                    return bmp;
                 }
-                bmp.SetData(convertBuffer);
-                return bmp;
             }
-            else
+            else if (texture.bytesPerPixel == 2)
             {
-                if (texture.bytesPerPixel == 2)
+                using (MemoryStream ms = new MemoryStream(buffer))
+                using (BinaryReader br = new BinaryReader(ms))
                 {
-                    //working code
+                    ms.Seek(TextureLocator, SeekOrigin.Begin);
                     Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
-                    using (MemoryStream os = new MemoryStream((int)(ImageSizeBytes)))
-                    using (BinaryWriter bw = new BinaryWriter(os))
+                    colors = new Color[(int)texture.Width * (int)texture.Height];
+                    for (int i = 0; i < colors.Length && ms.Position + 2 < ms.Length; i++)
                     {
-                        using (MemoryStream ms = new MemoryStream(buffer))
-                        using (BinaryReader br = new BinaryReader(ms))
-                        {
-                            ms.Seek(TextureLocator, SeekOrigin.Begin);
-                            while (ms.Position < ms.Length)
-                                bw.Write(FromPsColor(br.ReadUInt16()), 0, 4);
-                        }
-                        bmp.SetData(os.GetBuffer(), 0, (int)os.Length);
+                        colors[i] = FromPsColor(br.ReadUInt16());
                     }
+                    bmp.SetData(colors);
                     return bmp;
                 }
-                if (texture.bytesPerPixel == 3)
-                {
-                    // not tested but vincent tim had support for it so i guess it's possible RGB or
-                    // BGR is a thing.
-                    Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
-                    using (MemoryStream os = new MemoryStream((int)(ImageSizeBytes)))
-                    using (BinaryWriter bw = new BinaryWriter(os))
-                    {
-                        using (MemoryStream ms = new MemoryStream(buffer))
-                        using (BinaryReader br = new BinaryReader(ms))
-                        {
-                            ms.Seek(TextureLocator, SeekOrigin.Begin);
-                            while (ms.Position < ms.Length)
-                            {
-                                //RGB or BGR so might need to reorder things to RGB
-                                bw.Write(br.ReadBytes(3), 0, 3);
-                                //ALPHA
-                                bw.Write((byte)0xFF);
-                            }
-                        }
-                        bmp.SetData(os.GetBuffer(), 0, (int)os.Length);
-                    }
-                    return bmp;
-                }
-
-                return null;
             }
+            else if (texture.bytesPerPixel == 3)
+            {
+                // not tested but vincent tim had support for it so i guess it's possible RGB or BGR
+                using (MemoryStream ms = new MemoryStream(buffer))
+                using (BinaryReader br = new BinaryReader(ms))
+                {
+                    ms.Seek(TextureLocator, SeekOrigin.Begin);
+                    Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
+                    colors = new Color[(int)texture.Width * (int)texture.Height];
+                    for (int i = 0; i < colors.Length && ms.Position + 3 < ms.Length; i++)
+                    {
+                        //RGB or BGR so might need to reorder things to RGB
+                        colors[i].B = br.ReadByte();
+                        colors[i].G = br.ReadByte();
+                        colors[i].R = br.ReadByte();
+                        colors[i].A = 0xFF;
+                    }
+                    bmp.SetData(colors);
+                    return bmp;
+                }
+            }
+            return null;
         }
 
         /// <summary>
@@ -196,7 +194,7 @@ namespace FF8
         /// <param name="useAlpha">area is visable or not</param>
         /// <returns>byte[4] red green blue alpha, i think</returns>
         /// <see cref="https://github.com/myst6re/vincent-tim/blob/master/PsColor.cpp"/>
-        public static byte[] FromPsColor(ushort color, bool useAlpha = false) => new byte[] { (byte)Math.Round((color & 31) * COEFF_COLOR), (byte)Math.Round(((color >> 5) & 31) * COEFF_COLOR), (byte)Math.Round(((color >> 10) & 31) * COEFF_COLOR), (byte)(color == 0 && useAlpha ? 0 : 255) };
+        public static Color FromPsColor(ushort color, bool useAlpha = false) => new Color((byte)Math.Round((color & 31) * COEFF_COLOR), (byte)Math.Round(((color >> 5) & 31) * COEFF_COLOR), (byte)Math.Round(((color >> 10) & 31) * COEFF_COLOR), (byte)(color == 0 && useAlpha ? 0 : 255));
 
         #endregion Methods
 

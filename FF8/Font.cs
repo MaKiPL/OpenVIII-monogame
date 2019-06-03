@@ -52,8 +52,7 @@ namespace FF8
 
             getWidths(Tdw, widthPointer, dataPointer - widthPointer);
             TIM2 tim = new TIM2(Tdw, dataPointer);
-            menuFont = new Texture2D(Memory.graphics.GraphicsDevice, tim.GetWidth, tim.GetHeight);
-            menuFont.SetData(tim.CreateImageBuffer(tim.GetClutColors(ColorID.White)));
+            menuFont = tim.GetTexture((ushort)ColorID.White);
         }
 
         public void getWidths(byte[] Tdw, uint offset, uint length)

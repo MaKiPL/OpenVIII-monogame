@@ -911,10 +911,7 @@ namespace FF8
             {
                 ms.Seek(v + textures.pTims[i], SeekOrigin.Begin);
                 TIM2 tm = new TIM2(buffer, (uint)ms.Position); //broken
-                textures.textures[i] = new Texture2D(Memory.graphics.GraphicsDevice, tm.GetWidth, tm.GetHeight, false,
-                SurfaceFormat.Color);
-                textures.textures[i].SetData(tm.CreateImageBuffer(tm.GetClutColors(0), true)); //??
-                tm.KillStreams();
+                textures.textures[i] = tm.GetTexture(0, true);
             }
         }
         public Textures textures;

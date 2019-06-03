@@ -265,7 +265,6 @@
     <Compile Include="World\module_world_debug.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PseudoBufferedStream.cs" />
     <Compile Include="Sources\Environment\Game\Location\HardcodedGameLocationProvider.cs" />
     <Compile Include="Sources\Exceptions\ExceptionList.cs" />
     <Compile Include="Sources\MonoGame\Hooks\IMonoGameHook.cs" />
