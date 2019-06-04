@@ -219,7 +219,7 @@ namespace FF8
 
                 Data.Add(SectionName.Mag_Group, new IGMData_Mag_Group(
                     new IGMData_Mag_Stats(),
-                    new IGMData_Container(new IGMDataItem_Box(pos: new Rectangle(0, 345, 435, 66))),
+                    new IGMData_Mag_PageTitle(),
                     new IGMData_Mag_Pool()
                     ));
                 base.Init();
@@ -245,7 +245,9 @@ namespace FF8
                 RemAll,
                 TopMenu_GF_Group,
                 Mag_Pool,
-                Mag_Stat
+                Mag_Stat,
+                Mag_EL_A_D,
+                Mag_ST_A_D
             }
 
             public new Mode mode;
@@ -430,15 +432,38 @@ namespace FF8
                                         ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 7;
                                         ((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Grey;
                                     }
+
                                     ITEM[pos, 2] = new IGMDataItem_Int(Setting.TotalStat(stat, VisableCharacter), new Rectangle(SIZE[pos].X + 152, SIZE[pos].Y, 0, 0), 2, Icons.NumType.sysFntBig, spaces: 10);
                                     ITEM[pos, 3] = stat == Kernel_bin.Stat.HIT || stat == Kernel_bin.Stat.EVA
                                         ? new IGMDataItem_String(Misc[Items.Percent], new Rectangle(SIZE[pos].X + 350, SIZE[pos].Y, 0, 0))
                                         : null;
+                                    if (PrevSetting == null || PrevSetting.Stat_J[stat] == Setting.Stat_J[stat] || PrevSetting.TotalStat(stat, VisableCharacter) == Setting.TotalStat(stat, VisableCharacter))
+                                    {
+                                        ITEM[pos, 4] = null;
+                                    }
+                                    else if (PrevSetting.TotalStat(stat, VisableCharacter)> Setting.TotalStat(stat, VisableCharacter))
+                                    {
 
-                                    //((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Red;
-                                    //ITEM[pos, 4] = new IGMDataItem_Icon(Icons.ID.Arrow_Down, new Rectangle(SIZE[pos].X + 265, SIZE[pos].Y, 0, 0), 16);
-                                    //((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Yellow;
-                                    //ITEM[pos, 4] = new IGMDataItem_Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos].X + 265, SIZE[pos].Y, 0, 0), 17);
+                                        ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = 5;
+                                        ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 5;
+                                        ((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Red;
+                                        ((IGMDataItem_Int)ITEM[pos, 2]).Colorid = Font.ColorID.Red;
+                                        if (ITEM[pos, 3] != null)
+                                            ((IGMDataItem_String)ITEM[pos, 3]).Colorid = Font.ColorID.Red;
+                                        ITEM[pos, 4] = new IGMDataItem_Icon(Icons.ID.Arrow_Down, new Rectangle(SIZE[pos].X + 250, SIZE[pos].Y, 0, 0), 16);
+                                    }
+                                    else
+                                    {
+
+                                        ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = 6;
+                                        ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 6;
+                                        ((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Yellow;
+                                        ((IGMDataItem_Int)ITEM[pos, 2]).Colorid = Font.ColorID.Yellow;
+                                        if(ITEM[pos, 3]!= null)
+                                            ((IGMDataItem_String)ITEM[pos, 3]).Colorid = Font.ColorID.Yellow;
+                                        ITEM[pos, 4] = new IGMDataItem_Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos].X + 250, SIZE[pos].Y, 0, 0), 17);
+
+                                    }
                                 }
                             }
                         }
@@ -477,6 +502,11 @@ namespace FF8
                         Setting = PrevSetting.Clone();
                         Memory.State.Characters[Character] = Setting;
                     }
+                }
+                public override void ConfirmChange()
+                {
+                    //set backupuped change to null so it no longer exists.
+                    PrevSetting = null;
                 }
                 public override void Inputs_OKAY()
                 {
@@ -1829,7 +1859,7 @@ namespace FF8
 
                         IGMData_Mag_Stats A = (IGMData_Mag_Stats)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[0, 0]).Data;
                         var stat = A.Contents[A.CURSOR_SELECT];
-                        if(stat != Kernel_bin.Stat.None)
+                        if(stat != Kernel_bin.Stat.None && CURSOR_SELECT < Contents.Length)
                         {
                             if (Source.Stat_J[stat] != Contents[CURSOR_SELECT])
                             {
@@ -2144,6 +2174,67 @@ namespace FF8
                             InGameMenu_Junction.ReInit();
                         }
                     }
+                }
+            }
+
+            private class IGMData_Mag_PageTitle : IGMData
+            {
+                public Dictionary<Items, FF8String> Descriptions { get; private set; }
+
+                public IGMData_Mag_PageTitle() : base(1,5,new IGMDataItem_Box(pos: new Rectangle(0, 345, 435, 66)))
+                {
+                }
+                protected override void Init()
+                {
+                    Descriptions = new Dictionary<Items, FF8String> {
+                    {Items.ST_A_D, Memory.Strings.Read(Strings.FileID.MNGRP,2,251) },
+                    {Items.EL_A_D, Memory.Strings.Read(Strings.FileID.MNGRP,2,253) },
+                    {Items.Stats, Memory.Strings.Read(Strings.FileID.MNGRP,2,255) },
+                    };
+
+                    base.Init();
+                }
+                protected override void InitShift(int i, int col, int row)
+                {
+                    base.InitShift(i, col, row);
+                    SIZE[0].Inflate(-19, -18);
+                }
+
+                public override void ReInit()
+                {
+                    base.ReInit();
+
+                    if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.Mag_Stat && Enabled)
+                    {
+                        ITEM[0, 0] = new IGMDataItem_Icon(Icons.ID.Rewind_Fast, new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0),2,7);
+                        ITEM[0, 1] = new IGMDataItem_String(Descriptions[Items.ST_A_D], new Rectangle(SIZE[0].X + 20, SIZE[0].Y, 0, 0));
+                        ITEM[0, 2] = new IGMDataItem_Icon(Icons.ID.Rewind, new Rectangle(SIZE[0].X+143, SIZE[0].Y, 0, 0), 2, 7);
+                        ITEM[0, 3] = new IGMDataItem_String(Descriptions[Items.EL_A_D], new Rectangle(SIZE[0].X + 169, SIZE[0].Y, 0, 0));
+                        ITEM[0, 4] = null;
+                    }
+                    else
+                    if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.Mag_EL_A_D && Enabled) //coords for these two need checked.
+                    {
+                        ITEM[0, 0] = new IGMDataItem_Icon(Icons.ID.Rewind, new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0), 2, 7);
+                        ITEM[0, 1] = new IGMDataItem_String(Descriptions[Items.ST_A_D], new Rectangle(SIZE[0].X + 20, SIZE[0].Y, 0, 0));
+                        ITEM[0, 2] = null;
+                        ITEM[0, 3] = new IGMDataItem_String(Descriptions[Items.Stats], new Rectangle(SIZE[0].X + 169, SIZE[0].Y, 0, 0));
+                        ITEM[0, 4] = new IGMDataItem_Icon(Icons.ID.Forward, new Rectangle(SIZE[0].X + 143, SIZE[0].Y, 0, 0), 2, 7);
+                    }
+                    else
+                    if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.Mag_ST_A_D && Enabled)
+                    {
+                        ITEM[0, 0] = null;
+                        ITEM[0, 1] = new IGMDataItem_String(Descriptions[Items.EL_A_D], new Rectangle(SIZE[0].X + 20, SIZE[0].Y, 0, 0));
+                        ITEM[0, 2] = new IGMDataItem_Icon(Icons.ID.Forward, new Rectangle(SIZE[0].X + 143, SIZE[0].Y, 0, 0), 2, 7);
+                        ITEM[0, 3] = new IGMDataItem_String(Descriptions[Items.Stats], new Rectangle(SIZE[0].X + 169, SIZE[0].Y, 0, 0));
+                        ITEM[0, 4] = new IGMDataItem_Icon(Icons.ID.Forward_Fast, new Rectangle(SIZE[0].X + 143, SIZE[0].Y, 0, 0), 2, 7);
+                    }
+                }
+                public override bool Update()
+                {
+                    ReInit();
+                    return base.Update();
                 }
             }
         }

@@ -252,6 +252,9 @@ namespace FF8
             Entries[ID.MAGIC_PG11] = new EntryGroup(Entries[ID.MAGIC][0], P_, _1, __1);
             Entries[ID.MAGIC_PG12] = new EntryGroup(Entries[ID.MAGIC][0], P_, _1, __2);
             Entries[ID.MAGIC_PG13] = new EntryGroup(Entries[ID.MAGIC][0], P_, _1, __3);
+            Entry _RR_0 = Entries[ID.Rewind_Fast][0].Clone();
+            Entry _RR_1 = Entries[ID.Rewind_Fast][1].Clone();
+            Entries[ID.Rewind_Fast] = new EntryGroup(_RR_1, _RR_0);
         }
     }
 }

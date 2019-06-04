@@ -1249,7 +1249,7 @@ namespace FF8
             {
                 get => _pallet; set
                 {
-                    if (value >= 16) value = 2;
+                    if (value >= Memory.Icons.PalletCount) value = 2;
                     _pallet = value;
                 }
             }
@@ -1258,7 +1258,7 @@ namespace FF8
             {
                 get => _faded_pallet; set
                 {
-                    if (value >= 16) value = 2;
+                    if (value >= Memory.Icons.PalletCount) value = 2;
                     _faded_pallet = value;
                 }
             }
@@ -1333,7 +1333,7 @@ namespace FF8
 
             public int Data { get; set; }
             public byte Padding { get; set; }
-            public new Font.ColorID Color;
+            public Font.ColorID Colorid;
 
             public byte Pallet
             {
@@ -1348,7 +1348,7 @@ namespace FF8
 
             private int Digits;
 
-            public IGMDataItem_Int(int data, Rectangle? pos = null, byte? pallet = null, Icons.NumType? numtype = null, byte? padding = null, int? spaces = null, int? spacewidth = null, Font.ColorID? color = null) : base(pos)
+            public IGMDataItem_Int(int data, Rectangle? pos = null, byte? pallet = null, Icons.NumType? numtype = null, byte? padding = null, int? spaces = null, int? spacewidth = null, Font.ColorID? colorid = null) : base(pos)
             {
                 Data = data;
                 Padding = padding ?? 1;
@@ -1359,10 +1359,10 @@ namespace FF8
                 Spaces = spaces??1;
                 SpaceWidth = spacewidth??20;
                 _pos.Offset(SpaceWidth * (Spaces - Digits), 0);
-                Color = color?? Font.ColorID.White;
+                Colorid = colorid?? Font.ColorID.White;
             }
 
-            public override void Draw() => Memory.Icons.Draw(Data, NumType, Pallet, $"D{Padding}", Pos.Location.ToVector2(), Scale, fade,Color);
+            public override void Draw() => Memory.Icons.Draw(Data, NumType, Pallet, $"D{Padding}", Pos.Location.ToVector2(), Scale, fade,Colorid);
         }
 
         private class IGMDataItem_String : IGMDataItem
