@@ -168,8 +168,6 @@ namespace FF8
                             }
                         }
                     }
-                    //custom stuff not in sp1
-                    InsertCustomEntries();
                 }
             }
         }

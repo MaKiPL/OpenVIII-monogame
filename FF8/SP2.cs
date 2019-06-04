@@ -156,10 +156,13 @@ namespace FF8
 
         protected virtual void Init()
         {
-            ArchiveWorker aw = new ArchiveWorker(ArchiveString);
-            InitEntries(aw);
-            InitTextures(aw);
-            InsertCustomEntries();
+            if (Entries == null)
+            {
+                ArchiveWorker aw = new ArchiveWorker(ArchiveString);
+                InitEntries(aw);
+                InsertCustomEntries();
+                InitTextures(aw);
+            }
         }
 
         protected virtual void InitEntries(ArchiveWorker aw = null)
