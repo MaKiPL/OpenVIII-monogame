@@ -243,7 +243,9 @@ namespace FF8
                 Abilities_Abilities,
                 RemMag,
                 RemAll,
-                TopMenu_GF_Group
+                TopMenu_GF_Group,
+                Mag_Pool,
+                Mag_Stat
             }
 
             public new Mode mode;
@@ -293,6 +295,12 @@ namespace FF8
                         ret = ((IGMData_GF_Group)Data[SectionName.TopMenu_GF_Group]).ITEM[1, 0].Inputs();
                         break;
 
+                    case Mode.Mag_Pool:
+                        ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[2, 0].Inputs();
+                        break;
+                    case Mode.Mag_Stat:
+                        ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[0, 0].Inputs();
+                        break;
                     default:
                         break;
                 }
@@ -624,8 +632,16 @@ namespace FF8
                 public override void Inputs_OKAY()
                 {
                     base.Inputs_OKAY();
-                    InGameMenu_Junction.mode = Mode.TopMenu_GF_Group;
-                    InGameMenu_Junction.Data[SectionName.TopMenu_GF_Group].Show();
+                    if (CURSOR_SELECT == 0)
+                    {
+                        InGameMenu_Junction.mode = Mode.TopMenu_GF_Group;
+                        InGameMenu_Junction.Data[SectionName.TopMenu_GF_Group].Show();
+                    }
+                    else
+                    {
+                        InGameMenu_Junction.mode = Mode.Mag_Stat;
+                        InGameMenu_Junction.Data[SectionName.Mag_Group].Show();
+                    }
                 }
 
                 public IGMData_TopMenu_Junction() : base(2, 1, new IGMDataItem_Box(pos: new Rectangle(210, 12, 400, 54)), 2, 1)
