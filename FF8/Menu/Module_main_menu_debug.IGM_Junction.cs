@@ -381,54 +381,65 @@ namespace FF8
                     { Kernel_bin.Stat.HIT, Icons.ID.Stats_Hit_Percent },
                 };
 
+                public new Saves.CharacterData PrevSetting { get; private set; }
+                public new Saves.CharacterData Setting { get; private set; }
+                public Kernel_bin.Stat[] Contents { get; private set; }
+
                 /// <summary>
                 /// Things that may of changed before screen loads or junction is changed.
                 /// </summary>
                 public override void ReInit()
                 {
-                    base.ReInit();
-
                     if (Memory.State.Characters != null)
                     {
-                        List<Kernel_bin.Abilities> unlocked = Memory.State.Characters[Character].UnlockedGFAbilities;
-                        ITEM[5, 0] = new IGMDataItem_Icon(Icons.ID.Icon_Status_Attack, new Rectangle(SIZE[5].X + 200, SIZE[5].Y, 0, 0),
-                            (byte)(unlocked.Contains(Kernel_bin.Abilities.ST_Atk_J) ? 2 : 7));
-                        ITEM[5, 1] = new IGMDataItem_Icon(Icons.ID.Icon_Status_Defense, new Rectangle(SIZE[5].X + 240, SIZE[5].Y, 0, 0),
-                            (byte)(unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx1) ||
-                            unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx2) ||
-                            unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4) ? 2 : 7));
-                        ITEM[5, 2] = new IGMDataItem_Icon(Icons.ID.Icon_Elemental_Attack, new Rectangle(SIZE[5].X + 280, SIZE[5].Y, 0, 0),
-                            (byte)(unlocked.Contains(Kernel_bin.Abilities.Elem_Atk_J) ? 2 : 7));
-                        ITEM[5, 3] = new IGMDataItem_Icon(Icons.ID.Icon_Elemental_Defense, new Rectangle(SIZE[5].X + 320, SIZE[5].Y, 0, 0),
-                            (byte)(unlocked.Contains(Kernel_bin.Abilities.Elem_Def_Jx1) ||
-                            unlocked.Contains(Kernel_bin.Abilities.Elem_Def_Jx2) ||
-                            unlocked.Contains(Kernel_bin.Abilities.Elem_Def_Jx4) ? 2 : 7));
-                        BLANKS[5] = true;
-                        foreach (Kernel_bin.Stat stat in (Kernel_bin.Stat[])Enum.GetValues(typeof(Kernel_bin.Stat)))
+                        Setting = Memory.State.Characters[Character];
+                        Contents = new Kernel_bin.Stat[Count];
+                        Contents = Array.ConvertAll(Contents, c => c = Kernel_bin.Stat.None);
+                        base.ReInit();
+
+                        if (Memory.State.Characters != null)
                         {
-                            if (Stat2Icon.ContainsKey(stat))
+                            List<Kernel_bin.Abilities> unlocked = Setting.UnlockedGFAbilities;
+                            ITEM[5, 0] = new IGMDataItem_Icon(Icons.ID.Icon_Status_Attack, new Rectangle(SIZE[5].X + 200, SIZE[5].Y, 0, 0),
+                                (byte)(unlocked.Contains(Kernel_bin.Abilities.ST_Atk_J) ? 2 : 7));
+                            ITEM[5, 1] = new IGMDataItem_Icon(Icons.ID.Icon_Status_Defense, new Rectangle(SIZE[5].X + 240, SIZE[5].Y, 0, 0),
+                                (byte)(unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx1) ||
+                                unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx2) ||
+                                unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4) ? 2 : 7));
+                            ITEM[5, 2] = new IGMDataItem_Icon(Icons.ID.Icon_Elemental_Attack, new Rectangle(SIZE[5].X + 280, SIZE[5].Y, 0, 0),
+                                (byte)(unlocked.Contains(Kernel_bin.Abilities.Elem_Atk_J) ? 2 : 7));
+                            ITEM[5, 3] = new IGMDataItem_Icon(Icons.ID.Icon_Elemental_Defense, new Rectangle(SIZE[5].X + 320, SIZE[5].Y, 0, 0),
+                                (byte)(unlocked.Contains(Kernel_bin.Abilities.Elem_Def_Jx1) ||
+                                unlocked.Contains(Kernel_bin.Abilities.Elem_Def_Jx2) ||
+                                unlocked.Contains(Kernel_bin.Abilities.Elem_Def_Jx4) ? 2 : 7));
+                            BLANKS[5] = true;
+                            foreach (Kernel_bin.Stat stat in (Kernel_bin.Stat[])Enum.GetValues(typeof(Kernel_bin.Stat)))
                             {
-                                int pos = (int)stat;
-                                if (pos >= 5) pos++;
-                                FF8String name = Kernel_bin.MagicData[Memory.State.Characters[Character].Stat_J[stat]].Name;
-                                if (name.Length == 0) name = Misc[Items._];
-
-                                ITEM[pos, 0] = new IGMDataItem_Icon(Stat2Icon[stat], new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), 2);
-                                ITEM[pos, 1] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X + 80, SIZE[pos].Y, 0, 0));
-                                if (!unlocked.Contains(Kernel_bin.Stat2Ability[stat]))
+                                if (Stat2Icon.ContainsKey(stat))
                                 {
-                                    ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 7;
-                                    ((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Grey;
-                                }
-                                ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[Character].TotalStat(stat, VisableCharacter), new Rectangle(SIZE[pos].X + 152, SIZE[pos].Y, 0, 0), 2, Icons.NumType.sysFntBig, spaces: 10);
-                                ITEM[pos, 3] = stat == Kernel_bin.Stat.HIT || stat == Kernel_bin.Stat.EVA
-                                    ? new IGMDataItem_String(Misc[Items.Percent], new Rectangle(SIZE[pos].X + 350, SIZE[pos].Y, 0, 0))
-                                    : null;
+                                    int pos = (int)stat;
+                                    if (pos >= 5) pos++;
+                                    Contents[pos] = stat;
+                                    FF8String name = Kernel_bin.MagicData[Setting.Stat_J[stat]].Name;
+                                    if (name.Length == 0) name = Misc[Items._];
 
-                                //((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Red;
-                                //ITEM[pos, 4] = new IGMDataItem_Icon(Icons.ID.Arrow_Down, new Rectangle(SIZE[pos].X + 265, SIZE[pos].Y, 0, 0), 16);
-                                //((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Yellow;
-                                //ITEM[pos, 4] = new IGMDataItem_Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos].X + 265, SIZE[pos].Y, 0, 0), 17);
+                                    ITEM[pos, 0] = new IGMDataItem_Icon(Stat2Icon[stat], new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), 2);
+                                    ITEM[pos, 1] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X + 80, SIZE[pos].Y, 0, 0));
+                                    if (!unlocked.Contains(Kernel_bin.Stat2Ability[stat]))
+                                    {
+                                        ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 7;
+                                        ((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Grey;
+                                    }
+                                    ITEM[pos, 2] = new IGMDataItem_Int(Setting.TotalStat(stat, VisableCharacter), new Rectangle(SIZE[pos].X + 152, SIZE[pos].Y, 0, 0), 2, Icons.NumType.sysFntBig, spaces: 10);
+                                    ITEM[pos, 3] = stat == Kernel_bin.Stat.HIT || stat == Kernel_bin.Stat.EVA
+                                        ? new IGMDataItem_String(Misc[Items.Percent], new Rectangle(SIZE[pos].X + 350, SIZE[pos].Y, 0, 0))
+                                        : null;
+
+                                    //((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Red;
+                                    //ITEM[pos, 4] = new IGMDataItem_Icon(Icons.ID.Arrow_Down, new Rectangle(SIZE[pos].X + 265, SIZE[pos].Y, 0, 0), 16);
+                                    //((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Yellow;
+                                    //ITEM[pos, 4] = new IGMDataItem_Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos].X + 265, SIZE[pos].Y, 0, 0), 17);
+                                }
                             }
                         }
                     }
@@ -453,10 +464,25 @@ namespace FF8
                     }
                     return ret;
                 }
+                public override void BackupSetting()
+                {
+                    PrevSetting = Setting.Clone();
+                }
+
+                public override void UndoChange()
+                {
+                    //override this use it to take value of prevSetting and restore the setting unless default method works
+                    if (PrevSetting != null)
+                    {
+                        Setting = PrevSetting.Clone();
+                        Memory.State.Characters[Character] = Setting;
+                    }
+                }
                 public override void Inputs_OKAY()
                 {
                     base.Inputs_OKAY();
                     InGameMenu_Junction.mode = Mode.Mag_Pool;
+                    BackupSetting();                    
                 }
                 public override void Inputs_CANCEL()
                 {
@@ -560,7 +586,6 @@ namespace FF8
                         {Items.Ability, Memory.Strings.Read(Strings.FileID.MNGRP,2,224) },
                     };
                 }
-
                 public override void ReInit()
                 {
                     if (Memory.State.Characters != null)
@@ -1734,6 +1759,7 @@ namespace FF8
                 private void addMagic(ref int pos, byte spell, Font.ColorID color = Font.ColorID.White)
                 {
                     ITEM[pos, 0] = new IGMDataItem_String(Kernel_bin.MagicData[spell].Name, SIZE[pos], color);
+                    ITEM[pos, 1] = color != Font.ColorID.White ? new IGMDataItem_Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 75, SIZE[pos].Y, 0, 0)) : null;
                     ITEM[pos, 2] = new IGMDataItem_Int(Source.Magics[spell], new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), spaces: 3);
                     BLANKS[pos] = false;
                     Contents[pos] = spell;
@@ -1761,7 +1787,10 @@ namespace FF8
                         {
                             if (Source.Magics.ContainsKey(i) && skip-- <= 0)
                             {
-                                addMagic(ref pos, i, Font.ColorID.White);
+                                if(Source.Stat_J.ContainsValue(i))
+                                    addMagic(ref pos, i, Font.ColorID.Grey);
+                                else
+                                    addMagic(ref pos, i, Font.ColorID.White);
                             }
                         }
                         for (; pos < rows; pos++)
@@ -1773,7 +1802,6 @@ namespace FF8
                         }
                         base.ReInit();
                         UpdateTitle();
-                        UpdateCharacter();
                     }
                 }
 
@@ -1798,6 +1826,30 @@ namespace FF8
                         Cursor_Status &= ~Cursor_Status.Horizontal;
                         Cursor_Status |= Cursor_Status.Vertical;
                         Cursor_Status &= ~Cursor_Status.Blinking;
+
+                        IGMData_Mag_Stats A = (IGMData_Mag_Stats)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[0, 0]).Data;
+                        var stat = A.Contents[A.CURSOR_SELECT];
+                        if(stat != Kernel_bin.Stat.None)
+                        {
+                            if (Source.Stat_J[stat] != Contents[CURSOR_SELECT])
+                            {
+                                A.UndoChange();
+                                if (Memory.State.Characters != null)
+                                {
+                                    Source = Memory.State.Characters[Character];
+                                }
+                                if (Source.Stat_J.ContainsValue(Contents[CURSOR_SELECT]))
+                                {
+                                    Kernel_bin.Stat key = Source.Stat_J.FirstOrDefault(x => x.Value == Contents[CURSOR_SELECT]).Key;
+                                    Source.Stat_J[key] = 0;
+                                }
+                                Source.Stat_J[stat] = Contents[CURSOR_SELECT];
+
+                                A.ReInit();
+                            }
+                        }
+
+
                     }
                     else
                     {
@@ -1806,14 +1858,6 @@ namespace FF8
                     return base.Update();
                 }
 
-                private void UpdateCharacter()
-                {
-                    if (InGameMenu_Junction != null)
-                    {
-                        var m = Contents[CURSOR_SELECT];
-                        IGMDataItem_IGMData i = (IGMDataItem_IGMData)((IGMData_GF_Group)InGameMenu_Junction.Data[SectionName.TopMenu_GF_Group]).ITEM[2, 0];
-                    }
-                }
 
                 protected override void PAGE_PREV()
                 {
@@ -1827,32 +1871,33 @@ namespace FF8
                     ReInit();
                 }
 
-                public override int CURSOR_PREV()
-                {
-                    int ret = base.CURSOR_PREV();
-                    UpdateCharacter();
-                    return ret;
-                }
-
-                public override int CURSOR_NEXT()
-                {
-                    int ret = base.CURSOR_NEXT();
-                    UpdateCharacter();
-                    return ret;
-                }
-
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
-                    //TODO have pool return to correct screen as there will be possible return modes.
+                    //TODO have pool return to correct screen as there will be 3 possible return modes.
                     InGameMenu_Junction.mode = Mode.Mag_Stat;
+
+                    if (Memory.State.Characters != null)
+                    {
+                        IGMData_Mag_Stats A = (IGMData_Mag_Stats)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[0, 0]).Data;
+                        A.UndoChange();
+                        A.ConfirmChange();
+                        Source = Memory.State.Characters[Character];
+                        A.ReInit();
+                    }
                 }
 
                 public override void Inputs_OKAY()
                 {
                     skipsnd = true;
                     init_debugger_Audio.PlaySound(31);
+                    InGameMenu_Junction.mode = Mode.Mag_Stat;
                     base.Inputs_OKAY();
+                    if (Memory.State.Characters != null)
+                    {
+                        IGMData_Mag_Stats A = (IGMData_Mag_Stats)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[0, 0]).Data;
+                        A.ConfirmChange();
+                    }
                     InGameMenu_Junction.ReInit();
                 }
             }
@@ -2055,7 +2100,7 @@ namespace FF8
                                         case Kernel_bin.Abilities.Elem_Def_Jx1:
                                         case Kernel_bin.Abilities.Elem_Def_Jx2:
                                         case Kernel_bin.Abilities.Elem_Def_Jx4:
-                                            int count = 0;
+                                            byte count = 0;
                                             if (b.Contains(Kernel_bin.Abilities.Elem_Def_Jx4))
                                                 count = 4;
                                             else if (b.Contains(Kernel_bin.Abilities.Elem_Def_Jx2))

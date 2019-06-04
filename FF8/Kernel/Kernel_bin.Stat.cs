@@ -36,7 +36,7 @@ namespace FF8
 
         #region Enums
 
-        public enum Stat
+        public enum Stat :byte
         {
             HP,
             STR,
@@ -57,6 +57,7 @@ namespace FF8
             ST_Def_2,
             ST_Def_3,
             ST_Def_4,
+            None = 0xFF,
         }
 
         #endregion Enums

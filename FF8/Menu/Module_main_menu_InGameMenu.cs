@@ -801,6 +801,29 @@ namespace FF8
             public Table_Options Table_Options { get; set; } = Table_Options.Default;
             public Cursor_Status Cursor_Status { get; set; } = Cursor_Status.Disabled;
 
+            public object PrevSetting { get; protected set; } = null;
+            public object Setting { get; protected set; } = null;
+
+            public virtual void ConfirmChange()
+            {
+                //set backupuped change to null so it no longer exists.
+                PrevSetting = null;
+            }
+            public virtual void BackupSetting()
+            {
+                //override this use it to set prevSetting with the value you want to store
+                //if (Setting != null)
+                //    PrevSetting = Setting.Clone(); //needs to be a clone or the changing one will change both.
+            }
+            public virtual void UndoChange()
+            {
+                //override this use it to take value of prevSetting and restore the setting unless default method works
+                //if (PrevSetting != null)
+                //{
+                //    Setting = PrevSetting.Clone();
+                //}
+            }
+
             public int CURSOR_SELECT
             {
                 get => _cursor_select; set
