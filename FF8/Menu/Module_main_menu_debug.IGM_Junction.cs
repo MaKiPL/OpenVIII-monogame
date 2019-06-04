@@ -2269,7 +2269,6 @@ namespace FF8
                         ITEM[0, 1] = new IGMDataItem_String(Descriptions[Items.ST_A_D], new Rectangle(SIZE[0].X + 20, SIZE[0].Y, 0, 0));
                         ITEM[0, 2] = new IGMDataItem_Icon(Icons.ID.Rewind, new Rectangle(SIZE[0].X+143, SIZE[0].Y, 0, 0), 2, 7);
                         ITEM[0, 3] = new IGMDataItem_String(Descriptions[Items.EL_A_D], new Rectangle(SIZE[0].X + 169, SIZE[0].Y, 0, 0));
-                        ITEM[0, 4] = null;
                     }
                     else
                     if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.Mag_EL_A_D && Enabled) //coords for these two need checked.
