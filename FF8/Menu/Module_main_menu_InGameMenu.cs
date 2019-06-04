@@ -1053,6 +1053,19 @@ namespace FF8
                             Inputs_Triangle();
                             return true;
                         }
+                        else if ((Cursor_Status & Cursor_Status.Horizontal) == 0)
+                        {
+                            if (Input.Button(Buttons.Left))
+                            {
+                                Inputs_Left();
+                                return true;
+                            }
+                            else if (Input.Button(Buttons.Right))
+                            {
+                                Inputs_Right();
+                                return true;
+                            }
+                        }
                     }
                     if (ret && !mouse)
                     {
@@ -1063,6 +1076,19 @@ namespace FF8
                 }
                 skipsnd = false;
                 return ret;
+            }
+
+            public virtual void Inputs_Right()
+            {
+                Input.ResetInputLimit();
+                if (!skipsnd)
+                    init_debugger_Audio.PlaySound(0);
+            }
+            public virtual void Inputs_Left()
+            {
+                Input.ResetInputLimit();
+                if (!skipsnd)
+                    init_debugger_Audio.PlaySound(0);
             }
 
             public virtual void Inputs_Triangle()

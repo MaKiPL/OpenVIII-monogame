@@ -218,9 +218,13 @@ namespace FF8
                     ));
 
                 Data.Add(SectionName.Mag_Group, new IGMData_Mag_Group(
-                    new IGMData_Mag_Stats(),
+                    new IGMData_Mag_Stat_Slots(),
                     new IGMData_Mag_PageTitle(),
-                    new IGMData_Mag_Pool()
+                    new IGMData_Mag_Pool(),
+                    new IGMData_Mag_EL_A_D_Slots(),
+                    new IGMData_Mag_EL_A_D_Values(),
+                    new IGMData_Mag_ST_A_D_Slots(),
+                    new IGMData_Mag_ST_A_D_Values()
                     ));
                 base.Init();
             }
@@ -303,6 +307,12 @@ namespace FF8
                     case Mode.Mag_Stat:
                         ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[0, 0].Inputs();
                         break;
+                    case Mode.Mag_EL_A_D:
+                        ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[3, 0].Inputs();
+                        break;
+                    case Mode.Mag_ST_A_D:
+                        ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[4, 0].Inputs();
+                        break;
                     default:
                         break;
                 }
@@ -361,9 +371,9 @@ namespace FF8
                 }
             }
 
-            private class IGMData_Mag_Stats : IGMData
+            private class IGMData_Mag_Stat_Slots : IGMData
             {
-                public IGMData_Mag_Stats() : base(10, 5, new IGMDataItem_Box(pos: new Rectangle(0, 414, 840, 216)), 2, 5)
+                public IGMData_Mag_Stat_Slots() : base(10, 5, new IGMDataItem_Box(pos: new Rectangle(0, 414, 840, 216)), 2, 5)
                 {
                 }
 
@@ -469,13 +479,42 @@ namespace FF8
                         }
                     }
                 }
+                public override void Inputs_Left()
+                {
+                    base.Inputs_Left();
+                    if (CURSOR_SELECT < Count / cols)
+                    {
+                        InGameMenu_Junction.mode = Mode.Mag_EL_A_D;
+                        InGameMenu_Junction.Data[SectionName.Mag_Group].Show();
+                    }
+                    else
+                    {
+                        CURSOR_SELECT -= Count / cols;
+                        
+                    }
+                }
+                public override void Inputs_Right()
+                {
+                    base.Inputs_Left();
+                    if (CURSOR_SELECT < Count / cols)
+                    {
+                        if (CURSOR_SELECT == 0) CURSOR_SELECT++;
+                        CURSOR_SELECT += Count / cols;
+                    }
+                    else
+                    {
+                        InGameMenu_Junction.mode = Mode.Mag_ST_A_D;
+                        InGameMenu_Junction.Data[SectionName.Mag_Group].Show();
+                    }
+                }
+
                 public override bool Update()
                 {
                     bool ret = base.Update();
                     if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.Mag_Stat && Enabled)
                     {
                         Cursor_Status |= Cursor_Status.Enabled;
-                        Cursor_Status |= Cursor_Status.Horizontal;
+                        Cursor_Status &= ~Cursor_Status.Horizontal;
                         Cursor_Status |= Cursor_Status.Vertical;
                         Cursor_Status &= ~Cursor_Status.Blinking;
                     }
@@ -1302,48 +1341,35 @@ namespace FF8
 
                 public override bool Inputs()
                 {
-                    bool ret = false;
+                    bool ret = base.Inputs();
                     if (Pages > 1 && CONTAINER.Pos.Contains(Input.MouseLocation.Transform(Focus)))
                     {
                         if (Input.Button(Buttons.MouseWheelup))
                         {
-                            PAGE_PREV();
+                            Inputs_Left();
                             ret = true;
                         }
                         else if (Input.Button(Buttons.MouseWheeldown))
                         {
-                            PAGE_NEXT();
+                            Inputs_Right();
                             ret = true;
-                        }
-                        if (ret)
-                        {
-                            Input.ResetInputLimit();
-                            if (!skipsnd)
-                                init_debugger_Audio.PlaySound(0);
-                            return ret;
-                        }
-                    }
-                    ret = base.Inputs();
-                    if (Pages > 1 && !ret)
-                    {
-                        if (Input.Button(Buttons.Left))
-                        {
-                            PAGE_PREV();
-                            ret = true;
-                        }
-                        else if (Input.Button(Buttons.Right))
-                        {
-                            PAGE_NEXT();
-                            ret = true;
-                        }
-                        if (ret)
-                        {
-                            Input.ResetInputLimit();
-                            if (!skipsnd)
-                                init_debugger_Audio.PlaySound(0);
                         }
                     }
                     return ret;
+                }
+                public override void Inputs_Left()
+                {
+                    if (Pages > 1)
+                    {
+                        base.Inputs_Left(); PAGE_PREV();
+                    }
+                }
+                public override void Inputs_Right()
+                {
+                    if (Pages > 1)
+                    {
+                        base.Inputs_Right(); PAGE_NEXT();
+                    }
                 }
 
                 protected virtual void PAGE_NEXT()
@@ -1718,9 +1744,42 @@ namespace FF8
                 }
                 public override void Show()
                 {
-                    for (int i = 0; i < Count && ITEM[i, 0] != null; i++)
+                    for (int i = 0; i < Count - 4 && ITEM[i, 0] != null; i++)
                     {
                         ((IGMDataItem_IGMData)ITEM[i, 0]).Data.Show();
+                    }
+
+                    if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.Mag_EL_A_D && Enabled)
+                    {
+
+                        for (int i = Count - 4; i < Count - 2 && ITEM[i, 0] != null; i++)
+                        {
+                            ((IGMDataItem_IGMData)ITEM[i, 0]).Data.Show();
+                        }
+                        for (int i = Count - 2; i < Count && ITEM[i, 0] != null; i++)
+                        {
+                            ((IGMDataItem_IGMData)ITEM[i, 0]).Data.Hide();
+                        }
+                    }
+                    else if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.Mag_ST_A_D && Enabled)
+                    {
+
+                        for (int i = Count - 2; i < Count && ITEM[i, 0] != null; i++)
+                        {
+                            ((IGMDataItem_IGMData)ITEM[i, 0]).Data.Show();
+                        }
+                        for (int i = Count - 4; i < Count-2 && ITEM[i, 0] != null; i++)
+                        {
+                            ((IGMDataItem_IGMData)ITEM[i, 0]).Data.Hide();
+                        }
+                    }
+                    else
+                    {
+
+                        for (int i = Count - 4; i < Count && ITEM[i, 0] != null; i++)
+                        {
+                            ((IGMDataItem_IGMData)ITEM[i, 0]).Data.Hide();
+                        }
                     }
                 }
 
@@ -1857,7 +1916,7 @@ namespace FF8
                         Cursor_Status |= Cursor_Status.Vertical;
                         Cursor_Status &= ~Cursor_Status.Blinking;
 
-                        IGMData_Mag_Stats A = (IGMData_Mag_Stats)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[0, 0]).Data;
+                        IGMData_Mag_Stat_Slots A = (IGMData_Mag_Stat_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[0, 0]).Data;
                         var stat = A.Contents[A.CURSOR_SELECT];
                         if(stat != Kernel_bin.Stat.None && CURSOR_SELECT < Contents.Length)
                         {
@@ -1909,7 +1968,7 @@ namespace FF8
 
                     if (Memory.State.Characters != null)
                     {
-                        IGMData_Mag_Stats A = (IGMData_Mag_Stats)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[0, 0]).Data;
+                        IGMData_Mag_Stat_Slots A = (IGMData_Mag_Stat_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[0, 0]).Data;
                         A.UndoChange();
                         A.ConfirmChange();
                         Source = Memory.State.Characters[Character];
@@ -1925,7 +1984,7 @@ namespace FF8
                     base.Inputs_OKAY();
                     if (Memory.State.Characters != null)
                     {
-                        IGMData_Mag_Stats A = (IGMData_Mag_Stats)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[0, 0]).Data;
+                        IGMData_Mag_Stat_Slots A = (IGMData_Mag_Stat_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[0, 0]).Data;
                         A.ConfirmChange();
                     }
                     InGameMenu_Junction.ReInit();
@@ -2179,9 +2238,9 @@ namespace FF8
 
             private class IGMData_Mag_PageTitle : IGMData
             {
-                public Dictionary<Items, FF8String> Descriptions { get; private set; }
+                public new Dictionary<Items, FF8String> Descriptions { get; private set; }
 
-                public IGMData_Mag_PageTitle() : base(1,5,new IGMDataItem_Box(pos: new Rectangle(0, 345, 435, 66)))
+                public IGMData_Mag_PageTitle() : base(1,4,new IGMDataItem_Box(pos: new Rectangle(0, 345, 435, 66)))
                 {
                 }
                 protected override void Init()
@@ -2217,24 +2276,50 @@ namespace FF8
                     {
                         ITEM[0, 0] = new IGMDataItem_Icon(Icons.ID.Rewind, new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0), 2, 7);
                         ITEM[0, 1] = new IGMDataItem_String(Descriptions[Items.ST_A_D], new Rectangle(SIZE[0].X + 20, SIZE[0].Y, 0, 0));
-                        ITEM[0, 2] = null;
+                        ITEM[0, 2] = new IGMDataItem_Icon(Icons.ID.Forward, new Rectangle(SIZE[0].X + 143, SIZE[0].Y, 0, 0), 2, 7);
                         ITEM[0, 3] = new IGMDataItem_String(Descriptions[Items.Stats], new Rectangle(SIZE[0].X + 169, SIZE[0].Y, 0, 0));
-                        ITEM[0, 4] = new IGMDataItem_Icon(Icons.ID.Forward, new Rectangle(SIZE[0].X + 143, SIZE[0].Y, 0, 0), 2, 7);
                     }
                     else
                     if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.Mag_ST_A_D && Enabled)
                     {
-                        ITEM[0, 0] = null;
+                        ITEM[0, 0] = new IGMDataItem_Icon(Icons.ID.Forward, new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0), 2, 7);
                         ITEM[0, 1] = new IGMDataItem_String(Descriptions[Items.EL_A_D], new Rectangle(SIZE[0].X + 20, SIZE[0].Y, 0, 0));
-                        ITEM[0, 2] = new IGMDataItem_Icon(Icons.ID.Forward, new Rectangle(SIZE[0].X + 143, SIZE[0].Y, 0, 0), 2, 7);
+                        ITEM[0, 2] = new IGMDataItem_Icon(Icons.ID.Forward_Fast, new Rectangle(SIZE[0].X + 143, SIZE[0].Y, 0, 0), 2, 7);
                         ITEM[0, 3] = new IGMDataItem_String(Descriptions[Items.Stats], new Rectangle(SIZE[0].X + 169, SIZE[0].Y, 0, 0));
-                        ITEM[0, 4] = new IGMDataItem_Icon(Icons.ID.Forward_Fast, new Rectangle(SIZE[0].X + 143, SIZE[0].Y, 0, 0), 2, 7);
                     }
                 }
                 public override bool Update()
                 {
                     ReInit();
                     return base.Update();
+                }
+            }
+
+            private class IGMData_Mag_EL_A_D_Slots : IGMData
+            {
+                public IGMData_Mag_EL_A_D_Slots() : base(5,2,new IGMDataItem_Box(pos:new Rectangle(0,414,840,216)),1,5)
+                {
+                }
+            }
+
+            private class IGMData_Mag_EL_A_D_Values : IGMData
+            {
+                public IGMData_Mag_EL_A_D_Values() : base(8, 5, new IGMDataItem_Box(pos: new Rectangle(280,423,545,201)), 2, 4)
+                {
+                }
+            }
+
+            private class IGMData_Mag_ST_A_D_Slots : IGMData
+            {
+                public IGMData_Mag_ST_A_D_Slots() : base(5, 2, new IGMDataItem_Box(pos: new Rectangle(0, 414, 840, 216)), 1, 5)
+                {
+                }
+            }
+
+            private class IGMData_Mag_ST_A_D_Values : IGMData
+            {
+                public IGMData_Mag_ST_A_D_Values() : base(5, 2, new IGMDataItem_Box(pos: new Rectangle(280,363,545,237)), 2, 6)
+                {
                 }
             }
         }
