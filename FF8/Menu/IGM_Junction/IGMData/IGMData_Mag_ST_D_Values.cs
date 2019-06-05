@@ -11,7 +11,7 @@ namespace FF8
         {
             private class IGMData_Mag_ST_D_Values : IGMData
             {
-                public IGMData_Mag_ST_D_Values() : base( 12, 3, new IGMDataItem_Box(title: Icons.ID.Status_Defense, pos: new Rectangle(280, 363, 545, 267)), 2, 6)
+                public IGMData_Mag_ST_D_Values() : base( 13, 5, new IGMDataItem_Box(title: Icons.ID.Status_Defense, pos: new Rectangle(280, 342, 545, 288)), 2, 7)
                 {
                 }
 
@@ -32,29 +32,28 @@ namespace FF8
                             Memory.State.Characters[Character].Stat_J[Kernel_bin.Stat.ST_Def_3],
                             Memory.State.Characters[Character].Stat_J[Kernel_bin.Stat.ST_Def_4]
                         };
-                        Dictionary<Kernel_bin.Statuses0, byte> total = new Dictionary<Kernel_bin.Statuses0, byte>(8);
+                        Dictionary<Kernel_bin.J_Statuses, byte> total = new Dictionary<Kernel_bin.J_Statuses, byte>(8);
 
-                    //    IEnumerable<Enum> availableFlags = Enum.GetValues(typeof(Kernel_bin.Statuses0)).Cast<Enum>();
-                    //    foreach (Enum flag in availableFlags)
-                    //        total.Add((Kernel_bin.Statuses0)flag, 0);
-                    //    for (int i = 0; i < spell.Length; i++)
-                    //        foreach (Enum flag in availableFlags.Where(Kernel_bin.MagicData[spell[i]].Stat_J_def.HasFlag))
-                    //        {
-                    //            total[(Kernel_bin.Statuses0)flag] += (byte)((Kernel_bin.MagicData[spell[i]].Elem_J_def_val * Memory.State.Characters[Character].Magics[spell[i]]) / 100);
-                    //            if (total[(Kernel_bin.Statuses0)flag] > 200) total[(Kernel_bin.Statuses0)flag] = 200;
-                    //        }
+                        IEnumerable<Enum> availableFlags = Enum.GetValues(typeof(Kernel_bin.J_Statuses)).Cast<Enum>();
+                        foreach (Enum flag in availableFlags.Where(d => !total.ContainsKey((Kernel_bin.J_Statuses)d)))
+                            total.Add((Kernel_bin.J_Statuses)flag, 0);
+                        for (int i = 0; i < spell.Length; i++)
+                            foreach (Enum flag in availableFlags.Where(Kernel_bin.MagicData[spell[i]].Stat_J_def.HasFlag))
+                            {
+                                total[(Kernel_bin.J_Statuses)flag] += (byte)((Kernel_bin.MagicData[spell[i]].Stat_J_def_val * Memory.State.Characters[Character].Magics[spell[i]]) / 100);
+                                if (total[(Kernel_bin.J_Statuses)flag] > 100) total[(Kernel_bin.J_Statuses)flag] = 100;
+                            }
 
-                    //    Enum[] availableFlagsarray = availableFlags.ToArray();
-                    //    for (short pos = 0; pos < Count; pos++)
-                    //    {
-                    //        ITEM[pos, 0] = new IGMDataItem_Icon(Icons.ID.Status_Death + pos, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0),10);
-                    //        ITEM[pos, 1] = total[(Kernel_bin.Statuses0)availableFlagsarray[pos + 1]] > 100 ? new IGMDataItem_Icon(Icons.ID.Star, new Rectangle(SIZE[pos].X + 45, SIZE[pos].Y, 0, 0), 4) : null;
-                    //        //ITEM[pos, 2] = new IGMDataItem_Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 105, SIZE[pos].Y, 0, 0), 17);
-                    //        ITEM[pos, 2] = null;
-                    //        if (total[(Kernel_bin.Statuses0)availableFlagsarray[pos + 1]] > 100) total[(Kernel_bin.Statuses0)availableFlagsarray[pos + 1]] -= 100;
-                    //        ITEM[pos, 3] = new IGMDataItem_Int(total[(Kernel_bin.Statuses0)availableFlagsarray[pos + 1]], new Rectangle(SIZE[pos].X + SIZE[pos].Width - 80, SIZE[pos].Y, 0, 0), 17, numtype: Icons.NumType.sysFntBig, spaces: 3);
-                    //        ITEM[pos, 4] = new IGMDataItem_String("%", new Rectangle(SIZE[pos].X + SIZE[pos].Width - 20, SIZE[pos].Y, 0, 0));
-                    //    }
+                        Enum[] availableFlagsarray = availableFlags.ToArray();
+                        for (short pos = 0; pos < Count; pos++)
+                        {
+                            ITEM[pos, 0] = new IGMDataItem_Icon(Icons.ID.Status_Death + pos, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), 10);
+                            ITEM[pos, 1] = null;
+                            //ITEM[pos, 2] = new IGMDataItem_Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 105, SIZE[pos].Y, 0, 0), 17);
+                            ITEM[pos, 2] = null;
+                            ITEM[pos, 3] = new IGMDataItem_Int(total[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]], new Rectangle(SIZE[pos].X + SIZE[pos].Width - 80, SIZE[pos].Y, 0, 0), 17, numtype: Icons.NumType.sysFntBig, spaces: 3);
+                            ITEM[pos, 4] = new IGMDataItem_String("%", new Rectangle(SIZE[pos].X + SIZE[pos].Width - 20, SIZE[pos].Y, 0, 0));
+                        }
                     }
                     return base.Update();
                 }

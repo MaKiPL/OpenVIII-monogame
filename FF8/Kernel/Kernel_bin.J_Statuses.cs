@@ -10,23 +10,23 @@ namespace FF8
         [Flags]
         public enum J_Statuses : ushort
         {
-            None = 0x0001,
-            Death = 0x0002,
-            Poison = 0x0004,
-            Petrify = 0x0008,
-            Darkness = 0x0010,
-            Silence = 0x0020,
-            Berserk = 0x0040,
-            Zombie = 0x0080,
-            Sleep = 0x0100,
-            Slow = 0x0200,
-            Stop = 0x0400,
+            None = 0x0000,
+            Death = 0x0001,
+            Poison = 0x0002,
+            Petrify = 0x0004,
+            Darkness = 0x008,
+            Silence = 0x0010,
+            Berserk = 0x0020,
+            Zombie = 0x0040,
+            Sleep = 0x0080,
+            Slow = 0x0100,
+            Stop = 0x0200,
             /// <summary>
             /// Curse; unused for attack
             /// </summary>
-            Curse = 0x0800,
-            Confusion = 0x1000,
-            Drain = 0x0010,
+            Curse = 0x0400,
+            Confusion = 0x0800,
+            Drain = 0x1000,
         }
     }
 }
