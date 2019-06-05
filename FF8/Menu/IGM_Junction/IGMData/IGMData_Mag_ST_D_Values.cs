@@ -11,15 +11,15 @@ namespace FF8
         {
             private class IGMData_Mag_ST_D_Values : IGMData
             {
-                public IGMData_Mag_ST_D_Values() : base( 13, 5, new IGMDataItem_Box(title: Icons.ID.Status_Defense, pos: new Rectangle(280, 342, 545, 288)), 2, 7)
+                public IGMData_Mag_ST_D_Values() : base( 14, 5, new IGMDataItem_Box(title: Icons.ID.Status_Defense, pos: new Rectangle(280, 342, 545, 288)), 2, 7)
                 {
                 }
 
                 protected override void InitShift(int i, int col, int row)
                 {
                     base.InitShift(i, col, row);
-                    SIZE[i].Inflate(-25, -25);
-                    SIZE[i].Y -= 6 * row;
+                    SIZE[i].Inflate(-25, -10);
+                    SIZE[i].Y -= 3 * row;
                 }
 
                 public override bool Update()
@@ -45,14 +45,14 @@ namespace FF8
                             }
 
                         Enum[] availableFlagsarray = availableFlags.ToArray();
-                        for (short pos = 0; pos < Count; pos++)
+                        for (short pos = 0; pos < Count-1; pos++)
                         {
-                            ITEM[pos, 0] = new IGMDataItem_Icon(Icons.ID.Status_Death + pos, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), 10);
+                            ITEM[pos, 0] = new IGMDataItem_Icon(Icons.ID.Status_Death + pos, new Rectangle(SIZE[pos + 1].X, SIZE[pos+1].Y, 0, 0), 10);
                             ITEM[pos, 1] = null;
-                            //ITEM[pos, 2] = new IGMDataItem_Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 105, SIZE[pos].Y, 0, 0), 17);
+                            //ITEM[pos, 2] = new IGMDataItem_Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos+ 1].X + SIZE[pos+1].Width - 105, SIZE[pos+1].Y, 0, 0), 17);
                             ITEM[pos, 2] = null;
-                            ITEM[pos, 3] = new IGMDataItem_Int(total[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]], new Rectangle(SIZE[pos].X + SIZE[pos].Width - 80, SIZE[pos].Y, 0, 0), 17, numtype: Icons.NumType.sysFntBig, spaces: 3);
-                            ITEM[pos, 4] = new IGMDataItem_String("%", new Rectangle(SIZE[pos].X + SIZE[pos].Width - 20, SIZE[pos].Y, 0, 0));
+                            ITEM[pos, 3] = new IGMDataItem_Int(total[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]], new Rectangle(SIZE[pos + 1].X + SIZE[pos + 1].Width - 80, SIZE[pos + 1].Y, 0, 0), 17, numtype: Icons.NumType.sysFntBig, spaces: 3);
+                            ITEM[pos, 4] = new IGMDataItem_String("%", new Rectangle(SIZE[pos + 1].X + SIZE[pos + 1].Width - 20, SIZE[pos + 1].Y, 0, 0));
                         }
                     }
                     return base.Update();
