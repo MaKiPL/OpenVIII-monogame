@@ -12,7 +12,7 @@ namespace FF8
 
             private class IGMData_Mag_ST_D_Values : IGMData
             {
-                public IGMData_Mag_ST_A_D_Slots Slots { get; private set }
+                public IGMData_Mag_ST_A_D_Slots Slots { get; private set; }
 
                 //    public new Saves.CharacterData PrevSetting { get; private set; }
                 //    public new Saves.CharacterData Setting { get; private set; }
