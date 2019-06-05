@@ -11,11 +11,11 @@ namespace FF8
         {
             private class IGMData_Mag_EL_D_Values : IGMData
             {
-                public IGMData_Mag_EL_A_D_Slots EL_A_D_Slots { get; }
+                public IGMData_Mag_EL_A_D_Slots Slots { get; }
 
                 public IGMData_Mag_EL_D_Values(IGMData_Mag_EL_A_D_Slots mag_EL_A_D_Slots) : base(8, 5, new IGMDataItem_Box(title: Icons.ID.Elemental_Defense, pos: new Rectangle(280, 423, 545, 201)), 2, 4)
                 {
-                    EL_A_D_Slots = mag_EL_A_D_Slots;
+                    Slots = mag_EL_A_D_Slots;
                 }
 
                 protected override void InitShift(int i, int col, int row)
