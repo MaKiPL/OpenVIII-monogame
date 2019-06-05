@@ -9,10 +9,16 @@ namespace FF8
     {
         private partial class IGM_Junction
         {
+
             private class IGMData_Mag_ST_D_Values : IGMData
             {
-                public IGMData_Mag_ST_D_Values() : base( 14, 5, new IGMDataItem_Box(title: Icons.ID.Status_Defense, pos: new Rectangle(280, 342, 545, 288)), 2, 7)
+                public IGMData_Mag_ST_A_D_Slots ST_A_D_Slots { get; }
+
+                //    public new Saves.CharacterData PrevSetting { get; private set; }
+                //    public new Saves.CharacterData Setting { get; private set; }
+                public IGMData_Mag_ST_D_Values(IGMData_Mag_ST_A_D_Slots mag_ST_A_D_Slots) : base( 14, 5, new IGMDataItem_Box(title: Icons.ID.Status_Defense, pos: new Rectangle(280, 342, 545, 288)), 2, 7)
                 {
+                    ST_A_D_Slots = mag_ST_A_D_Slots;
                 }
 
                 protected override void InitShift(int i, int col, int row)
@@ -45,14 +51,40 @@ namespace FF8
                             }
 
                         Enum[] availableFlagsarray = availableFlags.ToArray();
-                        for (short pos = 0; pos < Count-1; pos++)
+                        for (short pos = 0; pos < Count - 1; pos++)
                         {
-                            ITEM[pos, 0] = new IGMDataItem_Icon(Icons.ID.Status_Death + pos, new Rectangle(SIZE[pos + 1].X, SIZE[pos+1].Y, 0, 0), 10);
+                            ITEM[pos, 0] = new IGMDataItem_Icon(Icons.ID.Status_Death + pos, new Rectangle(SIZE[pos + 1].X, SIZE[pos + 1].Y, 0, 0), 10);
                             ITEM[pos, 1] = null;
-                            //ITEM[pos, 2] = new IGMDataItem_Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos+ 1].X + SIZE[pos+1].Width - 105, SIZE[pos+1].Y, 0, 0), 17);
                             ITEM[pos, 2] = null;
                             ITEM[pos, 3] = new IGMDataItem_Int(total[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]], new Rectangle(SIZE[pos + 1].X + SIZE[pos + 1].Width - 80, SIZE[pos + 1].Y, 0, 0), 17, numtype: Icons.NumType.sysFntBig, spaces: 3);
                             ITEM[pos, 4] = new IGMDataItem_String("%", new Rectangle(SIZE[pos + 1].X + SIZE[pos + 1].Width - 20, SIZE[pos + 1].Y, 0, 0));
+
+                            //ITEM[pos, 2] = new IGMDataItem_Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos + 1].X + SIZE[pos + 1].Width - 105, SIZE[pos + 1].Y, 0, 0), 17);
+
+                            //if (PrevSetting == null || PrevSetting.Stat_J[stat] == Setting.Stat_J[stat] || PrevSetting.TotalStat(stat, VisableCharacter) == Setting.TotalStat(stat, VisableCharacter))
+                            //{
+                            //    ITEM[pos, 4] = null;
+                            //}
+                            //else if (PrevSetting.TotalStat(stat, VisableCharacter) > Setting.TotalStat(stat, VisableCharacter))
+                            //{
+                            //    ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = 5;
+                            //    ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 5;
+                            //    ((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Red;
+                            //    ((IGMDataItem_Int)ITEM[pos, 2]).Colorid = Font.ColorID.Red;
+                            //    if (ITEM[pos, 3] != null)
+                            //        ((IGMDataItem_String)ITEM[pos, 3]).Colorid = Font.ColorID.Red;
+                            //    ITEM[pos, 4] = new IGMDataItem_Icon(Icons.ID.Arrow_Down, new Rectangle(SIZE[pos].X + 250, SIZE[pos].Y, 0, 0), 16);
+                            //}
+                            //else
+                            //{
+                            //    ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = 6;
+                            //    ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 6;
+                            //    ((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Yellow;
+                            //    ((IGMDataItem_Int)ITEM[pos, 2]).Colorid = Font.ColorID.Yellow;
+                            //    if (ITEM[pos, 3] != null)
+                            //        ((IGMDataItem_String)ITEM[pos, 3]).Colorid = Font.ColorID.Yellow;
+                            //    ITEM[pos, 4] = new IGMDataItem_Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos].X + 250, SIZE[pos].Y, 0, 0), 17);
+                            //}
                         }
                     }
                     return base.Update();

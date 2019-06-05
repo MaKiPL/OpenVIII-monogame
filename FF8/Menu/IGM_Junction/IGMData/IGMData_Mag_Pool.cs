@@ -9,8 +9,15 @@ namespace FF8
         {
             private class IGMData_Mag_Pool : IGMData_Pool<Saves.CharacterData, byte>
             {
-                public IGMData_Mag_Pool() : base( 5, 3, new IGMDataItem_Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.MAGIC), 4, 13)
+                public IGMData_Mag_Stat_Slots Stat_Slots { get; }
+                public IGMData_Mag_EL_A_D_Slots EL_A_D_Slots { get; }
+                public IGMData_Mag_ST_A_D_Slots ST_A_D_Slots { get; }
+
+                public IGMData_Mag_Pool(IGMData_Mag_Stat_Slots mag_Stat_Slots, IGMData_Mag_EL_A_D_Slots mag_EL_A_D_Slots, IGMData_Mag_ST_A_D_Slots mag_ST_A_D_Slots) : base( 5, 3, new IGMDataItem_Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.MAGIC), 4, 13)
                 {
+                    Stat_Slots = mag_Stat_Slots;
+                    EL_A_D_Slots = mag_EL_A_D_Slots;
+                    ST_A_D_Slots = mag_ST_A_D_Slots;
                 }
 
                 protected override void InitShift(int i, int col, int row)
