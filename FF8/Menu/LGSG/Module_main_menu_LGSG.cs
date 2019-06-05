@@ -64,20 +64,8 @@ namespace FF8
 
         private static float PercentLoaded { get; set; } = .5f;
 
-        #endregion Properties
-
-        #region Methods
-
-        [Flags]
-        public enum Box_Options
-        {
-            Default = 0x0,
-            Indent = 0x1,
-            Buttom = 0x2,
-            SkipDraw = 0x4,
-            Center = 0x8,
-            Middle = 0x10,
-        }
+#endregion Properties
+#region Methods
 
         private static Tuple<Rectangle, Point, Rectangle> DrawBox(Rectangle dst, FF8String buffer = null, Icons.ID? title = null, Vector2? textScale = null, Vector2? boxScale = null, Box_Options options = Box_Options.Default)
         {

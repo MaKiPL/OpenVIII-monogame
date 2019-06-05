@@ -8,7 +8,7 @@ namespace FF8
     public partial class Module_main_menu_debug
     {
 
-        private abstract class Menu
+        public abstract class Menu
         {
             /// <summary>
             /// replace me with new keyword
@@ -31,7 +31,7 @@ namespace FF8
 
             private Vector2 _size;
             static public Vector2 TextScale { get; protected set; }
-            static public Matrix Focus;
+            static public Matrix Focus { get; protected set; }
             private bool skipdata;
 
             public Vector2 Size { get => _size; protected set => _size = value; }

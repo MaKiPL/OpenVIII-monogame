@@ -199,22 +199,74 @@
     <Compile Include="Kernel\Kernel_bin.Temporary_character_limit_breaks.cs" />
     <Compile Include="Kernel\Kernel_bin.Weapons_Data.cs" />
     <Compile Include="Kernel\Kernel_bin.Zell_limit_break_parameters.cs" />
+    <Compile Include="Menu\IGMDataItem\IGMDataItem_Box.cs" />
+    <Compile Include="Menu\IGMDataItem\IGMDataItem_Empty.cs" />
+    <Compile Include="Menu\IGMDataItem\IGMDataItem_Face.cs" />
+    <Compile Include="Menu\IGMDataItem\IGMDataItem_Icon.cs" />
+    <Compile Include="Menu\IGMDataItem\IGMDataItem_Int.cs" />
+    <Compile Include="Menu\IGMDataItem\IGMDataItem_String.cs" />
+    <Compile Include="Menu\IGMDataItem\IGMDataItem_Texture.cs" />
+    <Compile Include="Menu\IGMData\IGMData_Container.cs" />
+    <Compile Include="Menu\IGMData\IGMData_Group.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_AbilityPool.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_AbilitySlots.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_Command.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_CommandPool.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_Group.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_CharacterInfo.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Commands.cs" />
+    <Compile Include="Menu\IGMData\IGMData_ConfirmDialog.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_ConfirmRemAll.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_ConfirmRemMag.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_GF_Group.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_GF_Junctioned.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_GF_Pool.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Help.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_EL_A_D_Slots.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_EL_A_Values.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_EL_D_Values.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_Group.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_PageTitle.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_Pool.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_Stat_Slots.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_ST_A_D_Slots.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_ST_A_Values.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_ST_D_Values.cs" />
+    <Compile Include="Menu\IGMData\IGMData_Pool.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_TopMenu.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_TopMenu_Auto.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_TopMenu_Auto_Group.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_TopMenu_Junction.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_TopMenu_Off.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_TopMenu_Off_Group.cs" />
+    <Compile Include="Menu\IGM\IGMData\IGMData_Clock.cs" />
+    <Compile Include="Menu\IGM\IGMData\IGMData_Footer.cs" />
+    <Compile Include="Menu\IGM\IGMData\IGMData_Header.cs" />
+    <Compile Include="Menu\IGM\IGMData\IGMData_NonParty.cs" />
+    <Compile Include="Menu\IGM\IGMData\IGMData_Party.cs" />
+    <Compile Include="Menu\IGM\IGMData\IGMData_SideMenu.cs" />
+    <Compile Include="Menu\LGSG\Box_Options.cs" />
     <Compile Include="Menu\Magazine.cs" />
     <Compile Include="Menu\Magazine.InsertCustomEntries.cs" />
     <Compile Include="Menu\Magazine.ID.cs" />
-    <Compile Include="Menu\Module_main_menu_debug.IGM_Junction.cs" />
-    <Compile Include="Menu\Module_main_menu_debug.Menu.cs" />
-    <Compile Include="Menu\Module_main_menu_InGameMenu.cs" />
-    <Compile Include="Menu\Module_main_menu_LGSG_CheckingSlot.cs" />
-    <Compile Include="Menu\Module_main_menu_LGSG_ChooseGame.cs" />
-    <Compile Include="Menu\Module_main_menu_LGSG_ChooseSlot.cs" />
-    <Compile Include="Menu\Module_main_menu_LGSG_ing.cs" />
+    <Compile Include="Menu\Module_main_menu_debug.Cursor_Status.cs" />
+    <Compile Include="Menu\IGMData\IGMData.cs" />
+    <Compile Include="Menu\IGMDataItem\IGMDataItem.cs" />
+    <Compile Include="Menu\IGMDataItem\IGMDataItem_IGMData.cs" />
+    <Compile Include="Menu\IGM_Junction\IGM_Junction.cs" />
+    <Compile Include="Menu\Menu.cs" />
+    <Compile Include="Menu\Module_main_menu_debug.Table_Options.cs" />
+    <Compile Include="Menu\IGM\IGM.cs" />
+    <Compile Include="Menu\LGSG\Module_main_menu_LGSG_CheckingSlot.cs" />
+    <Compile Include="Menu\LGSG\Module_main_menu_LGSG_ChooseGame.cs" />
+    <Compile Include="Menu\LGSG\Module_main_menu_LGSG_ChooseSlot.cs" />
+    <Compile Include="Menu\LGSG\Module_main_menu_LGSG_ing.cs" />
     <Compile Include="Menu\PointEx.cs" />
     <Compile Include="Menu\Stringfile.cs" />
     <Compile Include="Menu\Strings.cs" />
     <Compile Include="Menu\Module_card_test.cs" />
     <Compile Include="Menu\Module_main_menu_debug.Item.cs" />
-    <Compile Include="Menu\Module_main_menu_LGSG.cs" />
+    <Compile Include="Menu\LGSG\Module_main_menu_LGSG.cs" />
     <Compile Include="Menu\Module_main_menu_MainLobby.cs" />
     <Compile Include="Menu\Module_main_menu_DebugLobby.cs" />
     <Compile Include="Characters.cs" />
@@ -875,7 +927,9 @@
       <Name>FF8.Encoding</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Menu\Debug\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
