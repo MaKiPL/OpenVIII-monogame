@@ -23,11 +23,13 @@ namespace FF8
                 {
                     if (Memory.State.Characters != null)
                     {
+                        Contents[0] = Kernel_bin.Stat.Elem_Atk;
                         ITEM[0, 0] = new IGMDataItem_Icon(Icons.ID.Icon_Elemental_Attack, new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0));
                         ITEM[0, 1] = new IGMDataItem_String(Kernel_bin.MagicData[Memory.State.Characters[Character].Stat_J[Kernel_bin.Stat.Elem_Atk]].Name, new Rectangle(SIZE[0].X + 60, SIZE[0].Y, 0, 0));
                         BLANKS[0] = false;
                         for (byte pos = 1; pos < Count; pos++)
                         {
+                            Contents[pos] = Kernel_bin.Stat.Elem_Def_1 + pos - 1;
                             ITEM[pos, 0] = new IGMDataItem_Icon(Icons.ID.Icon_Elemental_Defense, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0));
                             ITEM[pos, 1] = new IGMDataItem_String(Kernel_bin.MagicData[Memory.State.Characters[Character].Stat_J[Kernel_bin.Stat.Elem_Def_1 + pos - 1]].Name, new Rectangle(SIZE[pos].X + 60, SIZE[pos].Y, 0, 0));
                             BLANKS[pos] = false;
@@ -107,7 +109,7 @@ namespace FF8
                 public override void Inputs_OKAY()
                 {
                     base.Inputs_OKAY();
-                    InGameMenu_Junction.mode = Mode.Mag_Pool_Stat;
+                    InGameMenu_Junction.mode = CURSOR_SELECT == 0 ? Mode.Mag_Pool_EL_A : Mode.Mag_Pool_EL_D;
                     BackupSetting();
                 }
 

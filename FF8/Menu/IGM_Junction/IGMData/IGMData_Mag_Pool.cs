@@ -13,7 +13,7 @@ namespace FF8
                 public IGMData_Mag_EL_A_D_Slots EL_A_D_Slots { get; }
                 public IGMData_Mag_ST_A_D_Slots ST_A_D_Slots { get; }
 
-                public IGMData_Mag_Pool(IGMData_Mag_Stat_Slots mag_Stat_Slots, IGMData_Mag_EL_A_D_Slots mag_EL_A_D_Slots, IGMData_Mag_ST_A_D_Slots mag_ST_A_D_Slots) : base( 5, 3, new IGMDataItem_Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.MAGIC), 4, 13)
+                public IGMData_Mag_Pool(IGMData_Mag_Stat_Slots mag_Stat_Slots, IGMData_Mag_EL_A_D_Slots mag_EL_A_D_Slots, IGMData_Mag_ST_A_D_Slots mag_ST_A_D_Slots) : base(5, 3, new IGMDataItem_Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.MAGIC), 4, 13)
                 {
                     Stat_Slots = mag_Stat_Slots;
                     EL_A_D_Slots = mag_EL_A_D_Slots;
@@ -91,20 +91,34 @@ namespace FF8
 
                 public override bool Update()
                 {
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.Mag_Pool_Stat && Enabled)
+                    Cursor_Status |= Cursor_Status.Enabled;
+                    Cursor_Status &= ~Cursor_Status.Horizontal;
+                    Cursor_Status |= Cursor_Status.Vertical;
+                    Cursor_Status &= ~Cursor_Status.Blinking;
+                    if (InGameMenu_Junction != null && Enabled)
                     {
-                        Cursor_Status |= Cursor_Status.Enabled;
-                        Cursor_Status &= ~Cursor_Status.Horizontal;
-                        Cursor_Status |= Cursor_Status.Vertical;
-                        Cursor_Status &= ~Cursor_Status.Blinking;
-
-                        IGMData_Mag_Stat_Slots A = (IGMData_Mag_Stat_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[0, 0]).Data;
-                        Kernel_bin.Stat stat = A.Contents[A.CURSOR_SELECT];
+                        Kernel_bin.Stat stat = Kernel_bin.Stat.None;
+                        IGMData Slots = null;
+                        if (InGameMenu_Junction.mode == Mode.Mag_Pool_Stat)
+                        {
+                            stat = Stat_Slots.Contents[Stat_Slots.CURSOR_SELECT];
+                            Slots = Stat_Slots;
+                        }
+                        else if (InGameMenu_Junction.mode == Mode.Mag_Pool_EL_A || InGameMenu_Junction.mode == Mode.Mag_Pool_EL_D)
+                        {
+                            stat = Stat_Slots.Contents[Stat_Slots.CURSOR_SELECT];
+                            Slots = EL_A_D_Slots;
+                        }
+                        else if (InGameMenu_Junction.mode == Mode.Mag_Pool_ST_A || InGameMenu_Junction.mode == Mode.Mag_Pool_ST_D)
+                        {
+                            stat = Stat_Slots.Contents[Stat_Slots.CURSOR_SELECT];
+                            Slots = EL_A_D_Slots;
+                        }
                         if (stat != Kernel_bin.Stat.None && CURSOR_SELECT < Contents.Length)
                         {
                             if (Source.Stat_J[stat] != Contents[CURSOR_SELECT])
                             {
-                                A.UndoChange();
+                                Slots.UndoChange();
                                 if (Memory.State.Characters != null)
                                 {
                                     Source = Memory.State.Characters[Character];
@@ -115,8 +129,7 @@ namespace FF8
                                     Source.Stat_J[key] = 0;
                                 }
                                 Source.Stat_J[stat] = Contents[CURSOR_SELECT];
-
-                                A.ReInit();
+                                Slots.ReInit();
                             }
                         }
                     }
@@ -141,32 +154,59 @@ namespace FF8
 
                 public override void Inputs_CANCEL()
                 {
-                    base.Inputs_CANCEL();
-                    //TODO have pool return to correct screen as there will be 3 possible return modes.
-                    InGameMenu_Junction.mode = Mode.Mag_Stat;
-
                     if (Memory.State.Characters != null)
                     {
-                        IGMData_Mag_Stat_Slots A = (IGMData_Mag_Stat_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[0, 0]).Data;
-                        A.UndoChange();
-                        A.ConfirmChange();
+                        base.Inputs_CANCEL();
+                        //TODO have pool return to correct screen as there will be 3 possible return modes.
+                        if (InGameMenu_Junction.mode == Mode.Mag_Pool_Stat)
+                        {
+                            InGameMenu_Junction.mode = Mode.Mag_Stat;
+                            Stat_Slots.UndoChange();
+                            Stat_Slots.ConfirmChange();
+                            Stat_Slots.ReInit();
+                        }
+                        else if (InGameMenu_Junction.mode == Mode.Mag_Pool_EL_A || InGameMenu_Junction.mode == Mode.Mag_Pool_EL_D)
+                        {
+                            InGameMenu_Junction.mode = Mode.Mag_Stat;
+                            EL_A_D_Slots.UndoChange();
+                            EL_A_D_Slots.ConfirmChange();
+                            EL_A_D_Slots.ReInit();
+                        }
+                        else if (InGameMenu_Junction.mode == Mode.Mag_Pool_ST_A || InGameMenu_Junction.mode == Mode.Mag_Pool_ST_D)
+                        {
+                            InGameMenu_Junction.mode = Mode.Mag_Stat;
+                            EL_A_D_Slots.UndoChange();
+                            EL_A_D_Slots.ConfirmChange();
+                            EL_A_D_Slots.ReInit();
+                        }
                         Source = Memory.State.Characters[Character];
-                        A.ReInit();
                     }
                 }
 
                 public override void Inputs_OKAY()
                 {
-                    skipsnd = true;
-                    init_debugger_Audio.PlaySound(31);
-                    InGameMenu_Junction.mode = Mode.Mag_Stat;
-                    base.Inputs_OKAY();
                     if (Memory.State.Characters != null)
                     {
-                        IGMData_Mag_Stat_Slots A = (IGMData_Mag_Stat_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[0, 0]).Data;
-                        A.ConfirmChange();
+                        skipsnd = true;
+                        init_debugger_Audio.PlaySound(31);
+                        base.Inputs_OKAY();
+                        if (InGameMenu_Junction.mode == Mode.Mag_Pool_Stat)
+                        {
+                            InGameMenu_Junction.mode = Mode.Mag_Stat;
+                            Stat_Slots.ConfirmChange();
+                        }
+                        else if (InGameMenu_Junction.mode == Mode.Mag_Pool_EL_A || InGameMenu_Junction.mode == Mode.Mag_Pool_EL_D)
+                        {
+                            InGameMenu_Junction.mode = Mode.Mag_Stat;
+                            EL_A_D_Slots.ConfirmChange();
+                        }
+                        else if (InGameMenu_Junction.mode == Mode.Mag_Pool_ST_A || InGameMenu_Junction.mode == Mode.Mag_Pool_ST_D)
+                        {
+                            InGameMenu_Junction.mode = Mode.Mag_Stat;
+                            EL_A_D_Slots.ConfirmChange();
+                        }
+                        InGameMenu_Junction.ReInit();
                     }
-                    InGameMenu_Junction.ReInit();
                 }
             }
         }
