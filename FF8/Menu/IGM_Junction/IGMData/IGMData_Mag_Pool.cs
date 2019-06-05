@@ -9,15 +9,12 @@ namespace FF8
         {
             private class IGMData_Mag_Pool : IGMData_Pool<Saves.CharacterData, byte>
             {
-                public IGMData_Mag_Stat_Slots Stat_Slots { get; }
-                public IGMData_Mag_EL_A_D_Slots EL_A_D_Slots { get; }
-                public IGMData_Mag_ST_A_D_Slots ST_A_D_Slots { get; }
+                public IGMData_Mag_Stat_Slots Stat_Slots { get; private set; }
+                public IGMData_Mag_EL_A_D_Slots EL_A_D_Slots { get; private set; }
+                public IGMData_Mag_ST_A_D_Slots ST_A_D_Slots { get; private set; }
 
-                public IGMData_Mag_Pool(IGMData_Mag_Stat_Slots mag_Stat_Slots, IGMData_Mag_EL_A_D_Slots mag_EL_A_D_Slots, IGMData_Mag_ST_A_D_Slots mag_ST_A_D_Slots) : base(5, 3, new IGMDataItem_Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.MAGIC), 4, 13)
+                public IGMData_Mag_Pool() : base(5, 3, new IGMDataItem_Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.MAGIC), 4, 13)
                 {
-                    Stat_Slots = mag_Stat_Slots;
-                    EL_A_D_Slots = mag_EL_A_D_Slots;
-                    ST_A_D_Slots = mag_ST_A_D_Slots;
                 }
 
                 protected override void InitShift(int i, int col, int row)
@@ -50,6 +47,9 @@ namespace FF8
                 {
                     if (Memory.State.Characters != null)
                     {
+                        Stat_Slots = (IGMData_Mag_Stat_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[0, 0]).Data;
+                        EL_A_D_Slots = (IGMData_Mag_EL_A_D_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[3, 0]).Data;
+                        ST_A_D_Slots = (IGMData_Mag_ST_A_D_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[6, 0]).Data;
                         Source = Memory.State.Characters[Character];
 
                         int pos = 0;
@@ -106,13 +106,13 @@ namespace FF8
                         }
                         else if (InGameMenu_Junction.mode == Mode.Mag_Pool_EL_A || InGameMenu_Junction.mode == Mode.Mag_Pool_EL_D)
                         {
-                            stat = Stat_Slots.Contents[Stat_Slots.CURSOR_SELECT];
+                            stat = EL_A_D_Slots.Contents[Stat_Slots.CURSOR_SELECT];
                             Slots = EL_A_D_Slots;
                         }
                         else if (InGameMenu_Junction.mode == Mode.Mag_Pool_ST_A || InGameMenu_Junction.mode == Mode.Mag_Pool_ST_D)
                         {
-                            stat = Stat_Slots.Contents[Stat_Slots.CURSOR_SELECT];
-                            Slots = EL_A_D_Slots;
+                            stat = ST_A_D_Slots.Contents[Stat_Slots.CURSOR_SELECT];
+                            Slots = ST_A_D_Slots;
                         }
                         if (stat != Kernel_bin.Stat.None && CURSOR_SELECT < Contents.Length)
                         {

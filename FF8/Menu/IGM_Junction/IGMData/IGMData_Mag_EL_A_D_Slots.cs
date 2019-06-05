@@ -18,6 +18,11 @@ namespace FF8
                     SIZE[i].Inflate(-30, -6);
                     SIZE[i].Y -= row * 2;
                 }
+                protected override void Init()
+                {
+                    Contents = new Kernel_bin.Stat[Count];
+                    base.Init();
+                }
 
                 public override void ReInit()
                 {

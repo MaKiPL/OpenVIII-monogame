@@ -12,13 +12,19 @@ namespace FF8
 
             private class IGMData_Mag_ST_D_Values : IGMData
             {
-                public IGMData_Mag_ST_A_D_Slots Slots { get; }
+                public IGMData_Mag_ST_A_D_Slots Slots { get; private set }
 
                 //    public new Saves.CharacterData PrevSetting { get; private set; }
                 //    public new Saves.CharacterData Setting { get; private set; }
-                public IGMData_Mag_ST_D_Values(IGMData_Mag_ST_A_D_Slots mag_ST_A_D_Slots) : base( 14, 5, new IGMDataItem_Box(title: Icons.ID.Status_Defense, pos: new Rectangle(280, 342, 545, 288)), 2, 7)
+                public IGMData_Mag_ST_D_Values() : base( 14, 5, new IGMDataItem_Box(title: Icons.ID.Status_Defense, pos: new Rectangle(280, 342, 545, 288)), 2, 7)
                 {
-                    Slots = mag_ST_A_D_Slots;
+                }
+                public override void ReInit()
+                {
+                    //Slots = (IGMData_Mag_Stat_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[0, 0]).Data;
+                    //Slots = (IGMData_Mag_EL_A_D_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[3, 0]).Data;
+                    Slots = (IGMData_Mag_ST_A_D_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[6, 0]).Data;
+                    base.ReInit();
                 }
 
                 protected override void InitShift(int i, int col, int row)
@@ -63,22 +69,24 @@ namespace FF8
                             ITEM[pos, 2] = null;
                             ITEM[pos, 3] = new IGMDataItem_Int(total[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]], new Rectangle(SIZE[pos + 1].X + SIZE[pos + 1].Width - 80, SIZE[pos + 1].Y, 0, 0), 17, numtype: Icons.NumType.sysFntBig, spaces: 3);
                             ITEM[pos, 4] = new IGMDataItem_String("%", new Rectangle(SIZE[pos + 1].X + SIZE[pos + 1].Width - 20, SIZE[pos + 1].Y, 0, 0));
-
-                            if(oldtotal[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]]> total[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]])
+                            if (oldtotal != null)
                             {
-                                ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = 5;
-                                ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 5;
-                                ITEM[pos, 2] = new IGMDataItem_Icon(Icons.ID.Arrow_Down, new Rectangle(SIZE[pos + 1].X + SIZE[pos + 1].Width - 105, SIZE[pos + 1].Y, 0, 0), 16);
-                                ((IGMDataItem_String)ITEM[pos, 3]).Colorid = Font.ColorID.Red;
-                                ((IGMDataItem_Int)ITEM[pos, 4]).Colorid = Font.ColorID.Red;
-                            }
-                            else if (oldtotal[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]] < total[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]])
-                            {
-                                ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = 6;
-                                ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 6;
-                                ITEM[pos, 2] = new IGMDataItem_Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos + 1].X + SIZE[pos + 1].Width - 105, SIZE[pos + 1].Y, 0, 0), 17);
-                                ((IGMDataItem_String)ITEM[pos, 3]).Colorid = Font.ColorID.Yellow;
-                                ((IGMDataItem_Int)ITEM[pos, 4]).Colorid = Font.ColorID.Yellow;
+                                if (oldtotal[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]] > total[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]])
+                                {
+                                    ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = 5;
+                                    ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 5;
+                                    ITEM[pos, 2] = new IGMDataItem_Icon(Icons.ID.Arrow_Down, new Rectangle(SIZE[pos + 1].X + SIZE[pos + 1].Width - 105, SIZE[pos + 1].Y, 0, 0), 16);
+                                    ((IGMDataItem_String)ITEM[pos, 3]).Colorid = Font.ColorID.Red;
+                                    ((IGMDataItem_Int)ITEM[pos, 4]).Colorid = Font.ColorID.Red;
+                                }
+                                else if (oldtotal[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]] < total[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]])
+                                {
+                                    ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = 6;
+                                    ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 6;
+                                    ITEM[pos, 2] = new IGMDataItem_Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos + 1].X + SIZE[pos + 1].Width - 105, SIZE[pos + 1].Y, 0, 0), 17);
+                                    ((IGMDataItem_String)ITEM[pos, 3]).Colorid = Font.ColorID.Yellow;
+                                    ((IGMDataItem_Int)ITEM[pos, 4]).Colorid = Font.ColorID.Yellow;
+                                }
                             }
                         }
                     }

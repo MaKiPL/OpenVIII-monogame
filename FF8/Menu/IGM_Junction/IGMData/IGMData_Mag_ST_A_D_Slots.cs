@@ -12,6 +12,11 @@ namespace FF8
                 {
                 }
 
+                protected override void Init()
+                {
+                    Contents = new Kernel_bin.Stat[Count];
+                    base.Init();
+                }
                 protected override void InitShift(int i, int col, int row)
                 {
                     base.InitShift(i, col, row);

@@ -13,7 +13,6 @@ namespace FF8
                 public IGMData_Mag_Stat_Slots() : base( 10, 5, new IGMDataItem_Box(pos: new Rectangle(0, 414, 840, 216)), 2, 5)
                 {
                 }
-
                 /// <summary>
                 /// Convert stat to correct icon id.
                 /// </summary>
@@ -42,7 +41,6 @@ namespace FF8
                     if (Memory.State.Characters != null)
                     {
                         Setting = Memory.State.Characters[Character];
-                        Contents = new Kernel_bin.Stat[Count];
                         Contents = Array.ConvertAll(Contents, c => c = Kernel_bin.Stat.None);
                         base.ReInit();
 
@@ -204,7 +202,11 @@ namespace FF8
                 /// <summary>
                 /// Things fixed at startup.
                 /// </summary>
-                protected override void Init() => base.Init();
+                protected override void Init()
+                {
+                    Contents = new Kernel_bin.Stat[Count];
+                    base.Init();
+                }
             }
         }
     }

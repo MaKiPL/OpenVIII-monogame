@@ -193,19 +193,16 @@ namespace FF8
                 Data.Add(SectionName.TopMenu, new IGMData_TopMenu());
                 Data.Add(SectionName.Title, new IGMData_Container(
                     new IGMDataItem_Box(Titles[Items.Junction], pos: new Rectangle(615, 0, 225, 66))));
-                IGMData_Mag_ST_A_D_Slots Mag_ST_A_D_Slots = new IGMData_Mag_ST_A_D_Slots();
-                IGMData_Mag_EL_A_D_Slots Mag_EL_A_D_Slots = new IGMData_Mag_EL_A_D_Slots();
-                IGMData_Mag_Stat_Slots Mag_Stat_Slots = new IGMData_Mag_Stat_Slots();
                 Data.Add(SectionName.Mag_Group, new IGMData_Mag_Group(
                     new IGMData_Mag_Stat_Slots(),
                     new IGMData_Mag_PageTitle(),
-                    new IGMData_Mag_Pool(Mag_Stat_Slots, Mag_EL_A_D_Slots, Mag_ST_A_D_Slots),
-                    Mag_EL_A_D_Slots,
-                    new IGMData_Mag_EL_A_Values(Mag_EL_A_D_Slots),
-                    new IGMData_Mag_EL_D_Values(Mag_EL_A_D_Slots),
-                    Mag_ST_A_D_Slots,
-                    new IGMData_Mag_ST_A_Values(Mag_ST_A_D_Slots),
-                    new IGMData_Mag_ST_D_Values(Mag_ST_A_D_Slots)
+                    new IGMData_Mag_Pool(),
+                    new IGMData_Mag_EL_A_D_Slots(),
+                    new IGMData_Mag_EL_A_Values(),
+                    new IGMData_Mag_EL_D_Values(),
+                    new IGMData_Mag_ST_A_D_Slots(),
+                    new IGMData_Mag_ST_A_Values(),
+                    new IGMData_Mag_ST_D_Values()
                     ));
                 Data.Add(SectionName.TopMenu_Junction, new IGMData_TopMenu_Junction());
                 Data.Add(SectionName.TopMenu_Off, new IGMData_TopMenu_Off_Group(

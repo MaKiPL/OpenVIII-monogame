@@ -11,13 +11,19 @@ namespace FF8
         {
             private class IGMData_Mag_ST_A_Values : IGMData
             {
-                public IGMData_Mag_ST_A_D_Slots Slots { get; }
+                public IGMData_Mag_ST_A_D_Slots Slots { get; private set; }
 
-                public IGMData_Mag_ST_A_Values(IGMData_Mag_ST_A_D_Slots mag_ST_A_D_Slots) : base( 12, 5, new IGMDataItem_Box(title: Icons.ID.Status_Attack, pos: new Rectangle(280, 363, 545, 267)), 2, 6)
+                public IGMData_Mag_ST_A_Values() : base( 12, 5, new IGMDataItem_Box(title: Icons.ID.Status_Attack, pos: new Rectangle(280, 363, 545, 267)), 2, 6)
                 {
-                    Slots = mag_ST_A_D_Slots;
                 }
 
+                public override void ReInit()
+                {
+                    //Slots = (IGMData_Mag_Stat_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[0, 0]).Data;
+                    //Slots = (IGMData_Mag_EL_A_D_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[3, 0]).Data;
+                    Slots = (IGMData_Mag_ST_A_D_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[6, 0]).Data;
+                    base.ReInit();
+                }
 
                 protected override void InitShift(int i, int col, int row)
                 {
