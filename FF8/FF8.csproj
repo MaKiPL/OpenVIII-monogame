@@ -144,6 +144,7 @@
     <Compile Include="FF8String.cs" />
     <Compile Include="Kernel\Kernel_bin.Ability.cs" />
     <Compile Include="Kernel\Kernel_bin.CharacterAbilityFlags.cs" />
+    <Compile Include="Kernel\Kernel_bin.J_Statuses.cs" />
     <Compile Include="Menu\Cards.cs" />
     <Compile Include="Menu\Cards.ID.cs" />
     <Compile Include="EntryGroup.cs" />
