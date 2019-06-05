@@ -245,7 +245,8 @@
     <Compile Include="Menu\IGM\IGMData\IGMData_NonParty.cs" />
     <Compile Include="Menu\IGM\IGMData\IGMData_Party.cs" />
     <Compile Include="Menu\IGM\IGMData\IGMData_SideMenu.cs" />
-    <Compile Include="Menu\LGSG\Box_Options.cs" />
+    <Compile Include="Menu\DrawBox.cs" />
+    <Compile Include="Menu\DrawPointer.cs" />
     <Compile Include="Menu\Magazine.cs" />
     <Compile Include="Menu\Magazine.InsertCustomEntries.cs" />
     <Compile Include="Menu\Magazine.ID.cs" />
