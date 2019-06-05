@@ -203,6 +203,7 @@
     <Compile Include="Menu\Magazine.InsertCustomEntries.cs" />
     <Compile Include="Menu\Magazine.ID.cs" />
     <Compile Include="Menu\Module_main_menu_debug.IGM_Junction.cs" />
+    <Compile Include="Menu\Module_main_menu_debug.Menu.cs" />
     <Compile Include="Menu\Module_main_menu_InGameMenu.cs" />
     <Compile Include="Menu\Module_main_menu_LGSG_CheckingSlot.cs" />
     <Compile Include="Menu\Module_main_menu_LGSG_ChooseGame.cs" />

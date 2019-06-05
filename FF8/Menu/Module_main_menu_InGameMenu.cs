@@ -113,31 +113,34 @@ namespace FF8
 
             public override void Draw()
             {
-                Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: Focus);
-                switch (mode)
+                if (Enabled)
                 {
-                    case Mode.ChooseChar:
-                    case Mode.ChooseItem:
-                    default:
-                        base.Draw();
-                        break;
-                }
-                switch (mode)
-                {
-                    case Mode.ChooseChar:
-                        DrawPointer(Data[SectionName.SideMenu].CURSOR[(int)choSideBar], blink: true);
+                    StartDraw();
+                    switch (mode)
+                    {
+                        case Mode.ChooseChar:
+                        case Mode.ChooseItem:
+                        default:
+                            base.Draw();
+                            break;
+                    }
+                    switch (mode)
+                    {
+                        case Mode.ChooseChar:
+                            DrawPointer(Data[SectionName.SideMenu].CURSOR[(int)choSideBar], blink: true);
 
-                        if (choChar < Data[SectionName.Party].Count && choChar >= 0)
-                            DrawPointer(Data[SectionName.Party].CURSOR[choChar]);
-                        else if (choChar < Data[SectionName.Non_Party].Count + Data[SectionName.Party].Count && choChar >= Data[SectionName.Party].Count)
-                            DrawPointer(Data[SectionName.Non_Party].CURSOR[choChar - Data[SectionName.Party].Count]);
-                        break;
+                            if (choChar < Data[SectionName.Party].Count && choChar >= 0)
+                                DrawPointer(Data[SectionName.Party].CURSOR[choChar]);
+                            else if (choChar < Data[SectionName.Non_Party].Count + Data[SectionName.Party].Count && choChar >= Data[SectionName.Party].Count)
+                                DrawPointer(Data[SectionName.Non_Party].CURSOR[choChar - Data[SectionName.Party].Count]);
+                            break;
 
-                    default:
-                        DrawPointer(Data[SectionName.SideMenu].CURSOR[(int)choSideBar]);
-                        break;
+                        default:
+                            DrawPointer(Data[SectionName.SideMenu].CURSOR[(int)choSideBar]);
+                            break;
+                    }
+                    EndDraw();
                 }
-                Memory.SpriteBatchEnd();
             }
 
             public enum SectionName
@@ -171,31 +174,96 @@ namespace FF8
 
             public override bool Update()
             {
-                base.Update();
-                ((IGMData_Header)Data[SectionName.Header]).Update(choSideBar);
-
-                return Inputs();
+                if (Enabled)
+                {
+                    bool ret = base.Update();
+                    ret = ((IGMData_Header)Data[SectionName.Header]).Update(choSideBar) || ret;
+                    return Inputs() || ret;
+                }
+                return false;
             }
 
             protected override bool Inputs()
             {
                 bool ret = false;
-                foreach (KeyValuePair<Enum, IGMData> i in Data)
+                if (Enabled)
                 {
-                    i.Value.Inputs();
-                }
-                ml = Input.MouseLocation.Transform(Focus);
-
-                if (mode == Mode.ChooseItem)
-                {
-                    if (Data[SectionName.SideMenu] != null && Data[SectionName.SideMenu].Count > 0)
+                    foreach (KeyValuePair<Enum, IGMData> i in Data)
                     {
-                        for (int pos = 0; pos < Data[SectionName.SideMenu].Count; pos++)
+                        i.Value.Inputs();
+                    }
+                    ml = Input.MouseLocation.Transform(Focus);
+
+                    if (mode == Mode.ChooseItem)
+                    {
+                        if (Data[SectionName.SideMenu] != null && Data[SectionName.SideMenu].Count > 0)
                         {
-                            Rectangle r = Data[SectionName.SideMenu].ITEM[pos, 0];
+                            for (int pos = 0; pos < Data[SectionName.SideMenu].Count; pos++)
+                            {
+                                Rectangle r = Data[SectionName.SideMenu].ITEM[pos, 0];
+                                if (r.Contains(ml))
+                                {
+                                    choSideBar = (Items)pos;
+                                    ret = true;
+
+                                    if (Input.Button(Buttons.MouseWheelup) || Input.Button(Buttons.MouseWheeldown))
+                                    {
+                                        return ret;
+                                    }
+                                    break;
+                                }
+                            }
+
+                            if (Input.Button(Buttons.Down))
+                            {
+                                Input.ResetInputLimit();
+                                init_debugger_Audio.PlaySound(0);
+                                if ((int)++choSideBar >= ((IGMData_SideMenu)Data[SectionName.SideMenu]).Count)
+                                    choSideBar = 0;
+                                ret = true;
+                            }
+                            else if (Input.Button(Buttons.Up))
+                            {
+                                Input.ResetInputLimit();
+                                init_debugger_Audio.PlaySound(0);
+                                if (--choSideBar < 0)
+                                    choSideBar = (Items)((IGMData_SideMenu)Data[SectionName.SideMenu]).Count - 1;
+                                ret = true;
+                            }
+                            else if (Input.Button(Buttons.Cancel))
+                            {
+                                Input.ResetInputLimit();
+                                init_debugger_Audio.PlaySound(8);
+                                Fade = 0.0f;
+                                State = MainMenuStates.LoadGameChooseGame;
+                                ret = true;
+                            }
+                            else if (Input.Button(Buttons.Okay))
+                            {
+                                Input.ResetInputLimit();
+                                init_debugger_Audio.PlaySound(0);
+                                ret = true;
+                                switch (choSideBar)
+                                {
+                                    //Select Char Mode
+                                    case Items.Junction:
+                                    case Items.Magic:
+                                    case Items.Status:
+                                        mode = Mode.ChooseChar;
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                    else if (mode == Mode.ChooseChar)
+                    {
+                        for (int i = 0; i < Data[SectionName.Party].Count; i++)
+                        {
+                            if (Data[SectionName.Party].BLANKS[i]) continue;
+                            Rectangle r = Data[SectionName.Party].SIZE[i];
                             if (r.Contains(ml))
                             {
-                                choSideBar = (Items)pos;
+                                choChar = i;
                                 ret = true;
 
                                 if (Input.Button(Buttons.MouseWheelup) || Input.Button(Buttons.MouseWheeldown))
@@ -205,30 +273,43 @@ namespace FF8
                                 break;
                             }
                         }
+                        for (int i = Data[SectionName.Party].Count; i < Data[SectionName.Non_Party].Count + Data[SectionName.Party].Count; i++)
+                        {
+                            if (Data[SectionName.Non_Party].BLANKS[i - Data[SectionName.Party].Count]) continue;
+                            Rectangle r = Data[SectionName.Non_Party].SIZE[i - Data[SectionName.Party].Count];
+                            //r.Offset(focus.Translation.X, focus.Translation.Y);
+                            if (r.Contains(ml))
+                            {
+                                choChar = i;
+                                ret = true;
 
+                                if (Input.Button(Buttons.MouseWheelup) || Input.Button(Buttons.MouseWheeldown))
+                                {
+                                    return ret;
+                                }
+                                break;
+                            }
+                        }
                         if (Input.Button(Buttons.Down))
                         {
                             Input.ResetInputLimit();
                             init_debugger_Audio.PlaySound(0);
-                            if ((int)++choSideBar >= ((IGMData_SideMenu)Data[SectionName.SideMenu]).Count)
-                                choSideBar = 0;
+                            choChar++;
                             ret = true;
                         }
                         else if (Input.Button(Buttons.Up))
                         {
                             Input.ResetInputLimit();
                             init_debugger_Audio.PlaySound(0);
-                            if (--choSideBar < 0)
-                                choSideBar = (Items)((IGMData_SideMenu)Data[SectionName.SideMenu]).Count-1;
+                            choChar--;
                             ret = true;
                         }
                         else if (Input.Button(Buttons.Cancel))
                         {
                             Input.ResetInputLimit();
-                            init_debugger_Audio.PlaySound(8);
-                            Fade = 0.0f;
-                            State = MainMenuStates.LoadGameChooseGame;
                             ret = true;
+                            init_debugger_Audio.PlaySound(8);
+                            mode = Mode.ChooseItem;
                         }
                         else if (Input.Button(Buttons.Okay))
                         {
@@ -239,103 +320,31 @@ namespace FF8
                             {
                                 //Select Char Mode
                                 case Items.Junction:
-                                case Items.Magic:
-                                case Items.Status:
-                                    mode = Mode.ChooseChar;
-                                    break;
-                            }
-                        }
-                    }
-                }
-                else if (mode == Mode.ChooseChar)
-                {
-                    for (int i = 0; i < Data[SectionName.Party].Count; i++)
-                    {
-                        if (Data[SectionName.Party].BLANKS[i]) continue;
-                        Rectangle r = Data[SectionName.Party].SIZE[i];
-                        if (r.Contains(ml))
-                        {
-                            choChar = i;
-                            ret = true;
-
-                            if (Input.Button(Buttons.MouseWheelup) || Input.Button(Buttons.MouseWheeldown))
-                            {
-                                return ret;
-                            }
-                            break;
-                        }
-                    }
-                    for (int i = Data[SectionName.Party].Count; i < Data[SectionName.Non_Party].Count + Data[SectionName.Party].Count; i++)
-                    {
-                        if (Data[SectionName.Non_Party].BLANKS[i - Data[SectionName.Party].Count]) continue;
-                        Rectangle r = Data[SectionName.Non_Party].SIZE[i - Data[SectionName.Party].Count];
-                        //r.Offset(focus.Translation.X, focus.Translation.Y);
-                        if (r.Contains(ml))
-                        {
-                            choChar = i;
-                            ret = true;
-
-                            if (Input.Button(Buttons.MouseWheelup) || Input.Button(Buttons.MouseWheeldown))
-                            {
-                                return ret;
-                            }
-                            break;
-                        }
-                    }
-                    if (Input.Button(Buttons.Down))
-                    {
-                        Input.ResetInputLimit();
-                        init_debugger_Audio.PlaySound(0);
-                        choChar++;
-                        ret = true;
-                    }
-                    else if (Input.Button(Buttons.Up))
-                    {
-                        Input.ResetInputLimit();
-                        init_debugger_Audio.PlaySound(0);
-                        choChar--;
-                        ret = true;
-                    }
-                    else if (Input.Button(Buttons.Cancel))
-                    {
-                        Input.ResetInputLimit();
-                        ret = true;
-                        init_debugger_Audio.PlaySound(8);
-                        mode = Mode.ChooseItem;
-                    }
-                    else if (Input.Button(Buttons.Okay))
-                    {
-                        Input.ResetInputLimit();
-                        init_debugger_Audio.PlaySound(0);
-                        ret = true;
-                        switch (choSideBar)
-                        {
-                            //Select Char Mode
-                            case Items.Junction:
-                                //case Items.Magic:
-                                //case Items.Status:
-                                State = MainMenuStates.IGM_Junction;
-                                if (choChar < 3)
-                                    InGameMenu_Junction.ReInit(Memory.State.PartyData[choChar], Memory.State.Party[choChar]);
-                                else
-                                {
-                                    int pos = 0;
-                                    if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
+                                    //case Items.Magic:
+                                    //case Items.Status:
+                                    State = MainMenuStates.IGM_Junction;
+                                    if (choChar < 3)
+                                        InGameMenu_Junction.ReInit(Memory.State.PartyData[choChar], Memory.State.Party[choChar]);
+                                    else
                                     {
-                                        for (byte i = 0; Memory.State.Party != null && i < Memory.State.Characters.Count; i++)
+                                        int pos = 0;
+                                        if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
                                         {
-                                            if (!Memory.State.PartyData.Contains((Characters)i) && Memory.State.Characters[(Characters)i].VisibleInMenu)
+                                            for (byte i = 0; Memory.State.Party != null && i < Memory.State.Characters.Count; i++)
                                             {
-                                                if (pos++ + 3 == choChar)
+                                                if (!Memory.State.PartyData.Contains((Characters)i) && Memory.State.Characters[(Characters)i].VisibleInMenu)
                                                 {
-                                                    InGameMenu_Junction.ReInit((Characters)i, (Characters)i);
-                                                    break;
+                                                    if (pos++ + 3 == choChar)
+                                                    {
+                                                        InGameMenu_Junction.ReInit((Characters)i, (Characters)i);
+                                                        break;
+                                                    }
                                                 }
                                             }
                                         }
                                     }
-                                }
-                                break;
+                                    break;
+                            }
                         }
                     }
                 }
@@ -1031,7 +1040,7 @@ namespace FF8
                             ret = true;
                         }
                     }
-                    if (!ret || mouse)
+                    if (mouse || !ret)
                     {
                         if (Input.Button(Buttons.Okay))
                         {
@@ -1180,7 +1189,7 @@ namespace FF8
         {
             //protected T _data;
             protected Rectangle _pos;
-
+            public bool Enabled { get; private set; } = true;
             public Vector2 Scale { get; set; }
 
             public IGMDataItem(Rectangle? pos = null, Vector2? scale = null)
@@ -1188,6 +1197,9 @@ namespace FF8
                 _pos = pos ?? Rectangle.Empty;
                 Scale = scale ?? Menu.TextScale;
             }
+
+            public virtual void Show() => Enabled = true;
+            public virtual void Hide() => Enabled = false;
 
             /// <summary>
             /// Where to draw this item.
@@ -1231,19 +1243,48 @@ namespace FF8
 
             public override void Draw()
             {
-                Data.Draw();
+                if(Enabled)
+                    Data.Draw();
             }
 
             public override bool Update()
             {
-                bool ret = base.Update();
-                return ret || Data.Update();
+                if (Enabled)
+                {
+                    bool ret = base.Update();
+                    return Data.Update() || ret;
+                }
+                return false;
             }
 
             public override bool Inputs()
             {
-                bool ret = base.Inputs();
-                return ret || Data.Inputs();
+                if (Enabled)
+                {
+                    bool ret = base.Inputs();
+                    return Data.Inputs() || ret;
+                }
+                return false;
+            }
+            public override void Hide()
+            {
+                base.Hide();
+                Data.Hide();
+            }
+            public override void Show()
+            {
+                base.Show();
+                Data.Show();
+            }
+            public override Rectangle Pos
+            {
+                get { return Data.CONTAINER == null ? base.Pos : Data.CONTAINER.Pos; }
+                set
+                {
+                    base.Pos = value;
+                    if (Data.CONTAINER != null)
+                        Data.CONTAINER.Pos = value;
+                }
             }
 
             public override void ReInit()
@@ -1302,9 +1343,12 @@ namespace FF8
 
             public override void Draw()
             {
-                Memory.Icons.Draw(Data, Pallet, Pos, Scale, fade);
-                if (Blink)
-                    Memory.Icons.Draw(Data, Faded_Pallet, Pos, Scale, fade * blink_Amount * Blink_Adjustment);
+                if (Enabled)
+                {
+                    Memory.Icons.Draw(Data, Pallet, Pos, Scale, fade);
+                    if (Blink)
+                        Memory.Icons.Draw(Data, Faded_Pallet, Pos, Scale, fade * blink_Amount * Blink_Adjustment);
+                }
             }
         }
 
@@ -1345,9 +1389,12 @@ namespace FF8
 
             public override void Draw()
             {
-                Memory.Faces.Draw(Data, Pos, Vector2.UnitY, fade);
-                if (Blink)
-                    Memory.Faces.Draw(Data, Pos, Vector2.UnitY, fade * blink_Amount * Blink_Adjustment);
+                if (Enabled)
+                {
+                    Memory.Faces.Draw(Data, Pos, Vector2.UnitY, fade);
+                    if (Blink)
+                        Memory.Faces.Draw(Data, Pos, Vector2.UnitY, fade * blink_Amount * Blink_Adjustment);
+                }
             }
         }
 
@@ -1388,20 +1435,31 @@ namespace FF8
                 Colorid = colorid?? Font.ColorID.White;
             }
 
-            public override void Draw() => Memory.Icons.Draw(Data, NumType, Pallet, $"D{Padding}", Pos.Location.ToVector2(), Scale, fade,Colorid);
+            public override void Draw()
+            {
+                if (Enabled)
+                {
+                    Memory.Icons.Draw(Data, NumType, Pallet, $"D{Padding}", Pos.Location.ToVector2(), Scale, fade, Colorid);
+                }
+            }
         }
 
         private class IGMDataItem_String : IGMDataItem
         {
+            private int _pallet;
+
             public FF8String Data { get; set; }
             public Font.ColorID Colorid { get; set; }
             public Icons.ID? Icon { get; set; }
-            public int Pallet { get; set; }
+            public int Pallet
+            {
+                get => _pallet; set => _pallet = value < Memory.Icons.PalletCount ? value : 2;
+            }
 
-            public IGMDataItem_String(FF8String data, Rectangle? pos = null,Font.ColorID? color = null): base(pos)
+            public IGMDataItem_String(FF8String data, Rectangle? pos = null, Font.ColorID? color = null) : base(pos)
             {
                 Data = data;
-                Colorid = color??Font.ColorID.White;
+                Colorid = color ?? Font.ColorID.White;
             }
 
             public IGMDataItem_String(Icons.ID? icon, int pallet, FF8String data, Rectangle? pos = null, Font.ColorID? color = null) : base(pos)
@@ -1414,15 +1472,18 @@ namespace FF8
 
             public override void Draw()
             {
-                Rectangle r = Pos;
-                if (Icon != null && Icon != Icons.ID.None)
+                if (Enabled)
                 {
-                    Rectangle r2 = r;
-                    r2.Size = Point.Zero;
-                    Memory.Icons.Draw(Icon, Pallet, r2, new Vector2(Scale.X), fade);
-                    r.Offset(Memory.Icons.GetEntryGroup(Icon).Width*Scale.X, 0);
+                    Rectangle r = Pos;
+                    if (Icon != null && Icon != Icons.ID.None)
+                    {
+                        Rectangle r2 = r;
+                        r2.Size = Point.Zero;
+                        Memory.Icons.Draw(Icon, Pallet, r2, new Vector2(Scale.X), fade);
+                        r.Offset(Memory.Icons.GetEntryGroup(Icon).Width * Scale.X, 0);
+                    }
+                    Memory.font.RenderBasicText(Data, r.Location, Scale, Fade: fade, color: Colorid);
                 }
-                Memory.font.RenderBasicText(Data, r.Location, Scale, Fade: fade, color: Colorid);
             }
         }
 
@@ -1440,8 +1501,13 @@ namespace FF8
                 Options = options;
             }
 
-            public override void Draw() =>
+            public override void Draw()
+            {
+                if (Enabled)
+                {
                     Dims = DrawBox(Pos, Data, Title, options: Options);
+                }
+            }
         }
 
         private class IGMDataItem_Texture : IGMDataItem
@@ -1450,136 +1516,67 @@ namespace FF8
 
             public IGMDataItem_Texture(Texture2D data, Rectangle? pos = null) : base(pos) => this.Data = data;
 
-            public override void Draw() => Memory.spriteBatch.Draw(Data, Pos, null, base.Color * fade);//4
+            public override void Draw()
+            {
+                if (Enabled)
+                {
+                    Memory.spriteBatch.Draw(Data, Pos, null, base.Color * fade);//4
+                }
+            }
         }
 
-        #endregion Classes
-
-        private abstract class Menu
+        public class IGMData_Group : IGMData
         {
-            /// <summary>
-            /// replace me with new keyword
-            /// </summary>
-            protected enum Mode
+            public IGMData_Group(params IGMData[] d) : base(d.Length, 1)
             {
-                UNDEFINDED
-            }
-
-            public Dictionary<Enum, IGMData> Data;
-
-            /// <summary>
-            /// replace me with new keyword or cast me to your new enum.
-            /// </summary>
-            protected Enum mode=(Mode)0;
-
-            private Vector2 _size;
-            static public Vector2 TextScale { get; protected set; }
-            static public Matrix Focus;
-            private bool skipdata;
-
-            public Vector2 Size { get => _size; protected set => _size = value; }
-
-            public Menu()
-            {
-                Data = new Dictionary<Enum, IGMData>();
-                Init();
-                skipdata = true;
-                ReInit();
-                skipdata = false;
-            }
-
-            protected virtual void Init()
-            {
-            }
-
-            public virtual void ReInit()
-            {
-                if(!skipdata)
-                foreach (KeyValuePair<Enum, IGMData> i in Data)
-                    i.Value.ReInit();
-                //Update();
-            }
-
-            public virtual void StartDraw()
-            {
-                Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: Focus);
-            }
-
-            public virtual void Draw()
-            {
-                if (!skipdata)
-                    foreach (KeyValuePair<Enum, IGMData> i in Data)
-                    i.Value.Draw();
-            }
-
-            public virtual void EndDraw()
-            {
-                Memory.SpriteBatchEnd();
-            }
-
-            public virtual bool Update()
-            {
-                Vector2 Zoom = Memory.Scale(Size.X, Size.Y, Memory.ScaleMode.FitBoth);
-                Focus = Matrix.CreateTranslation((Size.X / -2), (Size.Y / -2), 0) *
-                    Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) *
-                    Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
-
-                //todo detect when there is no saves detected.
-                //check for null
-                if(!skipdata)
-                foreach (KeyValuePair<Enum, IGMData> i in Data)
+                for (int i = 0; i < d.Length; i++)
                 {
-                    i.Value.Update();
+                    ITEM[i, 0] = d[i];
                 }
-                return false;
             }
 
-            public class IGMData_Group : IGMData
+            public override bool Inputs()
             {
-                public IGMData_Group(params IGMData[] d) : base(d.Length, 1)
-                {
-                    for (int i = 0; i < d.Length; i++)
-                    {
-                        ITEM[i, 0] = d[i];
-                    }
-                }
-
-                public override bool Inputs()
+                if (Enabled)
                 {
                     bool ret = base.Inputs();
                     if (!skipdata)
                         foreach (var i in ITEM)
-                    {
-                        ret = ret || i.Inputs();
-                    }
+                        {
+                            ret = i.Inputs() || ret;
+                        }
                     return ret;
                 }
+                return false;
+            }
 
-                public override void ReInit()
-                {
-                    base.ReInit();
-                    if (!skipdata)
-                        foreach (var i in ITEM)
+            public override void ReInit()
+            {
+                base.ReInit();
+                if (!skipdata)
+                    foreach (var i in ITEM)
                     {
                         if (i != null)
                             i.ReInit();
                     }
-                }
+            }
 
-                public override bool Update()
+            public override bool Update()
+            {
+                if (Enabled)
                 {
                     bool ret = base.Update();
                     if (!skipdata)
                         foreach (var i in ITEM)
-                    {
-                        if (i != null)
-                            ret = ret || i.Update();
-                    }
+                        {
+                            if (i != null)
+                                ret = i.Update() || ret;
+                        }
                     return ret;
                 }
+                return false;
             }
-
-            protected abstract bool Inputs();
         }
+        #endregion Classes
     }
 }
