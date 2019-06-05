@@ -84,7 +84,7 @@ namespace FF8
 
                 public override bool Update()
                 {
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.Mag_Pool && Enabled)
+                    if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.Mag_Pool_Stat && Enabled)
                     {
                         Cursor_Status |= Cursor_Status.Enabled;
                         Cursor_Status &= ~Cursor_Status.Horizontal;

@@ -252,7 +252,11 @@ namespace FF8
                 RemMag,
                 RemAll,
                 TopMenu_GF_Group,
-                Mag_Pool,
+                Mag_Pool_Stat,
+                Mag_Pool_EL_A,
+                Mag_Pool_EL_D,
+                Mag_Pool_ST_A,
+                Mag_Pool_ST_D,
                 Mag_Stat,
                 Mag_EL_A_D,
                 Mag_ST_A_D
@@ -307,7 +311,11 @@ namespace FF8
                             ret = ((IGMData_GF_Group)Data[SectionName.TopMenu_GF_Group]).ITEM[1, 0].Inputs();
                             break;
 
-                        case Mode.Mag_Pool:
+                        case Mode.Mag_Pool_Stat:
+                        case Mode.Mag_Pool_EL_A:
+                        case Mode.Mag_Pool_EL_D:
+                        case Mode.Mag_Pool_ST_A:
+                        case Mode.Mag_Pool_ST_D:
                             ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[2, 0].Inputs();
                             break;
 

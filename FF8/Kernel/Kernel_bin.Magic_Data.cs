@@ -43,9 +43,9 @@ namespace FF8
             public byte EVA_J;         //0x001D  1 byte  Characters EVA junction value
             public byte HIT_J;         //0x001E  1 byte  Characters HIT junction value
             public byte LUCK_J;        //0x001F  1 byte  Characters LUCK junction value
-            public byte Elem_J_atk;    //0x0020  1 byte Characters J - Elem attack
+            public Element Elem_J_atk;    //0x0020  1 byte Characters J - Elem attack
             public byte Elem_J_atk_val;//0x0021  1 byte  Characters J - Elem attack value
-            public byte Elem_J_def;    //0x0022  1 byte Characters J - Elem defense
+            public Element Elem_J_def;    //0x0022  1 byte Characters J - Elem defense
             public byte Elem_J_def_val;//0x0023  1 byte  Characters J - Elem defense value
             public byte Stat_J_atk_val;//0x0024  1 byte  Characters J - Status attack value
             public byte Stat_J_def_val;//0x0025  1 byte  Characters J - Status defense value
@@ -99,9 +99,9 @@ namespace FF8
                 EVA_J = br.ReadByte();
                 HIT_J = br.ReadByte();
                 LUCK_J = br.ReadByte();
-                Elem_J_atk = br.ReadByte();
+                Elem_J_atk = (Element) br.ReadByte();
                 Elem_J_atk_val = br.ReadByte();
-                Elem_J_def = br.ReadByte();
+                Elem_J_def = (Element) br.ReadByte();
                 Elem_J_def_val = br.ReadByte();
                 Stat_J_atk_val = br.ReadByte();
                 Stat_J_def_val = br.ReadByte();

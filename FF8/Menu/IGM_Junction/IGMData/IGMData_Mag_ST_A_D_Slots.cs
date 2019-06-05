@@ -74,7 +74,7 @@ namespace FF8
                             ((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[8, 0]).Data.Hide();
                         }
                     }
-                    else if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.Mag_Pool && Enabled)
+                    else if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.Mag_Pool_Stat && Enabled)
                     {
                         Cursor_Status |= Cursor_Status.Blinking;
                     }
@@ -104,7 +104,7 @@ namespace FF8
                 public override void Inputs_OKAY()
                 {
                     base.Inputs_OKAY();
-                    InGameMenu_Junction.mode = Mode.Mag_Pool;
+                    InGameMenu_Junction.mode = Mode.Mag_Pool_Stat;
                     BackupSetting();
                 }
 
