@@ -260,7 +260,9 @@ namespace FF8
                 Mag_Pool_ST_D,
                 Mag_Stat,
                 Mag_EL_A,
-                Mag_ST_A
+                Mag_ST_A,
+                Mag_EL_D,
+                Mag_ST_D
             }
 
             public new Mode mode;
@@ -326,10 +328,12 @@ namespace FF8
                             break;
 
                         case Mode.Mag_EL_A:
+                        case Mode.Mag_EL_D:
                             ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[3, 0].Inputs();
                             break;
 
                         case Mode.Mag_ST_A:
+                        case Mode.Mag_ST_D:
                             ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[6, 0].Inputs();
                             break;
 

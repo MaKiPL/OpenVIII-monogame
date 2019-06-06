@@ -36,7 +36,7 @@ namespace FF8
                 public Dictionary<Kernel_bin.Element, byte> getTotal(Saves.CharacterData source, out Enum[] availableFlagsarray)
                 {
                     byte[] spell = new byte[] {
-                            source.Stat_J[Kernel_bin.Stat.Elem_Atk]
+                            source.Stat_J[Kernel_bin.Stat.EL_Atk]
                         };
                     Dictionary<Kernel_bin.Element, byte> total = new Dictionary<Kernel_bin.Element, byte>(8);
 
@@ -46,7 +46,7 @@ namespace FF8
                     for (int i = 0; i < spell.Length; i++)
                         foreach (Enum flag in availableFlags.Where(Kernel_bin.MagicData[spell[i]].Elem_J_atk.HasFlag))
                         {
-                            int t = total[(Kernel_bin.Element)flag] + ((Kernel_bin.MagicData[spell[i]].Elem_J_atk_val * Memory.State.Characters[Character].Magics[spell[i]]) / 100);
+                            int t = total[(Kernel_bin.Element)flag] + ((Kernel_bin.MagicData[spell[i]].J_Val[Kernel_bin.Stat.EL_Atk] * Memory.State.Characters[Character].Magics[spell[i]]) / 100);
                             total[(Kernel_bin.Element)flag] = (byte)(t > 200 ? 200 : t);
                         }
 

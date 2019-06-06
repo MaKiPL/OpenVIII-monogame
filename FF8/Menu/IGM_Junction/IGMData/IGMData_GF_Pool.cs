@@ -200,7 +200,7 @@ namespace FF8
                                             break;
 
                                         case Kernel_bin.Abilities.Elem_Atk_J:
-                                            Source.Characters[c].Stat_J[Kernel_bin.Stat.Elem_Atk] = 0;
+                                            Source.Characters[c].Stat_J[Kernel_bin.Stat.EL_Atk] = 0;
                                             break;
 
                                         case Kernel_bin.Abilities.Elem_Def_Jx1:
@@ -214,7 +214,7 @@ namespace FF8
                                             else if (b.Contains(Kernel_bin.Abilities.Elem_Def_Jx1))
                                                 count = 1;
                                             for (; count < 4; count++)
-                                                Source.Characters[c].Stat_J[Kernel_bin.Stat.Elem_Def_1 + count] = 0;
+                                                Source.Characters[c].Stat_J[Kernel_bin.Stat.EL_Def_1 + count] = 0;
                                             break;
 
                                         case Kernel_bin.Abilities.ST_Def_Jx1:

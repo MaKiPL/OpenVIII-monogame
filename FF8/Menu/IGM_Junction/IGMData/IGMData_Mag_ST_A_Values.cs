@@ -46,7 +46,7 @@ namespace FF8
                     for (int i = 0; i < spell.Length; i++)
                         foreach (Enum flag in availableFlags.Where(Kernel_bin.MagicData[spell[i]].Stat_J_atk.HasFlag))
                         {
-                            int t = total[(Kernel_bin.J_Statuses)flag] + ((Kernel_bin.MagicData[spell[i]].Stat_J_atk_val * Memory.State.Characters[Character].Magics[spell[i]]) / 100);
+                            int t = total[(Kernel_bin.J_Statuses)flag] + ((Kernel_bin.MagicData[spell[i]].J_Val[Kernel_bin.Stat.ST_Atk] * Memory.State.Characters[Character].Magics[spell[i]]) / 100);
                             total[(Kernel_bin.J_Statuses)flag] = (byte)(t > 100 ? 100 : t);
                         }
 

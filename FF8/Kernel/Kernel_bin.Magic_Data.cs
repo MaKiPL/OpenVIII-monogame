@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace FF8
 {
@@ -34,22 +35,23 @@ namespace FF8
             public byte Unknown3;      //0x000F  1 byte  Unknown
             public Statuses0 Statuses0;   //0x0014  2 bytes Statuses 0
             public Statuses1 Statuses1;   //0x0010  4 bytes Statuses 1
-            public byte Status_attack; //0x0016  1 byte  Status attack enabler
-            public byte HP_J;          //0x0017  1 byte  Characters HP junction value
-            public byte STR_J;         //0x0018  1 byte  Characters STR junction value
-            public byte VIT_J;         //0x0019  1 byte  Characters VIT junction value
-            public byte MAG_J;         //0x001A  1 byte  Characters MAG junction value
-            public byte SPR_J;         //0x001B  1 byte  Characters SPR junction value
-            public byte SPD_J;         //0x001C  1 byte  Characters SPD junction value
-            public byte EVA_J;         //0x001D  1 byte  Characters EVA junction value
-            public byte HIT_J;         //0x001E  1 byte  Characters HIT junction value
-            public byte LUCK_J;        //0x001F  1 byte  Characters LUCK junction value
+            public byte Status_attack; //0x0016  1 byte  Status attack enabler\
+            public Dictionary<Stat, byte> J_Val { get; private set; }
+            //public byte HP_J;          //0x0017  1 byte  Characters HP junction value
+            //public byte STR_J;         //0x0018  1 byte  Characters STR junction value
+            //public byte VIT_J;         //0x0019  1 byte  Characters VIT junction value
+            //public byte MAG_J;         //0x001A  1 byte  Characters MAG junction value
+            //public byte SPR_J;         //0x001B  1 byte  Characters SPR junction value
+            //public byte SPD_J;         //0x001C  1 byte  Characters SPD junction value
+            //public byte EVA_J;         //0x001D  1 byte  Characters EVA junction value
+            //public byte HIT_J;         //0x001E  1 byte  Characters HIT junction value
+            //public byte LUCK_J;        //0x001F  1 byte  Characters LUCK junction value
             public Element Elem_J_atk;    //0x0020  1 byte Characters J - Elem attack
-            public byte Elem_J_atk_val;//0x0021  1 byte  Characters J - Elem attack value
+            //public byte J_Val[Kernel_bin.Stat.EL_Atk];//0x0021  1 byte  Characters J - Elem attack value
             public Element Elem_J_def;    //0x0022  1 byte Characters J - Elem defense
-            public byte Elem_J_def_val;//0x0023  1 byte  Characters J - Elem defense value
-            public byte Stat_J_atk_val;//0x0024  1 byte  Characters J - Status attack value
-            public byte Stat_J_def_val;//0x0025  1 byte  Characters J - Status defense value
+            //public byte J_Val[Kernel_bin.Stat.EL_Def_1];//0x0023  1 byte  Characters J - Elem defense value
+            //public byte J_Val[Kernel_bin.Stat.ST_Atk];//0x0024  1 byte  Characters J - Status attack value
+            //public byte J_Val[Kernel_bin.Stat.ST_Def_1];//0x0025  1 byte  Characters J - Status defense value
             public J_Statuses Stat_J_atk;  //0x0026  2 bytes Characters J - Statuses Attack
             public J_Statuses Stat_J_def;  //0x0028  2 bytes Characters J - Statuses Defend
             public byte[] GF_Compatibility;
@@ -92,21 +94,28 @@ namespace FF8
                 Statuses1 = (Statuses1)br.ReadUInt32();
                 Statuses0 = (Statuses0)br.ReadUInt16();
                 Status_attack = br.ReadByte();
-                HP_J = br.ReadByte();
-                STR_J = br.ReadByte();
-                VIT_J = br.ReadByte();
-                MAG_J = br.ReadByte();
-                SPR_J = br.ReadByte();
-                SPD_J = br.ReadByte();
-                EVA_J = br.ReadByte();
-                HIT_J = br.ReadByte();
-                LUCK_J = br.ReadByte();
+                J_Val = new Dictionary<Stat, byte>(6);
+                J_Val.Add(Stat.HP,br.ReadByte());
+                J_Val.Add(Stat.STR,br.ReadByte());
+                J_Val.Add(Stat.VIT , br.ReadByte());
+                J_Val.Add(Stat.MAG , br.ReadByte());
+                J_Val.Add(Stat.SPR , br.ReadByte());
+                J_Val.Add(Stat.SPD , br.ReadByte());
+                J_Val.Add(Stat.EVA , br.ReadByte());
+                J_Val.Add(Stat.HIT , br.ReadByte());
+                J_Val.Add(Stat.LUCK , br.ReadByte());
                 Elem_J_atk = (Element) br.ReadByte();
-                Elem_J_atk_val = br.ReadByte();
+                J_Val.Add(Stat.EL_Atk, br.ReadByte());
                 Elem_J_def = (Element) br.ReadByte();
-                Elem_J_def_val = br.ReadByte();
-                Stat_J_atk_val = br.ReadByte();
-                Stat_J_def_val = br.ReadByte();
+                J_Val.Add(Stat.EL_Def_1, br.ReadByte());
+                J_Val.Add(Stat.EL_Def_2, J_Val[Stat.EL_Def_1]);
+                J_Val.Add(Stat.EL_Def_3, J_Val[Stat.EL_Def_1]);
+                J_Val.Add(Stat.EL_Def_4, J_Val[Stat.EL_Def_1]);
+                J_Val.Add(Stat.ST_Atk, br.ReadByte());
+                J_Val.Add(Stat.ST_Def_1, br.ReadByte());
+                J_Val.Add(Stat.ST_Def_2, J_Val[Stat.ST_Def_1]);
+                J_Val.Add(Stat.ST_Def_3, J_Val[Stat.ST_Def_1]);
+                J_Val.Add(Stat.ST_Def_4, J_Val[Stat.ST_Def_1]);
                 Stat_J_atk = (J_Statuses) br.ReadUInt16();
                 Stat_J_def = (J_Statuses) br.ReadUInt16();
                 GF_Compatibility = br.ReadBytes(16);

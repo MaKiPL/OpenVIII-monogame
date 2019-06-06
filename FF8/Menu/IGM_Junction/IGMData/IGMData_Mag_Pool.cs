@@ -17,6 +17,11 @@ namespace FF8
                 public IGMData_Mag_ST_A_Values ST_A_Values { get; private set; }
                 public IGMData_Mag_ST_D_Values ST_D_Values { get; private set; }
                 public Mode SortMode { get; private set; }
+                public Mode LastMode { get; private set; }
+                public Characters LastCharacter { get; private set; }
+                public Kernel_bin.Stat LastStat { get; private set; }
+                public int LastPage { get; private set; }
+                public Kernel_bin.Stat Stat { get; private set; }
 
                 public IGMData_Mag_Pool() : base(5, 3, new IGMDataItem_Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.MAGIC), 4, 13)
                 {
@@ -52,33 +57,39 @@ namespace FF8
                 {
                     if (Memory.State.Characters != null)
                     {
-                        if(SortMode == Mode.None)
-                        SortMode = InGameMenu_Junction.mode;
+                        if (SortMode == Mode.None)
+                            SortMode = InGameMenu_Junction.mode;
 
+                        Stat = Kernel_bin.Stat.None;
                         switch (InGameMenu_Junction.mode)
                         {
                             default:
                             case Mode.Mag_Stat:
                             case Mode.Mag_Pool_Stat:
-                                    SortMode = Mode.Mag_Pool_Stat;
+                                if(Stat_Slots!= null)
+                                Stat = Stat_Slots.Contents[Stat_Slots.CURSOR_SELECT];
+                                SortMode = Mode.Mag_Pool_Stat;
                                 break;
+
                             case Mode.Mag_ST_D:
                             case Mode.Mag_Pool_ST_D:
                                 SortMode = Mode.Mag_Pool_ST_D;
                                 break;
+
                             case Mode.Mag_ST_A:
                             case Mode.Mag_Pool_ST_A:
-                                    SortMode = Mode.Mag_Pool_ST_A;
+                                SortMode = Mode.Mag_Pool_ST_A;
                                 break;
+
                             case Mode.Mag_EL_D:
                             case Mode.Mag_Pool_EL_D:
                                 SortMode = Mode.Mag_Pool_EL_D;
                                 break;
+
                             case Mode.Mag_EL_A:
                             case Mode.Mag_Pool_EL_A:
-                                    SortMode = Mode.Mag_Pool_EL_A;
+                                SortMode = Mode.Mag_Pool_EL_A;
                                 break;
-
                         }
                         Cursor_Status &= ~Cursor_Status.Horizontal;
                         Cursor_Status |= Cursor_Status.Vertical;
@@ -91,32 +102,45 @@ namespace FF8
                         ST_A_Values = (IGMData_Mag_ST_A_Values)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[7, 0]).Data;
                         ST_D_Values = (IGMData_Mag_ST_D_Values)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[8, 0]).Data;
                         Source = Memory.State.Characters[Character];
+                        if (SortMode == LastMode && Character == LastCharacter && Stat == LastStat && Page == LastPage)
+                            return;
+                        LastMode = SortMode;
+                        LastCharacter = Character;
+                        LastStat = Stat;
+                        LastPage = Page;
                         System.Collections.Generic.IEnumerable<Kernel_bin.Magic_Data> sort = null;
                         switch (SortMode)
                         {
-                            //case Mode.Mag_Pool_Stat:
-                            //    //TODO sort by selected stat.
-                            //    break;
+                            case Mode.Mag_Pool_Stat:
+                                if (Stat != Kernel_bin.Stat.None)
+                                    sort = Kernel_bin.MagicData.OrderBy(x => (-x.J_Val[Stat] * (Source.Magics.ContainsKey(x.ID) ? Source.Magics[x.ID] : 0)) / 100);
+                                //Kernel_bin.MagicData.ToList().ConvertAll(x => (x.J_Val[Stat] * (Source.Magics.ContainsKey(x.ID) ? Source.Magics[x.ID] : 0)) / 100);
+                                break;
+
                             case Mode.Mag_Pool_EL_D:
-                                sort = Kernel_bin.MagicData.OrderBy(x => -x.Elem_J_def_val * x.Elem_J_def.Count());
+                                sort = Kernel_bin.MagicData.OrderBy(x => (-x.J_Val[Kernel_bin.Stat.EL_Def_1] * x.Elem_J_def.Count() * (Source.Magics.ContainsKey(x.ID) ? Source.Magics[x.ID] : 0)) / 100);
                                 break;
+
                             case Mode.Mag_Pool_EL_A:
-                                sort = Kernel_bin.MagicData.OrderBy(x => -x.Elem_J_atk_val * x.Elem_J_atk.Count());
+                                sort = Kernel_bin.MagicData.OrderBy(x => (-x.J_Val[Kernel_bin.Stat.EL_Atk] * x.Elem_J_atk.Count() * (Source.Magics.ContainsKey(x.ID) ? Source.Magics[x.ID] : 0)) / 100);
                                 break;
+
                             case Mode.Mag_Pool_ST_D:
-                                sort = Kernel_bin.MagicData.OrderBy(x => -x.Stat_J_def_val * x.Stat_J_def.Count());
+                                sort = Kernel_bin.MagicData.OrderBy(x => (-x.J_Val[Kernel_bin.Stat.ST_Def_1] * x.Stat_J_def.Count() * (Source.Magics.ContainsKey(x.ID) ? Source.Magics[x.ID] : 0)) / 100);
                                 break;
+
                             case Mode.Mag_Pool_ST_A:
-                                sort = Kernel_bin.MagicData.OrderBy(x => -x.Stat_J_atk_val * x.Stat_J_atk.Count());
+                                sort = Kernel_bin.MagicData.OrderBy(x => (-x.J_Val[Kernel_bin.Stat.ST_Atk] * x.Stat_J_atk.Count() * (Source.Magics.ContainsKey(x.ID) ? Source.Magics[x.ID] : 0)) / 100);
                                 break;
+
                             default:
                                 sort = Kernel_bin.MagicData.AsEnumerable();
                                 break;
-
                         }
                         int pos = 0;
                         int skip = Page * rows;
-                        foreach(var i in sort)
+                        if(sort != null)
+                        foreach (Kernel_bin.Magic_Data i in sort)
                         {
                             if (pos >= rows) break;
                             if (Source.Magics.ContainsKey(i.ID) && skip-- <= 0 && i.ID > 0)
@@ -126,38 +150,44 @@ namespace FF8
                                 else
                                     switch (SortMode)
                                     {
-                                        //case Mode.Mag_Pool_Stat:
-                                        //    //TODO sort by selected stat.
-                                        //    break;
+                                        case Mode.Mag_Pool_Stat:
+                                            if (i.J_Val[Stat] == 0)
+                                                addMagic(ref pos, i, Font.ColorID.Dark_Gray);
+                                            else
+                                                addMagic(ref pos, i, Font.ColorID.White);
+                                            break;
                                         case Mode.Mag_Pool_EL_D:
-                                            if(i.Elem_J_def_val * i.Elem_J_def.Count() == 0)
+                                            if (i.J_Val[Kernel_bin.Stat.EL_Def_1] * i.Elem_J_def.Count() == 0)
                                                 addMagic(ref pos, i, Font.ColorID.Dark_Gray);
                                             else
                                                 addMagic(ref pos, i, Font.ColorID.White);
                                             break;
+
                                         case Mode.Mag_Pool_EL_A:
-                                            if (i.Elem_J_atk_val * i.Elem_J_atk.Count() == 0)
+                                            if (i.J_Val[Kernel_bin.Stat.EL_Atk] * i.Elem_J_atk.Count() == 0)
                                                 addMagic(ref pos, i, Font.ColorID.Dark_Gray);
                                             else
                                                 addMagic(ref pos, i, Font.ColorID.White);
                                             break;
+
                                         case Mode.Mag_Pool_ST_D:
-                                            if (i.Stat_J_def_val * i.Stat_J_def.Count() == 0)
+                                            if (i.J_Val[Kernel_bin.Stat.ST_Def_1] * i.Stat_J_def.Count() == 0)
                                                 addMagic(ref pos, i, Font.ColorID.Dark_Gray);
                                             else
                                                 addMagic(ref pos, i, Font.ColorID.White);
                                             break;
+
                                         case Mode.Mag_Pool_ST_A:
-                                            if (i.Stat_J_atk_val * i.Stat_J_atk.Count() == 0)
+                                            if (i.J_Val[Kernel_bin.Stat.ST_Atk] * i.Stat_J_atk.Count() == 0)
                                                 addMagic(ref pos, i, Font.ColorID.Dark_Gray);
                                             else
                                                 addMagic(ref pos, i, Font.ColorID.White);
                                             break;
+
                                         default:
                                             addMagic(ref pos, i, Font.ColorID.White);
                                             break;
                                     }
-
                             }
                         }
                         for (; pos < rows; pos++)
@@ -189,6 +219,7 @@ namespace FF8
                 {
                     if (InGameMenu_Junction != null && Enabled)
                     {
+                        ReInit();
                         Kernel_bin.Stat stat = Kernel_bin.Stat.None;
                         IGMData Slots = null;
                         IGMData Values = null;
@@ -219,8 +250,8 @@ namespace FF8
                                 Values = ST_D_Values;
 #pragma warning restore IDE0045 // Convert to conditional expression
                         }
-                    
-                        if (Slots!= null && stat != Kernel_bin.Stat.None && CURSOR_SELECT < Contents.Length)
+
+                        if (Slots != null && stat != Kernel_bin.Stat.None && CURSOR_SELECT < Contents.Length)
                         {
                             Cursor_Status |= Cursor_Status.Enabled;
                             if (Source.Stat_J[stat] != Contents[CURSOR_SELECT])

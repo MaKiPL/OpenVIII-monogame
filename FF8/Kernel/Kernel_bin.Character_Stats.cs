@@ -107,21 +107,21 @@ namespace FF8
             /// <returns></returns>
             public ushort HP(sbyte lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = 0)
             {
-                int value = (((MagicData[MagicID].HP_J * magic_count) + stat_bonus + (lvl * _HP[0]) - ((10 * lvl * lvl) / _HP[1]) + _HP[2]) * (percent_mod + _percent_mod)) / 100;
+                int value = (((MagicData[MagicID].J_Val[Stat.HP] * magic_count) + stat_bonus + (lvl * _HP[0]) - ((10 * lvl * lvl) / _HP[1]) + _HP[2]) * (percent_mod + _percent_mod)) / 100;
                 return (ushort)(value > MAX_HP_VALUE ? MAX_HP_VALUE : value);
             }
 
             public byte STR(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod, int weapon = 0)
-                => STR_VIT_MAG_SPR(_STR[0], _STR[1], _STR[2], _STR[3], lvl, MagicData[MagicID].STR_J, magic_count, stat_bonus, percent_mod, weapon);
+                => STR_VIT_MAG_SPR(_STR[0], _STR[1], _STR[2], _STR[3], lvl, MagicData[MagicID].J_Val[Stat.STR], magic_count, stat_bonus, percent_mod, weapon);
 
             public byte VIT(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
-                => STR_VIT_MAG_SPR(_VIT[0], _VIT[1], _VIT[2], _VIT[3], lvl, MagicData[MagicID].VIT_J, magic_count, stat_bonus, percent_mod);
+                => STR_VIT_MAG_SPR(_VIT[0], _VIT[1], _VIT[2], _VIT[3], lvl, MagicData[MagicID].J_Val[Stat.VIT], magic_count, stat_bonus, percent_mod);
 
             public byte MAG(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
-                => STR_VIT_MAG_SPR(_MAG[0], _MAG[1], _MAG[2], _MAG[3], lvl, MagicData[MagicID].MAG_J, magic_count, stat_bonus, percent_mod);
+                => STR_VIT_MAG_SPR(_MAG[0], _MAG[1], _MAG[2], _MAG[3], lvl, MagicData[MagicID].J_Val[Stat.MAG], magic_count, stat_bonus, percent_mod);
 
             public byte SPR(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
-                => STR_VIT_MAG_SPR(_SPR[0], _SPR[1], _SPR[2], _SPR[3], lvl, MagicData[MagicID].SPR_J, magic_count, stat_bonus, percent_mod);
+                => STR_VIT_MAG_SPR(_SPR[0], _SPR[1], _SPR[2], _SPR[3], lvl, MagicData[MagicID].J_Val[Stat.SPR], magic_count, stat_bonus, percent_mod);
 
             private byte STR_VIT_MAG_SPR(int a, int b, int c, int d, int lvl, int magic_J_val, int magic_count, int stat_bonus, int percent_mod = 0, int UNK = 0)
             {
@@ -131,10 +131,10 @@ namespace FF8
             }
 
             public byte SPD(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
-                => SPD_LUCK(_SPD[0], _SPD[1], _SPD[2], _SPD[3], lvl, MagicData[MagicID].SPD_J, magic_count, stat_bonus, percent_mod);
+                => SPD_LUCK(_SPD[0], _SPD[1], _SPD[2], _SPD[3], lvl, MagicData[MagicID].J_Val[Stat.SPD], magic_count, stat_bonus, percent_mod);
 
             public byte LUCK(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
-                => SPD_LUCK(_LUCK[0], _LUCK[1], _LUCK[2], _LUCK[3], lvl, MagicData[MagicID].LUCK_J, magic_count, stat_bonus, percent_mod);
+                => SPD_LUCK(_LUCK[0], _LUCK[1], _LUCK[2], _LUCK[3], lvl, MagicData[MagicID].J_Val[Stat.LUCK], magic_count, stat_bonus, percent_mod);
 
             private byte SPD_LUCK(int a, int b, int c, int d, int lvl, int magic_J_val, int magic_count, int stat_bonus, int percent_mod = 0, int UNK = 0)
             {
@@ -144,13 +144,13 @@ namespace FF8
 
             public byte EVA(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int spd = 0, int percent_mod = 0)
             {
-                int value = (((MagicData[MagicID].EVA_J * magic_count) / 100 + spd / 4) * (percent_mod + _percent_mod)) / 100;
+                int value = (((MagicData[MagicID].J_Val[Stat.EVA] * magic_count) / 100 + spd / 4) * (percent_mod + _percent_mod)) / 100;
                 return (byte)(value > MAX_STAT_VALUE ? MAX_STAT_VALUE : value);
             }
 
             public byte HIT(int MagicID = 0, int magic_count = 0, int weapon = 0)
             {
-                int value = MagicData[MagicID].HIT_J * magic_count + weapon;
+                int value = MagicData[MagicID].J_Val[Stat.HIT] * magic_count + weapon;
                 return (byte)(value > MAX_STAT_VALUE ? MAX_STAT_VALUE : value);
             }
         }
