@@ -92,7 +92,12 @@ namespace FF8
                     return ret;
                 }
 
-                public override void BackupSetting() => PrevSetting = Setting.Clone();
+                public override void BackupSetting()
+                {
+                    if (Setting == null)
+                        Setting = Memory.State.Characters[Character];
+                    PrevSetting = Setting.Clone();
+                }
 
                 public override void UndoChange()
                 {

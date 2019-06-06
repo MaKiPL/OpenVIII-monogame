@@ -19,9 +19,10 @@ namespace FF8
 
                 public override void ReInit()
                 {
-                    //Slots = (IGMData_Mag_Stat_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[0, 0]).Data;
-                    //Slots = (IGMData_Mag_EL_A_D_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[3, 0]).Data;
-                    Slots = (IGMData_Mag_ST_A_D_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[6, 0]).Data;
+                    if (InGameMenu_Junction != null)
+                        //Slots = (IGMData_Mag_Stat_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[0, 0]).Data;
+                        //Slots = (IGMData_Mag_EL_A_D_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[3, 0]).Data;
+                        Slots = (IGMData_Mag_ST_A_D_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[6, 0]).Data;
                     base.ReInit();
                 }
 
@@ -32,26 +33,34 @@ namespace FF8
                     SIZE[i].Y -= 6 * row;
                 }
 
+                public Dictionary<Kernel_bin.J_Statuses, byte> getTotal(Saves.CharacterData source, out Enum[] availableFlagsarray)
+                {
+                    byte[] spell = new byte[] {
+                            source.Stat_J[Kernel_bin.Stat.ST_Atk]
+                        };
+                    Dictionary<Kernel_bin.J_Statuses, byte> total = new Dictionary<Kernel_bin.J_Statuses, byte>(8);
+
+                    IEnumerable<Enum> availableFlags = Enum.GetValues(typeof(Kernel_bin.J_Statuses)).Cast<Enum>();
+                    foreach (Enum flag in availableFlags.Where(d => !total.ContainsKey((Kernel_bin.J_Statuses)d)))
+                        total.Add((Kernel_bin.J_Statuses)flag, 0);
+                    for (int i = 0; i < spell.Length; i++)
+                        foreach (Enum flag in availableFlags.Where(Kernel_bin.MagicData[spell[i]].Stat_J_atk.HasFlag))
+                        {
+                            total[(Kernel_bin.J_Statuses)flag] += (byte)((Kernel_bin.MagicData[spell[i]].Stat_J_atk_val * Memory.State.Characters[Character].Magics[spell[i]]) / 100);
+                            if (total[(Kernel_bin.J_Statuses)flag] > 100) total[(Kernel_bin.J_Statuses)flag] = 100;
+                        }
+
+                    availableFlagsarray = availableFlags.ToArray();
+                    return total;
+                }
                 public override bool Update()
                 {
                     if (Memory.State.Characters != null)
                     {
-                        byte[] spell = new byte[] {
-                            Memory.State.Characters[Character].Stat_J[Kernel_bin.Stat.ST_Atk]
-                        };
-                        Dictionary<Kernel_bin.J_Statuses, byte> total = new Dictionary<Kernel_bin.J_Statuses, byte>(8);
-
-                        IEnumerable<Enum> availableFlags = Enum.GetValues(typeof(Kernel_bin.J_Statuses)).Cast<Enum>();
-                        foreach (Enum flag in availableFlags.Where(d=>!total.ContainsKey((Kernel_bin.J_Statuses)d)))
-                            total.Add((Kernel_bin.J_Statuses)flag, 0);
-                        for (int i = 0; i < spell.Length; i++)
-                            foreach (Enum flag in availableFlags.Where(Kernel_bin.MagicData[spell[i]].Stat_J_atk.HasFlag))
-                            {
-                                total[(Kernel_bin.J_Statuses)flag] += (byte)((Kernel_bin.MagicData[spell[i]].Stat_J_atk_val * Memory.State.Characters[Character].Magics[spell[i]]) / 100);
-                                if (total[(Kernel_bin.J_Statuses)flag] > 100) total[(Kernel_bin.J_Statuses)flag] = 100;
-                            }
-
-                        Enum[] availableFlagsarray = availableFlags.ToArray();
+                        int _nag = 0;
+                        int _pos = 0;
+                        Dictionary<Kernel_bin.J_Statuses, byte> oldtotal = (Slots.PrevSetting != null) ? getTotal(Slots.PrevSetting, out Enum[] availableFlagsarray) : null;
+                        Dictionary<Kernel_bin.J_Statuses, byte> total = getTotal(Memory.State.Characters[Character], out availableFlagsarray);
                         for (short pos = 0; pos < Count; pos++)
                         {
                             short offset = (short)(Icons.ID.Status_Death + pos >= Icons.ID.Status_Curse ? 1 : 0);
@@ -61,6 +70,37 @@ namespace FF8
                             ITEM[pos, 2] = null;
                             ITEM[pos, 3] = new IGMDataItem_Int(total[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]], new Rectangle(SIZE[pos].X + SIZE[pos].Width - 80, SIZE[pos].Y, 0, 0), 17, numtype: Icons.NumType.sysFntBig, spaces: 3);
                             ITEM[pos, 4] = new IGMDataItem_String("%", new Rectangle(SIZE[pos].X + SIZE[pos].Width - 20, SIZE[pos].Y, 0, 0));
+                            if (oldtotal != null)
+                            {
+                                if (oldtotal[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]] > total[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]])
+                                {
+                                    ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = 5;
+                                    ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 5;
+                                    ITEM[pos, 2] = new IGMDataItem_Icon(Icons.ID.Arrow_Down, new Rectangle(SIZE[pos + 1].X + SIZE[pos + 1].Width - 105, SIZE[pos + 1].Y, 0, 0), 16);
+                                    ((IGMDataItem_Int)ITEM[pos, 3]).Colorid = Font.ColorID.Red;
+                                    ((IGMDataItem_String)ITEM[pos, 4]).Colorid = Font.ColorID.Red;
+                                    if (++_nag > _pos)
+                                    {
+                                        ((IGMDataItem_Icon)Slots.ITEM[Slots.CURSOR_SELECT, 0]).Pallet = 5;
+                                        ((IGMDataItem_Icon)Slots.ITEM[Slots.CURSOR_SELECT, 0]).Faded_Pallet = 5;
+                                        ((IGMDataItem_String)Slots.ITEM[Slots.CURSOR_SELECT, 1]).Colorid = Font.ColorID.Red;
+                                    }
+                                }
+                                else if (oldtotal[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]] < total[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]])
+                                {
+                                    ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = 6;
+                                    ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 6;
+                                    ITEM[pos, 2] = new IGMDataItem_Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos + 1].X + SIZE[pos + 1].Width - 105, SIZE[pos + 1].Y, 0, 0), 17);
+                                    ((IGMDataItem_Int)ITEM[pos, 3]).Colorid = Font.ColorID.Yellow;
+                                    ((IGMDataItem_String)ITEM[pos, 4]).Colorid = Font.ColorID.Yellow;
+                                    if (_nag <= ++_pos)
+                                    {
+                                        ((IGMDataItem_Icon)Slots.ITEM[Slots.CURSOR_SELECT, 0]).Pallet = 6;
+                                        ((IGMDataItem_Icon)Slots.ITEM[Slots.CURSOR_SELECT, 0]).Faded_Pallet = 6;
+                                        ((IGMDataItem_String)Slots.ITEM[Slots.CURSOR_SELECT, 1]).Colorid = Font.ColorID.Yellow;
+                                    }
+                                }
+                            }
                         }
                     }
                     return base.Update();

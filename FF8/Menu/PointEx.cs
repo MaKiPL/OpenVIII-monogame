@@ -75,7 +75,19 @@ namespace FF8
             Y = v.Y < target.Y ? (float)Math.Ceiling(v.Y) : (float)Math.Floor(v.Y);
             return new Vector2(X, Y);
         }
-
+        /// <summary>
+        /// Count how many flags set in enum.
+        /// </summary>
+        /// <param name="skills"></param>
+        /// <returns></returns>
+        /// <see cref="https://stackoverflow.com/questions/677204/counting-the-number-of-flags-set-on-an-enumeration"/>
+        public static uint Count(this Kernel_bin.J_Statuses statuses)
+        {
+            uint v = (uint)statuses;
+            v = v - ((v >> 1) & 0x55555555); // reuse input as temporary
+            v = (v & 0x33333333) + ((v >> 2) & 0x33333333); // temp
+            return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // count
+        }
         #endregion Methods
     }
 }
