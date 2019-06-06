@@ -30,6 +30,7 @@ namespace FF8
                 };
 
                 public new Saves.CharacterData PrevSetting { get; private set; }
+                public IGMData_Mag_Pool Pool { get; private set; }
                 public new Saves.CharacterData Setting { get; private set; }
                 public Kernel_bin.Stat[] Contents { get; private set; }
 
@@ -40,6 +41,7 @@ namespace FF8
                 {
                     if (Memory.State.Characters != null)
                     {
+                        Pool = (IGMData_Mag_Pool)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[2, 0]).Data;
                         Setting = Memory.State.Characters[Character];
                         Contents = Array.ConvertAll(Contents, c => c = Kernel_bin.Stat.None);
                         base.ReInit();
@@ -117,7 +119,7 @@ namespace FF8
                     base.Inputs_Left();
                     if (CURSOR_SELECT < Count / cols)
                     {
-                        InGameMenu_Junction.mode = Mode.Mag_EL_A_D;
+                        InGameMenu_Junction.mode = Mode.Mag_EL_A;
                         InGameMenu_Junction.Data[SectionName.Mag_Group].Show();
                     }
                     else
@@ -136,7 +138,7 @@ namespace FF8
                     }
                     else
                     {
-                        InGameMenu_Junction.mode = Mode.Mag_ST_A_D;
+                        InGameMenu_Junction.mode = Mode.Mag_ST_A;
                         InGameMenu_Junction.Data[SectionName.Mag_Group].Show();
                     }
                 }
@@ -182,6 +184,7 @@ namespace FF8
                 {
                     base.Inputs_OKAY();
                     InGameMenu_Junction.mode = Mode.Mag_Pool_Stat;
+                    Pool.ReInit();
                     BackupSetting();
                 }
 

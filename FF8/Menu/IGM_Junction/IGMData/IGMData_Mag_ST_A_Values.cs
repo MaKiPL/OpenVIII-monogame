@@ -46,8 +46,8 @@ namespace FF8
                     for (int i = 0; i < spell.Length; i++)
                         foreach (Enum flag in availableFlags.Where(Kernel_bin.MagicData[spell[i]].Stat_J_atk.HasFlag))
                         {
-                            total[(Kernel_bin.J_Statuses)flag] += (byte)((Kernel_bin.MagicData[spell[i]].Stat_J_atk_val * Memory.State.Characters[Character].Magics[spell[i]]) / 100);
-                            if (total[(Kernel_bin.J_Statuses)flag] > 100) total[(Kernel_bin.J_Statuses)flag] = 100;
+                            int t = total[(Kernel_bin.J_Statuses)flag] + ((Kernel_bin.MagicData[spell[i]].Stat_J_atk_val * Memory.State.Characters[Character].Magics[spell[i]]) / 100);
+                            total[(Kernel_bin.J_Statuses)flag] = (byte)(t > 100 ? 100 : t);
                         }
 
                     availableFlagsarray = availableFlags.ToArray();
@@ -68,15 +68,15 @@ namespace FF8
                             ITEM[pos, 1] = null;
                             //ITEM[pos, 2] = new IGMDataItem_Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 105, SIZE[pos].Y, 0, 0), 17);
                             ITEM[pos, 2] = null;
-                            ITEM[pos, 3] = new IGMDataItem_Int(total[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]], new Rectangle(SIZE[pos].X + SIZE[pos].Width - 80, SIZE[pos].Y, 0, 0), 17, numtype: Icons.NumType.sysFntBig, spaces: 3);
+                            ITEM[pos, 3] = new IGMDataItem_Int(total[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1 + offset]], new Rectangle(SIZE[pos].X + SIZE[pos].Width - 80, SIZE[pos].Y, 0, 0), 17, numtype: Icons.NumType.sysFntBig, spaces: 3);
                             ITEM[pos, 4] = new IGMDataItem_String("%", new Rectangle(SIZE[pos].X + SIZE[pos].Width - 20, SIZE[pos].Y, 0, 0));
                             if (oldtotal != null)
                             {
-                                if (oldtotal[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]] > total[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]])
+                                if (oldtotal[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1 + offset]] > total[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1 + offset]])
                                 {
                                     ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = 5;
                                     ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 5;
-                                    ITEM[pos, 2] = new IGMDataItem_Icon(Icons.ID.Arrow_Down, new Rectangle(SIZE[pos + 1].X + SIZE[pos + 1].Width - 105, SIZE[pos + 1].Y, 0, 0), 16);
+                                    ITEM[pos, 2] = new IGMDataItem_Icon(Icons.ID.Arrow_Down, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 105, SIZE[pos].Y, 0, 0), 16);
                                     ((IGMDataItem_Int)ITEM[pos, 3]).Colorid = Font.ColorID.Red;
                                     ((IGMDataItem_String)ITEM[pos, 4]).Colorid = Font.ColorID.Red;
                                     if (++_nag > _pos)
@@ -86,11 +86,11 @@ namespace FF8
                                         ((IGMDataItem_String)Slots.ITEM[Slots.CURSOR_SELECT, 1]).Colorid = Font.ColorID.Red;
                                     }
                                 }
-                                else if (oldtotal[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]] < total[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1]])
+                                else if (oldtotal[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1 + offset]] < total[(Kernel_bin.J_Statuses)availableFlagsarray[pos + 1 + offset]])
                                 {
                                     ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = 6;
                                     ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 6;
-                                    ITEM[pos, 2] = new IGMDataItem_Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos + 1].X + SIZE[pos + 1].Width - 105, SIZE[pos + 1].Y, 0, 0), 17);
+                                    ITEM[pos, 2] = new IGMDataItem_Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 105, SIZE[pos].Y, 0, 0), 17);
                                     ((IGMDataItem_Int)ITEM[pos, 3]).Colorid = Font.ColorID.Yellow;
                                     ((IGMDataItem_String)ITEM[pos, 4]).Colorid = Font.ColorID.Yellow;
                                     if (_nag <= ++_pos)

@@ -22,6 +22,7 @@ namespace FF8
                     if (InGameMenu_Junction != null)
                         //Slots = (IGMData_Mag_Stat_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[0, 0]).Data;
                         Slots = (IGMData_Mag_EL_A_D_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[3, 0]).Data;
+                    
                     //Slots = (IGMData_Mag_ST_A_D_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[6, 0]).Data;
                     base.ReInit();
                 }
@@ -36,10 +37,10 @@ namespace FF8
                 public Dictionary<Kernel_bin.Element, byte> getTotal(Saves.CharacterData source, out Enum[] availableFlagsarray)
                 {
                     byte[] spell = new byte[] {
-                            Memory.State.Characters[Character].Stat_J[Kernel_bin.Stat.Elem_Def_1],
-                            Memory.State.Characters[Character].Stat_J[Kernel_bin.Stat.Elem_Def_2],
-                            Memory.State.Characters[Character].Stat_J[Kernel_bin.Stat.Elem_Def_3],
-                            Memory.State.Characters[Character].Stat_J[Kernel_bin.Stat.Elem_Def_4]
+                            source.Stat_J[Kernel_bin.Stat.Elem_Def_1],
+                            source.Stat_J[Kernel_bin.Stat.Elem_Def_2],
+                            source.Stat_J[Kernel_bin.Stat.Elem_Def_3],
+                            source.Stat_J[Kernel_bin.Stat.Elem_Def_4]
                         };
                     Dictionary<Kernel_bin.Element, byte> total = new Dictionary<Kernel_bin.Element, byte>(8);
 
@@ -49,8 +50,8 @@ namespace FF8
                     for (int i = 0; i < spell.Length; i++)
                         foreach (Enum flag in availableFlags.Where(Kernel_bin.MagicData[spell[i]].Elem_J_def.HasFlag))
                         {
-                            total[(Kernel_bin.Element)flag] += (byte)((Kernel_bin.MagicData[spell[i]].Elem_J_def_val * Memory.State.Characters[Character].Magics[spell[i]]) / 100);
-                            if (total[(Kernel_bin.Element)flag] > 200) total[(Kernel_bin.Element)flag] = 200;
+                            int t = total[(Kernel_bin.Element)flag] + ((Kernel_bin.MagicData[spell[i]].Elem_J_def_val * Memory.State.Characters[Character].Magics[spell[i]]) / 100);
+                            total[(Kernel_bin.Element)flag] = (byte)(t >200? 200:t);
                         }
 
                     availableFlagsarray = availableFlags.ToArray();

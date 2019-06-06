@@ -14,6 +14,7 @@ namespace FF8
             public const int count = 57;
             public FF8String Name { get; private set; }
             public FF8String Description { get; private set; }
+            public byte ID { get; private set; }
 
             public override string ToString() => Name;
 
@@ -75,6 +76,7 @@ namespace FF8
             {
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
+                ID = (byte)i;
                 br.BaseStream.Seek(4, SeekOrigin.Current);
                 MagicID = (Magic_ID)br.ReadUInt16();
                 Unknown = br.ReadByte();

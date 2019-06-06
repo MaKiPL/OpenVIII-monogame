@@ -242,6 +242,7 @@ namespace FF8
 
             public new enum Mode
             {
+                None,
                 TopMenu,
                 TopMenu_Junction,
                 TopMenu_Off,
@@ -258,14 +259,15 @@ namespace FF8
                 Mag_Pool_ST_A,
                 Mag_Pool_ST_D,
                 Mag_Stat,
-                Mag_EL_A_D,
-                Mag_ST_A_D
+                Mag_EL_A,
+                Mag_ST_A
             }
 
             public new Mode mode;
 
             protected override bool Inputs()
             {
+                if (mode == Mode.None) mode = Mode.TopMenu;
                 bool ret = false;
                 if (Enabled)
                 {
@@ -323,11 +325,11 @@ namespace FF8
                             ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[0, 0].Inputs();
                             break;
 
-                        case Mode.Mag_EL_A_D:
+                        case Mode.Mag_EL_A:
                             ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[3, 0].Inputs();
                             break;
 
-                        case Mode.Mag_ST_A_D:
+                        case Mode.Mag_ST_A:
                             ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[6, 0].Inputs();
                             break;
 
