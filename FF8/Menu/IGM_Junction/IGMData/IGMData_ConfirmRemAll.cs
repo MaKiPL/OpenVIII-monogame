@@ -26,7 +26,7 @@ namespace FF8
 
                             InGameMenu_Junction.Data[SectionName.RemAll].Hide();
                             InGameMenu_Junction.Data[SectionName.TopMenu_Off].Hide();
-                            InGameMenu_Junction.mode = Mode.TopMenu;
+                            InGameMenu_Junction.SetMode(Mode.TopMenu);
                             InGameMenu_Junction.Data[SectionName.TopMenu].CURSOR_SELECT = 0;
                             InGameMenu_Junction.ReInit();
                             break;
@@ -41,7 +41,7 @@ namespace FF8
                 {
                     base.Inputs_CANCEL();
                     InGameMenu_Junction.Data[SectionName.RemAll].Hide();
-                    InGameMenu_Junction.mode = Mode.TopMenu_Off;
+                    InGameMenu_Junction.SetMode(Mode.TopMenu_Off);
                 }
             }
         }

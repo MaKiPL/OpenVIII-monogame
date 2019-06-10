@@ -155,7 +155,7 @@ namespace FF8
                 {
                     base.Inputs_CANCEL();
                     InGameMenu_Junction.Data[SectionName.TopMenu_GF_Group].Hide();
-                    InGameMenu_Junction.mode = Mode.TopMenu_Junction;
+                    InGameMenu_Junction.SetMode(Mode.TopMenu_Junction);
                 }
 
                 public override void Inputs_OKAY()

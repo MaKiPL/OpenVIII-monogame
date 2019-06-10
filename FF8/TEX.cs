@@ -122,65 +122,68 @@ namespace FF8
         /// </remarks>
         public Texture2D GetTexture(int forcePalette = -1, Color[] colors = null)
         {
-            if (texture.PaletteFlag != 0)
+            if (Memory.graphics.GraphicsDevice != null)
             {
-                if (colors != null && colors.Length != texture.NumOfColorsPerPalette)
-                    throw new Exception($" custom colors parameter set but array size to match pallet size: {texture.NumOfColorsPerPalette}");
-                else if (colors == null)
+                if (texture.PaletteFlag != 0)
                 {
-                    if (forcePalette >= texture.NumOfPalettes) //prevents exception for forcing a palette that doesn't exist.
-                        throw new Exception($"Desired pallet is incorrect use -1 for default or use a smaller number: {forcePalette} > {texture.NumOfPalettes}");
-                    colors = GetPalette(forcePalette);
-                }
-                using (MemoryStream ms = new MemoryStream(buffer))
-                using (BinaryReader br = new BinaryReader(ms))
-                {
-                    ms.Seek(TextureLocator, SeekOrigin.Begin);
-                    Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
-                    Color[] convertBuffer = new Color[(int)texture.Width * (int)texture.Height];
-                    for (int i = 0; i < convertBuffer.Length && ms.Position < ms.Length; i++)
+                    if (colors != null && colors.Length != texture.NumOfColorsPerPalette)
+                        throw new Exception($" custom colors parameter set but array size to match pallet size: {texture.NumOfColorsPerPalette}");
+                    else if (colors == null)
                     {
-                        convertBuffer[i] = colors[br.ReadByte()]; //colorkey
+                        if (forcePalette >= texture.NumOfPalettes) //prevents exception for forcing a palette that doesn't exist.
+                            throw new Exception($"Desired pallet is incorrect use -1 for default or use a smaller number: {forcePalette} > {texture.NumOfPalettes}");
+                        colors = GetPalette(forcePalette);
                     }
-                    bmp.SetData(convertBuffer);
-                    return bmp;
-                }
-            }
-            else if (texture.bytesPerPixel == 2)
-            {
-                using (MemoryStream ms = new MemoryStream(buffer))
-                using (BinaryReader br = new BinaryReader(ms))
-                {
-                    ms.Seek(TextureLocator, SeekOrigin.Begin);
-                    Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
-                    colors = new Color[(int)texture.Width * (int)texture.Height];
-                    for (int i = 0; i < colors.Length && ms.Position + 2 < ms.Length; i++)
+                    using (MemoryStream ms = new MemoryStream(buffer))
+                    using (BinaryReader br = new BinaryReader(ms))
                     {
-                        colors[i] = FromPsColor(br.ReadUInt16());
+                        ms.Seek(TextureLocator, SeekOrigin.Begin);
+                        Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
+                        Color[] convertBuffer = new Color[(int)texture.Width * (int)texture.Height];
+                        for (int i = 0; i < convertBuffer.Length && ms.Position < ms.Length; i++)
+                        {
+                            convertBuffer[i] = colors[br.ReadByte()]; //colorkey
+                        }
+                        bmp.SetData(convertBuffer);
+                        return bmp;
                     }
-                    bmp.SetData(colors);
-                    return bmp;
                 }
-            }
-            else if (texture.bytesPerPixel == 3)
-            {
-                // not tested but vincent tim had support for it so i guess it's possible RGB or BGR
-                using (MemoryStream ms = new MemoryStream(buffer))
-                using (BinaryReader br = new BinaryReader(ms))
+                else if (texture.bytesPerPixel == 2)
                 {
-                    ms.Seek(TextureLocator, SeekOrigin.Begin);
-                    Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
-                    colors = new Color[(int)texture.Width * (int)texture.Height];
-                    for (int i = 0; i < colors.Length && ms.Position + 3 < ms.Length; i++)
+                    using (MemoryStream ms = new MemoryStream(buffer))
+                    using (BinaryReader br = new BinaryReader(ms))
                     {
-                        //RGB or BGR so might need to reorder things to RGB
-                        colors[i].B = br.ReadByte();
-                        colors[i].G = br.ReadByte();
-                        colors[i].R = br.ReadByte();
-                        colors[i].A = 0xFF;
+                        ms.Seek(TextureLocator, SeekOrigin.Begin);
+                        Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
+                        colors = new Color[(int)texture.Width * (int)texture.Height];
+                        for (int i = 0; i < colors.Length && ms.Position + 2 < ms.Length; i++)
+                        {
+                            colors[i] = FromPsColor(br.ReadUInt16());
+                        }
+                        bmp.SetData(colors);
+                        return bmp;
                     }
-                    bmp.SetData(colors);
-                    return bmp;
+                }
+                else if (texture.bytesPerPixel == 3)
+                {
+                    // not tested but vincent tim had support for it so i guess it's possible RGB or BGR
+                    using (MemoryStream ms = new MemoryStream(buffer))
+                    using (BinaryReader br = new BinaryReader(ms))
+                    {
+                        ms.Seek(TextureLocator, SeekOrigin.Begin);
+                        Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
+                        colors = new Color[(int)texture.Width * (int)texture.Height];
+                        for (int i = 0; i < colors.Length && ms.Position + 3 < ms.Length; i++)
+                        {
+                            //RGB or BGR so might need to reorder things to RGB
+                            colors[i].B = br.ReadByte();
+                            colors[i].G = br.ReadByte();
+                            colors[i].R = br.ReadByte();
+                            colors[i].A = 0xFF;
+                        }
+                        bmp.SetData(colors);
+                        return bmp;
+                    }
                 }
             }
             return null;

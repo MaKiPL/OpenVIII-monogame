@@ -61,7 +61,7 @@ namespace FF8
                 private void Get_Sort_Stat()
                 {
                     Stat = Kernel_bin.Stat.None;
-                    SortMode = InGameMenu_Junction.mode;
+                    SortMode = InGameMenu_Junction.GetMode();
                     switch (SortMode)
                     {
                         default:
@@ -286,11 +286,11 @@ namespace FF8
                 public override bool Update()
                 {
                     if (InGameMenu_Junction != null &&
-                        InGameMenu_Junction.mode != Mode.Mag_Pool_ST_A &&
-                        InGameMenu_Junction.mode != Mode.Mag_Pool_ST_D &&
-                        InGameMenu_Junction.mode != Mode.Mag_Pool_EL_A &&
-                        InGameMenu_Junction.mode != Mode.Mag_Pool_EL_D &&
-                        InGameMenu_Junction.mode != Mode.Mag_Pool_Stat)
+                        InGameMenu_Junction.GetMode() != Mode.Mag_Pool_ST_A &&
+                        InGameMenu_Junction.GetMode() != Mode.Mag_Pool_ST_D &&
+                        InGameMenu_Junction.GetMode() != Mode.Mag_Pool_EL_A &&
+                        InGameMenu_Junction.GetMode() != Mode.Mag_Pool_EL_D &&
+                        InGameMenu_Junction.GetMode() != Mode.Mag_Pool_Stat)
                     {
                         Cursor_Status &= ~Cursor_Status.Enabled;
                     }
@@ -311,11 +311,11 @@ namespace FF8
                             UpdateTitle();
                         }
                         if (
-                            InGameMenu_Junction.mode == Mode.Mag_Pool_ST_A ||
-                            InGameMenu_Junction.mode == Mode.Mag_Pool_ST_D ||
-                            InGameMenu_Junction.mode == Mode.Mag_Pool_EL_A ||
-                            InGameMenu_Junction.mode == Mode.Mag_Pool_EL_D ||
-                            InGameMenu_Junction.mode == Mode.Mag_Pool_Stat)
+                            InGameMenu_Junction.GetMode() == Mode.Mag_Pool_ST_A ||
+                            InGameMenu_Junction.GetMode() == Mode.Mag_Pool_ST_D ||
+                            InGameMenu_Junction.GetMode() == Mode.Mag_Pool_EL_A ||
+                            InGameMenu_Junction.GetMode() == Mode.Mag_Pool_EL_D ||
+                            InGameMenu_Junction.GetMode() == Mode.Mag_Pool_Stat)
                         {
                             Get_Current_Slot_Value();
                             Generate_Preview();
@@ -343,23 +343,23 @@ namespace FF8
                     {
                         base.Inputs_CANCEL();
                         //TODO have pool return to correct screen as there will be 3 possible return modes.
-                        if (InGameMenu_Junction.mode == Mode.Mag_Pool_Stat)
+                        if (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_Stat)
                         {
-                            InGameMenu_Junction.mode = Mode.Mag_Stat;
+                            InGameMenu_Junction.SetMode(Mode.Mag_Stat);
                             Stat_Slots.UndoChange();
                             Stat_Slots.ConfirmChange();
                             Stat_Slots.ReInit();
                         }
                         else if (SortMode == Mode.Mag_Pool_EL_A || SortMode == Mode.Mag_Pool_EL_D)
                         {
-                            InGameMenu_Junction.mode = Mode.Mag_EL_A;
+                            InGameMenu_Junction.SetMode(Mode.Mag_EL_A);
                             EL_A_D_Slots.UndoChange();
                             EL_A_D_Slots.ConfirmChange();
                             EL_A_D_Slots.ReInit();
                         }
                         else if (SortMode == Mode.Mag_Pool_ST_A || SortMode == Mode.Mag_Pool_ST_D)
                         {
-                            InGameMenu_Junction.mode = Mode.Mag_ST_A;
+                            InGameMenu_Junction.SetMode(Mode.Mag_ST_A);
                             ST_A_D_Slots.UndoChange();
                             ST_A_D_Slots.ConfirmChange();
                             ST_A_D_Slots.ReInit();
@@ -376,19 +376,19 @@ namespace FF8
                         skipsnd = true;
                         init_debugger_Audio.PlaySound(31);
                         base.Inputs_OKAY();
-                        if (InGameMenu_Junction.mode == Mode.Mag_Pool_Stat)
+                        if (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_Stat)
                         {
-                            InGameMenu_Junction.mode = Mode.Mag_Stat;
+                            InGameMenu_Junction.SetMode(Mode.Mag_Stat);
                             Stat_Slots.ConfirmChange();
                         }
-                        else if (InGameMenu_Junction.mode == Mode.Mag_Pool_EL_A || InGameMenu_Junction.mode == Mode.Mag_Pool_EL_D)
+                        else if (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_EL_A || InGameMenu_Junction.GetMode() == Mode.Mag_Pool_EL_D)
                         {
-                            InGameMenu_Junction.mode = Mode.Mag_EL_A;
+                            InGameMenu_Junction.SetMode(Mode.Mag_EL_A);
                             EL_A_D_Slots.ConfirmChange();
                         }
-                        else if (InGameMenu_Junction.mode == Mode.Mag_Pool_ST_A || InGameMenu_Junction.mode == Mode.Mag_Pool_ST_D)
+                        else if (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_ST_A || InGameMenu_Junction.GetMode() == Mode.Mag_Pool_ST_D)
                         {
-                            InGameMenu_Junction.mode = Mode.Mag_ST_A;
+                            InGameMenu_Junction.SetMode(Mode.Mag_ST_A);
                             ST_A_D_Slots.ConfirmChange();
                         }
                         Cursor_Status &= ~Cursor_Status.Enabled;

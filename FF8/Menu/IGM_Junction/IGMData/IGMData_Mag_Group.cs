@@ -15,7 +15,7 @@
                         ((IGMDataItem_IGMData)ITEM[i, 0]).Data.Show();
                     }
 
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.Mag_EL_A && Enabled)
+                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode() == Mode.Mag_EL_A && Enabled)
                     {
                         for (int i = Count - 6; i < Count - 3 && ITEM[i, 0] != null; i++)
                         {
@@ -26,7 +26,7 @@
                             ((IGMDataItem_IGMData)ITEM[i, 0]).Data.Hide();
                         }
                     }
-                    else if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.Mag_ST_A && Enabled)
+                    else if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode() == Mode.Mag_ST_A && Enabled)
                     {
                         for (int i = Count - 3; i < Count && ITEM[i, 0] != null; i++)
                         {

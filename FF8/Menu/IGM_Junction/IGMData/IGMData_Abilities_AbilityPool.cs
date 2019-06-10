@@ -33,7 +33,7 @@ namespace FF8
                     {
                         int target = InGameMenu_Junction.Data[SectionName.TopMenu_Abilities].CURSOR_SELECT - 4;
                         Memory.State.Characters[Character].Abilities[target] = Contents[CURSOR_SELECT];
-                        InGameMenu_Junction.mode = Mode.Abilities;
+                        InGameMenu_Junction.SetMode(Mode.Abilities);
                         InGameMenu_Junction.ReInit(); // can be more specific if you want to find what is being changed.
                     }
                 }
@@ -41,7 +41,7 @@ namespace FF8
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
-                    InGameMenu_Junction.mode = Mode.Abilities;
+                    InGameMenu_Junction.SetMode(Mode.Abilities);
                 }
 
                 public override void UpdateTitle()
@@ -75,7 +75,7 @@ namespace FF8
 
                 public override bool Update()
                 {
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.mode != Mode.Abilities_Abilities)
+                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode() != Mode.Abilities_Abilities)
                         Cursor_Status &= ~Cursor_Status.Enabled;
                     else
                         Cursor_Status |= Cursor_Status.Enabled;
@@ -114,7 +114,7 @@ namespace FF8
                         BLANKS[pos] = true;
                         Contents[pos] = Kernel_bin.Abilities.None;
                     }
-                    if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && InGameMenu_Junction.mode == Mode.Abilities_Abilities)
+                    if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && InGameMenu_Junction.GetMode() == Mode.Abilities_Abilities)
                         ((IGMDataItem_Box)InGameMenu_Junction.Data[SectionName.Help].CONTAINER).Data = Source[Contents[CURSOR_SELECT]].Description.ReplaceRegion();
                     UpdateTitle();
                     if (Contents[CURSOR_SELECT] == Kernel_bin.Abilities.None)

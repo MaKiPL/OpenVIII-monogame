@@ -52,21 +52,21 @@ namespace FF8
                 public override void Inputs_Left()
                 {
                     base.Inputs_Left();
-                    InGameMenu_Junction.mode = Mode.Mag_Stat;
+                    InGameMenu_Junction.SetMode(Mode.Mag_Stat);
                     InGameMenu_Junction.Data[SectionName.Mag_Group].Show();
                 }
 
                 public override void Inputs_Right()
                 {
                     base.Inputs_Left();
-                    InGameMenu_Junction.mode = Mode.Mag_EL_A;
+                    InGameMenu_Junction.SetMode(Mode.Mag_EL_A);
                     InGameMenu_Junction.Data[SectionName.Mag_Group].Show();
                 }
 
                 public override bool Update()
                 {
                     bool ret = base.Update();
-                    if (InGameMenu_Junction != null && (InGameMenu_Junction.mode == Mode.Mag_ST_A || InGameMenu_Junction.mode == Mode.Mag_ST_D) && Enabled)
+                    if (InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_ST_A || InGameMenu_Junction.GetMode() == Mode.Mag_ST_D) && Enabled)
                     {
                         Cursor_Status |= Cursor_Status.Enabled;
                         Cursor_Status &= ~Cursor_Status.Horizontal;
@@ -76,16 +76,16 @@ namespace FF8
                         {
                             ((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[7, 0]).Data.Hide();
                             ((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[8, 0]).Data.Show();
-                            InGameMenu_Junction.mode = Mode.Mag_ST_A;
+                            InGameMenu_Junction.SetMode(Mode.Mag_ST_A);
                         }
                         else
                         {
                             ((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[7, 0]).Data.Show();
                             ((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[8, 0]).Data.Hide();
-                            InGameMenu_Junction.mode = Mode.Mag_ST_D;
+                            InGameMenu_Junction.SetMode(Mode.Mag_ST_D);
                         }
                     }
-                    else if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.Mag_Pool_Stat && Enabled)
+                    else if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode() == Mode.Mag_Pool_Stat && Enabled)
                     {
                         Cursor_Status |= Cursor_Status.Blinking;
                     }
@@ -120,7 +120,7 @@ namespace FF8
                 public override void Inputs_OKAY()
                 {
                     base.Inputs_OKAY();
-                    InGameMenu_Junction.mode = CURSOR_SELECT == 0 ? Mode.Mag_Pool_ST_A : Mode.Mag_Pool_ST_D;
+                    InGameMenu_Junction.SetMode(CURSOR_SELECT == 0 ? Mode.Mag_Pool_ST_A : Mode.Mag_Pool_ST_D);
                     Pool.ReInit();
                     BackupSetting();
                 }
@@ -128,7 +128,7 @@ namespace FF8
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
-                    InGameMenu_Junction.mode = Mode.TopMenu_Junction;
+                    InGameMenu_Junction.SetMode(Mode.TopMenu_Junction);
                     InGameMenu_Junction.Data[SectionName.Mag_Group].Hide();
                 }
             }

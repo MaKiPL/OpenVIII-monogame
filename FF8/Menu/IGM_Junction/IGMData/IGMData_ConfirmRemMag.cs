@@ -34,7 +34,7 @@ namespace FF8
                 {
                     base.Inputs_CANCEL();
                     InGameMenu_Junction.Data[SectionName.RemMag].Hide();
-                    InGameMenu_Junction.mode = Mode.TopMenu_Off;
+                    InGameMenu_Junction.SetMode(Mode.TopMenu_Off);
                 }
             }
         }

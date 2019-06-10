@@ -27,7 +27,7 @@ namespace FF8
                     {
                         int target = InGameMenu_Junction.Data[SectionName.TopMenu_Abilities].CURSOR_SELECT - 1;
                         Memory.State.Characters[Character].Commands[target] = Contents[CURSOR_SELECT];
-                        InGameMenu_Junction.mode = Mode.Abilities;
+                        InGameMenu_Junction.SetMode(Mode.Abilities);
                         InGameMenu_Junction.Data[SectionName.TopMenu_Abilities].ReInit();
                         InGameMenu_Junction.Data[SectionName.Commands].ReInit();
                     }
@@ -36,7 +36,7 @@ namespace FF8
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
-                    InGameMenu_Junction.mode = Mode.Abilities;
+                    InGameMenu_Junction.SetMode(Mode.Abilities);
                 }
 
                 public override void UpdateTitle()
@@ -62,7 +62,7 @@ namespace FF8
 
                 public override bool Update()
                 {
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.mode != Mode.Abilities_Commands)
+                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode() != Mode.Abilities_Commands)
                         Cursor_Status &= ~Cursor_Status.Enabled;
                     else
                     {
@@ -98,7 +98,7 @@ namespace FF8
                         Contents[pos] = Kernel_bin.Abilities.None;
                     }
 
-                    if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && InGameMenu_Junction.mode == Mode.Abilities_Commands)
+                    if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && InGameMenu_Junction.GetMode() == Mode.Abilities_Commands)
                         ((IGMDataItem_Box)InGameMenu_Junction.Data[SectionName.Help].CONTAINER).Data = Source[Contents[CURSOR_SELECT]].Description.ReplaceRegion();
                     UpdateTitle();
                     if (Contents[CURSOR_SELECT] == Kernel_bin.Abilities.None)

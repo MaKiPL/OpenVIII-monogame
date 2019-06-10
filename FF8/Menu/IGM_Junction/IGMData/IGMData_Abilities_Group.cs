@@ -43,7 +43,7 @@ namespace FF8
                     base.Inputs_CANCEL();
                     skipdata = false;
                     InGameMenu_Junction.Data[SectionName.TopMenu_Abilities].Hide();
-                    InGameMenu_Junction.mode = Mode.TopMenu;
+                    InGameMenu_Junction.SetMode(Mode.TopMenu);
                 }
 
                 protected override void Init()
@@ -78,7 +78,7 @@ namespace FF8
                 {
                     bool ret = base.Update();
 
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.Abilities)
+                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode() == Mode.Abilities)
                     {
                         Cursor_Status &= ~Cursor_Status.Blinking;
 
@@ -133,9 +133,9 @@ namespace FF8
                     if (i != null && i.Data != null)
                     {
                         if (CURSOR_SELECT >= i.Data.Count)
-                            InGameMenu_Junction.mode = Mode.Abilities_Abilities;
+                            InGameMenu_Junction.SetMode(Mode.Abilities_Abilities);
                         else
-                            InGameMenu_Junction.mode = Mode.Abilities_Commands;
+                            InGameMenu_Junction.SetMode(Mode.Abilities_Commands);
                     }
                 }
             }

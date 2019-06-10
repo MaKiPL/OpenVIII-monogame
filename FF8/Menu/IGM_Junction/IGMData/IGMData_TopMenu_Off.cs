@@ -17,7 +17,7 @@ namespace FF8
 
                 private void Update_String()
                 {
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.TopMenu_Off && Enabled)
+                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode() == Mode.TopMenu_Off && Enabled)
                     {
                         FF8String Changed = null;
                         switch (CURSOR_SELECT)
@@ -49,7 +49,7 @@ namespace FF8
 
                     if (InGameMenu_Junction != null)
                     {
-                        if (InGameMenu_Junction.mode == Mode.TopMenu_Off)
+                        if (InGameMenu_Junction.GetMode() == Mode.TopMenu_Off)
                             Cursor_Status &= ~Cursor_Status.Blinking;
                         else
                             Cursor_Status |= Cursor_Status.Blinking;
@@ -78,12 +78,12 @@ namespace FF8
                     {
                         case 0:
                             InGameMenu_Junction.Data[SectionName.RemMag].Show();
-                            InGameMenu_Junction.mode = Mode.RemMag;
+                            InGameMenu_Junction.SetMode(Mode.RemMag);
                             break;
 
                         case 1:
                             InGameMenu_Junction.Data[SectionName.RemAll].Show();
-                            InGameMenu_Junction.mode = Mode.RemAll;
+                            InGameMenu_Junction.SetMode(Mode.RemAll);
                             break;
                     }
                 }
@@ -92,7 +92,7 @@ namespace FF8
                 {
                     base.Inputs_CANCEL();
                     InGameMenu_Junction.Data[SectionName.TopMenu_Off].Hide();
-                    InGameMenu_Junction.mode = Mode.TopMenu;
+                    InGameMenu_Junction.SetMode(Mode.TopMenu);
                 }
             }
         }

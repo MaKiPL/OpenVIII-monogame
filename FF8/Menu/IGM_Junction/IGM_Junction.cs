@@ -104,6 +104,7 @@ namespace FF8
             /// </summary>
             public static Characters VisableCharacter { get; private set; }
 
+            private Mode GetMode() => _mode; private void SetMode(Mode value) => _mode = value; 
             public override bool Update()
             {
                 if (Enabled)
@@ -265,15 +266,15 @@ namespace FF8
                 Mag_ST_D
             }
 
-            public new Mode mode;
+            private new Mode _mode;
 
             protected override bool Inputs()
             {
-                if (mode == Mode.None) mode = Mode.TopMenu;
+                if (GetMode() == Mode.None) SetMode(Mode.TopMenu);
                 bool ret = false;
                 if (Enabled)
                 {
-                    switch (mode)
+                    switch (GetMode())
                     {
                         case Mode.TopMenu:
                             ret = ((IGMData_TopMenu)Data[SectionName.TopMenu]).Inputs();

@@ -14,7 +14,7 @@ namespace FF8
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
-                    InGameMenu_Junction.mode = Mode.TopMenu;
+                    InGameMenu_Junction.SetMode(Mode.TopMenu);
                     Hide();
                 }
 
@@ -23,12 +23,12 @@ namespace FF8
                     base.Inputs_OKAY();
                     if (CURSOR_SELECT == 0)
                     {
-                        InGameMenu_Junction.mode = Mode.TopMenu_GF_Group;
+                        InGameMenu_Junction.SetMode(Mode.TopMenu_GF_Group);
                         InGameMenu_Junction.Data[SectionName.TopMenu_GF_Group].Show();
                     }
                     else
                     {
-                        InGameMenu_Junction.mode = Mode.Mag_Stat;
+                        InGameMenu_Junction.SetMode(Mode.Mag_Stat);
                         InGameMenu_Junction.Data[SectionName.Mag_Group].Show();
                     }
                 }
@@ -42,7 +42,7 @@ namespace FF8
                     Update_String();
                     if (InGameMenu_Junction != null)
                     {
-                        if (InGameMenu_Junction.mode == Mode.TopMenu_Junction)
+                        if (InGameMenu_Junction.GetMode() == Mode.TopMenu_Junction)
                             Cursor_Status &= ~Cursor_Status.Blinking;
                         else
                             Cursor_Status |= Cursor_Status.Blinking;
@@ -76,7 +76,7 @@ namespace FF8
 
                 private void Update_String()
                 {
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.TopMenu_Junction && Enabled)
+                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode() == Mode.TopMenu_Junction && Enabled)
                     {
                         FF8String Changed = null;
                         switch (CURSOR_SELECT)

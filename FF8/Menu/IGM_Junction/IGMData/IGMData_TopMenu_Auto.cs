@@ -24,7 +24,7 @@ namespace FF8
 
                 private void Update_String()
                 {
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.TopMenu_Auto && Enabled)
+                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode() == Mode.TopMenu_Auto && Enabled)
                     {
                         FF8String Changed = null;
                         switch (CURSOR_SELECT)
@@ -98,7 +98,7 @@ namespace FF8
                 {
                     base.Inputs_CANCEL();
                     InGameMenu_Junction.Data[SectionName.TopMenu_Auto].Hide();
-                    InGameMenu_Junction.mode = Mode.TopMenu;
+                    InGameMenu_Junction.SetMode(Mode.TopMenu);
                 }
             }
         }

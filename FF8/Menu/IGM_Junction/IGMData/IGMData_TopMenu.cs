@@ -70,25 +70,25 @@ namespace FF8
                         case 0:
                             InGameMenu_Junction.Data[SectionName.TopMenu_Junction].Show();
                             Cursor_Status |= Cursor_Status.Blinking;
-                            InGameMenu_Junction.mode = Mode.TopMenu_Junction;
+                            InGameMenu_Junction.SetMode(Mode.TopMenu_Junction);
                             break;
 
                         case 1:
                             InGameMenu_Junction.Data[SectionName.TopMenu_Off].Show();
                             Cursor_Status |= Cursor_Status.Blinking;
-                            InGameMenu_Junction.mode = Mode.TopMenu_Off;
+                            InGameMenu_Junction.SetMode(Mode.TopMenu_Off);
                             break;
 
                         case 2:
                             InGameMenu_Junction.Data[SectionName.TopMenu_Auto].Show();
                             Cursor_Status |= Cursor_Status.Blinking;
-                            InGameMenu_Junction.mode = Mode.TopMenu_Auto;
+                            InGameMenu_Junction.SetMode(Mode.TopMenu_Auto);
                             break;
 
                         case 3:
                             InGameMenu_Junction.Data[SectionName.TopMenu_Abilities].Show();
                             Cursor_Status |= Cursor_Status.Blinking;
-                            InGameMenu_Junction.mode = Mode.Abilities;
+                            InGameMenu_Junction.SetMode(Mode.Abilities);
                             break;
                     }
                     base.Inputs_OKAY();
@@ -97,7 +97,7 @@ namespace FF8
                 public override bool Update()
                 {
                     bool ret = base.Update();
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.TopMenu && Enabled)
+                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode() == Mode.TopMenu && Enabled)
                     {
                         FF8String Changed = null;
                         switch (CURSOR_SELECT)

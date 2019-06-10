@@ -119,7 +119,7 @@ namespace FF8
                     base.Inputs_Left();
                     if (CURSOR_SELECT < Count / cols)
                     {
-                        InGameMenu_Junction.mode = Mode.Mag_EL_A;
+                        InGameMenu_Junction.SetMode(Mode.Mag_EL_A);
                         InGameMenu_Junction.Data[SectionName.Mag_Group].Show();
                     }
                     else
@@ -138,7 +138,7 @@ namespace FF8
                     }
                     else
                     {
-                        InGameMenu_Junction.mode = Mode.Mag_ST_A;
+                        InGameMenu_Junction.SetMode(Mode.Mag_ST_A);
                         InGameMenu_Junction.Data[SectionName.Mag_Group].Show();
                     }
                 }
@@ -146,14 +146,14 @@ namespace FF8
                 public override bool Update()
                 {
                     bool ret = base.Update();
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.Mag_Stat && Enabled)
+                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode() == Mode.Mag_Stat && Enabled)
                     {
                         Cursor_Status |= Cursor_Status.Enabled;
                         Cursor_Status &= ~Cursor_Status.Horizontal;
                         Cursor_Status |= Cursor_Status.Vertical;
                         Cursor_Status &= ~Cursor_Status.Blinking;
                     }
-                    else if (InGameMenu_Junction != null && InGameMenu_Junction.mode == Mode.Mag_Pool_Stat && Enabled)
+                    else if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode() == Mode.Mag_Pool_Stat && Enabled)
                     {
                         Cursor_Status |= Cursor_Status.Blinking;
                     }
@@ -183,7 +183,7 @@ namespace FF8
                 public override void Inputs_OKAY()
                 {
                     base.Inputs_OKAY();
-                    InGameMenu_Junction.mode = Mode.Mag_Pool_Stat;
+                    InGameMenu_Junction.SetMode(Mode.Mag_Pool_Stat);
                     Pool.ReInit();
                     BackupSetting();
                 }
@@ -191,7 +191,7 @@ namespace FF8
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
-                    InGameMenu_Junction.mode = Mode.TopMenu_Junction;
+                    InGameMenu_Junction.SetMode(Mode.TopMenu_Junction);
                     InGameMenu_Junction.Data[SectionName.Mag_Group].Hide();
                 }
 
