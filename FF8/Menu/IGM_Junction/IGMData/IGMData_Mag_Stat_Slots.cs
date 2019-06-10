@@ -8,11 +8,12 @@ namespace FF8
     {
         private partial class IGM_Junction
         {
-            private class IGMData_Mag_Stat_Slots : IGMData
+            private class IGMData_Mag_Stat_Slots : IGMData_Slots<Kernel_bin.Stat, Saves.CharacterData>
             {
-                public IGMData_Mag_Stat_Slots() : base( 10, 5, new IGMDataItem_Box(pos: new Rectangle(0, 414, 840, 216)), 2, 5)
+                public IGMData_Mag_Stat_Slots() : base(10, 5, new IGMDataItem_Box(pos: new Rectangle(0, 414, 840, 216)), 2, 5)
                 {
                 }
+
                 /// <summary>
                 /// Convert stat to correct icon id.
                 /// </summary>
@@ -29,11 +30,6 @@ namespace FF8
                     { Kernel_bin.Stat.HIT, Icons.ID.Stats_Hit_Percent },
                 };
 
-                public new Saves.CharacterData PrevSetting { get; private set; }
-                public IGMData_Mag_Pool Pool { get; private set; }
-                public new Saves.CharacterData Setting { get; private set; }
-                public Kernel_bin.Stat[] Contents { get; private set; }
-
                 /// <summary>
                 /// Things that may of changed before screen loads or junction is changed.
                 /// </summary>
@@ -41,9 +37,8 @@ namespace FF8
                 {
                     if (Memory.State.Characters != null)
                     {
-                        Pool = (IGMData_Mag_Pool)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[2, 0]).Data;
                         Setting = Memory.State.Characters[Character];
-                        Contents = Array.ConvertAll(Contents, c => c = Kernel_bin.Stat.None);
+                        Contents = Array.ConvertAll(Contents, c => c = default);
                         base.ReInit();
 
                         if (Memory.State.Characters != null)
@@ -143,26 +138,11 @@ namespace FF8
                     }
                 }
 
-                public override bool Update()
-                {
-                    bool ret = base.Update();
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode() == Mode.Mag_Stat && Enabled)
-                    {
-                        Cursor_Status |= Cursor_Status.Enabled;
-                        Cursor_Status &= ~Cursor_Status.Horizontal;
-                        Cursor_Status |= Cursor_Status.Vertical;
-                        Cursor_Status &= ~Cursor_Status.Blinking;
-                    }
-                    else if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode() == Mode.Mag_Pool_Stat && Enabled)
-                    {
-                        Cursor_Status |= Cursor_Status.Blinking;
-                    }
-                    else
-                    {
-                        Cursor_Status &= ~Cursor_Status.Enabled;
-                    }
-                    return ret;
-                }
+                public override void CheckMode(bool cursor = true) =>
+                   CheckMode(-1, Mode.None, Mode.Mag_Stat,
+                       InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_Stat),
+                       InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_Stat),
+                       (InGameMenu_Junction.GetMode() == Mode.Mag_Stat || InGameMenu_Junction.GetMode() == Mode.Mag_Pool_Stat));
 
                 public override void BackupSetting() => PrevSetting = Setting.Clone();
 
@@ -171,20 +151,14 @@ namespace FF8
                     //override this use it to take value of prevSetting and restore the setting unless default method works
                     if (PrevSetting != null)
                     {
-                        Setting = PrevSetting.Clone();
-                        Memory.State.Characters[Character] = Setting;
+                        Memory.State.Characters[Character] = Setting = PrevSetting.Clone();
                     }
                 }
-
-                public override void ConfirmChange() =>
-                    //set backupuped change to null so it no longer exists.
-                    PrevSetting = null;
 
                 public override void Inputs_OKAY()
                 {
                     base.Inputs_OKAY();
                     InGameMenu_Junction.SetMode(Mode.Mag_Pool_Stat);
-                    Pool.ReInit();
                     BackupSetting();
                 }
 

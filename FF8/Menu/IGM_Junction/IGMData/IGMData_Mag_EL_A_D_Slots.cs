@@ -6,7 +6,7 @@ namespace FF8
     {
         private partial class IGM_Junction
         {
-            private class IGMData_Mag_EL_A_D_Slots : IGMData
+            private class IGMData_Mag_EL_A_D_Slots : IGMData_Slots<Kernel_bin.Stat, Saves.CharacterData>
             {
                 public IGMData_Mag_EL_A_D_Slots() : base( 5, 2, new IGMDataItem_Box(pos: new Rectangle(0, 414, 840, 216)), 1, 5)
                 {
@@ -17,11 +17,6 @@ namespace FF8
                     base.InitShift(i, col, row);
                     SIZE[i].Inflate(-30, -6);
                     SIZE[i].Y -= row * 2;
-                }
-                protected override void Init()
-                {
-                    Contents = new Kernel_bin.Stat[Count];
-                    base.Init();
                 }
 
                 public override void ReInit()
@@ -40,12 +35,10 @@ namespace FF8
                             ITEM[pos, 1] = new IGMDataItem_String(Kernel_bin.MagicData[Memory.State.Characters[Character].Stat_J[Kernel_bin.Stat.EL_Def_1 + pos - 1]].Name, new Rectangle(SIZE[pos].X + 60, SIZE[pos].Y, 0, 0));
                             BLANKS[pos] = false;
                         }
+                        CheckMode();
                         base.ReInit();
                     }
                 }
-                public new Saves.CharacterData PrevSetting { get; private set; }
-                public new Saves.CharacterData Setting { get; private set; }
-                public Kernel_bin.Stat[] Contents { get; private set; }
                 public IGMData_Mag_Pool Pool { get; private set; }
 
                 public override void Inputs_Left()
@@ -61,39 +54,11 @@ namespace FF8
                     InGameMenu_Junction.SetMode(Mode.Mag_Stat);
                     InGameMenu_Junction.Data[SectionName.Mag_Group].Show();
                 }
-
-                public override bool Update()
-                {
-                    bool ret = base.Update();
-                    if (InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_EL_A || InGameMenu_Junction.GetMode() == Mode.Mag_EL_D) && Enabled)
-                    {
-                        Cursor_Status |= Cursor_Status.Enabled;
-                        Cursor_Status &= ~Cursor_Status.Horizontal;
-                        Cursor_Status |= Cursor_Status.Vertical;
-                        Cursor_Status &= ~Cursor_Status.Blinking;
-                        if (CURSOR_SELECT > 0)
-                        {
-                            ((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[4, 0]).Data.Hide();
-                            ((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[5, 0]).Data.Show();
-                            InGameMenu_Junction.SetMode(Mode.Mag_EL_A);
-                        }
-                        else
-                        {
-                            ((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[4, 0]).Data.Show();
-                            ((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[5, 0]).Data.Hide();
-                            InGameMenu_Junction.SetMode(Mode.Mag_EL_D);
-                        }
-                    }
-                    else if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode() == Mode.Mag_Pool_Stat && Enabled)
-                    {
-                        Cursor_Status |= Cursor_Status.Blinking;
-                    }
-                    else
-                    {
-                        Cursor_Status &= ~Cursor_Status.Enabled;
-                    }
-                    return ret;
-                }
+                public override void CheckMode(bool cursor = true) =>
+                    CheckMode(0, Mode.Mag_EL_A, Mode.Mag_EL_D,
+                        InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_EL_A || InGameMenu_Junction.GetMode() == Mode.Mag_EL_D),
+                        InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_EL_A || InGameMenu_Junction.GetMode() == Mode.Mag_Pool_EL_D),
+                        cursor);                
 
                 public override void BackupSetting()
                 {
@@ -111,15 +76,10 @@ namespace FF8
                     }
                 }
 
-                public override void ConfirmChange() =>
-                    //set backupuped change to null so it no longer exists.
-                    PrevSetting = null;
-
                 public override void Inputs_OKAY()
                 {
                     base.Inputs_OKAY();
                     InGameMenu_Junction.SetMode(CURSOR_SELECT == 0 ? Mode.Mag_Pool_EL_A : Mode.Mag_Pool_EL_D);
-                    Pool.ReInit();
                     BackupSetting();
                 }
 
@@ -127,7 +87,6 @@ namespace FF8
                 {
                     base.Inputs_CANCEL();
                     InGameMenu_Junction.SetMode(Mode.TopMenu_Junction);
-                    InGameMenu_Junction.Data[SectionName.Mag_Group].Hide();
                 }
             }
         }

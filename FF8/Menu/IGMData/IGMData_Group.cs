@@ -22,14 +22,16 @@
                 if (Enabled)
                 {
                     base.Hide();
-                    if (!skipdata)
-                    {
-                        int pos = 0;
-                        foreach (IGMDataItem i in ITEM)
-                        {
-                           ITEMHide(i, pos++);
-                        }
-                    }
+                    //maybe overkill to run hide on items. if group is hidden it won't draw.
+                    //if (!skipdata)
+                    //{
+                    //    int pos = 0;
+                    //    foreach (IGMDataItem i in ITEM)
+                    //    {
+                    //        if (i != null)
+                    //            ITEMHide(i, pos++);
+                    //    }
+                    //}
                 }
             }
             public virtual void ITEMShow(IGMDataItem i, int pos = 0)
@@ -44,7 +46,8 @@
                     int pos = 0;
                     foreach (IGMDataItem i in ITEM)
                     {
-                        ITEMShow(i, pos++);
+                        if (i != null)
+                            ITEMShow(i, pos++);
                     }
                 }             
             }
@@ -91,7 +94,7 @@
             }
             public virtual bool ITEMUpdate(IGMDataItem i, int pos = 0)
             {
-                return i.Inputs();
+                return i.Update();
             }
             public override bool Update()
             {

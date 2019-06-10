@@ -24,6 +24,15 @@ namespace FF8
                 public int LastPage { get; private set; }
                 public Kernel_bin.Stat Stat { get; private set; }
                 public IEnumerable<Kernel_bin.Magic_Data> Sort { get; private set; }
+                //public override bool Inputs()
+                //{
+                //    bool ret = base.Inputs();
+                //    if(ret)
+                //    {
+                //        return ret;
+                //    }
+                //    return false;
+                //}
 
                 public IGMData_Mag_Pool() : base(5, 3, new IGMDataItem_Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.MAGIC), 4, 13)
                 {
@@ -220,67 +229,66 @@ namespace FF8
                         ((IGMDataItem_Box)CONTAINER).Title = (Icons.ID)((int)Icons.ID.MAGIC_PG1 + Page);
                 }
 
-                public IGMData Slots { get; private set; } = null;
                 public IGMData Values { get; private set; } = null;
 
                 public void Get_Current_Slot_Value()
                 {
-                    switch (SortMode)
-                    {
-                        case Mode.Mag_Pool_Stat:
-                            Slots = Stat_Slots;
-                            Values = null;
-                            break;
+                    //switch (SortMode)
+                    //{
+                    //    case Mode.Mag_Pool_Stat:
+                    //        Slots = Stat_Slots;
+                    //        Values = null;
+                    //        break;
 
-                        case Mode.Mag_Pool_EL_A:
-                            Slots = EL_A_D_Slots;
-                            Values = EL_A_Values;
-                            break;
+                    //    case Mode.Mag_Pool_EL_A:
+                    //        Slots = EL_A_D_Slots;
+                    //        Values = EL_A_Values;
+                    //        break;
 
-                        case Mode.Mag_Pool_EL_D:
-                            Slots = EL_A_D_Slots;
-                            Values = EL_D_Values;
-                            break;
+                    //    case Mode.Mag_Pool_EL_D:
+                    //        Slots = EL_A_D_Slots;
+                    //        Values = EL_D_Values;
+                    //        break;
 
-                        case Mode.Mag_Pool_ST_A:
-                            Slots = ST_A_D_Slots;
-                            Values = ST_A_Values;
-                            break;
+                    //    case Mode.Mag_Pool_ST_A:
+                    //        Slots = ST_A_D_Slots;
+                    //        Values = ST_A_Values;
+                    //        break;
 
-                        case Mode.Mag_Pool_ST_D:
-                            Slots = ST_A_D_Slots;
-                            Values = ST_D_Values;
-                            break;
+                    //    case Mode.Mag_Pool_ST_D:
+                    //        Slots = ST_A_D_Slots;
+                    //        Values = ST_D_Values;
+                    //        break;
 
-                        default:
-                            Slots = null;
-                            Values = null;
-                            break;
-                    }
+                    //    default:
+                    //        Slots = null;
+                    //        Values = null;
+                    //        break;
+                    //}
                 }
 
                 public void Generate_Preview()
                 {
-                    if (Slots != null && Stat != Kernel_bin.Stat.None && CURSOR_SELECT < Contents.Length)
-                    {
-                        Cursor_Status |= Cursor_Status.Enabled;
-                        if (Source.Stat_J[Stat] != Contents[CURSOR_SELECT])
-                        {
-                            Slots.UndoChange();
-                            if (Memory.State.Characters != null)
-                            {
-                                Source = Memory.State.Characters[Character];
-                            }
-                            if (Source.Stat_J.ContainsValue(Contents[CURSOR_SELECT]))
-                            {
-                                Kernel_bin.Stat key = Source.Stat_J.FirstOrDefault(x => x.Value == Contents[CURSOR_SELECT]).Key;
-                                Source.Stat_J[key] = 0;
-                            }
-                            Source.Stat_J[Stat] = Contents[CURSOR_SELECT];
-                            Slots.ReInit();
-                            if (Values != null) Values.ReInit();
-                        }
-                    }
+                    //if (Slots != null && Stat != Kernel_bin.Stat.None && CURSOR_SELECT < Contents.Length)
+                    //{
+                    //    Cursor_Status |= Cursor_Status.Enabled;
+                    //    if (Source.Stat_J[Stat] != Contents[CURSOR_SELECT])
+                    //    {
+                    //        Slots.UndoChange();
+                    //        if (Memory.State.Characters != null)
+                    //        {
+                    //            Source = Memory.State.Characters[Character];
+                    //        }
+                    //        if (Source.Stat_J.ContainsValue(Contents[CURSOR_SELECT]))
+                    //        {
+                    //            Kernel_bin.Stat key = Source.Stat_J.FirstOrDefault(x => x.Value == Contents[CURSOR_SELECT]).Key;
+                    //            Source.Stat_J[key] = 0;
+                    //        }
+                    //        Source.Stat_J[Stat] = Contents[CURSOR_SELECT];
+                    //        Slots.ReInit();
+                    //        if (Values != null) Values.ReInit();
+                    //    }
+                    //}
                 }
 
                 public override bool Update()

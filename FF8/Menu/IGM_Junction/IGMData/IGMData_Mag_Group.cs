@@ -6,49 +6,57 @@
         {
             private class IGMData_Mag_Group : IGMData_Group
             {
-                public IGMData_Mag_Group(params IGMData[] d) : base( d) => Hide();
+                public IGMData_Mag_Group(params IGMData[] d) : base(d) { }
+                public override void ReInit()
+                {
+                    base.ReInit();
+                    Show();
+                }
 
                 public override void ITEMShow(IGMDataItem i, int pos = 0)
                 {
-                    pos = cnv(pos);
-                    switch(InGameMenu_Junction.GetMode())
+                    if (InGameMenu_Junction != null)
                     {
-                        default:
-                            if (pos < 1)
-                                base.ITEMShow(i, pos);
-                            else base.ITEMHide(i, pos);
-                            break;
-                        case Mode.Mag_Pool_Stat:
-                        case Mode.Mag_Stat:
-                            if (pos < 3)
-                                base.ITEMShow(i, pos);
-                            else base.ITEMHide(i, pos);
-                            break;
-                        case Mode.Mag_EL_A:
-                        case Mode.Mag_Pool_EL_A:
-                            if (pos > 0 && pos < 5)
-                                base.ITEMShow(i, pos);
-                            else base.ITEMHide(i, pos);
-                            break;
-                        case Mode.Mag_EL_D:
-                        case Mode.Mag_Pool_EL_D:
-                            if (pos > 0 && pos < 4 || pos == 5)
-                                base.ITEMShow(i, pos);
-                            else base.ITEMHide(i, pos);
-                            break;
-                        case Mode.Mag_ST_A:
-                        case Mode.Mag_Pool_ST_A:
-                            if (pos > 0 && pos < 3 || pos == 6 || pos == 7 )
-                                base.ITEMShow(i, pos);
-                            else base.ITEMHide(i, pos);
-                            break;
-                        case Mode.Mag_ST_D:
-                        case Mode.Mag_Pool_ST_D:
-                            if (pos > 0 && pos < 3 || pos == 6 || pos == 8)
-                                base.ITEMShow(i, pos);
-                            else base.ITEMHide(i, pos);
-                            break;
+                        pos = cnv(pos);
+                        switch (InGameMenu_Junction.GetMode())
+                        {
+                            default:
+                                if (pos < 1)
+                                    base.ITEMShow(i, pos);
+                                else base.ITEMHide(i, pos);
+                                break;
+                            case Mode.Mag_Pool_Stat:
+                            case Mode.Mag_Stat:
+                                if (pos < 3)
+                                    base.ITEMShow(i, pos);
+                                else base.ITEMHide(i, pos);
+                                break;
+                            case Mode.Mag_EL_A:
+                            case Mode.Mag_Pool_EL_A:
+                                if (pos > 0 && pos < 5)
+                                    base.ITEMShow(i, pos);
+                                else base.ITEMHide(i, pos);
+                                break;
+                            case Mode.Mag_EL_D:
+                            case Mode.Mag_Pool_EL_D:
+                                if (pos > 0 && pos < 4 || pos == 5)
+                                    base.ITEMShow(i, pos);
+                                else base.ITEMHide(i, pos);
+                                break;
+                            case Mode.Mag_ST_A:
+                            case Mode.Mag_Pool_ST_A:
+                                if (pos > 0 && pos < 3 || pos == 6 || pos == 7)
+                                    base.ITEMShow(i, pos);
+                                else base.ITEMHide(i, pos);
+                                break;
+                            case Mode.Mag_ST_D:
+                            case Mode.Mag_Pool_ST_D:
+                                if (pos > 0 && pos < 3 || pos == 6 || pos == 8)
+                                    base.ITEMShow(i, pos);
+                                else base.ITEMHide(i, pos);
+                                break;
 
+                        }
                     }
                 }
                 private bool InputsModeTest(int pos)
