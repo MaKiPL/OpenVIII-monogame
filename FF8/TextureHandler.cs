@@ -288,7 +288,7 @@ namespace FF8
             uint r2 = 0;
             for (uint r = 0; r < Rows; r++)
             {
-                for (uint c = 0; c < Cols; c++)
+                for (uint c = 0; c < Cols && Memory.graphics.GraphicsDevice != null; c++)
                 {
                     ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
                     string path = aw.GetListOfFiles().First(x => (x.IndexOf(string.Format(Filename, c + r * Cols + StartOffset), StringComparison.OrdinalIgnoreCase) >= 0));
@@ -297,7 +297,7 @@ namespace FF8
                     Texture2D pngTex = LoadPNG(path, Pallet);
                     Textures[c, r] = (UseBest(tex, pngTex, Pallet, Colors));
                     if (pngTex != null) Modded = true;
-                    if (c2 < Cols) size.X += Textures[c2++, r2].Width;
+                    if (c2 < Cols && Textures[c2,r2] != null) size.X += Textures[c2++, r2].Width;
                 }
                 if (Classic == null && r2 < Rows) oldsize.Y += tex.TextureData.Height;
                 if (r2 < Rows) size.Y += Textures[c2 - 1, r2++].Height;

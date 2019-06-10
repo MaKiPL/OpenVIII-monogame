@@ -10,13 +10,13 @@ namespace FF8
 
         public abstract class Menu
         {
-            /// <summary>
-            /// replace me with new keyword
-            /// </summary>
-            protected enum Mode
-            {
-                UNDEFINDED
-            }
+            ///// <summary>
+            ///// replace me with new keyword
+            ///// </summary>
+            //protected enum Mode
+            //{
+            //    UNDEFINDED
+            //}
 
             public bool Enabled { get; private set; } = true;
             public virtual void Hide() => Enabled = false;
@@ -24,10 +24,10 @@ namespace FF8
 
             public Dictionary<Enum, IGMData> Data;
 
-            /// <summary>
-            /// replace me with new keyword or cast me to your new enum.
-            /// </summary>
-            protected Enum mode=(Mode)0;
+            ///// <summary>
+            ///// replace me with new keyword or cast me to your new enum.
+            ///// </summary>
+            //protected Enum mode=(Mode)0;
 
             private Vector2 _size;
             static public Vector2 TextScale { get; protected set; }

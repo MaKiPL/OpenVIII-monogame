@@ -90,14 +90,14 @@ namespace FF8
                             {
                                 if (i2.Data.Descriptions != null && i2.Data.Descriptions.ContainsKey(CURSOR_SELECT - i.Data.Count))
                                 {
-                                    ((IGMDataItem_Box)InGameMenu_Junction.Data[SectionName.Help].CONTAINER).Data = i2.Data.Descriptions[CURSOR_SELECT - i.Data.Count];
+                                    InGameMenu_Junction.ChangeHelp(i2.Data.Descriptions[CURSOR_SELECT - i.Data.Count]);
                                 }
                             }
                             else
                             {
                                 if (i.Data.Descriptions != null && i.Data.Descriptions.ContainsKey(CURSOR_SELECT))
                                 {
-                                    ((IGMDataItem_Box)InGameMenu_Junction.Data[SectionName.Help].CONTAINER).Data = i.Data.Descriptions[CURSOR_SELECT];
+                                    InGameMenu_Junction.ChangeHelp(i.Data.Descriptions[CURSOR_SELECT]);
                                 }
                             }
                         }

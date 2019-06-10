@@ -119,7 +119,7 @@ namespace FF8
                                 break;
                         }
                         if (Changed != null)
-                            ((IGMDataItem_Box)InGameMenu_Junction.Data[SectionName.Help].CONTAINER).Data = Changed;
+                            InGameMenu_Junction.ChangeHelp(Changed);
                     }
                     return ret;
                 }

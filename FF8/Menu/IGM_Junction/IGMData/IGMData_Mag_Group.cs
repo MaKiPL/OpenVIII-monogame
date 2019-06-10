@@ -53,6 +53,11 @@
                         ((IGMDataItem_IGMData)ITEM[i, 0]).Data.Hide();
                     }
                 }
+                public override bool Inputs()
+                {
+                    bool ret = base.Inputs();
+                    return ret;
+                }
             }
         }
     }

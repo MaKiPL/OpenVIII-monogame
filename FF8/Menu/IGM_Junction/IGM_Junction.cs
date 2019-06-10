@@ -115,6 +115,8 @@ namespace FF8
                 return false;
             }
 
+            public void ChangeHelp(FF8String str) => ((IGMDataItem_Box)Data[SectionName.Help].CONTAINER).Data = str;
+
             protected override void Init()
             {
                 Size = new Vector2 { X = 840, Y = 630 };
@@ -187,7 +189,6 @@ namespace FF8
                 Descriptions = new Dictionary<Items, FF8String> {
                     {Items.Junction, Memory.Strings.Read(Strings.FileID.MNGRP,2,218) }
                 };
-
                 Data.Add(SectionName.CharacterInfo, new IGMData_CharacterInfo());
                 Data.Add(SectionName.Commands, new IGMData_Commands());
                 Data.Add(SectionName.Help, new IGMData_Help());
@@ -266,7 +267,7 @@ namespace FF8
                 Mag_ST_D
             }
 
-            private new Mode _mode;
+            private Mode _mode;
 
             protected override bool Inputs()
             {
@@ -321,21 +322,19 @@ namespace FF8
                         case Mode.Mag_Pool_EL_D:
                         case Mode.Mag_Pool_ST_A:
                         case Mode.Mag_Pool_ST_D:
-                            ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[2, 0].Inputs();
-                            break;
+                            //ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[2, 0].Inputs();
 
                         case Mode.Mag_Stat:
-                            ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[0, 0].Inputs();
-                            break;
+                            //ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[0, 0].Inputs();
 
                         case Mode.Mag_EL_A:
                         case Mode.Mag_EL_D:
-                            ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[3, 0].Inputs();
-                            break;
+                            //ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[3, 0].Inputs();
 
                         case Mode.Mag_ST_A:
                         case Mode.Mag_ST_D:
-                            ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[6, 0].Inputs();
+                            //ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[6, 0].Inputs();
+                            ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).Inputs();
                             break;
 
                         default:
