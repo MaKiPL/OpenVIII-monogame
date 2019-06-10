@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace FF8
 {
@@ -69,15 +70,15 @@ namespace FF8
                 Statuses1 = (Statuses1)br.ReadUInt32();
                 //0x0014  4 bytes status_1; //statuses 8-39
             }
-            public static Shot_Irvine_limit_break[] Read(BinaryReader br)
+            public static List<Shot_Irvine_limit_break> Read(BinaryReader br)
             {
-                var ret = new Shot_Irvine_limit_break[count];
+                var ret = new List<Shot_Irvine_limit_break>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     var tmp = new Shot_Irvine_limit_break();
                     tmp.Read(br, i);
-                    ret[i] = tmp;
+                    ret.Add(tmp);
                 }
                 return ret;
             }

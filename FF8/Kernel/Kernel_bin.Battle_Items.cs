@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace FF8
 {
@@ -21,49 +22,49 @@ namespace FF8
             public FF8String Description { get; private set; }
 
             //0x0002	2 bytes Offset to item description
-            public Magic_ID MagicID;
+            public Magic_ID MagicID { get; private set; }
 
             //0x0004	2 bytes Magic ID
-            public Attack_Type Attack_Type;
+            public Attack_Type Attack_Type { get; private set; }
 
             //0x0006	1 byte Attack type
-            public byte Attack_Power;
+            public byte Attack_Power { get; private set; }
 
             //0x0007	1 byte Attack power
-            public byte Unknown0;
+            public byte Unknown0 { get; private set; }
 
             //0x0008	1 byte Unknown
-            public Target Target;
+            public Target Target { get; private set; }
 
             //0x0009	1 byte Target info
-            public byte Unknown1;
+            public byte Unknown1 { get; private set; }
 
             //0x000A	1 byte Unknown
-            public Attack_Flags Attack_Flags;
+            public Attack_Flags Attack_Flags { get; private set; }
 
             //0x000B	1 byte Attack flags
-            public byte Unknown2;
+            public byte Unknown2 { get; private set; }
 
             //0x000C	1 bytes Unknown
-            public byte Status_Attack;
+            public byte Status_Attack { get; private set; }
 
             //0x000D	1 byte Status Attack Enabler
-            public Statuses0 Statuses0;
+            public Statuses0 Statuses0 { get; private set; }
 
             //0x000E	2 bytes status_0; //statuses 0-7
-            public Statuses1 Statuses1;
+            public Statuses1 Statuses1 { get; private set; }
 
             //0x0010	4 bytes status_1; //statuses 8-39
-            public byte Attack_Param;
+            public byte Attack_Param { get; private set; }
 
             //0x0014	1 byte Attack Param
-            public byte Unknown3;
+            public byte Unknown3 { get; private set; }
 
             //0x0015	1 byte Unknown
-            public byte Hit_Count;
+            public byte Hit_Count { get; private set; }
 
             //0x0016	1 bytes Hit Count
-            public Element Element;
+            public Element Element { get; private set; }
 
             //0x0017	1 bytes Element
 
@@ -107,15 +108,15 @@ namespace FF8
                 //0x0017	1 bytes Element
             }
 
-            public static Battle_Items_Data[] Read(BinaryReader br)
+            public static List<Battle_Items_Data> Read(BinaryReader br)
             {
-                Battle_Items_Data[] ret = new Battle_Items_Data[count];
+                var ret = new List<Battle_Items_Data>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     Battle_Items_Data tmp = new Battle_Items_Data();
                     tmp.Read(br, i);
-                    ret[i] = tmp;
+                    ret.Add(tmp);
                 }
                 return ret;
             }

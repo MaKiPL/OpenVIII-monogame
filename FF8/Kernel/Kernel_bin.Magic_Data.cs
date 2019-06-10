@@ -21,22 +21,22 @@ namespace FF8
 
             //0x0000	2 bytes Offset to spell name
             //0x0002	2 bytes Offset to spell description
-            public Magic_ID MagicID;     //0x0004	2 bytes Magic ID
+            public Magic_ID MagicID { get; private set; }     //0x0004	2 bytes Magic ID
 
-            public byte Unknown;       //0x0006  1 byte  Unknown
-            public Attack_Type Attack_type;   //0x0007  1 byte  Attack type
-            public byte Spellpower;    //0x0008  1 byte  Spell power(used in damage formula)
-            public byte Unknown2;      //0x0009  1 byte  Unknown
-            public Target Default_target;//0x000A  1 byte  Default_target
-            public Attack_Flags Attack_flags;  //0x000B  1 byte  Attack Flags
-            public byte Draw_resist;   //0x000C  1 byte  Draw resist(how hard is the magic to draw)
-            public byte Hit_count;     //0x000D  1 byte  Hit count(works with meteor animation, not sure about others)
-            public Element Element;       //0x000E  1 byte Element
-            public byte Unknown3;      //0x000F  1 byte  Unknown
-            public Statuses0 Statuses0;   //0x0014  2 bytes Statuses 0
-            public Statuses1 Statuses1;   //0x0010  4 bytes Statuses 1
-            public byte Status_attack; //0x0016  1 byte  Status attack enabler\
-            public Dictionary<Stat, byte> J_Val { get; private set; }
+            public byte Unknown { get; private set; }       //0x0006  1 byte  Unknown
+            public Attack_Type Attack_type { get; private set; }   //0x0007  1 byte  Attack type
+            public byte Spellpower { get; private set; }    //0x0008  1 byte  Spell power(used in damage formula)
+            public byte Unknown2 { get; private set; }      //0x0009  1 byte  Unknown
+            public Target Default_target { get; private set; }//0x000A  1 byte  Default_target
+            public Attack_Flags Attack_flags { get; private set; }  //0x000B  1 byte  Attack Flags
+            public byte Draw_resist { get; private set; }   //0x000C  1 byte  Draw resist(how hard is the magic to draw)
+            public byte Hit_count { get; private set; }     //0x000D  1 byte  Hit count(works with meteor animation, not sure about others)
+            public Element Element { get; private set; }       //0x000E  1 byte Element
+            public byte Unknown3 { get; private set; }      //0x000F  1 byte  Unknown
+            public Statuses0 Statuses0 { get; private set; }   //0x0014  2 bytes Statuses 0
+            public Statuses1 Statuses1 { get; private set; }   //0x0010  4 bytes Statuses 1
+            public byte Status_attack { get; private set; } //0x0016  1 byte  Status attack enabler\
+            public IReadOnlyDictionary<Stat, byte> J_Val { get => _j_Val;  }
             //public byte HP_J;          //0x0017  1 byte  Characters HP junction value
             //public byte STR_J;         //0x0018  1 byte  Characters STR junction value
             //public byte VIT_J;         //0x0019  1 byte  Characters VIT junction value
@@ -46,15 +46,15 @@ namespace FF8
             //public byte EVA_J;         //0x001D  1 byte  Characters EVA junction value
             //public byte HIT_J;         //0x001E  1 byte  Characters HIT junction value
             //public byte LUCK_J;        //0x001F  1 byte  Characters LUCK junction value
-            public Element Elem_J_atk;    //0x0020  1 byte Characters J - Elem attack
+            public Element Elem_J_atk { get; private set; }    //0x0020  1 byte Characters J - Elem attack
             //public byte J_Val[Kernel_bin.Stat.EL_Atk];//0x0021  1 byte  Characters J - Elem attack value
-            public Element Elem_J_def;    //0x0022  1 byte Characters J - Elem defense
+            public Element Elem_J_def { get; private set; }    //0x0022  1 byte Characters J - Elem defense
             //public byte J_Val[Kernel_bin.Stat.EL_Def_1];//0x0023  1 byte  Characters J - Elem defense value
             //public byte J_Val[Kernel_bin.Stat.ST_Atk];//0x0024  1 byte  Characters J - Status attack value
             //public byte J_Val[Kernel_bin.Stat.ST_Def_1];//0x0025  1 byte  Characters J - Status defense value
-            public J_Statuses Stat_J_atk;  //0x0026  2 bytes Characters J - Statuses Attack
-            public J_Statuses Stat_J_def;  //0x0028  2 bytes Characters J - Statuses Defend
-            public byte[] GF_Compatibility;
+            public J_Statuses Stat_J_atk { get; private set; }  //0x0026  2 bytes Characters J - Statuses Attack
+            public J_Statuses Stat_J_def { get; private set; }  //0x0028  2 bytes Characters J - Statuses Defend
+            public byte[] GF_Compatibility { get; private set; }
 
             //0x002A  1 byte  Quezacolt compatibility
             //0x002B  1 byte  Shiva compatibility
@@ -72,7 +72,8 @@ namespace FF8
             //0x0037  1 byte  Cactuar compatibility
             //0x0038  1 byte  Tonberry compatibility
             //0x0039  1 byte  Eden compatibility
-            public byte[] Unknown4;      //0x003A  2 bytes Unknown
+            public byte[] Unknown4 { get; private set; }      //0x003A  2 bytes Unknown
+            private Dictionary<Stat, byte> _j_Val;
 
             public void Read(BinaryReader br, int i)
             {
@@ -94,44 +95,46 @@ namespace FF8
                 Statuses1 = (Statuses1)br.ReadUInt32();
                 Statuses0 = (Statuses0)br.ReadUInt16();
                 Status_attack = br.ReadByte();
-                J_Val = new Dictionary<Stat, byte>(6);
-                J_Val.Add(Stat.HP,br.ReadByte());
-                J_Val.Add(Stat.STR,br.ReadByte());
-                J_Val.Add(Stat.VIT , br.ReadByte());
-                J_Val.Add(Stat.MAG , br.ReadByte());
-                J_Val.Add(Stat.SPR , br.ReadByte());
-                J_Val.Add(Stat.SPD , br.ReadByte());
-                J_Val.Add(Stat.EVA , br.ReadByte());
-                J_Val.Add(Stat.HIT , br.ReadByte());
-                J_Val.Add(Stat.LUCK , br.ReadByte());
-                Elem_J_atk = (Element) br.ReadByte();
-                J_Val.Add(Stat.EL_Atk, br.ReadByte());
-                Elem_J_def = (Element) br.ReadByte();
-                J_Val.Add(Stat.EL_Def_1, br.ReadByte());
-                J_Val.Add(Stat.EL_Def_2, J_Val[Stat.EL_Def_1]);
-                J_Val.Add(Stat.EL_Def_3, J_Val[Stat.EL_Def_1]);
-                J_Val.Add(Stat.EL_Def_4, J_Val[Stat.EL_Def_1]);
-                J_Val.Add(Stat.ST_Atk, br.ReadByte());
-                J_Val.Add(Stat.ST_Def_1, br.ReadByte());
-                J_Val.Add(Stat.ST_Def_2, J_Val[Stat.ST_Def_1]);
-                J_Val.Add(Stat.ST_Def_3, J_Val[Stat.ST_Def_1]);
-                J_Val.Add(Stat.ST_Def_4, J_Val[Stat.ST_Def_1]);
-                Stat_J_atk = (J_Statuses) br.ReadUInt16();
-                Stat_J_def = (J_Statuses) br.ReadUInt16();
+                _j_Val = new Dictionary<Stat, byte>(6)
+                {
+                    { Stat.HP, br.ReadByte() },
+                    { Stat.STR, br.ReadByte() },
+                    { Stat.VIT, br.ReadByte() },
+                    { Stat.MAG, br.ReadByte() },
+                    { Stat.SPR, br.ReadByte() },
+                    { Stat.SPD, br.ReadByte() },
+                    { Stat.EVA, br.ReadByte() },
+                    { Stat.HIT, br.ReadByte() },
+                    { Stat.LUCK, br.ReadByte() }
+                };
+                Elem_J_atk = (Element)br.ReadByte();
+                _j_Val.Add(Stat.EL_Atk, br.ReadByte());
+                Elem_J_def = (Element)br.ReadByte();
+                _j_Val.Add(Stat.EL_Def_1, br.ReadByte());
+                _j_Val.Add(Stat.EL_Def_2, _j_Val[Stat.EL_Def_1]);
+                _j_Val.Add(Stat.EL_Def_3, _j_Val[Stat.EL_Def_1]);
+                _j_Val.Add(Stat.EL_Def_4, _j_Val[Stat.EL_Def_1]);
+                _j_Val.Add(Stat.ST_Atk, br.ReadByte());
+                _j_Val.Add(Stat.ST_Def_1, br.ReadByte());
+                _j_Val.Add(Stat.ST_Def_2, _j_Val[Stat.ST_Def_1]);
+                _j_Val.Add(Stat.ST_Def_3, _j_Val[Stat.ST_Def_1]);
+                _j_Val.Add(Stat.ST_Def_4, _j_Val[Stat.ST_Def_1]);
+                Stat_J_atk = (J_Statuses)br.ReadUInt16();
+                Stat_J_def = (J_Statuses)br.ReadUInt16();
                 GF_Compatibility = br.ReadBytes(16);
                 Unknown4 = br.ReadBytes(2);
             }
 
 
-            public static Magic_Data[] Read(BinaryReader br)
+            public static List<Magic_Data> Read(BinaryReader br)
             {
-                var ret = new Magic_Data[count];
+                var ret = new List<Magic_Data>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     var tmp = new Magic_Data();
                     tmp.Read(br, i);
-                    ret[i] = tmp;
+                    ret.Add(tmp);
                 }
                 return ret;
             }

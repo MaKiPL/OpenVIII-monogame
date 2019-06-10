@@ -7,7 +7,7 @@
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/blob/master/Doomtrain/Resources/Magic_ID_List.txt"/>
         /// <seealso cref="https://github.com/alexfilth/doomtrain/wiki/MagicID"/>
-        public enum Magic_ID
+        public enum Magic_ID : ushort
         {
             None = 000,
             Cure = 001,

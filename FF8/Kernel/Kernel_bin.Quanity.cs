@@ -5,7 +5,7 @@ namespace FF8
     public partial class Kernel_bin
     {
         [Flags]
-        public enum Quanity
+        public enum Quanity : byte
         {
             //0% = 0x00,
             //6.25% = 0x01,

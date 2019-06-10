@@ -1,4 +1,6 @@
-﻿namespace FF8
+﻿using System.Collections.Generic;
+
+namespace FF8
 {
     public partial class Kernel_bin
     {
@@ -29,15 +31,15 @@
                 //br.BaseStream.Seek(4,SeekOrigin.Current);
             }
 
-            public static Non_battle_Items_Data[] Read()
+            public static List<Non_battle_Items_Data> Read()
             {
-                Non_battle_Items_Data[] ret = new Non_battle_Items_Data[count];
+                var ret = new List<Non_battle_Items_Data>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     Non_battle_Items_Data tmp = new Non_battle_Items_Data();
                     tmp.Read(i);
-                    ret[i] = tmp;
+                    ret.Add(tmp);
                 }
                 return ret;
             }

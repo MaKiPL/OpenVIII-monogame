@@ -16,7 +16,7 @@ namespace FF8
             public const int count = 11;
             public const ushort MAX_HP_VALUE = 9999;
             public const byte MAX_STAT_VALUE = 255;
-            private Characters char_id;
+            private Characters char_id { get; set; }
             public FF8String Name => Memory.Strings.GetName((Faces.ID)char_id);
 
             public override string ToString() => Name;
@@ -27,19 +27,19 @@ namespace FF8
             /// Crisis level modifier
             /// </summary>
             /// <see cref="https://finalfantasy.fandom.com/wiki/Crisis_Level#Crisis_Level"/>
-            public byte Crisis; //0x0002; 1 byte; Crisis level hp multiplier
+            public byte Crisis { get; private set; } //0x0002; 1 byte; Crisis level hp multiplier
 
-            public Gender Gender; //0x0003; 1 byte; Gender; 0x00 - Male 0x01 - Female
-            public byte LimitID; //0x0004; 1 byte; Limit Break ID
-            public byte LimitParam; //0x0005; 1 byte; Limit Break Param used for the power of each renzokuken hit before finisher
-            private byte[] _EXP; //0x0006; 2 bytes; EXP modifier
-            private byte[] _HP; //0x0008; 4 bytes; HP
-            private byte[] _STR; //0x000C; 4 bytes; STR
-            private byte[] _VIT; //0x0010; 4 bytes; VIT
-            private byte[] _MAG; //0x0014; 4 bytes; MAG
-            private byte[] _SPR; //0x0018; 4 bytes; SPR
-            private byte[] _SPD; //0x001C; 4 bytes; SPD
-            private byte[] _LUCK; //0x0020; 4 bytes; LUCK
+            public Gender Gender { get; private set; } //0x0003; 1 byte; Gender; 0x00 - Male 0x01 - Female
+            public byte LimitID { get; private set; } //0x0004; 1 byte; Limit Break ID
+            public byte LimitParam { get; private set; } //0x0005; 1 byte; Limit Break Param used for the power of each renzokuken hit before finisher
+            private byte[] _EXP { get; set; } //0x0006; 2 bytes; EXP modifier
+            private byte[] _HP { get; set; } //0x0008; 4 bytes; HP modifiers
+            private byte[] _STR { get; set; } //0x000C; 4 bytes; STR modifiers
+            private byte[] _VIT { get; set; } //0x0010; 4 bytes; VIT modifiers
+            private byte[] _MAG { get; set; } //0x0014; 4 bytes; MAG modifiers
+            private byte[] _SPR { get; set; } //0x0018; 4 bytes; SPR modifiers
+            private byte[] _SPD { get; set; } //0x001C; 4 bytes; SPD modifiers
+            private byte[] _LUCK { get; set; } //0x0020; 4 bytes; LUCK modifiers
 
             public void Read(BinaryReader br, Characters char_id)
             {
@@ -52,13 +52,13 @@ namespace FF8
                 LimitID = br.ReadByte(); //0x0004; 1 byte; Limit Break ID
                 LimitParam = br.ReadByte(); //0x0005; 1 byte; Limit Break Param used for the power of each renzokuken hit before finisher
                 _EXP = br.ReadBytes(2); //0x0006; 2 bytes; EXP modifier
-                _HP = br.ReadBytes(4); //0x0008; 4 bytes; HP
-                _STR = br.ReadBytes(4); //0x000C; 4 bytes; STR
-                _VIT = br.ReadBytes(4); //0x0010; 4 bytes; VIT
-                _MAG = br.ReadBytes(4); //0x0014; 4 bytes; MAG
-                _SPR = br.ReadBytes(4); //0x0018; 4 bytes; SPR
-                _SPD = br.ReadBytes(4); //0x001C; 4 bytes; SPD
-                _LUCK = br.ReadBytes(4); //0x0020; 4 bytes; LUCK
+                _HP = br.ReadBytes(4); //0x0008; 4 bytes; HP modifiers
+                _STR = br.ReadBytes(4); //0x000C; 4 bytes; STR modifiers
+                _VIT = br.ReadBytes(4); //0x0010; 4 bytes; VIT modifiers
+                _MAG = br.ReadBytes(4); //0x0014; 4 bytes; MAG modifiers
+                _SPR = br.ReadBytes(4); //0x0018; 4 bytes; SPR modifiers
+                _SPD = br.ReadBytes(4); //0x001C; 4 bytes; SPD modifiers
+                _LUCK = br.ReadBytes(4); //0x0020; 4 bytes; LUCK modifiers
                 int hp = HP(8);
             }
 

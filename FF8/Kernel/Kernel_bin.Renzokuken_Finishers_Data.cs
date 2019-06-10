@@ -18,20 +18,20 @@ namespace FF8
 
             public override string ToString() => Name;
 
-            public Magic_ID MagicID;          //0x0004	2 bytes Magic ID
-            public Attack_Type Attack_Type;   //0x0006	1 byte Attack Type
-            public byte Unknown0;             //0x0007	1 byte Unknown
-            public byte Attack_Power;         //0x0008	1 byte Attack power
-            public byte Unknown1;             //0x0009	1 byte Unknown
-            public Target Target;             //0x000A	1 byte Target info
-            public Attack_Flags Attack_Flags; //0x000B	1 byte Attack Flags
-            public byte Hit_Count;            //0x000C	1 byte Hit count
-            public Element Element;           //0x000D	1 byte Element Attack
-            public byte Element_Percent;      //0x000E	1 byte Element Attack %
-            public byte Status_Attack;        //0x000F	1 byte Status Attack Enabler
-            public byte[] Unknown2;           //0x0010	2 bytes Unknown
-            public Statuses0 Statuses0;       //0x0012	2 bytes status_0; //statuses 0-7
-            public Statuses1 Statuses1;       //0x0014	4 bytes status_1; //statuses 8-39
+            public Magic_ID MagicID { get; private set; }          //0x0004	2 bytes Magic ID
+            public Attack_Type Attack_Type { get; private set; }   //0x0006	1 byte Attack Type
+            public byte Unknown0 { get; private set; }             //0x0007	1 byte Unknown
+            public byte Attack_Power { get; private set; }         //0x0008	1 byte Attack power
+            public byte Unknown1 { get; private set; }             //0x0009	1 byte Unknown
+            public Target Target { get; private set; }             //0x000A	1 byte Target info
+            public Attack_Flags Attack_Flags { get; private set; } //0x000B	1 byte Attack Flags
+            public byte Hit_Count { get; private set; }            //0x000C	1 byte Hit count
+            public Element Element { get; private set; }           //0x000D	1 byte Element Attack
+            public byte Element_Percent { get; private set; }      //0x000E	1 byte Element Attack %
+            public byte Status_Attack { get; private set; }        //0x000F	1 byte Status Attack Enabler
+            public byte[] Unknown2 { get; private set; }           //0x0010	2 bytes Unknown
+            public Statuses0 Statuses0 { get; private set; }       //0x0012	2 bytes status_0; //statuses 0-7
+            public Statuses1 Statuses1 { get; private set; }       //0x0014	4 bytes status_1; //statuses 8-39
 
             public void Read(BinaryReader br, int i)
             {

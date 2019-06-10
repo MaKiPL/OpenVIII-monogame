@@ -16,7 +16,7 @@ namespace FF8
             public new const int id = 14;
             
             public CharacterAbilityFlags Flags { get; private set; }
-            public Battle_Commands BattleCommand { get; set; } = null;
+            //public Battle_Commands BattleCommand { get; private set; } = null;
 
             public override void Read(BinaryReader br, int i)
             {

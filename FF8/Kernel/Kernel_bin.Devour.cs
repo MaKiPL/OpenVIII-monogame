@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace FF8
 {
@@ -71,15 +72,15 @@ namespace FF8
                 HP = br.ReadByte();
                 //0x000B  1 byte Raised Stat HP Quantity
             }
-            public static Devour[] Read(BinaryReader br)
+            public static List<Devour> Read(BinaryReader br)
             {
-                var ret = new Devour[count];
+                var ret = new List<Devour>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     var tmp = new Devour();
                     tmp.Read(br, i);
-                    ret[i] = tmp;
+                    ret.Add(tmp);
                 }
                 return ret;
             }

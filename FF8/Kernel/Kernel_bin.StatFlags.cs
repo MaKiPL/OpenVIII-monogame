@@ -5,7 +5,7 @@ namespace FF8
     public partial class Kernel_bin
     {
         [Flags]
-        private enum StatFlags
+        private enum StatFlags :byte
         {
             None = 0x00,
             STR = 0x01,

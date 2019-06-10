@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace FF8
 {
@@ -64,15 +65,15 @@ namespace FF8
                 Statuses1 = (Statuses1)br.ReadUInt32();
                 //0x0010  4 bytes status_1; //statuses 8-39
             }
-            public static Rinoa_limit_breaks_part_2[] Read(BinaryReader br)
+            public static List<Rinoa_limit_breaks_part_2> Read(BinaryReader br)
             {
-                var ret = new Rinoa_limit_breaks_part_2[count];
+                var ret = new List<Rinoa_limit_breaks_part_2>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     var tmp = new Rinoa_limit_breaks_part_2();
                     tmp.Read(br,i);
-                    ret[i] = tmp;
+                    ret.Add(tmp);
                 }
                 return ret;
             }

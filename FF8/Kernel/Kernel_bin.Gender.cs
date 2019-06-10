@@ -2,7 +2,7 @@
 {
     public partial class Kernel_bin
     {
-        public enum Gender
+        public enum Gender :byte
         {
             Male,
             Female

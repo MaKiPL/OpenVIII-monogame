@@ -17,8 +17,8 @@ namespace FF8
 
             public byte Index { get; private set; }
             public byte[] Unknown0 { get; private set; }
-            public Battle_Commands BattleCommand { get; set; }
-            private Dictionary<int, int> convert = new Dictionary<int, int>
+            public Battle_Commands BattleCommand { get; private set; }
+            private IReadOnlyDictionary<int, int> convert { get; } = new Dictionary<int, int>
             {
                 {0,2},
                 {1,3},
