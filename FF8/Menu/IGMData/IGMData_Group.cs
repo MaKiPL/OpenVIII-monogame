@@ -13,17 +13,23 @@
                     ITEM[i, 0] = d[i];
                 }
             }
-
+            public virtual bool ITEMInputs(IGMDataItem i, int pos = 0)
+            {
+                return i.Inputs();
+            }
             public override bool Inputs()
             {
                 if (Enabled)
                 {
                     bool ret = base.Inputs();
                     if (!skipdata)
-                        foreach (var i in ITEM)
+                    {
+                        int pos = 0;
+                        foreach (IGMDataItem i in ITEM)
                         {
-                            ret = i.Inputs() || ret;
+                            ret = ITEMInputs(i,pos++) || ret;
                         }
+                    }
                     return ret;
                 }
                 return false;
