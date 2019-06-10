@@ -13,6 +13,42 @@
                     ITEM[i, 0] = d[i];
                 }
             }
+            public virtual void ITEMHide(IGMDataItem i, int pos=0)
+            {
+                i.Hide();
+            }
+            public override void Hide()
+            {
+                if (Enabled)
+                {
+                    base.Hide();
+                    if (!skipdata)
+                    {
+                        int pos = 0;
+                        foreach (IGMDataItem i in ITEM)
+                        {
+                           ITEMHide(i, pos++);
+                        }
+                    }
+                }
+            }
+            public virtual void ITEMShow(IGMDataItem i, int pos = 0)
+            {
+                i.Show();
+            }
+            public override void Show()
+            {
+                base.Show();
+                if (!skipdata)
+                {
+                    int pos = 0;
+                    foreach (IGMDataItem i in ITEM)
+                    {
+                        ITEMShow(i, pos++);
+                    }
+                }             
+            }
+
             public int cnv(int pos) => pos / Depth;
             public int deep(int pos) => pos % Depth;
             public virtual bool ITEMInputs(IGMDataItem i, int pos = 0)

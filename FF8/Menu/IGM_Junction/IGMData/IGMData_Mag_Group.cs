@@ -8,54 +8,99 @@
             {
                 public IGMData_Mag_Group(params IGMData[] d) : base( d) => Hide();
 
-                public override void Show()
+                public override void ITEMShow(IGMDataItem i, int pos = 0)
                 {
-                    for (int i = 0; i < Count - 4 && ITEM[i, 0] != null; i++)
+                    pos = cnv(pos);
+                    switch(InGameMenu_Junction.GetMode())
                     {
-                        ((IGMDataItem_IGMData)ITEM[i, 0]).Data.Show();
-                    }
+                        default:
+                            if (pos < 1)
+                                base.ITEMShow(i, pos);
+                            else base.ITEMHide(i, pos);
+                            break;
+                        case Mode.Mag_Pool_Stat:
+                        case Mode.Mag_Stat:
+                            if (pos < 3)
+                                base.ITEMShow(i, pos);
+                            else base.ITEMHide(i, pos);
+                            break;
+                        case Mode.Mag_EL_A:
+                        case Mode.Mag_Pool_EL_A:
+                            if (pos > 0 && pos < 5)
+                                base.ITEMShow(i, pos);
+                            else base.ITEMHide(i, pos);
+                            break;
+                        case Mode.Mag_EL_D:
+                        case Mode.Mag_Pool_EL_D:
+                            if (pos > 0 && pos < 4 || pos == 5)
+                                base.ITEMShow(i, pos);
+                            else base.ITEMHide(i, pos);
+                            break;
+                        case Mode.Mag_ST_A:
+                        case Mode.Mag_Pool_ST_A:
+                            if (pos > 0 && pos < 3 || pos == 6 || pos == 7 )
+                                base.ITEMShow(i, pos);
+                            else base.ITEMHide(i, pos);
+                            break;
+                        case Mode.Mag_ST_D:
+                        case Mode.Mag_Pool_ST_D:
+                            if (pos > 0 && pos < 3 || pos == 6 || pos == 8)
+                                base.ITEMShow(i, pos);
+                            else base.ITEMHide(i, pos);
+                            break;
 
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode() == Mode.Mag_EL_A && Enabled)
-                    {
-                        for (int i = Count - 6; i < Count - 3 && ITEM[i, 0] != null; i++)
-                        {
-                            ((IGMDataItem_IGMData)ITEM[i, 0]).Data.Show();
-                        }
-                        for (int i = Count - 3; i < Count && ITEM[i, 0] != null; i++)
-                        {
-                            ((IGMDataItem_IGMData)ITEM[i, 0]).Data.Hide();
-                        }
-                    }
-                    else if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode() == Mode.Mag_ST_A && Enabled)
-                    {
-                        for (int i = Count - 3; i < Count && ITEM[i, 0] != null; i++)
-                        {
-                            ((IGMDataItem_IGMData)ITEM[i, 0]).Data.Show();
-                        }
-                        for (int i = Count - 6; i < Count - 3 && ITEM[i, 0] != null; i++)
-                        {
-                            ((IGMDataItem_IGMData)ITEM[i, 0]).Data.Hide();
-                        }
-                    }
-                    else
-                    {
-                        for (int i = Count - 6; i < Count && ITEM[i, 0] != null; i++)
-                        {
-                            ((IGMDataItem_IGMData)ITEM[i, 0]).Data.Hide();
-                        }
                     }
                 }
+                private bool InputsModeTest(int pos)
+                {
+                    pos = cnv(pos);
+                    switch (InGameMenu_Junction.GetMode())
+                    {
+                        case Mode.Mag_Pool_Stat:
+                        case Mode.Mag_Pool_EL_A:
+                        case Mode.Mag_Pool_EL_D:
+                        case Mode.Mag_Pool_ST_A:
+                        case Mode.Mag_Pool_ST_D:
+                            if (pos == 2)
+                                return true;
+                            break;
+                        case Mode.Mag_Stat:
+                            if (pos == 0)
+                                return true;
+                            break;
+                        case Mode.Mag_EL_A:
+                        case Mode.Mag_EL_D:
+                            if (pos == 3)
+                                return true;
+                            break;
+                        case Mode.Mag_ST_A:
+                        case Mode.Mag_ST_D:
+                            if (pos == 6)
+                                return true;
+                            break;
 
+                    }
+                    return false;
+                }
                 public override void Hide()
                 {
-                    for (int i = 1; i < Count && ITEM[i, 0] != null; i++)
-                    {
-                        ((IGMDataItem_IGMData)ITEM[i, 0]).Data.Hide();
-                    }
+                    //depending on the mode it'll hide what's needed and show rest.
+                    Show();
                 }
-                public override bool Inputs()
+
+                public override bool ITEMInputs(IGMDataItem i, int pos = 0)
                 {
-                    bool ret = base.Inputs();
+                    bool ret = false;
+                    if (InputsModeTest(pos))
+                    {
+                        Mode lastmode = InGameMenu_Junction.GetMode();
+                        ret = base.ITEMInputs(i, pos);
+                        if (ret)
+                        {
+                            if (lastmode != InGameMenu_Junction.GetMode())
+                                Show();
+                        }
+                    }
                     return ret;
                 }
             }
