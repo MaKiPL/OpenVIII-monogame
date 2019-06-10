@@ -13,6 +13,8 @@
                     ITEM[i, 0] = d[i];
                 }
             }
+            public int cnv(int pos) => pos / Depth;
+            public int deep(int pos) => pos % Depth;
             public virtual bool ITEMInputs(IGMDataItem i, int pos = 0)
             {
                 return i.Inputs();
@@ -34,29 +36,41 @@
                 }
                 return false;
             }
-
+            public virtual void ITEMReInit(IGMDataItem i, int pos = 0)
+            {
+                i.ReInit();
+            }
             public override void ReInit()
             {
                 base.ReInit();
                 if (!skipdata)
+                {
+                    int pos = 0;
                     foreach (var i in ITEM)
                     {
                         if (i != null)
-                            i.ReInit();
+                            ITEMReInit(i, pos);
                     }
+                }
             }
-
+            public virtual bool ITEMUpdate(IGMDataItem i, int pos = 0)
+            {
+                return i.Inputs();
+            }
             public override bool Update()
             {
                 if (Enabled)
                 {
                     bool ret = base.Update();
                     if (!skipdata)
+                    {
+                        int pos = 0;
                         foreach (var i in ITEM)
                         {
                             if (i != null)
-                                ret = i.Update() || ret;
+                                ret = ITEMUpdate(i, pos++) || ret;
                         }
+                    }
                     return ret;
                 }
                 return false;
