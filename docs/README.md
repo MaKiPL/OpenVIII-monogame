@@ -31,6 +31,7 @@ Compared to vanilla Steam release so far we introduced these features:
 
 * Unlimited resolution - You can play in 64x64 up to 8k if your monitor supports it
 * Linux native support - You no longer have to play with Wine emulator. OpenVIII based on OpenGL delivers the game in native code- with direct support for your platform drivers. 
+* [WIP] Current known graphical mods support - We are succesfully introducing current vanilla mods supports including GUI/Menu overhaul, music replacement mods and more! We are in direct contact with all the mods authors planning how can we integrate their work
 * [WIP] Current gen audio - You can now play DirectX Music segments on all platforms (WIP); We also natively support loopable OGG music replacements making it possible to change any music you want by simply drag&drop operation. Thanks to OpenVIII you will be able to change, edit, export to Midi .SGT segments, replace soundfonts and much more!
 * FFMPEG video module - Due to FFMPEG integration we are able to support wide amount of video formats. You are able to play .mp4, .bik and even replace the videos with your own without worrying about the codec. 
 * No more frame limits - All actions are no more tied to specific framerate. You can now enjoy the game with fully real-time animation blending making it possible to play the game in unlimited framerate making every motion smooth
@@ -46,4 +47,6 @@ Our main objective is to finish every single module to make the game fully playa
 
 # Current progress
 
-TODO
+#### These screenshots were taken on Linux machine in 1280x720 resolution. Keep in mind that it doesn't show everything that was done. There's A LOT more including video support, music support, audio support, cards, in-game menu and many more! Screenshots taken at 11/06/2019
+![Load menu](https://i.postimg.cc/RVSzcGnm/Screenshot-from-2019-06-11-11-45-14.png)![Galbadian soldier](https://i.postimg.cc/rwzXHmJY/Screenshot-from-2019-06-11-11-44-19.png)
+![Fight at Balamb](https://i.postimg.cc/5NsWpvwC/Screenshot-from-2019-06-11-11-44-38.png)![World with worldmap](https://i.postimg.cc/2SJRND9j/Screenshot-from-2019-06-11-11-46-24.png)
