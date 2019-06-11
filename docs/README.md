@@ -48,7 +48,7 @@ Our main objective is to finish every single module to make the game fully playa
 
 # Current progress
 
-#### These screenshots were taken on Linux machine in 1280x720 resolution. Keep in mind that it doesn't show everything that was done. There's A LOT more including video support, music support, audio support, cards, in-game menu and many more! Screenshots taken at 11/06/2019
+#### These screenshots were taken on Linux machine in 1280x720 resolution. Keep in mind that it doesn't show everything that was done. There's A LOT more including video support, music support, audio support, cards, in-game menu and many more! Screenshots taken at 11 June 2019
 ![Load menu](https://i.postimg.cc/RVSzcGnm/Screenshot-from-2019-06-11-11-45-14.png)![Galbadian soldier](https://i.postimg.cc/rwzXHmJY/Screenshot-from-2019-06-11-11-44-19.png)
 ![Fight at Balamb](https://i.postimg.cc/5NsWpvwC/Screenshot-from-2019-06-11-11-44-38.png)![World with worldmap](https://i.postimg.cc/2SJRND9j/Screenshot-from-2019-06-11-11-46-24.png)
 
