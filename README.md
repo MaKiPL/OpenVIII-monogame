@@ -4,52 +4,40 @@ Open source VIII engine implementation in C#
 
 Progress:
 Current state- DEBUG ONLY; pre-prototype, may contain DIRTY code and file reverse engineering work in progress with a lot of trash. 
-Such DEBUG modules are designed to be rewritten into stable version, without trash, test functions and keeping in mind all future improvements.
 
-=Are debug modules fully featured?
-
--Yes, they are. They are debug just to test the functions and work with reverse engineering, but they should support all functionalities.
-
-Legend:
-
-NAME OF MODULE
-
-PROGRESS BAR PROGRESS PERCENTAGE  -> WHAT'S REMAINING TO DO
-
-
-## PROGRESS IN-DEV PROTOTYPES
+## PROGRESS IN-DEV PROTOTYPES (may be different due to bugs/ insufficient testing)
 
 MODULE OVERTURE
 
-⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛ 100% 
+⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛ 100%
 
 MODULE MAIN MENU
 
-⬛⬛⬛⬛⬛⬛⬜⬜⬜⬜ 60%  -> LOAD MENU; SAVEGAME PARSING
+⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛ 100%
 
 MODULE IN-GAME MENU
 
-⬛⬜⬜⬜⬜⬜⬜⬜⬜⬜ 10%   -> EVERYTHING
+⬛⬛⬛⬛⬛⬛⬜⬜⬜⬜ 60%
 
 MODULE BATTLE
 
-⬛⬛⬛⬛⬛⬜⬜⬜⬜⬜ 50%  -> CAMERA SEQUENCE; AI; WHOLE BATTLE CODE
+⬛⬛⬛⬛⬛⬜⬜⬜⬜⬜ 55% 
 
 MODULE TRIPLE TRIAD
 
-⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0%   -> EVERYTHING
+⬛⬛⬜⬜⬜⬜⬜⬜⬜⬜ 20%   
 
 MODULE FIELD
 
-⬛⬛⬛⬛⬜⬜⬜⬜⬜⬜ 40%  -> SCRIPT; ENTITY RENDERING; BACKGROUND FIXES; BACKGROUND ANIMATION; 
+⬛⬛⬛⬛⬛⬛⬜⬜⬜⬜ 60% 
 
 MODULE FMV
 
-⬛⬛⬛⬛⬛⬛⬛⬛⬜⬜ 80%  -> BINK IMPLEMENTATION(?)
+⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛ 100% 
 
 MODULE WORLD MAP
 
-⬛⬛⬛⬛⬛⬜⬜⬜⬜⬜ 50%   -> CHARACTER; OBJECT OF INTEREST; WM2FIELD; RAGNAROK/VEHICLES; ENCOUNTERS
+⬛⬛⬛⬛⬛⬜⬜⬜⬜⬜ 50%
 
 
 ## Getting started (Windows)
