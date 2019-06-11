@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 
 namespace FF8
@@ -7,7 +8,7 @@ namespace FF8
     {
         private partial class IGM_Junction : Menu
         {
-            public enum Items
+            public enum Items :byte
             {
                 Junction,
                 Off,
@@ -49,7 +50,7 @@ namespace FF8
                 Percent
             }
 
-            public enum SectionName
+            public enum SectionName: byte
             {
                 /// <summary>
                 /// Junction OFF Auto Ability
@@ -103,8 +104,17 @@ namespace FF8
             /// Required to support Laguna's Party. They have unique stats but share junctions and inventory.
             /// </summary>
             public static Characters VisableCharacter { get; private set; }
+            public EventHandler<Mode> ModeChangeEventListener;
+            private Mode GetMode() => _mode;
+            private void SetMode(Mode value)
+            {
+                if (_mode != value)
+                {
+                    _mode = value;
+                    ModeChangeEventListener?.Invoke(this, value);
+                }
+            }
 
-            private Mode GetMode() => _mode; private void SetMode(Mode value) => _mode = value; 
             public override bool Update()
             {
                 if (Enabled)
@@ -242,7 +252,7 @@ namespace FF8
                 ReInit();
             }
 
-            public new enum Mode
+            public enum Mode
             {
                 None,
                 TopMenu,
@@ -322,18 +332,11 @@ namespace FF8
                         case Mode.Mag_Pool_EL_D:
                         case Mode.Mag_Pool_ST_A:
                         case Mode.Mag_Pool_ST_D:
-                            //ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[2, 0].Inputs();
-
                         case Mode.Mag_Stat:
-                            //ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[0, 0].Inputs();
-
                         case Mode.Mag_EL_A:
                         case Mode.Mag_EL_D:
-                            //ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[3, 0].Inputs();
-
                         case Mode.Mag_ST_A:
                         case Mode.Mag_ST_D:
-                            //ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).ITEM[6, 0].Inputs();
                             ret = ((IGMData_Mag_Group)Data[SectionName.Mag_Group]).Inputs();
                             break;
 

@@ -9,7 +9,7 @@ namespace FF8
         /// <summary>
         /// Convert stat to stat junction
         /// </summary>
-        public static Dictionary<Stat, Abilities> Stat2Ability = new Dictionary<Stat, Abilities>
+        public static IReadOnlyDictionary<Stat, Abilities> Stat2Ability { get; } = new Dictionary<Stat, Abilities>
                 {
                     { Stat.HP, Abilities.HP_J },
                     { Stat.STR, Abilities.Str_J },

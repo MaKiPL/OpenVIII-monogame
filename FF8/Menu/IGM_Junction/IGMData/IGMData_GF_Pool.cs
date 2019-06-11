@@ -192,7 +192,7 @@ namespace FF8
                             }
                             foreach (Kernel_bin.Abilities r in a.Except(b).Where(v => Kernel_bin.Junctionabilities.ContainsKey(v)))
                             {
-                                if (Kernel_bin.Stat2Ability.ContainsValue(r))
+                                if (Kernel_bin.Stat2Ability.Any(item => item.Value == r))
                                     switch (r)
                                     {
                                         case Kernel_bin.Abilities.ST_Atk_J:

@@ -10,8 +10,12 @@ namespace FF8
         {
             private class IGMData_Mag_Stat_Slots : IGMData_Slots<Kernel_bin.Stat, Saves.CharacterData>
             {
-                public IGMData_Mag_Stat_Slots() : base(10, 5, new IGMDataItem_Box(pos: new Rectangle(0, 414, 840, 216)), 2, 5)
+                public IGMData_Mag_Stat_Slots() : base(10, 5, new IGMDataItem_Box(pos: new Rectangle(0, 414, 840, 216)), 2, 5) { }
+
+                private void ModeChangeEvent(object sender, Mode e)
                 {
+                    if (e == Mode.Mag_Stat)
+                        CheckMode();
                 }
 
                 /// <summary>
@@ -29,6 +33,7 @@ namespace FF8
                     { Kernel_bin.Stat.LUCK, Icons.ID.Stats_Luck },
                     { Kernel_bin.Stat.HIT, Icons.ID.Stats_Hit_Percent },
                 };
+                private bool eventAdded = false;
 
                 /// <summary>
                 /// Things that may of changed before screen loads or junction is changed.
@@ -37,6 +42,11 @@ namespace FF8
                 {
                     if (Memory.State.Characters != null)
                     {
+                        if (!eventAdded && InGameMenu_Junction != null)
+                        {
+                            InGameMenu_Junction.ModeChangeEventListener += ModeChangeEvent;
+                            eventAdded = true;
+                        }
                         Setting = Memory.State.Characters[Character];
                         Contents = Array.ConvertAll(Contents, c => c = default);
                         base.ReInit();
@@ -142,7 +152,7 @@ namespace FF8
                    CheckMode(-1, Mode.None, Mode.Mag_Stat,
                        InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_Stat),
                        InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_Stat),
-                       (InGameMenu_Junction.GetMode() == Mode.Mag_Stat || InGameMenu_Junction.GetMode() == Mode.Mag_Pool_Stat));
+                       (InGameMenu_Junction.GetMode() == Mode.Mag_Stat || InGameMenu_Junction.GetMode() == Mode.Mag_Pool_Stat) && cursor);
 
                 public override void BackupSetting() => PrevSetting = Setting.Clone();
 
