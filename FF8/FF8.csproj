@@ -234,6 +234,7 @@
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_ST_A_Values.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_ST_D_Values.cs" />
     <Compile Include="Menu\IGMData\IGMData_Pool.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Slots.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_TopMenu.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_TopMenu_Auto.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_TopMenu_Auto_Group.cs" />

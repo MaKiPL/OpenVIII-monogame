@@ -94,55 +94,6 @@ namespace FF8
                     InGameMenu_Junction.SetMode(Mode.TopMenu_Junction);
                 }
             }
-
-            public abstract class IGMData_Slots<T,T2> : IGMData
-            {
-                public T[] Contents { get; protected set; }
-
-                public IGMData_Slots(int count, int depth, IGMDataItem container = null, int? cols = null, int? rows = null) : base(count, depth, container, cols, rows)
-                {
-
-                    Contents = new T[Count];
-                }
-                public T2 Setting { get; protected set; }
-                public T2 PrevSetting { get; protected set; }
-                public virtual void CheckMode(bool cursor = true) => CheckMode(0, Mode.None, Mode.None, false, false, cursor);
-                public void CheckMode(int pos, Mode one, Mode two, bool slots, bool pools, bool cursor = true)
-                {
-                    if (InGameMenu_Junction != null && slots && Enabled)
-                    {
-                        Cursor_Status &= ~Cursor_Status.Horizontal;
-                        Cursor_Status |= Cursor_Status.Vertical;
-                        Cursor_Status &= ~Cursor_Status.Blinking;
-                        if (CURSOR_SELECT > pos)
-                            InGameMenu_Junction.SetMode(two);
-                        else
-                            InGameMenu_Junction.SetMode(one);
-                    }
-                    else if (InGameMenu_Junction != null && pools && Enabled)
-                    {
-                        Cursor_Status |= Cursor_Status.Blinking;
-                    }
-                    if (cursor)
-                        Cursor_Status |= Cursor_Status.Enabled;
-                    else
-                        Cursor_Status &= ~Cursor_Status.Enabled;
-                }
-
-                public virtual void ConfirmChange()
-                {
-                    PrevSetting = default;
-                }
-                public abstract void BackupSetting();
-                public abstract void UndoChange();
-
-                public override bool Inputs()
-                {
-                    bool ret = base.Inputs();
-                    if (ret) CheckMode();
-                    return ret;
-                }
-            }
         }
     }
 }

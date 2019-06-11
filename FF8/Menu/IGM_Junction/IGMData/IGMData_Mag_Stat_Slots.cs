@@ -12,16 +12,12 @@ namespace FF8
             {
                 public IGMData_Mag_Stat_Slots() : base(10, 5, new IGMDataItem_Box(pos: new Rectangle(0, 414, 840, 216)), 2, 5) { }
 
-                private void ModeChangeEvent(object sender, Mode e)
-                {
-                    if (e == Mode.Mag_Stat)
-                        CheckMode();
-                }
+
 
                 /// <summary>
                 /// Convert stat to correct icon id.
                 /// </summary>
-                private static Dictionary<Kernel_bin.Stat, Icons.ID> Stat2Icon = new Dictionary<Kernel_bin.Stat, Icons.ID>
+                private static IReadOnlyDictionary<Kernel_bin.Stat, Icons.ID> Stat2Icon { get; } = new Dictionary<Kernel_bin.Stat, Icons.ID>
                 {
                     { Kernel_bin.Stat.HP, Icons.ID.Stats_Hit_Points },
                     { Kernel_bin.Stat.STR, Icons.ID.Stats_Strength },
@@ -33,7 +29,6 @@ namespace FF8
                     { Kernel_bin.Stat.LUCK, Icons.ID.Stats_Luck },
                     { Kernel_bin.Stat.HIT, Icons.ID.Stats_Hit_Percent },
                 };
-                private bool eventAdded = false;
 
                 /// <summary>
                 /// Things that may of changed before screen loads or junction is changed.
@@ -42,11 +37,7 @@ namespace FF8
                 {
                     if (Memory.State.Characters != null)
                     {
-                        if (!eventAdded && InGameMenu_Junction != null)
-                        {
-                            InGameMenu_Junction.ModeChangeEventListener += ModeChangeEvent;
-                            eventAdded = true;
-                        }
+                        AddEventListener();
                         Setting = Memory.State.Characters[Character];
                         Contents = Array.ConvertAll(Contents, c => c = default);
                         base.ReInit();
@@ -117,6 +108,11 @@ namespace FF8
                             }
                         }
                     }
+                }
+                protected override void ModeChangeEvent(object sender, Mode e)
+                {
+                    if (e == Mode.Mag_Stat)
+                        base.ModeChangeEvent(sender, e);
                 }
 
                 public override void Inputs_Left()
