@@ -6,18 +6,15 @@ namespace FF8
 {
     public partial class Module_main_menu_debug
     {
-
         #region Classes
 
         private partial class IGM_Junction
         {
-
             #region Classes
 
             public abstract class IGMData_Slots<C> : IGMData
                 where C : class
             {
-
                 #region Fields
 
                 public static EventHandler<C> PrevSettingUpdateEventListener;
@@ -66,7 +63,6 @@ namespace FF8
                         Cursor_Status |= Cursor_Status.Enabled;
                     else
                         Cursor_Status &= ~Cursor_Status.Enabled;
-
                 }
 
                 public virtual void ConfirmChange() => SetPrevSetting(default);
@@ -88,14 +84,14 @@ namespace FF8
                             PageRight();
                             ret = true;
                         }
-                        if(ret)
+                        if (ret)
                         {
                             Input.ResetInputLimit();
                             if (!skipsnd)
                                 init_debugger_Audio.PlaySound(0);
                         }
                     }
-                    if(!ret)
+                    if (!ret)
                         ret = base.Inputs();
                     if (ret) CheckMode();
                     return ret;
@@ -133,30 +129,54 @@ namespace FF8
                     }
                 }
 
+                private void getColor(byte pos, out byte palette, out Font.ColorID _colorid, out bool unlocked)
+                {
+                    unlocked = Unlocked(pos);
+                    palette = 2;
+                    _colorid = Font.ColorID.White;
+                    if (unlocked)
+                    {
+                        if (colorid != null && CURSOR_SELECT == pos && _prevSetting != null)
+                        {
+                            if (colorid == Font.ColorID.Red)
+                            {
+                                palette = 5;
+                                _colorid = Font.ColorID.Red;
+                            }
+                            else if (colorid == Font.ColorID.Yellow)
+                            {
+                                palette = 6;
+                                _colorid = Font.ColorID.Yellow;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        palette = 7;
+                        _colorid = Font.ColorID.Grey;
+                    }
+                }
+
                 protected void FillData(Icons.ID starticon, Kernel_bin.Stat statatk, Kernel_bin.Stat statdef)
                 {
                     byte pos = 0;
                     Contents[0] = statatk;
-                    bool unlocked = Unlocked(pos);
-                    ITEM[pos, 0] = new IGMDataItem_Icon(starticon, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), (byte)(
-                        unlocked ? (colorid != null && CURSOR_SELECT == pos && colorid == Font.ColorID.Red? 5:
-                        (colorid != null && CURSOR_SELECT == pos && colorid == Font.ColorID.Yellow ? 6 : 2)) : 7));
+                    getColor(pos, out byte palette, out Font.ColorID _colorid, out bool unlocked);
                     FF8String name = Kernel_bin.MagicData[Memory.State.Characters[Character].Stat_J[statatk]].Name;
-                    if (name.Length == 0) name = Misc[Items._];
-                    ITEM[pos, 1] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X + 60, SIZE[pos].Y, 0, 0), color:
-                        unlocked ? (colorid != null && CURSOR_SELECT == pos ? colorid : Font.ColorID.White) : Font.ColorID.Grey);
+                    if (name.Length == 0)
+                        name = Misc[Items._];
+                    ITEM[pos, 0] = new IGMDataItem_Icon(starticon, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), palette);
+                    ITEM[pos, 1] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X + 60, SIZE[pos].Y, 0, 0), color: _colorid);
                     BLANKS[pos] = !unlocked;
                     for (pos = 1; pos < Count; pos++)
                     {
                         Contents[pos] = statdef + pos - 1;
-                        unlocked = Unlocked(pos);
-                        ITEM[pos, 0] = new IGMDataItem_Icon(starticon + 1, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), (byte)(
-                            unlocked ? (colorid != null && CURSOR_SELECT == pos && colorid == Font.ColorID.Red ? 5 : 
-                            (colorid != null && CURSOR_SELECT == pos && colorid == Font.ColorID.Yellow ? 6 : 2)) : 7));
+                        getColor(pos, out palette, out _colorid, out unlocked);
                         name = Kernel_bin.MagicData[Memory.State.Characters[Character].Stat_J[statdef + pos - 1]].Name;
-                        if (name.Length == 0) name = Misc[Items._];
-                        ITEM[pos, 1] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X + 60, SIZE[pos].Y, 0, 0), color: 
-                            unlocked ? (colorid!=null && CURSOR_SELECT == pos? colorid: Font.ColorID.White) : Font.ColorID.Grey);
+                        if (name.Length == 0)
+                            name = Misc[Items._];
+                        ITEM[pos, 0] = new IGMDataItem_Icon(starticon + 1, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), palette);
+                        ITEM[pos, 1] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X + 60, SIZE[pos].Y, 0, 0), color: _colorid);
                         BLANKS[pos] = !unlocked;
                     }
                 }
@@ -173,6 +193,7 @@ namespace FF8
                 protected abstract void PageLeft();
 
                 protected abstract void PageRight();
+
                 protected void SetPrevSetting(C value)
                 {
                     if (!EqualityComparer<C>.Default.Equals(_prevSetting, value))
@@ -183,25 +204,20 @@ namespace FF8
                             colorid = null;
                     }
                 }
+
                 /// <summary>
                 /// overload me and return true if type at pos is unlocked or not.
                 /// </summary>
                 /// <param name="pos">current position</param>
                 /// <returns></returns>
-                protected virtual bool Unlocked(byte pos)
-                {
-                    return true;
-                }
+                protected virtual bool Unlocked(byte pos) => true;
 
                 #endregion Methods
-
             }
 
             #endregion Classes
-
         }
 
         #endregion Classes
-
     }
 }
