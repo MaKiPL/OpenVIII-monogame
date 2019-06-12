@@ -7,17 +7,14 @@ namespace FF8
 {
     public partial class Module_main_menu_debug
     {
-
         #region Classes
 
         private partial class IGM_Junction
         {
-
             #region Classes
 
             private class IGMData_Mag_Pool : IGMData_Pool<Saves.CharacterData, byte>
             {
-
                 #region Fields
 
                 public static EventHandler<Mode> SlotConfirmListener;
@@ -51,6 +48,7 @@ namespace FF8
                 //public IGMData_Mag_ST_A_Values ST_A_Values { get; private set; }
                 //public IGMData_Mag_ST_D_Values ST_D_Values { get; private set; }
                 public Mode SortMode { get; private set; }
+
                 public Kernel_bin.Stat Stat { get; private set; }
 
                 #endregion Properties
@@ -67,50 +65,47 @@ namespace FF8
                             if (pos >= rows) break;
                             if (Source.Magics.ContainsKey(i.ID) && skip-- <= 0 && i.ID > 0)
                             {
-                                if (Source.Stat_J.ContainsValue(i.ID))
-                                    addMagic(ref pos, i, Font.ColorID.Grey);
-                                else
-                                    switch (SortMode)
-                                    {
-                                        case Mode.Mag_Pool_Stat:
-                                            if (i.J_Val[Stat] == 0)
-                                                addMagic(ref pos, i, Font.ColorID.Dark_Gray);
-                                            else
-                                                addMagic(ref pos, i, Font.ColorID.White);
-                                            break;
-
-                                        case Mode.Mag_Pool_EL_D:
-                                            if (i.J_Val[Kernel_bin.Stat.EL_Def_1] * i.Elem_J_def.Count() == 0)
-                                                addMagic(ref pos, i, Font.ColorID.Dark_Gray);
-                                            else
-                                                addMagic(ref pos, i, Font.ColorID.White);
-                                            break;
-
-                                        case Mode.Mag_Pool_EL_A:
-                                            if (i.J_Val[Kernel_bin.Stat.EL_Atk] * i.Elem_J_atk.Count() == 0)
-                                                addMagic(ref pos, i, Font.ColorID.Dark_Gray);
-                                            else
-                                                addMagic(ref pos, i, Font.ColorID.White);
-                                            break;
-
-                                        case Mode.Mag_Pool_ST_D:
-                                            if (i.J_Val[Kernel_bin.Stat.ST_Def_1] * i.Stat_J_def.Count() == 0)
-                                                addMagic(ref pos, i, Font.ColorID.Dark_Gray);
-                                            else
-                                                addMagic(ref pos, i, Font.ColorID.White);
-                                            break;
-
-                                        case Mode.Mag_Pool_ST_A:
-                                            if (i.J_Val[Kernel_bin.Stat.ST_Atk] * i.Stat_J_atk.Count() == 0)
-                                                addMagic(ref pos, i, Font.ColorID.Dark_Gray);
-                                            else
-                                                addMagic(ref pos, i, Font.ColorID.White);
-                                            break;
-
-                                        default:
+                                switch (SortMode)
+                                {
+                                    case Mode.Mag_Pool_Stat:
+                                        if (i.J_Val[Stat] == 0)
+                                            addMagic(ref pos, i, Font.ColorID.Dark_Gray);
+                                        else
                                             addMagic(ref pos, i, Font.ColorID.White);
-                                            break;
-                                    }
+                                        break;
+
+                                    case Mode.Mag_Pool_EL_D:
+                                        if (i.J_Val[Stat] * i.Elem_J_def.Count() == 0)
+                                            addMagic(ref pos, i, Font.ColorID.Dark_Gray);
+                                        else
+                                            addMagic(ref pos, i, Font.ColorID.White);
+                                        break;
+
+                                    case Mode.Mag_Pool_EL_A:
+                                        if (i.J_Val[Stat] * i.Elem_J_atk.Count() == 0)
+                                            addMagic(ref pos, i, Font.ColorID.Dark_Gray);
+                                        else
+                                            addMagic(ref pos, i, Font.ColorID.White);
+                                        break;
+
+                                    case Mode.Mag_Pool_ST_D:
+                                        if (i.J_Val[Stat] * i.Stat_J_def.Count() == 0)
+                                            addMagic(ref pos, i, Font.ColorID.Dark_Gray);
+                                        else
+                                            addMagic(ref pos, i, Font.ColorID.White);
+                                        break;
+
+                                    case Mode.Mag_Pool_ST_A:
+                                        if (i.J_Val[Stat] * i.Stat_J_atk.Count() == 0)
+                                            addMagic(ref pos, i, Font.ColorID.Dark_Gray);
+                                        else
+                                            addMagic(ref pos, i, Font.ColorID.White);
+                                        break;
+
+                                    default:
+                                        addMagic(ref pos, i, Font.ColorID.White);
+                                        break;
+                                }
                             }
                         }
                     for (; pos < rows; pos++)
@@ -122,6 +117,7 @@ namespace FF8
                         Contents[pos] = 0;
                     }
                 }
+
                 public void Generate_Preview()
                 {
                     if (Stat != Kernel_bin.Stat.None && CURSOR_SELECT < Contents.Length)
@@ -149,25 +145,13 @@ namespace FF8
                     //        Values = null;
                     //        break;
 
-                    //    case Mode.Mag_Pool_EL_A:
-                    //        Slots = EL_A_D_Slots;
-                    //        Values = EL_A_Values;
-                    //        break;
+                    // case Mode.Mag_Pool_EL_A: Slots = EL_A_D_Slots; Values = EL_A_Values; break;
 
-                    //    case Mode.Mag_Pool_EL_D:
-                    //        Slots = EL_A_D_Slots;
-                    //        Values = EL_D_Values;
-                    //        break;
+                    // case Mode.Mag_Pool_EL_D: Slots = EL_A_D_Slots; Values = EL_D_Values; break;
 
-                    //    case Mode.Mag_Pool_ST_A:
-                    //        Slots = ST_A_D_Slots;
-                    //        Values = ST_A_Values;
-                    //        break;
+                    // case Mode.Mag_Pool_ST_A: Slots = ST_A_D_Slots; Values = ST_A_Values; break;
 
-                    //    case Mode.Mag_Pool_ST_D:
-                    //        Slots = ST_A_D_Slots;
-                    //        Values = ST_D_Values;
-                    //        break;
+                    // case Mode.Mag_Pool_ST_D: Slots = ST_A_D_Slots; Values = ST_D_Values; break;
 
                     //    default:
                     //        Slots = null;
@@ -176,8 +160,7 @@ namespace FF8
                     //}
                 }
 
-                public void Get_Slots_Values()
-                {
+                public void Get_Slots_Values() =>
                     //Stat_Slots = (IGMData_Mag_Stat_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[0, 0]).Data;
                     //EL_A_D_Slots = (IGMData_Mag_EL_A_D_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[3, 0]).Data;
                     //ST_A_D_Slots = (IGMData_Mag_ST_A_D_Slots)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[6, 0]).Data;
@@ -186,7 +169,6 @@ namespace FF8
                     //ST_A_Values = (IGMData_Mag_ST_A_Values)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[7, 0]).Data;
                     //ST_D_Values = (IGMData_Mag_ST_D_Values)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[8, 0]).Data;
                     Source = Memory.State.Characters[Character];
-                }
 
                 public void Get_Sort()
                 {
@@ -259,7 +241,6 @@ namespace FF8
                 {
                     if (Memory.State.Characters != null)
                     {
-
                         if (!BLANKS[CURSOR_SELECT])
                         {
                             skipsnd = true;
@@ -340,23 +321,25 @@ namespace FF8
                 protected override void PAGE_NEXT()
                 {
                     base.PAGE_NEXT();
+                    UpdateOnEvent(this);
                     while (Contents[0] == 0 && Page > 0)
                     {
                         skipsnd = true;
                         base.PAGE_NEXT();
+                        UpdateOnEvent(this);
                     }
-                    UpdateOnEvent(this);
                 }
 
                 protected override void PAGE_PREV()
                 {
                     base.PAGE_PREV();
+                    UpdateOnEvent(this);
                     while (Contents[0] == 0 && Page > 0)
                     {
                         skipsnd = true;
                         base.PAGE_PREV();
+                        UpdateOnEvent(this);
                     }
-                    UpdateOnEvent(this);
                 }
 
                 protected override void SetCursor_select(int value)
@@ -367,8 +350,14 @@ namespace FF8
                         UpdateOnEvent(this);
                     }
                 }
+
                 private void addMagic(ref int pos, Kernel_bin.Magic_Data spell, Font.ColorID color = Font.ColorID.White)
                 {
+                    if (color == Font.ColorID.White && Source.Stat_J.ContainsValue(spell.ID))
+                    {
+                        //spell is junctioned
+                        color = Font.ColorID.Grey;
+                    }
                     ITEM[pos, 0] = new IGMDataItem_String(spell.Name, SIZE[pos], color);
                     ITEM[pos, 1] = color != Font.ColorID.White ? new IGMDataItem_Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 75, SIZE[pos].Y, 0, 0)) : null;
                     ITEM[pos, 2] = new IGMDataItem_Int(Source.Magics[spell.ID], new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), spaces: 3);
@@ -376,6 +365,7 @@ namespace FF8
                     Contents[pos] = spell.ID;
                     pos++;
                 }
+
                 private void Get_Sort_Stat()
                 {
                     SortMode = InGameMenu_Junction.GetMode();
@@ -410,16 +400,12 @@ namespace FF8
                             break;
                     }
                 }
-                private void ModeChangeEvent(object sender, Mode e)
-                {
-                    UpdateOnEvent(sender, e);
-                }
 
-                private void StatChangeEvent(object sender, Kernel_bin.Stat e)
-                {
-                    UpdateOnEvent(sender,null, e);
-                }
-                private void UpdateOnEvent(object sender, Mode? mode = null, Kernel_bin.Stat? stat= null)
+                private void ModeChangeEvent(object sender, Mode e) => UpdateOnEvent(sender, e);
+
+                private void StatChangeEvent(object sender, Kernel_bin.Stat e) => UpdateOnEvent(sender, null, e);
+
+                private void UpdateOnEvent(object sender, Mode? mode = null, Kernel_bin.Stat? stat = null)
                 {
                     mode = mode ?? InGameMenu_Junction.GetMode();
                     if (
@@ -466,14 +452,11 @@ namespace FF8
                 }
 
                 #endregion Methods
-
             }
 
             #endregion Classes
-
         }
 
         #endregion Classes
-
     }
 }
