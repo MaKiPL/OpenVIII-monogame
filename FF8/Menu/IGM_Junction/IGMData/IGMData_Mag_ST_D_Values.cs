@@ -63,7 +63,7 @@ namespace FF8
                     {
                         int _nag = 0;
                         int _pos = 0;
-                        Dictionary<Kernel_bin.J_Statuses, byte> oldtotal = (Slots.PrevSetting != null) ? getTotal(Slots.PrevSetting, out Enum[] availableFlagsarray):null;
+                        Dictionary<Kernel_bin.J_Statuses, byte> oldtotal = (Slots.GetPrevSetting() != null) ? getTotal(Slots.GetPrevSetting(), out Enum[] availableFlagsarray):null;
                         Dictionary<Kernel_bin.J_Statuses, byte> total = getTotal(Memory.State.Characters[Character], out availableFlagsarray);
                         for (short pos = 0; pos < Count - 1; pos++)
                         {

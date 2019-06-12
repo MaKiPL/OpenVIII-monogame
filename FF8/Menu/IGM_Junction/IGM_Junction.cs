@@ -104,7 +104,7 @@ namespace FF8
             /// Required to support Laguna's Party. They have unique stats but share junctions and inventory.
             /// </summary>
             public static Characters VisableCharacter { get; private set; }
-            public EventHandler<Mode> ModeChangeEventListener;
+            public static EventHandler<Mode> ModeChangeEventListener;
             private Mode GetMode() => _mode;
             private void SetMode(Mode value)
             {

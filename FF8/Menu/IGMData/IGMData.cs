@@ -32,10 +32,10 @@ namespace FF8
 
             public int CURSOR_SELECT
             {
-                get => _cursor_select; set
+                get => GetCursor_select(); set
                 {
                     if ((Cursor_Status & Cursor_Status.Enabled) != 0 && value >= 0 && value < CURSOR.Length && CURSOR[value] != Point.Zero)
-                        _cursor_select = value;
+                        SetCursor_select(value);
                 }
             }
 
@@ -43,7 +43,7 @@ namespace FF8
             {
                 if ((Cursor_Status & Cursor_Status.Enabled) != 0)
                 {
-                    int value = _cursor_select;
+                    int value = GetCursor_select();
                     int loop = 0;
                     while (true)
                     {
@@ -54,16 +54,16 @@ namespace FF8
                         }
                         if ((CURSOR[value] != Point.Zero && !BLANKS[value])) break;
                     }
-                    _cursor_select = value;
+                    SetCursor_select(value);
                 }
-                return _cursor_select;
+                return GetCursor_select();
             }
 
             public virtual int CURSOR_PREV()
             {
                 if ((Cursor_Status & Cursor_Status.Enabled) != 0)
                 {
-                    int value = _cursor_select;
+                    int value = GetCursor_select();
                     int loop = 0;
                     while (true)
                     {
@@ -74,9 +74,9 @@ namespace FF8
                         }
                         if ((CURSOR[value] != Point.Zero && !BLANKS[value])) break;
                     }
-                    _cursor_select = value;
+                    SetCursor_select(value);
                 }
-                return _cursor_select;
+                return GetCursor_select();
             }
 
             public IGMDataItem[,] ITEM;
@@ -176,6 +176,12 @@ namespace FF8
             public int rows { get; private set; }
             public int cols { get; private set; }
 
+            protected int GetCursor_select() => _cursor_select;
+            protected virtual void SetCursor_select(int value)
+            {
+                _cursor_select = value;
+            }
+
             /// <summary>
             /// Convert to rectangle based on container.
             /// </summary>
@@ -255,7 +261,7 @@ namespace FF8
                         }
                         else if (Input.Button(Buttons.Square))
                         {
-                            Inputs_Triangle();
+                            Inputs_Square();
                             return true;
                         }
                         else if ((Cursor_Status & Cursor_Status.Horizontal) == 0)

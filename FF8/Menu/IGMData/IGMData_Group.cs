@@ -60,20 +60,21 @@
             }
             public override bool Inputs()
             {
+                bool ret = false;
                 if (Enabled)
                 {
-                    bool ret = base.Inputs();
                     if (!skipdata)
                     {
                         int pos = 0;
                         foreach (IGMDataItem i in ITEM)
                         {
-                            ret = ITEMInputs(i,pos++) || ret;
+                            ret = ITEMInputs(i, pos++);
+                            if (ret) return ret;
                         }
                     }
-                    return ret;
+                    ret = base.Inputs();
                 }
-                return false;
+                return ret;
             }
             public virtual void ITEMReInit(IGMDataItem i, int pos = 0)
             {

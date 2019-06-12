@@ -62,7 +62,7 @@ namespace FF8
 
                 public override bool Update()
                 {
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode() != Mode.Abilities_Commands)
+                    if (InGameMenu_Junction != null &&InGameMenu_Junction.GetMode() != Mode.Abilities_Commands)
                         Cursor_Status &= ~Cursor_Status.Enabled;
                     else
                     {
@@ -98,7 +98,7 @@ namespace FF8
                         Contents[pos] = Kernel_bin.Abilities.None;
                     }
 
-                    if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && InGameMenu_Junction.GetMode() == Mode.Abilities_Commands)
+                    if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None &&InGameMenu_Junction.GetMode() == Mode.Abilities_Commands)
                         InGameMenu_Junction.ChangeHelp(Source[Contents[CURSOR_SELECT]].Description.ReplaceRegion());
                     UpdateTitle();
                     if (Contents[CURSOR_SELECT] == Kernel_bin.Abilities.None)

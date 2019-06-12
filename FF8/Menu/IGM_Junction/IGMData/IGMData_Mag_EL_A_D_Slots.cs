@@ -18,11 +18,50 @@ namespace FF8
                     SIZE[i].Inflate(-30, -6);
                     SIZE[i].Y -= row * 2;
                 }
+                protected override void AddEventListener()
+                {
+                    if (!eventAdded)
+                    {
+                        IGMData_Mag_Pool.SlotConfirmListener += ConfirmChangeEvent;
+                        IGMData_Mag_Pool.SlotReinitListener += ReInitEvent;
+                        IGMData_Mag_Pool.SlotUndoListener += UndoChangeEvent;
+                    }
+                    base.AddEventListener();
+                }
 
+                private void UndoChangeEvent(object sender, Mode e)
+                {
+                    if (e == Mode.Mag_Pool_EL_A || e == Mode.Mag_Pool_EL_D)
+                        UndoChange();
+                }
+
+                private void ReInitEvent(object sender, Mode e)
+                {
+                    if (e == Mode.Mag_Pool_EL_A || e == Mode.Mag_Pool_EL_D)
+                        ReInit();
+                }
+
+                private void ConfirmChangeEvent(object sender, Mode e)
+                {
+                    if (e == Mode.Mag_Pool_EL_A || e == Mode.Mag_Pool_EL_D)
+                        ConfirmChange();
+                }
+                public override void Inputs_Square()
+                {
+                    skipdata = true;
+                    base.Inputs_Square();
+                    skipdata = false;
+                    if (Contents[CURSOR_SELECT] == Kernel_bin.Stat.None)
+                    {
+                        Memory.State.Characters[Character].Stat_J[Contents[CURSOR_SELECT]] = 0;
+                        InGameMenu_Junction.ReInit();
+                    }
+                }
                 public override void ReInit()
                 {
                     if (Memory.State.Characters != null)
                     {
+                        AddEventListener();
                         Pool = (IGMData_Mag_Pool)((IGMDataItem_IGMData)((IGMData_Mag_Group)InGameMenu_Junction.Data[SectionName.Mag_Group]).ITEM[2, 0]).Data;
                         Contents[0] = Kernel_bin.Stat.EL_Atk;
                         ITEM[0, 0] = new IGMDataItem_Icon(Icons.ID.Icon_Elemental_Attack, new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0));
@@ -56,23 +95,30 @@ namespace FF8
                 }
                 public override void CheckMode(bool cursor = true) =>
                     CheckMode(0, Mode.Mag_EL_A, Mode.Mag_EL_D,
-                        InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_EL_A || InGameMenu_Junction.GetMode() == Mode.Mag_EL_D),
-                        InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_EL_A || InGameMenu_Junction.GetMode() == Mode.Mag_Pool_EL_D),
-                        cursor);                
+                        InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_EL_A ||InGameMenu_Junction.GetMode() == Mode.Mag_EL_D),
+                        InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_EL_A ||InGameMenu_Junction.GetMode() == Mode.Mag_Pool_EL_D),
+                        cursor);
 
+                protected override void SetCursor_select(int value)
+                {
+                    if (value != GetCursor_select())
+                    {
+                        base.SetCursor_select(value);
+                        if (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_EL_D)
+                            IGMData_Mag_Pool.StatEventListener?.Invoke(this, Contents[CURSOR_SELECT]);
+                    }
+                }
                 public override void BackupSetting()
                 {
-                    Setting = Memory.State.Characters[Character];
-                    PrevSetting = Setting.Clone();
+                    SetPrevSetting(Memory.State.Characters[Character].Clone());
                 }
 
                 public override void UndoChange()
                 {
                     //override this use it to take value of prevSetting and restore the setting unless default method works
-                    if (PrevSetting != null)
+                    if (GetPrevSetting() != null)
                     {
-                        Setting = PrevSetting.Clone();
-                        Memory.State.Characters[Character] = Setting;
+                        Memory.State.Characters[Character] = GetPrevSetting().Clone();
                     }
                 }
 

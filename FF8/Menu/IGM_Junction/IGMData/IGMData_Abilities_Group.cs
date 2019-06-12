@@ -23,7 +23,7 @@ namespace FF8
                     IGMDataItem_IGMData i2 = ((IGMDataItem_IGMData)ITEM[3, 0]);
                     if (i != null && i.Data != null)
                     {
-                        if (CURSOR_SELECT >= i.Data.Count)
+                        if (CURSOR_SELECT < i.Data.Count)
                         {
                             Memory.State.Characters[Character].Commands[CURSOR_SELECT - 1] = Kernel_bin.Abilities.None;
                             InGameMenu_Junction.Data[SectionName.TopMenu_Abilities].ReInit();
@@ -78,7 +78,7 @@ namespace FF8
                 {
                     bool ret = base.Update();
 
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode() == Mode.Abilities)
+                    if (InGameMenu_Junction != null &&InGameMenu_Junction.GetMode() == Mode.Abilities)
                     {
                         Cursor_Status &= ~Cursor_Status.Blinking;
 

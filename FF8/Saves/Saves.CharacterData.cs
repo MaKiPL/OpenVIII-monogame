@@ -209,6 +209,18 @@ namespace FF8
                 return _CurrentHP;
             }
 
+            public void JunctionSpell(Kernel_bin.Stat stat,byte spell)
+            {
+                //see if magic is in use, if so remove it
+                if (Stat_J.ContainsValue(spell))
+                {
+                    Kernel_bin.Stat key = Stat_J.FirstOrDefault(x => x.Value == spell).Key;
+                    Stat_J[key] = 0;
+                }
+                //junction magic
+                Stat_J[stat] = spell;
+            }
+
             public float PercentFullHP(Characters c = Characters.Blank) => (float)_CurrentHP / MaxHP(c);
             public override string ToString() => Name.Length>0?Name.ToString():base.ToString();
             public CharacterData Clone()
@@ -217,8 +229,6 @@ namespace FF8
                 CharacterData c = (CharacterData)MemberwiseClone();
                 //Deepcopy
                 c.CompatibilitywithGFs = CompatibilitywithGFs.ToDictionary(e => e.Key, e => e.Value);
-                c.Stat_J = Stat_J.ToDictionary(e => e.Key, e => e.Value);
-                c.Magics = Magics.ToDictionary(e => e.Key, e => e.Value);
                 c.Stat_J = Stat_J.ToDictionary(e => e.Key, e => e.Value);
                 c.Magics = Magics.ToDictionary(e => e.Key, e => e.Value);
                 c.RawStats = RawStats.ToDictionary(e => e.Key, e => e.Value);
