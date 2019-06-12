@@ -200,8 +200,8 @@ namespace FF8
                 public override void Inputs_OKAY()
                 {
                     base.Inputs_OKAY();
-                    InGameMenu_Junction.SetMode(Mode.Mag_Pool_Stat);
                     BackupSetting();
+                    InGameMenu_Junction.SetMode(Mode.Mag_Pool_Stat);
                 }
 
                 public override void Inputs_CANCEL()

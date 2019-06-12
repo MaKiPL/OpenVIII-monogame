@@ -133,8 +133,8 @@ namespace FF8
                 public override void Inputs_OKAY()
                 {
                     base.Inputs_OKAY();
-                    InGameMenu_Junction.SetMode(CURSOR_SELECT == 0 ? Mode.Mag_Pool_ST_A : Mode.Mag_Pool_ST_D);
                     BackupSetting();
+                    InGameMenu_Junction.SetMode(CURSOR_SELECT == 0 ? Mode.Mag_Pool_ST_A : Mode.Mag_Pool_ST_D);
                 }
 
                 public override void Inputs_CANCEL()
