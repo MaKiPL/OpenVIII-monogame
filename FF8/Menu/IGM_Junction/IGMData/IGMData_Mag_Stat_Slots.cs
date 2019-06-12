@@ -10,9 +10,9 @@ namespace FF8
         {
             private class IGMData_Mag_Stat_Slots : IGMData_Slots<Kernel_bin.Stat, Saves.CharacterData>
             {
-                public IGMData_Mag_Stat_Slots() : base(10, 5, new IGMDataItem_Box(pos: new Rectangle(0, 414, 840, 216)), 2, 5) { }
-
-
+                public IGMData_Mag_Stat_Slots() : base(10, 5, new IGMDataItem_Box(pos: new Rectangle(0, 414, 840, 216)), 2, 5)
+                {
+                }
 
                 /// <summary>
                 /// Convert stat to correct icon id.
@@ -41,23 +41,12 @@ namespace FF8
                     base.AddEventListener();
                 }
 
-                private void UndoChangeEvent(object sender, Mode e)
-                {
-                    
-                        UndoChange();
-                }
+                private void UndoChangeEvent(object sender, Mode e) => UndoChange();
 
-                private void ReInitEvent(object sender, Mode e)
-                {
-                    
-                        ReInit();
-                }
+                private void ReInitEvent(object sender, Mode e) => ReInit();
 
-                private void ConfirmChangeEvent(object sender, Mode e)
-                {
-                    
-                        ConfirmChange();
-                }
+                private void ConfirmChangeEvent(object sender, Mode e) => ConfirmChange();
+
                 /// <summary>
                 /// Things that may of changed before screen loads or junction is changed.
                 /// </summary>
@@ -145,6 +134,7 @@ namespace FF8
                         IGMData_Mag_Pool.StatEventListener?.Invoke(this, Contents[CURSOR_SELECT]);
                     }
                 }
+
                 protected override void ModeChangeEvent(object sender, Mode e)
                 {
                     if (e == Mode.Mag_Stat)
@@ -217,6 +207,7 @@ namespace FF8
                     SIZE[i].Inflate(-22, -8);
                     SIZE[i].Offset(0, 4 + (-2 * row));
                 }
+
                 public override void Inputs_Square()
                 {
                     skipdata = true;
@@ -228,6 +219,7 @@ namespace FF8
                         InGameMenu_Junction.ReInit();
                     }
                 }
+
                 /// <summary>
                 /// Things fixed at startup.
                 /// </summary>

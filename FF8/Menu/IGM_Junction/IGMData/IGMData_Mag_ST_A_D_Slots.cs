@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 
 namespace FF8
 {
@@ -13,10 +12,7 @@ namespace FF8
                 {
                 }
 
-                protected override void Init()
-                {
-                    base.Init();
-                }
+                protected override void Init() => base.Init();
 
                 protected override void InitShift(int i, int col, int row)
                 {
@@ -27,7 +23,7 @@ namespace FF8
 
                 protected override void AddEventListener()
                 {
-                    if(!eventAdded)
+                    if (!eventAdded)
                     {
                         IGMData_Mag_Pool.SlotConfirmListener += ConfirmChangeEvent;
                         IGMData_Mag_Pool.SlotReinitListener += ReInitEvent;
@@ -36,23 +32,11 @@ namespace FF8
                     base.AddEventListener();
                 }
 
-                private void UndoChangeEvent(object sender, Mode e)
-                {
-                    if (e == Mode.Mag_Pool_ST_A || e == Mode.Mag_Pool_ST_D)
-                        UndoChange();
-                }
+                private void UndoChangeEvent(object sender, Mode e) => UndoChange();
 
-                private void ReInitEvent(object sender, Mode e)
-                {
-                    if (e == Mode.Mag_Pool_ST_A || e == Mode.Mag_Pool_ST_D)
-                        ReInit();
-                }
+                private void ReInitEvent(object sender, Mode e) => ReInit();
 
-                private void ConfirmChangeEvent(object sender, Mode e)
-                {
-                    if(e == Mode.Mag_Pool_ST_A|| e == Mode.Mag_Pool_ST_D)
-                        ConfirmChange();
-                }
+                private void ConfirmChangeEvent(object sender, Mode e) => ConfirmChange();
 
                 public override void Inputs_Square()
                 {
@@ -65,6 +49,7 @@ namespace FF8
                         InGameMenu_Junction.ReInit();
                     }
                 }
+
                 public override void ReInit()
                 {
                     if (Memory.State.Characters != null)
@@ -91,14 +76,12 @@ namespace FF8
                     if (value != GetCursor_select())
                     {
                         base.SetCursor_select(value);
-                        if(InGameMenu_Junction.GetMode() == Mode.Mag_Pool_ST_D)
-                        IGMData_Mag_Pool.StatEventListener?.Invoke(this, Contents[CURSOR_SELECT]);
+                        if (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_ST_D)
+                            IGMData_Mag_Pool.StatEventListener?.Invoke(this, Contents[CURSOR_SELECT]);
                     }
                 }
-                public override void BackupSetting()
-                {
-                    SetPrevSetting(Memory.State.Characters[Character].Clone());
-                }
+
+                public override void BackupSetting() => SetPrevSetting(Memory.State.Characters[Character].Clone());
 
                 public override void UndoChange()
                 {
@@ -126,9 +109,6 @@ namespace FF8
                         InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_ST_A || InGameMenu_Junction.GetMode() == Mode.Mag_ST_D),
                         InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_ST_A || InGameMenu_Junction.GetMode() == Mode.Mag_Pool_ST_D),
                         cursor);
-                
-
-
 
                 public override void Inputs_OKAY()
                 {
