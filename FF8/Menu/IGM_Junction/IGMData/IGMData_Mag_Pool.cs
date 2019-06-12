@@ -7,19 +7,22 @@ namespace FF8
 {
     public partial class Module_main_menu_debug
     {
+
         #region Classes
 
         private partial class IGM_Junction
         {
+
             #region Classes
 
             private class IGMData_Mag_Pool : IGMData_Pool<Saves.CharacterData, byte>
             {
+
                 #region Fields
 
+                public static EventHandler<Mode> SlotConfirmListener;
                 public static EventHandler<Mode> SlotReinitListener;
                 public static EventHandler<Mode> SlotUndoListener;
-                public static EventHandler<Mode> SlotConfirmListener;
                 public static EventHandler<Kernel_bin.Stat> StatEventListener;
                 private bool eventAdded = false;
 
@@ -119,15 +122,6 @@ namespace FF8
                         Contents[pos] = 0;
                     }
                 }
-                protected override void SetCursor_select(int value)
-                {
-                    if (value != GetCursor_select())
-                    {
-                        base.SetCursor_select(value);
-                        UpdateOnEvent(this);
-                    }
-                }
-
                 public void Generate_Preview()
                 {
                     if (Stat != Kernel_bin.Stat.None && CURSOR_SELECT < Contents.Length)
@@ -265,24 +259,28 @@ namespace FF8
                 {
                     if (Memory.State.Characters != null)
                     {
-                        skipsnd = true;
-                        init_debugger_Audio.PlaySound(31);
-                        base.Inputs_OKAY();
-                        SlotConfirmListener?.Invoke(this, InGameMenu_Junction.GetMode());
-                        if (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_Stat)
+
+                        if (!BLANKS[CURSOR_SELECT])
                         {
-                            InGameMenu_Junction.SetMode(Mode.Mag_Stat);
+                            skipsnd = true;
+                            init_debugger_Audio.PlaySound(31);
+                            base.Inputs_OKAY();
+                            SlotConfirmListener?.Invoke(this, InGameMenu_Junction.GetMode());
+                            if (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_Stat)
+                            {
+                                InGameMenu_Junction.SetMode(Mode.Mag_Stat);
+                            }
+                            else if (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_EL_A || InGameMenu_Junction.GetMode() == Mode.Mag_Pool_EL_D)
+                            {
+                                InGameMenu_Junction.SetMode(Mode.Mag_EL_A);
+                            }
+                            else if (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_ST_A || InGameMenu_Junction.GetMode() == Mode.Mag_Pool_ST_D)
+                            {
+                                InGameMenu_Junction.SetMode(Mode.Mag_ST_A);
+                            }
+                            Cursor_Status &= ~Cursor_Status.Enabled;
+                            InGameMenu_Junction.ReInit();
                         }
-                        else if (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_EL_A || InGameMenu_Junction.GetMode() == Mode.Mag_Pool_EL_D)
-                        {
-                            InGameMenu_Junction.SetMode(Mode.Mag_EL_A);
-                        }
-                        else if (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_ST_A || InGameMenu_Junction.GetMode() == Mode.Mag_Pool_ST_D)
-                        {
-                            InGameMenu_Junction.SetMode(Mode.Mag_ST_A);
-                        }
-                        Cursor_Status &= ~Cursor_Status.Enabled;
-                        InGameMenu_Junction.ReInit();
                     }
                 }
 
@@ -361,6 +359,14 @@ namespace FF8
                     UpdateOnEvent(this);
                 }
 
+                protected override void SetCursor_select(int value)
+                {
+                    if (value != GetCursor_select())
+                    {
+                        base.SetCursor_select(value);
+                        UpdateOnEvent(this);
+                    }
+                }
                 private void addMagic(ref int pos, Kernel_bin.Magic_Data spell, Font.ColorID color = Font.ColorID.White)
                 {
                     ITEM[pos, 0] = new IGMDataItem_String(spell.Name, SIZE[pos], color);
@@ -460,11 +466,14 @@ namespace FF8
                 }
 
                 #endregion Methods
+
             }
 
             #endregion Classes
+
         }
 
         #endregion Classes
+
     }
 }

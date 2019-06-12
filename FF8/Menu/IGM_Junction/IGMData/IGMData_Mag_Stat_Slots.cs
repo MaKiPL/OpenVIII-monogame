@@ -6,13 +6,26 @@ namespace FF8
 {
     public partial class Module_main_menu_debug
     {
+
+        #region Classes
+
         private partial class IGM_Junction
         {
-            private class IGMData_Mag_Stat_Slots : IGMData_Slots<Kernel_bin.Stat, Saves.CharacterData>
+
+            #region Classes
+
+            private class IGMData_Mag_Stat_Slots : IGMData_Slots<Saves.CharacterData>
             {
+
+                #region Constructors
+
                 public IGMData_Mag_Stat_Slots() : base(10, 5, new IGMDataItem_Box(pos: new Rectangle(0, 414, 840, 216)), 2, 5)
                 {
                 }
+
+                #endregion Constructors
+
+                #region Properties
 
                 /// <summary>
                 /// Convert stat to correct icon id.
@@ -30,22 +43,73 @@ namespace FF8
                     { Kernel_bin.Stat.HIT, Icons.ID.Stats_Hit_Percent },
                 };
 
-                protected override void AddEventListener()
+                #endregion Properties
+
+                #region Methods
+
+                public override void BackupSetting() => SetPrevSetting(Memory.State.Characters[Character].Clone());
+
+                public override void CheckMode(bool cursor = true) =>
+                   CheckMode(-1, Mode.None, Mode.Mag_Stat,
+                       InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_Stat),
+                       InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_Stat),
+                       (InGameMenu_Junction.GetMode() == Mode.Mag_Stat || InGameMenu_Junction.GetMode() == Mode.Mag_Pool_Stat) && cursor);
+
+                public override void Inputs_CANCEL()
                 {
-                    if (!eventAdded)
-                    {
-                        IGMData_Mag_Pool.SlotConfirmListener += ConfirmChangeEvent;
-                        IGMData_Mag_Pool.SlotReinitListener += ReInitEvent;
-                        IGMData_Mag_Pool.SlotUndoListener += UndoChangeEvent;
-                    }
-                    base.AddEventListener();
+                    base.Inputs_CANCEL();
+                    InGameMenu_Junction.SetMode(Mode.TopMenu_Junction);
+                    InGameMenu_Junction.Data[SectionName.Mag_Group].Hide();
                 }
 
-                private void UndoChangeEvent(object sender, Mode e) => UndoChange();
+                public override void Inputs_Left()
+                {
+                    base.Inputs_Left();
+                    if (CURSOR_SELECT < Count / cols || BLANKS[CURSOR_SELECT - Count / cols])
+                    {
+                        PageLeft();
+                    }
+                    else
+                    {
+                        CURSOR_SELECT -= Count / cols;
+                    }
+                }
 
-                private void ReInitEvent(object sender, Mode e) => ReInit();
+                public override void Inputs_OKAY()
+                {
+                    if (!BLANKS[CURSOR_SELECT])
+                    {
+                        base.Inputs_OKAY();
+                        BackupSetting();
+                        InGameMenu_Junction.SetMode(Mode.Mag_Pool_Stat);
+                    }
+                }
 
-                private void ConfirmChangeEvent(object sender, Mode e) => ConfirmChange();
+                public override void Inputs_Right()
+                {
+                    base.Inputs_Right();
+                    if (CURSOR_SELECT < Count / cols && !BLANKS[CURSOR_SELECT + Count / cols])
+                    {
+                        //if (CURSOR_SELECT == 0) CURSOR_SELECT++;
+                        CURSOR_SELECT += Count / cols;
+                    }
+                    else
+                    {
+                        PageRight();
+                    }
+                }
+
+                public override void Inputs_Square()
+                {
+                    skipdata = true;
+                    base.Inputs_Square();
+                    skipdata = false;
+                    if (Contents[CURSOR_SELECT] == Kernel_bin.Stat.None)
+                    {
+                        Memory.State.Characters[Character].Stat_J[Contents[CURSOR_SELECT]] = 0;
+                        InGameMenu_Junction.ReInit();
+                    }
+                }
 
                 /// <summary>
                 /// Things that may of changed before screen loads or junction is changed.
@@ -54,13 +118,11 @@ namespace FF8
                 {
                     if (Memory.State.Characters != null)
                     {
-                        AddEventListener();
                         Contents = Array.ConvertAll(Contents, c => c = default);
                         base.ReInit();
 
                         if (Memory.State.Characters != null)
                         {
-                            List<Kernel_bin.Abilities> unlocked = Memory.State.Characters[Character].UnlockedGFAbilities;
                             ITEM[5, 0] = new IGMDataItem_Icon(Icons.ID.Icon_Status_Attack, new Rectangle(SIZE[5].X + 200, SIZE[5].Y, 0, 0),
                                 (byte)(unlocked.Contains(Kernel_bin.Abilities.ST_Atk_J) ? 2 : 7));
                             ITEM[5, 1] = new IGMDataItem_Icon(Icons.ID.Icon_Status_Defense, new Rectangle(SIZE[5].X + 240, SIZE[5].Y, 0, 0),
@@ -90,7 +152,9 @@ namespace FF8
                                     {
                                         ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 7;
                                         ((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Grey;
+                                        BLANKS[pos] = true;
                                     }
+                                    else BLANKS[pos] = false;
 
                                     ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[Character].TotalStat(stat, VisableCharacter), new Rectangle(SIZE[pos].X + 152, SIZE[pos].Y, 0, 0), 2, Icons.NumType.sysFntBig, spaces: 10);
                                     ITEM[pos, 3] = stat == Kernel_bin.Stat.HIT || stat == Kernel_bin.Stat.EVA
@@ -126,58 +190,6 @@ namespace FF8
                     }
                 }
 
-                protected override void SetCursor_select(int value)
-                {
-                    if (value != GetCursor_select())
-                    {
-                        base.SetCursor_select(value);
-                        IGMData_Mag_Pool.StatEventListener?.Invoke(this, Contents[CURSOR_SELECT]);
-                    }
-                }
-
-                protected override void ModeChangeEvent(object sender, Mode e)
-                {
-                    if (e == Mode.Mag_Stat)
-                        base.ModeChangeEvent(sender, e);
-                }
-
-                public override void Inputs_Left()
-                {
-                    base.Inputs_Left();
-                    if (CURSOR_SELECT < Count / cols)
-                    {
-                        InGameMenu_Junction.SetMode(Mode.Mag_EL_A);
-                        InGameMenu_Junction.Data[SectionName.Mag_Group].Show();
-                    }
-                    else
-                    {
-                        CURSOR_SELECT -= Count / cols;
-                    }
-                }
-
-                public override void Inputs_Right()
-                {
-                    base.Inputs_Left();
-                    if (CURSOR_SELECT < Count / cols)
-                    {
-                        if (CURSOR_SELECT == 0) CURSOR_SELECT++;
-                        CURSOR_SELECT += Count / cols;
-                    }
-                    else
-                    {
-                        InGameMenu_Junction.SetMode(Mode.Mag_ST_A);
-                        InGameMenu_Junction.Data[SectionName.Mag_Group].Show();
-                    }
-                }
-
-                public override void CheckMode(bool cursor = true) =>
-                   CheckMode(-1, Mode.None, Mode.Mag_Stat,
-                       InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_Stat),
-                       InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_Stat),
-                       (InGameMenu_Junction.GetMode() == Mode.Mag_Stat || InGameMenu_Junction.GetMode() == Mode.Mag_Pool_Stat) && cursor);
-
-                public override void BackupSetting() => SetPrevSetting(Memory.State.Characters[Character].Clone());
-
                 public override void UndoChange()
                 {
                     //override this use it to take value of prevSetting and restore the setting unless default method works
@@ -187,37 +199,15 @@ namespace FF8
                     }
                 }
 
-                public override void Inputs_OKAY()
+                protected override void AddEventListener()
                 {
-                    base.Inputs_OKAY();
-                    BackupSetting();
-                    InGameMenu_Junction.SetMode(Mode.Mag_Pool_Stat);
-                }
-
-                public override void Inputs_CANCEL()
-                {
-                    base.Inputs_CANCEL();
-                    InGameMenu_Junction.SetMode(Mode.TopMenu_Junction);
-                    InGameMenu_Junction.Data[SectionName.Mag_Group].Hide();
-                }
-
-                protected override void InitShift(int i, int col, int row)
-                {
-                    base.InitShift(i, col, row);
-                    SIZE[i].Inflate(-22, -8);
-                    SIZE[i].Offset(0, 4 + (-2 * row));
-                }
-
-                public override void Inputs_Square()
-                {
-                    skipdata = true;
-                    base.Inputs_Square();
-                    skipdata = false;
-                    if (Contents[CURSOR_SELECT] == Kernel_bin.Stat.None)
+                    if (!eventAdded)
                     {
-                        Memory.State.Characters[Character].Stat_J[Contents[CURSOR_SELECT]] = 0;
-                        InGameMenu_Junction.ReInit();
+                        IGMData_Mag_Pool.SlotConfirmListener += ConfirmChangeEvent;
+                        IGMData_Mag_Pool.SlotReinitListener += ReInitEvent;
+                        IGMData_Mag_Pool.SlotUndoListener += UndoChangeEvent;
                     }
+                    base.AddEventListener();
                 }
 
                 /// <summary>
@@ -228,7 +218,48 @@ namespace FF8
                     Contents = new Kernel_bin.Stat[Count];
                     base.Init();
                 }
+
+                protected override void InitShift(int i, int col, int row)
+                {
+                    base.InitShift(i, col, row);
+                    SIZE[i].Inflate(-22, -8);
+                    SIZE[i].Offset(0, 4 + (-2 * row));
+                }
+
+                protected override void ModeChangeEvent(object sender, Mode e)
+                {
+                    if (e == Mode.Mag_Stat)
+                        base.ModeChangeEvent(sender, e);
+                }
+
+                protected override void PageLeft() => InGameMenu_Junction.SetMode(Mode.Mag_EL_A);
+
+                protected override void PageRight() => InGameMenu_Junction.SetMode(Mode.Mag_ST_A);
+
+                protected override void SetCursor_select(int value)
+                {
+                    if (value != GetCursor_select())
+                    {
+                        base.SetCursor_select(value);
+                        IGMData_Mag_Pool.StatEventListener?.Invoke(this, Contents[CURSOR_SELECT]);
+                    }
+                }
+
+                private void ConfirmChangeEvent(object sender, Mode e) => ConfirmChange();
+
+                private void ReInitEvent(object sender, Mode e) => ReInit();
+
+                private void UndoChangeEvent(object sender, Mode e) => UndoChange();
+
+                #endregion Methods
+
             }
+
+            #endregion Classes
+
         }
+
+        #endregion Classes
+
     }
 }

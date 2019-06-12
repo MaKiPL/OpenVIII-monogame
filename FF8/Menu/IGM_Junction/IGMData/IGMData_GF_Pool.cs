@@ -128,27 +128,24 @@ namespace FF8
                 protected override void PAGE_PREV()
                 {
                     base.PAGE_PREV();
+                    UpdateCharacter();
                     ReInit();
                 }
 
                 protected override void PAGE_NEXT()
                 {
                     base.PAGE_NEXT();
+                    UpdateCharacter();
                     ReInit();
                 }
 
-                public override int CURSOR_PREV()
+                protected override void SetCursor_select(int value)
                 {
-                    int ret = base.CURSOR_PREV();
-                    UpdateCharacter();
-                    return ret;
-                }
-
-                public override int CURSOR_NEXT()
-                {
-                    int ret = base.CURSOR_NEXT();
-                    UpdateCharacter();
-                    return ret;
+                    if (value != GetCursor_select())
+                    {
+                        base.SetCursor_select(value);
+                        UpdateCharacter();
+                    }
                 }
 
                 public override void Inputs_CANCEL()

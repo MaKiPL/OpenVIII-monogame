@@ -15,7 +15,7 @@ namespace FF8
 
             #region Classes
 
-            private class IGMData_Values : IGMData
+            private abstract class IGMData_Values : IGMData
             {
 
                 #region Fields
