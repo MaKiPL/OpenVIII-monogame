@@ -97,8 +97,8 @@ namespace FF8
                     if (value != GetCursor_select())
                     {
                         base.SetCursor_select(value);
-                        if (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_EL_D)
-                            IGMData_Mag_Pool.StatEventListener?.Invoke(this, Contents[CURSOR_SELECT]);
+                        CheckMode();
+                        IGMData_Mag_Pool.StatEventListener?.Invoke(this, Contents[CURSOR_SELECT]);
                     }
                 }
 

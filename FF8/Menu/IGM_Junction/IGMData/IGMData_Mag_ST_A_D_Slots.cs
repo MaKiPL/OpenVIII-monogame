@@ -1,42 +1,64 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
 
 namespace FF8
 {
     public partial class Module_main_menu_debug
     {
+
+        #region Classes
+
         private partial class IGM_Junction
         {
+
+            #region Classes
+
             private class IGMData_Mag_ST_A_D_Slots : IGMData_Slots<Kernel_bin.Stat, Saves.CharacterData>
             {
+
+                #region Constructors
+
                 public IGMData_Mag_ST_A_D_Slots() : base(5, 2, new IGMDataItem_Box(pos: new Rectangle(0, 414, 840, 216)), 1, 5)
                 {
+
                 }
 
-                protected override void Init() => base.Init();
+                #endregion Constructors
 
-                protected override void InitShift(int i, int col, int row)
+                #region Methods
+
+                public override void BackupSetting() => SetPrevSetting(Memory.State.Characters[Character].Clone());
+
+                public override void CheckMode(bool cursor = true) =>
+                    CheckMode(0, Mode.Mag_ST_A, Mode.Mag_ST_D,
+                        InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_ST_A || InGameMenu_Junction.GetMode() == Mode.Mag_ST_D),
+                        InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_ST_A || InGameMenu_Junction.GetMode() == Mode.Mag_Pool_ST_D),
+                        cursor);
+
+                public override void Inputs_CANCEL()
                 {
-                    base.InitShift(i, col, row);
-                    SIZE[i].Inflate(-30, -6);
-                    SIZE[i].Y -= row * 2;
+                    base.Inputs_CANCEL();
+                    InGameMenu_Junction.SetMode(Mode.TopMenu_Junction);
                 }
 
-                protected override void AddEventListener()
+                public override void Inputs_Left()
                 {
-                    if (!eventAdded)
-                    {
-                        IGMData_Mag_Pool.SlotConfirmListener += ConfirmChangeEvent;
-                        IGMData_Mag_Pool.SlotReinitListener += ReInitEvent;
-                        IGMData_Mag_Pool.SlotUndoListener += UndoChangeEvent;
-                    }
-                    base.AddEventListener();
+                    base.Inputs_Left();
+                    InGameMenu_Junction.SetMode(Mode.Mag_Stat);
                 }
 
-                private void UndoChangeEvent(object sender, Mode e) => UndoChange();
+                public override void Inputs_OKAY()
+                {
+                    base.Inputs_OKAY();
+                    BackupSetting();
+                    InGameMenu_Junction.SetMode(CURSOR_SELECT == 0 ? Mode.Mag_Pool_ST_A : Mode.Mag_Pool_ST_D);
+                }
 
-                private void ReInitEvent(object sender, Mode e) => ReInit();
-
-                private void ConfirmChangeEvent(object sender, Mode e) => ConfirmChange();
+                public override void Inputs_Right()
+                {
+                    base.Inputs_Left();
+                    InGameMenu_Junction.SetMode(Mode.Mag_EL_A);
+                }
 
                 public override void Inputs_Square()
                 {
@@ -71,18 +93,6 @@ namespace FF8
                     }
                 }
 
-                protected override void SetCursor_select(int value)
-                {
-                    if (value != GetCursor_select())
-                    {
-                        base.SetCursor_select(value);
-                        if (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_ST_D)
-                            IGMData_Mag_Pool.StatEventListener?.Invoke(this, Contents[CURSOR_SELECT]);
-                    }
-                }
-
-                public override void BackupSetting() => SetPrevSetting(Memory.State.Characters[Character].Clone());
-
                 public override void UndoChange()
                 {
                     //override this use it to take value of prevSetting and restore the setting unless default method works
@@ -92,37 +102,50 @@ namespace FF8
                     }
                 }
 
-                public override void Inputs_Left()
+                protected override void AddEventListener()
                 {
-                    base.Inputs_Left();
-                    InGameMenu_Junction.SetMode(Mode.Mag_Stat);
+                    if (!eventAdded)
+                    {
+                        IGMData_Mag_Pool.SlotConfirmListener += ConfirmChangeEvent;
+                        IGMData_Mag_Pool.SlotReinitListener += ReInitEvent;
+                        IGMData_Mag_Pool.SlotUndoListener += UndoChangeEvent;
+                    }
+                    base.AddEventListener();
                 }
 
-                public override void Inputs_Right()
+                protected override void Init() => base.Init();
+
+                protected override void InitShift(int i, int col, int row)
                 {
-                    base.Inputs_Left();
-                    InGameMenu_Junction.SetMode(Mode.Mag_EL_A);
+                    base.InitShift(i, col, row);
+                    SIZE[i].Inflate(-30, -6);
+                    SIZE[i].Y -= row * 2;
+                }
+                protected override void SetCursor_select(int value)
+                {
+                    if (value != GetCursor_select())
+                    {
+                        base.SetCursor_select(value);
+                        CheckMode();
+                        IGMData_Mag_Pool.StatEventListener?.Invoke(this, Contents[CURSOR_SELECT]);
+                    }
                 }
 
-                public override void CheckMode(bool cursor = true) =>
-                    CheckMode(0, Mode.Mag_ST_A, Mode.Mag_ST_D,
-                        InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_ST_A || InGameMenu_Junction.GetMode() == Mode.Mag_ST_D),
-                        InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_ST_A || InGameMenu_Junction.GetMode() == Mode.Mag_Pool_ST_D),
-                        cursor);
+                private void ConfirmChangeEvent(object sender, Mode e) => ConfirmChange();
 
-                public override void Inputs_OKAY()
-                {
-                    base.Inputs_OKAY();
-                    BackupSetting();
-                    InGameMenu_Junction.SetMode(CURSOR_SELECT == 0 ? Mode.Mag_Pool_ST_A : Mode.Mag_Pool_ST_D);
-                }
+                private void ReInitEvent(object sender, Mode e) => ReInit();
 
-                public override void Inputs_CANCEL()
-                {
-                    base.Inputs_CANCEL();
-                    InGameMenu_Junction.SetMode(Mode.TopMenu_Junction);
-                }
+                private void UndoChangeEvent(object sender, Mode e) => UndoChange();
+
+                #endregion Methods
+
             }
+
+            #endregion Classes
+
         }
+
+        #endregion Classes
+
     }
 }
