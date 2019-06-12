@@ -8,14 +8,14 @@ namespace FF8
 
         private class IGMDataItem_String : IGMDataItem
         {
-            private int _pallet;
+            private int _palette;
 
             public FF8String Data { get; set; }
             public Font.ColorID Colorid { get; set; }
             public Icons.ID? Icon { get; set; }
-            public int Pallet
+            public int Palette
             {
-                get => _pallet; set => _pallet = value < Memory.Icons.PalletCount ? value : 2;
+                get => _palette; set => _palette = value < Memory.Icons.PaletteCount ? value : 2;
             }
 
             public IGMDataItem_String(FF8String data, Rectangle? pos = null, Font.ColorID? color = null) : base(pos)
@@ -24,10 +24,10 @@ namespace FF8
                 Colorid = color ?? Font.ColorID.White;
             }
 
-            public IGMDataItem_String(Icons.ID? icon, int pallet, FF8String data, Rectangle? pos = null, Font.ColorID? color = null) : base(pos)
+            public IGMDataItem_String(Icons.ID? icon, int palette, FF8String data, Rectangle? pos = null, Font.ColorID? color = null) : base(pos)
             {
                 Icon = icon;
-                Pallet = pallet;
+                Palette = palette;
                 Data = data;
                 Colorid = color ?? Font.ColorID.White;
             }
@@ -41,7 +41,7 @@ namespace FF8
                     {
                         Rectangle r2 = r;
                         r2.Size = Point.Zero;
-                        Memory.Icons.Draw(Icon, Pallet, r2, new Vector2(Scale.X), fade);
+                        Memory.Icons.Draw(Icon, Palette, r2, new Vector2(Scale.X), fade);
                         r.Offset(Memory.Icons.GetEntryGroup(Icon).Width * Scale.X, 0);
                     }
                     Memory.font.RenderBasicText(Data, r.Location, Scale, Fade: fade, color: Colorid);

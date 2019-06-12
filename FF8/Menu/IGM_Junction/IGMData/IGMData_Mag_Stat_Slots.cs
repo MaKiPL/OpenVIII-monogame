@@ -150,7 +150,7 @@ namespace FF8
                                     ITEM[pos, 1] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X + 80, SIZE[pos].Y, 0, 0));
                                     if (!unlocked.Contains(Kernel_bin.Stat2Ability[stat]))
                                     {
-                                        ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 7;
+                                        ((IGMDataItem_Icon)ITEM[pos, 0]).Palette = ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Palette = 7;
                                         ((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Grey;
                                         BLANKS[pos] = true;
                                     }
@@ -166,8 +166,8 @@ namespace FF8
                                     }
                                     else if (GetPrevSetting().TotalStat(stat, VisableCharacter) > Memory.State.Characters[Character].TotalStat(stat, VisableCharacter))
                                     {
-                                        ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = 5;
-                                        ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 5;
+                                        ((IGMDataItem_Icon)ITEM[pos, 0]).Palette = 5;
+                                        ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Palette = 5;
                                         ((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Red;
                                         ((IGMDataItem_Int)ITEM[pos, 2]).Colorid = Font.ColorID.Red;
                                         if (ITEM[pos, 3] != null)
@@ -176,8 +176,8 @@ namespace FF8
                                     }
                                     else
                                     {
-                                        ((IGMDataItem_Icon)ITEM[pos, 0]).Pallet = 6;
-                                        ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Pallet = 6;
+                                        ((IGMDataItem_Icon)ITEM[pos, 0]).Palette = 6;
+                                        ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Palette = 6;
                                         ((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Yellow;
                                         ((IGMDataItem_Int)ITEM[pos, 2]).Colorid = Font.ColorID.Yellow;
                                         if (ITEM[pos, 3] != null)

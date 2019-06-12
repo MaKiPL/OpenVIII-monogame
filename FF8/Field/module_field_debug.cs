@@ -226,7 +226,7 @@ namespace FF8
             int type1Width = 1664;
 
             tiles = new List<Tile>();
-            int palletes = 24;
+            int palettees = 24;
             //128x256
             //using (BinaryReader pbsmim = new BinaryReader(new MemoryStream(mimb))
             using (BinaryReader pbsmap = new BinaryReader(new MemoryStream(mapb)))
@@ -289,7 +289,7 @@ namespace FF8
                         continue;
 
                     int palettePointer = 4096 + ((tile.pallID) * 512);
-                    int sourceImagePointer = 512 * palletes;
+                    int sourceImagePointer = 512 * palettees;
 
                     int realX = Math.Abs(lowestX) + tile.x; //baseX
                     int realY = Math.Abs(lowestY) + tile.y; //*width

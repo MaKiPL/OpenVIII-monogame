@@ -13,7 +13,7 @@ namespace FF8
         protected SP2()
         {
             Count = 0;
-            PalletCount = 1;
+            PaletteCount = 1;
             EntriesPerTexture = 1;
             Scale = null;
             TextureStartOffset = 0;
@@ -42,9 +42,9 @@ namespace FF8
         public uint Count { get; protected set; }
 
         /// <summary>
-        /// Number of Pallets
+        /// Number of Palettes
         /// </summary>
-        public uint PalletCount { get; protected set; }
+        public uint PaletteCount { get; protected set; }
 
         protected string ArchiveString { get; set; }
 
@@ -272,7 +272,7 @@ namespace FF8
 
 
             /// <summary>
-            /// leave null unless big version has a different custom pallet than normal.
+            /// leave null unless big version has a different custom palette than normal.
             /// </summary>
             public Color[] Colors;
 
@@ -300,7 +300,7 @@ namespace FF8
             public List<BigTexProps> Big;
 
             /// <summary>
-            /// Override pallet of texture to this and don't load other pallets. If null ignore.
+            /// Override palette of texture to this and don't load other palettes. If null ignore.
             /// </summary>
             public Color[] Colors;
 

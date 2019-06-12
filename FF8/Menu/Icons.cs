@@ -33,9 +33,9 @@ namespace FF8
             //FORCE_ORIGINAL = true;
             Props = new List<TexProps>()
             {
-                new TexProps("icon.tex",1,new BigTexProps("iconfl{0:00}.TEX",4)), //0-15 pallet
-                new TexProps("icon.tex",1,red, new BigTexProps("iconfl{0:00}.TEX",4,red)),//16 pallet
-                new TexProps("icon.tex",1,yellow, new BigTexProps("iconfl{0:00}.TEX",4,yellow))//17 pallet
+                new TexProps("icon.tex",1,new BigTexProps("iconfl{0:00}.TEX",4)), //0-15 palette
+                new TexProps("icon.tex",1,red, new BigTexProps("iconfl{0:00}.TEX",4,red)),//16 palette
+                new TexProps("icon.tex",1,yellow, new BigTexProps("iconfl{0:00}.TEX",4,yellow))//17 palette
             };
             IndexFilename = "icon.sp1";
             Init();
@@ -63,7 +63,7 @@ namespace FF8
         #region Properties
 
         public new uint EntriesPerTexture => (uint)Enum.GetValues(typeof(Icons.ID)).Cast<Icons.ID>().Max();
-        public new uint PalletCount => (uint)Textures.Count();
+        public new uint PaletteCount => (uint)Textures.Count();
         public new uint Count => (uint)Entries.Count();
         private new uint TextureStartOffset => 0;
 
@@ -79,7 +79,7 @@ namespace FF8
 
         #region Methods
 
-        public void Draw(int number, NumType type, int pallet, string format, Vector2 location, Vector2 scale, float fade = 1f,Font.ColorID color = Font.ColorID.White)
+        public void Draw(int number, NumType type, int palette, string format, Vector2 location, Vector2 scale, float fade = 1f,Font.ColorID color = Font.ColorID.White)
         {
             if (type == NumType.sysfnt)
             {
@@ -112,15 +112,15 @@ namespace FF8
             Rectangle dst = new Rectangle { Location = location.ToPoint() };
             foreach (int i in intList)
             {
-                Draw(nums[(int)type][i], pallet, dst, scale, fade);
+                Draw(nums[(int)type][i], palette, dst, scale, fade);
                 dst.Offset(Entries[nums[(int)type][i]].GetRectangle.Width * scale.X, 0);
             }
         }
 
-        public void Draw(Enum id, int pallet, Rectangle dst, Vector2 scale, float fade = 1f)
+        public void Draw(Enum id, int palette, Rectangle dst, Vector2 scale, float fade = 1f)
         {
             if ((ID)id != ID.None)
-                Entries[(ID)id].Draw(Textures, pallet, dst, scale, fade);
+                Entries[(ID)id].Draw(Textures, palette, dst, scale, fade);
         }
 
         public override void Draw(Enum id, Rectangle dst, float fade = 1) => Draw((ID)id, 2, dst, Vector2.One, fade);

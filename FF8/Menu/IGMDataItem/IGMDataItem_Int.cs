@@ -8,7 +8,7 @@ namespace FF8
 
         public class IGMDataItem_Int : IGMDataItem//<Int>
         {
-            private byte _pallet;
+            private byte _palette;
             private int Spaces;
             private int SpaceWidth;
 
@@ -16,12 +16,12 @@ namespace FF8
             public byte Padding { get; set; }
             public Font.ColorID Colorid;
 
-            public byte Pallet
+            public byte Palette
             {
-                get => _pallet; set
+                get => _palette; set
                 {
                     if (value >= 16) value = 2;
-                    _pallet = value;
+                    _palette = value;
                 }
             }
 
@@ -29,11 +29,11 @@ namespace FF8
 
             private int Digits;
 
-            public IGMDataItem_Int(int data, Rectangle? pos = null, byte? pallet = null, Icons.NumType? numtype = null, byte? padding = null, int? spaces = null, int? spacewidth = null, Font.ColorID? colorid = null) : base(pos)
+            public IGMDataItem_Int(int data, Rectangle? pos = null, byte? palette = null, Icons.NumType? numtype = null, byte? padding = null, int? spaces = null, int? spacewidth = null, Font.ColorID? colorid = null) : base(pos)
             {
                 Data = data;
                 Padding = padding ?? 1;
-                Pallet = pallet ?? 2;
+                Palette = palette ?? 2;
                 NumType = numtype ?? 0;
                 Digits = data.ToString().Length;
                 if (Digits < padding) Digits = (int)padding;
@@ -47,7 +47,7 @@ namespace FF8
             {
                 if (Enabled)
                 {
-                    Memory.Icons.Draw(Data, NumType, Pallet, $"D{Padding}", Pos.Location.ToVector2(), Scale, fade, Colorid);
+                    Memory.Icons.Draw(Data, NumType, Palette, $"D{Padding}", Pos.Location.ToVector2(), Scale, fade, Colorid);
                 }
             }
         }

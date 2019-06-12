@@ -36,9 +36,9 @@ namespace FF8
                 Init(filename, null, cols, rows);
         }
 
-        public TextureHandler(string filename, TEX classic, int pallet = -1, Color[] colors = null) => Init(filename, classic, 1, 1, pallet: pallet, colors: colors);
+        public TextureHandler(string filename, TEX classic, int palette = -1, Color[] colors = null) => Init(filename, classic, 1, 1, palette: palette, colors: colors);
 
-        public TextureHandler(string filename, TEX classic, uint cols, uint rows, int pallet = -1, Color[] colors = null) => Init(filename, classic, cols, rows, pallet, colors);
+        public TextureHandler(string filename, TEX classic, uint cols, uint rows, int palette = -1, Color[] colors = null) => Init(filename, classic, cols, rows, palette, colors);
 
         #endregion Constructors
 
@@ -57,7 +57,7 @@ namespace FF8
         public Color[] Colors { get; private set; }
         public uint Count { get; protected set; }
         public bool Modded { get; private set; } = false;
-        public int Pallet { get; protected set; }
+        public int Palette { get; protected set; }
 
         /// <summary>
         /// Scale vector from original to big
@@ -126,14 +126,14 @@ namespace FF8
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        public static Texture2D LoadPNG(string path, int pallet = -1)
+        public static Texture2D LoadPNG(string path, int palette = -1)
         {
             string bn = Path.GetFileNameWithoutExtension(path);
             string prefix = bn.Substring(0, 2);
             string pngpath = Path.Combine(Memory.FF8DIR, "textures", prefix, bn);
-            // this isn't working correctly unless mod authors have the this-> 13=0, 14=1... for pallets
+            // this isn't working correctly unless mod authors have the this-> 13=0, 14=1... for palettes
             //https://github.com/MaKiPL/OpenVIII/issues/73
-            string suffix = pallet > -1 ? $"{pallet + 13}" : "";
+            string suffix = palette > -1 ? $"{palette + 13}" : "";
             suffix += ".png";
             if (Directory.Exists(pngpath))
             {
@@ -189,9 +189,9 @@ namespace FF8
             }
         }
 
-        public static Texture2D UseBest(TEX _old, Texture2D _new, int pallet = 0, Color[] colors = null) => UseBest(_old, _new, out Vector2 scale, pallet, colors);
+        public static Texture2D UseBest(TEX _old, Texture2D _new, int palette = 0, Color[] colors = null) => UseBest(_old, _new, out Vector2 scale, palette, colors);
 
-        public static Texture2D UseBest(TEX _old, Texture2D _new, out Vector2 scale, int pallet = 0, Color[] colors = null)
+        public static Texture2D UseBest(TEX _old, Texture2D _new, out Vector2 scale, int palette = 0, Color[] colors = null)
         {
             Texture2D tex;
             if (_new == null)
@@ -199,7 +199,7 @@ namespace FF8
                 scale = Vector2.One;
                 if (_old.TextureData.NumOfPalettes <= 1)
                     return _old.GetTexture();
-                tex = _old.GetTexture(pallet, colors);
+                tex = _old.GetTexture(palette, colors);
                 return tex;
             }
             else
@@ -294,8 +294,8 @@ namespace FF8
                     string path = aw.GetListOfFiles().First(x => (x.IndexOf(string.Format(Filename, c + r * Cols + StartOffset), StringComparison.OrdinalIgnoreCase) >= 0));
                     tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
                     if (Classic == null && c2 < Cols) oldsize.X += tex.TextureData.Width;
-                    Texture2D pngTex = LoadPNG(path, Pallet);
-                    Textures[c, r] = (UseBest(tex, pngTex, Pallet, Colors));
+                    Texture2D pngTex = LoadPNG(path, Palette);
+                    Textures[c, r] = (UseBest(tex, pngTex, Palette, Colors));
                     if (pngTex != null) Modded = true;
                     if (c2 < Cols && Textures[c2,r2] != null) size.X += Textures[c2++, r2].Width;
                 }
@@ -306,7 +306,7 @@ namespace FF8
             if (Classic == null) ClassicSize = oldsize;
         }
 
-        private void Init(string filename, TEX classic, uint cols, uint rows, int pallet = -1, Color[] colors = null)
+        private void Init(string filename, TEX classic, uint cols, uint rows, int palette = -1, Color[] colors = null)
         {
             Classic = classic;
             Size = Vector2.Zero;
@@ -316,7 +316,7 @@ namespace FF8
             Rows = rows;
             Cols = cols;
             Filename = filename;
-            Pallet = pallet;
+            Palette = palette;
             Colors = colors;
 
             //load textures;

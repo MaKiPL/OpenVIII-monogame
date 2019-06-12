@@ -96,13 +96,13 @@ namespace FF8
 
         public static Point RoundedPoint(Vector2 v) => v.RoundedPoint();
 
-        public void Draw(List<TextureHandler> textures, int pallet, Rectangle inputdst, Vector2 inscale, float fade = 1f) =>
-            Draw(textures, list, pallet, inputdst, inscale, fade, new Point(Width, Height));
+        public void Draw(List<TextureHandler> textures, int palette, Rectangle inputdst, Vector2 inscale, float fade = 1f) =>
+            Draw(textures, list, palette, inputdst, inscale, fade, new Point(Width, Height));
         public static int GetChange(int tot,int goal, float scale = 1f)
         {
            return (int) Math.Round(Math.Abs(tot* scale - goal));
         }
-        public static void Draw(List<TextureHandler> textures,List<Entry> elist, int pallet, Rectangle inputdst, Vector2 inscale, float fade, Point totalSize)
+        public static void Draw(List<TextureHandler> textures,List<Entry> elist, int palette, Rectangle inputdst, Vector2 inscale, float fade, Point totalSize)
         {
             Rectangle dst;
             inscale = Abs(inscale);
@@ -127,7 +127,7 @@ namespace FF8
                     totalSize.X = (int)e.Width;
                     totalSize.Y = (int)e.Height;
                 }
-                int cpallet = e.CustomPallet < 0 || e.CustomPallet >= textures.Count ? pallet : e.CustomPallet;
+                int cpalette = e.CustomPalette < 0 || e.CustomPalette >= textures.Count ? palette : e.CustomPalette;
                 dst = inputdst;
 
                 Vector2 Offset = e.Offset * scale;
@@ -189,7 +189,7 @@ namespace FF8
                                 src.Width += (int)Math.Round(correction / scale.X);
                             }
                         }
-                        textures[cpallet].Draw(dst, src, Color.White * fade);
+                        textures[cpalette].Draw(dst, src, Color.White * fade);
                         if (e.Tile.Y > 0)
                         {
                             dst.Y += dst.Height;

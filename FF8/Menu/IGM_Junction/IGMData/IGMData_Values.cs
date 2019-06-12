@@ -47,7 +47,7 @@ namespace FF8
                     base.ReInit();
                 }
 
-                protected void FillData<T>(Dictionary<T, byte> oldtotal, Dictionary<T, byte> total, Enum[] availableFlagsarray, Icons.ID starticon, sbyte offset = 0,byte pallet=2, Icons.ID[] skip = null) where T : Enum
+                protected void FillData<T>(Dictionary<T, byte> oldtotal, Dictionary<T, byte> total, Enum[] availableFlagsarray, Icons.ID starticon, sbyte offset = 0,byte palette=2, Icons.ID[] skip = null) where T : Enum
                 {
                     int _nag = 0;
                     int _pos = 0;
@@ -61,7 +61,7 @@ namespace FF8
                             pos += 1;
                             endoffset -= 1;
                         }
-                        ITEM[pos+offset, 0] = new IGMDataItem_Icon(starticon + pos, new Rectangle(SIZE[pos + offset].X, SIZE[pos + offset].Y, 0, 0), pallet);
+                        ITEM[pos+offset, 0] = new IGMDataItem_Icon(starticon + pos, new Rectangle(SIZE[pos + offset].X, SIZE[pos + offset].Y, 0, 0), palette);
                         ITEM[pos+offset, 1] = total[(T)availableFlagsarray[pos+1]] > 100 ? new IGMDataItem_Icon(Icons.ID.Star, new Rectangle(SIZE[pos+offset].X + 45, SIZE[pos+offset].Y, 0, 0), 4) : null;
                         ITEM[pos+offset, 2] = null;
                         ITEM[pos+offset, 3] = new IGMDataItem_Int(
@@ -73,15 +73,15 @@ namespace FF8
                         {
                             if (oldtotal[(T)availableFlagsarray[pos + 1]] > total[(T)availableFlagsarray[pos + 1]])
                             {
-                                ((IGMDataItem_Icon)ITEM[pos+offset, 0]).Pallet = 5;
-                                ((IGMDataItem_Icon)ITEM[pos+offset, 0]).Faded_Pallet = 5;
+                                ((IGMDataItem_Icon)ITEM[pos+offset, 0]).Palette = 5;
+                                ((IGMDataItem_Icon)ITEM[pos+offset, 0]).Faded_Palette = 5;
                                 ITEM[pos+offset, 2] = new IGMDataItem_Icon(Icons.ID.Arrow_Down, new Rectangle(SIZE[pos + offset].X + SIZE[pos + offset].Width - 105, SIZE[pos + offset].Y, 0, 0), 16);
                                 ((IGMDataItem_Int)ITEM[pos+offset, 3]).Colorid = Font.ColorID.Red;
                                 ((IGMDataItem_String)ITEM[pos+offset, 4]).Colorid = Font.ColorID.Red;
 
                                 //{
-                                //    ((IGMDataItem_Icon)Slots.ITEM[Slots.CURSOR_SELECT, 0]).Pallet = 5;
-                                //    ((IGMDataItem_Icon)Slots.ITEM[Slots.CURSOR_SELECT, 0]).Faded_Pallet = 5;
+                                //    ((IGMDataItem_Icon)Slots.ITEM[Slots.CURSOR_SELECT, 0]).Palette = 5;
+                                //    ((IGMDataItem_Icon)Slots.ITEM[Slots.CURSOR_SELECT, 0]).Faded_Palette = 5;
                                 //    ((IGMDataItem_String)Slots.ITEM[Slots.CURSOR_SELECT, 1]).Colorid = Font.ColorID.Red;
                                 //}
                                 if (++_nag > _pos)
@@ -89,15 +89,15 @@ namespace FF8
                             }
                             else if (oldtotal[(T)availableFlagsarray[pos + 1]] < total[(T)availableFlagsarray[pos + 1]])
                             {
-                                ((IGMDataItem_Icon)ITEM[pos+offset, 0]).Pallet = 6;
-                                ((IGMDataItem_Icon)ITEM[pos+offset, 0]).Faded_Pallet = 6;
+                                ((IGMDataItem_Icon)ITEM[pos+offset, 0]).Palette = 6;
+                                ((IGMDataItem_Icon)ITEM[pos+offset, 0]).Faded_Palette = 6;
                                 ITEM[pos+offset, 2] = new IGMDataItem_Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos + offset].X + SIZE[pos + offset].Width - 105, SIZE[pos + offset].Y, 0, 0), 17);
                                 ((IGMDataItem_Int)ITEM[pos+offset, 3]).Colorid = Font.ColorID.Yellow;
                                 ((IGMDataItem_String)ITEM[pos+offset, 4]).Colorid = Font.ColorID.Yellow;
 
                                 //{
-                                //    ((IGMDataItem_Icon)Slots.ITEM[Slots.CURSOR_SELECT, 0]).Pallet = 6;
-                                //    ((IGMDataItem_Icon)Slots.ITEM[Slots.CURSOR_SELECT, 0]).Faded_Pallet = 6;
+                                //    ((IGMDataItem_Icon)Slots.ITEM[Slots.CURSOR_SELECT, 0]).Palette = 6;
+                                //    ((IGMDataItem_Icon)Slots.ITEM[Slots.CURSOR_SELECT, 0]).Faded_Palette = 6;
                                 //    ((IGMDataItem_String)Slots.ITEM[Slots.CURSOR_SELECT, 1]).Colorid = Font.ColorID.Yellow;
                                 //}
                                 if (_nag <= ++_pos)

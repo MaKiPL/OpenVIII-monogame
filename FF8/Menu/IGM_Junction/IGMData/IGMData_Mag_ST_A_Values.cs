@@ -35,7 +35,7 @@ namespace FF8
                     {
                         Dictionary<Kernel_bin.J_Statuses, byte> oldtotal = (prevSetting != null) ? getTotal(prevSetting, out Enum[] availableFlagsarray) : null;
                         Dictionary<Kernel_bin.J_Statuses, byte> total = getTotal(Memory.State.Characters[Character], out availableFlagsarray);
-                        FillData(oldtotal, total, availableFlagsarray, Icons.ID.Status_Death, pallet: 10, skip: new Icons.ID[] { Icons.ID.Status_Curse });
+                        FillData(oldtotal, total, availableFlagsarray, Icons.ID.Status_Death, palette: 10, skip: new Icons.ID[] { Icons.ID.Status_Curse });
                     }
                     return base.Update();
                 }

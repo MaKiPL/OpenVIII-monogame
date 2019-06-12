@@ -13,7 +13,7 @@ namespace FF8
         public Vector2 Location;
         public Vector2 Offset;
         public Vector2 Size;
-        public string ToStringHeader { get; } = "{File},{Part},{CustomPallet},{Location.X},{Location.Y},{Size.X},{Size.Y},{Offset.X},{Offset.Y},{End.X},{End.Y},{Tile.X},{Tile.Y},{Fill.X},{Fill.Y},{Snap_Right},{Snap_Bottom}\n";
+        public string ToStringHeader { get; } = "{File},{Part},{CustomPalette},{Location.X},{Location.Y},{Size.X},{Size.Y},{Offset.X},{Offset.Y},{End.X},{End.Y},{Tile.X},{Tile.Y},{Fill.X},{Fill.Y},{Snap_Right},{Snap_Bottom}\n";
         public byte[] UNK;
         private Loc loc;
 
@@ -34,7 +34,7 @@ namespace FF8
 
         public ushort CurrentPos { get; set; }
 
-        public sbyte CustomPallet { get; set; } = -1;
+        public sbyte CustomPalette { get; set; } = -1;
 
         public byte File { get; set; }
 
@@ -116,7 +116,7 @@ namespace FF8
         public override string ToString()
         {
             
-            return $"{File},{Part},{CustomPallet},{Location.X},{Location.Y},{Size.X},{Size.Y},{Offset.X},{Offset.Y},{End.X},{End.Y},{Tile.X},{Tile.Y},{Fill.X},{Fill.Y},{Snap_Right},{Snap_Bottom}\n";
+            return $"{File},{Part},{CustomPalette},{Location.X},{Location.Y},{Size.X},{Size.Y},{Offset.X},{Offset.Y},{End.X},{End.Y},{Tile.X},{Tile.Y},{Fill.X},{Fill.Y},{Snap_Right},{Snap_Bottom}\n";
         }
 
         #endregion Methods

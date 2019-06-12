@@ -113,7 +113,7 @@ namespace FF8
         /// Get Texture2D converted to 32bit color
         /// </summary>
         /// <param name="forcePalette">Desired Palette, see texture.NumOfPalettes. -1 is default.</param>
-        /// <param name="colors">Override colors of pallet; Array size must match texture.NumOfColorsPerPalette</param>
+        /// <param name="colors">Override colors of palette; Array size must match texture.NumOfColorsPerPalette</param>
         /// <returns>32bit Texture2D</returns>
         /// <remarks>
         /// Some paletts are 256 but the game only uses 16 colors might need to make the restriction
@@ -127,11 +127,11 @@ namespace FF8
                 if (texture.PaletteFlag != 0)
                 {
                     if (colors != null && colors.Length != texture.NumOfColorsPerPalette)
-                        throw new Exception($" custom colors parameter set but array size to match pallet size: {texture.NumOfColorsPerPalette}");
+                        throw new Exception($" custom colors parameter set but array size to match palette size: {texture.NumOfColorsPerPalette}");
                     else if (colors == null)
                     {
                         if (forcePalette >= texture.NumOfPalettes) //prevents exception for forcing a palette that doesn't exist.
-                            throw new Exception($"Desired pallet is incorrect use -1 for default or use a smaller number: {forcePalette} > {texture.NumOfPalettes}");
+                            throw new Exception($"Desired palette is incorrect use -1 for default or use a smaller number: {forcePalette} > {texture.NumOfPalettes}");
                         colors = GetPalette(forcePalette);
                     }
                     using (MemoryStream ms = new MemoryStream(buffer))

@@ -8,16 +8,16 @@ namespace FF8
 
         public class IGMDataItem_Face : IGMDataItem
         {
-            private byte _pallet;
+            private byte _palette;
 
             public Faces.ID Data { get; set; }
 
-            public byte Pallet
+            public byte Palette
             {
-                get => _pallet; set
+                get => _palette; set
                 {
                     if (value >= 16) value = 2;
-                    _pallet = value;
+                    _palette = value;
                 }
             }
 
