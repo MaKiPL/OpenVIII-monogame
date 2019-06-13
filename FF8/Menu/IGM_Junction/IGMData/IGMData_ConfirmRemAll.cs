@@ -19,10 +19,7 @@ namespace FF8
                             skipsnd = true;
                             init_debugger_Audio.PlaySound(31);
                             base.Inputs_OKAY();
-                            Memory.State.Characters[Character].Stat_J = Memory.State.Characters[Character].Stat_J.ToDictionary(e => e.Key, e => (byte)0);
-                            Memory.State.Characters[Character].Commands = Memory.State.Characters[Character].Commands.ConvertAll(Item => Kernel_bin.Abilities.None);
-                            Memory.State.Characters[Character].Abilities = Memory.State.Characters[Character].Abilities.ConvertAll(Item => Kernel_bin.Abilities.None);
-                            Memory.State.Characters[Character].JunctionnedGFs = Saves.GFflags.None;
+                            Memory.State.Characters[Character].RemoveAll();
 
                             InGameMenu_Junction.Data[SectionName.RemAll].Hide();
                             InGameMenu_Junction.Data[SectionName.TopMenu_Off].Hide();

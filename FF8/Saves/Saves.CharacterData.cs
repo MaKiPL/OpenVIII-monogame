@@ -36,6 +36,9 @@ namespace FF8
             //public byte _SPD; //0x0D
             //public byte _LCK; //0x0E
             public Dictionary<byte,byte> Magics; //0x0F
+
+            
+
             public List<Kernel_bin.Abilities> Commands; //0x10
             public byte Paddingorunusedcommand; //0x50
             public List<Kernel_bin.Abilities> Abilities; //0x53
@@ -94,6 +97,23 @@ namespace FF8
                     return abilities;
                 }
             }
+            /// <summary>
+            /// Sorted Enumerable based on best to worst for Stat. Uses character's total magic and kernel bin's stat value.
+            /// </summary>
+            /// <param name="Stat">Stat sorting by.</param>
+            /// <returns>Ordered Enumberable</returns>
+            public IOrderedEnumerable<Kernel_bin.Magic_Data> SortedMagic(Kernel_bin.Stat Stat) => Kernel_bin.MagicData.OrderBy(x => (-x.totalStatVal(Stat) * (Magics.ContainsKey(x.ID) ? Magics[x.ID] : 0)) / 100);
+
+            public void RemoveMagic() => Stat_J = Stat_J.ToDictionary(e => e.Key, e => (byte)0);
+
+            public void RemoveAll()
+            {
+                Stat_J = Stat_J.ToDictionary(e => e.Key, e => (byte)0);
+                Commands = Commands.ConvertAll(Item => Kernel_bin.Abilities.None);
+                Abilities = Abilities.ConvertAll(Item => Kernel_bin.Abilities.None);
+                JunctionnedGFs = GFflags.None;
+            }
+
             public void Read(BinaryReader br,Characters c)
             {
                 ID = c;
@@ -102,13 +122,15 @@ namespace FF8
                 Experience = br.ReadUInt32();//0x04
                 ModelID = br.ReadByte();//0x08
                 WeaponID = br.ReadByte();//0x09
-                RawStats = new Dictionary<Kernel_bin.Stat, byte>(6);
-                RawStats[Kernel_bin.Stat.STR] = br.ReadByte();//0x0A
-                RawStats[Kernel_bin.Stat.VIT] = br.ReadByte();//0x0B
-                RawStats[Kernel_bin.Stat.MAG] = br.ReadByte();//0x0C
-                RawStats[Kernel_bin.Stat.SPR] = br.ReadByte();//0x0D
-                RawStats[Kernel_bin.Stat.SPD] = br.ReadByte();//0x0E
-                RawStats[Kernel_bin.Stat.LUCK] = br.ReadByte();//0x0F
+                RawStats = new Dictionary<Kernel_bin.Stat, byte>(6)
+                {
+                    [Kernel_bin.Stat.STR] = br.ReadByte(),//0x0A
+                    [Kernel_bin.Stat.VIT] = br.ReadByte(),//0x0B
+                    [Kernel_bin.Stat.MAG] = br.ReadByte(),//0x0C
+                    [Kernel_bin.Stat.SPR] = br.ReadByte(),//0x0D
+                    [Kernel_bin.Stat.SPD] = br.ReadByte(),//0x0E
+                    [Kernel_bin.Stat.LUCK] = br.ReadByte()//0x0F
+                };
                 Magics = new Dictionary<byte, byte>(33);
                 for (int i = 0; i < 32; i++)
                 {

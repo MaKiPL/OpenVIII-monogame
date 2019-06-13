@@ -19,7 +19,7 @@ namespace FF8
                             skipsnd = true;
                             init_debugger_Audio.PlaySound(31);
                             base.Inputs_OKAY();
-                            Memory.State.Characters[Character].Stat_J = Memory.State.Characters[Character].Stat_J.ToDictionary(e => e.Key, e => (byte)0);
+                            Memory.State.Characters[Character].RemoveMagic();
                             Inputs_CANCEL();
                             InGameMenu_Junction.ReInit();
                             break;

@@ -71,28 +71,28 @@ namespace FF8
                                         break;
 
                                     case Mode.Mag_Pool_EL_D:
-                                        if (i.J_Val[Stat] * i.Elem_J_def.Count() == 0)
+                                        if (i.J_Val[Stat] * i.EL_Def.Count() == 0)
                                             addMagic(ref pos, i, Font.ColorID.Dark_Gray);
                                         else
                                             addMagic(ref pos, i, Font.ColorID.White);
                                         break;
 
                                     case Mode.Mag_Pool_EL_A:
-                                        if (i.J_Val[Stat] * i.Elem_J_atk.Count() == 0)
+                                        if (i.J_Val[Stat] * i.EL_Atk.Count() == 0)
                                             addMagic(ref pos, i, Font.ColorID.Dark_Gray);
                                         else
                                             addMagic(ref pos, i, Font.ColorID.White);
                                         break;
 
                                     case Mode.Mag_Pool_ST_D:
-                                        if (i.J_Val[Stat] * i.Stat_J_def.Count() == 0)
+                                        if (i.J_Val[Stat] * i.ST_Def.Count() == 0)
                                             addMagic(ref pos, i, Font.ColorID.Dark_Gray);
                                         else
                                             addMagic(ref pos, i, Font.ColorID.White);
                                         break;
 
                                     case Mode.Mag_Pool_ST_A:
-                                        if (i.J_Val[Stat] * i.Stat_J_atk.Count() == 0)
+                                        if (i.J_Val[Stat] * i.ST_Atk.Count() == 0)
                                             addMagic(ref pos, i, Font.ColorID.Dark_Gray);
                                         else
                                             addMagic(ref pos, i, Font.ColorID.White);
@@ -138,25 +138,26 @@ namespace FF8
                 {
                     switch (SortMode)
                     {
+                        
                         case Mode.Mag_Pool_Stat:
-                            if (Stat != Kernel_bin.Stat.None)
-                                Sort = Kernel_bin.MagicData.OrderBy(x => (-x.J_Val[Stat] * (Source.Magics.ContainsKey(x.ID) ? Source.Magics[x.ID] : 0)) / 100);
+                            if(Stat != Kernel_bin.Stat.None)
+                                Sort = Source.SortedMagic(Stat);
                             break;
 
                         case Mode.Mag_Pool_EL_D:
-                            Sort = Kernel_bin.MagicData.OrderBy(x => (-x.J_Val[Kernel_bin.Stat.EL_Def_1] * x.Elem_J_def.Count() * (Source.Magics.ContainsKey(x.ID) ? Source.Magics[x.ID] : 0)) / 100);
+                            Sort = Source.SortedMagic(Kernel_bin.Stat.EL_Def_1);
                             break;
 
                         case Mode.Mag_Pool_EL_A:
-                            Sort = Kernel_bin.MagicData.OrderBy(x => (-x.J_Val[Kernel_bin.Stat.EL_Atk] * x.Elem_J_atk.Count() * (Source.Magics.ContainsKey(x.ID) ? Source.Magics[x.ID] : 0)) / 100);
+                            Sort = Source.SortedMagic(Kernel_bin.Stat.EL_Atk);
                             break;
 
                         case Mode.Mag_Pool_ST_D:
-                            Sort = Kernel_bin.MagicData.OrderBy(x => (-x.J_Val[Kernel_bin.Stat.ST_Def_1] * x.Stat_J_def.Count() * (Source.Magics.ContainsKey(x.ID) ? Source.Magics[x.ID] : 0)) / 100);
+                            Sort = Source.SortedMagic(Kernel_bin.Stat.ST_Def_1);
                             break;
 
                         case Mode.Mag_Pool_ST_A:
-                            Sort = Kernel_bin.MagicData.OrderBy(x => (-x.J_Val[Kernel_bin.Stat.ST_Atk] * x.Stat_J_atk.Count() * (Source.Magics.ContainsKey(x.ID) ? Source.Magics[x.ID] : 0)) / 100);
+                            Sort = Source.SortedMagic(Kernel_bin.Stat.ST_Atk);
                             break;
 
                         default:

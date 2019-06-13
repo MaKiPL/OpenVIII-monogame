@@ -121,22 +121,22 @@ namespace FF8
                         switch (stat)
                         {
                             case Kernel_bin.Stat.EL_Atk:
-                                flags = Kernel_bin.MagicData[spell[i]].Elem_J_atk;
+                                flags = Kernel_bin.MagicData[spell[i]].EL_Atk;
                                 break;
                             case Kernel_bin.Stat.EL_Def_1:
                             case Kernel_bin.Stat.EL_Def_2:
                             case Kernel_bin.Stat.EL_Def_3:
                             case Kernel_bin.Stat.EL_Def_4:
-                                flags = Kernel_bin.MagicData[spell[i]].Elem_J_def;
+                                flags = Kernel_bin.MagicData[spell[i]].EL_Def;
                                 break;
                             case Kernel_bin.Stat.ST_Atk:
-                                flags = Kernel_bin.MagicData[spell[i]].Stat_J_atk;
+                                flags = Kernel_bin.MagicData[spell[i]].ST_Atk;
                                 break;
                             case Kernel_bin.Stat.ST_Def_1:
                             case Kernel_bin.Stat.ST_Def_2:
                             case Kernel_bin.Stat.ST_Def_3:
                             case Kernel_bin.Stat.ST_Def_4:
-                                flags = Kernel_bin.MagicData[spell[i]].Stat_J_def;
+                                flags = Kernel_bin.MagicData[spell[i]].ST_Def;
                                 break;
                         }
                         if (flags != null)

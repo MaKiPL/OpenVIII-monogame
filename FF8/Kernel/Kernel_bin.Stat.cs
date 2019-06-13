@@ -36,7 +36,7 @@ namespace FF8
 
         #region Enums
 
-        public enum Stat :byte
+        public enum Stat : byte
         {
             HP,
             STR,
@@ -59,6 +59,74 @@ namespace FF8
             ST_Def_4,
             None = 0xFF,
         }
+
+        public IReadOnlyList<Stat> AutoATK { get; } = new List<Stat>()
+        {
+            Stat.STR,
+            Stat.HIT,
+            Stat.EL_Atk,
+            Stat.ST_Atk,
+            Stat.MAG,
+            Stat.SPD,
+            Stat.LUCK,
+            Stat.HP,
+            Stat.VIT,
+            Stat.SPR,
+            Stat.EVA,
+            Stat.EL_Def_1,
+            Stat.ST_Def_1,
+            Stat.EL_Def_2,
+            Stat.ST_Def_2,
+            Stat.EL_Def_3,
+            Stat.ST_Def_3,
+            Stat.EL_Def_4,
+            Stat.ST_Def_4,
+        };
+        public IReadOnlyList<Stat> AutoMAG { get; } = new List<Stat>()
+        {
+            Stat.MAG,
+            Stat.SPR,
+            Stat.SPD,
+            Stat.LUCK,
+            Stat.HP,
+            Stat.VIT,
+            Stat.EVA,
+            Stat.EL_Def_1,
+            Stat.ST_Def_1,
+            Stat.EL_Def_2,
+            Stat.ST_Def_2,
+            Stat.EL_Def_3,
+            Stat.ST_Def_3,
+            Stat.EL_Def_4,
+            Stat.ST_Def_4,
+            Stat.STR,
+            Stat.HIT,
+            Stat.EL_Atk,
+            Stat.ST_Atk,
+        };
+        public IReadOnlyList<Stat> AutoDEF { get; } = new List<Stat>()
+        {
+
+            Stat.HP,
+            Stat.VIT,
+            Stat.SPR,
+            Stat.EVA,
+            Stat.EL_Def_1,
+            Stat.ST_Def_1,
+            Stat.EL_Def_2,
+            Stat.ST_Def_2,
+            Stat.EL_Def_3,
+            Stat.ST_Def_3,
+            Stat.EL_Def_4,
+            Stat.ST_Def_4,
+            Stat.SPD,
+            Stat.LUCK,
+            Stat.MAG,
+            Stat.STR,
+            Stat.HIT,
+            Stat.EL_Atk,
+            Stat.ST_Atk,
+        };
 
         #endregion Enums
     }

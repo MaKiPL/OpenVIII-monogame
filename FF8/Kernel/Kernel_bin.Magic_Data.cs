@@ -46,14 +46,14 @@ namespace FF8
             //public byte EVA_J;         //0x001D  1 byte  Characters EVA junction value
             //public byte HIT_J;         //0x001E  1 byte  Characters HIT junction value
             //public byte LUCK_J;        //0x001F  1 byte  Characters LUCK junction value
-            public Element Elem_J_atk { get; private set; }    //0x0020  1 byte Characters J - Elem attack
+            public Element EL_Atk { get; private set; }    //0x0020  1 byte Characters J - Elem attack
             //public byte J_Val[Kernel_bin.Stat.EL_Atk];//0x0021  1 byte  Characters J - Elem attack value
-            public Element Elem_J_def { get; private set; }    //0x0022  1 byte Characters J - Elem defense
+            public Element EL_Def { get; private set; }    //0x0022  1 byte Characters J - Elem defense
             //public byte J_Val[Kernel_bin.Stat.EL_Def_1];//0x0023  1 byte  Characters J - Elem defense value
             //public byte J_Val[Kernel_bin.Stat.ST_Atk];//0x0024  1 byte  Characters J - Status attack value
             //public byte J_Val[Kernel_bin.Stat.ST_Def_1];//0x0025  1 byte  Characters J - Status defense value
-            public J_Statuses Stat_J_atk { get; private set; }  //0x0026  2 bytes Characters J - Statuses Attack
-            public J_Statuses Stat_J_def { get; private set; }  //0x0028  2 bytes Characters J - Statuses Defend
+            public J_Statuses ST_Atk { get; private set; }  //0x0026  2 bytes Characters J - Statuses Attack
+            public J_Statuses ST_Def { get; private set; }  //0x0028  2 bytes Characters J - Statuses Defend
             public byte[] GF_Compatibility { get; private set; }
 
             //0x002A  1 byte  Quezacolt compatibility
@@ -107,9 +107,9 @@ namespace FF8
                     { Stat.HIT, br.ReadByte() },
                     { Stat.LUCK, br.ReadByte() }
                 };
-                Elem_J_atk = (Element)br.ReadByte();
+                EL_Atk = (Element)br.ReadByte();
                 _j_Val.Add(Stat.EL_Atk, br.ReadByte());
-                Elem_J_def = (Element)br.ReadByte();
+                EL_Def = (Element)br.ReadByte();
                 _j_Val.Add(Stat.EL_Def_1, br.ReadByte());
                 _j_Val.Add(Stat.EL_Def_2, _j_Val[Stat.EL_Def_1]);
                 _j_Val.Add(Stat.EL_Def_3, _j_Val[Stat.EL_Def_1]);
@@ -119,12 +119,26 @@ namespace FF8
                 _j_Val.Add(Stat.ST_Def_2, _j_Val[Stat.ST_Def_1]);
                 _j_Val.Add(Stat.ST_Def_3, _j_Val[Stat.ST_Def_1]);
                 _j_Val.Add(Stat.ST_Def_4, _j_Val[Stat.ST_Def_1]);
-                Stat_J_atk = (J_Statuses)br.ReadUInt16();
-                Stat_J_def = (J_Statuses)br.ReadUInt16();
+                ST_Atk = (J_Statuses)br.ReadUInt16();
+                ST_Def = (J_Statuses)br.ReadUInt16();
                 GF_Compatibility = br.ReadBytes(16);
                 Unknown4 = br.ReadBytes(2);
             }
 
+            public uint totalStatVal(Stat stat)
+            {
+                if (stat < Stat.EL_Atk)
+                    return J_Val[stat];
+                else if (stat == Stat.EL_Atk)
+                    return J_Val[stat] * EL_Atk.Count();
+                else if (stat == Stat.ST_Atk)
+                    return J_Val[stat] * ST_Atk.Count();
+                else if (stat >= Stat.EL_Def_1 && stat <= Stat.EL_Def_4)
+                    return J_Val[stat] * EL_Def.Count();
+                else if (stat >= Stat.ST_Def_1 && stat <= Stat.ST_Def_4)
+                    return J_Val[stat] * ST_Def.Count();
+                return 0;
+            }
 
             public static List<Magic_Data> Read(BinaryReader br)
             {
