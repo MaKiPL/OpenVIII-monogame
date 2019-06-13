@@ -226,29 +226,48 @@ namespace FF8
 
             }
         }
+        //private static float x = 0;
+        //private static float y = 0;
+        //private static float z = 0;
+
         private static void UpdateCamera()
         {
+            //if (Input.Button(Keys.NumPad7))
+            //    x += 2f;
+            //if (Input.Button(Keys.NumPad4))
+            //    x -= 2f;
+
+            //if (Input.Button(Keys.NumPad8))
+            //    y += 2f;
+            //if (Input.Button(Keys.NumPad5))
+            //    y -= 2f;
+
+            //if (Input.Button(Keys.NumPad9))
+            //    z += 2f;
+            //if (Input.Button(Keys.NumPad6))
+            //    z -= 2f;
+
             const float V = 100f;
             //battleCamera.cam.startingTime = 64;
             float step = battleCamera.cam.startingTime / (float)battleCamera.cam.time;
             float camWorldX = MathHelper.Lerp(battleCamera.cam.Camera_World_X_s16[0] / V,
-                battleCamera.cam.Camera_World_X_s16[1] / V, step) -60;
+                battleCamera.cam.Camera_World_X_s16[1] / V, step) + 30;
             float camWorldY = MathHelper.Lerp(battleCamera.cam.Camera_World_Y_s16[0] / V,
-                battleCamera.cam.Camera_World_Y_s16[1] / V, step); 
+                battleCamera.cam.Camera_World_Y_s16[1] / V, step) - 40 ; 
             float camWorldZ = MathHelper.Lerp(battleCamera.cam.Camera_World_Z_s16[0] / V,
-                battleCamera.cam.Camera_World_Z_s16[1] / V, step) +40;
+                battleCamera.cam.Camera_World_Z_s16[1] / V, step) +0;
 
             float camTargetX = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_X_s16[0] / V,
-    battleCamera.cam.Camera_Lookat_X_s16[1] / V, step) -20;
+    battleCamera.cam.Camera_Lookat_X_s16[1] / V, step) +30;
             float camTargetY = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_Y_s16[0] / V,
-battleCamera.cam.Camera_Lookat_Y_s16[1] / V, step) +25;
+battleCamera.cam.Camera_Lookat_Y_s16[1] / V, step) - 40;
             float camTargetZ = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_Z_s16[0] / V,
-battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
+battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
 
 
 
-            camPosition = new Vector3(camWorldX, -camWorldY, camWorldZ);
-            camTarget = new Vector3(camTargetX, -camTargetY, camTargetZ);
+            camPosition = new Vector3(camWorldX, -camWorldY, -camWorldZ);
+            camTarget = new Vector3(camTargetX, -camTargetY, -camTargetZ);
 
 
             float fovDirector = MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, step);
@@ -256,7 +275,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          Vector3.Up);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
-                   MathHelper.ToRadians(fovDirector/6),
+                   MathHelper.ToRadians(fovDirector / 8),
                    Memory.graphics.GraphicsDevice.DisplayMode.AspectRatio,
     1f, 1000f);
 
@@ -660,6 +679,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
             Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {Extended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 5, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.FOV: {MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, battleCamera.cam.startingTime / (float)battleCamera.cam.time)}"), 20, 30 * 6, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.Mode: {battleCamera.cam.control_word&1}"), 20, 30 * 7, 1, 1, 0, 1);
+            //Memory.font.RenderBasicText(new FF8String($"Camera.translate: {x},{y},{z}"), 20, 30 * 7, 1, 1, 0, 1);
 
             Memory.SpriteBatchEnd();
         }
