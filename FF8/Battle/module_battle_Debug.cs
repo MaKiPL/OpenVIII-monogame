@@ -247,8 +247,8 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
 
 
 
-            camPosition = new Vector3(-camWorldX, camWorldY, -camWorldZ);
-            camTarget = new Vector3(camTargetY, -camTargetX, -camTargetZ);
+            camPosition = new Vector3(camWorldX, -camWorldY, camWorldZ);
+            camTarget = new Vector3(camTargetX, -camTargetY, camTargetZ);
 
 
             float fovDirector = MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, step);
@@ -659,6 +659,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
             Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {Extended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 4, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {Extended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 5, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.FOV: {MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, battleCamera.cam.startingTime / (float)battleCamera.cam.time)}"), 20, 30 * 6, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Camera.Mode: {battleCamera.cam.control_word&1}"), 20, 30 * 7, 1, 1, 0, 1);
 
             Memory.SpriteBatchEnd();
         }
@@ -1157,7 +1158,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
         [StructLayout(LayoutKind.Sequential, Pack =1, Size =1092)]
         public struct CameraStruct
         {
-            public byte unkbyte000; //000
+            public byte animationId; //000
             public byte keyframeCount;
             public ushort control_word;
             public ushort startingFOV; //usually ~280
@@ -1181,7 +1182,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
             public short[] Camera_World_Y_s16; //0E4
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            public byte[] unkbyte124; //124
+            public byte[] is_FrameDurationsShot; //124
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
             public short[] Camera_Lookat_Z_s16; //144
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
@@ -1189,7 +1190,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
             public short[] Camera_Lookat_Y_s16; //1C4
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            public byte[] unkbyte204; //204
+            public byte[] is_FrameEndingShots; //204
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
             public byte[] unkbyte224; //224
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
@@ -1326,6 +1327,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
         /// <param name="animId"></param>
         private static uint ReadAnimation(int animId)
         {
+            animId = DEBUGframe;
             short local2C;
             byte keyframecount =0;
             ushort totalframecount = 0;
@@ -1393,19 +1395,19 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
                     {
                         while(true) //I'm setting this to true and breaking in code as this works on peeking on next variable via pointer and that's not possible here without unsafe block
                         {
-                            battleCamera.cam.unkword024[keyframecount] = totalframecount;
+                            battleCamera.cam.unkword024[keyframecount] = totalframecount; //looks like this is the camera index
                             current_position = br.ReadUInt16();
                             if ((short)current_position < 0) //reverse of *current_position >= 0, also cast to signed is important here
                                 break;
                             totalframecount += (ushort)(current_position * 16); //here is increment of short*, but I already did that above
-                            battleCamera.cam.unkbyte124[keyframecount] = (byte)(current_position =  br.ReadUInt16()); //cam->unkbyte124[keyframecount] = *current_position++; - looks like we are wasting one byte due to integer sizes
-                            battleCamera.cam.Camera_World_Z_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
+                            battleCamera.cam.is_FrameDurationsShot[keyframecount] = (byte)(current_position =  br.ReadUInt16()); //cam->unkbyte124[keyframecount] = *current_position++; - looks like we are wasting one byte due to integer sizes
                             battleCamera.cam.Camera_World_X_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
                             battleCamera.cam.Camera_World_Y_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
-                            battleCamera.cam.unkbyte204[keyframecount] = (byte)(current_position = br.ReadUInt16()); //m->unkbyte204[keyframecount] = *current_position++;
-                            battleCamera.cam.Camera_Lookat_Z_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
+                            battleCamera.cam.Camera_World_Z_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
+                            battleCamera.cam.is_FrameEndingShots[keyframecount] = (byte)(current_position = br.ReadUInt16()); //m->unkbyte204[keyframecount] = *current_position++;
                             battleCamera.cam.Camera_Lookat_X_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
                             battleCamera.cam.Camera_Lookat_Y_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
+                            battleCamera.cam.Camera_Lookat_Z_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
                             keyframecount++;
                         }
 
@@ -1434,8 +1436,8 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
                                 totalframecount += (ushort)(current_position * 16);
 					//ff8funcs.Sub503AE0(++local18, ++local1C, ++ebx, *(BYTE*)current_position, &cam->unkword064[keyframecount], &cam->unkword0A4[keyframecount], &cam->unkword0E4[keyframecount]);
 					//ff8funcs.Sub503AE0(++local14, ++local10, ++local2C, *(BYTE*)(current_position + 4), &cam->unkword144[keyframecount], &cam->unkword184[keyframecount], &cam->unkword1C4[keyframecount]);
-					battleCamera.cam.unkbyte204[keyframecount] = 0xFB;
-					battleCamera.cam.unkbyte124[keyframecount] = 0xFB;
+					battleCamera.cam.is_FrameEndingShots[keyframecount] = 0xFB;
+					battleCamera.cam.is_FrameDurationsShot[keyframecount] = 0xFB;
 					local1C += 8;
 					local18 += 8;
 					current_position += 8;
