@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 
 namespace FF8
@@ -24,19 +25,19 @@ namespace FF8
             /// <summary>
             /// Ability data ID
             /// </summary>
-            public byte Ability;           //0x0004	1 byte Ability data ID
+            public byte Ability { get; private set; }           //0x0004	1 byte Ability data ID
             /// <summary>
             /// Unknown Flags
             /// </summary>
-            public BitArray Flags;             //0x0005	1 byte Unknown Flags
+            public BitArray Flags { get; private set; }             //0x0005	1 byte Unknown Flags
             /// <summary>
             /// Target
             /// </summary>
-            public byte Target;            //0x0006	1 byte Target
+            public byte Target { get; private set; }            //0x0006	1 byte Target
             /// <summary>
             /// Unknown / Unused
             /// </summary>
-            public byte Unknown;           //0x0007	1 byte Unknown / Unused
+            public byte Unknown { get; private set; }           //0x0007	1 byte Unknown / Unused
 
             public void Read(BinaryReader br, int i)
             {
@@ -49,15 +50,15 @@ namespace FF8
                 Unknown = br.ReadByte();
             }
 
-            public static Battle_Commands[] Read(BinaryReader br)
+            public static List<Battle_Commands> Read(BinaryReader br)
             {
-                var ret = new Battle_Commands[count];
+                var ret = new List<Battle_Commands>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     var tmp = new Battle_Commands();
                     tmp.Read(br, i);
-                    ret[i] = tmp;
+                    ret.Add(tmp);
                 }
                 return ret;
             }

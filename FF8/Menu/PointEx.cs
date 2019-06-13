@@ -21,11 +21,13 @@ namespace FF8
             source = (source.ToVector2() + offset).ToPoint();
             return source;
         }
+
         public static Point Transform(this Point point, Matrix matrix)
         {
             point = Vector2.Transform(point.ToVector2(), Matrix.Invert(matrix)).RoundedPoint();
             return point;
         }
+
         public static Rectangle Scale(this Rectangle source, Matrix matrix)
         {
             Vector2 scale = Memory.Scale();
@@ -35,12 +37,14 @@ namespace FF8
             source.Size = (source.Size.ToVector2() * scale).RoundedPoint();
             return source;
         }
+
         public static Rectangle Scale(this Rectangle source, Vector2 scale)
         {
             source.Location = (source.Location.ToVector2() * scale).RoundedPoint();
             source.Size = (source.Size.ToVector2() * scale).RoundedPoint();
             return source;
         }
+
         public static Rectangle Scale(this Rectangle source)
         {
             Vector2 scale = Memory.Scale();
@@ -54,6 +58,7 @@ namespace FF8
             source = (source.ToVector2() * scale).RoundedPoint();
             return source;
         }
+
         public static Point Scale(this Point source)
         {
             Vector2 scale = Memory.Scale();
@@ -64,10 +69,15 @@ namespace FF8
         public static Point RoundedPoint(this Vector2 v) => new Point((int)Math.Round(v.X), (int)Math.Round(v.Y));
 
         public static Point CeilingPoint(this Vector2 v) => v.Ceiling().ToPoint();
+
         public static Point FloorPoint(this Vector2 v) => v.Floor().ToPoint();
-        public static Vector2 Round(this Vector2 v) => new Vector2 ((float)Math.Round(v.X), (float)Math.Round(v.Y));
+
+        public static Vector2 Round(this Vector2 v) => new Vector2((float)Math.Round(v.X), (float)Math.Round(v.Y));
+
         public static Vector2 Ceiling(this Vector2 v) => new Vector2((float)Math.Ceiling(v.X), (float)Math.Ceiling(v.Y));
+
         public static Vector2 Floor(this Vector2 v) => new Vector2((float)Math.Floor(v.X), (float)Math.Floor(v.Y));
+
         public static Vector2 FloorOrCeiling(this Vector2 v, Vector2 target)
         {
             float X, Y;
@@ -76,6 +86,33 @@ namespace FF8
             return new Vector2(X, Y);
         }
 
+        /// <summary>
+        /// Count how many flags set in enum.
+        /// </summary>
+        /// <param name="statuses">varible you need to number of flags set.</param>
+        /// <returns>count</returns>
+        /// <see cref="https://stackoverflow.com/questions/677204/counting-the-number-of-flags-set-on-an-enumeration"/>
+        public static uint Count(this Kernel_bin.J_Statuses statuses)
+        {
+            uint v = (uint)statuses;
+            v = v - ((v >> 1) & 0x55555555); // reuse input as temporary
+            v = (v & 0x33333333) + ((v >> 2) & 0x33333333); // temp
+            return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // count
+        }
+
+        /// <summary>
+        /// Count how many flags set in enum.
+        /// </summary>
+        /// <param name="element">varible you need to number of flags set.</param>
+        /// <returns>count</returns>
+        /// <see cref="https://stackoverflow.com/questions/677204/counting-the-number-of-flags-set-on-an-enumeration"/>
+        public static uint Count(this Kernel_bin.Element element)
+        {
+            uint v = (uint)element;
+            v = v - ((v >> 1) & 0x55555555); // reuse input as temporary
+            v = (v & 0x33333333) + ((v >> 2) & 0x33333333); // temp
+            return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // count
+        }
         #endregion Methods
     }
 }

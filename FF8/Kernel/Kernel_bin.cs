@@ -1,46 +1,79 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace FF8
 {
     public partial class Kernel_bin
     {
-        private ArchiveWorker aw;
-        private readonly string ArchiveString = Memory.Archives.A_MAIN;
-        public static Magic_Data[] MagicData { get; private set; }//0
-        public static Dictionary<GFs, Junctionable_GFs_Data> JunctionableGFsData { get; private set; }//1
-        public static Enemy_Attacks_Data[] EnemyAttacksData { get; private set; }//2
-        public static Battle_Commands[] BattleCommands { get; private set; }//3
-        public static Weapons_Data[] WeaponsData { get; private set; }//4
-        public static Dictionary<Renzokeken_Level, Renzokuken_Finishers_Data> RenzokukenFinishersData; //5
-        public static Dictionary<Characters, Character_Stats> CharacterStats { get; private set; }//6
-        public static Battle_Items_Data[] BattleItemsData { get; private set; }//7
-        public static Non_battle_Items_Data[] NonbattleItemsData { get; private set; } //8 //only strings
-        public static Non_Junctionable_GFs_Attacks_Data[] NonJunctionableGFsAttacksData { get; private set; } //9
-        public static Dictionary<Abilities, Command_ability_data> Commandabilitydata { get; private set; }//10
-        public static Dictionary<Abilities,Junction_abilities> Junctionabilities { get; private set; }//11
-        public static Dictionary<Abilities, Command_abilities> Commandabilities { get; private set; }//12
-        public static Dictionary<Abilities, Stat_percent_abilities> Statpercentabilities { get; private set; }//13
-        public static Dictionary<Abilities, Character_abilities> Characterabilities { get; private set; }//14
-        public static Dictionary<Abilities, Party_abilities> Partyabilities { get; private set; }//15
-        public static Dictionary<Abilities, GF_abilities> GFabilities { get; private set; }//16
-        public static Dictionary<Abilities, Menu_abilities> Menuabilities { get; private set; }//17
-        public static Temporary_character_limit_breaks[] Temporarycharacterlimitbreaks { get; private set; }//18
-        public static Blue_magic_Quistis_limit_break[] BluemagicQuistislimitbreak { get; private set; }//19
-        //public static Quistis_limit_break_parameters[] Quistislimitbreakparameters { get; private set; }//20
-        public static Shot_Irvine_limit_break[] ShotIrvinelimitbreak { get; private set; }//21
-        public static Duel_Zell_limit_break[] DuelZelllimitbreak { get; private set; }//22
-        public static Zell_limit_break_parameters[] Zelllimitbreakparameters { get; private set; }//23
-        public static Rinoa_limit_breaks_part_1[] Rinoalimitbreakspart1 { get; private set; }//24
-        public static Rinoa_limit_breaks_part_2[] Rinoalimitbreakspart2 { get; private set; }//25
-        public static Slot_array[] Slotarray { get; private set; }//26
-        public static Selphie_limit_break_sets[] Selphielimitbreaksets { get; private set; }//27
-        public static Devour[] Devour_ { get; private set; }//28
-        public static Misc_section[] Miscsection { get; private set; }//29 //only_strings
-        public static Misc_text_pointers[] Misctextpointers { get; private set; }//30
+        private static List<Magic_Data> s_magicData;
+        private static Dictionary<GFs, Junctionable_GFs_Data> s_junctionableGFsData;
+        private static List<Enemy_Attacks_Data> s_enemyAttacksData;
+        private static List<Battle_Commands> s_battleCommands;
+        private static List<Weapons_Data> s_weaponsData;
+        private static Dictionary<Renzokeken_Level, Renzokuken_Finishers_Data> s_renzokukenFinishersData;
+        private static Dictionary<Characters, Character_Stats> s_characterStats;
+        private static List<Battle_Items_Data> s_battleItemsData;
+        private static List<Non_battle_Items_Data> s_nonbattleItemsData;
+        private static List<Non_Junctionable_GFs_Attacks_Data> s_nonJunctionableGFsAttacksData;
+        private static Dictionary<Abilities, Command_ability_data> s_commandabilitydata;
+        private static Dictionary<Abilities, Junction_abilities> s_junctionabilities;
+        private static Dictionary<Abilities, Command_abilities> s_commandabilities;
+        private static Dictionary<Abilities, Stat_percent_abilities> s_statpercentabilities;
+        private static Dictionary<Abilities, Character_abilities> s_characterabilities;
+        private static Dictionary<Abilities, Party_abilities> s_partyabilities;
+        private static Dictionary<Abilities, GF_abilities> s_gFabilities;
+        private static Dictionary<Abilities, Menu_abilities> s_menuabilities;
+        private static List<Temporary_character_limit_breaks> s_temporarycharacterlimitbreaks;
+        private static List<Blue_magic_Quistis_limit_break> s_bluemagicQuistislimitbreak;
+        private static List<Shot_Irvine_limit_break> s_shotIrvinelimitbreak;
+        private static List<Duel_Zell_limit_break> s_duelZelllimitbreak;
+        private static List<Zell_limit_break_parameters> s_zelllimitbreakparameters;
+        private static List<Rinoa_limit_breaks_part_1> s_rinoalimitbreakspart1;
+        private static List<Rinoa_limit_breaks_part_2> s_rinoalimitbreakspart2;
+        private static List<Slot_array> s_slotarray;
+        private static List<Selphie_limit_break_sets> s_selphielimitbreaksets;
+        private static List<Devour> s_devour_;
+        private static List<Misc_section> s_miscsection;
+        private static List<Misc_text_pointers> s_misctextpointers;
+        private static Dictionary<Abilities, Equipable_Ability> s_equipableAbilities;
 
-        public static Dictionary<Abilities, Equipable_Ability> EquipableAbilities; // contains 4 types;
+        private ArchiveWorker aw { get; set; }
+        private string ArchiveString { get; } = Memory.Archives.A_MAIN;
+        public static IReadOnlyList<Magic_Data> MagicData { get => s_magicData; }//0
+        public static IReadOnlyDictionary<GFs, Junctionable_GFs_Data> JunctionableGFsData { get => s_junctionableGFsData; }//1
+        public static IReadOnlyList<Enemy_Attacks_Data> EnemyAttacksData { get => s_enemyAttacksData; }//2
+        public static IReadOnlyList<Battle_Commands> BattleCommands { get => s_battleCommands; }//3
+        public static IReadOnlyList<Weapons_Data> WeaponsData { get => s_weaponsData; }//4
+        public static IReadOnlyDictionary<Renzokeken_Level, Renzokuken_Finishers_Data> RenzokukenFinishersData { get => s_renzokukenFinishersData; } //5
+        public static IReadOnlyDictionary<Characters, Character_Stats> CharacterStats { get => s_characterStats; }//6
+        public static IReadOnlyList<Battle_Items_Data> BattleItemsData { get => s_battleItemsData; }//7
+        public static IReadOnlyList<Non_battle_Items_Data> NonbattleItemsData { get => s_nonbattleItemsData; } //8 //only strings
+        public static IReadOnlyList<Non_Junctionable_GFs_Attacks_Data> NonJunctionableGFsAttacksData { get => s_nonJunctionableGFsAttacksData; } //9
+        public static IReadOnlyDictionary<Abilities, Command_ability_data> Commandabilitydata { get => s_commandabilitydata; }//10
+        public static IReadOnlyDictionary<Abilities, Junction_abilities> Junctionabilities { get => s_junctionabilities; }//11
+        public static IReadOnlyDictionary<Abilities, Command_abilities> Commandabilities { get => s_commandabilities; }//12
+        public static IReadOnlyDictionary<Abilities, Stat_percent_abilities> Statpercentabilities { get => s_statpercentabilities;  }//13
+        public static IReadOnlyDictionary<Abilities, Character_abilities> Characterabilities { get => s_characterabilities;  }//14
+        public static IReadOnlyDictionary<Abilities, Party_abilities> Partyabilities { get => s_partyabilities;  }//15
+        public static IReadOnlyDictionary<Abilities, GF_abilities> GFabilities { get => s_gFabilities;  }//16
+        public static IReadOnlyDictionary<Abilities, Menu_abilities> Menuabilities { get => s_menuabilities;  }//17
+        public static IReadOnlyList<Temporary_character_limit_breaks> Temporarycharacterlimitbreaks { get => s_temporarycharacterlimitbreaks;  }//18
+        public static IReadOnlyList<Blue_magic_Quistis_limit_break> BluemagicQuistislimitbreak { get => s_bluemagicQuistislimitbreak;  }//19
+        //public static List<Quistis_limit_break_parameters> Quistislimitbreakparameters { get; private set; }//20
+        public static IReadOnlyList<Shot_Irvine_limit_break> ShotIrvinelimitbreak { get => s_shotIrvinelimitbreak;  }//21
+        public static IReadOnlyList<Duel_Zell_limit_break> DuelZelllimitbreak { get => s_duelZelllimitbreak;  }//22
+        public static IReadOnlyList<Zell_limit_break_parameters> Zelllimitbreakparameters { get => s_zelllimitbreakparameters;  }//23
+        public static IReadOnlyList<Rinoa_limit_breaks_part_1> Rinoalimitbreakspart1 { get => s_rinoalimitbreakspart1;  }//24
+        public static IReadOnlyList<Rinoa_limit_breaks_part_2> Rinoalimitbreakspart2 { get => s_rinoalimitbreakspart2;  }//25
+        public static IReadOnlyList<Slot_array> Slotarray { get => s_slotarray;  }//26
+        public static IReadOnlyList<Selphie_limit_break_sets> Selphielimitbreaksets { get => s_selphielimitbreaksets;  }//27
+        public static IReadOnlyList<Devour> Devour_ { get => s_devour_;  }//28
+        public static IReadOnlyList<Misc_section> Miscsection { get => s_miscsection;  }//29 //only_strings
+        public static IReadOnlyList<Misc_text_pointers> Misctextpointers { get => s_misctextpointers;  }//30
+
+        public static IReadOnlyDictionary<Abilities, Equipable_Ability> EquipableAbilities { get => s_equipableAbilities;  } // contains 4 types;
 
         /// <summary>
         /// Read binary data from into structures and arrays
@@ -57,81 +90,81 @@ namespace FF8
             using (MemoryStream ms = new MemoryStream(buffer))
             using (BinaryReader br = new BinaryReader(ms))
             {
-                BattleCommands = Battle_Commands.Read(br);
+                s_battleCommands = Battle_Commands.Read(br);
                 ms.Seek(subPositions[Magic_Data.id], SeekOrigin.Begin);
-                MagicData = Magic_Data.Read(br);
+                s_magicData = Magic_Data.Read(br);
                 ms.Seek(subPositions[Junctionable_GFs_Data.id], SeekOrigin.Begin);
-                JunctionableGFsData = Junctionable_GFs_Data.Read(br);
+                s_junctionableGFsData = Junctionable_GFs_Data.Read(br);
                 ms.Seek(subPositions[Enemy_Attacks_Data.id], SeekOrigin.Begin);
-                EnemyAttacksData = Enemy_Attacks_Data.Read(br);
+                s_enemyAttacksData = Enemy_Attacks_Data.Read(br);
                 ms.Seek(subPositions[Weapons_Data.id], SeekOrigin.Begin);
-                WeaponsData = Weapons_Data.Read(br);
+                s_weaponsData = Weapons_Data.Read(br);
                 ms.Seek(subPositions[Renzokuken_Finishers_Data.id], SeekOrigin.Begin);
-                RenzokukenFinishersData = Renzokuken_Finishers_Data.Read(br);
+                s_renzokukenFinishersData = Renzokuken_Finishers_Data.Read(br);
                 ms.Seek(subPositions[Character_Stats.id], SeekOrigin.Begin);
-                CharacterStats = Character_Stats.Read(br);
+                s_characterStats = Character_Stats.Read(br);
                 ms.Seek(subPositions[Battle_Items_Data.id], SeekOrigin.Begin);
-                BattleItemsData = Battle_Items_Data.Read(br);
-                NonbattleItemsData = Non_battle_Items_Data.Read();
+                s_battleItemsData = Battle_Items_Data.Read(br);
+                s_nonbattleItemsData = Non_battle_Items_Data.Read();
                 ms.Seek(subPositions[Non_Junctionable_GFs_Attacks_Data.id], SeekOrigin.Begin);
-                NonJunctionableGFsAttacksData = Non_Junctionable_GFs_Attacks_Data.Read(br);
+                s_nonJunctionableGFsAttacksData = Non_Junctionable_GFs_Attacks_Data.Read(br);
                 ms.Seek(subPositions[Command_ability_data.id], SeekOrigin.Begin);
-                Commandabilitydata = Command_ability_data.Read(br);
+                s_commandabilitydata = Command_ability_data.Read(br);
                 ms.Seek(subPositions[Junction_abilities.id], SeekOrigin.Begin);
-                Junctionabilities = Junction_abilities.Read(br);
+                s_junctionabilities = Junction_abilities.Read(br);
                 ms.Seek(subPositions[Command_abilities.id], SeekOrigin.Begin);
-                Commandabilities = Command_abilities.Read(br);
+                s_commandabilities = Command_abilities.Read(br);
                 ms.Seek(subPositions[Stat_percent_abilities.id], SeekOrigin.Begin);
-                Statpercentabilities = Stat_percent_abilities.Read(br);
+                s_statpercentabilities = Stat_percent_abilities.Read(br);
                 ms.Seek(subPositions[Character_abilities.id], SeekOrigin.Begin);
-                Characterabilities = Character_abilities.Read(br);
+                s_characterabilities = Character_abilities.Read(br);
                 ms.Seek(subPositions[Party_abilities.id], SeekOrigin.Begin);
-                Partyabilities = Party_abilities.Read(br);
+                s_partyabilities = Party_abilities.Read(br);
                 ms.Seek(subPositions[GF_abilities.id], SeekOrigin.Begin);
-                GFabilities = GF_abilities.Read(br);
+                s_gFabilities = GF_abilities.Read(br);
                 ms.Seek(subPositions[Menu_abilities.id], SeekOrigin.Begin);
-                Menuabilities = Menu_abilities.Read(br);
+                s_menuabilities = Menu_abilities.Read(br);
                 ms.Seek(subPositions[Temporary_character_limit_breaks.id], SeekOrigin.Begin);
-                Temporarycharacterlimitbreaks = Temporary_character_limit_breaks.Read(br);
+                s_temporarycharacterlimitbreaks = Temporary_character_limit_breaks.Read(br);
                 ms.Seek(subPositions[Blue_magic_Quistis_limit_break.id], SeekOrigin.Begin);
-                BluemagicQuistislimitbreak = Blue_magic_Quistis_limit_break.Read(br);
+                s_bluemagicQuistislimitbreak = Blue_magic_Quistis_limit_break.Read(br);
                 //ms.Seek(subPositions[Quistis_limit_break_parameters.id], SeekOrigin.Begin);
                 //Quistislimitbreakparameters = Quistis_limit_break_parameters.Read(br);
                 ms.Seek(subPositions[Shot_Irvine_limit_break.id], SeekOrigin.Begin);
-                ShotIrvinelimitbreak = Shot_Irvine_limit_break.Read(br);
+                s_shotIrvinelimitbreak = Shot_Irvine_limit_break.Read(br);
                 ms.Seek(subPositions[Duel_Zell_limit_break.id], SeekOrigin.Begin);
-                DuelZelllimitbreak = Duel_Zell_limit_break.Read(br);
+                s_duelZelllimitbreak = Duel_Zell_limit_break.Read(br);
                 ms.Seek(subPositions[Zell_limit_break_parameters.id], SeekOrigin.Begin);
-                Zelllimitbreakparameters = Zell_limit_break_parameters.Read(br);
+                s_zelllimitbreakparameters = Zell_limit_break_parameters.Read(br);
                 ms.Seek(subPositions[Rinoa_limit_breaks_part_1.id], SeekOrigin.Begin);
-                Rinoalimitbreakspart1 = Rinoa_limit_breaks_part_1.Read(br);
+                s_rinoalimitbreakspart1 = Rinoa_limit_breaks_part_1.Read(br);
                 ms.Seek(subPositions[Rinoa_limit_breaks_part_2.id], SeekOrigin.Begin);
-                Rinoalimitbreakspart2 = Rinoa_limit_breaks_part_2.Read(br);
+                s_rinoalimitbreakspart2 = Rinoa_limit_breaks_part_2.Read(br);
                 ms.Seek(subPositions[Slot_array.id], SeekOrigin.Begin);
-                Slotarray = Slot_array.Read(br);
+                s_slotarray = Slot_array.Read(br);
                 ms.Seek(subPositions[Selphie_limit_break_sets.id], SeekOrigin.Begin);
-                Selphielimitbreaksets = Selphie_limit_break_sets.Read(br);
+                s_selphielimitbreaksets = Selphie_limit_break_sets.Read(br);
                 ms.Seek(subPositions[Devour.id], SeekOrigin.Begin);
-                Devour_ = Devour.Read(br);
+                s_devour_ = Devour.Read(br);
                 ms.Seek(subPositions[Misc_section.id], SeekOrigin.Begin);
-                Miscsection = Misc_section.Read(br);
-                Misctextpointers = Misc_text_pointers.Read();
+                s_miscsection = Misc_section.Read(br);
+                s_misctextpointers = Misc_text_pointers.Read();
 
-                EquipableAbilities = new Dictionary<Abilities,Equipable_Ability>(
+                s_equipableAbilities = new Dictionary<Abilities, Equipable_Ability>(
                     Stat_percent_abilities.count +
                     Character_abilities.count +
                     Party_abilities.count +
                     GF_abilities.count);
-                foreach (Abilities ability in (Abilities[])Enum.GetValues(typeof(Abilities)))
+                foreach (Abilities ability in (Abilities[])(Enum.GetValues(typeof(Abilities))))
                 {
                     if (Statpercentabilities.ContainsKey(ability))
-                        EquipableAbilities[ability] = Statpercentabilities[ability];
+                        s_equipableAbilities[ability] = Statpercentabilities[ability];
                     else if (Characterabilities.ContainsKey(ability))
-                        EquipableAbilities[ability] = Characterabilities[ability];
+                        s_equipableAbilities[ability] = Characterabilities[ability];
                     else if (Partyabilities.ContainsKey(ability))
-                        EquipableAbilities[ability] = Partyabilities[ability];
+                        s_equipableAbilities[ability] = Partyabilities[ability];
                     else if (Characterabilities.ContainsKey(ability))
-                        EquipableAbilities[ability] = Characterabilities[ability];
+                        s_equipableAbilities[ability] = Characterabilities[ability];
                 }
             }
         }

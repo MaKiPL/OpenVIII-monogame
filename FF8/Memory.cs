@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 #pragma warning disable CS0649
@@ -170,19 +171,35 @@ namespace FF8
         public static string FF8DIR => GameLocation.Current.DataPath;
         public static string FF8DIRdata { get; private set; }
         public static string FF8DIRdata_lang { get; private set; }
-        public static void InitTaskMethod()
+        public static void InitTaskMethod(object obj)
         {
-            Memory.font = new Font(); //this initializes the fonts and drawing system- holds fonts in-memory
-            Memory.Strings = new Strings();
+            CancellationToken token = (CancellationToken)obj;
+            if (!token.IsCancellationRequested)            
+                Memory.font = new Font(); //this initializes the fonts and drawing system- holds fonts in-memory
 
-            Kernel_Bin = new Kernel_bin();
-            Memory.Cards = new Cards();
-            Memory.Faces = new Faces();
-            Memory.Icons = new Icons();
-            Saves.Init(); //loads all savegames from steam or cd2000 directories. first come first serve.
-            InitStrings();
-            Module_main_menu_debug.Init();
+            if (!token.IsCancellationRequested)
+                Memory.Strings = new Strings();
 
+            if (!token.IsCancellationRequested)
+                Kernel_Bin = new Kernel_bin();
+
+            if (!token.IsCancellationRequested)
+                Memory.Cards = new Cards();
+
+            if (!token.IsCancellationRequested)
+                Memory.Faces = new Faces();
+
+            if (!token.IsCancellationRequested)
+                Memory.Icons = new Icons();
+
+            if (!token.IsCancellationRequested)
+                Saves.Init(); //loads all savegames from steam or cd2000 directories. first come first serve.
+
+            if (!token.IsCancellationRequested)
+                InitStrings();
+
+            if (!token.IsCancellationRequested)
+                Module_main_menu_debug.Init();
         }
         public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
         {
@@ -196,7 +213,9 @@ namespace FF8
             Memory.FieldHolder.FieldMemory = new int[1024];
 
             FF8String.Init();
-            InitTask = new Task(InitTaskMethod);
+            TokenSource = new CancellationTokenSource();
+            Token = TokenSource.Token;
+            InitTask = new Task(InitTaskMethod,Token);
             InitTask.Start();
         }
         /// <summary>
@@ -205,6 +224,8 @@ namespace FF8
         public static bool SuppressDraw { get; set; }
 
         public static bool IsMouseVisible { get; set; } = false;
+
+        public static Saves.Data PrevState { get; set; }
         public static Saves.Data State
         {
             get => _state; set
@@ -213,6 +234,9 @@ namespace FF8
                 _state.Loadtime = Memory.gameTime.TotalGameTime;
             }
         }
+
+        public static CancellationTokenSource TokenSource { get; private set; }
+        public static CancellationToken Token { get; private set; }
 
 
         #region modules

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 
 namespace FF8
@@ -40,15 +41,15 @@ namespace FF8
                 Unknown1 = br.ReadByte();
                 //0x0007  1 byte Unknown / Unused
             }
-            public static Rinoa_limit_breaks_part_1[] Read(BinaryReader br)
+            public static List<Rinoa_limit_breaks_part_1> Read(BinaryReader br)
             {
-                var ret = new Rinoa_limit_breaks_part_1[count];
+                var ret = new List<Rinoa_limit_breaks_part_1>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     var tmp = new Rinoa_limit_breaks_part_1();
                     tmp.Read(br, i);
-                    ret[i] = tmp;
+                    ret.Add(tmp);
                 }
                 return ret;
             }

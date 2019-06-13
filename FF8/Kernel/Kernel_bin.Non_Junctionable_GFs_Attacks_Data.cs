@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace FF8
 {
@@ -16,28 +17,28 @@ namespace FF8
             public FF8String Name { get; private set; }
 
             //0x0000	2 bytes Offset to GF attack name
-            public Magic_ID MagicID;
+            public Magic_ID MagicID { get; private set; }
 
             //0x0002	2 bytes Magic ID(decides what animation to play)
-            public Attack_Type Attack_Type;
+            public Attack_Type Attack_Type { get; private set; }
 
             //0x0004	1 byte Attack type
-            public byte GF_Power;
+            public byte GF_Power { get; private set; }
 
             //0x0005	1 byte GF power(used in damage formula)
-            public byte Status_Attack;
+            public byte Status_Attack { get; private set; }
 
             //0x0006	1 byte Status attack enabler
-            public byte Unknown0;
+            public byte Unknown0 { get; private set; }
 
             //0x0007	1 byte Unknown
-            public byte Status_flags;
+            public byte Status_flags { get; private set; }
 
             //0x0008	1 byte Status flags ?
-            public byte[] Unknown1;
+            public byte[] Unknown1 { get; private set; }
 
             //0x0009	2 bytes Unknown
-            public Element Element;
+            public Element Element { get; private set; }
 
             //0x000B	1 byte Element
 
@@ -50,7 +51,7 @@ namespace FF8
             //0x20 - Wind
             //0x40 - Water
             //0x80 - Holy
-            public Statuses1 Statuses1;
+            public Statuses1 Statuses1 { get; private set; }
 
             //0x000C	1 byte Status 1
 
@@ -96,7 +97,7 @@ namespace FF8
             //0x20 - ???
             //0x40 - ???
             //0x80 - ???
-            public Statuses0 Statuses0;
+            public Statuses0 Statuses0 { get; private set; }
 
             //0x0010	1 byte Status 5
 
@@ -111,10 +112,10 @@ namespace FF8
             //0x80 - ???
             //public byte Unknown2;
             //0x0011	1 byte Unknown
-            public byte Power_Mod;
+            public byte Power_Mod { get; private set; }
 
             //0x0012	1 byte Power Mod(used in damage formula)
-            public byte Level_Mod;
+            public byte Level_Mod { get; private set; }
 
             //0x0013	1 byte Level Mod(used in damage formula)
 
@@ -153,15 +154,15 @@ namespace FF8
                 //0x0013	1 byte Level Mod(used in damage formula)
             }
 
-            public static Non_Junctionable_GFs_Attacks_Data[] Read(BinaryReader br)
+            public static List<Non_Junctionable_GFs_Attacks_Data> Read(BinaryReader br)
             {
-                Non_Junctionable_GFs_Attacks_Data[] ret = new Non_Junctionable_GFs_Attacks_Data[count];
+                var ret = new List<Non_Junctionable_GFs_Attacks_Data>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     Non_Junctionable_GFs_Attacks_Data tmp = new Non_Junctionable_GFs_Attacks_Data();
                     tmp.Read(br, i);
-                    ret[i] = tmp;
+                    ret.Add(tmp);
                 }
                 return ret;
             }

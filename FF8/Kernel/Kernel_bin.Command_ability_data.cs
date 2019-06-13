@@ -28,7 +28,7 @@ namespace FF8
             /// <summary>
             /// order is different so convertion is requried.
             /// </summary>
-            private static Dictionary<int, Abilities> ConvertCommandAbilitytoAbility = new Dictionary<int, Abilities>
+            private static IReadOnlyDictionary<int, Abilities> ConvertCommandAbilitytoAbility { get; } = new Dictionary<int, Abilities>
             {
                 {0,Abilities.Recover},
                 {1,Abilities.Revive},

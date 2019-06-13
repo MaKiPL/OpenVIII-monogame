@@ -145,26 +145,29 @@ namespace FF8
         {
             public const int id = 2;
             public const int count = 16;
+            private Dictionary<Abilities, Unlocker> _ability;
+            private Dictionary<GFs, decimal> _gF_Compatibility;
+
             public FF8String Name { get; private set; }
             public FF8String Description { get; private set; }
             public override string ToString() => Name;
             //0x0000  2 bytes Offset to GF attack name
             //0x0002  2 bytes Offset to GF attack description
-            public Magic_ID MagicID;             //0x0004  2 bytes[[Magic ID
-            public Attack_Type Attack_type;           //0x0006  1 byte  Attack type
-            public byte GF_power;              //0x0007  1 byte  GF power(used in damage formula)
-            public byte[] Unknown0;            //0x0008  2 bytes Unknown
-            public Attack_Flags Attack_flags;          //0x000A  1 byte  Attack Flags
-            public byte[] Unknown1;            //0x000B  2 bytes Unknown
-            public Element Element;               //0x000D  1 byte[[Element
-            public Statuses0 Statuses0;           //0x000E  2 bytes[[Statuses 0
-            public Statuses1 Statuses1;           //0x0010  4 bytes[[Statuses 1
-            public byte GFHP_modifier;         //0x0014  1 byte  GF HP Modifier(used in GF HP formula)
-            public byte[] Unknown2_1;            //0x0015  3 bytes Unknown
-            public ushort EXPperLevel;             //0x18  1 byte *10;
-            public byte[] Unknown2_2;            //0x0019  2 bytes Unknown
-            public byte Status_attack;         //0x001B  1 byte  Status attack enabler
-            public Dictionary<Abilities, Unlocker> Ability;     
+            public Magic_ID MagicID { get; private set; }             //0x0004  2 bytes[[Magic ID
+            public Attack_Type Attack_type { get; private set; }           //0x0006  1 byte  Attack type
+            public byte GF_power { get; private set; }              //0x0007  1 byte  GF power(used in damage formula)
+            public byte[] Unknown0 { get; private set; }            //0x0008  2 bytes Unknown
+            public Attack_Flags Attack_flags { get; private set; }          //0x000A  1 byte  Attack Flags
+            public byte[] Unknown1 { get; private set; }            //0x000B  2 bytes Unknown
+            public Element Element { get; private set; }               //0x000D  1 byte[[Element
+            public Statuses0 Statuses0 { get; private set; }           //0x000E  2 bytes[[Statuses 0
+            public Statuses1 Statuses1 { get; private set; }           //0x0010  4 bytes[[Statuses 1
+            public byte GFHP_modifier { get; private set; }         //0x0014  1 byte  GF HP Modifier(used in GF HP formula)
+            public byte[] Unknown2_1 { get; private set; }            //0x0015  3 bytes Unknown
+            public ushort EXPperLevel { get; private set; }             //0x18  1 byte *10;
+            public byte[] Unknown2_2 { get; private set; }            //0x0019  2 bytes Unknown
+            public byte Status_attack { get; private set; }         //0x001B  1 byte  Status attack enabler
+            public IReadOnlyDictionary<Abilities, Unlocker> Ability { get => _ability; }
             //0x001C  1 byte[[Ability 1 Unlocker
             //0x001D  1 byte  Unknown
             //0x001E  1 byte[[Ability 1
@@ -249,7 +252,7 @@ namespace FF8
             //0x006D  1 byte  Unknown
             //0x006E  1 byte[[Ability 21
             //0x006F  1 byte  Unknown
-            public Dictionary <GFs,decimal> GF_Compatibility;
+            public IReadOnlyDictionary<GFs, decimal> GF_Compatibility { get => _gF_Compatibility; }
             //0x0070  1 byte  Quezacolt compatibility
             //0x0071  1 byte  Shiva compatibility
             //0x0072  1 byte  Ifrit compatibility
@@ -266,9 +269,9 @@ namespace FF8
             //0x007D  1 byte  Cactuar compatibility
             //0x007E  1 byte  Tonberry compatibility
             //0x007F  1 byte  Eden compatibility
-            public byte[] Unknown3;            //0x0080  2 bytes Unknown
-            public byte PowerMod;              //0x0082  1 byte  Power Mod(used in damage formula)
-            public byte LevelMod;              //0x0083  1 byte  Level Mod(used in damage formula)
+            public byte[] Unknown3 { get; private set; }            //0x0080  2 bytes Unknown
+            public byte PowerMod { get; private set; }              //0x0082  1 byte  Power Mod(used in damage formula)
+            public byte LevelMod { get; private set; }              //0x0083  1 byte  Level Mod(used in damage formula)
             public void Read(BinaryReader br, int i)
             {
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
@@ -280,28 +283,28 @@ namespace FF8
                 Attack_type = (Attack_Type)br.ReadByte();           //0x0006  1 byte  Attack type
                 GF_power = br.ReadByte();              //0x0007  1 byte  GF power(used in damage formula)
                 Unknown0 = br.ReadBytes(2);            //0x0008  2 bytes Unknown
-                Attack_flags = (Attack_Flags)( br.ReadByte());          //0x000A  1 byte  Attack Flags
+                Attack_flags = (Attack_Flags)(br.ReadByte());          //0x000A  1 byte  Attack Flags
                 Unknown1 = br.ReadBytes(2);            //0x000B  2 bytes Unknown
                 Element = (Element)br.ReadByte();               //0x000D  1 byte[[Element
                 Statuses0 = (Statuses0)br.ReadUInt16();           //0x000E  2 bytes[[Statuses 0
                 Statuses1 = (Statuses1)br.ReadUInt32();           //0x0010  4 bytes[[Statuses 1
                 GFHP_modifier = br.ReadByte();         //0x0014  1 byte  GF HP Modifier(used in GF HP formula)
                 Unknown2_1 = br.ReadBytes(3);            //0x0015  3 bytes Unknown
-                EXPperLevel = (ushort)((br.ReadByte())*10); //0x0018
+                EXPperLevel = (ushort)((br.ReadByte()) * 10); //0x0018
                 Unknown2_2 = br.ReadBytes(2);            //0x0019  2 bytes Unknown
                 Status_attack = br.ReadByte();         //0x001B  1 byte  Status attack enabler
-                Ability = new Dictionary< Abilities, Unlocker>(21);
+                _ability = new Dictionary<Abilities, Unlocker>(21);
                 for (i = 0; i < 21; i++)
                 {
-                    Unlocker val = (Unlocker) br.ReadByte();
+                    Unlocker val = (Unlocker)br.ReadByte();
                     br.BaseStream.Seek(1, SeekOrigin.Current);
                     Abilities key = (Abilities)br.ReadUInt16();
-                    Ability.Add(key, val);
-                    
+                    _ability.Add(key, val);
+
                 }
-                GF_Compatibility = new Dictionary<GFs, decimal>(16);
-                for(i=0; i < 16; i++)
-                    GF_Compatibility.Add((GFs)i,(100 - Convert.ToDecimal(br.ReadByte())) / 5); //doomtrain shows this is a decimal number. i got formula from code.
+                _gF_Compatibility = new Dictionary<GFs, decimal>(16);
+                for (i = 0; i < 16; i++)
+                    _gF_Compatibility.Add((GFs)i, (100 - Convert.ToDecimal(br.ReadByte())) / 5); //doomtrain shows this is a decimal number. i got formula from code.
                 Unknown3 = br.ReadBytes(2);            //0x0080  2 bytes Unknown
                 PowerMod = br.ReadByte();              //0x0082  1 byte  Power Mod(used in damage formula)
                 LevelMod = br.ReadByte();              //0x0083  1 byte  Level Mod(used in damage formula)

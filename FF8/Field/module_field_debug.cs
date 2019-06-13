@@ -226,35 +226,35 @@ namespace FF8
             int type1Width = 1664;
 
             tiles = new List<Tile>();
-            int palletes = 24;
+            int palettees = 24;
             //128x256
-            PseudoBufferedStream pbsmap = new PseudoBufferedStream(mapb);
-            PseudoBufferedStream pbsmim = new PseudoBufferedStream(mimb);
-            while (pbsmap.Tell() + 16 < pbsmap.Length)
-            {
-                Tile tile = new Tile { x = pbsmap.ReadShort() };
-                if (tile.x == 0x7FFF)
-                    break;
-                tile.y = pbsmap.ReadShort();
-                tile.z = pbsmap.ReadUShort();// (ushort)(4096 - pbsmap.ReadUShort());
-                byte texIdBuffer = pbsmap.ReadByte();
-                tile.texID = (byte)(texIdBuffer & 0xF);
-                pbsmap.Seek(1, SeekOrigin.Current);
-                //short testz = pbsmap.ReadShort();
-                //testz = (short)(testz >> 6);
-                //testz &= 0xF;
-                tile.pallID = (byte)((pbsmap.ReadShort() >> 6) & 0xF);
-                tile.srcx = pbsmap.ReadByte();
-                tile.srcy = pbsmap.ReadByte();
-                tile.layId = (byte)(pbsmap.ReadByte() & 0x7F);
-                tile.blendType = pbsmap.ReadByte();
-                tile.parameter = pbsmap.ReadByte();
-                tile.state = pbsmap.ReadByte();
-                tile.blend1 = (byte)((texIdBuffer >> 4) & 0x1);
-                tile.blend2 = (byte)(texIdBuffer >> 5);
-                tiles.Add(tile);
-                //srcY = srcX == texID * 128 + srcX;
-            }
+            //using (BinaryReader pbsmim = new BinaryReader(new MemoryStream(mimb))
+            using (BinaryReader pbsmap = new BinaryReader(new MemoryStream(mapb)))
+                while (pbsmap.BaseStream.Position + 16 < pbsmap.BaseStream.Length)
+                {
+                    Tile tile = new Tile { x = pbsmap.ReadInt16() };
+                    if (tile.x == 0x7FFF)
+                        break;
+                    tile.y = pbsmap.ReadInt16();
+                    tile.z = pbsmap.ReadUInt16();// (ushort)(4096 - pbsmap.ReadUShort());
+                    byte texIdBuffer = pbsmap.ReadByte();
+                    tile.texID = (byte)(texIdBuffer & 0xF);
+                    pbsmap.BaseStream.Seek(1, SeekOrigin.Current);
+                    //short testz = pbsmap.ReadShort();
+                    //testz = (short)(testz >> 6);
+                    //testz &= 0xF;
+                    tile.pallID = (byte)((pbsmap.ReadInt16() >> 6) & 0xF);
+                    tile.srcx = pbsmap.ReadByte();
+                    tile.srcy = pbsmap.ReadByte();
+                    tile.layId = (byte)(pbsmap.ReadByte() & 0x7F);
+                    tile.blendType = pbsmap.ReadByte();
+                    tile.parameter = pbsmap.ReadByte();
+                    tile.state = pbsmap.ReadByte();
+                    tile.blend1 = (byte)((texIdBuffer >> 4) & 0x1);
+                    tile.blend2 = (byte)(texIdBuffer >> 5);
+                    tiles.Add(tile);
+                    //srcY = srcX == texID * 128 + srcX;
+                }
 
             int lowestY = tiles.Min(x => x.y);
             int maximumY = tiles.Max(x => x.y);
@@ -289,7 +289,7 @@ namespace FF8
                         continue;
 
                     int palettePointer = 4096 + ((tile.pallID) * 512);
-                    int sourceImagePointer = 512 * palletes;
+                    int sourceImagePointer = 512 * palettees;
 
                     int realX = Math.Abs(lowestX) + tile.x; //baseX
                     int realY = Math.Abs(lowestY) + tile.y; //*width

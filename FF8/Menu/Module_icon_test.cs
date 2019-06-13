@@ -15,8 +15,8 @@ namespace FF8
         private static Mode currentMode;
 
         private static Icons.ID icon = Icons.ID.Arrow_Down;
-        private const int DefaultPallet = 2;
-        private static int pallet = DefaultPallet;
+        private const int DefaultPalette = 2;
+        private static int palette = DefaultPalette;
 
         #endregion Fields
 
@@ -51,19 +51,19 @@ namespace FF8
         {
             if (Input.Button(Keys.Up))
             {
-                if (pallet <= 0)
-                    pallet = (int)Memory.Icons.PalletCount - 1;
+                if (palette <= 0)
+                    palette = (int)Memory.Icons.PaletteCount - 1;
                 else
-                    pallet--;
+                    palette--;
                 currentMode = Mode.Draw;
             }
 
             if (Input.Button(Keys.Down))
             {
-                if (pallet >= Memory.Icons.PalletCount - 1)
-                    pallet = 0;
+                if (palette >= Memory.Icons.PaletteCount - 1)
+                    palette = 0;
                 else
-                    pallet++;
+                    palette++;
                 currentMode = Mode.Draw;
             }
             //if ((Input.Button(Keys.Up) || Input.Button(Keys.Down)) && Memory.Icons.GetEntry(icon) != null && (Memory.Icons.GetEntry(icon).GetLoc.count > 1))
@@ -137,11 +137,11 @@ namespace FF8
             }
 
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
-            Memory.Icons.Draw(icon, pallet, dst, scale);
+            Memory.Icons.Draw(icon, palette, dst, scale);
             Memory.font.RenderBasicText(
                 $"{(icon).ToString().Replace('_', ' ')}\n" +
                 $"id: {(ushort)icon}\n\n" +
-                $"pallet: {pallet}\n\n" +
+                $"palette: {palette}\n\n" +
                 $"width: {Memory.Icons[icon].Width}\n" +
                 $"height: {Memory.Icons[icon].Height}",
                 (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f),lineSpacing: 0);

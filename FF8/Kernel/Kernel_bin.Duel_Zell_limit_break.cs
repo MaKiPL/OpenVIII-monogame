@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace FF8
 {
@@ -80,15 +81,15 @@ namespace FF8
                 Statuses1 = (Statuses1)br.ReadUInt32();
                 //0x001C  4 bytes status_1; //statuses 8-39
             }
-            public static Duel_Zell_limit_break[] Read(BinaryReader br)
+            public static List<Duel_Zell_limit_break> Read(BinaryReader br)
             {
-                var ret = new Duel_Zell_limit_break[count];
+                var ret = new List<Duel_Zell_limit_break>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     var tmp = new Duel_Zell_limit_break();
                     tmp.Read(br, i);
-                    ret[i] = tmp;
+                    ret.Add(tmp);
                 }
                 return ret;
             }

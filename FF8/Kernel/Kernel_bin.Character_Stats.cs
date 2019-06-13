@@ -16,7 +16,7 @@ namespace FF8
             public const int count = 11;
             public const ushort MAX_HP_VALUE = 9999;
             public const byte MAX_STAT_VALUE = 255;
-            private Characters char_id;
+            private Characters char_id { get; set; }
             public FF8String Name => Memory.Strings.GetName((Faces.ID)char_id);
 
             public override string ToString() => Name;
@@ -27,19 +27,19 @@ namespace FF8
             /// Crisis level modifier
             /// </summary>
             /// <see cref="https://finalfantasy.fandom.com/wiki/Crisis_Level#Crisis_Level"/>
-            public byte Crisis; //0x0002; 1 byte; Crisis level hp multiplier
+            public byte Crisis { get; private set; } //0x0002; 1 byte; Crisis level hp multiplier
 
-            public Gender Gender; //0x0003; 1 byte; Gender; 0x00 - Male 0x01 - Female
-            public byte LimitID; //0x0004; 1 byte; Limit Break ID
-            public byte LimitParam; //0x0005; 1 byte; Limit Break Param used for the power of each renzokuken hit before finisher
-            private byte[] _EXP; //0x0006; 2 bytes; EXP modifier
-            private byte[] _HP; //0x0008; 4 bytes; HP
-            private byte[] _STR; //0x000C; 4 bytes; STR
-            private byte[] _VIT; //0x0010; 4 bytes; VIT
-            private byte[] _MAG; //0x0014; 4 bytes; MAG
-            private byte[] _SPR; //0x0018; 4 bytes; SPR
-            private byte[] _SPD; //0x001C; 4 bytes; SPD
-            private byte[] _LUCK; //0x0020; 4 bytes; LUCK
+            public Gender Gender { get; private set; } //0x0003; 1 byte; Gender; 0x00 - Male 0x01 - Female
+            public byte LimitID { get; private set; } //0x0004; 1 byte; Limit Break ID
+            public byte LimitParam { get; private set; } //0x0005; 1 byte; Limit Break Param used for the power of each renzokuken hit before finisher
+            private byte[] _EXP { get; set; } //0x0006; 2 bytes; EXP modifier
+            private byte[] _HP { get; set; } //0x0008; 4 bytes; HP modifiers
+            private byte[] _STR { get; set; } //0x000C; 4 bytes; STR modifiers
+            private byte[] _VIT { get; set; } //0x0010; 4 bytes; VIT modifiers
+            private byte[] _MAG { get; set; } //0x0014; 4 bytes; MAG modifiers
+            private byte[] _SPR { get; set; } //0x0018; 4 bytes; SPR modifiers
+            private byte[] _SPD { get; set; } //0x001C; 4 bytes; SPD modifiers
+            private byte[] _LUCK { get; set; } //0x0020; 4 bytes; LUCK modifiers
 
             public void Read(BinaryReader br, Characters char_id)
             {
@@ -52,13 +52,13 @@ namespace FF8
                 LimitID = br.ReadByte(); //0x0004; 1 byte; Limit Break ID
                 LimitParam = br.ReadByte(); //0x0005; 1 byte; Limit Break Param used for the power of each renzokuken hit before finisher
                 _EXP = br.ReadBytes(2); //0x0006; 2 bytes; EXP modifier
-                _HP = br.ReadBytes(4); //0x0008; 4 bytes; HP
-                _STR = br.ReadBytes(4); //0x000C; 4 bytes; STR
-                _VIT = br.ReadBytes(4); //0x0010; 4 bytes; VIT
-                _MAG = br.ReadBytes(4); //0x0014; 4 bytes; MAG
-                _SPR = br.ReadBytes(4); //0x0018; 4 bytes; SPR
-                _SPD = br.ReadBytes(4); //0x001C; 4 bytes; SPD
-                _LUCK = br.ReadBytes(4); //0x0020; 4 bytes; LUCK
+                _HP = br.ReadBytes(4); //0x0008; 4 bytes; HP modifiers
+                _STR = br.ReadBytes(4); //0x000C; 4 bytes; STR modifiers
+                _VIT = br.ReadBytes(4); //0x0010; 4 bytes; VIT modifiers
+                _MAG = br.ReadBytes(4); //0x0014; 4 bytes; MAG modifiers
+                _SPR = br.ReadBytes(4); //0x0018; 4 bytes; SPR modifiers
+                _SPD = br.ReadBytes(4); //0x001C; 4 bytes; SPD modifiers
+                _LUCK = br.ReadBytes(4); //0x0020; 4 bytes; LUCK modifiers
                 int hp = HP(8);
             }
 
@@ -107,21 +107,21 @@ namespace FF8
             /// <returns></returns>
             public ushort HP(sbyte lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = 0)
             {
-                int value = (((MagicData[MagicID].HP_J * magic_count) + stat_bonus + (lvl * _HP[0]) - ((10 * lvl * lvl) / _HP[1]) + _HP[2]) * (percent_mod + _percent_mod)) / 100;
+                int value = (((MagicData[MagicID].J_Val[Stat.HP] * magic_count) + stat_bonus + (lvl * _HP[0]) - ((10 * lvl * lvl) / _HP[1]) + _HP[2]) * (percent_mod + _percent_mod)) / 100;
                 return (ushort)(value > MAX_HP_VALUE ? MAX_HP_VALUE : value);
             }
 
             public byte STR(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod, int weapon = 0)
-                => STR_VIT_MAG_SPR(_STR[0], _STR[1], _STR[2], _STR[3], lvl, MagicData[MagicID].STR_J, magic_count, stat_bonus, percent_mod, weapon);
+                => STR_VIT_MAG_SPR(_STR[0], _STR[1], _STR[2], _STR[3], lvl, MagicData[MagicID].J_Val[Stat.STR], magic_count, stat_bonus, percent_mod, weapon);
 
             public byte VIT(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
-                => STR_VIT_MAG_SPR(_VIT[0], _VIT[1], _VIT[2], _VIT[3], lvl, MagicData[MagicID].VIT_J, magic_count, stat_bonus, percent_mod);
+                => STR_VIT_MAG_SPR(_VIT[0], _VIT[1], _VIT[2], _VIT[3], lvl, MagicData[MagicID].J_Val[Stat.VIT], magic_count, stat_bonus, percent_mod);
 
             public byte MAG(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
-                => STR_VIT_MAG_SPR(_MAG[0], _MAG[1], _MAG[2], _MAG[3], lvl, MagicData[MagicID].MAG_J, magic_count, stat_bonus, percent_mod);
+                => STR_VIT_MAG_SPR(_MAG[0], _MAG[1], _MAG[2], _MAG[3], lvl, MagicData[MagicID].J_Val[Stat.MAG], magic_count, stat_bonus, percent_mod);
 
             public byte SPR(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
-                => STR_VIT_MAG_SPR(_SPR[0], _SPR[1], _SPR[2], _SPR[3], lvl, MagicData[MagicID].SPR_J, magic_count, stat_bonus, percent_mod);
+                => STR_VIT_MAG_SPR(_SPR[0], _SPR[1], _SPR[2], _SPR[3], lvl, MagicData[MagicID].J_Val[Stat.SPR], magic_count, stat_bonus, percent_mod);
 
             private byte STR_VIT_MAG_SPR(int a, int b, int c, int d, int lvl, int magic_J_val, int magic_count, int stat_bonus, int percent_mod = 0, int UNK = 0)
             {
@@ -131,10 +131,10 @@ namespace FF8
             }
 
             public byte SPD(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
-                => SPD_LUCK(_SPD[0], _SPD[1], _SPD[2], _SPD[3], lvl, MagicData[MagicID].SPD_J, magic_count, stat_bonus, percent_mod);
+                => SPD_LUCK(_SPD[0], _SPD[1], _SPD[2], _SPD[3], lvl, MagicData[MagicID].J_Val[Stat.SPD], magic_count, stat_bonus, percent_mod);
 
             public byte LUCK(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
-                => SPD_LUCK(_LUCK[0], _LUCK[1], _LUCK[2], _LUCK[3], lvl, MagicData[MagicID].LUCK_J, magic_count, stat_bonus, percent_mod);
+                => SPD_LUCK(_LUCK[0], _LUCK[1], _LUCK[2], _LUCK[3], lvl, MagicData[MagicID].J_Val[Stat.LUCK], magic_count, stat_bonus, percent_mod);
 
             private byte SPD_LUCK(int a, int b, int c, int d, int lvl, int magic_J_val, int magic_count, int stat_bonus, int percent_mod = 0, int UNK = 0)
             {
@@ -144,13 +144,13 @@ namespace FF8
 
             public byte EVA(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int spd = 0, int percent_mod = 0)
             {
-                int value = (((MagicData[MagicID].EVA_J * magic_count) / 100 + spd / 4) * (percent_mod + _percent_mod)) / 100;
+                int value = (((MagicData[MagicID].J_Val[Stat.EVA] * magic_count) / 100 + spd / 4) * (percent_mod + _percent_mod)) / 100;
                 return (byte)(value > MAX_STAT_VALUE ? MAX_STAT_VALUE : value);
             }
 
             public byte HIT(int MagicID = 0, int magic_count = 0, int weapon = 0)
             {
-                int value = MagicData[MagicID].HIT_J * magic_count + weapon;
+                int value = MagicData[MagicID].J_Val[Stat.HIT] * magic_count + WeaponsData[weapon].HIT;
                 return (byte)(value > MAX_STAT_VALUE ? MAX_STAT_VALUE : value);
             }
         }

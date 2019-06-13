@@ -1,4 +1,6 @@
-﻿namespace FF8
+﻿using System.Collections.Generic;
+
+namespace FF8
 {
     public partial class Kernel_bin
     {
@@ -22,15 +24,15 @@
 
             public void Read(int i) => Value = Memory.Strings.Read(Strings.FileID.KERNEL, id, i);//0x0000	2 bytes Offset to item name
 
-            public static Misc_text_pointers[] Read()
+            public static List<Misc_text_pointers> Read()
             {
-                var ret = new Misc_text_pointers[count];
+                var ret = new List<Misc_text_pointers>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     var tmp = new Misc_text_pointers();
                     tmp.Read(i);
-                    ret[i] = tmp;
+                    ret.Add(tmp);
                 }
                 return ret;
             }

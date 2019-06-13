@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace FF8
 {
@@ -17,15 +18,15 @@ namespace FF8
             public byte SlotID { get; private set; }
 
             public void Read(BinaryReader br, int i) => SlotID = br.ReadByte();
-            public static Slot_array[] Read(BinaryReader br)
+            public static List<Slot_array> Read(BinaryReader br)
             {
-                var ret = new Slot_array[count];
+                var ret = new List<Slot_array>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     var tmp = new Slot_array();
                     tmp.Read(br, i);
-                    ret[i] = tmp;
+                    ret.Add(tmp);
                 }
                 return ret;
             }

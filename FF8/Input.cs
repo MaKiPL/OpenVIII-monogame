@@ -112,16 +112,17 @@ namespace FF8
 
         private static void CheckInputLimit()
         {
-            if (bLimitInput)
-            {
-                bLimitInput = (msDelay += Memory.gameTime.ElapsedGameTime.Milliseconds) < msDelayLimit;
-            }
+            //issue here if CheckInputLimit is checked more than once per update cycle this will be wrong.
+            if(Memory.gameTime!= null)
+            bLimitInput = (msDelay += Memory.gameTime.ElapsedGameTime.Milliseconds) < msDelayLimit;
         }
-
+        /// <summary>
+        /// Input was grabbed, reset for next update cycle.
+        /// </summary>
         public static void ResetInputLimit()
         {
             msDelay = 0;
-            bLimitInput = true;
+            bLimitInput = false;            
         }
 
         private static bool IsPressed(Keys k, bool dblinput = false)
@@ -129,7 +130,7 @@ namespace FF8
             //This function checks if the key on KB is pressed
             //if dblinput is false it makes sure the key wasn't pressed last time.
             bool boolRT = CurrentKBState.IsKeyDown(k);
-            boolRT = !dblinput ? boolRT && LastKBState.IsKeyUp(k) : boolRT && !bLimitInput;
+            boolRT = !dblinput ? boolRT && LastKBState.IsKeyUp(k) && !bLimitInput : boolRT && !bLimitInput;
 
             return boolRT;
         }

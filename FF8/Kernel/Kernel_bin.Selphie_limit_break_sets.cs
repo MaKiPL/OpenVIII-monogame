@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace FF8
 {
@@ -14,25 +15,29 @@ namespace FF8
             public const int count = 16;
             public const int id = 27;
             public const int size = 16;
-            public Slot[] Slots { get; private set; }
+            private List<Slot> _slots;
+
+            public IReadOnlyList<Slot> Slots { get => _slots; }
 
             public void Read(BinaryReader br, int i)
             {
-                Slots = new Slot[8];
+                _slots = new List<Slot>(8);
                 for (int s = 0; s < 8; s++)
                 {
-                    Slots[s].Read(br, s);
+                    var tmp = new Slot();
+                    tmp.Read(br);
+                    _slots.Add(tmp);
                 }
             }
-            public static Selphie_limit_break_sets[] Read(BinaryReader br)
+            public static List<Selphie_limit_break_sets> Read(BinaryReader br)
             {
-                var ret = new Selphie_limit_break_sets[count];
+                var ret = new List<Selphie_limit_break_sets>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     var tmp = new Selphie_limit_break_sets();
                     tmp.Read(br, i);
-                    ret[i] = tmp;
+                    ret.Add(tmp);
                 }
                 return ret;
             }

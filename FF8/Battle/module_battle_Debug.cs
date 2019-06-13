@@ -924,14 +924,8 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
         {
             textureInterface = new TIM2(stageBuffer, texturePointer);
             textures = new Texture2D[textureInterface.GetClutCount];
-            for (ushort i = 0; i < textureInterface.GetClutCount; i++)
-            {
-                byte[] b = textureInterface.CreateImageBuffer(textureInterface.GetClutColors(i));
-                Texture2D tex = new Texture2D(Memory.spriteBatch.GraphicsDevice,
-                    textureInterface.GetWidth, textureInterface.GetHeight, false, SurfaceFormat.Color);
-                tex.SetData(b);
-                textures[i] = tex;
-            }
+            for (ushort i = 0; i < textureInterface.GetClutCount; i++)            
+                textures[i] = textureInterface.GetTexture(i);            
         }
 
         /// <summary>
