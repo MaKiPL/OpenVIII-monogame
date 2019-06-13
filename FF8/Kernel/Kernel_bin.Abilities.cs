@@ -49,7 +49,7 @@
             /// <summary>
             /// Increased elemental attack slot count to 1
             /// </summary>
-            Elem_Atk_J,
+            EL_Atk_J,
             /// <summary>
             /// Increased status attack slot count to 1
             /// </summary>
@@ -57,7 +57,7 @@
             /// <summary>
             /// Increased elemental defense slot count to 1
             /// </summary>
-            Elem_Def_Jx1,
+            EL_Def_Jx1,
             /// <summary>
             /// Increased status defense slot count to 1
             /// </summary>
@@ -65,11 +65,11 @@
             /// <summary>
             /// Increased elemental defense slot count to 2
             /// </summary>
-            Elem_Def_Jx2,
+            EL_Def_Jx2,
             /// <summary>
             /// Increased elemental defense slot count to 4
             /// </summary>
-            Elem_Def_Jx4,
+            EL_Def_Jx4,
             /// <summary>
             /// Increased status defense slot count to 2
             /// </summary>

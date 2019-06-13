@@ -130,17 +130,17 @@ namespace FF8
                     switch (pos)
                     {
                         case 0:
-                            return unlocked.Contains(Kernel_bin.Abilities.Elem_Atk_J);
+                            return unlocked.Contains(Kernel_bin.Abilities.EL_Atk_J);
                         case 1:
-                            return unlocked.Contains(Kernel_bin.Abilities.Elem_Def_Jx1) ||
-                                unlocked.Contains(Kernel_bin.Abilities.Elem_Def_Jx2) ||
-                                unlocked.Contains(Kernel_bin.Abilities.Elem_Def_Jx4);
+                            return unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx1) ||
+                                unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx2) ||
+                                unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx4);
                         case 2:
-                            return unlocked.Contains(Kernel_bin.Abilities.Elem_Def_Jx2) ||
-                                unlocked.Contains(Kernel_bin.Abilities.Elem_Def_Jx4);
+                            return unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx2) ||
+                                unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx4);
                         case 3:
                         case 4:
-                            return unlocked.Contains(Kernel_bin.Abilities.Elem_Def_Jx4);
+                            return unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx4);
                         default:
                             return false;
                     }

@@ -94,6 +94,26 @@ namespace FF8
                     };
                 }
 
+                public override void Inputs_OKAY()
+                {
+                    skipsnd = true;
+                    init_debugger_Audio.PlaySound(31);
+                    switch (CURSOR_SELECT)
+                    {
+                        case 0:
+                            Memory.State.Characters[Character].AutoATK();
+                            break;
+                        case 1:
+                            Memory.State.Characters[Character].AutoDEF();
+                            break;
+                        case 2:
+                            Memory.State.Characters[Character].AutoMAG();
+                            break;
+                    }
+                    Inputs_CANCEL();
+                    InGameMenu_Junction.ReInit();
+                }
+
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();

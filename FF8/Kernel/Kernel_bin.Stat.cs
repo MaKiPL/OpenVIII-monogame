@@ -20,12 +20,12 @@ namespace FF8
                     { Stat.EVA, Abilities.Eva_J },
                     { Stat.LUCK, Abilities.Luck_J },
                     { Stat.HIT, Abilities.Hit_J },
-                    { Stat.EL_Atk, Abilities.Elem_Atk_J },
+                    { Stat.EL_Atk, Abilities.EL_Atk_J },
                     { Stat.ST_Atk, Abilities.ST_Atk_J },
-                    { Stat.EL_Def_1, Abilities.Elem_Def_Jx1 },//or Elem_Def_Jx2 or Elem_Def_Jx4
-                    { Stat.EL_Def_2, Abilities.Elem_Def_Jx2 },//or Elem_Def_Jx4
-                    { Stat.EL_Def_3, Abilities.Elem_Def_Jx4 },
-                    { Stat.EL_Def_4, Abilities.Elem_Def_Jx4 },
+                    { Stat.EL_Def_1, Abilities.EL_Def_Jx1 },//or Elem_Def_Jx2 or Elem_Def_Jx4
+                    { Stat.EL_Def_2, Abilities.EL_Def_Jx2 },//or Elem_Def_Jx4
+                    { Stat.EL_Def_3, Abilities.EL_Def_Jx4 },
+                    { Stat.EL_Def_4, Abilities.EL_Def_Jx4 },
                     { Stat.ST_Def_1, Abilities.ST_Def_Jx1 },//or ST_Def_Jx2 or ST_Def_Jx4
                     { Stat.ST_Def_2, Abilities.ST_Def_Jx2 },//or ST_Def_Jx4
                     { Stat.ST_Def_3, Abilities.ST_Def_Jx4 },
@@ -60,7 +60,7 @@ namespace FF8
             None = 0xFF,
         }
 
-        public IReadOnlyList<Stat> AutoATK { get; } = new List<Stat>()
+        public static IReadOnlyList<Stat> AutoATK { get; } = new List<Stat>()
         {
             Stat.STR,
             Stat.HIT,
@@ -82,7 +82,7 @@ namespace FF8
             Stat.EL_Def_4,
             Stat.ST_Def_4,
         };
-        public IReadOnlyList<Stat> AutoMAG { get; } = new List<Stat>()
+        public static IReadOnlyList<Stat> AutoMAG { get; } = new List<Stat>()
         {
             Stat.MAG,
             Stat.SPR,
@@ -104,7 +104,7 @@ namespace FF8
             Stat.EL_Atk,
             Stat.ST_Atk,
         };
-        public IReadOnlyList<Stat> AutoDEF { get; } = new List<Stat>()
+        public static IReadOnlyList<Stat> AutoDEF { get; } = new List<Stat>()
         {
 
             Stat.HP,

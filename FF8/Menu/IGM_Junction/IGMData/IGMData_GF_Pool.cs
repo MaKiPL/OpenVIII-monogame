@@ -196,19 +196,19 @@ namespace FF8
                                             Source.Characters[c].Stat_J[Kernel_bin.Stat.ST_Atk] = 0;
                                             break;
 
-                                        case Kernel_bin.Abilities.Elem_Atk_J:
+                                        case Kernel_bin.Abilities.EL_Atk_J:
                                             Source.Characters[c].Stat_J[Kernel_bin.Stat.EL_Atk] = 0;
                                             break;
 
-                                        case Kernel_bin.Abilities.Elem_Def_Jx1:
-                                        case Kernel_bin.Abilities.Elem_Def_Jx2:
-                                        case Kernel_bin.Abilities.Elem_Def_Jx4:
+                                        case Kernel_bin.Abilities.EL_Def_Jx1:
+                                        case Kernel_bin.Abilities.EL_Def_Jx2:
+                                        case Kernel_bin.Abilities.EL_Def_Jx4:
                                             byte count = 0;
-                                            if (b.Contains(Kernel_bin.Abilities.Elem_Def_Jx4))
+                                            if (b.Contains(Kernel_bin.Abilities.EL_Def_Jx4))
                                                 count = 4;
-                                            else if (b.Contains(Kernel_bin.Abilities.Elem_Def_Jx2))
+                                            else if (b.Contains(Kernel_bin.Abilities.EL_Def_Jx2))
                                                 count = 2;
-                                            else if (b.Contains(Kernel_bin.Abilities.Elem_Def_Jx1))
+                                            else if (b.Contains(Kernel_bin.Abilities.EL_Def_Jx1))
                                                 count = 1;
                                             for (; count < 4; count++)
                                                 Source.Characters[c].Stat_J[Kernel_bin.Stat.EL_Def_1 + count] = 0;

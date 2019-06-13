@@ -150,7 +150,7 @@ namespace FF8
 
             public byte HIT(int MagicID = 0, int magic_count = 0, int weapon = 0)
             {
-                int value = MagicData[MagicID].J_Val[Stat.HIT] * magic_count + weapon;
+                int value = MagicData[MagicID].J_Val[Stat.HIT] * magic_count + WeaponsData[weapon].HIT;
                 return (byte)(value > MAX_STAT_VALUE ? MAX_STAT_VALUE : value);
             }
         }

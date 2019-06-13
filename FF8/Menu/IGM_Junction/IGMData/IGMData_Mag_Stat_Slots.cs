@@ -130,11 +130,11 @@ namespace FF8
                                 unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx2) ||
                                 unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4) ? 2 : 7));
                             ITEM[5, 2] = new IGMDataItem_Icon(Icons.ID.Icon_Elemental_Attack, new Rectangle(SIZE[5].X + 280, SIZE[5].Y, 0, 0),
-                                (byte)(unlocked.Contains(Kernel_bin.Abilities.Elem_Atk_J) ? 2 : 7));
+                                (byte)(unlocked.Contains(Kernel_bin.Abilities.EL_Atk_J) ? 2 : 7));
                             ITEM[5, 3] = new IGMDataItem_Icon(Icons.ID.Icon_Elemental_Defense, new Rectangle(SIZE[5].X + 320, SIZE[5].Y, 0, 0),
-                                (byte)(unlocked.Contains(Kernel_bin.Abilities.Elem_Def_Jx1) ||
-                                unlocked.Contains(Kernel_bin.Abilities.Elem_Def_Jx2) ||
-                                unlocked.Contains(Kernel_bin.Abilities.Elem_Def_Jx4) ? 2 : 7));
+                                (byte)(unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx1) ||
+                                unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx2) ||
+                                unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx4) ? 2 : 7));
                             BLANKS[5] = true;
                             foreach (Kernel_bin.Stat stat in (Kernel_bin.Stat[])Enum.GetValues(typeof(Kernel_bin.Stat)))
                             {
