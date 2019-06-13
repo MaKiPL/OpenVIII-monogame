@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://cdn.discordapp.com/attachments/552838120895283210/588452586110058509/Open_VIII_Logo-MCINDUS-2.png">
+</p>
+
 # OpenVIII
 Open source VIII engine implementation in C#
 
