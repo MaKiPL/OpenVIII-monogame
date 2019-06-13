@@ -193,8 +193,8 @@ namespace FF8
                     ReadData();
                     break;
                 case BATTLEMODULE_DRAWGEOMETRY:
-                    UpdateCamera();
-                    //FPSCamera();
+                    //UpdateCamera();
+                    FPSCamera();
                     break;
             }
 #if DEBUG
@@ -858,54 +858,6 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) -20;
                     Data = ReadCharacterData(2,6,13),
                     animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
                     characterId = 2
-                },
-                new CharacterInstanceInformation()
-                {
-                    Data = ReadCharacterData(3,7,18),
-                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
-                    characterId = 3
-                },
-                new CharacterInstanceInformation()
-                {
-                    Data = ReadCharacterData(4,9,23),
-                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
-                    characterId = 4
-                },
-                new CharacterInstanceInformation()
-                {
-                    Data = ReadCharacterData(5,11,28),
-                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
-                    characterId = 5
-                },
-                new CharacterInstanceInformation()
-                {
-                    Data = ReadCharacterData(6,14,33),
-                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
-                    characterId = 6
-                },
-                new CharacterInstanceInformation()
-                {
-                    Data = ReadCharacterData(8,17,35),
-                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
-                    characterId = 8
-                },
-                new CharacterInstanceInformation()
-                {
-                    Data = ReadCharacterData(9,19,37),
-                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
-                    characterId = 9
-                },
-                new CharacterInstanceInformation()
-                {
-                    Data = ReadCharacterData(10,21,39),
-                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
-                    characterId = 10
-                },
-                new CharacterInstanceInformation()
-                {
-                    Data = ReadCharacterData(7,16,-1),
-                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
-                    characterId = 7
                 }
             };
         }
