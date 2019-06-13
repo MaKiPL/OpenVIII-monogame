@@ -89,6 +89,7 @@ namespace FF8
                 RemMag,
                 RemAll,
                 TopMenu_GF_Group,
+                ConfirmChanges,
             }
 
             public static Dictionary<Items, FF8String> Titles { get; private set; }
@@ -234,21 +235,29 @@ namespace FF8
                     ));
                 FF8String Yes = Memory.Strings.Read(Strings.FileID.MNGRP, 0, 57);
                 FF8String No = Memory.Strings.Read(Strings.FileID.MNGRP, 0, 58);
-                Data.Add(SectionName.RemMag, new IGMData_ConfirmRemMag(data: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 280), title: Icons.ID.NOTICE, opt1: Yes, opt2: No, pos: new Rectangle(180, 174, 477, 216)));
-                Data.Add(SectionName.RemAll, new IGMData_ConfirmRemAll(data: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 279), title: Icons.ID.NOTICE, opt1: Yes, opt2: No, pos: new Rectangle(170, 174, 583, 216)));
                 Data.Add(SectionName.TopMenu_GF_Group, new IGMData_GF_Group(
                     new IGMData_GF_Junctioned(),
                     new IGMData_GF_Pool(),
                     new IGMData_Container(new IGMDataItem_Box(pos: new Rectangle(440, 345, 385, 66)))
                     ));
 
+                Data.Add(SectionName.RemMag, new IGMData_ConfirmRemMag(data: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 280), title: Icons.ID.NOTICE, opt1: Yes, opt2: No, pos: new Rectangle(180, 174, 477, 216)));
+                Data.Add(SectionName.RemAll, new IGMData_ConfirmRemAll(data: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 279), title: Icons.ID.NOTICE, opt1: Yes, opt2: No, pos: new Rectangle(170, 174, 583, 216)));
+                Data.Add(SectionName.ConfirmChanges, new IGMData_ConfirmChanges(data: Memory.Strings.Read(Strings.FileID.MNGRP, 0, 73), title: Icons.ID.NOTICE, opt1: Yes, opt2: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 268), pos: new Rectangle(280, 174, 367, 216)));
+
                 base.Init();
             }
-
+            /// <summary>
+            /// Refreshes Junction menu and sets character and visable character. Also resets backup of data.
+            /// </summary>
+            /// <param name="c"></param>
+            /// <param name="vc"></param>
             public void ReInit(Characters c, Characters vc)
             {
                 Character = c;
                 VisableCharacter = vc;
+                //backup memory
+                Memory.PrevState = Memory.State.Clone();
                 ReInit();
             }
 
@@ -274,7 +283,8 @@ namespace FF8
                 Mag_EL_A,
                 Mag_ST_A,
                 Mag_EL_D,
-                Mag_ST_D
+                Mag_ST_D,
+                ConfirmChanges
             }
 
             private Mode _mode;
@@ -321,6 +331,9 @@ namespace FF8
 
                         case Mode.RemAll:
                             ret = ((IGMData_ConfirmDialog)Data[SectionName.RemAll]).Inputs();
+                            break;
+                        case Mode.ConfirmChanges:
+                            ret = ((IGMData_ConfirmDialog)Data[SectionName.ConfirmChanges]).Inputs();
                             break;
 
                         case Mode.TopMenu_GF_Group:

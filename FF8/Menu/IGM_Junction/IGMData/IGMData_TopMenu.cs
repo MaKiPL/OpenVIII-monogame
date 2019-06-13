@@ -54,12 +54,20 @@ namespace FF8
 
                 public override void Inputs_CANCEL()
                 {
-                    base.Inputs_CANCEL();
-                    if (State == MainMenuStates.IGM_Junction)
+                    if (Memory.PrevState.Characters[VisableCharacter].CurrentHP() > Memory.State.Characters[VisableCharacter].CurrentHP())
                     {
-                        State = MainMenuStates.InGameMenu;
-                        InGameMenu.ReInit();
-                        Fade = 0.0f;
+                        InGameMenu_Junction.Data[SectionName.ConfirmChanges].Show();
+                        InGameMenu_Junction.SetMode(Mode.ConfirmChanges);
+                    }
+                    else
+                    {
+                        base.Inputs_CANCEL();
+                        if (State == MainMenuStates.IGM_Junction)
+                        {
+                            State = MainMenuStates.InGameMenu;
+                            InGameMenu.ReInit();
+                            Fade = 0.0f;
+                        }
                     }
                 }
 

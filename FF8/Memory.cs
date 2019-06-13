@@ -224,6 +224,8 @@ namespace FF8
         public static bool SuppressDraw { get; set; }
 
         public static bool IsMouseVisible { get; set; } = false;
+
+        public static Saves.Data PrevState { get; set; }
         public static Saves.Data State
         {
             get => _state; set

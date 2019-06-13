@@ -18,11 +18,14 @@ namespace FF8
                 ITEM[0, 0] = new IGMDataItem_String(opt[0], SIZE[0]);
                 ITEM[1, 0] = new IGMDataItem_String(opt[1], SIZE[1]);
             }
-
-            protected override void Init()
+            protected virtual void SetSize()
             {
                 SIZE[0] = new Rectangle(212 + X, 117 + Y, 52, 30);
                 SIZE[1] = new Rectangle(212 + X, 156 + Y, 52, 30);
+            }
+            protected override void Init()
+            {
+                SetSize();
                 base.Init();
                 Hide();
             }
