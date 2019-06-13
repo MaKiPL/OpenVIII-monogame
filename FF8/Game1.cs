@@ -1,16 +1,13 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using System;
-using System.IO;
-using System.Linq;
 
 namespace FF8
 {
     public class Game1 : Game
     {
-        GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
+        private GraphicsDeviceManager graphics;
+        private SpriteBatch spriteBatch;
 
         public Game1()
         {
@@ -20,6 +17,7 @@ namespace FF8
             graphics.PreferredBackBufferHeight = Memory.PreferredViewportHeight;
             Window.AllowUserResizing = true;
         }
+
         protected override void Initialize()
         {
             FFmpeg.AutoGen.Example.FFmpegBinariesHelper.RegisterFFmpegBinaries();
@@ -36,14 +34,21 @@ namespace FF8
 
             base.Initialize();
             //ArchiveSearch s = new ArchiveSearch(new byte[] { 0xc8,0xc9,0xca,0xcb,0xcc,0xcd,0xce,0xcf });//used to find file a string is in. disable if not using.
-
         }
+
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
             Memory.spriteBatch = spriteBatch;
             Memory.shadowTexture = Content.Load<Texture2D>("Shadow");
             GenerateShadowModel();
+            base.LoadContent();
+        }
+
+        protected override void OnExiting(object sender, EventArgs args)
+        {
+            GracefullyExit();
+            base.OnExiting(sender, args);
         }
 
         private void GenerateShadowModel()
@@ -53,7 +58,7 @@ namespace FF8
              * X-X
              * X-X
              */
-            Vector3[] vertices = new Vector3[] //3x3 
+            Vector3[] vertices = new Vector3[] //3x3
             {
                 new Vector3(-10,0,10),
                 new Vector3(0,0,10),
@@ -78,9 +83,8 @@ namespace FF8
             new Vector2(0.9821f, 0.0144f)
             };
 
-        VertexPositionTexture[] vpt = new VertexPositionTexture[]
-            {
-
+            VertexPositionTexture[] vpt = new VertexPositionTexture[]
+                {
                 //righttop (should be bottom left)
                                 new VertexPositionTexture(vertices[0], textureCoordinates[6]),
                 new VertexPositionTexture(vertices[1], textureCoordinates[7]),
@@ -88,7 +92,6 @@ namespace FF8
                                 new VertexPositionTexture(vertices[2], textureCoordinates[4]),
                 new VertexPositionTexture(vertices[3], textureCoordinates[5]),
                 new VertexPositionTexture(vertices[0], textureCoordinates[6]),
-
 
                 //top left
                                 new VertexPositionTexture(vertices[1], textureCoordinates[0]),
@@ -98,7 +101,6 @@ namespace FF8
                 new VertexPositionTexture(vertices[2], textureCoordinates[3]),
                 new VertexPositionTexture(vertices[1], textureCoordinates[0]),
 
-
                 //bottom right should be top right
                                 new VertexPositionTexture(vertices[3], textureCoordinates[7]),
                 new VertexPositionTexture(vertices[2], textureCoordinates[4]),
@@ -107,7 +109,6 @@ namespace FF8
                 new VertexPositionTexture(vertices[7], textureCoordinates[6]),
                 new VertexPositionTexture(vertices[3], textureCoordinates[7]),
 
-
                 //bottom left should be bottom right
                                 new VertexPositionTexture(vertices[2], textureCoordinates[4]),
                 new VertexPositionTexture(vertices[5], textureCoordinates[5]),
@@ -115,7 +116,7 @@ namespace FF8
                                 new VertexPositionTexture(vertices[8], textureCoordinates[6]),
                 new VertexPositionTexture(vertices[6], textureCoordinates[7]),
                 new VertexPositionTexture(vertices[2], textureCoordinates[4]),
-            };
+                };
 
             Memory.shadowGeometry = vpt;
         }
@@ -126,7 +127,6 @@ namespace FF8
 
         protected override void Update(GameTime gameTime)
         {
-
             Memory.gameTime = gameTime;
             Memory.IsActive = IsActive;
 
@@ -137,7 +137,7 @@ namespace FF8
             Input.Update();
 
             if (Input.Button(Buttons.Exit))
-                GracefullyExit();
+                Exit();
             init_debugger_Audio.Update();
             ModuleHandler.Update(gameTime);
             base.Update(gameTime);
@@ -148,7 +148,6 @@ namespace FF8
             }
 
             IsMouseVisible = Memory.IsMouseVisible;
-
         }
 
         protected override void Draw(GameTime gameTime)
@@ -172,7 +171,7 @@ namespace FF8
             await Memory.InitTask; // wait for task to finish what it's doing.
             //step1. dispose DirectMusic as it's unmanaged
             init_debugger_Audio.KillAudio();
-            Exit();
+            //Exit();
         }
     }
 }
