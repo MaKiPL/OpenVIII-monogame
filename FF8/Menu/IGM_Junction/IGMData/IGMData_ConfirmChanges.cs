@@ -18,6 +18,8 @@ namespace FF8
                     base.SetSize();
                     SIZE[0].X = X + 20;
                     SIZE[1].X = X + 20;
+                    SIZE[0].Width = Width - 40;
+                    SIZE[1].Width = Width - 40;
                 }
 
                 public override void Inputs_OKAY()
