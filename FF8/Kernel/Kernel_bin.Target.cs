@@ -11,10 +11,11 @@ namespace FF8
         [Flags]
         public enum Target :byte
         {
-            Dead = 0x01,
-            UNK02 = 0x02,
-            UNK04 = 0x04,
-            Single_Side = 0x08,
+            None = 0x0,
+            Dead = 0x1,
+            UNK02 = 0x2,
+            UNK04 = 0x4,
+            Single_Side = 0x8,
             Single_Target = 0x10,
             UNK20 = 0x20,
             Enemy = 0x40,

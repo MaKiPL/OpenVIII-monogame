@@ -209,6 +209,7 @@
     <Compile Include="Menu\IGMDataItem\IGMDataItem_Texture.cs" />
     <Compile Include="Menu\IGMData\IGMData_Container.cs" />
     <Compile Include="Menu\IGMData\IGMData_Group.cs" />
+    <Compile Include="Menu\IGM_Items\IGM_Items.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_AbilityPool.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_AbilitySlots.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_Command.cs" />
@@ -254,6 +255,7 @@
     <Compile Include="Menu\Magazine.cs" />
     <Compile Include="Menu\Magazine.InsertCustomEntries.cs" />
     <Compile Include="Menu\Magazine.ID.cs" />
+    <Compile Include="Menu\mItems.cs" />
     <Compile Include="Menu\Module_main_menu_debug.Cursor_Status.cs" />
     <Compile Include="Menu\IGMData\IGMData.cs" />
     <Compile Include="Menu\IGMDataItem\IGMDataItem.cs" />

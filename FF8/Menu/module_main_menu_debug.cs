@@ -18,6 +18,7 @@ namespace FF8
         private static bool blinkstate;
         private static IGM InGameMenu;
         private static IGM_Junction InGameMenu_Junction;
+        private static IGM_Items InGameMenu_Items;
 
         #endregion Fields
 
@@ -41,7 +42,8 @@ namespace FF8
             LoadGameLoading,
             SaveGameSaving,
             InGameMenu,
-            IGM_Junction
+            IGM_Junction,
+            IGM_Items
         }
 
         #endregion Enums
@@ -103,6 +105,9 @@ namespace FF8
                     break;
                 case MainMenuStates.IGM_Junction:
                     InGameMenu_Junction.Draw();
+                    break;
+                case MainMenuStates.IGM_Items:
+                    InGameMenu_Items.Draw();
                     break;
             }
         }
@@ -202,6 +207,10 @@ namespace FF8
                     Memory.IsMouseVisible = true;
                     InGameMenu_Junction.Update();
                     break;
+                case MainMenuStates.IGM_Items:
+                    Memory.IsMouseVisible = true;
+                    InGameMenu_Items.Update();
+                    break;
 
                 default:
                     goto case 0;
@@ -226,6 +235,7 @@ namespace FF8
 
             InGameMenu = new IGM();
             InGameMenu_Junction = new IGM_Junction();
+            InGameMenu_Items = new IGM_Items();
             Memory.Strings.Close();
         }
 

@@ -82,13 +82,44 @@ namespace FF8
                 /// </summary>
                 CharacterInfo,
 
+                /// <summary>
+                /// Top menu where you select junction GF or Magic
+                /// </summary>
                 TopMenu_Junction,
+
+                /// <summary>
+                /// Top Menu where you select unjunction all or magic
+                /// </summary>
                 TopMenu_Off,
+
+                /// <summary>
+                /// Top Menu where you select automaticly sort by ATK DEF or MAG
+                /// </summary>
                 TopMenu_Auto,
+
+                /// <summary>
+                /// Junction commands/abilities
+                /// </summary>
                 TopMenu_Abilities,
+
+                /// <summary>
+                /// Remove all Magic?
+                /// </summary>
                 RemMag,
+
+                /// <summary>
+                /// Remove all Junctions?
+                /// </summary>
                 RemAll,
+
+                /// <summary>
+                /// GF junction screen
+                /// </summary>
                 TopMenu_GF_Group,
+
+                /// <summary>
+                /// Confirm changes screen
+                /// </summary>
                 ConfirmChanges,
             }
 
@@ -358,16 +389,6 @@ namespace FF8
                     }
                 }
                 return ret;
-            }
-
-            public override void Draw()
-            {
-                if (Enabled)
-                {
-                    StartDraw();
-                    base.Draw();
-                    EndDraw();
-                }
             }
         }
     }

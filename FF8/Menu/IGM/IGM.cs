@@ -120,7 +120,7 @@ namespace FF8
                         case Mode.ChooseChar:
                         case Mode.ChooseItem:
                         default:
-                            base.Draw();
+                            DrawData();
                             break;
                     }
                     switch (mode)
@@ -249,6 +249,10 @@ namespace FF8
                                     case Items.Magic:
                                     case Items.Status:
                                         mode = Mode.ChooseChar;
+                                        break;
+                                    case Items.Item:
+                                        State = MainMenuStates.IGM_Items;
+                                        InGameMenu_Items.ReInit();
                                         break;
                                 }
                             }

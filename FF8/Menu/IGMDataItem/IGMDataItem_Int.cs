@@ -9,11 +9,24 @@ namespace FF8
         public class IGMDataItem_Int : IGMDataItem//<Int>
         {
             private byte _palette;
-            private int Spaces;
+            private int _spaces;
             private int SpaceWidth;
+            private Rectangle original_pos;
 
-            public int Data { get; set; }
-            public byte Padding { get; set; }
+            public int Data
+            {
+                get => _data; set
+                {
+                    _data = value;
+
+                    _digits = _data.ToString().Length;
+                    if (_digits < _padding) _digits = (int)_padding;
+
+                    _pos = original_pos;
+                    _pos.Offset(SpaceWidth * (_spaces - _digits), 0);
+                }
+            }
+            private byte _padding;
             public Font.ColorID Colorid;
 
             public byte Palette
@@ -27,27 +40,26 @@ namespace FF8
 
             public Icons.NumType NumType { get; set; }
 
-            private int Digits;
+            private int _digits;
+            private int _data;
 
             public IGMDataItem_Int(int data, Rectangle? pos = null, byte? palette = null, Icons.NumType? numtype = null, byte? padding = null, int? spaces = null, int? spacewidth = null, Font.ColorID? colorid = null) : base(pos)
             {
-                Data = data;
-                Padding = padding ?? 1;
+                original_pos = _pos;
+                _padding = padding ?? 1;
                 Palette = palette ?? 2;
                 NumType = numtype ?? 0;
-                Digits = data.ToString().Length;
-                if (Digits < padding) Digits = (int)padding;
-                Spaces = spaces??1;
-                SpaceWidth = spacewidth??20;
-                _pos.Offset(SpaceWidth * (Spaces - Digits), 0);
-                Colorid = colorid?? Font.ColorID.White;
+                _spaces = spaces ?? 1;
+                SpaceWidth = spacewidth ?? 20;
+                Colorid = colorid ?? Font.ColorID.White;
+                Data = data;
             }
 
             public override void Draw()
             {
                 if (Enabled)
                 {
-                    Memory.Icons.Draw(Data, NumType, Palette, $"D{Padding}", Pos.Location.ToVector2(), Scale, fade, Colorid);
+                    Memory.Icons.Draw(Data, NumType, Palette, $"D{_padding}", Pos.Location.ToVector2(), Scale, fade, Colorid);
                 }
             }
         }

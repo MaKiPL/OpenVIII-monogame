@@ -254,7 +254,7 @@ namespace FF8
                 Itemsbattleorder = br.ReadBytes(32);//0x0B34
                 Items = new Item[198];
                 for (int i = 0; i < 198; i++)
-                    Items[0] = new Item { ID = br.ReadByte(), QTY = br.ReadByte() }; //0x0B54 198 items (Item ID and Quantity)
+                    Items[i] = new Item { ID = br.ReadByte(), QTY = br.ReadByte() }; //0x0B54 198 items (Item ID and Quantity)
                 Gametime = new TimeSpan(0, 0, (int)br.ReadUInt32());//0x0CE0
                 Countdown = br.ReadUInt32();//0x0CE4
                 Unknown3 = br.ReadUInt32();//0x0CE8
