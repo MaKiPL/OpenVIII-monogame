@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 
 namespace FF8
 {
@@ -193,15 +193,27 @@ namespace FF8
                     ReadData();
                     break;
                 case BATTLEMODULE_DRAWGEOMETRY:
-                    //UpdateCamera();
-                    FPSCamera();
+                    if (bUseFPSCamera)
+                        FPSCamera();
+                    else UpdateCamera();
+                    LogicUpdate();
                     break;
             }
 #if DEBUG
             if (Input.Button(Keys.D1))
-                DEBUGframe += 1;
+                if ((DEBUGframe & 0b1111) >= 7)
+                {
+                    DEBUGframe += 0b00010000;
+                    DEBUGframe -= 7;
+                }
+                else DEBUGframe += 1;
             if (Input.Button(Keys.D2))
-                DEBUGframe--;
+                if ((DEBUGframe & 0b1111) == 0)
+                {
+                    DEBUGframe -= 0b00010000;
+                    DEBUGframe += 7;
+                }
+                else DEBUGframe--;
             if (Input.Button(Keys.D3))
                 battleModule = BATTLEMODULE_INIT;
             if(Input.Button(Keys.D4))
@@ -225,6 +237,11 @@ namespace FF8
                     break;
 
             }
+        }
+        private static void LogicUpdate()
+        {
+            if (Input.Button(Keys.D0))
+                bUseFPSCamera = !bUseFPSCamera;
         }
         //private static float x = 0;
         //private static float y = 0;
@@ -287,8 +304,28 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
             //};
 
             if (battleCamera.cam.startingTime >= battleCamera.cam.time)
-                return;
-            battleCamera.cam.startingTime += 4;
+            {
+                if (battleCamera.bMultiShotAnimation && battleCamera.cam.time != 0)
+                {
+                    ReopenStageStreams();
+                    ReadAnimation(battleCamera.lastCameraPointer-2);
+                    CloseStageStreams();
+                }
+            }
+            else battleCamera.cam.startingTime += 4;
+        }
+
+        private static void ReopenStageStreams()
+        {
+            ms = new MemoryStream(stageBuffer);
+            br = new BinaryReader(ms);
+        }
+
+        private static void CloseStageStreams()
+        {
+            if(br != null)
+                br.Close();
+            if(ms!= null) { ms.Close(); ms.Dispose(); }
         }
 
         /// <summary>
@@ -672,13 +709,14 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
                 $"1000/deltaTime milliseconds: {Math.Round((double)1000 / Memory.gameTime.ElapsedGameTime.Milliseconds,2)}",
                 30,20,lineSpacing: 5);*/
             Memory.font.RenderBasicText(new FF8String($"Encounter ready at: {Memory.battle_encounter}"), 0, 0, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe}"), 20, 30 * 1, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe} ({DEBUGframe >> 4},{DEBUGframe & 0b1111})"), 20, 30 * 1, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {1000/Memory.gameTime.ElapsedGameTime.Milliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"camera frame: {battleCamera.cam.startingTime}/{battleCamera.cam.time}"), 20, 30 * 3, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {Extended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 4, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {Extended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 5, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.FOV: {MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, battleCamera.cam.startingTime / (float)battleCamera.cam.time)}"), 20, 30 * 6, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.Mode: {battleCamera.cam.control_word&1}"), 20, 30 * 7, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"DEBUG: Press 0 to switch between FPSCamera/Camera anim: {bUseFPSCamera}"), 20, 30 * 8, 1, 1, 0, 1);
             //Memory.font.RenderBasicText(new FF8String($"Camera.translate: {x},{y},{z}"), 20, 30 * 7, 1, 1, 0, 1);
 
             Memory.SpriteBatchEnd();
@@ -808,6 +846,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
         }
 
         #region fileParsing
+
 
         private static void ReadData()
         {
@@ -1194,7 +1233,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
             public byte[] unk; //010
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            public ushort[] unkword024; //024 - start frames for each key frame?
+            public ushort[] startFramesOffsets; //024 - start frames for each key frame?
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
             public short[] Camera_World_Z_s16; //064
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
@@ -1233,9 +1272,12 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
             public BattleCameraSettings battleCameraSettings;
             public BattleCameraCollection battleCameraCollection;
             public CameraStruct cam;
+            public uint lastCameraPointer;
+            public bool bMultiShotAnimation;
         }
 
         private static BattleCamera battleCamera;
+        private static bool bUseFPSCamera = true;
 
         /// <summary>
         /// Battle camera settings are about 32 bytes of unknown flags and variables used in whole stage including geometry
@@ -1302,8 +1344,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
             CameraStruct cam = Extended.ByteArrayToStructure<CameraStruct>(new byte[Marshal.SizeOf(typeof(CameraStruct))]); //what about this kind of trick to initialize struct with a lot amount of fixed sizes in arrays? 
             battleCamera = new BattleCamera() { battleCameraCollection = bcc, battleCameraSettings = bcs, cam = cam };
 
-            ReadAnimation(GetRandomCameraN(Memory.encounters[Memory.battle_encounter]));
-
+            ReadAnimationById(GetRandomCameraN(Memory.encounters[Memory.battle_encounter]));
             ms.Seek(bs_cameraPointer + sCameraDataSize, 0); //step out
         }
 
@@ -1339,15 +1380,31 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
             return new Tuple<int, int>(pSet, pAnim);
         }
 
-
         /// <summary>
-        /// Method that provides reading of real animation data based on 6bit camera pointer. In future do overload on this function
-        /// to support GF and magic reading
+        /// This method resolves the correct camera pointer and runs ReadAnimation(uint,ms,br) method and returns the final pointer
         /// </summary>
-        /// <param name="animId"></param>
-        private static uint ReadAnimation(int animId)
+        /// <param name="animId">Animation Id as of binary mask (0bXXXXYYYY where XXXX= animationSet and YYYY=animationId)</param>
+        /// <returns></returns>
+        private static uint ReadAnimationById(int animId)
         {
-            animId = DEBUGframe;
+            animId = DEBUGframe; //DEBUG
+            var tpGetter = GetCameraCollectionPointers(animId);
+            uint cameraAnimationGlobalPointer = battleCamera.battleCameraCollection.battleCameraSet[tpGetter.Item1].animPointers[tpGetter.Item2];
+            return ReadAnimation(cameraAnimationGlobalPointer);
+        }
+
+/// <summary>
+/// This method reads raw animation data in stage file or if ms_ and br_ == null then ms_ file and stores parsed data into battleCamera struct
+/// </summary>
+/// <param name="cameraAnimOffset">if (ms_ and br_ are null) is an offset in current battle stage file for camera animation. If ms_ and _br are provided it's the offset in this file</param>
+/// <param name="ms_">if null then stage file either this memory stream</param>
+/// <param name="br_">sub-component of ms</param>
+/// <returns></returns>
+        private static uint ReadAnimation(uint cameraAnimOffset, MemoryStream ms_= null, BinaryReader br_ = null)
+        {
+            if (ms_ == null || br_ == null)
+            { ms_ = ms; br_ = br; }
+            
             short local2C;
             byte keyframecount =0;
             ushort totalframecount = 0;
@@ -1357,15 +1414,14 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
             short local10;
 
 
-            var tpGetter = GetCameraCollectionPointers(animId);
-            uint cameraAnimationGlobalPointer = battleCamera.battleCameraCollection.battleCameraSet[tpGetter.Item1].animPointers[tpGetter.Item2];
-            ms.Seek(cameraAnimationGlobalPointer, SeekOrigin.Begin);
-            battleCamera.cam.control_word = br.ReadUInt16(); 
+
+            ms_.Seek(cameraAnimOffset, SeekOrigin.Begin);
+            battleCamera.cam.control_word = br_.ReadUInt16(); 
             if (battleCamera.cam.control_word == 0xFFFF)
                 return 0; //return NULL
 
-            var current_position = br.ReadUInt16(); //getter for *current_position
-            ms.Seek(-2, SeekOrigin.Current); //roll back one WORD because no increment
+            var current_position = br_.ReadUInt16(); //getter for *current_position
+            ms_.Seek(-2, SeekOrigin.Current); //roll back one WORD because no increment
 
             switch((battleCamera.cam.control_word >> 6) & 3)
             {
@@ -1376,13 +1432,13 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
                 case 2:
                     battleCamera.cam.startingFOV = current_position;
                     battleCamera.cam.endingFOV = current_position;
-                    br.ReadUInt16(); //current_position++
+                    br_.ReadUInt16(); //current_position++
                     break;
                 case 3:
                     battleCamera.cam.startingFOV = current_position;
-                    current_position = br.ReadUInt16();
+                    current_position = br_.ReadUInt16();
                     battleCamera.cam.endingFOV = current_position;
-                    ms.Seek(2, SeekOrigin.Current); //skipping WORD, because we already rolled back one WORD above this switch
+                    ms_.Seek(2, SeekOrigin.Current); //skipping WORD, because we already rolled back one WORD above this switch
                     break;
             }
             switch ((battleCamera.cam.control_word >> 8) & 3)
@@ -1396,14 +1452,14 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
                     battleCamera.cam.endingCameraRoll = 0;
                     break;
                 case 2:
-                    current_position = br.ReadUInt16(); //* + current_position++;
+                    current_position = br_.ReadUInt16(); //* + current_position++;
                     battleCamera.cam.startingCameraRoll = current_position;
                     battleCamera.cam.endingCameraRoll = current_position;
                     break;
                 case 3:
-                    current_position = br.ReadUInt16(); //* + current_position++;
+                    current_position = br_.ReadUInt16(); //* + current_position++;
                     battleCamera.cam.startingCameraRoll = current_position;
-                    current_position = br.ReadUInt16(); //* + current_position++;
+                    current_position = br_.ReadUInt16(); //* + current_position++;
                     battleCamera.cam.endingCameraRoll = current_position;
                     break;
             }
@@ -1415,19 +1471,19 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
                     {
                         while(true) //I'm setting this to true and breaking in code as this works on peeking on next variable via pointer and that's not possible here without unsafe block
                         {
-                            battleCamera.cam.unkword024[keyframecount] = totalframecount; //looks like this is the camera index
-                            current_position = br.ReadUInt16();
+                            battleCamera.cam.startFramesOffsets[keyframecount] = totalframecount; //looks like this is the camera index
+                            current_position = br_.ReadUInt16();
                             if ((short)current_position < 0) //reverse of *current_position >= 0, also cast to signed is important here
                                 break;
                             totalframecount += (ushort)(current_position * 16); //here is increment of short*, but I already did that above
-                            battleCamera.cam.is_FrameDurationsShot[keyframecount] = (byte)(current_position =  br.ReadUInt16()); //cam->unkbyte124[keyframecount] = *current_position++; - looks like we are wasting one byte due to integer sizes
-                            battleCamera.cam.Camera_World_X_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
-                            battleCamera.cam.Camera_World_Y_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
-                            battleCamera.cam.Camera_World_Z_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
-                            battleCamera.cam.is_FrameEndingShots[keyframecount] = (byte)(current_position = br.ReadUInt16()); //m->unkbyte204[keyframecount] = *current_position++;
-                            battleCamera.cam.Camera_Lookat_X_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
-                            battleCamera.cam.Camera_Lookat_Y_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
-                            battleCamera.cam.Camera_Lookat_Z_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
+                            battleCamera.cam.is_FrameDurationsShot[keyframecount] = (byte)(current_position =  br_.ReadUInt16()); //cam->unkbyte124[keyframecount] = *current_position++; - looks like we are wasting one byte due to integer sizes
+                            battleCamera.cam.Camera_World_X_s16[keyframecount] = (short)(current_position = br_.ReadUInt16());
+                            battleCamera.cam.Camera_World_Y_s16[keyframecount] = (short)(current_position = br_.ReadUInt16());
+                            battleCamera.cam.Camera_World_Z_s16[keyframecount] = (short)(current_position = br_.ReadUInt16());
+                            battleCamera.cam.is_FrameEndingShots[keyframecount] = (byte)(current_position = br_.ReadUInt16()); //m->unkbyte204[keyframecount] = *current_position++;
+                            battleCamera.cam.Camera_Lookat_X_s16[keyframecount] = (short)(current_position = br_.ReadUInt16());
+                            battleCamera.cam.Camera_Lookat_Y_s16[keyframecount] = (short)(current_position = br_.ReadUInt16());
+                            battleCamera.cam.Camera_Lookat_Z_s16[keyframecount] = (short)(current_position = br_.ReadUInt16());
                             keyframecount++;
                         }
 
@@ -1442,15 +1498,15 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
                     {
                         if(current_position >= 0)
                         {
-                            local14 = (short)(ms.Position + 5*2); //current_position + 5; but current_position is WORD, so multiply by two
-                            local10 = (short)(ms.Position + 6*2);
-                            local2C = (short)(ms.Position + 7*2);
-                            local18 = (short)(ms.Position + 1*2);
-                            local1C = (short)(ms.Position + 2*2);
+                            local14 = (short)(ms_.Position + 5*2); //current_position + 5; but current_position is WORD, so multiply by two
+                            local10 = (short)(ms_.Position + 6*2);
+                            local2C = (short)(ms_.Position + 7*2);
+                            local18 = (short)(ms_.Position + 1*2);
+                            local1C = (short)(ms_.Position + 2*2);
                             while(true)
                             {
-                                battleCamera.cam.unkword024[keyframecount] = totalframecount;
-                                current_position = br.ReadUInt16();
+                                battleCamera.cam.startFramesOffsets[keyframecount] = totalframecount;
+                                current_position = br_.ReadUInt16();
                                 if ((short)current_position < 0) //reverse of *current_position >= 0, also cast to signed is important here
                                     break;
                                 totalframecount += (ushort)(current_position * 16);
@@ -1480,7 +1536,9 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
             battleCamera.cam.keyframeCount = keyframecount;
             battleCamera.cam.time = totalframecount;
             battleCamera.cam.startingTime = 0;
-            return (uint)(ms.Position+2);
+            battleCamera.lastCameraPointer = (uint)(ms_.Position + 2);
+            battleCamera.bMultiShotAnimation = br.ReadInt16() != -1;
+            return (uint)(ms_.Position);
         }
 
 
