@@ -46,7 +46,7 @@ namespace FF8
         /// </summary>
         public uint PaletteCount { get; protected set; }
 
-        protected string ArchiveString { get; set; }
+        protected Memory.Archive ArchiveString { get; set; }
 
         /// <summary>
         /// Dictionary of Entries

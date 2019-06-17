@@ -30,8 +30,8 @@ namespace FF8
             public byte Element_Percent { get; private set; }      //0x000E	1 byte Element Attack %
             public byte Status_Attack { get; private set; }        //0x000F	1 byte Status Attack Enabler
             public byte[] Unknown2 { get; private set; }           //0x0010	2 bytes Unknown
-            public Statuses0 Statuses0 { get; private set; }       //0x0012	2 bytes status_0; //statuses 0-7
-            public Statuses1 Statuses1 { get; private set; }       //0x0014	4 bytes status_1; //statuses 8-39
+            public Persistant_Statuses Statuses0 { get; private set; }       //0x0012	2 bytes status_0; //statuses 0-7
+            public Battle_Only_Statuses Statuses1 { get; private set; }       //0x0014	4 bytes status_1; //statuses 8-39
 
             public void Read(BinaryReader br, int i)
             {
@@ -50,8 +50,8 @@ namespace FF8
                 Element_Percent = br.ReadByte();      //0x000E	1 byte Element Attack %
                 Status_Attack = br.ReadByte();        //0x000F	1 byte Status Attack Enabler
                 Unknown2 = br.ReadBytes(2);             //0x0010	2 bytes Unknown
-                Statuses0 = (Statuses0)br.ReadUInt16();       //0x0012	2 bytes status_0; //statuses 0-7
-                Statuses1 = (Statuses1)br.ReadUInt32();       //0x0014	4 bytes status_1; //statuses 8-39
+                Statuses0 = (Persistant_Statuses)br.ReadUInt16();       //0x0012	2 bytes status_0; //statuses 0-7
+                Statuses1 = (Battle_Only_Statuses)br.ReadUInt32();       //0x0014	4 bytes status_1; //statuses 8-39
             }
 
             public static Dictionary<Renzokeken_Level, Renzokuken_Finishers_Data> Read(BinaryReader br)

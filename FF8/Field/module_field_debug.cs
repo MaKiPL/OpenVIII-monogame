@@ -121,11 +121,11 @@ namespace FF8
             var CollectionEntry = test.Where(x => x.ToLower().Contains(Memory.FieldHolder.fields[Memory.FieldHolder.FieldID]));
             if (!CollectionEntry.Any()) return;
             string fieldArchive = CollectionEntry.First();
-            int fieldLen = fieldArchive.Length - 2;
+            int fieldLen = fieldArchive.Length - 3;
             fieldArchive = fieldArchive.Substring(0, fieldLen);
-            byte[] fs = aw.GetBinaryFile( $"{fieldArchive}fs");
-            byte[] fi = aw.GetBinaryFile( $"{fieldArchive}fi");
-            byte[] fl = aw.GetBinaryFile( $"{fieldArchive}fl");
+            byte[] fs = aw.GetBinaryFile( $"{fieldArchive}{Memory.Archive.B_FileArchive}");
+            byte[] fi = aw.GetBinaryFile( $"{fieldArchive}{Memory.Archive.B_FileIndex}");
+            byte[] fl = aw.GetBinaryFile( $"{fieldArchive}{Memory.Archive.B_FileList}");
             if (fs == null || fi == null || fl == null) return;
             string[] test_ = aw.GetBinaryFileList(fl);
             string mim = null;

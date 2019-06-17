@@ -20,8 +20,10 @@ namespace FF8
             //0x0000	2 bytes Offset to item name
             public FF8String Description { get; private set; }
 
-            //0x0002	2 bytes Offset to item description
 
+            //0x0002	2 bytes Offset to item description
+            public int ID { get; private set; }
+            //public Icons.ID Icon { get; private set; }
             public void Read(int i)
             {
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
@@ -29,6 +31,7 @@ namespace FF8
                 Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
                 //0x0002	2 bytes Offset to item description
                 //br.BaseStream.Seek(4,SeekOrigin.Current);
+                ID = i;
             }
 
             public static List<Non_battle_Items_Data> Read()

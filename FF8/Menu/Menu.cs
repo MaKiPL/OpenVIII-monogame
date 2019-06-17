@@ -65,11 +65,16 @@ namespace FF8
 
             public virtual void Draw()
             {
+                StartDraw();
+                DrawData();
+                EndDraw();
+            }
+            public virtual void DrawData()
+            {
                 if (!skipdata && Enabled)
                     foreach (KeyValuePair<Enum, IGMData> i in Data)
-                    i.Value.Draw();
+                        i.Value.Draw();
             }
-
             public virtual void EndDraw()
             {
                 if(Enabled)

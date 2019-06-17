@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("OpenVIII")]
-[assembly: AssemblyProduct("FF8")]
+[assembly: AssemblyTitle("OpenVII - DirectX Mode")]
+[assembly: AssemblyProduct("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyCopyright("Copyright ©  2018")]
+[assembly: AssemblyCopyright("Copyright ©  2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("69939e05-647a-45e7-ad0a-6dec42a1d7b6")]
+[assembly: Guid("a2017772-0a28-4528-a04a-a722c8f21f15")]
 
 // Version information for an assembly consists of the following four values:
 //

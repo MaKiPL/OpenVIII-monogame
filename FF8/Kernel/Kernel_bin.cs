@@ -26,7 +26,7 @@ namespace FF8
         private static Dictionary<Abilities, GF_abilities> s_gFabilities;
         private static Dictionary<Abilities, Menu_abilities> s_menuabilities;
         private static List<Temporary_character_limit_breaks> s_temporarycharacterlimitbreaks;
-        private static List<Blue_magic_Quistis_limit_break> s_bluemagicQuistislimitbreak;
+        private static Dictionary<Blue_Magic,Blue_magic_Quistis_limit_break> s_bluemagicQuistislimitbreak;
         private static List<Shot_Irvine_limit_break> s_shotIrvinelimitbreak;
         private static List<Duel_Zell_limit_break> s_duelZelllimitbreak;
         private static List<Zell_limit_break_parameters> s_zelllimitbreakparameters;
@@ -40,7 +40,7 @@ namespace FF8
         private static Dictionary<Abilities, Equipable_Ability> s_equipableAbilities;
 
         private ArchiveWorker aw { get; set; }
-        private string ArchiveString { get; } = Memory.Archives.A_MAIN;
+        private Memory.Archive ArchiveString { get; } = Memory.Archives.A_MAIN;
         public static IReadOnlyList<Magic_Data> MagicData { get => s_magicData; }//0
         public static IReadOnlyDictionary<GFs, Junctionable_GFs_Data> JunctionableGFsData { get => s_junctionableGFsData; }//1
         public static IReadOnlyList<Enemy_Attacks_Data> EnemyAttacksData { get => s_enemyAttacksData; }//2
@@ -60,7 +60,7 @@ namespace FF8
         public static IReadOnlyDictionary<Abilities, GF_abilities> GFabilities { get => s_gFabilities;  }//16
         public static IReadOnlyDictionary<Abilities, Menu_abilities> Menuabilities { get => s_menuabilities;  }//17
         public static IReadOnlyList<Temporary_character_limit_breaks> Temporarycharacterlimitbreaks { get => s_temporarycharacterlimitbreaks;  }//18
-        public static IReadOnlyList<Blue_magic_Quistis_limit_break> BluemagicQuistislimitbreak { get => s_bluemagicQuistislimitbreak;  }//19
+        public static IReadOnlyDictionary<Blue_Magic,Blue_magic_Quistis_limit_break> BluemagicQuistislimitbreak { get => s_bluemagicQuistislimitbreak;  }//19
         //public static List<Quistis_limit_break_parameters> Quistislimitbreakparameters { get; private set; }//20
         public static IReadOnlyList<Shot_Irvine_limit_break> ShotIrvinelimitbreak { get => s_shotIrvinelimitbreak;  }//21
         public static IReadOnlyList<Duel_Zell_limit_break> DuelZelllimitbreak { get => s_duelZelllimitbreak;  }//22

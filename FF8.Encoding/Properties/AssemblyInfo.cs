@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // набора атрибутов. Измените значения этих атрибутов, чтобы изменить сведения,
 // связанные со сборкой.
 [assembly: AssemblyTitle("FF8.Encoding")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Decodes and Encodes FF8 Strings")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("FF8.Encoding")]

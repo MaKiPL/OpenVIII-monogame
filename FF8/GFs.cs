@@ -1,6 +1,6 @@
 ﻿namespace FF8
 {
-    public enum GFs
+    public enum GFs : byte
     {
         Quezacotl,
         Shiva,
@@ -17,6 +17,7 @@
         Bahamut,
         Cactuar,
         Tonberry,
-        Eden
+        Eden,
+        All = 0xFF,
     }
 }

@@ -160,8 +160,8 @@ namespace FF8
             public Attack_Flags Attack_flags { get; private set; }          //0x000A  1 byte  Attack Flags
             public byte[] Unknown1 { get; private set; }            //0x000B  2 bytes Unknown
             public Element Element { get; private set; }               //0x000D  1 byte[[Element
-            public Statuses0 Statuses0 { get; private set; }           //0x000E  2 bytes[[Statuses 0
-            public Statuses1 Statuses1 { get; private set; }           //0x0010  4 bytes[[Statuses 1
+            public Persistant_Statuses Statuses0 { get; private set; }           //0x000E  2 bytes[[Statuses 0
+            public Battle_Only_Statuses Statuses1 { get; private set; }           //0x0010  4 bytes[[Statuses 1
             public byte GFHP_modifier { get; private set; }         //0x0014  1 byte  GF HP Modifier(used in GF HP formula)
             public byte[] Unknown2_1 { get; private set; }            //0x0015  3 bytes Unknown
             public ushort EXPperLevel { get; private set; }             //0x18  1 byte *10;
@@ -286,8 +286,8 @@ namespace FF8
                 Attack_flags = (Attack_Flags)(br.ReadByte());          //0x000A  1 byte  Attack Flags
                 Unknown1 = br.ReadBytes(2);            //0x000B  2 bytes Unknown
                 Element = (Element)br.ReadByte();               //0x000D  1 byte[[Element
-                Statuses0 = (Statuses0)br.ReadUInt16();           //0x000E  2 bytes[[Statuses 0
-                Statuses1 = (Statuses1)br.ReadUInt32();           //0x0010  4 bytes[[Statuses 1
+                Statuses0 = (Persistant_Statuses)br.ReadUInt16();           //0x000E  2 bytes[[Statuses 0
+                Statuses1 = (Battle_Only_Statuses)br.ReadUInt32();           //0x0010  4 bytes[[Statuses 1
                 GFHP_modifier = br.ReadByte();         //0x0014  1 byte  GF HP Modifier(used in GF HP formula)
                 Unknown2_1 = br.ReadBytes(3);            //0x0015  3 bytes Unknown
                 EXPperLevel = (ushort)((br.ReadByte()) * 10); //0x0018

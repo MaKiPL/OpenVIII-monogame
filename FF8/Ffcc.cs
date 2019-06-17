@@ -645,7 +645,23 @@ EOF:
                     SoundEffectInstance.Volume = volume;
                     SoundEffectInstance.Pitch = pitch;
                     SoundEffectInstance.Pan = pan;
-                    SoundEffectInstance.Play();
+
+                    try
+                    {
+                        SoundEffectInstance.Play();
+                    }
+                    catch (Exception e)
+                    {
+                        if (e.GetType().Name == "SharpDXException")
+                        {
+                            Mode = FfccMode.NOTINIT;
+                            State = FfccState.NODLL;
+                            SoundEffectInstance = null;
+                            SoundEffect = null;
+                        }
+                        else
+                            e.Rethrow();
+                    }
                 }
             }
         }
@@ -955,6 +971,7 @@ EOF:
         {
             if (length > 0 && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
             {
+                
                 if (DynamicSound == null)
                 {
                     //create instance here to set sample_rate and channels dynamicly
@@ -968,7 +985,18 @@ EOF:
                 {
                     //got error saying buffer was too small. makes no sense.
                 }
-            }
+                catch(Exception e)
+                {
+                    if (e.GetType().Name == "SharpDXException")
+                    {
+                        Mode = FfccMode.NOTINIT;
+                        State = FfccState.NODLL;
+                        DynamicSound = null;
+                    }
+                    else
+                        e.Rethrow();
+                }
+}
         }
 
         /// <summary>

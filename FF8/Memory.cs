@@ -34,20 +34,24 @@ namespace FF8
 
         public static Texture2D shadowTexture;
         public static VertexPositionTexture[] shadowGeometry;
+
         public enum ScaleMode
         {
             /// <summary>
             /// scale object to have the same height as viewport
             /// </summary>
             FitVertical,
+
             /// <summary>
             /// scale object to have the same width as viewport
             /// </summary>
             FitHorizontal,
+
             /// <summary>
             /// Same as FitVertical unless width is too large, then it becomes FitHorizontal
             /// </summary>
             FitBoth,
+
             /// <summary>
             /// fill the entire viewport
             /// </summary>
@@ -73,8 +77,10 @@ namespace FF8
 
                 case ScaleMode.FitVertical:
                     return new Vector2(v, v);
+
                 case ScaleMode.FitBoth:
-                    return (v * Width > targetX)? new Vector2(h, h): new Vector2(v, v);
+                    return (v * Width > targetX) ? new Vector2(h, h) : new Vector2(v, v);
+
                 case ScaleMode.Stretch:
                 default:
                     return new Vector2(h, v);
@@ -91,10 +97,12 @@ namespace FF8
 
         private static ushort prevmusic = 0;
         private static ushort currmusic = 0;
+
         /// <summary>
         /// Stores current savestate. When you save this is wrote. When you load this is replaced.
         /// </summary>
         private static Saves.Data _state = new Saves.Data();
+
         public static ushort MusicIndex
         {
             get
@@ -171,14 +179,18 @@ namespace FF8
         public static string FF8DIR => GameLocation.Current.DataPath;
         public static string FF8DIRdata { get; private set; }
         public static string FF8DIRdata_lang { get; private set; }
+
         public static void InitTaskMethod(object obj)
         {
             CancellationToken token = (CancellationToken)obj;
-            if (!token.IsCancellationRequested)            
+            if (!token.IsCancellationRequested)
                 Memory.font = new Font(); //this initializes the fonts and drawing system- holds fonts in-memory
 
             if (!token.IsCancellationRequested)
                 Memory.Strings = new Strings();
+
+            if (!token.IsCancellationRequested)
+                Memory.MItems = Items_In_Menu.Read();
 
             if (!token.IsCancellationRequested)
                 Kernel_Bin = new Kernel_bin();
@@ -201,6 +213,7 @@ namespace FF8
             if (!token.IsCancellationRequested)
                 Module_main_menu_debug.Init();
         }
+
         public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
         {
             FF8DIRdata = Extended.GetUnixFullPath(Path.Combine(FF8DIR, "Data"));
@@ -215,9 +228,10 @@ namespace FF8
             FF8String.Init();
             TokenSource = new CancellationTokenSource();
             Token = TokenSource.Token;
-            InitTask = new Task(InitTaskMethod,Token);
+            InitTask = new Task(InitTaskMethod, Token);
             InitTask.Start();
         }
+
         /// <summary>
         /// If true by the end of Update() will skip the next Draw()
         /// </summary>
@@ -237,7 +251,7 @@ namespace FF8
 
         public static CancellationTokenSource TokenSource { get; private set; }
         public static CancellationToken Token { get; private set; }
-
+        public static Items_In_Menu MItems { get; private set; }
 
         #region modules
 
@@ -258,13 +272,15 @@ namespace FF8
         #region battleProvider
 
         /// <summary>
-        /// Active battle encounter. Set by field or battle module. You shouldn't change it in-battle. 
+        /// Active battle encounter. Set by field or battle module. You shouldn't change it in-battle.
         /// </summary>
         public static int battle_encounter = 0;
+
         /// <summary>
         /// Battle music pointer. Set by SETBATTLEMUSIC in field module or by world module. Default=6
         /// </summary>
         public static int SetBattleMusic = 6;
+
         public static Init_debugger_battle.Encounter[] encounters;
 
         #endregion battleProvider
@@ -730,6 +746,7 @@ namespace FF8
             {255, "Scan"}
         };
         }
+
         #endregion MusicDataOGG
 
         #region DrawPointMagic
@@ -739,19 +756,71 @@ namespace FF8
 
         #endregion DrawPointMagic
 
+        /// <summary>
+        /// Archive class handles the filename formatting and extensions for archive files.
+        /// </summary>
+        public class Archive
+        {
+            public string _Root { get; private set; }
+            public string _Filename { get; private set; }
+            public Archive(string path) : this(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path))
+            { }
+            public Archive(string root, string filename)
+            {
+                _Root = root;
+                _Filename = filename;
+            }
+            /// <summary>
+            /// File Archive Extension
+            /// </summary>
+            public const string B_FileList = ".fl";
 
+            /// <summary>
+            /// File Index Extension
+            /// </summary>
+            public const string B_FileIndex = ".fi";
+
+            /// <summary>
+            /// File Archive Extension
+            /// </summary>
+            public const string B_FileArchive = ".fs";
+            /// <summary>
+            /// File Index
+            /// </summary>
+            public string FI => Test(Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}{B_FileIndex}"));
+            /// <summary>
+            /// File List
+            /// </summary>
+            public string FL => Test(Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}{B_FileList}"));
+            /// <summary>
+            /// File Archive
+            /// </summary>
+            public string FS => Test(Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}{B_FileArchive}"));
+            /// <summary>
+            /// Test if input file path exists
+            /// </summary>
+            /// <param name="input">file path</param>
+            /// <returns></returns>
+            private string Test(string input)
+            {
+                if (!File.Exists(input)) throw new FileNotFoundException($"There is no {input} file!\nExiting...");
+                return input;
+            }
+
+            public override string ToString()
+            {
+                return Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}");
+            }
+
+        }
         public static class Archives
         {
-            public static string A_BATTLE = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "battle"));
-            public static string A_FIELD = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "field"));
-            public static string A_MAGIC = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "magic"));
-            public static string A_MAIN = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "main"));
-            public static string A_MENU = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "menu"));
-            public static string A_WORLD = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "world"));
-
-            public const string B_FileList = ".fl";
-            public const string B_FileIndex = ".fi";
-            public const string B_FileArchive = ".fs";
+            public static Archive A_BATTLE = new Archive(FF8DIRdata_lang, "battle");
+            public static Archive A_FIELD = new Archive(FF8DIRdata_lang, "field");
+            public static Archive A_MAGIC = new Archive(FF8DIRdata_lang, "magic");
+            public static Archive A_MAIN = new Archive(FF8DIRdata_lang, "main");
+            public static Archive A_MENU = new Archive(FF8DIRdata_lang, "menu");
+            public static Archive A_WORLD = new Archive(FF8DIRdata_lang, "world");
         }
 
         public static class FieldHolder

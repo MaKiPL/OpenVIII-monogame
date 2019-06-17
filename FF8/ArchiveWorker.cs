@@ -1,52 +1,56 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 
 namespace FF8
 {
     public class ArchiveWorker
     {
-        uint _unpackedFileSize;
-        uint _locationInFs;
-        bool _compressed;
-        private string _path;
-        public string GetPath() => _path;
+
+        #region Fields
+
+        /// <summary>
+        /// Generated File List
+        /// </summary>
         public string[] FileList;
 
+        private bool _compressed;
+        private uint _locationInFs;
+        private Memory.Archive _path;
+        private uint _unpackedFileSize;
 
-        public ArchiveWorker(string path)
+        #endregion Fields
+
+        #region Constructors
+
+        /// <summary>
+        /// Saves the active archive and file list.
+        /// </summary>
+        /// <param name="path">Memory.Archive</param>
+        /// <param name="skiplist">If list generation is unneeded you can skip it by setting true</param>
+        public ArchiveWorker(Memory.Archive path, bool skiplist = false)
         {
-            _path = Extended.GetUnixFullPath(path);
-            string root = Path.GetDirectoryName(_path);
-            string file = Path.GetFileNameWithoutExtension(_path);
-            string fi = Extended.GetUnixFullPath($"{Path.Combine(root, file)}{Memory.Archives.B_FileIndex}");
-            string fl = Extended.GetUnixFullPath($"{Path.Combine(root, file)}{Memory.Archives.B_FileList}");
-            if (!File.Exists(fi)) throw new Exception($"There is no {file}.fi file!\nExiting...");
-            if (!File.Exists(fl)) throw new Exception($"There is no {file}.fl file!\nExiting...");
-            FileList = ProduceFileLists();
+            _path = path;
+            if (!skiplist)
+                FileList = ProduceFileLists();
         }
 
-        private string[] ProduceFileLists() =>
-            File.ReadAllLines(
-                    $"{Path.Combine(Path.GetDirectoryName(_path), Path.GetFileNameWithoutExtension(_path))}{Memory.Archives.B_FileList}"
-                    );
+        #endregion Constructors
 
-        public string[] GetBinaryFileList(byte[] fl) =>System.Text.Encoding.ASCII.GetString(fl).Replace("\r", "").Replace("\0", "").Split('\n');
+        #region Methods
 
-        public byte[] GetBinaryFile(string fileName)
+        /// <summary>
+        /// Generate archive worker and get file
+        /// </summary>
+        /// <param name="archive">which archive you want to read from</param>
+        /// <param name="fileName">name of file you want to recieve</param>
+        /// <returns>Uncompressed binary file data</returns>
+        public static byte[] GetBinaryFile(Memory.Archive archive, string fileName)
         {
-            byte[] isComp = GetBin(Extended.GetUnixFullPath(_path), fileName);
-            if (isComp == null) throw new FileNotFoundException($"Searched {_path} and could not find {fileName}.",fileName);
-            if(_compressed)
-                isComp = isComp.Skip(4).ToArray();
-            return isComp == null ? null : _compressed ? LZSS.DecompressAllNew(isComp) : isComp;
-        }
-        static public byte[] GetBinaryFile(string archiveName, string fileName)
-        {
-            var tmp = new ArchiveWorker(archiveName);
+            ArchiveWorker tmp = new ArchiveWorker(archive, true);
             return tmp.GetBinaryFile(fileName);
         }
+
         /// <summary>
         /// Give me three archives as bytes uncompressed please!
         /// </summary>
@@ -55,26 +59,13 @@ namespace FF8
         /// <param name="FL">FileList</param>
         /// <param name="filename">Filename of the file to get</param>
         /// <returns></returns>
+        /// <remarks>
+        /// Does the same thing as Get Binary file, but it reads from byte arrays in ram because the
+        /// data was already pulled from a file earlier.
+        /// </remarks>
         public byte[] FileInTwoArchives(byte[] FI, byte[] FS, byte[] FL, string filename)
         {
-            string a = filename.TrimEnd('\0');
-
-            string flText = System.Text.Encoding.UTF8.GetString(FL);
-            flText = flText.Replace(Convert.ToString(0x0d), "");
-            int loc = -1;
-            string[] files = flText.Split((char)0x0a);
-            for (int i = 0; i != files.Length; i++) //check archive for filename
-            {
-                if(string.IsNullOrWhiteSpace(files[i]))
-                {
-                    Debug.WriteLine("ArchiveWorker::File entry is null. Returning null");
-                    return null;
-                }
-                string testme = files[i].Substring(0, files[i].Length - 1).ToUpper().TrimEnd('\0');
-                if (testme != a.ToUpper()) continue;
-                loc = i;
-                break;
-            }
+            int loc = FindFile(filename, new MemoryStream(FL, false));
             if (loc == -1)
             {
                 Debug.WriteLine("ArchiveWorker: NO SUCH FILE!");
@@ -82,103 +73,125 @@ namespace FF8
                 //throw new Exception("ArchiveWorker: No such file!");
             }
 
-
+            // get params from index
             uint fsLen = BitConverter.ToUInt32(FI, loc * 12);
             uint fSpos = BitConverter.ToUInt32(FI, (loc * 12) + 4);
             bool compe = BitConverter.ToUInt32(FI, (loc * 12) + 8) != 0;
-            
-            byte[] file = new byte[fsLen];
 
+            // copy binary data
+            byte[] file = new byte[fsLen];
             Array.Copy(FS, fSpos, file, 0, file.Length);
             return compe ? LZSS.DecompressAllNew(file) : file;
         }
 
-        private byte[] GetBin(string archiveName, string fileName)
+        /// <summary>
+        /// GetBinary
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public byte[] GetBinaryFile(string fileName)
         {
-            if (fileName.Length < 1 || archiveName.Length < 1)
-                throw new FileNotFoundException("NO FILENAME OR ARCHIVE!");
-            string path = Path.GetDirectoryName(archiveName);
-            string file = Path.GetFileNameWithoutExtension(archiveName);
-            string archivePath = Path.Combine(path,file + Memory.Archives.B_FileArchive);
-            string archiveIndexPath = Path.Combine(path, file + Memory.Archives.B_FileIndex);
-            string archiveNamesPath = Path.Combine(path, file + Memory.Archives.B_FileList);
-            int loc = -1;
+            if (fileName.Length < 1)
+                throw new FileNotFoundException("NO FILENAME");
 
-            FileStream fs = new FileStream(archiveNamesPath, FileMode.Open);
-            TextReader tr = new StreamReader(fs);
-            string locTr = tr.ReadToEnd();
-            tr.Dispose();
-            fs.Close();
-            //locTr = locTr.Replace(Convert.ToString(0x0d), "");
-            string[] files = locTr.Split((char)0x0a);
-            for (int i = 0; i != files.Length - 1; i++)
-            {
-                string testme = files[i].Substring(0, files[i].Length - 1);
-                if (testme.IndexOf(fileName,StringComparison.OrdinalIgnoreCase)>=0)
-                {
-                    loc = i;
-                    break;
-                }
-            }
+            int loc = FindFile(fileName, File.OpenRead(_path.FL));
+            byte[] temp = null;
+            // read file list
+
             if (loc == -1)
             {
                 Debug.WriteLine("ArchiveWorker: NO SUCH FILE!");
-                return null;
                 //throw new Exception("ArchiveWorker: No such file!");
             }
-
-            fs = new FileStream(archiveIndexPath, FileMode.Open);
-            BinaryReader br = new BinaryReader(fs);
-            fs.Seek(loc * 12, SeekOrigin.Begin);
-            _unpackedFileSize = br.ReadUInt32(); //fs.Seek(4, SeekOrigin.Current);
-            _locationInFs = br.ReadUInt32();
-            _compressed = br.ReadUInt32() != 0;
-            fs.Close();
-
-            fs = new FileStream(archivePath, FileMode.Open);
-            fs.Seek(_locationInFs, SeekOrigin.Begin);
-
-            br = new BinaryReader(fs);
-            int howMany = _compressed ? br.ReadInt32() : (int)_unpackedFileSize;
-
-            byte[] temp;
-            if (_compressed)
-            {
-                fs.Seek(-4, SeekOrigin.Current);
-                temp = br.ReadBytes(howMany + 4);
-
-            }
             else
-                temp = br.ReadBytes(howMany);
+            {
+                //read index data
+                using (BinaryReader br = new BinaryReader(File.OpenRead(_path.FI)))
+                {
+                    br.BaseStream.Seek(loc * 12, SeekOrigin.Begin);
+                    _unpackedFileSize = br.ReadUInt32(); //fs.Seek(4, SeekOrigin.Current);
+                    _locationInFs = br.ReadUInt32();
+                    _compressed = br.ReadUInt32() != 0;
+                }
+                //read binary data.
+                using (BinaryReader br = new BinaryReader(File.OpenRead(_path.FS)))
+                {
+                    br.BaseStream.Seek(_locationInFs, SeekOrigin.Begin);
+                    temp = br.ReadBytes(_compressed ? br.ReadInt32() : (int)_unpackedFileSize);
+                }
+            }
+            if (temp == null) throw new FileNotFoundException($"Searched {_path} and could not find {fileName}.", fileName);
 
-            fs.Close();
-
-
-            return temp;
+            return temp == null ? null : _compressed ? LZSS.DecompressAllNew(temp) : temp;
         }
 
+        /// <summary>
+        /// Generate a file list from binary data.
+        /// </summary>
+        /// <param name="fl"></param>
+        public string[] GetBinaryFileList(byte[] fl) => System.Text.Encoding.ASCII.GetString(fl).Replace("\r", "").Replace("\0", "").Split('\n');
+
+        /// <summary>
+        /// Get current file list for loaded archive.
+        /// </summary>
         public string[] GetListOfFiles() => FileList;
 
-        public struct FI
-        {
-            public uint LengthOfUnpackedFile;
-            public uint LocationInFS;
-            public uint LZSS;
-        }
+        public Memory.Archive GetPath() => _path;
 
-        public FI[] GetFI()
+        /// <summary>
+        /// Search file list for line filename is on.
+        /// </summary>
+        /// <param name="filename">filename or path to search for</param>
+        /// <param name="stream">stream of text data to search in</param>
+        /// <returns>-1 on error or &gt;=0 on success.</returns>
+        private int FindFile(string filename, Stream stream)
         {
-            FI[] FileIndex = new FI[FileList.Length];
-            string flPath = $"{Path.GetDirectoryName(_path)}\\{Path.GetFileNameWithoutExtension(_path)}.fi";
-            using (FileStream fs = new FileStream(flPath, FileMode.Open, FileAccess.Read))
-            using (BinaryReader br = new BinaryReader(fs))
-                for (int i = 0; i <= FileIndex.Length - 1; i++)
+            filename = filename.TrimEnd('\0');
+            using (TextReader tr = new StreamReader(stream))
+            {
+                string line;
+                for (int i = 0; (line = tr.ReadLine().TrimEnd('\0')) != null; i++)
                 {
-                    FileIndex[i].LengthOfUnpackedFile = br.ReadUInt32();
-                    FileIndex[i].LocationInFS = br.ReadUInt32();
-                    FileIndex[i].LZSS = br.ReadUInt32();
+                    if (string.IsNullOrWhiteSpace(line))
+                    {
+                        Debug.WriteLine("ArchiveWorker::File entry is null. Returning -1");
+                        break;
+                    }
+                    if (line.IndexOf(filename, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        return i;
+                    }
                 }
-            return FileIndex;
+            }
+            Debug.WriteLine($"ArchiveWorker:: Filename {filename}, not found. returning -1");
+            return -1;
         }
+        /// <summary>
+        /// Generate a file list from raw text file.
+        /// </summary>
+        private string[] ProduceFileLists() => File.ReadAllLines(_path.FL, System.Text.Encoding.ASCII);
+
+        #endregion Methods
+
+        //public struct FI
+        //{
+        //    public uint LengthOfUnpackedFile;
+        //    public uint LocationInFS;
+        //    public uint LZSS;
+        //}
+
+        //public FI[] GetFI()
+        //{
+        //    FI[] FileIndex = new FI[FileList.Length];
+        //    using (FileStream fs = new FileStream(_path.FI, FileMode.Open, FileAccess.Read))
+        //    using (BinaryReader br = new BinaryReader(fs))
+        //        for (int i = 0; i <= FileIndex.Length - 1; i++)
+        //        {
+        //            FileIndex[i].LengthOfUnpackedFile = br.ReadUInt32();
+        //            FileIndex[i].LocationInFS = br.ReadUInt32();
+        //            FileIndex[i].LZSS = br.ReadUInt32();
+        //        }
+        //    return FileIndex;
+        //}
     }
 }
