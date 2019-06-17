@@ -40,7 +40,7 @@ namespace FF8
         private static Dictionary<Abilities, Equipable_Ability> s_equipableAbilities;
 
         private ArchiveWorker aw { get; set; }
-        private string ArchiveString { get; } = Memory.Archives.A_MAIN;
+        private Memory.Archive ArchiveString { get; } = Memory.Archives.A_MAIN;
         public static IReadOnlyList<Magic_Data> MagicData { get => s_magicData; }//0
         public static IReadOnlyDictionary<GFs, Junctionable_GFs_Data> JunctionableGFsData { get => s_junctionableGFsData; }//1
         public static IReadOnlyList<Enemy_Attacks_Data> EnemyAttacksData { get => s_enemyAttacksData; }//2

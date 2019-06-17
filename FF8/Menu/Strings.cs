@@ -15,7 +15,7 @@ namespace FF8
         #region Fields
 
         private readonly string[] filenames = new string[] { "mngrp.bin", "mngrphd.bin", "areames.dc1", "namedic.bin", "kernel.bin" };
-        private string ArchiveString;
+        private Memory.Archive ArchiveString;
         private ArchiveWorker aw;
 
         //temp storage for locations isn't kept long term.

@@ -755,16 +755,70 @@ namespace FF8
         public static Random random;
 
         #endregion DrawPointMagic
+        public class Archive
+        {
+            public string _Root { get; private set; }
+            public string _Filename { get; private set; }
+            public Archive(string path) : this(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path))
+            { }
+            public Archive(string root, string filename)
+            {
+                _Root = root;
+                _Filename = filename;
+            }
+            /// <summary>
+            /// File Archive Extension
+            /// </summary>
+            private const string B_FileList = ".fl";
 
+            /// <summary>
+            /// File Index Extension
+            /// </summary>
+            private const string B_FileIndex = ".fi";
+
+            /// <summary>
+            /// File Archive Extension
+            /// </summary>
+            private const string B_FileArchive = ".fs";
+            /// <summary>
+            /// File Index
+            /// </summary>
+            public string FI => Test(Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}{Memory.Archives.B_FileIndex}"));
+            /// <summary>
+            /// File List
+            /// </summary>
+            public string FL => Test(Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}{Memory.Archives.B_FileList}"));
+            /// <summary>
+            /// File Archive
+            /// </summary>
+            public string FS => Test(Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}{Memory.Archives.B_FileArchive}"));
+            /// <summary>
+            /// Test if input file path exists
+            /// </summary>
+            /// <param name="input">file path</param>
+            /// <returns></returns>
+            private string Test(string input)
+            {
+                if (!File.Exists(input)) throw new FileNotFoundException($"There is no {input} file!\nExiting...");
+                return input;
+            }
+
+            public override string ToString()
+            {
+                return Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}");
+            }
+
+            public override bool Equals(object obj) => base.Equals(obj);
+        }
         public static class Archives
         {
-            public static string A_BATTLE = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "battle"));
-            public static string A_FIELD = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "field"));
-            public static string A_MAGIC = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "magic"));
-            public static string A_MAIN = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "main"));
-            public static string A_MENU = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "menu"));
-            public static string A_WORLD = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata_lang, "world"));
-
+            public static Archive A_BATTLE = new Archive(FF8DIRdata_lang, "battle");
+            public static Archive A_FIELD = new Archive(FF8DIRdata_lang, "field");
+            public static Archive A_MAGIC = new Archive(FF8DIRdata_lang, "magic");
+            public static Archive A_MAIN = new Archive(FF8DIRdata_lang, "main");
+            public static Archive A_MENU = new Archive(FF8DIRdata_lang, "menu");
+            public static Archive A_WORLD = new Archive(FF8DIRdata_lang, "world");
+            
             public const string B_FileList = ".fl";
             public const string B_FileIndex = ".fi";
             public const string B_FileArchive = ".fs";
