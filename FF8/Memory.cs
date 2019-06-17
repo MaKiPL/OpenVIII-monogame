@@ -755,6 +755,10 @@ namespace FF8
         public static Random random;
 
         #endregion DrawPointMagic
+
+        /// <summary>
+        /// Archive class handles the filename formatting and extensions for archive files.
+        /// </summary>
         public class Archive
         {
             public string _Root { get; private set; }
@@ -769,29 +773,29 @@ namespace FF8
             /// <summary>
             /// File Archive Extension
             /// </summary>
-            private const string B_FileList = ".fl";
+            public const string B_FileList = ".fl";
 
             /// <summary>
             /// File Index Extension
             /// </summary>
-            private const string B_FileIndex = ".fi";
+            public const string B_FileIndex = ".fi";
 
             /// <summary>
             /// File Archive Extension
             /// </summary>
-            private const string B_FileArchive = ".fs";
+            public const string B_FileArchive = ".fs";
             /// <summary>
             /// File Index
             /// </summary>
-            public string FI => Test(Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}{Memory.Archives.B_FileIndex}"));
+            public string FI => Test(Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}{B_FileIndex}"));
             /// <summary>
             /// File List
             /// </summary>
-            public string FL => Test(Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}{Memory.Archives.B_FileList}"));
+            public string FL => Test(Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}{B_FileList}"));
             /// <summary>
             /// File Archive
             /// </summary>
-            public string FS => Test(Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}{Memory.Archives.B_FileArchive}"));
+            public string FS => Test(Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}{B_FileArchive}"));
             /// <summary>
             /// Test if input file path exists
             /// </summary>
@@ -808,7 +812,6 @@ namespace FF8
                 return Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}");
             }
 
-            public override bool Equals(object obj) => base.Equals(obj);
         }
         public static class Archives
         {
@@ -818,10 +821,6 @@ namespace FF8
             public static Archive A_MAIN = new Archive(FF8DIRdata_lang, "main");
             public static Archive A_MENU = new Archive(FF8DIRdata_lang, "menu");
             public static Archive A_WORLD = new Archive(FF8DIRdata_lang, "world");
-            
-            public const string B_FileList = ".fl";
-            public const string B_FileIndex = ".fi";
-            public const string B_FileArchive = ".fs";
         }
 
         public static class FieldHolder

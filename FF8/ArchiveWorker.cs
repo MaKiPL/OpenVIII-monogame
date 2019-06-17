@@ -6,6 +6,7 @@ namespace FF8
 {
     public class ArchiveWorker
     {
+
         #region Fields
 
         /// <summary>
@@ -82,34 +83,6 @@ namespace FF8
             Array.Copy(FS, fSpos, file, 0, file.Length);
             return compe ? LZSS.DecompressAllNew(file) : file;
         }
-        /// <summary>
-        /// Search file list for file return index of array.
-        /// </summary>
-        /// <param name="filename"></param>
-        /// <param name="stream"></param>
-        /// <returns></returns>
-        private int FindFile(string filename, Stream stream)
-        {
-            filename = filename.TrimEnd('\0');
-            using (TextReader tr = new StreamReader(stream))
-            {
-                string line;
-                for(int i=0;(line = tr.ReadLine().TrimEnd('\0')) !=null;i++)
-                {
-                    if (string.IsNullOrWhiteSpace(line))
-                    {
-                        Debug.WriteLine("ArchiveWorker::File entry is null. Returning -1");
-                        break;
-                    }
-                    if (line.IndexOf(filename, StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        return i;
-                    }
-                }
-            }
-            Debug.WriteLine($"ArchiveWorker:: Filename {filename}, not found. returning -1");
-            return -1;
-        }
 
         /// <summary>
         /// GetBinary
@@ -165,6 +138,34 @@ namespace FF8
 
         public Memory.Archive GetPath() => _path;
 
+        /// <summary>
+        /// Search file list for line filename is on.
+        /// </summary>
+        /// <param name="filename">filename or path to search for</param>
+        /// <param name="stream">stream of text data to search in</param>
+        /// <returns>-1 on error or &gt;=0 on success.</returns>
+        private int FindFile(string filename, Stream stream)
+        {
+            filename = filename.TrimEnd('\0');
+            using (TextReader tr = new StreamReader(stream))
+            {
+                string line;
+                for (int i = 0; (line = tr.ReadLine().TrimEnd('\0')) != null; i++)
+                {
+                    if (string.IsNullOrWhiteSpace(line))
+                    {
+                        Debug.WriteLine("ArchiveWorker::File entry is null. Returning -1");
+                        break;
+                    }
+                    if (line.IndexOf(filename, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        return i;
+                    }
+                }
+            }
+            Debug.WriteLine($"ArchiveWorker:: Filename {filename}, not found. returning -1");
+            return -1;
+        }
         /// <summary>
         /// Generate a file list from raw text file.
         /// </summary>
