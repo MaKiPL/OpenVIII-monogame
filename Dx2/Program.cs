@@ -1,7 +1,7 @@
 ﻿using System;
 using FF8;
 
-namespace Dx2
+namespace FF8.DirectX
 {
 #if WINDOWS || LINUX
     /// <summary>
