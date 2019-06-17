@@ -5,7 +5,7 @@ namespace FF8
     public partial class Kernel_bin
     {
         /// <summary>
-        /// Attack Flags
+        /// Attack Flags effects how the attack can be treated.
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/blob/master/Doomtrain/MainForm.cs"/>
         [Flags]

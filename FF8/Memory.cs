@@ -190,7 +190,7 @@ namespace FF8
                 Memory.Strings = new Strings();
 
             if (!token.IsCancellationRequested)
-                Memory.MItems = MItems.Read();
+                Memory.MItems = Items_In_Menu.Read();
 
             if (!token.IsCancellationRequested)
                 Kernel_Bin = new Kernel_bin();
@@ -251,7 +251,7 @@ namespace FF8
 
         public static CancellationTokenSource TokenSource { get; private set; }
         public static CancellationToken Token { get; private set; }
-        public static MItems MItems { get; private set; }
+        public static Items_In_Menu MItems { get; private set; }
 
         #region modules
 

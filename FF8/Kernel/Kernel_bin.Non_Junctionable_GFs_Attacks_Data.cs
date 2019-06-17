@@ -51,7 +51,7 @@ namespace FF8
             //0x20 - Wind
             //0x40 - Water
             //0x80 - Holy
-            public Statuses1 Statuses1 { get; private set; }
+            public Battle_Only_Statuses Statuses1 { get; private set; }
 
             //0x000C	1 byte Status 1
 
@@ -97,7 +97,7 @@ namespace FF8
             //0x20 - ???
             //0x40 - ???
             //0x80 - ???
-            public Statuses0 Statuses0 { get; private set; }
+            public Persistant_Statuses Statuses0 { get; private set; }
 
             //0x0010	1 byte Status 5
 
@@ -140,12 +140,12 @@ namespace FF8
                 //0x0009	2 bytes Unknown
                 Element = (Element)br.ReadByte();
                 //0x000B	1 byte Element
-                Statuses1 = (Statuses1)br.ReadUInt32();
+                Statuses1 = (Battle_Only_Statuses)br.ReadUInt32();
                 //0x000C	1 byte Status 1
                 //0x000D	1 byte Status 2
                 //0x000E	1 byte Status 3
                 //0x000F	1 byte Status 4
-                Statuses0 = (Statuses0)br.ReadUInt16();
+                Statuses0 = (Persistant_Statuses)br.ReadUInt16();
                 //0x0010	1 byte Status 5
                 //0x0011	1 byte Unknown
                 Power_Mod = br.ReadByte();

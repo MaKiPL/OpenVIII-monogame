@@ -28,9 +28,9 @@ namespace FF8
             public Element Element { get; private set; }
             public byte Element_Percent { get; private set; }
             public byte Status_Attack { get; private set; }
-            public Statuses0 Statuses0 { get; private set; }
+            public Persistant_Statuses Statuses0 { get; private set; }
             public byte[] Unknown1 { get; private set; }
-            public Statuses1 Statuses1 { get; private set; }
+            public Battle_Only_Statuses Statuses1 { get; private set; }
 
             public void Read(BinaryReader br, int i)
             {
@@ -59,11 +59,11 @@ namespace FF8
                 //0x000E  1 byte Element Attack %
                 Status_Attack = br.ReadByte();
                 //0x000F  1 byte Status Attack Enabler
-                Statuses0 = (Statuses0)br.ReadUInt16();
+                Statuses0 = (Persistant_Statuses)br.ReadUInt16();
                 //0x0010  2 bytes status_0; //statuses 0-7
                 Unknown1 = br.ReadBytes(2);
                 //0x0012  2 bytes Unknown
-                Statuses1 = (Statuses1)br.ReadUInt32();
+                Statuses1 = (Battle_Only_Statuses)br.ReadUInt32();
                 //0x0014  4 bytes status_1; //statuses 8-39
             }
             public static List<Temporary_character_limit_breaks> Read(BinaryReader br)

@@ -118,7 +118,7 @@ namespace FF8
                             if (item.ID == 0) continue;
                             Kernel_bin.Battle_Items_Data bitemdata = Kernel_bin.BattleItemsData.Count > item.ID ? Kernel_bin.BattleItemsData[item.ID] : null;
                             Kernel_bin.Non_battle_Items_Data nbitemdata = bitemdata == null ? Kernel_bin.NonbattleItemsData[item.ID - Kernel_bin.BattleItemsData.Count] : null;
-                            MItem itemdata = Memory.MItems.Items[item.ID];
+                            Item_In_Menu itemdata = Memory.MItems.Items[item.ID];
 
                             _helpStr[pos] = bitemdata == null ? nbitemdata.Description : bitemdata.Description;
                             ((IGMDataItem_String)(ITEM[pos, 0])).Data = bitemdata == null ? nbitemdata.Name : bitemdata.Name;

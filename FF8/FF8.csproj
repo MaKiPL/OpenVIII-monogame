@@ -143,8 +143,10 @@
     <Compile Include="Extended.cs" />
     <Compile Include="FF8String.cs" />
     <Compile Include="Kernel\Kernel_bin.Ability.cs" />
+    <Compile Include="Kernel\Kernel_bin.Battle_Only_Statuses.cs" />
     <Compile Include="Kernel\Kernel_bin.CharacterAbilityFlags.cs" />
     <Compile Include="Kernel\Kernel_bin.J_Statuses.cs" />
+    <Compile Include="Kernel\Kernel_bin.Persistant_Statuses.cs" />
     <Compile Include="Menu\Cards.cs" />
     <Compile Include="Menu\Cards.ID.cs" />
     <Compile Include="EntryGroup.cs" />
@@ -193,8 +195,6 @@
     <Compile Include="Kernel\Kernel_bin.Slot_array.cs" />
     <Compile Include="Kernel\Kernel_bin.Stat.cs" />
     <Compile Include="Kernel\Kernel_bin.StatFlags.cs" />
-    <Compile Include="Kernel\Kernel_bin.Statuses0.cs" />
-    <Compile Include="Kernel\Kernel_bin.Statuses1.cs" />
     <Compile Include="Kernel\Kernel_bin.Stat_percent_abilities.cs" />
     <Compile Include="Kernel\Kernel_bin.Target.cs" />
     <Compile Include="Kernel\Kernel_bin.Temporary_character_limit_breaks.cs" />
@@ -252,10 +252,10 @@
     <Compile Include="Menu\DrawBox.cs" />
     <Compile Include="Menu\DrawPointer.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Values.cs" />
+    <Compile Include="Menu\Items_In_Menu.cs" />
     <Compile Include="Menu\Magazine.cs" />
     <Compile Include="Menu\Magazine.InsertCustomEntries.cs" />
     <Compile Include="Menu\Magazine.ID.cs" />
-    <Compile Include="Menu\mItems.cs" />
     <Compile Include="Menu\Module_main_menu_debug.Cursor_Status.cs" />
     <Compile Include="Menu\IGMData\IGMData.cs" />
     <Compile Include="Menu\IGMDataItem\IGMDataItem.cs" />

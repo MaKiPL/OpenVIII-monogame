@@ -33,8 +33,8 @@ namespace FF8
             public byte Hit_count { get; private set; }     //0x000D  1 byte  Hit count(works with meteor animation, not sure about others)
             public Element Element { get; private set; }       //0x000E  1 byte Element
             public byte Unknown3 { get; private set; }      //0x000F  1 byte  Unknown
-            public Statuses0 Statuses0 { get; private set; }   //0x0014  2 bytes Statuses 0
-            public Statuses1 Statuses1 { get; private set; }   //0x0010  4 bytes Statuses 1
+            public Persistant_Statuses Statuses0 { get; private set; }   //0x0014  2 bytes Statuses 0
+            public Battle_Only_Statuses Statuses1 { get; private set; }   //0x0010  4 bytes Statuses 1
             public byte Status_attack { get; private set; } //0x0016  1 byte  Status attack enabler\
             public IReadOnlyDictionary<Stat, byte> J_Val { get => _j_Val;  }
             //public byte HP_J;          //0x0017  1 byte  Characters HP junction value
@@ -92,8 +92,8 @@ namespace FF8
                 Hit_count = br.ReadByte();
                 Element = (Element)br.ReadByte();
                 Unknown3 = br.ReadByte();
-                Statuses1 = (Statuses1)br.ReadUInt32();
-                Statuses0 = (Statuses0)br.ReadUInt16();
+                Statuses1 = (Battle_Only_Statuses)br.ReadUInt32();
+                Statuses0 = (Persistant_Statuses)br.ReadUInt16();
                 Status_attack = br.ReadByte();
                 _j_Val = new Dictionary<Stat, byte>(6)
                 {
