@@ -1,254 +1,254 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<file id=0 seek=0 length=4294967295>
-	<string id=0 seek=504>???</string>
-	<string id=1 seek=508>0xE22- Alcauld Plains</string>
-	<string id=2 seek=527>0xE22- Gaulg Mountains</string>
-	<string id=3 seek=547>0xE22- Rinaul Coast</string>
-	<string id=4 seek=564>0xE22- Raha Cape</string>
-	<string id=5 seek=578>0xE24- Roshfall Forest</string>
-	<string id=6 seek=598>0xE24- Mandy Beach</string>
-	<string id=7 seek=614>0xE24- Obel Lake</string>
-	<string id=8 seek=628>0xE24- Lanker Plains</string>
-	<string id=9 seek=646>0xE24- Nanchucket Island</string>
-	<string id=10 seek=668>0xE24- Yaulny Canyon</string>
-	<string id=11 seek=686>0xE23- Hasberry Plains</string>
-	<string id=12 seek=706>0xE23- Holy Glory Cape</string>
-	<string id=13 seek=726>0xE23- Long Horn Island</string>
-	<string id=14 seek=747>0xE23- Malgo Peninsula</string>
-	<string id=15 seek=767>0xE20- Monterosa Plateau</string>
-	<string id=16 seek=789>0xE20- Lallapalooza Canyon</string>
-	<string id=17 seek=813>0xE24- Shenand Hill</string>
-	<string id=18 seek=830>0xE20- Gotland Peninsula</string>
-	<string id=19 seek=852>Island Closest to Hell</string>
-	<string id=20 seek=875>Great Plains of 0xE20</string>
-	<string id=21 seek=894>0xE20- Wilburn Hill</string>
-	<string id=22 seek=911>0xE20- Rem Archipelago</string>
-	<string id=23 seek=931>0xE20- Dingo Desert</string>
-	<string id=24 seek=948>Winhill- Winhill Bluffs</string>
-	<string id=25 seek=972>Winhill- Humphrey Archipelago</string>
-	<string id=26 seek=1002>0xE25- Winter Island</string>
-	<string id=27 seek=1020>0xE25- Sorbald Snowfield</string>
-	<string id=28 seek=1042>0xE25- Eldbeak Peninsula</string>
-	<string id=29 seek=1064>               </string>
-	<string id=30 seek=1080>0xE25- Hawkwind Plains</string>
-	<string id=31 seek=1100>0xE25- Albatross Archipelago</string>
-	<string id=32 seek=1126>0xE25- Bika Snowfield</string>
-	<string id=33 seek=1145>0xE25- Thor Peninsula</string>
-	<string id=34 seek=1164>               </string>
-	<string id=35 seek=1180>0xE25- Heath Peninsula</string>
-	<string id=36 seek=1200>0xE25- 0xE25 Crater</string>
-	<string id=37 seek=1214>0xE25- Vienne Mountains</string>
-	<string id=38 seek=1235>0xE21- Mordred Plains</string>
-	<string id=39 seek=1254>0xE21- Nortes Mountains</string>
-	<string id=40 seek=1275>0xE21- Fulcura Archipelago</string>
-	<string id=41 seek=1299>0xE21- Grandidi Forest</string>
-	<string id=42 seek=1319>0xE21- Millefeuille Archipelago</string>
-	<string id=43 seek=1348>Great Plains of 0xE21</string>
-	<string id=44 seek=1367>0xE21 City</string>
-	<string id=45 seek=1375>0xE21- Great Salt Lake</string>
-	<string id=46 seek=1395>0xE21- West Coast</string>
-	<string id=47 seek=1410>0xE21- Sollet Mountains</string>
-	<string id=48 seek=1431>0xE21- Abadan Plains</string>
-	<string id=49 seek=1449>0xE21- Minde Island</string>
-	<string id=50 seek=1466>0xE21- Kashkabald Desert</string>
-	<string id=51 seek=1488>Island Closest to Heaven</string>
-	<string id=52 seek=1513>0xE21- Talle Mountains</string>
-	<string id=53 seek=1533>0xE21- Shalmal Peninsula</string>
-	<string id=54 seek=1555>0xE26- Lolestern Plains</string>
-	<string id=55 seek=1576>0xE26- Almaj Mountains</string>
-	<string id=56 seek=1596>0xE26- Lenown Plains</string>
-	<string id=57 seek=1614>0xE26- Cape of Good Hope</string>
-	<string id=58 seek=1636>0xE26- Yorn Mountains</string>
-	<string id=59 seek=1655>0xE21- Cactuar Island</string>
-	<string id=60 seek=1674>0xE26- Serengetti Plains</string>
-	<string id=61 seek=1696>0xE26- Nectar Peninsula</string>
-	<string id=62 seek=1717>0xE26- 0xE26 Crater</string>
-	<string id=63 seek=1731>0xE26- Poccarahi Island</string>
-	<string id=64 seek=1752>B-0xE3E- Library</string>
-	<string id=65 seek=1766>B-0xE3E- Front Gate</string>
-	<string id=66 seek=1783>B-0xE3E- Classroom</string>
-	<string id=67 seek=1799>B-0xE3E- Cafeteria</string>
-	<string id=68 seek=1815>B-0xE3E- MD Level</string>
-	<string id=69 seek=1830>B-0xE3E- 2F Hallway</string>
-	<string id=70 seek=1847>B-0xE3E- Hall</string>
-	<string id=71 seek=1858>B-0xE3E- Infirmary</string>
-	<string id=72 seek=1874>B-0xE3E- Dormitory Double</string>
-	<string id=73 seek=1897>B-0xE3E- Dormitory Single</string>
-	<string id=74 seek=1920>B-0xE3E- Headmaster`s Office</string>
-	<string id=75 seek=1946>B-0xE3E- Parking Lot</string>
-	<string id=76 seek=1964>B-0xE3E- Ballroom</string>
-	<string id=77 seek=1979>B-0xE3E- Quad</string>
-	<string id=78 seek=1990>B-0xE3E- Training Center</string>
-	<string id=79 seek=2012>B-0xE3E- Secret Area</string>
-	<string id=80 seek=2030>B-0xE3E- Hallway</string>
-	<string id=81 seek=2044>B-0xE3E- Master Room</string>
-	<string id=82 seek=2062>B-0xE3E- Deck</string>
-	<string id=83 seek=2073>0xE22- The Dincht`s</string>
-	<string id=84 seek=2090>0xE22 Hotel</string>
-	<string id=85 seek=2099>0xE22- Town Square</string>
-	<string id=86 seek=2115>0xE22- Station Yard</string>
-	<string id=87 seek=2132>0xE22 Harbor</string>
-	<string id=88 seek=2142>0xE22- Residence</string>
-	<string id=89 seek=2156>Train</string>
-	<string id=90 seek=2162>Car</string>
-	<string id=91 seek=2166>Inside Ship</string>
-	<string id=92 seek=2178>Fire Cavern</string>
-	<string id=93 seek=2190>0xE23- Town Square</string>
-	<string id=94 seek=2206>0xE23- Lapin Beach</string>
-	<string id=95 seek=2222>0xE23 Harbor</string>
-	<string id=96 seek=2232>0xE23 Pub</string>
-	<string id=97 seek=2239>0xE23 Hotel</string>
-	<string id=98 seek=2248>0xE23- Residence</string>
-	<string id=99 seek=2262>0xE23- Comm Tower</string>
-	<string id=100 seek=2277>0xE23- Mountain Hideout</string>
-	<string id=101 seek=2298>0xE24- City Square</string>
-	<string id=102 seek=2314>0xE24 TV Station</string>
-	<string id=103 seek=2328>0xE24- Forest Owls` Base</string>
-	<string id=104 seek=2350>0xE24 Pub</string>
-	<string id=105 seek=2357>0xE24 Hotel</string>
-	<string id=106 seek=2366>0xE24- Train</string>
-	<string id=107 seek=2376>0xE24- Residence</string>
-	<string id=108 seek=2390>0xE24- TV Screen</string>
-	<string id=109 seek=2404>0xE24- Editorial Department</string>
-	<string id=110 seek=2429>0xE24 Forest</string>
-	<string id=111 seek=2439>0xE20 0xE3E- Front Gate</string>
-	<string id=112 seek=2457>G-0xE3E- Station</string>
-	<string id=113 seek=2471>G-0xE3E- Hall</string>
-	<string id=114 seek=2482>G-0xE3E- Hallway</string>
-	<string id=115 seek=2496>G-0xE3E- Reception Room</string>
-	<string id=116 seek=2517>G-0xE3E- Classroom</string>
-	<string id=117 seek=2533>G-0xE3E- Clubroom</string>
-	<string id=118 seek=2548>G-0xE3E- Dormitory</string>
-	<string id=119 seek=2564>G-0xE3E- Elevator Hall</string>
-	<string id=120 seek=2584>G-0xE3E- Master Room</string>
-	<string id=121 seek=2602>G-0xE3E- Auditorium</string>
-	<string id=122 seek=2619>G-0xE3E- Athletic Track</string>
-	<string id=123 seek=2640>G-0xE3E- Stand</string>
-	<string id=124 seek=2652>G-0xE3E- Back Entrance</string>
-	<string id=125 seek=2672>G-0xE3E- Gymnasium</string>
-	<string id=126 seek=2688>0xE3F- Presidential Residence</string>
-	<string id=127 seek=2715>0xE2D- Caraway`s Mansion</string>
-	<string id=128 seek=2737>0xE2D- Station Yard</string>
-	<string id=129 seek=2754>0xE2D- City Square</string>
-	<string id=130 seek=2770>0xE2D- Hotel</string>
-	<string id=131 seek=2780>0xE2D- Club</string>
-	<string id=132 seek=2789>0xE2D- Gateway</string>
-	<string id=133 seek=2801>0xE2D- Parade</string>
-	<string id=134 seek=2812>0xE2D- Sewer</string>
-	<string id=135 seek=2822>0xE20 D-District Prison</string>
-	<string id=136 seek=2843>Desert</string>
-	<string id=137 seek=2850>0xE20 Missile Base</string>
-	<string id=138 seek=2866>Winhill Village</string>
-	<string id=139 seek=2882>Winhill Pub</string>
-	<string id=140 seek=2894>Winhill- Vacant House</string>
-	<string id=141 seek=2916>Winhill- Mansion</string>
-	<string id=142 seek=2933>Winhill- Residence</string>
-	<string id=143 seek=2952>Winhill- Hotel</string>
-	<string id=144 seek=2967>Winhill- Car</string>
-	<string id=145 seek=2980>Tomb of the Unknown King</string>
-	<string id=146 seek=3005>0xE27</string>
-	<string id=147 seek=3008>FH- Residential Area</string>
-	<string id=148 seek=3029>FH- Sun Panel</string>
-	<string id=149 seek=3043>FH- Mayor`s Residence</string>
-	<string id=150 seek=3065>FH- Factory</string>
-	<string id=151 seek=3077>FH- Festival Grounds</string>
-	<string id=152 seek=3098>FH- Hotel</string>
-	<string id=153 seek=3108>FH- Residence</string>
-	<string id=154 seek=3122>FH- Station Yard</string>
-	<string id=155 seek=3139>Horizon Bridge</string>
-	<string id=156 seek=3154>Seaside Station</string>
-	<string id=157 seek=3170>Great Salt Lake</string>
-	<string id=158 seek=3186>Mystery Building</string>
-	<string id=159 seek=3203>0xE21- City</string>
-	<string id=160 seek=3212>0xE21- Odine`s Laboratory</string>
-	<string id=161 seek=3235>0xE21- Airstation</string>
-	<string id=162 seek=3250>Lunatic Pandora Approaching</string>
-	<string id=163 seek=3278>0xE21- Presidential Palace</string>
-	<string id=164 seek=3302>Presidential Palace- Hall</string>
-	<string id=165 seek=3328>Presidential Palace- Hallway</string>
-	<string id=166 seek=3357>Presidential Palace- Office</string>
-	<string id=167 seek=3385>Dr. Odine`s Laboratory- Lobby</string>
-	<string id=168 seek=3415>Dr. Odine`s Laboratory- Lab</string>
-	<string id=169 seek=3443>Deleted</string>
-	<string id=170 seek=3451>0xE32</string>
-	<string id=171 seek=3454>0xE32- Concourse</string>
-	<string id=172 seek=3468>0xE32- Deep Freeze</string>
-	<string id=173 seek=3484>0xE21 Sorceress Memorial</string>
-	<string id=174 seek=3506>Sorceress Memorial- Entrance</string>
-	<string id=175 seek=3535>Sorceress Memorial- Pod</string>
-	<string id=176 seek=3559>Sorceress Memorial- Ctrl Room</string>
-	<string id=177 seek=3589>Tears` Point</string>
-	<string id=178 seek=3602>Lunatic Pandora Laboratory</string>
-	<string id=179 seek=3629>Emergency Landing Zone</string>
-	<string id=180 seek=3652>Spaceship Landing Zone</string>
-	<string id=181 seek=3675>Lunatic Pandora</string>
-	<string id=182 seek=3691>0xE26- Excavation Site</string>
-	<string id=183 seek=3711>Edea`s House</string>
-	<string id=184 seek=3724>Edea`s House- Playroom</string>
-	<string id=185 seek=3747>Edea`s House- Bedroom</string>
-	<string id=186 seek=3769>Edea`s House- Backyard</string>
-	<string id=187 seek=3792>Edea`s House- Oceanside</string>
-	<string id=188 seek=3816>Edea`s House- Flower Field</string>
-	<string id=189 seek=3843>0xE26 Ruins</string>
-	<string id=190 seek=3852>0xE25 0xE3E- Front Gate</string>
-	<string id=191 seek=3870>T-0xE3E- Cemetery</string>
-	<string id=192 seek=3885>T-0xE3E- Garage</string>
-	<string id=193 seek=3898>T-0xE3E- Festival Stage</string>
-	<string id=194 seek=3919>T-0xE3E- Classroom</string>
-	<string id=195 seek=3935>T-0xE3E- Athletic Ground</string>
-	<string id=196 seek=3957>Mystery Dome</string>
-	<string id=197 seek=3970>0xE2C- Desert Village</string>
-	<string id=198 seek=3989>0xE2C- Elevator</string>
-	<string id=199 seek=4002>0xE2C- Village</string>
-	<string id=200 seek=4014>0xE2C- Residence</string>
-	<string id=201 seek=4028>0xE2C- Residence</string>
-	<string id=202 seek=4042>0xE2C- Residence</string>
-	<string id=203 seek=4056>0xE2C- Hotel</string>
-	<string id=204 seek=4066>0xE25 Canyon</string>
-	<string id=205 seek=4076>White SeeD Ship</string>
-	<string id=206 seek=4092>White SeeD Ship</string>
-	<string id=207 seek=4108>White SeeD Ship- Cabin</string>
-	<string id=208 seek=4131>Ragnarok- Cockpit</string>
-	<string id=209 seek=4149>Ragnarok- Passenger Seat</string>
-	<string id=210 seek=4174>Ragnarok- Aisle</string>
-	<string id=211 seek=4190>Ragnarok- Hangar</string>
-	<string id=212 seek=4207>Ragnarok- Entrance</string>
-	<string id=213 seek=4226>Ragnarok- Air Room</string>
-	<string id=214 seek=4245>Ragnarok- Space Hatch</string>
-	<string id=215 seek=4267>Deep Sea Research Center</string>
-	<string id=216 seek=4292>Deep Sea Research Center- Lb</string>
-	<string id=217 seek=4321>Deep Sea Research Center- Lv</string>
-	<string id=218 seek=4350>Deep Sea Deposit</string>
-	<string id=219 seek=4367>0xE2B- Control Room</string>
-	<string id=220 seek=4384>0xE2B- Medical Room</string>
-	<string id=221 seek=4401>0xE2B- Pod</string>
-	<string id=222 seek=4409>0xE2B- Dock</string>
-	<string id=223 seek=4418>0xE2B- Passageway</string>
-	<string id=224 seek=4433>0xE2B- Locker</string>
-	<string id=225 seek=4444>0xE2B- Residential Zone</string>
-	<string id=226 seek=4465>Outer Space</string>
-	<string id=227 seek=4477>Chocobo Forest</string>
-	<string id=228 seek=4492>Wilderness</string>
-	<string id=229 seek=4503>0xE3D- Hall</string>
-	<string id=230 seek=4512>0xE3D- Grand Hall</string>
-	<string id=231 seek=4527>0xE3D- Terrace</string>
-	<string id=232 seek=4539>0xE3D- Wine Cellar</string>
-	<string id=233 seek=4555>0xE3D- Passageway</string>
-	<string id=234 seek=4570>0xE3D- Elevator Hall</string>
-	<string id=235 seek=4588>0xE3D- Stairway Hall</string>
-	<string id=236 seek=4606>0xE3D- Treasure Rm</string>
-	<string id=237 seek=4622>0xE3D- Storage Room</string>
-	<string id=238 seek=4639>0xE3D- Art Gallery</string>
-	<string id=239 seek=4655>0xE3D- Flood Gate</string>
-	<string id=240 seek=4670>0xE3D- Armory</string>
-	<string id=241 seek=4681>0xE3D- Prison Cell</string>
-	<string id=242 seek=4697>0xE3D- Waterway</string>
-	<string id=243 seek=4710>0xE3D- Courtyard</string>
-	<string id=244 seek=4724>0xE3D- Chapel</string>
-	<string id=245 seek=4735>0xE3D- Clock Tower</string>
-	<string id=246 seek=4751>0xE3D- Master Room</string>
-	<string id=247 seek=4767>???</string>
-	<string id=248 seek=4771>0xE3D</string>
-	<string id=249 seek=4774>Commencement Room</string>
-	<string id=250 seek=4792>Queen</string>
+<file id="0" seek="0" length="4294967295">
+	<string id="0" seek="504">???</string>
+	<string id="1" seek="508">0xE22- Alcauld Plains</string>
+	<string id="2" seek="527">0xE22- Gaulg Mountains</string>
+	<string id="3" seek="547">0xE22- Rinaul Coast</string>
+	<string id="4" seek="564">0xE22- Raha Cape</string>
+	<string id="5" seek="578">0xE24- Roshfall Forest</string>
+	<string id="6" seek="598">0xE24- Mandy Beach</string>
+	<string id="7" seek="614">0xE24- Obel Lake</string>
+	<string id="8" seek="628">0xE24- Lanker Plains</string>
+	<string id="9" seek="646">0xE24- Nanchucket Island</string>
+	<string id="10" seek="668">0xE24- Yaulny Canyon</string>
+	<string id="11" seek="686">0xE23- Hasberry Plains</string>
+	<string id="12" seek="706">0xE23- Holy Glory Cape</string>
+	<string id="13" seek="726">0xE23- Long Horn Island</string>
+	<string id="14" seek="747">0xE23- Malgo Peninsula</string>
+	<string id="15" seek="767">0xE20- Monterosa Plateau</string>
+	<string id="16" seek="789">0xE20- Lallapalooza Canyon</string>
+	<string id="17" seek="813">0xE24- Shenand Hill</string>
+	<string id="18" seek="830">0xE20- Gotland Peninsula</string>
+	<string id="19" seek="852">Island Closest to Hell</string>
+	<string id="20" seek="875">Great Plains of 0xE20</string>
+	<string id="21" seek="894">0xE20- Wilburn Hill</string>
+	<string id="22" seek="911">0xE20- Rem Archipelago</string>
+	<string id="23" seek="931">0xE20- Dingo Desert</string>
+	<string id="24" seek="948">Winhill- Winhill Bluffs</string>
+	<string id="25" seek="972">Winhill- Humphrey Archipelago</string>
+	<string id="26" seek="1002">0xE25- Winter Island</string>
+	<string id="27" seek="1020">0xE25- Sorbald Snowfield</string>
+	<string id="28" seek="1042">0xE25- Eldbeak Peninsula</string>
+	<string id="29" seek="1064">               </string>
+	<string id="30" seek="1080">0xE25- Hawkwind Plains</string>
+	<string id="31" seek="1100">0xE25- Albatross Archipelago</string>
+	<string id="32" seek="1126">0xE25- Bika Snowfield</string>
+	<string id="33" seek="1145">0xE25- Thor Peninsula</string>
+	<string id="34" seek="1164">               </string>
+	<string id="35" seek="1180">0xE25- Heath Peninsula</string>
+	<string id="36" seek="1200">0xE25- 0xE25 Crater</string>
+	<string id="37" seek="1214">0xE25- Vienne Mountains</string>
+	<string id="38" seek="1235">0xE21- Mordred Plains</string>
+	<string id="39" seek="1254">0xE21- Nortes Mountains</string>
+	<string id="40" seek="1275">0xE21- Fulcura Archipelago</string>
+	<string id="41" seek="1299">0xE21- Grandidi Forest</string>
+	<string id="42" seek="1319">0xE21- Millefeuille Archipelago</string>
+	<string id="43" seek="1348">Great Plains of 0xE21</string>
+	<string id="44" seek="1367">0xE21 City</string>
+	<string id="45" seek="1375">0xE21- Great Salt Lake</string>
+	<string id="46" seek="1395">0xE21- West Coast</string>
+	<string id="47" seek="1410">0xE21- Sollet Mountains</string>
+	<string id="48" seek="1431">0xE21- Abadan Plains</string>
+	<string id="49" seek="1449">0xE21- Minde Island</string>
+	<string id="50" seek="1466">0xE21- Kashkabald Desert</string>
+	<string id="51" seek="1488">Island Closest to Heaven</string>
+	<string id="52" seek="1513">0xE21- Talle Mountains</string>
+	<string id="53" seek="1533">0xE21- Shalmal Peninsula</string>
+	<string id="54" seek="1555">0xE26- Lolestern Plains</string>
+	<string id="55" seek="1576">0xE26- Almaj Mountains</string>
+	<string id="56" seek="1596">0xE26- Lenown Plains</string>
+	<string id="57" seek="1614">0xE26- Cape of Good Hope</string>
+	<string id="58" seek="1636">0xE26- Yorn Mountains</string>
+	<string id="59" seek="1655">0xE21- Cactuar Island</string>
+	<string id="60" seek="1674">0xE26- Serengetti Plains</string>
+	<string id="61" seek="1696">0xE26- Nectar Peninsula</string>
+	<string id="62" seek="1717">0xE26- 0xE26 Crater</string>
+	<string id="63" seek="1731">0xE26- Poccarahi Island</string>
+	<string id="64" seek="1752">B-0xE3E- Library</string>
+	<string id="65" seek="1766">B-0xE3E- Front Gate</string>
+	<string id="66" seek="1783">B-0xE3E- Classroom</string>
+	<string id="67" seek="1799">B-0xE3E- Cafeteria</string>
+	<string id="68" seek="1815">B-0xE3E- MD Level</string>
+	<string id="69" seek="1830">B-0xE3E- 2F Hallway</string>
+	<string id="70" seek="1847">B-0xE3E- Hall</string>
+	<string id="71" seek="1858">B-0xE3E- Infirmary</string>
+	<string id="72" seek="1874">B-0xE3E- Dormitory Double</string>
+	<string id="73" seek="1897">B-0xE3E- Dormitory Single</string>
+	<string id="74" seek="1920">B-0xE3E- Headmaster`s Office</string>
+	<string id="75" seek="1946">B-0xE3E- Parking Lot</string>
+	<string id="76" seek="1964">B-0xE3E- Ballroom</string>
+	<string id="77" seek="1979">B-0xE3E- Quad</string>
+	<string id="78" seek="1990">B-0xE3E- Training Center</string>
+	<string id="79" seek="2012">B-0xE3E- Secret Area</string>
+	<string id="80" seek="2030">B-0xE3E- Hallway</string>
+	<string id="81" seek="2044">B-0xE3E- Master Room</string>
+	<string id="82" seek="2062">B-0xE3E- Deck</string>
+	<string id="83" seek="2073">0xE22- The Dincht`s</string>
+	<string id="84" seek="2090">0xE22 Hotel</string>
+	<string id="85" seek="2099">0xE22- Town Square</string>
+	<string id="86" seek="2115">0xE22- Station Yard</string>
+	<string id="87" seek="2132">0xE22 Harbor</string>
+	<string id="88" seek="2142">0xE22- Residence</string>
+	<string id="89" seek="2156">Train</string>
+	<string id="90" seek="2162">Car</string>
+	<string id="91" seek="2166">Inside Ship</string>
+	<string id="92" seek="2178">Fire Cavern</string>
+	<string id="93" seek="2190">0xE23- Town Square</string>
+	<string id="94" seek="2206">0xE23- Lapin Beach</string>
+	<string id="95" seek="2222">0xE23 Harbor</string>
+	<string id="96" seek="2232">0xE23 Pub</string>
+	<string id="97" seek="2239">0xE23 Hotel</string>
+	<string id="98" seek="2248">0xE23- Residence</string>
+	<string id="99" seek="2262">0xE23- Comm Tower</string>
+	<string id="100" seek="2277">0xE23- Mountain Hideout</string>
+	<string id="101" seek="2298">0xE24- City Square</string>
+	<string id="102" seek="2314">0xE24 TV Station</string>
+	<string id="103" seek="2328">0xE24- Forest Owls` Base</string>
+	<string id="104" seek="2350">0xE24 Pub</string>
+	<string id="105" seek="2357">0xE24 Hotel</string>
+	<string id="106" seek="2366">0xE24- Train</string>
+	<string id="107" seek="2376">0xE24- Residence</string>
+	<string id="108" seek="2390">0xE24- TV Screen</string>
+	<string id="109" seek="2404">0xE24- Editorial Department</string>
+	<string id="110" seek="2429">0xE24 Forest</string>
+	<string id="111" seek="2439">0xE20 0xE3E- Front Gate</string>
+	<string id="112" seek="2457">G-0xE3E- Station</string>
+	<string id="113" seek="2471">G-0xE3E- Hall</string>
+	<string id="114" seek="2482">G-0xE3E- Hallway</string>
+	<string id="115" seek="2496">G-0xE3E- Reception Room</string>
+	<string id="116" seek="2517">G-0xE3E- Classroom</string>
+	<string id="117" seek="2533">G-0xE3E- Clubroom</string>
+	<string id="118" seek="2548">G-0xE3E- Dormitory</string>
+	<string id="119" seek="2564">G-0xE3E- Elevator Hall</string>
+	<string id="120" seek="2584">G-0xE3E- Master Room</string>
+	<string id="121" seek="2602">G-0xE3E- Auditorium</string>
+	<string id="122" seek="2619">G-0xE3E- Athletic Track</string>
+	<string id="123" seek="2640">G-0xE3E- Stand</string>
+	<string id="124" seek="2652">G-0xE3E- Back Entrance</string>
+	<string id="125" seek="2672">G-0xE3E- Gymnasium</string>
+	<string id="126" seek="2688">0xE3F- Presidential Residence</string>
+	<string id="127" seek="2715">0xE2D- Caraway`s Mansion</string>
+	<string id="128" seek="2737">0xE2D- Station Yard</string>
+	<string id="129" seek="2754">0xE2D- City Square</string>
+	<string id="130" seek="2770">0xE2D- Hotel</string>
+	<string id="131" seek="2780">0xE2D- Club</string>
+	<string id="132" seek="2789">0xE2D- Gateway</string>
+	<string id="133" seek="2801">0xE2D- Parade</string>
+	<string id="134" seek="2812">0xE2D- Sewer</string>
+	<string id="135" seek="2822">0xE20 D-District Prison</string>
+	<string id="136" seek="2843">Desert</string>
+	<string id="137" seek="2850">0xE20 Missile Base</string>
+	<string id="138" seek="2866">Winhill Village</string>
+	<string id="139" seek="2882">Winhill Pub</string>
+	<string id="140" seek="2894">Winhill- Vacant House</string>
+	<string id="141" seek="2916">Winhill- Mansion</string>
+	<string id="142" seek="2933">Winhill- Residence</string>
+	<string id="143" seek="2952">Winhill- Hotel</string>
+	<string id="144" seek="2967">Winhill- Car</string>
+	<string id="145" seek="2980">Tomb of the Unknown King</string>
+	<string id="146" seek="3005">0xE27</string>
+	<string id="147" seek="3008">FH- Residential Area</string>
+	<string id="148" seek="3029">FH- Sun Panel</string>
+	<string id="149" seek="3043">FH- Mayor`s Residence</string>
+	<string id="150" seek="3065">FH- Factory</string>
+	<string id="151" seek="3077">FH- Festival Grounds</string>
+	<string id="152" seek="3098">FH- Hotel</string>
+	<string id="153" seek="3108">FH- Residence</string>
+	<string id="154" seek="3122">FH- Station Yard</string>
+	<string id="155" seek="3139">Horizon Bridge</string>
+	<string id="156" seek="3154">Seaside Station</string>
+	<string id="157" seek="3170">Great Salt Lake</string>
+	<string id="158" seek="3186">Mystery Building</string>
+	<string id="159" seek="3203">0xE21- City</string>
+	<string id="160" seek="3212">0xE21- Odine`s Laboratory</string>
+	<string id="161" seek="3235">0xE21- Airstation</string>
+	<string id="162" seek="3250">Lunatic Pandora Approaching</string>
+	<string id="163" seek="3278">0xE21- Presidential Palace</string>
+	<string id="164" seek="3302">Presidential Palace- Hall</string>
+	<string id="165" seek="3328">Presidential Palace- Hallway</string>
+	<string id="166" seek="3357">Presidential Palace- Office</string>
+	<string id="167" seek="3385">Dr. Odine`s Laboratory- Lobby</string>
+	<string id="168" seek="3415">Dr. Odine`s Laboratory- Lab</string>
+	<string id="169" seek="3443">Deleted</string>
+	<string id="170" seek="3451">0xE32</string>
+	<string id="171" seek="3454">0xE32- Concourse</string>
+	<string id="172" seek="3468">0xE32- Deep Freeze</string>
+	<string id="173" seek="3484">0xE21 Sorceress Memorial</string>
+	<string id="174" seek="3506">Sorceress Memorial- Entrance</string>
+	<string id="175" seek="3535">Sorceress Memorial- Pod</string>
+	<string id="176" seek="3559">Sorceress Memorial- Ctrl Room</string>
+	<string id="177" seek="3589">Tears` Point</string>
+	<string id="178" seek="3602">Lunatic Pandora Laboratory</string>
+	<string id="179" seek="3629">Emergency Landing Zone</string>
+	<string id="180" seek="3652">Spaceship Landing Zone</string>
+	<string id="181" seek="3675">Lunatic Pandora</string>
+	<string id="182" seek="3691">0xE26- Excavation Site</string>
+	<string id="183" seek="3711">Edea`s House</string>
+	<string id="184" seek="3724">Edea`s House- Playroom</string>
+	<string id="185" seek="3747">Edea`s House- Bedroom</string>
+	<string id="186" seek="3769">Edea`s House- Backyard</string>
+	<string id="187" seek="3792">Edea`s House- Oceanside</string>
+	<string id="188" seek="3816">Edea`s House- Flower Field</string>
+	<string id="189" seek="3843">0xE26 Ruins</string>
+	<string id="190" seek="3852">0xE25 0xE3E- Front Gate</string>
+	<string id="191" seek="3870">T-0xE3E- Cemetery</string>
+	<string id="192" seek="3885">T-0xE3E- Garage</string>
+	<string id="193" seek="3898">T-0xE3E- Festival Stage</string>
+	<string id="194" seek="3919">T-0xE3E- Classroom</string>
+	<string id="195" seek="3935">T-0xE3E- Athletic Ground</string>
+	<string id="196" seek="3957">Mystery Dome</string>
+	<string id="197" seek="3970">0xE2C- Desert Village</string>
+	<string id="198" seek="3989">0xE2C- Elevator</string>
+	<string id="199" seek="4002">0xE2C- Village</string>
+	<string id="200" seek="4014">0xE2C- Residence</string>
+	<string id="201" seek="4028">0xE2C- Residence</string>
+	<string id="202" seek="4042">0xE2C- Residence</string>
+	<string id="203" seek="4056">0xE2C- Hotel</string>
+	<string id="204" seek="4066">0xE25 Canyon</string>
+	<string id="205" seek="4076">White SeeD Ship</string>
+	<string id="206" seek="4092">White SeeD Ship</string>
+	<string id="207" seek="4108">White SeeD Ship- Cabin</string>
+	<string id="208" seek="4131">Ragnarok- Cockpit</string>
+	<string id="209" seek="4149">Ragnarok- Passenger Seat</string>
+	<string id="210" seek="4174">Ragnarok- Aisle</string>
+	<string id="211" seek="4190">Ragnarok- Hangar</string>
+	<string id="212" seek="4207">Ragnarok- Entrance</string>
+	<string id="213" seek="4226">Ragnarok- Air Room</string>
+	<string id="214" seek="4245">Ragnarok- Space Hatch</string>
+	<string id="215" seek="4267">Deep Sea Research Center</string>
+	<string id="216" seek="4292">Deep Sea Research Center- Lb</string>
+	<string id="217" seek="4321">Deep Sea Research Center- Lv</string>
+	<string id="218" seek="4350">Deep Sea Deposit</string>
+	<string id="219" seek="4367">0xE2B- Control Room</string>
+	<string id="220" seek="4384">0xE2B- Medical Room</string>
+	<string id="221" seek="4401">0xE2B- Pod</string>
+	<string id="222" seek="4409">0xE2B- Dock</string>
+	<string id="223" seek="4418">0xE2B- Passageway</string>
+	<string id="224" seek="4433">0xE2B- Locker</string>
+	<string id="225" seek="4444">0xE2B- Residential Zone</string>
+	<string id="226" seek="4465">Outer Space</string>
+	<string id="227" seek="4477">Chocobo Forest</string>
+	<string id="228" seek="4492">Wilderness</string>
+	<string id="229" seek="4503">0xE3D- Hall</string>
+	<string id="230" seek="4512">0xE3D- Grand Hall</string>
+	<string id="231" seek="4527">0xE3D- Terrace</string>
+	<string id="232" seek="4539">0xE3D- Wine Cellar</string>
+	<string id="233" seek="4555">0xE3D- Passageway</string>
+	<string id="234" seek="4570">0xE3D- Elevator Hall</string>
+	<string id="235" seek="4588">0xE3D- Stairway Hall</string>
+	<string id="236" seek="4606">0xE3D- Treasure Rm</string>
+	<string id="237" seek="4622">0xE3D- Storage Room</string>
+	<string id="238" seek="4639">0xE3D- Art Gallery</string>
+	<string id="239" seek="4655">0xE3D- Flood Gate</string>
+	<string id="240" seek="4670">0xE3D- Armory</string>
+	<string id="241" seek="4681">0xE3D- Prison Cell</string>
+	<string id="242" seek="4697">0xE3D- Waterway</string>
+	<string id="243" seek="4710">0xE3D- Courtyard</string>
+	<string id="244" seek="4724">0xE3D- Chapel</string>
+	<string id="245" seek="4735">0xE3D- Clock Tower</string>
+	<string id="246" seek="4751">0xE3D- Master Room</string>
+	<string id="247" seek="4767">???</string>
+	<string id="248" seek="4771">0xE3D</string>
+	<string id="249" seek="4774">Commencement Room</string>
+	<string id="250" seek="4792">Queen</string>
 </file>
