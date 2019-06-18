@@ -1,9 +1,8 @@
 ﻿using System;
-using FF8;
 
 namespace FF8.DirectX
 {
-#if WINDOWS || LINUX
+#if WINDOWS
     /// <summary>
     /// The main class.
     /// </summary>

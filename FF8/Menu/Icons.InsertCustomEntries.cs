@@ -4,6 +4,10 @@ namespace FF8
 {
     public partial class Icons
     {
+        /// <summary>
+        /// Add Manual hardcoded entries / settings here.
+        /// </summary>
+        /// <remarks>Maybe one day we can export these to an xml file and read it in on launch.</remarks>
         protected override void InsertCustomEntries()
         {
             Entry BG = new Entry
@@ -252,6 +256,78 @@ namespace FF8
             Entries[ID.MAGIC_PG11] = new EntryGroup(Entries[ID.MAGIC][0], P_, _1, __1);
             Entries[ID.MAGIC_PG12] = new EntryGroup(Entries[ID.MAGIC][0], P_, _1, __2);
             Entries[ID.MAGIC_PG13] = new EntryGroup(Entries[ID.MAGIC][0], P_, _1, __3);
+
+
+            //18 pages for 198 Items
+            P_ = Entries[ID.Size_08x08_P_][0].Clone();
+            P_.Offset.X += Entries[ID.ITEM][0].Width + 8;
+            P_.CustomPalette = 2;
+            _1 = Entries[ID.Num_8x8_1_1][0].Clone();
+            _1.Offset.X += P_.Offset.X + P_.Width + 2;
+            _1.CustomPalette = 7;
+            _2 = Entries[ID.Num_8x8_1_2][0].Clone();
+            _2.Offset.X += P_.Offset.X + P_.Width + 2;
+            _2.CustomPalette = 7;
+            _3 = Entries[ID.Num_8x8_1_3][0].Clone();
+            _3.Offset.X += P_.Offset.X + P_.Width + 2;
+            _3.CustomPalette = 7;
+            _4 = Entries[ID.Num_8x8_1_4][0].Clone();
+            _4.Offset.X += P_.Offset.X + P_.Width + 2;
+            _4.CustomPalette = 7;
+            _5 = Entries[ID.Num_8x8_1_5][0].Clone();
+            _5.Offset.X += P_.Offset.X + P_.Width + 2;
+            _5.CustomPalette = 7;
+            _6 = Entries[ID.Num_8x8_1_6][0].Clone();
+            _6.Offset.X += P_.Offset.X + P_.Width + 2;
+            _6.CustomPalette = 7;
+            _7 = Entries[ID.Num_8x8_1_7][0].Clone();
+            _7.Offset.X += P_.Offset.X + P_.Width + 2;
+            _7.CustomPalette = 7;
+            _8 = Entries[ID.Num_8x8_1_8][0].Clone();
+            _8.Offset.X += P_.Offset.X + P_.Width + 2;
+            _8.CustomPalette = 7;
+            _9 = Entries[ID.Num_8x8_1_9][0].Clone();
+            _9.Offset.X += P_.Offset.X + P_.Width + 2;
+            _9.CustomPalette = 7;
+            __0 = Entries[ID.Num_8x8_1_0][0].Clone();
+            __0.Offset.X += P_.Offset.X + P_.Width + 2 + _1.Width;
+            __0.CustomPalette = 7;
+            __1 = _1.Clone();
+            __1.Offset.X = __0.Offset.X;
+            __2 = _2.Clone();
+            __2.Offset.X = __0.Offset.X;
+            __3 = _3.Clone();
+            __3.Offset.X = __0.Offset.X;
+            Entry __4 = _4.Clone();
+            __4.Offset.X = __0.Offset.X;
+            Entry __5 = _5.Clone();
+            __5.Offset.X = __0.Offset.X;
+            Entry __6 = _6.Clone();
+            __6.Offset.X = __0.Offset.X;
+            Entry __7 = _7.Clone();
+            __7.Offset.X = __0.Offset.X;
+            Entry __8 = _8.Clone();
+            __8.Offset.X = __0.Offset.X;
+            Entries[ID.ITEM_PG1] = new EntryGroup(Entries[ID.ITEM][0], P_, _1);
+            Entries[ID.ITEM_PG2] = new EntryGroup(Entries[ID.ITEM][0], P_, _2);
+            Entries[ID.ITEM_PG3] = new EntryGroup(Entries[ID.ITEM][0], P_, _3);
+            Entries[ID.ITEM_PG4] = new EntryGroup(Entries[ID.ITEM][0], P_, _4);
+            Entries[ID.ITEM_PG5] = new EntryGroup(Entries[ID.ITEM][0], P_, _5);
+            Entries[ID.ITEM_PG6] = new EntryGroup(Entries[ID.ITEM][0], P_, _6);
+            Entries[ID.ITEM_PG7] = new EntryGroup(Entries[ID.ITEM][0], P_, _7);
+            Entries[ID.ITEM_PG8] = new EntryGroup(Entries[ID.ITEM][0], P_, _8);
+            Entries[ID.ITEM_PG9] = new EntryGroup(Entries[ID.ITEM][0], P_, _9);
+            Entries[ID.ITEM_PG10] = new EntryGroup(Entries[ID.ITEM][0], P_, _1, __0);
+            Entries[ID.ITEM_PG11] = new EntryGroup(Entries[ID.ITEM][0], P_, _1, __1);
+            Entries[ID.ITEM_PG12] = new EntryGroup(Entries[ID.ITEM][0], P_, _1, __2);
+            Entries[ID.ITEM_PG13] = new EntryGroup(Entries[ID.ITEM][0], P_, _1, __3);
+            Entries[ID.ITEM_PG14] = new EntryGroup(Entries[ID.ITEM][0], P_, _1, __4);
+            Entries[ID.ITEM_PG15] = new EntryGroup(Entries[ID.ITEM][0], P_, _1, __5);
+            Entries[ID.ITEM_PG16] = new EntryGroup(Entries[ID.ITEM][0], P_, _1, __6);
+            Entries[ID.ITEM_PG17] = new EntryGroup(Entries[ID.ITEM][0], P_, _1, __7);
+            Entries[ID.ITEM_PG18] = new EntryGroup(Entries[ID.ITEM][0], P_, _1, __8);
+
+            //revese order of rewind so arrows draw correctly
             Entry _RR_0 = Entries[ID.Rewind_Fast][0].Clone();
             Entry _RR_1 = Entries[ID.Rewind_Fast][1].Clone();
             Entries[ID.Rewind_Fast] = new EntryGroup(_RR_1, _RR_0);
