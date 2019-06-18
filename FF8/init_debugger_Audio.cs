@@ -31,18 +31,6 @@ namespace FF8
         private static CInstrument[] instruments;
 #endif
 
-        private static byte[] getBytes(object aux)
-        {
-            int length = Marshal.SizeOf(aux);
-            IntPtr ptr = Marshal.AllocHGlobal(length);
-            byte[] myBuffer = new byte[length];
-
-            Marshal.StructureToPtr(aux, ptr, true);
-            Marshal.Copy(ptr, myBuffer, 0, length);
-            Marshal.FreeHGlobal(ptr);
-
-            return myBuffer;
-        }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         private struct SoundEntry
@@ -65,15 +53,15 @@ namespace FF8
                 if (HeaderData == null)
                 {
                     HeaderData = new byte[output_HeaderSize + 28];
-                    using (MemoryStream ms = new MemoryStream(HeaderData))
+                    using (BinaryWriter bw = new BinaryWriter(new MemoryStream(HeaderData)))
                     {
-                        ms.Write(System.Text.Encoding.ASCII.GetBytes("RIFF"), 0, 4);
-                        ms.Write(getBytes(output_TotalSize), 0, 4);
-                        ms.Write(System.Text.Encoding.ASCII.GetBytes("WAVEfmt "), 0, 8);
-                        ms.Write(getBytes(output_HeaderSize), 0, 4);
-                        ms.Write(br.ReadBytes((int)output_HeaderSize), 0, (int)output_HeaderSize);
-                        ms.Write(System.Text.Encoding.ASCII.GetBytes("data"), 0, 4);
-                        ms.Write(getBytes(output_DataSize), 0, 4);
+                        bw.Write(System.Text.Encoding.ASCII.GetBytes("RIFF"));
+                        bw.Write(output_TotalSize);
+                        bw.Write(System.Text.Encoding.ASCII.GetBytes("WAVEfmt "));
+                        bw.Write(output_HeaderSize);
+                        bw.Write(br.ReadBytes((int)output_HeaderSize));
+                        bw.Write(System.Text.Encoding.ASCII.GetBytes("data"));
+                        bw.Write(output_DataSize);
                     }
                 }
             }

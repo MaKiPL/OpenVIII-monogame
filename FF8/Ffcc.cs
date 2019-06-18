@@ -81,19 +81,6 @@
         /// https://stackoverflow.com/questions/24758386/intptr-to-callback-function probably could
         /// be wrote better theres alot of hoops to jump threw
         /// </remarks>
-        //public Ffcc(byte[] data, int length, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.PROCESS_ALL, int loopstart = -1)
-        //{
-        //LoadFromRAM(data, length);
-        //Init(null, mediatype, mode, loopstart);
-        //}
-
-        //public Ffcc(Buffer_Data* buffer_Data, string datafilename, AVMediaType mediatype, FfccMode mode, int loopstart = -1)
-        //{
-        //    DataFileName = datafilename;
-        //    LoadFromRAM(buffer_Data);
-        //    Init(null, mediatype, mode, loopstart);
-        //}
-
         public Ffcc(Buffer_Data buffer_Data, byte[] headerData, string datafilename, int loopstart = -1)
         {
             fixed (byte* tmp = &headerData[0])
