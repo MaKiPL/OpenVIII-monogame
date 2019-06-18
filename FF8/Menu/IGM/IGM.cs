@@ -13,7 +13,7 @@ namespace FF8
 
             private Items choSideBar;
             private int _choChar;
-            protected new Mode mode=0;
+            protected Mode mode=0;
 
             public int choChar
             {
@@ -100,7 +100,7 @@ namespace FF8
                 NextLEVEL
             }
 
-            protected new enum Mode
+            protected enum Mode
             {
                 ChooseItem,
                 ChooseChar,
