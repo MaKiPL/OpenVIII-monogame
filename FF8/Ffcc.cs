@@ -21,6 +21,7 @@
     /// </remarks>
     public unsafe class Ffcc : IDisposable
     {
+
         #region Fields
 
         /// <summary>
@@ -41,21 +42,24 @@
         private const int NextAsyncSleep = 10;
 
         private readonly AVDictionary* _dict;
-        private avio_alloc_context_read_packet rf;
         private AVIOContext* _avio_ctx;
         private byte* _avio_ctx_buffer;
         private int _avio_ctx_buffer_size;
         private byte[] _convertedData;
-
         //private byte* _convertedData;
         private MemoryStream _decodedMemoryStream;
 
         private bool _frameSkip = true;
-
         //private IntPtr _intPtr;
         private int _loopstart;
 
-        public static string DataFileName;
+        private CancellationToken cancellationToken;
+        private avio_alloc_context_read_packet rf;
+        private CancellationTokenSource sourceToken;
+
+        private bool stopped = false;
+
+        private Task task;
 
         #endregion Fields
 
@@ -191,6 +195,7 @@
 
         #region Properties
 
+        public static string DataFileName { get; set; }
         /// <summary>
         /// Are you ahead of target frame
         /// </summary>
@@ -428,136 +433,9 @@
         #region Methods
 
         /// <summary>
-        /// Flush the Decoder context and packet
-        /// </summary>
-        /// <param name="avctx">Decoder Codec Context</param>
-        /// <param name="avpkt">Decoder Packet</param>
-        /// <returns>0 on success, less than 0 on error</returns>
-        public static int DecodeFlush(ref AVCodecContext* avctx, ref AVPacket avpkt)
-        {
-            avpkt.data = null;
-            avpkt.size = 0;
-
-            fixed (AVPacket* tmpPacket = &avpkt)
-            {
-                return ffmpeg.avcodec_send_packet(avctx, tmpPacket);
-            }
-        }
-
-        /// <summary>
-        /// Decode the next frame.
-        /// </summary>
-        /// <param name="frame">Current Decoded Frame</param>
-        /// <returns>false if EOF, or true if grabbed frame</returns>
-        public bool Decode(out AVFrame frame)
-        {
-            do
-            {
-                //need this extra receive frame for when decoding audio with >1 frame per packet
-                Return = ffmpeg.avcodec_receive_frame(Decoder.CodecContext, Decoder.Frame);
-                if (Return == ffmpeg.AVERROR(ffmpeg.EAGAIN))
-                {
-                    do
-                    {
-                        do
-                        {
-                            //make sure packet is unref before getting a new one.
-                            ffmpeg.av_packet_unref(Decoder.Packet);
-                            Return = ffmpeg.av_read_frame(Decoder.Format, Decoder.Packet);
-                            if (Return == ffmpeg.AVERROR_EOF)
-                            {
-                                goto EOF;
-                            }
-                            else
-                            {
-                                CheckReturn();
-                            }
-                        }
-                        //check for correct stream.
-                        while (Decoder.Packet->stream_index != Decoder.StreamIndex);
-                        Return = ffmpeg.avcodec_send_packet(Decoder.CodecContext, Decoder.Packet);
-                        ffmpeg.av_packet_unref(Decoder.Packet);
-                        CheckReturn();
-                        Return = ffmpeg.avcodec_receive_frame(Decoder.CodecContext, Decoder.Frame);
-                    }
-                    while (Return == ffmpeg.AVERROR(ffmpeg.EAGAIN));
-                    CheckReturn();
-                }
-                else if (Return == ffmpeg.AVERROR_EOF)
-                {
-                    goto EOF;
-                }
-                else
-                {
-                    CheckReturn();
-                }
-            }
-            //check for frameskip, if enabled check if behind.
-            while (FrameSkip && Behind);
-            frame = *Decoder.Frame;
-            return true;
-
-//end of file, check for loop and end.
-EOF:
-            Loop();
-            frame = *Decoder.Frame;
-            return false;
-        }
-
-        private Task task;
-
-        /// <summary>
         /// Dispose of all leaky varibles.
         /// </summary>
         public void Dispose() => Dispose(true);
-
-        /// <summary>
-        /// Same as Play but with a thread. Thread is terminated on Stop() or Dispose().
-        /// </summary>
-        public void PlayInTask(float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f)
-        {
-            if (sourceToken == null)
-                sourceToken = new CancellationTokenSource();
-            if (cancellationToken == null)
-                cancellationToken = sourceToken.Token;
-            Play(volume, pitch, pan);
-            task = new Task(NextinTask);
-            task.Start();
-        }
-
-        private CancellationTokenSource sourceToken;
-        private CancellationToken cancellationToken;
-
-        /// <summary>
-        /// For use in threads runs Next till done. To keep audio buffer fed. Or really good timing
-        /// on video frames.
-        /// </summary>
-        private void NextinTask()
-        {
-            try
-            {
-                while (Mode == FfccMode.STATE_MACH && !cancellationToken.IsCancellationRequested && State != FfccState.DONE && !isDisposed)
-                {
-                    lock (Decoder) //make the main thread wait if it accesses this class.
-                    {
-                        while (!isDisposed && !Ahead)
-                        {
-                            if (Next() < 0)
-                                break;
-                        }
-                    }
-                    Thread.Sleep(NextAsyncSleep); //delay checks
-                }
-            }
-            //catch (ThreadAbortException)
-            //{
-            //    disposeAll = true;//stop playing
-            //}
-            finally
-            {
-                Dispose(cancellationToken.IsCancellationRequested); // dispose of everything except audio encase it's still playing.
-            }
-        }
 
         /// <summary>
         /// Attempts to get 1 frame of Video, or refill Audio buffer.
@@ -654,6 +532,25 @@ EOF:
         }
 
         /// <summary>
+        /// Same as Play but with a task. Thread is terminated on Stop() or Dispose().
+        /// </summary>
+        public void PlayInTask(float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f)
+        {
+            if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
+            {
+                if (sourceToken == null)
+                    sourceToken = new CancellationTokenSource();
+                if (cancellationToken == null)
+                    cancellationToken = sourceToken.Token;
+                Play(volume, pitch, pan);
+                task = new Task(NextinTask);
+                task.Start();
+            }
+            else
+                Play(volume, pitch, pan);
+        }
+
+        /// <summary>
         /// Stop playing Sound or Stop the FPS timer for Video , and Dispose of Varibles
         /// </summary>
         public void Stop()
@@ -715,8 +612,6 @@ EOF:
             }
         }
 
-        private bool stopped = false;
-
         protected virtual void Dispose(bool disposing)
         {
             lock (Decoder)
@@ -770,6 +665,23 @@ EOF:
                     isDisposed = true;
                     //GC.Collect(); // donno if this really does much. was trying to make sure the memory i'm watching is what is really there.
                 }
+            }
+        }
+
+        /// <summary>
+        /// Flush the Decoder context and packet
+        /// </summary>
+        /// <param name="avctx">Decoder Codec Context</param>
+        /// <param name="avpkt">Decoder Packet</param>
+        /// <returns>0 on success, less than 0 on error</returns>
+        private static int DecodeFlush(ref AVCodecContext* avctx, ref AVPacket avpkt)
+        {
+            avpkt.data = null;
+            avpkt.size = 0;
+
+            fixed (AVPacket* tmpPacket = &avpkt)
+            {
+                return ffmpeg.avcodec_send_packet(avctx, tmpPacket);
             }
         }
 
@@ -842,6 +754,65 @@ EOF:
             return Return;
         }
 
+        /// <summary>
+        /// Decode the next frame.
+        /// </summary>
+        /// <param name="frame">Current Decoded Frame</param>
+        /// <returns>false if EOF, or true if grabbed frame</returns>
+        private bool Decode(out AVFrame frame)
+        {
+            do
+            {
+                //need this extra receive frame for when decoding audio with >1 frame per packet
+                Return = ffmpeg.avcodec_receive_frame(Decoder.CodecContext, Decoder.Frame);
+                if (Return == ffmpeg.AVERROR(ffmpeg.EAGAIN))
+                {
+                    do
+                    {
+                        do
+                        {
+                            //make sure packet is unref before getting a new one.
+                            ffmpeg.av_packet_unref(Decoder.Packet);
+                            Return = ffmpeg.av_read_frame(Decoder.Format, Decoder.Packet);
+                            if (Return == ffmpeg.AVERROR_EOF)
+                            {
+                                goto EOF;
+                            }
+                            else
+                            {
+                                CheckReturn();
+                            }
+                        }
+                        //check for correct stream.
+                        while (Decoder.Packet->stream_index != Decoder.StreamIndex);
+                        Return = ffmpeg.avcodec_send_packet(Decoder.CodecContext, Decoder.Packet);
+                        ffmpeg.av_packet_unref(Decoder.Packet);
+                        CheckReturn();
+                        Return = ffmpeg.avcodec_receive_frame(Decoder.CodecContext, Decoder.Frame);
+                    }
+                    while (Return == ffmpeg.AVERROR(ffmpeg.EAGAIN));
+                    CheckReturn();
+                }
+                else if (Return == ffmpeg.AVERROR_EOF)
+                {
+                    goto EOF;
+                }
+                else
+                {
+                    CheckReturn();
+                }
+            }
+            //check for frameskip, if enabled check if behind.
+            while (FrameSkip && Behind);
+            frame = *Decoder.Frame;
+            return true;
+
+//end of file, check for loop and end.
+EOF:
+            Loop();
+            frame = *Decoder.Frame;
+            return false;
+        }
         /// <summary>
         /// reads the tags from metadata
         /// </summary>
@@ -919,18 +890,6 @@ EOF:
         }
 
         /// <summary>
-        /// Copies byte[] data to a Pointer. So it can be used with ffmpeg.
-        /// </summary>
-        /// <param name="data">incoming data</param>
-        /// <param name="length">size of data</param>
-        //private void LoadFromRAM(byte[] data, int length)
-        //{
-        //    _intPtr = Marshal.AllocHGlobal(length);
-        //    Marshal.Copy(data, 0, _intPtr, length);
-        //    LoadFromRAM(_intPtr, length);
-        //}
-
-        /// <summary>
         /// Load sound from Memorystream into a SoundEFFect
         /// </summary>
         /// <param name="decodedStream">Memory Stream containing sound data</param>
@@ -951,6 +910,17 @@ EOF:
         }
 
         /// <summary>
+        /// Copies byte[] data to a Pointer. So it can be used with ffmpeg.
+        /// </summary>
+        /// <param name="data">incoming data</param>
+        /// <param name="length">size of data</param>
+        //private void LoadFromRAM(byte[] data, int length)
+        //{
+        //    _intPtr = Marshal.AllocHGlobal(length);
+        //    Marshal.Copy(data, 0, _intPtr, length);
+        //    LoadFromRAM(_intPtr, length);
+        //}
+        /// <summary>
         /// Add sound from byte[] to a DynamicSoundEFFectInstance, it can play while you give it more data.
         /// </summary>
         /// <param name="decodedStream">sound data</param>
@@ -958,7 +928,7 @@ EOF:
         {
             if (length > 0 && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
             {
-                
+
                 if (DynamicSound == null)
                 {
                     //create instance here to set sample_rate and channels dynamicly
@@ -968,11 +938,11 @@ EOF:
                 {
                     DynamicSound.SubmitBuffer(buffer, 0, length);
                 }
-                catch(ArgumentException)
+                catch (ArgumentException)
                 {
                     //got error saying buffer was too small. makes no sense.
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     if (e.GetType().Name == "SharpDXException")
                     {
@@ -983,7 +953,7 @@ EOF:
                     else
                         e.Rethrow();
                 }
-}
+            }
         }
 
         /// <summary>
@@ -1018,6 +988,36 @@ EOF:
             }
         }
 
+        /// <summary>
+        /// For use in threads runs Next till done. To keep audio buffer fed. Or really good timing
+        /// on video frames.
+        /// </summary>
+        private void NextinTask()
+        {
+            try
+            {
+                while (Mode == FfccMode.STATE_MACH && !cancellationToken.IsCancellationRequested && State != FfccState.DONE && !isDisposed)
+                {
+                    lock (Decoder) //make the main thread wait if it accesses this class.
+                    {
+                        while (!isDisposed && !Ahead)
+                        {
+                            if (Next() < 0)
+                                break;
+                        }
+                    }
+                    Thread.Sleep(NextAsyncSleep); //delay checks
+                }
+            }
+            //catch (ThreadAbortException)
+            //{
+            //    disposeAll = true;//stop playing
+            //}
+            finally
+            {
+                Dispose(cancellationToken.IsCancellationRequested); // dispose of everything except audio encase it's still playing.
+            }
+        }
         /// <summary>
         /// Opens filename and assigns FormatContext.
         /// </summary>
@@ -1405,35 +1405,30 @@ EOF:
         /// </summary>
         public struct Buffer_Data
         {
+
             #region Fields
 
+            public UInt32 DataSeekLoc;
+            public UInt32 DataSize;
             public IntPtr Header;
             public UInt32 HeaderSize;
+
+            #endregion Fields
+
+            #region Methods
+
+            public unsafe int Read(byte* buf, int buf_size)
+            {
+                int ret;
+                if ((ret = ReadHeader(buf, buf_size)) != ffmpeg.AVERROR_EOF)
+                    return ret;
+                else
+                    return ReadData(buf, buf_size);
+            }
 
             public void SetHeader(IntPtr value) => Header = value;
 
             public void SetHeader(byte* value) => Header = (IntPtr)value;
-
-            public UInt32 DataSeekLoc;
-            public UInt32 DataSize;
-
-            private unsafe int ReadHeader(byte* buf, int buf_size)
-            {
-                buf_size = FFMIN(buf_size, (int)HeaderSize);
-
-                if (buf_size == 0)
-                {
-                    return ffmpeg.AVERROR_EOF;
-                }
-
-                // copy public buffer data to buf
-                Buffer.MemoryCopy((void*)Header, (void*)buf, buf_size, buf_size);
-                Header += buf_size;
-                HeaderSize -= (uint)buf_size;
-
-                return buf_size;
-            }
-
             private unsafe int ReadData(byte* buf, int buf_size)
             {
                 buf_size = FFMIN(buf_size, (int)DataSize);
@@ -1460,14 +1455,24 @@ EOF:
                 }
             }
 
-            public unsafe int Read(byte* buf, int buf_size)
+            private unsafe int ReadHeader(byte* buf, int buf_size)
             {
-                int ret;
-                if ((ret = ReadHeader(buf, buf_size)) != ffmpeg.AVERROR_EOF)
-                    return ret;
-                else
-                    return ReadData(buf, buf_size);
+                buf_size = FFMIN(buf_size, (int)HeaderSize);
+
+                if (buf_size == 0)
+                {
+                    return ffmpeg.AVERROR_EOF;
+                }
+
+                // copy public buffer data to buf
+                Buffer.MemoryCopy((void*)Header, (void*)buf, buf_size, buf_size);
+                Header += buf_size;
+                HeaderSize -= (uint)buf_size;
+
+                return buf_size;
             }
+
+            #endregion Methods
 
             //can't do this because soon as fixed block ends the pointer is no good.
             //private void SetHeader(byte[] value)
@@ -1478,11 +1483,10 @@ EOF:
             //    }
             //}
 
-            #endregion Fields
-
             //< size left in the buffer
         };
 
         #endregion Structs
+
     }
 }
