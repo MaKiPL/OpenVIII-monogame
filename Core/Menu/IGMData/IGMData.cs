@@ -91,8 +91,6 @@ namespace OpenVIII
             protected bool skipsnd = false;
 
             public IGMDataItem CONTAINER { get; protected set; }
-            public IGMData_Group Parent { get; set; }
-
 
             #endregion Fields
 

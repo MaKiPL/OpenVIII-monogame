@@ -10,9 +10,7 @@
             {
                 for (int i = 0; i < d.Length; i++)
                 {
-                    d[i].Parent = this;
                     ITEM[i, 0] = d[i];
-
                 }
             }
             public virtual void ITEMHide(IGMDataItem i, int pos=0)

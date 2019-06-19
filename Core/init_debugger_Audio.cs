@@ -1,6 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+
+#if _WINDOWS && !_X64
+
+#endif
+
 using System.Runtime.InteropServices;
 using NAudio.Vorbis;
 using FFmpeg.AutoGen;
