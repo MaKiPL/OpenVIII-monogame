@@ -14,7 +14,29 @@ namespace OpenVIII
                 Help,
                 Title,
             }
-
+            public enum Mode : byte
+            {
+                /// <summary>
+                /// Select one of the 4 top options to do
+                /// </summary>
+                TopMenu,
+                /// <summary>
+                /// Show Item pool and characters by default, choose an item to use
+                /// </summary>
+                UseItemPool,
+                /// <summary>
+                /// If item is a gf item type show gfs instead of characters, choose an item to use
+                /// </summary>
+                UseItemPoolGFItem,
+                /// <summary>
+                /// Choose a character to use item on
+                /// </summary>
+                UseItemChooseCharacter,
+                /// <summary>
+                /// Choose a GF to use item on.
+                /// </summary>
+                UseItemChooseGF,
+            }
             protected override void Init()
             {
                 Size = new Vector2 { X = 840, Y = 630 };
