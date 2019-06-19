@@ -65,23 +65,15 @@
         /// buffered wave provider used to handle audio samples
         /// </summary>
         /// <see cref="https://markheath.net/post/how-to-record-and-play-audio-at-same"/>
-        private BufferedWaveProvider bufferedWaveProvider;
 
         private CancellationToken cancellationToken;
-
+#if _WINDOWS
+        private BufferedWaveProvider bufferedWaveProvider;
         /// <summary>
         /// Wave out for naudio only works in windows.
         /// </summary>
         /// <see cref="https://markheath.net/post/how-to-record-and-play-audio-at-same"/>
         private DirectSoundOut nAudioOut;
-
-        private avio_alloc_context_read_packet rf;
-        private CancellationTokenSource sourceToken;
-
-        private bool stopped = false;
-
-        private Task task;
-
         /// <summary>
         /// Directsound requires VolumeSampleProvider to change volume.
         /// </summary>
@@ -91,10 +83,18 @@
         /// Required by naudio to pan the sound.
         /// </summary>
         private PanningSampleProvider panningSampleProvider;
+#endif
+        private avio_alloc_context_read_packet rf;
+        private CancellationTokenSource sourceToken;
 
-        #endregion Fields
+        private bool stopped = false;
 
-        #region Constructors
+        private Task task;
+
+
+#endregion Fields
+
+#region Constructors
 
         /// <summary>
         /// Opens filename and init class.
@@ -134,18 +134,18 @@
             }
         }
 
-        #endregion Constructors
+#endregion Constructors
 
-        #region Destructors
+#region Destructors
 
         ~Ffcc()
         {
             Dispose();
         }
 
-        #endregion Destructors
+#endregion Destructors
 
-        #region Enums
+#region Enums
 
         //public FileStream DecodeFileStream { get => _decodeFileStream; set => _decodeFileStream = value; }
         public enum FfccMode
@@ -222,9 +222,9 @@
             PREPARE_SWR
         }
 
-        #endregion Enums
+#endregion Enums
 
-        #region Properties
+#region Properties
 
         public static string DataFileName { get; set; }
 
@@ -244,10 +244,12 @@
                         {
                             return DynamicSound.PendingBufferCount > GoalBufferCount;
                         }
+#if _WINDOWS
                         else if (useNaudio)
                         {
                             return bufferedWaveProvider.BufferedDuration.TotalSeconds > bufferedWaveProvider.BufferDuration.TotalSeconds - 1;
                         }
+#endif
                     }
                     else if (timer.IsRunning)
                     {
@@ -280,10 +282,12 @@
                         {
                             return DynamicSound.PendingBufferCount == GoalBufferCount;
                         }
+#if _WINDOWS
                         else if (useNaudio)
                         {
                             return bufferedWaveProvider.BufferedDuration.TotalSeconds == bufferedWaveProvider.BufferDuration.TotalSeconds - 1;
                         }
+#endif
                         else
                         {
                             die($"{Decoder.CodecContext->sample_rate} is currently unsupported");
@@ -468,9 +472,9 @@
         /// </summary>
         private FfccState State { get; set; }
 
-        #endregion Properties
+#endregion Properties
 
-        #region Methods
+#region Methods
 
         /// <summary>
         /// Dispose of all leaky varibles.
@@ -574,6 +578,7 @@
                         }
                     }
                 }
+#if _WINDOWS
                 else if (bufferedWaveProvider != null && nAudioOut != null)
                 {
                     volumeSampleProvider.Volume = volume;
@@ -583,6 +588,7 @@
                     // like it might do more than we need.
                     nAudioOut.Play();
                 }
+#endif
             }
         }
 
@@ -641,6 +647,7 @@
                     SoundEffect.Dispose();
                 }
             }
+#if _WINDOWS
             else if (bufferedWaveProvider != null && nAudioOut != null)
             {
                 nAudioOut.Stop();
@@ -654,6 +661,7 @@
                     // naudio can't be disposed of if not in original thread.
                 }
             }
+#endif
             if (task != null)
             {
                 sourceToken.Cancel();
@@ -932,6 +940,7 @@ EOF:
 
         private unsafe bool initNaudio()
         {
+#if _WINDOWS
             if (!Extended.IsLinux)
             {
                 bufferedWaveProvider = new BufferedWaveProvider(
@@ -951,6 +960,7 @@ EOF:
                 useNaudio = true;
                 return true;
             }
+#endif
             return false;
         }
 
@@ -1132,6 +1142,7 @@ EOF:
             {
                 Dispose(cancellationToken.IsCancellationRequested); // dispose of everything except audio encase it's still playing.
             }
+#if _WINDOWS
             if (useNaudio)
             {
                 while (nAudioOut.PlaybackState != PlaybackState.Stopped)
@@ -1147,6 +1158,7 @@ EOF:
                     //doesn't like threads...
                 }
             }
+#endif
             return 0;
         }
 
@@ -1355,7 +1367,6 @@ EOF:
                 DecodeFlush(ref Decoder._codecContext, ref *Decoder.Packet); //calling this twice was causing issues.
             }
         }
-
         /// <summary>
         /// </summary>
         /// <param name="sender"></param>
@@ -1363,11 +1374,14 @@ EOF:
         /// <see cref="https://markheath.net/post/how-to-record-and-play-audio-at-same"/>
         private void RecorderOnDataAvailable(object sender, WaveInEventArgs waveInEventArgs)
         {
+
+#if _WINDOWS
             if (bufferedWaveProvider == null)
                 initNaudio();
 
             if (useNaudio)
                 bufferedWaveProvider.AddSamples(waveInEventArgs.Buffer, 0, waveInEventArgs.BytesRecorded);
+#endif
         }
 
         /// <summary>
@@ -1542,25 +1556,25 @@ EOF:
             }
         }
 
-        #endregion Methods
+#endregion Methods
 
-        #region Structs
+#region Structs
 
         /// <summary>
         /// Used only when reading ADPCM data from memory.
         /// </summary>
         public struct Buffer_Data
         {
-            #region Fields
+#region Fields
 
             public UInt32 DataSeekLoc;
             public UInt32 DataSize;
             public IntPtr Header;
             public UInt32 HeaderSize;
 
-            #endregion Fields
+#endregion Fields
 
-            #region Methods
+#region Methods
 
             public unsafe int Read(byte* buf, int buf_size)
             {
@@ -1618,7 +1632,7 @@ EOF:
                 return buf_size;
             }
 
-            #endregion Methods
+#endregion Methods
 
             //can't do this because soon as fixed block ends the pointer is no good.
             //private void SetHeader(byte[] value)
@@ -1632,6 +1646,6 @@ EOF:
             //< size left in the buffer
         };
 
-        #endregion Structs
+#endregion Structs
     }
 }

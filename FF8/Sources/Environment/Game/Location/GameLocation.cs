@@ -4,14 +4,22 @@ namespace FF8
 {
     public sealed class GameLocation
     {
-        public String DataPath { get; }
+        private readonly static GameLocation s_current = GetCurrentLocation();
+
+        public String DataPath { get; private set; }
 
         public GameLocation(String dataPath)
         {
             DataPath = dataPath;
         }
 
-        public static GameLocation Current { get; } = GetCurrentLocation();
+        public static GameLocation Current
+        {
+            get
+            { 
+                return s_current;
+            }
+        }
 
         private static GameLocation GetCurrentLocation()
         {
