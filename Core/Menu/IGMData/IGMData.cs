@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace OpenVIII
@@ -96,26 +97,40 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData(int count, int depth, IGMDataItem container = null, int? cols = null, int? rows = null)
-            {
-                SIZE = new Rectangle[count];
-                ITEM = new IGMDataItem[count, depth];
-                CURSOR = new Point[count];
+            public IGMData(int count=0, int depth=0, IGMDataItem container = null, int? cols = null, int? rows = null)
+            => Init(count,depth,container,cols,rows);
 
-                Count = (byte)count;
-                Depth = (byte)depth;
-                BLANKS = new bool[count];
+            public void Init(int count, int depth, IGMDataItem container = null, int? cols = null, int? rows = null)
+            {
+                if (count <= 0 || depth <= 0)
+                {
+                    if (container == null)
+                    {
+                        Debug.WriteLine($"{this}:: count {count} or depth {depth}, is invalid must be 1 or greater.\n Or a container {container} must be set instead");
+                        return;
+                    }
+                }
+                else
+                {
+                    SIZE = new Rectangle[count];
+                    ITEM = new IGMDataItem[count, depth];
+                    CURSOR = new Point[count];
+
+                    Count = (byte)count;
+                    Depth = (byte)depth;
+                    BLANKS = new bool[count];
+                    Descriptions = new Dictionary<int, FF8String>(count);                
+                    this.cols = cols ?? 1;
+                    this.rows = rows ?? 1;
+                }
                 if (container != null)
+                {
                     CONTAINER = container;
-                CURSOR_SELECT = 0;
-                this.cols = cols ?? 1;
-                this.rows = rows ?? 1;
-                Descriptions = new Dictionary<int, FF8String>(count);
+                }
                 Init();
                 ReInit();
                 Update();
             }
-
             public IGMDataItem this[int pos, int i] { get => ITEM[pos, i]; set => ITEM[pos, i] = value; }
             /// <summary>
             /// Draw all items
@@ -126,7 +141,7 @@ namespace OpenVIII
                 {
                     if (CONTAINER != null)
                         CONTAINER.Draw();
-                    if(!skipdata)
+                    if(!skipdata &&  ITEM != null)
                     foreach (IGMDataItem i in ITEM)
                     {
                         if (i != null)
@@ -337,7 +352,7 @@ namespace OpenVIII
             /// </summary>
             protected virtual void Init()
             {
-                if (SIZE.Length > 0)
+                if (SIZE != null && SIZE.Length > 0)
                 {
                     for (int i = 0; i < SIZE.Length; i++)
                     {
@@ -362,9 +377,9 @@ namespace OpenVIII
                         }
                     }
                 }
-                if (SIZE.Length == 0 || SIZE[0].IsEmpty)
+                if (SIZE == null || SIZE.Length == 0 || SIZE[0].IsEmpty)
                 {
-                    if (CURSOR.Length == 0 || SIZE.Length == 0)
+                    if (CURSOR == null || CURSOR.Length == 0 || SIZE.Length == 0)
                     {
                         CURSOR = new Point[1];
                         SIZE = new Rectangle[1];

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 
 namespace OpenVIII
@@ -14,29 +15,35 @@ namespace OpenVIII
                 Help,
                 Title,
             }
+
             public enum Mode : byte
             {
                 /// <summary>
                 /// Select one of the 4 top options to do
                 /// </summary>
                 TopMenu,
+
                 /// <summary>
                 /// Show Item pool and characters by default, choose an item to use
                 /// </summary>
                 UseItemPool,
+
                 /// <summary>
                 /// If item is a gf item type show gfs instead of characters, choose an item to use
                 /// </summary>
                 UseItemPoolGFItem,
+
                 /// <summary>
                 /// Choose a character to use item on
                 /// </summary>
                 UseItemChooseCharacter,
+
                 /// <summary>
                 /// Choose a GF to use item on.
                 /// </summary>
                 UseItemChooseGF,
             }
+
             protected override void Init()
             {
                 Size = new Vector2 { X = 840, Y = 630 };
@@ -44,7 +51,12 @@ namespace OpenVIII
 
                 Data.Add(SectionName.Help, new IGMData_Container(
                     new IGMDataItem_Box(null, pos: new Rectangle(15, 69, 810, 78), Icons.ID.HELP, options: Box_Options.Middle)));
-                Data.Add(SectionName.TopMenu, new IGMData_TopMenu());
+                Data.Add(SectionName.TopMenu, new IGMData_TopMenu(new Dictionary<FF8String, FF8String>() {
+                            { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 179),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 180)},
+                            { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 183),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 184)},
+                            { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 202),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 203)},
+                            { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 181),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 182)},
+                            }));
                 Data.Add(SectionName.Title, new IGMData_Container(
                     new IGMDataItem_Box(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), pos: new Rectangle(615, 0, 225, 66))));
                 Data.Add(SectionName.UseItemGroup, new IGMData_Group(
@@ -52,58 +64,77 @@ namespace OpenVIII
                     new IGMData_CharacterPool(),
                     new IGMData_Statuses()
                     ));
+                InputsDict = new Dictionary<Mode, Func<bool>>() {
+                {Mode.TopMenu, Data[SectionName.TopMenu].Inputs},
+                {Mode.UseItemPool, ((IGMDataItem_IGMData)((IGMData_Group)Data[SectionName.UseItemGroup]).ITEM[0,0]).Inputs},
+                {Mode.UseItemPoolGFItem, ((IGMDataItem_IGMData)((IGMData_Group)Data[SectionName.UseItemGroup]).ITEM[0,0]).Inputs},
+                {Mode.UseItemChooseCharacter, ((IGMDataItem_IGMData)((IGMData_Group)Data[SectionName.UseItemGroup]).ITEM[0,0]).Inputs},
+                {Mode.UseItemChooseGF,((IGMDataItem_IGMData)((IGMData_Group)Data[SectionName.UseItemGroup]).ITEM[0,0]).Inputs},
+                };
                 base.Init();
             }
 
+            private Mode mode;
 
-            protected override bool Inputs() => false;
+            public Mode GetMode() => mode;
+
+            public void SetMode(Mode value) => mode = value;
+
+            protected Dictionary<Mode, Func<bool>> InputsDict;
+
+            protected override bool Inputs() => InputsDict[GetMode()]();
 
             private class IGMData_TopMenu : IGMData
             {
                 private FF8String[] _helpStr;
+                private int[] widths;
 
-                public IGMData_TopMenu() : base(4, 1, new IGMDataItem_Box(pos: new Rectangle(0, 12, 610, 54)), 4, 1)
+                private IReadOnlyDictionary<FF8String, FF8String> Pairs { get; }
+                public IGMData_TopMenu(IReadOnlyDictionary<FF8String, FF8String> pairs) : base()
                 {
-                }
-
-                public IReadOnlyList<FF8String> HelpStr => _helpStr;
-
-                protected override void Init()
-                {
-                    base.Init();
-                    _helpStr = new FF8String[Count];
-                    for (byte pos = 0; pos < Count; pos++)
+                    Pairs = pairs;
+                    _helpStr = new FF8String[Pairs.Count];
+                    widths = new int[Pairs.Count];
+                    byte pos = 0;
+                    foreach (KeyValuePair<FF8String, FF8String> pair in Pairs)
                     {
-                        FF8String data = null;
-                        switch (pos)
-                        {
-                            case 0:
-                                data = Memory.Strings.Read(Strings.FileID.MNGRP, 2, 179);//Use
-                                _helpStr[pos] = Memory.Strings.Read(Strings.FileID.MNGRP, 2, 180);
-                                break;
+                        _helpStr[pos] = pair.Value;
+                        Rectangle rectangle = Memory.font.RenderBasicText(pair.Key, 0, 0, skipdraw: true);
+                        widths[pos] = rectangle.Width;
+                        if (rectangle.Width > largestwidth) largestwidth = rectangle.Width;
+                        if (rectangle.Height > largestheight) largestheight = rectangle.Height;
+                        totalwidth += rectangle.Width;
 
-                            case 1:
-                                data = Memory.Strings.Read(Strings.FileID.MNGRP, 2, 183);//Rearrange
-                                _helpStr[pos] = Memory.Strings.Read(Strings.FileID.MNGRP, 2, 184);
-                                break;
 
-                            case 2:
-                                data = Memory.Strings.Read(Strings.FileID.MNGRP, 2, 202);//Sort
-                                _helpStr[pos] = Memory.Strings.Read(Strings.FileID.MNGRP, 2, 203);
-                                break;
-
-                            case 3:
-                                data = Memory.Strings.Read(Strings.FileID.MNGRP, 2, 181);//Battle
-                                _helpStr[pos] = Memory.Strings.Read(Strings.FileID.MNGRP, 2, 182);
-                                break;
-                        }
-                        ITEM[pos, 0] = new IGMDataItem_String(data, SIZE[pos]);
+                        avgwidth = totalwidth / ++pos;
+                    }
+                    Init(Pairs.Count, 1, new IGMDataItem_Box(pos: new Rectangle(0, 12, 610, 54)), Pairs.Count, 1);
+                    pos = 0;
+                    foreach (KeyValuePair<FF8String, FF8String> pair in Pairs)
+                    {
+                        ITEM[pos, 0] = new IGMDataItem_String(pair.Key, SIZE[pos]);
+                        pos++;
                     }
                     Cursor_Status |= Cursor_Status.Enabled;
                     Cursor_Status |= Cursor_Status.Horizontal;
                     Cursor_Status |= Cursor_Status.Vertical;
                     Cursor_Status |= Cursor_Status.Blinking;
                 }
+
+                protected override void InitShift(int i, int col, int row)
+                {
+                    SIZE[i].Inflate(0, (SIZE[i].Height - largestheight)/-2);
+                    SIZE[i].X += SIZE[i].Width / 2 - widths[i]/2;
+                    SIZE[i].Width = widths[i];
+                    SIZE[i].Height = largestheight;
+                }
+
+                public IReadOnlyList<FF8String> HelpStr => _helpStr;
+
+                protected int largestwidth { get; private set; }
+                protected int totalwidth { get; private set; }
+                protected int avgwidth { get; private set; }
+                protected int largestheight { get; private set; }
             }
 
             private class IGMData_ItemPool : IGMData_Pool<Saves.Data, byte>
