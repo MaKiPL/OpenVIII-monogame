@@ -109,13 +109,14 @@ Requirements: MonoGame + Visual Studio
 2. ??
 
 PS. Required FFmpeg dlls. (available on Ubuntu Cosmos via `sudo apt-get install ffmpeg`)
-avcodec-58.dll
-avdevice-58.dll
-avfilter-7.dll
-avformat-58.dll
-avutil-56.dll
-postproc-55.dll
-swresample-3.dll
-swscale-5.dll
-
+<br/>
+* avcodec-58.dll
+* avdevice-58.dll
+* avfilter-7.dll
+* avformat-58.dll
+* avutil-56.dll
+* postproc-55.dll
+* swresample-3.dll
+* swscale-5.dll
+<br/>
 I'd like to thanks everyone involved in this project!
