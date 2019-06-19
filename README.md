@@ -60,6 +60,10 @@ Requirements: MonoGame + Visual Studio
 4. If you get "Unable to load DLL 'FreeImage'", Download and install:
 [Visual C++ Redistributable Packages for Visual Studio 2013](https://www.microsoft.com/en-us/download/details.aspx?id=40784)
 
+5. Make sure you add Final Fantasy VIII path to array at `WindowsGameLocationProvider.cs:36`. On Windows the code tries to detect the install path via the registry. If it fails, it'll fall back to the array.
+
+6. That's all. You can now compile the executable.
+
 ## Getting started (Linux/Mono) [Tested on Ubuntu]
 
 1. Make sure your Linux is up to date. Due to FFmpeg dependency we require Ubuntu Cosmos
@@ -99,8 +103,9 @@ Requirements: MonoGame + Visual Studio
 `MonoGame.Framework.DesktopGL.Core`
 
 `MonoGame.Framework.OpenGL`
+9. Make sure you add Final Fantasy VIII path to array at `LinuxGameLocationProvider.cs:18`
 
-9. That's all. You can now compile the executable. Make sure you add path to array at `WindowsGameLocationProvider.cs:36` or `LinuxGameLocationProvider.cs:18`
+10. That's all. You can now compile the executable.
 
 ## Development guidelines
 
