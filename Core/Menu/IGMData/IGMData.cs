@@ -106,7 +106,7 @@ namespace OpenVIII
                 {
                     if (container == null)
                     {
-                        Debug.WriteLine($"{this}:: count {count} or depth {depth}, is invalid must be 1 or greater.\n Or a container {container} must be set instead");
+                        Debug.WriteLine($"{this}:: count {count} or depth {depth}, is invalid must be >= 1, or a container {container} must be set instead, Skipping Init()");
                         return;
                     }
                 }
