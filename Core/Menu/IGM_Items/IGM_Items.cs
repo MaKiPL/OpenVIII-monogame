@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 
 namespace OpenVIII
@@ -14,6 +15,9 @@ namespace OpenVIII
                 Help,
                 Title,
             }
+            public EventHandler<IGMData> ModeChangeHandler;
+
+            public IGMData Mode { get; private set; }
 
             protected override void Init()
             {
@@ -25,16 +29,26 @@ namespace OpenVIII
                 Data.Add(SectionName.TopMenu, new IGMData_TopMenu());
                 Data.Add(SectionName.Title, new IGMData_Container(
                     new IGMDataItem_Box(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), pos: new Rectangle(615, 0, 225, 66))));
-                Data.Add(SectionName.UseItemGroup, new IGMData_Group(
+                Data.Add(SectionName.UseItemGroup, new IGMData_UseItemGroup(
                     new IGMData_ItemPool(),
                     new IGMData_CharacterPool(),
                     new IGMData_Statuses()
                     ));
+                ModeChangeHandler += ModeChangeEvent;
+                ModeChangeHandler?.Invoke(this, Data[SectionName.UseItemGroup]);
                 base.Init();
             }
 
+            private void ModeChangeEvent(object sender, IGMData e)
+            {
+                if(!Mode.Equals(e))
+                    Mode = e;
+            }
 
-            protected override bool Inputs() => false;
+            protected override bool Inputs()
+            {
+                return Mode==null?false:Mode.Inputs();
+            }
 
             private class IGMData_TopMenu : IGMData
             {
@@ -92,6 +106,7 @@ namespace OpenVIII
 
                 private FF8String[] _helpStr;
                 public IReadOnlyList<FF8String> HelpStr => _helpStr;
+                bool EventAdded = false;
 
                 protected override void Init()
                 {
@@ -103,10 +118,15 @@ namespace OpenVIII
                         ITEM[pos, 1] = new IGMDataItem_Int(0, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0), numtype: Icons.NumType.sysFntBig, spaces: 3);
                     }
                 }
-
+                
                 public override void ReInit()
                 {
                     base.ReInit();
+                    if (Parent != null && !EventAdded)
+                    {
+                        ((IGMData_UseItemGroup)Parent).ModeChangeHandler += ModeChangeEvent;
+                        EventAdded = true;
+                    }
                     Source = Memory.State;
                     if (Source != null && Source.Items != null)
                     {
@@ -127,6 +147,21 @@ namespace OpenVIII
                         }
                     }
                 }
+
+                private void ModeChangeEvent(object sender, IGMData e)
+                {
+                    if (InGameMenu_Items.Mode == Parent)
+                    {
+                        if (e == this)
+                        {
+                            Cursor_Status |= Cursor_Status.Enabled;
+                        }
+                        else
+                        {
+                            Cursor_Status ^= Cursor_Status.Enabled;
+                        }
+                    }
+                }
             }
 
             private class IGMData_CharacterPool : IGMData_Pool<Saves.Data, Characters>
@@ -140,6 +175,28 @@ namespace OpenVIII
             {
                 public IGMData_Statuses() : base(1, 1, new IGMDataItem_Box(pos: new Rectangle(420, 510, 420, 120)))
                 {
+                }
+            }
+
+            private class IGMData_UseItemGroup : IGMData_Group
+            {
+                public IGMData_UseItemGroup(params IGMData[] d) : base(d)
+                {
+                    ModeChangeHandler += ModeChangeEvent;
+                    ModeChangeHandler?.Invoke(this, ((IGMDataItem_IGMData)ITEM[0,0]).Data);
+                }
+                public EventHandler<IGMData> ModeChangeHandler;
+
+                public IGMData Mode { get; private set; }
+
+                private void ModeChangeEvent(object sender, IGMData e)
+                {
+                    if (!Mode.Equals(e))
+                        Mode = e;
+                }
+                public override bool Inputs()
+                {
+                    return Mode.Inputs();
                 }
             }
         }
