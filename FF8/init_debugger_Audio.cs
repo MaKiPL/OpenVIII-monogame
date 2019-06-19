@@ -4,18 +4,15 @@ using System.IO;
 
 #if _WINDOWS && !_X64
 
-
 #endif
 
 using System.Runtime.InteropServices;
 using NAudio.Vorbis;
 using FFmpeg.AutoGen;
-using System.Diagnostics;
 using System.Linq;
 
 namespace FF8
 {
-
 #pragma warning disable IDE1006 // Naming Styles
 
     public static class init_debugger_Audio
@@ -460,14 +457,7 @@ namespace FF8
             //{
             //    Sound.Dispose();
             //}
-            for (int i = 0; i < MaxSoundChannels; i++)
-            {
-                if (SoundChannels[i] != null && !SoundChannels[i].isDisposed)
-                {
-                    SoundChannels[i].Dispose();
-                    SoundChannels[i] = null;
-                }
-            }
+            SoundChannels.Where(x => x != null).ForEach(action => action.Dispose());
 
             if (dm_Midi != null)
                 dm_Midi.Dispose();
