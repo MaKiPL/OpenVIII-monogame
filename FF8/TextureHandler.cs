@@ -300,7 +300,7 @@ namespace FF8
                     if (c2 < Cols && Textures[c2,r2] != null) size.X += Textures[c2++, r2].Width;
                 }
                 if (Classic == null && r2 < Rows) oldsize.Y += tex.TextureData.Height;
-                if (r2 < Rows && Textures.LongLength > r2+c2-1 && Textures[0,0] !=null) size.Y += Textures[c2 - 1, r2++].Height;
+                if (r2 < Rows && Textures.LongLength > r2+c2-1 && Textures[c2 - 1, r2] != null) size.Y += Textures[c2 - 1, r2++].Height;
             }
             Size = size;
             if (Classic == null) ClassicSize = oldsize;

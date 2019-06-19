@@ -117,8 +117,8 @@ namespace FF8
         /// <returns>32bit Texture2D</returns>
         /// <remarks>
         /// Some paletts are 256 but the game only uses 16 colors might need to make the restriction
-        /// more lax and allow any size array and only throw errors if the colorkey is greater than size of
-        /// array. Or we could treat any of those bad matches as transparent.
+        /// more lax and allow any size array and only throw errors if the colorkey is greater than
+        /// size of array. Or we could treat any of those bad matches as transparent.
         /// </remarks>
         public Texture2D GetTexture(int forcePalette = -1, Color[] colors = null)
         {
@@ -137,15 +137,26 @@ namespace FF8
                     using (MemoryStream ms = new MemoryStream(buffer))
                     using (BinaryReader br = new BinaryReader(ms))
                     {
-                        ms.Seek(TextureLocator, SeekOrigin.Begin);
-                        Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
-                        Color[] convertBuffer = new Color[(int)texture.Width * (int)texture.Height];
-                        for (int i = 0; i < convertBuffer.Length && ms.Position < ms.Length; i++)
+                        try
                         {
-                            convertBuffer[i] = colors[br.ReadByte()]; //colorkey
+                            ms.Seek(TextureLocator, SeekOrigin.Begin);
+                            Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
+                            Color[] convertBuffer = new Color[(int)texture.Width * (int)texture.Height];
+                            for (int i = 0; i < convertBuffer.Length && ms.Position < ms.Length; i++)
+                            {
+                                convertBuffer[i] = colors[br.ReadByte()]; //colorkey
+                            }
+                            bmp.SetData(convertBuffer);
+                            return bmp;
                         }
-                        bmp.SetData(convertBuffer);
-                        return bmp;
+                        catch (NullReferenceException)
+                        {
+                            return null;
+                        }
+                        catch (ArgumentNullException)
+                        {
+                            return null;
+                        }
                     }
                 }
                 else if (texture.bytesPerPixel == 2)
@@ -153,15 +164,26 @@ namespace FF8
                     using (MemoryStream ms = new MemoryStream(buffer))
                     using (BinaryReader br = new BinaryReader(ms))
                     {
-                        ms.Seek(TextureLocator, SeekOrigin.Begin);
-                        Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
-                        colors = new Color[(int)texture.Width * (int)texture.Height];
-                        for (int i = 0; i < colors.Length && ms.Position + 2 < ms.Length; i++)
+                        try
                         {
-                            colors[i] = FromPsColor(br.ReadUInt16());
+                            ms.Seek(TextureLocator, SeekOrigin.Begin);
+                            Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
+                            colors = new Color[(int)texture.Width * (int)texture.Height];
+                            for (int i = 0; i < colors.Length && ms.Position + 2 < ms.Length; i++)
+                            {
+                                colors[i] = FromPsColor(br.ReadUInt16());
+                            }
+                            bmp.SetData(colors);
+                            return bmp;
                         }
-                        bmp.SetData(colors);
-                        return bmp;
+                        catch (NullReferenceException)
+                        {
+                            return null;
+                        }
+                        catch (ArgumentNullException)
+                        {
+                            return null;
+                        }
                     }
                 }
                 else if (texture.bytesPerPixel == 3)

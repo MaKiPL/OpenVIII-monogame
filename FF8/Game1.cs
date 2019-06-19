@@ -166,12 +166,13 @@ namespace FF8
 
         private async void GracefullyExit()
         {
-            //step0. kill init task. to prevent exceptions if exiting before fully loaded.
             Memory.TokenSource.Cancel(); // tell task we are done
-            await Memory.InitTask; // wait for task to finish what it's doing.
-            //step1. dispose DirectMusic as it's unmanaged
+            //step0. dispose stop sounds
+            Module_movie_test.Reset();
+            init_debugger_Audio.StopMusic();
             init_debugger_Audio.KillAudio();
-            //Exit();
+            //step1. kill init task. to prevent exceptions if exiting before fully loaded.
+            await Memory.InitTask; // wait for task to finish what it's doing.
         }
     }
 }

@@ -176,11 +176,11 @@ namespace FF8
 
         public static int module = MODULE_OVERTURE_DEBUG;
 
-        public static string FF8DIR => GameLocation.Current.DataPath;
+        public static string FF8DIR { get; private set; }
         public static string FF8DIRdata { get; private set; }
         public static string FF8DIRdata_lang { get; private set; }
 
-        public static void InitTaskMethod(object obj)
+        public static int InitTaskMethod(object obj)
         {
             CancellationToken token = (CancellationToken)obj;
             if (!token.IsCancellationRequested)
@@ -212,10 +212,12 @@ namespace FF8
 
             if (!token.IsCancellationRequested)
                 Module_main_menu_debug.Init();
+            return 0;
         }
 
         public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
         {
+            FF8DIR = GameLocation.Current.DataPath;
             FF8DIRdata = Extended.GetUnixFullPath(Path.Combine(FF8DIR, "Data"));
             string testdir = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata, "lang-en"));
             FF8DIRdata_lang = Directory.Exists(testdir) ? testdir : FF8DIRdata;
@@ -228,7 +230,7 @@ namespace FF8
             FF8String.Init();
             TokenSource = new CancellationTokenSource();
             Token = TokenSource.Token;
-            InitTask = new Task(InitTaskMethod, Token);
+            InitTask = new Task<int>(InitTaskMethod, Token);
             InitTask.Start();
         }
 

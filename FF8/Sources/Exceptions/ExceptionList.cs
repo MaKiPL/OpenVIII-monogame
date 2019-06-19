@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.ExceptionServices;
 using System.Text;
 
@@ -11,6 +12,7 @@ namespace FF8
 
         public void Add(Exception ex)
         {
+            Debug.WriteLine(ex); // doesn't seem like this list is used correctly. so adding this writeline to atleast spit out the error.
             _exceptions.Add(ex);
         }
 
