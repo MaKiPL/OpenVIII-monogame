@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
 
 #if _WINDOWS && !_X64
-using DirectMidi;
+
+
 #endif
 
 using System.Runtime.InteropServices;
@@ -15,22 +15,13 @@ using System.Linq;
 
 namespace FF8
 {
+
 #pragma warning disable IDE1006 // Naming Styles
 
     public static class init_debugger_Audio
 #pragma warning restore IDE1006 // Naming Styles
     {
-#if _WINDOWS && !_X64
-        private static CDirectMusic cdm;
-        private static CDLSLoader loader;
-        private static CSegment segment;
-        private static CAPathPerformance path;
-        public static CPortPerformance cport; //public explicit
-        private static COutputPort outport;
-        private static CCollection ccollection;
-        private static CInstrument[] instruments;
-#endif
-
+        private static DM_Midi dm_Midi;
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         private struct SoundEntry
@@ -92,8 +83,6 @@ namespace FF8
 
         private static SoundEntry[] soundEntries;
         public static int soundEntriesCount;
-
-        public const int S_OK = 0x00000000;
         public const int MaxSoundChannels = 20;
 
         /// <summary>
@@ -136,13 +125,13 @@ namespace FF8
             // From what I gather the OGG files and the sgt files have the same numerical prefix. I
             // might try to add the functionality to the debug screen monday.
 
-            dmusic_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music","dmusic_backup"));
+            dmusic_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music", "dmusic_backup"));
             if (!Directory.Exists(dmusic_pt))
             {
                 dmusic_pt = null;
             }
 
-            music_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music","dmusic"));
+            music_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music", "dmusic"));
             if (!Directory.Exists(music_pt))
             {
                 music_pt = null;
@@ -158,7 +147,7 @@ namespace FF8
             // with the same prefix. so you can later on switch out which one you want.
             if (RaW_ogg_pt != null)
             {
-                Memory.musices = Directory.GetFiles(RaW_ogg_pt).Where(x=> x.EndsWith(".ogg",StringComparison.OrdinalIgnoreCase)).ToArray();
+                Memory.musices = Directory.GetFiles(RaW_ogg_pt).Where(x => x.EndsWith(".ogg", StringComparison.OrdinalIgnoreCase)).ToArray();
                 foreach (string m in Memory.musices)
                 {
                     if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
@@ -275,32 +264,32 @@ namespace FF8
         //I messed around here as figuring out how things worked probably didn't need to mess with this.
         public static void Init_SoundAudio()
         {
-            string path = Path.Combine(Memory.FF8DIRdata, "Sound","audio.fmt");
-            if(File.Exists(path))
-            using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
-            using (BinaryReader br = new BinaryReader(fs))
-            {
-                soundEntries = new SoundEntry[br.ReadUInt32()];
-                fs.Seek(36, SeekOrigin.Current);
-                for (int i = 0; i < soundEntries.Length - 1; i++)
+            string path = Path.Combine(Memory.FF8DIRdata, "Sound", "audio.fmt");
+            if (File.Exists(path))
+                using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
+                using (BinaryReader br = new BinaryReader(fs))
                 {
-                    UInt32 sz = br.ReadUInt32();
-                    if (sz == 0)
+                    soundEntries = new SoundEntry[br.ReadUInt32()];
+                    fs.Seek(36, SeekOrigin.Current);
+                    for (int i = 0; i < soundEntries.Length - 1; i++)
                     {
-                        fs.Seek(34, SeekOrigin.Current); continue;
+                        UInt32 sz = br.ReadUInt32();
+                        if (sz == 0)
+                        {
+                            fs.Seek(34, SeekOrigin.Current); continue;
+                        }
+
+                        soundEntries[i] = new SoundEntry
+                        {
+                            Size = sz,
+                            Offset = br.ReadUInt32()
+                        };
+                        fs.Seek(12, SeekOrigin.Current);
+                        soundEntries[i].fillHeader(br);
                     }
-
-                    soundEntries[i] = new SoundEntry
-                    {
-                        Size = sz,
-                        Offset = br.ReadUInt32()
-                    };
-                    fs.Seek(12, SeekOrigin.Current);
-                    soundEntries[i].fillHeader(br);
                 }
-            }
 
-            soundEntriesCount = soundEntries ==null ? 0: soundEntries.Length;
+            soundEntriesCount = soundEntries == null ? 0 : soundEntries.Length;
         }
 
         public static void PlaySound(int soundID)
@@ -312,7 +301,7 @@ namespace FF8
             SoundChannels[CurrentSoundChannel] = new Ffcc(
                 new Ffcc.Buffer_Data { DataSeekLoc = soundEntries[soundID].Offset, DataSize = soundEntries[soundID].Size, HeaderSize = (uint)soundEntries[soundID].HeaderData.Length },
                 soundEntries[soundID].HeaderData,
-                Path.Combine(Memory.FF8DIRdata, "Sound","audio.dat"));
+                Path.Combine(Memory.FF8DIRdata, "Sound", "audio.dat"));
             SoundChannels[CurrentSoundChannel++].Play();
         }
 
@@ -446,92 +435,24 @@ namespace FF8
                     break;
 
                 case ".sgt":
-                    if(Extended.IsLinux || bFakeLinux)
+                    if (Extended.IsLinux || bFakeLinux)
                     {
                         ReadSegmentFileManually(pt);
                         break;
                     }
-                    if (!Extended.IsLinux)
+                    else
                     {
-#if _WINDOWS && !_X64
-                        if (cdm == null)
-                        {
-                            cdm = new CDirectMusic();
-                            cdm.Initialize();
-                            loader = new CDLSLoader();
-                            loader.Initialize();
-                            loader.LoadSegment(pt, out segment);
-                            ccollection = new CCollection();
-                            string pathDLS = Path.Combine(Memory.FF8DIRdata, "Music/dmusic_backup/FF8.dls");
-                            if (!File.Exists(pathDLS))
-                            {
-                                pathDLS = Path.Combine(Memory.FF8DIRdata, "Music/dmusic/FF8.dls");
-                            }
-
-                            loader.LoadDLS(pathDLS, out ccollection);
-                            uint dwInstrumentIndex = 0;
-                            while (ccollection.EnumInstrument(++dwInstrumentIndex, out INSTRUMENTINFO iInfo) == S_OK)
-                            {
-                                Debug.WriteLine(iInfo.szInstName);
-                            }
-                            instruments = new CInstrument[dwInstrumentIndex];
-
-                            path = new CAPathPerformance();
-                            path.Initialize(cdm, null, null, DMUS_APATH.DYNAMIC_3D, 128);
-                            cport = new CPortPerformance();
-                            cport.Initialize(cdm, null, null);
-                            outport = new COutputPort();
-                            outport.Initialize(cdm);
-
-                            uint dwPortCount = 0;
-                            INFOPORT infoport;
-                            do
-                            {
-                                outport.GetPortInfo(++dwPortCount, out infoport);
-                            }
-                            while ((infoport.dwFlags & DMUS_PC.SOFTWARESYNTH) == 0);
-
-                            outport.SetPortParams(0, 0, 0, DirectMidi.SET.REVERB | DirectMidi.SET.CHORUS, 44100);
-                            outport.ActivatePort(infoport);
-
-                            cport.AddPort(outport, 0, 1);
-
-                            for (int i = 0; i < dwInstrumentIndex; i++)
-                            {
-                                ccollection.GetInstrument(out instruments[i], i);
-                                outport.DownloadInstrument(instruments[i]);
-                            }
-                            segment.Download(cport);
-                            cport.PlaySegment(segment);
-                        }
-                        else
-                        {
-                            cport.Stop(segment);
-                            segment.Dispose();
-                            //segment.ConnectToDLS
-                            loader.LoadSegment(pt, out segment);
-                            segment.Download(cport);
-                            cport.PlaySegment(segment);
-                            cdm.Dispose();
-                        }
-
-                        //GCHandle.Alloc(cdm, GCHandleType.Pinned);
-                        //GCHandle.Alloc(loader, GCHandleType.Pinned);
-                        //GCHandle.Alloc(segment, GCHandleType.Pinned);
-                        //GCHandle.Alloc(path, GCHandleType.Pinned);
-                        //GCHandle.Alloc(cport, GCHandleType.Pinned);
-                        //GCHandle.Alloc(outport, GCHandleType.Pinned);
-                        //GCHandle.Alloc(infoport, GCHandleType.Pinned);
-#endif
+                        if (dm_Midi == null)
+                            dm_Midi = new DM_Midi();
+                        dm_Midi.Play(pt);
                     }
-                    
+
                     break;
             }
 
             musicplaying = true;
             lastplayed = Memory.MusicIndex;
         }
-
 
         public static void KillAudio()
         {
@@ -548,24 +469,8 @@ namespace FF8
                 }
             }
 
-            try
-            {
-                if (Extended.IsLinux)
-                {
-#if _WINDOWS && !_X64
-                    cport.StopAll();
-                    cport.Dispose();
-                    ccollection.Dispose();
-                    loader.Dispose();
-                    outport.Dispose();
-                    path.Dispose();
-                    cdm.Dispose();
-#endif
-                }
-            }
-            catch
-            {
-            }
+            if (dm_Midi != null)
+                dm_Midi.Dispose();
         }
 
         public static void StopMusic()
@@ -577,20 +482,13 @@ namespace FF8
                 ffccMusic = null;
             }
 
-#if _WINDOWS && !_X64
-            try
-            {
-                if (!Extended.IsLinux)
-                {
-                    cport.StopAll();
-                }
-            }
-            catch { }
-#endif
+            if (dm_Midi != null)
+                dm_Midi.Stop();
         }
+
         //MUSIC_TIME=LONG->int32; REFERENCE_TIME=LONGLONG->long
-        [StructLayout(LayoutKind.Sequential, Pack =1, Size =24)]
-        struct DMUS_IO_SEGMENT_HEADER
+        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 24)]
+        private struct DMUS_IO_SEGMENT_HEADER
         {
             public uint dwRepeats;
             public int mtLength;
@@ -600,33 +498,36 @@ namespace FF8
             public uint dwResolution;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack =1, Size =8)]
-        struct DMUS_IO_VERSION
+        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
+        private struct DMUS_IO_VERSION
         {
-            uint dwVersionMS;
-            uint dwVersionLS;
+            private uint dwVersionMS;
+            private uint dwVersionLS;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack =1, Size =32)]
-        struct DMUS_IO_TRACK_HEADER
+        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
+        private struct DMUS_IO_TRACK_HEADER
         {
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst =16)]
-            byte[] guidClassID;
-            uint dwPosition;
-            uint dwGroup;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst =4)]
-            char[] _ckid;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+            private byte[] guidClassID;
+
+            private uint dwPosition;
+            private uint dwGroup;
+
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            char[] _fccType;
+            private char[] _ckid;
 
-            public string ckid { get => new string(_ckid); }
-            public string fccType { get => new string(_fccType); }
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            private char[] _fccType;
 
+            public string ckid => new string(_ckid);
+            public string fccType => new string(_fccType);
         }
 
-        static DMUS_IO_SEGMENT_HEADER segh = new DMUS_IO_SEGMENT_HEADER();
-        static DMUS_IO_VERSION vers = new DMUS_IO_VERSION();
-        static List<DMUS_IO_TRACK_HEADER> trkh;
+        private static DMUS_IO_SEGMENT_HEADER segh = new DMUS_IO_SEGMENT_HEADER();
+        private static DMUS_IO_VERSION vers = new DMUS_IO_VERSION();
+        private static List<DMUS_IO_TRACK_HEADER> trkh;
+
         /// <summary>
         /// [LINUX]: This method manually reads DirectMusic Segment files
         /// </summary>
@@ -636,13 +537,13 @@ namespace FF8
             using (FileStream fs = new FileStream(pt, FileMode.Open, FileAccess.Read))
             using (BinaryReader br = new BinaryReader(fs))
             {
-                if(ReadFourCc(br) != "RIFF")
+                if (ReadFourCc(br) != "RIFF")
                 {
                     Console.WriteLine($"init_debugger_Audio::ReadSegmentFileManually: NOT RIFF!");
                     return;
                 }
                 fs.Seek(4, SeekOrigin.Current);
-                if(ReadFourCc(br) != "DMSG")
+                if (ReadFourCc(br) != "DMSG")
                 {
                     Console.WriteLine($"init_debugger_Audio::ReadSegmentFileManually: Broken structure. Expected DMSG!");
                     return;
@@ -656,35 +557,35 @@ namespace FF8
             string fourCc;
             trkh = new List<DMUS_IO_TRACK_HEADER>();
             if ((fourCc = ReadFourCc(br)) != "segh")
-                { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: Broken structure. Expected segh, got={fourCc}");return;}
+            { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: Broken structure. Expected segh, got={fourCc}"); return; }
             uint chunkSize = br.ReadUInt32();
             if (chunkSize != Marshal.SizeOf(segh))
-                { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: chunkSize={chunkSize} is different than DMUS_IO_SEGMENT_HEADER sizeof={Marshal.SizeOf(segh)}");return;}
+            { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: chunkSize={chunkSize} is different than DMUS_IO_SEGMENT_HEADER sizeof={Marshal.SizeOf(segh)}"); return; }
             segh = Extended.ByteArrayToStructure<DMUS_IO_SEGMENT_HEADER>(br.ReadBytes((int)chunkSize));
-            if((fourCc = ReadFourCc(br)) != "guid")
-                {Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected guid, got={fourCc}");return;}
+            if ((fourCc = ReadFourCc(br)) != "guid")
+            { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected guid, got={fourCc}"); return; }
             byte[] guid = br.ReadBytes(br.ReadInt32());
             if ((fourCc = ReadFourCc(br)) != "LIST")
-                { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected LIST, got={fourCc}");return;}
+            { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected LIST, got={fourCc}"); return; }
             //let's skip segment data for now, looks like it's not needed, it's not even oficially a part of segh
             fs.Seek(br.ReadUInt32(), SeekOrigin.Current);
             if ((fourCc = ReadFourCc(br)) != "vers")
-                { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected vers, got={fourCc}"); return;}
+            { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected vers, got={fourCc}"); return; }
             if ((chunkSize = br.ReadUInt32()) != Marshal.SizeOf(vers))
-                { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: vers expected sizeof={Marshal.SizeOf(vers)}, got={chunkSize}");return;}
+            { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: vers expected sizeof={Marshal.SizeOf(vers)}, got={chunkSize}"); return; }
             vers = Extended.ByteArrayToStructure<DMUS_IO_VERSION>(br.ReadBytes((int)chunkSize));
             if ((fourCc = ReadFourCc(br)) != "LIST")
-                { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected LIST, got={fourCc}");return;}
+            { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected LIST, got={fourCc}"); return; }
             //this list should now contain metadata like name, authors and etc. It's completely useless in this project scope
             fs.Seek(br.ReadUInt32(), SeekOrigin.Current); //therefore let's just skip whole UNFO and etc.
             if ((fourCc = ReadFourCc(br)) != "LIST")
-                { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected LIST, got={fourCc}"); return; }
+            { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected LIST, got={fourCc}"); return; }
             chunkSize = br.ReadUInt32();
             if ((fourCc = ReadFourCc(br)) != "trkl")
             { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected trkl, got={fourCc}"); return; }
             //at this point we are free to read the file up to the end by reading all available DMTK RIFFs;
-            uint eof = (uint)fs.Position + chunkSize-4;
-            while(fs.Position < eof)
+            uint eof = (uint)fs.Position + chunkSize - 4;
+            while (fs.Position < eof)
             {
                 if ((fourCc = ReadFourCc(br)) != "RIFF")
                 { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected RIFF, got={fourCc}"); return; }
@@ -694,8 +595,7 @@ namespace FF8
                 trkh.Add(Extended.ByteArrayToStructure<DMUS_IO_TRACK_HEADER>(br.ReadBytes((int)br.ReadUInt32())));
                 //TODO HERE
                 //this seek below is to ensure that no critical behaviour happens and every RIFF header is read correctly
-                fs.Seek(skipTell+chunkSize, SeekOrigin.Begin);
-
+                fs.Seek(skipTell + chunkSize, SeekOrigin.Begin);
             }
         }
 

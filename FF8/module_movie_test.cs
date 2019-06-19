@@ -1,5 +1,4 @@
-﻿
-using FFmpeg.AutoGen;
+﻿using FFmpeg.AutoGen;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -7,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 
 namespace FF8
 {
@@ -25,6 +23,7 @@ namespace FF8
         private static string[] movieDirs;
 
         private static List<string> _movies;
+
         public static void Init()
         {
             movieDirs = new string[] {
@@ -44,19 +43,15 @@ namespace FF8
             }
             ReturnState = Memory.MODULE_MAINMENU_DEBUG;
         }
+
         /// <summary>
         /// Movie file list
         /// </summary>
-        public static List<string> Movies
-        {
-            get
-            {
-                return _movies;
-            }
-        }
+        public static List<string> Movies => _movies;
 
         //private static Bitmap Frame { get; set; } = null;
         private static Ffcc FfccVideo { get; set; }
+
         private static Texture2D frameTex { get; set; }
         private static Ffcc FfccAudio { get; set; }
         public static int ReturnState { get; set; }
@@ -64,6 +59,7 @@ namespace FF8
         /// Index in movie file list
         /// </summary>
         public static int Index { get; set; } = 0;
+
         private static double FPS { get; set; } = 0;
         private static int FrameRenderingDelay { get; set; } = 0;
         private static int MsElapsed { get; set; } = 0;
@@ -79,7 +75,8 @@ namespace FF8
                 MovieState = STATE_RETURN;
             }
 #if DEBUG
-            // lets you move through all the feilds just holding left or right. it will just loop when it runs out.
+            // lets you move through all the feilds just holding left or right. it will just loop
+            // when it runs out.
             if (Input.Button(Buttons.Left))
             {
                 Input.ResetInputLimit();
@@ -101,8 +98,10 @@ namespace FF8
                     MovieState++;
                     LoadMovie();
                     break;
+
                 case STATE_CLEAR:
                     break;
+
                 case STATE_STARTPLAY:
                     MovieState++;
                     if (FfccAudio != null)
@@ -114,13 +113,14 @@ namespace FF8
                         FfccVideo.Play();
                     }
                     break;
+
                 case STATE_PLAYING:
                     //if (FfccAudio != null && !FfccAudio.Ahead)
                     //{
                     //    // if we are behind the timer get the next frame of audio.
                     //    FfccAudio.Next();
                     //}
-                    if (FfccVideo==null)
+                    if (FfccVideo == null)
                         MovieState = STATE_FINISHED;
                     else if (FfccVideo.Behind)
                     {
@@ -144,19 +144,23 @@ namespace FF8
                     }
                     if (frameTex == null)
                     {
-                        if(FfccVideo!=null)
+                        if (FfccVideo != null)
                             frameTex = FfccVideo.Texture2D();
                     }
                     break;
+
                 case STATE_PAUSED:
                     //todo add a function to pause sound
                     //pausing the stopwatch will cause the video to pause because it calcs the current frame based on time.
                     break;
+
                 case STATE_FINISHED:
                     break;
+
                 case STATE_RESET:
                     Reset();
                     break;
+
                 case STATE_RETURN:
                 default:
                     Reset();
@@ -165,7 +169,10 @@ namespace FF8
                     break;
             }
         }
-        private static void Reset()
+        /// <summary>
+        /// Sets the movie player back to default state. Use when exiting or otherwise it shouldn't be required.
+        /// </summary>
+        public static void Reset()
         {
             if (FfccAudio != null)
             {
@@ -187,7 +194,6 @@ namespace FF8
             frameTex = null;
             GC.Collect();
         }
-
 
         // The flush packet is a non-null packet with size 0 and data null
         private static void LoadMovie()
@@ -213,31 +219,36 @@ namespace FF8
             {
                 case STATE_LOAD:
                     break;
+
                 case STATE_CLEAR:
                     MovieState++;
                     ClearScreen();
                     break;
-                case STATE_STARTPLAY:                    
+
+                case STATE_STARTPLAY:
                 case STATE_PLAYING:
                     PlayingDraw();
                     break;
+
                 case STATE_PAUSED:
                     break;
+
                 case STATE_FINISHED:
                     MovieState++;
                     FinishedDraw();
                     break;
+
                 case STATE_RESET:
                     break;
+
                 case STATE_RETURN:
                 default:
                     break;
             }
         }
-        private static void ClearScreen()
-        {
-            Memory.spriteBatch.GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.Black);
-        }
+
+        private static void ClearScreen() => Memory.spriteBatch.GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.Black);
+
         private static void FinishedDraw()
         {
             ClearScreen();
@@ -251,6 +262,7 @@ namespace FF8
             //movieState = STATE_INIT;
             //Memory.module = Memory.MODULE_BATTLE_DEBUG;
         }
+
         //private static Bitmap lastframe = null;
         //private static Bitmap Frame { get => frame; set { lastframe = frame; frame = value; } }
         private static void PlayingDraw()
@@ -264,10 +276,9 @@ namespace FF8
             Memory.SpriteBatchStartStencil(ss: SamplerState.AnisotropicClamp);//by default xna filters all textures SamplerState.PointClamp disables that. so video is being filtered why playing.
             ClearScreen();
             Rectangle dst = new Rectangle(new Point(0), (new Vector2(frameTex.Width, frameTex.Height) * Memory.Scale(frameTex.Width, frameTex.Height)).ToPoint());
-            dst.Offset(Memory.Center.X - dst.Center.X,Memory.Center.Y - dst.Center.Y);
-            Memory.spriteBatch.Draw(frameTex,dst, Microsoft.Xna.Framework.Color.White);
+            dst.Offset(Memory.Center.X - dst.Center.X, Memory.Center.Y - dst.Center.Y);
+            Memory.spriteBatch.Draw(frameTex, dst, Microsoft.Xna.Framework.Color.White);
             Memory.SpriteBatchEnd();
-            
         }
     }
 }

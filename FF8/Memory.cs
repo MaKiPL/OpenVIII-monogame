@@ -180,7 +180,7 @@ namespace FF8
         public static string FF8DIRdata { get; private set; }
         public static string FF8DIRdata_lang { get; private set; }
 
-        public static void InitTaskMethod(object obj)
+        public static int InitTaskMethod(object obj)
         {
             CancellationToken token = (CancellationToken)obj;
             if (!token.IsCancellationRequested)
@@ -212,6 +212,7 @@ namespace FF8
 
             if (!token.IsCancellationRequested)
                 Module_main_menu_debug.Init();
+            return 0;
         }
 
         public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
@@ -228,7 +229,7 @@ namespace FF8
             FF8String.Init();
             TokenSource = new CancellationTokenSource();
             Token = TokenSource.Token;
-            InitTask = new Task(InitTaskMethod, Token);
+            InitTask = new Task<int>(InitTaskMethod, Token);
             InitTask.Start();
         }
 

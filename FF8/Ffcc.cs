@@ -23,7 +23,6 @@
     /// </remarks>
     public class Ffcc : IDisposable
     {
-
         #region Fields
 
         /// <summary>
@@ -48,7 +47,7 @@
         /// </summary>
         private static bool useNaudio = false;
 
-        private unsafe readonly AVDictionary* _dict;
+        private readonly unsafe AVDictionary* _dict;
         private unsafe AVIOContext* _avio_ctx;
         private unsafe byte* _avio_ctx_buffer;
         private int _avio_ctx_buffer_size;
@@ -69,6 +68,7 @@
         private BufferedWaveProvider bufferedWaveProvider;
 
         private CancellationToken cancellationToken;
+
         /// <summary>
         /// Wave out for naudio only works in windows.
         /// </summary>
@@ -81,10 +81,12 @@
         private bool stopped = false;
 
         private Task task;
+
         /// <summary>
         /// Directsound requires VolumeSampleProvider to change volume.
         /// </summary>
         private VolumeSampleProvider volumeSampleProvider;
+
         /// <summary>
         /// Required by naudio to pan the sound.
         /// </summary>
@@ -563,7 +565,8 @@
                                 State = FfccState.NODLL;
                                 SoundEffectInstance = null;
                                 SoundEffect = null;
-                                // if it gets here I can't extract the sound from the SoundEffect but I can turn on nAudio and next sound will work
+                                // if it gets here I can't extract the sound from the SoundEffect but
+                                // I can turn on nAudio and next sound will work
                                 useNaudio = true;
                             }
                             else
@@ -574,9 +577,10 @@
                 else if (bufferedWaveProvider != null && nAudioOut != null)
                 {
                     volumeSampleProvider.Volume = volume;
-                    if(panningSampleProvider != null) // panning requires mono sound so it's null if it wasn't 1 channel.
+                    if (panningSampleProvider != null) // panning requires mono sound so it's null if it wasn't 1 channel.
                         panningSampleProvider.Pan = pan;
-                    // i'll leave out pitch unless it's needed. there is a provider for it but sounds like it might do more than we need.
+                    // i'll leave out pitch unless it's needed. there is a provider for it but sounds
+                    // like it might do more than we need.
                     nAudioOut.Play();
                 }
             }
@@ -680,7 +684,7 @@
             }
         }
 
-        protected unsafe virtual void Dispose(bool disposing)
+        protected virtual unsafe void Dispose(bool disposing)
         {
             lock (Decoder)
             {
@@ -742,7 +746,7 @@
         /// <param name="avctx">Decoder Codec Context</param>
         /// <param name="avpkt">Decoder Packet</param>
         /// <returns>0 on success, less than 0 on error</returns>
-        private unsafe static int DecodeFlush(ref AVCodecContext* avctx, ref AVPacket avpkt)
+        private static unsafe int DecodeFlush(ref AVCodecContext* avctx, ref AVPacket avpkt)
         {
             avpkt.data = null;
             avpkt.size = 0;
@@ -774,7 +778,7 @@
         /// <param name="buf">outgoing data</param>
         /// <param name="buf_size">outgoing buffer size</param>
         /// <returns>Total bytes read, or EOF</returns>
-        private unsafe static int Read_packet(void* opaque, byte* buf, int buf_size)
+        private static unsafe int Read_packet(void* opaque, byte* buf, int buf_size)
         {
             Buffer_Data* bd = (Buffer_Data*)opaque;
 
@@ -1056,7 +1060,6 @@ EOF:
                             {
                                 LoadSoundFromStream(ref buffer, start, ref length);
                             }
-
                         }
                         else
                             e.Rethrow();
@@ -1119,7 +1122,6 @@ EOF:
                     }
                     if (!useNaudio)
                         Thread.Sleep(NextAsyncSleep); //delay checks
-
                 }
             }
             //catch (ThreadAbortException)
@@ -1132,7 +1134,6 @@ EOF:
             }
             if (useNaudio)
             {
-
                 while (nAudioOut.PlaybackState != PlaybackState.Stopped)
                     Thread.Sleep(NextAsyncSleep);
                 try
@@ -1368,6 +1369,7 @@ EOF:
             if (useNaudio)
                 bufferedWaveProvider.AddSamples(waveInEventArgs.Buffer, 0, waveInEventArgs.BytesRecorded);
         }
+
         /// <summary>
         /// Resample current frame, Save output data
         /// </summary>
@@ -1549,7 +1551,6 @@ EOF:
         /// </summary>
         public struct Buffer_Data
         {
-
             #region Fields
 
             public UInt32 DataSeekLoc;
@@ -1632,6 +1633,5 @@ EOF:
         };
 
         #endregion Structs
-
     }
 }
