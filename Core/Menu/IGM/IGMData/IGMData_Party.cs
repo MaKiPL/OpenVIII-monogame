@@ -13,51 +13,67 @@ namespace OpenVIII
                 private int vSpace;
                 private Dictionary<Enum, FF8String> strings;
 
-                public IGMData_Party() : base( 3, 12)
+                public IGMData_Party() : base( )
                 {
                 }
+                bool skipReInit = false;
+
+                public Tuple<Characters, Characters>[] Contents { get; private set; }
 
                 public override void ReInit()
                 {
-                    base.ReInit();
-                    if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
+                    if (Memory.State.Characters != null && !skipReInit)
                     {
-                        CONTAINER = new IGMDataItem_Empty(pos: new Rectangle { Width = 580, Height = 234, X = 20, Y = 84 });
-                        vSpace = 0;
-                    }
-                    else
-                    {
-                        CONTAINER = new IGMDataItem_Empty(pos: new Rectangle { Width = 580, Height = 462, X = 20, Y = 84 });
-                        vSpace = 6;
-                    }
-                    for (int i = 0; i < 3; i++)
-                        SIZE[i] = new Rectangle { Width = Width, Height = (Height / 3) - vSpace, X = X, Y = Y + (Height / 3 * i) };
-                }
+                        skipReInit = true;
+                        IGMDataItem_Empty c;
+                        if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
+                        {
+                            c = new IGMDataItem_Empty(pos: new Rectangle { Width = 580, Height = 234, X = 20, Y = 84 });
+                            vSpace = 0;
+                        }
+                        else
+                        {
+                            c = new IGMDataItem_Empty(pos: new Rectangle { Width = 580, Height = 462, X = 20, Y = 84 });
+                            vSpace = 6;
+                        }
+                        Init(3, 12, c, 1, 3);
+                        //for (int i = 0; i < 3; i++)
+                        //    SIZE[i] = new Rectangle { Width = Width, Height = (Height / 3) - vSpace, X = X, Y = Y + (Height / 3 * i) };
+                        skipReInit = false;
 
-                public override bool Update()
-                {
-                    bool ret = base.Update();
-                    for (sbyte i = 0; Memory.State.PartyData != null && i < SIZE.Length; i++)
-                        Update(i, Memory.State.PartyData[i], Memory.State.Party[i]);
-                    return true;
+                        if (Memory.State.Characters != null)
+                        {
+                            bool ret = base.Update();
+                            for (sbyte i = 0; Memory.State.PartyData != null && i < SIZE.Length; i++)
+                                ReInitCharacter(i, Memory.State.PartyData[i], Memory.State.Party[i]);
+                        }
+                    }
                 }
 
                 protected override void Init()
                 {
+                    if(strings!=null)
                     strings = new Dictionary<Enum, FF8String>()
                     {
                         { Items.CurrentEXP, Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,23)  },
                         { Items.NextLEVEL, Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,24)  },
                     };
+                    Contents = new Tuple<Characters, Characters>[Count];
                     base.Init();
                 }
+                protected override void InitShift(int i, int col, int row)
+                {
+                    base.InitShift(i, col, row);
+                    SIZE[i].Height -= vSpace;
+                }
 
-                private void Update(sbyte pos, Characters character, Characters visableCharacter)
+                private void ReInitCharacter(sbyte pos, Characters character, Characters visableCharacter)
                 {
                     if (SIZE != null)
                     {
                         if (character != Characters.Blank)
                         {
+                            Contents[pos] = new Tuple<Characters, Characters>(character, visableCharacter);
                             float yoff = 6;
 
                             ITEM[pos, 0] = new IGMDataItem_Box(Memory.Strings.GetName(visableCharacter), title: Icons.ID.STATUS);

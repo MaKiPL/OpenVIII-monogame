@@ -21,7 +21,7 @@ namespace OpenVIII
             {
                 PercentLoaded += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 3;
             }
-            else
+            else if(InGameMenu != null)
             {
                 State = MainMenuStates.InGameMenu; // start loaded game.
                 Memory.State = Saves.FileList[SlotLoc, BlockLoc + blockpage * 3].Clone();

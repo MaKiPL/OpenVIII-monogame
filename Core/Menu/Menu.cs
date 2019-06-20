@@ -98,7 +98,7 @@ namespace OpenVIII
                             ret = i.Value.Update() || ret;
                         }
                 }
-                return ret;
+                return Inputs() || ret;
             }            
 
             protected abstract bool Inputs();

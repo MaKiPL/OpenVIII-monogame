@@ -147,15 +147,6 @@ namespace OpenVIII
                 }
             }
 
-            public override bool Update()
-            {
-                if (Enabled)
-                {
-                    bool ret = base.Update();
-                    return Inputs() || ret;
-                }
-                return false;
-            }
 
             public void ChangeHelp(FF8String str) => ((IGMDataItem_Box)Data[SectionName.Help].CONTAINER).Data = str;
 
@@ -259,7 +250,7 @@ namespace OpenVIII
                         new IGMDataItem_Box(Titles[Items.Auto], pos: new Rectangle(0, 12, 169, 54), options: Box_Options.Center | Box_Options.Middle)),
                     new IGMData_TopMenu_Auto()));
                 Data.Add(SectionName.TopMenu_Abilities, new IGMData_Abilities_Group(
-                    new IGMData_Abilities_Command(),
+                    new IGMData_Abilities_CommandSlots(),
                     new IGMData_Abilities_AbilitySlots(),
                     new IGMData_Abilities_CommandPool(),
                     new IGMData_Abilities_AbilityPool()

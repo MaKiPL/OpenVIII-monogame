@@ -71,14 +71,22 @@ namespace OpenVIII
                 {Mode.UseItemChooseCharacter, ((IGMDataItem_IGMData)((IGMData_Group)Data[SectionName.UseItemGroup]).ITEM[0,0]).Inputs},
                 {Mode.UseItemChooseGF,((IGMDataItem_IGMData)((IGMData_Group)Data[SectionName.UseItemGroup]).ITEM[0,0]).Inputs},
                 };
+                SetMode(Mode.UseItemPool);
                 base.Init();
             }
-
+            public EventHandler<Mode> ModeChangeHandler;
             private Mode mode;
 
             public Mode GetMode() => mode;
 
-            public void SetMode(Mode value) => mode = value;
+            public void SetMode(Mode value)
+            {
+                if (mode != value)
+                {
+                    ModeChangeHandler?.Invoke(this, value);
+                    mode = value;
+                }
+            }
 
             protected Dictionary<Mode, Func<bool>> InputsDict;
 
@@ -88,6 +96,7 @@ namespace OpenVIII
             {
                 private FF8String[] _helpStr;
                 private int[] widths;
+                bool eventSet = false;
 
                 private IReadOnlyDictionary<FF8String, FF8String> Pairs { get; }
                 public IGMData_TopMenu(IReadOnlyDictionary<FF8String, FF8String> pairs) : base()
@@ -121,6 +130,19 @@ namespace OpenVIII
                     Cursor_Status |= Cursor_Status.Blinking;
                 }
 
+                public override void ReInit()
+                {
+                    if (!eventSet && InGameMenu_Items != null)
+                    {
+                        InGameMenu_Items.ModeChangeHandler += ModeChangeEvent;
+                        eventSet = true;
+                    }
+                    base.ReInit();
+                }
+                private void ModeChangeEvent(object sender, Mode e)
+                {
+                }
+
                 protected override void InitShift(int i, int col, int row)
                 {
                     SIZE[i].Inflate(0, (SIZE[i].Height - largestheight)/-2);
@@ -144,6 +166,8 @@ namespace OpenVIII
                 }
 
                 private FF8String[] _helpStr;
+                private bool eventSet=false;
+
                 public IReadOnlyList<FF8String> HelpStr => _helpStr;
 
                 protected override void Init()
@@ -156,13 +180,23 @@ namespace OpenVIII
                         ITEM[pos, 1] = new IGMDataItem_Int(0, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0), numtype: Icons.NumType.sysFntBig, spaces: 3);
                     }
                 }
-
+                private void ModeChangeEvent(object sender, Mode e)
+                {
+                }
                 public override void ReInit()
                 {
+                    if (!eventSet && InGameMenu_Items != null)
+                    {
+                        InGameMenu_Items.ModeChangeHandler += ModeChangeEvent;
+                        eventSet = true;
+                    }
                     base.ReInit();
                     Source = Memory.State;
                     if (Source != null && Source.Items != null)
                     {
+                        Cursor_Status |= Cursor_Status.Enabled;
+                        Cursor_Status |= Cursor_Status.Vertical;
+                        Cursor_Status &= ~Cursor_Status.Horizontal;
                         byte pos = 0;
                         for (byte i = 0; pos < rows && i < Source.Items.Length; i++)
                         {
@@ -172,29 +206,73 @@ namespace OpenVIII
                             Kernel_bin.Battle_Items_Data bitemdata = Kernel_bin.BattleItemsData.Count > item.ID ? Kernel_bin.BattleItemsData[item.ID] : null;
                             Kernel_bin.Non_battle_Items_Data nbitemdata = bitemdata == null ? Kernel_bin.NonbattleItemsData[item.ID - Kernel_bin.BattleItemsData.Count] : null;
                             Item_In_Menu itemdata = Memory.MItems.Items[item.ID];
-
-                            _helpStr[pos] = bitemdata == null ? nbitemdata.Description : bitemdata.Description;
                             ((IGMDataItem_String)(ITEM[pos, 0])).Data = bitemdata == null ? nbitemdata.Name : bitemdata.Name;
                             ((IGMDataItem_Int)(ITEM[pos, 1])).Data = item.QTY;
+                            _helpStr[pos] = bitemdata == null ? nbitemdata.Description : bitemdata.Description;
+                            BLANKS[pos] = false;
                             pos++;
                         }
-                    }
+                    }                    
+                }
+                public override bool Inputs()
+                {
+                    Cursor_Status &= ~Cursor_Status.Blinking;
+                    return base.Inputs();
+                }
+                public override void Draw()
+                {
+                    base.Draw();
                 }
             }
 
             private class IGMData_CharacterPool : IGMData_Pool<Saves.Data, Characters>
             {
+                private bool eventSet;
+
                 public IGMData_CharacterPool() : base(9, 3, new IGMDataItem_Box(pos: new Rectangle(420, 150, 420, 360), title: Icons.ID.NAME), 9, 1)
                 {
+                }
+                private void ModeChangeEvent(object sender, Mode e)
+                {
+                }
+                public override void ReInit()
+                {
+                    if (!eventSet && InGameMenu_Items != null)
+                    {
+                        InGameMenu_Items.ModeChangeHandler += ModeChangeEvent;
+                        eventSet = true;
+                    }
+                }
+                public override void Draw()
+                {
+                    //base.Draw();
                 }
             }
 
             private class IGMData_Statuses : IGMData
             {
+                private bool eventSet;
+
                 public IGMData_Statuses() : base(1, 1, new IGMDataItem_Box(pos: new Rectangle(420, 510, 420, 120)))
                 {
                 }
+                private void ModeChangeEvent(object sender, Mode e)
+                {
+                }
+                public override void ReInit()
+                {
+                    if (!eventSet && InGameMenu_Items != null)
+                    {
+                        InGameMenu_Items.ModeChangeHandler += ModeChangeEvent;
+                        eventSet = true;
+                    }
+                }
+                public override void Draw()
+                {
+                    base.Draw();
+                }
             }
+
         }
     }
 }

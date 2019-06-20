@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Linq;
 
 namespace OpenVIII
@@ -11,6 +12,8 @@ namespace OpenVIII
             private class IGMData_NonParty : IGMData
             {
                 private Texture2D _red_pixel;
+
+                public Tuple<Characters, Characters>[] Contents { get; private set; }
 
                 public IGMData_NonParty() : base(6, 9, new IGMDataItem_Box(pos: new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 }),2,3)
                 {
@@ -35,38 +38,43 @@ namespace OpenVIII
                     Table_Options |= Table_Options.FillRows;
                     _red_pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
                     Color[] color = new Color[] { new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, 100) };
-                    _red_pixel.SetData<Color>(color, 0, _red_pixel.Width * _red_pixel.Height);
+                    _red_pixel.SetData(color, 0, _red_pixel.Width * _red_pixel.Height);
+                    Contents = new Tuple<Characters, Characters>[Count];
                     base.Init();
                 }
 
-                public override bool Update()
+                public override void ReInit()
                 {
-                    sbyte pos = 0;
-                    bool ret = base.Update();
-                    if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
+                    if (Memory.State.Characters != null)
                     {
-                        for (byte i = 0; Memory.State.Party != null && i < Memory.State.Characters.Count && SIZE != null && pos < SIZE.Length; i++)
+                        sbyte pos = 0;
+                        bool ret = base.Update();
+                        if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
                         {
-                            if (!Memory.State.Party.Contains((Characters)i) && Memory.State.Characters[(Characters)i].VisibleInMenu)
+                            for (byte i = 0; Memory.State.Party != null && i < Memory.State.Characters.Count && SIZE != null && pos < SIZE.Length; i++)
                             {
-                                BLANKS[pos] = false;
-                                Update(pos++, (Characters)i);
+                                if (!Memory.State.Party.Contains((Characters)i) && Memory.State.Characters[(Characters)i].VisibleInMenu)
+                                {
+                                    BLANKS[pos] = false;
+                                    ReInit(pos++, (Characters)i);
+                                }
+                            }
+                        }
+                        for (; pos < Count; pos++)
+                        {
+                            for (int i = 0; i < Depth; i++)
+                            {
+                                BLANKS[pos] = true;
+                                ITEM[pos, i] = null;
                             }
                         }
                     }
-                    for (; pos < Count; pos++)
-                    {
-                        for (int i = 0; i < Depth; i++)
-                        {
-                            BLANKS[pos] = true;
-                            ITEM[pos, i] = null;
-                        }
-                    }
-                    return true;
                 }
 
-                private void Update(sbyte pos, Characters character)
+                private void ReInit(sbyte pos, Characters character)
                 {
+
+                    Contents[pos] = new Tuple<Characters, Characters>(character, character);
                     float yoff = 39;
                     Rectangle rbak = SIZE[pos];
                     Rectangle r = rbak;

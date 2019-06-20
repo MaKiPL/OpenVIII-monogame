@@ -1,210 +1,101 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
-namespace OpenVIII
+namespace FF8
 {
     public partial class Module_main_menu_debug
     {
-        private partial class IGM : Menu
+        private partial class IGM
         {
-            #region Fields
-
-            //private Items choSideBar;
-            //private int _choChar;
-            private Mode _mode = 0;
-
-            //public int choChar
-            //{
-            //    get
-            //    {
-            //        if (_choChar >= 0 && _choChar < Data[SectionName.Party].Count)
-            //        {
-            //            if (Data[SectionName.Party].BLANKS[_choChar])
-            //                return choCharSet(_choChar + 1);
-            //        }
-            //        else if (_choChar < Data[SectionName.Non_Party].Count + Data[SectionName.Party].Count && _choChar >= Data[SectionName.Non_Party].Count)
-            //        {
-            //            if (Data[SectionName.Non_Party].BLANKS[_choChar - Data[SectionName.Party].Count])
-            //                return choCharSet(_choChar + 1);
-            //        }
-            //        return _choChar;
-            //    }
-
-            //    set => choCharSet(value);
-            //}
-
-            public EventHandler<KeyValuePair<Items,FF8String>> ChoiceChangeHandler;
-            public EventHandler<Mode> ModeChangeHandler;
-            private Mode GetMode() => _mode;
-            private void SetMode(Mode value)
+            private class IGMData_PartyGroup : IGMData_Group
             {
-                if(_mode != value)
+                private bool eventSet = false;
+                private Items Choice;
+                private Tuple<Characters, Characters>[] Contents;
+
+                public IGMData_PartyGroup(params IGMData[] d) : base(d)
                 {
-                    ModeChangeHandler?.Invoke(this,value);
-                    _mode = value;
+                    Cursor_Status &= ~Cursor_Status.Enabled;
+                    Cursor_Status |= Cursor_Status.Vertical;
+                    Cursor_Status &= ~Cursor_Status.Horizontal;
+                    Cursor_Status &= ~Cursor_Status.Blinking;
+                }
+
+                public override bool Inputs()
+                {
+
+                    Cursor_Status |= Cursor_Status.Enabled;
+                    return base.Inputs();
+                }
+
+                public override void ReInit()
+                {
+
+                    if (!eventSet && InGameMenu_Items != null)
+                    {
+                        InGameMenu.ModeChangeHandler += ModeChangeEvent;
+                        InGameMenu.ChoiceChangeHandler += ChoiceChangeEvent;
+                        eventSet = true;
+                    }
+                    base.ReInit();
+
+                    if (Memory.State.Characters != null)
+                    {
+                        IGMDataItem_IGMData i = ((IGMDataItem_IGMData)ITEM[0, 0]);
+                        IGMDataItem_IGMData i2 = ((IGMDataItem_IGMData)ITEM[1, 0]);
+                        if (i != null && i.Data != null && i2 != null && i2.Data != null)
+                        {
+                            SIZE = new Rectangle[i.Data.Count + i2.Data.Count];
+                            Array.Copy(i.Data.SIZE, SIZE, i.Data.Count);
+                            Array.Copy(i2.Data.SIZE, 0, SIZE, i.Data.Count, i2.Data.Count);
+                            CURSOR = new Point[i.Data.Count + i2.Data.Count];
+                            Array.Copy(i.Data.CURSOR, CURSOR, i.Data.Count);
+                            Array.Copy(i2.Data.CURSOR, 0, CURSOR, i.Data.Count, i2.Data.Count);
+                            BLANKS = new bool[i.Data.Count + i2.Data.Count];
+                            Array.Copy(i.Data.BLANKS, BLANKS, i.Data.Count);
+                            Array.Copy(i2.Data.BLANKS, 0, BLANKS, i.Data.Count, i2.Data.Count);
+                            Contents = new Tuple<Characters,Characters>[i.Data.Count + i2.Data.Count];
+                            Array.Copy(((IGMData_Party)i.Data).Contents, Contents, i.Data.Count);
+                            Array.Copy(((IGMData_NonParty)i2.Data).Contents, 0, Contents, i.Data.Count, i2.Data.Count);
+                        }
+                    }
+                }
+
+                private void ChoiceChangeEvent(object sender, KeyValuePair<Items, FF8String> e)
+                {
+                    Choice = e.Key;
+                }
+
+                private void ModeChangeEvent(object sender, Mode e)
+                {
+                    if (e != Mode.ChooseChar)
+                    {
+                        Cursor_Status &= ~Cursor_Status.Enabled;
+                    }
+                }
+                public override void Inputs_OKAY()
+                {
+                    base.Inputs_OKAY();
+                    fade = 0;
+                    switch(Choice)
+                    {
+                        case Items.Junction:
+                            State = MainMenuStates.IGM_Junction;
+                            InGameMenu_Junction.ReInit(Contents[CURSOR_SELECT].Item1, Contents[CURSOR_SELECT].Item2);
+                            return;
+                    }
+                }
+
+                public override void Inputs_CANCEL()
+                {
+                    base.Inputs_CANCEL();
+                    InGameMenu.SetMode(Mode.ChooseItem);
                 }
             }
-
-            //private int choCharSet(int value)
-            //{
-            //    while (true)
-            //    {
-            //        if (value >= 0 && value < Data[SectionName.Party].Count)
-            //        {
-            //            if (Data[SectionName.Party].BLANKS[value])
-            //            {
-            //                if (_choChar > value) value--;
-            //                else if (_choChar < value) value++;
-            //            }
-            //            else
-            //            {
-            //                break;
-            //            }
-            //        }
-            //        else if (value < Data[SectionName.Non_Party].Count + Data[SectionName.Party].Count && value >= Data[SectionName.Party].Count)
-            //        {
-            //            if (Data[SectionName.Non_Party].BLANKS[value - Data[SectionName.Party].Count])
-            //            {
-            //                if (_choChar > value) value--;
-            //                else if (_choChar < value) value++;
-            //            }
-            //            else
-            //            {
-            //                break;
-            //            }
-            //        }
-            //        if (value < 0)
-            //        {
-            //            value = Data[SectionName.Non_Party].Count + Data[SectionName.Party].Count - 1;
-            //            _choChar = int.MaxValue;
-            //        }
-            //        else if (value >= Data[SectionName.Non_Party].Count + Data[SectionName.Party].Count)
-            //        {
-            //            value = 0;
-            //            _choChar = int.MinValue;
-            //        }
-            //    }
-
-            //    _choChar = value;
-            //    return value;
-            //}
-
-            #endregion Fields
-
-            #region Enums
-
-            public enum Items
-            {
-                Junction,
-                Item,
-                Magic,
-                Status,
-                GF,
-                Ability,
-                Switch,
-                Card,
-                Config,
-                Tutorial,
-                Save,
-                CurrentEXP,
-                NextLEVEL
-            }
-
-            public enum Mode
-            {
-                ChooseItem,
-                ChooseChar,
-            }
-
-            #endregion Enums
-
-            #region Methods
-
-            public override void Draw()
-            {
-                if (Enabled)
-                {
-                    StartDraw();
-                    DrawData();
-                    //switch (GetMode())
-                    //{
-                    //    case Mode.ChooseChar:
-                    //    case Mode.ChooseItem:
-                    //    case Mode.ChooseNonPartyChar:
-                    //    default:
-                    //        DrawData();
-                    //        break;
-                    //}
-                    //switch (GetMode())
-                    //{
-                    //    case Mode.ChooseChar:
-                    //        DrawPointer(Data[SectionName.SideMenu].CURSOR[(int)choSideBar], blink: true);
-
-                    //        if (choChar < Data[SectionName.Party].Count && choChar >= 0)
-                    //            DrawPointer(Data[SectionName.Party].CURSOR[choChar]);
-                    //        else if (choChar < Data[SectionName.Non_Party].Count + Data[SectionName.Party].Count && choChar >= Data[SectionName.Party].Count)
-                    //            DrawPointer(Data[SectionName.Non_Party].CURSOR[choChar - Data[SectionName.Party].Count]);
-                    //        break;
-
-                    //    default:
-                    //        //DrawPointer(Data[SectionName.SideMenu].CURSOR[(int)choSideBar]);
-                    //        break;
-                    //}
-                    EndDraw();
-                }
-            }
-
-            public enum SectionName
-            {
-                Header,
-                Footer,
-                SideMenu,
-                Clock,
-                PartyGroup,
-            }
-
-            protected override void Init()
-            {
-                Size = new Vector2 { X = 843, Y = 630 };
-                TextScale = new Vector2(2.545455f, 3.0375f);
-                Data.Add(SectionName.Header, new IGMData_Header());
-                Data.Add(SectionName.Footer, new IGMData_Footer());
-                Data.Add(SectionName.Clock, new IGMData_Clock());
-                Data.Add(SectionName.PartyGroup, new IGMData_PartyGroup(new IGMData_Party(),new IGMData_NonParty()));
-                Data.Add(SectionName.SideMenu, new IGMData_SideMenu( new Dictionary<FF8String, FF8String>() {
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 0), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 1)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 3)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 4), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 5)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 8), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 9)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 6), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 7)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 62), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 63)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 64), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 65)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 10), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 11)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 16), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 17)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 67), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 68)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 14), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 15)},
-                }));
-                InputDict = new Dictionary<Mode, Func<bool>>
-                {
-                    { Mode.ChooseItem, Data[SectionName.SideMenu].Inputs },
-                    { Mode.ChooseChar, Data[SectionName.PartyGroup].Inputs },
-                };
-                base.Init();
-            }
-            protected Dictionary<Mode,Func<bool>> InputDict;
-            //public override bool Update()
-            //{
-            //    if (Enabled)
-            //    {
-            //        //bool ret = ((IGMData_Header)Data[SectionName.Header]).Update(choSideBar);
-            //        return base.Update();// || ret;
-            //    }
-            //    return false;
-            //}
-
-            protected override bool Inputs() => InputDict[GetMode()]();
+        }
+    }
+}
             //{
             //    bool ret = false;
             //    if (Enabled)
@@ -376,8 +267,3 @@ namespace OpenVIII
             //    }
             //    return ret;
             //}
-
-            #endregion Methods
-        }
-    }
-}
