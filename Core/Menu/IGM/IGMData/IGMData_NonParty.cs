@@ -7,40 +7,43 @@ namespace OpenVIII
 {
     public partial class Module_main_menu_debug
     {
+
+        #region Classes
+
         private partial class IGM
         {
+
+            #region Classes
+
             private class IGMData_NonParty : IGMData
             {
+
+                #region Fields
+
                 private Texture2D _red_pixel;
+
+                #endregion Fields
+
+                #region Constructors
+
+                public IGMData_NonParty() : base(6, 9, new IGMDataItem_Box(pos: new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 }), 2, 3)
+                {
+                }
+
+                #endregion Constructors
+
+                #region Properties
 
                 public Tuple<Characters, Characters>[] Contents { get; private set; }
 
-                public IGMData_NonParty() : base(6, 9, new IGMDataItem_Box(pos: new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 }),2,3)
-                {
-                }
+                #endregion Properties
+
+                #region Methods
 
                 public override void Draw()
                 {
                     if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
                         base.Draw();
-                }
-
-                protected override void InitShift(int i, int col, int row)
-                {
-                    base.InitShift(i, col, row);
-                    SIZE[i].Inflate(-26, -8);
-                    if (row >= 1) SIZE[i].Y -= 4;
-                    if (row >= 2) SIZE[i].Y -= 4;
-                }
-
-                protected override void Init()
-                {
-                    Table_Options |= Table_Options.FillRows;
-                    _red_pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
-                    Color[] color = new Color[] { new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, 100) };
-                    _red_pixel.SetData(color, 0, _red_pixel.Width * _red_pixel.Height);
-                    Contents = new Tuple<Characters, Characters>[Count];
-                    base.Init();
                 }
 
                 public override void ReInit()
@@ -71,6 +74,23 @@ namespace OpenVIII
                     }
                 }
 
+                protected override void Init()
+                {
+                    Table_Options |= Table_Options.FillRows;
+                    _red_pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
+                    Color[] color = new Color[] { new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, 100) };
+                    _red_pixel.SetData(color, 0, _red_pixel.Width * _red_pixel.Height);
+                    Contents = new Tuple<Characters, Characters>[Count];
+                    base.Init();
+                }
+
+                protected override void InitShift(int i, int col, int row)
+                {
+                    base.InitShift(i, col, row);
+                    SIZE[i].Inflate(-26, -8);
+                    if (row >= 1) SIZE[i].Y -= 4;
+                    if (row >= 2) SIZE[i].Y -= 4;
+                }
                 private void ReInit(sbyte pos, Characters character)
                 {
 
@@ -111,8 +131,16 @@ namespace OpenVIII
                     r.Offset((166), yoff);
                     ITEM[pos, 8] = new IGMDataItem_Int(Memory.State.Characters[character].CurrentHP(), r, 2, 0, 1,4);
                 }
+
+                #endregion Methods
+
             }
 
+            #endregion Classes
+
         }
+
+        #endregion Classes
+
     }
 }

@@ -6,19 +6,37 @@ namespace OpenVIII
 {
     public partial class Module_main_menu_debug
     {
+        #region Classes
+
         private partial class IGM
         {
+            #region Classes
+
             private class IGMData_Party : IGMData
             {
-                private int vSpace;
+                #region Fields
+
+                bool skipReInit = false;
                 private Dictionary<Enum, FF8String> strings;
+                private int vSpace;
+
+                #endregion Fields
+
+                #region Constructors
 
                 public IGMData_Party() : base( )
                 {
                 }
-                bool skipReInit = false;
+
+                #endregion Constructors
+
+                #region Properties
 
                 public Tuple<Characters, Characters>[] Contents { get; private set; }
+
+                #endregion Properties
+
+                #region Methods
 
                 public override void ReInit()
                 {
@@ -37,9 +55,6 @@ namespace OpenVIII
                             vSpace = 6;
                         }
                         Init(3, 12, c, 1, 3);
-                        //for (int i = 0; i < 3; i++)
-                        //    SIZE[i] = new Rectangle { Width = Width, Height = (Height / 3) - vSpace, X = X, Y = Y + (Height / 3 * i) };
-                        skipReInit = false;
 
                         if (Memory.State.Characters != null)
                         {
@@ -47,6 +62,7 @@ namespace OpenVIII
                             for (sbyte i = 0; Memory.State.PartyData != null && i < SIZE.Length; i++)
                                 ReInitCharacter(i, Memory.State.PartyData[i], Memory.State.Party[i]);
                         }
+                        skipReInit = false;
                     }
                 }
 
@@ -145,8 +161,14 @@ namespace OpenVIII
                         }
                     }
                 }
+
+                #endregion Methods
             }
 
+            #endregion Classes
+
         }
+
+        #endregion Classes
     }
 }

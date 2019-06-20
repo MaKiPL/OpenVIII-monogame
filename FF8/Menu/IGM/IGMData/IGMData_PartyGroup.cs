@@ -6,13 +6,23 @@ namespace FF8
 {
     public partial class Module_main_menu_debug
     {
+        #region Classes
+
         private partial class IGM
         {
+            #region Classes
+
             private class IGMData_PartyGroup : IGMData_Group
             {
-                private bool eventSet = false;
+                #region Fields
+
                 private Items Choice;
                 private Tuple<Characters, Characters>[] Contents;
+                private bool eventSet = false;
+
+                #endregion Fields
+
+                #region Constructors
 
                 public IGMData_PartyGroup(params IGMData[] d) : base(d)
                 {
@@ -22,6 +32,10 @@ namespace FF8
                     Cursor_Status &= ~Cursor_Status.Blinking;
                 }
 
+                #endregion Constructors
+
+                #region Methods
+
                 public override bool Inputs()
                 {
 
@@ -29,10 +43,29 @@ namespace FF8
                     return base.Inputs();
                 }
 
+                public override void Inputs_CANCEL()
+                {
+                    base.Inputs_CANCEL();
+                    InGameMenu.SetMode(Mode.ChooseItem);
+                }
+
+                public override void Inputs_OKAY()
+                {
+                    base.Inputs_OKAY();
+                    fade = 0;
+                    switch (Choice)
+                    {
+                        case Items.Junction:
+                            State = MainMenuStates.IGM_Junction;
+                            InGameMenu_Junction.ReInit(Contents[CURSOR_SELECT].Item1, Contents[CURSOR_SELECT].Item2);
+                            return;
+                    }
+                }
+
                 public override void ReInit()
                 {
 
-                    if (!eventSet && InGameMenu_Items != null)
+                    if (!eventSet && InGameMenu != null)
                     {
                         InGameMenu.ModeChangeHandler += ModeChangeEvent;
                         InGameMenu.ChoiceChangeHandler += ChoiceChangeEvent;
@@ -74,196 +107,13 @@ namespace FF8
                         Cursor_Status &= ~Cursor_Status.Enabled;
                     }
                 }
-                public override void Inputs_OKAY()
-                {
-                    base.Inputs_OKAY();
-                    fade = 0;
-                    switch(Choice)
-                    {
-                        case Items.Junction:
-                            State = MainMenuStates.IGM_Junction;
-                            InGameMenu_Junction.ReInit(Contents[CURSOR_SELECT].Item1, Contents[CURSOR_SELECT].Item2);
-                            return;
-                    }
-                }
 
-                public override void Inputs_CANCEL()
-                {
-                    base.Inputs_CANCEL();
-                    InGameMenu.SetMode(Mode.ChooseItem);
-                }
+                #endregion Methods
             }
+
+            #endregion Classes
         }
+
+        #endregion Classes
     }
 }
-            //{
-            //    bool ret = false;
-            //    if (Enabled)
-            //    {
-            //        foreach (KeyValuePair<Enum, IGMData> i in Data)
-            //        {
-            //            i.Value.Inputs();
-            //        }
-            //        ml = Input.MouseLocation.Transform(Focus);
-
-            //        if (GetMode() == Mode.ChooseItem)
-            //        {
-            //            Data[SectionName.SideMenu].Inputs();
-            //            //if (Data[SectionName.SideMenu] != null && Data[SectionName.SideMenu].Count > 0)
-            //            //{
-            //            //    for (int pos = 0; pos < Data[SectionName.SideMenu].Count; pos++)
-            //            //    {
-            //            //        Rectangle r = Data[SectionName.SideMenu].ITEM[pos, 0];
-            //            //        if (r.Contains(ml))
-            //            //        {
-            //            //            choSideBar = (Items)pos;
-            //            //            ret = true;
-
-            //            //            if (Input.Button(Buttons.MouseWheelup) || Input.Button(Buttons.MouseWheeldown))
-            //            //            {
-            //            //                return ret;
-            //            //            }
-            //            //            break;
-            //            //        }
-            //            //    }
-
-            //            //    if (Input.Button(Buttons.Down))
-            //            //    {
-            //            //        Input.ResetInputLimit();
-            //            //        init_debugger_Audio.PlaySound(0);
-            //            //        if ((int)++choSideBar >= ((IGMData_SideMenu)Data[SectionName.SideMenu]).Count)
-            //            //            choSideBar = 0;
-            //            //        ret = true;
-            //            //    }
-            //            //    else if (Input.Button(Buttons.Up))
-            //            //    {
-            //            //        Input.ResetInputLimit();
-            //            //        init_debugger_Audio.PlaySound(0);
-            //            //        if (--choSideBar < 0)
-            //            //            choSideBar = (Items)((IGMData_SideMenu)Data[SectionName.SideMenu]).Count - 1;
-            //            //        ret = true;
-            //            //    }
-            //            //    else if (Input.Button(Buttons.Cancel))
-            //            //    {
-            //            //        Input.ResetInputLimit();
-            //            //        init_debugger_Audio.PlaySound(8);
-            //            //        Fade = 0.0f;
-            //            //        State = MainMenuStates.LoadGameChooseGame;
-            //            //        ret = true;
-            //            //    }
-            //            //    else if (Input.Button(Buttons.Okay))
-            //            //    {
-            //            //        Input.ResetInputLimit();
-            //            //        init_debugger_Audio.PlaySound(0);
-            //            //        ret = true;
-            //            //        switch (choSideBar)
-            //            //        {
-            //            //            //Select Char Mode
-            //            //            case Items.Junction:
-            //            //            case Items.Magic:
-            //            //            case Items.Status:
-            //            //                mode = Mode.ChooseChar;
-            //            //                break;
-            //            //            case Items.Item:
-            //            //                State = MainMenuStates.IGM_Items;
-            //            //                InGameMenu_Items.ReInit();
-            //            //                break;
-            //            //        }
-            //            //    }
-            //            //}
-            //        }
-            //        //else if (GetMode() == Mode.ChooseChar)
-            //        //{
-            //        //    for (int i = 0; i < Data[SectionName.Party].Count; i++)
-            //        //    {
-            //        //        if (Data[SectionName.Party].BLANKS[i]) continue;
-            //        //        Rectangle r = Data[SectionName.Party].SIZE[i];
-            //        //        if (r.Contains(ml))
-            //        //        {
-            //        //            choChar = i;
-            //        //            ret = true;
-
-            //        //            if (Input.Button(Buttons.MouseWheelup) || Input.Button(Buttons.MouseWheeldown))
-            //        //            {
-            //        //                return ret;
-            //        //            }
-            //        //            break;
-            //        //        }
-            //        //    }
-            //        //    for (int i = Data[SectionName.Party].Count; i < Data[SectionName.Non_Party].Count + Data[SectionName.Party].Count; i++)
-            //        //    {
-            //        //        if (Data[SectionName.Non_Party].BLANKS[i - Data[SectionName.Party].Count]) continue;
-            //        //        Rectangle r = Data[SectionName.Non_Party].SIZE[i - Data[SectionName.Party].Count];
-            //        //        //r.Offset(focus.Translation.X, focus.Translation.Y);
-            //        //        if (r.Contains(ml))
-            //        //        {
-            //        //            choChar = i;
-            //        //            ret = true;
-
-            //        //            if (Input.Button(Buttons.MouseWheelup) || Input.Button(Buttons.MouseWheeldown))
-            //        //            {
-            //        //                return ret;
-            //        //            }
-            //        //            break;
-            //        //        }
-            //        //    }
-            //        //    if (Input.Button(Buttons.Down))
-            //        //    {
-            //        //        Input.ResetInputLimit();
-            //        //        init_debugger_Audio.PlaySound(0);
-            //        //        choChar++;
-            //        //        ret = true;
-            //        //    }
-            //        //    else if (Input.Button(Buttons.Up))
-            //        //    {
-            //        //        Input.ResetInputLimit();
-            //        //        init_debugger_Audio.PlaySound(0);
-            //        //        choChar--;
-            //        //        ret = true;
-            //        //    }
-            //        //    else if (Input.Button(Buttons.Cancel))
-            //        //    {
-            //        //        Input.ResetInputLimit();
-            //        //        ret = true;
-            //        //        init_debugger_Audio.PlaySound(8);
-            //        //        SetMode(Mode.ChooseItem);
-            //        //    }
-            //        //    else if (Input.Button(Buttons.Okay))
-            //        //    {
-            //        //        Input.ResetInputLimit();
-            //        //        init_debugger_Audio.PlaySound(0);
-            //        //        ret = true;
-            //        //        switch (choSideBar)
-            //        //        {
-            //        //            //Select Char Mode
-            //        //            case Items.Junction:
-            //        //                //case Items.Magic:
-            //        //                //case Items.Status:
-            //        //                State = MainMenuStates.IGM_Junction;
-            //        //                if (choChar < 3)
-            //        //                    InGameMenu_Junction.ReInit(Memory.State.PartyData[choChar], Memory.State.Party[choChar]);
-            //        //                else
-            //        //                {
-            //        //                    int pos = 0;
-            //        //                    if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
-            //        //                    {
-            //        //                        for (byte i = 0; Memory.State.Party != null && i < Memory.State.Characters.Count; i++)
-            //        //                        {
-            //        //                            if (!Memory.State.PartyData.Contains((Characters)i) && Memory.State.Characters[(Characters)i].VisibleInMenu)
-            //        //                            {
-            //        //                                if (pos++ + 3 == choChar)
-            //        //                                {
-            //        //                                    InGameMenu_Junction.ReInit((Characters)i, (Characters)i);
-            //        //                                    break;
-            //        //                                }
-            //        //                            }
-            //        //                        }
-            //        //                    }
-            //        //                }
-            //        //                break;
-            //        //        }
-            //        //    }
-            //        //}
-            //    }
-            //    return ret;
-            //}

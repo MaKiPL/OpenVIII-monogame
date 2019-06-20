@@ -4,30 +4,23 @@ namespace OpenVIII
 {
     public partial class Module_main_menu_debug
     {
+        #region Classes
+
         private partial class IGM
         {
+            #region Classes
+
             private class IGMData_Clock : IGMData
             {
+                #region Constructors
+
                 public IGMData_Clock() : base(1, 8, new IGMDataItem_Box(pos: new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 }))
                 {
                 }
 
-                protected override void Init()
-                {
-                    Rectangle r;
-                    r = CONTAINER;
-                    r.Offset(25, 14);
-                    ITEM[0, 0] = new IGMDataItem_Icon(Icons.ID.PLAY, r, 13);
+                #endregion Constructors
 
-                    r = CONTAINER;
-                    r.Offset(145, 14);
-                    ITEM[0, 2] = new IGMDataItem_Icon(Icons.ID.Colon, r, 13, 2, .5f);
-
-                    r = CONTAINER;
-                    r.Offset(185, 81);
-                    ITEM[0, 7] = new IGMDataItem_Icon(Icons.ID.G, r, 2);
-                    base.Init();
-                }
+                #region Methods
 
                 public override void ReInit()
                 {
@@ -61,7 +54,7 @@ namespace OpenVIII
 
                     r = CONTAINER;
                     r.Offset(25, 81);
-                    ITEM[0, 6] = new IGMDataItem_Int(Memory.State.AmountofGil < 99999999 ? (int)(Memory.State.AmountofGil) : 99999999, r, 2, 0, 1,8);
+                    ITEM[0, 6] = new IGMDataItem_Int(Memory.State.AmountofGil < 99999999 ? (int)(Memory.State.AmountofGil) : 99999999, r, 2, 0, 1, 8);
                 }
 
                 public override bool Update()
@@ -70,8 +63,31 @@ namespace OpenVIII
 
                     return ret;
                 }
+
+                protected override void Init()
+                {
+                    Rectangle r;
+                    r = CONTAINER;
+                    r.Offset(25, 14);
+                    ITEM[0, 0] = new IGMDataItem_Icon(Icons.ID.PLAY, r, 13);
+
+                    r = CONTAINER;
+                    r.Offset(145, 14);
+                    ITEM[0, 2] = new IGMDataItem_Icon(Icons.ID.Colon, r, 13, 2, .5f);
+
+                    r = CONTAINER;
+                    r.Offset(185, 81);
+                    ITEM[0, 7] = new IGMDataItem_Icon(Icons.ID.G, r, 2);
+                    base.Init();
+                }
+
+                #endregion Methods
             }
 
+            #endregion Classes
+
         }
+
+        #endregion Classes
     }
 }
