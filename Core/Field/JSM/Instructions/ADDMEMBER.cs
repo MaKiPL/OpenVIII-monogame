@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace FF8
+namespace OpenVIII
 {
     /// <summary>
     /// Adds a PC to the available party (not to the active party). 

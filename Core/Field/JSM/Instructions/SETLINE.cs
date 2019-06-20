@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace FF8
+namespace OpenVIII
 {
     /// <summary>
     /// Sets the bounds of this line object (for its touchOn, touchOff, and across scripts).

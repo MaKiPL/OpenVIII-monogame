@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace FF8
+namespace OpenVIII
 {
     /// <summary>
     /// Make this entity face "Angle" in degrees. 

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FF8
+namespace OpenVIII
 {
     public interface IPartyService
     {

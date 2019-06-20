@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace FF8
+namespace OpenVIII
 {
     /// <summary>
     /// Pop up a message window and pauses script execution until the player dismisses the window. 

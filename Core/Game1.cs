@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
-namespace FF8
+namespace OpenVIII
 {
     public class Game1 : Game
     {

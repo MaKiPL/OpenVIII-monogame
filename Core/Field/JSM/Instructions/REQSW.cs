@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace FF8
+namespace OpenVIII
 {
     /// <summary>
     /// Request remote execution (asynchronous execution, guaranteed)

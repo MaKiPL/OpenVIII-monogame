@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
-namespace FF8
+namespace OpenVIII
 {
     public partial class Kernel_bin
     {

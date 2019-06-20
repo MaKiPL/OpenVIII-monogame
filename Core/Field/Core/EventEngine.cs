@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Threading;
 
 
-namespace FF8
+namespace OpenVIII
 {
     public sealed class EventEngine
     {

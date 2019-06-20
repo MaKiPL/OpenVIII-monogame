@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FF8
+namespace OpenVIII
 {
     /// <summary>
     /// Pauses this script for some number of frames. 

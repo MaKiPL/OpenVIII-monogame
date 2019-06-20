@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace FF8
+namespace OpenVIII
 {
     public sealed class ScriptWriter
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace FF8
+namespace OpenVIII
 {
     public static class FieldInitializer
     {

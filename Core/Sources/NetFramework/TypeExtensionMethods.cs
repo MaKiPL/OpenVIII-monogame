@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace FF8.NetFramework
+namespace OpenVIII.NetFramework
 {
     public static class TypeExtensionMethods
     {

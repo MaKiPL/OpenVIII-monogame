@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace FF8.MonoGame
+namespace OpenVIII.MonoGame
 {
     public static class MonoGameHooks
     {

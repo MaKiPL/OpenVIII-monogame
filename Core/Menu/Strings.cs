@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace FF8
+namespace OpenVIII
 {
 
     /// <summary>

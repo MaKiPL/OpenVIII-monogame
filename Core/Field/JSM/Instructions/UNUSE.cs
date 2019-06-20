@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace FF8
+namespace OpenVIII
 {
     /// <summary>
     /// Disable this entity's scripts, hides its model, and makes it throughable. Call USE to re-enable. 

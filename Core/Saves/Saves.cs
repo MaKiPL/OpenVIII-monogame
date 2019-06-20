@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace FF8
+namespace OpenVIII
 {
     // ref http://wiki.ffrtt.ru/index.php/FF8/Variables copied the table into excel and tried to
     // changed the list into c# code. I was thinking atleast some of it would be useful.

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FF8
+namespace OpenVIII
 { 
 /// <summary>
 /// Make this entity face the entity with the ID of the first parameter.

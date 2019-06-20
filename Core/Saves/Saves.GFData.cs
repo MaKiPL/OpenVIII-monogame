@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.IO;
 
-namespace FF8
+namespace OpenVIII
 {
     public static partial class Saves
     {

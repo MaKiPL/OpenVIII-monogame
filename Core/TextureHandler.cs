@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using System.Linq;
 
-namespace FF8
+namespace OpenVIII
 {
     /// <summary>
     /// This contains functions to Load Highres mod versions of textures and get scale vector.

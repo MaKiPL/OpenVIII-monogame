@@ -1,7 +1,7 @@
 ﻿using System;
 // ReSharper disable StringLiteralTypo
 
-namespace FF8
+namespace OpenVIII
 {
     public static class AreaName
     {

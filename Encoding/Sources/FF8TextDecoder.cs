@@ -1,7 +1,7 @@
 using System;
-using FF8.Encoding.Tags;
+using OpenVIII.Encoding.Tags;
 
-namespace FF8.Encoding
+namespace OpenVIII.Encoding
 {
     public sealed class FF8TextDecoder
     {

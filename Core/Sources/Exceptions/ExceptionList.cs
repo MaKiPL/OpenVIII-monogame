@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Runtime.ExceptionServices;
 using System.Text;
 
-namespace FF8
+namespace OpenVIII
 {
     public sealed class ExceptionList : IDisposable
     {

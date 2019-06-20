@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.Text;
 
-namespace FF8.Encoding.Tags
+namespace OpenVIII.Encoding.Tags
 {
     public sealed class FF8TextTag
     {

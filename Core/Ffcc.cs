@@ -1,4 +1,4 @@
-﻿namespace FF8
+﻿namespace OpenVIII
 {
     using FFmpeg.AutoGen;
     using Microsoft.Xna.Framework.Audio;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace FF8
+namespace OpenVIII
 {
     public static partial class Jsm
     {

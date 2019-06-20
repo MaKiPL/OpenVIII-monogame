@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FF8.Encoding
+namespace OpenVIII.Encoding
 {
     public sealed class FF8TextEncoding : System.Text.Encoding
     {

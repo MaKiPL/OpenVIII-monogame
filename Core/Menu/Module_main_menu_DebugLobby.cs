@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace FF8
+namespace OpenVIII
 {
     public static partial class Module_main_menu_debug
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace FF8
+namespace OpenVIII
 {
     internal class LZSS
     {

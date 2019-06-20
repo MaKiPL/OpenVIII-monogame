@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace FF8
+namespace OpenVIII
 {
     /// <summary>
     /// Effects of Items inside the in game menu.

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace FF8
+namespace OpenVIII
 {
     public static partial class Saves
     {
@@ -104,7 +104,7 @@ namespace FF8
 
             
 
-            public bool TeamLaguna => Party != null && (Party[0] == FF8.Characters.Laguna_Loire || Party[1] == FF8.Characters.Laguna_Loire || Party[2] == FF8.Characters.Laguna_Loire);
+            public bool TeamLaguna => Party != null && (Party[0] == OpenVIII.Characters.Laguna_Loire || Party[1] == OpenVIII.Characters.Laguna_Loire || Party[2] == OpenVIII.Characters.Laguna_Loire);
 
             public Dictionary<GFs, Characters> JunctionedGFs()
             {
@@ -220,11 +220,11 @@ namespace FF8
                 Bokosname = br.ReadBytes(12);//0x004C
                 CurrentDisk = br.ReadUInt32();//0x0058
                 Currentsave = br.ReadUInt32();//0x005C
-                for (int i = 0; i <= (int) FF8.GFs.Eden; i++)
+                for (int i = 0; i <= (int) OpenVIII.GFs.Eden; i++)
                 {
                        GFs[(GFs)i]=new GFData(br, (GFs) i);
                 }
-                for (int i = 0; i <= (int)FF8.Characters.Edea_Kramer; i++)
+                for (int i = 0; i <= (int)OpenVIII.Characters.Edea_Kramer; i++)
                 {
                     
                     Characters[(Characters)i]=new CharacterData(br, (Characters) i); // 0x04A0 -> 0x08C8 //152 bytes per 8 total

@@ -1,4 +1,4 @@
-﻿namespace FF8
+﻿namespace OpenVIII
 {
     public partial class Module_main_menu_debug
     {

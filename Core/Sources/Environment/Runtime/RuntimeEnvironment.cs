@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace FF8
+namespace OpenVIII
 {
     public static class RuntimeEnvironment
     {

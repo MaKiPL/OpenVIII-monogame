@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FF8
+namespace OpenVIII
 {
     /// <summary>
     /// Global[index] = (UInt16)value;

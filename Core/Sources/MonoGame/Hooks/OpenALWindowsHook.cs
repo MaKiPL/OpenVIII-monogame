@@ -5,10 +5,10 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using FF8.NetFramework;
+using OpenVIII.NetFramework;
 using Microsoft.Xna.Framework;
 
-namespace FF8.MonoGame
+namespace OpenVIII.MonoGame
 {
     /*
         This hook loads OpenAL (soft_oal.dll) from the specified location if it wasn't found by the native code.

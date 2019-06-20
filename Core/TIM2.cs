@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.IO;
 
-namespace FF8
+namespace OpenVIII
 {
     //upgraded TIM class, because that first one is a trash
     public class TIM2

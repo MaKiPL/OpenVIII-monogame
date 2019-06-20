@@ -1,4 +1,4 @@
-﻿namespace FF8
+﻿namespace OpenVIII
 {
     public partial class Icons
     {

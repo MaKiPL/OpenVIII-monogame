@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FF8
+namespace OpenVIII
 {
     public static class ModuleHandler
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace FF8
+namespace OpenVIII
 {
     internal sealed class SCROLLRATIO2 : JsmInstruction
     {

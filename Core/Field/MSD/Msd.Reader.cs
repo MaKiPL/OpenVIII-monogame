@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 
-namespace FF8
+namespace OpenVIII
 {
     public static partial class Msd
     {

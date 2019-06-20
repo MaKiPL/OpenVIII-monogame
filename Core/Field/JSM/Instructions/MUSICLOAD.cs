@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace FF8
+namespace OpenVIII
 {
     /// <summary>
     /// Preloads a new field music track. You can start the new track by calling MUSICCHANGE. 

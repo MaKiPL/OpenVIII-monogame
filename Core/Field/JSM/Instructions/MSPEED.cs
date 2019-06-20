@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FF8
+namespace OpenVIII
 {
     /// <summary>
     /// Sets this entity's movement speed. 

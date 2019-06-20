@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 
-namespace FF8
+namespace OpenVIII
 {
     public abstract class JsmInstruction : IJsmInstruction, IFormattableScript
     {

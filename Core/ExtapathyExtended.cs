@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FF8
+namespace OpenVIII
 {
     //Class that provides language extensions made by JWP/Extapathy
     class ExtapathyExtended

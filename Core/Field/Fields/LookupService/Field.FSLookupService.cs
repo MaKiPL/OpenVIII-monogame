@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 // ReSharper disable StringLiteralTypo
 
-namespace FF8
+namespace OpenVIII
 {
     public static partial class Field
     {

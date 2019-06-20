@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace FF8
+namespace OpenVIII
 {
     public class Debug_battleDat
     {

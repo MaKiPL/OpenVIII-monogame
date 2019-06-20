@@ -1,4 +1,4 @@
-﻿namespace FF8.Encoding.Tags
+﻿namespace OpenVIII.Encoding.Tags
 {
     public enum FF8TextTagParam : byte
     {

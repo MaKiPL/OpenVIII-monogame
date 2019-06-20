@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace FF8
+namespace OpenVIII
 {
     public static class Module_movie_test
     {

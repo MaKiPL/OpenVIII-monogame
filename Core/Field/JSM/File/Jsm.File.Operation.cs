@@ -2,7 +2,7 @@
 
 #pragma warning disable 649 // field is never assigned
 
-namespace FF8
+namespace OpenVIII
 {
     public static partial class Jsm
     {

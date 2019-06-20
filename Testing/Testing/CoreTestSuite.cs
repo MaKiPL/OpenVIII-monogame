@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Threading;
 using NUnit.Framework;
 
-namespace FF8.Tests
+namespace OpenVIII.Tests
 {
     [TestFixture]
     public class CoreTestSuite

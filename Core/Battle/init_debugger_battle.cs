@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Linq;
 
-namespace FF8
+namespace OpenVIII
 {
     public static class Init_debugger_battle
     {

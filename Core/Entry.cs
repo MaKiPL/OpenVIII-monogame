@@ -2,7 +2,7 @@
 using System;
 using System.IO;
 
-namespace FF8
+namespace OpenVIII
 {
     public class Entry
     {

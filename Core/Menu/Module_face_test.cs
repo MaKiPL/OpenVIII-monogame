@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
-namespace FF8
+namespace OpenVIII
 {
     public static class Module_face_test
     {

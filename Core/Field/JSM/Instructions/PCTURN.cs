@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace FF8
+namespace OpenVIII
 {
     /// <summary>
     /// Make this entity face the PC. Speed is number of frames (larger = slower turn). 

@@ -2,7 +2,7 @@
 using System.IO;
 using Microsoft.Win32;
 
-namespace FF8
+namespace OpenVIII
 {
     public sealed class WindowsGameLocationProvider : IGameLocationProvider
     {

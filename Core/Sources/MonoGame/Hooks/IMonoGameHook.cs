@@ -1,4 +1,4 @@
-﻿namespace FF8.MonoGame
+﻿namespace OpenVIII.MonoGame
 {
     public interface IMonoGameHook
     {

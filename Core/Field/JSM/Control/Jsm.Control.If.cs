@@ -4,7 +4,7 @@ using System.Text;
 
 
 
-namespace FF8
+namespace OpenVIII
 {
     public static partial class Jsm
     {

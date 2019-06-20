@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FF8.DirectX
+namespace OpenVIII.DirectX
 {
 #if WINDOWS
     /// <summary>
@@ -14,7 +14,7 @@ namespace FF8.DirectX
         [STAThread]
         static void Main()
         {
-            using (var game = new FF8.Game1())
+            using (var game = new OpenVIII.Game1())
                 game.Run();
         }
     }

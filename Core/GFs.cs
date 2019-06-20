@@ -1,4 +1,4 @@
-﻿namespace FF8
+﻿namespace OpenVIII
 {
     public enum GFs : byte
     {

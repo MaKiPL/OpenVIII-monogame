@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace FF8
+namespace OpenVIII
 {
     /// <summary>
     /// Requests that the entity associated with a character in the current party executes one of its member functions at a specified priority.

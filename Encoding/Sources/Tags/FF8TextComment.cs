@@ -1,6 +1,6 @@
 using System;
 
-namespace FF8.Encoding.Tags
+namespace OpenVIII.Encoding.Tags
 {
     public sealed class FF8TextComment
     {

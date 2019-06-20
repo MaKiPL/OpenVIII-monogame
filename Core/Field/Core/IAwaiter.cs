@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-namespace FF8
+namespace OpenVIII
 {
     public interface IAwaiter : INotifyCompletion
     {

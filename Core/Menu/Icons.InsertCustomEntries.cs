@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace FF8
+namespace OpenVIII
 {
     public partial class Icons
     {

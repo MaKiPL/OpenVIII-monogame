@@ -13,7 +13,7 @@ namespace OpenVIII.OpenGL
         [STAThread]
         static void Main()
         {
-            using (var game = new FF8.Game1())
+            using (var game = new OpenVIII.Game1())
                 game.Run();
         }
     }

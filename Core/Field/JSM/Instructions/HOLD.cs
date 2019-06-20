@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FF8
+namespace OpenVIII
 {
     /// <summary>
     /// Sets whether the PC character can be moved/selected in the switch menu. 

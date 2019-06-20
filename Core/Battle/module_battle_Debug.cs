@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace FF8
+namespace OpenVIII
 {
     static class Module_battle_debug
     {

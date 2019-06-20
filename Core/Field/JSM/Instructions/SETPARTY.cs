@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace FF8
+namespace OpenVIII
 {
     /// <summary>
     /// Sets the active party to be the members with the input IDs. These IDs also work with the other party related functions.

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace FF8
+namespace OpenVIII
 {
     public sealed class FieldObject
     {

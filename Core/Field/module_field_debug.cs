@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 using System.Diagnostics;
 using System.IO;
 
-namespace FF8
+namespace OpenVIII
 {
     public static class Module_field_debug
     {

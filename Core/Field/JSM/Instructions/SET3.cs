@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace FF8
+namespace OpenVIII
 {
     /// <summary>
     /// Place this entity's model at XCoord, YCoord, ZCoord standing on the given walkmesh triangle. 

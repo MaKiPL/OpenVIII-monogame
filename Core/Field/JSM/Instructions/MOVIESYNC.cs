@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FF8
+namespace OpenVIII
 {
     /// <summary>
     /// Pauses execution of this script until the current FMV movie is finished playing. 

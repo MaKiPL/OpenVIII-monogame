@@ -1,4 +1,4 @@
-﻿namespace FF8
+﻿namespace OpenVIII
 {
     public sealed class SpinAwaitable : IAwaitable
     {

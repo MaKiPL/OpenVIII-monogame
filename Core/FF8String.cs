@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace FF8
+namespace OpenVIII
 {
     /// <summary>
     /// This holds the encoded bytes and provides implict casts to string and byte[]

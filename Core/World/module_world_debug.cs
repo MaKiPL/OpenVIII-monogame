@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FF8
+namespace OpenVIII
 {
     class Module_world_debug
     {

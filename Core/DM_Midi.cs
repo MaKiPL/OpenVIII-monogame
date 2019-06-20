@@ -9,7 +9,7 @@ using DirectMidi;
 
 using System.Diagnostics;
 
-namespace FF8
+namespace OpenVIII
 {
     public class DM_Midi : IDisposable
     {

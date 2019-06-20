@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 // ReSharper disable StringLiteralTypo
 
-namespace FF8
+namespace OpenVIII
 {
     public static class MusicName
     {

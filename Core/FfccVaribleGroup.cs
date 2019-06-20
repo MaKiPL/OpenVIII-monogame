@@ -3,7 +3,7 @@ using System;
 
 
 
-namespace FF8
+namespace OpenVIII
 {
     public class FfccVaribleGroup : IDisposable
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FF8
+namespace OpenVIII
 {
     internal sealed class DOFFSET : JsmInstruction
     {

@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace FF8
+namespace OpenVIII
 {
     public class EntryGroup : IEnumerator, IEnumerable
     {

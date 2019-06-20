@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace FF8
+namespace OpenVIII
 {
     public partial class Faces : SP2
     {

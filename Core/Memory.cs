@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 #pragma warning disable CS0649
 
-namespace FF8
+namespace OpenVIII
 {
     public static class Memory
     {

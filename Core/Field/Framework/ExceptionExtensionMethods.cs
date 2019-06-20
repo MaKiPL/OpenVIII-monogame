@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.ExceptionServices;
 
-namespace FF8
+namespace OpenVIII
 {
     public static class ExceptionExtensionMethods
     {

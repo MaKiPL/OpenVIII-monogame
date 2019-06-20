@@ -11,7 +11,7 @@ using NAudio.Vorbis;
 using FFmpeg.AutoGen;
 using System.Linq;
 
-namespace FF8
+namespace OpenVIII
 {
 #pragma warning disable IDE1006 // Naming Styles
 

@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.IO;
 
-namespace FF8
+namespace OpenVIII
 {
     /// <summary>
     /// TEX file handler class. TEX files are packages of textures and Palettes.

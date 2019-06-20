@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 
-namespace FF8
+namespace OpenVIII
 {
     /// <summary>
     /// class to add offset to point

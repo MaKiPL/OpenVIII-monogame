@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FF8
+namespace OpenVIII
 {
     //Class that provides language extensions made by Maki
     static class Extended
