@@ -28,8 +28,6 @@ namespace OpenVIII.Tests
                 "chara.one"
             };
 
-            Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");
-
             Input.Init();
             Memory.Init(null,null, null);
             Memory.Archives.A_WORLD._Root = Memory.FF8DIRdata_lang;
@@ -52,8 +50,6 @@ namespace OpenVIII.Tests
         [Test]
         public void SimpleKernelTest()
         {
-            Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");
-
             Input.Init();
             Memory.Init(null,null, null);
             Memory.Archives.A_WORLD._Root = Memory.FF8DIRdata_lang;
