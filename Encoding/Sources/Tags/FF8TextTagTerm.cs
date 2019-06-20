@@ -1,0 +1,38 @@
+﻿namespace OpenVIII.Encoding.Tags
+{
+    public enum FF8TextTagTerm : byte
+    {
+        Galbadia = 0x20,
+        Esthar,
+        Balamb,
+        Dollet,
+        Timber,
+        Trabia,
+        Centra,
+        FishermansHorizon,
+        EastAcademy,
+        DesertPrison,
+        TrabiaGarden,
+        LunarBase,
+        ShumiVillage,
+        DelingCity,
+        BalambGarden,
+        EastAcademyStation,
+        DolletStation,
+        DesertPrisonStation,
+        LunarGate,
+        Restores,
+        Status,
+        Learns,
+        Ability,
+        Magic,
+        Refine,
+        Junctions,
+        Raises,
+        Command,
+        Magazine,
+        UltimeciaCastle,
+        Garden,
+        Deling,
+    }
+}
