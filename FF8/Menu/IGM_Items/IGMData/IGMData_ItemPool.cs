@@ -72,18 +72,16 @@ namespace FF8
                         for (byte i = 0; pos < rows && i < Source.Items.Length; i++)
                         {
                             Saves.Item item = Source.Items[i];
-                            //byte itembo = Source.Itemsbattleorder[i];
                             if (item.ID == 0) continue; // skip empty values.
                             if (skip-- > 0) continue; //skip items that are on prev pages.
-                            Kernel_bin.Battle_Items_Data bitemdata = Kernel_bin.BattleItemsData.Count > item.ID ? Kernel_bin.BattleItemsData[item.ID] : null;
-                            Kernel_bin.Non_battle_Items_Data nbitemdata = bitemdata == null ? Kernel_bin.NonbattleItemsData[item.ID - Kernel_bin.BattleItemsData.Count] : null;
-                            Item_In_Menu itemdata = Memory.MItems.Items[item.ID];
-                            ((IGMDataItem_String)(ITEM[pos, 0])).Data = nbitemdata?.Name ?? bitemdata.Name;
+                            Item_In_Menu itemdata = item.DATA?? new Item_In_Menu();
+                            if (itemdata.ID == 0) continue; // skip empty values.
+                            ((IGMDataItem_String)(ITEM[pos, 0])).Data = itemdata.Description;
                             ((IGMDataItem_String)(ITEM[pos, 0])).Icon = itemdata.Icon;
-                            ((IGMDataItem_String)(ITEM[pos, 0])).Palette = 9;
+                            ((IGMDataItem_String)(ITEM[pos, 0])).Palette = itemdata.Palette;
                             ((IGMDataItem_Int)(ITEM[pos, 1])).Data = item.QTY;
                             ((IGMDataItem_Int)(ITEM[pos, 1])).Show();
-                            _helpStr[pos] = (nbitemdata?.Description ?? bitemdata.Description).ReplaceRegion();
+                            _helpStr[pos] = itemdata.Description;
                             Contents[pos] = itemdata;
                             BLANKS[pos] = false;
                             pos++;

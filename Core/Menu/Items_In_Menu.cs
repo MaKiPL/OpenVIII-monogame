@@ -40,7 +40,7 @@ namespace OpenVIII
         public enum _Type : byte
         {
             Heal = 0x00,
-            Revive= 0x01,
+            Revive = 0x01,
             HealGF = 0x03,
             ReviveGF = 0x04,
             SavePointHeal = 0x06,
@@ -102,7 +102,7 @@ namespace OpenVIII
                 return 0;
             }
         }
-        public Kernel_bin.Stat Stat => Type == _Type.Stat ? (Kernel_bin.Stat)b3: Kernel_bin.Stat.None;
+        public Kernel_bin.Stat Stat => Type == _Type.Stat ? (Kernel_bin.Stat)b3 : Kernel_bin.Stat.None;
         public byte Stat_Increase => (byte)(Type == _Type.Stat ? b2 : 0);
         /// <summary>
         /// Item ID
@@ -111,7 +111,7 @@ namespace OpenVIII
         /// <summary>
         /// Who is targeted and 0x01 seems to be a useable item in menu item. Magazine values don't seem to corrispond.
         /// </summary>
-        public _Target Target => Type == _Type.Magazine? _Target.None:b1;
+        public _Target Target => Type == _Type.Magazine ? _Target.None : b1;
         /// <summary>
         /// Type of item.
         /// </summary>
@@ -121,7 +121,13 @@ namespace OpenVIII
         /// Target in byte form
         /// </summary>
         private byte b1_byte => (byte)b1;
+        public byte Palette => 9;
+        public byte Faded_Palette => 7;
+        public Kernel_bin.Battle_Items_Data Battle => (Kernel_bin.BattleItemsData?.Count ?? 0) > ID ? Kernel_bin.BattleItemsData[ID] : null;
+        public Kernel_bin.Non_battle_Items_Data Non_Battle => Battle == null ? Kernel_bin.NonbattleItemsData[ID - (Kernel_bin.BattleItemsData?.Count ?? 0)] : null;
 
+        public FF8String Name => Battle?.Name ?? Non_Battle?.Name;
+        public FF8String Description => Battle?.Description ?? Non_Battle?.Description;
         #endregion Properties
 
         #region Methods
