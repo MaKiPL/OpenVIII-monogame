@@ -78,7 +78,7 @@ namespace OpenVIII
             public void Read(BinaryReader br, int i)
             {
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
-                Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
+                Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1).ReplaceRegion();
                 ID = (byte)i;
                 br.BaseStream.Seek(4, SeekOrigin.Current);
                 MagicID = (Magic_ID)br.ReadUInt16();

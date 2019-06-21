@@ -76,7 +76,7 @@ namespace FF8
                             if (skip-- > 0) continue; //skip items that are on prev pages.
                             Item_In_Menu itemdata = item.DATA?? new Item_In_Menu();
                             if (itemdata.ID == 0) continue; // skip empty values.
-                            ((IGMDataItem_String)(ITEM[pos, 0])).Data = itemdata.Description;
+                            ((IGMDataItem_String)(ITEM[pos, 0])).Data = itemdata.Name;
                             ((IGMDataItem_String)(ITEM[pos, 0])).Icon = itemdata.Icon;
                             ((IGMDataItem_String)(ITEM[pos, 0])).Palette = itemdata.Palette;
                             ((IGMDataItem_Int)(ITEM[pos, 1])).Data = item.QTY;

@@ -74,7 +74,7 @@ namespace OpenVIII
 
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 //0x0000	2 bytes Offset to item name
-                Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
+                Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1).ReplaceRegion();
                 //0x0002	2 bytes Offset to item description
                 MagicID = (Magic_ID)br.ReadUInt16();
                 //0x0004	2 bytes Magic ID
