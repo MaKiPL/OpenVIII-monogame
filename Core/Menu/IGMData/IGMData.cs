@@ -371,8 +371,9 @@ namespace OpenVIII
                                     Height = Height / rows,
                                 };
                             }
+                            CURSOR[i] = Point.Zero;
                             InitShift(i, col, row);
-                            CURSOR[i].Y += (int)(SIZE[i].Y + SIZE[i].Height / 2 - 6 * TextScale.Y);
+                            CURSOR[i].Y += (int)(SIZE[i].Y + 6 * TextScale.Y);
                             CURSOR[i].X += SIZE[i].X;
                         }
                     }

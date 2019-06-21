@@ -20,6 +20,10 @@
                 base.Init();
                 Cursor_Status |= Cursor_Status.Enabled;
                 Cursor_Status |= Cursor_Status.Vertical;
+                if(Pages > 1)
+                    Cursor_Status &= ~Cursor_Status.Horizontal;
+                else
+                    Cursor_Status |= Cursor_Status.Horizontal;
                 Page = 0;
                 Contents = new T2[rows];
                 SIZE[Count - 2].X = X + 6;
@@ -38,7 +42,7 @@
 
             public override bool Inputs()
             {
-                bool ret = base.Inputs();
+                bool ret = false;
                 if (Pages > 1 && CONTAINER.Pos.Contains(Input.MouseLocation.Transform(Menu.Focus)))
                 {
                     if (Input.Button(Buttons.MouseWheelup))
@@ -52,6 +56,8 @@
                         ret = true;
                     }
                 }
+                if(!ret)
+                    ret = base.Inputs();
                 return ret;
             }
 

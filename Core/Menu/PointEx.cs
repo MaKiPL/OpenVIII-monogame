@@ -113,6 +113,30 @@ namespace OpenVIII
             v = (v & 0x33333333) + ((v >> 2) & 0x33333333); // temp
             return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // count
         }
+
+        public static Characters ToCharacters(this Faces.ID id)
+        {
+            if ((byte)id > 10)
+                return Characters.Blank;
+            return (Characters)id;
+        }
+
+        public static GFs ToGFs(this Faces.ID id)
+        {
+            if ((byte)id < 16 || (byte)id > 31)
+                return GFs.Blank;
+            return (GFs)(id - 16);
+        }
+
+        public static Faces.ID ToFacesID(this Characters id) => (Faces.ID)id;
+
+        public static Faces.ID ToFacesID(this GFs id)
+        {
+            if (GFs.All == id || GFs.Blank == id)
+                return Faces.ID.Blank;
+            return (Faces.ID)(id + 16);
+        }
+
         #endregion Methods
     }
 }

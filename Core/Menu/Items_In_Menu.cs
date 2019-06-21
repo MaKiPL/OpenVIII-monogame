@@ -56,6 +56,9 @@ namespace OpenVIII
             GF_Compatability = 0x10,
             GF_Learn = 0x11,
             GF_Forget = 0x12,
+            /// <summary>
+            /// blue magic only shows quistis in target list, should detect if she knows the spell to grey it out item.
+            /// </summary>
             Blue_Magic = 0x13, // learn
             Stat = 0x14,
             Cure_Abnormal_Status = 0x15,
@@ -123,16 +126,63 @@ namespace OpenVIII
 
         #region Methods
 
-        public static Item_In_Menu Read(BinaryReader br, byte i) => new Item_In_Menu
+        public static Item_In_Menu Read(BinaryReader br, byte i)
         {
-            b0 = (_Type)br.ReadByte(),
-            b1 = (_Target)br.ReadByte(),
-            b2 = br.ReadByte(),
-            b3 = br.ReadByte(),
-            ID = i
-        };
+            var tmp = new Item_In_Menu
+            {
+                b0 = (_Type)br.ReadByte(),
+                b1 = (_Target)br.ReadByte(),
+                b2 = br.ReadByte(),
+                b3 = br.ReadByte(),
+                ID = i
+            };
+            switch (tmp.Type)
+            {
+                case _Type.Heal:
+                case _Type.Revive:
+                case _Type.Cure_Abnormal_Status:
+                    tmp.Icon = Icons.ID.Item_Recovery;
+                    break;
+                case _Type.HealGF:
+                case _Type.ReviveGF:
+                case _Type.GF:
+                case _Type.GF_Forget:
+                case _Type.GF_Learn:
+                    tmp.Icon = Icons.ID.Item_GF;
+                    break;
+                case _Type.Battle:
+                case _Type.Angelo:
+                case _Type.Chocobo: // i'm not sure about this one i have no chocobo items.
+                case _Type.SolomonRing:
+                case _Type.Lamp:
+                    tmp.Icon = Icons.ID.Item_Battle;
+                    break;
+                case _Type.SavePointHeal:
+                    tmp.Icon = Icons.ID.Item_Tent;
+                    break;
+                case _Type.Ammo:
+                    tmp.Icon = Icons.ID.Item_Ammo;
+                    break;
+                case _Type.Magazine:
+                    tmp.Icon = Icons.ID.Item_Magazine;
+                    break;
+                case _Type.None:
+                case _Type.Blue_Magic: 
+                case _Type.GF_Compatability:
+                case _Type.Stat:
+                    tmp.Icon = Icons.ID.Item_Misc;
+                    break;
+                default:
+                    tmp.Icon = Icons.ID.None;
+                    break;
+            }
+            return tmp;
+        }
 
         public Kernel_bin.Blue_Magic Learned_Blue_Magic => Type == _Type.Blue_Magic ? (Kernel_bin.Blue_Magic)b2 : Kernel_bin.Blue_Magic.None;
+
+        public Icons.ID Icon { get; private set; }
+
         /// <summary>
         /// How much Compatability is added to gf. neg is how much is removed from other gfs.
         /// </summary>
@@ -208,7 +258,7 @@ namespace OpenVIII
         private static Items_In_Menu Read(BinaryReader br)
         {
             Items_In_Menu ret = new Items_In_Menu();
-            for (byte i = 0; br.BaseStream.Position + 4 < br.BaseStream.Length; i++)
+            for (byte i = 0; br.BaseStream.Position + 4 <= br.BaseStream.Length; i++)
             {
                 Item_In_Menu tmp = Item_In_Menu.Read(br, i);
                 ret._items.Add(tmp);

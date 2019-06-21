@@ -30,7 +30,7 @@ namespace OpenVIII
             //protected Enum mode=(Mode)0;
 
             private Vector2 _size;
-            static public Vector2 TextScale { get; protected set; }
+            //static public Vector2 TextScale { get; protected set; }
             static public Matrix Focus { get; protected set; }
             private bool skipdata;
 

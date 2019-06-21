@@ -62,7 +62,7 @@ namespace OpenVIII
             protected override void Init()
             {
                 Size = new Vector2 { X = 843, Y = 630 };
-                TextScale = new Vector2(2.545455f, 3.0375f);
+                //TextScale = new Vector2(2.545455f, 3.0375f);
                 Data.Add(SectionName.Header, new IGMData_Header());
                 Data.Add(SectionName.Footer, new IGMData_Footer());
                 Data.Add(SectionName.Clock, new IGMData_Clock());
