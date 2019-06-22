@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace FF8
+namespace OpenVIII
 {
     public static partial class Module_main_menu_debug
     {
