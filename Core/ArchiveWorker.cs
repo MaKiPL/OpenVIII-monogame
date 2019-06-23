@@ -7,18 +7,16 @@ namespace OpenVIII
 {
     public class ArchiveWorker
     {
+
         #region Fields
+
+        public Memory.Archive _path;
 
         /// <summary>
         /// Generated File List
         /// </summary>
         public string[] FileList;
 
-        private bool _compressed;
-        private uint _locationInFs;
-        public Memory.Archive _path;
-        private uint _unpackedFileSize;
-        private static object cachelock = new object(); //prevent two threads from writing to cache at the same time.
         private static Dictionary<Memory.Archive, Dictionary<string, byte[]>> ArchiveCache = new Dictionary<Memory.Archive, Dictionary<string, byte[]>>
             {
                 { Memory.Archives.A_BATTLE, new Dictionary<string, byte[]>() },
@@ -28,6 +26,13 @@ namespace OpenVIII
                 { Memory.Archives.A_MENU, new Dictionary<string, byte[]>() },
                 { Memory.Archives.A_WORLD, new Dictionary<string, byte[]>() }
             };
+        /// <summary>
+        /// prevent two threads from writing to cache at the same time.
+        /// </summary>
+        private static object cachelock = new object();
+        private bool _compressed;
+        private uint _locationInFs;
+        private uint _unpackedFileSize;
 
         #endregion Fields
 
@@ -126,31 +131,6 @@ namespace OpenVIII
             throw new FileNotFoundException($"Searched {_path} and could not find {fileName}.", fileName);
         }
 
-        private byte[] GetBinaryFile(string fileName, int loc, bool cache)
-        {
-            byte[] temp = null;
-            if (ArchiveCache.ContainsKey(_path) && ArchiveCache[_path].ContainsKey(fileName))
-                return (ArchiveCache[_path][fileName]);
-            //read index data
-            using (BinaryReader br = new BinaryReader(File.OpenRead(_path.FI)))
-            {
-                br.BaseStream.Seek(loc * 12, SeekOrigin.Begin);
-                _unpackedFileSize = br.ReadUInt32(); //fs.Seek(4, SeekOrigin.Current);
-                _locationInFs = br.ReadUInt32();
-                _compressed = br.ReadUInt32() != 0;
-            }
-            //read binary data.
-            using (BinaryReader br = new BinaryReader(File.OpenRead(_path.FS)))
-            {
-                br.BaseStream.Seek(_locationInFs, SeekOrigin.Begin);
-                temp = br.ReadBytes(_compressed ? br.ReadInt32() : (int)_unpackedFileSize);
-            }
-
-            temp = temp == null ? null : _compressed ? LZSS.DecompressAllNew(temp) : temp;
-            if (temp != null && cache) ArchiveCache[_path][fileName] = temp;
-            return temp;
-        }
-
         /// <summary>
         /// Generate a file list from binary data.
         /// </summary>
@@ -194,6 +174,30 @@ namespace OpenVIII
             return -1;
         }
 
+        private byte[] GetBinaryFile(string fileName, int loc, bool cache)
+        {
+            byte[] temp = null;
+            if (ArchiveCache.ContainsKey(_path) && ArchiveCache[_path].ContainsKey(fileName))
+                return (ArchiveCache[_path][fileName]);
+            //read index data
+            using (BinaryReader br = new BinaryReader(File.OpenRead(_path.FI)))
+            {
+                br.BaseStream.Seek(loc * 12, SeekOrigin.Begin);
+                _unpackedFileSize = br.ReadUInt32(); //fs.Seek(4, SeekOrigin.Current);
+                _locationInFs = br.ReadUInt32();
+                _compressed = br.ReadUInt32() != 0;
+            }
+            //read binary data.
+            using (BinaryReader br = new BinaryReader(File.OpenRead(_path.FS)))
+            {
+                br.BaseStream.Seek(_locationInFs, SeekOrigin.Begin);
+                temp = br.ReadBytes(_compressed ? br.ReadInt32() : (int)_unpackedFileSize);
+            }
+
+            temp = temp == null ? null : _compressed ? LZSS.DecompressAllNew(temp) : temp;
+            if (temp != null && cache) ArchiveCache[_path][fileName] = temp;
+            return temp;
+        }
         /// <summary>
         /// Generate a file list from raw text file.
         /// </summary>
