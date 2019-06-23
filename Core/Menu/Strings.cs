@@ -119,14 +119,12 @@ namespace OpenVIII
             GetAW(fileID);
             try
             {
-                localms = new MemoryStream(aw.GetBinaryFile(
-                       aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)fileID], StringComparison.OrdinalIgnoreCase) >= 0)));
+                localms = new MemoryStream(aw.GetBinaryFile(filenames[(int)fileID], true));
             }
             catch
             {
                 GetAW(fileID, true);
-                localms = new MemoryStream(aw.GetBinaryFile(
-                       aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)fileID], StringComparison.OrdinalIgnoreCase) >= 0)));
+                localms = new MemoryStream(aw.GetBinaryFile(filenames[(int)fileID], true));
             }
             localbr = new BinaryReader(localms);
             opened = true;
@@ -175,8 +173,7 @@ namespace OpenVIII
         {
 
             files[fileID] = new Stringfile(new Dictionary<uint, List<uint>>(56), new List<Loc>(56));
-            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(
-                aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)fileID], StringComparison.OrdinalIgnoreCase) >= 0))))
+            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(filenames[(int)fileID],true)))
             using (BinaryReader br = new BinaryReader(ms))
             {
                 kernel_GetFileLocations(br);
@@ -329,8 +326,7 @@ namespace OpenVIII
         private void mngrp_GetFileLocations()
         {
             FileID fileID = FileID.MNGRP;
-            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(
-                aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)FileID.MNGRP_MAP], StringComparison.OrdinalIgnoreCase) >= 0))))
+            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(filenames[(int)FileID.MNGRP_MAP],true)))
             using (BinaryReader br = new BinaryReader(ms))
             {
                 while (ms.Position < ms.Length)
@@ -367,8 +363,7 @@ namespace OpenVIII
             files[fileID] = new Stringfile(new Dictionary<uint, List<uint>>(118), new List<Loc>(118));
             mngrp_GetFileLocations();
 
-            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(
-                aw.GetListOfFiles().First(x => x.IndexOf(filenames[(int)FileID.MNGRP], StringComparison.OrdinalIgnoreCase) >= 0))))
+            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(filenames[(int)FileID.MNGRP],true)))
             using (BinaryReader br = new BinaryReader(ms))
             {
                 //string contain padding values at start of file
@@ -466,9 +461,7 @@ namespace OpenVIII
 
         private void simple_init(FileID fileID)
         {
-            string[] list = aw.GetListOfFiles();
-            string index = list.First(x => x.IndexOf(filenames[(int)fileID], StringComparison.OrdinalIgnoreCase) >= 0);
-            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(index)))
+            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(filenames[(int)fileID], true)))
             using (BinaryReader br = new BinaryReader(ms))
             {
                 if (!files.ContainsKey(fileID))

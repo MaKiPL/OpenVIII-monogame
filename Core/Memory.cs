@@ -770,8 +770,24 @@ namespace OpenVIII
         /// </summary>
         public class Archive
         {
+            public Archive Parent;
             public string _Root { get; set; }
             public string _Filename { get; private set; }
+            public Archive(Archive parent, string path)
+            {
+                Parent = parent;
+                _Root = "";
+                if (Path.HasExtension(path))
+                {
+                    var ext = Path.GetExtension(path);
+                    if (ext == B_FileArchive || ext == B_FileIndex || ext == B_FileList)
+                    {
+                        int index = path.LastIndexOf('.');
+                        path = index == -1 ? path : path.Substring(0, index);
+                    }
+                }
+                _Filename = path;
+            }
             public Archive(string path) : this(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path))
             { }
             public Archive(string root, string filename)
