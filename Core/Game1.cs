@@ -33,7 +33,6 @@ namespace OpenVIII
             Memory.random = new Random(); //creates global random class for all sort of things
 
             base.Initialize();
-            //ArchiveSearch s = new ArchiveSearch("Ultra Waves");//used to find file a string is in. disable if not using.
         }
 
         protected override void LoadContent()
