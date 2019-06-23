@@ -7,7 +7,6 @@ namespace OpenVIII
 {
     public class ArchiveWorker
     {
-
         #region Fields
 
         /// <summary>
@@ -19,7 +18,16 @@ namespace OpenVIII
         private uint _locationInFs;
         public Memory.Archive _path;
         private uint _unpackedFileSize;
-        private static Dictionary<Memory.Archive, Dictionary<String, byte[]>> ArchiveCache;
+        private static object cachelock = new object(); //prevent two threads from writing to cache at the same time.
+        private static Dictionary<Memory.Archive, Dictionary<string, byte[]>> ArchiveCache = new Dictionary<Memory.Archive, Dictionary<string, byte[]>>
+            {
+                { Memory.Archives.A_BATTLE, new Dictionary<string, byte[]>() },
+                { Memory.Archives.A_FIELD, new Dictionary<string, byte[]>() },
+                { Memory.Archives.A_MAGIC, new Dictionary<string, byte[]>() },
+                { Memory.Archives.A_MAIN, new Dictionary<string, byte[]>() },
+                { Memory.Archives.A_MENU, new Dictionary<string, byte[]>() },
+                { Memory.Archives.A_WORLD, new Dictionary<string, byte[]>() }
+            };
 
         #endregion Fields
 
@@ -32,18 +40,6 @@ namespace OpenVIII
         /// <param name="skiplist">If list generation is unneeded you can skip it by setting true</param>
         public ArchiveWorker(Memory.Archive path, bool skiplist = false)
         {
-            if (ArchiveCache == null)
-            {
-                ArchiveCache = new Dictionary<Memory.Archive, Dictionary<string, byte[]>>
-                {
-                    { Memory.Archives.A_BATTLE, new Dictionary<string, byte[]>() },
-                    { Memory.Archives.A_FIELD, new Dictionary<string, byte[]>() },
-                    { Memory.Archives.A_MAGIC, new Dictionary<string, byte[]>() },
-                    { Memory.Archives.A_MAIN, new Dictionary<string, byte[]>() },
-                    { Memory.Archives.A_MENU, new Dictionary<string, byte[]>() },
-                    { Memory.Archives.A_WORLD, new Dictionary<string, byte[]>() }
-                };
-            }
             _path = path;
             if (!skiplist)
                 FileList = ProduceFileLists();
@@ -62,7 +58,7 @@ namespace OpenVIII
         public static byte[] GetBinaryFile(Memory.Archive archive, string fileName, bool cache = false)
         {
             ArchiveWorker tmp = new ArchiveWorker(archive, true);
-            return tmp.GetBinaryFile(fileName,cache);
+            return tmp.GetBinaryFile(fileName, cache);
         }
 
         /// <summary>
@@ -110,7 +106,6 @@ namespace OpenVIII
 
             int loc = FindFile(ref fileName, File.OpenRead(_path.FL));
 
-            byte[] temp = null;
             // read file list
 
             if (loc == -1)
@@ -120,24 +115,36 @@ namespace OpenVIII
             }
             else
             {
-                if (ArchiveCache.ContainsKey(_path) && ArchiveCache[_path].ContainsKey(fileName))
-                    return (ArchiveCache[_path][fileName]);
-                //read index data
-                using (BinaryReader br = new BinaryReader(File.OpenRead(_path.FI)))
-                {
-                    br.BaseStream.Seek(loc * 12, SeekOrigin.Begin);
-                    _unpackedFileSize = br.ReadUInt32(); //fs.Seek(4, SeekOrigin.Current);
-                    _locationInFs = br.ReadUInt32();
-                    _compressed = br.ReadUInt32() != 0;
-                }
-                //read binary data.
-                using (BinaryReader br = new BinaryReader(File.OpenRead(_path.FS)))
-                {
-                    br.BaseStream.Seek(_locationInFs, SeekOrigin.Begin);
-                    temp = br.ReadBytes(_compressed ? br.ReadInt32() : (int)_unpackedFileSize);
-                }
+                if (cache)
+                    lock (cachelock)
+                    {
+                        return GetBinaryFile(fileName, loc, cache);
+                    }
+                else
+                    return GetBinaryFile(fileName, loc, cache);
             }
-            if (temp == null) throw new FileNotFoundException($"Searched {_path} and could not find {fileName}.", fileName);
+            throw new FileNotFoundException($"Searched {_path} and could not find {fileName}.", fileName);
+        }
+
+        private byte[] GetBinaryFile(string fileName, int loc, bool cache)
+        {
+            byte[] temp = null;
+            if (ArchiveCache.ContainsKey(_path) && ArchiveCache[_path].ContainsKey(fileName))
+                return (ArchiveCache[_path][fileName]);
+            //read index data
+            using (BinaryReader br = new BinaryReader(File.OpenRead(_path.FI)))
+            {
+                br.BaseStream.Seek(loc * 12, SeekOrigin.Begin);
+                _unpackedFileSize = br.ReadUInt32(); //fs.Seek(4, SeekOrigin.Current);
+                _locationInFs = br.ReadUInt32();
+                _compressed = br.ReadUInt32() != 0;
+            }
+            //read binary data.
+            using (BinaryReader br = new BinaryReader(File.OpenRead(_path.FS)))
+            {
+                br.BaseStream.Seek(_locationInFs, SeekOrigin.Begin);
+                temp = br.ReadBytes(_compressed ? br.ReadInt32() : (int)_unpackedFileSize);
+            }
 
             temp = temp == null ? null : _compressed ? LZSS.DecompressAllNew(temp) : temp;
             if (temp != null && cache) ArchiveCache[_path][fileName] = temp;
@@ -186,6 +193,7 @@ namespace OpenVIII
             Debug.WriteLine($"ArchiveWorker:: Filename {filename}, not found. returning -1");
             return -1;
         }
+
         /// <summary>
         /// Generate a file list from raw text file.
         /// </summary>
