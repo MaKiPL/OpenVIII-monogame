@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 
 namespace OpenVIII
 {
@@ -38,7 +36,7 @@ namespace OpenVIII
         private uint[] StringsLoc;
         private uint[] StringsPadLoc;
 
-        public Dictionary<FileID, Stringfile> Files { get => files; }
+        public Dictionary<FileID, Stringfile> Files => files;
 
         public string[] Filenames => filenames;
 
@@ -103,6 +101,7 @@ namespace OpenVIII
                 default:
                     ArchiveString = Memory.Archives.A_MENU;
                     break;
+
                 case FileID.NAMEDIC:
                 case FileID.KERNEL:
                     ArchiveString = Memory.Archives.A_MAIN;
@@ -164,6 +163,7 @@ namespace OpenVIII
             GetAW(FileID.KERNEL);
             Kernel_init(FileID.KERNEL);
         }
+
         /// <summary>
         /// Fetch strings from kernel.bin
         /// </summary>
@@ -171,9 +171,8 @@ namespace OpenVIII
         /// <see cref="http://www.balamb.pl/qh/kernel-pointers.htm"/>
         private void Kernel_init(FileID fileID)
         {
-
             files[fileID] = new Stringfile(new Dictionary<uint, List<uint>>(56), new List<Loc>(56));
-            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(filenames[(int)fileID],true)))
+            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(filenames[(int)fileID], true)))
             using (BinaryReader br = new BinaryReader(ms))
             {
                 kernel_GetFileLocations(br);
@@ -326,7 +325,7 @@ namespace OpenVIII
         private void mngrp_GetFileLocations()
         {
             FileID fileID = FileID.MNGRP;
-            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(filenames[(int)FileID.MNGRP_MAP],true)))
+            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(filenames[(int)FileID.MNGRP_MAP], true)))
             using (BinaryReader br = new BinaryReader(ms))
             {
                 while (ms.Position < ms.Length)
@@ -340,6 +339,7 @@ namespace OpenVIII
                 }
             }
         }
+
         private void kernel_GetFileLocations(BinaryReader br)
         {
             FileID fileID = FileID.KERNEL;
@@ -363,7 +363,7 @@ namespace OpenVIII
             files[fileID] = new Stringfile(new Dictionary<uint, List<uint>>(118), new List<Loc>(118));
             mngrp_GetFileLocations();
 
-            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(filenames[(int)FileID.MNGRP],true)))
+            using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(filenames[(int)FileID.MNGRP], true)))
             using (BinaryReader br = new BinaryReader(ms))
             {
                 //string contain padding values at start of file
@@ -469,22 +469,29 @@ namespace OpenVIII
                 mngrp_get_string_offsets(br, fileID, 0);
             }
         }
+
         public FF8String GetName(Characters c, Saves.Data d = null) => GetName((Faces.ID)c, d);
-        public FF8String GetName(GFs gf, Saves.Data d = null) => GetName((Faces.ID)((int)gf+16), d);
-        public FF8String GetName(Faces.ID id, Saves.Data d = null )
+
+        public FF8String GetName(GFs gf, Saves.Data d = null) => GetName((Faces.ID)((int)gf + 16), d);
+
+        public FF8String GetName(Faces.ID id, Saves.Data d = null)
         {
             if (d == null)
                 d = Memory.State;
             switch (id)
             {
                 case Faces.ID.Squall_Leonhart:
-                    return d.Squallsname?? Read(FileID.MNGRP,2,92);
+                    return d.Squallsname ?? Read(FileID.MNGRP, 2, 92);
+
                 case Faces.ID.Rinoa_Heartilly:
                     return d.Rinoasname ?? Read(FileID.MNGRP, 2, 93);
+
                 case Faces.ID.Angelo:
                     return d.Angelosname ?? Read(FileID.MNGRP, 2, 94);
+
                 case Faces.ID.Boko:
                     return d.Bokosname ?? Read(FileID.MNGRP, 2, 135);
+
                 case Faces.ID.Zell_Dincht:
                 case Faces.ID.Irvine_Kinneas:
                 case Faces.ID.Quistis_Trepe:
@@ -495,6 +502,7 @@ namespace OpenVIII
                 case Faces.ID.Kiros_Seagill:
                 case Faces.ID.Ward_Zabac:
                     return Read(FileID.KERNEL, 6, (int)id);
+
                 case Faces.ID.Quezacotl:
                 case Faces.ID.Shiva:
                 case Faces.ID.Ifrit:
@@ -511,15 +519,18 @@ namespace OpenVIII
                 case Faces.ID.Cactuar:
                 case Faces.ID.Tonberry:
                 case Faces.ID.Eden:
-                    return d.GFs[(GFs)((int)id - 16)].Name ?? Read(FileID.MNGRP, 2, 95-16 + (int)id);
+                    return d.GFs[(GFs)((int)id - 16)].Name ?? Read(FileID.MNGRP, 2, 95 - 16 + (int)id);
+
                 case Faces.ID.Griever:
-                    return d.Grieversname?? Read(FileID.MNGRP, 2, 135);
+                    return d.Grieversname ?? Read(FileID.MNGRP, 2, 135);
+
                 case Faces.ID.MiniMog:
                     return Read(FileID.KERNEL, 0, 72); // also in KERNEL, 12, 36
                 default:
                     return new FF8String();
             }
         }
+
         #endregion Methods
 
         //private byte[] Read(FileID fid, uint pos)

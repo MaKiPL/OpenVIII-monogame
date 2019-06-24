@@ -108,7 +108,7 @@ namespace OpenVIII
 
         #region Properties
 
-        public byte[] Value { get => value; set => this.value = value; }
+        public virtual byte[] Value { get => value; set => this.value = value; }
         public string Value_str => encoding.GetString(Value).TrimEnd('\0');
         public int Length => value==null? 0:value.Length;
         public object Current { get => Value[position-1] ; }

@@ -19,14 +19,7 @@ namespace OpenVIII
             this.subPositions = subPositions;
         }
 
-        /// <summary>
-        /// do not use this.
-        /// </summary>
-        private Stringfile()
-        {
-            this.sPositions = null;
-            this.subPositions = null;
-        }
+
 
         #endregion Constructors
     }

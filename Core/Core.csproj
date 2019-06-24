@@ -704,6 +704,7 @@
     <Compile Include="Menu\DrawPointer.cs" />
     <Compile Include="Menu\Faces.cs" />
     <Compile Include="Menu\Faces.ID.cs" />
+    <Compile Include="Menu\FF8StringReference.cs" />
     <Compile Include="Menu\Icons.cs" />
     <Compile Include="Menu\Icons.ID.cs" />
     <Compile Include="Menu\Icons.InsertCustomEntries.cs" />
