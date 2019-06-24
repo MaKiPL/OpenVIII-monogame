@@ -140,8 +140,8 @@
     <Compile Include="EntryGroup.cs" />
     <Compile Include="ExtapathyExtended.cs" />
     <Compile Include="Extended.cs" />
-    <Compile Include="FF8String.cs" />
-    <Compile Include="FF8StringReference.cs" />
+    <Compile Include="Strings\FF8String.cs" />
+    <Compile Include="Strings\FF8StringReference.cs" />
     <Compile Include="Ffcc.cs" />
     <Compile Include="FfccVaribleGroup.cs" />
     <Compile Include="FFmpegBinariesHelper.cs" />

@@ -144,7 +144,7 @@ namespace OpenVIII
                                     if (pos >= 5) pos++;
                                     Contents[pos] = stat;
                                     FF8String name = Kernel_bin.MagicData[Memory.State.Characters[Character].Stat_J[stat]].Name;
-                                    if (name.Length == 0) name = Misc[Items._];
+                                    if (name == null || name.Length == 0) name = Misc[Items._];
 
                                     ITEM[pos, 0] = new IGMDataItem_Icon(Stat2Icon[stat], new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), 2);
                                     ITEM[pos, 1] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X + 80, SIZE[pos].Y, 0, 0));

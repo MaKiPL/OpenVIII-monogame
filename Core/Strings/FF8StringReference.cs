@@ -227,7 +227,7 @@ namespace OpenVIII
                             }
                         }
                     }
-                    if ((StringSettings & Settings.Namedic) != 0)
+                    if ((StringSettings & Settings.Namedic) != 0) 
                     {
                         InsertNamedic();
                     }
@@ -242,7 +242,7 @@ namespace OpenVIII
         //        return new FF8String("");
         //    if (pos < br.BaseStream.Length)
         //        using (MemoryStream os = new MemoryStream(50))
-        //        {
+        //        {p
         //            br.BaseStream.Seek(pos, SeekOrigin.Begin);
         //            int c = 0;
         //            byte b = 0;
