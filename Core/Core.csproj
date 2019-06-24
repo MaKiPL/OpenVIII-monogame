@@ -789,8 +789,9 @@
     <Compile Include="Menu\Module_main_menu_DebugLobby.cs" />
     <Compile Include="Menu\Module_main_menu_MainLobby.cs" />
     <Compile Include="Menu\PointEx.cs" />
-    <Compile Include="Menu\Stringfile.cs" />
-    <Compile Include="Menu\Strings.cs" />
+    <Compile Include="Strings\Stringfile.cs" />
+    <Compile Include="Strings\Strings.Areames.cs" />
+    <Compile Include="Strings\Strings.cs" />
     <Compile Include="ModuleHandler.cs" />
     <Compile Include="module_movie_test.cs" />
     <Compile Include="module_overture_debug.cs" />
@@ -821,6 +822,8 @@
     <Compile Include="Sources\MonoGame\Hooks\OpenALWindowsHook.cs" />
     <Compile Include="Sources\NetFramework\TypeExtensionMethods.cs" />
     <Compile Include="SP2.cs" />
+    <Compile Include="Strings\Strings.Kernel.cs" />
+    <Compile Include="Strings\StringsBase.cs" />
     <Compile Include="TEX.cs" />
     <Compile Include="TextureHandler.cs" />
     <Compile Include="TIM2.cs" />
@@ -886,6 +889,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
+    <Compile Include="Strings\Strings.Mngrp.cs" />
+    <Compile Include="Strings\Strings.Namedic.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Menu\Debug\" />
