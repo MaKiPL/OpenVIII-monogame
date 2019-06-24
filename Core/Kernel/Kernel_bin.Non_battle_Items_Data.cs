@@ -28,7 +28,7 @@ namespace OpenVIII
             {
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 //0x0000	2 bytes Offset to item name
-                Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1).ReplaceRegion();
+                Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
                 //0x0002	2 bytes Offset to item description
                 //br.BaseStream.Seek(4,SeekOrigin.Current);
                 ID = i;

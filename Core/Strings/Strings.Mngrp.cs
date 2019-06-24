@@ -14,11 +14,13 @@ namespace OpenVIII
 
         public class Mngrp : StringsBase
         {
+
             #region Fields
 
             private Dictionary<uint, uint> BinMSG;
             private Dictionary<uint, List<uint>> ComplexStr;
             private uint[] StringsLoc;
+            private uint[] StringsPadLoc;
 
             #endregion Fields
 
@@ -29,6 +31,17 @@ namespace OpenVIII
             }
 
             #endregion Constructors
+
+            #region Enums
+
+            private enum SectionID
+            {
+                tkmnmes1,
+                tkmnmes2,
+                tkmnmes3,
+            }
+
+            #endregion Enums
 
             #region Methods
 
@@ -54,10 +67,9 @@ namespace OpenVIII
                     }
                 }
             }
-
             protected override void Init()
             {
-                Files = new Stringfile(new Dictionary<uint, List<uint>>(118), new List<Loc>(118));
+                Files = new StringFile(118);
                 GetFileLocations();
                 ArchiveWorker aw = new ArchiveWorker(Archive, true);
                 using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(Filenames[0], true)))
@@ -97,8 +109,10 @@ namespace OpenVIII
             }
 
             #endregion Methods
+
         }
 
         #endregion Classes
+
     }
 }

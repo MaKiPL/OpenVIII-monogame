@@ -43,7 +43,7 @@ namespace OpenVIII
                                     Kernel_bin.EquipableAbilities[Memory.State.Characters[Character].Abilities[i]].Icon, 9,
                                     Kernel_bin.EquipableAbilities[Memory.State.Characters[Character].Abilities[i]].Name,
                                     new Rectangle(SIZE[i].X + 40, SIZE[i].Y, 0, 0));
-                                    Descriptions[i] = Kernel_bin.EquipableAbilities[Memory.State.Characters[Character].Abilities[i]].Description.ReplaceRegion();
+                                    Descriptions[i] = Kernel_bin.EquipableAbilities[Memory.State.Characters[Character].Abilities[i]].Description;
                                 }
                                 else
                                 {

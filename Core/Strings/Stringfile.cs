@@ -2,7 +2,7 @@
 
 namespace OpenVIII
 {
-    public class Stringfile
+    public class StringFile
     {
         #region Fields
 
@@ -13,10 +13,10 @@ namespace OpenVIII
 
         #region Constructors
 
-        public Stringfile(Dictionary<uint, List<FF8StringReference>> sPositions, List<Loc> subPositions)
+        public StringFile(int count = 0)
         {
-            this.sPositions = sPositions;
-            this.subPositions = subPositions;
+            sPositions = new Dictionary<uint, List<FF8StringReference>>(count);
+            subPositions = new List<Loc>(count);
         }
         public FF8StringReference this[uint i,int j] => sPositions[i][j];
         public Loc this[int i] => subPositions[i];

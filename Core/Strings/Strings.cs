@@ -1,15 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 
 namespace OpenVIII
 {
-
     /// <summary>
     /// Loads strings from FF8 files
     /// </summary>
     public partial class Strings
     {
+        #region Fields
+
+        private static Dictionary<FileID, StringsBase> Files;
+
+        private static object Filesloc = new object();
+
+        #endregion Fields
 
         #region Constructors
 
@@ -33,7 +37,6 @@ namespace OpenVIII
         #endregion Enums
 
         #region Methods
-
 
         public FF8String GetName(Characters c, Saves.Data d = null) => GetName(c.ToFacesID(), d);
 
@@ -84,7 +87,7 @@ namespace OpenVIII
                 case Faces.ID.Cactuar:
                 case Faces.ID.Tonberry:
                 case Faces.ID.Eden:
-                    return d.GFs[id.ToGFs()].Name ?? Read(FileID.MNGRP, 2, 95 - 16 + (int)id);
+                    return d.GFs[id.ToGFs()].Name ?? Read(FileID.MNGRP, 2, 95 + (int)(id.ToGFs()));
 
                 case Faces.ID.Griever:
                     return d.Grieversname ?? Read(FileID.MNGRP, 2, 135);
@@ -96,7 +99,6 @@ namespace OpenVIII
             }
         }
 
-
         /// <summary>
         /// Remember to Close() if done using
         /// </summary>
@@ -104,56 +106,21 @@ namespace OpenVIII
         /// <param name="sectionID"></param>
         /// <param name="stringID"></param>
         /// <returns></returns>
-        public FF8StringReference Read(FileID fileID, int sectionID, int stringID) => Files[fileID][(uint)sectionID,stringID];
+        public FF8StringReference Read(FileID fileID, int sectionID, int stringID) => Files[fileID][(uint)sectionID, stringID];
 
+        public StringsBase this[FileID id] => Files[id];
 
-
-        //public FF8String Read(BinaryReader br, FileID fid, uint pos)
-        //{
-        //    if (pos == 0)
-        //        return new FF8String("");
-        //    if (pos < br.BaseStream.Length)
-        //        using (MemoryStream os = new MemoryStream(50))
-        //        {
-        //            br.BaseStream.Seek(pos, SeekOrigin.Begin);
-        //            int c = 0;
-        //            byte b = 0;
-        //            do
-        //            {
-        //                if (br.BaseStream.Position > br.BaseStream.Length) break;
-        //                //sometimes strings start with 00 or 01. But there is another 00 at the end.
-        //                //I think it's for SeeD test like 1 is right and 0 is wrong. for now i skip them.
-        //                b = br.ReadByte();
-        //                if (b != 0 && b != 1)
-        //                {
-        //                    os.WriteByte(b);
-        //                }
-        //                c++;
-        //            }
-        //            while (b != 0 || c == 0);
-        //            if (os.Length > 0)
-        //                return os.ToArray();
-        //        }
-        //    return null;
-        //}
-
-        private Dictionary<FileID, StringsBase> Files;
-        private void Init() => Files = new Dictionary<FileID, StringsBase>{
+        private void Init()
+        {
+            lock (Filesloc)
+                if (Files == null)
+                    Files = new Dictionary<FileID, StringsBase>{
                 { FileID.MNGRP, new Mngrp()},
-                { FileID.KERNEL, new Kernel() },
+                { FileID.NAMEDIC, new Namedic() },
                 { FileID.AREAMES, new Areames() },
-                { FileID.NAMEDIC, new Namedic() }
+                { FileID.KERNEL, new Kernel() },
                 };
-
-
-
-
-
-
-
-
-
-
+        }
 
         #endregion Methods
     }

@@ -25,7 +25,7 @@ namespace OpenVIII
                 public override void ReInit()
                 {
                     base.ReInit();
-                    ((IGMDataItem_Box)CONTAINER).Data = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Memory.State.LocationID).ReplaceRegion();
+                    ((IGMDataItem_Box)CONTAINER).Data = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Memory.State.LocationID);
                 }
 
                 #endregion Methods

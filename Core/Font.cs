@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace OpenVIII
 {
@@ -95,73 +94,69 @@ namespace OpenVIII
             Point size = (new Vector2(0, charSize) * zoom).RoundedPoint();
             int width;
 
-            foreach (byte cs in buffer)
+            foreach (byte c in buffer)
             {
-                byte[] expanded = cs > 0xE1 && FF8String.BytetoStr.ContainsKey(cs)?
-                    FF8String.BytetoStr[cs].Value : new byte[] { cs };
-                foreach (byte c in expanded)
+                if (c == 0) continue;
+                int deltaChar = (c - 32);
+                if (deltaChar >= 0 && deltaChar < charWidths.Length)
                 {
-                    if (c == 0) continue;
-                    int deltaChar = (c - 32);
-                    if (deltaChar >= 0 && deltaChar < charWidths.Length)
-                    {
-                        width = charWidths[deltaChar];
-                        size.X = (int)(charWidths[deltaChar] * zoom.X);
-                    }
-                    else
-                    {
-                        width = charSize;
-                        size.X = (int)(charSize * zoom.X);
-                    }
-                    Point curSize = size;
-                    int verticalPosition = deltaChar / charCountWidth;
-                    //i.e. 1280 is 100%, 640 is 50% and therefore 2560 is 200% which means multiply by 0.5f or 2.0f
-                    if (c == 0x02)// \n
-                    {
-                        real.X = (int)pos.X;
-                        real.Y += size.Y + lineSpacing;
-                        continue;
-                    }
-                    Rectangle destRect = new Rectangle(real, size);
-                    // if you use Memory.SpriteBatchStartAlpha(SamplerState.PointClamp); you won't need
-                    // to trim last pixel. but it doesn't look good on low res fonts.
-                    if (!skipdraw)
-                    {
-                        Rectangle sourceRect = new Rectangle((deltaChar - (verticalPosition * charCountWidth)) * charSize,
-                            verticalPosition * charSize,
-                            width,
-                            charSize);
-
-                        switch (whichFont)
-                        {
-                            case Type.menuFont:
-                            case Type.sysfnt:
-                                //trim pixels to remove texture filtering artifacts.
-                                sourceRect.Width -= 1;
-                                sourceRect.Height -= 1;
-                                Memory.spriteBatch.Draw(whichFont == Type.menuFont ? menuFont : sysfnt,
-                                    destRect,
-                                    sourceRect,
-                                ColorID2Color[color] * Fade);
-                                break;
-
-                            case Type.sysFntBig:
-                                if (!sysfntbig.Modded)
-                                {
-                                    Rectangle ShadowdestRect = new Rectangle(destRect.Location, destRect.Size);
-                                    ShadowdestRect.Offset(zoom);
-                                    sysfntbig.Draw(ShadowdestRect, sourceRect, Color.Black * Fade * .5f);
-                                }
-                                sysfntbig.Draw(destRect, sourceRect, ColorID2Color[color] * Fade);
-                                break;
-                        }
-                    }
-                    real.X += size.X;
-                    int curWidth = real.X - (int)pos.X;
-                    if (curWidth > ret.Width)
-                        ret.Width = curWidth;
+                    width = charWidths[deltaChar];
+                    size.X = (int)(charWidths[deltaChar] * zoom.X);
                 }
+                else
+                {
+                    width = charSize;
+                    size.X = (int)(charSize * zoom.X);
+                }
+                Point curSize = size;
+                int verticalPosition = deltaChar / charCountWidth;
+                //i.e. 1280 is 100%, 640 is 50% and therefore 2560 is 200% which means multiply by 0.5f or 2.0f
+                if (c == 0x02)// \n
+                {
+                    real.X = (int)pos.X;
+                    real.Y += size.Y + lineSpacing;
+                    continue;
+                }
+                Rectangle destRect = new Rectangle(real, size);
+                // if you use Memory.SpriteBatchStartAlpha(SamplerState.PointClamp); you won't need
+                // to trim last pixel. but it doesn't look good on low res fonts.
+                if (!skipdraw)
+                {
+                    Rectangle sourceRect = new Rectangle((deltaChar - (verticalPosition * charCountWidth)) * charSize,
+                        verticalPosition * charSize,
+                        width,
+                        charSize);
+
+                    switch (whichFont)
+                    {
+                        case Type.menuFont:
+                        case Type.sysfnt:
+                            //trim pixels to remove texture filtering artifacts.
+                            sourceRect.Width -= 1;
+                            sourceRect.Height -= 1;
+                            Memory.spriteBatch.Draw(whichFont == Type.menuFont ? menuFont : sysfnt,
+                                destRect,
+                                sourceRect,
+                            ColorID2Color[color] * Fade);
+                            break;
+
+                        case Type.sysFntBig:
+                            if (!sysfntbig.Modded)
+                            {
+                                Rectangle ShadowdestRect = new Rectangle(destRect.Location, destRect.Size);
+                                ShadowdestRect.Offset(zoom);
+                                sysfntbig.Draw(ShadowdestRect, sourceRect, Color.Black * Fade * .5f);
+                            }
+                            sysfntbig.Draw(destRect, sourceRect, ColorID2Color[color] * Fade);
+                            break;
+                    }
+                }
+                real.X += size.X;
+                int curWidth = real.X - (int)pos.X;
+                if (curWidth > ret.Width)
+                    ret.Width = curWidth;
             }
+
             ret.Height = size.Y + (real.Y - (int)pos.Y);
             return ret;
         }

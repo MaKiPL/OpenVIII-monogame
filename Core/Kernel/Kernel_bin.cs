@@ -84,8 +84,8 @@ namespace OpenVIII
         public Kernel_bin()
         {
             aw = new ArchiveWorker(ArchiveString);
-            byte[] buffer = aw.GetBinaryFile(Memory.Strings.Filenames[(int)Strings.FileID.KERNEL]);
-            List<Loc> subPositions = Memory.Strings.Files[Strings.FileID.KERNEL].subPositions;
+            byte[] buffer = aw.GetBinaryFile(Memory.Strings[Strings.FileID.KERNEL].GetFilenames()[0]);
+            List<Loc> subPositions = Memory.Strings[Strings.FileID.KERNEL].GetFiles().subPositions;
 
             using (MemoryStream ms = new MemoryStream(buffer))
             using (BinaryReader br = new BinaryReader(ms))

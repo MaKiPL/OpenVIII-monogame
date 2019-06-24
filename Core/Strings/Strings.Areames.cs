@@ -10,6 +10,10 @@ namespace OpenVIII
     public partial class Strings
     {
 
+        /// <summary>
+        /// <para>Area Names</para>
+        /// <para>Requires Namedic</para>
+        /// </summary>
         public class Areames : StringsBase
         {
             public Areames() : base(Memory.Archives.A_MENU, "areames.dc1")
@@ -17,7 +21,11 @@ namespace OpenVIII
             }
 
             protected override void GetFileLocations(BinaryReader br) { }
-            protected override void Init() => simple_init();
+            protected override void Init()
+            {
+                Settings = FF8StringReference.Settings.Namedic;
+                simple_init();
+            }
         }
     }
 }

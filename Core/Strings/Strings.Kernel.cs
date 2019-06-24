@@ -11,7 +11,10 @@ namespace OpenVIII
     {
 
         #region Classes
-
+        /// <summary>
+        /// <para>Kernel.bin Strings</para>
+        /// <para>Has Multibyte Characters, Requires Namedic</para>
+        /// </summary>
         public class Kernel : StringsBase
         {
 
@@ -68,8 +71,9 @@ namespace OpenVIII
             /// <see cref="http://www.balamb.pl/qh/kernel-pointers.htm"/>
             protected override void Init()
             {
+                Settings = (FF8StringReference.Settings.MultiCharByte | FF8StringReference.Settings.Namedic);
                 ArchiveWorker aw = new ArchiveWorker(Archive);
-                Files = new Stringfile(new Dictionary<uint, List<uint>>(56), new List<Loc>(56));
+                Files = new StringFile(56);
                 using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(Filenames[0], true)))
                 using (BinaryReader br = new BinaryReader(ms))
                 {
@@ -107,7 +111,6 @@ namespace OpenVIII
                     for (uint key = 0; key < Files.subPositions.Count; key++)
                     {
                         Loc fpos = Files.subPositions[(int)key];
-                        bool pad = (Array.IndexOf(StringsPadLoc, key) >= 0);
                         if (StringLocations.ContainsKey(key))
                         {
                             Get_Strings_BinMSG(br, Filenames[0], key, Files.subPositions[(int)(StringLocations[key].Item1)].seek, StringLocations[key].Item2, StringLocations[key].Item3);

@@ -115,7 +115,7 @@ namespace OpenVIII
                         Contents[pos] = Kernel_bin.Abilities.None;
                     }
                     if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None &&InGameMenu_Junction.GetMode() == Mode.Abilities_Abilities)
-                        InGameMenu_Junction.ChangeHelp(Source[Contents[CURSOR_SELECT]].Description.ReplaceRegion());
+                        InGameMenu_Junction.ChangeHelp(Source[Contents[CURSOR_SELECT]].Description);
                     UpdateTitle();
                     if (Contents[CURSOR_SELECT] == Kernel_bin.Abilities.None)
                         CURSOR_NEXT();
