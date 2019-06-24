@@ -5,6 +5,8 @@ namespace OpenVIII
     /// <summary>
     /// This class stores the reference to where the string is. Can be read with Read();
     /// </summary>
+    /// <remarks>I thought his would be a good idea but it doesn't look easy to implement.
+    /// The strings class is kinda messy. I think I need to recode it to be more like the kernel class where file has it's own class.</remarks>
     public class FF8StringReference : FF8String
     {
         private readonly Memory.Archive Archive;
