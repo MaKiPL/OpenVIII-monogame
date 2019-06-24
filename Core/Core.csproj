@@ -789,7 +789,7 @@
     <Compile Include="Menu\Module_main_menu_DebugLobby.cs" />
     <Compile Include="Menu\Module_main_menu_MainLobby.cs" />
     <Compile Include="Menu\PointEx.cs" />
-    <Compile Include="Strings\Stringfile.cs" />
+    <Compile Include="Strings\StringFile.cs" />
     <Compile Include="Strings\Strings.Areames.cs" />
     <Compile Include="Strings\Strings.cs" />
     <Compile Include="ModuleHandler.cs" />
