@@ -42,7 +42,7 @@ namespace OpenVIII
                     Update_String();
                     if (InGameMenu_Junction != null)
                     {
-                        if (InGameMenu_Junction.GetMode() == Mode.TopMenu_Junction)
+                        if (InGameMenu_Junction.GetMode().Equals(Mode.TopMenu_Junction))
                             Cursor_Status &= ~Cursor_Status.Blinking;
                         else
                             Cursor_Status |= Cursor_Status.Blinking;
@@ -76,7 +76,7 @@ namespace OpenVIII
 
                 private void Update_String()
                 {
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode() == Mode.TopMenu_Junction && Enabled)
+                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode().Equals(Mode.TopMenu_Junction) && Enabled)
                     {
                         FF8String Changed = null;
                         switch (CURSOR_SELECT)

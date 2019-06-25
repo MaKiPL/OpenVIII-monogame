@@ -42,7 +42,7 @@ namespace OpenVIII
                 public byte TopMenuChoice { get; private set; }
                 bool All => (Item.Target & (Item_In_Menu._Target.All | Item_In_Menu._Target.All2)) != 0;
 
-                bool IsMe => InGameMenu_Items.GetMode() == Mode.UseItemOnTarget;
+                bool IsMe => InGameMenu_Items.GetMode().Equals(Mode.UseItemOnTarget);
 
                 #endregion Properties
 

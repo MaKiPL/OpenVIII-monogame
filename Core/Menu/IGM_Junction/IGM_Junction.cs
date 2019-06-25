@@ -137,13 +137,13 @@ namespace OpenVIII
             /// </summary>
             public static Characters VisableCharacter { get; private set; }
             public static EventHandler<Mode> ModeChangeEventListener;
-            private Mode GetMode() => _mode;
-            private void SetMode(Mode value)
+            public override Enum GetMode() => _mode;
+            public override void SetMode(Enum value)
             {
-                if (_mode != value)
+                if (!_mode.Equals(value))
                 {
-                    _mode = value;
-                    ModeChangeEventListener?.Invoke(this, value);
+                    _mode = (Mode)value;
+                    ModeChangeEventListener?.Invoke(this, (Mode)value);
                 }
             }
 
@@ -313,7 +313,7 @@ namespace OpenVIII
 
             protected override bool Inputs()
             {
-                if (GetMode() == Mode.None) SetMode(Mode.TopMenu);
+                if (GetMode().Equals(Mode.None)) SetMode(Mode.TopMenu);
                 bool ret = false;
                 if (Enabled)
                 {

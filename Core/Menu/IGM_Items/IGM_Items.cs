@@ -59,7 +59,7 @@ namespace OpenVIII
 
             #region Methods
 
-            public Mode GetMode() => mode;
+            public override Enum GetMode() => mode;
 
             public override void ReInit()
             {
@@ -67,12 +67,12 @@ namespace OpenVIII
                 base.ReInit();
             }
 
-            public void SetMode(Mode value)
+            public override void SetMode(Enum value)
             {
-                if (mode != value)
+                if (!mode.Equals(value))
                 {
-                    ModeChangeHandler?.Invoke(this, value);
-                    mode = value;
+                    ModeChangeHandler?.Invoke(this, (Mode)value);
+                    mode = (Mode)value;
                 }
             }
 
@@ -104,7 +104,7 @@ namespace OpenVIII
                 SetMode(Mode.SelectItem);
                 base.Init();
             }
-            protected override bool Inputs() => InputsDict[GetMode()]();
+            protected override bool Inputs() => InputsDict[(Mode)GetMode()]();
 
             #endregion Methods
         }

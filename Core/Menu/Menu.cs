@@ -17,6 +17,8 @@ namespace OpenVIII
             //{
             //    UNDEFINDED
             //}
+            public abstract void SetMode(Enum mode);
+            public abstract Enum GetMode();
 
             public bool Enabled { get; private set; } = true;
             public virtual void Hide() => Enabled = false;

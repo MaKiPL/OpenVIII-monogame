@@ -78,7 +78,7 @@ namespace OpenVIII
                 {
                     bool ret = base.Update();
 
-                    if (InGameMenu_Junction != null &&InGameMenu_Junction.GetMode() == Mode.Abilities)
+                    if (InGameMenu_Junction != null &&InGameMenu_Junction.GetMode().Equals(Mode.Abilities))
                     {
                         Cursor_Status &= ~Cursor_Status.Blinking;
 

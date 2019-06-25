@@ -699,15 +699,15 @@
     <Compile Include="Loc.cs" />
     <Compile Include="LZSS.cs" />
     <Compile Include="Memory.cs" />
-    <Compile Include="Menu\Cards.cs" />
-    <Compile Include="Menu\Cards.ID.cs" />
-    <Compile Include="Menu\DrawBox.cs" />
-    <Compile Include="Menu\DrawPointer.cs" />
-    <Compile Include="Menu\Faces.cs" />
-    <Compile Include="Menu\Faces.ID.cs" />
-    <Compile Include="Menu\Icons.cs" />
-    <Compile Include="Menu\Icons.ID.cs" />
-    <Compile Include="Menu\Icons.InsertCustomEntries.cs" />
+    <Compile Include="Menu\Images\Cards.cs" />
+    <Compile Include="Menu\Images\Cards.ID.cs" />
+    <Compile Include="Menu\Images\DrawBox.cs" />
+    <Compile Include="Menu\Images\DrawPointer.cs" />
+    <Compile Include="Menu\Images\Faces.cs" />
+    <Compile Include="Menu\Images\Faces.ID.cs" />
+    <Compile Include="Menu\Images\Icons.cs" />
+    <Compile Include="Menu\Images\Icons.ID.cs" />
+    <Compile Include="Menu\Images\Icons.InsertCustomEntries.cs" />
     <Compile Include="Menu\IGMDataItem\IGMDataItem.cs" />
     <Compile Include="Menu\IGMDataItem\IGMDataItem_Box.cs" />
     <Compile Include="Menu\IGMDataItem\IGMDataItem_Empty.cs" />
@@ -769,26 +769,26 @@
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_TopMenu_Off_Group.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Values.cs" />
     <Compile Include="Menu\IGM_Junction\IGM_Junction.cs" />
-    <Compile Include="Menu\Items_In_Menu.cs" />
+    <Compile Include="Menu\IGM_Items\Items_In_Menu.cs" />
     <Compile Include="Menu\LGSG\Module_main_menu_LGSG.cs" />
     <Compile Include="Menu\LGSG\Module_main_menu_LGSG_CheckingSlot.cs" />
     <Compile Include="Menu\LGSG\Module_main_menu_LGSG_ChooseGame.cs" />
     <Compile Include="Menu\LGSG\Module_main_menu_LGSG_ChooseSlot.cs" />
     <Compile Include="Menu\LGSG\Module_main_menu_LGSG_ing.cs" />
-    <Compile Include="Menu\Magazine.cs" />
-    <Compile Include="Menu\Magazine.ID.cs" />
-    <Compile Include="Menu\Magazine.InsertCustomEntries.cs" />
+    <Compile Include="Menu\Images\Magazine.cs" />
+    <Compile Include="Menu\Images\Magazine.ID.cs" />
+    <Compile Include="Menu\Images\Magazine.InsertCustomEntries.cs" />
     <Compile Include="Menu\Menu.cs" />
-    <Compile Include="Menu\Module_card_test.cs" />
-    <Compile Include="Menu\Module_face_test.cs" />
-    <Compile Include="Menu\Module_icon_test.cs" />
+    <Compile Include="Menu\Debug\Module_card_test.cs" />
+    <Compile Include="Menu\Debug\Module_face_test.cs" />
+    <Compile Include="Menu\Debug\Module_icon_test.cs" />
     <Compile Include="Menu\module_main_menu_debug.cs" />
-    <Compile Include="Menu\Module_main_menu_debug.Cursor_Status.cs" />
-    <Compile Include="Menu\Module_main_menu_debug.Item.cs" />
-    <Compile Include="Menu\Module_main_menu_debug.Table_Options.cs" />
-    <Compile Include="Menu\Module_main_menu_DebugLobby.cs" />
-    <Compile Include="Menu\Module_main_menu_MainLobby.cs" />
-    <Compile Include="Menu\PointEx.cs" />
+    <Compile Include="Menu\Cursor_Status.cs" />
+    <Compile Include="Menu\Item.cs" />
+    <Compile Include="Menu\Table_Options.cs" />
+    <Compile Include="Menu\Debug\Module_main_menu_DebugLobby.cs" />
+    <Compile Include="Menu\Lobby\Module_main_menu_MainLobby.cs" />
+    <Compile Include="PointEx.cs" />
     <Compile Include="Strings\StringFile.cs" />
     <Compile Include="Strings\Strings.Areames.cs" />
     <Compile Include="Strings\Strings.cs" />
@@ -892,9 +892,7 @@
     <Compile Include="Strings\Strings.Mngrp.cs" />
     <Compile Include="Strings\Strings.Namedic.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Menu\Debug\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\Encoding\Encoding.csproj">
       <Project>{a9b33bf4-9b03-4e3d-bf6a-181521046ee8}</Project>

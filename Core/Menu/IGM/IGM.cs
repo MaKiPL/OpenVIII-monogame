@@ -88,15 +88,15 @@ namespace OpenVIII
                 base.Init();
             }
 
-            protected override bool Inputs() => InputDict[GetMode()]();
+            protected override bool Inputs() => InputDict[(Mode)GetMode()]();
 
-            private Mode GetMode() => _mode;
-            private void SetMode(Mode value)
+            public override Enum GetMode() => _mode;
+            public override void SetMode(Enum value)
             {
-                if(_mode != value)
+                if(!_mode.Equals(value))
                 {
-                    ModeChangeHandler?.Invoke(this,value);
-                    _mode = value;
+                    ModeChangeHandler?.Invoke(this,(Mode)value);
+                    _mode = (Mode)value;
                 }
             }
 
