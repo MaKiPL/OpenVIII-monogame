@@ -205,9 +205,9 @@ namespace OpenVIII
                                 //example if you can get max stat with a weaker spell use that first.
 
                                 // if stat is max with out spell skip
-                                if (stat != Kernel_bin.Stat.HP && TotalStat(stat) == Kernel_bin.Character_Stats.MAX_STAT_VALUE) break;
+                                if (stat != Kernel_bin.Stat.HP && TotalStat(stat) == Kernel_bin.MAX_STAT_VALUE) break;
                                 // if hp is max without spell skip
-                                else if (stat == Kernel_bin.Stat.HP && TotalStat(stat) == Kernel_bin.Character_Stats.MAX_HP_VALUE) break;
+                                else if (stat == Kernel_bin.Stat.HP && TotalStat(stat) == Kernel_bin.MAX_HP_VALUE) break;
                                 // junction spell
                                 else Stat_J[stat] = spell.ID;
                                 break;
