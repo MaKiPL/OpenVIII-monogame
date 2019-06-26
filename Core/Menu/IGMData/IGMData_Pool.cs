@@ -20,24 +20,33 @@
                 base.Init();
                 Cursor_Status |= Cursor_Status.Enabled;
                 Cursor_Status |= Cursor_Status.Vertical;
-                if(Pages > 1)
-                    Cursor_Status &= ~Cursor_Status.Horizontal;
-                else
-                    Cursor_Status |= Cursor_Status.Horizontal;
                 Page = 0;
                 Contents = new T2[rows];
                 SIZE[Count - 2].X = X + 6;
                 SIZE[Count - 2].Y = Y + Height - 28;
                 SIZE[Count - 1].X = X + Width - 24;
                 SIZE[Count - 1].Y = Y + Height - 28;
+                ITEM[Count - 2, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Left, SIZE[Count - 2], 2, 7);
+                ITEM[Count - 1, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right2, SIZE[Count - 1], 2, 7);
             }
-
+            public virtual void ResetPages() =>
+                Pages = DefaultPages;
             public override void ReInit()
             {
                 base.ReInit();
-                Pages = DefaultPages;
-                ITEM[Count - 2, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Left, SIZE[Count - 2], 2, 7);
-                ITEM[Count - 1, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right2, SIZE[Count - 1], 2, 7);
+                ResetPages();
+                if (Pages > 1)
+                {
+                    Cursor_Status &= ~Cursor_Status.Horizontal;
+                    ITEM[Count - 1, 0].Show();
+                    ITEM[Count - 2, 0].Show();
+                }
+                else
+                {
+                    Cursor_Status |= Cursor_Status.Horizontal;
+                    ITEM[Count - 1, 0].Hide();
+                    ITEM[Count - 2, 0].Hide();
+                }
             }
 
             public override bool Inputs()

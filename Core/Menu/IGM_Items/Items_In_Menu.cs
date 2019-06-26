@@ -9,15 +9,15 @@ namespace OpenVIII
     /// </summary>
     public struct Item_In_Menu
     {
-        #region Fields
 
-        private _Type b0;
+        #region Fields
 
         private _Target b1;
 
         private byte b2;
 
         private byte b3;
+        private _Type _type;
 
         #endregion Fields
 
@@ -47,12 +47,30 @@ namespace OpenVIII
             Battle = 0x07,
             Ammo = 0x08,
             Magazine = 0x09,
-            None = 0x0A, //Refine or None
-            GF = 0x0B, //Rename
-            Angelo = 0x0C, //Rename
-            Chocobo = 0x0D, //Rename
-            Lamp = 0x0E, //start battle
-            SolomonRing = 0x0F, // get Doomtrain
+            /// <summary>
+            /// Refine or None
+            /// </summary>
+            None = 0x0A,
+            /// <summary>
+            /// Rename
+            /// </summary>
+            GF = 0x0B,
+            /// <summary>
+            /// Rename
+            /// </summary>
+            Angelo = 0x0C,
+            /// <summary>
+            /// Rename
+            /// </summary>
+            Chocobo = 0x0D,
+            /// <summary>
+            /// start battle
+            /// </summary>
+            Lamp = 0x0E,
+            /// <summary>
+            /// get Doomtrain
+            /// </summary>
+            SolomonRing = 0x0F,
             GF_Compatability = 0x10,
             GF_Learn = 0x11,
             GF_Forget = 0x12,
@@ -115,8 +133,9 @@ namespace OpenVIII
         /// <summary>
         /// Type of item.
         /// </summary>
-        public _Type Type => b0;
-
+        public _Type Type { get {
+                if (ID == 0) _type = _Type.None;
+                return _type; } private set => _type = value; }
         /// <summary>
         /// Target in byte form
         /// </summary>
@@ -136,7 +155,7 @@ namespace OpenVIII
         {
             var tmp = new Item_In_Menu
             {
-                b0 = (_Type)br.ReadByte(),
+                Type = (_Type)br.ReadByte(),
                 b1 = (_Target)br.ReadByte(),
                 b2 = br.ReadByte(),
                 b3 = br.ReadByte(),
@@ -173,7 +192,7 @@ namespace OpenVIII
                     tmp.Icon = Icons.ID.Item_Magazine;
                     break;
                 case _Type.None:
-                case _Type.Blue_Magic: 
+                case _Type.Blue_Magic:
                 case _Type.GF_Compatability:
                 case _Type.Stat:
                     tmp.Icon = Icons.ID.Item_Misc;
@@ -196,18 +215,18 @@ namespace OpenVIII
         /// <param name="neg">How much Comptability is lost by all other GFs</param>
         /// <returns>Total compatability gained by selected character for this GF.</returns>
         /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/6110"/>
-        public byte Compatibility(out GFs gf,out sbyte neg)
+        public byte Compatibility(out GFs gf, out sbyte neg)
         {
             gf = 0; neg = 0;
             byte ret = 0;
             if (Type == _Type.GF_Compatability)
             {
                 gf = (GFs)b2;
-                switch(b3)
+                switch (b3)
                 {
                     case 0x08://Weak C Item
                         ret = 0x01;
-                        neg = (sbyte)(gf == GFs.All?0x00:-0x01);
+                        neg = (sbyte)(gf == GFs.All ? 0x00 : -0x01);
                         break;
                     case 0x10://Strong C Item
                         ret = 0x03;
@@ -220,7 +239,7 @@ namespace OpenVIII
 
                 }
             }
-                return ret;
+            return ret;
         }
 
         #endregion Methods
@@ -250,6 +269,8 @@ namespace OpenVIII
         #endregion Properties
 
         #region Methods
+        public Item_In_Menu this[byte item] => Items[item];
+        public Item_In_Menu this[Saves.Item item] => Items[item.ID];
 
         public static Items_In_Menu Read()
         {

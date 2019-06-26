@@ -93,7 +93,7 @@ namespace OpenVIII
             int charSize = 12; //pixelhandler does the 2x scaling on the fly.
             Point size = (new Vector2(0, charSize) * zoom).RoundedPoint();
             int width;
-
+            if(buffer.Length > 0)
             foreach (byte c in buffer)
             {
                 if (c == 0) continue;

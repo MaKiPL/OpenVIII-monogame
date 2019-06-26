@@ -19,6 +19,7 @@ namespace OpenVIII
             public EventHandler<Mode> ModeChangeHandler;
 
             public EventHandler<Faces.ID> TargetChangeHandler;
+            public EventHandler ReInitCompletedHandler;
 
             protected Dictionary<Mode, Func<bool>> InputsDict;
 
@@ -65,6 +66,7 @@ namespace OpenVIII
             {
                 SetMode(Mode.SelectItem);
                 base.ReInit();
+                ReInitCompletedHandler?.Invoke(this, null);
             }
 
             public override void SetMode(Enum value)
@@ -92,14 +94,14 @@ namespace OpenVIII
                 Data.Add(SectionName.Title, new IGMData_Container(
                     new IGMDataItem_Box(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), pos: new Rectangle(615, 0, 225, 66))));
                 Data.Add(SectionName.UseItemGroup, new IGMData_Group(
+                    new IGMData_Statuses(),
                     new IGMData_ItemPool(),
-                    new IGMData_TargetPool(),
-                    new IGMData_Statuses()
+                    new IGMData_TargetPool()
                     ));
                 InputsDict = new Dictionary<Mode, Func<bool>>() {
                 {Mode.TopMenu, Data[SectionName.TopMenu].Inputs},
-                {Mode.SelectItem, ((IGMDataItem_IGMData)((IGMData_Group)Data[SectionName.UseItemGroup]).ITEM[0,0]).Inputs},
-                {Mode.UseItemOnTarget, ((IGMDataItem_IGMData)((IGMData_Group)Data[SectionName.UseItemGroup]).ITEM[1,0]).Inputs}
+                {Mode.SelectItem, ((IGMDataItem_IGMData)((IGMData_Group)Data[SectionName.UseItemGroup]).ITEM[1,0]).Inputs},
+                {Mode.UseItemOnTarget, ((IGMDataItem_IGMData)((IGMData_Group)Data[SectionName.UseItemGroup]).ITEM[2,0]).Inputs}
                 };
                 SetMode(Mode.SelectItem);
                 base.Init();

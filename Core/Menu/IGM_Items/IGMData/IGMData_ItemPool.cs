@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 
 namespace OpenVIII
@@ -59,7 +60,7 @@ namespace OpenVIII
                     if (!eventSet && InGameMenu_Items != null)
                     {
                         InGameMenu_Items.ModeChangeHandler += ModeChangeEvent;
-
+                        InGameMenu_Items.ReInitCompletedHandler += ReInitCompletedEvent;
                         eventSet = true;
                     }
                     base.ReInit();
@@ -95,8 +96,12 @@ namespace OpenVIII
                             ((IGMDataItem_String)(ITEM[pos, 0])).Icon = Icons.ID.None;
                             BLANKS[pos] = true;
                         }
-                        InGameMenu_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
                     }
+                }
+
+                private void ReInitCompletedEvent(object sender, EventArgs e)
+                {
+                    InGameMenu_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
                 }
 
                 protected override void Init()
@@ -113,8 +118,8 @@ namespace OpenVIII
                 protected override void InitShift(int i, int col, int row)
                 {
                     base.InitShift(i, col, row);
-                    SIZE[i].Inflate(-16, -20);
-                    SIZE[i].Y -= 3 * row;
+                    SIZE[i].Inflate(-18, -20);
+                    SIZE[i].Y -= 5 * row;
                     SIZE[i].Height = (int)(12 * TextScale.Y);
                 }
 
@@ -149,6 +154,14 @@ namespace OpenVIII
                         base.SetCursor_select(value);
                         InGameMenu_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[value], HelpStr[value]));
                     }
+                }
+                public override void Inputs_OKAY()
+                {
+                    var item = Contents[CURSOR_SELECT];
+                    if (item.Target == Item_In_Menu._Target.None)
+                        return;
+                    base.Inputs_OKAY();
+                    InGameMenu_Items.SetMode(Mode.UseItemOnTarget);
                 }
 
                 private void ModeChangeEvent(object sender, Mode e)

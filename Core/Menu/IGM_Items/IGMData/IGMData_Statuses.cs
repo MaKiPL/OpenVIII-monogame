@@ -24,7 +24,7 @@ namespace OpenVIII
 
                 #region Constructors
 
-                public IGMData_Statuses() : base(2, 4, new IGMDataItem_Box(pos: new Rectangle(420, 510, 420, 120)),2,1)
+                public IGMData_Statuses() : base(2, 4, new IGMDataItem_Box(title: Icons.ID.STATUS, pos: new Rectangle(420, 510, 420, 120)),2,1)
                 {
                 }
 
