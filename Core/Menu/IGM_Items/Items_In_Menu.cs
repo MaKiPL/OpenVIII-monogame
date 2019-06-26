@@ -9,7 +9,6 @@ namespace OpenVIII
     /// </summary>
     public struct Item_In_Menu
     {
-
         #region Fields
 
         private _Target b1;
@@ -47,37 +46,47 @@ namespace OpenVIII
             Battle = 0x07,
             Ammo = 0x08,
             Magazine = 0x09,
+
             /// <summary>
             /// Refine or None
             /// </summary>
             None = 0x0A,
+
             /// <summary>
             /// Rename
             /// </summary>
             GF = 0x0B,
+
             /// <summary>
             /// Rename
             /// </summary>
             Angelo = 0x0C,
+
             /// <summary>
             /// Rename
             /// </summary>
             Chocobo = 0x0D,
+
             /// <summary>
             /// start battle
             /// </summary>
             Lamp = 0x0E,
+
             /// <summary>
             /// get Doomtrain
             /// </summary>
             SolomonRing = 0x0F,
+
             GF_Compatability = 0x10,
             GF_Learn = 0x11,
             GF_Forget = 0x12,
+
             /// <summary>
-            /// blue magic only shows quistis in target list, should detect if she knows the spell to grey it out item.
+            /// blue magic only shows quistis in target list, should detect if she knows the spell to
+            /// grey it out item.
             /// </summary>
             Blue_Magic = 0x13, // learn
+
             Stat = 0x14,
             Cure_Abnormal_Status = 0x15,
         }
@@ -120,26 +129,38 @@ namespace OpenVIII
                 return 0;
             }
         }
+
         public Kernel_bin.Stat Stat => Type == _Type.Stat ? (Kernel_bin.Stat)b3 : Kernel_bin.Stat.None;
         public byte Stat_Increase => (byte)(Type == _Type.Stat ? b2 : 0);
         /// <summary>
         /// Item ID
         /// </summary>
         public byte ID { get; private set; }
+
         /// <summary>
-        /// Who is targeted and 0x01 seems to be a useable item in menu item. Magazine values don't seem to corrispond.
+        /// Who is targeted and 0x01 seems to be a useable item in menu item. Magazine values don't
+        /// seem to corrispond.
         /// </summary>
         public _Target Target => Type == _Type.Magazine ? _Target.None : b1;
+
         /// <summary>
         /// Type of item.
         /// </summary>
-        public _Type Type { get {
+        public _Type Type
+        {
+            get
+            {
                 if (ID == 0) _type = _Type.None;
-                return _type; } private set => _type = value; }
+                return _type;
+            }
+            private set => _type = value;
+        }
+
         /// <summary>
         /// Target in byte form
         /// </summary>
         private byte b1_byte => (byte)b1;
+
         public byte Palette => 9;
         public byte Faded_Palette => 7;
         public Kernel_bin.Battle_Items_Data Battle => (Kernel_bin.BattleItemsData?.Count ?? 0) > ID ? Kernel_bin.BattleItemsData[ID] : null;
@@ -147,13 +168,14 @@ namespace OpenVIII
 
         public FF8String Name => Battle?.Name ?? Non_Battle?.Name;
         public FF8String Description => Battle?.Description ?? Non_Battle?.Description;
+
         #endregion Properties
 
         #region Methods
 
         public static Item_In_Menu Read(BinaryReader br, byte i)
         {
-            var tmp = new Item_In_Menu
+            Item_In_Menu tmp = new Item_In_Menu
             {
                 Type = (_Type)br.ReadByte(),
                 b1 = (_Target)br.ReadByte(),
@@ -168,6 +190,7 @@ namespace OpenVIII
                 case _Type.Cure_Abnormal_Status:
                     tmp.Icon = Icons.ID.Item_Recovery;
                     break;
+
                 case _Type.HealGF:
                 case _Type.ReviveGF:
                 case _Type.GF:
@@ -175,6 +198,7 @@ namespace OpenVIII
                 case _Type.GF_Learn:
                     tmp.Icon = Icons.ID.Item_GF;
                     break;
+
                 case _Type.Battle:
                 case _Type.Angelo:
                 case _Type.Chocobo: // i'm not sure about this one i have no chocobo items.
@@ -182,26 +206,94 @@ namespace OpenVIII
                 case _Type.Lamp:
                     tmp.Icon = Icons.ID.Item_Battle;
                     break;
+
                 case _Type.SavePointHeal:
                     tmp.Icon = Icons.ID.Item_Tent;
                     break;
+
                 case _Type.Ammo:
                     tmp.Icon = Icons.ID.Item_Ammo;
                     break;
+
                 case _Type.Magazine:
                     tmp.Icon = Icons.ID.Item_Magazine;
                     break;
+
                 case _Type.None:
                 case _Type.Blue_Magic:
                 case _Type.GF_Compatability:
                 case _Type.Stat:
                     tmp.Icon = Icons.ID.Item_Misc;
                     break;
+
                 default:
                     tmp.Icon = Icons.ID.None;
                     break;
             }
             return tmp;
+        }
+
+        public bool TestCharacter(ref Faces.ID id, out Characters character)
+        {
+            character = id.ToCharacters();
+            if (Type == Item_In_Menu._Type.Blue_Magic)
+            {
+                if (character != Characters.Quistis_Trepe)
+                    return false;
+                else return TestBlueMagic();
+            }
+            if (character == Characters.Blank || (Target & _Target.Character) == 0)
+                return false;
+            if (Memory.State.Characters.ContainsKey(character) && Memory.State.Characters[character].VisibleInMenu)
+                return true;
+            return false;
+        }
+
+        public bool ValidTarget()
+        {
+            Faces.ID _face;
+            foreach (Faces.ID face in (Faces.ID[])Enum.GetValues(typeof(Faces.ID)))
+            {
+                _face = face;
+                if (TestCharacter(ref _face, out Characters character) || TestGF(ref _face, out GFs gf))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// If True Quistis can learn the ability. Else Quistis already knows the ability.
+        /// </summary>
+        /// <returns></returns>
+        public bool TestBlueMagic()
+        {
+            if (Learned_Blue_Magic != Kernel_bin.Blue_Magic.None)
+                return !Memory.State.LimitBreakQuistis[(int)Learned_Blue_Magic];
+            return false;
+        }
+
+        public bool TestGF(ref Faces.ID id, out GFs gf)
+        {
+            gf = id.ToGFs();
+            if (Type == Item_In_Menu._Type.Angelo && id == Faces.ID.Angelo)
+            {
+                return true;
+            }
+            if (Type == Item_In_Menu._Type.Chocobo && id == Faces.ID.Boko)
+            {
+                return true;
+            }
+            if (gf == GFs.Blank || gf == GFs.All || (Target & Item_In_Menu._Target.GF) == 0)
+                return false;
+            if (Memory.State?.GFs != null && Memory.State.GFs.ContainsKey(gf))// && Memory.State.GFs[gf].VisibleInMenu)
+            {
+                if (Type == Item_In_Menu._Type.GF_Learn && (!Memory.State.GFs[gf].TestGFCanLearn(Learn) || Memory.State.GFs[gf].MaxGFAbilities))
+                    return false;
+                return true;
+            }
+            return false;
         }
 
         public Kernel_bin.Blue_Magic Learned_Blue_Magic => Type == _Type.Blue_Magic ? (Kernel_bin.Blue_Magic)b2 : Kernel_bin.Blue_Magic.None;
@@ -228,15 +320,16 @@ namespace OpenVIII
                         ret = 0x01;
                         neg = (sbyte)(gf == GFs.All ? 0x00 : -0x01);
                         break;
+
                     case 0x10://Strong C Item
                         ret = 0x03;
                         neg = (sbyte)(gf == GFs.All ? 0x00 : -0x02);
                         break;
+
                     case 0x65: //LuvLuvG
                         ret = 0x14;
                         neg = (sbyte)(gf == GFs.All ? 0x00 : 0x00);
                         break;
-
                 }
             }
             return ret;
@@ -244,8 +337,10 @@ namespace OpenVIII
 
         #endregion Methods
     }
+
     /// <summary>
-    /// Info on Items in menus. Items have a slightly limited effect in menues. See Kernel_bin.Battle_Items for effects in battle.
+    /// Info on Items in menus. Items have a slightly limited effect in menues. See
+    /// Kernel_bin.Battle_Items for effects in battle.
     /// </summary>
     /// <see cref="http://forums.qhimm.com/index.php?topic=17098.0"/>
     public class Items_In_Menu
@@ -269,6 +364,7 @@ namespace OpenVIII
         #endregion Properties
 
         #region Methods
+
         public Item_In_Menu this[byte item] => Items[item];
         public Item_In_Menu this[Saves.Item item] => Items[item.ID];
 

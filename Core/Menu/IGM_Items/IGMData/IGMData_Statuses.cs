@@ -24,7 +24,7 @@ namespace OpenVIII
 
                 #region Constructors
 
-                public IGMData_Statuses() : base(2, 4, new IGMDataItem_Box(title: Icons.ID.STATUS, pos: new Rectangle(420, 510, 420, 120)),2,1)
+                public IGMData_Statuses() : base(2, 4, new IGMDataItem_Box(title: Icons.ID.STATUS, pos: new Rectangle(420, 510, 420, 120)),1,2)
                 {
                 }
 
@@ -33,12 +33,19 @@ namespace OpenVIII
                 #region Properties
 
                 public Item_In_Menu Item { get; private set; }
-                public Faces.ID Target { get; private set; }
+                public Faces.ID Target { get; private set; } = Faces.ID.Blank;
                 public byte TopMenuChoice { get; private set; }
 
                 #endregion Properties
 
                 #region Methods
+                protected override void InitShift(int i, int col, int row)
+                {
+                    base.InitShift(i, col, row);
+                    SIZE[i].Inflate(-18, -20);
+                    SIZE[i].Y -= 5 * row;
+                    SIZE[i].Height = (int)(12 * TextScale.Y);
+                }
                 protected override void Init()
                 {
                     Misc = new Dictionary<Items, FF8String> {
@@ -67,13 +74,24 @@ namespace OpenVIII
 
                 private void ModeChangeEvent(object sender, Mode e)
                 {
+                    if (!e.Equals(Mode.UseItemOnTarget))
+                        TargetChangeEvent(this, Faces.ID.Blank);
                 }
                 private bool All => (Item.Target & (Item_In_Menu._Target.All | Item_In_Menu._Target.All2)) !=0;
 
                 private void TargetChangeEvent(object sender, Faces.ID e)
                 {
-                    if (!All)
+                    if ((e == Faces.ID.Blank && Target != Faces.ID.Blank) || All)
                     {
+                        Target = e;
+                        foreach (var i in ITEM)
+                            i?.Hide();
+                    }
+                    else
+                    {
+                        if(Target == Faces.ID.Blank)
+                        foreach (var i in ITEM)
+                            i?.Show();
                         Target = e;
                         Characters character = e.ToCharacters();
                         GFs gf = e.ToGFs();

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace OpenVIII
 {
@@ -29,6 +30,20 @@ namespace OpenVIII
             public GFData()
             {
             }
+
+            /// <summary>
+            /// True if at max.
+            /// </summary>
+            public bool MaxGFAbilities => (from bool m in Complete
+                                            where m
+                                            select m).Count() >= 22;
+
+            /// <summary>
+            /// False if gf knows ability, True if can learn it.
+            /// </summary>
+            /// <param name="ability">Ability you want to learn.</param>
+            /// <returns></returns>
+            public bool TestGFCanLearn(Kernel_bin.Abilities ability) => !Complete[(int)ability];
 
             public GFData(BinaryReader br, GFs g) => Read(br, g);
 
@@ -74,10 +89,16 @@ namespace OpenVIII
 
             public ushort EXPtoNextLevel => Level >= 100 ? (ushort)0 : (ushort)(Experience - (Level * Kernel_bin.JunctionableGFsData[ID].EXPperLevel));
 
-            public ushort CurrentHP { get {
-                    var max = MaxHP;
+            public ushort CurrentHP
+            {
+                get
+                {
+                    ushort max = MaxHP;
                     if (_HP > max) _HP = max;
-                    return _HP; } set => _HP = value; }
+                    return _HP;
+                }
+                set => _HP = value;
+            }
 
             public override string ToString() => Name.ToString();
 

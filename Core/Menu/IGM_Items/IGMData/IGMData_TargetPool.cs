@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OpenVIII
 {
@@ -145,73 +146,18 @@ namespace OpenVIII
                     }
                 }
 
-                private bool TestCharacter(ref Faces.ID id, out Characters character)
-                {
-                    character = id.ToCharacters();
-                    if (Item.Type == Item_In_Menu._Type.Blue_Magic)
-                    {
-                        if (character != Characters.Quistis_Trepe)
-                            return false;
-                        else return TestBlueMagic();
-                    }
-                    if (character == Characters.Blank || (Item.Target & Item_In_Menu._Target.Character) == 0)
-                        return false;
-                    if (Memory.State.Characters.ContainsKey(character) && Memory.State.Characters[character].VisibleInMenu)
-                        return true;
-                    return false;
-                }
 
-                /// <summary>
-                /// If True Quistis can learn the ability. Else Quistis already knows the ability.
-                /// </summary>
-                /// <returns></returns>
-                private bool TestBlueMagic()
-                {
-                    if (Item.Learned_Blue_Magic != Kernel_bin.Blue_Magic.None)
-                        return !Memory.State.LimitBreakQuistis[(int)Item.Learned_Blue_Magic];
-                    return false;
-                }
 
-                /// <summary>
-                /// False if gf knows ability, True if can learn it.
-                /// </summary>
-                /// <param name="gf"></param>
-                /// <returns></returns>
-                private bool TestGFLearn(GFs gf)
-                {
-                    var unlocked = Memory.State.GFs[gf].UnlockedAbilities;
-                    if (unlocked.Contains(Item.Learn))
-                            return false;       
-                    return true;
-                }
-                private bool MaxGFAbilities(GFs gf)
-                {
-                    var unlocked = Memory.State.GFs[gf].UnlockedAbilities;
-                    return unlocked.Count >= 22;
-                }
+                
 
-                private bool TestGF(ref Faces.ID id, out GFs gf)
+
+                protected override void SetCursor_select(int value)
                 {
-                    gf = id.ToGFs();
-                    if (Item.Type == Item_In_Menu._Type.Angelo && id == Faces.ID.Angelo)
+                    if (!value.Equals(GetCursor_select()))
                     {
-                        return true;
+                        base.SetCursor_select(value);
+                        InGameMenu_Items.TargetChangeHandler?.Invoke(this, Contents[CURSOR_SELECT]);
                     }
-                    if (Item.Type == Item_In_Menu._Type.Chocobo && id == Faces.ID.Boko)
-                    {
-                        return true;
-                    }
-                    if (gf == GFs.Blank || gf == GFs.All || (Item.Target & Item_In_Menu._Target.GF) == 0)
-                        return false;
-                    if (Memory.State.GFs.ContainsKey(gf))// && Memory.State.GFs[gf].VisibleInMenu)
-                    {
-                        if (Item.Type == Item_In_Menu._Type.GF_Learn && (!TestGFLearn(gf) || MaxGFAbilities(gf)))
-                            return false;
-                        return true;
-                        //if (Item.Type == Item_In_Menu._Type.GF_Forget && !TestGFLearn(gf))
-                        //    return true;
-                    }
-                    return false;
                 }
 
                 public override void ResetPages()
@@ -229,7 +175,7 @@ namespace OpenVIII
                         Characters character = Characters.Blank;
                         GFs gf = GFs.Blank;
                         while (!Enum.IsDefined(typeof(Faces.ID), id)
-                            || !((ctest = TestCharacter(ref id, out character)) || (gftest = TestGF(ref id, out gf)))
+                            || !((ctest = Item.TestCharacter(ref id, out character)) || (gftest = Item.TestGF(ref id, out gf)))
                             || skip-- > 0)
                             if ((byte)++id > 32)
                             {
@@ -238,17 +184,20 @@ namespace OpenVIII
                                     ITEM[i, 0] = null;
                                     ITEM[i, 1] = null;
                                     ITEM[i, 2] = null;
+                                    BLANKS[i] = true;
+                                    Contents[i] = Faces.ID.Blank;
                                 }
                                 Pages = Page + 1;
                                 return;
                             }
                         ITEM[i, 0] = new IGMDataItem_String(Memory.Strings.GetName(id), pos: SIZE[i]);
-                        int hp = (ctest && Memory.State.Characters.ContainsKey(character) ? Memory.State.Characters[character].CurrentHP() : -1);
-                        hp = (gftest && hp < 0 && Memory.State.GFs.ContainsKey(gf) ? Memory.State.GFs[gf].CurrentHP : hp);
+                        int hp = ((ctest || gftest)? Memory.State.CurrentHP(character:character,gf:gf) : -1);
+                        BLANKS[i] = false;
+                        Contents[i] = id;
                         if (hp > -1)
                         {
                             ITEM[i, 1] = new IGMDataItem_Icon(Icons.ID.HP2, new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 7), SIZE[i].Y, 0, 0), 13);
-                            ITEM[i, 2] = new IGMDataItem_Int(hp, pos: new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 4), SIZE[i].Y, 0, 0), spaces: 4);
+                            ITEM[i, 2] = new IGMDataItem_Int(hp, pos: new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 4), SIZE[i].Y, 0, 0), spaces: 4);                            
                         }
                         else
                         {
@@ -265,6 +214,8 @@ namespace OpenVIII
                 {
                     if (!IsMe)
                         Cursor_Status &= ~Cursor_Status.Enabled;
+                    else
+                        InGameMenu_Items.TargetChangeHandler?.Invoke(this, Contents[CURSOR_SELECT]);
                 }
 
                 #endregion Methods

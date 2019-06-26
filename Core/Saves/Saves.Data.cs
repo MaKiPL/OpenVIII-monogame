@@ -301,6 +301,26 @@ namespace OpenVIII
                 ChocoboWorld = new ChocoboWorld(br); //br.ReadBytes(64);//0x1370
             }
             /// <summary>
+            /// return -1 on error
+            /// </summary>
+            /// <param name="id"></param>
+            /// <param name="character"></param>
+            /// <param name="gf"></param>
+            /// <returns></returns>
+            public int CurrentHP(Faces.ID id = Faces.ID.Blank,Characters character = OpenVIII.Characters.Blank, GFs gf = OpenVIII.GFs.Blank)
+            {
+                if (character == OpenVIII.Characters.Blank)
+                    character = id.ToCharacters();
+                if (gf == OpenVIII.GFs.Blank)
+                    gf = id.ToGFs();
+                int hp = (Characters.ContainsKey(character) ? Characters[character].CurrentHP() : -1);
+                hp = (hp < 0 && GFs.ContainsKey(gf) ? GFs[gf].CurrentHP : hp);
+                return hp;
+            }
+
+            public bool MaxGFAbilities(GFs gf) => GFs.ContainsKey(gf) ? GFs[gf].MaxGFAbilities:false;
+
+            /// <summary>
             /// preforms a Shadow Copy. Then does deep copy on any required objects.
             /// </summary>
             /// <returns></returns>
