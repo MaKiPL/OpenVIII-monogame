@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace OpenVIII
 {
@@ -57,16 +56,20 @@ namespace OpenVIII
 
                 public override void Draw()
                 {
-                    base.Draw();
+                    if (All && IsMe)
+                        Cursor_Status &= ~Cursor_Status.Enabled;
+                        base.Draw();
                     if (All && IsMe)
                     {
                         // if all draw blinking pointers on everyone.
                         byte i = 0;
                         foreach (Point c in CURSOR)
                         {
-                            if (!BLANKS[i++])
+                            if (!BLANKS[i] && ITEM[i,0] != null && ITEM[i,0].Enabled && c != Point.Zero)
                                 DrawPointer(c, blink: true);
+                            i++;
                         }
+                        Cursor_Status |= Cursor_Status.Enabled;
                     }
                 }
 
@@ -103,10 +106,16 @@ namespace OpenVIII
 
                 private void ItemTypeChangeEvent(object sender, KeyValuePair<Item_In_Menu, FF8String> e)
                 {
-                    if (!Item.Equals(e.Key))
+                    CURSOR_SELECT = 0;
+                    if (!Item.Equals(e.Key) || Page > 0)
                     {
+                        Page = 0;
                         bool sameTargets = Item.Target != e.Key.Target || Item.Type != e.Key.Type;
-
+                        if(!sameTargets)
+                        {
+                            sameTargets = (Item.Type == Item_In_Menu._Type.GF_Learn && Item.Learn != e.Key.Learn);
+                            sameTargets = sameTargets || (Item.Type == Item_In_Menu._Type.Blue_Magic && Item.Learned_Blue_Magic != e.Key.Learned_Blue_Magic);
+                        }
                         Item = e.Key;
                         if (sameTargets)
                         {
@@ -116,11 +125,35 @@ namespace OpenVIII
                     }
                 }
 
-                private bool TestCharacter(ref Faces.ID id)
+                protected override void PAGE_NEXT()
                 {
-                    Characters character = id.ToCharacters();
-                    if (Item.Type == Item_In_Menu._Type.Blue_Magic & character != Characters.Quistis_Trepe)
-                        return false;
+                    if (Pages > 1)
+                    {
+                        base.PAGE_NEXT();
+                        Fill();
+                        base.ReInit();
+                    }
+                }
+
+                protected override void PAGE_PREV()
+                {
+                    if (Pages > 1)
+                    {
+                        base.PAGE_PREV();
+                        Fill();
+                        base.ReInit();
+                    }
+                }
+
+                private bool TestCharacter(ref Faces.ID id, out Characters character)
+                {
+                    character = id.ToCharacters();
+                    if (Item.Type == Item_In_Menu._Type.Blue_Magic)
+                    {
+                        if (character != Characters.Quistis_Trepe)
+                            return false;
+                        else return TestBlueMagic();
+                    }
                     if (character == Characters.Blank || (Item.Target & Item_In_Menu._Target.Character) == 0)
                         return false;
                     if (Memory.State.Characters.ContainsKey(character) && Memory.State.Characters[character].VisibleInMenu)
@@ -128,13 +161,56 @@ namespace OpenVIII
                     return false;
                 }
 
-                private bool TestGF(ref Faces.ID id)
+                /// <summary>
+                /// If True Quistis can learn the ability. Else Quistis already knows the ability.
+                /// </summary>
+                /// <returns></returns>
+                private bool TestBlueMagic()
                 {
-                    GFs gf = id.ToGFs();
+                    if (Item.Learned_Blue_Magic != Kernel_bin.Blue_Magic.None)
+                        return !Memory.State.LimitBreakQuistis[(int)Item.Learned_Blue_Magic];
+                    return false;
+                }
+
+                /// <summary>
+                /// False if gf knows ability, True if can learn it.
+                /// </summary>
+                /// <param name="gf"></param>
+                /// <returns></returns>
+                private bool TestGFLearn(GFs gf)
+                {
+                    var unlocked = Memory.State.GFs[gf].UnlockedAbilities;
+                    if (unlocked.Contains(Item.Learn))
+                            return false;       
+                    return true;
+                }
+                private bool MaxGFAbilities(GFs gf)
+                {
+                    var unlocked = Memory.State.GFs[gf].UnlockedAbilities;
+                    return unlocked.Count >= 22;
+                }
+
+                private bool TestGF(ref Faces.ID id, out GFs gf)
+                {
+                    gf = id.ToGFs();
+                    if (Item.Type == Item_In_Menu._Type.Angelo && id == Faces.ID.Angelo)
+                    {
+                        return true;
+                    }
+                    if (Item.Type == Item_In_Menu._Type.Chocobo && id == Faces.ID.Boko)
+                    {
+                        return true;
+                    }
                     if (gf == GFs.Blank || gf == GFs.All || (Item.Target & Item_In_Menu._Target.GF) == 0)
                         return false;
                     if (Memory.State.GFs.ContainsKey(gf))// && Memory.State.GFs[gf].VisibleInMenu)
+                    {
+                        if (Item.Type == Item_In_Menu._Type.GF_Learn && (!TestGFLearn(gf) || MaxGFAbilities(gf)))
+                            return false;
                         return true;
+                        //if (Item.Type == Item_In_Menu._Type.GF_Forget && !TestGFLearn(gf))
+                        //    return true;
+                    }
                     return false;
                 }
 
@@ -148,18 +224,39 @@ namespace OpenVIII
                     int skip = Page * rows;
                     for (int i = 0; i < rows; i++)
                     {
+                        bool gftest = false;
+                        bool ctest = false;
+                        Characters character = Characters.Blank;
+                        GFs gf = GFs.Blank;
                         while (!Enum.IsDefined(typeof(Faces.ID), id)
-                            || !(TestCharacter(ref id) || TestGF(ref id))
+                            || !((ctest = TestCharacter(ref id, out character)) || (gftest = TestGF(ref id, out gf)))
                             || skip-- > 0)
                             if ((byte)++id > 32)
                             {
                                 for (; i < rows; i++)
+                                {
                                     ITEM[i, 0] = null;
-                                Pages = Page+1;
+                                    ITEM[i, 1] = null;
+                                    ITEM[i, 2] = null;
+                                }
+                                Pages = Page + 1;
                                 return;
                             }
                         ITEM[i, 0] = new IGMDataItem_String(Memory.Strings.GetName(id), pos: SIZE[i]);
-                        id++;                          
+                        int hp = (ctest && Memory.State.Characters.ContainsKey(character) ? Memory.State.Characters[character].CurrentHP() : -1);
+                        hp = (gftest && hp < 0 && Memory.State.GFs.ContainsKey(gf) ? Memory.State.GFs[gf].CurrentHP : hp);
+                        if (hp > -1)
+                        {
+                            ITEM[i, 1] = new IGMDataItem_Icon(Icons.ID.HP2, new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 7), SIZE[i].Y, 0, 0), 13);
+                            ITEM[i, 2] = new IGMDataItem_Int(hp, pos: new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 4), SIZE[i].Y, 0, 0), spaces: 4);
+                        }
+                        else
+                        {
+                            ITEM[i, 1] = null;
+                            ITEM[i, 2] = null;
+                        }
+
+                        id++;
                     }
                     Pages = Page + 2;
                 }

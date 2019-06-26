@@ -133,6 +133,7 @@ namespace OpenVIII
                         skipsnd = true;
                     }
                     while (cnt-- > 0 && !((IGMDataItem_Int)(ITEM[0, 1])).Enabled);
+                    InGameMenu_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
                 }
 
                 protected override void PAGE_PREV()
@@ -146,6 +147,7 @@ namespace OpenVIII
                         skipsnd = true;
                     }
                     while (cnt-- > 0 && !((IGMDataItem_Int)(ITEM[0, 1])).Enabled);
+                    InGameMenu_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
                 }
                 protected override void SetCursor_select(int value)
                 {

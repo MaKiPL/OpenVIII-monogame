@@ -126,8 +126,11 @@ namespace OpenVIII
 
                 protected override void SetCursor_select(int value)
                 {
-                    base.SetCursor_select(value);
-                    InGameMenu?.ChoiceChangeHandler?.Invoke(this, new KeyValuePair<Items, FF8String>((Items)value ,_helpStr[value]));
+                    if (!value.Equals(GetCursor_select()))
+                    {
+                        base.SetCursor_select(value);
+                        InGameMenu?.ChoiceChangeHandler?.Invoke(this, new KeyValuePair<Items, FF8String>((Items)value, _helpStr[value]));
+                    }
                 }
 
                 private void ChoiceChangeEvent(object sender, FF8String e) => ((IGMDataItem_Box)CONTAINER).Data = e;

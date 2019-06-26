@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -50,12 +51,12 @@ namespace OpenVIII
             public ushort Unknown2; //0x0B1A
             public uint AmountofGil2; //0x0B1C
             public uint AmountofGil_Laguna; //0x0B20
-            public ushort LimitBreakQuistis; //0x0B24
-            public ushort LimitBreakZell; //0x0B26
-            public byte LimitBreakIrvine; //0x0B28
-            public byte LimitBreakSelphie; //0x0B29
-            public byte LimitBreakAngelocompleted; //0x0B2A
-            public byte LimitBreakAngeloknown; //0x0B2B
+            public BitArray LimitBreakQuistis; //0x0B24
+            public BitArray LimitBreakZell; //0x0B26
+            public BitArray LimitBreakIrvine; //0x0B28
+            public BitArray LimitBreakSelphie; //0x0B29
+            public BitArray LimitBreakAngelocompleted; //0x0B2A
+            public BitArray LimitBreakAngeloknown; //0x0B2B
             public byte[] LimitBreakAngelopoints; //0x0B2C
             public byte[] Itemsbattleorder; //0x0B34
             public Item[] Items; //0x0B54 198 items (Item ID and Quantity)
@@ -244,12 +245,12 @@ namespace OpenVIII
                 Unknown2 = br.ReadUInt16();//0x0B1A
                 AmountofGil2 = br.ReadUInt32();//0x0B1C //dupilicate
                 AmountofGil_Laguna = br.ReadUInt32();//0x0B20
-                LimitBreakQuistis = br.ReadUInt16();//0x0B24
-                LimitBreakZell = br.ReadUInt16();//0x0B26
-                LimitBreakIrvine = br.ReadByte();//0x0B28
-                LimitBreakSelphie = br.ReadByte();//0x0B29
-                LimitBreakAngelocompleted = br.ReadByte();//0x0B2A
-                LimitBreakAngeloknown = br.ReadByte();//0x0B2B
+                LimitBreakQuistis = new BitArray(br.ReadBytes(2));//0x0B24
+                LimitBreakZell = new BitArray(br.ReadBytes(2));//0x0B26
+                LimitBreakIrvine = new BitArray(br.ReadBytes(1));//0x0B28
+                LimitBreakSelphie = new BitArray(br.ReadBytes(1));//0x0B29
+                LimitBreakAngelocompleted = new BitArray(br.ReadBytes(1));//0x0B2A
+                LimitBreakAngeloknown = new BitArray(br.ReadBytes(1));//0x0B2B
                 LimitBreakAngelopoints = br.ReadBytes(8);//0x0B2C
                 Itemsbattleorder = br.ReadBytes(32);//0x0B34
                 Items = new Item[198];
