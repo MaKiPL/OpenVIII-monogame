@@ -113,7 +113,33 @@ namespace OpenVIII
             v = (v & 0x33333333) + ((v >> 2) & 0x33333333); // temp
             return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // count
         }
+        /// <summary>
+        /// Count how many flags set in enum.
+        /// </summary>
+        /// <param name="element">varible you need to number of flags set.</param>
+        /// <returns>count</returns>
+        /// <see cref="https://stackoverflow.com/questions/677204/counting-the-number-of-flags-set-on-an-enumeration"/>
+        public static uint Count(this Kernel_bin.Battle_Only_Statuses element)
+        {
+            uint v = (uint)element;
+            v = v - ((v >> 1) & 0x55555555); // reuse input as temporary
+            v = (v & 0x33333333) + ((v >> 2) & 0x33333333); // temp
+            return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // count
+        }
 
+        /// <summary>
+        /// Count how many flags set in enum.
+        /// </summary>
+        /// <param name="element">varible you need to number of flags set.</param>
+        /// <returns>count</returns>
+        /// <see cref="https://stackoverflow.com/questions/677204/counting-the-number-of-flags-set-on-an-enumeration"/>
+        public static uint Count(this Kernel_bin.Persistant_Statuses element)
+        {
+            uint v = (uint)element;
+            v = v - ((v >> 1) & 0x55555555); // reuse input as temporary
+            v = (v & 0x33333333) + ((v >> 2) & 0x33333333); // temp
+            return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // count
+        }
         public static Characters ToCharacters(this Faces.ID id)
         {
             if ((byte)id > 10)

@@ -286,7 +286,7 @@ namespace OpenVIII
             };
             faceRect.Offset(offset);
             sbyte mainchar = -1;
-            for (byte face = 0; d != null && d.Party != null && face < d.Party.Length; face++)
+            for (byte face = 0; d != null && d.Party != null && face < d.Party.Count; face++)
             {
                 if (face != 0)
                     faceRect.Offset(faceRect.Width, 0);

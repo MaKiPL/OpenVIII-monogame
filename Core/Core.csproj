@@ -140,6 +140,7 @@
     <Compile Include="EntryGroup.cs" />
     <Compile Include="ExtapathyExtended.cs" />
     <Compile Include="Extended.cs" />
+    <Compile Include="Saves\Damageable.cs" />
     <Compile Include="Strings\FF8String.cs" />
     <Compile Include="Strings\FF8StringReference.cs" />
     <Compile Include="Ffcc.cs" />

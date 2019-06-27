@@ -8,7 +8,7 @@ namespace OpenVIII
 {
     public static partial class Saves
     {
-        public class Data 
+        public class Data
         {
             public ushort LocationID;//0x0004
             public ushort firstcharacterscurrentHP;//0x0006
@@ -23,7 +23,7 @@ namespace OpenVIII
             /// <summary>
             /// 0xFF = blank; The value should cast to Faces.ID
             /// </summary>
-            public Characters[] Party;//0x0025//0x0026//0x0027
+            public List<Characters> Party;//0x0025//0x0026//0x0027
 
             /// <summary>
             /// 12 characters 0x00 terminated
@@ -43,7 +43,7 @@ namespace OpenVIII
             public Dictionary<Characters, CharacterData> Characters; // 0x04A0 -> 0x08C8 //152 bytes per 8 total
             public List<Shop> Shops; //0x0960 //400 bytes
             public byte[] Configuration; //0x0AF0 //20 bytes
-            public Characters[] PartyData; //0x0B04 // 4 bytes 0xFF terminated.
+            public List<Characters> PartyData; //0x0B04 // 4 bytes 0xFF terminated.
             public byte[] KnownWeapons; //0x0B08 // 4 bytes
             public FF8String Grieversname; //0x0B0C // 12 bytes
 
@@ -59,7 +59,7 @@ namespace OpenVIII
             public BitArray LimitBreakAngeloknown; //0x0B2B
             public byte[] LimitBreakAngelopoints; //0x0B2C
             public byte[] Itemsbattleorder; //0x0B34
-            public Item[] Items; //0x0B54 198 items (Item ID and Quantity)
+            public List<Item> Items; //0x0B54 198 items (Item ID and Quantity)
             private TimeSpan _gametime; //0x0CE0
             public uint Countdown; //0x0CE4
             public uint Unknown3; //0x0CE8
@@ -103,8 +103,6 @@ namespace OpenVIII
             public TripleTriad TripleTriad; //0x12F0
             public ChocoboWorld ChocoboWorld; //0x1370
 
-            
-
             public bool TeamLaguna => Party != null && (Party[0] == OpenVIII.Characters.Laguna_Loire || Party[1] == OpenVIII.Characters.Laguna_Loire || Party[2] == OpenVIII.Characters.Laguna_Loire);
 
             public Dictionary<GFs, Characters> JunctionedGFs()
@@ -112,12 +110,12 @@ namespace OpenVIII
                 Dictionary<GFs, Characters> r = new Dictionary<GFs, Characters>(16);
                 if (Characters != null)
                 {
-                    foreach (var c in Characters)
+                    foreach (KeyValuePair<Characters, CharacterData> c in Characters)
                     {
                         if (c.Value.JunctionnedGFs != GFflags.None)
                         {
-                            var availableFlags = Enum.GetValues(typeof(GFflags)).Cast<Enum>();
-                            foreach (var flag in availableFlags.Where(c.Value.JunctionnedGFs.HasFlag))
+                            IEnumerable<Enum> availableFlags = Enum.GetValues(typeof(GFflags)).Cast<Enum>();
+                            foreach (Enum flag in availableFlags.Where(c.Value.JunctionnedGFs.HasFlag))
                             {
                                 if ((GFflags)flag == GFflags.None) continue;
                                 r.Add(ConvertGFEnum[(GFflags)flag], c.Key);
@@ -127,12 +125,13 @@ namespace OpenVIII
                 }
                 return r;
             }
+
             public List<GFs> UnlockedGFs()
             {
                 List<GFs> r = new List<GFs>(16);
                 if (GFs != null)
                 {
-                    foreach (var g in GFs)
+                    foreach (KeyValuePair<GFs, GFData> g in GFs)
                     {
                         if ((g.Value.Exists & 1) != 0) //needs testing could be wrong.
                         {
@@ -214,22 +213,23 @@ namespace OpenVIII
                 AmountofGil = br.ReadUInt32();//0x000C
                 Timeplayed = new TimeSpan(0, 0, (int)br.ReadUInt32());//0x0020
                 firstcharacterslevel = br.ReadByte();//0x0024
-                Party = Array.ConvertAll(br.ReadBytes(3), Item => (Characters)Item);//0x0025//0x0026//0x0027 0xFF = blank.
+                Party = Array.ConvertAll(br.ReadBytes(3), Item => (Characters)Item).ToList();//0x0025//0x0026//0x0027 0xFF = blank.
                 Squallsname = br.ReadBytes(12);//0x0028
                 Rinoasname = br.ReadBytes(12);//0x0034
                 Angelosname = br.ReadBytes(12);//0x0040
                 Bokosname = br.ReadBytes(12);//0x004C
                 CurrentDisk = br.ReadUInt32();//0x0058
                 Currentsave = br.ReadUInt32();//0x005C
-                for (int i = 0; i <= (int) OpenVIII.GFs.Eden; i++)
+                for (int i = 0; i <= (int)OpenVIII.GFs.Eden; i++)
                 {
-                       GFs[(GFs)i]=new GFData(br, (GFs) i);
+                    GFs[(GFs)i] = new GFData(br, (GFs)i);
                 }
                 for (int i = 0; i <= (int)OpenVIII.Characters.Edea_Kramer; i++)
                 {
-                    
-                    Characters[(Characters)i]=new CharacterData(br, (Characters) i); // 0x04A0 -> 0x08C8 //152 bytes per 8 total
-                    Characters[(Characters)i].Name = Memory.Strings.GetName((Characters)i, this);
+                    Characters[(Characters)i] = new CharacterData(br, (Characters)i)
+                    {
+                        Name = Memory.Strings.GetName((Characters)i, this)
+                    }; // 0x04A0 -> 0x08C8 //152 bytes per 8 total
                 }
                 int ShopCount = 400 / (16 + 1 + 3);
                 Shops = new List<Shop>(ShopCount); //0x0960 //400 bytes
@@ -237,7 +237,7 @@ namespace OpenVIII
                     Shops.Add(new Shop(br));
                 Configuration = br.ReadBytes(20); //0x0AF0 //20 bytes
 
-                PartyData = Array.ConvertAll(br.ReadBytes(4), Item => (Characters)Item); //0x0B04 // 4 bytes 0xFF terminated.
+                PartyData = Array.ConvertAll(br.ReadBytes(4), Item => (Characters)Item).ToList(); //0x0B04 // 4 bytes 0xFF terminated.
                 KnownWeapons = br.ReadBytes(4); //0x0B08 // 4 bytes
                 Grieversname = br.ReadBytes(12); //0x0B0C // 12 bytes
 
@@ -253,9 +253,9 @@ namespace OpenVIII
                 LimitBreakAngeloknown = new BitArray(br.ReadBytes(1));//0x0B2B
                 LimitBreakAngelopoints = br.ReadBytes(8);//0x0B2C
                 Itemsbattleorder = br.ReadBytes(32);//0x0B34
-                Items = new Item[198];
+                Items = new List<Item>(198);
                 for (int i = 0; i < 198; i++)
-                    Items[i] = new Item { ID = br.ReadByte(), QTY = br.ReadByte() }; //0x0B54 198 items (Item ID and Quantity)
+                    Items.Add(new Item { ID = br.ReadByte(), QTY = br.ReadByte() }); //0x0B54 198 items (Item ID and Quantity)
                 Gametime = new TimeSpan(0, 0, (int)br.ReadUInt32());//0x0CE0
                 Countdown = br.ReadUInt32();//0x0CE4
                 Unknown3 = br.ReadUInt32();//0x0CE8
@@ -300,6 +300,7 @@ namespace OpenVIII
                 TripleTriad = new TripleTriad(br); //br.ReadBytes(128);//0x12F0
                 ChocoboWorld = new ChocoboWorld(br); //br.ReadBytes(64);//0x1370
             }
+
             /// <summary>
             /// return -1 on error
             /// </summary>
@@ -307,18 +308,30 @@ namespace OpenVIII
             /// <param name="character"></param>
             /// <param name="gf"></param>
             /// <returns></returns>
-            public int CurrentHP(Faces.ID id = Faces.ID.Blank,Characters character = OpenVIII.Characters.Blank, GFs gf = OpenVIII.GFs.Blank)
+            public int CurrentHP(Faces.ID id = Faces.ID.Blank, Characters character = OpenVIII.Characters.Blank, GFs gf = OpenVIII.GFs.Blank)
             {
                 if (character == OpenVIII.Characters.Blank)
                     character = id.ToCharacters();
                 if (gf == OpenVIII.GFs.Blank)
                     gf = id.ToGFs();
                 int hp = (Characters.ContainsKey(character) ? Characters[character].CurrentHP() : -1);
-                hp = (hp < 0 && GFs.ContainsKey(gf) ? GFs[gf].CurrentHP : hp);
+                hp = (hp < 0 && GFs.ContainsKey(gf) ? GFs[gf].CurrentHP() : hp);
                 return hp;
             }
 
-            public bool MaxGFAbilities(GFs gf) => GFs.ContainsKey(gf) ? GFs[gf].MaxGFAbilities:false;
+            public bool MaxGFAbilities(GFs gf) => GFs.ContainsKey(gf) ? GFs[gf].MaxGFAbilities : false;
+
+            /// <summary>
+            /// How many dead party members there are.
+            /// </summary>
+            /// <returns>>=0</returns>
+            public int DeadPartyMembers() => PartyData.Where(m => m != OpenVIII.Characters.Blank && (Characters[m].CurrentHP() == 0 || (Characters[m].Statuses0 & Kernel_bin.Persistant_Statuses.Death) != 0)).Count();
+
+            /// <summary>
+            /// How many dead characters there are.
+            /// </summary>
+            /// <returns>>=0</returns>
+            public int DeadCharacters() => Characters.Where(m=>m.Value.VisibleInMenu && m.Value.CurrentHP() == 0 || (m.Value.Statuses0 & Kernel_bin.Persistant_Statuses.Death) != 0).Count();
 
             /// <summary>
             /// preforms a Shadow Copy. Then does deep copy on any required objects.
@@ -327,7 +340,7 @@ namespace OpenVIII
             public Data Clone()
             {
                 //shadowcopy
-                Data d =(Data) MemberwiseClone();
+                Data d = (Data)MemberwiseClone();
                 //deepcopy anything that needs it here.
 
                 d.Characters = Characters.ToDictionary(entry => entry.Key,

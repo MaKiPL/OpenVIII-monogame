@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace OpenVIII
 {
@@ -17,6 +18,7 @@ namespace OpenVIII
 
         private byte b3;
         private _Type _type;
+        private new Dictionary<_Type, Func<Faces.ID, bool>> _useActions;
 
         #endregion Fields
 
@@ -251,6 +253,9 @@ namespace OpenVIII
 
         public bool ValidTarget()
         {
+            if (Type == _Type.Magazine) return true; //TODO pressing okay display Magazine.
+            else if (Type == _Type.SolomonRing) return true; //TODO detect doomtrain and return false if unlocked
+            else if (Type == _Type.Lamp) return true; //TODO detect diablo and return false if unlocked
             Faces.ID _face;
             foreach (Faces.ID face in (Faces.ID[])Enum.GetValues(typeof(Faces.ID)))
             {
@@ -261,6 +266,10 @@ namespace OpenVIII
                 }
             }
             return false;
+        }
+
+        public void UseItem(Faces.ID target)
+        {
         }
 
         /// <summary>
@@ -277,22 +286,175 @@ namespace OpenVIII
         public bool TestGF(ref Faces.ID id, out GFs gf)
         {
             gf = id.ToGFs();
-            if (Type == Item_In_Menu._Type.Angelo && id == Faces.ID.Angelo)
+            if (Type == _Type.Angelo && id == Faces.ID.Angelo)
             {
                 return true;
             }
-            if (Type == Item_In_Menu._Type.Chocobo && id == Faces.ID.Boko)
+            if (Type == _Type.Chocobo && id == Faces.ID.Boko)
             {
                 return true;
             }
-            if (gf == GFs.Blank || gf == GFs.All || (Target & Item_In_Menu._Target.GF) == 0)
+            if (gf == GFs.Blank || gf == GFs.All || (Target & _Target.GF) == 0)
                 return false;
             if (Memory.State?.GFs != null && Memory.State.GFs.ContainsKey(gf))// && Memory.State.GFs[gf].VisibleInMenu)
             {
-                if (Type == Item_In_Menu._Type.GF_Learn && (!Memory.State.GFs[gf].TestGFCanLearn(Learn) || Memory.State.GFs[gf].MaxGFAbilities))
+                if (Type == _Type.GF_Learn && (!Memory.State.GFs[gf].TestGFCanLearn(Learn) || Memory.State.GFs[gf].MaxGFAbilities))
                     return false;
                 return true;
             }
+            return false;
+        }
+
+        private new Dictionary<_Type, Func<Faces.ID, bool>> UseActions
+        {
+            get
+            {
+                if (_useActions == null)
+                {
+                    _useActions = new Dictionary<_Type, Func<Faces.ID,bool>>
+                    {
+                        {_Type.Heal, HealAction },
+                        {_Type.Revive, ReviveAction },
+                        {_Type.HealGF, HealGFAction },
+                        {_Type.ReviveGF, ReviveGFAction },
+                        {_Type.SavePointHeal, SavePointHealAction },
+                        {_Type.Battle, BattleAction },
+                        {_Type.Ammo, AmmoAction },
+                        {_Type.Magazine, MagazineAction },
+                        {_Type.None, NoneAction },
+                        {_Type.GF, GFAction },
+                        {_Type.Angelo, AngeloAction },
+                        {_Type.Chocobo, ChocoboAction },
+                        {_Type.Lamp, LampAction },
+                        {_Type.SolomonRing, SolomonRingAction },
+                        {_Type.GF_Compatability, GF_CompatabilityAction },
+                        {_Type.GF_Learn, GF_LearnAction },
+                        {_Type.GF_Forget, GF_ForgetAction },
+                        {_Type.Blue_Magic, Blue_MagicAction },
+                        {_Type.Stat, StatAction },
+                        {_Type.Cure_Abnormal_Status, Cure_Abnormal_StatusAction },
+                    };
+                }
+                return _useActions;
+            }
+        }
+
+        public void UseAction(Faces.ID obj)
+        {
+            if(_useActions[Type](obj))
+            {
+                var id = ID;
+                Memory.State.Items.Where(m => m.ID == id).ForEach(x=>x.UsedOne());
+
+            }
+        }
+        public override string ToString()
+        {
+            return Name ?? base.ToString();
+        }
+
+        private bool HealAction(Faces.ID obj)
+        {
+            Characters character = obj.ToCharacters();
+            if(Memory.State?.Characters != null && Memory.State.Characters.ContainsKey(character))
+            {
+                Memory.State.Characters[character].DealDamage(Heals, Kernel_bin.Attack_Type.Curative_Item, Kernel_bin.Attack_Flags.None);
+            }
+            return false;
+        }
+
+        private bool ReviveAction(Faces.ID obj)
+        {
+            return false;
+        }
+
+        private bool HealGFAction(Faces.ID obj)
+        {
+            return false;
+        }
+
+        private bool ReviveGFAction(Faces.ID obj)
+        {
+            return false;
+        }
+
+        private bool SavePointHealAction(Faces.ID obj)
+        {
+            return false;
+        }
+
+        private bool BattleAction(Faces.ID obj)
+        {
+            return false;
+        }
+
+        private bool AmmoAction(Faces.ID obj)
+        {
+            return false;
+        }
+
+        private bool MagazineAction(Faces.ID obj)
+        {
+            return false;
+        }
+
+        private bool NoneAction(Faces.ID obj)
+        {
+            return false;
+        }
+
+        private bool GFAction(Faces.ID obj)
+        {
+            return false;
+        }
+
+        private bool AngeloAction(Faces.ID obj)
+        {
+            return false;
+        }
+
+        private bool ChocoboAction(Faces.ID obj)
+        {
+            return false;
+        }
+
+        private bool LampAction(Faces.ID obj)
+        {
+            return false;
+        }
+
+        private bool SolomonRingAction(Faces.ID obj)
+        {
+            return false;
+        }
+
+        private bool GF_CompatabilityAction(Faces.ID obj)
+        {
+            return false;
+        }
+
+        private bool GF_LearnAction(Faces.ID obj)
+        {
+            return false;
+        }
+
+        private bool GF_ForgetAction(Faces.ID obj)
+        {
+            return false;
+        }
+
+        private bool Blue_MagicAction(Faces.ID obj)
+        {
+            return false;
+        }
+
+        private bool StatAction(Faces.ID obj)
+        {
+            return false;
+        }
+
+        private bool Cure_Abnormal_StatusAction(Faces.ID obj)
+        {
             return false;
         }
 

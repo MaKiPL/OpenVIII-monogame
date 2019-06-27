@@ -114,8 +114,8 @@ namespace OpenVIII
                         {
                             ITEM[0, 1] = new IGMDataItem_Int(Memory.State.GFs[gf].Level, new Rectangle(SIZE[0].X + 35, SIZE[0].Y, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 6);
                             ITEM[0, 2] = null;
-                            ITEM[1, 1] = new IGMDataItem_Int(Memory.State.GFs[gf].CurrentHP, new Rectangle(SIZE[1].X + 35, SIZE[1].Y, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 6);
-                            ITEM[1, 3] = new IGMDataItem_Int(Memory.State.GFs[gf].MaxHP, new Rectangle(SIZE[1].X + 155, SIZE[1].Y, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 5);
+                            ITEM[1, 1] = new IGMDataItem_Int(Memory.State.GFs[gf].CurrentHP(), new Rectangle(SIZE[1].X + 35, SIZE[1].Y, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 6);
+                            ITEM[1, 3] = new IGMDataItem_Int(Memory.State.GFs[gf].MaxHP(), new Rectangle(SIZE[1].X + 155, SIZE[1].Y, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 5);
                         }
                     }
                 }

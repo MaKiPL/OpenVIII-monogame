@@ -70,21 +70,32 @@ namespace OpenVIII
                         ((IGMDataItem_Box)CONTAINER).Title = Pages <= 1 ? (Icons.ID?)Icons.ID.ITEM : (Icons.ID?)(Icons.ID.ITEM_PG1 + (byte)Page);
                         byte pos = 0;
                         int skip = Page * rows;
-                        for (byte i = 0; pos < rows && i < Source.Items.Length; i++)
+                        for (byte i = 0; pos < rows && i < Source.Items.Count; i++)
                         {
                             Saves.Item item = Source.Items[i];
-                            if (item.ID == 0) continue; // skip empty values.
+                            if (item.ID == 0 || item.QTY == 0) continue; // skip empty values.
                             if (skip-- > 0) continue; //skip items that are on prev pages.
                             Item_In_Menu itemdata = item.DATA?? new Item_In_Menu();
                             if (itemdata.ID == 0) continue; // skip empty values.
+                            Font.ColorID color = Font.ColorID.White;
+                            byte palette = itemdata.Palette;
+                            if (!itemdata.ValidTarget())
+                            {
+                                color = Font.ColorID.Grey;
+                                BLANKS[pos] = true;
+                                palette = itemdata.Faded_Palette;
+                            }
+                            else
+                                BLANKS[pos] = false;
                             ((IGMDataItem_String)(ITEM[pos, 0])).Data = itemdata.Name;
                             ((IGMDataItem_String)(ITEM[pos, 0])).Icon = itemdata.Icon;
-                            ((IGMDataItem_String)(ITEM[pos, 0])).Palette = itemdata.Palette;
+                            ((IGMDataItem_String)(ITEM[pos, 0])).Palette = palette;
+                            ((IGMDataItem_String)(ITEM[pos, 0])).Colorid = color;
                             ((IGMDataItem_Int)(ITEM[pos, 1])).Data = item.QTY;
                             ((IGMDataItem_Int)(ITEM[pos, 1])).Show();
+                            ((IGMDataItem_Int)(ITEM[pos, 1])).Colorid = color;
                             _helpStr[pos] = itemdata.Description;
                             Contents[pos] = itemdata;
-                            BLANKS[pos] = false;
                             pos++;
                         }
                         for (; pos < rows; pos++)
