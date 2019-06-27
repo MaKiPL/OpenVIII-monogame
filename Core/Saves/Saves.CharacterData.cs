@@ -285,6 +285,7 @@ namespace OpenVIII
                 }
             }
 
+
             public int Level => (int)((Experience / 1000) + 1);
             public int ExperienceToNextLevel => (int)((Level) * 1000 - Experience);
 
