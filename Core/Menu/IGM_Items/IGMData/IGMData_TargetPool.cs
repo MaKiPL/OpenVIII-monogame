@@ -164,7 +164,7 @@ namespace OpenVIII
                 {
                 }
 
-                private void Fill()
+                private void Fill(bool force = false)
                 {
                     Faces.ID id = 0;
                     int skip = Page * rows;
@@ -191,7 +191,7 @@ namespace OpenVIII
                                 return;
                             }
                         ITEM[i, 0] = new IGMDataItem_String(Memory.Strings.GetName(id), pos: SIZE[i]);
-                        int hp = ((ctest || gftest)? Memory.State.CurrentHP(character:character,gf:gf) : -1);
+                        int hp = (ctest || gftest)? Memory.State[id].CurrentHP(): -1;
                         BLANKS[i] = false;
                         Contents[i] = id;
                         if (hp > -1)
@@ -217,7 +217,20 @@ namespace OpenVIII
                     else
                         InGameMenu_Items.TargetChangeHandler?.Invoke(this, Contents[CURSOR_SELECT]);
                 }
-
+                public override void Inputs_OKAY()
+                {
+                    bool ret = false;
+                    if (All)
+                        ret = Item.Use(Faces.ID.Blank);
+                    else if (!BLANKS[CURSOR_SELECT])
+                        ret = Item.Use(Contents[CURSOR_SELECT]);
+                    if(ret)
+                    {
+                        base.Inputs_OKAY();
+                        Fill(true);
+                        InGameMenu_Items.ReInit(true);
+                    }
+                }
                 #endregion Methods
             }
 

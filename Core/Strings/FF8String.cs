@@ -32,7 +32,12 @@ namespace OpenVIII
         #region Properties
 
         public virtual byte[] Value { get => value; set => this.value = value; }
-        public string Value_str => encoding.GetString(Value).TrimEnd('\0');
+
+        /// <summary>
+        /// This is incorrect as null can be in the beginning of strings as a marker or tag.
+        /// But I can't figure out how to make his code leave null as null.
+        /// </summary>
+        public string Value_str => encoding.GetString(Value).TrimEnd('\0').Replace("{End}","");
         public virtual int Length => value == null ? 0 : value.Length;
         public object Current => Value[position - 1];
 

@@ -18,7 +18,7 @@ namespace OpenVIII
             public FF8String Name; //Offset (0x00 terminated)
             public uint Experience; //0x00
             public byte Unknown; //0x0C
-            public byte Exists; //0x10
+            public bool Exists; //0x10
 
             //private ushort _CurrentHP; //0x11
             public BitArray Complete; //0x12 abilities (1 bit = 1 ability completed, 9 bits unused)
@@ -26,7 +26,6 @@ namespace OpenVIII
             public byte[] APs; //0x14 (1 byte = 1 ability of the GF, 2 bytes unused)
             public ushort NumberKills; //0x24 of kills
             public ushort NumberKOs; //0x3C of KOs
-            public byte Learning; //0x3E ability
             public byte[] Forgotten; //0x41 abilities (1 bit = 1 ability of the GF forgotten, 2 bits unused)
 
             public GFData()
@@ -56,13 +55,13 @@ namespace OpenVIII
                 Name = br.ReadBytes(12);//0x00 (0x00 terminated)
                 Experience = br.ReadUInt32();//0x0C
                 Unknown = br.ReadByte();//0x10
-                Exists = br.ReadByte();//0x11
+                Exists = br.ReadByte() == 1 ? true : false;//0x11 //1 unlocked //0 locked
                 _CurrentHP = br.ReadUInt16();//0x12
                 Complete = new BitArray(br.ReadBytes(16));//0x14 abilities (1 bit = 1 ability completed, 9 bits unused)
                 APs = br.ReadBytes(24);//0x24 (1 byte = 1 ability of the GF, 2 bytes unused)
                 NumberKills = br.ReadUInt16();//0x3C of kills
                 NumberKOs = br.ReadUInt16();//0x3E of KOs
-                Learning = br.ReadByte();//0x41 ability
+                Learning = (Kernel_bin.Abilities)br.ReadByte();//0x41 ability
                 Forgotten = br.ReadBytes(3);//0x42 abilities (1 bit = 1 ability of the GF forgotten, 2 bits unused)
             }
 
@@ -116,6 +115,52 @@ namespace OpenVIII
                         p += 40;
                     return p;
                 }
+            }
+            /// <summary>
+            /// This is the ability that will gain AP from battles.
+            /// </summary>
+            public Kernel_bin.Abilities Learning { get; private set; }
+
+            public void SetLearning(Kernel_bin.Abilities? ability = null)
+            {
+                Kernel_bin.Abilities a = ability ?? Kernel_bin.Abilities.None;
+                if (!MaxGFAbilities)
+                {
+                    if (ability == null)
+                    {
+                        // if ability is null set learning to the next ability that can be learned
+                        // check if max abilities is known already.
+
+                    }
+                    else if (a != Kernel_bin.Abilities.None)
+                    {
+                        // if ability isn't none.
+                        // confirm if can learn it
+                        // set ability to be learned
+                    }
+                }
+                else
+                    Learning = Kernel_bin.Abilities.None;
+            }
+
+            private Kernel_bin.Junctionable_GFs_Data JunctionableGFsData => Kernel_bin.JunctionableGFsData[ID];
+            private IReadOnlyDictionary<Kernel_bin.Abilities, Kernel_bin.GF_abilities> GFabilities => Kernel_bin.GFabilities;
+            //public Kernel_bin.GF_abilities this[Kernel_bin.Abilities ability] => Kernel_bin.GFabilities[ability];
+            public bool Learn(Kernel_bin.Abilities ability)
+            {
+                if (!MaxGFAbilities)
+                {
+                    if (!Complete[(int)ability])
+                    {
+                        Complete[(int)ability] = true;
+                        if (Learning.Equals(ability))
+                        {
+                            SetLearning();                         
+                        }
+                        return true;
+                    }
+                }
+                return false;
             }
         }
     }

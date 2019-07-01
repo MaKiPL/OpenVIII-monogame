@@ -7,7 +7,7 @@ namespace OpenVIII
 
         #region Structs
 
-        public struct Item
+        public class Item
         {
 
             #region Fields
@@ -19,7 +19,7 @@ namespace OpenVIII
 
             #region Constructors
 
-            public Item(byte iD, byte qTY) { ID = iD; QTY = qTY; }
+            public Item(byte ID, byte QTY) { this.ID = ID; this.QTY = QTY; }
 
             #endregion Constructors
 
@@ -33,7 +33,7 @@ namespace OpenVIII
                 {
                     ID = 0;
                 }
-                QTY -= 1;
+                QTY--;
             }
             public void Remove()
             {
@@ -49,6 +49,14 @@ namespace OpenVIII
                     if (x > 100) x = 100;
                     QTY = (byte)x;
                 }
+            }
+
+            public Item Clone()
+            {
+                //shadowcopy
+                Item d = new Item(ID, QTY);
+                //deepcopy anything that needs it here.
+                return d;
             }
             #endregion Properties
         };

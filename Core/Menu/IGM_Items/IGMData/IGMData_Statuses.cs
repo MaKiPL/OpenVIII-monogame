@@ -54,17 +54,23 @@ namespace OpenVIII
                 { Items.ForwardSlash,Memory.Strings.Read(Strings.FileID.MNGRP,0,25)},
                 };
                     base.Init();
+                    Target = Faces.ID.Blank;
                 }
 
                 public override void ReInit()
                 {
-                    if (!eventSet && InGameMenu_Items != null)
+                    if (InGameMenu_Items != null)
                     {
-                        InGameMenu_Items.ModeChangeHandler += ModeChangeEvent;
-                        InGameMenu_Items.ChoiceChangeHandler += ChoiceChangeEvent;
-                        InGameMenu_Items.ItemChangeHandler += ItemChangeEvent;
-                        InGameMenu_Items.TargetChangeHandler += TargetChangeEvent;
-                        eventSet = true;
+                        if (!eventSet)
+                        {
+                            InGameMenu_Items.ModeChangeHandler += ModeChangeEvent;
+                            InGameMenu_Items.ChoiceChangeHandler += ChoiceChangeEvent;
+                            InGameMenu_Items.ItemChangeHandler += ItemChangeEvent;
+                            InGameMenu_Items.TargetChangeHandler += TargetChangeEvent;
+                            eventSet = true;
+                        }
+                        else
+                            Fill(Target); // refresh the screen.
                     }
                 }
 
@@ -81,6 +87,11 @@ namespace OpenVIII
 
                 private void TargetChangeEvent(object sender, Faces.ID e)
                 {
+                    Fill(e);
+                }
+
+                private void Fill(Faces.ID e)
+                {
                     if ((e == Faces.ID.Blank && Target != Faces.ID.Blank) || All)
                     {
                         Target = e;
@@ -89,9 +100,9 @@ namespace OpenVIII
                     }
                     else
                     {
-                        if(Target == Faces.ID.Blank)
-                        foreach (var i in ITEM)
-                            i?.Show();
+                        if (Target == Faces.ID.Blank)
+                            foreach (var i in ITEM)
+                                i?.Show();
                         Target = e;
                         Characters character = e.ToCharacters();
                         GFs gf = e.ToGFs();

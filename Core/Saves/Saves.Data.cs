@@ -133,7 +133,7 @@ namespace OpenVIII
                 {
                     foreach (KeyValuePair<GFs, GFData> g in GFs)
                     {
-                        if ((g.Value.Exists & 1) != 0) //needs testing could be wrong.
+                        if (g.Value.Exists) //needs testing could be wrong.
                         {
                             r.Add(g.Key);
                         }
@@ -141,12 +141,32 @@ namespace OpenVIII
                 }
                 return r;
             }
+            public Damageable this[GFs id] => GetDamagable(id);
+            public Damageable this[Characters id] => GetDamagable(id);
+            public Damageable this[Faces.ID id] => GetDamagable(id);
+            private Damageable GetDamagable(Characters id)
+            {
+                return Characters.ContainsKey(id) ? Characters[id] : null;
+            }
+            private Damageable GetDamagable(GFs id)
+            {
+                return GFs.ContainsKey(id) ? GFs[id] : null;
+            }
+            private Damageable GetDamagable(Faces.ID id)
+            {
+                GFs gf = id.ToGFs();
+                Characters c = id.ToCharacters();
+                if (c == OpenVIII.Characters.Blank)
+                    return GetDamagable(gf);
+                else
+                    return GetDamagable(c);
+            }
 
             public bool SmallTeam
             {
                 get
                 {
-                    if (this.Characters != null)
+                    if (Characters != null)
                     {
                         foreach (KeyValuePair<Characters, CharacterData> i in Characters)
                         {
@@ -255,7 +275,7 @@ namespace OpenVIII
                 Itemsbattleorder = br.ReadBytes(32);//0x0B34
                 Items = new List<Item>(198);
                 for (int i = 0; i < 198; i++)
-                    Items.Add(new Item { ID = br.ReadByte(), QTY = br.ReadByte() }); //0x0B54 198 items (Item ID and Quantity)
+                    Items.Add(new Item (br.ReadByte(), br.ReadByte()) ); //0x0B54 198 items (Item ID and Quantity)
                 Gametime = new TimeSpan(0, 0, (int)br.ReadUInt32());//0x0CE0
                 Countdown = br.ReadUInt32();//0x0CE4
                 Unknown3 = br.ReadUInt32();//0x0CE8
@@ -349,7 +369,13 @@ namespace OpenVIII
                 d.Fieldvars = Fieldvars.Clone();
                 d.Worldmap = Worldmap.Clone();
                 d.TripleTriad = TripleTriad.Clone();
-                d.Shops.ToList().ForEach(i => i.Clone());
+                d.Shops = new List<Shop>(Shops.Count);
+                foreach (Shop s in Shops)
+                    d.Shops.Add(s.Clone());
+
+                d.Items = new List<Item>(Items.Count);
+                foreach (Item i in Items)
+                    d.Items.Add(i.Clone());
                 return d;
             }
         }

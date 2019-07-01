@@ -64,7 +64,12 @@ namespace OpenVIII
 
             public override void ReInit()
             {
-                SetMode(Mode.SelectItem);
+                ReInit(false);
+            }
+            public void ReInit(bool skipmode)
+            {
+                if(!skipmode)
+                    SetMode(Mode.SelectItem);
                 base.ReInit();
                 ReInitCompletedHandler?.Invoke(this, null);
             }
