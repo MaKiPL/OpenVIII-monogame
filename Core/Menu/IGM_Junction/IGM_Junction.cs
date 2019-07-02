@@ -127,15 +127,6 @@ namespace OpenVIII
             public static Dictionary<Items, FF8String> Misc { get; private set; }
             public static Dictionary<Items, FF8String> Descriptions { get; private set; }
 
-            /// <summary>
-            /// Character who has the junctions and inventory. Same as VisableCharacter unless TeamLaguna.
-            /// </summary>
-            public static Characters Character { get; private set; }
-
-            /// <summary>
-            /// Required to support Laguna's Party. They have unique stats but share junctions and inventory.
-            /// </summary>
-            public static Characters VisableCharacter { get; private set; }
             public static EventHandler<Mode> ModeChangeEventListener;
             public override Enum GetMode() => _mode;
             public override void SetMode(Enum value)
@@ -223,7 +214,7 @@ namespace OpenVIII
                     {Items.Junction, Memory.Strings.Read(Strings.FileID.MNGRP,2,218) }
                 };
                 Data.Add(SectionName.CharacterInfo, new IGMData_CharacterInfo());
-                Data.Add(SectionName.Commands, new IGMData_Commands());
+                Data.Add(SectionName.Commands, new IGMData_Commands(Character, new Rectangle(615, 150, 210, 192)));
                 Data.Add(SectionName.Help, new IGMData_Help());
                 Data.Add(SectionName.TopMenu, new IGMData_TopMenu());
                 Data.Add(SectionName.Title, new IGMData_Container(
@@ -274,13 +265,9 @@ namespace OpenVIII
             /// </summary>
             /// <param name="c"></param>
             /// <param name="vc"></param>
-            public void ReInit(Characters c, Characters vc)
+            public override void ReInit(Characters c, Characters vc, bool backup = true)
             {
-                Character = c;
-                VisableCharacter = vc;
-                //backup memory
-                Memory.PrevState = Memory.State.Clone();
-                ReInit();
+                base.ReInit(c, vc, backup);
             }
 
             public enum Mode

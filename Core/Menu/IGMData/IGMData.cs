@@ -5,27 +5,47 @@ using System.Linq;
 
 namespace OpenVIII
 {
-    #region Classes
 
     public class IGMData
     {
+
         #region Fields
 
-        public Dictionary<int, FF8String> Descriptions { get; protected set; }
-        protected bool skipdata = false;
-
+        public bool[] BLANKS;
         /// <summary>
         /// location of where pointer finger will point.
         /// </summary>
         public Point[] CURSOR;
 
-        public bool Enabled { get; private set; } = true;
+        public IGMDataItem[,] ITEM;
+        /// <summary>
+        /// Size of the entire area
+        /// </summary>
+        public Rectangle[] SIZE;
 
-        public Table_Options Table_Options { get; set; } = Table_Options.Default;
-        public Cursor_Status Cursor_Status { get; set; } = Cursor_Status.Disabled;
+        protected Characters Character;
+        protected bool skipdata = false;
+        protected bool skipsnd = false;
+        protected Characters VisableCharacter;
+        private int _cursor_select;
 
-        //public object PrevSetting { get; protected set; } = null;
-        //public object Setting { get; protected set; } = null;
+        #endregion Fields
+
+        #region Constructors
+
+        public IGMData(int count = 0, int depth = 0, IGMDataItem container = null, int? cols = null, int? rows = null)
+        => Init(count, depth, container, cols, rows);
+
+        #endregion Constructors
+
+        #region Properties
+
+        public int cols { get; private set; }
+        public IGMDataItem CONTAINER { get; protected set; }
+        /// <summary>
+        /// Total number of items
+        /// </summary>
+        public byte Count { get; private set; }
 
         public int CURSOR_SELECT
         {
@@ -36,6 +56,61 @@ namespace OpenVIII
             }
         }
 
+        public Cursor_Status Cursor_Status { get; set; } = Cursor_Status.Disabled;
+        /// <summary>
+        /// How many Peices per Item. Example 1 box could have 9 things to draw in it.
+        /// </summary>
+        public byte Depth { get; private set; }
+
+        public Dictionary<int, FF8String> Descriptions { get; protected set; }
+        public bool Enabled { get; private set; } = true;
+
+        public int rows { get; private set; }
+        public Table_Options Table_Options { get; set; } = Table_Options.Default;
+        public static Point MouseLocation => Menu.MouseLocation;
+
+        public static Vector2 TextScale => Menu.TextScale;
+
+        /// <summary>
+        /// Container's Height
+        /// </summary>
+        public int Height => CONTAINER != null ? CONTAINER.Pos.Height : 0;
+
+        /// <summary>
+        /// Container's Width
+        /// </summary>
+        public int Width => CONTAINER != null ? CONTAINER.Pos.Width : 0;
+
+        /// <summary>
+        /// Container's X Position
+        /// </summary>
+        public int X => CONTAINER != null ? CONTAINER.Pos.X : 0;
+
+        /// <summary>
+        /// Container's Y Position
+        /// </summary>
+        public int Y => CONTAINER != null ? CONTAINER.Pos.Y : 0;
+
+        #endregion Properties
+
+        #region Indexers
+
+        public IGMDataItem this[int pos, int i] { get => ITEM[pos, i]; set => ITEM[pos, i] = value; }
+
+        #endregion Indexers
+
+        #region Methods
+
+        public static void DrawPointer(Point cursor, Vector2? offset = null, bool blink = false) => Menu.DrawPointer(cursor, offset, blink);
+
+        /// <summary>
+        /// Convert to rectangle based on container.
+        /// </summary>
+        /// <param name="v">Input data</param>
+        public static implicit operator Rectangle(IGMData v) => v.CONTAINER ?? Rectangle.Empty;
+
+        //public object PrevSetting { get; protected set; } = null;
+        //public object Setting { get; protected set; } = null;
         public virtual int CURSOR_NEXT()
         {
             if ((Cursor_Status & Cursor_Status.Enabled) != 0)
@@ -76,26 +151,29 @@ namespace OpenVIII
             return GetCursor_select();
         }
 
-        public IGMDataItem[,] ITEM;
-        public static Vector2 TextScale => Menu.TextScale;
-
         /// <summary>
-        /// Size of the entire area
+        /// Draw all items
         /// </summary>
-        public Rectangle[] SIZE;
+        public virtual void Draw()
+        {
+            if (Enabled)
+            {
+                if (CONTAINER != null)
+                    CONTAINER.Draw();
+                if (!skipdata && ITEM != null)
+                    foreach (IGMDataItem i in ITEM)
+                    {
+                        if (i != null)
+                            i.Draw();
+                    }
+                if ((Cursor_Status & (Cursor_Status.Enabled | Cursor_Status.Draw)) != 0)
+                {
+                    DrawPointer(CURSOR[CURSOR_SELECT], blink: ((Cursor_Status & Cursor_Status.Blinking) != 0));
+                }
+            }
+        }
 
-        public bool[] BLANKS;
-        private int _cursor_select;
-        protected bool skipsnd = false;
-
-        public IGMDataItem CONTAINER { get; protected set; }
-
-        #endregion Fields
-
-        #region Constructors
-
-        public IGMData(int count = 0, int depth = 0, IGMDataItem container = null, int? cols = null, int? rows = null)
-        => Init(count, depth, container, cols, rows);
+        public virtual void Hide() => Enabled = false;
 
         public void Init(int count, int depth, IGMDataItem container = null, int? cols = null, int? rows = null)
         {
@@ -128,87 +206,6 @@ namespace OpenVIII
             ReInit();
             Update();
         }
-
-        public IGMDataItem this[int pos, int i] { get => ITEM[pos, i]; set => ITEM[pos, i] = value; }
-
-        /// <summary>
-        /// Draw all items
-        /// </summary>
-        public virtual void Draw()
-        {
-            if (Enabled)
-            {
-                if (CONTAINER != null)
-                    CONTAINER.Draw();
-                if (!skipdata && ITEM != null)
-                    foreach (IGMDataItem i in ITEM)
-                    {
-                        if (i != null)
-                            i.Draw();
-                    }
-                if ((Cursor_Status & (Cursor_Status.Enabled | Cursor_Status.Draw)) != 0)
-                {
-                    DrawPointer(CURSOR[CURSOR_SELECT], blink: ((Cursor_Status & Cursor_Status.Blinking) != 0));
-                }
-            }
-        }
-
-        public static void DrawPointer(Point cursor, Vector2? offset = null, bool blink = false) => Menu.DrawPointer(cursor, offset, blink);
-
-        #endregion Constructors
-
-        #region Properties
-
-        /// <summary>
-        /// Total number of items
-        /// </summary>
-        public byte Count { get; private set; }
-
-        /// <summary>
-        /// How many Peices per Item. Example 1 box could have 9 things to draw in it.
-        /// </summary>
-        public byte Depth { get; private set; }
-
-        /// <summary>
-        /// Container's Width
-        /// </summary>
-        public int Width => CONTAINER != null ? CONTAINER.Pos.Width : 0;
-
-        /// <summary>
-        /// Container's Height
-        /// </summary>
-        public int Height => CONTAINER != null ? CONTAINER.Pos.Height : 0;
-
-        /// <summary>
-        /// Container's X Position
-        /// </summary>
-        public int X => CONTAINER != null ? CONTAINER.Pos.X : 0;
-
-        /// <summary>
-        /// Container's Y Position
-        /// </summary>
-        public int Y => CONTAINER != null ? CONTAINER.Pos.Y : 0;
-
-        public int rows { get; private set; }
-        public int cols { get; private set; }
-
-        protected int GetCursor_select() => _cursor_select;
-
-        protected virtual void SetCursor_select(int value) => _cursor_select = value;
-
-        /// <summary>
-        /// Convert to rectangle based on container.
-        /// </summary>
-        /// <param name="v">Input data</param>
-        public static implicit operator Rectangle(IGMData v) => v.CONTAINER ?? Rectangle.Empty;
-
-        /// <summary>
-        /// Things that change on every update.
-        /// </summary>
-        /// <returns>True = signifigant change</returns>
-        public virtual bool Update() => false;
-
-        public static Point MouseLocation => Menu.MouseLocation;
 
         /// <summary>
         /// Check inputs
@@ -304,11 +301,11 @@ namespace OpenVIII
             return ret;
         }
 
-        public virtual void Inputs_Right()
+        public virtual void Inputs_CANCEL()
         {
             Input.ResetInputLimit();
             if (!skipsnd)
-                init_debugger_Audio.PlaySound(0);
+                init_debugger_Audio.PlaySound(8);
         }
 
         public virtual void Inputs_Left()
@@ -318,7 +315,14 @@ namespace OpenVIII
                 init_debugger_Audio.PlaySound(0);
         }
 
-        public virtual void Inputs_Triangle()
+        public virtual void Inputs_OKAY()
+        {
+            Input.ResetInputLimit();
+            if (!skipsnd)
+                init_debugger_Audio.PlaySound(0);
+        }
+
+        public virtual void Inputs_Right()
         {
             Input.ResetInputLimit();
             if (!skipsnd)
@@ -332,23 +336,35 @@ namespace OpenVIII
                 init_debugger_Audio.PlaySound(31);
         }
 
-        public virtual void Inputs_OKAY()
+        public virtual void Inputs_Triangle()
         {
             Input.ResetInputLimit();
             if (!skipsnd)
                 init_debugger_Audio.PlaySound(0);
         }
 
-        public virtual void Inputs_CANCEL()
+        public virtual void ReInit(Characters character, Characters? visablecharacter = null)
         {
-            Input.ResetInputLimit();
-            if (!skipsnd)
-                init_debugger_Audio.PlaySound(8);
+            Character = character;
+            VisableCharacter = visablecharacter ?? character;
+            ReInit();
+        }
+        /// <summary>
+        /// Things that change rarely. Like a party member changes or Laguna dream happens.
+        /// </summary>
+        public virtual void ReInit()
+        {
         }
 
-        protected virtual void InitShift(int i, int col, int row)
-        {
-        }
+        public virtual void Show() => Enabled = true;
+
+        /// <summary>
+        /// Things that change on every update.
+        /// </summary>
+        /// <returns>True = signifigant change</returns>
+        public virtual bool Update() => false;
+
+        protected int GetCursor_select() => _cursor_select;
 
         /// <summary>
         /// Things that are fixed values at startup.
@@ -393,19 +409,13 @@ namespace OpenVIII
             }
         }
 
-        public virtual void Hide() => Enabled = false;
-
-        public virtual void Show() => Enabled = true;
-
-        /// <summary>
-        /// Things that change rarely. Like a party member changes or Laguna dream happens.
-        /// </summary>
-        public virtual void ReInit()
+        protected virtual void InitShift(int i, int col, int row)
         {
         }
 
-        #endregion Properties
+        protected virtual void SetCursor_select(int value) => _cursor_select = value;
+
+        #endregion Methods
     }
 
-    #endregion Classes
 }

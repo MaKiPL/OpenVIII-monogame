@@ -7,25 +7,17 @@ namespace OpenVIII
 {
     public abstract class Menu
     {
-        public abstract void SetMode(Enum mode);
-
-        public abstract Enum GetMode();
-
-        public bool Enabled { get; private set; } = true;
-
-        public virtual void Hide() => Enabled = false;
-
-        public virtual void Show() => Enabled = true;
+        #region Fields
 
         public Dictionary<Enum, IGMData> Data;
 
-
         private Vector2 _size;
-        public static Matrix Focus { get; protected set; }
 
         private bool skipdata;
 
-        public Vector2 Size { get => _size; protected set => _size = value; }
+        #endregion Fields
+
+        #region Constructors
 
         public Menu()
         {
@@ -36,69 +28,40 @@ namespace OpenVIII
             skipdata = false;
         }
 
-        protected virtual void Init()
-        {
-        }
+        #endregion Constructors
 
-        public virtual void ReInit()
-        {
-            if (!skipdata)
-                foreach (KeyValuePair<Enum, IGMData> i in Data)
-                    i.Value.ReInit();
-        }
+        #region Properties
 
-        public virtual void StartDraw()
-        {
-            if (Enabled)
-                Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: Focus);
-        }
+        public static float Blink_Amount { get; set; } = 1f;
 
-        public virtual void Draw()
-        {
-            StartDraw();
-            DrawData();
-            EndDraw();
-        }
+        public static float Fade { get; set; } = 1f;
 
-        public virtual void DrawData()
-        {
-            if (!skipdata && Enabled)
-                foreach (KeyValuePair<Enum, IGMData> i in Data)
-                    i.Value.Draw();
-        }
+        public static Matrix Focus { get; protected set; }
 
-        public virtual void EndDraw()
-        {
-            if (Enabled)
-                Memory.SpriteBatchEnd();
-        }
+        public static Vector2 TextScale { get; } = new Vector2(2.545455f, 3.0375f);
+
+        public bool Enabled { get; private set; } = true;
+
+        public Vector2 Size { get => _size; protected set => _size = value; }
+
+        public static Point MouseLocation => Input.MouseLocation.Transform(Menu.Focus);
+
+        /// <summary>
+        /// Character who has the junctions and inventory. Same as VisableCharacter unless TeamLaguna.
+        /// </summary>
+        protected Characters Character { get; set; }
+
+        /// <summary>
+        /// Required to support Laguna's Party. They have unique stats but share junctions and inventory.
+        /// </summary>
+        protected Characters VisableCharacter { get; set; }
 
         protected Vector2 vp { get; set; } = new Vector2(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height);
 
-        public virtual bool Update()
-        {
-            bool ret = false;
-            Vector2 Zoom = Memory.Scale(Size.X, Size.Y, Memory.ScaleMode.FitBoth);
-            Focus = Matrix.CreateTranslation((Size.X / -2), (Size.Y / -2), 0) *
-                Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) *
-                Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
-            if (Enabled)
-            {
-                //todo detect when there is no saves detected.
-                //check for null
-                if (!skipdata)
-                    foreach (KeyValuePair<Enum, IGMData> i in Data)
-                    {
-                        ret = i.Value.Update() || ret;
-                    }
-            }
-            return Inputs() || ret;
-        }
+        #endregion Properties
 
-        public static Vector2 TextScale { get; } = new Vector2(2.545455f, 3.0375f);
-        protected abstract bool Inputs();
-        public static float Fade { get; set; } = 1f;
-        public static float Blink_Amount { get; set; } = 1f;
+        #region Methods
+
         public static Tuple<Rectangle, Point, Rectangle> DrawBox(Rectangle dst, FF8String buffer = null, Icons.ID? title = null, Vector2? textScale = null, Vector2? boxScale = null, Box_Options options = Box_Options.Default)
         {
             if (textScale == null) textScale = Vector2.One;
@@ -151,7 +114,6 @@ namespace OpenVIII
             return new Tuple<Rectangle, Point, Rectangle>(hotspot, cursor, font);
         }
 
-        public static Point MouseLocation => Input.MouseLocation.Transform(Menu.Focus);
         public static void DrawPointer(Point cursor, Vector2? offset = null, bool blink = false)
         {
             if (offset == null)
@@ -167,6 +129,83 @@ namespace OpenVIII
                 Memory.Icons.Draw(Icons.ID.Finger_Right, fadedpallet, dst, scale, Fade);
             }
             Memory.Icons.Draw(Icons.ID.Finger_Right, pallet, dst, scale, blink ? Fade * Blink_Amount : Fade);
-        }    
+        }
+
+        public virtual void Draw()
+        {
+            StartDraw();
+            DrawData();
+            EndDraw();
+        }
+
+        public virtual void DrawData()
+        {
+            if (!skipdata && Enabled)
+                foreach (KeyValuePair<Enum, IGMData> i in Data)
+                    i.Value.Draw();
+        }
+
+        public virtual void EndDraw()
+        {
+            if (Enabled)
+                Memory.SpriteBatchEnd();
+        }
+
+        public abstract Enum GetMode();
+
+        public virtual void Hide() => Enabled = false;
+
+        public virtual void ReInit()
+        {
+            if (!skipdata)
+                foreach (KeyValuePair<Enum, IGMData> i in Data)
+                    i.Value.ReInit(Character, VisableCharacter);
+        }
+
+        public virtual void ReInit(Characters c, Characters vc, bool backup = false)
+        {
+            Character = c;
+            VisableCharacter = vc;
+            //backup memory
+
+            if (backup)
+                Memory.PrevState = Memory.State.Clone();
+            ReInit();
+        }
+
+        public abstract void SetMode(Enum mode);
+        public virtual void Show() => Enabled = true;
+        public virtual void StartDraw()
+        {
+            if (Enabled)
+                Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: Focus);
+        }
+
+        public virtual bool Update()
+        {
+            bool ret = false;
+            Vector2 Zoom = Memory.Scale(Size.X, Size.Y, Memory.ScaleMode.FitBoth);
+            Focus = Matrix.CreateTranslation((Size.X / -2), (Size.Y / -2), 0) *
+                Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) *
+                Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
+            if (Enabled)
+            {
+                //todo detect when there is no saves detected.
+                //check for null
+                if (!skipdata)
+                    foreach (KeyValuePair<Enum, IGMData> i in Data)
+                    {
+                        ret = i.Value.Update() || ret;
+                    }
+            }
+            return Inputs() || ret;
+        }
+
+        protected virtual void Init()
+        {
+        }
+        protected abstract bool Inputs();
+
+        #endregion Methods
     }
 }
