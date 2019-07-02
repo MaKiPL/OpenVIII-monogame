@@ -153,7 +153,7 @@ namespace OpenVIII
             float item = 0;
             Rectangle dst = FontBoxCalc<Ditems>(strDebugLobby);
             Memory.SpriteBatchStartAlpha(tm: IGM_focus);
-            DrawBox(dst, title: Icons.ID.DEBUG);
+            Menu.DrawBox(dst, title: Icons.ID.DEBUG);
             //Memory.Icons.Draw(Icons.ID.Menu_BG_256, 0, dst, new Vector2(2f), Fade);
             item = 0;
             dst.Offset(4 * 3.5f, 0);

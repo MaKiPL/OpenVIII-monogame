@@ -3,11 +3,9 @@ using System;
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
         #region Classes
 
-        private class IGMDataItem_Box : IGMDataItem
+        public class IGMDataItem_Box : IGMDataItem
         {
             public FF8String Data { get; set; }
             public Icons.ID? Title { get; set; }
@@ -25,10 +23,10 @@ namespace OpenVIII
             {
                 if (Enabled)
                 {
-                    Dims = DrawBox(Pos, Data, Title, options: Options);
+                    Dims = Menu.DrawBox(Pos, Data, Title, options: Options);
                 }
             }
         }
         #endregion Classes
-    }
+    
 }

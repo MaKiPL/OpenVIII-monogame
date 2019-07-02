@@ -1,7 +1,6 @@
 ﻿namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
+
         public abstract class IGMData_Pool<T, T2> : IGMData
         {
             public IGMData_Pool( int count, int depth, IGMDataItem container = null, int? rows = null, int? pages = null) : base(count + 2, depth, container, 1, rows)
@@ -105,4 +104,3 @@
             }
         }
     }
-}

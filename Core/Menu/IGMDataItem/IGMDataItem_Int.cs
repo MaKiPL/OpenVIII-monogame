@@ -2,8 +2,6 @@
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
         #region Classes
 
         public class IGMDataItem_Int : IGMDataItem//<Int>
@@ -59,10 +57,9 @@ namespace OpenVIII
             {
                 if (Enabled)
                 {
-                    Memory.Icons.Draw(Data, NumType, Palette, $"D{_padding}", Pos.Location.ToVector2(), Scale, fade, Colorid);
+                    Memory.Icons.Draw(Data, NumType, Palette, $"D{_padding}", Pos.Location.ToVector2(), Scale, Fade, Colorid);
                 }
             }
         }
         #endregion Classes
     }
-}

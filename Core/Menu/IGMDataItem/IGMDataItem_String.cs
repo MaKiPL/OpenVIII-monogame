@@ -2,11 +2,9 @@
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
         #region Classes
 
-        private class IGMDataItem_String : IGMDataItem
+        public class IGMDataItem_String : IGMDataItem
         {
             private int _palette;
 
@@ -41,13 +39,13 @@ namespace OpenVIII
                     {
                         Rectangle r2 = r;
                         r2.Size = Point.Zero;
-                        Memory.Icons.Draw(Icon, Palette, r2, new Vector2(Scale.X), fade);
+                        Memory.Icons.Draw(Icon, Palette, r2, new Vector2(Scale.X), Fade);
                         r.Offset(Memory.Icons.GetEntryGroup(Icon).Width * Scale.X, 0);
                     }
-                    Memory.font.RenderBasicText(Data, r.Location, Scale, Fade: fade, color: Colorid);
+                    Memory.font.RenderBasicText(Data, r.Location, Scale, Fade: Fade, color: Colorid);
                 }
             }
         }
         #endregion Classes
-    }
+    
 }

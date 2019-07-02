@@ -3,11 +3,9 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
         #region Classes
 
-        private class IGMDataItem_Texture : IGMDataItem
+        public class IGMDataItem_Texture : IGMDataItem
         {
             public Texture2D Data { get; set; }
 
@@ -17,10 +15,10 @@ namespace OpenVIII
             {
                 if (Enabled)
                 {
-                    Memory.spriteBatch.Draw(Data, Pos, null, base.Color * fade);//4
+                    Memory.spriteBatch.Draw(Data, Pos, null, Color * Fade);//4
                 }
             }
         }
         #endregion Classes
-    }
+    
 }

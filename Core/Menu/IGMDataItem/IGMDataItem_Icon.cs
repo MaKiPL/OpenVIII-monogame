@@ -2,8 +2,6 @@
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
         #region Classes
 
         public class IGMDataItem_Icon : IGMDataItem//<Icons.ID>
@@ -46,12 +44,12 @@ namespace OpenVIII
             {
                 if (Enabled)
                 {
-                    Memory.Icons.Draw(Data, Palette, Pos, Scale, fade);
+                    Memory.Icons.Draw(Data, Palette, Pos, Scale, Fade);
                     if (Blink)
-                        Memory.Icons.Draw(Data, Faded_Palette, Pos, Scale, fade * blink_Amount * Blink_Adjustment);
+                        Memory.Icons.Draw(Data, Faded_Palette, Pos, Scale, Fade * Blink_Amount * Blink_Adjustment);
                 }
             }
         }
         #endregion Classes
-    }
+    
 }

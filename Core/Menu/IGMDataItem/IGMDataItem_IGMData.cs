@@ -2,8 +2,6 @@
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
         #region Classes
 
         public class IGMDataItem_IGMData : IGMDataItem
@@ -70,4 +68,3 @@ namespace OpenVIII
         }
         #endregion Classes
     }
-}

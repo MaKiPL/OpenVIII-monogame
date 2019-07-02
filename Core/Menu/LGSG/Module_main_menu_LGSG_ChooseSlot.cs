@@ -24,7 +24,7 @@ namespace OpenVIII
             DrawLGSGHeader(strLoadScreen[Litems.GameFolder].Text, topright, help);
             SlotLocs[0] = DrawLGSGSlot(Vector2.Zero, strLoadScreen[Litems.Slot1].Text, strLoadScreen[Litems.FF8].Text);
             SlotLocs[1] = DrawLGSGSlot(new Vector2(0, vp_per.Y * 0.216666667f), strLoadScreen[Litems.Slot2].Text, strLoadScreen[Litems.FF8].Text);
-            DrawPointer(SlotLocs[SlotLoc].Item2);
+            Menu.DrawPointer(SlotLocs[SlotLoc].Item2);
         }
         /// <summary>
         /// Draw Save Choose Slot Screen

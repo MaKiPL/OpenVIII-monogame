@@ -2,8 +2,6 @@
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
         public abstract class IGMData_ConfirmDialog : IGMData
         {
             protected int startcursor;
@@ -40,4 +38,3 @@ namespace OpenVIII
             }
         }
     }
-}

@@ -2,8 +2,6 @@
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
         #region Classes
 
         public class IGMDataItem_Face : IGMDataItem
@@ -35,12 +33,12 @@ namespace OpenVIII
             {
                 if (Enabled)
                 {
-                    Memory.Faces.Draw(Data, Pos, Vector2.UnitY, fade);
+                    Memory.Faces.Draw(Data, Pos, Vector2.UnitY, Fade);
                     if (Blink)
-                        Memory.Faces.Draw(Data, Pos, Vector2.UnitY, fade * blink_Amount * Blink_Adjustment);
+                        Memory.Faces.Draw(Data, Pos, Vector2.UnitY, Fade * Blink_Amount * Blink_Adjustment);
                 }
             }
         }
         #endregion Classes
-    }
+    
 }

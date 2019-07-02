@@ -2,8 +2,7 @@
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
+   
         #region Classes
 
         public abstract class IGMDataItem//<T>
@@ -18,8 +17,11 @@ namespace OpenVIII
                 _pos = pos ?? Rectangle.Empty;
                 Scale = scale ?? TextScale;
             }
-
-            public virtual void Show() => Enabled = true;
+        public static float Fade => Menu.Fade;
+        public static Vector2 TextScale => Menu.TextScale;
+        public static float Blink_Amount => Menu.Blink_Amount;
+        public static void DrawPointer(Point cursor, Vector2? offset = null, bool blink = false) => Menu.DrawPointer(cursor, offset, blink);
+        public virtual void Show() => Enabled = true;
             public virtual void Hide() => Enabled = false;
 
             /// <summary>
@@ -52,5 +54,5 @@ namespace OpenVIII
             { return false; }
         }
         #endregion Classes
-    }
+    
 }
