@@ -19,24 +19,31 @@ namespace OpenVIII
             if (_hardcoded.FindGameLocation(out var gameLocation))
                 return gameLocation;
 
-            using (RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
-            using (RegistryKey registryKey = localMachine.OpenSubKey(SteamRegistyPath))
+            foreach (RegistryView registryView in new RegistryView[] { RegistryView.Registry32, RegistryView.Registry64 })
             {
-                if (registryKey != null)
+                using (RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, registryView))
+                using (RegistryKey registryKey = localMachine.OpenSubKey(SteamRegistyPath))
                 {
-                    String installLocation = (String)registryKey.GetValue(SteamGamePathTag);
-                    String dataPath = installLocation;//Path.Combine(installLocation, "Data", "lang-en");
-                    if (Directory.Exists(dataPath))
-                        return new GameLocation(dataPath);
+                    if (registryKey != null)
+                    {
+                        String installLocation = (String)registryKey.GetValue(SteamGamePathTag);
+                        String dataPath = installLocation;//Path.Combine(installLocation, "Data", "lang-en");
+                        if (Directory.Exists(dataPath))
+                            return new GameLocation(dataPath);
+                    }
                 }
-            }
-            using (RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
-            using (RegistryKey registryKey = localMachine.OpenSubKey(CD2000RegistyPath))
-            {
-                String installLocation = (String)registryKey.GetValue(CD2000GamePathTag);
-                String dataPath = installLocation; //Path.Combine(installLocation, "Data"); //no lang-en on cd version.
-                if (Directory.Exists(dataPath))
-                    return new GameLocation(dataPath);
+                using (RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, registryView))
+                using (RegistryKey registryKey = localMachine.OpenSubKey(CD2000RegistyPath))
+                {
+                    if (registryKey != null)
+                    {
+                        String installLocation = (String)registryKey.GetValue(CD2000GamePathTag);
+                        String dataPath = installLocation; //Path.Combine(installLocation, "Data"); //no lang-en on cd version.
+                        if (Directory.Exists(dataPath))
+                            return new GameLocation(dataPath);
+                    }
+                }
+
             }
 
                 throw new DirectoryNotFoundException($"Cannot find game directory." +
