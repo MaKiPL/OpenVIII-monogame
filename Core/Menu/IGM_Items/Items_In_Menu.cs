@@ -122,7 +122,10 @@ namespace OpenVIII
             {
                 if (Type == _Type.Heal || Type == _Type.HealGF || Type == _Type.SavePointHeal)
                 {
-                    return (ushort)(b2 * 0x32);
+                    if (Attack_Type == Kernel_bin.Attack_Type.Give_Percentage_HP)
+                        return (byte)((b2 * 100)/ byte.MaxValue);
+                    else
+                        return (ushort)(b2 * 0x32);
                 }
                 //else if (Type == _Type.Revive || Type == _Type.ReviveGF)
                 //    return 0; // 12.5%
@@ -379,6 +382,7 @@ namespace OpenVIII
             return false;
         }
 
+        Kernel_bin.Attack_Type Attack_Type => Battle?.Attack_Type ?? Kernel_bin.Attack_Type.None;
         private bool GFAction(Func<Faces.ID, bool, bool> func, Faces.ID obj, bool battle = false)
         {
             bool ret = false;
@@ -386,7 +390,7 @@ namespace OpenVIII
             {
                 foreach (KeyValuePair<GFs, Saves.GFData> c in Memory.State.GFs.Where(x => x.Value.Exists))
                 {
-                    ret = func(obj, battle) || ret;
+                    ret = func(c.Key.ToFacesID(), battle) || ret;
                 }
                 return ret;
             }
@@ -404,7 +408,7 @@ namespace OpenVIII
             {
                 foreach (KeyValuePair<Characters, Saves.CharacterData> c in Memory.State.Characters.Where(x => (battle && Memory.State.PartyData.Contains(x.Key)) || x.Value.VisibleInMenu))
                 {
-                    ret = func(obj, battle) || ret;
+                    ret = func(c.Key.ToFacesID(),battle) || ret;
                 }
                 return ret;
             }

@@ -177,7 +177,7 @@ namespace OpenVIII
             {
                 //ChangeHP(-dmg);
                 // check max and min values
-                if (dmg > Kernel_bin.MAX_HP_VALUE) dmg = Kernel_bin.MAX_HP_VALUE;
+                if (dmg > Kernel_bin.MAX_HP_VALUE && type != Kernel_bin.Attack_Type.Give_Percentage_HP) dmg = Kernel_bin.MAX_HP_VALUE;
                 if (dmg < 0) return false;
                 // depending on damage type see if damage is correct
                 dmg = DamageActions[type](dmg, flags ?? Kernel_bin.Attack_Flags.None);
@@ -272,7 +272,10 @@ namespace OpenVIII
 
         private int Damage_GF_Ignore_Target_SPR_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
 
-        private int Damage_Give_Percentage_HP_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+        private int Damage_Give_Percentage_HP_Action(int dmg, Kernel_bin.Attack_Flags flags)
+        {
+            return Damage_Curative_Item_Action(MaxHP() * dmg / 100, flags);
+        }
 
         private int Damage_Kamikaze_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
 
@@ -371,7 +374,8 @@ namespace OpenVIII
 
         private int Statuses_GF_Statuses_Action(Kernel_bin.Persistant_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
 
-        private int Statuses_Give_Percentage_HP_Action(Kernel_bin.Persistant_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+        private int Statuses_Give_Percentage_HP_Action(Kernel_bin.Persistant_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => 
+            Statuses_Curative_Item_Action(statuses0,Statuses1,flags);
 
         private int Statuses_Kamikaze_Action(Kernel_bin.Persistant_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
 

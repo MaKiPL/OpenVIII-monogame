@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace OpenVIII
 {
@@ -59,14 +58,14 @@ namespace OpenVIII
                 {
                     if (All && IsMe)
                         Cursor_Status &= ~Cursor_Status.Enabled;
-                        base.Draw();
+                    base.Draw();
                     if (All && IsMe)
                     {
                         // if all draw blinking pointers on everyone.
                         byte i = 0;
                         foreach (Point c in CURSOR)
                         {
-                            if (!BLANKS[i] && ITEM[i,0] != null && ITEM[i,0].Enabled && c != Point.Zero)
+                            if (!BLANKS[i] && ITEM[i, 0] != null && ITEM[i, 0].Enabled && c != Point.Zero)
                                 DrawPointer(c, blink: true);
                             i++;
                         }
@@ -99,7 +98,8 @@ namespace OpenVIII
                     ////List won't populate unless theres a valid item set.
                     //if (Item.Type == Item_In_Menu._Type.None && Memory.State.Items != null)
                     //    Item = Memory.MItems[Memory.State.Items.FirstOrDefault(m => m.ID > 0 && m.QTY > 0).ID];
-                    //Fill();
+                    else
+                        Fill();
                     base.ReInit();
                 }
 
@@ -112,7 +112,7 @@ namespace OpenVIII
                     {
                         Page = 0;
                         bool sameTargets = Item.Target != e.Key.Target || Item.Type != e.Key.Type;
-                        if(!sameTargets)
+                        if (!sameTargets)
                         {
                             sameTargets = (Item.Type == Item_In_Menu._Type.GF_Learn && Item.Learn != e.Key.Learn);
                             sameTargets = sameTargets || (Item.Type == Item_In_Menu._Type.Blue_Magic && Item.Learned_Blue_Magic != e.Key.Learned_Blue_Magic);
@@ -145,11 +145,6 @@ namespace OpenVIII
                         base.ReInit();
                     }
                 }
-
-
-
-                
-
 
                 protected override void SetCursor_select(int value)
                 {
@@ -191,13 +186,13 @@ namespace OpenVIII
                                 return;
                             }
                         ITEM[i, 0] = new IGMDataItem_String(Memory.Strings.GetName(id), pos: SIZE[i]);
-                        int hp = (ctest || gftest)? Memory.State[id].CurrentHP(): -1;
+                        int hp = (ctest || gftest) ? Memory.State[id].CurrentHP() : -1;
                         BLANKS[i] = false;
                         Contents[i] = id;
                         if (hp > -1)
                         {
                             ITEM[i, 1] = new IGMDataItem_Icon(Icons.ID.HP2, new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 7), SIZE[i].Y, 0, 0), 13);
-                            ITEM[i, 2] = new IGMDataItem_Int(hp, pos: new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 4), SIZE[i].Y, 0, 0), spaces: 4);                            
+                            ITEM[i, 2] = new IGMDataItem_Int(hp, pos: new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 4), SIZE[i].Y, 0, 0), spaces: 4);
                         }
                         else
                         {
@@ -217,6 +212,7 @@ namespace OpenVIII
                     else
                         InGameMenu_Items.TargetChangeHandler?.Invoke(this, Contents[CURSOR_SELECT]);
                 }
+
                 public override void Inputs_OKAY()
                 {
                     bool ret = false;
@@ -224,13 +220,14 @@ namespace OpenVIII
                         ret = Item.Use(Faces.ID.Blank);
                     else if (!BLANKS[CURSOR_SELECT])
                         ret = Item.Use(Contents[CURSOR_SELECT]);
-                    if(ret)
+                    if (ret)
                     {
                         base.Inputs_OKAY();
                         Fill(true);
                         InGameMenu_Items.ReInit(true);
                     }
                 }
+
                 #endregion Methods
             }
 
