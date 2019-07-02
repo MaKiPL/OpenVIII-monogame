@@ -67,7 +67,7 @@ namespace OpenVIII
         private static void DrawMainLobby()
         {
             float item = 0;
-            TextScale = new Vector2(2.545454545f, 3.0375f);// scaled in render function.
+            //TextScale1 = new Vector2(2.545454545f, 3.0375f);// scaled in render function.
             Vector2 textStart = new Vector2(0.45078125f, .65f)* vp_per;
             Memory.SpriteBatchStartAlpha(tm: IGM_focus);
             Rectangle dst = new Rectangle()

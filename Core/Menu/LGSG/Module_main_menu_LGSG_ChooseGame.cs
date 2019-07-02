@@ -286,7 +286,7 @@ namespace OpenVIII
             };
             faceRect.Offset(offset);
             sbyte mainchar = -1;
-            for (byte face = 0; d != null && d.Party != null && face < d.Party.Length; face++)
+            for (byte face = 0; d != null && d.Party != null && face < d.Party.Count; face++)
             {
                 if (face != 0)
                     faceRect.Offset(faceRect.Width, 0);
@@ -306,7 +306,7 @@ namespace OpenVIII
                 } + offset;
                 FF8String name = Memory.Strings.GetName(d.Party[mainchar], d);
                 FF8String lv_ = new FF8String($"LV.   {d.firstcharacterslevel}");
-                TextScale = new Vector2(OffScreenBuffer.Width * 0.0030303030297619f, OffScreenBuffer.Height * 0.00636792452830189f);
+                //TextScale1 = new Vector2(OffScreenBuffer.Width * 0.0030303030297619f, OffScreenBuffer.Height * 0.00636792452830189f);
                 Memory.font.RenderBasicText(name, detailsLoc, TextScale, Fade: fade);
 
                 int playy = (int)detailsLoc.Y;
@@ -349,7 +349,7 @@ namespace OpenVIII
                 };
                 locbox.Offset(offset);
                 DrawBox(locbox);
-                FF8String loc = Memory.Strings.Read(Strings.FileID.AREAMES, 0, d.LocationID).ReplaceRegion();
+                FF8String loc = Memory.Strings.Read(Strings.FileID.AREAMES, 0, d.LocationID);
                 locbox.Offset(0.0297619047619048f * OffScreenBuffer.Width, 0.0440251572327044f * OffScreenBuffer.Height);
                 Memory.font.RenderBasicText(loc, locbox.Location, TextScale, Fade: fade);
             }

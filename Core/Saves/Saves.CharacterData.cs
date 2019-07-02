@@ -6,16 +6,16 @@ using System.Linq;
 
 namespace OpenVIII
 {
+
     public static partial class Saves
     {
         /// <summary>
         /// Data for each Character
         /// </summary>
         /// <see cref="http://wiki.ffrtt.ru/index.php/FF8/GameSaveFormat#Characters"/>
-        public class CharacterData
+        public class CharacterData : Damageable
         {
             public FF8String Name; //not saved to file.
-            private ushort _CurrentHP; //0x00 -- forgot this one heh
 
             /// <summary>
             /// Raw HP buff from items.
@@ -25,7 +25,34 @@ namespace OpenVIII
             public uint Experience; //0x02
             public byte ModelID; //0x04
             public byte WeaponID; //0x08
+            static Random random = new Random((int)DateTime.Now.Ticks);
+            /// <summary>
+            /// needs tested. should return the current crisis level. randomly -1 means no limit break. >=0 has a limit break.
+            /// </summary>
+            /// <returns>-1 - 4</returns>
+            /// <remarks>https://finalfantasy.fandom.com/wiki/Crisis_Level</remarks>
+            public sbyte CrisisLevel()
+            {
+                ushort current = CurrentHP();
+                ushort max = MaxHP();
+                if (Critical() || (ID == Characters.Seifer_Almasy && CurrentHP()<(max*84/100)))
+                {
+                    int HPMod = CharacterStats.Crisis * 10 * current / max;
+                    int DeathBonus = Memory.State.DeadPartyMembers() * 200 + 1600;
+                    int StatusBonus = (int)(Statuses0.Count() * 10);
+                    int RandomMod = random.Next(0, 255) + 160;
+                    int crisislevel = (StatusBonus + DeathBonus - HPMod) / RandomMod;
+                    if (crisislevel == 5) return 0;
+                    else if (crisislevel == 6) return 1;
+                    else if (crisislevel == 7) return 2;
+                    else if (crisislevel >= 8) return 3;
+                }
+                return -1;
+            }
+            public override bool Critical() => base.Critical();
 
+
+            Kernel_bin.Character_Stats CharacterStats => Kernel_bin.CharacterStats[ID];
             /// <summary>
             /// Stats that can be incrased via items. Except for HP because it's a ushort not a byte.
             /// </summary>
@@ -69,7 +96,6 @@ namespace OpenVIII
             public bool VisibleInMenu => Exists != 0 && Exists != 6;
             public bool CanAddToParty => true; // I'm sure one of the Exists values determines this but I donno yet.
             public byte Unknown3; //0x94
-            public byte MentalStatus; //0x95
             public byte Unknown4; //0x96
 
             public CharacterData()
@@ -179,7 +205,7 @@ namespace OpenVIII
                 NumberofKOs = br.ReadUInt16();//0x92
                 Exists = br.ReadByte();//0x94
                 Unknown3 = br.ReadByte();//0x95
-                MentalStatus = br.ReadByte();//0x96
+                Statuses0 = (Kernel_bin.Persistant_Statuses)br.ReadByte();//0x96
                 Unknown4 = br.ReadByte();//0x97
             }
 
@@ -205,9 +231,9 @@ namespace OpenVIII
                                 //example if you can get max stat with a weaker spell use that first.
 
                                 // if stat is max with out spell skip
-                                if (stat != Kernel_bin.Stat.HP && TotalStat(stat) == Kernel_bin.Character_Stats.MAX_STAT_VALUE) break;
+                                if (stat != Kernel_bin.Stat.HP && TotalStat(stat) == Kernel_bin.MAX_STAT_VALUE) break;
                                 // if hp is max without spell skip
-                                else if (stat == Kernel_bin.Stat.HP && TotalStat(stat) == Kernel_bin.Character_Stats.MAX_HP_VALUE) break;
+                                else if (stat == Kernel_bin.Stat.HP && TotalStat(stat) == Kernel_bin.MAX_HP_VALUE) break;
                                 // junction spell
                                 else Stat_J[stat] = spell.ID;
                                 break;
@@ -259,6 +285,7 @@ namespace OpenVIII
                 }
             }
 
+
             public int Level => (int)((Experience / 1000) + 1);
             public int ExperienceToNextLevel => (int)((Level) * 1000 - Experience);
 
@@ -267,7 +294,17 @@ namespace OpenVIII
             /// </summary>
             /// <param name="c">Force another character's HP calculation</param>
             /// <returns></returns>
-            public ushort MaxHP(Characters c = Characters.Blank) => TotalStat(Kernel_bin.Stat.HP, c);
+            public ushort MaxHP(Characters c) => TotalStat(Kernel_bin.Stat.HP, c);
+
+            public override ushort MaxHP()
+            {
+                int ind = -1;
+                if (Memory.State?.Characters != null && Memory.State.TeamLaguna && (ind = Memory.State.PartyData.FindIndex(u => u == ID)) >= 0)
+                {
+                    return MaxHP(Memory.State.Party[ind]);
+                }
+                return MaxHP(ID);
+            }
 
             public ushort TotalStat(Kernel_bin.Stat s, Characters c = Characters.Blank)
             {
@@ -312,7 +349,18 @@ namespace OpenVIII
                 return 0;
             }
 
-            public ushort CurrentHP(Characters c = Characters.Blank)
+
+            public override ushort CurrentHP()
+            {
+                int ind = -1;
+                if (Memory.State?.Characters != null && Memory.State.TeamLaguna && (ind = Memory.State.PartyData.FindIndex(u => u == ID)) >= 0)
+                {
+                    return CurrentHP(Memory.State.Party[ind]);
+                }
+                return CurrentHP(ID);
+            }
+
+            public ushort CurrentHP(Characters c)
             {
                 ushort max = MaxHP(c);
                 if (max < _CurrentHP) _CurrentHP = max;
@@ -331,7 +379,17 @@ namespace OpenVIII
                 Stat_J[stat] = spell;
             }
 
-            public float PercentFullHP(Characters c = Characters.Blank) => (float)_CurrentHP / MaxHP(c);
+            public override float PercentFullHP()
+            {
+                int ind = -1;
+                if (Memory.State?.Characters != null && Memory.State.TeamLaguna && (ind = Memory.State.PartyData.FindIndex(u => u == ID)) >= 0)
+                {
+                    return PercentFullHP(Memory.State.Party[ind]);
+                }
+                return PercentFullHP(ID);
+            }
+
+            public float PercentFullHP(Characters c) => (float)CurrentHP(c) / MaxHP(c);
 
             public override string ToString() => Name.Length > 0 ? Name.ToString() : base.ToString();
 
@@ -340,6 +398,7 @@ namespace OpenVIII
                 //Shadowcopy
                 CharacterData c = (CharacterData)MemberwiseClone();
                 //Deepcopy
+                c.Name = Name.Clone();
                 c.CompatibilitywithGFs = CompatibilitywithGFs.ToDictionary(e => e.Key, e => e.Value);
                 c.Stat_J = Stat_J.ToDictionary(e => e.Key, e => e.Value);
                 c.Magics = Magics.ToDictionary(e => e.Key, e => e.Value);

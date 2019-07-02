@@ -101,11 +101,11 @@
                     bool ret = false;
                     if (InputsModeTest(pos))
                     {
-                        Mode lastmode = InGameMenu_Junction.GetMode();
+                        Mode lastmode = (Mode)InGameMenu_Junction.GetMode();
                         ret = base.ITEMInputs(i, pos);
                         if (ret)
                         {
-                            if (lastmode != InGameMenu_Junction.GetMode())
+                            if (!InGameMenu_Junction.GetMode().Equals(lastmode))
                                 Show();
                         }
                     }

@@ -31,8 +31,8 @@ namespace OpenVIII
 
                 public override void CheckMode(bool cursor = true) =>
                     CheckMode(0, Mode.Mag_ST_A, Mode.Mag_ST_D,
-                        InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_ST_A || InGameMenu_Junction.GetMode() == Mode.Mag_ST_D),
-                        InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_ST_A || InGameMenu_Junction.GetMode() == Mode.Mag_Pool_ST_D),
+                        InGameMenu_Junction != null && (InGameMenu_Junction.GetMode().Equals(Mode.Mag_ST_A) || InGameMenu_Junction.GetMode().Equals(Mode.Mag_ST_D)),
+                        InGameMenu_Junction != null && (InGameMenu_Junction.GetMode().Equals(Mode.Mag_Pool_ST_A) || InGameMenu_Junction.GetMode().Equals(Mode.Mag_Pool_ST_D)),
                         cursor);
 
                 public override void Inputs_CANCEL()

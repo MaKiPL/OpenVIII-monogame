@@ -183,26 +183,16 @@ namespace OpenVIII
         public static int InitTaskMethod(object obj)
         {
             CancellationToken token = (CancellationToken)obj;
-            if (!token.IsCancellationRequested)
-                Memory.font = new Font(); //this initializes the fonts and drawing system- holds fonts in-memory
 
             if (!token.IsCancellationRequested)
                 Memory.Strings = new Strings();
 
-            if (!token.IsCancellationRequested)
-                Memory.MItems = Items_In_Menu.Read();
-
-            if (!token.IsCancellationRequested)
+            if (!token.IsCancellationRequested) // requires strings because it uses an array generated in strings.
                 Kernel_Bin = new Kernel_bin();
 
             if (!token.IsCancellationRequested)
-                Memory.Cards = new Cards();
+                Memory.MItems = Items_In_Menu.Read(); // this has a soft requirement on kernel_bin. It checks for null so should work without it.
 
-            if (!token.IsCancellationRequested)
-                Memory.Faces = new Faces();
-
-            if (!token.IsCancellationRequested)
-                Memory.Icons = new Icons();
 
             if (!token.IsCancellationRequested)
                 Saves.Init(); //loads all savegames from steam or cd2000 directories. first come first serve.
@@ -210,8 +200,25 @@ namespace OpenVIII
             if (!token.IsCancellationRequested)
                 InitStrings();
 
-            if (!token.IsCancellationRequested)
-                Module_main_menu_debug.Init();
+            if (graphics?.GraphicsDevice != null) // all below require graphics to work. to load textures graphics device needed.
+            {
+                if (!token.IsCancellationRequested)
+                    Memory.font = new Font(); //this initializes the fonts and drawing system- holds fonts in-memory
+
+                if (!token.IsCancellationRequested)
+                    Memory.Cards = new Cards(); // card images in menu.
+
+                if (!token.IsCancellationRequested)
+                    Memory.Faces = new Faces();
+
+                if (!token.IsCancellationRequested)
+                    Memory.Icons = new Icons();
+
+                // requires font, faces, and icons.
+                // currently cards only used in debug menu. will have support for cards when added to menu.
+                if (!token.IsCancellationRequested)
+                    Module_main_menu_debug.Init();
+            }
             return 0;
         }
 
@@ -227,7 +234,7 @@ namespace OpenVIII
             Memory.content = content;
             Memory.FieldHolder.FieldMemory = new int[1024];
 
-            FF8String.Init();
+            FF8StringReference.Init();
             TokenSource = new CancellationTokenSource();
             Token = TokenSource.Token;
             InitTask = new Task<int>(InitTaskMethod, Token);
@@ -763,8 +770,24 @@ namespace OpenVIII
         /// </summary>
         public class Archive
         {
+            public Archive Parent;
             public string _Root { get; set; }
             public string _Filename { get; private set; }
+            public Archive(Archive parent, string path)
+            {
+                Parent = parent;
+                _Root = "";
+                if (Path.HasExtension(path))
+                {
+                    var ext = Path.GetExtension(path);
+                    if (ext == B_FileArchive || ext == B_FileIndex || ext == B_FileList)
+                    {
+                        int index = path.LastIndexOf('.');
+                        path = index == -1 ? path : path.Substring(0, index);
+                    }
+                }
+                _Filename = path;
+            }
             public Archive(string path) : this(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path))
             { }
             public Archive(string root, string filename)

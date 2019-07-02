@@ -105,7 +105,7 @@ namespace OpenVIII
                 public override bool Update()
                 {
                     bool ret = base.Update();
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode() == Mode.TopMenu && Enabled)
+                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode().Equals(Mode.TopMenu) && Enabled)
                     {
                         FF8String Changed = null;
                         switch (CURSOR_SELECT)

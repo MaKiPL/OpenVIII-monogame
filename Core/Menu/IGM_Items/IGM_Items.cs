@@ -1,12 +1,53 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 
 namespace OpenVIII
 {
     public static partial class Module_main_menu_debug
     {
-        private class IGM_Items : Menu
+        #region Classes
+
+        private partial class IGM_Items : Menu
         {
+            #region Fields
+
+            public EventHandler<KeyValuePair<byte, FF8String>> ChoiceChangeHandler;
+
+            public EventHandler<KeyValuePair<Item_In_Menu, FF8String>> ItemChangeHandler;
+
+            public EventHandler<Mode> ModeChangeHandler;
+
+            public EventHandler<Faces.ID> TargetChangeHandler;
+            public EventHandler ReInitCompletedHandler;
+
+            protected Dictionary<Mode, Func<bool>> InputsDict;
+
+            private Mode mode;
+
+            #endregion Fields
+
+            #region Enums
+
+            public enum Mode : byte
+            {
+                /// <summary>
+                /// Select one of the 4 top options to do
+                /// </summary>
+                TopMenu,
+
+                /// <summary>
+                /// Choose an item to use
+                /// </summary>
+                SelectItem,
+
+
+                /// <summary>
+                /// Choose a character or gf to use item on
+                /// </summary>
+                UseItemOnTarget,
+            }
+
             public enum SectionName : byte
             {
                 TopMenu,
@@ -15,133 +56,66 @@ namespace OpenVIII
                 Title,
             }
 
+            #endregion Enums
+
+            #region Methods
+
+            public override Enum GetMode() => mode;
+
+            public override void ReInit()
+            {
+                ReInit(false);
+            }
+            public void ReInit(bool skipmode)
+            {
+                if(!skipmode)
+                    SetMode(Mode.SelectItem);
+                base.ReInit();
+                ReInitCompletedHandler?.Invoke(this, null);
+            }
+
+            public override void SetMode(Enum value)
+            {
+                if (!mode.Equals(value))
+                {
+                    mode = (Mode)value;
+                    ModeChangeHandler?.Invoke(this, (Mode)value);
+                }
+            }
+
             protected override void Init()
             {
                 Size = new Vector2 { X = 840, Y = 630 };
-                TextScale = new Vector2(2.545455f, 3.0375f);
+                //TextScale = new Vector2(2.545455f, 3.0375f);
 
-                Data.Add(SectionName.Help, new IGMData_Container(
+                Data.Add(SectionName.Help, new IGMData_Help(
                     new IGMDataItem_Box(null, pos: new Rectangle(15, 69, 810, 78), Icons.ID.HELP, options: Box_Options.Middle)));
-                Data.Add(SectionName.TopMenu, new IGMData_TopMenu());
+                Data.Add(SectionName.TopMenu, new IGMData_TopMenu(new Dictionary<FF8String, FF8String>() {
+                            { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 179),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 180)},
+                            { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 183),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 184)},
+                            { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 202),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 203)},
+                            { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 181),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 182)},
+                            }));
                 Data.Add(SectionName.Title, new IGMData_Container(
                     new IGMDataItem_Box(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), pos: new Rectangle(615, 0, 225, 66))));
                 Data.Add(SectionName.UseItemGroup, new IGMData_Group(
+                    new IGMData_Statuses(),
                     new IGMData_ItemPool(),
-                    new IGMData_CharacterPool(),
-                    new IGMData_Statuses()
+                    new IGMData_TargetPool()
                     ));
+                InputsDict = new Dictionary<Mode, Func<bool>>() {
+                {Mode.TopMenu, Data[SectionName.TopMenu].Inputs},
+                {Mode.SelectItem, ((IGMDataItem_IGMData)((IGMData_Group)Data[SectionName.UseItemGroup]).ITEM[1,0]).Inputs},
+                {Mode.UseItemOnTarget, ((IGMDataItem_IGMData)((IGMData_Group)Data[SectionName.UseItemGroup]).ITEM[2,0]).Inputs}
+                };
+                SetMode(Mode.SelectItem);
                 base.Init();
             }
+            protected override bool Inputs() => InputsDict[(Mode)GetMode()]();
 
-
-            protected override bool Inputs() => false;
-
-            private class IGMData_TopMenu : IGMData
-            {
-                private FF8String[] _helpStr;
-
-                public IGMData_TopMenu() : base(4, 1, new IGMDataItem_Box(pos: new Rectangle(0, 12, 610, 54)), 4, 1)
-                {
-                }
-
-                public IReadOnlyList<FF8String> HelpStr => _helpStr;
-
-                protected override void Init()
-                {
-                    base.Init();
-                    _helpStr = new FF8String[Count];
-                    for (byte pos = 0; pos < Count; pos++)
-                    {
-                        FF8String data = null;
-                        switch (pos)
-                        {
-                            case 0:
-                                data = Memory.Strings.Read(Strings.FileID.MNGRP, 2, 179);//Use
-                                _helpStr[pos] = Memory.Strings.Read(Strings.FileID.MNGRP, 2, 180);
-                                break;
-
-                            case 1:
-                                data = Memory.Strings.Read(Strings.FileID.MNGRP, 2, 183);//Rearrange
-                                _helpStr[pos] = Memory.Strings.Read(Strings.FileID.MNGRP, 2, 184);
-                                break;
-
-                            case 2:
-                                data = Memory.Strings.Read(Strings.FileID.MNGRP, 2, 202);//Sort
-                                _helpStr[pos] = Memory.Strings.Read(Strings.FileID.MNGRP, 2, 203);
-                                break;
-
-                            case 3:
-                                data = Memory.Strings.Read(Strings.FileID.MNGRP, 2, 181);//Battle
-                                _helpStr[pos] = Memory.Strings.Read(Strings.FileID.MNGRP, 2, 182);
-                                break;
-                        }
-                        ITEM[pos, 0] = new IGMDataItem_String(data, SIZE[pos]);
-                    }
-                    Cursor_Status |= Cursor_Status.Enabled;
-                    Cursor_Status |= Cursor_Status.Horizontal;
-                    Cursor_Status |= Cursor_Status.Vertical;
-                    Cursor_Status |= Cursor_Status.Blinking;
-                }
-            }
-
-            private class IGMData_ItemPool : IGMData_Pool<Saves.Data, byte>
-            {
-                public IGMData_ItemPool() : base(11, 2, new IGMDataItem_Box(pos: new Rectangle(5, 150, 415, 480), title: Icons.ID.ITEM), 11, 1)
-                {
-                }
-
-                private FF8String[] _helpStr;
-                public IReadOnlyList<FF8String> HelpStr => _helpStr;
-
-                protected override void Init()
-                {
-                    base.Init();
-                    _helpStr = new FF8String[Count];
-                    for (byte pos = 0; pos < rows; pos++)
-                    {
-                        ITEM[pos, 0] = new IGMDataItem_String(null, SIZE[pos]);
-                        ITEM[pos, 1] = new IGMDataItem_Int(0, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0), numtype: Icons.NumType.sysFntBig, spaces: 3);
-                    }
-                }
-
-                public override void ReInit()
-                {
-                    base.ReInit();
-                    Source = Memory.State;
-                    if (Source != null && Source.Items != null)
-                    {
-                        byte pos = 0;
-                        for (byte i = 0; pos < rows && i < Source.Items.Length; i++)
-                        {
-                            Saves.Item item = Source.Items[i];
-                            //byte itembo = Source.Itemsbattleorder[i];
-                            if (item.ID == 0) continue;
-                            Kernel_bin.Battle_Items_Data bitemdata = Kernel_bin.BattleItemsData.Count > item.ID ? Kernel_bin.BattleItemsData[item.ID] : null;
-                            Kernel_bin.Non_battle_Items_Data nbitemdata = bitemdata == null ? Kernel_bin.NonbattleItemsData[item.ID - Kernel_bin.BattleItemsData.Count] : null;
-                            Item_In_Menu itemdata = Memory.MItems.Items[item.ID];
-
-                            _helpStr[pos] = bitemdata == null ? nbitemdata.Description : bitemdata.Description;
-                            ((IGMDataItem_String)(ITEM[pos, 0])).Data = bitemdata == null ? nbitemdata.Name : bitemdata.Name;
-                            ((IGMDataItem_Int)(ITEM[pos, 1])).Data = item.QTY;
-                            pos++;
-                        }
-                    }
-                }
-            }
-
-            private class IGMData_CharacterPool : IGMData_Pool<Saves.Data, Characters>
-            {
-                public IGMData_CharacterPool() : base(9, 3, new IGMDataItem_Box(pos: new Rectangle(420, 150, 420, 360), title: Icons.ID.NAME), 9, 1)
-                {
-                }
-            }
-
-            private class IGMData_Statuses : IGMData
-            {
-                public IGMData_Statuses() : base(1, 1, new IGMDataItem_Box(pos: new Rectangle(420, 510, 420, 120)))
-                {
-                }
-            }
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

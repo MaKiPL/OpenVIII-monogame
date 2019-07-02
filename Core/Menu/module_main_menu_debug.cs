@@ -236,7 +236,6 @@ namespace OpenVIII
             InGameMenu = new IGM();
             InGameMenu_Junction = new IGM_Junction();
             InGameMenu_Items = new IGM_Items();
-            Memory.Strings.Close();
         }
 
         #endregion Methods

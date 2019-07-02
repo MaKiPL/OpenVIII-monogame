@@ -121,7 +121,7 @@ namespace OpenVIII
                 //0x000F  1 byte Unknown
                 long current = br.BaseStream.Position;
 
-                br.BaseStream.Seek(Memory.Strings.Files[Strings.FileID.KERNEL].subPositions[Quistis_limit_break_parameters.id] + Quistis_limit_break_parameters.size * (byte)i, SeekOrigin.Begin);
+                br.BaseStream.Seek(Memory.Strings[Strings.FileID.KERNEL].GetFiles().subPositions[Quistis_limit_break_parameters.id] + Quistis_limit_break_parameters.size * (byte)i, SeekOrigin.Begin);
                 _crisis_Levels = Quistis_limit_break_parameters.Read(br);
                 br.BaseStream.Seek(current, SeekOrigin.Begin);
             }

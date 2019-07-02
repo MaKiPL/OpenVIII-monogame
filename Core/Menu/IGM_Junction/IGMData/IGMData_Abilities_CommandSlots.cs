@@ -6,9 +6,9 @@ namespace OpenVIII
     {
         private partial class IGM_Junction
         {
-            private class IGMData_Abilities_Command : IGMData
+            private class IGMData_Abilities_CommandSlots : IGMData
             {
-                public IGMData_Abilities_Command() : base( 4, 2, new IGMDataItem_Box(pos: new Rectangle(0, 198, 435, 216), title: Icons.ID.COMMAND), 1, 4)
+                public IGMData_Abilities_CommandSlots() : base( 4, 2, new IGMDataItem_Box(pos: new Rectangle(0, 198, 435, 216), title: Icons.ID.COMMAND), 1, 4)
                 {
                 }
 

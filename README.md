@@ -5,6 +5,7 @@
 # OpenVIII
 Open source VIII engine implementation in C#
 
+Check our website to find screenshots and more info at: https://makipl.github.io/OpenVIII/
 
 Progress:
 Current state- DEBUG ONLY; pre-prototype, may contain DIRTY code and file reverse engineering work in progress with a lot of trash. 

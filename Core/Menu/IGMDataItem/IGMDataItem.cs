@@ -16,7 +16,7 @@ namespace OpenVIII
             public IGMDataItem(Rectangle? pos = null, Vector2? scale = null)
             {
                 _pos = pos ?? Rectangle.Empty;
-                Scale = scale ?? Menu.TextScale;
+                Scale = scale ?? TextScale;
             }
 
             public virtual void Show() => Enabled = true;

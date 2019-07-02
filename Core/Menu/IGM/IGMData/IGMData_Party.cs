@@ -6,58 +6,98 @@ namespace OpenVIII
 {
     public partial class Module_main_menu_debug
     {
+        #region Classes
+
         private partial class IGM
         {
+            #region Classes
+
             private class IGMData_Party : IGMData
             {
-                private int vSpace;
-                private Dictionary<Enum, FF8String> strings;
+                #region Fields
 
-                public IGMData_Party() : base( 3, 12)
+                private bool skipReInit = false;
+                private Dictionary<Enum, FF8String> strings;
+                private int vSpace;
+
+                #endregion Fields
+
+                #region Constructors
+
+                public IGMData_Party() : base()
                 {
                 }
+
+                #endregion Constructors
+
+                #region Properties
+
+                public Tuple<Characters, Characters>[] Contents { get; private set; }
+                protected IReadOnlyDictionary<Enum, FF8String> Strings
+                {
+                    get
+                    {
+                        if (strings == null)
+                            strings = new Dictionary<Enum, FF8String>()
+                            {
+                                { Items.CurrentEXP, Memory.Strings.Read(OpenVIII.Strings.FileID.MNGRP, 0 ,23)  },
+                                { Items.NextLEVEL, Memory.Strings.Read(OpenVIII.Strings.FileID.MNGRP, 0 ,24)  },
+                            };
+                        return strings;
+                    }
+                }
+
+                #endregion Properties
+
+                #region Methods
 
                 public override void ReInit()
                 {
-                    base.ReInit();
-                    if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
+                    if (Memory.State.Characters != null && !skipReInit)
                     {
-                        CONTAINER = new IGMDataItem_Empty(pos: new Rectangle { Width = 580, Height = 234, X = 20, Y = 84 });
-                        vSpace = 0;
-                    }
-                    else
-                    {
-                        CONTAINER = new IGMDataItem_Empty(pos: new Rectangle { Width = 580, Height = 462, X = 20, Y = 84 });
-                        vSpace = 6;
-                    }
-                    for (int i = 0; i < 3; i++)
-                        SIZE[i] = new Rectangle { Width = Width, Height = (Height / 3) - vSpace, X = X, Y = Y + (Height / 3 * i) };
-                }
+                        skipReInit = true;
+                        IGMDataItem_Empty c;
+                        if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
+                        {
+                            c = new IGMDataItem_Empty(pos: new Rectangle { Width = 580, Height = 234, X = 20, Y = 84 });
+                            vSpace = 0;
+                        }
+                        else
+                        {
+                            c = new IGMDataItem_Empty(pos: new Rectangle { Width = 580, Height = 462, X = 20, Y = 84 });
+                            vSpace = 6;
+                        }
+                        Init(3, 12, c, 1, 3);
 
-                public override bool Update()
-                {
-                    bool ret = base.Update();
-                    for (sbyte i = 0; Memory.State.PartyData != null && i < SIZE.Length; i++)
-                        Update(i, Memory.State.PartyData[i], Memory.State.Party[i]);
-                    return true;
+                        if (Memory.State.Characters != null)
+                        {
+                            bool ret = base.Update();
+                            for (sbyte i = 0; Memory.State.PartyData != null && i < SIZE.Length; i++)
+                                ReInitCharacter(i, Memory.State.PartyData[i], Memory.State.Party[i]);
+                        }
+                        skipReInit = false;
+                    }
                 }
 
                 protected override void Init()
                 {
-                    strings = new Dictionary<Enum, FF8String>()
-                    {
-                        { Items.CurrentEXP, Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,23)  },
-                        { Items.NextLEVEL, Memory.Strings.Read(Strings.FileID.MNGRP, 0 ,24)  },
-                    };
+                    Contents = new Tuple<Characters, Characters>[Count];
                     base.Init();
                 }
 
-                private void Update(sbyte pos, Characters character, Characters visableCharacter)
+                protected override void InitShift(int i, int col, int row)
+                {
+                    base.InitShift(i, col, row);
+                    SIZE[i].Height -= vSpace;
+                }
+
+                private void ReInitCharacter(sbyte pos, Characters character, Characters visableCharacter)
                 {
                     if (SIZE != null)
                     {
                         if (character != Characters.Blank)
                         {
+                            Contents[pos] = new Tuple<Characters, Characters>(character, visableCharacter);
                             float yoff = 6;
 
                             ITEM[pos, 0] = new IGMDataItem_Box(Memory.Strings.GetName(visableCharacter), title: Icons.ID.STATUS);
@@ -72,7 +112,7 @@ namespace OpenVIII
 
                             r = dims.Item3;
                             r.Offset((229), yoff);
-                            ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[character].Level, r, 2, 0, 1,3);
+                            ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[character].Level, r, 2, 0, 1, 3);
 
                             r = dims.Item3;
                             r.Offset(304, yoff);
@@ -80,7 +120,7 @@ namespace OpenVIII
 
                             r = dims.Item3;
                             r.Offset((354), yoff);
-                            ITEM[pos, 4] = new IGMDataItem_Int(Memory.State.Characters[character].CurrentHP(visableCharacter), r, 2, 0, 1,4);
+                            ITEM[pos, 4] = new IGMDataItem_Int(Memory.State.Characters[character].CurrentHP(visableCharacter), r, 2, 0, 1, 4);
 
                             r = dims.Item3;
                             r.Offset(437, yoff);
@@ -89,18 +129,19 @@ namespace OpenVIII
                             r = dims.Item3;
 
                             r.Offset((459), yoff);
-                            ITEM[pos, 6] = new IGMDataItem_Int(Memory.State.Characters[character].MaxHP(visableCharacter), r, 2, 0,1,4);
+                            ITEM[pos, 6] = new IGMDataItem_Int(Memory.State.Characters[character].MaxHP(visableCharacter), r, 2, 0, 1, 4);
 
                             if (Memory.State.TeamLaguna || Memory.State.SmallTeam)
                             {
                                 BLANKS[pos] = false;
                                 r = dims.Item3;
                                 r.Offset(145, 36);
-                                ITEM[pos, 7] = new IGMDataItem_String(strings[Items.CurrentEXP] + new FF8String("\n") + strings[Items.NextLEVEL], r);
+                                FF8String s = Strings[Items.CurrentEXP] + "\n" + Strings[Items.NextLEVEL];
+                                ITEM[pos, 7] = new IGMDataItem_String(s, r);
 
                                 r = dims.Item3;
                                 r.Offset((340), 42);
-                                ITEM[pos, 8] = new IGMDataItem_Int((int)Memory.State.Characters[character].Experience, r, 2, 0, 1,9);
+                                ITEM[pos, 8] = new IGMDataItem_Int((int)Memory.State.Characters[character].Experience, r, 2, 0, 1, 9);
 
                                 r = dims.Item3;
                                 r.Offset(520, 42);
@@ -108,7 +149,7 @@ namespace OpenVIII
 
                                 r = dims.Item3;
                                 r.Offset((340), 75);
-                                ITEM[pos, 10] = new IGMDataItem_Int(Memory.State.Characters[character].ExperienceToNextLevel, r, 2, 0, 1,9);
+                                ITEM[pos, 10] = new IGMDataItem_Int(Memory.State.Characters[character].ExperienceToNextLevel, r, 2, 0, 1, 9);
 
                                 r = dims.Item3;
                                 r.Offset(520, 75);
@@ -129,8 +170,13 @@ namespace OpenVIII
                         }
                     }
                 }
+
+                #endregion Methods
             }
 
+            #endregion Classes
         }
+
+        #endregion Classes
     }
 }

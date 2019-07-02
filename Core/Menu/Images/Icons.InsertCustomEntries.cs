@@ -260,7 +260,7 @@ namespace OpenVIII
 
             //18 pages for 198 Items
             P_ = Entries[ID.Size_08x08_P_][0].Clone();
-            P_.Offset.X += Entries[ID.ITEM][0].Width + 8;
+            P_.Offset.X += Entries[ID.ITEM][0].Width - 4;
             P_.CustomPalette = 2;
             _1 = Entries[ID.Num_8x8_1_1][0].Clone();
             _1.Offset.X += P_.Offset.X + P_.Width + 2;

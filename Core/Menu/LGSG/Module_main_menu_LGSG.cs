@@ -17,7 +17,6 @@ namespace OpenVIII
         private static Vector2 LastPageTarget;
         private static Vector2 lastscale;
         private static Vector2 scale;
-        private static Vector2 TextScale;
         private static Point ml;
         private static Tuple<FF8String, FF8String, FF8String> LGSGHEADER;
         private static Vector2 IGM_Size;
@@ -63,11 +62,12 @@ namespace OpenVIII
         }
 
         private static float PercentLoaded { get; set; } = .5f;
+        public static Vector2 TextScale { get; } = new Vector2(2.545455f, 3.0375f);
 
-#endregion Properties
-#region Methods
+        #endregion Properties
+        #region Methods
 
-        
+
 
         private static void DrawLGSG()
         {
