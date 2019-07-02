@@ -1,25 +1,87 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Linq;
 
 namespace OpenVIII
 {
     public partial class Module_main_menu_debug
     {
+
+        #region Classes
+
         private partial class IGM
         {
+
+            #region Classes
+
             private class IGMData_NonParty : IGMData
             {
+
+                #region Fields
+
                 private Texture2D _red_pixel;
 
-                public IGMData_NonParty() : base(6, 9, new IGMDataItem_Box(pos: new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 }),2,3)
+                #endregion Fields
+
+                #region Constructors
+
+                public IGMData_NonParty() : base(6, 9, new IGMDataItem_Box(pos: new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 }), 2, 3)
                 {
                 }
+
+                #endregion Constructors
+
+                #region Properties
+
+                public Tuple<Characters, Characters>[] Contents { get; private set; }
+
+                #endregion Properties
+
+                #region Methods
 
                 public override void Draw()
                 {
                     if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
                         base.Draw();
+                }
+
+                public override void ReInit()
+                {
+                    if (Memory.State.Characters != null)
+                    {
+                        sbyte pos = 0;
+                        bool ret = base.Update();
+                        if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
+                        {
+                            for (byte i = 0; Memory.State.Party != null && i < Memory.State.Characters.Count && SIZE != null && pos < SIZE.Length; i++)
+                            {
+                                if (!Memory.State.Party.Contains((Characters)i) && Memory.State.Characters[(Characters)i].VisibleInMenu)
+                                {
+                                    BLANKS[pos] = false;
+                                    ReInit(pos++, (Characters)i);
+                                }
+                            }
+                        }
+                        for (; pos < Count; pos++)
+                        {
+                            for (int i = 0; i < Depth; i++)
+                            {
+                                BLANKS[pos] = true;
+                                ITEM[pos, i] = null;
+                            }
+                        }
+                    }
+                }
+
+                protected override void Init()
+                {
+                    Table_Options |= Table_Options.FillRows;
+                    _red_pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
+                    Color[] color = new Color[] { new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, 100) };
+                    _red_pixel.SetData(color, 0, _red_pixel.Width * _red_pixel.Height);
+                    Contents = new Tuple<Characters, Characters>[Count];
+                    base.Init();
                 }
 
                 protected override void InitShift(int i, int col, int row)
@@ -29,44 +91,10 @@ namespace OpenVIII
                     if (row >= 1) SIZE[i].Y -= 4;
                     if (row >= 2) SIZE[i].Y -= 4;
                 }
-
-                protected override void Init()
+                private void ReInit(sbyte pos, Characters character)
                 {
-                    Table_Options |= Table_Options.FillRows;
-                    _red_pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
-                    Color[] color = new Color[] { new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, 100) };
-                    _red_pixel.SetData<Color>(color, 0, _red_pixel.Width * _red_pixel.Height);
-                    base.Init();
-                }
 
-                public override bool Update()
-                {
-                    sbyte pos = 0;
-                    bool ret = base.Update();
-                    if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
-                    {
-                        for (byte i = 0; Memory.State.Party != null && i < Memory.State.Characters.Count && SIZE != null && pos < SIZE.Length; i++)
-                        {
-                            if (!Memory.State.Party.Contains((Characters)i) && Memory.State.Characters[(Characters)i].VisibleInMenu)
-                            {
-                                BLANKS[pos] = false;
-                                Update(pos++, (Characters)i);
-                            }
-                        }
-                    }
-                    for (; pos < Count; pos++)
-                    {
-                        for (int i = 0; i < Depth; i++)
-                        {
-                            BLANKS[pos] = true;
-                            ITEM[pos, i] = null;
-                        }
-                    }
-                    return true;
-                }
-
-                private void Update(sbyte pos, Characters character)
-                {
+                    Contents[pos] = new Tuple<Characters, Characters>(character, character);
                     float yoff = 39;
                     Rectangle rbak = SIZE[pos];
                     Rectangle r = rbak;
@@ -103,8 +131,16 @@ namespace OpenVIII
                     r.Offset((166), yoff);
                     ITEM[pos, 8] = new IGMDataItem_Int(Memory.State.Characters[character].CurrentHP(), r, 2, 0, 1,4);
                 }
+
+                #endregion Methods
+
             }
 
+            #endregion Classes
+
         }
+
+        #endregion Classes
+
     }
 }

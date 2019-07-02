@@ -18,6 +18,7 @@
         Cactuar,
         Tonberry,
         Eden,
+        Blank = 0xFE,
         All = 0xFF,
     }
 }

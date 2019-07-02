@@ -137,32 +137,23 @@ namespace OpenVIII
             /// </summary>
             public static Characters VisableCharacter { get; private set; }
             public static EventHandler<Mode> ModeChangeEventListener;
-            private Mode GetMode() => _mode;
-            private void SetMode(Mode value)
+            public override Enum GetMode() => _mode;
+            public override void SetMode(Enum value)
             {
-                if (_mode != value)
+                if (!_mode.Equals(value))
                 {
-                    _mode = value;
-                    ModeChangeEventListener?.Invoke(this, value);
+                    _mode = (Mode)value;
+                    ModeChangeEventListener?.Invoke(this, (Mode)value);
                 }
             }
 
-            public override bool Update()
-            {
-                if (Enabled)
-                {
-                    bool ret = base.Update();
-                    return Inputs() || ret;
-                }
-                return false;
-            }
 
             public void ChangeHelp(FF8String str) => ((IGMDataItem_Box)Data[SectionName.Help].CONTAINER).Data = str;
 
             protected override void Init()
             {
                 Size = new Vector2 { X = 840, Y = 630 };
-                TextScale = new Vector2(2.545455f, 3.0375f);
+                //TextScale = new Vector2(2.545455f, 3.0375f);
 
                 Titles = new Dictionary<Items, FF8String> {
                     {Items.Junction, Memory.Strings.Read(Strings.FileID.MNGRP,2,217) },
@@ -259,7 +250,7 @@ namespace OpenVIII
                         new IGMDataItem_Box(Titles[Items.Auto], pos: new Rectangle(0, 12, 169, 54), options: Box_Options.Center | Box_Options.Middle)),
                     new IGMData_TopMenu_Auto()));
                 Data.Add(SectionName.TopMenu_Abilities, new IGMData_Abilities_Group(
-                    new IGMData_Abilities_Command(),
+                    new IGMData_Abilities_CommandSlots(),
                     new IGMData_Abilities_AbilitySlots(),
                     new IGMData_Abilities_CommandPool(),
                     new IGMData_Abilities_AbilityPool()
@@ -322,7 +313,7 @@ namespace OpenVIII
 
             protected override bool Inputs()
             {
-                if (GetMode() == Mode.None) SetMode(Mode.TopMenu);
+                if (GetMode().Equals(Mode.None)) SetMode(Mode.TopMenu);
                 bool ret = false;
                 if (Enabled)
                 {

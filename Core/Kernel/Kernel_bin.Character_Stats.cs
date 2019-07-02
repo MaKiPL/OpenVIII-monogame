@@ -14,8 +14,6 @@ namespace OpenVIII
         {
             public const int id = 6;
             public const int count = 11;
-            public const ushort MAX_HP_VALUE = 9999;
-            public const byte MAX_STAT_VALUE = 255;
             private Characters char_id { get; set; }
             public FF8String Name => Memory.Strings.GetName((Faces.ID)char_id);
 

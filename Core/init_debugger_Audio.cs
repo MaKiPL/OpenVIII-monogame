@@ -1,20 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-
-#if _WINDOWS && !_X64
-
-#endif
-
 using System.Runtime.InteropServices;
-using NAudio.Vorbis;
 using FFmpeg.AutoGen;
 using System.Linq;
 
 namespace OpenVIII
 {
 #pragma warning disable IDE1006 // Naming Styles
-
     public static class init_debugger_Audio
 #pragma warning restore IDE1006 // Naming Styles
     {
@@ -343,28 +336,6 @@ namespace OpenVIII
             }
 
             return buffer;
-        }
-
-        public static byte[] ReadFullyFloat(VorbisWaveReader stream)
-        {
-            // following formula goal is to calculate the number of bytes to make buffer. might be wrong.
-            long size = (stream.Length / sizeof(float)) + 100; //unsure why but read was > than size so added 100; will error if the size is too small.
-
-            float[] buffer = new float[size];
-
-            int read = stream.Read(buffer, 0, buffer.Length);
-            return GetSamplesWaveData(buffer, read);
-        }
-
-        public static byte[] GetSamplesWaveData(byte[] samples, int samplesCount)
-        {
-            float[] f = new float[(samplesCount / sizeof(float))];
-            int i = 0;
-            for (int n = 0; n < samples.Length; n += sizeof(float))
-            {
-                f[i++] = BitConverter.ToSingle(samples, n);
-            }
-            return GetSamplesWaveData(f, samplesCount / sizeof(float));
         }
 
         public static byte[] GetSamplesWaveData(float[] samples, int samplesCount)

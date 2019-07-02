@@ -108,7 +108,9 @@ namespace OpenVIII
             inscale = Abs(inscale);
             inputdst.Width = Math.Abs(inputdst.Width);
             inputdst.Height = Math.Abs(inputdst.Height);
-            if (inputdst.X + inputdst.Width < 0 || inputdst.Y + inputdst.Height < 0) return;
+            minx = -200;
+            miny = -100;
+            if (inputdst.X + inputdst.Width < minx || inputdst.Y + inputdst.Height < miny) return;
 
             Vector2 autoscale = new Vector2((float)inputdst.Width / totalSize.X, (float)inputdst.Height / totalSize.Y);
             Vector2 scale;
@@ -205,6 +207,9 @@ namespace OpenVIII
             }
         }
         int position = 0;
+        private static int minx;
+        private static int miny;
+
         public bool MoveNext() => ++position<=list.Count;
         public void Reset() => position = 0;
         public IEnumerator GetEnumerator() => this;

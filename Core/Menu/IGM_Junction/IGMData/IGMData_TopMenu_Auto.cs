@@ -24,7 +24,7 @@ namespace OpenVIII
 
                 private void Update_String()
                 {
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode() == Mode.TopMenu_Auto && Enabled)
+                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode().Equals(Mode.TopMenu_Auto) && Enabled)
                     {
                         FF8String Changed = null;
                         switch (CURSOR_SELECT)

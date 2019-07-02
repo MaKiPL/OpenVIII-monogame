@@ -13,6 +13,8 @@
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugWindows|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -115,12 +117,6 @@
     <Reference Include="NAudio, Version=1.9.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\NAudio.1.9.0\lib\net35\NAudio.dll</HintPath>
     </Reference>
-    <Reference Include="NAudio.Vorbis, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NAudio.Vorbis.1.0.0.0\lib\net35\NAudio.Vorbis.dll</HintPath>
-    </Reference>
-    <Reference Include="NVorbis, Version=0.8.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NVorbis.0.8.6\lib\net35\NVorbis.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Windows.Forms" />
@@ -144,7 +140,9 @@
     <Compile Include="EntryGroup.cs" />
     <Compile Include="ExtapathyExtended.cs" />
     <Compile Include="Extended.cs" />
-    <Compile Include="FF8String.cs" />
+    <Compile Include="Saves\Damageable.cs" />
+    <Compile Include="Strings\FF8String.cs" />
+    <Compile Include="Strings\FF8StringReference.cs" />
     <Compile Include="Ffcc.cs" />
     <Compile Include="FfccVaribleGroup.cs" />
     <Compile Include="FFmpegBinariesHelper.cs" />
@@ -702,15 +700,15 @@
     <Compile Include="Loc.cs" />
     <Compile Include="LZSS.cs" />
     <Compile Include="Memory.cs" />
-    <Compile Include="Menu\Cards.cs" />
-    <Compile Include="Menu\Cards.ID.cs" />
-    <Compile Include="Menu\DrawBox.cs" />
-    <Compile Include="Menu\DrawPointer.cs" />
-    <Compile Include="Menu\Faces.cs" />
-    <Compile Include="Menu\Faces.ID.cs" />
-    <Compile Include="Menu\Icons.cs" />
-    <Compile Include="Menu\Icons.ID.cs" />
-    <Compile Include="Menu\Icons.InsertCustomEntries.cs" />
+    <Compile Include="Menu\Images\Cards.cs" />
+    <Compile Include="Menu\Images\Cards.ID.cs" />
+    <Compile Include="Menu\Images\DrawBox.cs" />
+    <Compile Include="Menu\Images\DrawPointer.cs" />
+    <Compile Include="Menu\Images\Faces.cs" />
+    <Compile Include="Menu\Images\Faces.ID.cs" />
+    <Compile Include="Menu\Images\Icons.cs" />
+    <Compile Include="Menu\Images\Icons.ID.cs" />
+    <Compile Include="Menu\Images\Icons.InsertCustomEntries.cs" />
     <Compile Include="Menu\IGMDataItem\IGMDataItem.cs" />
     <Compile Include="Menu\IGMDataItem\IGMDataItem_Box.cs" />
     <Compile Include="Menu\IGMDataItem\IGMDataItem_Empty.cs" />
@@ -731,12 +729,18 @@
     <Compile Include="Menu\IGM\IGMData\IGMData_Header.cs" />
     <Compile Include="Menu\IGM\IGMData\IGMData_NonParty.cs" />
     <Compile Include="Menu\IGM\IGMData\IGMData_Party.cs" />
+    <Compile Include="Menu\IGM\IGMData\IGMData_PartyGroup.cs" />
     <Compile Include="Menu\IGM\IGMData\IGMData_SideMenu.cs" />
+    <Compile Include="Menu\IGM_Items\IGMData\IGMData_Help.cs" />
+    <Compile Include="Menu\IGM_Items\IGMData\IGMData_ItemPool.cs" />
+    <Compile Include="Menu\IGM_Items\IGMData\IGMData_Statuses.cs" />
+    <Compile Include="Menu\IGM_Items\IGMData\IGMData_TargetPool.cs" />
+    <Compile Include="Menu\IGM_Items\IGMData\IGMData_TopMenu.cs" />
     <Compile Include="Menu\IGM_Items\IGM_Items.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_AbilityPool.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_AbilitySlots.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_Command.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_CommandPool.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_CommandSlots.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_Group.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_CharacterInfo.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Commands.cs" />
@@ -766,28 +770,29 @@
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_TopMenu_Off_Group.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Values.cs" />
     <Compile Include="Menu\IGM_Junction\IGM_Junction.cs" />
-    <Compile Include="Menu\Items_In_Menu.cs" />
+    <Compile Include="Menu\IGM_Items\Items_In_Menu.cs" />
     <Compile Include="Menu\LGSG\Module_main_menu_LGSG.cs" />
     <Compile Include="Menu\LGSG\Module_main_menu_LGSG_CheckingSlot.cs" />
     <Compile Include="Menu\LGSG\Module_main_menu_LGSG_ChooseGame.cs" />
     <Compile Include="Menu\LGSG\Module_main_menu_LGSG_ChooseSlot.cs" />
     <Compile Include="Menu\LGSG\Module_main_menu_LGSG_ing.cs" />
-    <Compile Include="Menu\Magazine.cs" />
-    <Compile Include="Menu\Magazine.ID.cs" />
-    <Compile Include="Menu\Magazine.InsertCustomEntries.cs" />
+    <Compile Include="Menu\Images\Magazine.cs" />
+    <Compile Include="Menu\Images\Magazine.ID.cs" />
+    <Compile Include="Menu\Images\Magazine.InsertCustomEntries.cs" />
     <Compile Include="Menu\Menu.cs" />
-    <Compile Include="Menu\Module_card_test.cs" />
-    <Compile Include="Menu\Module_face_test.cs" />
-    <Compile Include="Menu\Module_icon_test.cs" />
+    <Compile Include="Menu\Debug\Module_card_test.cs" />
+    <Compile Include="Menu\Debug\Module_face_test.cs" />
+    <Compile Include="Menu\Debug\Module_icon_test.cs" />
     <Compile Include="Menu\module_main_menu_debug.cs" />
-    <Compile Include="Menu\Module_main_menu_debug.Cursor_Status.cs" />
-    <Compile Include="Menu\Module_main_menu_debug.Item.cs" />
-    <Compile Include="Menu\Module_main_menu_debug.Table_Options.cs" />
-    <Compile Include="Menu\Module_main_menu_DebugLobby.cs" />
-    <Compile Include="Menu\Module_main_menu_MainLobby.cs" />
-    <Compile Include="Menu\PointEx.cs" />
-    <Compile Include="Menu\Stringfile.cs" />
-    <Compile Include="Menu\Strings.cs" />
+    <Compile Include="Menu\Cursor_Status.cs" />
+    <Compile Include="Menu\Item.cs" />
+    <Compile Include="Menu\Table_Options.cs" />
+    <Compile Include="Menu\Debug\Module_main_menu_DebugLobby.cs" />
+    <Compile Include="Menu\Lobby\Module_main_menu_MainLobby.cs" />
+    <Compile Include="PointEx.cs" />
+    <Compile Include="Strings\StringFile.cs" />
+    <Compile Include="Strings\Strings.Areames.cs" />
+    <Compile Include="Strings\Strings.cs" />
     <Compile Include="ModuleHandler.cs" />
     <Compile Include="module_movie_test.cs" />
     <Compile Include="module_overture_debug.cs" />
@@ -818,6 +823,8 @@
     <Compile Include="Sources\MonoGame\Hooks\OpenALWindowsHook.cs" />
     <Compile Include="Sources\NetFramework\TypeExtensionMethods.cs" />
     <Compile Include="SP2.cs" />
+    <Compile Include="Strings\Strings.Kernel.cs" />
+    <Compile Include="Strings\StringsBase.cs" />
     <Compile Include="TEX.cs" />
     <Compile Include="TextureHandler.cs" />
     <Compile Include="TIM2.cs" />
@@ -883,10 +890,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
+    <Compile Include="Strings\Strings.Mngrp.cs" />
+    <Compile Include="Strings\Strings.Namedic.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Menu\Debug\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\Encoding\Encoding.csproj">
       <Project>{a9b33bf4-9b03-4e3d-bf6a-181521046ee8}</Project>
@@ -894,4 +901,11 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\MonoGame.Framework.DesktopGL.3.7.1.189\build\MonoGame.Framework.DesktopGL.targets" Condition="Exists('..\packages\MonoGame.Framework.DesktopGL.3.7.1.189\build\MonoGame.Framework.DesktopGL.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\MonoGame.Framework.DesktopGL.3.7.1.189\build\MonoGame.Framework.DesktopGL.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MonoGame.Framework.DesktopGL.3.7.1.189\build\MonoGame.Framework.DesktopGL.targets'))" />
+  </Target>
 </Project>

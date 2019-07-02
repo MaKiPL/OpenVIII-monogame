@@ -7,6 +7,10 @@ namespace OpenVIII
 {
     public partial class Kernel_bin
     {
+
+        public const ushort MAX_HP_VALUE = 9999;
+        public const byte MAX_STAT_VALUE = 255;
+
         private static List<Magic_Data> s_magicData;
         private static Dictionary<GFs, Junctionable_GFs_Data> s_junctionableGFsData;
         private static List<Enemy_Attacks_Data> s_enemyAttacksData;
@@ -84,8 +88,8 @@ namespace OpenVIII
         public Kernel_bin()
         {
             aw = new ArchiveWorker(ArchiveString);
-            byte[] buffer = aw.GetBinaryFile(Memory.Strings.Filenames[(int)Strings.FileID.KERNEL]);
-            List<Loc> subPositions = Memory.Strings.Files[Strings.FileID.KERNEL].subPositions;
+            byte[] buffer = aw.GetBinaryFile(Memory.Strings[Strings.FileID.KERNEL].GetFilenames()[0]);
+            List<Loc> subPositions = Memory.Strings[Strings.FileID.KERNEL].GetFiles().subPositions;
 
             using (MemoryStream ms = new MemoryStream(buffer))
             using (BinaryReader br = new BinaryReader(ms))

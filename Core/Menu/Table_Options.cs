@@ -4,7 +4,8 @@ namespace OpenVIII
 {
     public partial class Module_main_menu_debug
     {
-        #region Classes
+
+        #region Enums
 
         [Flags]
         public enum Table_Options
@@ -19,6 +20,8 @@ namespace OpenVIII
             /// </summary>
             FillRows = 0x1,
         }
-        #endregion Classes
+
+        #endregion Enums
+
     }
 }

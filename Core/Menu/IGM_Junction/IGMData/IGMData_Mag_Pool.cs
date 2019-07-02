@@ -127,7 +127,7 @@ namespace OpenVIII
                                 skipundo = false;
                             }
                             Source.JunctionSpell(Stat, Contents[CURSOR_SELECT]);
-                            SlotReinitListener?.Invoke(this, InGameMenu_Junction.GetMode());
+                            SlotReinitListener?.Invoke(this, (Mode)InGameMenu_Junction.GetMode());
                         }
                     }
                 }
@@ -171,9 +171,9 @@ namespace OpenVIII
                     if (Memory.State.Characters != null)
                     {
                         base.Inputs_CANCEL();
-                        SlotUndoListener?.Invoke(this, InGameMenu_Junction.GetMode());
-                        SlotConfirmListener?.Invoke(this, InGameMenu_Junction.GetMode());
-                        SlotReinitListener?.Invoke(this, InGameMenu_Junction.GetMode());
+                        SlotUndoListener?.Invoke(this, (Mode)InGameMenu_Junction.GetMode());
+                        SlotConfirmListener?.Invoke(this, (Mode)InGameMenu_Junction.GetMode());
+                        SlotReinitListener?.Invoke(this, (Mode)InGameMenu_Junction.GetMode());
                         switch(SortMode)
                         {
                             case Mode.Mag_Pool_Stat:
@@ -207,16 +207,16 @@ namespace OpenVIII
                             skipsnd = true;
                             init_debugger_Audio.PlaySound(31);
                             base.Inputs_OKAY();
-                            SlotConfirmListener?.Invoke(this, InGameMenu_Junction.GetMode());
-                            if (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_Stat)
+                            SlotConfirmListener?.Invoke(this, (Mode)InGameMenu_Junction.GetMode());
+                            if (InGameMenu_Junction.GetMode().Equals(Mode.Mag_Pool_Stat))
                             {
                                 InGameMenu_Junction.SetMode(Mode.Mag_Stat);
                             }
-                            else if (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_EL_A || InGameMenu_Junction.GetMode() == Mode.Mag_Pool_EL_D)
+                            else if (InGameMenu_Junction.GetMode().Equals(Mode.Mag_Pool_EL_A) || InGameMenu_Junction.GetMode().Equals(Mode.Mag_Pool_EL_D))
                             {
                                 InGameMenu_Junction.SetMode(Mode.Mag_EL_A);
                             }
-                            else if (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_ST_A || InGameMenu_Junction.GetMode() == Mode.Mag_Pool_ST_D)
+                            else if (InGameMenu_Junction.GetMode().Equals(Mode.Mag_Pool_ST_A) || InGameMenu_Junction.GetMode().Equals(Mode.Mag_Pool_ST_D))
                             {
                                 InGameMenu_Junction.SetMode(Mode.Mag_ST_A);
                             }
@@ -329,7 +329,7 @@ namespace OpenVIII
 
                 private void Get_Sort_Stat()
                 {
-                    SortMode = InGameMenu_Junction.GetMode();
+                    SortMode = (Mode)InGameMenu_Junction.GetMode();
                     switch (SortMode)
                     {
                         default:
@@ -368,7 +368,7 @@ namespace OpenVIII
 
                 private bool Undo()
                 {
-                    SlotUndoListener?.Invoke(this, InGameMenu_Junction.GetMode());
+                    SlotUndoListener?.Invoke(this, (Mode)InGameMenu_Junction.GetMode());
                     if (Memory.State.Characters != null)
                         Source = Memory.State.Characters[Character];
                     return true;
@@ -376,7 +376,7 @@ namespace OpenVIII
 
                 private void UpdateOnEvent(object sender, Mode? mode = null, Kernel_bin.Stat? stat = null)
                 {
-                    mode = mode ?? InGameMenu_Junction.GetMode();
+                    mode = mode ?? (Mode)InGameMenu_Junction.GetMode();
                     if (
                         mode != Mode.Mag_Pool_ST_A &&
                         mode != Mode.Mag_Pool_ST_D &&

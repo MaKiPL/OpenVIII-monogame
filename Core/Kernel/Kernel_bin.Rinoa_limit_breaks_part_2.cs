@@ -35,7 +35,8 @@ namespace OpenVIII
             public void Read(BinaryReader br,int i)
             {
                 var offset = br.ReadUInt16();
-                Name = Memory.Strings.Read(Strings.FileID.KERNEL, Memory.Strings.Files[Strings.FileID.KERNEL].subPositions[(int)Memory.Strings.Kernel_LocSTR[id].Item1]+offset);
+                Name = new FF8StringReference(Memory.Strings[Strings.FileID.KERNEL].GetArchive(), Memory.Strings[Strings.FileID.KERNEL].GetFilenames()[0],
+                    Memory.Strings[Strings.FileID.KERNEL].GetFiles().subPositions[(int)((Strings.Kernel)Memory.Strings[Strings.FileID.KERNEL]).StringLocations[id].Item1]+offset,settings: (FF8StringReference.Settings.Namedic | FF8StringReference.Settings.MultiCharByte));
                 //0x0000	2 bytes Offset to name
                 //br.BaseStream.Seek(2, SeekOrigin.Current);
                 MagicID = (Magic_ID)br.ReadUInt16();

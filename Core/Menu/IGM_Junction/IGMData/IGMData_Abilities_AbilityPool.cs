@@ -75,7 +75,7 @@ namespace OpenVIII
 
                 public override bool Update()
                 {
-                    if (InGameMenu_Junction != null &&InGameMenu_Junction.GetMode() != Mode.Abilities_Abilities)
+                    if (InGameMenu_Junction != null && !InGameMenu_Junction.GetMode().Equals(Mode.Abilities_Abilities))
                         Cursor_Status &= ~Cursor_Status.Enabled;
                     else
                         Cursor_Status |= Cursor_Status.Enabled;
@@ -114,8 +114,8 @@ namespace OpenVIII
                         BLANKS[pos] = true;
                         Contents[pos] = Kernel_bin.Abilities.None;
                     }
-                    if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None &&InGameMenu_Junction.GetMode() == Mode.Abilities_Abilities)
-                        InGameMenu_Junction.ChangeHelp(Source[Contents[CURSOR_SELECT]].Description.ReplaceRegion());
+                    if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && InGameMenu_Junction.GetMode().Equals(Mode.Abilities_Abilities))
+                        InGameMenu_Junction.ChangeHelp(Source[Contents[CURSOR_SELECT]].Description);
                     UpdateTitle();
                     if (Contents[CURSOR_SELECT] == Kernel_bin.Abilities.None)
                         CURSOR_NEXT();

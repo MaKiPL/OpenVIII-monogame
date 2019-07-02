@@ -163,7 +163,7 @@ namespace OpenVIII
                     Contents[0] = statatk;
                     getColor(pos, out byte palette, out Font.ColorID _colorid, out bool unlocked);
                     FF8String name = Kernel_bin.MagicData[Memory.State.Characters[Character].Stat_J[statatk]].Name;
-                    if (name.Length == 0)
+                    if (name == null || name.Length == 0)
                         name = Misc[Items._];
                     ITEM[pos, 0] = new IGMDataItem_Icon(starticon, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), palette);
                     ITEM[pos, 1] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X + 60, SIZE[pos].Y, 0, 0), color: _colorid);
@@ -173,7 +173,7 @@ namespace OpenVIII
                         Contents[pos] = statdef + pos - 1;
                         getColor(pos, out palette, out _colorid, out unlocked);
                         name = Kernel_bin.MagicData[Memory.State.Characters[Character].Stat_J[statdef + pos - 1]].Name;
-                        if (name.Length == 0)
+                        if (name == null || name.Length == 0)
                             name = Misc[Items._];
                         ITEM[pos, 0] = new IGMDataItem_Icon(starticon + 1, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), palette);
                         ITEM[pos, 1] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X + 60, SIZE[pos].Y, 0, 0), color: _colorid);

@@ -17,6 +17,8 @@ namespace OpenVIII
             //{
             //    UNDEFINDED
             //}
+            public abstract void SetMode(Enum mode);
+            public abstract Enum GetMode();
 
             public bool Enabled { get; private set; } = true;
             public virtual void Hide() => Enabled = false;
@@ -30,7 +32,7 @@ namespace OpenVIII
             //protected Enum mode=(Mode)0;
 
             private Vector2 _size;
-            static public Vector2 TextScale { get; protected set; }
+            //static public Vector2 TextScale { get; protected set; }
             static public Matrix Focus { get; protected set; }
             private bool skipdata;
 
@@ -98,7 +100,7 @@ namespace OpenVIII
                             ret = i.Value.Update() || ret;
                         }
                 }
-                return ret;
+                return Inputs() || ret;
             }            
 
             protected abstract bool Inputs();

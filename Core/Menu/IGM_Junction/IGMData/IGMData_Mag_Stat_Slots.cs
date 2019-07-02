@@ -51,9 +51,9 @@ namespace OpenVIII
 
                 public override void CheckMode(bool cursor = true) =>
                    CheckMode(-1, Mode.None, Mode.Mag_Stat,
-                       InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_Stat),
-                       InGameMenu_Junction != null && (InGameMenu_Junction.GetMode() == Mode.Mag_Pool_Stat),
-                       (InGameMenu_Junction.GetMode() == Mode.Mag_Stat || InGameMenu_Junction.GetMode() == Mode.Mag_Pool_Stat) && cursor);
+                       InGameMenu_Junction != null && (InGameMenu_Junction.GetMode().Equals(Mode.Mag_Stat)),
+                       InGameMenu_Junction != null && (InGameMenu_Junction.GetMode().Equals(Mode.Mag_Pool_Stat)),
+                       (InGameMenu_Junction.GetMode().Equals(Mode.Mag_Stat) || InGameMenu_Junction.GetMode().Equals(Mode.Mag_Pool_Stat)) && cursor);
 
                 public override void Inputs_CANCEL()
                 {
@@ -144,7 +144,7 @@ namespace OpenVIII
                                     if (pos >= 5) pos++;
                                     Contents[pos] = stat;
                                     FF8String name = Kernel_bin.MagicData[Memory.State.Characters[Character].Stat_J[stat]].Name;
-                                    if (name.Length == 0) name = Misc[Items._];
+                                    if (name == null || name.Length == 0) name = Misc[Items._];
 
                                     ITEM[pos, 0] = new IGMDataItem_Icon(Stat2Icon[stat], new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), 2);
                                     ITEM[pos, 1] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X + 80, SIZE[pos].Y, 0, 0));

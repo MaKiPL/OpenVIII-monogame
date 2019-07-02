@@ -26,19 +26,32 @@
                 SIZE[Count - 2].Y = Y + Height - 28;
                 SIZE[Count - 1].X = X + Width - 24;
                 SIZE[Count - 1].Y = Y + Height - 28;
+                ITEM[Count - 2, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Left, SIZE[Count - 2], 2, 7);
+                ITEM[Count - 1, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right2, SIZE[Count - 1], 2, 7);
             }
-
+            public virtual void ResetPages() =>
+                Pages = DefaultPages;
             public override void ReInit()
             {
                 base.ReInit();
-                Pages = DefaultPages;
-                ITEM[Count - 2, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Left, SIZE[Count - 2], 2, 7);
-                ITEM[Count - 1, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right2, SIZE[Count - 1], 2, 7);
+                ResetPages();
+                if (Pages > 1)
+                {
+                    Cursor_Status &= ~Cursor_Status.Horizontal;
+                    ITEM[Count - 1, 0].Show();
+                    ITEM[Count - 2, 0].Show();
+                }
+                else
+                {
+                    Cursor_Status |= Cursor_Status.Horizontal;
+                    ITEM[Count - 1, 0].Hide();
+                    ITEM[Count - 2, 0].Hide();
+                }
             }
 
             public override bool Inputs()
             {
-                bool ret = base.Inputs();
+                bool ret = false;
                 if (Pages > 1 && CONTAINER.Pos.Contains(Input.MouseLocation.Transform(Menu.Focus)))
                 {
                     if (Input.Button(Buttons.MouseWheelup))
@@ -52,6 +65,8 @@
                         ret = true;
                     }
                 }
+                if(!ret)
+                    ret = base.Inputs();
                 return ret;
             }
 

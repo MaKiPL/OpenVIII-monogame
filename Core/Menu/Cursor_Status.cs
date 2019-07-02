@@ -4,7 +4,8 @@ namespace OpenVIII
 {
     public partial class Module_main_menu_debug
     {
-        #region Classes
+
+        #region Enums
 
         /// <summary>
         /// Flags for cursor behavior
@@ -43,6 +44,8 @@ namespace OpenVIII
             /// </summary>
             Draw = 0x10,
         }
-        #endregion Classes
+
+        #endregion Enums
+
     }
 }
