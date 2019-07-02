@@ -365,6 +365,8 @@ namespace OpenVIII
 
                 d.Characters = Characters.ToDictionary(entry => entry.Key,
                     entry => entry.Value.Clone());
+                d.GFs = GFs.ToDictionary(entry => entry.Key,
+                    entry => entry.Value.Clone());
                 d.ChocoboWorld = ChocoboWorld.Clone();
                 d.Fieldvars = Fieldvars.Clone();
                 d.Worldmap = Worldmap.Clone();

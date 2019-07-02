@@ -6,10 +6,12 @@ namespace OpenVIII
 {
     public static partial class Module_main_menu_debug
     {
+
         #region Classes
 
         private partial class IGM_Items
         {
+
             #region Classes
 
             /// <summary>
@@ -20,9 +22,11 @@ namespace OpenVIII
             /// </remarks>
             private class IGMData_TargetPool : IGMData_Pool<Saves.Data, Faces.ID>
             {
+
                 #region Fields
 
                 private bool eventSet;
+                private bool ForceRefresh;
 
                 #endregion Fields
 
@@ -44,15 +48,6 @@ namespace OpenVIII
                 #endregion Properties
 
                 #region Methods
-
-                protected override void InitShift(int i, int col, int row)
-                {
-                    base.InitShift(i, col, row);
-                    SIZE[i].Inflate(-18, -20);
-                    SIZE[i].Y -= 3 * row;
-                    //SIZE[i].X += 2;
-                    SIZE[i].Height = (int)(12 * TextScale.Y);
-                }
 
                 public override void Draw()
                 {
@@ -86,6 +81,21 @@ namespace OpenVIII
                     InGameMenu_Items.SetMode(Mode.SelectItem);
                 }
 
+                public override void Inputs_OKAY()
+                {
+                    bool ret = false;
+                    if (All)
+                        ret = Item.Use(Faces.ID.Blank);
+                    else if (!BLANKS[CURSOR_SELECT])
+                        ret = Item.Use(Contents[CURSOR_SELECT]);
+                    if (ret)
+                    {
+                        base.Inputs_OKAY();
+                        Fill();
+                        InGameMenu_Items.ReInit(true);
+                    }
+                }
+
                 public override void ReInit()
                 {
                     if (!eventSet && InGameMenu_Items != null)
@@ -100,32 +110,22 @@ namespace OpenVIII
                     //    Item = Memory.MItems[Memory.State.Items.FirstOrDefault(m => m.ID > 0 && m.QTY > 0).ID];
                     else
                         Fill();
+                    ForceRefresh = true;
                     base.ReInit();
                 }
 
-                private void ChoiceChangeEvent(object sender, KeyValuePair<byte, FF8String> e) => TopMenuChoice = e.Key;
-
-                private void ItemTypeChangeEvent(object sender, KeyValuePair<Item_In_Menu, FF8String> e)
+                public override void ResetPages()
                 {
-                    CURSOR_SELECT = 0;
-                    if (!Item.Equals(e.Key) || Page > 0)
-                    {
-                        Page = 0;
-                        bool sameTargets = Item.Target != e.Key.Target || Item.Type != e.Key.Type;
-                        if (!sameTargets)
-                        {
-                            sameTargets = (Item.Type == Item_In_Menu._Type.GF_Learn && Item.Learn != e.Key.Learn);
-                            sameTargets = sameTargets || (Item.Type == Item_In_Menu._Type.Blue_Magic && Item.Learned_Blue_Magic != e.Key.Learned_Blue_Magic);
-                        }
-                        Item = e.Key;
-                        if (sameTargets)
-                        {
-                            Fill();
-                            base.ReInit();
-                        }
-                    }
                 }
 
+                protected override void InitShift(int i, int col, int row)
+                {
+                    base.InitShift(i, col, row);
+                    SIZE[i].Inflate(-18, -20);
+                    SIZE[i].Y -= 3 * row;
+                    //SIZE[i].X += 2;
+                    SIZE[i].Height = (int)(12 * TextScale.Y);
+                }
                 protected override void PAGE_NEXT()
                 {
                     if (Pages > 1)
@@ -155,11 +155,9 @@ namespace OpenVIII
                     }
                 }
 
-                public override void ResetPages()
-                {
-                }
+                private void ChoiceChangeEvent(object sender, KeyValuePair<byte, FF8String> e) => TopMenuChoice = e.Key;
 
-                private void Fill(bool force = false)
+                private void Fill()
                 {
                     Faces.ID id = 0;
                     int skip = Page * rows;
@@ -205,6 +203,28 @@ namespace OpenVIII
                     Pages = Page + 2;
                 }
 
+                private void ItemTypeChangeEvent(object sender, KeyValuePair<Item_In_Menu, FF8String> e)
+                {
+                    
+                    CURSOR_SELECT = 0;
+                    if (!Item.Equals(e.Key) || Page > 0)
+                    {
+                        Page = 0;
+                        bool sameTargets = Item.Target != e.Key.Target || Item.Type != e.Key.Type;
+                        if (!sameTargets)
+                        {
+                            sameTargets = (Item.Type == Item_In_Menu._Type.GF_Learn && Item.Learn != e.Key.Learn);
+                            sameTargets = sameTargets || (Item.Type == Item_In_Menu._Type.Blue_Magic && Item.Learned_Blue_Magic != e.Key.Learned_Blue_Magic);
+                        }
+                        Item = e.Key;
+                        if (sameTargets || ForceRefresh)
+                        {
+                            Fill();
+                            base.ReInit();
+                            ForceRefresh = false;
+                        }
+                    }
+                }
                 private void ModeChangeEvent(object sender, Mode e)
                 {
                     if (!IsMe)
@@ -213,27 +233,14 @@ namespace OpenVIII
                         InGameMenu_Items.TargetChangeHandler?.Invoke(this, Contents[CURSOR_SELECT]);
                 }
 
-                public override void Inputs_OKAY()
-                {
-                    bool ret = false;
-                    if (All)
-                        ret = Item.Use(Faces.ID.Blank);
-                    else if (!BLANKS[CURSOR_SELECT])
-                        ret = Item.Use(Contents[CURSOR_SELECT]);
-                    if (ret)
-                    {
-                        base.Inputs_OKAY();
-                        Fill(true);
-                        InGameMenu_Items.ReInit(true);
-                    }
-                }
-
                 #endregion Methods
             }
 
             #endregion Classes
+
         }
 
         #endregion Classes
+
     }
 }

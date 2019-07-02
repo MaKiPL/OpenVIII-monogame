@@ -398,6 +398,7 @@ namespace OpenVIII
                 //Shadowcopy
                 CharacterData c = (CharacterData)MemberwiseClone();
                 //Deepcopy
+                c.Name = Name.Clone();
                 c.CompatibilitywithGFs = CompatibilitywithGFs.ToDictionary(e => e.Key, e => e.Value);
                 c.Stat_J = Stat_J.ToDictionary(e => e.Key, e => e.Value);
                 c.Magics = Magics.ToDictionary(e => e.Key, e => e.Value);
