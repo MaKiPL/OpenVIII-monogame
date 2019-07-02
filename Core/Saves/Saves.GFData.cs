@@ -161,7 +161,7 @@ namespace OpenVIII
             /// <summary>
             /// Kernel bin data on this GF
             /// </summary>
-            private Kernel_bin.Junctionable_GFs_Data JunctionableGFsData => JunctionableGFsData;
+            private Kernel_bin.Junctionable_GFs_Data JunctionableGFsData => Kernel_bin.JunctionableGFsData[ID];
 
             #endregion Properties
 
