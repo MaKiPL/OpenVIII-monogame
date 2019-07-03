@@ -100,7 +100,7 @@ namespace OpenVIII
                     Choice = e.Key;
                 }
 
-                private void ModeChangeEvent(object sender, Enum e)
+                protected override void ModeChangeEvent(object sender, Enum e)
                 {
                     if (!e.Equals(Mode.ChooseChar))
                     {

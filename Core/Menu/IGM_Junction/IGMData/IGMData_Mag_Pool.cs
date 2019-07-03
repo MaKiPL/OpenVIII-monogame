@@ -362,7 +362,7 @@ namespace OpenVIII
                     }
                 }
 
-                private void ModeChangeEvent(object sender, Enum e) => UpdateOnEvent(sender, (Mode)e);
+                protected override void ModeChangeEvent(object sender, Enum e) => UpdateOnEvent(sender, (Mode)e);
 
                 private void StatChangeEvent(object sender, Kernel_bin.Stat e) => UpdateOnEvent(sender, null, e);
 

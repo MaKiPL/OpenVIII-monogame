@@ -15,9 +15,6 @@ namespace OpenVIII
                 {
                 }
 
-                private void ModeChangeEvent(object sender, Enum e)
-                {
-                }
                 public override void ReInit()
                 {
                     if (!eventSet && InGameMenu_Items != null)

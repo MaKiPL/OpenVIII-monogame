@@ -187,8 +187,7 @@ namespace OpenVIII
                 /// </summary>
                 /// <param name="sender"></param>
                 /// <param name="e"></param>
-                protected virtual void ModeChangeEvent(object sender, Enum e) =>
-                    ReInit();
+                protected override void ModeChangeEvent(object sender, Enum e) => ReInit();
 
                 protected abstract void PageLeft();
 

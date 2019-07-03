@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -39,6 +40,11 @@ namespace OpenVIII
         #endregion Constructors
 
         #region Properties
+        public void SetModeChangeEvent(ref EventHandler<Enum> eventHandler) => eventHandler += ModeChangeEvent;
+
+        protected virtual void ModeChangeEvent(object sender, Enum e)
+        {
+        }
 
         public int cols { get; private set; }
         public IGMDataItem CONTAINER { get; protected set; }

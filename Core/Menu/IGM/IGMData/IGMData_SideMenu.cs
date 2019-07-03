@@ -135,7 +135,7 @@ namespace OpenVIII
 
                 private void ChoiceChangeEvent(object sender, FF8String e) => ((IGMDataItem_Box)CONTAINER).Data = e;
 
-                private void ModeChangeEvent(object sender, Enum e)
+                protected override void ModeChangeEvent(object sender, Enum e)
                 {
                     if (!e.Equals(Mode.ChooseItem))
                     {

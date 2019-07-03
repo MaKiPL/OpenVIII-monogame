@@ -10,11 +10,8 @@ namespace OpenVIII
     /// </summary>
     public class BattleMenu : Menu
     {
-        #region Fields
 
         //private Mode _mode = Mode.Waiting;
-
-        #endregion Fields
 
         #region Constructors
 
@@ -43,10 +40,15 @@ namespace OpenVIII
         /// </summary>
         public override void Draw() => base.DrawData();
 
-        protected override void Init() => base.Init();
+        protected override void Init()
+        {
+            SetMode((Mode)0);
+            base.Init();
+        }
         protected override bool Inputs() => throw new NotImplementedException();
 
         #endregion Methods
+
     }
 
     /// <summary>
@@ -54,11 +56,8 @@ namespace OpenVIII
     /// </summary>
     public class BattleMenus : Menus
     {
-        #region Fields
 
         //private Mode _mode = Mode.Starting;
-
-        #endregion Fields
 
         #region Enums
 
@@ -81,6 +80,7 @@ namespace OpenVIII
             menus?.ForEach(m => m.Draw());
             EndDraw();
         }
+
         public override void ReInit()
         {
             if (Memory.State?.Characters != null)
@@ -96,17 +96,25 @@ namespace OpenVIII
             base.ReInit();
         }
 
+        protected override void Init()
+        {
+            SetMode((Mode)0);
+            base.Init();
+        }
         protected override bool Inputs() => throw new NotImplementedException();
 
         #endregion Methods
+
     }
 
     public abstract class Menus : Menu
     {
+
         #region Fields
 
         protected List<Menu> menus;
 
         #endregion Fields
+
     }
 }

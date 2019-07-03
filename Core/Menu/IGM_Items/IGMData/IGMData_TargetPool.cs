@@ -225,7 +225,7 @@ namespace OpenVIII
                         }
                     }
                 }
-                private void ModeChangeEvent(object sender, Enum e)
+                protected override void ModeChangeEvent(object sender, Enum e)
                 {
                     if (!IsMe)
                         Cursor_Status &= ~Cursor_Status.Enabled;
