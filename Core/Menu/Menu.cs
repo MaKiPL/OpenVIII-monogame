@@ -58,6 +58,7 @@ namespace OpenVIII
         protected Characters VisableCharacter { get; set; }
 
         protected Vector2 vp { get; set; } = new Vector2(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height);
+        public bool FadeOut { get; private set; }
 
         #endregion Properties
 
@@ -188,13 +189,23 @@ namespace OpenVIII
         {
 
             if (_blinkstate)
+            {
                 Blink_Amount += (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 500);
+                if (Blink_Amount > 1f) _blinkstate = false;
+            }
             else
+            {
                 Blink_Amount -= (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 900);
-            if (Blink_Amount > 1f) _blinkstate = false;
-            else if(Blink_Amount < 0) _blinkstate = true;
-            if (Fade < 1f)
+                if (Blink_Amount < 0) _blinkstate = true;
+            }
+            if (!FadeOut && Fade < 1f)
                 Fade += (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 700);
+            else if(FadeOut && Fade > 0f)
+            { 
+                Fade -= (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 1500);
+                FadeOut = false;
+            }
+
             bool ret = false;
             Vector2 Zoom = Memory.Scale(Size.X, Size.Y, Memory.ScaleMode.FitBoth);
             Focus = Matrix.CreateTranslation((Size.X / -2), (Size.Y / -2), 0) *
