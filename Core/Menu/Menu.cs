@@ -7,14 +7,14 @@ namespace OpenVIII
 {
     public abstract class Menu
     {
+
         #region Fields
 
         public Dictionary<Enum, IGMData> Data;
 
-        private Vector2 _size;
-
-        private bool skipdata;
+        protected bool skipdata;
         private bool _blinkstate;
+        private Vector2 _size;
 
         #endregion Fields
 
@@ -41,8 +41,9 @@ namespace OpenVIII
 
         public static Vector2 TextScale { get; } = new Vector2(2.545455f, 3.0375f);
 
-        public bool Enabled { get; private set; } = true;
-
+        public bool Enabled { get; protected set; } = true;
+        
+        public bool FadeOut { get; set; }
         public Vector2 Size { get => _size; protected set => _size = value; }
 
         public static Point MouseLocation => Input.MouseLocation.Transform(Menu.Focus);
@@ -58,7 +59,6 @@ namespace OpenVIII
         protected Characters VisableCharacter { get; set; }
 
         protected Vector2 vp { get; set; } = new Vector2(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height);
-        public bool FadeOut { get; private set; }
 
         #endregion Properties
 
@@ -231,5 +231,6 @@ namespace OpenVIII
         protected abstract bool Inputs();
 
         #endregion Methods
+
     }
 }
