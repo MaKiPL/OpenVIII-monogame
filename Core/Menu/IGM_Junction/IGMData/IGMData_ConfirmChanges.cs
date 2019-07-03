@@ -2,9 +2,7 @@
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
-        private partial class IGM_Junction
+        public partial class IGM_Junction
         {
             private sealed class IGMData_ConfirmChanges : IGMData_ConfirmDialog
             {
@@ -26,8 +24,8 @@ namespace OpenVIII
                 {
                     skipsnd = true;
                     init_debugger_Audio.PlaySound(31);
-                    InGameMenu_Junction.Data[SectionName.ConfirmChanges].Hide();
-                    InGameMenu_Junction.SetMode(Mode.TopMenu);
+                    IGM_Junction.Data[SectionName.ConfirmChanges].Hide();
+                    IGM_Junction.SetMode(Mode.TopMenu);
 
                     base.Inputs_OKAY();
                     switch (CURSOR_SELECT)
@@ -39,21 +37,21 @@ namespace OpenVIII
                             Memory.State = Memory.PrevState.Clone();
                             break;
                     }
-                    if (State == MainMenuStates.IGM_Junction)
+                    if (Module_main_menu_debug.State == Module_main_menu_debug.MainMenuStates.IGM_Junction)
                     {
-                        State = MainMenuStates.InGameMenu;
-                        InGameMenu.ReInit();
-                        Fade = 0.0f;
+                    Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.IGM;
+                        IGM.ReInit();
+                        FadeIn();
                     }
                 }
 
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
-                    InGameMenu_Junction.Data[SectionName.ConfirmChanges].Hide();
-                    InGameMenu_Junction.SetMode(Mode.TopMenu);
+                    IGM_Junction.Data[SectionName.ConfirmChanges].Hide();
+                    IGM_Junction.SetMode(Mode.TopMenu);
                 }
             }
         }
-    }
+    
 }

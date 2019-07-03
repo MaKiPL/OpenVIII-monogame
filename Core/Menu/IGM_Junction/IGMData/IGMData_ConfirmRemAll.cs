@@ -3,9 +3,7 @@ using System.Linq;
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
-        private partial class IGM_Junction
+        public partial class IGM_Junction
         {
             private sealed class IGMData_ConfirmRemAll : IGMData_ConfirmDialog
             {
@@ -21,11 +19,11 @@ namespace OpenVIII
                             base.Inputs_OKAY();
                             Memory.State.Characters[Character].RemoveAll();
 
-                            InGameMenu_Junction.Data[SectionName.RemAll].Hide();
-                            InGameMenu_Junction.Data[SectionName.TopMenu_Off].Hide();
-                            InGameMenu_Junction.SetMode(Mode.TopMenu);
-                            InGameMenu_Junction.Data[SectionName.TopMenu].CURSOR_SELECT = 0;
-                            InGameMenu_Junction.ReInit();
+                            IGM_Junction.Data[SectionName.RemAll].Hide();
+                            IGM_Junction.Data[SectionName.TopMenu_Off].Hide();
+                            IGM_Junction.SetMode(Mode.TopMenu);
+                            IGM_Junction.Data[SectionName.TopMenu].CURSOR_SELECT = 0;
+                            IGM_Junction.ReInit();
                             break;
 
                         case 1:
@@ -37,10 +35,10 @@ namespace OpenVIII
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
-                    InGameMenu_Junction.Data[SectionName.RemAll].Hide();
-                    InGameMenu_Junction.SetMode(Mode.TopMenu_Off);
+                    IGM_Junction.Data[SectionName.RemAll].Hide();
+                    IGM_Junction.SetMode(Mode.TopMenu_Off);
                 }
             }
         }
-    }
+    
 }

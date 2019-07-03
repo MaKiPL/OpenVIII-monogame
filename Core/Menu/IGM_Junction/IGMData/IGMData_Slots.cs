@@ -4,11 +4,9 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
         #region Classes
 
-        private partial class IGM_Junction
+        public partial class IGM_Junction
         {
             #region Classes
 
@@ -45,17 +43,17 @@ namespace OpenVIII
 
                 public void CheckMode(int pos, Mode one, Mode two, bool slots, bool pools, bool cursor = true)
                 {
-                    if (InGameMenu_Junction != null && slots && Enabled)
+                    if (IGM_Junction != null && slots && Enabled)
                     {
                         Cursor_Status &= ~Cursor_Status.Horizontal;
                         Cursor_Status |= Cursor_Status.Vertical;
                         Cursor_Status &= ~Cursor_Status.Blinking;
                         if (CURSOR_SELECT > pos)
-                            InGameMenu_Junction.SetMode(two);
+                            IGM_Junction.SetMode(two);
                         else
-                            InGameMenu_Junction.SetMode(one);
+                            IGM_Junction.SetMode(one);
                     }
-                    else if (InGameMenu_Junction != null && pools && Enabled)
+                    else if (IGM_Junction != null && pools && Enabled)
                     {
                         Cursor_Status |= Cursor_Status.Blinking;
                     }
@@ -114,7 +112,7 @@ namespace OpenVIII
                 {
                     if (!eventAdded)
                     {
-                        InGameMenu_Junction.ModeChangeHandler += ModeChangeEvent;
+                        IGM_Junction.ModeChangeHandler += ModeChangeEvent;
                         IGMData_Values.ColorChangeEventListener += ColorChangeEvent;
                         eventAdded = true;
                     }
@@ -218,5 +216,5 @@ namespace OpenVIII
         }
 
         #endregion Classes
-    }
+    
 }

@@ -4,11 +4,9 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    public static partial class Module_main_menu_debug
-    {
         #region Classes
 
-        private partial class IGM_Items : Menu
+        public partial class IGM_Items : Menu
         {
             #region Fields
 
@@ -107,5 +105,5 @@ namespace OpenVIII
         }
 
         #endregion Classes
-    }
+    
 }

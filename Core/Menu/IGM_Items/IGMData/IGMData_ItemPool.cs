@@ -4,12 +4,10 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    public static partial class Module_main_menu_debug
-    {
 
         #region Classes
 
-        private partial class IGM_Items
+        public partial class IGM_Items
         {
 
             #region Classes
@@ -51,16 +49,16 @@ namespace OpenVIII
 
                 public override void Inputs_CANCEL()
                 {
-                    InGameMenu_Items.SetMode(Mode.TopMenu);
+                    IGM_Items.SetMode(Mode.TopMenu);
                     base.Inputs_CANCEL();
                 }
 
                 public override void ReInit()
                 {
-                    if (!eventSet && InGameMenu_Items != null)
+                    if (!eventSet && IGM_Items != null)
                     {
-                        InGameMenu_Items.ModeChangeHandler += ModeChangeEvent;
-                        InGameMenu_Items.ReInitCompletedHandler += ReInitCompletedEvent;
+                        IGM_Items.ModeChangeHandler += ModeChangeEvent;
+                        IGM_Items.ReInitCompletedHandler += ReInitCompletedEvent;
                         eventSet = true;
                     }
                     base.ReInit();
@@ -112,7 +110,7 @@ namespace OpenVIII
 
                 private void ReInitCompletedEvent(object sender, EventArgs e)
                 {
-                    InGameMenu_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
+                    IGM_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
                 }
 
                 protected override void Init()
@@ -144,7 +142,7 @@ namespace OpenVIII
                         skipsnd = true;
                     }
                     while (cnt-- > 0 && !((IGMDataItem_Int)(ITEM[0, 1])).Enabled);
-                    InGameMenu_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
+                    IGM_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
                 }
 
                 protected override void PAGE_PREV()
@@ -158,14 +156,14 @@ namespace OpenVIII
                         skipsnd = true;
                     }
                     while (cnt-- > 0 && !((IGMDataItem_Int)(ITEM[0, 1])).Enabled);
-                    InGameMenu_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
+                    IGM_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
                 }
                 protected override void SetCursor_select(int value)
                 {
                     if (value != GetCursor_select())
                     {
                         base.SetCursor_select(value);
-                        InGameMenu_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[value], HelpStr[value]));
+                        IGM_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[value], HelpStr[value]));
                     }
                 }
                 public override void Inputs_OKAY()
@@ -174,7 +172,7 @@ namespace OpenVIII
                     if (item.Target == Item_In_Menu._Target.None)
                         return;
                     base.Inputs_OKAY();
-                    InGameMenu_Items.SetMode(Mode.UseItemOnTarget);
+                    IGM_Items.SetMode(Mode.UseItemOnTarget);
                 }
 
                 protected override void ModeChangeEvent(object sender, Enum e)
@@ -204,4 +202,3 @@ namespace OpenVIII
         #endregion Classes
 
     }
-}

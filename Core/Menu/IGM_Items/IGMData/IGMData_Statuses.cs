@@ -6,11 +6,10 @@ using System.Linq;
 
 namespace OpenVIII
 {
-    public static partial class Module_main_menu_debug
-    {
+
         #region Classes
 
-        private partial class IGM_Items
+        public partial class IGM_Items
         {
             #region Classes
 
@@ -60,14 +59,14 @@ namespace OpenVIII
 
                 public override void ReInit()
                 {
-                    if (InGameMenu_Items != null)
+                    if (IGM_Items != null)
                     {
                         if (!eventSet)
                         {
-                            InGameMenu_Items.ModeChangeHandler += ModeChangeEvent;
-                            InGameMenu_Items.ChoiceChangeHandler += ChoiceChangeEvent;
-                            InGameMenu_Items.ItemChangeHandler += ItemChangeEvent;
-                            InGameMenu_Items.TargetChangeHandler += TargetChangeEvent;
+                            IGM_Items.ModeChangeHandler += ModeChangeEvent;
+                            IGM_Items.ChoiceChangeHandler += ChoiceChangeEvent;
+                            IGM_Items.ItemChangeHandler += ItemChangeEvent;
+                            IGM_Items.TargetChangeHandler += TargetChangeEvent;
                             eventSet = true;
                         }
                         else
@@ -139,7 +138,7 @@ namespace OpenVIII
         }
 
         #endregion Classes
-    }
+    
 }
 
 namespace OpenVIII.Core.Menu.IGM_Items.IGMData

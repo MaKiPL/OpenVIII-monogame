@@ -3,9 +3,7 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
-        private partial class IGM_Junction
+        public partial class IGM_Junction
         {
             private class IGMData_TopMenu : IGMData
             {
@@ -56,17 +54,17 @@ namespace OpenVIII
                 {
                     if (Memory.PrevState.Characters[VisableCharacter].CurrentHP() > Memory.State.Characters[VisableCharacter].CurrentHP())
                     {
-                        InGameMenu_Junction.Data[SectionName.ConfirmChanges].Show();
-                        InGameMenu_Junction.SetMode(Mode.ConfirmChanges);
+                        IGM_Junction.Data[SectionName.ConfirmChanges].Show();
+                        IGM_Junction.SetMode(Mode.ConfirmChanges);
                     }
                     else
                     {
                         base.Inputs_CANCEL();
-                        if (State == MainMenuStates.IGM_Junction)
+                        if (Module_main_menu_debug.State == Module_main_menu_debug.MainMenuStates.IGM_Junction)
                         {
-                            State = MainMenuStates.InGameMenu;
-                            InGameMenu.ReInit();
-                            Fade = 0.0f;
+                        Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.IGM;
+                            IGM.ReInit();
+                            FadeIn();
                         }
                     }
                 }
@@ -76,27 +74,27 @@ namespace OpenVIII
                     switch (CURSOR_SELECT)
                     {
                         case 0:
-                            InGameMenu_Junction.Data[SectionName.TopMenu_Junction].Show();
+                            IGM_Junction.Data[SectionName.TopMenu_Junction].Show();
                             Cursor_Status |= Cursor_Status.Blinking;
-                            InGameMenu_Junction.SetMode(Mode.TopMenu_Junction);
+                            IGM_Junction.SetMode(Mode.TopMenu_Junction);
                             break;
 
                         case 1:
-                            InGameMenu_Junction.Data[SectionName.TopMenu_Off].Show();
+                            IGM_Junction.Data[SectionName.TopMenu_Off].Show();
                             Cursor_Status |= Cursor_Status.Blinking;
-                            InGameMenu_Junction.SetMode(Mode.TopMenu_Off);
+                            IGM_Junction.SetMode(Mode.TopMenu_Off);
                             break;
 
                         case 2:
-                            InGameMenu_Junction.Data[SectionName.TopMenu_Auto].Show();
+                            IGM_Junction.Data[SectionName.TopMenu_Auto].Show();
                             Cursor_Status |= Cursor_Status.Blinking;
-                            InGameMenu_Junction.SetMode(Mode.TopMenu_Auto);
+                            IGM_Junction.SetMode(Mode.TopMenu_Auto);
                             break;
 
                         case 3:
-                            InGameMenu_Junction.Data[SectionName.TopMenu_Abilities].Show();
+                            IGM_Junction.Data[SectionName.TopMenu_Abilities].Show();
                             Cursor_Status |= Cursor_Status.Blinking;
-                            InGameMenu_Junction.SetMode(Mode.Abilities);
+                            IGM_Junction.SetMode(Mode.Abilities);
                             break;
                     }
                     base.Inputs_OKAY();
@@ -105,7 +103,7 @@ namespace OpenVIII
                 public override bool Update()
                 {
                     bool ret = base.Update();
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode().Equals(Mode.TopMenu) && Enabled)
+                    if (IGM_Junction != null && IGM_Junction.GetMode().Equals(Mode.TopMenu) && Enabled)
                     {
                         FF8String Changed = null;
                         switch (CURSOR_SELECT)
@@ -127,11 +125,11 @@ namespace OpenVIII
                                 break;
                         }
                         if (Changed != null)
-                            InGameMenu_Junction.ChangeHelp(Changed);
+                            IGM_Junction.ChangeHelp(Changed);
                     }
                     return ret;
                 }
             }
         }
-    }
+    
 }

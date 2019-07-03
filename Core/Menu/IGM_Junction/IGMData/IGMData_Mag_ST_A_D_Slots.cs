@@ -3,12 +3,10 @@ using System;
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
 
         #region Classes
 
-        private partial class IGM_Junction
+        public partial class IGM_Junction
         {
 
             #region Classes
@@ -31,14 +29,14 @@ namespace OpenVIII
 
                 public override void CheckMode(bool cursor = true) =>
                     CheckMode(0, Mode.Mag_ST_A, Mode.Mag_ST_D,
-                        InGameMenu_Junction != null && (InGameMenu_Junction.GetMode().Equals(Mode.Mag_ST_A) || InGameMenu_Junction.GetMode().Equals(Mode.Mag_ST_D)),
-                        InGameMenu_Junction != null && (InGameMenu_Junction.GetMode().Equals(Mode.Mag_Pool_ST_A) || InGameMenu_Junction.GetMode().Equals(Mode.Mag_Pool_ST_D)),
+                        IGM_Junction != null && (IGM_Junction.GetMode().Equals(Mode.Mag_ST_A) || IGM_Junction.GetMode().Equals(Mode.Mag_ST_D)),
+                        IGM_Junction != null && (IGM_Junction.GetMode().Equals(Mode.Mag_Pool_ST_A) || IGM_Junction.GetMode().Equals(Mode.Mag_Pool_ST_D)),
                         cursor);
 
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
-                    InGameMenu_Junction.SetMode(Mode.TopMenu_Junction);
+                    IGM_Junction.SetMode(Mode.TopMenu_Junction);
                 }
 
                 public override void Inputs_Left()
@@ -53,7 +51,7 @@ namespace OpenVIII
                     {
                         base.Inputs_OKAY();
                         BackupSetting();
-                        InGameMenu_Junction.SetMode(CURSOR_SELECT == 0 ? Mode.Mag_Pool_ST_A : Mode.Mag_Pool_ST_D);
+                        IGM_Junction.SetMode(CURSOR_SELECT == 0 ? Mode.Mag_Pool_ST_A : Mode.Mag_Pool_ST_D);
                     }
                 }
 
@@ -71,7 +69,7 @@ namespace OpenVIII
                     if (Contents[CURSOR_SELECT] == Kernel_bin.Stat.None)
                     {
                         Memory.State.Characters[Character].Stat_J[Contents[CURSOR_SELECT]] = 0;
-                        InGameMenu_Junction.ReInit();
+                        IGM_Junction.ReInit();
                     }
                 }
 
@@ -112,9 +110,9 @@ namespace OpenVIII
                     SIZE[i].Inflate(-30, -6);
                     SIZE[i].Y -= row * 2;
                 }
-                protected override void PageLeft() => InGameMenu_Junction.SetMode(Mode.Mag_Stat);
+                protected override void PageLeft() => IGM_Junction.SetMode(Mode.Mag_Stat);
 
-                protected override void PageRight() => InGameMenu_Junction.SetMode(Mode.Mag_EL_A);
+                protected override void PageRight() => IGM_Junction.SetMode(Mode.Mag_EL_A);
 
                 protected override void SetCursor_select(int value)
                 {
@@ -163,5 +161,5 @@ namespace OpenVIII
 
         #endregion Classes
 
-    }
+    
 }

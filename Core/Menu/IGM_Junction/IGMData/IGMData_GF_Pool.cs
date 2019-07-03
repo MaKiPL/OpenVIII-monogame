@@ -4,9 +4,7 @@ using System.Linq;
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
-        private partial class IGM_Junction
+        public partial class IGM_Junction
         {
             private class IGMData_GF_Pool : IGMData_Pool<Saves.Data, GFs>
             {
@@ -117,10 +115,10 @@ namespace OpenVIII
 
                 private void UpdateCharacter()
                 {
-                    if (InGameMenu_Junction != null)
+                    if (IGM_Junction != null)
                     {
                         GFs g = Contents[CURSOR_SELECT];
-                        IGMDataItem_IGMData i = (IGMDataItem_IGMData)((IGMData_GF_Group)InGameMenu_Junction.Data[SectionName.TopMenu_GF_Group]).ITEM[2, 0];
+                        IGMDataItem_IGMData i = (IGMDataItem_IGMData)((IGMData_GF_Group)IGM_Junction.Data[SectionName.TopMenu_GF_Group]).ITEM[2, 0];
                         ((IGMDataItem_Box)i.Data.CONTAINER).Data = JunctionedGFs.Count > 0 && JunctionedGFs.ContainsKey(g) ? Memory.Strings.GetName(JunctionedGFs[g]) : null;
                     }
                 }
@@ -151,8 +149,8 @@ namespace OpenVIII
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
-                    InGameMenu_Junction.Data[SectionName.TopMenu_GF_Group].Hide();
-                    InGameMenu_Junction.SetMode(Mode.TopMenu_Junction);
+                    IGM_Junction.Data[SectionName.TopMenu_GF_Group].Hide();
+                    IGM_Junction.SetMode(Mode.TopMenu_Junction);
                 }
 
                 public override void Inputs_OKAY()
@@ -244,11 +242,11 @@ namespace OpenVIII
                                             break;
                                     }
                             }
-                            InGameMenu_Junction.ReInit();
+                            IGM_Junction.ReInit();
                         }
                     }
                 }
             }
         }
-    }
+    
 }

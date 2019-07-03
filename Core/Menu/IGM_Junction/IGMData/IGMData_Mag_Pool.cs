@@ -5,12 +5,10 @@ using System.Linq;
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
 
         #region Classes
 
-        private partial class IGM_Junction
+        public partial class IGM_Junction
         {
 
             #region Classes
@@ -127,7 +125,7 @@ namespace OpenVIII
                                 skipundo = false;
                             }
                             Source.JunctionSpell(Stat, Contents[CURSOR_SELECT]);
-                            SlotReinitListener?.Invoke(this, (Mode)InGameMenu_Junction.GetMode());
+                            SlotReinitListener?.Invoke(this, (Mode)IGM_Junction.GetMode());
                         }
                     }
                 }
@@ -171,25 +169,25 @@ namespace OpenVIII
                     if (Memory.State.Characters != null)
                     {
                         base.Inputs_CANCEL();
-                        SlotUndoListener?.Invoke(this, (Mode)InGameMenu_Junction.GetMode());
-                        SlotConfirmListener?.Invoke(this, (Mode)InGameMenu_Junction.GetMode());
-                        SlotReinitListener?.Invoke(this, (Mode)InGameMenu_Junction.GetMode());
+                        SlotUndoListener?.Invoke(this, (Mode)IGM_Junction.GetMode());
+                        SlotConfirmListener?.Invoke(this, (Mode)IGM_Junction.GetMode());
+                        SlotReinitListener?.Invoke(this, (Mode)IGM_Junction.GetMode());
                         switch(SortMode)
                         {
                             case Mode.Mag_Pool_Stat:
-                                InGameMenu_Junction.SetMode(Mode.Mag_Stat);
+                                IGM_Junction.SetMode(Mode.Mag_Stat);
                                 break;
                             case Mode.Mag_Pool_EL_A:
-                                InGameMenu_Junction.SetMode(Mode.Mag_EL_A);
+                                IGM_Junction.SetMode(Mode.Mag_EL_A);
                                 break;
                             case Mode.Mag_Pool_EL_D:
-                                InGameMenu_Junction.SetMode(Mode.Mag_EL_D);
+                                IGM_Junction.SetMode(Mode.Mag_EL_D);
                                 break;
                             case Mode.Mag_Pool_ST_A:
-                                InGameMenu_Junction.SetMode(Mode.Mag_ST_A);
+                                IGM_Junction.SetMode(Mode.Mag_ST_A);
                                 break;
                             case Mode.Mag_Pool_ST_D:
-                                InGameMenu_Junction.SetMode(Mode.Mag_ST_D);
+                                IGM_Junction.SetMode(Mode.Mag_ST_D);
                                 break;
                         }
 
@@ -207,21 +205,21 @@ namespace OpenVIII
                             skipsnd = true;
                             init_debugger_Audio.PlaySound(31);
                             base.Inputs_OKAY();
-                            SlotConfirmListener?.Invoke(this, (Mode)InGameMenu_Junction.GetMode());
-                            if (InGameMenu_Junction.GetMode().Equals(Mode.Mag_Pool_Stat))
+                            SlotConfirmListener?.Invoke(this, (Mode)IGM_Junction.GetMode());
+                            if (IGM_Junction.GetMode().Equals(Mode.Mag_Pool_Stat))
                             {
-                                InGameMenu_Junction.SetMode(Mode.Mag_Stat);
+                                IGM_Junction.SetMode(Mode.Mag_Stat);
                             }
-                            else if (InGameMenu_Junction.GetMode().Equals(Mode.Mag_Pool_EL_A) || InGameMenu_Junction.GetMode().Equals(Mode.Mag_Pool_EL_D))
+                            else if (IGM_Junction.GetMode().Equals(Mode.Mag_Pool_EL_A) || IGM_Junction.GetMode().Equals(Mode.Mag_Pool_EL_D))
                             {
-                                InGameMenu_Junction.SetMode(Mode.Mag_EL_A);
+                                IGM_Junction.SetMode(Mode.Mag_EL_A);
                             }
-                            else if (InGameMenu_Junction.GetMode().Equals(Mode.Mag_Pool_ST_A) || InGameMenu_Junction.GetMode().Equals(Mode.Mag_Pool_ST_D))
+                            else if (IGM_Junction.GetMode().Equals(Mode.Mag_Pool_ST_A) || IGM_Junction.GetMode().Equals(Mode.Mag_Pool_ST_D))
                             {
-                                InGameMenu_Junction.SetMode(Mode.Mag_ST_A);
+                                IGM_Junction.SetMode(Mode.Mag_ST_A);
                             }
                             Cursor_Status &= ~Cursor_Status.Enabled;
-                            InGameMenu_Junction.ReInit();
+                            IGM_Junction.ReInit();
                         }
                     }
                 }
@@ -229,9 +227,9 @@ namespace OpenVIII
                 //public IGMData Values { get; private set; } = null;
                 public override void ReInit()
                 {
-                    if (!eventAdded && InGameMenu_Junction != null)
+                    if (!eventAdded && IGM_Junction != null)
                     {
-                        InGameMenu_Junction.ModeChangeHandler += ModeChangeEvent;
+                        IGM_Junction.ModeChangeHandler += ModeChangeEvent;
                         StatEventListener += StatChangeEvent;
                         eventAdded = true;
                     }
@@ -329,7 +327,7 @@ namespace OpenVIII
 
                 private void Get_Sort_Stat()
                 {
-                    SortMode = (Mode)InGameMenu_Junction.GetMode();
+                    SortMode = (Mode)IGM_Junction.GetMode();
                     switch (SortMode)
                     {
                         default:
@@ -368,7 +366,7 @@ namespace OpenVIII
 
                 private bool Undo()
                 {
-                    SlotUndoListener?.Invoke(this, (Mode)InGameMenu_Junction.GetMode());
+                    SlotUndoListener?.Invoke(this, (Mode)IGM_Junction.GetMode());
                     if (Memory.State.Characters != null)
                         Source = Memory.State.Characters[Character];
                     return true;
@@ -376,7 +374,7 @@ namespace OpenVIII
 
                 private void UpdateOnEvent(object sender, Mode? mode = null, Kernel_bin.Stat? stat = null)
                 {
-                    mode = mode ?? (Mode)InGameMenu_Junction.GetMode();
+                    mode = mode ?? (Mode)IGM_Junction.GetMode();
                     if (
                         mode != Mode.Mag_Pool_ST_A &&
                         mode != Mode.Mag_Pool_ST_D &&
@@ -429,5 +427,5 @@ namespace OpenVIII
 
         #endregion Classes
 
-    }
+    
 }

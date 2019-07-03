@@ -3,9 +3,7 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
-        private partial class IGM_Junction
+        public partial class IGM_Junction
         {
             private class IGMData_Abilities_CommandPool : IGMData_Pool<IReadOnlyDictionary<Kernel_bin.Abilities, Kernel_bin.Command_abilities>, Kernel_bin.Abilities>
             {
@@ -25,18 +23,18 @@ namespace OpenVIII
                     base.Inputs_OKAY();
                     if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && !BLANKS[CURSOR_SELECT])
                     {
-                        int target = InGameMenu_Junction.Data[SectionName.TopMenu_Abilities].CURSOR_SELECT - 1;
+                        int target = IGM_Junction.Data[SectionName.TopMenu_Abilities].CURSOR_SELECT - 1;
                         Memory.State.Characters[Character].Commands[target] = Contents[CURSOR_SELECT];
-                        InGameMenu_Junction.SetMode(Mode.Abilities);
-                        InGameMenu_Junction.Data[SectionName.TopMenu_Abilities].ReInit();
-                        InGameMenu_Junction.Data[SectionName.Commands].ReInit();
+                        IGM_Junction.SetMode(Mode.Abilities);
+                        IGM_Junction.Data[SectionName.TopMenu_Abilities].ReInit();
+                        IGM_Junction.Data[SectionName.Commands].ReInit();
                     }
                 }
 
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
-                    InGameMenu_Junction.SetMode(Mode.Abilities);
+                    IGM_Junction.SetMode(Mode.Abilities);
                 }
 
                 public override void UpdateTitle()
@@ -62,7 +60,7 @@ namespace OpenVIII
 
                 public override bool Update()
                 {
-                    if (InGameMenu_Junction != null && !InGameMenu_Junction.GetMode().Equals(Mode.Abilities_Commands))
+                    if (IGM_Junction != null && !IGM_Junction.GetMode().Equals(Mode.Abilities_Commands))
                         Cursor_Status &= ~Cursor_Status.Enabled;
                     else
                     {
@@ -98,8 +96,8 @@ namespace OpenVIII
                         Contents[pos] = Kernel_bin.Abilities.None;
                     }
 
-                    if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && InGameMenu_Junction.GetMode().Equals(Mode.Abilities_Commands))
-                        InGameMenu_Junction.ChangeHelp(Source[Contents[CURSOR_SELECT]].Description);
+                    if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && IGM_Junction.GetMode().Equals(Mode.Abilities_Commands))
+                        IGM_Junction.ChangeHelp(Source[Contents[CURSOR_SELECT]].Description);
                     UpdateTitle();
                     if (Contents[CURSOR_SELECT] == Kernel_bin.Abilities.None)
                         CURSOR_NEXT();
@@ -118,5 +116,5 @@ namespace OpenVIII
                 }
             }
         }
-    }
+    
 }

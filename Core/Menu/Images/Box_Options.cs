@@ -11,5 +11,6 @@ namespace OpenVIII
         SkipDraw = 0x4,
         Center = 0x8,
         Middle = 0x10,
+        Top = 0x20,
     }
 }

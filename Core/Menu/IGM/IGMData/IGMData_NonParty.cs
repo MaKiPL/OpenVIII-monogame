@@ -5,12 +5,10 @@ using System.Linq;
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
 
         #region Classes
 
-        private partial class IGM
+        public partial class IGM
         {
 
             #region Classes
@@ -142,5 +140,5 @@ namespace OpenVIII
 
         #endregion Classes
 
-    }
+    
 }

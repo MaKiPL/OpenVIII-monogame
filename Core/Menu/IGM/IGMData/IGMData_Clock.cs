@@ -2,27 +2,26 @@
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
+
+        public partial class IGM
+        {
+
         #region Classes
 
-        private partial class IGM
-        {
-            #region Classes
-
-            private class IGMData_Clock : IGMData
+        private class IGMData_Clock : IGMData
             {
-                #region Constructors
 
-                public IGMData_Clock() : base(1, 8, new IGMDataItem_Box(pos: new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 }))
+            #region Constructors
+
+            public IGMData_Clock() : base(1, 8, new IGMDataItem_Box(pos: new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 }))
                 {
-                }
+            }
 
-                #endregion Constructors
+            #endregion Constructors
 
-                #region Methods
+            #region Methods
 
-                public override void ReInit()
+            public override void ReInit()
                 {
                     base.ReInit();
                     Rectangle r;
@@ -79,15 +78,14 @@ namespace OpenVIII
                     r.Offset(185, 81);
                     ITEM[0, 7] = new IGMDataItem_Icon(Icons.ID.G, r, 2);
                     base.Init();
-                }
-
-                #endregion Methods
             }
 
-            #endregion Classes
+            #endregion Methods
 
         }
 
         #endregion Classes
+
     }
+
 }

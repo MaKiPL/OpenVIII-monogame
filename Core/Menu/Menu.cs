@@ -10,10 +10,52 @@ namespace OpenVIII
 
         #region Fields
 
+        public static EventHandler FadedInHandler;
+        public static EventHandler FadedOutHandler;
         public Dictionary<Enum, IGMData> Data;
 
+        public EventHandler<Enum> ModeChangeHandler;
+        protected Enum _mode;
         protected bool skipdata;
-        private bool _blinkstate;
+
+        /// <summary>
+        /// <para>Time to fade out in milliseconds</para>
+        /// <para>Larger is slower</para>
+        /// </summary>
+        private const int _blinkinspeed = 500;
+
+        /// <summary>
+        /// <para>Time to fade out in milliseconds</para>
+        /// <para>Larger is slower</para>
+        /// </summary>
+        private const int _blinkoutspeed = 900;
+
+        private const float _fadedin = 1f;
+        private const float _fadedout = 0f;
+
+        /// <summary>
+        /// <para>Time to fade out in milliseconds</para>
+        /// <para>Larger is slower</para>
+        /// </summary>
+        private const int _fadeinspeed = 700;
+
+        /// <summary>
+        /// <para>Time to fade out in milliseconds</para>
+        /// <para>Larger is slower</para>
+        /// </summary>
+        private const int _fadeoutspeed = 1500;
+
+        private static bool _blinkstate;
+        private static bool _fadeout = false;
+        private static IGM _igm;
+
+        private static IGM_Items _igm_items;
+
+        private static IGM_Junction _igm_junction;
+
+        private static IGM_Lobby _igm_lobby;
+
+        private static object _igm_lock = new object();
         private Vector2 _size;
 
         #endregion Fields
@@ -22,13 +64,18 @@ namespace OpenVIII
 
         public Menu()
         {
-            Data = new Dictionary<Enum, IGMData>();
-            Init();
-            skipdata = true;
-            ReInit();
-            skipdata = false;
+            //WaitForInit();
+            if (!cancel)
+            {
+                Data = new Dictionary<Enum, IGMData>();
+                Init();
+                skipdata = true;
+                ReInit();
+                skipdata = false;
+            }
         }
-        public Menu(Characters character,Characters? visablecharacter = null) : this()
+
+        public Menu(Characters character, Characters? visablecharacter = null) : this()
         {
             Character = Character;
             VisableCharacter = visablecharacter ?? character;
@@ -38,17 +85,24 @@ namespace OpenVIII
 
         #region Properties
 
-        public static float Blink_Amount { get; set; } = 1f;
+        public static float Blink_Amount { get; private set; } = _fadedin;
 
-        public static float Fade { get; set; } = 1f;
+        public static float Fade { get; private set; } = _fadedin;
 
         public static Matrix Focus { get; protected set; }
+
+        public static IGM IGM => _igm;
+
+        public static IGM_Items IGM_Items => _igm_items;
+
+        public static IGM_Junction IGM_Junction => _igm_junction;
+
+        public static IGM_Lobby IGM_Lobby => _igm_lobby;
 
         public static Vector2 TextScale { get; } = new Vector2(2.545455f, 3.0375f);
 
         public bool Enabled { get; protected set; } = true;
-        
-        public bool FadeOut { get; set; }
+
         public Vector2 Size { get => _size; protected set => _size = value; }
 
         public static Point MouseLocation => Input.MouseLocation.Transform(Menu.Focus);
@@ -63,7 +117,9 @@ namespace OpenVIII
         /// </summary>
         protected Characters VisableCharacter { get; set; }
 
-        protected Vector2 vp { get; set; } = new Vector2(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height);
+        protected Vector2 vp => new Vector2(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height);
+
+        private bool cancel => Memory.Token.IsCancellationRequested;
 
         #endregion Properties
 
@@ -138,6 +194,66 @@ namespace OpenVIII
             Memory.Icons.Draw(Icons.ID.Finger_Right, pallet, dst, scale, blink ? Fade * Blink_Amount : Fade);
         }
 
+        public static void FadeIn()
+        {
+            Fade = _fadedout;
+            _fadeout = false;
+        }
+
+        public static void FadeOut()
+        {
+            Fade = _fadedin;
+            _fadeout = true;
+        }
+
+        public static void InitStaticMembers()
+        {
+            lock (_igm_lock)
+            {
+                if (_igm_lobby == null)
+                    _igm_lobby = new IGM_Lobby();
+                if (_igm == null)
+                    _igm = new IGM();
+                if (_igm_junction == null)
+                    _igm_junction = new IGM_Junction();
+                if (_igm_items == null)
+                    _igm_items = new IGM_Items();
+                Fade = 0;
+            }
+        }
+
+        public static void UpdateFade(object sender = null)
+        {
+
+            if (_blinkstate)
+            {
+                Blink_Amount += (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / _blinkinspeed);
+                if (Blink_Amount >= _fadedin) _blinkstate = false;
+            }
+            else
+            {
+                Blink_Amount -= (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / _blinkoutspeed);
+                if (Blink_Amount <= _fadedout) _blinkstate = true;
+            }
+            if (!_fadeout && Fade < _fadedin)
+            {
+                Fade += (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / _fadeinspeed);
+                if (Fade >= _fadedin)
+                {
+                    FadedInHandler?.Invoke(sender, null);
+                }
+            }
+            else if (_fadeout && Fade > _fadedout)
+            {
+                Fade -= (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / _fadeoutspeed);
+                if (Fade <= _fadedout)
+                {
+                    _fadeout = false;
+                    FadedOutHandler?.Invoke(sender, null);
+                }
+            }
+        }
+
         public virtual void Draw()
         {
             StartDraw();
@@ -158,9 +274,7 @@ namespace OpenVIII
                 Memory.SpriteBatchEnd();
         }
 
-        protected Enum _mode;
         public Enum GetMode() => _mode;
-
 
         public virtual void Hide() => Enabled = false;
 
@@ -181,16 +295,15 @@ namespace OpenVIII
                 Memory.PrevState = Memory.State.Clone();
             ReInit();
         }
-        public EventHandler<Enum> ModeChangeHandler;
+
         public void SetMode(Enum mode)
-        { 
-            if(!mode.Equals(_mode))
-            { 
+        {
+            if (!mode.Equals(_mode))
+            {
                 ModeChangeHandler?.Invoke(this, mode);
                 _mode = mode;
             }
         }
-
 
         public virtual void Show() => Enabled = true;
 
@@ -199,33 +312,11 @@ namespace OpenVIII
             if (Enabled)
                 Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: Focus);
         }
-
         public virtual bool Update()
         {
-
-            if (_blinkstate)
-            {
-                Blink_Amount += (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 500);
-                if (Blink_Amount > 1f) _blinkstate = false;
-            }
-            else
-            {
-                Blink_Amount -= (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 900);
-                if (Blink_Amount < 0) _blinkstate = true;
-            }
-            if (!FadeOut && Fade < 1f)
-                Fade += (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 700);
-            else if(FadeOut && Fade > 0f)
-            { 
-                Fade -= (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 1500);
-                FadeOut = false;
-            }
-
             bool ret = false;
-            Vector2 Zoom = Memory.Scale(Size.X, Size.Y, Memory.ScaleMode.FitBoth);
-            Focus = Matrix.CreateTranslation((Size.X / -2), (Size.Y / -2), 0) *
-                Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) *
-                Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
+            UpdateFade(this);
+            GenerateFocus();
             if (Enabled)
             {
                 //todo detect when there is no saves detected.
@@ -238,6 +329,27 @@ namespace OpenVIII
             }
             return Inputs() || ret;
         }
+        
+        protected void GenerateFocus(Vector2? inputsize = null, Box_Options options = Box_Options.Default)
+        {
+            Vector2 size = inputsize ?? Size;
+            Vector2 Zoom = Memory.Scale(size.X, size.Y, Memory.ScaleMode.FitBoth);
+            size /= 2;
+            Vector2 t = new Vector2(vp.X / 2, vp.Y / 2);
+            if ((options & Box_Options.Top) != 0)
+            {
+                t.Y = 0;
+                size.Y = 0;
+            }
+            else if ((options & Box_Options.Buttom)!=0)
+            {
+                t.Y = vp.Y - (size.Y * 2 * Zoom.Y);
+                size.Y = 0;
+            }
+            Focus = Matrix.CreateTranslation(-size.X , -size.Y, 0) *
+                Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) *
+                Matrix.CreateTranslation(t.X, t.Y, 0);
+        }
 
         protected virtual void Init()
         {
@@ -247,5 +359,12 @@ namespace OpenVIII
 
         #endregion Methods
 
+        //private async void WaitForInit()
+        //{
+        //    while (!Memory.Inited)
+        //    {
+        //        await Memory.InitTask;
+        //    }
+        //}
     }
 }

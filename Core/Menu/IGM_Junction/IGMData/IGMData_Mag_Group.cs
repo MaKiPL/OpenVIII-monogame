@@ -1,8 +1,6 @@
 ﻿namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
-        private partial class IGM_Junction
+        public partial class IGM_Junction
         {
             private class IGMData_Mag_Group : IGMData_Group
             {
@@ -15,10 +13,10 @@
 
                 public override void ITEMShow(IGMDataItem i, int pos = 0)
                 {
-                    if (InGameMenu_Junction != null)
+                    if (IGM_Junction != null)
                     {
                         pos = cnv(pos);
-                        switch (InGameMenu_Junction.GetMode())
+                        switch (IGM_Junction.GetMode())
                         {
                             default:
                                 if (pos < 1)
@@ -62,7 +60,7 @@
                 private bool InputsModeTest(int pos)
                 {
                     pos = cnv(pos);
-                    switch (InGameMenu_Junction.GetMode())
+                    switch (IGM_Junction.GetMode())
                     {
                         case Mode.Mag_Pool_Stat:
                         case Mode.Mag_Pool_EL_A:
@@ -101,11 +99,11 @@
                     bool ret = false;
                     if (InputsModeTest(pos))
                     {
-                        Mode lastmode = (Mode)InGameMenu_Junction.GetMode();
+                        Mode lastmode = (Mode)IGM_Junction.GetMode();
                         ret = base.ITEMInputs(i, pos);
                         if (ret)
                         {
-                            if (!InGameMenu_Junction.GetMode().Equals(lastmode))
+                            if (!IGM_Junction.GetMode().Equals(lastmode))
                                 Show();
                         }
                     }
@@ -113,5 +111,5 @@
                 }
             }
         }
-    }
+    
 }

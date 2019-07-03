@@ -4,12 +4,10 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    public static partial class Module_main_menu_debug
-    {
 
         #region Classes
 
-        private partial class IGM_Items
+        public partial class IGM_Items
         {
 
             #region Classes
@@ -43,7 +41,7 @@ namespace OpenVIII
 
                 private bool All => (Item.Target & (Item_In_Menu._Target.All | Item_In_Menu._Target.All2)) != 0;
 
-                private bool IsMe => InGameMenu_Items.GetMode().Equals(Mode.UseItemOnTarget);
+                private bool IsMe => IGM_Items.GetMode().Equals(Mode.UseItemOnTarget);
 
                 #endregion Properties
 
@@ -78,7 +76,7 @@ namespace OpenVIII
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
-                    InGameMenu_Items.SetMode(Mode.SelectItem);
+                    IGM_Items.SetMode(Mode.SelectItem);
                 }
 
                 public override void Inputs_OKAY()
@@ -92,17 +90,17 @@ namespace OpenVIII
                     {
                         base.Inputs_OKAY();
                         Fill();
-                        InGameMenu_Items.ReInit(true);
+                        IGM_Items.ReInit(true);
                     }
                 }
 
                 public override void ReInit()
                 {
-                    if (!eventSet && InGameMenu_Items != null)
+                    if (!eventSet && IGM_Items != null)
                     {
-                        InGameMenu_Items.ModeChangeHandler += ModeChangeEvent;
-                        InGameMenu_Items.ChoiceChangeHandler += ChoiceChangeEvent;
-                        InGameMenu_Items.ItemChangeHandler += ItemTypeChangeEvent;
+                        IGM_Items.ModeChangeHandler += ModeChangeEvent;
+                        IGM_Items.ChoiceChangeHandler += ChoiceChangeEvent;
+                        IGM_Items.ItemChangeHandler += ItemTypeChangeEvent;
                         eventSet = true;
                     }
                     ////List won't populate unless theres a valid item set.
@@ -151,7 +149,7 @@ namespace OpenVIII
                     if (!value.Equals(GetCursor_select()))
                     {
                         base.SetCursor_select(value);
-                        InGameMenu_Items.TargetChangeHandler?.Invoke(this, Contents[CURSOR_SELECT]);
+                        IGM_Items.TargetChangeHandler?.Invoke(this, Contents[CURSOR_SELECT]);
                     }
                 }
 
@@ -230,7 +228,7 @@ namespace OpenVIII
                     if (!IsMe)
                         Cursor_Status &= ~Cursor_Status.Enabled;
                     else
-                        InGameMenu_Items.TargetChangeHandler?.Invoke(this, Contents[CURSOR_SELECT]);
+                        IGM_Items.TargetChangeHandler?.Invoke(this, Contents[CURSOR_SELECT]);
                 }
 
                 #endregion Methods
@@ -242,5 +240,5 @@ namespace OpenVIII
 
         #endregion Classes
 
-    }
+    
 }

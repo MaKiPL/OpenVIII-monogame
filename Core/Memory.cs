@@ -18,6 +18,8 @@ namespace OpenVIII
         public static GraphicsDeviceManager graphics;
 
         public static SpriteBatch spriteBatch;
+
+
         public static ContentManager content;
 
         public static bool IsActive = true;
@@ -218,10 +220,16 @@ namespace OpenVIII
                 // currently cards only used in debug menu. will have support for cards when added to menu.
                 if (!token.IsCancellationRequested)
                     Module_main_menu_debug.Init();
+
+                // requires font, faces, and icons.
+                // currently cards only used in debug menu. will have support for cards when added to menu.
+                if (!token.IsCancellationRequested)
+                    Menu.InitStaticMembers();
             }
+            Inited = true;
             return 0;
         }
-
+        public static bool Inited { get; private set; } = false;
         public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
         {
             FF8DIR = GameLocation.Current.DataPath;

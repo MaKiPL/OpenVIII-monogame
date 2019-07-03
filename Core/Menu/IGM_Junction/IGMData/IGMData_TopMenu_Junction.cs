@@ -3,9 +3,7 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
-        private partial class IGM_Junction
+        public partial class IGM_Junction
         {
             private class IGMData_TopMenu_Junction : IGMData
             {
@@ -14,7 +12,7 @@ namespace OpenVIII
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
-                    InGameMenu_Junction.SetMode(Mode.TopMenu);
+                    IGM_Junction.SetMode(Mode.TopMenu);
                     Hide();
                 }
 
@@ -23,13 +21,13 @@ namespace OpenVIII
                     base.Inputs_OKAY();
                     if (CURSOR_SELECT == 0)
                     {
-                        InGameMenu_Junction.SetMode(Mode.TopMenu_GF_Group);
-                        InGameMenu_Junction.Data[SectionName.TopMenu_GF_Group].Show();
+                        IGM_Junction.SetMode(Mode.TopMenu_GF_Group);
+                        IGM_Junction.Data[SectionName.TopMenu_GF_Group].Show();
                     }
                     else
                     {
-                        InGameMenu_Junction.SetMode(Mode.Mag_Stat);
-                        InGameMenu_Junction.Data[SectionName.Mag_Group].Show();
+                        IGM_Junction.SetMode(Mode.Mag_Stat);
+                        IGM_Junction.Data[SectionName.Mag_Group].Show();
                     }
                 }
 
@@ -40,9 +38,9 @@ namespace OpenVIII
                 public override bool Update()
                 {
                     Update_String();
-                    if (InGameMenu_Junction != null)
+                    if (IGM_Junction != null)
                     {
-                        if (InGameMenu_Junction.GetMode().Equals(Mode.TopMenu_Junction))
+                        if (IGM_Junction.GetMode().Equals(Mode.TopMenu_Junction))
                             Cursor_Status &= ~Cursor_Status.Blinking;
                         else
                             Cursor_Status |= Cursor_Status.Blinking;
@@ -76,7 +74,7 @@ namespace OpenVIII
 
                 private void Update_String()
                 {
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode().Equals(Mode.TopMenu_Junction) && Enabled)
+                    if (IGM_Junction != null && IGM_Junction.GetMode().Equals(Mode.TopMenu_Junction) && Enabled)
                     {
                         FF8String Changed = null;
                         switch (CURSOR_SELECT)
@@ -89,11 +87,11 @@ namespace OpenVIII
                                 Changed = Descriptions[Items.Magic];
                                 break;
                         }
-                        if (Changed != null && InGameMenu_Junction != null)
-                            InGameMenu_Junction.ChangeHelp(Changed);
+                        if (Changed != null && IGM_Junction != null)
+                            IGM_Junction.ChangeHelp(Changed);
                     }
                 }
             }
         }
-    }
+    
 }

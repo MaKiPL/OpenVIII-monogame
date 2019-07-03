@@ -4,11 +4,9 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
         #region Classes
 
-        private partial class IGM
+        public partial class IGM
         {
             #region Classes
 
@@ -46,18 +44,18 @@ namespace OpenVIII
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
-                    InGameMenu.SetMode(Mode.ChooseItem);
+                    IGM.SetMode(Mode.ChooseItem);
                 }
 
                 public override void Inputs_OKAY()
                 {
                     base.Inputs_OKAY();
-                    fade = 0;
+                    FadeIn();
                     switch (Choice)
                     {
                         case Items.Junction:
-                            State = MainMenuStates.IGM_Junction;
-                            InGameMenu_Junction.ReInit(Contents[CURSOR_SELECT].Item1, Contents[CURSOR_SELECT].Item2);
+                        Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.IGM_Junction;
+                            IGM_Junction.ReInit(Contents[CURSOR_SELECT].Item1, Contents[CURSOR_SELECT].Item2);
                             return;
                     }
                 }
@@ -65,10 +63,10 @@ namespace OpenVIII
                 public override void ReInit()
                 {
 
-                    if (!eventSet && InGameMenu != null)
+                    if (!eventSet && IGM != null)
                     {
-                        InGameMenu.ModeChangeHandler += ModeChangeEvent;
-                        InGameMenu.ChoiceChangeHandler += ChoiceChangeEvent;
+                        IGM.ModeChangeHandler += ModeChangeEvent;
+                        IGM.ChoiceChangeHandler += ChoiceChangeEvent;
                         eventSet = true;
                     }
                     base.ReInit();
@@ -112,7 +110,7 @@ namespace OpenVIII
             }
 
             #endregion Classes
-        }
+        
 
         #endregion Classes
     }

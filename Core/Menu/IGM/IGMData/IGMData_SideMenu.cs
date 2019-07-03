@@ -4,12 +4,11 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
+   
 
         #region Classes
 
-        private partial class IGM
+        public partial class IGM
         {
 
             #region Classes
@@ -82,8 +81,8 @@ namespace OpenVIII
                 {
                     base.Inputs_CANCEL();
                     Input.ResetInputLimit();
-                    Fade = 0.0f;
-                    State = MainMenuStates.LoadGameChooseGame;
+                    FadeIn();
+                Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.LoadGameChooseGame;
                 }
 
                 public override void Inputs_OKAY()
@@ -94,24 +93,24 @@ namespace OpenVIII
                         case Items.Junction:
                         case Items.Magic:
                         case Items.Status:
-                            InGameMenu.SetMode(Mode.ChooseChar);
+                            IGM.SetMode(Mode.ChooseChar);
                             return;
 
                         case Items.Item:
-                            State = MainMenuStates.IGM_Items;
-                            InGameMenu_Items.ReInit();
+                        Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.IGM_Items;
+                            IGM_Items.ReInit();
                             return;
                     }
                 }
 
                 public override void ReInit()
                 {
-                    if (!eventSet && InGameMenu != null)
+                    if (!eventSet && IGM != null)
                     {
-                        InGameMenu.ModeChangeHandler += ModeChangeEvent;
+                        IGM.ModeChangeHandler += ModeChangeEvent;
                         eventSet = true;
                     }
-                    InGameMenu?.ChoiceChangeHandler?.Invoke(this, new KeyValuePair<Items, FF8String>((Items)CURSOR_SELECT, _helpStr[CURSOR_SELECT]));
+                    IGM?.ChoiceChangeHandler?.Invoke(this, new KeyValuePair<Items, FF8String>((Items)CURSOR_SELECT, _helpStr[CURSOR_SELECT]));
                     base.ReInit();
                 }
 
@@ -129,7 +128,7 @@ namespace OpenVIII
                     if (!value.Equals(GetCursor_select()))
                     {
                         base.SetCursor_select(value);
-                        InGameMenu?.ChoiceChangeHandler?.Invoke(this, new KeyValuePair<Items, FF8String>((Items)value, _helpStr[value]));
+                        IGM?.ChoiceChangeHandler?.Invoke(this, new KeyValuePair<Items, FF8String>((Items)value, _helpStr[value]));
                     }
                 }
 
@@ -153,4 +152,3 @@ namespace OpenVIII
         #endregion Classes
 
     }
-}

@@ -3,9 +3,7 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
-        private partial class IGM_Junction
+        public partial class IGM_Junction
         {
             private class IGMData_TopMenu_Auto : IGMData
             {
@@ -24,7 +22,7 @@ namespace OpenVIII
 
                 private void Update_String()
                 {
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode().Equals(Mode.TopMenu_Auto) && Enabled)
+                    if (IGM_Junction != null && IGM_Junction.GetMode().Equals(Mode.TopMenu_Auto) && Enabled)
                     {
                         FF8String Changed = null;
                         switch (CURSOR_SELECT)
@@ -41,8 +39,8 @@ namespace OpenVIII
                                 Changed = Descriptions[Items.AutoMag];
                                 break;
                         }
-                        if (Changed != null && InGameMenu_Junction != null)
-                            InGameMenu_Junction.ChangeHelp(Changed);
+                        if (Changed != null && IGM_Junction != null)
+                            IGM_Junction.ChangeHelp(Changed);
                     }
                 }
 
@@ -111,16 +109,16 @@ namespace OpenVIII
                             break;
                     }
                     Inputs_CANCEL();
-                    InGameMenu_Junction.ReInit();
+                    IGM_Junction.ReInit();
                 }
 
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
-                    InGameMenu_Junction.Data[SectionName.TopMenu_Auto].Hide();
-                    InGameMenu_Junction.SetMode(Mode.TopMenu);
+                    IGM_Junction.Data[SectionName.TopMenu_Auto].Hide();
+                    IGM_Junction.SetMode(Mode.TopMenu);
                 }
             }
         }
-    }
+    
 }

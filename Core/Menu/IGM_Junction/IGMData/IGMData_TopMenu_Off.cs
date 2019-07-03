@@ -3,9 +3,7 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
-        private partial class IGM_Junction
+        public partial class IGM_Junction
         {
             private class IGMData_TopMenu_Off : IGMData
             {
@@ -17,7 +15,7 @@ namespace OpenVIII
 
                 private void Update_String()
                 {
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode().Equals(Mode.TopMenu_Off) && Enabled)
+                    if (IGM_Junction != null && IGM_Junction.GetMode().Equals(Mode.TopMenu_Off) && Enabled)
                     {
                         FF8String Changed = null;
                         switch (CURSOR_SELECT)
@@ -30,8 +28,8 @@ namespace OpenVIII
                                 Changed = Descriptions[Items.RemAll];
                                 break;
                         }
-                        if (Changed != null && InGameMenu_Junction != null)
-                            InGameMenu_Junction.ChangeHelp(Changed);
+                        if (Changed != null && IGM_Junction != null)
+                            IGM_Junction.ChangeHelp(Changed);
                     }
                 }
 
@@ -47,9 +45,9 @@ namespace OpenVIII
                     bool ret = base.Update();
                     Update_String();
 
-                    if (InGameMenu_Junction != null)
+                    if (IGM_Junction != null)
                     {
-                        if (InGameMenu_Junction.GetMode().Equals(Mode.TopMenu_Off))
+                        if (IGM_Junction.GetMode().Equals(Mode.TopMenu_Off))
                             Cursor_Status &= ~Cursor_Status.Blinking;
                         else
                             Cursor_Status |= Cursor_Status.Blinking;
@@ -77,13 +75,13 @@ namespace OpenVIII
                     switch (CURSOR_SELECT)
                     {
                         case 0:
-                            InGameMenu_Junction.Data[SectionName.RemMag].Show();
-                            InGameMenu_Junction.SetMode(Mode.RemMag);
+                            IGM_Junction.Data[SectionName.RemMag].Show();
+                            IGM_Junction.SetMode(Mode.RemMag);
                             break;
 
                         case 1:
-                            InGameMenu_Junction.Data[SectionName.RemAll].Show();
-                            InGameMenu_Junction.SetMode(Mode.RemAll);
+                            IGM_Junction.Data[SectionName.RemAll].Show();
+                            IGM_Junction.SetMode(Mode.RemAll);
                             break;
                     }
                 }
@@ -91,10 +89,10 @@ namespace OpenVIII
                 public override void Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
-                    InGameMenu_Junction.Data[SectionName.TopMenu_Off].Hide();
-                    InGameMenu_Junction.SetMode(Mode.TopMenu);
+                    IGM_Junction.Data[SectionName.TopMenu_Off].Hide();
+                    IGM_Junction.SetMode(Mode.TopMenu);
                 }
             }
         }
-    }
+    
 }
