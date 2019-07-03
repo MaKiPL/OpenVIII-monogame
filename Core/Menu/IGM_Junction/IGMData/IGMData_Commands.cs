@@ -5,9 +5,10 @@ namespace OpenVIII
     public class IGMData_Commands : IGMData
     {
 
-        public IGMData_Commands(Characters character, Rectangle pos) : base(4, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.COMMAND), 1, 4)
+        public IGMData_Commands(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null) : base(4, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.COMMAND), 1, 4)
         {
             Character = character;
+            VisableCharacter = visablecharacter ?? character;
         }
 
         /// <summary>
@@ -33,12 +34,6 @@ namespace OpenVIII
                         SIZE[pos]) : null;
                 }
             }
-        }
-
-        public void ReInit(Characters character)
-        {
-            Character = character;
-            ReInit();
         }
         protected override void InitShift(int i, int col, int row)
         {
