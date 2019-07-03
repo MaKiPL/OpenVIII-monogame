@@ -40,7 +40,8 @@ namespace OpenVIII
             SaveGameSaving,
             IGM,
             IGM_Junction,
-            IGM_Items
+            IGM_Items,
+            BattleMenu
         }
 
         #endregion Enums
@@ -105,7 +106,10 @@ namespace OpenVIII
                     Menu.IGM_Junction.Draw();
                     break;
                 case MainMenuStates.IGM_Items:
-                    Menu.IGM_Items.Draw();
+                    Menu.IGM_Items.Draw();                
+                    break;
+                case MainMenuStates.BattleMenu:
+                    Menu.BattleMenus.Draw();
                     break;
             }
         }
@@ -214,6 +218,9 @@ namespace OpenVIII
                     Menu.IGM_Items.Update();
                     break;
 
+                case MainMenuStates.BattleMenu:
+                    Menu.BattleMenus.Update();
+                    break;
                 default:
                     goto case 0;
             }

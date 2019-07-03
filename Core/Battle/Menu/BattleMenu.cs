@@ -62,6 +62,7 @@ namespace OpenVIII
     /// </summary>
     public class BattleMenus : Menus
     {
+        private Dictionary<Mode, Func<bool>> UpdateFunctions;
 
         //private Mode _mode = Mode.Starting;
 
@@ -86,6 +87,10 @@ namespace OpenVIII
             menus?.ForEach(m => m.Draw());
             EndDraw();
         }
+        public override bool Update()
+        {
+            return base.Update();
+        }
 
         public override void ReInit()
         {
@@ -100,9 +105,23 @@ namespace OpenVIII
                     tmp.Hide();
                     menus.Add(tmp);
                 }
+                SetMode(Mode.Battle);
+                UpdateFunctions = new Dictionary<Mode, Func<bool>>()
+                {
+                    {Mode.Starting, StartingAction},
+                    {Mode.Battle, BattleAction},
+                    {Mode.Victory, VictoryAction},
+                    {Mode.GameOver, GameOverAction},
+                };
+
             }
             base.ReInit();
         }
+
+        private bool GameOverAction() => throw new NotImplementedException();
+        private bool VictoryAction() => throw new NotImplementedException();
+        private bool BattleAction() => throw new NotImplementedException();
+        private bool StartingAction() => throw new NotImplementedException();
 
         protected override void Init()
         {
@@ -110,7 +129,7 @@ namespace OpenVIII
             SetMode((Mode)0);
             base.Init();
         }
-        protected override bool Inputs() => throw new NotImplementedException();
+        protected override bool Inputs() { return false; }
 
         #endregion Methods
 

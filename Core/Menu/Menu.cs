@@ -57,6 +57,7 @@ namespace OpenVIII
 
         private static object _igm_lock = new object();
         private Vector2 _size;
+        private static BattleMenus _battlemenus;
 
         #endregion Fields
 
@@ -98,6 +99,8 @@ namespace OpenVIII
         public static IGM_Junction IGM_Junction => _igm_junction;
 
         public static IGM_Lobby IGM_Lobby => _igm_lobby;
+
+        public static BattleMenus BattleMenus => _battlemenus;
 
         public static Vector2 TextScale { get; } = new Vector2(2.545455f, 3.0375f);
 
@@ -218,6 +221,8 @@ namespace OpenVIII
                     _igm_junction = new IGM_Junction();
                 if (_igm_items == null)
                     _igm_items = new IGM_Items();
+                if (_battlemenus ==null)
+                    _battlemenus = new BattleMenus();
                 Fade = 0;
             }
         }
