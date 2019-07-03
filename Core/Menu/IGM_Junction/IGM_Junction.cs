@@ -12,9 +12,7 @@ namespace OpenVIII
         {
             #region Fields
 
-            public static EventHandler<Mode> ModeChangeEventListener;
-
-            private Mode _mode;
+            //private Mode _mode;
 
             #endregion Fields
 
@@ -175,7 +173,6 @@ namespace OpenVIII
 
             public void ChangeHelp(FF8String str) => ((IGMDataItem_Box)Data[SectionName.Help].CONTAINER).Data = str;
 
-            public override Enum GetMode() => _mode;
 
             /// <summary>
             /// Refreshes Junction menu and sets character and visable character. Also resets backup
@@ -185,17 +182,9 @@ namespace OpenVIII
             /// <param name="vc"></param>
             public override void ReInit(Characters c, Characters vc, bool backup = true) => base.ReInit(c, vc, backup);
 
-            public override void SetMode(Enum value)
-            {
-                if (!_mode.Equals(value))
-                {
-                    _mode = (Mode)value;
-                    ModeChangeEventListener?.Invoke(this, (Mode)value);
-                }
-            }
-
             protected override void Init()
             {
+                SetMode((Mode)0);
                 Size = new Vector2 { X = 840, Y = 630 };
                 //TextScale = new Vector2(2.545455f, 3.0375f);
 

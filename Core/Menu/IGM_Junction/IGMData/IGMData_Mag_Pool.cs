@@ -229,9 +229,9 @@ namespace OpenVIII
                 //public IGMData Values { get; private set; } = null;
                 public override void ReInit()
                 {
-                    if (!eventAdded)
+                    if (!eventAdded && InGameMenu_Junction != null)
                     {
-                        ModeChangeEventListener += ModeChangeEvent;
+                        InGameMenu_Junction.ModeChangeHandler += ModeChangeEvent;
                         StatEventListener += StatChangeEvent;
                         eventAdded = true;
                     }
@@ -362,7 +362,7 @@ namespace OpenVIII
                     }
                 }
 
-                private void ModeChangeEvent(object sender, Mode e) => UpdateOnEvent(sender, e);
+                private void ModeChangeEvent(object sender, Enum e) => UpdateOnEvent(sender, (Mode)e);
 
                 private void StatChangeEvent(object sender, Kernel_bin.Stat e) => UpdateOnEvent(sender, null, e);
 

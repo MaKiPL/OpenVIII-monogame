@@ -135,9 +135,9 @@ namespace OpenVIII
 
                 private void ChoiceChangeEvent(object sender, FF8String e) => ((IGMDataItem_Box)CONTAINER).Data = e;
 
-                private void ModeChangeEvent(object sender, Mode e)
+                private void ModeChangeEvent(object sender, Enum e)
                 {
-                    if (e != Mode.ChooseItem)
+                    if (!e.Equals(Mode.ChooseItem))
                     {
                         Cursor_Status |= Cursor_Status.Blinking;
                     }

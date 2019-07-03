@@ -28,6 +28,11 @@ namespace OpenVIII
             ReInit();
             skipdata = false;
         }
+        public Menu(Characters character,Characters? visablecharacter = null) : this()
+        {
+            Character = Character;
+            VisableCharacter = visablecharacter ?? character;
+        }
 
         #endregion Constructors
 
@@ -153,7 +158,9 @@ namespace OpenVIII
                 Memory.SpriteBatchEnd();
         }
 
-        public abstract Enum GetMode();
+        protected Enum _mode;
+        public Enum GetMode() => _mode;
+
 
         public virtual void Hide() => Enabled = false;
 
@@ -174,8 +181,16 @@ namespace OpenVIII
                 Memory.PrevState = Memory.State.Clone();
             ReInit();
         }
+        public EventHandler<Enum> ModeChangeHandler;
+        public void SetMode(Enum mode)
+        { 
+            if(!mode.Equals(_mode))
+            { 
+                ModeChangeHandler?.Invoke(this, mode);
+                _mode = mode;
+            }
+        }
 
-        public abstract void SetMode(Enum mode);
 
         public virtual void Show() => Enabled = true;
 

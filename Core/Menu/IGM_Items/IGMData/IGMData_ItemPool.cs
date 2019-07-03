@@ -177,13 +177,13 @@ namespace OpenVIII
                     InGameMenu_Items.SetMode(Mode.UseItemOnTarget);
                 }
 
-                private void ModeChangeEvent(object sender, Mode e)
+                private void ModeChangeEvent(object sender, Enum e)
                 {
-                    if (e == Mode.SelectItem)
+                    if (e.Equals(Mode.SelectItem))
                     {
                         Cursor_Status |= Cursor_Status.Enabled;
                     }
-                    else if (e == Mode.UseItemOnTarget)
+                    else if (e.Equals(Mode.UseItemOnTarget))
                     {
                         Cursor_Status |= Cursor_Status.Blinking;
                     }

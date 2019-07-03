@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using OpenVIII.Core.Menu.IGM_Items.IGMData;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -78,7 +79,7 @@ namespace OpenVIII
 
                 private void ItemChangeEvent(object sender, KeyValuePair<Item_In_Menu, FF8String> e) => Item = e.Key;
 
-                private void ModeChangeEvent(object sender, Mode e)
+                private void ModeChangeEvent(object sender, Enum e)
                 {
                     if (!e.Equals(Mode.UseItemOnTarget))
                         TargetChangeEvent(this, Faces.ID.Blank);

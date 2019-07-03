@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace OpenVIII
 {
@@ -14,7 +15,7 @@ namespace OpenVIII
                 {
                 }
 
-                private void ModeChangeEvent(object sender, Mode e)
+                private void ModeChangeEvent(object sender, Enum e)
                 {
                 }
                 public override void ReInit()

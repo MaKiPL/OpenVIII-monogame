@@ -131,6 +131,7 @@
     <Compile Include="ArchiveWorker.cs" />
     <Compile Include="Battle\debug_battleDat.cs" />
     <Compile Include="Battle\init_debugger_battle.cs" />
+    <Compile Include="Battle\Menu\BattleMenu.cs" />
     <Compile Include="Battle\module_battle.cs" />
     <Compile Include="Battle\module_battle_Debug.cs" />
     <Compile Include="Characters.cs" />

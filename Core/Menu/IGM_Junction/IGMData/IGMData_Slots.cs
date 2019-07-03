@@ -114,7 +114,7 @@ namespace OpenVIII
                 {
                     if (!eventAdded)
                     {
-                        ModeChangeEventListener += ModeChangeEvent;
+                        InGameMenu_Junction.ModeChangeHandler += ModeChangeEvent;
                         IGMData_Values.ColorChangeEventListener += ColorChangeEvent;
                         eventAdded = true;
                     }
@@ -187,7 +187,7 @@ namespace OpenVIII
                 /// </summary>
                 /// <param name="sender"></param>
                 /// <param name="e"></param>
-                protected virtual void ModeChangeEvent(object sender, Mode e) =>
+                protected virtual void ModeChangeEvent(object sender, Enum e) =>
                     ReInit();
 
                 protected abstract void PageLeft();

@@ -15,9 +15,9 @@ namespace OpenVIII
             #region Fields
 
             public EventHandler<KeyValuePair<Items, FF8String>> ChoiceChangeHandler;
-            public EventHandler<Mode> ModeChangeHandler;
+            //public EventHandler<Mode> ModeChangeHandler;
             protected Dictionary<Mode, Func<bool>> InputDict;
-            private Mode _mode = 0;
+            //private Mode _mode = 0;
 
             #endregion Fields
 
@@ -85,20 +85,12 @@ namespace OpenVIII
                     { Mode.ChooseItem, Data[SectionName.SideMenu].Inputs },
                     { Mode.ChooseChar, Data[SectionName.PartyGroup].Inputs },
                 };
+                SetMode((Mode)0);
                 base.Init();
             }
 
             protected override bool Inputs() => InputDict[(Mode)GetMode()]();
 
-            public override Enum GetMode() => _mode;
-            public override void SetMode(Enum value)
-            {
-                if(!_mode.Equals(value))
-                {
-                    ModeChangeHandler?.Invoke(this,(Mode)value);
-                    _mode = (Mode)value;
-                }
-            }
 
             #endregion Methods
         }

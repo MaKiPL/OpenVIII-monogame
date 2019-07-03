@@ -88,8 +88,7 @@ namespace OpenVIII.Encoding.Tags
             Int32 oldOffset = offset;
             Int32 oldleft = left;
 
-            String tag, par;
-            if (chars[offset++] != '{' || !TryGetTag(chars, ref offset, ref left, out tag, out par))
+            if (chars[offset++] != '{' || !TryGetTag(chars, ref offset, ref left, out string tag, out string par))
             {
                 offset = oldOffset;
                 left = oldleft;

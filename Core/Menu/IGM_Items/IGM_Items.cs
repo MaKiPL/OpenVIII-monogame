@@ -16,15 +16,13 @@ namespace OpenVIII
 
             public EventHandler<KeyValuePair<Item_In_Menu, FF8String>> ItemChangeHandler;
 
-            public EventHandler<Mode> ModeChangeHandler;
+            //public EventHandler<Mode> ModeChangeHandler;
 
             public EventHandler<Faces.ID> TargetChangeHandler;
             public EventHandler ReInitCompletedHandler;
 
             protected Dictionary<Mode, Func<bool>> InputsDict;
-
-            private Mode mode;
-
+            
             #endregion Fields
 
             #region Enums
@@ -60,7 +58,6 @@ namespace OpenVIII
 
             #region Methods
 
-            public override Enum GetMode() => mode;
 
             public override void ReInit()
             {
@@ -74,14 +71,7 @@ namespace OpenVIII
                 ReInitCompletedHandler?.Invoke(this, null);
             }
 
-            public override void SetMode(Enum value)
-            {
-                if (!mode.Equals(value))
-                {
-                    mode = (Mode)value;
-                    ModeChangeHandler?.Invoke(this, (Mode)value);
-                }
-            }
+
 
             protected override void Init()
             {

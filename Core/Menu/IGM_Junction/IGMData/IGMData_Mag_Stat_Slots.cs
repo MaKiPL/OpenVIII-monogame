@@ -226,9 +226,9 @@ namespace OpenVIII
                     SIZE[i].Offset(0, 4 + (-2 * row));
                 }
 
-                protected override void ModeChangeEvent(object sender, Mode e)
+                protected override void ModeChangeEvent(object sender, Enum e)
                 {
-                    if (e == Mode.Mag_Stat)
+                    if (e.Equals(Mode.Mag_Stat))
                         base.ModeChangeEvent(sender, e);
                 }
 

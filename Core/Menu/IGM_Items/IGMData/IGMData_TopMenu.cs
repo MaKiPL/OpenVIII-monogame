@@ -117,9 +117,9 @@ namespace OpenVIII
                 {
                     InGameMenu_Items.SetMode(Mode.SelectItem);
                 }
-                private void ModeChangeEvent(object sender, Mode e)
+                private void ModeChangeEvent(object sender, Enum e)
                 {
-                    if (e != Mode.TopMenu)
+                    if (!e.Equals(Mode.TopMenu))
                         Cursor_Status |= Cursor_Status.Blinking;
                     else
                         InGameMenu_Items.ChoiceChangeHandler?.Invoke(this, new KeyValuePair<byte, FF8String>((byte)CURSOR_SELECT, HelpStr[CURSOR_SELECT]));
