@@ -14,6 +14,7 @@ namespace OpenVIII
         private Vector2 _size;
 
         private bool skipdata;
+        private bool _blinkstate;
 
         #endregion Fields
 
@@ -174,7 +175,9 @@ namespace OpenVIII
         }
 
         public abstract void SetMode(Enum mode);
+
         public virtual void Show() => Enabled = true;
+
         public virtual void StartDraw()
         {
             if (Enabled)
@@ -183,6 +186,15 @@ namespace OpenVIII
 
         public virtual bool Update()
         {
+
+            if (_blinkstate)
+                Blink_Amount += (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 500);
+            else
+                Blink_Amount -= (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 900);
+            if (Blink_Amount > 1f) _blinkstate = false;
+            else if(Blink_Amount < 0) _blinkstate = true;
+            if (Fade < 1f)
+                Fade += (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 700);
             bool ret = false;
             Vector2 Zoom = Memory.Scale(Size.X, Size.Y, Memory.ScaleMode.FitBoth);
             Focus = Matrix.CreateTranslation((Size.X / -2), (Size.Y / -2), 0) *
@@ -204,6 +216,7 @@ namespace OpenVIII
         protected virtual void Init()
         {
         }
+
         protected abstract bool Inputs();
 
         #endregion Methods
