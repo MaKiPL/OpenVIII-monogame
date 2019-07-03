@@ -260,8 +260,8 @@ namespace OpenVIII
             else
             {
                 Vector2 dstV = Vector2.Zero;
-                dstOffset.X += dst.X;
-                dstOffset.Y += dst.X;
+                dstOffset.X = dst.X;
+                dstOffset.Y = dst.Y;
                 for (uint r = 0; r < Rows; r++)
                 {
                     for (uint c = 0; c < Cols; c++)

@@ -19,6 +19,7 @@ namespace OpenVIII
         private static IGM InGameMenu;
         private static IGM_Junction InGameMenu_Junction;
         private static IGM_Items InGameMenu_Items;
+        private static IGM_Lobby InGameMenu_Lobby;
 
         #endregion Fields
 
@@ -79,16 +80,17 @@ namespace OpenVIII
             {
                 //case MainMenuStates.Init:
                 case MainMenuStates.MainLobby:
-                    DrawMainLobby();
+                    //DrawMainLobby();
+                    InGameMenu_Lobby.Draw();
                     break;
 
                 case MainMenuStates.DebugScreen:
                     DrawDebugLobby();
                     break;
 
-                case MainMenuStates.NewGameChoosed:
-                    DrawMainLobby();
-                    break;
+                //case MainMenuStates.NewGameChoosed:
+                //    DrawMainLobby();
+                //    break;
 
                 case MainMenuStates.LoadGameLoading:
                 case MainMenuStates.LoadGameChooseSlot:
@@ -164,11 +166,12 @@ namespace OpenVIII
                 case MainMenuStates.MainLobby:
                     Memory.IsMouseVisible = true;
                     Offset = new Vector2(-1000, 0);
-                    if (UpdateMainLobby() || (lastfade != fade))
-                    {
-                        forceupdate = true;
-                    }
+                    //if (UpdateMainLobby() || (lastfade != fade))
+                    //{
+                    //    forceupdate = true;
+                    //}
 
+                    InGameMenu_Lobby.Update();
                     break;
 
                 case MainMenuStates.DebugScreen:
@@ -184,10 +187,10 @@ namespace OpenVIII
 
                     break;
 
-                case MainMenuStates.NewGameChoosed:
-                    Memory.IsMouseVisible = false;
-                    UpdateNewGame();
-                    break;
+                //case MainMenuStates.NewGameChoosed:
+                //    Memory.IsMouseVisible = false;
+                //    UpdateNewGame();
+                //    break;
 
                 case MainMenuStates.LoadGameChooseSlot:
                 case MainMenuStates.LoadGameCheckingSlot:
@@ -229,7 +232,8 @@ namespace OpenVIII
         /// </summary>
         public static void Init()
         {
-            InitMain();
+            //InitMain();
+            InGameMenu_Lobby = new IGM_Lobby();
             InitLoad();
             InitDebug();
 

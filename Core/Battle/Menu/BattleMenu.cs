@@ -97,6 +97,7 @@ namespace OpenVIII
                 foreach (var m in party)
                 {
                     var tmp = new BattleMenu(Memory.State.PartyData[m.Key], m.Value);
+                    tmp.Hide();
                     menus.Add(tmp);
                 }
             }

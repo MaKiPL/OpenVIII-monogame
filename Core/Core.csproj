@@ -141,7 +141,9 @@
     <Compile Include="EntryGroup.cs" />
     <Compile Include="ExtapathyExtended.cs" />
     <Compile Include="Extended.cs" />
+    <Compile Include="Menu\IGMDataItem\IGMDataItem_TextureHandler.cs" />
     <Compile Include="Menu\Images\Box_Options.cs" />
+    <Compile Include="Menu\Lobby\IGM_Lobby.cs" />
     <Compile Include="Saves\Damageable.cs" />
     <Compile Include="Strings\FF8String.cs" />
     <Compile Include="Strings\FF8StringReference.cs" />
@@ -788,7 +790,6 @@
     <Compile Include="Menu\Item.cs" />
     <Compile Include="Menu\Table_Options.cs" />
     <Compile Include="Menu\Debug\Module_main_menu_DebugLobby.cs" />
-    <Compile Include="Menu\Lobby\Module_main_menu_MainLobby.cs" />
     <Compile Include="PointEx.cs" />
     <Compile Include="Strings\StringFile.cs" />
     <Compile Include="Strings\Strings.Areames.cs" />
