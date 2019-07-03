@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -29,7 +30,10 @@ namespace OpenVIII
             YourTurn,
             GF_Charging,
         }
-
+        public enum SectionName: byte
+        {
+            Commands
+        }
         #endregion Enums
 
         #region Methods
@@ -42,7 +46,9 @@ namespace OpenVIII
 
         protected override void Init()
         {
+            Size = new Vector2 { X = 840, Y = 630 };
             SetMode((Mode)0);
+            Data.Add(SectionName.Commands, new IGMData_Commands(new Rectangle(0, (int)(Size.Y - 192), 210, 192)));
             base.Init();
         }
         protected override bool Inputs() => throw new NotImplementedException();
@@ -90,7 +96,8 @@ namespace OpenVIII
                 menus = new List<Menu>(count);
                 foreach (var m in party)
                 {
-                    menus.Add(new BattleMenu(Memory.State.PartyData[m.Key], m.Value));
+                    var tmp = new BattleMenu(Memory.State.PartyData[m.Key], m.Value);
+                    menus.Add(tmp);
                 }
             }
             base.ReInit();
@@ -98,6 +105,7 @@ namespace OpenVIII
 
         protected override void Init()
         {
+            Size = new Vector2 { X = 840, Y = 630 };
             SetMode((Mode)0);
             base.Init();
         }
