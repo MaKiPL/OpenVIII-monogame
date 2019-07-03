@@ -10,6 +10,9 @@ using System.Linq;
 
 namespace OpenVIII
 {
+    /// <summary>
+    /// FluidSynth 2.0.5 + libinstpatch DLS support implementation for playing DirectMusic without DirectX for Linux, Windows64 and other platforms
+    /// </summary>
     public class Fluid_Midi : IDisposable
     {
         private static IntPtr driver;
@@ -717,13 +720,14 @@ namespace OpenVIII
         {
             settings = new_fluid_settings();
 #if !_WINDOWS
+            //Forces alsa driver- in future we should allow user to choose it by his will
             fluid_settings_setstr(settings, "audio.driver", "alsa");
 #endif
             synth = new_fluid_synth(settings);
             driver = new_fluid_audio_driver(settings, synth);
             string music_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music", "dmusic"));
             string dlsPath = Path.Combine(music_pt, "FF8.dls");
-            fluid_synth_sfload(synth, dlsPath, 1);
+            fluid_synth_sfload(synth, dlsPath, 1); //we should allow user to choose other SoundFont if he wants to
             player = new_fluid_player(synth);
             GCHandle.Alloc(settings, GCHandleType.Pinned);
             GCHandle.Alloc(synth, GCHandleType.Pinned);
@@ -735,12 +739,8 @@ namespace OpenVIII
             fluidThread.Start();
         }
 
-        private double fluidWorkerAbsTime;
-        private int fluidCurrentIndex;
-        private const int fluidTimeFrame = 1; //test
         private const int DMUS_PPQ = 768; //DirectMusic PulsePerQuarterNote
         private const int DMUS_MusicTimeMilisecond = 60000000; //not really sure why 60 000 000 instead of 60 000, but it works
-        private float fluidDivider = 1000f; //test
         private void FluidWorker()
         {
             while (true)
@@ -763,7 +763,6 @@ namespace OpenVIII
 
                     //We received the newSong state. We are resetting as in reset, but in the end we fall into playing
                     case ThreadFluidState.newSong:
-                        FluidWorker_Reset();
                         FluidWorker_ProduceMid();
                         if (player != IntPtr.Zero)
                         {
@@ -782,7 +781,7 @@ namespace OpenVIII
                         continue;
 
                     case ThreadFluidState.kill:
-                        FluidWorker_Reset();
+                        fluidState = ThreadFluidState.idle;
                         System.Threading.Thread.CurrentThread.Abort();
                         break;
                 }
@@ -816,20 +815,17 @@ namespace OpenVIII
             }
             for (int i = 0; i < 16; i++)
             {
+                //as suggested on https://github.com/FluidSynth/fluidsynth/issues/544#issuecomment-507844553
                 mid.AddEvent(new NAudio.Midi.ControlChangeEvent(0, i + 1, NAudio.Midi.MidiController.NRPN_MSB, 120), 0);
                 mid.AddEvent(new NAudio.Midi.ControlChangeEvent(0, i + 1, NAudio.Midi.MidiController.NRPN_LSB, 38), 0);
                 mid.AddEvent(new NAudio.Midi.ControlChangeEvent(0, i + 1, NAudio.Midi.MidiController.LSBGenerator38, 127), 0);
                 mid.AddEvent(new NAudio.Midi.ControlChangeEvent(0, i + 1, NAudio.Midi.MidiController.MSGgenerator38, 110), 0);
+                //The DLS loader has wrong release/hold/attack so we need to tweak it via generators. It's prior to change
             }
             MemoryStream ms = new MemoryStream();
             NAudio.Midi.MidiFile.Export(ms, mid);
             midBuffer = ms.ToArray();
             ms.Dispose();
-        }
-        private void FluidWorker_Reset()
-        {
-            fluidWorkerAbsTime = 0;
-            fluidCurrentIndex = 0;
         }
 
         public void ReadSegmentFileManually(string pt)
