@@ -742,7 +742,7 @@
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_CommandSlots.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_Group.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_CharacterInfo.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Commands.cs" />
+    <Compile Include="Menu\IGMData\IGMData_Commands.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_ConfirmChanges.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_ConfirmRemAll.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_ConfirmRemMag.cs" />
