@@ -95,6 +95,12 @@ namespace OpenVIII
             skeleton.bones = new Bone[skeleton.cBones];
             for (int i = 0; i < skeleton.cBones; i++)
                 skeleton.bones[i] = Extended.ByteArrayToStructure<Bone>(br.ReadBytes(48));
+            string debugBuffer = string.Empty;
+            for (int i = 0; i< skeleton.cBones; i++)
+            {
+                debugBuffer += $"{i}|{skeleton.bones[i].parentId}|{skeleton.bones[i].boneSize}|{skeleton.bones[i].Size}\n";
+            }
+            Console.WriteLine(debugBuffer);
             return;
         }
 

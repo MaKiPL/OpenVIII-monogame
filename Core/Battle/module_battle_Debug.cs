@@ -948,7 +948,14 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
                 monstersData = new Debug_battleDat[0];
                 return;
             }
-            var DistinctMonsterPointers = enc.BEnemies.GroupBy(x => x).ToArray();
+            var monstersList = enc.BEnemies.ToList();
+            for(int i = 7; i>0; i--)
+            {
+                bool bEnabled = Extended.GetBit(enc.EnabledEnemy, 7-i);
+                if (!bEnabled)
+                    monstersList.RemoveLast();
+            }
+            var DistinctMonsterPointers = monstersList.GroupBy(x => x).ToArray();
             monstersData = new Debug_battleDat[DistinctMonsterPointers.Count()];
             for (int n = 0; n < monstersData.Length; n++)
                 monstersData[n] = new Debug_battleDat(DistinctMonsterPointers[n].Key, Debug_battleDat.EntityType.Monster);
