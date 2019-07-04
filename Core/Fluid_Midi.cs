@@ -19,6 +19,8 @@ namespace OpenVIII
         private static IntPtr synth;
         private static IntPtr settings;
         private static IntPtr player;
+
+        private static GCHandle[] handles;
         enum ThreadFluidState
         {
             /// <summary>
@@ -729,10 +731,11 @@ namespace OpenVIII
             string dlsPath = Path.Combine(music_pt, "FF8.dls");
             fluid_synth_sfload(synth, dlsPath, 1); //we should allow user to choose other SoundFont if he wants to
             player = new_fluid_player(synth);
-            GCHandle.Alloc(settings, GCHandleType.Pinned);
-            GCHandle.Alloc(synth, GCHandleType.Pinned);
-            GCHandle.Alloc(driver, GCHandleType.Pinned);
-            GCHandle.Alloc(player, GCHandleType.Pinned);
+            handles = new GCHandle[4];
+            handles[0] = GCHandle.Alloc(settings, GCHandleType.Pinned);
+            handles[1] = GCHandle.Alloc(synth, GCHandleType.Pinned);
+            handles[2] = GCHandle.Alloc(driver, GCHandleType.Pinned);
+            handles[3] = GCHandle.Alloc(player, GCHandleType.Pinned);
             fluid_synth_set_interp_method(synth, -1, fluid_interp.FLUID_INTERP_HIGHEST);
             //fluid_synth_set_gain(synth, 0.8f);
             System.Threading.Thread fluidThread = new System.Threading.Thread(new System.Threading.ThreadStart(FluidWorker));
@@ -1060,6 +1063,11 @@ namespace OpenVIII
         }
 
         public void Dispose()
-        {; }
+        {
+            Stop();
+            fluidState = ThreadFluidState.kill;
+            foreach (GCHandle hwnd in handles)
+                hwnd.Free();
+        }
     }
 }
