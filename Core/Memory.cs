@@ -174,7 +174,7 @@ namespace OpenVIII
             AlphaBlendFunction = BlendFunction.Add,
         };
 
-        public static int module = MODULE_BATTLE_DEBUG;
+        public static int module = MODULE_OVERTURE_DEBUG;
 
         public static string FF8DIR { get; private set; }
         public static string FF8DIRdata { get; private set; }

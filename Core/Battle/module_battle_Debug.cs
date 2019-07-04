@@ -201,9 +201,19 @@ namespace OpenVIII
             }
 #if DEBUG
             if (Input.Button(Keys.D1))
-                DEBUGframe += 1;
+                if ((DEBUGframe & 0b1111) >= 7)
+                {
+                    DEBUGframe += 0b00010000;
+                    DEBUGframe -= 7;
+                }
+                else DEBUGframe += 1;
             if (Input.Button(Keys.D2))
-                DEBUGframe--;
+                if ((DEBUGframe & 0b1111) == 0)
+                {
+                    DEBUGframe -= 0b00010000;
+                    DEBUGframe += 7;
+                }
+                else DEBUGframe--;
             if (Input.Button(Keys.D3))
                 battleModule = BATTLEMODULE_INIT;
             if(Input.Button(Keys.D4))
@@ -244,21 +254,6 @@ namespace OpenVIII
 
         private static void UpdateCamera()
         {
-            //if (Input.Button(Keys.NumPad7))
-            //    x += 2f;
-            //if (Input.Button(Keys.NumPad4))
-            //    x -= 2f;
-
-            //if (Input.Button(Keys.NumPad8))
-            //    y += 2f;
-            //if (Input.Button(Keys.NumPad5))
-            //    y -= 2f;
-
-            //if (Input.Button(Keys.NumPad9))
-            //    z += 2f;
-            //if (Input.Button(Keys.NumPad6))
-            //    z -= 2f;
-
             const float V = 100f;
             //battleCamera.cam.startingTime = 64;
             float step = battleCamera.cam.startingTime / (float)battleCamera.cam.time;
@@ -335,10 +330,12 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
             ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
             effect.TextureEnabled = true;
             //CHARACTER
+            if (CharacterInstances == null)
+                return;
             for (int n = 0; n < CharacterInstances.Count; n++)
             {
                 CheckAnimationFrame(Debug_battleDat.EntityType.Character, n);
-                Vector3 charaPosition = new Vector3(-40 + n * 10, 0, -40);
+                Vector3 charaPosition = new Vector3(-40 + n * 10, -2.5f, -40);
                 for (int i = 0; i < CharacterInstances[n].Data.character.geometry.cObjects; i++)
                 {
                     var a = CharacterInstances[n].Data.character.GetVertexPositions(i,charaPosition ,Quaternion.CreateFromYawPitchRoll(3f,0,0), CharacterInstances[n].animationSystem.animationId, CharacterInstances[n].animationSystem.animationFrame, frameperFPS / FPS); //DEBUG
@@ -361,7 +358,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
             for (int n = 0; n < CharacterInstances.Count; n++)
             {   
                 CheckAnimationFrame(Debug_battleDat.EntityType.Weapon, n);
-                Vector3 weaponPosition = new Vector3(-40 + n * 10, 0+DEBUGframe, -40+1);
+                Vector3 weaponPosition = new Vector3(-40 + n * 10, -2.5f, -40+1);
                 for (int i = 0; i < CharacterInstances[n].Data.weapon.geometry.cObjects; i++)
                 {
                     var a = CharacterInstances[n].Data.weapon.GetVertexPositions(i, weaponPosition, Quaternion.CreateFromYawPitchRoll(3f, 0, 0), CharacterInstances[n].animationSystem.animationId, CharacterInstances[n].animationSystem.animationFrame, frameperFPS / FPS); //DEBUG
@@ -381,6 +378,11 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
             }
         }
 
+        /// <summary>
+        /// This function is responsible for deleting the queue of animation if passed correctly
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="n"></param>
         private static void CheckAnimationFrame(Debug_battleDat.EntityType type, int n)
         {
             Debug_battleDat.Animation animationSystem;
@@ -485,6 +487,12 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
             }
         }
 
+        /// <summary>
+        /// [BROKEN] See issue #46
+        /// </summary>
+        /// <param name="enemyPosition"></param>
+        /// <param name="ate"></param>
+        /// <param name="scale"></param>
         private static void DrawShadow(Vector3 enemyPosition, AlphaTestEffect ate, float scale)
         {
             return;
@@ -666,7 +674,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
 
 
             effect.TextureEnabled = true;
-            for(int n = 1; n < 2; n++)
+            for(int n = 1; n < modelGroups.Length; n++)
                 foreach (var b in modelGroups[n].models)
                 {
                     var vpt = GetVertexBuffer(b);
@@ -698,21 +706,23 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
                 }
 
             Memory.SpriteBatchStartAlpha();
-            /*Memory.font.RenderBasicText(
-                $"Encounter ready at: {Memory.battle_encounter}\n" +
-                $"Debug variable: {DEBUGframe}\n" +
-                $"1000/deltaTime milliseconds: {Math.Round((double)1000 / Memory.gameTime.ElapsedGameTime.Milliseconds,2)}",
-                30,20,lineSpacing: 5);*/
             Memory.font.RenderBasicText(new FF8String($"Encounter ready at: {Memory.battle_encounter}"), 0, 0, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe}"), 20, 30 * 1, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {Extended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 2, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {Extended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 3, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Monster.Id0.Animation0.Frame: {EnemyInstances[0].animationSystem.animationFrame}"), 20, 30 * 4, 1, 1, 0, 1);
-            //Memory.font.RenderBasicText(new FF8String($"Camera.translate: {x},{y},{z}"), 20, 30 * 7, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe} ({DEBUGframe >> 4},{DEBUGframe & 0b1111})"), 20, 30 * 1, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {1000 / Memory.gameTime.ElapsedGameTime.Milliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"camera frame: {battleCamera.cam.startingTime}/{battleCamera.cam.time}"), 20, 30 * 3, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {Extended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 4, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {Extended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 5, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Camera.FOV: {MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, battleCamera.cam.startingTime / (float)battleCamera.cam.time)}"), 20, 30 * 6, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Camera.Mode: {battleCamera.cam.control_word & 1}"), 20, 30 * 7, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"DEBUG: Press 0 to switch between FPSCamera/Camera anim: {bUseFPSCamera}"), 20, 30 * 8, 1, 1, 0, 1);
 
             Memory.SpriteBatchEnd();
         }
 
+        /// <summary>
+        /// Moves sky 
+        /// </summary>
+        /// <param name="vpt"></param>
         private static void CreateRotation(Tuple<Stage_GeometryInfoSupplier[], VertexPositionTexture[]> vpt)
         {
             localRotator += (short)skyRotators[Memory.encounters[Memory.battle_encounter].Scenario]/4096f * Memory.gameTime.ElapsedGameTime.Milliseconds;
@@ -888,6 +898,9 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
         public static int DEBUG = 0;
         private static float frameperFPS = 0.0f;
 
+        /// <summary>
+        /// [WIP] Basic class responsible for creating character model into game. It should be changed to be parsed from current party
+        /// </summary>
         private static void ReadCharacters()
         {
             CharacterInstances = new List<CharacterInstanceInformation>
@@ -936,12 +949,6 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
         /// </summary>
         private static void ReadMonster()
         {
-            //for(int i = 0; i<199; i++)
-            //{
-            //    var dcd = new Debug_battleDat(i, Debug_battleDat.EntityType.Monster);
-            //    var ecd = dcd.skeleton.GetScale.Y;
-            //    Console.WriteLine($"{i}/{ecd}");
-            //}
             Init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
             if (enc.EnabledEnemy == 0)
             {

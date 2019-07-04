@@ -14,10 +14,7 @@ namespace OpenVIII
         readonly EntityType entityType;
         byte[] buffer;
 
-        /// <summary>
-        /// V is the scale dividor. For now in Battle and World modules I'm dividing native f16 to 2048f
-        /// </summary>
-        public const float V = 2048.0f;
+        public const float SCALEHELPER = 2048.0f;
         private const float DEGREES = 360f;
 
         public struct DatFile
@@ -43,7 +40,7 @@ namespace OpenVIII
             public ushort unk7;
             public Bone[] bones;
 
-            public Vector3 GetScale => new Vector3(scale/V*12, scale/V*12, scale/V*12);
+            public Vector3 GetScale => new Vector3(scale/SCALEHELPER*12, scale/SCALEHELPER*12, scale/SCALEHELPER*12);
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 48)]
@@ -60,13 +57,13 @@ namespace OpenVIII
             [MarshalAs(UnmanagedType.ByValArray,SizeConst = 28 )]
             public byte[] Unk;
 
-            public float Size { get => boneSize / V; }
-            public float Unk1 { get => unk1 / 4096.0f * 360.0f; }
-            public float Unk2 { get => unk2 / 4096.0f * 360.0f; }
-            public float Unk3 { get => unk3 / 4096.0f * 360.0f; }
-            public float Unk4 { get => unk4 / 4096.0f; }
-            public float Unk5 { get => unk5 / 4096.0f; }
-            public float Unk6 { get => unk6 / 4096.0f; }
+            public float Size { get => boneSize / SCALEHELPER; }
+            public float Unk1 { get => unk1 / 4096.0f * 360.0f; } //rotX
+            public float Unk2 { get => unk2 / 4096.0f * 360.0f; } //rotY
+            public float Unk3 { get => unk3 / 4096.0f * 360.0f; } //rotZ
+            public float Unk4 { get => unk4 / 4096.0f; } //unk1v
+            public float Unk5 { get => unk5 / 4096.0f; } //unk2v
+            public float Unk6 { get => unk6 / 4096.0f; } //unk3v
         }
 
         /// <summary>
@@ -96,11 +93,9 @@ namespace OpenVIII
             skeleton.bones = new Bone[skeleton.cBones];
             for (int i = 0; i < skeleton.cBones; i++)
                 skeleton.bones[i] = Extended.ByteArrayToStructure<Bone>(br.ReadBytes(48));
-            string debugBuffer = string.Empty;
-            for (int i = 0; i< skeleton.cBones; i++)
-            {
-                debugBuffer += $"{i}|{skeleton.bones[i].parentId}|{skeleton.bones[i].boneSize}|{skeleton.bones[i].Size}\n";
-            }
+            //string debugBuffer = string.Empty;
+            //for (int i = 0; i< skeleton.cBones; i++)
+            //    debugBuffer += $"{i}|{skeleton.bones[i].parentId}|{skeleton.bones[i].boneSize}|{skeleton.bones[i].Size}\n";
             //Console.WriteLine(debugBuffer);
             return;
         }
@@ -143,7 +138,7 @@ namespace OpenVIII
             public short y;
             public short z;
 
-            public Vector3 GetVector => new Vector3(-x/ V, -z/V, -y/V);
+            public Vector3 GetVector => new Vector3(-x/ SCALEHELPER, -z/SCALEHELPER, -y/SCALEHELPER);
         }
 
         [StructLayout(LayoutKind.Sequential, Pack =1, Size =16)]
@@ -284,6 +279,7 @@ namespace OpenVIII
             byte[] texturePointers = new byte[obj.cTriangles + obj.cQuads*2];
             Vector3 translationPosition = position /*+ Vector3.SmoothStep(frame.Position, nextFrame.Position, step) + snapToGround*/;
 
+            //Triangle parsing
             for (;i<obj.cTriangles; i++ )
             {
                 Vector3 VerticeDataC = TranslateVertex(verts[obj.triangles[i].C1].Item1, rotation, translationPosition);
@@ -297,9 +293,7 @@ namespace OpenVIII
                 texturePointers[i] = obj.triangles[i].textureIndex;
             }
 
-
-
-
+            //Quad parsing
             for (i = 0; i < obj.cQuads; i++)
             {
                 
@@ -421,8 +415,9 @@ namespace OpenVIII
                     animHeader.animations[i].animationFrames[n - 1].Position.Y + y,
                     animHeader.animations[i].animationFrames[n - 1].Position.Z + z)
                         };
-
-                    bitReader.ReadBits(1); //padding byte;
+                    byte ModeTest =  (byte)bitReader.ReadBits(1); //used to determine if additional info is required
+                    if(i == 0 && n == 0)
+                        Console.WriteLine($"{i} {n}: {ModeTest}");
                     animHeader.animations[i].animationFrames[n].boneMatrix = new Matrix[skeleton.cBones];
                     animHeader.animations[i].animationFrames[n].bonesVectorRotations = new Vector3[skeleton.cBones];
 
@@ -438,6 +433,8 @@ namespace OpenVIII
                                 Y = bitReader.ReadRotationType(),
                                 Z = bitReader.ReadRotationType()
                             };
+                            if (ModeTest > 0)
+                                _ = GetAdditionalRotationInformation(bitReader);
                             Vector3 previousFrame = animHeader.animations[i].animationFrames[n - 1].bonesVectorRotations[k];
                             Vector3 currentFrame = animHeader.animations[i].animationFrames[n].bonesVectorRotations[k];
                             animHeader.animations[i].animationFrames[n].bonesVectorRotations[k] = previousFrame + currentFrame;
@@ -450,6 +447,8 @@ namespace OpenVIII
                                 Y = bitReader.ReadRotationType(),
                                 Z = bitReader.ReadRotationType()
                             };
+                            if (ModeTest > 0)
+                                _ = GetAdditionalRotationInformation(bitReader);
                         }
                     }
 
@@ -490,6 +489,34 @@ namespace OpenVIII
                 }
             }
         }
+
+        /// <summary>
+        /// Some enemies use additional information that is saved for bone AFTER rotation types. We are still not sure what it does as enemy works without it
+        /// </summary>
+        /// <param name="bitReader"></param>
+        /// <returns></returns>
+        private Tuple<short, short, short> GetAdditionalRotationInformation(ExtapathyExtended.BitReader bitReader)
+        {
+            short unk1v = 0, unk2v = 0, unk3v = 0;
+
+            byte unk1 = (byte)bitReader.ReadBits(1);
+            if (unk1 > 0)
+                unk1v = (short)(bitReader.ReadBits(16) + 1024);
+            else unk1v = 1024;
+
+            byte unk2 = (byte)bitReader.ReadBits(1);
+            if (unk2 > 0)
+                unk2v = (short)(bitReader.ReadBits(16) + 1024);
+            else unk2v = 1024;
+
+            byte unk3 = (byte)bitReader.ReadBits(1);
+            if (unk3 > 0)
+                unk3v = (short)(bitReader.ReadBits(16) + 1024);
+            else unk3v = 1024;
+
+            return new Tuple<short, short, short>(unk1v, unk2v, unk3v);
+        }
+
         public AnimationData animHeader;
         public int frame;
         public float frameperFPS = 0.0f;
@@ -645,7 +672,7 @@ namespace OpenVIII
             string path = aw.GetListOfFiles().First(x => x.ToLower().Contains(fileName));
             buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, path);
 
-#if _WINDOWS
+#if _WINDOWS && DEBUG
             try
             {
                 string targetdir = @"d:\";
