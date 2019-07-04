@@ -201,19 +201,9 @@ namespace OpenVIII
             }
 #if DEBUG
             if (Input.Button(Keys.D1))
-                if ((DEBUGframe & 0b1111) >= 7)
-                {
-                    DEBUGframe += 0b00010000;
-                    DEBUGframe -= 7;
-                }
-                else DEBUGframe += 1;
+                DEBUGframe += 1;
             if (Input.Button(Keys.D2))
-                if ((DEBUGframe & 0b1111) == 0)
-                {
-                    DEBUGframe -= 0b00010000;
-                    DEBUGframe += 7;
-                }
-                else DEBUGframe--;
+                DEBUGframe--;
             if (Input.Button(Keys.D3))
                 battleModule = BATTLEMODULE_INIT;
             if(Input.Button(Keys.D4))
@@ -497,6 +487,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
 
         private static void DrawShadow(Vector3 enemyPosition, AlphaTestEffect ate, float scale)
         {
+            return;
             VertexPositionTexture[] ptCopy = Memory.shadowGeometry.Clone() as VertexPositionTexture[];
             for(int i = 0; i<ptCopy.Length; i++)
                 ptCopy[i].Position =  Vector3.Transform(ptCopy[i].Position, Matrix.CreateScale(scale));
@@ -675,7 +666,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
 
 
             effect.TextureEnabled = true;
-            for(int n = 0; n < modelGroups.Length; n++)
+            for(int n = 1; n < 2; n++)
                 foreach (var b in modelGroups[n].models)
                 {
                     var vpt = GetVertexBuffer(b);
@@ -713,14 +704,10 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
                 $"1000/deltaTime milliseconds: {Math.Round((double)1000 / Memory.gameTime.ElapsedGameTime.Milliseconds,2)}",
                 30,20,lineSpacing: 5);*/
             Memory.font.RenderBasicText(new FF8String($"Encounter ready at: {Memory.battle_encounter}"), 0, 0, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe} ({DEBUGframe >> 4},{DEBUGframe & 0b1111})"), 20, 30 * 1, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {1000/Memory.gameTime.ElapsedGameTime.Milliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"camera frame: {battleCamera.cam.startingTime}/{battleCamera.cam.time}"), 20, 30 * 3, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {Extended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 4, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {Extended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 5, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Camera.FOV: {MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, battleCamera.cam.startingTime / (float)battleCamera.cam.time)}"), 20, 30 * 6, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Camera.Mode: {battleCamera.cam.control_word&1}"), 20, 30 * 7, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"DEBUG: Press 0 to switch between FPSCamera/Camera anim: {bUseFPSCamera}"), 20, 30 * 8, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe}"), 20, 30 * 1, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {Extended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 2, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {Extended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 3, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Monster.Id0.Animation0.Frame: {EnemyInstances[0].animationSystem.animationFrame}"), 20, 30 * 4, 1, 1, 0, 1);
             //Memory.font.RenderBasicText(new FF8String($"Camera.translate: {x},{y},{z}"), 20, 30 * 7, 1, 1, 0, 1);
 
             Memory.SpriteBatchEnd();
