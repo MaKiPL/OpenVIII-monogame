@@ -4,11 +4,16 @@ namespace OpenVIII
 {
     public class IGMData_Commands : IGMData
     {
+        public bool Battle { get; }
 
-        public IGMData_Commands(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null) : base(4, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.COMMAND), 1, 4)
+        private int nonbattleWidth;
+
+        public IGMData_Commands(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null, bool battle = false) : base(5, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.COMMAND), 1, 4)
         {
             Character = character;
             VisableCharacter = visablecharacter ?? character;
+            Battle = battle;
+            nonbattleWidth = Width;
         }
         public override bool Inputs()
         {
@@ -32,11 +37,22 @@ namespace OpenVIII
                             1].Name,
                         SIZE[0]);
 
-                for (int pos = 1; pos < SIZE.Length; pos++)
+                for (int pos = 1; pos < rows; pos++)
                 {
                     ITEM[pos, 0] = Memory.State.Characters[Character].Commands[pos - 1] != Kernel_bin.Abilities.None ? new IGMDataItem_String(
                         Kernel_bin.Commandabilities[Memory.State.Characters[Character].Commands[pos - 1]].Name,
                         SIZE[pos]) : null;
+                }
+
+                if (Battle && Memory.State.Characters[Character].GenerateCrisisLevel() >= 0 || true)
+                {
+                    CONTAINER.Width = 294;
+                    ITEM[Count-1, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right, new Rectangle(Width+10, SIZE[0].Y, 0, 0), 2, 7);
+                }
+                else
+                {
+                    CONTAINER.Width = nonbattleWidth;
+                    ITEM[Count - 1, 0] = null;
                 }
             }
         }

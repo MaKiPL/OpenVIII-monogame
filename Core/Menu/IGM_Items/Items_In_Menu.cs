@@ -332,7 +332,7 @@ namespace OpenVIII
             }
             if (character == Characters.Blank || (Target & _Target.Character) == 0)
                 return false;
-            if (Memory.State.Characters.ContainsKey(character) && Memory.State.Characters[character].VisibleInMenu)
+            if (Memory.State.Characters.ContainsKey(character) && Memory.State.Characters[character].Available)
                 return true;
             return false;
         }
@@ -408,7 +408,7 @@ namespace OpenVIII
             bool ret = false;
             if (All)
             {
-                foreach (KeyValuePair<Characters, Saves.CharacterData> c in Memory.State.Characters.Where(x => (battle && Memory.State.PartyData.Contains(x.Key)) || x.Value.VisibleInMenu))
+                foreach (KeyValuePair<Characters, Saves.CharacterData> c in Memory.State.Characters.Where(x => (battle && Memory.State.PartyData.Contains(x.Key)) || x.Value.Available))
                 {
                     obj = c.Key.ToFacesID();
                     if (TestCharacter(ref obj, out Characters character))

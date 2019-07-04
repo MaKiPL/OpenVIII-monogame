@@ -2,21 +2,25 @@
 
 namespace OpenVIII
 {
-   
-        #region Classes
 
-        public abstract class IGMDataItem//<T>
+    #region Classes
+
+    public abstract class IGMDataItem//<T>
+    {
+        //protected T _data;
+        protected Rectangle _pos;
+        public bool Enabled { get; private set; } = true;
+        public Vector2 Scale { get; set; }
+
+        public IGMDataItem(Rectangle? pos = null, Vector2? scale = null)
         {
-            //protected T _data;
-            protected Rectangle _pos;
-            public bool Enabled { get; private set; } = true;
-            public Vector2 Scale { get; set; }
-
-            public IGMDataItem(Rectangle? pos = null, Vector2? scale = null)
-            {
-                _pos = pos ?? Rectangle.Empty;
-                Scale = scale ?? TextScale;
-            }
+            _pos = pos ?? Rectangle.Empty;
+            Scale = scale ?? TextScale;
+        }
+        public int Width { get => _pos.Width; set => _pos.Width = value; }
+        public int Height { get => _pos.Height; set => _pos.Height = value; }
+        public int X { get => _pos.X; set => _pos.X = value; }
+        public int Y { get => _pos.Y; set => _pos.Y = value; }
         public static float Fade => Menu.Fade;
         public static Vector2 TextScale => Menu.TextScale;
         public static float Blink_Amount => Menu.Blink_Amount;

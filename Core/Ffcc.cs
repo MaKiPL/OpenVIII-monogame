@@ -401,7 +401,7 @@
         /// Current frame number
         /// </summary>
         /// <returns>Current frame number or -1 on error</returns>
-        private unsafe int CurrentFrameNum => Decoder.CodecContext != null ? Decoder.CodecContext->frame_number : -1;
+        public unsafe int CurrentFrameNum => Decoder.CodecContext != null ? Decoder.CodecContext->frame_number : -1;
 
         /// <summary>
         /// MemoryStream of Audio after decoding and resamping to compatable format.

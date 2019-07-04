@@ -54,7 +54,7 @@ namespace OpenVIII
                         {
                             for (byte i = 0; Memory.State.Party != null && i < Memory.State.Characters.Count && SIZE != null && pos < SIZE.Length; i++)
                             {
-                                if (!Memory.State.Party.Contains((Characters)i) && Memory.State.Characters[(Characters)i].VisibleInMenu)
+                                if (!Memory.State.Party.Contains((Characters)i) && Memory.State.Characters[(Characters)i].Available)
                                 {
                                     BLANKS[pos] = false;
                                     ReInit(pos++, (Characters)i);

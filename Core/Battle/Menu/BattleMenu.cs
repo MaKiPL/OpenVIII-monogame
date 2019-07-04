@@ -52,7 +52,7 @@ namespace OpenVIII
         {
             Size = new Vector2 { X = 840, Y = 630 };
             SetMode((Mode)0);
-            Data.Add(SectionName.Commands, new IGMData_Commands(new Rectangle(50, (int)(Size.Y - 204), 210, 192)));
+            Data.Add(SectionName.Commands, new IGMData_Commands(new Rectangle(50, (int)(Size.Y - 204), 210, 192),Character,VisableCharacter,true));
             base.Init();
         }
 

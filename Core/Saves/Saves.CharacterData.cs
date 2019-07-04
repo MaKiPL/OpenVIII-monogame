@@ -10,6 +10,35 @@ namespace OpenVIII
     public static partial class Saves
     {
         /// <summary>
+        /// 
+        /// </summary>
+        /// <remarks>Hyne has switchlocked0 and 1</remarks>
+        [Flags]
+        public enum Exists :byte
+        {
+            Unavailable = 0x0,
+            /// <summary>
+            /// Shows in menu.
+            /// </summary>
+            Available = 0x1,
+            /// <summary>
+            /// Party members that cannot leave or be added 
+            /// </summary>
+            SwitchLocked0 = 0x2,
+            /// <summary>
+            /// Party members that cannot leave or be added
+            /// </summary>
+            SwitchLocked1 = 0x4,
+            /// <summary>
+            /// Many have this set. I donno what it does.
+            /// </summary>
+            Unk8 = 0x8,
+            Unk10 = 0x10,
+            Unk20 = 0x20,
+            Unk30 = 0x40,
+            Unk40 = 0x80,
+        }
+        /// <summary>
         /// Data for each Character
         /// </summary>
         /// <see cref="http://wiki.ffrtt.ru/index.php/FF8/GameSaveFormat#Characters"/>
@@ -20,38 +49,73 @@ namespace OpenVIII
             /// <summary>
             /// Raw HP buff from items.
             /// </summary>
-            public ushort _HP; //0x02
-
-            public uint Experience; //0x02
-            public byte ModelID; //0x04
-            public byte WeaponID; //0x08
+            public ushort _HP;
+            /// <summary>
+            /// Total Exp
+            /// </summary>
+            public uint Experience; 
+            /// <summary>
+            /// Character Model
+            /// </summary>
+            public byte ModelID; 
+            /// <summary>
+            /// Weapon
+            /// </summary>
+            public byte WeaponID; 
+            /// <summary>
+            /// Random number generator seeded with time.
+            /// </summary>
             static Random random = new Random((int)DateTime.Now.Ticks);
             /// <summary>
-            /// needs tested. should return the current crisis level. randomly -1 means no limit break. >=0 has a limit break.
+            /// <para>This Generates a Crisis Level. Run this each turn in battle. Though in real game it runs when the menu pops up.</para>
+            /// <para>-1 means no limit break. >=0 has a limit break.</para>
             /// </summary>
             /// <returns>-1 - 4</returns>
             /// <remarks>https://finalfantasy.fandom.com/wiki/Crisis_Level</remarks>
-            public sbyte CrisisLevel()
+            public sbyte GenerateCrisisLevel()
             {
                 ushort current = CurrentHP();
                 ushort max = MaxHP();
-                if (Critical() || (ID == Characters.Seifer_Almasy && CurrentHP()<(max*84/100)))
+                if ((ID == Characters.Seifer_Almasy && CurrentHP()<(max*84/100)))
                 {
                     int HPMod = CharacterStats.Crisis * 10 * current / max;
                     int DeathBonus = Memory.State.DeadPartyMembers() * 200 + 1600;
                     int StatusBonus = (int)(Statuses0.Count() * 10);
                     int RandomMod = random.Next(0, 255) + 160;
                     int crisislevel = (StatusBonus + DeathBonus - HPMod) / RandomMod;
-                    if (crisislevel == 5) return 0;
-                    else if (crisislevel == 6) return 1;
-                    else if (crisislevel == 7) return 2;
-                    else if (crisislevel >= 8) return 3;
+                    if (crisislevel == 5)
+                    {
+                        CurrentCrisisLevel = 0;
+                        return CurrentCrisisLevel;
+                    }
+                    else if (crisislevel == 6)
+                    {
+                        CurrentCrisisLevel = 1;
+                        return CurrentCrisisLevel;
+                    }
+                    else if (crisislevel == 7)
+                    {
+                        CurrentCrisisLevel = 2;
+                        return CurrentCrisisLevel;
+                    }
+                    else if (crisislevel >= 8)
+                    {
+                        CurrentCrisisLevel = 3;
+                        return CurrentCrisisLevel;
+                    }
                 }
-                return -1;
+                return CurrentCrisisLevel = -1;
             }
-            public override bool Critical() => base.Critical();
-
-
+            /// <summary>
+            /// Set by CrisisLevel(), -1 means no limit break. >=0 has a limit break.
+            /// </summary>
+            /// <returns>-1 - 4</returns>
+            /// <remarks>https://finalfantasy.fandom.com/wiki/Crisis_Level</remarks>
+            public sbyte CurrentCrisisLevel { get; private set; }
+            
+            /// <summary>
+            /// Kernel Stats
+            /// </summary>
             Kernel_bin.Character_Stats CharacterStats => Kernel_bin.CharacterStats[ID];
             /// <summary>
             /// Stats that can be incrased via items. Except for HP because it's a ushort not a byte.
@@ -64,37 +128,60 @@ namespace OpenVIII
             //public byte _SPR; //0x0C
             //public byte _SPD; //0x0D
             //public byte _LCK; //0x0E
-            public Dictionary<byte, byte> Magics; //0x0F
-
-            public List<Kernel_bin.Abilities> Commands; //0x10
-            public byte Paddingorunusedcommand; //0x50
-            public List<Kernel_bin.Abilities> Abilities; //0x53
-            public GFflags JunctionnedGFs; //0x54
-            public byte Unknown1; //0x58
-            public byte Alternativemodel; //0x5A (Normal, SeeD, Soldier...)
+            public Dictionary<byte, byte> Magics;
+            /// <summary>
+            /// Junctioned Commands
+            /// </summary>
+            public List<Kernel_bin.Abilities> Commands;
+            public byte Paddingorunusedcommand;
+            /// <summary>
+            /// Junctioned Abilities
+            /// </summary>
+            public List<Kernel_bin.Abilities> Abilities;
+            /// <summary>
+            /// Juctioned GFs
+            /// </summary>
+            public GFflags JunctionnedGFs;
+            public byte Unknown1;
+            /// <summary>
+            /// <para>Alt Models/different costumes</para>
+            /// <para>(Normal, SeeD, Soldier...)</para>
+            /// </summary>
+            public byte Alternativemodel;
+            /// <summary>
+            /// Junctioned Magic per stat.
+            /// </summary>
             public Dictionary<Kernel_bin.Stat, byte> Stat_J;
 
-            //public byte JunctionHP; //0x5B
-            //public byte JunctionSTR; //0x5C
-            //public byte JunctionVIT; //0x5D
-            //public byte JunctionMAG; //0x5E
-            //public byte JunctionSPR; //0x5F
-            //public byte JunctionSPD; //0x60
-            //public byte JunctionEVA; //0x61
-            //public byte JunctionHIT; //0x62
-            //public byte JunctionLCK; //0x63
-            //public byte Elem_Atk_J; //0x64
-            //public byte ST_Atk_J; //0x65
-            //public List<byte> Elem_Def_J; //0x66
-            //public List<byte> ST_Def_J; //0x67
+
             public byte Unknown2; //0x6B (padding?)
 
-            public Dictionary<GFs, ushort> CompatibilitywithGFs; //0x6F
-            public ushort Numberofkills; //0x70
-            public ushort NumberofKOs; //0x90
-            public byte Exists; //0x92 //15,9,7,4,1 shows on menu, 0 locked, 6 hidden // I think I wonder if this is a flags value.
-            public bool VisibleInMenu => Exists != 0 && Exists != 6;
-            public bool CanAddToParty => true; // I'm sure one of the Exists values determines this but I donno yet.
+            /// <summary>
+            /// <para>Compatibility With GFs</para>
+            /// <para>Effects Summon speed and such.</para>
+            /// </summary>
+            public Dictionary<GFs, ushort> CompatibilitywithGFs;
+            /// <summary>
+            /// Number of Kills
+            /// </summary>
+            public ushort Numberofkills;
+            /// <summary>
+            /// Number of KOs
+            /// </summary>
+            public ushort NumberofKOs;
+            /// <summary>
+            /// Value determines if a character shows in menu and can be added to party.
+            /// <para>15,9,7,4,1 shows on menu, 0 locked, 6 hidden // I think I wonder if this is a flags value.</para>
+            /// </summary>
+            public Exists Exists;
+            /// <summary>
+            /// Visable
+            /// </summary>
+            public bool Available => (Exists & Exists.Available) !=0;
+            /// <summary>
+            /// Cannot remove from party or add to party.
+            /// </summary>
+            public bool SwitchLocked => (Exists & (Exists.SwitchLocked0 | Exists.SwitchLocked1)) != 0;
             public byte Unknown3; //0x94
             public byte Unknown4; //0x96
 
@@ -204,8 +291,25 @@ namespace OpenVIII
                     CompatibilitywithGFs.Add((GFs)i, br.ReadUInt16());//0x70
                 Numberofkills = br.ReadUInt16();//0x90
                 NumberofKOs = br.ReadUInt16();//0x92
-                Exists = br.ReadByte();//0x94
-                Unknown3 = br.ReadByte();//0x95
+                Exists = (Exists)br.ReadByte();//0x94
+                //switch((int)Exists)
+                //{
+                //    case 0:
+                //        break;
+                //    case 1:
+                //        break;
+                //    case 9:
+                //        break;
+                //    case 6:
+                //        break;
+                //    case 7:
+                //        break;
+                //    case 15:
+                //        break;
+                //    default:
+                //    break;
+                //}
+                    Unknown3 = br.ReadByte();//0x95
                 Statuses0 = (Kernel_bin.Persistant_Statuses)br.ReadByte();//0x96
                 Unknown4 = br.ReadByte();//0x97
             }
