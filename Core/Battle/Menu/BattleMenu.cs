@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -184,9 +185,21 @@ namespace OpenVIII
 
         private class IGMData_HP : IGMData
         {
+            static Texture2D dot;
             public IGMData_HP(Rectangle pos) : base(3, 4, new IGMDataItem_Empty(pos), 1, 3)
             {
             }
+            protected override void Init()
+            {
+                if (dot == null)
+                {
+                    dot = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
+                    lock(dot)
+                    dot.SetData(new Color[] { Color.White });
+                }
+                base.Init();
+            }
+
             public override void ReInit()
             {
                 if (Memory.State?.Characters != null)
@@ -219,15 +232,18 @@ namespace OpenVIII
                         {
                             fadedpalette = 7;
                             fadedcolorid = Font.ColorID.Grey;
+                            ITEM[pos, 2] = new IGMDataItem_Texture(dot, new Rectangle(SIZE[pos].X + 230, SIZE[pos].Y + 12, 150, 15), Color.Yellow * .8f, Color.LightYellow);
                         }
+                        // insert gradient atb bar here. Though this probably belongs in the update method as it'll be in constant flux.
+                        else ITEM[pos, 2] = null;
 
 
 
                         // TODO: make a font render that can draw right to left from a point. For Right aligning the names.
                         ITEM[pos, 0] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), colorid,faded_color: fadedcolorid);
                         ITEM[pos, 1] = new IGMDataItem_Int(HP, new Rectangle(SIZE[pos].X + 128, SIZE[pos].Y, 0, 0), palette: palette, faded_palette: fadedpalette, spaces: 4, numtype: Icons.NumType.Num_8x16_1);
-                        //ITEM[pos, 2] // insert gradient atb bar here. Though this probably belongs in the update method as it'll be in constant flux.
-                        ITEM[pos, 3] = new IGMDataItem_Icon(Icons.ID.Size_08x64_Bar, new Rectangle(SIZE[pos].X + 239, SIZE[pos].Y + 12, 150, 15),0);
+                        
+                        ITEM[pos, 3] = new IGMDataItem_Icon(Icons.ID.Size_08x64_Bar, new Rectangle(SIZE[pos].X + 230, SIZE[pos].Y + 12, 150, 15),0);
                         pos++;
                     }
                     base.ReInit();

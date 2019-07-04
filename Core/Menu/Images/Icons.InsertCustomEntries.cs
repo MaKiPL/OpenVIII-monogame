@@ -331,6 +331,18 @@ namespace OpenVIII
             Entry _RR_0 = Entries[ID.Rewind_Fast][0].Clone();
             Entry _RR_1 = Entries[ID.Rewind_Fast][1].Clone();
             Entries[ID.Rewind_Fast] = new EntryGroup(_RR_1, _RR_0);
+
+            //override this entry to make it tile instead of have set number of elements.
+            var b = Entries[ID.Size_08x64_Bar];
+            Entry Left = b[0].Clone();
+            Entry Center = b[1].Clone();
+            Entry Right = b[7].Clone();
+            Left.Offset = Vector2.Zero;
+            Center.Offset = Vector2.Zero;
+            Right.Offset = new Vector2(-8f,0);
+            Center.Tile = Vector2.UnitX;
+            Right.Snap_Right = true;
+            Entries[ID.Size_08x64_Bar] = new EntryGroup(Center, Left, Right);
         }
     }
 }
