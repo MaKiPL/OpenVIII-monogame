@@ -528,8 +528,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
                     InstanceInformationProvider.animationSystem.animationFrame++;
                     EnemyInstances[x] = InstanceInformationProvider;
                 }
-                if (CharacterInstances == null)
-                    return;
+                if(CharacterInstances != null)
                 for (int x = 0; x < CharacterInstances.Count; x++)
                 {
                     var InstanceInformationProvider = CharacterInstances[x];
