@@ -136,6 +136,7 @@ namespace OpenVIII
             public IOrderedEnumerable<Kernel_bin.Magic_Data> SortedMagic(Kernel_bin.Stat Stat) => Kernel_bin.MagicData.OrderBy(x => (-x.totalStatVal(Stat) * (Magics.ContainsKey(x.ID) ? Magics[x.ID] : 0)) / 100);
 
             public void RemoveMagic() => Stat_J = Stat_J.ToDictionary(e => e.Key, e => (byte)0);
+            public int CriticalHP(Characters value) => MaxHP(value) / 4;
 
             public void RemoveAll()
             {

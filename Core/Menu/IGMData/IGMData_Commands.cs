@@ -10,6 +10,11 @@ namespace OpenVIII
             Character = character;
             VisableCharacter = visablecharacter ?? character;
         }
+        public override bool Inputs()
+        {
+            Cursor_Status |= Cursor_Status.Enabled;
+            return base.Inputs();
+        }
 
         /// <summary>
         /// Things that may of changed before screen loads or junction is changed.
