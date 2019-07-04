@@ -282,30 +282,14 @@ namespace OpenVIII
                 foreach (var b in a.vertices)
                     verts.Add(CalculateFrame(new Tuple<Vector3, int>(b.GetVector, a.boneId),frame,nextFrame, step));
             byte[] texturePointers = new byte[obj.cTriangles + obj.cQuads*2];
-            FixScaleYOffset(out Vector3 snapToGround);
             Vector3 translationPosition = position /*+ Vector3.SmoothStep(frame.Position, nextFrame.Position, step) + snapToGround*/;
 
             for (;i<obj.cTriangles; i++ )
             {
-                ///=/=/=/=/==/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
-                ///
-                ////////////////////=============VERTEX C========\\\\\\\\\\\\\\\\\\\\\
-                Tuple<Vector3, int> VerticeC = verts[ obj.triangles[i].C1];
-                Vector3 VerticeDataC = VerticeC.Item1;
-                //VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateFromQuaternion(rotation));
-                VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateTranslation(translationPosition));
-                ////////////////////=============VERTEX A========\\\\\\\\\\\\\\\\\\\\\
-                Tuple<Vector3, int> VerticeA = verts[obj.triangles[i].A1];
-                Vector3 VerticeDataA = VerticeA.Item1;
-                //VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateFromQuaternion(rotation));
-                VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateTranslation(translationPosition));
-                ////////////////////=============VERTEX B========\\\\\\\\\\\\\\\\\\\\\
-                Tuple<Vector3, int> VerticeB = verts[obj.triangles[i].B1];
-                Vector3 VerticeDataB = VerticeB.Item1;
-                //VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateFromQuaternion(rotation));
-                VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateTranslation(translationPosition));
-                ///
-                ///=/=/=/=/==/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
+                Vector3 VerticeDataC = TranslateVertex(verts[obj.triangles[i].C1].Item1, rotation, translationPosition);
+                Vector3 VerticeDataA = TranslateVertex(verts[obj.triangles[i].A1].Item1, rotation, translationPosition);
+                Vector3 VerticeDataB = TranslateVertex(verts[obj.triangles[i].B1].Item1, rotation, translationPosition);
+
                 var prevarTexT = textures.textures[obj.triangles[i].textureIndex];
                 vpt.Add(new VertexPositionTexture(VerticeDataC, new Vector2(obj.triangles[i].vta.U1(prevarTexT.Width), obj.triangles[i].vta.V1(prevarTexT.Height))));
                 vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.triangles[i].vtb.U1(prevarTexT.Width), obj.triangles[i].vtb.V1(prevarTexT.Height))));
@@ -318,27 +302,12 @@ namespace OpenVIII
 
             for (i = 0; i < obj.cQuads; i++)
             {
-                ////////////////////=============VERTEX A========\\\\\\\\\\\\\\\\\\\\\
-                Tuple<Vector3, int> VerticeA = verts[obj.quads[i].A1];
-                Vector3 VerticeDataA = VerticeA.Item1;
-                //VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateFromQuaternion(rotation));
-                VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateTranslation(translationPosition));
-                ////////////////////=============VERTEX B========\\\\\\\\\\\\\\\\\\\\\
-                Tuple<Vector3, int> VerticeB = verts[obj.quads[i].B1];
-                Vector3 VerticeDataB = VerticeB.Item1;
-                VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateFromQuaternion(rotation));
-                VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateTranslation(translationPosition));
-                ////////////////////=============VERTEX C========\\\\\\\\\\\\\\\\\\\\\
-                Tuple<Vector3, int> VerticeC = verts[obj.quads[i].C1];
-                Vector3 VerticeDataC = VerticeC.Item1;
-                //VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateFromQuaternion(rotation));
-                VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateTranslation(translationPosition));
-                ////////////////////=============VERTEX D========\\\\\\\\\\\\\\\\\\\\\
-                Tuple<Vector3, int> VerticeD = verts[obj.quads[i].D1];
-                Vector3 VerticeDataD = VerticeD.Item1;
-                //VerticeDataD = Vector3.Transform(VerticeDataD, Matrix.CreateFromQuaternion(rotation));
-                VerticeDataD = Vector3.Transform(VerticeDataD, Matrix.CreateTranslation(translationPosition));
-                ///
+                
+                Vector3 VerticeDataA = TranslateVertex(verts[obj.quads[i].A1].Item1, rotation, translationPosition);
+                Vector3 VerticeDataB = TranslateVertex(verts[obj.quads[i].B1].Item1, rotation, translationPosition);
+                Vector3 VerticeDataC = TranslateVertex(verts[obj.quads[i].C1].Item1, rotation, translationPosition);
+                Vector3 VerticeDataD = TranslateVertex(verts[obj.quads[i].D1].Item1, rotation, translationPosition);
+
                 var preVarTex = textures.textures[obj.quads[i].textureIndex];
                 vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.quads[i].vta.U1(preVarTex.Width), obj.quads[i].vta.V1(preVarTex.Height))));
                 vpt.Add(new VertexPositionTexture(VerticeDataB, new Vector2(obj.quads[i].vtb.U1(preVarTex.Width), obj.quads[i].vtb.V1(preVarTex.Height))));
@@ -355,296 +324,12 @@ namespace OpenVIII
             return new Tuple<VertexPositionTexture[], byte[]>(vpt.ToArray(), texturePointers);
         }
 
-        /// <summary>
-        /// Lazy class to fix Y axis of entities because due to scalling some appeared above or below the stage.
-        /// Those entities that have so far unknown Y axis are vurnable to DEBUGframe variable
-        /// </summary>
-        /// <param name="snapToGround"></param>
-        private void FixScaleYOffset(out Vector3 snapToGround)
+        Vector3 TranslateVertex(Vector3 vertex, Quaternion rotation, Vector3 localTranslate)
         {
-            //snapToGround = Vector3.Zero;
-            //return;
-            float fScaleResolver = skeleton.GetScale.Y;
-            float y = 0f;
-            switch(entityType)
-            {
-                case EntityType.Monster:
-                    switch (GetId)
-                    {
-                        case 68:
-                            y = -300f;
-                            break;
-                        case 21:
-                        case 18:
-                            y = -125;
-                            break;
-                        case 125:
-                            y = -120;
-                            break;
-                        case 25:
-                            y = -100;
-                            break;
-                        case 113:
-                            y = -90;
-                            break;
-                        case 54:
-                            y = -57;
-                            break;
-                        case 119:
-                        case 136:
-                            y = -50;
-                            break;
-                        case 88:
-                        case 100:
-                            y = -30;
-                            break;
-                        case 55:
-                            y = -28;
-                            break;
-                        case 82:
-                        case 142:
-                            y = -27;
-                            break;
-                        case 85:
-                        case 86:
-                        case 87:
-                        case 128:
-                        case 71:
-                        case 73:
-                        case 76:
-                        case 108:
-                        case 15:
-                        case 134:
-                        case 143:
-                        case 17:
-                            y = -25;
-                            break;
-                        case 75:
-                            y = -23;
-                            break;
-                        case 28:
-                        case 29:
-                        case 78:
-                        case 79:
-                        case 120:
-                        case 137:
-                        case 14:
-                            y = -20;
-                            break;
-                        case 60:
-                            y = -19;
-                            break;
-                        case 31:
-                            y = -18;
-                            break;
-                        case 64:
-                        case 72:
-                        case 74:
-                        case 135:
-                            y = -17;
-                            break;
-                        case 4:
-                        case 46:
-                        case 56:
-                        case 59:
-                        case 13:
-                            y = -14;
-                            break;
-                        case 39:
-                        case 40:
-                            y = -12;
-                            break;
-                        case 42:
-                            y = -11;
-                            break;
-                        case 69:
-                            y = -10;
-                            break;
-                        case 57:
-                            y = -6;
-                            break;
-                        case 129:
-                            y = -4;
-                            break;
-                        case 62:
-                        case 23:
-                        case 80:
-                        case 81:
-                            y = -3;
-                            break;
-                        case 96:
-                            y = -2;
-                            break;
-                        case 33:
-                        case 95:
-                        case 37:
-                        case 99:
-                        case 48:
-                        case 124:
-                            break; //f default 0, so no need to explicitely write it again
-                        case 53:
-                            y = 2;
-                            break;
-                        case 19:
-                            y = 3;
-                            break;
-                        case 32:
-                        case 93:
-                            y = 4;
-                            break;
-                        case 52:
-                            y = 5;
-                            break;
-                        case 121:
-                        case 22:
-                            y = 6;
-                            break;
-                        case 9:
-                        case 27:
-                        case 65:
-                        case 35:
-                        case 36:
-                        case 50:
-                        case 12:
-                        case 11:
-                            y = 10;
-                            break;
-                        case 7:
-                        case 16:
-                            y = 15;
-                            break;
-                        case 45:
-                            y = 18;
-                            break;
-                        case 6:
-                        case 43:
-                        case 3:
-                        case 8:
-                            y = 20;
-                            break;
-                        case 1:
-                            y = 24;
-                            break;
-                        case 63:
-                            y = 25;
-                            break;
-                        case 41:
-                        case 24:
-                            y = 30;
-                            break;
-                        case 115:
-                            y = 32;
-                            break;
-                        case 20:
-                        case 10:
-                        case 133:
-                            y = 40;
-                            break;
-                        case 38:
-                        case 49:
-                            y = 50;
-                            break;
-                        case 61:
-                        case 114:
-                            y = 60;
-                            break;
-                        case 89:
-                        case 97:
-                        case 98:
-                        case 111:
-                            y = 62;
-                            break;
-                        case 90:
-                            y = 90;
-                            break;
-                        case 51:
-                            y = 72;
-                            break;
-                        case 66:
-                            y = 80;
-                            break;
-                        case 112:
-                            y = 85;
-                            break;
-                        case 130:
-                            y = 90;
-                            break;
-                        case 5:
-                        case 26:
-                        case 77:
-                        case 30:
-                        case 92:
-                            y = 100;
-                            break;
-                        case 67:
-                        case 132:
-                            y = 150;
-                            break;
-                        case 131:
-                            y = 160;
-                            break;
-                        case 122:
-                        case 84:
-                            y = 180;
-                            break;
-                        case 109:
-                            y = 240;
-                            break;
-                        case 118:
-                        case 140:
-                        case 138:
-                        case 141:
-                            y = 250;
-                            break;
-                        default:
-                            y = Module_battle_debug.DEBUGframe;
-                            break;
-                    }
-                    break;
-                case EntityType.Character:
-                case EntityType.Weapon:
-                    switch(GetId)
-                    {
-                        case 0:
-                            y = -30;
-                            break;
-                        case 1:
-                        case 2:
-                        case 8:
-                            y = -32;
-                            break;
-                        case 3:
-                            y = -64;
-                            break;
-                        case 4:
-                            y = -66;
-                            break;
-                        case 5:
-                            y = -60;
-                            break;
-                        case 6:
-                            y = -26;
-                            break;
-                        case 7:
-                            y = -24;
-                            break;
-                        case 9:
-                            y = -36;
-                            break;
-                        case 10:
-                            y = 0;
-                            break;
-                        default:
-                            y = Module_battle_debug.DEBUGframe;
-                            break;
-                    }
-                    break;
-            }
-
-
-
-            y = fScaleResolver+  y/10f;
-            snapToGround = new Vector3(0, y, 0);
+            Vector3 verticeData = vertex;
+            verticeData = Vector3.Transform(verticeData, Matrix.CreateFromQuaternion(rotation));
+            verticeData = Vector3.Transform(verticeData, Matrix.CreateTranslation(localTranslate));
+            return verticeData;
         }
 
         /// <summary>
@@ -724,9 +409,9 @@ namespace OpenVIII
                 {
                     //Step 1. It starts with bone0.position. Let's read that into AnimationFrames[animId]- it's only one position per frame
 
-                    float x = bitReader.ReadPositionType() * .01f * 1f;
-                    float y = bitReader.ReadPositionType() * .01f * -1f;
-                    float z = bitReader.ReadPositionType() * .01f * 1f;
+                    float x = bitReader.ReadPositionType() * .01f;
+                    float y = bitReader.ReadPositionType() * .01f;
+                    float z = bitReader.ReadPositionType() * .01f;
                     animHeader.animations[i].animationFrames[n] = n == 0
                         ? new AnimationFrame()
                         {Position = new Vector3(x,y,z)}
@@ -782,23 +467,21 @@ namespace OpenVIII
 
                         if (skeleton.bones[k].parentId == 0xFFFF) //if parentId is 0xFFFF then the current bone is core aka bone0
                         {
-                            //I'm leaving the code below, because there might be some issue with M4 dimension for position translation for bone0 only
-                            //Matrix rt = Matrix.CreateTranslation(animHeader.animations[i].animationFrames[n].Position);
-                            //MatrixZ.M41 = rt.M42;
-                            //MatrixZ.M42 = rt.M41; //up/down
-                            //MatrixZ.M43 = rt.M43;
-                            //MatrixZ.M44 = 1;
-                            //MatrixZ *= Matrix.CreateTranslation(animHeader.animations[i].animationFrames[n].Position);
-                            MatrixZ.M43 = animHeader.animations[i].animationFrames[n].Position.Z + 2; //why 2?
+                            MatrixZ.M41 = -animHeader.animations[i].animationFrames[n].Position.X;
+                            MatrixZ.M42 = -animHeader.animations[i].animationFrames[n].Position.Y; //up/down
+                            MatrixZ.M43 = animHeader.animations[i].animationFrames[n].Position.Z;
+                            MatrixZ.M44 = 1;
+
                         }
                         else
                         {
                             Matrix parentBone = animHeader.animations[i].animationFrames[n].boneMatrix[skeleton.bones[k].parentId]; //gets the parent bone
-                            MatrixZ.M43 = skeleton.bones[skeleton.bones[k].parentId].Size; //This is M43 which is Y
+                            MatrixZ.M43 = skeleton.bones[skeleton.bones[k].parentId].Size;
                             Matrix rMatrix = Matrix.Multiply(parentBone, MatrixZ);
                             rMatrix.M41 = parentBone.M11 * MatrixZ.M41 + parentBone.M12 * MatrixZ.M42 + parentBone.M13 * MatrixZ.M43 + parentBone.M41;
                             rMatrix.M42 = parentBone.M21 * MatrixZ.M41 + parentBone.M22 * MatrixZ.M42 + parentBone.M23 * MatrixZ.M43 + parentBone.M42;
                             rMatrix.M43 = parentBone.M31 * MatrixZ.M41 + parentBone.M32 * MatrixZ.M42 + parentBone.M33 * MatrixZ.M43 + parentBone.M43;
+                            rMatrix.M44 = 1;
                             MatrixZ = rMatrix;
                         }
 

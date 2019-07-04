@@ -334,8 +334,6 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
             Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
             effect.TextureEnabled = true;
-            if (CharacterInstances == null)
-                return;
             //CHARACTER
             for (int n = 0; n < CharacterInstances.Count; n++)
             {
@@ -361,8 +359,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
             }
             //WEAPON
             for (int n = 0; n < CharacterInstances.Count; n++)
-            {   if (CharacterInstances[n].Data.weapon == null)
-                    return;
+            {   
                 CheckAnimationFrame(Debug_battleDat.EntityType.Weapon, n);
                 Vector3 weaponPosition = new Vector3(-40 + n * 10, 0+DEBUGframe, -40+1);
                 for (int i = 0; i < CharacterInstances[n].Data.weapon.geometry.cObjects; i++)
@@ -405,8 +402,6 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
                     return;
                 case Debug_battleDat.EntityType.Character:
                 case Debug_battleDat.EntityType.Weapon:
-                    if (CharacterInstances == null)
-                        return;
                     animationSystem = CharacterInstances[n].Data.character.animHeader.animations[CharacterInstances[n].animationSystem.animationId];
                     if (CharacterInstances[n].animationSystem.animationFrame >= animationSystem.cFrames)
                     {
@@ -895,27 +890,27 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
 
         private static void ReadCharacters()
         {
-            //CharacterInstances = new List<CharacterInstanceInformation>
-            //{
-            //    new CharacterInstanceInformation()
-            //    {
-            //        Data = ReadCharacterData(0,0,0),
-            //        animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
-            //        characterId = 0,
-            //    },
-            //    new CharacterInstanceInformation()
-            //    {
-            //        Data = ReadCharacterData(1,3,8),
-            //        animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
-            //        characterId = 1
-            //    },
-            //    new CharacterInstanceInformation()
-            //    {
-            //        Data = ReadCharacterData(2,6,13),
-            //        animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
-            //        characterId = 2
-            //    }
-            //};
+            CharacterInstances = new List<CharacterInstanceInformation>
+            {
+                new CharacterInstanceInformation()
+                {
+                    Data = ReadCharacterData(0,0,0),
+                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
+                    characterId = 0,
+                },
+                new CharacterInstanceInformation()
+                {
+                    Data = ReadCharacterData(1,3,8),
+                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
+                    characterId = 1
+                },
+                new CharacterInstanceInformation()
+                {
+                    Data = ReadCharacterData(2,6,13),
+                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
+                    characterId = 2
+                }
+            };
         }
 
         private static CharacterData ReadCharacterData(int characterId, int alternativeCostumeId, int weaponId)
