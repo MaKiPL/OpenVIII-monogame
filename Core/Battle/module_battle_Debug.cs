@@ -211,6 +211,11 @@ namespace OpenVIII
                 battleModule = BATTLEMODULE_INIT;
                 Memory.battle_encounter++;
             }
+            if(Input.Button(Keys.D5))
+            {
+                AddAnimationToQueue(Debug_battleDat.EntityType.Monster, 0, 3);
+                AddAnimationToQueue(Debug_battleDat.EntityType.Monster, 0, 0);
+            }
 #endif
         }
 

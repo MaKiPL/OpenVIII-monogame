@@ -18,6 +18,7 @@ namespace OpenVIII
         /// V is the scale dividor. For now in Battle and World modules I'm dividing native f16 to 2048f
         /// </summary>
         public const float V = 2048.0f;
+        private const float DEGREES = 360f;
 
         public struct DatFile
         {
@@ -100,7 +101,7 @@ namespace OpenVIII
             {
                 debugBuffer += $"{i}|{skeleton.bones[i].parentId}|{skeleton.bones[i].boneSize}|{skeleton.bones[i].Size}\n";
             }
-            Console.WriteLine(debugBuffer);
+            //Console.WriteLine(debugBuffer);
             return;
         }
 
@@ -281,9 +282,8 @@ namespace OpenVIII
                 foreach (var b in a.vertices)
                     verts.Add(CalculateFrame(new Tuple<Vector3, int>(b.GetVector, a.boneId),frame,nextFrame, step));
             byte[] texturePointers = new byte[obj.cTriangles + obj.cQuads*2];
-            Vector3 snapToGround = Vector3.Zero;
-            FixScaleYOffset(out snapToGround);
-            Vector3 translationPosition = position + Vector3.SmoothStep(frame.Position, nextFrame.Position, step) + snapToGround;
+            FixScaleYOffset(out Vector3 snapToGround);
+            Vector3 translationPosition = position /*+ Vector3.SmoothStep(frame.Position, nextFrame.Position, step) + snapToGround*/;
 
             for (;i<obj.cTriangles; i++ )
             {
@@ -292,17 +292,17 @@ namespace OpenVIII
                 ////////////////////=============VERTEX C========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeC = verts[ obj.triangles[i].C1];
                 Vector3 VerticeDataC = VerticeC.Item1;
-                VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateFromQuaternion(rotation));
+                //VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateFromQuaternion(rotation));
                 VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateTranslation(translationPosition));
                 ////////////////////=============VERTEX A========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeA = verts[obj.triangles[i].A1];
                 Vector3 VerticeDataA = VerticeA.Item1;
-                VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateFromQuaternion(rotation));
+                //VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateFromQuaternion(rotation));
                 VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateTranslation(translationPosition));
                 ////////////////////=============VERTEX B========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeB = verts[obj.triangles[i].B1];
                 Vector3 VerticeDataB = VerticeB.Item1;
-                VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateFromQuaternion(rotation));
+                //VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateFromQuaternion(rotation));
                 VerticeDataB = Vector3.Transform(VerticeDataB, Matrix.CreateTranslation(translationPosition));
                 ///
                 ///=/=/=/=/==/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
@@ -321,7 +321,7 @@ namespace OpenVIII
                 ////////////////////=============VERTEX A========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeA = verts[obj.quads[i].A1];
                 Vector3 VerticeDataA = VerticeA.Item1;
-                VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateFromQuaternion(rotation));
+                //VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateFromQuaternion(rotation));
                 VerticeDataA = Vector3.Transform(VerticeDataA, Matrix.CreateTranslation(translationPosition));
                 ////////////////////=============VERTEX B========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeB = verts[obj.quads[i].B1];
@@ -331,12 +331,12 @@ namespace OpenVIII
                 ////////////////////=============VERTEX C========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeC = verts[obj.quads[i].C1];
                 Vector3 VerticeDataC = VerticeC.Item1;
-                VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateFromQuaternion(rotation));
+                //VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateFromQuaternion(rotation));
                 VerticeDataC = Vector3.Transform(VerticeDataC, Matrix.CreateTranslation(translationPosition));
                 ////////////////////=============VERTEX D========\\\\\\\\\\\\\\\\\\\\\
                 Tuple<Vector3, int> VerticeD = verts[obj.quads[i].D1];
                 Vector3 VerticeDataD = VerticeD.Item1;
-                VerticeDataD = Vector3.Transform(VerticeDataD, Matrix.CreateFromQuaternion(rotation));
+                //VerticeDataD = Vector3.Transform(VerticeDataD, Matrix.CreateFromQuaternion(rotation));
                 VerticeDataD = Vector3.Transform(VerticeDataD, Matrix.CreateTranslation(translationPosition));
                 ///
                 var preVarTex = textures.textures[obj.quads[i].textureIndex];
@@ -657,12 +657,12 @@ namespace OpenVIII
         /// <returns></returns>
         private Tuple<Vector3, int> CalculateFrame(Tuple<Vector3, int> tuple, AnimationFrame frame,AnimationFrame nextFrame, float step)
         {
-            Matrix matrix = frame.boneRot.Item3[tuple.Item2]; //get's bone matrix
+            Matrix matrix = frame.boneMatrix[tuple.Item2]; //get's bone matrix
             Vector3 rootFramePos = new Vector3(
                 matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
                 matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
                 matrix.M31 * tuple.Item1.X + matrix.M43 + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
-            matrix = nextFrame.boneRot.Item3[tuple.Item2];
+            matrix = nextFrame.boneMatrix[tuple.Item2];
             Vector3 nextFramePos = new Vector3(
                 matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
                 matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
@@ -691,16 +691,10 @@ namespace OpenVIII
         public struct AnimationFrame
         {
             private Vector3 position;
-            public Tuple<Vector3[], ShortVector[],Matrix[]> boneRot;
+            public Vector3[] bonesVectorRotations;
+            public Matrix[] boneMatrix;
 
             public Vector3 Position { get => position; set => position = value; }
-        }
-
-        public struct ShortVector
-        {
-            public short x;
-            public short y;
-            public short z;
         }
 
         /// <summary>
@@ -715,19 +709,24 @@ namespace OpenVIII
             animHeader = new AnimationData() {cAnimations = br.ReadUInt32() };
             animHeader.pAnimations = new uint[animHeader.cAnimations];
             for (int i = 0; i < animHeader.cAnimations; i++)
+            {
                 animHeader.pAnimations[i] = br.ReadUInt32();
+                //Console.WriteLine($"{i}|{animHeader.pAnimations[i]}");
+            }
             animHeader.animations = new Animation[animHeader.cAnimations];
             for (int i = 0; i < animHeader.cAnimations; i++) //animation
-            {
-                ms.Seek(v + animHeader.pAnimations[i], SeekOrigin.Begin);
-                animHeader.animations[i] = new Animation() {cFrames = br.ReadByte() };
+            { 
+                ms.Seek(v + animHeader.pAnimations[i], SeekOrigin.Begin); //Get to pointer of animation Id
+                animHeader.animations[i] = new Animation() {cFrames = br.ReadByte() }; //Create new animation with cFrames frames
                 animHeader.animations[i].animationFrames = new AnimationFrame[animHeader.animations[i].cFrames];
                 ExtapathyExtended.BitReader bitReader = new ExtapathyExtended.BitReader(ms);
                 for(int n = 0; n<animHeader.animations[i].cFrames; n++) //frames
                 {
-                    float x = bitReader.ReadPositionType()*.01f;
+                    //Step 1. It starts with bone0.position. Let's read that into AnimationFrames[animId]- it's only one position per frame
+
+                    float x = bitReader.ReadPositionType() * .01f * 1f;
                     float y = bitReader.ReadPositionType() * .01f * -1f;
-                    float z = bitReader.ReadPositionType() * .01f;
+                    float z = bitReader.ReadPositionType() * .01f * 1f;
                     animHeader.animations[i].animationFrames[n] = n == 0
                         ? new AnimationFrame()
                         {Position = new Vector3(x,y,z)}
@@ -735,42 +734,53 @@ namespace OpenVIII
                         {Position = new Vector3(
                     animHeader.animations[i].animationFrames[n - 1].Position.X + x,
                     animHeader.animations[i].animationFrames[n - 1].Position.Y + y,
-                    animHeader.animations[i].animationFrames[n - 1].Position.Z + z)};
+                    animHeader.animations[i].animationFrames[n - 1].Position.Z + z)
+                        };
 
                     bitReader.ReadBits(1); //padding byte;
-                    animHeader.animations[i].animationFrames[n].boneRot = new Tuple<Vector3[], ShortVector[], Matrix[]>(new Vector3[skeleton.cBones], new ShortVector[skeleton.cBones], new Matrix[skeleton.cBones]);
+                    animHeader.animations[i].animationFrames[n].boneMatrix = new Matrix[skeleton.cBones];
+                    animHeader.animations[i].animationFrames[n].bonesVectorRotations = new Vector3[skeleton.cBones];
+
+                    //Step 2. We read the position and we need to store the bones rotations or save base rotation if frame==0
+
                     for (int k = 0; k < skeleton.cBones; k++) //bones iterator
                     {
-                        if (n != 0)
+                        if (n != 0) //just like position the data for next frames are added to previous
                         {
-                            animHeader.animations[i].animationFrames[n].boneRot.Item2[k] = new ShortVector() { x = bitReader.ReadRotationType(), y = bitReader.ReadRotationType(), z = bitReader.ReadRotationType() };
-                            var grabber = animHeader.animations[i].animationFrames[n - 1].boneRot.Item2[k];
-                            var adder = animHeader.animations[i].animationFrames[n].boneRot.Item2[k];
-                            animHeader.animations[i].animationFrames[n].boneRot.Item2[k] = new ShortVector() { x = (short)(grabber.x + adder.x), y = (short)(grabber.y + adder.y), z = (short)(grabber.z + adder.z) };
-                            animHeader.animations[i].animationFrames[n].boneRot.Item1[k] = new Vector3(
-                            (animHeader.animations[i].animationFrames[n].boneRot.Item2[k].x) * 360f / 4096f,
-                            (animHeader.animations[i].animationFrames[n].boneRot.Item2[k].y) * 360f / 4096f,
-                            (animHeader.animations[i].animationFrames[n].boneRot.Item2[k].z) * 360f / 4096f);
+                            animHeader.animations[i].animationFrames[n].bonesVectorRotations[k] = new Vector3()
+                            {
+                                X = bitReader.ReadRotationType(),
+                                Y = bitReader.ReadRotationType(),
+                                Z = bitReader.ReadRotationType()
+                            };
+                            Vector3 previousFrame = animHeader.animations[i].animationFrames[n - 1].bonesVectorRotations[k];
+                            Vector3 currentFrame = animHeader.animations[i].animationFrames[n].bonesVectorRotations[k];
+                            animHeader.animations[i].animationFrames[n].bonesVectorRotations[k] = previousFrame + currentFrame;
                         }
-                        else
+                        else //if this is zero frame, then we need to set the base rotations for bones
                         {
-                            animHeader.animations[i].animationFrames[n].boneRot.Item2[k] = new ShortVector() { x = bitReader.ReadRotationType(), y = bitReader.ReadRotationType(), z = bitReader.ReadRotationType() };
-                            animHeader.animations[i].animationFrames[n].boneRot.Item1[k] = new Vector3(
-                            (animHeader.animations[i].animationFrames[n].boneRot.Item2[k].x * 360f / 4096f),
-                            (animHeader.animations[i].animationFrames[n].boneRot.Item2[k].y * 360f / 4096f),
-                            (animHeader.animations[i].animationFrames[n].boneRot.Item2[k].z * 360f / 4096f));
+                            animHeader.animations[i].animationFrames[n].bonesVectorRotations[k] = new Vector3()
+                            {
+                                X = bitReader.ReadRotationType(),
+                                Y = bitReader.ReadRotationType(),
+                                Z = bitReader.ReadRotationType()
+                            };
                         }
                     }
+
+                    //Step 3. We now have all bone rotations stored into short. We need to convert that into Matrix and 360/4096
                     for(int k = 0; k<skeleton.cBones; k++)
                     {
-                        var rad = animHeader.animations[i].animationFrames[n].boneRot.Item1[k];
-                        Matrix xRot = Extended.GetRotationMatrixX(-rad.X);
-                        Matrix yRot = Extended.GetRotationMatrixY(-rad.Y);
-                        Matrix zRot = Extended.GetRotationMatrixZ(-rad.Z);
+                        Vector3 boneRotation = animHeader.animations[i].animationFrames[n].bonesVectorRotations[k];
+                        boneRotation = Extended.S16VectorToFloat(boneRotation); //we had vector3 containing direct copy of short to float, now we need them in real floating point values
+                        boneRotation *= DEGREES; //bone rotations are in 360 scope
+                        Matrix xRot = Extended.GetRotationMatrixX(-boneRotation.X);
+                        Matrix yRot = Extended.GetRotationMatrixY(-boneRotation.Y);
+                        Matrix zRot = Extended.GetRotationMatrixZ(-boneRotation.Z);
                         var MatrixZ = Extended.MatrixMultiply_transpose(yRot, xRot);
                         MatrixZ = Extended.MatrixMultiply_transpose(zRot, MatrixZ);
 
-                        if (skeleton.bones[k].parentId == 0xFFFF)
+                        if (skeleton.bones[k].parentId == 0xFFFF) //if parentId is 0xFFFF then the current bone is core aka bone0
                         {
                             //I'm leaving the code below, because there might be some issue with M4 dimension for position translation for bone0 only
                             //Matrix rt = Matrix.CreateTranslation(animHeader.animations[i].animationFrames[n].Position);
@@ -778,20 +788,21 @@ namespace OpenVIII
                             //MatrixZ.M42 = rt.M41; //up/down
                             //MatrixZ.M43 = rt.M43;
                             //MatrixZ.M44 = 1;
-                            MatrixZ.M43 = animHeader.animations[i].animationFrames[n].Position.Z + 2;
+                            //MatrixZ *= Matrix.CreateTranslation(animHeader.animations[i].animationFrames[n].Position);
+                            MatrixZ.M43 = animHeader.animations[i].animationFrames[n].Position.Z + 2; //why 2?
                         }
                         else
                         {
-                            Matrix prevBone = animHeader.animations[i].animationFrames[n].boneRot.Item3[skeleton.bones[k].parentId];
-                            MatrixZ.M43 = skeleton.bones[skeleton.bones[k].parentId].Size;
-                            Matrix rMatrix = Matrix.Multiply(prevBone, MatrixZ);
-                            rMatrix.M41 = prevBone.M11 * MatrixZ.M41 + prevBone.M12 * MatrixZ.M42 + prevBone.M13 * MatrixZ.M43 + prevBone.M41;
-                            rMatrix.M42 = prevBone.M21 * MatrixZ.M41 + prevBone.M22 * MatrixZ.M42 + prevBone.M23 * MatrixZ.M43 + prevBone.M42;
-                            rMatrix.M43 = prevBone.M31 * MatrixZ.M41 + prevBone.M32 * MatrixZ.M42 + prevBone.M33 * MatrixZ.M43 + prevBone.M43;
+                            Matrix parentBone = animHeader.animations[i].animationFrames[n].boneMatrix[skeleton.bones[k].parentId]; //gets the parent bone
+                            MatrixZ.M43 = skeleton.bones[skeleton.bones[k].parentId].Size; //This is M43 which is Y
+                            Matrix rMatrix = Matrix.Multiply(parentBone, MatrixZ);
+                            rMatrix.M41 = parentBone.M11 * MatrixZ.M41 + parentBone.M12 * MatrixZ.M42 + parentBone.M13 * MatrixZ.M43 + parentBone.M41;
+                            rMatrix.M42 = parentBone.M21 * MatrixZ.M41 + parentBone.M22 * MatrixZ.M42 + parentBone.M23 * MatrixZ.M43 + parentBone.M42;
+                            rMatrix.M43 = parentBone.M31 * MatrixZ.M41 + parentBone.M32 * MatrixZ.M42 + parentBone.M33 * MatrixZ.M43 + parentBone.M43;
                             MatrixZ = rMatrix;
                         }
 
-                        animHeader.animations[i].animationFrames[n].boneRot.Item3[k] = MatrixZ;
+                        animHeader.animations[i].animationFrames[n].boneMatrix[k] = MatrixZ;
                     }
                 }
             }
