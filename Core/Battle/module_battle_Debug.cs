@@ -664,7 +664,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
         {
             Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
 
-            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
             Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
             Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
@@ -778,12 +778,12 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
                     CalculateUV(model.quads[i].U4, model.quads[i].V4, model.quads[i].TexturePage, textureInterface.GetWidth)));
 
                 //1 3 4
-                vptDynamic.Add(new VertexPositionTexture(new Vector3((float)A.X / 100, (float)A.Y / 100, (float)A.Z / 100),
-                    CalculateUV(model.quads[i].U1, model.quads[i].V1, model.quads[i].TexturePage, textureInterface.GetWidth)));
-                vptDynamic.Add(new VertexPositionTexture(new Vector3((float)C.X / 100, (float)C.Y / 100, (float)C.Z / 100),
-                    CalculateUV(model.quads[i].U3, model.quads[i].V3, model.quads[i].TexturePage, textureInterface.GetWidth)));
                 vptDynamic.Add(new VertexPositionTexture(new Vector3((float)D.X / 100, (float)D.Y / 100, (float)D.Z / 100),
                     CalculateUV(model.quads[i].U4, model.quads[i].V4, model.quads[i].TexturePage, textureInterface.GetWidth)));
+                vptDynamic.Add(new VertexPositionTexture(new Vector3((float)C.X / 100, (float)C.Y / 100, (float)C.Z / 100),
+                    CalculateUV(model.quads[i].U3, model.quads[i].V3, model.quads[i].TexturePage, textureInterface.GetWidth)));
+                vptDynamic.Add(new VertexPositionTexture(new Vector3((float)A.X / 100, (float)A.Y / 100, (float)A.Z / 100),
+                    CalculateUV(model.quads[i].U1, model.quads[i].V1, model.quads[i].TexturePage, textureInterface.GetWidth)));
 
                 bs_renderer_supplier.Add(new Stage_GeometryInfoSupplier()
                 {
