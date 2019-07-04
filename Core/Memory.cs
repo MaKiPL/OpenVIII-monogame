@@ -174,7 +174,7 @@ namespace OpenVIII
             AlphaBlendFunction = BlendFunction.Add,
         };
 
-        public static int module = MODULE_OVERTURE_DEBUG;
+        public static int module = MODULE_BATTLE_DEBUG;
 
         public static string FF8DIR { get; private set; }
         public static string FF8DIRdata { get; private set; }
@@ -283,7 +283,7 @@ namespace OpenVIII
         /// <summary>
         /// Active battle encounter. Set by field or battle module. You shouldn't change it in-battle.
         /// </summary>
-        public static int battle_encounter = 0;
+        public static int battle_encounter = 38;
 
         /// <summary>
         /// Battle music pointer. Set by SETBATTLEMUSIC in field module or by world module. Default=6
