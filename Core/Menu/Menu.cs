@@ -65,6 +65,17 @@ namespace OpenVIII
 
         public Menu()
         {
+            InitConstructor();
+        }
+
+        public Menu(Characters character, Characters? visablecharacter = null)
+        {
+            Character = character;
+            VisableCharacter = visablecharacter ?? character;
+            InitConstructor(); // because base() would always run first :(
+        }
+        private void InitConstructor()
+        {
             //WaitForInit();
             if (!cancel)
             {
@@ -75,13 +86,6 @@ namespace OpenVIII
                 skipdata = false;
             }
         }
-
-        public Menu(Characters character, Characters? visablecharacter = null) : this()
-        {
-            Character = Character;
-            VisableCharacter = visablecharacter ?? character;
-        }
-
         #endregion Constructors
 
         #region Properties

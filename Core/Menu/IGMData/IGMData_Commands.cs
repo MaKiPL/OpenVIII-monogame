@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 
 namespace OpenVIII
 {
@@ -7,29 +8,30 @@ namespace OpenVIII
         public bool Battle { get; }
 
         private int nonbattleWidth;
+        private bool skipReinit;
 
-        public IGMData_Commands(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null, bool battle = false) : base(5, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.COMMAND), 1, 4)
+        public IGMData_Commands(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null, bool battle = false) : base(5, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.COMMAND), 1, 4, character,visablecharacter)
         {
-            Character = character;
-            VisableCharacter = visablecharacter ?? character;
             Battle = battle;
             nonbattleWidth = Width;
+            skipReinit = true;
+            ReInit();
         }
         public override bool Inputs()
         {
             Cursor_Status |= Cursor_Status.Enabled;
             return base.Inputs();
         }
-
         /// <summary>
         /// Things that may of changed before screen loads or junction is changed.
         /// </summary>
         public override void ReInit()
         {
-            base.ReInit();
-
-            if (Memory.State.Characters != null)
+            if (Memory.State.Characters != null && !skipReinit)
             {
+                base.ReInit();
+                page = 0;
+                Cursor_Status &= ~Cursor_Status.Horizontal;
                 ITEM[0, 0] = new IGMDataItem_String(
                         Kernel_bin.BattleCommands[
                             Memory.State.Characters[Character].Abilities.Contains(Kernel_bin.Abilities.Mug) ?
@@ -39,9 +41,21 @@ namespace OpenVIII
 
                 for (int pos = 1; pos < rows; pos++)
                 {
-                    ITEM[pos, 0] = Memory.State.Characters[Character].Commands[pos - 1] != Kernel_bin.Abilities.None ? new IGMDataItem_String(
-                        Kernel_bin.Commandabilities[Memory.State.Characters[Character].Commands[pos - 1]].Name,
-                        SIZE[pos]) : null;
+                    Kernel_bin.Abilities cmd = Memory.State.Characters[Character].Commands[pos - 1];
+
+                    if (cmd != Kernel_bin.Abilities.None)
+                    {
+                        ITEM[pos, 0] = new IGMDataItem_String(
+                            Kernel_bin.Commandabilities[Memory.State.Characters[Character].Commands[pos - 1]].Name,
+                            SIZE[pos]);
+                        ITEM[pos, 0].Show();
+                        BLANKS[pos] = false;
+                    }
+                    else
+                    {
+                        ITEM[pos, 0].Hide();
+                        BLANKS[pos] = true;
+                    }
                 }
 
                 if (Battle && Memory.State.Characters[Character].GenerateCrisisLevel() >= 0 || true)
@@ -55,7 +69,60 @@ namespace OpenVIII
                     ITEM[Count - 1, 0] = null;
                 }
             }
+            skipReinit = false;
         }
+        sbyte page = 0;
+        protected override void ModeChangeEvent(object sender, Enum e)
+        {
+            base.ModeChangeEvent(sender, e);
+            if (e.GetType() == typeof(BattleMenu.Mode))
+            {
+                BattleMenu.Mode mode = (BattleMenu.Mode)e;
+                if (mode.Equals(BattleMenu.Mode.YourTurn))
+                {
+                    Show();
+                    ReInit();
+                }
+                else Hide();
+            }
+        }
+
+        public override void Inputs_Right()
+        {
+            if (Battle && Memory.State.Characters[Character].GenerateCrisisLevel() >= 0 && CURSOR_SELECT == 1 || true )
+            {
+                if (page == 0)
+                {
+                    ((IGMDataItem_String)ITEM[0, 0]).Data = Memory.State.Characters[Character].CharacterStats.Limit.Name;
+                    base.Inputs_Right();
+                    page++;
+                    ITEM[Count - 1, 0].Hide();
+                    //for (int i = 1; i < Count; i++)
+                    //{
+                    //    ITEM[i, 0].Hide();
+                    //    BLANKS[i] = true;
+                    //}
+                }
+            }
+        }
+
+        public override void Inputs_Left()
+        {
+            if (Battle && Memory.State.Characters[Character].GenerateCrisisLevel() >= 0 && CURSOR_SELECT == 1 || true)
+            {
+                if (page == 1)
+                {
+                    ReInit();
+                    base.Inputs_Left();
+                    //for (int i = 1; i < Count; i++)
+                    //{
+                    //    ITEM[i, 0].Hide();
+                    //    BLANKS[i] = true;
+                    //}
+                }
+            }
+        }
+
         protected override void InitShift(int i, int col, int row)
         {
             base.InitShift(i, col, row);
@@ -66,6 +133,10 @@ namespace OpenVIII
         /// <summary>
         /// Things fixed at startup.
         /// </summary>
-        protected override void Init() => base.Init();
+        protected override void Init()
+        {
+            BLANKS[Count - 1] = true;
+            base.Init();
+        }
     }
 }

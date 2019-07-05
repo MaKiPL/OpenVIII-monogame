@@ -34,8 +34,12 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData(int count = 0, int depth = 0, IGMDataItem container = null, int? cols = null, int? rows = null)
-        => Init(count, depth, container, cols, rows);
+        public IGMData(int count = 0, int depth = 0, IGMDataItem container = null, int? cols = null, int? rows = null, Characters? character = null, Characters? visablecharacter = null)
+        {
+            Character = character ?? Characters.Blank;
+            VisableCharacter = visablecharacter ?? Character;
+            Init(count, depth, container, cols, rows);
+        }
 
         #endregion Constructors
 

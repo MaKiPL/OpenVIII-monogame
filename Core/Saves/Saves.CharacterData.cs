@@ -116,7 +116,7 @@ namespace OpenVIII
             /// <summary>
             /// Kernel Stats
             /// </summary>
-            Kernel_bin.Character_Stats CharacterStats => Kernel_bin.CharacterStats[ID];
+            public Kernel_bin.Character_Stats CharacterStats => Kernel_bin.CharacterStats[ID];
             /// <summary>
             /// Stats that can be incrased via items. Except for HP because it's a ushort not a byte.
             /// </summary>
