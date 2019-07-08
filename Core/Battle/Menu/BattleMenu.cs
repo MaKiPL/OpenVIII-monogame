@@ -66,6 +66,8 @@ namespace OpenVIII
         /// </summary>
         public override void Draw() => base.DrawData();
 
+        public override bool Inputs() => Data[SectionName.Commands].Inputs();
+
         protected override void Init()
         {
             NoInputOnUpdate = true;
@@ -77,45 +79,36 @@ namespace OpenVIII
             base.Init();
         }
 
-        public override bool Inputs() => Data[SectionName.Commands].Inputs();
-
         #endregion Methods
+
+        #region Classes
 
         private class IGMData_HP : IGMData
         {
+            #region Fields
+
             private static Texture2D dot;
             private Mode mode;
+
+            #endregion Fields
+
+            #region Constructors
 
             public IGMData_HP(Rectangle pos, Characters character, Characters visablecharacter) : base(3, 4, new IGMDataItem_Empty(pos), 1, 3, character, visablecharacter)
             {
             }
 
-            protected override void Init()
-            {
-                if (dot == null)
-                {
-                    dot = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
-                    lock (dot)
-                        dot.SetData(new Color[] { Color.White });
-                }
-                base.Init();
-            }
-            protected override void ModeChangeEvent(object sender, Enum e)
-            {
-                base.ModeChangeEvent(sender, e);
-                if (e.GetType() == typeof(Mode))
-                {
-                    mode = (Mode)e;
-                    ReInit();
-                }
-            }
+            #endregion Constructors
+
+            #region Methods
+
             public override void ReInit()
             {
                 if (Memory.State?.Characters != null)
                 {
                     List<KeyValuePair<int, Characters>> party = Memory.State.Party.Select((element, index) => new { element, index }).ToDictionary(m => m.index, m => m.element).Where(m => !m.Value.Equals(Characters.Blank)).ToList();
                     byte pos = (byte)party.FindIndex(x => x.Value == VisableCharacter);
-                    foreach (KeyValuePair<int, Characters> pm in party.Where(x=>x.Value == VisableCharacter))
+                    foreach (KeyValuePair<int, Characters> pm in party.Where(x => x.Value == VisableCharacter))
                     {
                         Saves.CharacterData c = Memory.State.Characters[Memory.State.PartyData[pm.Key]];
                         FF8String name = Memory.Strings.GetName(pm.Value);
@@ -143,7 +136,7 @@ namespace OpenVIII
                             fadedcolorid = Font.ColorID.Grey;
                             ITEM[pos, 2] = new IGMDataItem_Texture(dot, new Rectangle(SIZE[pos].X + 230, SIZE[pos].Y + 12, 150, 15), Color.Yellow * .8f, Color.LightYellow);
                         }
-                        else if(mode == Mode.ATB_Charged)
+                        else if (mode == Mode.ATB_Charged)
                             ITEM[pos, 2] = new IGMDataItem_Texture(dot, new Rectangle(SIZE[pos].X + 230, SIZE[pos].Y + 12, 150, 15), Color.Yellow * .8f);
                         // insert gradient atb bar here. Though this probably belongs in the update
                         // method as it'll be in constant flux.
@@ -159,7 +152,31 @@ namespace OpenVIII
                     base.ReInit();
                 }
             }
+
+            protected override void Init()
+            {
+                if (dot == null)
+                {
+                    dot = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
+                    lock (dot)
+                        dot.SetData(new Color[] { Color.White });
+                }
+                base.Init();
+            }
+            protected override void ModeChangeEvent(object sender, Enum e)
+            {
+                base.ModeChangeEvent(sender, e);
+                if (e.GetType() == typeof(Mode))
+                {
+                    mode = (Mode)e;
+                    ReInit();
+                }
+            }
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 
     /// <summary>
@@ -167,14 +184,13 @@ namespace OpenVIII
     /// </summary>
     public class BattleMenus : Menus
     {
+
         #region Fields
 
+        private int _player = 0;
         private Dictionary<Mode, Action> DrawActions;
         private Dictionary<Mode, Func<bool>> InputFunctions;
-        private int _player = 0;
         private Dictionary<Mode, Func<bool>> UpdateFunctions;
-
-
 
         #endregion Fields
 
@@ -188,6 +204,11 @@ namespace OpenVIII
             Battle,
             Victory,
             GameOver,
+        }
+
+        private enum SectionName : byte
+        {
+            HP
         }
 
         #endregion Enums
@@ -207,6 +228,14 @@ namespace OpenVIII
             if (DrawActions.ContainsKey((Mode)GetMode()))
                 DrawActions[(Mode)GetMode()]();
             base.DrawData();
+        }
+
+        public override bool Inputs()
+        {
+            bool ret = false;
+            if (InputFunctions.ContainsKey((Mode)GetMode()))
+                ret = InputFunctions[(Mode)GetMode()]() && ret;
+            return ret;
         }
 
         public override void ReInit()
@@ -249,11 +278,42 @@ namespace OpenVIII
             base.ReInit();
         }
 
-        private bool InputGameOverFunction() => throw new NotImplementedException();
-        private bool InputVictoryFunction() => throw new NotImplementedException();
+        public override bool Update()
+        {
+            bool ret = false;
+            if (UpdateFunctions.ContainsKey((Mode)GetMode()))
+                UpdateFunctions[(Mode)GetMode()]();
+            ret = base.Update() || ret;
+            return ret;
+        }
+
+        protected override void Init()
+        {
+            Size = new Vector2 { X = 840, Y = 630 };
+            SetMode((Mode)0);
+            Data = new Dictionary<Enum, IGMData>()
+            {
+                //{SectionName.HP, new IGMData_HP(new Rectangle((int)(Size.X-389),507,389,126))}
+            };
+            base.Init();
+        }
+
+        private void DrawBattleAction() => menus?.ForEach(m => m.Draw());
+
+        private void DrawGameOverAction() => throw new NotImplementedException();
+
+        private void DrawStartingAction() => throw new NotImplementedException();
+
+        private void DrawVictoryAction() => throw new NotImplementedException();
+
         private bool InputBattleFunction()
         {
             bool ret = false;
+            foreach (var m in menus.Where(m => (BattleMenu.Mode)m.GetMode() == BattleMenu.Mode.YourTurn))
+            {
+                ret = m.Inputs() || ret;
+                if (ret) return ret;
+            }
             if (Input.Button(Buttons.Cancel))
             {
                 switch ((BattleMenu.Mode)menus[_player].GetMode())
@@ -275,54 +335,10 @@ namespace OpenVIII
             return ret;
         }
 
+        private bool InputGameOverFunction() => throw new NotImplementedException();
         private bool InputStartingFunction() => throw new NotImplementedException();
 
-        public override bool Update()
-        {
-            bool ret = false;
-            if (UpdateFunctions.ContainsKey((Mode)GetMode()))
-                UpdateFunctions[(Mode)GetMode()]();
-            ret = base.Update() || ret;
-            return ret;
-        }
-
-        private enum SectionName : byte
-        {
-            HP
-        }
-
-        protected override void Init()
-        {
-            Size = new Vector2 { X = 840, Y = 630 };
-            SetMode((Mode)0);
-            Data = new Dictionary<Enum, IGMData>()
-            {
-                //{SectionName.HP, new IGMData_HP(new Rectangle((int)(Size.X-389),507,389,126))}
-            };
-            base.Init();
-        }
-
-        public override bool Inputs()
-        {
-            bool ret = false;
-            foreach(var m in menus.Where(m=>(BattleMenu.Mode)m.GetMode() == BattleMenu.Mode.YourTurn))
-            {
-                ret = m.Inputs() || ret;
-                if (ret) return ret;
-            }
-            if (InputFunctions.ContainsKey((Mode)GetMode()))
-                ret = InputFunctions[(Mode)GetMode()]() && ret;
-            return ret;
-        }
-
-        private void DrawBattleAction() => menus?.ForEach(m=>m.Draw());
-
-        private void DrawGameOverAction() => throw new NotImplementedException();
-
-        private void DrawStartingAction() => throw new NotImplementedException();
-
-        private void DrawVictoryAction() => throw new NotImplementedException();
-
+        private bool InputVictoryFunction() => throw new NotImplementedException();
         private bool UpdateBattleFunction()
         {
             menus?[_player].SetMode(BattleMenu.Mode.YourTurn);
@@ -341,14 +357,17 @@ namespace OpenVIII
         private bool UpdateVictoryFunction() => throw new NotImplementedException();
 
         #endregion Methods
+
     }
 
     public abstract class Menus : Menu
     {
+
         #region Fields
 
         protected List<Menu> menus;
 
         #endregion Fields
+
     }
 }
