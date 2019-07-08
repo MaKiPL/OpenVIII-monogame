@@ -301,7 +301,7 @@ namespace OpenVIII
                 base.Init();
             }
 
-            protected override bool Inputs()
+            public override bool Inputs()
             {
                 if (GetMode().Equals(Mode.None)) SetMode(Mode.TopMenu);
                 bool ret = false;

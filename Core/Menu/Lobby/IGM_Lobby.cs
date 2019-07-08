@@ -38,7 +38,7 @@ namespace OpenVIII
             base.StartDraw();
         }
 
-        protected override bool Inputs() => Data[SectionName.Selections].Inputs();
+        public override bool Inputs() => Data[SectionName.Selections].Inputs();
 
 
         private class IGMData_Selections : IGMData

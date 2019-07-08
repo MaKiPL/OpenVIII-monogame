@@ -88,7 +88,7 @@ namespace OpenVIII
             base.Init();
         }
 
-        protected override bool Inputs() => InputDict[(Mode)GetMode()]();
+        public override bool Inputs() => InputDict[(Mode)GetMode()]();
 
 
         #endregion Methods

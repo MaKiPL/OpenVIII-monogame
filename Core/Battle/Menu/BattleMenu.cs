@@ -68,7 +68,8 @@ namespace OpenVIII
 
         protected override void Init()
         {
-            Size = new Vector2 { X = 840, Y = 630 };
+            NoInputOnUpdate = true;
+            Size = new Vector2 { X = 881, Y = 636 };
             Data.Add(SectionName.Commands, new IGMData_Commands(new Rectangle(50, (int)(Size.Y - 204), 210, 192), Character, VisableCharacter, true));
             Data.Add(SectionName.HP, new IGMData_HP(new Rectangle((int)(Size.X - 389), 507, 389, 126), Character, VisableCharacter));
             Data.ForEach(x=>x.Value.SetModeChangeEvent(ref ModeChangeHandler));
@@ -76,7 +77,7 @@ namespace OpenVIII
             base.Init();
         }
 
-        protected override bool Inputs() => Data[SectionName.Commands].Inputs();
+        public override bool Inputs() => Data[SectionName.Commands].Inputs();
 
         #endregion Methods
 
@@ -169,6 +170,7 @@ namespace OpenVIII
         #region Fields
 
         private Dictionary<Mode, Action> DrawActions;
+        private Dictionary<Mode, Func<bool>> InputFunctions;
         private int _player = 0;
         private Dictionary<Mode, Func<bool>> UpdateFunctions;
 
@@ -202,7 +204,8 @@ namespace OpenVIII
 
         public override void DrawData()
         {
-            DrawActions[(Mode)GetMode()]();
+            if (DrawActions.ContainsKey((Mode)GetMode()))
+                DrawActions[(Mode)GetMode()]();
             base.DrawData();
         }
 
@@ -234,14 +237,51 @@ namespace OpenVIII
                     {Mode.Victory, DrawVictoryAction},
                     {Mode.GameOver, DrawGameOverAction},
                 };
+                InputFunctions = new Dictionary<Mode, Func<bool>>()
+                {
+                    //{Mode.Starting, InputStartingFunction},
+                    {Mode.Battle, InputBattleFunction},
+                    //{Mode.Victory, InputVictoryFunction},
+                    //{Mode.GameOver, InputGameOverFunction},
+                };
                 menus?.ForEach(m => m.Show());
             }
             base.ReInit();
         }
 
+        private bool InputGameOverFunction() => throw new NotImplementedException();
+        private bool InputVictoryFunction() => throw new NotImplementedException();
+        private bool InputBattleFunction()
+        {
+            bool ret = false;
+            if (Input.Button(Buttons.Cancel))
+            {
+                switch ((BattleMenu.Mode)menus[_player].GetMode())
+                {
+                    case BattleMenu.Mode.YourTurn:
+                        menus[_player].SetMode(BattleMenu.Mode.ATB_Charged);
+                        break;
+                }
+                if (++_player > 2) _player = 0;
+                init_debugger_Audio.PlaySound(14);
+                menus[_player].SetMode(BattleMenu.Mode.YourTurn);
+                switch ((BattleMenu.Mode)menus[_player].GetMode())
+                {
+                    case BattleMenu.Mode.ATB_Charged:
+                        menus[_player].SetMode(BattleMenu.Mode.YourTurn);
+                        break;
+                }
+            }
+            return ret;
+        }
+
+        private bool InputStartingFunction() => throw new NotImplementedException();
+
         public override bool Update()
         {
-            bool ret = UpdateFunctions[(Mode)GetMode()]();
+            bool ret = false;
+            if (UpdateFunctions.ContainsKey((Mode)GetMode()))
+                UpdateFunctions[(Mode)GetMode()]();
             ret = base.Update() || ret;
             return ret;
         }
@@ -262,7 +302,18 @@ namespace OpenVIII
             base.Init();
         }
 
-        protected override bool Inputs() => false;
+        public override bool Inputs()
+        {
+            bool ret = false;
+            foreach(var m in menus)
+            {
+                ret = m.Inputs() || ret;
+                if (ret) return ret;
+            }
+            if (InputFunctions.ContainsKey((Mode)GetMode()))
+                ret = InputFunctions[(Mode)GetMode()]() && ret;
+            return ret;
+        }
 
         private void DrawBattleAction() => menus?.ForEach(m=>m.Draw());
 

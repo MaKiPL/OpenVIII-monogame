@@ -99,7 +99,7 @@ namespace OpenVIII
                 SetMode(Mode.SelectItem);
                 base.Init();
             }
-            protected override bool Inputs() => InputsDict[(Mode)GetMode()]();
+            public override bool Inputs() => InputsDict[(Mode)GetMode()]();
 
             #endregion Methods
         }

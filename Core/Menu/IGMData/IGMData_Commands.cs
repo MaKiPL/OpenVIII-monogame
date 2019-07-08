@@ -58,7 +58,7 @@ namespace OpenVIII
                     }
                 }
 
-                if (Battle && Memory.State.Characters[Character].GenerateCrisisLevel() >= 0 || true)
+                if (Battle && Memory.State.Characters[Character].GenerateCrisisLevel() >= 0 || true) //TODO remove true for testing limitbreak
                 {
                     CONTAINER.Width = 294;
                     ITEM[Count-1, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right, new Rectangle(Width+10, SIZE[0].Y, 0, 0), 2, 7);
@@ -104,6 +104,11 @@ namespace OpenVIII
                     //}
                 }
             }
+        }
+        public override void Inputs_CANCEL()
+        {
+            
+            //base.Inputs_CANCEL();
         }
 
         public override void Inputs_Left()
