@@ -829,8 +829,11 @@
     <Compile Include="TEX.cs" />
     <Compile Include="TextureHandler.cs" />
     <Compile Include="TIM2.cs" />
+    <Compile Include="World\CharaOne.cs" />
     <Compile Include="World\debug_MCH.cs" />
     <Compile Include="World\module_world_debug.cs" />
+    <Compile Include="World\texl.cs" />
+    <Compile Include="World\wmset.cs" />
   </ItemGroup>
   <ItemGroup>
     <MonoGameContentReference Include="Content\Content.mgcb" />

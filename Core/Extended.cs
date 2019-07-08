@@ -9,8 +9,17 @@ using System.Threading.Tasks;
 namespace OpenVIII
 {
     //Class that provides language extensions made by Maki
-    static class Extended
+    public static class Extended
     {
+        public enum languages
+        {
+            en,
+            fr,
+            de,
+            es,
+            it
+        }
+
         //https://stackoverflow.com/a/2887/4509036
         public static T ByteArrayToStructure<T>(byte[] bytes) where T : struct
         {
@@ -129,6 +138,12 @@ namespace OpenVIII
         /// <param name="x"></param>
         /// <returns></returns>
         public static float S16ToFloat(short x) => x / 4096f;
+
+        public static string GetLanguageShort(bool bUseAlternative = false)
+        {
+            string languageIndicator = Memory.languages.ToString();
+            return bUseAlternative ? languageIndicator == "en" ? "us" : languageIndicator : languageIndicator;
+        }
 
         /// <summary>
         /// Converts short to float via x/4096f

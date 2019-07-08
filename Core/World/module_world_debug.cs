@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using OpenVIII.Core.World;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -36,23 +37,22 @@ namespace OpenVIII
 
         //DEBUG
         private const float WORLD_SCALE_MODEL = 16f;
-
-        private static List<Texture2D[]> textures;
-        private static List<Texture2D[]> wm38textures;
-        private static List<Texture2D[]> wm39textures;
-        private static List<Texture2D[]> charaOneTextures;
         private static readonly int renderDistance = 4;
         private static readonly float FOV = 60;
 
         private static Vector2 segmentPosition;
+        private static CharaOne chara;
+        private static texl texl;
+        private static wmset wmset;
 
-        private static Debug_MCH[] mchEntities;
 
         private static byte[] wmx;
 
         static float DEBUGshit = FOV;
+        private const int WM_SEG_SIZE = 0x9000; //World map segment size in file
+        private const int WM_SEGMENTS_COUNT = 835;
 
-        private static int GetSegment(int segID) => segID * 0x9000;
+        #region structures
 
         private static Segment[] segments;
 
@@ -111,22 +111,12 @@ namespace OpenVIII
             public short Z1 { get => (short)(Z * -1); set => Z = value; }
         }
 
+        #endregion
+
         private static _worldState worldState;
         private static MiniMapState MapState = MiniMapState.rectangle;
 
-        public static void Update()
-        {
-            switch (worldState)
-            {
-                case _worldState._0init:
-                    InitWorld();
-                    break;
-                case _worldState._1debugFly:
-                    FPSCamera();
-                    break;
-            }
-        }
-
+        private static int GetSegment(int segID) => segID * WM_SEG_SIZE;
         private static void InitWorld()
         {
             Input.OverrideLockMouse = true;
@@ -160,9 +150,6 @@ namespace OpenVIII
             };
 
             ReadWMX();
-
-
-
             worldState++;
             return;
         }
@@ -172,18 +159,14 @@ namespace OpenVIII
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_WORLD);
             string wmxPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("wmx.obj")).Select(x => x).First();
             string texlPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("texl.obj")).Select(x => x).First();
-            string wmPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("wmsetus.obj")).Select(x => x).First();
+            string wmPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains($"wmset{Extended.GetLanguageShort(true)}.obj")).Select(x => x).First();
             string charaOne = aw.GetListOfFiles().Where(x => x.ToLower().Contains("chara.one")).Select(x => x).First();
             wmx = ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, wmxPath);
-            byte[] texl = ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, texlPath);
-            byte[] charaOneB = ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, charaOne);
-            ReadCharaOne(charaOneB);
-            charaOneB = null; //GC
-            ReadWmSet(ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, wmPath));
+            texl = new texl(ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, texlPath));
+            chara = new CharaOne(ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, charaOne));
+            wmset = new wmset(ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, wmPath));
 
-            ReadTextures(texl);
-            texl = null; //GC
-            segments = new Segment[835];
+            segments = new Segment[WM_SEGMENTS_COUNT];
 
             using (MemoryStream ms = new MemoryStream(wmx))
             using (BinaryReader br = new BinaryReader(ms))
@@ -210,121 +193,22 @@ namespace OpenVIII
                 }
         }
 
-        //TODO - so parsing is done
-        private static void ReadCharaOne(byte[] charaOneB)
+        public static void Update()
         {
-            List<Debug_MCH> mchs = new List<Debug_MCH>();
-            using (MemoryStream ms = new MemoryStream(charaOneB))
-            using (BinaryReader br = new BinaryReader(ms))
+            switch (worldState)
             {
-
-                uint eof = br.ReadUInt32();
-                TIM2 tim;
-                while (ms.CanRead)
-                    if (ms.Position > ms.Length)
-                        break;
-                    else if (BitConverter.ToUInt16(charaOneB, (int)ms.Position) == 0)
-                        ms.Seek(2, SeekOrigin.Current);
-                    else if (br.ReadUInt64() == 0x0000000800000010)
-                    {
-                        ms.Seek(-8, SeekOrigin.Current);
-                        tim = new TIM2(charaOneB, (uint)ms.Position);
-                        ms.Seek(tim.GetHeight * tim.GetWidth / 2 + 64, SeekOrigin.Current); //i.e. 64*20=1280/2=640 + 64= 704 + eof
-                        if (charaOneTextures == null)
-                            charaOneTextures = new List<Texture2D[]>();
-                        Texture2D[] _2d = { tim.GetTexture(0,true) };
-
-                        charaOneTextures.Add(_2d);
-                    }
-                    else //is geometry structure
-                    {
-                        ms.Seek(-8, SeekOrigin.Current);
-                        mchs.Add(new Debug_MCH(ms, br));
-                    }
-            }
-            mchEntities = mchs.ToArray();
-        }
-
-        #region wmset
-
-        private static void ReadWmSet(byte[] v)
-        {
-            int[] sections = new int[48];
-            using (MemoryStream ms = new MemoryStream(v))
-            using (BinaryReader br = new BinaryReader(ms))
-            {
-                for (int i = 0; i < sections.Length; i++)
-                    sections[i] = br.ReadInt32();
-
-                Wm_s38(ms, br, sections, v);
-                Wm_s39(ms, br, sections, v);
-            }
-        }
-
-        private static void Wm_s39(MemoryStream ms, BinaryReader br, int[] sec, byte[] v)
-        {
-            ms.Seek(sec[39 - 1], SeekOrigin.Begin);
-            List<int> wm39sections = new List<int>();
-            int eof = -1;
-            while ((eof = br.ReadInt32()) != 0)
-                wm39sections.Add(eof);
-            wm39textures = new List<Texture2D[]>();
-
-            for (int i = 0; i < wm39sections.Count; i++)
-            {
-                TIM2 tim = new TIM2(v, (uint)(sec[39 - 1] + wm39sections[i]));
-                wm39textures.Add(new Texture2D[tim.GetClutCount]);
-                for (ushort k = 0; k < wm39textures[i].Length; k++)
-                {
-                    wm39textures[i][k] = tim.GetTexture(k, true);
-                }
-            }
-        }
-
-        private static void Wm_s38(MemoryStream ms, BinaryReader br, int[] sec, byte[] v)
-        {
-            ms.Seek(sec[38 - 1], SeekOrigin.Begin);
-            List<int> wm38sections = new List<int>();
-            int eof = -1;
-            while ((eof = br.ReadInt32()) != 0)
-                wm38sections.Add(eof);
-            wm38textures = new List<Texture2D[]>();
-
-            for (int i = 0; i < wm38sections.Count; i++)
-            {
-                TIM2 tim = new TIM2(v, (uint)(sec[38 - 1] + wm38sections[i]));
-                wm38textures.Add(new Texture2D[tim.GetClutCount]);
-                for (ushort k = 0; k < wm38textures[i].Length; k++)
-                {
-                    wm38textures[i][k] = tim.GetTexture(k, true);
-                }
-            }
-        }
-
-        #endregion
-
-        private static void ReadTextures(byte[] texl)
-        {
-            MemoryStream ms = new MemoryStream(texl);
-            BinaryReader br = new BinaryReader(ms);
-            textures = new List<Texture2D[]>(); //20
-
-            for (int i = 0; i < 20; i++)
-            {
-                int timOffset = i * 0x12800;
-                TIM2 tim = new TIM2(texl, (uint)timOffset);
-                textures.Add(new Texture2D[tim.GetClutCount]);
-                for (ushort k = 0; k < textures[i].Length; k++)
-                {
-                    textures[i][k] = tim.GetTexture(k,true);
-                }
+                case _worldState._0init:
+                    InitWorld();
+                    break;
+                case _worldState._1debugFly:
+                    FPSCamera();
+                    break;
             }
 
-            br.Close();
-            ms.Close();
-            br.Dispose();
-            ms.Dispose();
+            if (Input.Button(Keys.J))
+                MapState = MapState >= MiniMapState.fullscreen ? MapState = 0 : MapState + 1;
         }
+
         const float defaultmaxMoveSpeed = 1f;
         const float MoveSpeedChange = 1f;
         static float maxMoveSpeed = defaultmaxMoveSpeed;
@@ -403,11 +287,7 @@ namespace OpenVIII
         {
             Memory.spriteBatch.GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
-            Memory.spriteBatch.Draw(wm38textures[10][0], new Rectangle(0, 0, (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f)), Color.White * .1f);
-            Memory.spriteBatch.End();
-
-
+            DrawBackgroundClouds();
 
             Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
             Memory.graphics.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
@@ -421,24 +301,16 @@ namespace OpenVIII
             for (int i = 0; i < 768; i++)
                 DrawSegment(i);
 
-            if (true)
-            {
-                var collectionDebug = mchEntities[0].GetVertexPositions(-500, 100, -500);
-                ate.Texture = charaOneTextures[1][0];
-                foreach (var pass in ate.CurrentTechnique.Passes)
-                {
-                    pass.Apply();
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, collectionDebug.Item1, 0, collectionDebug.Item1.Length / 3);
-                }
-            }
-
-            if (Input.GetInputDelayed(Keys.J))
-                MapState = MapState >= MiniMapState.fullscreen ? MapState = 0 : MapState + 1;
-
-            //if (Input.GetInputDelayed(Keys.F1))
-            //    ;
-
-
+            //if (true)
+            //{
+            //    var collectionDebug = mchEntities[0].GetVertexPositions(-500, 100, -500);
+            //    ate.Texture = charaOneTextures[1][0];
+            //    foreach (var pass in ate.CurrentTechnique.Passes)
+            //    {
+            //        pass.Apply();
+            //        Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, collectionDebug.Item1, 0, collectionDebug.Item1.Length / 3);
+            //    }
+            //}
 
 
             switch (MapState)
@@ -460,19 +332,27 @@ namespace OpenVIII
                 $"World Map Camera: ={camPosition}\n" +
                 $"Segment Position: ={segmentPosition}\n" +
                 $"FPS camera degrees: ={degrees}°\n" +
-                $"FOV: ={FOV}", 30,20,lineSpacing:5);
+                $"FOV: ={FOV}", 30, 20, lineSpacing: 5);
             Memory.SpriteBatchEnd();
 
 
         }
 
+        /// <summary>
+        /// [WIP] Draws clouds in the background
+        /// </summary>
+        private static void DrawBackgroundClouds()
+        {
+            Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
+            Memory.spriteBatch.Draw(wmset.GetWorldMapTexture(wmset.Section38_textures.clouds, 0), new Rectangle(0, 0, (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f)), Color.White * .1f);
+            Memory.spriteBatch.End();
+        }
+
         private static void DrawRectangleMiniMap()
         {
             Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, Memory.blendState_BasicAdd);
-            Memory.spriteBatch.Draw(wm38textures[11][1], new Rectangle((int)(Memory.graphics.GraphicsDevice.Viewport.Width * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f)), Color.White * .7f);
+            Memory.spriteBatch.Draw(wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap,1), new Rectangle((int)(Memory.graphics.GraphicsDevice.Viewport.Width * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f)), Color.White * .7f);
             Memory.spriteBatch.End();
-
-            //cursor is wm38[24][0] and -16384 is max X, where 12288 is max Y
 
             float topX = Memory.graphics.GraphicsDevice.Viewport.Width * .6f; //6
             float topY = Memory.graphics.GraphicsDevice.Viewport.Height * .6f;
@@ -484,10 +364,17 @@ namespace OpenVIII
             topY += Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f * bc;
 
             Memory.SpriteBatchStartAlpha();
-            Memory.spriteBatch.Draw(wm38textures[24][0], new Rectangle((int)topX, (int)topY, (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 32.0f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 32.0f)), null, Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
+            Memory.spriteBatch.Draw(wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0), new Rectangle((int)topX, (int)topY, (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 32.0f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 32.0f)), null, Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
             Memory.SpriteBatchEnd();
         }
 
+        /// <summary>
+        /// Determines either to draw the segment or ignore. Example of ignore case is when the distance is bigger than X
+        /// </summary>
+        /// <param name="baseX"></param>
+        /// <param name="baseY"></param>
+        /// <param name="seg"></param>
+        /// <returns></returns>
         private static bool ShouldDrawSegment(float baseX, float baseY, int seg)
         {
             segmentPosition = new Vector2((int)(camPosition.X / 512) * -1, (int)(camPosition.Z / 512) * -1);
@@ -517,7 +404,6 @@ namespace OpenVIII
         private static void DrawSegment(int _i)
         {
             float baseX, baseY;
-            //TODO http://forums.qhimm.com/index.php?topic=16230.msg230004#msg230004 
             baseX = 2048f / 4 * (_i % 32);
             baseY = -(2048f / 4) * (_i / 32); //explicit int cast
 
@@ -626,18 +512,18 @@ namespace OpenVIII
                     if (seg.block[i].polygons[k / 3].TextureSwitch == 0x40 ||
                         seg.block[i].polygons[k / 3].TextureSwitch == 0xC0)
                     {
-                        ate.Texture = wm38textures[16][0];
-                    }   
+                        ate.Texture = wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0);
+                    }
                     else switch (seg.block[i].polygons[k / 3].TextureSwitch)
                         {
                             case 0x60:
-                                ate.Texture = wm39textures[0][0];
+                                ate.Texture = wmset.GetRoadsMiscTextures(wmset.Section39_Textures.train, 0);
                                 break;
                             case 0xE0:
-                                ate.Texture = wm39textures[5][0];
+                                ate.Texture = wmset.GetRoadsMiscTextures(wmset.Section39_Textures.asphalt, 0);
                                 break;
                             default:
-                                ate.Texture = textures[seg.block[i].polygons[k / 3].TPage][seg.block[i].polygons[k / 3].Clut]; //there are two texs, worth looking at other parameters; to reverse! 
+                                ate.Texture = texl.GetTexture(seg.block[i].polygons[k / 3].TPage,seg.block[i].polygons[k / 3].Clut); //there are two texs, worth looking at other parameters; to reverse! 
                                 break;
                         } //there are two texs, worth looking at other parameters; to reverse! 
 

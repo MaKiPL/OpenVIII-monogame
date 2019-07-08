@@ -35,6 +35,8 @@ namespace OpenVIII
         public static Texture2D shadowTexture;
         public static VertexPositionTexture[] shadowGeometry;
 
+        public static Extended.languages languages = Extended.languages.en;
+
         public enum ScaleMode
         {
             /// <summary>
@@ -226,7 +228,7 @@ namespace OpenVIII
         {
             FF8DIR = GameLocation.Current.DataPath;
             FF8DIRdata = Extended.GetUnixFullPath(Path.Combine(FF8DIR, "Data"));
-            string testdir = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata, "lang-en"));
+            string testdir = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata, $"lang-{Extended.GetLanguageShort()}"));
             FF8DIRdata_lang = Directory.Exists(testdir) ? testdir : FF8DIRdata;
 
             Memory.graphics = graphics;
