@@ -3,24 +3,33 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
+    #region Classes
+
+    public class IGMDataItem_Texture : IGMDataItem
     {
-        #region Classes
+        public Texture2D Data { get; set; }
+        public Color Faded_Color { get; set; }
+        public float Blink_Adjustment { get; set; }
 
-        private class IGMDataItem_Texture : IGMDataItem
+        public bool Blink => Color != Faded_Color;
+        public IGMDataItem_Texture(Texture2D data, Rectangle? pos = null, Color? color = null, Color? faded_color = null, float blink_adjustment = 1f) : base(pos)
         {
-            public Texture2D Data { get; set; }
+            Data = data;
+            Color = color?? Color.White;
+            Faded_Color = faded_color ?? Color;
+            Blink_Adjustment = blink_adjustment;
+        }
 
-            public IGMDataItem_Texture(Texture2D data, Rectangle? pos = null) : base(pos) => this.Data = data;
-
-            public override void Draw()
+        public override void Draw()
+        {
+            if (Enabled)
             {
-                if (Enabled)
-                {
-                    Memory.spriteBatch.Draw(Data, Pos, null, base.Color * fade);//4
-                }
+                Memory.spriteBatch.Draw(Data, Pos, null, Color * Fade);
+                if(Blink)
+                    Memory.spriteBatch.Draw(Data, Pos, null, Faded_Color * Fade * Blink_Amount * Blink_Adjustment);
             }
         }
-        #endregion Classes
     }
+
+    #endregion Classes
 }

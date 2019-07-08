@@ -2,24 +2,30 @@
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
+
+    #region Classes
+
+    public abstract class IGMDataItem//<T>
     {
-        #region Classes
+        //protected T _data;
+        protected Rectangle _pos;
+        public bool Enabled { get; private set; } = true;
+        public Vector2 Scale { get; set; }
 
-        public abstract class IGMDataItem//<T>
+        public IGMDataItem(Rectangle? pos = null, Vector2? scale = null)
         {
-            //protected T _data;
-            protected Rectangle _pos;
-            public bool Enabled { get; private set; } = true;
-            public Vector2 Scale { get; set; }
-
-            public IGMDataItem(Rectangle? pos = null, Vector2? scale = null)
-            {
-                _pos = pos ?? Rectangle.Empty;
-                Scale = scale ?? TextScale;
-            }
-
-            public virtual void Show() => Enabled = true;
+            _pos = pos ?? Rectangle.Empty;
+            Scale = scale ?? TextScale;
+        }
+        public int Width { get => _pos.Width; set => _pos.Width = value; }
+        public int Height { get => _pos.Height; set => _pos.Height = value; }
+        public int X { get => _pos.X; set => _pos.X = value; }
+        public int Y { get => _pos.Y; set => _pos.Y = value; }
+        public static float Fade => Menu.Fade;
+        public static Vector2 TextScale => Menu.TextScale;
+        public static float Blink_Amount => Menu.Blink_Amount;
+        public static void DrawPointer(Point cursor, Vector2? offset = null, bool blink = false) => Menu.DrawPointer(cursor, offset, blink);
+        public virtual void Show() => Enabled = true;
             public virtual void Hide() => Enabled = false;
 
             /// <summary>
@@ -52,5 +58,5 @@ namespace OpenVIII
             { return false; }
         }
         #endregion Classes
-    }
+    
 }

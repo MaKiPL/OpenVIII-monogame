@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace OpenVIII
 {
@@ -247,7 +248,28 @@ namespace OpenVIII
             Debug.WriteLine($"{this}: Dealt {dmg}, previous hp: {lasthp}, current hp: {_CurrentHP}");
             return true;
         }
+        public bool IsDead => CurrentHP() == 0 || (Statuses0 & Kernel_bin.Persistant_Statuses.Death) != 0;
+        public bool IsPetrify => (Statuses0 & (Kernel_bin.Persistant_Statuses.Petrify)) != 0;
+        /// <summary>
+        /// If all partymemembers are in gameover trigger Phoenix Pinion if CanPhoenixPinion or trigger Game over
+        /// </summary>
+        public bool IsGameOver => IsDead || IsPetrify || (Statuses1 & (Kernel_bin.Battle_Only_Statuses.Eject)) != 0;
 
+        /// <summary>
+        /// 25.4% chance to cast automaticly on gameover, if used once in battle
+        /// </summary>
+        /// <remarks>Memory.State.Fieldvars. has a value that tracks if PhoenixPinion is used just need to find it</remarks>
+        public bool CanPhoenixPinion => IsDead && !(IsPetrify || (Statuses1 & (Kernel_bin.Battle_Only_Statuses.Eject)) != 0) && Memory.State.Items.Where(m => m.ID == 31 && m.QTY >= 1).Count() > 0;
+        /// <summary>
+        /// ATB frozen
+        /// </summary>
+        public bool IsInactive => IsGameOver ||
+            (Statuses1 & (Kernel_bin.Battle_Only_Statuses.Stop))!=0;
+        /// <summary>
+        /// Menu disabled
+        /// </summary>
+        public bool IsNonInteractive => IsInactive ||
+            (Statuses0 & Kernel_bin.Persistant_Statuses.Berserk) != 0;
         private int Damage__1_HP_Damage_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
 
         private int Damage_Angelo_Search_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();

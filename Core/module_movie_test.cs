@@ -145,7 +145,11 @@ namespace OpenVIII
                     if (frameTex == null)
                     {
                         if (FfccVideo != null)
+                        {
+                            if (Memory.State?.Fieldvars != null)
+                                Memory.State.Fieldvars.FMVFrames = (ulong)FfccVideo.CurrentFrameNum;
                             frameTex = FfccVideo.Texture2D();
+                        }
                     }
                     break;
 
@@ -169,8 +173,10 @@ namespace OpenVIII
                     break;
             }
         }
+
         /// <summary>
-        /// Sets the movie player back to default state. Use when exiting or otherwise it shouldn't be required.
+        /// Sets the movie player back to default state. Use when exiting or otherwise it shouldn't
+        /// be required.
         /// </summary>
         public static void Reset()
         {

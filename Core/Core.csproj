@@ -131,6 +131,7 @@
     <Compile Include="ArchiveWorker.cs" />
     <Compile Include="Battle\debug_battleDat.cs" />
     <Compile Include="Battle\init_debugger_battle.cs" />
+    <Compile Include="Battle\Menu\BattleMenu.cs" />
     <Compile Include="Battle\module_battle.cs" />
     <Compile Include="Battle\module_battle_Debug.cs" />
     <Compile Include="Characters.cs" />
@@ -141,6 +142,9 @@
     <Compile Include="ExtapathyExtended.cs" />
     <Compile Include="Extended.cs" />
     <Compile Include="Fluid_Midi.cs" />
+    <Compile Include="Menu\IGMDataItem\IGMDataItem_TextureHandler.cs" />
+    <Compile Include="Menu\Images\Box_Options.cs" />
+    <Compile Include="Menu\Lobby\IGM_Lobby.cs" />
     <Compile Include="Saves\Damageable.cs" />
     <Compile Include="Strings\FF8String.cs" />
     <Compile Include="Strings\FF8StringReference.cs" />
@@ -703,8 +707,6 @@
     <Compile Include="Memory.cs" />
     <Compile Include="Menu\Images\Cards.cs" />
     <Compile Include="Menu\Images\Cards.ID.cs" />
-    <Compile Include="Menu\Images\DrawBox.cs" />
-    <Compile Include="Menu\Images\DrawPointer.cs" />
     <Compile Include="Menu\Images\Faces.cs" />
     <Compile Include="Menu\Images\Faces.ID.cs" />
     <Compile Include="Menu\Images\Icons.cs" />
@@ -744,7 +746,7 @@
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_CommandSlots.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_Group.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_CharacterInfo.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Commands.cs" />
+    <Compile Include="Menu\IGMData\IGMData_Commands.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_ConfirmChanges.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_ConfirmRemAll.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_ConfirmRemMag.cs" />
@@ -789,7 +791,6 @@
     <Compile Include="Menu\Item.cs" />
     <Compile Include="Menu\Table_Options.cs" />
     <Compile Include="Menu\Debug\Module_main_menu_DebugLobby.cs" />
-    <Compile Include="Menu\Lobby\Module_main_menu_MainLobby.cs" />
     <Compile Include="PointEx.cs" />
     <Compile Include="Strings\StringFile.cs" />
     <Compile Include="Strings\Strings.Areames.cs" />

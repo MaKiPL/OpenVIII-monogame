@@ -170,7 +170,7 @@ namespace OpenVIII
                     {
                         foreach (KeyValuePair<Characters, CharacterData> i in Characters)
                         {
-                            if (!Party.Contains(i.Key) && i.Value.VisibleInMenu)
+                            if (!Party.Contains(i.Key) && i.Value.Available)
                             {
                                 return false;
                             }
@@ -191,7 +191,7 @@ namespace OpenVIII
                         c = new List<CharacterData>();
                         foreach (KeyValuePair<Characters, CharacterData> i in Characters)
                         {
-                            if (!Party.Contains(i.Key) && i.Value.VisibleInMenu)
+                            if (!Party.Contains(i.Key) && i.Value.Available)
                             {
                                 c.Add(i.Value);
                             }
@@ -345,13 +345,13 @@ namespace OpenVIII
             /// How many dead party members there are.
             /// </summary>
             /// <returns>>=0</returns>
-            public int DeadPartyMembers() => PartyData.Where(m => m != OpenVIII.Characters.Blank && (Characters[m].CurrentHP() == 0 || (Characters[m].Statuses0 & Kernel_bin.Persistant_Statuses.Death) != 0)).Count();
+            public int DeadPartyMembers() => PartyData.Where(m => m != OpenVIII.Characters.Blank && Characters[m].IsDead).Count();
 
             /// <summary>
             /// How many dead characters there are.
             /// </summary>
             /// <returns>>=0</returns>
-            public int DeadCharacters() => Characters.Where(m=>m.Value.VisibleInMenu && m.Value.CurrentHP() == 0 || (m.Value.Statuses0 & Kernel_bin.Persistant_Statuses.Death) != 0).Count();
+            public int DeadCharacters() => Characters.Where(m=>m.Value.Available && m.Value.CurrentHP() == 0 || (m.Value.Statuses0 & Kernel_bin.Persistant_Statuses.Death) != 0).Count();
 
             /// <summary>
             /// preforms a Shadow Copy. Then does deep copy on any required objects.

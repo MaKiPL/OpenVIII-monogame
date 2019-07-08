@@ -3,9 +3,7 @@ using System;
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
-        private partial class IGM_Junction
+        public partial class IGM_Junction
         {
             private class IGMData_TopMenu_Auto_Group : IGMData_Group
             {
@@ -32,5 +30,5 @@ namespace OpenVIII
                 }
             }
         }
-    }
+    
 }

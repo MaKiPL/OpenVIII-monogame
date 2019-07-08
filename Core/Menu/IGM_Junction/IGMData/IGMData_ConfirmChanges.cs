@@ -2,57 +2,52 @@
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
+    public partial class IGM_Junction
     {
-        private partial class IGM_Junction
+        private sealed class IGMData_ConfirmChanges : IGMData_ConfirmDialog
         {
-            private sealed class IGMData_ConfirmChanges : IGMData_ConfirmDialog
+            public IGMData_ConfirmChanges(FF8String data, Icons.ID title, FF8String opt1, FF8String opt2, Rectangle pos) : base(data, title, opt1, opt2, pos) => startcursor = 1;
+
+            protected override void SetSize()
             {
-                public IGMData_ConfirmChanges(FF8String data, Icons.ID title, FF8String opt1, FF8String opt2, Rectangle pos) : base(data, title, opt1, opt2, pos)
+                base.SetSize();
+                SIZE[0].X = X + 20;
+                SIZE[1].X = X + 20;
+                SIZE[0].Width = Width - 40;
+                SIZE[1].Width = Width - 40;
+            }
+
+            public override void Inputs_OKAY()
+            {
+                skipsnd = true;
+                init_debugger_Audio.PlaySound(31);
+                IGM_Junction.Data[SectionName.ConfirmChanges].Hide();
+                IGM_Junction.SetMode(Mode.TopMenu);
+
+                base.Inputs_OKAY();
+                switch (CURSOR_SELECT)
                 {
-                    startcursor = 1;
+                    case 0:
+                        break;
 
+                    case 1:
+                        Memory.State = Memory.PrevState.Clone();
+                        break;
                 }
-                protected override void SetSize()
+                if (Module_main_menu_debug.State == Module_main_menu_debug.MainMenuStates.IGM_Junction)
                 {
-                    base.SetSize();
-                    SIZE[0].X = X + 20;
-                    SIZE[1].X = X + 20;
-                    SIZE[0].Width = Width - 40;
-                    SIZE[1].Width = Width - 40;
+                    Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.IGM;
+                    IGM.ReInit();
+                    FadeIn();
                 }
+            }
 
-                public override void Inputs_OKAY()
-                {
-                    skipsnd = true;
-                    init_debugger_Audio.PlaySound(31);
-                    InGameMenu_Junction.Data[SectionName.ConfirmChanges].Hide();
-                    InGameMenu_Junction.SetMode(Mode.TopMenu);
-
-                    base.Inputs_OKAY();
-                    switch (CURSOR_SELECT)
-                    {
-                        case 0:
-                            break;
-
-                        case 1:
-                            Memory.State = Memory.PrevState.Clone();
-                            break;
-                    }
-                    if (State == MainMenuStates.IGM_Junction)
-                    {
-                        State = MainMenuStates.InGameMenu;
-                        InGameMenu.ReInit();
-                        Fade = 0.0f;
-                    }
-                }
-
-                public override void Inputs_CANCEL()
-                {
-                    base.Inputs_CANCEL();
-                    InGameMenu_Junction.Data[SectionName.ConfirmChanges].Hide();
-                    InGameMenu_Junction.SetMode(Mode.TopMenu);
-                }
+            public override bool Inputs_CANCEL()
+            {
+                base.Inputs_CANCEL();
+                IGM_Junction.Data[SectionName.ConfirmChanges].Hide();
+                IGM_Junction.SetMode(Mode.TopMenu);
+                return true;
             }
         }
     }

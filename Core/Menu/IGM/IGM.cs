@@ -1,73 +1,71 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
+    #region Classes
+
+    public partial class IGM : Menu
     {
-        #region Classes
 
-        private partial class IGM : Menu
+        #region Fields
+
+        public EventHandler<KeyValuePair<Items, FF8String>> ChoiceChangeHandler;
+        //public EventHandler<Mode> ModeChangeHandler;
+        protected Dictionary<Mode, Func<bool>> InputDict;
+        //private Mode _mode = 0;
+
+        #endregion Fields
+
+        #region Enums
+
+        public enum Items
         {
+            Junction,
+            Item,
+            Magic,
+            Status,
+            GF,
+            Ability,
+            Switch,
+            Card,
+            Config,
+            Tutorial,
+            Save,
+            Battle,
+            CurrentEXP,
+            NextLEVEL,
+        }
 
-            #region Fields
+        public enum Mode
+        {
+            ChooseItem,
+            ChooseChar,
+        }
 
-            public EventHandler<KeyValuePair<Items, FF8String>> ChoiceChangeHandler;
-            public EventHandler<Mode> ModeChangeHandler;
-            protected Dictionary<Mode, Func<bool>> InputDict;
-            private Mode _mode = 0;
+        public enum SectionName
+        {
+            Header,
+            Footer,
+            SideMenu,
+            Clock,
+            PartyGroup,
+        }
 
-            #endregion Fields
+        #endregion Enums
 
-            #region Enums
+        #region Methods
 
-            public enum Items
-            {
-                Junction,
-                Item,
-                Magic,
-                Status,
-                GF,
-                Ability,
-                Switch,
-                Card,
-                Config,
-                Tutorial,
-                Save,
-                CurrentEXP,
-                NextLEVEL
-            }
-
-            public enum Mode
-            {
-                ChooseItem,
-                ChooseChar,
-            }
-
-            public enum SectionName
-            {
-                Header,
-                Footer,
-                SideMenu,
-                Clock,
-                PartyGroup,
-            }
-
-            #endregion Enums
-
-            #region Methods
-
-            protected override void Init()
-            {
-                Size = new Vector2 { X = 843, Y = 630 };
-                //TextScale = new Vector2(2.545455f, 3.0375f);
-                Data.Add(SectionName.Header, new IGMData_Header());
-                Data.Add(SectionName.Footer, new IGMData_Footer());
-                Data.Add(SectionName.Clock, new IGMData_Clock());
-                Data.Add(SectionName.PartyGroup, new IGMData_PartyGroup(new IGMData_Party(), new IGMData_NonParty()));
-                Data.Add(SectionName.SideMenu, new IGMData_SideMenu(new Dictionary<FF8String, FF8String>() {
+        protected override void Init()
+        {
+            Size = new Vector2 { X = 843, Y = 630 };
+            //TextScale = new Vector2(2.545455f, 3.0375f);
+            Data.Add(SectionName.Header, new IGMData_Header());
+            Data.Add(SectionName.Footer, new IGMData_Footer());
+            Data.Add(SectionName.Clock, new IGMData_Clock());
+            Data.Add(SectionName.PartyGroup, new IGMData_PartyGroup(new IGMData_Party(), new IGMData_NonParty()));
+            Data.Add(SectionName.SideMenu, new IGMData_SideMenu(new Dictionary<FF8String, FF8String>() {
                     { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 0), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 1)},
                     { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 3)},
                     { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 4), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 5)},
@@ -79,30 +77,23 @@ namespace OpenVIII
                     { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 16), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 17)},
                     { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 67), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 68)},
                     { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 14), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 15)},
+                    { "Battle", "Test Battle Menu"}
                 }));
-                InputDict = new Dictionary<Mode, Func<bool>>
+            InputDict = new Dictionary<Mode, Func<bool>>
                 {
                     { Mode.ChooseItem, Data[SectionName.SideMenu].Inputs },
                     { Mode.ChooseChar, Data[SectionName.PartyGroup].Inputs },
                 };
-                base.Init();
-            }
-
-            protected override bool Inputs() => InputDict[(Mode)GetMode()]();
-
-            public override Enum GetMode() => _mode;
-            public override void SetMode(Enum value)
-            {
-                if(!_mode.Equals(value))
-                {
-                    ModeChangeHandler?.Invoke(this,(Mode)value);
-                    _mode = (Mode)value;
-                }
-            }
-
-            #endregion Methods
+            SetMode((Mode)0);
+            base.Init();
         }
 
-        #endregion Classes
+        public override bool Inputs() => InputDict[(Mode)GetMode()]();
+
+
+        #endregion Methods
     }
+
+    #endregion Classes
+
 }

@@ -4,11 +4,9 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
         #region Classes
 
-        private partial class IGM
+        public partial class IGM
         {
             #region Classes
 
@@ -31,9 +29,9 @@ namespace OpenVIII
 
                 public override void ReInit()
                 {
-                    if (!eventSet && InGameMenu != null)
+                    if (!eventSet && IGM != null)
                     {                        
-                        InGameMenu.ChoiceChangeHandler += ChoiceChangeEvent;
+                        IGM.ChoiceChangeHandler += ChoiceChangeEvent;
                         eventSet = true;
                     }
                     base.ReInit();
@@ -52,5 +50,5 @@ namespace OpenVIII
         }
 
         #endregion Classes
-    }
+    
 }

@@ -4,11 +4,19 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
-    {
-        private partial class IGM_Junction : Menu
+        #region Classes
+
+        public partial class IGM_Junction : Menu
         {
-            public enum Items :byte
+            #region Fields
+
+            //private Mode _mode;
+
+            #endregion Fields
+
+            #region Enums
+
+            public enum Items : byte
             {
                 Junction,
                 Off,
@@ -50,7 +58,33 @@ namespace OpenVIII
                 Percent
             }
 
-            public enum SectionName: byte
+            public enum Mode
+            {
+                None,
+                TopMenu,
+                TopMenu_Junction,
+                TopMenu_Off,
+                TopMenu_Auto,
+                Abilities,
+                Abilities_Commands,
+                Abilities_Abilities,
+                RemMag,
+                RemAll,
+                TopMenu_GF_Group,
+                Mag_Pool_Stat,
+                Mag_Pool_EL_A,
+                Mag_Pool_EL_D,
+                Mag_Pool_ST_A,
+                Mag_Pool_ST_D,
+                Mag_Stat,
+                Mag_EL_A,
+                Mag_ST_A,
+                Mag_EL_D,
+                Mag_ST_D,
+                ConfirmChanges
+            }
+
+            public enum SectionName : byte
             {
                 /// <summary>
                 /// Junction OFF Auto Ability
@@ -123,35 +157,32 @@ namespace OpenVIII
                 ConfirmChanges,
             }
 
-            public static Dictionary<Items, FF8String> Titles { get; private set; }
-            public static Dictionary<Items, FF8String> Misc { get; private set; }
+            #endregion Enums
+
+            #region Properties
+
             public static Dictionary<Items, FF8String> Descriptions { get; private set; }
+            public static Dictionary<Items, FF8String> Misc { get; private set; }
+            public static Dictionary<Items, FF8String> Titles { get; private set; }
 
-            /// <summary>
-            /// Character who has the junctions and inventory. Same as VisableCharacter unless TeamLaguna.
-            /// </summary>
-            public static Characters Character { get; private set; }
+            #endregion Properties
 
-            /// <summary>
-            /// Required to support Laguna's Party. They have unique stats but share junctions and inventory.
-            /// </summary>
-            public static Characters VisableCharacter { get; private set; }
-            public static EventHandler<Mode> ModeChangeEventListener;
-            public override Enum GetMode() => _mode;
-            public override void SetMode(Enum value)
-            {
-                if (!_mode.Equals(value))
-                {
-                    _mode = (Mode)value;
-                    ModeChangeEventListener?.Invoke(this, (Mode)value);
-                }
-            }
-
+            #region Methods
 
             public void ChangeHelp(FF8String str) => ((IGMDataItem_Box)Data[SectionName.Help].CONTAINER).Data = str;
 
+
+            /// <summary>
+            /// Refreshes Junction menu and sets character and visable character. Also resets backup
+            /// of data.
+            /// </summary>
+            /// <param name="c"></param>
+            /// <param name="vc"></param>
+            public override void ReInit(Characters c, Characters vc, bool backup = true) => base.ReInit(c, vc, backup);
+
             protected override void Init()
             {
+                SetMode((Mode)0);
                 Size = new Vector2 { X = 840, Y = 630 };
                 //TextScale = new Vector2(2.545455f, 3.0375f);
 
@@ -223,7 +254,7 @@ namespace OpenVIII
                     {Items.Junction, Memory.Strings.Read(Strings.FileID.MNGRP,2,218) }
                 };
                 Data.Add(SectionName.CharacterInfo, new IGMData_CharacterInfo());
-                Data.Add(SectionName.Commands, new IGMData_Commands());
+                Data.Add(SectionName.Commands, new IGMData_Commands(new Rectangle(615, 150, 210, 192)));
                 Data.Add(SectionName.Help, new IGMData_Help());
                 Data.Add(SectionName.TopMenu, new IGMData_TopMenu());
                 Data.Add(SectionName.Title, new IGMData_Container(
@@ -269,49 +300,8 @@ namespace OpenVIII
 
                 base.Init();
             }
-            /// <summary>
-            /// Refreshes Junction menu and sets character and visable character. Also resets backup of data.
-            /// </summary>
-            /// <param name="c"></param>
-            /// <param name="vc"></param>
-            public void ReInit(Characters c, Characters vc)
-            {
-                Character = c;
-                VisableCharacter = vc;
-                //backup memory
-                Memory.PrevState = Memory.State.Clone();
-                ReInit();
-            }
 
-            public enum Mode
-            {
-                None,
-                TopMenu,
-                TopMenu_Junction,
-                TopMenu_Off,
-                TopMenu_Auto,
-                Abilities,
-                Abilities_Commands,
-                Abilities_Abilities,
-                RemMag,
-                RemAll,
-                TopMenu_GF_Group,
-                Mag_Pool_Stat,
-                Mag_Pool_EL_A,
-                Mag_Pool_EL_D,
-                Mag_Pool_ST_A,
-                Mag_Pool_ST_D,
-                Mag_Stat,
-                Mag_EL_A,
-                Mag_ST_A,
-                Mag_EL_D,
-                Mag_ST_D,
-                ConfirmChanges
-            }
-
-            private Mode _mode;
-
-            protected override bool Inputs()
+            public override bool Inputs()
             {
                 if (GetMode().Equals(Mode.None)) SetMode(Mode.TopMenu);
                 bool ret = false;
@@ -354,6 +344,7 @@ namespace OpenVIII
                         case Mode.RemAll:
                             ret = ((IGMData_ConfirmDialog)Data[SectionName.RemAll]).Inputs();
                             break;
+
                         case Mode.ConfirmChanges:
                             ret = ((IGMData_ConfirmDialog)Data[SectionName.ConfirmChanges]).Inputs();
                             break;
@@ -381,6 +372,10 @@ namespace OpenVIII
                 }
                 return ret;
             }
+
+            #endregion Methods
         }
-    }
+
+        #endregion Classes
+    
 }

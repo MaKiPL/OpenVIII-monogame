@@ -4,11 +4,9 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    public static partial class Module_main_menu_debug
-    {
         #region Classes
 
-        private partial class IGM_Items : Menu
+        public partial class IGM_Items : Menu
         {
             #region Fields
 
@@ -16,15 +14,13 @@ namespace OpenVIII
 
             public EventHandler<KeyValuePair<Item_In_Menu, FF8String>> ItemChangeHandler;
 
-            public EventHandler<Mode> ModeChangeHandler;
+            //public EventHandler<Mode> ModeChangeHandler;
 
             public EventHandler<Faces.ID> TargetChangeHandler;
             public EventHandler ReInitCompletedHandler;
 
             protected Dictionary<Mode, Func<bool>> InputsDict;
-
-            private Mode mode;
-
+            
             #endregion Fields
 
             #region Enums
@@ -60,7 +56,6 @@ namespace OpenVIII
 
             #region Methods
 
-            public override Enum GetMode() => mode;
 
             public override void ReInit()
             {
@@ -74,14 +69,7 @@ namespace OpenVIII
                 ReInitCompletedHandler?.Invoke(this, null);
             }
 
-            public override void SetMode(Enum value)
-            {
-                if (!mode.Equals(value))
-                {
-                    mode = (Mode)value;
-                    ModeChangeHandler?.Invoke(this, (Mode)value);
-                }
-            }
+
 
             protected override void Init()
             {
@@ -111,11 +99,11 @@ namespace OpenVIII
                 SetMode(Mode.SelectItem);
                 base.Init();
             }
-            protected override bool Inputs() => InputsDict[(Mode)GetMode()]();
+            public override bool Inputs() => InputsDict[(Mode)GetMode()]();
 
             #endregion Methods
         }
 
         #endregion Classes
-    }
+    
 }

@@ -109,7 +109,16 @@ namespace OpenVIII
 
         public static Vector2 GetOffset(Vector2 oldLoc, Vector2 newLoc) => Abs(oldLoc - newLoc);
 
-        public static Vector2 GetScale(Vector2 _old, Vector2 _new) => _new / _old;
+        public static Vector2 GetScale(Vector2 _old, Vector2 _new)
+        {
+            if (_new.Y == 0 && _new.X != 0)
+                return new Vector2(_new.X / _old.X);
+            else if (_new.Y != 0 && _new.X == 0)
+                return new Vector2(_new.Y / _old.Y);
+            else if (_new.Y == 0 && _new.X == 0)
+                return Vector2.One;
+            return _new / _old;
+        }
 
         public static Vector2 GetScale(Vector2 _old, Texture2D _new) => new Vector2(_new.Width / _old.X, _new.Height / _old.Y);
 
@@ -157,8 +166,8 @@ namespace OpenVIII
 
         public static Rectangle Scale(Rectangle mat1, Vector2 mat2)
         {
-            mat1.Location = (mat1.Location.ToVector2() * mat2).ToPoint();
-            mat1.Size = (mat1.Size.ToVector2() * mat2).ToPoint();
+            mat1.Location = (mat1.Location.ToVector2() * mat2).RoundedPoint();
+            mat1.Size = (mat1.Size.ToVector2() * mat2).RoundedPoint();
             return mat1;
         }
 
@@ -260,8 +269,8 @@ namespace OpenVIII
             else
             {
                 Vector2 dstV = Vector2.Zero;
-                dstOffset.X += dst.X;
-                dstOffset.Y += dst.X;
+                dstOffset.X = dst.X;
+                dstOffset.Y = dst.Y;
                 for (uint r = 0; r < Rows; r++)
                 {
                     for (uint c = 0; c < Cols; c++)

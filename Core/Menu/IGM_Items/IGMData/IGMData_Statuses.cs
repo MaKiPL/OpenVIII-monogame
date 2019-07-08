@@ -1,15 +1,15 @@
 ﻿using Microsoft.Xna.Framework;
 using OpenVIII.Core.Menu.IGM_Items.IGMData;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace OpenVIII
 {
-    public static partial class Module_main_menu_debug
-    {
+
         #region Classes
 
-        private partial class IGM_Items
+        public partial class IGM_Items
         {
             #region Classes
 
@@ -59,14 +59,14 @@ namespace OpenVIII
 
                 public override void ReInit()
                 {
-                    if (InGameMenu_Items != null)
+                    if (IGM_Items != null)
                     {
                         if (!eventSet)
                         {
-                            InGameMenu_Items.ModeChangeHandler += ModeChangeEvent;
-                            InGameMenu_Items.ChoiceChangeHandler += ChoiceChangeEvent;
-                            InGameMenu_Items.ItemChangeHandler += ItemChangeEvent;
-                            InGameMenu_Items.TargetChangeHandler += TargetChangeEvent;
+                            IGM_Items.ModeChangeHandler += ModeChangeEvent;
+                            IGM_Items.ChoiceChangeHandler += ChoiceChangeEvent;
+                            IGM_Items.ItemChangeHandler += ItemChangeEvent;
+                            IGM_Items.TargetChangeHandler += TargetChangeEvent;
                             eventSet = true;
                         }
                         else
@@ -78,7 +78,7 @@ namespace OpenVIII
 
                 private void ItemChangeEvent(object sender, KeyValuePair<Item_In_Menu, FF8String> e) => Item = e.Key;
 
-                private void ModeChangeEvent(object sender, Mode e)
+                protected override void ModeChangeEvent(object sender, Enum e)
                 {
                     if (!e.Equals(Mode.UseItemOnTarget))
                         TargetChangeEvent(this, Faces.ID.Blank);
@@ -138,7 +138,7 @@ namespace OpenVIII
         }
 
         #endregion Classes
-    }
+    
 }
 
 namespace OpenVIII.Core.Menu.IGM_Items.IGMData
