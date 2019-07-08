@@ -343,13 +343,15 @@ namespace OpenVIII
             ReInit();
         }
 
-        public void SetMode(Enum mode)
+        public virtual bool SetMode(Enum mode)
         {
             if (!mode.Equals(_mode))
             {
                 ModeChangeHandler?.Invoke(this, mode);
                 _mode = mode;
+                return true;
             }
+            return false;
         }
 
         public virtual void Show() => Enabled = true;

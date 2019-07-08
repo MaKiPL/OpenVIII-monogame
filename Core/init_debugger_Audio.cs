@@ -377,8 +377,11 @@ namespace OpenVIII
         private static Ffcc ffccMusic = null; // testing using class to play music instead of Naudio / Nvorbis
         private static int _currentSoundChannel;
 
-        public static void PlayMusic()
+        public static void PlayMusic(ushort? index = null)
         {
+            Memory.MusicIndex = index ?? Memory.MusicIndex;
+
+            if (musicplaying && lastplayed == Memory.MusicIndex) return;
             string ext = "";
 
             if (Memory.dicMusic.Count > 0 && Memory.dicMusic[Memory.MusicIndex].Count > 0)

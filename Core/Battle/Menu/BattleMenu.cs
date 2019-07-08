@@ -251,7 +251,7 @@ namespace OpenVIII
                     tmp.Hide();
                     menus.Add(tmp);
                 }
-                SetMode(Mode.Battle);
+                SetMode(Mode.Victory);
                 UpdateFunctions = new Dictionary<Mode, Func<bool>>()
                 {
                     {Mode.Starting, UpdateStartingFunction},
@@ -290,7 +290,6 @@ namespace OpenVIII
         protected override void Init()
         {
             Size = new Vector2 { X = 840, Y = 630 };
-            SetMode((Mode)0);
             Data = new Dictionary<Enum, IGMData>()
             {
                 //{SectionName.HP, new IGMData_HP(new Rectangle((int)(Size.X-389),507,389,126))}
@@ -304,7 +303,7 @@ namespace OpenVIII
 
         private void DrawStartingAction() => throw new NotImplementedException();
 
-        private void DrawVictoryAction() => throw new NotImplementedException();
+        private void DrawVictoryAction() { }
 
         private bool InputBattleFunction()
         {
@@ -349,7 +348,7 @@ namespace OpenVIII
             }
             return ret;
         }
-
+        
         private bool UpdateGameOverFunction()
         {
             Memory.module = Memory.MODULE_FIELD_DEBUG;
@@ -359,8 +358,11 @@ namespace OpenVIII
 
         private bool UpdateStartingFunction() => throw new NotImplementedException();
 
-        private bool UpdateVictoryFunction() => throw new NotImplementedException();
-
+        private bool UpdateVictoryFunction()
+        {
+            init_debugger_Audio.PlayMusic(1);
+            return false;
+        }
         #endregion Methods
 
     }
