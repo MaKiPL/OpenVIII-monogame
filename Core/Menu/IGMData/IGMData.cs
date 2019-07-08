@@ -273,8 +273,7 @@ namespace OpenVIII
                     }
                     else if (Input.Button(Buttons.Cancel))
                     {
-                        Inputs_CANCEL();
-                        return true;
+                        return Inputs_CANCEL();
                     }
                     else if (Input.Button(Buttons.Triangle))
                     {
@@ -311,11 +310,12 @@ namespace OpenVIII
             return ret;
         }
 
-        public virtual void Inputs_CANCEL()
+        public virtual bool Inputs_CANCEL()
         {
             Input.ResetInputLimit();
             if (!skipsnd)
                 init_debugger_Audio.PlaySound(8);
+            return false;
         }
 
         public virtual void Inputs_Left()

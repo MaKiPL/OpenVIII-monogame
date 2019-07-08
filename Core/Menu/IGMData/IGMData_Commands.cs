@@ -105,9 +105,10 @@ namespace OpenVIII
                 }
             }
         }
-        public override void Inputs_CANCEL()
+        public override bool Inputs_CANCEL()
         {
-            
+
+            return false;
             //base.Inputs_CANCEL();
         }
 

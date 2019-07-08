@@ -109,14 +109,16 @@ namespace OpenVIII
                 if (OkayActions.ContainsKey(CURSOR_SELECT))
                     OkayActions[CURSOR_SELECT]();
             }
-            public override void Inputs_CANCEL() { }
+            public override bool Inputs_CANCEL()
+            {
+                return false;
+            }
 
             private void NewGameOkayAction() {
                 init_debugger_Audio.PlaySound(28);
                 skipsnd = true;
                 base.Inputs_OKAY();
                 FadeOut();
-                
             }
             private void LoadGameOkayAction() {
                 base.Inputs_OKAY();

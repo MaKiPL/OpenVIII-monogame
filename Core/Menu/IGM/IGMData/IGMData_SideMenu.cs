@@ -73,12 +73,13 @@ namespace OpenVIII
                 return base.Inputs();
             }
 
-            public override void Inputs_CANCEL()
+            public override bool Inputs_CANCEL()
             {
                 base.Inputs_CANCEL();
                 Input.ResetInputLimit();
                 FadeIn();
                 Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.LoadGameChooseGame;
+                return true;
             }
 
             public override void Inputs_OKAY()

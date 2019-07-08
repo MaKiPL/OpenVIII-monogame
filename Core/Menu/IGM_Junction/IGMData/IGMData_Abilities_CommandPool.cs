@@ -31,10 +31,11 @@ namespace OpenVIII
                     }
                 }
 
-                public override void Inputs_CANCEL()
+                public override bool Inputs_CANCEL()
                 {
                     base.Inputs_CANCEL();
                     IGM_Junction.SetMode(Mode.Abilities);
+                    return true;
                 }
 
                 public override void UpdateTitle()
