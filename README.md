@@ -106,6 +106,7 @@ Requirements: MonoGame + Visual Studio
 `MonoGame.Framework.DesktopGL.Core`
 
 `MonoGame.Framework.OpenGL`
+
 9. Make sure you add Final Fantasy VIII path to array at `LinuxGameLocationProvider.cs:18`
 
 10. That's all. You can now compile the executable.
