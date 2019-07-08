@@ -37,7 +37,8 @@ namespace OpenVIII
         private enum Field_mods
         {
             INIT,
-            DEBUGRENDER
+            DEBUGRENDER,
+            DISABLED
         };
 
         public static void Draw()
@@ -100,6 +101,8 @@ namespace OpenVIII
                 case Field_mods.DEBUGRENDER:
                     UpdateScript();
                     break; //await events here
+                case Field_mods.DISABLED:
+                    break;
             }
         }
 
@@ -153,24 +156,30 @@ namespace OpenVIII
             byte[] sy = null;
             string s_jsm = null;
             string s_sy = null;
-            try
-            {
-                s_jsm = test_.First(x => x.ToLower().Contains(".jsm"));
-            }
-            catch { }
-            try
-            {
-                s_sy = test_.First(x => x.ToLower().Contains(".sy"));
-            }
-            catch { }
-            if (s_jsm != null && s_sy != null)
+            s_jsm = test_.FirstOrDefault(x => x.IndexOf(".jsm", StringComparison.OrdinalIgnoreCase) >= 0);
+            s_sy = test_.FirstOrDefault(x => x.IndexOf(".sy", StringComparison.OrdinalIgnoreCase) >= 0);
+            if (!string.IsNullOrWhiteSpace(s_jsm) && !string.IsNullOrWhiteSpace(s_sy))
             {
                 jsm = aw.FileInTwoArchives(fi, fs, fl, s_jsm);
                 sy = aw.FileInTwoArchives(fi, fs, fl, s_sy);
             }
-            else return; // one or both values are null
-
-            List<Jsm.GameObject> jsmObjects = Jsm.File.Read(jsm);
+            else
+            {
+                Debug.WriteLine($"s_jsm={s_jsm} or s_sy={s_sy} values are null/empty");
+                mod = Field_mods.DISABLED;
+                return; // 
+            }
+            List<Jsm.GameObject> jsmObjects = new List<Jsm.GameObject>(0);
+            try
+            {
+                jsmObjects = Jsm.File.Read(jsm);
+            }
+            catch(Exception e)
+            {
+                Debug.WriteLine(e);
+                mod = Field_mods.DISABLED;
+                return;
+            }
             if (sy == null)
                 return;
             Sym.GameObjects symObjects = Sym.Reader.FromBytes(sy);

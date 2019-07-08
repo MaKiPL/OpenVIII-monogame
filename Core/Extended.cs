@@ -123,6 +123,30 @@ namespace OpenVIII
 
         public static double Sin(double angle) => Math.Sin(Radians(angle));
 
+        /// <summary>
+        /// Converts short to float via x/4096f
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        public static float S16ToFloat(short x) => x / 4096f;
+
+        /// <summary>
+        /// Converts short to float via x/4096f
+        /// </summary>
+        /// <param name="x">mockup of short. I.e. short(50) -> float(50) -> 50.0f / 4096f</param>
+        /// <returns></returns>
+        public static float S16ToFloat(float x) => x / 4096f;
+
+        /// <summary>
+        /// Converts Vector3 containing direct short>float to Vector3 that XYZ are treated by S16ToFloat
+        /// </summary>
+        /// <param name="vec"></param>
+        /// <returns></returns>
+        public static Vector3 S16VectorToFloat(Vector3 vec) => new Vector3(
+            S16ToFloat(vec.X),
+            S16ToFloat(vec.Y),
+            S16ToFloat(vec.Z));
+
         public static ushort UshortLittleEndian(ushort ushort_)
     => (ushort)((ushort_ << 8) | (ushort_ >> 8));
 
