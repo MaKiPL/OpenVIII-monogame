@@ -251,7 +251,7 @@ namespace OpenVIII
                     tmp.Hide();
                     menus.Add(tmp);
                 }
-                SetMode(Mode.Victory);
+                SetMode(Mode.GameOver);
                 UpdateFunctions = new Dictionary<Mode, Func<bool>>()
                 {
                     {Mode.Starting, UpdateStartingFunction},
@@ -353,6 +353,8 @@ namespace OpenVIII
         {
             Memory.module = Memory.MODULE_FIELD_DEBUG;
             Memory.FieldHolder.FieldID = 75; //gover
+            init_debugger_Audio.PlayMusic(0);
+            Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.MainLobby;
             return true;
         }
 
