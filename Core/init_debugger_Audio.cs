@@ -12,6 +12,7 @@ namespace OpenVIII
 #pragma warning restore IDE1006 // Naming Styles
     {
         private static DM_Midi dm_Midi;
+        private static Fluid_Midi fluid_Midi;
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         private struct SoundEntry
@@ -379,7 +380,6 @@ namespace OpenVIII
         public static void PlayMusic()
         {
             string ext = "";
-            bool bFakeLinux = false; //set to force linux behaviour on windows; To delete after Linux music playable
 
             if (Memory.dicMusic.Count > 0 && Memory.dicMusic[Memory.MusicIndex].Count > 0)
             {
@@ -403,9 +403,17 @@ namespace OpenVIII
                     break;
 
                 case ".sgt":
-                    if (Extended.IsLinux || bFakeLinux)
+#if _X64
+                    if (fluid_Midi == null)
+                        fluid_Midi = new Fluid_Midi();
+                    fluid_Midi.ReadSegmentFileManually(pt);
+                    fluid_Midi.Play();
+                    break;
+#endif
+                    if (Extended.IsLinux)
                     {
-                        ReadSegmentFileManually(pt);
+                        fluid_Midi.ReadSegmentFileManually(pt);
+                        fluid_Midi.Play();
                         break;
                     }
                     else
@@ -432,6 +440,8 @@ namespace OpenVIII
 
             if (dm_Midi != null)
                 dm_Midi.Dispose();
+            if (fluid_Midi != null)
+                fluid_Midi.Dispose();
         }
 
         public static void StopMusic()
@@ -442,124 +452,13 @@ namespace OpenVIII
                 ffccMusic.Dispose();
                 ffccMusic = null;
             }
-
+#if !_X64
             if (dm_Midi != null)
                 dm_Midi.Stop();
+#else
+            if (fluid_Midi != null)
+                fluid_Midi.Stop();
+#endif
         }
-
-        //MUSIC_TIME=LONG->int32; REFERENCE_TIME=LONGLONG->long
-        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 24)]
-        private struct DMUS_IO_SEGMENT_HEADER
-        {
-            public uint dwRepeats;
-            public int mtLength;
-            public int mtPlayStart;
-            public int mtLoopStart;
-            public int mtLoopEnd;
-            public uint dwResolution;
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
-        private struct DMUS_IO_VERSION
-        {
-            private uint dwVersionMS;
-            private uint dwVersionLS;
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32)]
-        private struct DMUS_IO_TRACK_HEADER
-        {
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-            private byte[] guidClassID;
-
-            private uint dwPosition;
-            private uint dwGroup;
-
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            private char[] _ckid;
-
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            private char[] _fccType;
-
-            public string ckid => new string(_ckid);
-            public string fccType => new string(_fccType);
-        }
-
-        private static DMUS_IO_SEGMENT_HEADER segh = new DMUS_IO_SEGMENT_HEADER();
-        private static DMUS_IO_VERSION vers = new DMUS_IO_VERSION();
-        private static List<DMUS_IO_TRACK_HEADER> trkh;
-
-        /// <summary>
-        /// [LINUX]: This method manually reads DirectMusic Segment files
-        /// </summary>
-        /// <param name="pt"></param>
-        private static void ReadSegmentFileManually(string pt)
-        {
-            using (FileStream fs = new FileStream(pt, FileMode.Open, FileAccess.Read))
-            using (BinaryReader br = new BinaryReader(fs))
-            {
-                if (ReadFourCc(br) != "RIFF")
-                {
-                    Console.WriteLine($"init_debugger_Audio::ReadSegmentFileManually: NOT RIFF!");
-                    return;
-                }
-                fs.Seek(4, SeekOrigin.Current);
-                if (ReadFourCc(br) != "DMSG")
-                {
-                    Console.WriteLine($"init_debugger_Audio::ReadSegmentFileManually: Broken structure. Expected DMSG!");
-                    return;
-                }
-                ReadSegmentForm(fs, br);
-            }
-        }
-
-        private static void ReadSegmentForm(FileStream fs, BinaryReader br)
-        {
-            string fourCc;
-            trkh = new List<DMUS_IO_TRACK_HEADER>();
-            if ((fourCc = ReadFourCc(br)) != "segh")
-            { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: Broken structure. Expected segh, got={fourCc}"); return; }
-            uint chunkSize = br.ReadUInt32();
-            if (chunkSize != Marshal.SizeOf(segh))
-            { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: chunkSize={chunkSize} is different than DMUS_IO_SEGMENT_HEADER sizeof={Marshal.SizeOf(segh)}"); return; }
-            segh = Extended.ByteArrayToStructure<DMUS_IO_SEGMENT_HEADER>(br.ReadBytes((int)chunkSize));
-            if ((fourCc = ReadFourCc(br)) != "guid")
-            { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected guid, got={fourCc}"); return; }
-            byte[] guid = br.ReadBytes(br.ReadInt32());
-            if ((fourCc = ReadFourCc(br)) != "LIST")
-            { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected LIST, got={fourCc}"); return; }
-            //let's skip segment data for now, looks like it's not needed, it's not even oficially a part of segh
-            fs.Seek(br.ReadUInt32(), SeekOrigin.Current);
-            if ((fourCc = ReadFourCc(br)) != "vers")
-            { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected vers, got={fourCc}"); return; }
-            if ((chunkSize = br.ReadUInt32()) != Marshal.SizeOf(vers))
-            { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: vers expected sizeof={Marshal.SizeOf(vers)}, got={chunkSize}"); return; }
-            vers = Extended.ByteArrayToStructure<DMUS_IO_VERSION>(br.ReadBytes((int)chunkSize));
-            if ((fourCc = ReadFourCc(br)) != "LIST")
-            { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected LIST, got={fourCc}"); return; }
-            //this list should now contain metadata like name, authors and etc. It's completely useless in this project scope
-            fs.Seek(br.ReadUInt32(), SeekOrigin.Current); //therefore let's just skip whole UNFO and etc.
-            if ((fourCc = ReadFourCc(br)) != "LIST")
-            { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected LIST, got={fourCc}"); return; }
-            chunkSize = br.ReadUInt32();
-            if ((fourCc = ReadFourCc(br)) != "trkl")
-            { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected trkl, got={fourCc}"); return; }
-            //at this point we are free to read the file up to the end by reading all available DMTK RIFFs;
-            uint eof = (uint)fs.Position + chunkSize - 4;
-            while (fs.Position < eof)
-            {
-                if ((fourCc = ReadFourCc(br)) != "RIFF")
-                { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected RIFF, got={fourCc}"); return; }
-                chunkSize = br.ReadUInt32();
-                long skipTell = fs.Position;
-                Console.WriteLine($"RIFF entry: {ReadFourCc(br)}/{ReadFourCc(br)}");
-                trkh.Add(Extended.ByteArrayToStructure<DMUS_IO_TRACK_HEADER>(br.ReadBytes((int)br.ReadUInt32())));
-                //TODO HERE
-                //this seek below is to ensure that no critical behaviour happens and every RIFF header is read correctly
-                fs.Seek(skipTell + chunkSize, SeekOrigin.Begin);
-            }
-        }
-
-        private static string ReadFourCc(BinaryReader br) => new string(br.ReadChars(4));
     }
 }
