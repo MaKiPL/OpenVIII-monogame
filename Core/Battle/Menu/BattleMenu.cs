@@ -264,7 +264,7 @@ namespace OpenVIII
                     {Mode.Starting, DrawStartingAction},
                     {Mode.Battle, DrawBattleAction},
                     {Mode.Victory, DrawVictoryAction},
-                    {Mode.GameOver, DrawGameOverAction},
+                    //{Mode.GameOver, DrawGameOverAction},
                 };
                 InputFunctions = new Dictionary<Mode, Func<bool>>()
                 {
@@ -350,7 +350,12 @@ namespace OpenVIII
             return ret;
         }
 
-        private bool UpdateGameOverFunction() => throw new NotImplementedException();
+        private bool UpdateGameOverFunction()
+        {
+            Memory.module = Memory.MODULE_FIELD_DEBUG;
+            Memory.FieldHolder.FieldID = 75; //gover
+            return true;
+        }
 
         private bool UpdateStartingFunction() => throw new NotImplementedException();
 
