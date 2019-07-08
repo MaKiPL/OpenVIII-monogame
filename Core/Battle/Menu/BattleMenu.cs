@@ -305,7 +305,7 @@ namespace OpenVIII
         public override bool Inputs()
         {
             bool ret = false;
-            foreach(var m in menus)
+            foreach(var m in menus.Where(m=>(BattleMenu.Mode)m.GetMode() == BattleMenu.Mode.YourTurn))
             {
                 ret = m.Inputs() || ret;
                 if (ret) return ret;
