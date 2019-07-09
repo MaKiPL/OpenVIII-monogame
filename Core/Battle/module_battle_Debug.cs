@@ -674,7 +674,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
 
 
             effect.TextureEnabled = true;
-            for(int n = 1; n < modelGroups.Length; n++)
+            for(int n = 0; n < modelGroups.Length; n++)
                 foreach (var b in modelGroups[n].models)
                 {
                     var vpt = GetVertexBuffer(b);
