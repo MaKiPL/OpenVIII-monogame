@@ -85,10 +85,15 @@ namespace OpenVIII
 
         private struct Polygon
         {
-            public byte F1, F2, F3, N1, N2, N3, U1, V1, U2, V2, U3, V3, TPage_clut, groundtype, texSwitch, flags;
+            public byte F1, F2, F3, N1, N2, N3, U1, V1, U2, V2, U3, V3, TPage_clut, groundtype;
+            //private byte texSwitch, flags;
+
+            public Texflags texFlags;
+            public VertFlags vertFlags;
 
             public byte TPage { get => (byte)((TPage_clut >> 4) & 0x0F); }
             public byte Clut { get => (byte)(TPage_clut & 0x0F); }
+            private Texflags TexFlags { get => Texflags.TEXFLAGS_ISENTERABLE|Texflags.TEXFLAGS_MISC|Texflags.TEXFLAGS_ROAD|Texflags.TEXFLAGS_SHADOW|Texflags.TEXFLAGS_UNK|Texflags.TEXFLAGS_UNK2|Texflags.TEXFLAGS_WATER; set => texFlags = value; }
             //public byte TPage_clut1 { set => TPage_clut = value; }
         }
         private struct Vertex
@@ -116,13 +121,20 @@ namespace OpenVIII
         private static _worldState worldState;
         private static MiniMapState MapState = MiniMapState.rectangle;
 
-        const byte TEXFLAGS_SHADOW =        0b00000011;
-        const byte TEXFLAGS_UNK =           0b00000100;
-        const byte TEXFLAGS_ISENTERABLE =   0b00001000;
-        const byte TEXFLAGS_UNK2 =          0b00010000; //was bHidden, but it's not true
-        const byte TEXFLAGS_ROAD =          0b00100000;
-        const byte TEXFLAGS_WATER =         0b01000000;
-        const byte TEXFLAGS_MISC =          0b10000000;
+        [Flags] enum Texflags : byte
+        {
+            TEXFLAGS_SHADOW =       0b11,
+            TEXFLAGS_UNK =          0b100,
+            TEXFLAGS_ISENTERABLE =  0b00001000,
+            TEXFLAGS_UNK2 =         0b00010000,
+            TEXFLAGS_ROAD =         0b00100000,
+            TEXFLAGS_WATER =        0b01000000,
+            TEXFLAGS_MISC =         0b10000000
+    }
+        [Flags] enum VertFlags
+        {
+            bWalkable =             0b10000000
+        }
 
         const byte TRIFLAGS_COLLIDE = 0b10000000;
 
@@ -521,13 +533,11 @@ namespace OpenVIII
 
                     var poly = seg.block[i].polygons[k / 3];
 
-                    //if ((poly.texSwitch & TEXFLAGS_ISHIDDEN) > 0) //if is hidden then we shouldn't draw this face
-                    //    return;
-                    if ((poly.texSwitch & TEXFLAGS_ROAD) > 0)
-                        ate.Texture = wmset.GetRoadsMiscTextures(wmset.Section39_Textures.train, 0);
-                    else if ((poly.texSwitch & TEXFLAGS_WATER) > 0)
+                    if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_ROAD))
+                        ate.Texture = wmset.GetRoadsMiscTextures(wmset.Section39_Textures.asphalt, 0);
+                    else if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_WATER))
                         ate.Texture = wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0);
-                    else 
+                    else
                         ate.Texture = texl.GetTexture(seg.block[i].polygons[k / 3].TPage, seg.block[i].polygons[k / 3].Clut); //there are two texs, worth looking at other parameters; to reverse! 
 
                     foreach (var pass in ate.CurrentTechnique.Passes)

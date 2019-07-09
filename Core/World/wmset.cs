@@ -15,7 +15,7 @@ namespace OpenVIII.Core.World
         private int[] sectionPointers;
 
         private List<Texture2D[]> sec38_textures;
-        private List<Texture2D[]> sec39_textures;
+        private Texture2D sec39_texture;
 
 
         /// <summary>
@@ -128,6 +128,10 @@ namespace OpenVIII.Core.World
         #endregion
 
         #region Section39
+
+        const int SEC39_VRAM_STARTX = 832; //this is beginning of origX to map to one texture
+        const int SEC39_VRAM_STARTY = 256; //used to map VRAM, but here it's used to create new atlas
+
         /// <summary>
         /// Section 39: Textures of roads, train tracks and bridge
         /// </summary>
@@ -138,16 +142,19 @@ namespace OpenVIII.Core.World
             {
                 ms.Seek(sectionPointers[39 - 1], SeekOrigin.Begin);
                 var innerSec = GetInnerPointers(br);
-                sec39_textures = new List<Texture2D[]>();
-
+                sec39_texture = new Texture2D(Memory.graphics.GraphicsDevice, 96, 64, false, SurfaceFormat.Color);
                 for (int i = 0; i < innerSec.Length; i++)
                 {
                     TIM2 tim = new TIM2(buffer, (uint)(sectionPointers[39 - 1] + innerSec[i]));
-                    sec39_textures.Add(new Texture2D[tim.GetClutCount]);
-                    for (ushort k = 0; k < sec39_textures[i].Length; k++)
-                        sec39_textures[i][k] = tim.GetTexture(k, true);
+                    Texture2D atlasChunk = tim.GetTexture(0, true);
+                    byte[] chunkBuffer = new byte[atlasChunk.Width * atlasChunk.Height * 4];
+                    //Extended.DumpTexture(atlasChunk, $"D:/test{i}.png");
+                    int newX = tim.GetOrigX - SEC39_VRAM_STARTX;
+                    int newY = tim.GetOrigY - SEC39_VRAM_STARTY;
+                    sec39_texture.SetData(0, new Microsoft.Xna.Framework.Rectangle(newX, newY, atlasChunk.Width, atlasChunk.Height), chunkBuffer, 0, chunkBuffer.Length);
                 }
             }
+            //Extended.DumpTexture(sec39_texture, @"D:/test.png");
         }
 
         public enum Section39_Textures
@@ -171,7 +178,7 @@ namespace OpenVIII.Core.World
         /// Gets textures from Section39
         /// </summary>
         /// <returns></returns>
-        public Texture2D GetRoadsMiscTextures(Section39_Textures index, int clut) => sec38_textures[(int)index][clut];
+        public Texture2D GetRoadsMiscTextures(Section39_Textures index, int clut) => sec39_texture;
         #endregion
 
 

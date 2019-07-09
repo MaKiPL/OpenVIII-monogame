@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,6 +44,12 @@ namespace OpenVIII
 
         public static void DumpBuffer(System.IO.MemoryStream ms)
             => System.IO.File.WriteAllBytes(GetUnixFullPath(System.IO.Path.Combine(Memory.FF8DIR, "debugUnpack.debug")), ms.GetBuffer());
+
+        public static void DumpTexture(Texture2D tex, string s)
+        {
+            using (System.IO.FileStream fs = new System.IO.FileStream(s, System.IO.FileMode.Create, System.IO.FileAccess.Write))
+                tex.SaveAsPng(fs, tex.Width, tex.Height);
+        }
 #endif
 
         //https://stackoverflow.com/questions/1130698/checking-if-an-object-is-a-number-in-c-sharp
