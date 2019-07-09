@@ -297,13 +297,13 @@ namespace OpenVIII
             base.Init();
         }
 
-        private void DrawBattleAction() => menus?.ForEach(m => m.Draw());
+        private void DrawBattleAction() => menus?.Where(m=>m.GetType().Equals(typeof(BattleMenu))).ForEach(m => m.Draw());
 
-        private void DrawGameOverAction() => throw new NotImplementedException();
+        private void DrawGameOverAction() {}
 
-        private void DrawStartingAction() => throw new NotImplementedException();
+        private void DrawStartingAction() { }
 
-        private void DrawVictoryAction() { }
+        private void DrawVictoryAction() => menus?.Where(m => GetType().Equals(typeof(VictoryMenu))).First().Draw();
 
         private bool InputBattleFunction()
         {
@@ -334,8 +334,8 @@ namespace OpenVIII
             return ret;
         }
 
-        private bool InputGameOverFunction() => throw new NotImplementedException();
-        private bool InputStartingFunction() => throw new NotImplementedException();
+        private bool InputGameOverFunction() => false;
+        private bool InputStartingFunction() => false;
 
         private bool InputVictoryFunction() => throw new NotImplementedException();
         private bool UpdateBattleFunction()
