@@ -69,7 +69,7 @@ namespace OpenVIII
         #region Properties
 
         /// <summary>
-        /// Number of cult color palettes
+        /// Number of clut color palettes
         /// </summary>
         public int GetClutCount => texture.NumOfCluts;
 
@@ -82,6 +82,16 @@ namespace OpenVIII
         /// Width
         /// </summary>
         public int GetWidth => texture.Width;
+
+        /// <summary>
+        /// Gets origin texture coordinate X for VRAM buffer
+        /// </summary>
+        public int GetOrigX => texture.ImageOrgX;
+
+        /// <summary>
+        /// Gets origin texture coordinate Y for VRAM buffer
+        /// </summary>
+        public int GetOrigY => texture.ImageOrgY;
 
         #endregion Properties
 
