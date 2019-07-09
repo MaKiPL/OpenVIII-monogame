@@ -29,17 +29,30 @@ namespace OpenVIII
         protected bool skipsnd = false;
         protected Characters VisableCharacter;
         private int _cursor_select;
+        private object count;
+        private object depth;
+        private object container;
+        private byte partypos;
 
         #endregion Fields
 
         #region Constructors
 
-        public IGMData(int count = 0, int depth = 0, IGMDataItem container = null, int? cols = null, int? rows = null, Characters? character = null, Characters? visablecharacter = null)
+        public IGMData(int count = 0, int depth = 0, IGMDataItem container = null, int? cols = null, int? rows = null, Characters? character = null, Characters? visablecharacter = null, byte? partypos = null)
         {
-            Character = character ?? Characters.Blank;
-            VisableCharacter = visablecharacter ?? Character;
+            if (partypos != null)
+            {
+                Character = Memory.State?.PartyData?[partypos.Value] ?? Characters.Blank;
+                VisableCharacter = Memory.State?.Party?[partypos.Value] ?? Character;
+            }
+            else
+            {
+                Character = character ?? Characters.Blank;
+                VisableCharacter = visablecharacter ?? Character;
+            }
             Init(count, depth, container, cols, rows);
         }
+
 
         #endregion Constructors
 
@@ -51,7 +64,7 @@ namespace OpenVIII
         }
 
         public int cols { get; private set; }
-        public IGMDataItem CONTAINER { get; protected set; }
+        public IGMDataItem CONTAINER { get; set; }
         /// <summary>
         /// Total number of items
         /// </summary>

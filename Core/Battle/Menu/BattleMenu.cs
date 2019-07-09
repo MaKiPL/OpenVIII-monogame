@@ -2,7 +2,9 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using OpenVIII.Encoding.Tags;
 
 namespace OpenVIII
 {
@@ -251,6 +253,7 @@ namespace OpenVIII
                     tmp.Hide();
                     menus.Add(tmp);
                 }
+                menus.Add(new VictoryMenu());
                 SetMode(Mode.GameOver);
                 UpdateFunctions = new Dictionary<Mode, Func<bool>>()
                 {
@@ -289,7 +292,7 @@ namespace OpenVIII
 
         protected override void Init()
         {
-            Size = new Vector2 { X = 840, Y = 630 };
+            Size = new Vector2 { X = 881, Y = 636 };
             Data = new Dictionary<Enum, IGMData>()
             {
                 //{SectionName.HP, new IGMData_HP(new Rectangle((int)(Size.X-389),507,389,126))}
@@ -303,8 +306,9 @@ namespace OpenVIII
 
         private void DrawStartingAction() { }
 
-        private void DrawVictoryAction() => menus?.Where(m => GetType().Equals(typeof(VictoryMenu))).First().Draw();
+        private void DrawVictoryAction() => Victory_Menu.Draw();
 
+        public VictoryMenu Victory_Menu => (VictoryMenu)(menus?.Where(m => GetType().Equals(typeof(VictoryMenu))).First());
         private bool InputBattleFunction()
         {
             bool ret = false;
@@ -364,6 +368,83 @@ namespace OpenVIII
         {
             init_debugger_Audio.PlayMusic(1);
             return false;
+        }
+
+        public class VictoryMenu : Menu
+        {
+            public enum Mode
+            {
+                Exp,
+                ExpAdded,
+                ItemsNone,
+                ItemsFound,
+                ItemsAdded,
+                AP,
+                APAdded,
+                All,
+            }
+            protected override void Init()
+            {
+                Size = new Vector2(881, 606);
+                Data = new Dictionary<Enum, IGMData>
+                {
+                    { Mode.Exp,
+                    new IGMData_Group (
+                        new IGMData_Container(new IGMDataItem_Box(Memory.Strings.Read(Strings.FileID.KERNEL,30,23),new Rectangle(Point.Zero,new Point((int)Size.X,78)),Icons.ID.INFO)),
+                        new IGMData_PlayerEXP(partypos:0),new IGMData_PlayerEXP(partypos:1),new IGMData_PlayerEXP(partypos:2)
+                        )
+                    { CONTAINER = new IGMDataItem_Empty(new Rectangle(Point.Zero,Size.ToPoint()))} },
+                    { Mode.All,
+                    new IGMData_Container(new IGMDataItem_Box(new FF8String(new byte[] {
+                            (byte)FF8TextTagCode.Color,
+                            (byte)FF8TextTagColor.Green,
+                            (byte)FF8TextTagCode.Key,
+                            (byte)FF8TextTagKey.Confirm,
+                            (byte)FF8TextTagCode.Color,
+                            (byte)FF8TextTagColor.White}).Append(Memory.Strings.Read(Strings.FileID.KERNEL,30,22)),new Rectangle(new Point(0,(int)Size.Y-78),new Point((int)Size.X,78))))
+                    }
+                    
+                };
+                base.Init();
+            }
+
+            public override bool Inputs() => throw new NotImplementedException();
+
+            int _ap = 0;
+            int _exp = 0;
+            Saves.Item[] _items = null;
+
+            /// <summary>
+            /// if you use this you will get no exp, ap, or items
+            /// </summary>
+            public override void ReInit()
+            {
+                ReInit(exp: 0, ap: 0);
+            }
+            /// <summary>
+            /// if you use this you will get no exp, ap, or items, No character specifics for this menu.
+            /// </summary>
+            public override void ReInit(Characters c, Characters vc, bool backup = false)
+            {
+                ReInit(exp: 0, ap: 0);
+            }
+            public void ReInit(int exp,int ap, params Saves.Item[] items)
+            {
+                _exp = exp;
+                _ap = ap;
+                _items = items;
+                base.ReInit();
+            }
+
+            private class IGMData_PlayerEXP : IGMData
+            {
+                private byte partypos;
+
+                public IGMData_PlayerEXP(byte partypos) : base(1, 4, new IGMDataItem_Box(pos:new Rectangle(35,78+partypos*150,808,150)),1,1,partypos:partypos)
+                {
+                    this.partypos = partypos;
+                }
+            }
         }
         #endregion Methods
 
