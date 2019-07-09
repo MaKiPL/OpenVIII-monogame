@@ -438,11 +438,28 @@ namespace OpenVIII
 
             private class IGMData_PlayerEXP : IGMData
             {
-                private byte partypos;
 
-                public IGMData_PlayerEXP(byte partypos) : base(1, 4, new IGMDataItem_Box(pos:new Rectangle(35,78+partypos*150,808,150)),1,1,partypos:partypos)
+                public IGMData_PlayerEXP(sbyte partypos) : base(1, 4, new IGMDataItem_Box(pos:new Rectangle(35,78+partypos*150,808,150)),1,1,partypos:partypos)
                 {
-                    this.partypos = partypos;
+                    Debug.Assert(partypos >= 0 && partypos <= 2);
+                }
+                protected override void Init()
+                {
+                    if (Character != Characters.Blank)
+                    {
+                        FF8String ECN = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 29) + "\n" +
+                            Memory.Strings.Read(Strings.FileID.KERNEL, 30, 30) + "\n" +
+                            Memory.Strings.Read(Strings.FileID.KERNEL, 30, 31);
+                        base.Init();
+                    }
+                }
+                public override bool Update()
+                {
+                    if (Character != Characters.Blank)
+                    {
+                        return base.Update();
+                    }
+                    return false;
                 }
             }
         }

@@ -28,27 +28,31 @@ namespace OpenVIII
         protected bool skipdata = false;
         protected bool skipsnd = false;
         protected Characters VisableCharacter;
+
+        /// <summary>
+        /// Position of party member 0,1,2. If -1 at the time of setting the character wasn't in the party.
+        /// </summary>
+        protected sbyte PartyPos { get; private set; }
+
         private int _cursor_select;
-        private object count;
-        private object depth;
-        private object container;
-        private byte partypos;
 
         #endregion Fields
 
         #region Constructors
 
-        public IGMData(int count = 0, int depth = 0, IGMDataItem container = null, int? cols = null, int? rows = null, Characters? character = null, Characters? visablecharacter = null, byte? partypos = null)
+        public IGMData(int count = 0, int depth = 0, IGMDataItem container = null, int? cols = null, int? rows = null, Characters? character = null, Characters? visablecharacter = null, sbyte? partypos = null)
         {
             if (partypos != null)
             {
                 Character = Memory.State?.PartyData?[partypos.Value] ?? Characters.Blank;
                 VisableCharacter = Memory.State?.Party?[partypos.Value] ?? Character;
+                PartyPos = partypos.Value;
             }
             else
             {
                 Character = character ?? Characters.Blank;
                 VisableCharacter = visablecharacter ?? Character;
+                PartyPos = (sbyte)(Memory.State?.PartyData?.FindIndex(x=>x.Equals(Character)) ?? -1);
             }
             Init(count, depth, container, cols, rows);
         }
@@ -370,6 +374,7 @@ namespace OpenVIII
         {
             Character = character;
             VisableCharacter = visablecharacter ?? character;
+            PartyPos = (sbyte)(Memory.State?.PartyData?.FindIndex(x => x.Equals(Character)) ?? -1);
             ReInit();
         }
         /// <summary>
