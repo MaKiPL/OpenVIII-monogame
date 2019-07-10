@@ -11,7 +11,7 @@
                     Show();
                 }
 
-                public override void ITEMShow(IGMDataItem i, int pos = 0)
+                public override void ITEMShow(IGMDataItem_IGMData i, int pos = 0)
                 {
                     if (IGM_Junction != null)
                     {
@@ -94,7 +94,7 @@
                     Show();
                 }
 
-                public override bool ITEMInputs(IGMDataItem i, int pos = 0)
+                public override bool ITEMInputs(IGMDataItem_IGMData i, int pos = 0)
                 {
                     bool ret = false;
                     if (InputsModeTest(pos))

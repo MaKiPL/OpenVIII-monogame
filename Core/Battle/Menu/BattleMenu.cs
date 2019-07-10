@@ -456,7 +456,9 @@ namespace OpenVIII
                             ECN = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 29) + "\n" +
                                 Memory.Strings.Read(Strings.FileID.KERNEL, 30, 30) + "\n" +
                                 Memory.Strings.Read(Strings.FileID.KERNEL, 30, 31);
-                        Memory.State[Character]
+                        uint exp = Memory.State[Character].Experience;
+                        ushort expTNL = Memory.State[Character].ExperienceToNextLevel;
+                        byte lvl = Memory.State[Character].Level;
                         base.Init();
                     }
                 }

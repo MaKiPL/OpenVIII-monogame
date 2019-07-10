@@ -71,7 +71,7 @@ namespace OpenVIII
 
             public override void ReInit()
             {
-                if (Memory.State.Characters != null)
+                if (Memory.State.Characters != null && Character != Characters.Blank)
                 {
                     base.ReInit();
                     FillData(Icons.ID.Icon_Status_Attack, Kernel_bin.Stat.ST_Atk, Kernel_bin.Stat.ST_Def_1);
@@ -123,27 +123,26 @@ namespace OpenVIII
 
             protected override bool Unlocked(byte pos)
             {
-                switch (pos)
-                {
-                    case 0:
-                        return unlocked.Contains(Kernel_bin.Abilities.ST_Atk_J);
+                if (unlocked != null)
+                    switch (pos)
+                    {
+                        case 0:
+                            return unlocked.Contains(Kernel_bin.Abilities.ST_Atk_J);
 
-                    case 1:
-                        return unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx1) ||
-                            unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx2) ||
-                            unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4);
+                        case 1:
+                            return unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx1) ||
+                                unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx2) ||
+                                unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4);
 
-                    case 2:
-                        return unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx2) ||
-                            unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4);
+                        case 2:
+                            return unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx2) ||
+                                unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4);
 
-                    case 3:
-                    case 4:
-                        return unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4);
-
-                    default:
-                        return false;
-                }
+                        case 3:
+                        case 4:
+                            return unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4);
+                    }
+                return false;
             }
 
             private void ConfirmChangeEvent(object sender, Mode e) => ConfirmChange();

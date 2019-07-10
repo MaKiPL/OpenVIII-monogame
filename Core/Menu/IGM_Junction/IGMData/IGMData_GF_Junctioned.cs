@@ -29,7 +29,7 @@ namespace OpenVIII
                 public override void ReInit()
                 {
                     base.ReInit();
-                    if (Memory.State.Characters != null)
+                    if (Memory.State.Characters != null && Character != Characters.Blank)
                     {
                         IEnumerable<Enum> availableFlags = Enum.GetValues(typeof(Saves.GFflags)).Cast<Enum>();
                         int pos = 0;

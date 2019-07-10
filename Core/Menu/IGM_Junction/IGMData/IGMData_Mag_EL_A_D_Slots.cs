@@ -77,7 +77,7 @@ namespace OpenVIII
 
             public override void ReInit()
             {
-                if (Memory.State.Characters != null)
+                if (Memory.State.Characters != null && Character!= Characters.Blank)
                 {
                     base.ReInit();
                     FillData(Icons.ID.Icon_Elemental_Attack, Kernel_bin.Stat.EL_Atk, Kernel_bin.Stat.EL_Def_1);
@@ -127,6 +127,7 @@ namespace OpenVIII
 
             protected override bool Unlocked(byte pos)
             {
+                if(unlocked != null)
                 switch (pos)
                 {
                     case 0:
@@ -144,10 +145,8 @@ namespace OpenVIII
                     case 3:
                     case 4:
                         return unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx4);
-
-                    default:
-                        return false;
                 }
+                return false;
             }
 
             private void ConfirmChangeEvent(object sender, Mode e) => ConfirmChange();

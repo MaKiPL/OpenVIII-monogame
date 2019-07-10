@@ -393,7 +393,7 @@ namespace OpenVIII
                 {
                     Cursor_Status |= Cursor_Status.Enabled;
                 }
-                if (Memory.State.Characters != null)
+                if (Memory.State.Characters != null && Character != Characters.Blank)
                 {
                     Get_Sort_Stat();
                     Stat = stat ?? Stat;

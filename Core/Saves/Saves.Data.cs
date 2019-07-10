@@ -141,14 +141,14 @@ namespace OpenVIII
                 }
                 return r;
             }
-            public Damageable this[GFs id] => GetDamagable(id);
-            public Damageable this[Characters id] => GetDamagable(id);
+            public GFData this[GFs id] => GetDamagable(id);
+            public CharacterData this[Characters id] => GetDamagable(id);
             public Damageable this[Faces.ID id] => GetDamagable(id);
-            private Damageable GetDamagable(Characters id)
+            private CharacterData GetDamagable(Characters id)
             {
                 return Characters.ContainsKey(id) ? Characters[id] : null;
             }
-            private Damageable GetDamagable(GFs id)
+            private GFData GetDamagable(GFs id)
             {
                 return GFs.ContainsKey(id) ? GFs[id] : null;
             }

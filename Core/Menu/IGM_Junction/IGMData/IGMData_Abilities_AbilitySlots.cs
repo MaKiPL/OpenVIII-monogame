@@ -22,7 +22,7 @@ namespace OpenVIII
                 {
                     base.ReInit();
 
-                    if (Memory.State.Characters != null)
+                    if (Memory.State.Characters != null && Character != Characters.Blank)
                     {
                         for (int i = 0; i < Count; i++)
                         {

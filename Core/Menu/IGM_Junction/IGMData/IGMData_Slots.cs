@@ -97,10 +97,13 @@ namespace OpenVIII
 
                 public override void ReInit()
                 {
-                    unlocked = Memory.State.Characters[Character].UnlockedGFAbilities;
-                    AddEventListener();
-                    CheckMode();
-                    base.ReInit();
+                    if (Character != Characters.Blank)
+                    {
+                        unlocked = Memory.State.Characters[Character].UnlockedGFAbilities;
+                        AddEventListener();
+                        CheckMode();
+                        base.ReInit();
+                    }
                 }
 
                 public abstract void UndoChange();

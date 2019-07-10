@@ -117,7 +117,7 @@ namespace OpenVIII
                     Contents = Array.ConvertAll(Contents, c => c = default);
                     base.ReInit();
 
-                    if (Memory.State.Characters != null)
+                    if (Memory.State.Characters != null && unlocked != null)
                     {
                         ITEM[5, 0] = new IGMDataItem_Icon(Icons.ID.Icon_Status_Attack, new Rectangle(SIZE[5].X + 200, SIZE[5].Y, 0, 0),
                             (byte)(unlocked.Contains(Kernel_bin.Abilities.ST_Atk_J) ? 2 : 7));

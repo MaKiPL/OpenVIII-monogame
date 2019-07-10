@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -6,38 +7,42 @@ using System.Linq;
 
 namespace OpenVIII
 {
-
     public static partial class Saves
     {
         /// <summary>
-        /// 
         /// </summary>
         /// <remarks>Hyne has switchlocked0 and 1</remarks>
         [Flags]
-        public enum Exists :byte
+        public enum Exists : byte
         {
             Unavailable = 0x0,
+
             /// <summary>
             /// Shows in menu.
             /// </summary>
             Available = 0x1,
+
             /// <summary>
-            /// Party members that cannot leave or be added 
+            /// Party members that cannot leave or be added
             /// </summary>
             SwitchLocked0 = 0x2,
+
             /// <summary>
             /// Party members that cannot leave or be added
             /// </summary>
             SwitchLocked1 = 0x4,
+
             /// <summary>
             /// Many have this set. I donno what it does.
             /// </summary>
             Unk8 = 0x8,
+
             Unk10 = 0x10,
             Unk20 = 0x20,
             Unk30 = 0x40,
             Unk40 = 0x80,
         }
+
         /// <summary>
         /// Data for each Character
         /// </summary>
@@ -50,25 +55,33 @@ namespace OpenVIII
             /// Raw HP buff from items.
             /// </summary>
             public ushort _HP;
+
             /// <summary>
             /// Total Exp
             /// </summary>
-            public uint Experience; 
+            public uint Experience;
+
             /// <summary>
             /// Character Model
             /// </summary>
-            public byte ModelID; 
+            public byte ModelID;
+
             /// <summary>
             /// Weapon
             /// </summary>
-            public byte WeaponID; 
+            public byte WeaponID;
+
             /// <summary>
             /// Random number generator seeded with time.
             /// </summary>
-            static Random random = new Random((int)DateTime.Now.Ticks);
+            private static Random random = new Random((int)DateTime.Now.Ticks);
+
             /// <summary>
-            /// <para>This Generates a Crisis Level. Run this each turn in battle. Though in real game it runs when the menu pops up.</para>
-            /// <para>-1 means no limit break. >=0 has a limit break.</para>
+            /// <para>
+            /// This Generates a Crisis Level. Run this each turn in battle. Though in real game it
+            /// runs when the menu pops up.
+            /// </para>
+            /// <para>-1 means no limit break. &gt;=0 has a limit break.</para>
             /// </summary>
             /// <returns>-1 - 4</returns>
             /// <remarks>https://finalfantasy.fandom.com/wiki/Crisis_Level</remarks>
@@ -76,7 +89,7 @@ namespace OpenVIII
             {
                 ushort current = CurrentHP();
                 ushort max = MaxHP();
-                if ((ID == Characters.Seifer_Almasy && CurrentHP()<(max*84/100)))
+                if ((ID == Characters.Seifer_Almasy && CurrentHP() < (max * 84 / 100)))
                 {
                     int HPMod = CharacterStats.Crisis * 10 * current / max;
                     int DeathBonus = Memory.State.DeadPartyMembers() * 200 + 1600;
@@ -106,17 +119,19 @@ namespace OpenVIII
                 }
                 return CurrentCrisisLevel = -1;
             }
+
             /// <summary>
-            /// Set by CrisisLevel(), -1 means no limit break. >=0 has a limit break.
+            /// Set by CrisisLevel(), -1 means no limit break. &gt;=0 has a limit break.
             /// </summary>
             /// <returns>-1 - 4</returns>
             /// <remarks>https://finalfantasy.fandom.com/wiki/Crisis_Level</remarks>
             public sbyte CurrentCrisisLevel { get; private set; }
-            
+
             /// <summary>
             /// Kernel Stats
             /// </summary>
             public Kernel_bin.Character_Stats CharacterStats => Kernel_bin.CharacterStats[ID];
+
             /// <summary>
             /// Stats that can be incrased via items. Except for HP because it's a ushort not a byte.
             /// </summary>
@@ -129,30 +144,36 @@ namespace OpenVIII
             //public byte _SPD; //0x0D
             //public byte _LCK; //0x0E
             public Dictionary<byte, byte> Magics;
+
             /// <summary>
             /// Junctioned Commands
             /// </summary>
             public List<Kernel_bin.Abilities> Commands;
+
             public byte Paddingorunusedcommand;
+
             /// <summary>
             /// Junctioned Abilities
             /// </summary>
             public List<Kernel_bin.Abilities> Abilities;
+
             /// <summary>
             /// Juctioned GFs
             /// </summary>
             public GFflags JunctionnedGFs;
+
             public byte Unknown1;
+
             /// <summary>
             /// <para>Alt Models/different costumes</para>
             /// <para>(Normal, SeeD, Soldier...)</para>
             /// </summary>
             public byte Alternativemodel;
+
             /// <summary>
             /// Junctioned Magic per stat.
             /// </summary>
             public Dictionary<Kernel_bin.Stat, byte> Stat_J;
-
 
             public byte Unknown2; //0x6B (padding?)
 
@@ -161,27 +182,35 @@ namespace OpenVIII
             /// <para>Effects Summon speed and such.</para>
             /// </summary>
             public Dictionary<GFs, ushort> CompatibilitywithGFs;
+
             /// <summary>
             /// Number of Kills
             /// </summary>
             public ushort Numberofkills;
+
             /// <summary>
             /// Number of KOs
             /// </summary>
             public ushort NumberofKOs;
+
             /// <summary>
             /// Value determines if a character shows in menu and can be added to party.
-            /// <para>15,9,7,4,1 shows on menu, 0 locked, 6 hidden // I think I wonder if this is a flags value.</para>
+            /// <para>
+            /// 15,9,7,4,1 shows on menu, 0 locked, 6 hidden // I think I wonder if this is a flags value.
+            /// </para>
             /// </summary>
             public Exists Exists;
+
             /// <summary>
             /// Visable
             /// </summary>
-            public bool Available => (Exists & Exists.Available) !=0;
+            public bool Available => (Exists & Exists.Available) != 0;
+
             /// <summary>
             /// Cannot remove from party or add to party.
             /// </summary>
             public bool SwitchLocked => (Exists & (Exists.SwitchLocked0 | Exists.SwitchLocked1)) != 0;
+
             public byte Unknown3; //0x94
             public byte Unknown4; //0x96
 
@@ -223,6 +252,7 @@ namespace OpenVIII
             public IOrderedEnumerable<Kernel_bin.Magic_Data> SortedMagic(Kernel_bin.Stat Stat) => Kernel_bin.MagicData.OrderBy(x => (-x.totalStatVal(Stat) * (Magics.ContainsKey(x.ID) ? Magics[x.ID] : 0)) / 100);
 
             public void RemoveMagic() => Stat_J = Stat_J.ToDictionary(e => e.Key, e => (byte)0);
+
             public int CriticalHP(Characters value) => MaxHP(value) / 4;
 
             public void RemoveAll()
@@ -292,24 +322,24 @@ namespace OpenVIII
                 Numberofkills = br.ReadUInt16();//0x90
                 NumberofKOs = br.ReadUInt16();//0x92
                 Exists = (Exists)br.ReadByte();//0x94
-                //switch((int)Exists)
-                //{
-                //    case 0:
-                //        break;
-                //    case 1:
-                //        break;
-                //    case 9:
-                //        break;
-                //    case 6:
-                //        break;
-                //    case 7:
-                //        break;
-                //    case 15:
-                //        break;
-                //    default:
-                //    break;
-                //}
-                    Unknown3 = br.ReadByte();//0x95
+                                               //switch((int)Exists)
+                                               //{
+                                               //    case 0:
+                                               //        break;
+                                               //    case 1:
+                                               //        break;
+                                               //    case 9:
+                                               //        break;
+                                               //    case 6:
+                                               //        break;
+                                               //    case 7:
+                                               //        break;
+                                               //    case 15:
+                                               //        break;
+                                               //    default:
+                                               //    break;
+                                               //}
+                Unknown3 = br.ReadByte();//0x95
                 Statuses0 = (Kernel_bin.Persistant_Statuses)br.ReadByte();//0x96
                 Unknown4 = br.ReadByte();//0x97
             }
@@ -390,9 +420,8 @@ namespace OpenVIII
                 }
             }
 
-
-            public int Level => (int)((Experience / 1000) + 1);
-            public int ExperienceToNextLevel => (int)((Level) * 1000 - Experience);
+            public byte Level => CharacterStats.LEVEL(Experience);
+            public ushort ExperienceToNextLevel => (ushort)(Level == 100 ? 0 : MathHelper.Clamp(CharacterStats.EXP(Level) - Experience, 0, CharacterStats.EXP(2)));
 
             /// <summary>
             /// Max HP
@@ -421,39 +450,39 @@ namespace OpenVIII
                     if (Kernel_bin.Statpercentabilities.ContainsKey(i) && Kernel_bin.Statpercentabilities[i].Stat == s)
                         total += Kernel_bin.Statpercentabilities[i].Value;
                 }
+
                 switch (s)
                 {
                     case Kernel_bin.Stat.HP:
-                        return Kernel_bin.CharacterStats[c].HP((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], _HP, total);
+                        return CharacterStats.HP((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], _HP, total);
 
                     case Kernel_bin.Stat.EVA:
                         //TODO confirm if there is no flat stat buff for eva. If there isn't then remove from function.
-                        return Kernel_bin.CharacterStats[c].EVA((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], 0, TotalStat(Kernel_bin.Stat.SPD, c), total);
+                        return CharacterStats.EVA((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], 0, TotalStat(Kernel_bin.Stat.SPD, c), total);
 
                     case Kernel_bin.Stat.SPD:
-                        return Kernel_bin.CharacterStats[c].SPD((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
+                        return CharacterStats.SPD((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
 
                     case Kernel_bin.Stat.HIT:
-                        return Kernel_bin.CharacterStats[c].HIT(Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], WeaponID);
+                        return CharacterStats.HIT(Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], WeaponID);
 
                     case Kernel_bin.Stat.LUCK:
-                        return Kernel_bin.CharacterStats[c].LUCK((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
+                        return CharacterStats.LUCK((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
 
                     case Kernel_bin.Stat.MAG:
-                        return Kernel_bin.CharacterStats[c].MAG((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
+                        return CharacterStats.MAG((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
 
                     case Kernel_bin.Stat.SPR:
-                        return Kernel_bin.CharacterStats[c].SPR((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
+                        return CharacterStats.SPR((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
 
                     case Kernel_bin.Stat.STR:
-                        return Kernel_bin.CharacterStats[c].STR((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total, WeaponID);
+                        return CharacterStats.STR((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total, WeaponID);
 
                     case Kernel_bin.Stat.VIT:
-                        return Kernel_bin.CharacterStats[c].VIT((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
+                        return CharacterStats.VIT((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
                 }
                 return 0;
             }
-
 
             public override ushort CurrentHP()
             {
