@@ -80,7 +80,6 @@ namespace OpenVIII
             /// </summary>
             private static FF8String ECN;
         }
-        #endregion Methods
 
     }
 }

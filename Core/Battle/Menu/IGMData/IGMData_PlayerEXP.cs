@@ -40,7 +40,6 @@ namespace OpenVIII
                 }
             }
         }
-        #endregion Methods
 
     }
 }

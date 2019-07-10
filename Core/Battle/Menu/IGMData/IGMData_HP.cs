@@ -8,7 +8,6 @@ namespace OpenVIII
 {
     public partial class BattleMenu
     {
-        #endregion Methods
 
         #region Classes
 
