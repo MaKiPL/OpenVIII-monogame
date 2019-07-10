@@ -43,18 +43,11 @@ namespace OpenVIII
 
         public override void Draw()
         {
-            StartDraw();
-            DrawData();
-            //menus?.ForEach(m => m.DrawData());
-            EndDraw();
-        }
 
-        public override void DrawData()
-        {
             if (DrawActions.ContainsKey((Mode)GetMode()))
                 DrawActions[(Mode)GetMode()]();
-            base.DrawData();
         }
+
 
         public override bool Inputs()
         {
@@ -124,13 +117,18 @@ namespace OpenVIII
             base.Init();
         }
 
-        private void DrawBattleAction() => menus?.Where(m=>m.GetType().Equals(typeof(BattleMenu))).ForEach(m => m.Draw());
+        private void DrawBattleAction()
+        {
+            StartDraw();
+            menus?.Where(m => m.GetType().Equals(typeof(BattleMenu))).ForEach(m => m.DrawData());
+            EndDraw();
+        }
 
         private void DrawGameOverAction() {}
 
         private void DrawStartingAction() { }
 
-        private void DrawVictoryAction() => Victory_Menu.DrawData();
+        private void DrawVictoryAction() => Victory_Menu.Draw();
 
         public VictoryMenu Victory_Menu => (VictoryMenu)(menus?.Where(m => m.GetType().Equals(typeof(VictoryMenu))).First());
         private bool InputBattleFunction()

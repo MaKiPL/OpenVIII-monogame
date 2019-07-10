@@ -28,7 +28,7 @@ namespace OpenVIII
                 {
                     { Mode.Exp,
                     new IGMData_Group (
-                        new IGMData_Container(new IGMDataItem_Box(Memory.Strings.Read(Strings.FileID.KERNEL,30,23),new Rectangle(Point.Zero,new Point((int)Size.X,78)),Icons.ID.INFO)),
+                        new IGMData_Container(new IGMDataItem_Box(Memory.Strings.Read(Strings.FileID.KERNEL,30,23),new Rectangle(Point.Zero,new Point((int)Size.X,78)),Icons.ID.INFO,Box_Options.Middle)),
                         new IGMData_PlayerEXP(partypos:0),new IGMData_PlayerEXP(partypos:1),new IGMData_PlayerEXP(partypos:2)
                         )
                     { CONTAINER = new IGMDataItem_Empty(new Rectangle(Point.Zero,Size.ToPoint()))} },
@@ -39,7 +39,7 @@ namespace OpenVIII
                             (byte)FF8TextTagCode.Key,
                             (byte)FF8TextTagKey.Confirm,
                             (byte)FF8TextTagCode.Color,
-                            (byte)FF8TextTagColor.White}).Append(Memory.Strings.Read(Strings.FileID.KERNEL,30,22)),new Rectangle(new Point(0,(int)Size.Y-78),new Point((int)Size.X,78))))
+                            (byte)FF8TextTagColor.White}).Append(Memory.Strings.Read(Strings.FileID.KERNEL,30,22)),new Rectangle(new Point(0,(int)Size.Y-78),new Point((int)Size.X,78)),options: Box_Options.Center| Box_Options.Middle))
                     }
                     
                 };

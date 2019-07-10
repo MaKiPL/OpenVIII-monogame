@@ -55,13 +55,7 @@ namespace OpenVIII
         #endregion Enums
 
         #region Methods
-
-        /// <summary>
-        /// <para>Draws the IGMData</para>
-        /// <para>Skips Start and Stop because this class should be in another class</para>
-        /// </summary>
-        public override void Draw() => base.DrawData();
-
+        
         public override bool Inputs() => Data[SectionName.Commands].Inputs();
 
         protected override void Init()
