@@ -221,7 +221,7 @@ namespace OpenVIII
         {
             StartDraw();
             DrawData();
-            menus?.ForEach(m => m.Draw());
+            //menus?.ForEach(m => m.DrawData());
             EndDraw();
         }
 
@@ -254,7 +254,7 @@ namespace OpenVIII
                     menus.Add(tmp);
                 }
                 menus.Add(new VictoryMenu());
-                SetMode(Mode.GameOver);
+                SetMode(Mode.Victory);
                 UpdateFunctions = new Dictionary<Mode, Func<bool>>()
                 {
                     {Mode.Starting, UpdateStartingFunction},
@@ -306,9 +306,9 @@ namespace OpenVIII
 
         private void DrawStartingAction() { }
 
-        private void DrawVictoryAction() => Victory_Menu.Draw();
+        private void DrawVictoryAction() => Victory_Menu.DrawData();
 
-        public VictoryMenu Victory_Menu => (VictoryMenu)(menus?.Where(m => GetType().Equals(typeof(VictoryMenu))).First());
+        public VictoryMenu Victory_Menu => (VictoryMenu)(menus?.Where(m => m.GetType().Equals(typeof(VictoryMenu))).First());
         private bool InputBattleFunction()
         {
             bool ret = false;
@@ -435,7 +435,12 @@ namespace OpenVIII
                 _items = items;
                 base.ReInit();
             }
-
+            /// <summary>
+            /// <para>EXP Acquired</para>
+            /// <para>Current EXP</para>
+            /// <para>Next LEVEL</para>
+            /// </summary>
+            private static FF8String ECN;
             private class IGMData_PlayerEXP : IGMData
             {
 
@@ -447,9 +452,11 @@ namespace OpenVIII
                 {
                     if (Character != Characters.Blank)
                     {
-                        FF8String ECN = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 29) + "\n" +
-                            Memory.Strings.Read(Strings.FileID.KERNEL, 30, 30) + "\n" +
-                            Memory.Strings.Read(Strings.FileID.KERNEL, 30, 31);
+                        if(ECN == null)
+                            ECN = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 29) + "\n" +
+                                Memory.Strings.Read(Strings.FileID.KERNEL, 30, 30) + "\n" +
+                                Memory.Strings.Read(Strings.FileID.KERNEL, 30, 31);
+                        Memory.State[Character]
                         base.Init();
                     }
                 }
