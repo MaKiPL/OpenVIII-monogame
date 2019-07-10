@@ -131,6 +131,10 @@ namespace OpenVIII.Core.World
 
         const int SEC39_VRAM_STARTX = 832; //this is beginning of origX to map to one texture
         const int SEC39_VRAM_STARTY = 256; //used to map VRAM, but here it's used to create new atlas
+        const int VRAM_TEXBLOCKWIDTH = 256; //wm faces ask VRAM, not texture, so the block is 256px in VRAM + additional chunks from other files that we deal normally as Tex2D[]
+        const int VRAM_TEXBLOCKHEIGHT = 256; //see above
+        private const int VRAM_BLOCKSIZE = 32; // =VRAM_BLOCKSTEP*4 - one origX of 16 is actually 16/2=8*32=finalXorig
+        private const int VRAM_BLOCKSTEP = 8;
 
         /// <summary>
         /// Section 39: Textures of roads, train tracks and bridge
@@ -142,19 +146,19 @@ namespace OpenVIII.Core.World
             {
                 ms.Seek(sectionPointers[39 - 1], SeekOrigin.Begin);
                 var innerSec = GetInnerPointers(br);
-                sec39_texture = new Texture2D(Memory.graphics.GraphicsDevice, 96, 64, false, SurfaceFormat.Color);
+                sec39_texture = new Texture2D(Memory.graphics.GraphicsDevice, VRAM_TEXBLOCKWIDTH, VRAM_TEXBLOCKHEIGHT, false, SurfaceFormat.Color);
                 for (int i = 0; i < innerSec.Length; i++)
                 {
                     TIM2 tim = new TIM2(buffer, (uint)(sectionPointers[39 - 1] + innerSec[i]));
                     Texture2D atlasChunk = tim.GetTexture(0, true);
                     byte[] chunkBuffer = new byte[atlasChunk.Width * atlasChunk.Height * 4];
-                    //Extended.DumpTexture(atlasChunk, $"D:/test{i}.png");
+                    atlasChunk.GetData(chunkBuffer,0, chunkBuffer.Length);
                     int newX = tim.GetOrigX - SEC39_VRAM_STARTX;
                     int newY = tim.GetOrigY - SEC39_VRAM_STARTY;
+                    newX= (newX / VRAM_BLOCKSTEP) * VRAM_BLOCKSIZE;
                     sec39_texture.SetData(0, new Microsoft.Xna.Framework.Rectangle(newX, newY, atlasChunk.Width, atlasChunk.Height), chunkBuffer, 0, chunkBuffer.Length);
                 }
             }
-            //Extended.DumpTexture(sec39_texture, @"D:/test.png");
         }
 
         public enum Section39_Textures
