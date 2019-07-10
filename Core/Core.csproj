@@ -132,6 +132,11 @@
     <Compile Include="Battle\debug_battleDat.cs" />
     <Compile Include="Battle\init_debugger_battle.cs" />
     <Compile Include="Battle\Menu\BattleMenu.cs" />
+    <Compile Include="Battle\Menu\BattleMenus.cs" />
+    <Compile Include="Battle\Menu\IGMData\IGMData_HP.cs" />
+    <Compile Include="Battle\Menu\IGMData\IGMData_PlayerEXP.cs" />
+    <Compile Include="Menu\Menus.cs" />
+    <Compile Include="Battle\Menu\VictoryMenu.cs" />
     <Compile Include="Battle\module_battle.cs" />
     <Compile Include="Battle\module_battle_Debug.cs" />
     <Compile Include="Characters.cs" />
