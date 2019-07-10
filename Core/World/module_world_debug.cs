@@ -372,10 +372,6 @@ namespace OpenVIII
 
         private static void DrawRectangleMiniMap()
         {
-            Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, Memory.blendState_BasicAdd);
-            Memory.spriteBatch.Draw(wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap,1), new Rectangle((int)(Memory.graphics.GraphicsDevice.Viewport.Width * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f)), Color.White * .7f);
-            Memory.spriteBatch.End();
-
             float topX = Memory.graphics.GraphicsDevice.Viewport.Width * .6f; //6
             float topY = Memory.graphics.GraphicsDevice.Viewport.Height * .6f;
 
@@ -385,7 +381,12 @@ namespace OpenVIII
             bc = Math.Abs(camPosition.Z / 12288f);
             topY += Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f * bc;
 
-            Memory.SpriteBatchStartAlpha();
+            Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, Memory.blendState_BasicAdd);
+            Memory.spriteBatch.Draw(wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap,1), new Rectangle((int)(Memory.graphics.GraphicsDevice.Viewport.Width * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f)), Color.White * .7f);
+            Memory.spriteBatch.End();
+
+
+            Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
             Memory.spriteBatch.Draw(wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0), new Rectangle((int)topX, (int)topY, (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 32.0f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 32.0f)), null, Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
             Memory.SpriteBatchEnd();
         }
