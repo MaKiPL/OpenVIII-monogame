@@ -93,6 +93,8 @@
     <PlatformTarget>x64</PlatformTarget>
     <LangVersion>latest</LangVersion>
     <ErrorReport>prompt</ErrorReport>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugLinux|x86'">
     <OutputPath>bin\</OutputPath>
@@ -100,6 +102,8 @@
     <DefineConstants>TRACE</DefineConstants>
     <LangVersion>latest</LangVersion>
     <ErrorReport>prompt</ErrorReport>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
