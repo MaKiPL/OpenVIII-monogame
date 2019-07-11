@@ -22,7 +22,7 @@ MODULE MAIN MENU
 
 MODULE IN-GAME MENU
 
-⬛⬛⬛⬛⬛⬛⬜⬜⬜⬜ 60%
+⬛⬛⬛⬛⬛⬛⬛⬜⬜⬜ 75%
 
 MODULE BATTLE
 
@@ -34,7 +34,7 @@ MODULE TRIPLE TRIAD
 
 MODULE FIELD
 
-⬛⬛⬛⬛⬛⬛⬜⬜⬜⬜ 60% 
+⬛⬛⬛⬛⬛⬜⬜⬜⬜⬜ 50% 
 
 MODULE FMV
 
@@ -42,7 +42,7 @@ MODULE FMV
 
 MODULE WORLD MAP
 
-⬛⬛⬛⬛⬛⬜⬜⬜⬜⬜ 50%
+⬛⬛⬛⬛⬛⬛⬜⬜⬜⬜ 65%
 
 
 ## Getting started (Windows)
