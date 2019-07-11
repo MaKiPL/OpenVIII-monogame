@@ -61,8 +61,17 @@ namespace OpenVIII
         }
         private struct AnimFrame
         {
-            public Vector3 bone0pos;
+            private Vector3 Bone0pos;
             public Vector3[] vecRot;
+            public Matrix[] matrixRot;
+
+            public Vector3 bone0pos { get => Bone0pos*.01f; set => Bone0pos = value; }
+        }
+
+        private struct Skeleton
+        {
+            public Bone[] bones;
+            public SkinData[] skins;
         }
 
         [StructLayout(LayoutKind.Sequential, Size = 0x40, Pack = 1)]
@@ -108,12 +117,29 @@ namespace OpenVIII
             public byte v;
         }
 
+        private struct SkinData
+        {
+            public short vertIndex;
+            public short cVerts;
+            public short boneId;
+            public short unk;
+        }
+
+        /// <summary>
+        /// This is final combination of skin+vertices data. You query the class as the face is querying ABCD, but it has boneId paired to it
+        /// </summary>
+        private struct GroupedVertices
+        {
+            public byte boneId;
+            public Vector4 vertex;
+        }
+
         private Header header;
-        private AnimFrame[] animationKeypoints;
         private Animation animation;
-        private Bone[] bones;
+        private Skeleton skeleton;
         private Face[] faces;
         private Vector4[] vertices;
+        private GroupedVertices[] gVertices;
 
         public Debug_MCH(MemoryStream ms, BinaryReader br)
         {
@@ -121,10 +147,35 @@ namespace OpenVIII
             this.br = br;
             pBase = (uint)ms.Position;
             header = Extended.ByteArrayToStructure<Header>(br.ReadBytes(64));
+            if (header.Unk != 0)
+            {
+                ms.Seek(0, SeekOrigin.End); //rewind to end
+                return;
+            }
 
-            ReadSkeleton();
             ReadGeometry();
+            ReadSkeleton();
             ReadAnimation();
+            PairSkinWithVertex();
+        }
+
+        public bool bValid() => header.Unk == 0;
+
+        /// <summary>
+        /// as index data for skinning boneId is not in the same place as vertices, therefore we create sorted buffer with Vertex and their boneId
+        /// </summary>
+        private void PairSkinWithVertex()
+        {
+            gVertices = new GroupedVertices[header.cVertices];
+            int innerIndex = 0;
+            for(int i = 0; i<skeleton.skins.Length; i++)
+            {
+                for(int n = skeleton.skins[i].vertIndex; n<skeleton.skins[i].vertIndex + skeleton.skins[i].cVerts; n++)
+                {
+                    gVertices[innerIndex] = new GroupedVertices() { boneId = (byte)skeleton.skins[i].boneId, vertex = vertices[innerIndex] };
+                    innerIndex++;
+                }
+            }
         }
 
         private void ReadSkeleton()
@@ -133,13 +184,27 @@ namespace OpenVIII
 
             if (ms.Position > ms.Length)
                 return; //error handler
-
-            bones = new Bone[header.cSkeletonBones];
+            skeleton = new Skeleton();
+            skeleton.bones = new Bone[header.cSkeletonBones];
             for (int i = 0; i < header.cSkeletonBones; i++)
-                bones[i] = Extended.ByteArrayToStructure<Bone>(br.ReadBytes(64));
-
+                skeleton.bones[i] = Extended.ByteArrayToStructure<Bone>(br.ReadBytes(64));
+            ReadSkinning();
             return;
         }
+
+        private void ReadSkinning()
+        {
+            ms.Seek(pBase + header.pSkinObjects, SeekOrigin.Begin);
+
+            if (ms.Position > ms.Length)
+                return; //error handler
+
+            skeleton.skins = new SkinData[header.cSkinObjects];
+            for (int i = 0; i < header.cSkinObjects; i++)
+                skeleton.skins[i] = Extended.ByteArrayToStructure<SkinData>(br.ReadBytes(8));
+            return;
+        }
+
         private void ReadGeometry()
         {
             ms.Seek(pBase + header.pVertices, SeekOrigin.Begin);
@@ -158,7 +223,7 @@ namespace OpenVIII
         }
 
         /// <summary>
-        /// Method to parse available binary data to "animation" structure
+        /// Method to parse available binary data to "animation" structure and calculates the final Matrix
         /// </summary>
         private void ReadAnimation()
         {
@@ -179,25 +244,68 @@ namespace OpenVIII
                 {
                     AnimFrame keyPoint = new AnimFrame() { bone0pos= new Vector3(br.ReadInt16(),br.ReadInt16(), br.ReadInt16())};
                     Vector3[] vetRot = new Vector3[cBones];
+                    Matrix[] matrixRot = new Matrix[cBones];
                     for (int i = 0; i < cBones; i++)
-                        vetRot[i] = new Vector3() { X = br.ReadInt16()/4096.0f * 360f, Y = br.ReadInt16()/4096.0f * 360f, Z = br.ReadInt16()/4096.0f * 360f };
+                    {
+                        Vector3 shortVector = new Vector3() { X = br.ReadInt16(), Y = br.ReadInt16(), Z = br.ReadInt16()};
+                        vetRot[i] = Extended.S16VectorToFloat(shortVector) * 360f;
+                    }
                     animationFramesCount--;
                     keyPoint.vecRot = vetRot;
+                    keyPoint.matrixRot = matrixRot;
                     animKeypoints.Add(keyPoint);
                 }
                 animationCount--;
-                animation.animations[innerIndex].animationFrames = animationKeypoints.ToArray();
+                animation.animations[innerIndex].animationFrames = animKeypoints.ToArray();
                 innerIndex++;
             }
+            CalculateBoneMatrix();
             return;
+        }
+
+        private void CalculateBoneMatrix()
+        {
+            for (int animId = 0; animId < animation.animations.Length; animId++)
+                for (int frameId = 0; frameId < animation.animations[animId].cAnimFrames; frameId++)
+                    for (int boneId = 0; boneId < skeleton.bones.Length; boneId++)
+                    {
+                    var boneRotation = animation.animations[animId].animationFrames[frameId].vecRot[boneId];
+                    Matrix xRot = Extended.GetRotationMatrixX(-boneRotation.X);
+                    Matrix yRot = Extended.GetRotationMatrixY(-boneRotation.Y);
+                    Matrix zRot = Extended.GetRotationMatrixZ(-boneRotation.Z);
+                    var MatrixZ = Extended.MatrixMultiply_transpose(yRot, xRot);
+                    MatrixZ = Extended.MatrixMultiply_transpose(zRot, MatrixZ);
+                    if (skeleton.bones[boneId].parentBone == 0) //if parentId is 0 then the current bone is core aka bone0
+                    {
+                        MatrixZ.M41 =  animation.animations[animId].animationFrames[frameId].bone0pos.X;
+                        MatrixZ.M42 = -animation.animations[animId].animationFrames[frameId].bone0pos.Y; //up/down
+                        MatrixZ.M43 = animation.animations[animId].animationFrames[frameId].bone0pos.Z;
+                        MatrixZ.M44 = 1;
+
+                    }
+                    else
+                    {
+                        Matrix parentBone = animation.animations[animId].animationFrames[frameId].matrixRot[skeleton.bones[boneId].parentBone-1]; //gets the parent bone
+                        MatrixZ.M43 = skeleton.bones[skeleton.bones[boneId].parentBone-1].size;
+                        Matrix rMatrix = Matrix.Multiply(parentBone, MatrixZ);
+                        rMatrix.M41 = parentBone.M11 * MatrixZ.M41 + parentBone.M12 * MatrixZ.M42 + parentBone.M13 * MatrixZ.M43 + parentBone.M41;
+                        rMatrix.M42 = parentBone.M21 * MatrixZ.M41 + parentBone.M22 * MatrixZ.M42 + parentBone.M23 * MatrixZ.M43 + parentBone.M42;
+                        rMatrix.M43 = parentBone.M31 * MatrixZ.M41 + parentBone.M32 * MatrixZ.M42 + parentBone.M33 * MatrixZ.M43 + parentBone.M43;
+                        rMatrix.M44 = 1;
+                        MatrixZ = rMatrix;
+                    }
+                    animation.animations[animId].animationFrames[frameId].matrixRot[boneId] = MatrixZ;
+            }
         }
 
         /// <summary>
         /// [WIP] - this method should return vertices based on animation/skeleton, not 'as-is'
         /// </summary>
         /// <param name="position">abs X Y Z position to draw model</param>
+        /// <param name="animationId">absolute index of animation 0-based</param>
+        /// <param name="animationFrame">index of animation frame- 0-based, length vary</param>
         /// <returns>Tuple{item1= VertexPositionColorTexture; item2= clutIndex</returns>
-        public Tuple<VertexPositionColorTexture[], byte[]> GetVertexPositions(Vector3 position)
+        public Tuple<VertexPositionColorTexture[], byte[]> GetVertexPositions(Vector3 position, int animationId, int animationFrame)
         {
             List<VertexPositionColorTexture> facesVertices = new List<VertexPositionColorTexture>();
             List<byte> texIndexes = new List<byte>();
@@ -205,55 +313,58 @@ namespace OpenVIII
             {
                 if (!faces[i].BIsQuad) //triangle
                 {
-                    for (int k = 0; k < 3; k++)
-                    {
-                        Vector3 face = new Vector3(vertices[faces[i].verticesA[k]].X / MODEL_SCALE + position.X,
-                        vertices[faces[i].verticesA[k]].Z / MODEL_SCALE * -1f + position.Y,
-                        vertices[faces[i].verticesA[k]].Y / MODEL_SCALE + position.Z);
-                        Color clr = new Color(faces[i].vertColor[0], faces[i].vertColor[1], faces[i].vertColor[2], faces[i].vertColor[3]);
-                        Vector2 texData = new Vector2(faces[i].TextureMap[k].u/ TEX_SIZEW, faces[i].TextureMap[k].v/ TEX_SIZEH);
-                        facesVertices.Add( new VertexPositionColorTexture(face, clr, texData));
-                        texIndexes.Add((byte)faces[i].texIndex);
-                        if (faces[i].texIndex > byte.MaxValue)
-                            throw new Exception("Reverse engineering: test texture index? above 255, but datatype is word");
-                    }
+                    //We should have pre-calculated Matrices for all bones, frames, animations. Therefore we need to calculate final Vertex position
+                    var vertsCollection = faces[i].verticesA;
+                    //let's first get the vertices we need from face. Those are indexes. We need to get their associated boneId to perform
+                    //operations on them. Therefore:
+                    
+
+                        //Vector3 face = new Vector3(vertices[faces[i].verticesA[k]].X / MODEL_SCALE + position.X,
+                        //vertices[faces[i].verticesA[k]].Z / MODEL_SCALE * -1f + position.Y,
+                        //vertices[faces[i].verticesA[k]].Y / MODEL_SCALE + position.Z);
+                        //Color clr = new Color(faces[i].vertColor[0], faces[i].vertColor[1], faces[i].vertColor[2], faces[i].vertColor[3]);
+                        //Vector2 texData = new Vector2(faces[i].TextureMap[k].u/ TEX_SIZEW, faces[i].TextureMap[k].v/ TEX_SIZEH);
+                        //facesVertices.Add( new VertexPositionColorTexture(face, clr, texData));
+                        //texIndexes.Add((byte)faces[i].texIndex);
+                        //if (faces[i].texIndex > byte.MaxValue)
+                        //    throw new Exception("Reverse engineering: test texture index? above 255, but datatype is word");
                     
                 }
-                else //retriangulation
-                {
-                    Vector3 A = new Vector3(vertices[faces[i].verticesA[0]].X / MODEL_SCALE + position.X,
-                    vertices[faces[i].verticesA[0]].Z / MODEL_SCALE + position.Y,
-                    vertices[faces[i].verticesA[0]].Y / MODEL_SCALE + position.Z);
-                    Vector3 B = new Vector3(vertices[faces[i].verticesA[1]].X / MODEL_SCALE + position.X,
-                    vertices[faces[i].verticesA[1]].Z / MODEL_SCALE + position.Y,
-                    vertices[faces[i].verticesA[1]].Y / MODEL_SCALE + position.Z);
-                    Vector3 C = new Vector3(vertices[faces[i].verticesA[2]].X / MODEL_SCALE + position.X,
-                    vertices[faces[i].verticesA[2]].Z / MODEL_SCALE + position.Y,
-                    vertices[faces[i].verticesA[2]].Y / MODEL_SCALE + position.Z);
-                    Vector3 D = new Vector3(vertices[faces[i].verticesA[3]].X / MODEL_SCALE + position.X,
-                    vertices[faces[i].verticesA[3]].Z / MODEL_SCALE + position.Y,
-                    vertices[faces[i].verticesA[3]].Y / MODEL_SCALE + position.Z);
+                //else //retriangulation
+                //{
+                //    Vector3 A = new Vector3(vertices[faces[i].verticesA[0]].X / MODEL_SCALE + position.X,
+                //    vertices[faces[i].verticesA[0]].Z / MODEL_SCALE + position.Y,
+                //    vertices[faces[i].verticesA[0]].Y / MODEL_SCALE + position.Z);
+                //    Vector3 B = new Vector3(vertices[faces[i].verticesA[1]].X / MODEL_SCALE + position.X,
+                //    vertices[faces[i].verticesA[1]].Z / MODEL_SCALE + position.Y,
+                //    vertices[faces[i].verticesA[1]].Y / MODEL_SCALE + position.Z);
+                //    Vector3 C = new Vector3(vertices[faces[i].verticesA[2]].X / MODEL_SCALE + position.X,
+                //    vertices[faces[i].verticesA[2]].Z / MODEL_SCALE + position.Y,
+                //    vertices[faces[i].verticesA[2]].Y / MODEL_SCALE + position.Z);
+                //    Vector3 D = new Vector3(vertices[faces[i].verticesA[3]].X / MODEL_SCALE + position.X,
+                //    vertices[faces[i].verticesA[3]].Z / MODEL_SCALE + position.Y,
+                //    vertices[faces[i].verticesA[3]].Y / MODEL_SCALE + position.Z);
 
-                    Vector2 t1 = new Vector2(faces[i].TextureMap[0].u / TEX_SIZEW, faces[i].TextureMap[0].v / TEX_SIZEH);
-                    Vector2 t2 = new Vector2(faces[i].TextureMap[1].u / TEX_SIZEW, faces[i].TextureMap[1].v / TEX_SIZEH);
-                    Vector2 t3 = new Vector2(faces[i].TextureMap[2].u / TEX_SIZEW, faces[i].TextureMap[2].v / TEX_SIZEH);
-                    Vector2 t4 = new Vector2(faces[i].TextureMap[3].u / TEX_SIZEW, faces[i].TextureMap[3].v / TEX_SIZEH);
+                //    Vector2 t1 = new Vector2(faces[i].TextureMap[0].u / TEX_SIZEW, faces[i].TextureMap[0].v / TEX_SIZEH);
+                //    Vector2 t2 = new Vector2(faces[i].TextureMap[1].u / TEX_SIZEW, faces[i].TextureMap[1].v / TEX_SIZEH);
+                //    Vector2 t3 = new Vector2(faces[i].TextureMap[2].u / TEX_SIZEW, faces[i].TextureMap[2].v / TEX_SIZEH);
+                //    Vector2 t4 = new Vector2(faces[i].TextureMap[3].u / TEX_SIZEW, faces[i].TextureMap[3].v / TEX_SIZEH);
 
 
-                    Color clr = new Color(faces[i].vertColor[0], faces[i].vertColor[1], faces[i].vertColor[2], faces[i].vertColor[3]);
+                //    Color clr = new Color(faces[i].vertColor[0], faces[i].vertColor[1], faces[i].vertColor[2], faces[i].vertColor[3]);
 
-                    facesVertices.Add(new VertexPositionColorTexture(A, clr, t1));
-                    facesVertices.Add(new VertexPositionColorTexture(B, clr, t2));
-                    facesVertices.Add(new VertexPositionColorTexture(D, clr, t4));
+                //    facesVertices.Add(new VertexPositionColorTexture(A, clr, t1));
+                //    facesVertices.Add(new VertexPositionColorTexture(B, clr, t2));
+                //    facesVertices.Add(new VertexPositionColorTexture(D, clr, t4));
 
-                    facesVertices.Add(new VertexPositionColorTexture(A, clr, t1));
-                    facesVertices.Add(new VertexPositionColorTexture(C, clr, t3));
-                    facesVertices.Add(new VertexPositionColorTexture(D, clr, t4));
+                //    facesVertices.Add(new VertexPositionColorTexture(A, clr, t1));
+                //    facesVertices.Add(new VertexPositionColorTexture(C, clr, t3));
+                //    facesVertices.Add(new VertexPositionColorTexture(D, clr, t4));
 
-                    if (faces[i].texIndex > byte.MaxValue)
-                        throw new Exception("Reverse engineering: test texture index? above 255, but datatype is word");
-                    texIndexes.Add((byte)faces[i].texIndex); texIndexes.Add((byte)faces[i].texIndex);
-                }
+                //    if (faces[i].texIndex > byte.MaxValue)
+                //        throw new Exception("Reverse engineering: test texture index? above 255, but datatype is word");
+                //    texIndexes.Add((byte)faces[i].texIndex); texIndexes.Add((byte)faces[i].texIndex);
+                //}
             }
 
             return new Tuple<VertexPositionColorTexture[], byte[]>(facesVertices.ToArray(), texIndexes.ToArray());

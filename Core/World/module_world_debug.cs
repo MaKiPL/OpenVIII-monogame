@@ -331,13 +331,14 @@ namespace OpenVIII
 
             if (true) //DEBUG
             {
-                var collectionDebug = chara.GetMCH(0).GetVertexPositions(new Vector3(-9105f, 100, -4466));
+                var collectionDebug = chara.GetMCH(0).GetVertexPositions(new Vector3(-9105f, 100, -4466),0,0);
                 ate.Texture = chara.GetCharaTexture(0);
-                foreach (var pass in ate.CurrentTechnique.Passes)
-                {
-                    pass.Apply();
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, collectionDebug.Item1, 0, collectionDebug.Item1.Length / 3);
-                }
+                if (collectionDebug.Item1.Length != 0)
+                    foreach (var pass in ate.CurrentTechnique.Passes)
+                    {
+                        pass.Apply();
+                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, collectionDebug.Item1, 0, collectionDebug.Item1.Length / 3);
+                    }
             }
 
 

@@ -29,7 +29,7 @@ namespace OpenVIII.Core.World
                 uint eof = br.ReadUInt32();
                 TIM2 tim;
                 while (ms.CanRead)
-                    if (ms.Position > ms.Length)
+                    if (ms.Position >= ms.Length)
                         break;
                     else if (BitConverter.ToUInt16(this.buffer, (int)ms.Position) == 0)
                         ms.Seek(2, SeekOrigin.Current);
@@ -43,7 +43,9 @@ namespace OpenVIII.Core.World
                     else //is geometry structure
                     {
                         ms.Seek(-8, SeekOrigin.Current);
-                        mchs.Add(new Debug_MCH(ms, br));
+                        Debug_MCH mch = new Debug_MCH(ms, br);
+                        if(mch.bValid())
+                            mchs.Add(mch);
                     }
             }
             mchInstances = mchs.ToArray();
