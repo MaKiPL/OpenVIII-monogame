@@ -329,7 +329,7 @@ namespace OpenVIII
 
             TeleportCameraWrap();
 
-            if (true)
+            if (true) //DEBUG
             {
                 var collectionDebug = chara.GetMCH(0).GetVertexPositions(new Vector3(-9105f, 100, -4466));
                 ate.Texture = chara.GetCharaTexture(0);

@@ -13,7 +13,8 @@ namespace OpenVIII
     public class Debug_MCH
     {
         const float MODEL_SCALE = 10f;
-
+        private const float TEX_SIZEW = 64.0f;
+        private const float TEX_SIZEH = 128.0f;
         private uint pBase;
         private MemoryStream ms;
         private BinaryReader br;
@@ -41,13 +42,38 @@ namespace OpenVIII
         public uint Unk2;
         }
 
-
-        private struct AnimationKeypoint
+        /// <summary>
+        /// Main anim struct. Model can contain AnimationEntry[] animations, which hold AnimFrame[] frames
+        /// </summary>
+        private struct Animation
         {
-            public short X;
-            public short Y;
-            public short Z;
-            public Vector3[] rot;
+            public uint cAnimations;
+            public AnimationEntry[] animations;
+        }
+
+        /// <summary>
+        /// Animation struct- it holds all available animation frame keypoints for selected animation
+        /// </summary>
+        private struct AnimationEntry
+        {
+            public uint cAnimFrames;
+            public AnimFrame[] animationFrames;
+        }
+        private struct AnimFrame
+        {
+            public Vector3 bone0pos;
+            public Vector3[] vecRot;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Size = 0x40, Pack = 1)]
+        private struct Bone
+        {
+            public ushort parentBone;
+            public ushort unk;
+            public uint unk2;
+            public short size;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst =54)]
+            public byte[] unkBuffer;
         }
 
         [StructLayout(LayoutKind.Sequential, Size = 64, Pack = 1)]
@@ -74,16 +100,6 @@ namespace OpenVIII
             public bool BIsQuad => polygonType == 0x2d010709;
         }
 
-        [StructLayout(LayoutKind.Sequential, Size = 0x40, Pack = 1)]
-        private struct Bone
-        {
-            public ushort parentBone;
-            public ushort unk;
-            public uint unk2;
-            public short size;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst =54)]
-            public byte[] unkBuffer;
-        }
 
         [StructLayout(LayoutKind.Sequential, Size = 2, Pack = 1)]
         private struct TextureMap
@@ -93,7 +109,8 @@ namespace OpenVIII
         }
 
         private Header header;
-        private AnimationKeypoint[] animationKeypoints;
+        private AnimFrame[] animationKeypoints;
+        private Animation animation;
         private Bone[] bones;
         private Face[] faces;
         private Vector4[] vertices;
@@ -139,6 +156,10 @@ namespace OpenVIII
             faces = face.ToArray();
             return;
         }
+
+        /// <summary>
+        /// Method to parse available binary data to "animation" structure
+        /// </summary>
         private void ReadAnimation()
         {
             ms.Seek(pBase + header.pAnimation, SeekOrigin.Begin);
@@ -146,30 +167,33 @@ namespace OpenVIII
             if (ms.Position > ms.Length)
                 return; //error handler
             ushort animationCount = br.ReadUInt16();
-            List<AnimationKeypoint> animKeypoints = new List<AnimationKeypoint>();
-
-            while (animationCount != 0/*(cEntries = br.ReadUInt16()) != 0*/)
+            int innerIndex = 0;
+            animation = new Animation() { cAnimations = animationCount, animations= new AnimationEntry[animationCount] };
+            while (animationCount != 0)
             {
                 ushort animationFramesCount = br.ReadUInt16();
                 ushort cBones = br.ReadUInt16();
+                animation.animations[innerIndex] = new AnimationEntry() { cAnimFrames = animationFramesCount, animationFrames = new AnimFrame[animationFramesCount] };
+                List<AnimFrame> animKeypoints = new List<AnimFrame>();
                 while (animationFramesCount != 0)
                 {
-                    AnimationKeypoint keyPoint = new AnimationKeypoint() { X = br.ReadInt16(), Y = br.ReadInt16(), Z = br.ReadInt16() };
+                    AnimFrame keyPoint = new AnimFrame() { bone0pos= new Vector3(br.ReadInt16(),br.ReadInt16(), br.ReadInt16())};
                     Vector3[] vetRot = new Vector3[cBones];
                     for (int i = 0; i < cBones; i++)
-                        vetRot[i] = new Vector3() { X = br.ReadInt16()/4096.0f, Y = br.ReadUInt16()/4096.0f, Z = br.ReadUInt16()/4096.0f };
+                        vetRot[i] = new Vector3() { X = br.ReadInt16()/4096.0f * 360f, Y = br.ReadInt16()/4096.0f * 360f, Z = br.ReadInt16()/4096.0f * 360f };
                     animationFramesCount--;
-                    keyPoint.rot = vetRot;
+                    keyPoint.vecRot = vetRot;
                     animKeypoints.Add(keyPoint);
                 }
                 animationCount--;
+                animation.animations[innerIndex].animationFrames = animationKeypoints.ToArray();
+                innerIndex++;
             }
-            animationKeypoints = animKeypoints.ToArray();
             return;
         }
 
         /// <summary>
-        /// 
+        /// [WIP] - this method should return vertices based on animation/skeleton, not 'as-is'
         /// </summary>
         /// <param name="position">abs X Y Z position to draw model</param>
         /// <returns>Tuple{item1= VertexPositionColorTexture; item2= clutIndex</returns>
@@ -179,7 +203,7 @@ namespace OpenVIII
             List<byte> texIndexes = new List<byte>();
             for(int i = 0; i<faces.Length; i++)
             {
-                if (!faces[i].BIsQuad) //triangles please
+                if (!faces[i].BIsQuad) //triangle
                 {
                     for (int k = 0; k < 3; k++)
                     {
@@ -187,7 +211,7 @@ namespace OpenVIII
                         vertices[faces[i].verticesA[k]].Z / MODEL_SCALE * -1f + position.Y,
                         vertices[faces[i].verticesA[k]].Y / MODEL_SCALE + position.Z);
                         Color clr = new Color(faces[i].vertColor[0], faces[i].vertColor[1], faces[i].vertColor[2], faces[i].vertColor[3]);
-                        Vector2 texData = new Vector2(faces[i].TextureMap[k].u/256.0f, faces[i].TextureMap[k].v/256.0f);
+                        Vector2 texData = new Vector2(faces[i].TextureMap[k].u/ TEX_SIZEW, faces[i].TextureMap[k].v/ TEX_SIZEH);
                         facesVertices.Add( new VertexPositionColorTexture(face, clr, texData));
                         texIndexes.Add((byte)faces[i].texIndex);
                         if (faces[i].texIndex > byte.MaxValue)
@@ -195,7 +219,7 @@ namespace OpenVIII
                     }
                     
                 }
-                else //we may need to actually retriangulate
+                else //retriangulation
                 {
                     Vector3 A = new Vector3(vertices[faces[i].verticesA[0]].X / MODEL_SCALE + position.X,
                     vertices[faces[i].verticesA[0]].Z / MODEL_SCALE + position.Y,
@@ -210,10 +234,10 @@ namespace OpenVIII
                     vertices[faces[i].verticesA[3]].Z / MODEL_SCALE + position.Y,
                     vertices[faces[i].verticesA[3]].Y / MODEL_SCALE + position.Z);
 
-                    Vector2 t1 = new Vector2(faces[i].TextureMap[0].u / 256.0f, faces[i].TextureMap[0].v / 256.0f);
-                    Vector2 t2 = new Vector2(faces[i].TextureMap[1].u / 256.0f, faces[i].TextureMap[1].v / 256.0f);
-                    Vector2 t3 = new Vector2(faces[i].TextureMap[2].u / 256.0f, faces[i].TextureMap[2].v / 256.0f);
-                    Vector2 t4 = new Vector2(faces[i].TextureMap[3].u / 256.0f, faces[i].TextureMap[3].v / 256.0f);
+                    Vector2 t1 = new Vector2(faces[i].TextureMap[0].u / TEX_SIZEW, faces[i].TextureMap[0].v / TEX_SIZEH);
+                    Vector2 t2 = new Vector2(faces[i].TextureMap[1].u / TEX_SIZEW, faces[i].TextureMap[1].v / TEX_SIZEH);
+                    Vector2 t3 = new Vector2(faces[i].TextureMap[2].u / TEX_SIZEW, faces[i].TextureMap[2].v / TEX_SIZEH);
+                    Vector2 t4 = new Vector2(faces[i].TextureMap[3].u / TEX_SIZEW, faces[i].TextureMap[3].v / TEX_SIZEH);
 
 
                     Color clr = new Color(faces[i].vertColor[0], faces[i].vertColor[1], faces[i].vertColor[2], faces[i].vertColor[3]);
