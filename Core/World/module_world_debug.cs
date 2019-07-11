@@ -319,9 +319,15 @@ namespace OpenVIII
             ate.View = viewMatrix;
             ate.World = worldMatrix;
 
-            //334 debug
+
+
+            segmentPosition = new Vector2((int)(camPosition.X / 512) * -1, (int)(camPosition.Z / 512) * -1);
             for (int i = 0; i < 768; i++)
                 DrawSegment(i);
+
+            WrapWaterSegments();
+
+            TeleportCameraWrap();
 
             //if (true)
             //{
@@ -358,6 +364,112 @@ namespace OpenVIII
             Memory.SpriteBatchEnd();
 
 
+        }
+
+        /// <summary>
+        /// This prevents camera/player to get out of playable zone and wraps it to the other side like it's 360o
+        /// </summary>
+        private static void TeleportCameraWrap()
+        {
+            if (camPosition.X > 0)
+                camPosition.X = 32 * 512 * -1;
+            if (camPosition.X < 32 * 512 * -1)
+                camPosition.X = 0;
+
+            if (camPosition.Z > 0)
+                camPosition.Z = 24 * 512 * -1;
+            if (camPosition.Z < 24 * 512 * -1)
+                camPosition.Z = 0;
+        }
+
+        /// <summary>
+        /// Creates the effect of infinity by creating additional water blocks out-of playable zone
+        /// </summary>
+        private static void WrapWaterSegments()
+        {
+            //top water wrap
+            if (segmentPosition.Y < 2)
+            {
+                float baseXseg = 512f * (segmentPosition.X % 32);
+
+                DrawSegment(0, baseXseg, 512f, true);
+                DrawSegment(0, baseXseg, 1024f, true);
+
+                DrawSegment(0, baseXseg - 512f, 512f, true);
+                DrawSegment(0, baseXseg - 512f, 1024f, true);
+
+                DrawSegment(0, baseXseg - 1024f, 512f, true);
+                DrawSegment(0, baseXseg - 1024f, 1024f, true);
+
+                DrawSegment(0, baseXseg + 512f, 512f, true);
+                DrawSegment(0, baseXseg + 512f, 1024f, true);
+
+                DrawSegment(0, baseXseg + 1024f, 512f, true);
+                DrawSegment(0, baseXseg + 1024f, 1024f, true);
+            }
+
+            //left water wrap
+            if (segmentPosition.X < 2)
+            {
+                float baseYseg = -512f * (segmentPosition.Y % 24);
+
+                DrawSegment(0, -512f, baseYseg, true);
+                DrawSegment(0, -1024f, baseYseg, true);
+
+                DrawSegment(0, -512f, baseYseg - 512f, true);
+                DrawSegment(0, -1024f, baseYseg - 512f, true);
+
+                DrawSegment(0, -512f, baseYseg - 1024f, true);
+                DrawSegment(0, -1024f, baseYseg - 1024, true);
+
+                DrawSegment(0, -512f, baseYseg + 512f, true);
+                DrawSegment(0, -1024f, baseYseg + 512f, true);
+
+                DrawSegment(0, -512f, baseYseg + 1024f, true);
+                DrawSegment(0, -1024f, baseYseg + 1024, true);
+            }
+
+            //bottom water wrap
+            if (segmentPosition.Y > 21)
+            {
+                float baseXseg = 512f * (segmentPosition.X % 32);
+
+                DrawSegment(0, baseXseg, -12288f, true);
+                DrawSegment(0, baseXseg, -12800f, true);
+
+                DrawSegment(0, baseXseg - 512f, -12288f, true);
+                DrawSegment(0, baseXseg - 512f, -12800f, true);
+
+                DrawSegment(0, baseXseg - 1024f, -12288f, true);
+                DrawSegment(0, baseXseg - 1024f, -12800f, true);
+
+                DrawSegment(0, baseXseg + 512f, -12288f, true);
+                DrawSegment(0, baseXseg + 512f, -12800f, true);
+
+                DrawSegment(0, baseXseg + 1024f, -12288f, true);
+                DrawSegment(0, baseXseg + 1024f, -12800f, true);
+            }
+
+            //right water wrap
+            if (segmentPosition.X > 29)
+            {
+                float baseYseg = -512f * (segmentPosition.Y % 24);
+
+                DrawSegment(0, 16384f, baseYseg, true);
+                DrawSegment(0, 16896f, baseYseg, true);
+
+                DrawSegment(0, 16384f, baseYseg - 512f, true);
+                DrawSegment(0, 16896f, baseYseg - 512f, true);
+
+                DrawSegment(0, 16384f, baseYseg - 1024f, true);
+                DrawSegment(0, 16896f, baseYseg - 1024, true);
+
+                DrawSegment(0, 16384f, baseYseg + 512f, true);
+                DrawSegment(0, 16896f, baseYseg + 512f, true);
+
+                DrawSegment(0, 16384f, baseYseg + 1024f, true);
+                DrawSegment(0, 16896f, baseYseg + 1024, true);
+            }
         }
 
         /// <summary>
@@ -400,18 +512,6 @@ namespace OpenVIII
         /// <returns></returns>
         private static bool ShouldDrawSegment(float baseX, float baseY, int seg)
         {
-            segmentPosition = new Vector2((int)(camPosition.X / 512) * -1, (int)(camPosition.Z / 512) * -1);
-
-            if (camPosition.X > 0)
-                camPosition.X = 32 * 512 * -1;
-            if (camPosition.X < 32 * 512 * -1)
-                camPosition.X = 0;
-
-            if (camPosition.Z > 0)
-                camPosition.Z = 24 * 512 * -1;
-            if (camPosition.Z < 24 * 512 * -1)
-                camPosition.Z = 0;
-
             int ySegment = seg / 32; //2
             int xSegment = seg - ySegment * 32;
             Vector2 currentSegment = new Vector2(xSegment, ySegment);
@@ -424,14 +524,22 @@ namespace OpenVIII
             return false;
         }
 
-        private static void DrawSegment(int _i)
+        private static void DrawSegment(int _i, float? baseXf = null, float? baseYf = null, bool bIsWrapSegment = false)
         {
-            float baseX, baseY;
-            baseX = 2048f / 4 * (_i % 32);
-            baseY = -(2048f / 4) * (_i / 32); //explicit int cast
-
-            if (!ShouldDrawSegment(baseX, baseY, _i))
-                return;
+            float baseX=0f, baseY = 0f;
+            if (baseXf == null || baseYf == null)
+            {
+                baseX = 512f * (_i % 32);
+                baseY = -512f * (_i / 32); //explicit int cast
+            }
+            else
+            {
+                baseX = (float)baseXf; //31
+                baseY = (float)baseYf; //23
+            }
+            if(!bIsWrapSegment)
+                if (!ShouldDrawSegment((float)baseX, (float)baseY, _i))
+                    return;
 
             #region Interchangable zones
             //esthar
