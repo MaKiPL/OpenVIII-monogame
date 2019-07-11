@@ -95,6 +95,7 @@ namespace OpenVIII
                 };
                 menus?.ForEach(m => m.Show());
             }
+            Victory_Menu?.ReInit(100,0);
             base.ReInit();
         }
 
@@ -189,7 +190,7 @@ namespace OpenVIII
         private bool UpdateVictoryFunction()
         {
             init_debugger_Audio.PlayMusic(1);
-            return false;
+            return Victory_Menu.Update();
         }
         #endregion Methods
 

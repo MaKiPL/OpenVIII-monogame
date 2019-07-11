@@ -128,7 +128,11 @@ namespace OpenVIII
 
         #region Methods
 
-        public static void DrawPointer(Point cursor, Vector2? offset = null, bool blink = false) => Menu.DrawPointer(cursor, offset, blink);
+        public void DrawPointer(Point cursor, Vector2? offset = null, bool blink = false)
+        {
+            if ((Cursor_Status & Cursor_Status.Hidden) == 0)
+            Menu.DrawPointer(cursor, offset, blink);
+        }
 
         /// <summary>
         /// Convert to rectangle based on container.
@@ -246,6 +250,7 @@ namespace OpenVIII
             if ((Cursor_Status & Cursor_Status.Enabled) != 0)
             {
                 Cursor_Status &= ~Cursor_Status.Blinking;
+                if ((Cursor_Status & Cursor_Status.Static) == 0)
                 for (int i = 0; i < SIZE.Length; i++)
                 {
                     if (SIZE[i].Contains(MouseLocation) && !SIZE[i].IsEmpty && CURSOR[i] != Point.Zero && !BLANKS[i])
@@ -255,7 +260,7 @@ namespace OpenVIII
                         mouse = true;
                     }
                 }
-                if (!ret && (Cursor_Status & Cursor_Status.Horizontal) != 0)
+                if (!ret && (Cursor_Status & Cursor_Status.Horizontal) != 0 && (Cursor_Status & Cursor_Status.Static)==0)
                 {
                     if (Input.Button(Buttons.Left))
                     {
@@ -268,7 +273,7 @@ namespace OpenVIII
                         ret = true;
                     }
                 }
-                if (!ret && (Cursor_Status & Cursor_Status.Horizontal) == 0 || (Cursor_Status & Cursor_Status.Vertical) != 0)
+                if ((!ret && (Cursor_Status & Cursor_Status.Horizontal) == 0 || (Cursor_Status & Cursor_Status.Vertical) != 0) && (Cursor_Status & Cursor_Status.Static) == 0)
                 {
                     if (Input.Button(Buttons.Up))
                     {
