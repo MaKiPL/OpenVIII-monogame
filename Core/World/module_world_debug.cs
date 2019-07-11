@@ -305,6 +305,8 @@ namespace OpenVIII
             #endregion
         }
 
+        public static int testing2 = 0;
+
         public static void Draw()
         {
             Memory.spriteBatch.GraphicsDevice.Clear(Color.CornflowerBlue);
@@ -331,7 +333,11 @@ namespace OpenVIII
 
             if (true) //DEBUG
             {
-                var collectionDebug = chara.GetMCH(0).GetVertexPositions(new Vector3(-9105f, 100, -4466),0,0);
+                uint testing = chara.GetMCH(0).GetAnimationFramesCount(1);
+                testing2++;
+                if (testing2 >= testing)
+                    testing2 = 0;
+                var collectionDebug = chara.GetMCH(0).GetVertexPositions(new Vector3(-9105f, 100, -4466),1,testing2);
                 ate.Texture = chara.GetCharaTexture(0);
                 if (collectionDebug.Item1.Length != 0)
                     foreach (var pass in ate.CurrentTechnique.Passes)
