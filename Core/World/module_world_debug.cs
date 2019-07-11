@@ -147,7 +147,7 @@ namespace OpenVIII
             effect = new BasicEffect(Memory.graphics.GraphicsDevice);
             effect.EnableDefaultLighting();
             camTarget = new Vector3(0, 0f, 0f);
-            camPosition = new Vector3(-9166f, 112f, -4570f);
+            camPosition = new Vector3(-9124.221f, 98f, -4461.827f);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                                MathHelper.ToRadians(60),
                                Memory.graphics.GraphicsDevice.DisplayMode.AspectRatio,
@@ -329,16 +329,16 @@ namespace OpenVIII
 
             TeleportCameraWrap();
 
-            //if (true)
-            //{
-            //    var collectionDebug = mchEntities[0].GetVertexPositions(-500, 100, -500);
-            //    ate.Texture = charaOneTextures[1][0];
-            //    foreach (var pass in ate.CurrentTechnique.Passes)
-            //    {
-            //        pass.Apply();
-            //        Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, collectionDebug.Item1, 0, collectionDebug.Item1.Length / 3);
-            //    }
-            //}
+            if (true)
+            {
+                var collectionDebug = chara.GetMCH(0).GetVertexPositions(new Vector3(-9105f, 100, -4466));
+                ate.Texture = chara.GetCharaTexture(0);
+                foreach (var pass in ate.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, collectionDebug.Item1, 0, collectionDebug.Item1.Length / 3);
+                }
+            }
 
 
             switch (MapState)

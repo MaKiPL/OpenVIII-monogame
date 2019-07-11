@@ -11,17 +11,18 @@ namespace OpenVIII.Core.World
     class CharaOne
     {
         Debug_MCH[] mchInstances;
-        List<Texture2D[]> textures;
+        Texture2D[] textures;
         private byte[] buffer;
 
         /// <summary>
-        /// Reads chara.one buffer
+        /// Reads chara.one buffer -> chara one is a file packed with MCH files and TIM textures without pointers. File needs to be scanned
         /// </summary>
         /// <param name="buffer">Full chara.one file</param>
         public CharaOne(byte[] buffer)
         {
             this.buffer = buffer;
             List<Debug_MCH> mchs = new List<Debug_MCH>();
+            List<Texture2D> texturesList = new List<Texture2D>();
             using (MemoryStream ms = new MemoryStream(this.buffer))
             using (BinaryReader br = new BinaryReader(ms))
             {
@@ -37,10 +38,7 @@ namespace OpenVIII.Core.World
                         ms.Seek(-8, SeekOrigin.Current);
                         tim = new TIM2(this.buffer, (uint)ms.Position);
                         ms.Seek(tim.GetHeight * tim.GetWidth / 2 + 64, SeekOrigin.Current); //i.e. 64*20=1280/2=640 + 64= 704 + eof
-                        if (textures == null)
-                            textures = new List<Texture2D[]>();
-                        Texture2D[] _2d = { tim.GetTexture(0, true) };
-                        textures.Add(_2d);
+                        texturesList.Add(tim.GetTexture(0, true));
                     }
                     else //is geometry structure
                     {
@@ -49,7 +47,11 @@ namespace OpenVIII.Core.World
                     }
             }
             mchInstances = mchs.ToArray();
+            textures = texturesList.ToArray();
         }
 
+        public Debug_MCH GetMCH(int i) => mchInstances[i];
+
+        public Texture2D GetCharaTexture(int i) => textures[i];
     }
 }

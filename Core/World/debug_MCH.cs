@@ -12,12 +12,16 @@ namespace OpenVIII
 {
     public class Debug_MCH
     {
-        const float MODEL_SCALE = 1f;
+        const float MODEL_SCALE = 10f;
 
         private uint pBase;
         private MemoryStream ms;
         private BinaryReader br;
 
+
+        [StructLayout(LayoutKind.Sequential, Size =64, Pack =1)]
+        private struct Header
+        {
         public uint cSkeletonBones;
         public uint cVertices;
         public uint cTexAnimations;
@@ -35,6 +39,8 @@ namespace OpenVIII
         public uint pSkinObjects;
         public uint pAnimation;
         public uint Unk2;
+        }
+
 
         private struct AnimationKeypoint
         {
@@ -86,6 +92,7 @@ namespace OpenVIII
             public byte v;
         }
 
+        private Header header;
         private AnimationKeypoint[] animationKeypoints;
         private Bone[] bones;
         private Face[] faces;
@@ -96,23 +103,7 @@ namespace OpenVIII
             this.ms = ms;
             this.br = br;
             pBase = (uint)ms.Position;
-            cSkeletonBones = br.ReadUInt32();
-            cVertices = br.ReadUInt32();
-            cTexAnimations = br.ReadUInt32();
-            cFaces = br.ReadUInt32();
-            cUnk = br.ReadUInt32();
-            cSkinObjects = br.ReadUInt32();
-            Unk = br.ReadUInt32();
-            cTris = br.ReadUInt16();
-            cQuads = br.ReadUInt16();
-            pBones = br.ReadUInt32();
-            pVertices = br.ReadUInt32();
-            pTexAnimations = br.ReadUInt32();
-            pFaces = br.ReadUInt32();
-            pUnk = br.ReadUInt32();
-            pSkinObjects = br.ReadUInt32();
-            pAnimation = br.ReadUInt32();
-            Unk2 = br.ReadUInt32();
+            header = Extended.ByteArrayToStructure<Header>(br.ReadBytes(64));
 
             ReadSkeleton();
             ReadGeometry();
@@ -121,36 +112,36 @@ namespace OpenVIII
 
         private void ReadSkeleton()
         {
-            ms.Seek(pBase + pBones, SeekOrigin.Begin);
+            ms.Seek(pBase + header.pBones, SeekOrigin.Begin);
 
             if (ms.Position > ms.Length)
                 return; //error handler
 
-            bones = new Bone[cSkeletonBones];
-            for (int i = 0; i < cSkeletonBones; i++)
+            bones = new Bone[header.cSkeletonBones];
+            for (int i = 0; i < header.cSkeletonBones; i++)
                 bones[i] = Extended.ByteArrayToStructure<Bone>(br.ReadBytes(64));
 
             return;
         }
         private void ReadGeometry()
         {
-            ms.Seek(pBase + pVertices, SeekOrigin.Begin);
-            if (ms.Position > ms.Length || pVertices+ms.Position > ms.Length) //pvert error handler
+            ms.Seek(pBase + header.pVertices, SeekOrigin.Begin);
+            if (ms.Position > ms.Length || header.pVertices+ms.Position > ms.Length) //pvert error handler
                 return; //error handler
-            vertices = new Vector4[cVertices];
+            vertices = new Vector4[header.cVertices];
             for(int i = 0; i<vertices.Length; i++)
                 vertices[i] = new Vector4(br.ReadInt16(), br.ReadInt16(), br.ReadInt16(), br.ReadInt16());
 
-            ms.Seek(pBase + pFaces, SeekOrigin.Begin);
+            ms.Seek(pBase + header.pFaces, SeekOrigin.Begin);
             List<Face> face = new List<Face>();
-            for(int i = 0; i<cFaces; i++)
+            for(int i = 0; i<header.cFaces; i++)
                 face.Add(Extended.ByteArrayToStructure<Face>(br.ReadBytes(64)));
             faces = face.ToArray();
             return;
         }
         private void ReadAnimation()
         {
-            ms.Seek(pBase + pAnimation, SeekOrigin.Begin);
+            ms.Seek(pBase + header.pAnimation, SeekOrigin.Begin);
 
             if (ms.Position > ms.Length)
                 return; //error handler
@@ -177,7 +168,12 @@ namespace OpenVIII
             return;
         }
 
-        public Tuple<VertexPositionColorTexture[], byte[]> GetVertexPositions(int baseX =0, int baseY=0, int baseZ=0)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="position">abs X Y Z position to draw model</param>
+        /// <returns>Tuple{item1= VertexPositionColorTexture; item2= clutIndex</returns>
+        public Tuple<VertexPositionColorTexture[], byte[]> GetVertexPositions(Vector3 position)
         {
             List<VertexPositionColorTexture> facesVertices = new List<VertexPositionColorTexture>();
             List<byte> texIndexes = new List<byte>();
@@ -187,9 +183,9 @@ namespace OpenVIII
                 {
                     for (int k = 0; k < 3; k++)
                     {
-                        Vector3 face = new Vector3(vertices[faces[i].verticesA[k]].X / MODEL_SCALE + baseX,
-                        vertices[faces[i].verticesA[k]].Z / MODEL_SCALE * -1f + baseY,
-                        vertices[faces[i].verticesA[k]].Y / MODEL_SCALE + baseZ);
+                        Vector3 face = new Vector3(vertices[faces[i].verticesA[k]].X / MODEL_SCALE + position.X,
+                        vertices[faces[i].verticesA[k]].Z / MODEL_SCALE * -1f + position.Y,
+                        vertices[faces[i].verticesA[k]].Y / MODEL_SCALE + position.Z);
                         Color clr = new Color(faces[i].vertColor[0], faces[i].vertColor[1], faces[i].vertColor[2], faces[i].vertColor[3]);
                         Vector2 texData = new Vector2(faces[i].TextureMap[k].u/256.0f, faces[i].TextureMap[k].v/256.0f);
                         facesVertices.Add( new VertexPositionColorTexture(face, clr, texData));
@@ -201,18 +197,18 @@ namespace OpenVIII
                 }
                 else //we may need to actually retriangulate
                 {
-                    Vector3 A = new Vector3(vertices[faces[i].verticesA[0]].X / MODEL_SCALE + baseX,
-                    vertices[faces[i].verticesA[0]].Z / MODEL_SCALE * 1f + baseY,
-                    vertices[faces[i].verticesA[0]].Y / MODEL_SCALE + baseZ);
-                    Vector3 B = new Vector3(vertices[faces[i].verticesA[1]].X / MODEL_SCALE + baseX,
-                    vertices[faces[i].verticesA[1]].Z / MODEL_SCALE * 1f + baseY,
-                    vertices[faces[i].verticesA[1]].Y / MODEL_SCALE + baseZ);
-                    Vector3 C = new Vector3(vertices[faces[i].verticesA[2]].X / MODEL_SCALE + baseX,
-                    vertices[faces[i].verticesA[2]].Z / MODEL_SCALE * 1f + baseY,
-                    vertices[faces[i].verticesA[2]].Y / MODEL_SCALE + baseZ);
-                    Vector3 D = new Vector3(vertices[faces[i].verticesA[3]].X / MODEL_SCALE + baseX,
-                    vertices[faces[i].verticesA[3]].Z / MODEL_SCALE * 1f + baseY,
-                    vertices[faces[i].verticesA[3]].Y / MODEL_SCALE + baseZ);
+                    Vector3 A = new Vector3(vertices[faces[i].verticesA[0]].X / MODEL_SCALE + position.X,
+                    vertices[faces[i].verticesA[0]].Z / MODEL_SCALE + position.Y,
+                    vertices[faces[i].verticesA[0]].Y / MODEL_SCALE + position.Z);
+                    Vector3 B = new Vector3(vertices[faces[i].verticesA[1]].X / MODEL_SCALE + position.X,
+                    vertices[faces[i].verticesA[1]].Z / MODEL_SCALE + position.Y,
+                    vertices[faces[i].verticesA[1]].Y / MODEL_SCALE + position.Z);
+                    Vector3 C = new Vector3(vertices[faces[i].verticesA[2]].X / MODEL_SCALE + position.X,
+                    vertices[faces[i].verticesA[2]].Z / MODEL_SCALE + position.Y,
+                    vertices[faces[i].verticesA[2]].Y / MODEL_SCALE + position.Z);
+                    Vector3 D = new Vector3(vertices[faces[i].verticesA[3]].X / MODEL_SCALE + position.X,
+                    vertices[faces[i].verticesA[3]].Z / MODEL_SCALE + position.Y,
+                    vertices[faces[i].verticesA[3]].Y / MODEL_SCALE + position.Z);
 
                     Vector2 t1 = new Vector2(faces[i].TextureMap[0].u / 256.0f, faces[i].TextureMap[0].v / 256.0f);
                     Vector2 t2 = new Vector2(faces[i].TextureMap[1].u / 256.0f, faces[i].TextureMap[1].v / 256.0f);
