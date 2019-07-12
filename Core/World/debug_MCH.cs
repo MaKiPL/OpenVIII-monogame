@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using OpenVIII.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -244,20 +245,72 @@ namespace OpenVIII
             ushort animationCount = br.ReadUInt16();
             int innerIndex = 0;
             animation = new Animation() { cAnimations = animationCount, animations= new AnimationEntry[animationCount] };
-            while (animationCount != 0)
+            while (animationCount > 0)
             {
                 ushort animationFramesCount = br.ReadUInt16();
                 ushort cBones = br.ReadUInt16();
                 animation.animations[innerIndex] = new AnimationEntry() { cAnimFrames = animationFramesCount, animationFrames = new AnimFrame[animationFramesCount] };
                 List<AnimFrame> animKeypoints = new List<AnimFrame>();
-                while (animationFramesCount != 0)
+                while (animationFramesCount > 0)
                 {
-                    AnimFrame keyPoint = new AnimFrame() { bone0pos= new Vector3(br.ReadInt16(),br.ReadInt16(), br.ReadInt16())};
+                    AnimFrame keyPoint = new AnimFrame() { bone0pos= new Vector3(x:br.ReadInt16(),z:-br.ReadInt16(), y:br.ReadInt16())};
                     Vector3[] vetRot = new Vector3[cBones];
                     Matrix[] matrixRot = new Matrix[cBones];
                     for (int i = 0; i < cBones; i++)
                     {
-                        Vector3 shortVector = new Vector3() { X = br.ReadInt16(), Y = br.ReadInt16(), Z = br.ReadInt16()};
+                        short x = br.ReadInt16();
+                        short y = br.ReadInt16();
+                        short z = br.ReadInt16();
+                        #region REVERSE ENGINEERING WIP
+                        //TODO= MCH_BoneRoot : 00653EB0
+
+                        var esi3 = (byte)((x >> 10) & 3);
+                        var esi = (byte)(x >> 2);
+
+                        esi3 |= (byte)((byte)(y >> 8) & 0xc);
+
+                        var esi1 = (byte)(y >> 2);
+
+                        esi3 |= (byte)((z >> 6) & 0x30);
+                        var esi2 = (byte)(z >> 2);
+
+
+                        //esi3 = al
+                        //esi  = dl
+
+                        var edi = esi3 & 3;
+                        var ecx = esi3 & 0x0c;
+                        edi <<= 8;
+
+                        edi |= esi;
+                        var edx = esi1;
+                        var eax = esi3 & 0x30;
+                        ecx <<= 6;
+                        ecx |= edx;
+                        edi <<= 2;
+                        ecx <<= 0x12;
+                        ecx |= edi;
+
+                        var ebp0 = ecx; //x y 
+
+                        ecx = esi2;
+                        eax <<= 4;
+                        eax |= ecx;
+                        eax <<= 2;
+
+                        var ebp4 = eax;
+
+                        //x = EngineConst.BoneRotationB924BC[ebp0 & 0xFFF];
+                        //var xH = EngineConst.BoneRotationHelperB944C0[ebp0 & 0xFFF];
+                        //y = EngineConst.BoneRotationB924BC[(ebp0 >> 16) & 0xFFF];
+                        //var yH = EngineConst.BoneRotationHelperB944C0[(ebp0 >> 16) & 0xFFF];
+                        //z = EngineConst.BoneRotationB924BC[ebp4 & 0xFFF];
+                        //var zH = EngineConst.BoneRotationHelperB944C0[ebp4 & 0xFFF];
+                        x = (short)(ebp0 & 0xFFF);
+                        y = (short)((ebp0 >> 16) & 0xFFF);
+                        z = (short)(ebp4 & 0xFFF);
+                        #endregion
+                        Vector3 shortVector = new Vector3() { X = x, Y = y, Z = z};
                         vetRot[i] = Extended.S16VectorToFloat(shortVector) * 360f;
                     }
                     animationFramesCount--;
@@ -377,6 +430,7 @@ namespace OpenVIII
         }
     private Vector3 CalculateFinalVertex(GroupedVertices groupedVertex, int animationId, int animationFrame)
         {
+            
             var vertex = groupedVertex.vertex / MODEL_SCALE;
 
             Matrix faceMatrix = animation.animations[animationId].animationFrames[animationFrame].matrixRot[groupedVertex.boneId];
