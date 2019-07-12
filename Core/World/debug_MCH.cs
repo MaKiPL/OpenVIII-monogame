@@ -133,7 +133,7 @@ namespace OpenVIII
         private struct GroupedVertices
         {
             public byte boneId;
-            public Vector4 vertex;
+            public Vector3 vertex;
         }
 
         private Header header;
@@ -178,7 +178,11 @@ namespace OpenVIII
             {
                 for(int n = skeleton.skins[i].vertIndex; n<skeleton.skins[i].vertIndex + skeleton.skins[i].cVerts; n++)
                 {
-                    gVertices[innerIndex] = new GroupedVertices() { boneId = (byte)(skeleton.skins[i].boneId-1), vertex = vertices[innerIndex] };
+                    gVertices[innerIndex] = new GroupedVertices()
+                    {
+                        boneId = (byte)(skeleton.skins[i].boneId - 1),
+                        vertex = new Vector3(-vertices[innerIndex].X, -vertices[innerIndex].Z, -vertices[innerIndex].Y) //debug, replace with vertices[innerindex]
+                    };
                     innerIndex++;
                 }
             }
@@ -288,7 +292,7 @@ namespace OpenVIII
                             MatrixZ.M43 = animation.animations[animId].animationFrames[frameId].bone0pos.Z;
                             MatrixZ.M44 = 1;
 
-                    }
+                        }
                     else
                     {
                         Matrix parentBone = animation.animations[animId].animationFrames[frameId].matrixRot[skeleton.bones[boneId].parentBone-1]; //gets the parent bone
@@ -378,9 +382,9 @@ namespace OpenVIII
             Matrix faceMatrix = animation.animations[animationId].animationFrames[animationFrame].matrixRot[groupedVertex.boneId];
 
             Vector3 face = new Vector3(
-                faceMatrix.M11 * vertex.X + faceMatrix.M41 + faceMatrix.M12 * vertex.Y + faceMatrix.M13 * vertex.Z,
-                faceMatrix.M21 * vertex.X + faceMatrix.M42 + faceMatrix.M22 * vertex.Y + faceMatrix.M23 * vertex.Z,
-                faceMatrix.M31 * vertex.X + faceMatrix.M43 + faceMatrix.M32 * vertex.Y + faceMatrix.M33 * vertex.Z
+                faceMatrix.M11 * vertex.X + faceMatrix.M41 + faceMatrix.M12 * vertex.Z + faceMatrix.M13 * -vertex.Y,
+                faceMatrix.M21 * vertex.X + faceMatrix.M42 + faceMatrix.M22 * vertex.Z + faceMatrix.M23 * -vertex.Y,
+                faceMatrix.M31 * vertex.X + faceMatrix.M43 + faceMatrix.M32 * vertex.Z + faceMatrix.M33 * -vertex.Y
                 );
             return face;
         }
