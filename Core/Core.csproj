@@ -796,7 +796,7 @@
     <Compile Include="Menu\Debug\Module_main_menu_DebugLobby.cs" />
     <Compile Include="Menu\Lobby\Module_main_menu_MainLobby.cs" />
     <Compile Include="PointEx.cs" />
-    <Compile Include="Strings\StringFile.cs" />
+    <Compile Include="Strings\Stringfile.cs" />
     <Compile Include="Strings\Strings.Areames.cs" />
     <Compile Include="Strings\Strings.cs" />
     <Compile Include="ModuleHandler.cs" />
