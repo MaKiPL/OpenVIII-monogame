@@ -13,6 +13,9 @@ namespace OpenVIII.PAK_Extractor
         {
             Input.Init();
             Memory.Init(null, null, null);
+
+            string DestPath = Path.Combine(Memory.FF8DIRdata, "movies");
+//DestPath = Path.Combine(Path.GetTempPath(), "movies"); //comment out to default to ff8 folder.
 start:
             List<FileInfo> files = new List<FileInfo>(1);
             List<PAK> data = new List<PAK>(1);
@@ -20,7 +23,7 @@ start:
             Console.WriteLine($"Detecting Compact Disc drives...");
             foreach (DriveInfo drive in DriveInfo.GetDrives()
                                .Where(d => d.DriveType == DriveType.CDRom && d.IsReady))
-            {                
+            {
                 DirectoryInfo dir = drive.RootDirectory;
 
                 Console.WriteLine($"Found disc: {dir}");
@@ -29,9 +32,6 @@ start:
                 files.AddRange(dir.GetFiles("*", SearchOption.TopDirectoryOnly).Where(x =>
                   x.FullName.EndsWith(".pak", StringComparison.OrdinalIgnoreCase)));
             }
-
-            string DestPath = Path.Combine(Memory.FF8DIRdata, "movies");
-            //DestPath = Path.Combine(Path.GetTempPath(), "movies"); //comment out to default to ff8 folder.
             foreach (FileInfo f in files)
             {
                 Console.WriteLine($"PAK file detected: {f}");
@@ -45,19 +45,24 @@ start:
 
             if (data.Count > 0)
             {
-                Console.WriteLine($"Destination: {DestPath}\nPress [Enter] to continue. If you'd like to override this path, type a new destination, and then press [ENTER].");
+                Console.WriteLine($"Destination: {Path.GetFullPath(DestPath)}\nPress [Enter] to continue. If you'd like to override this path, type a new destination, and then press [ENTER].");
                 string input = Console.ReadLine();
-                if (!string.IsNullOrWhiteSpace(input))
+                if (!string.IsNullOrWhiteSpace(input.Trim()))
+                {
+                    Console.WriteLine($"Changed destination to: {Path.GetFullPath(input)}");
                     DestPath = input;
-                if (!Directory.Exists(DestPath)) Directory.CreateDirectory(DestPath);
-
+                }
+                if (!Directory.Exists(DestPath))
+                {
+                    Console.WriteLine($"Created directory.");
+                    Directory.CreateDirectory(DestPath);
+                }
                 foreach (PAK pak in data)
                 {
                     pak.Extract(DestPath);
-                    
                 }
             }
-            
+
             Console.WriteLine($"Insert disc and press [Enter].");
             Console.ReadLine();
             goto start;
