@@ -147,7 +147,7 @@ namespace OpenVIII
             effect = new BasicEffect(Memory.graphics.GraphicsDevice);
             effect.EnableDefaultLighting();
             camTarget = new Vector3(0, 0f, 0f);
-            camPosition = new Vector3(-9124.221f, 98f, -4461.827f);
+            camPosition = new Vector3(-9100.781f, 108.0096f, -4438.435f);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                                MathHelper.ToRadians(60),
                                Memory.graphics.GraphicsDevice.DisplayMode.AspectRatio,
@@ -229,6 +229,10 @@ namespace OpenVIII
 
             if (Input.Button(Keys.J))
                 MapState = MapState >= MiniMapState.fullscreen ? MapState = 0 : MapState + 1;
+
+            if (Input.Button(Keys.R))
+                worldState = _worldState._0init;
+
         }
 
         const float defaultmaxMoveSpeed = 1f;
@@ -333,11 +337,11 @@ namespace OpenVIII
 
             if (true) //DEBUG
             {
-                uint testing = chara.GetMCH(0).GetAnimationFramesCount(1);
+                uint testing = chara.GetMCH(4).GetAnimationFramesCount(4);
                 testing2++;
                 if (testing2 >= testing)
                     testing2 = 0;
-                var collectionDebug = chara.GetMCH(0).GetVertexPositions(new Vector3(-9105f, 100, -4466),1,testing2);
+                var collectionDebug = chara.GetMCH(4).GetVertexPositions(new Vector3(-9105f, 100, -4466),4,testing2);
                 ate.Texture = chara.GetCharaTexture(0);
                 if (collectionDebug.Item1.Length != 0)
                     foreach (var pass in ate.CurrentTechnique.Passes)

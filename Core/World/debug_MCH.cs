@@ -261,56 +261,157 @@ namespace OpenVIII
                         short x = br.ReadInt16();
                         short y = br.ReadInt16();
                         short z = br.ReadInt16();
-                        #region REVERSE ENGINEERING WIP
-                        //TODO= MCH_BoneRoot : 00653EB0
 
-                        var esi3 = (byte)((x >> 10) & 3);
-                        var esi = (byte)(x >> 2);
+                        //#region REVERSE ENGINEERING WIP
+                        ////TODO= MCH_BoneRoot : 00653EB0
 
-                        esi3 |= (byte)((byte)(y >> 8) & 0xc);
+                        //var esi3 = (byte)((x >> 10) & 3);
+                        //var esi = (byte)(x >> 2);
 
-                        var esi1 = (byte)(y >> 2);
+                        //esi3 |= (byte)((byte)(y >> 8) & 0xc);
 
-                        esi3 |= (byte)((z >> 6) & 0x30);
-                        var esi2 = (byte)(z >> 2);
+                        //var esi1 = (byte)(y >> 2);
+
+                        //esi3 |= (byte)((z >> 6) & 0x30);
+                        //var esi2 = (byte)(z >> 2);
 
 
-                        //esi3 = al
-                        //esi  = dl
+                        ////esi3 = al
+                        ////esi  = dl
 
-                        var edi = esi3 & 3;
-                        var ecx = esi3 & 0x0c;
-                        edi <<= 8;
+                        //var edi = esi3 & 3;
+                        //var ecx = esi3 & 0x0c;
+                        //edi <<= 8;
 
-                        edi |= esi;
-                        var edx = esi1;
-                        var eax = esi3 & 0x30;
-                        ecx <<= 6;
-                        ecx |= edx;
-                        edi <<= 2;
-                        ecx <<= 0x12;
-                        ecx |= edi;
+                        //edi |= esi;
+                        //var edx = esi1;
+                        //var eax = esi3 & 0x30;
+                        //ecx <<= 6;
+                        //ecx |= edx;
+                        //edi <<= 2;
+                        //ecx <<= 0x12;
+                        //ecx |= edi;
 
-                        var ebp0 = ecx; //x y 
+                        //var ebp0 = ecx; //x y 
 
-                        ecx = esi2;
-                        eax <<= 4;
-                        eax |= ecx;
-                        eax <<= 2;
+                        //ecx = esi2;
+                        //eax <<= 4;
+                        //eax |= ecx;
+                        //eax <<= 2;
 
-                        var ebp4 = eax;
+                        //var ebp4 = eax;
 
-                        //x = EngineConst.BoneRotationB924BC[ebp0 & 0xFFF];
-                        //var xH = EngineConst.BoneRotationHelperB944C0[ebp0 & 0xFFF];
-                        //y = EngineConst.BoneRotationB924BC[(ebp0 >> 16) & 0xFFF];
-                        //var yH = EngineConst.BoneRotationHelperB944C0[(ebp0 >> 16) & 0xFFF];
-                        //z = EngineConst.BoneRotationB924BC[ebp4 & 0xFFF];
-                        //var zH = EngineConst.BoneRotationHelperB944C0[ebp4 & 0xFFF];
-                        x = (short)(ebp0 & 0xFFF);
-                        y = (short)((ebp0 >> 16) & 0xFFF);
-                        z = (short)(ebp4 & 0xFFF);
-                        #endregion
-                        Vector3 shortVector = new Vector3() { X = x, Y = y, Z = z};
+                        //x = (short)(ebp0 & 0xFFF);
+                        //y = (short)((ebp0 >> 16) & 0xFFF);
+                        //z = (short)(ebp4 & 0xFFF);
+
+
+                        //short xHelp1 = EngineConst.BoneRotationB924BC[x];
+                        //short xHelp2 = EngineConst.BoneRotationHelperB944C0[x];
+
+                        //short yHelp1 = EngineConst.BoneRotationB924BC[y];
+                        //short yHelp2 = EngineConst.BoneRotationHelperB944C0[y];
+
+                        //short zHelp1 = EngineConst.BoneRotationB924BC[z];
+                        //short zHelp2 = EngineConst.BoneRotationHelperB944C0[z];
+
+                        ////short xBoneHelpa = EngineConst.BoneRotationB924BC[x]; //cx, MCH_boneRot+85
+                        ////ulong xBoneHelpb = (ulong)EngineConst.BoneRotationHelperB944C0[x]; //ax MCH_boneRot+8C
+
+                        ////xBoneHelpb = Extended.WORD3(xBoneHelpb, (ulong)xBoneHelpa);
+
+                        ////short yBoneHelpa = EngineConst.BoneRotationB924BC[y];
+                        ////ulong yBoneHelpb = (ulong)EngineConst.BoneRotationHelperB944C0[y];
+
+                        ////ulong v23 =0;
+                        ////v23 = Extended.WORD2(v23, yBoneHelpb);
+
+                        ////yBoneHelpb = Extended.WORD2(yBoneHelpb, (ulong)yBoneHelpa);
+
+                        ////v23 = (ulong)-yBoneHelpa;
+
+                        ////var zBoneHelpa = EngineConst.BoneRotationB924BC[z];
+                        ////ulong zBoneHelpb = (ulong)EngineConst.BoneRotationHelperB944C0[z];
+
+                        ////short v15 = (short)zBoneHelpb;
+
+                        ////zBoneHelpb = Extended.WORD3(zBoneHelpb, (ulong)zBoneHelpa);
+                        //////xBoneHelpb |= (ulong)(-xBoneHelpa << 48);
+
+                        ////zBoneHelpb |= (ulong)(-zBoneHelpa << 48);
+
+
+
+                        ////sub_56BEE0+11 -> zHelp1
+                        ////sub_56BEE0+20 -> zHelp2
+
+                        //var v1 = xHelp1;
+                        //var v2 = xHelp2;
+                        //var v3 = yHelp1;
+                        //var v4 = yHelp2;
+                        //var v5 = zHelp1;
+                        //var v6 = zHelp2;
+
+                        //var v7 = (-zHelp1);
+                        //var v8 = (-xHelp1);
+
+
+                        //var baseX = Memory.id.GetControl(InteractiveDebugger.ctrls.baseX)[0];
+                        //var baseY = Memory.id.GetControl(InteractiveDebugger.ctrls.baseY)[0];
+                        //var baseZ = Memory.id.GetControl(InteractiveDebugger.ctrls.baseZ)[0];
+
+                        //var minusers = Memory.id.GetControl(InteractiveDebugger.ctrls.minuser);
+                        //foreach(var ni in minusers)
+                        //{
+                        //    switch(ni)
+                        //    {
+                        //        case 0:
+                        //            x = (short)-x;
+                        //            break;
+                        //        case 1:
+                        //            y = (short)-y;
+                        //            break;
+                        //        case 2:
+                        //            z = (short)-z;
+                        //            break;
+
+                        //        case 3:
+                        //            v1 = (short)-v1;
+                        //            break;
+                        //        case 4:
+                        //            v2 = (short)-v2;
+                        //            break;
+
+                        //        case 5:
+                        //            v3 = (short)-v3;
+                        //            break;
+                        //        case 6:
+                        //            v4 = (short)-v4;
+                        //            break;
+
+                        //        case 7:
+                        //            v5 = (short)-v5;
+                        //            break;
+                        //        case 8:
+                        //            v6 = (short)-v6;
+                        //            break;
+                        //    }
+
+                        //}
+
+
+                        //baseX = baseX == 0 ? x : baseX == 1 ? y : baseX == 2 ? z : baseX == 3 ? v1 : baseX == 4 ? v2: baseX==5?v3:baseX==6?v4:baseX==7?v5:baseX==8?v6:x;
+                        //baseY = baseY == 0 ? x : baseY == 1 ? y : baseY == 2 ? z : baseY == 3 ? v1 : baseY == 4 ? v2: baseY==5?v3:baseY==6?v4:baseY==7?v5:baseY==8?v6:x;
+                        //baseZ = baseZ == 0 ? x : baseZ == 1 ? y : baseZ == 2 ? z : baseZ == 3 ? v1 : baseZ == 4 ? v2: baseZ==5?v3:baseZ==6?v4:baseZ==7?v5:baseZ==8?v6:x;
+
+                        //#endregion
+
+                        Vector3 shortVector = new Vector3()
+                        {
+                            X = -y,
+                            Y = -x,
+                            Z = -z
+                        };
                         vetRot[i] = Extended.S16VectorToFloat(shortVector) * 360f;
                     }
                     animationFramesCount--;
