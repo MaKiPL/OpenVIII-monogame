@@ -129,7 +129,7 @@ namespace OpenVIII
             AddMusicPath(music_wav_pt);
             AddMusicPath(dmusic_pt);
             AddMusicPath(music_pt);
-            if(!Memory.dicMusic.ContainsKey(eyesOnMePrefix) && Memory.dicMusic.ContainsKey(altEyesOnMePrefix))
+            if (!Memory.dicMusic.ContainsKey(eyesOnMePrefix) && Memory.dicMusic.ContainsKey(altEyesOnMePrefix))
             {
                 Memory.dicMusic.Add(eyesOnMePrefix, Memory.dicMusic[altEyesOnMePrefix]);
             }
@@ -137,7 +137,7 @@ namespace OpenVIII
             {
                 if (!string.IsNullOrWhiteSpace(p) && Directory.Exists(p))
                 {
-                    foreach (string m in Directory.GetFiles(p).Where(x => ext.Any(y=> x.EndsWith(y, StringComparison.OrdinalIgnoreCase))))
+                    foreach (string m in Directory.GetFiles(p).Where(x => ext.Any(y => x.EndsWith(y, StringComparison.OrdinalIgnoreCase))))
                     {
                         AddMusic(m);
                     }
@@ -153,11 +153,10 @@ namespace OpenVIII
                         key = loserPrefix; //loser.ogg and sgt don't match.
                     }
                 }
-                else if (m.IndexOf("eyes_on_me", StringComparison.OrdinalIgnoreCase) >= 0)                
-                    key = eyesOnMePrefix;                
+                else if (m.IndexOf("eyes_on_me", StringComparison.OrdinalIgnoreCase) >= 0)
+                    key = eyesOnMePrefix;
                 else
                     key = unkPrefix;
-                        
 
                 if (!Memory.dicMusic.ContainsKey(key))
                 {
@@ -166,8 +165,7 @@ namespace OpenVIII
                 else
                 {
                     Memory.dicMusic[key].Add(m);
-                }          
-
+                }
             }
         }
 
@@ -202,17 +200,31 @@ namespace OpenVIII
             soundEntriesCount = soundEntries == null ? 0 : soundEntries.Length;
         }
 
-        public static void PlaySound(int soundID)
+        /// <summary>
+        /// Play sound effect
+        /// </summary>
+        /// <param name="soundID">ID number of sound</param>
+        /// <param name="persist">
+        /// <para>If set sound will not be saved to SoundChannels</para>
+        /// <para>
+        /// It will be up to the calling object to keep track of the sound object that is returned.
+        /// </para>
+        /// </param>
+        /// <param name="loopstart">If loop &gt;-1, sound will loop from the set sample number.</param>
+        public static Ffcc PlaySound(int soundID, bool persist = false, bool loopstart = false)
         {
             if (soundEntries == null || soundEntries[soundID].Size == 0)
             {
-                return;
+                return null;
             }
-            SoundChannels[CurrentSoundChannel] = new Ffcc(
+            Ffcc ffcc = new Ffcc(
                 new Ffcc.Buffer_Data { DataSeekLoc = soundEntries[soundID].Offset, DataSize = soundEntries[soundID].Size, HeaderSize = (uint)soundEntries[soundID].HeaderData.Length },
                 soundEntries[soundID].HeaderData,
-                Path.Combine(Memory.FF8DIRdata, "Sound", "audio.dat"));
-            SoundChannels[CurrentSoundChannel++].Play();
+                Path.Combine(Memory.FF8DIRdata, "Sound", "audio.dat"), loopstart?0:-1);
+            if (!persist)
+                SoundChannels[CurrentSoundChannel++] = ffcc;
+            ffcc.Play();
+            return ffcc;
         }
 
         public static void StopSound()
@@ -229,8 +241,6 @@ namespace OpenVIII
             //}
             //if played in task we don't need to do this.
         }
-
-        //callable test
 
         public static byte[] ReadFullyByte(Stream stream)
         {
@@ -322,7 +332,7 @@ namespace OpenVIII
                     //ffccMusic = new Ffcc(@"c:\eyes_on_me.wav", AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
                     if (ffccMusic != null)
                         ffccMusic.Dispose();
-                    ffccMusic = new Ffcc(pt, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH,0);
+                    ffccMusic = new Ffcc(pt, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH, 0);
                     ffccMusic.PlayInTask(.5f);
                     break;
 
