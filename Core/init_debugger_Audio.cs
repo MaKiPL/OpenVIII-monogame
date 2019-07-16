@@ -110,162 +110,59 @@ namespace OpenVIII
             const int altLoserPrefix = 512;
             const int loserPrefix = 0;
             const int eyesOnMePrefix = 513;
-            string dmusic_pt = "", RaW_ogg_pt = "", music_pt = "", music_wav_pt = "";
             //Roses and Wine V07 moves most of the sgt files to dmusic_backup
             //it leaves a few files behind. I think because RaW doesn't replace everything.
             //ogg files stored in:
-            RaW_ogg_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "RaW", "GLOBAL", "Music"));
-            if (!Directory.Exists(RaW_ogg_pt))
-            {
-                RaW_ogg_pt = null;
-            }
+            string RaW_ogg_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "RaW", "GLOBAL", "Music"));
             // From what I gather the OGG files and the sgt files have the same numerical prefix. I
             // might try to add the functionality to the debug screen monday.
 
-            dmusic_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music", "dmusic_backup"));
-            if (!Directory.Exists(dmusic_pt))
-            {
-                dmusic_pt = null;
-            }
-
-            music_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music", "dmusic"));
-            if (!Directory.Exists(music_pt))
-            {
-                music_pt = null;
-            }
-
-            music_wav_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music"));
-            if (!Directory.Exists(music_wav_pt))
-            {
-                music_wav_pt = null;
-            }
+            string dmusic_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music", "dmusic_backup"));
+            string music_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music", "dmusic"));
+            string music_wav_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music"));
 
             // goal of dicmusic is to be able to select a track by prefix. it adds an list of files
             // with the same prefix. so you can later on switch out which one you want.
-            if (RaW_ogg_pt != null)
+            AddMusicPath(RaW_ogg_pt);
+            AddMusicPath(music_wav_pt);
+            AddMusicPath(dmusic_pt);
+            AddMusicPath(music_pt);
+            void AddMusicPath(string p)
             {
-                Memory.musices = Directory.GetFiles(RaW_ogg_pt).Where(x => x.EndsWith(".ogg", StringComparison.OrdinalIgnoreCase)).ToArray();
-                foreach (string m in Memory.musices)
+                string[] ext = { ".ogg",".sgt",".wav" };
+                if (!string.IsNullOrWhiteSpace(p) && Directory.Exists(p))
                 {
-                    if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
+                    foreach (string m in Directory.GetFiles(p).Where(x => ext.Any(y=> x.EndsWith(y, StringComparison.OrdinalIgnoreCase))))
                     {
-                        //mismatched prefix's go here
-                        if (key == altLoserPrefix)
-                        {
-                            key = loserPrefix; //loser.ogg and sgt don't match.
-                        }
-
-                        if (!Memory.dicMusic.ContainsKey(key))
-                        {
-                            Memory.dicMusic.Add(key, new List<string> { m });
-                        }
-                        else
-                        {
-                            Memory.dicMusic[key].Add(m);
-                        }
+                        AddMusic(m);
                     }
                 }
             }
-            if (dmusic_pt != null)
+            void AddMusic(string m)
             {
-                Memory.musices = Directory.GetFiles(dmusic_pt).Where(x => x.EndsWith(".sgt", StringComparison.OrdinalIgnoreCase)).ToArray();
-
-                foreach (string m in Memory.musices)
+                if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
                 {
-                    if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
+                    //mismatched prefix's go here
+                    if (key == altLoserPrefix)
                     {
-                        if (!Memory.dicMusic.ContainsKey(key))
-                        {
-                            Memory.dicMusic.Add(key, new List<string> { m });
-                        }
-                        else
-                        {
-                            Memory.dicMusic[key].Add(m);
-                        }
-                    }
-                    else
-                    {
-                        if (!Memory.dicMusic.ContainsKey(unkPrefix)) //gets any music w/o prefix
-                        {
-                            Memory.dicMusic.Add(unkPrefix, new List<string> { m });
-                        }
-                        else
-                        {
-                            Memory.dicMusic[unkPrefix].Add(m);
-                        }
+                        key = loserPrefix; //loser.ogg and sgt don't match.
                     }
                 }
-            }
-            if (music_pt != null)
-            {
-                Memory.musices = Directory.GetFiles(music_pt).Where(x => x.EndsWith(".sgt", StringComparison.OrdinalIgnoreCase)).ToArray();
+                else if (m.IndexOf("eyes_on_me", StringComparison.OrdinalIgnoreCase) >= 0)                
+                    key = eyesOnMePrefix;                
+                else
+                    key = unkPrefix;
+                        
 
-                foreach (string m in Memory.musices)
+                if (!Memory.dicMusic.ContainsKey(key))
                 {
-                    if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
-                    {
-                        if (!Memory.dicMusic.ContainsKey(key))
-                        {
-                            Memory.dicMusic.Add(key, new List<string> { m });
-                        }
-                        else
-                        {
-                            Memory.dicMusic[key].Add(m);
-                        }
-                    }
-                    else
-                    {
-                        if (!Memory.dicMusic.ContainsKey(unkPrefix)) //gets any music w/o prefix
-                        {
-                            Memory.dicMusic.Add(unkPrefix, new List<string> { m });
-                        }
-                        else
-                        {
-                            Memory.dicMusic[unkPrefix].Add(m);
-                        }
-                    }
+                    Memory.dicMusic.Add(key, new List<string> { m });
                 }
-            }
-            if (music_wav_pt != null)
-            {
-                Memory.musices = Directory.GetFiles(music_wav_pt).Where(x => x.EndsWith(".wav", StringComparison.OrdinalIgnoreCase)).ToArray();
+                else
+                {
+                    Memory.dicMusic[key].Add(m);
+                }          
 
-                foreach (string m in Memory.musices)
-                {
-                    if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
-                    {
-                        if (!Memory.dicMusic.ContainsKey(key))
-                        {
-                            Memory.dicMusic.Add(key, new List<string> { m });
-                        }
-                        else
-                        {
-                            Memory.dicMusic[key].Add(m);
-                        }
-                    }
-                    else
-                    {
-                        if (m.IndexOf("eyes_on_me", StringComparison.OrdinalIgnoreCase) >= 0)
-                        {
-                            if (!Memory.dicMusic.ContainsKey(eyesOnMePrefix))
-                            {
-                                Memory.dicMusic.Add(eyesOnMePrefix, new List<string> { m });
-                            }
-                            else
-                            {
-                                Memory.dicMusic[eyesOnMePrefix].Add(m);
-                            }
-                        }
-                        else if (!Memory.dicMusic.ContainsKey(unkPrefix)) //gets any music w/o prefix
-                        {
-                            Memory.dicMusic.Add(unkPrefix, new List<string> { m });
-                        }
-                        else
-                        {
-                            Memory.dicMusic[unkPrefix].Add(m);
-                        }
-                    }
-                }
             }
         }
 
@@ -428,8 +325,7 @@ namespace OpenVIII
                         fluid_Midi = new Fluid_Midi();
                     fluid_Midi.ReadSegmentFileManually(pt);
                     fluid_Midi.Play();
-                    break;
-#endif
+#else
                     if (Extended.IsLinux)
                     {
                         fluid_Midi.ReadSegmentFileManually(pt);
@@ -442,6 +338,7 @@ namespace OpenVIII
                             dm_Midi = new DM_Midi();
                         dm_Midi.Play(pt);
                     }
+#endif
 
                     break;
             }
