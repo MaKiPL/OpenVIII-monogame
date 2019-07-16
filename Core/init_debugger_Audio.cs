@@ -211,7 +211,7 @@ namespace OpenVIII
         /// </para>
         /// </param>
         /// <param name="loopstart">If loop &gt;-1, sound will loop from the set sample number.</param>
-        public static Ffcc PlaySound(int soundID, bool persist = false, bool loopstart = false)
+        public static Ffcc PlaySound(int soundID, float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f, bool persist = false, bool loopstart = false)
         {
             if (soundEntries == null || soundEntries[soundID].Size == 0)
             {
@@ -220,10 +220,10 @@ namespace OpenVIII
             Ffcc ffcc = new Ffcc(
                 new Ffcc.Buffer_Data { DataSeekLoc = soundEntries[soundID].Offset, DataSize = soundEntries[soundID].Size, HeaderSize = (uint)soundEntries[soundID].HeaderData.Length },
                 soundEntries[soundID].HeaderData,
-                Path.Combine(Memory.FF8DIRdata, "Sound", "audio.dat"), loopstart?0:-1);
+                Path.Combine(Memory.FF8DIRdata, "Sound", "audio.dat"), loopstart ? 0 : -1);
             if (!persist)
                 SoundChannels[CurrentSoundChannel++] = ffcc;
-            ffcc.Play();
+            ffcc.Play(volume, pitch, pan);
             return ffcc;
         }
 
@@ -291,11 +291,11 @@ namespace OpenVIII
         private static bool musicplaying = false;
         private static int lastplayed = -1;
 
-        public static void PlayStopMusic()
+        public static void PlayStopMusic(ushort? index = null, float volume = 0.5f, float pitch = 0.0f, float pan = 0.0f)
         {
             if (!musicplaying || lastplayed != Memory.MusicIndex)
             {
-                PlayMusic();
+                PlayMusic(index: index, volume: volume, pitch: pitch, pan: pan);
             }
             else
             {
@@ -306,7 +306,7 @@ namespace OpenVIII
         private static Ffcc ffccMusic = null; // testing using class to play music instead of Naudio / Nvorbis
         private static int _currentSoundChannel;
 
-        public static void PlayMusic(ushort? index = null)
+        public static void PlayMusic(ushort? index = null, float volume = 0.5f, float pitch = 0.0f, float pan = 0.0f)
         {
             Memory.MusicIndex = index ?? Memory.MusicIndex;
 
@@ -333,7 +333,7 @@ namespace OpenVIII
                     if (ffccMusic != null)
                         ffccMusic.Dispose();
                     ffccMusic = new Ffcc(pt, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH, 0);
-                    ffccMusic.PlayInTask(.5f);
+                    ffccMusic.PlayInTask(volume, pitch, pan);
                     break;
 
                 case ".sgt":
