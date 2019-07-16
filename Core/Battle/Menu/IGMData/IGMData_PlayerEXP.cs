@@ -11,6 +11,7 @@ namespace OpenVIII
             private class IGMData_PlayerEXP : IGMData
             {
                 private int _exp;
+                private byte _lvl;
 
                 public IGMData_PlayerEXP(int exp, sbyte partypos) : base(1, 10, new IGMDataItem_Box(pos: new Rectangle(35, 78 + partypos * 150, 808, 150)), 1, 1, partypos: partypos)
                 {
@@ -29,12 +30,12 @@ namespace OpenVIII
                         base.Init();
                         uint exp = Memory.State[Character].Experience;
                         ushort expTNL = Memory.State[Character].ExperienceToNextLevel;
-                        byte lvl = Memory.State[Character].Level;
+                        _lvl = Memory.State[Character].Level;
                         FF8String name = Memory.State[Character].Name;
 
                         ITEM[0, 0] = new IGMDataItem_String(name, new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0));
                         ITEM[0, 1] = new IGMDataItem_Icon(Icons.ID.Size_16x16_Lv_, new Rectangle(SIZE[0].X, SIZE[0].Y + 34, 0, 0), 13);
-                        ITEM[0, 2] = new IGMDataItem_Int(lvl, new Rectangle(SIZE[0].X + 50, SIZE[0].Y + 38, 0, 0), spaces: 4, numtype: Icons.NumType.sysFntBig);
+                        ITEM[0, 2] = new IGMDataItem_Int(_lvl, new Rectangle(SIZE[0].X + 50, SIZE[0].Y + 38, 0, 0), spaces: 4, numtype: Icons.NumType.sysFntBig);
                         ITEM[0, 3] = new IGMDataItem_String(ECN, new Rectangle(SIZE[0].X + 390, SIZE[0].Y, 0, 0));
                         ITEM[0, 4] = new IGMDataItem_Int(0, new Rectangle(SIZE[0].X + SIZE[0].Width - 160, SIZE[0].Y, 0, 0), spaces: 7);
                         ITEM[0, 5] = new IGMDataItem_Icon(Icons.ID.P, new Rectangle(SIZE[0].X + SIZE[0].Width - 20, SIZE[0].Y, 0, 0));
@@ -73,6 +74,14 @@ namespace OpenVIII
                         ((IGMDataItem_Int)ITEM[0, 4]).Data = _exp;
                         ((IGMDataItem_Int)ITEM[0, 6]).Data = (int)Memory.State[Character].Experience;
                         ((IGMDataItem_Int)ITEM[0, 8]).Data = Memory.State[Character].ExperienceToNextLevel;
+                        byte lvl = Memory.State[Character].Level;
+                        if (lvl != _lvl)
+                        {
+                            _lvl = lvl;
+                            //trigger level up message and sound effect
+                        }
+                        ((IGMDataItem_Int)ITEM[0, 2]).Data = _lvl;
+
                         return base.Update();
                     }
                     return false;
