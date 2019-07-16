@@ -59,7 +59,7 @@ namespace OpenVIII
             /// <summary>
             /// Total Exp
             /// </summary>
-            public uint Experience;
+            private uint experience;
 
             /// <summary>
             /// Character Model
@@ -421,7 +421,16 @@ namespace OpenVIII
             }
 
             public byte Level => CharacterStats.LEVEL(Experience);
-            public ushort ExperienceToNextLevel => (ushort)(Level == 100 ? 0 : MathHelper.Clamp(CharacterStats.EXP((byte)(Level+1)) - Experience, 0, CharacterStats.EXP(2)));
+            public ushort ExperienceToNextLevel => (ushort)(Level == 100 ? 0 : MathHelper.Clamp(CharacterStats.EXP((byte)(Level + 1)) - Experience, 0, CharacterStats.EXP(2)));
+
+            public uint Experience
+            {
+                get => experience; set
+                {
+                    if (experience == 0 || !IsGameOver)
+                        experience = value;
+                }
+            }
 
             /// <summary>
             /// Max HP

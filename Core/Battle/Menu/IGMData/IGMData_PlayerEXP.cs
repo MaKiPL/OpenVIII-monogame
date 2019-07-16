@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
 using System.Diagnostics;
 
 namespace OpenVIII
@@ -58,8 +59,11 @@ namespace OpenVIII
                 {
                     get => _exp; set
                     {
-                        if(_exp == 0 || !Memory.State[Character].IsGameOver)
+                        if (_exp == 0 || !Memory.State[Character].IsGameOver)
+                        {
+                            Memory.State[Character].Experience += (uint)Math.Abs((MathHelper.Distance(_exp, value)));
                             _exp = value;
+                        }
                     }
                 }
                 public override bool Update()
