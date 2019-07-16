@@ -140,7 +140,6 @@
     <Compile Include="Characters.cs" />
     <Compile Include="DictionaryEx.cs" />
     <Compile Include="DM_Midi.cs" />
-    <Compile Include="EngineConst.cs" />
     <Compile Include="Entry.cs" />
     <Compile Include="EntryGroup.cs" />
     <Compile Include="ExtapathyExtended.cs" />
