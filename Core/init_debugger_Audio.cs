@@ -110,6 +110,7 @@ namespace OpenVIII
             const int altLoserPrefix = 512;
             const int loserPrefix = 0;
             const int eyesOnMePrefix = 513;
+            string[] ext = { ".ogg", ".sgt", ".wav", ".mp3" };
             //Roses and Wine V07 moves most of the sgt files to dmusic_backup
             //it leaves a few files behind. I think because RaW doesn't replace everything.
             //ogg files stored in:
@@ -129,7 +130,6 @@ namespace OpenVIII
             AddMusicPath(music_pt);
             void AddMusicPath(string p)
             {
-                string[] ext = { ".ogg",".sgt",".wav" };
                 if (!string.IsNullOrWhiteSpace(p) && Directory.Exists(p))
                 {
                     foreach (string m in Directory.GetFiles(p).Where(x => ext.Any(y=> x.EndsWith(y, StringComparison.OrdinalIgnoreCase))))
