@@ -228,7 +228,7 @@ namespace OpenVIII
                         dst2 = new Rectangle();
                         //if all the pieces of Scales are correct they should all have the same scale.
                         Rectangle _src = Scale(src.Value, ScaleFactor);
-                        cnt = ToRectangle(Textures[c, r]);
+                        cnt = Textures[c, r] != null ? ToRectangle(Textures[c, r]) : new Rectangle();
                         cnt.Offset(offset);
                         if (cnt.Contains(_src))
                         {
@@ -291,13 +291,29 @@ namespace OpenVIII
                 for (uint c = 0; c < Cols && Memory.graphics.GraphicsDevice != null; c++)
                 {
                     ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
-                    string path = aw.GetListOfFiles().First(x => (x.IndexOf(string.Format(Filename, c + r * Cols + StartOffset), StringComparison.OrdinalIgnoreCase) >= 0));
-                    tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
-                    if (Classic == null && c2 < Cols) oldsize.X += tex.TextureData.Width;
-                    Texture2D pngTex = LoadPNG(path, Palette);
-                    Textures[c, r] = (UseBest(tex, pngTex, Palette, Colors));
-                    if (pngTex != null) Modded = true;
-                    if (c2 < Cols && Textures[c2,r2] != null) size.X += Textures[c2++, r2].Width;
+
+                    try
+                    {
+                        string path = aw.GetListOfFiles().First(s => s.IndexOf(string.Format(Filename, c + r * Cols + StartOffset), StringComparison.OrdinalIgnoreCase) >= 0);
+
+                        tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
+
+                        if (Classic == null && c2 < Cols)
+                            oldsize.X += tex.TextureData.Width;
+
+                        Texture2D pngTex = LoadPNG(path, Palette);
+                        Textures[c, r] = (UseBest(tex, pngTex, Palette, Colors));
+
+                        if (pngTex != null)
+                            Modded = true;
+
+                        if (c2 < Cols && Textures[c2, r2] != null)
+                            size.X += Textures[c2++, r2].Width;
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // couldn't find a match.
+                    }
                 }
                 if (Classic == null && r2 < Rows) oldsize.Y += tex.TextureData.Height;
                 if (r2 < Rows && Textures.LongLength > r2+c2-1 && Textures[c2 - 1, r2] != null) size.Y += Textures[c2 - 1, r2++].Height;
