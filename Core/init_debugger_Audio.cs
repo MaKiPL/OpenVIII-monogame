@@ -1,13 +1,14 @@
-﻿using System;
+﻿using FFmpeg.AutoGen;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
-using FFmpeg.AutoGen;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace OpenVIII
 {
 #pragma warning disable IDE1006 // Naming Styles
+
     public static class init_debugger_Audio
 #pragma warning restore IDE1006 // Naming Styles
     {
@@ -112,7 +113,7 @@ namespace OpenVIII
             //Roses and Wine V07 moves most of the sgt files to dmusic_backup
             //it leaves a few files behind. I think because RaW doesn't replace everything.
             //ogg files stored in:
-            RaW_ogg_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "RaW/GLOBAL/Music"));
+            RaW_ogg_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "RaW", "GLOBAL", "Music"));
             if (!Directory.Exists(RaW_ogg_pt))
             {
                 RaW_ogg_pt = null;
@@ -243,7 +244,7 @@ namespace OpenVIII
                     }
                     else
                     {
-                        if(m.IndexOf("eyes_on_me",StringComparison.OrdinalIgnoreCase)>=0)
+                        if (m.IndexOf("eyes_on_me", StringComparison.OrdinalIgnoreCase) >= 0)
                         {
                             if (!Memory.dicMusic.ContainsKey(eyesOnMePrefix))
                             {
