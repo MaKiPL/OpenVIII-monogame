@@ -13,8 +13,8 @@ namespace OpenVIII
     public class Debug_MCH
     {
         const float MODEL_SCALE = 10f;
-        private const float TEX_SIZEW = 64.0f;
-        private const float TEX_SIZEH = 128.0f;
+        private const float TEX_SIZEW = 44.0f;
+        private const float TEX_SIZEH = 64.0f;
         private uint pBase;
         private MemoryStream ms;
         private BinaryReader br;
@@ -333,6 +333,7 @@ namespace OpenVIII
             List<byte> texIndexes = new List<byte>();
             for(int i = 0; i<faces.Length; i++)
             {
+
                 //We should have pre-calculated Matrices for all bones, frames, animations. Therefore we need to calculate final Vertex position
                 var vertsCollection = faces[i].verticesA;
                 if (!faces[i].BIsQuad) //triangle
@@ -381,10 +382,22 @@ namespace OpenVIII
                     facesVertices.Add(new VertexPositionColorTexture(faceC, clr, t3));
                     facesVertices.Add(new VertexPositionColorTexture(faceD, clr, t4));
 
-                    texIndexes.Add((byte)faces[i].texIndex); texIndexes.Add((byte)faces[i].texIndex);
+                    texIndexes.Add((byte)faces[i].texIndex);
+                    texIndexes.Add((byte)faces[i].texIndex);
+                    texIndexes.Add((byte)faces[i].texIndex);
+
+                    texIndexes.Add((byte)faces[i].texIndex);
+                    texIndexes.Add((byte)faces[i].texIndex);
+                    texIndexes.Add((byte)faces[i].texIndex);
                 }
             }
 
+            //var a = (from b in faces from c in b.TextureMap select new { x = c.u, y = c.v, w = b.texIndex }).ToArray();
+            //var min = a.Min(x => x.x);
+            //var max = a.Max(x => x.x);
+
+            //var mina = a.Min(x => x.y);
+            //var maxb = a.Max(x => x.y);
             return new Tuple<VertexPositionColorTexture[], byte[]>(facesVertices.ToArray(), texIndexes.ToArray());
         }
 

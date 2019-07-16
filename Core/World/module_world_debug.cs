@@ -337,17 +337,23 @@ namespace OpenVIII
 
             if (true) //DEBUG
             {
-                uint testing = chara.GetMCH(0).GetAnimationFramesCount(0);
+                int MchIndex = 0;
+                uint testing = chara.GetMCH(MchIndex).GetAnimationFramesCount(0);
                 testing2++;
                 if (testing2 >= testing)
                     testing2 = 0;
-                var collectionDebug = chara.GetMCH(0).GetVertexPositions(new Vector3(-9105f, 100, -4466),0,testing2);
-                ate.Texture = chara.GetCharaTexture(0);
+                var collectionDebug = chara.GetMCH(MchIndex).GetVertexPositions(new Vector3(-9105f, 100, -4466),0,testing2);
                 if (collectionDebug.Item1.Length != 0)
-                    foreach (var pass in ate.CurrentTechnique.Passes)
+                    for (int i = 0; i < collectionDebug.Item1.Length; i += 3)
                     {
-                        pass.Apply();
-                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, collectionDebug.Item1, 0, collectionDebug.Item1.Length / 3);
+                            ate.Texture = chara.GetCharaTexture(collectionDebug.Item2[i]);
+                        if (collectionDebug.Item2[i / 3] == 0)
+                            ;
+                        foreach (var pass in ate.CurrentTechnique.Passes)
+                        {
+                            pass.Apply();
+                            Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, collectionDebug.Item1, i, 1);
+                        }
                     }
             }
 
