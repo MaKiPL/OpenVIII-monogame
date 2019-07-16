@@ -41,14 +41,18 @@ namespace OpenVIII
                 string[] dirs = Directory.GetDirectories(SteamFolder);
                 if (dirs.Length > 0)
                 {
-                    SteamFolder = Directory.GetDirectories(SteamFolder)[0];
-                    foreach (string file in Directory.EnumerateFiles(SteamFolder))
+                    string[] SteamFolders = Directory.GetDirectories(SteamFolder);
+                    if (SteamFolders.Length > 0)
                     {
-                        Match n = Regex.Match(file, @"slot(\d+)_save(\d+).ff8");
-
-                        if (n.Success && n.Groups.Count > 0)
+                        SteamFolder = SteamFolders[0];
+                        foreach (string file in Directory.EnumerateFiles(SteamFolder))
                         {
-                            FileList[int.Parse(n.Groups[1].Value) - 1, int.Parse(n.Groups[2].Value) - 1] = read(file);
+                            Match n = Regex.Match(file, @"slot(\d+)_save(\d+).ff8",RegexOptions.IgnoreCase);
+
+                            if (n.Success && n.Groups.Count > 0)
+                            {
+                                FileList[int.Parse(n.Groups[1].Value) - 1, int.Parse(n.Groups[2].Value) - 1] = read(file);
+                            }
                         }
                     }
                 }
@@ -60,7 +64,7 @@ namespace OpenVIII
                 {
                     foreach (string file in files)
                     {
-                        Match n = Regex.Match(file, @"Slot(\d+)[\\/]save(\d+)");
+                        Match n = Regex.Match(file, @"Slot(\d+)[\\/]save(\d+)", RegexOptions.IgnoreCase);
 
                         if (n.Success && n.Groups.Count > 0)
                         {
