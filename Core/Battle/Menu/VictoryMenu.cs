@@ -82,32 +82,6 @@ namespace OpenVIII
             /// </summary>
             private static FF8String ECN;
             private Dictionary<Mode, Func<bool>> InputFunctions;
-
-            private class IGMData_PlayerEXPGroup : IGMData_Group
-            {
-                private int _exp;
-
-                public IGMData_PlayerEXPGroup(params IGMData_PlayerEXP[] d) : base(d)
-                {
-                }
-                protected override void Init()
-                {
-                    base.Init();
-                    Cursor_Status |= (Cursor_Status.Hidden | (Cursor_Status.Enabled | Cursor_Status.Static));
-                }
-
-                public int EXP
-                {
-                    get => _exp; set
-                    {
-                        foreach (IGMDataItem_IGMData i in ITEM)
-                        {
-                            ((IGMData_PlayerEXP)i.Data).EXP = value;
-                        }
-                        _exp = value;
-                    }
-                }
-            }
         }
     }
 }

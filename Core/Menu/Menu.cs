@@ -61,6 +61,8 @@ namespace OpenVIII
 
         private static object _igm_lock = new object();
         private Vector2 _size;
+        private Characters _character = Characters.Blank;
+        private Characters _visableCharacter = Characters.Blank;
 
         #endregion Fields
 
@@ -149,12 +151,26 @@ namespace OpenVIII
         /// <summary>
         /// Character who has the junctions and inventory. Same as VisableCharacter unless TeamLaguna.
         /// </summary>
-        protected Characters Character { get; set; }
+        protected Characters Character
+        {
+            get => _character; set
+            {
+                if(_character != value && value != Characters.Blank)
+                    _character = value;
+            }
+        }
 
         /// <summary>
         /// Required to support Laguna's Party. They have unique stats but share junctions and inventory.
         /// </summary>
-        protected Characters VisableCharacter { get; set; }
+        protected Characters VisableCharacter
+        {
+            get => _visableCharacter; set
+            {
+                if(_visableCharacter != value && value != Characters.Blank)
+                    _visableCharacter = value;
+            }
+        }
 
         /// <summary>
         /// Viewport dimensions
@@ -326,21 +342,29 @@ namespace OpenVIII
 
         public abstract bool Inputs();
 
-        public virtual void ReInit()
+        public virtual void ReInit() => ReInit(false);
+        public void ReInit(bool backup)
         {
+            //backup memory
+            if (backup)
+                Memory.PrevState = Memory.State.Clone();
             if (!skipdata)
-                foreach (KeyValuePair<Enum, IGMData> i in Data)
-                    i.Value.ReInit(Character, VisableCharacter);
+            {
+                if (Character != Characters.Blank)
+                    foreach (KeyValuePair<Enum, IGMData> i in Data)
+                        i.Value.ReInit(Character, VisableCharacter);
+                else
+                    foreach (KeyValuePair<Enum, IGMData> i in Data)
+                        i.Value.ReInit();
+
+            }
         }
 
         public virtual void ReInit(Characters c, Characters vc, bool backup = false)
         {
             Character = c;
             VisableCharacter = vc;
-            //backup memory
-            if (backup)
-                Memory.PrevState = Memory.State.Clone();
-            ReInit();
+            ReInit(backup);
         }
 
         public virtual bool SetMode(Enum mode)

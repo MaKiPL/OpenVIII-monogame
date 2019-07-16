@@ -24,10 +24,10 @@ namespace OpenVIII
         /// </summary>
         public Rectangle[] SIZE;
 
-        protected Characters Character;
+        private Characters character = Characters.Blank;
         protected bool skipdata = false;
         protected bool skipsnd = false;
-        protected Characters VisableCharacter;
+        private Characters visableCharacter = Characters.Blank;
 
         /// <summary>
         /// Position of party member 0,1,2. If -1 at the time of setting the character wasn't in the party.
@@ -117,6 +117,23 @@ namespace OpenVIII
         /// Container's Y Position
         /// </summary>
         public int Y => CONTAINER != null ? CONTAINER.Pos.Y : 0;
+
+        protected Characters Character
+        {
+            get => character; set
+            {
+                if(character != value && value != Characters.Blank)
+                    character = value;
+            }
+        }
+        protected Characters VisableCharacter
+        {
+            get => visableCharacter; set
+            {
+                if(visableCharacter != value && value != Characters.Blank)
+                    visableCharacter = value;
+            }
+        }
 
         #endregion Properties
 

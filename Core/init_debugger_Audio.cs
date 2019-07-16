@@ -210,8 +210,8 @@ namespace OpenVIII
         /// It will be up to the calling object to keep track of the sound object that is returned.
         /// </para>
         /// </param>
-        /// <param name="loopstart">If loop &gt;-1, sound will loop from the set sample number.</param>
-        public static Ffcc PlaySound(int soundID, float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f, bool persist = false, bool loopstart = false)
+        /// <param name="loop">If loop, sound will loop from the set sample number.</param>
+        public static Ffcc PlaySound(int soundID, float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f, bool persist = false, bool loop = false)
         {
             if (soundEntries == null || soundEntries[soundID].Size == 0)
             {
@@ -220,7 +220,7 @@ namespace OpenVIII
             Ffcc ffcc = new Ffcc(
                 new Ffcc.Buffer_Data { DataSeekLoc = soundEntries[soundID].Offset, DataSize = soundEntries[soundID].Size, HeaderSize = (uint)soundEntries[soundID].HeaderData.Length },
                 soundEntries[soundID].HeaderData,
-                Path.Combine(Memory.FF8DIRdata, "Sound", "audio.dat"), loopstart ? 0 : -1);
+                Path.Combine(Memory.FF8DIRdata, "Sound", "audio.dat"), loop ? 0 : -1);
             if (!persist)
                 SoundChannels[CurrentSoundChannel++] = ffcc;
             ffcc.Play(volume, pitch, pan);

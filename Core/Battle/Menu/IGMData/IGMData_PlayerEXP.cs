@@ -54,7 +54,14 @@ namespace OpenVIII
                 {
                     base.ReInit();
                 }
-                public int EXP { get => _exp; set => _exp = value; }
+                public int EXP
+                {
+                    get => _exp; set
+                    {
+                        if(_exp == 0 || !Memory.State[Character].IsGameOver)
+                            _exp = value;
+                    }
+                }
                 public override bool Update()
                 {
                     if (Character != Characters.Blank)
