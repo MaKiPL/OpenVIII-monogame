@@ -104,6 +104,10 @@ namespace OpenVIII
 
         public static void Init()
         {
+            const int unkPrefix = 999;
+            const int altLoserPrefix = 512;
+            const int loserPrefix = 0;
+            const int eyesOnMePrefix = 513;
             string dmusic_pt = "", RaW_ogg_pt = "", music_pt = "", music_wav_pt = "";
             //Roses and Wine V07 moves most of the sgt files to dmusic_backup
             //it leaves a few files behind. I think because RaW doesn't replace everything.
@@ -144,9 +148,9 @@ namespace OpenVIII
                     if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
                     {
                         //mismatched prefix's go here
-                        if (key == 512)
+                        if (key == altLoserPrefix)
                         {
-                            key = 0; //loser.ogg and sgt don't match.
+                            key = loserPrefix; //loser.ogg and sgt don't match.
                         }
 
                         if (!Memory.dicMusic.ContainsKey(key))
@@ -179,13 +183,13 @@ namespace OpenVIII
                     }
                     else
                     {
-                        if (!Memory.dicMusic.ContainsKey(999)) //gets any music w/o prefix
+                        if (!Memory.dicMusic.ContainsKey(unkPrefix)) //gets any music w/o prefix
                         {
-                            Memory.dicMusic.Add(999, new List<string> { m });
+                            Memory.dicMusic.Add(unkPrefix, new List<string> { m });
                         }
                         else
                         {
-                            Memory.dicMusic[999].Add(m);
+                            Memory.dicMusic[unkPrefix].Add(m);
                         }
                     }
                 }
@@ -209,13 +213,13 @@ namespace OpenVIII
                     }
                     else
                     {
-                        if (!Memory.dicMusic.ContainsKey(999)) //gets any music w/o prefix
+                        if (!Memory.dicMusic.ContainsKey(unkPrefix)) //gets any music w/o prefix
                         {
-                            Memory.dicMusic.Add(999, new List<string> { m });
+                            Memory.dicMusic.Add(unkPrefix, new List<string> { m });
                         }
                         else
                         {
-                            Memory.dicMusic[999].Add(m);
+                            Memory.dicMusic[unkPrefix].Add(m);
                         }
                     }
                 }
@@ -239,13 +243,24 @@ namespace OpenVIII
                     }
                     else
                     {
-                        if (!Memory.dicMusic.ContainsKey(999)) //gets any music w/o prefix
+                        if(m.IndexOf("eyes_on_me",StringComparison.OrdinalIgnoreCase)>=0)
                         {
-                            Memory.dicMusic.Add(999, new List<string> { m });
+                            if (!Memory.dicMusic.ContainsKey(eyesOnMePrefix))
+                            {
+                                Memory.dicMusic.Add(eyesOnMePrefix, new List<string> { m });
+                            }
+                            else
+                            {
+                                Memory.dicMusic[eyesOnMePrefix].Add(m);
+                            }
+                        }
+                        else if (!Memory.dicMusic.ContainsKey(unkPrefix)) //gets any music w/o prefix
+                        {
+                            Memory.dicMusic.Add(unkPrefix, new List<string> { m });
                         }
                         else
                         {
-                            Memory.dicMusic[999].Add(m);
+                            Memory.dicMusic[unkPrefix].Add(m);
                         }
                     }
                 }
