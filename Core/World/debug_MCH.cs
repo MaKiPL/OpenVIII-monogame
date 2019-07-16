@@ -184,6 +184,7 @@ namespace OpenVIII
                         boneId = (byte)(skeleton.skins[i].boneId - 1),
                         vertex = new Vector3(-vertices[innerIndex].X, -vertices[innerIndex].Z, -vertices[innerIndex].Y) //debug, replace with vertices[innerindex]
                     };
+                    gVertices[innerIndex].vertex = Vector3.Transform(gVertices[innerIndex].vertex, Matrix.CreateFromYawPitchRoll(2920, 0, 0));
                     innerIndex++;
                 }
             }
@@ -461,7 +462,9 @@ namespace OpenVIII
                     animation.animations[animId].animationFrames[frameId].matrixRot[boneId] = MatrixZ;
             }
         }
-
+        public int xa = 0;
+        private static float xb = 0f;
+        private static float cx = 0f;
         /// <summary>
         /// [WIP] - this method should return vertices based on animation/skeleton, not 'as-is'
         /// </summary>
@@ -529,18 +532,21 @@ namespace OpenVIII
 
             return new Tuple<VertexPositionColorTexture[], byte[]>(facesVertices.ToArray(), texIndexes.ToArray());
         }
+
+        
     private Vector3 CalculateFinalVertex(GroupedVertices groupedVertex, int animationId, int animationFrame)
         {
-            
-            var vertex = groupedVertex.vertex / MODEL_SCALE;
 
+            var vertex = groupedVertex.vertex / MODEL_SCALE;
             Matrix faceMatrix = animation.animations[animationId].animationFrames[animationFrame].matrixRot[groupedVertex.boneId];
+
 
             Vector3 face = new Vector3(
                 faceMatrix.M11 * vertex.X + faceMatrix.M41 + faceMatrix.M12 * vertex.Z + faceMatrix.M13 * -vertex.Y,
                 faceMatrix.M21 * vertex.X + faceMatrix.M42 + faceMatrix.M22 * vertex.Z + faceMatrix.M23 * -vertex.Y,
                 faceMatrix.M31 * vertex.X + faceMatrix.M43 + faceMatrix.M32 * vertex.Z + faceMatrix.M33 * -vertex.Y
                 );
+
             return face;
         }
     }

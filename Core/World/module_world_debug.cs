@@ -335,13 +335,19 @@ namespace OpenVIII
 
             TeleportCameraWrap();
 
+            if (Input.Button(Keys.U))
+                chara.GetMCH(0).xa++;
+            if (Input.Button(Keys.J))
+                chara.GetMCH(0).xa--;
+
             if (true) //DEBUG
             {
-                uint testing = chara.GetMCH(4).GetAnimationFramesCount(4);
+                var tester = chara.GetMCH(0).xa;
+                uint testing = chara.GetMCH(tester).GetAnimationFramesCount(0);
                 testing2++;
                 if (testing2 >= testing)
                     testing2 = 0;
-                var collectionDebug = chara.GetMCH(4).GetVertexPositions(new Vector3(-9105f, 100, -4466),4,testing2);
+                var collectionDebug = chara.GetMCH(tester).GetVertexPositions(new Vector3(-9105f, 100, -4466),0,testing2);
                 ate.Texture = chara.GetCharaTexture(0);
                 if (collectionDebug.Item1.Length != 0)
                     foreach (var pass in ate.CurrentTechnique.Passes)
@@ -371,6 +377,7 @@ namespace OpenVIII
                 $"World Map Camera: ={camPosition}\n" +
                 $"Segment Position: ={segmentPosition}\n" +
                 $"FPS camera degrees: ={degrees}°\n" +
+                $"xa: ={chara.GetMCH(0).xa}\n" +
                 $"FOV: ={FOV}", 30, 20, lineSpacing: 5);
             Memory.SpriteBatchEnd();
 
