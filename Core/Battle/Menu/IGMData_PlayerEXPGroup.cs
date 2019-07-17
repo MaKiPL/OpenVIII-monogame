@@ -17,7 +17,26 @@
                 /// <para>Cannot be 0.</para>
                 /// The smaller the number the faster it'll count down.
                 /// </summary>
-                private const float speedOfEarningExp = 2;
+                /// <list type="bullet">
+                /// <item>
+                /// <term>1</term>
+                /// <description>1000 per second</description>
+                /// </item>
+                /// <item>
+                /// <term>2</term>
+                /// <description>500 per second</description>
+                /// </item>
+                /// <item>
+                /// <term>3</term>
+                /// <description>333.333... per second</description>
+                /// </item>
+                /// <item>
+                /// <term>4</term>
+                /// <description>250 per second</description>
+                /// </item>
+                /// </list>
+                private const float speedOfEarningExp = 4;
+
                 /// <summary>
                 /// Total exp left to earn.
                 /// </summary>
@@ -36,7 +55,7 @@
                 /// <summary>
                 /// Keeps remainder between cycles
                 /// </summary>
-                double remaining = 0;
+                private double remaining = 0;
 
                 #endregion Fields
 
