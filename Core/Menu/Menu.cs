@@ -196,7 +196,12 @@ namespace OpenVIII
                 if (dst.Size == Point.Zero)
                 {
                     dst.Size = font.Size ;
-                    dst.Inflate(20,10);
+                    if (title == null)
+                    {
+                        dst.Inflate(20, 10);
+                    }
+                    else
+                        dst.Inflate(20, 30);
                     dst.Location = backup.Location;
                     backup = dst;
                 }

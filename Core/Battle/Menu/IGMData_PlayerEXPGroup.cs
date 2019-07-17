@@ -1,4 +1,6 @@
-﻿namespace OpenVIII
+﻿using Microsoft.Xna.Framework;
+
+namespace OpenVIII
 {
     public partial class BattleMenus
     {
@@ -57,6 +59,8 @@
                 /// </summary>
                 private double remaining = 0;
 
+                private IGMData_Container header;
+
                 #endregion Fields
 
                 #region Constructors
@@ -102,10 +106,8 @@
                         EXP = 0;
                     }
                 }
-                public override bool Inputs_CANCEL()
-                {
-                    return false;
-                }
+
+                public override bool Inputs_CANCEL() => false;
 
                 public override bool Update()
                 {
@@ -126,6 +128,8 @@
                             EXPsnd = null;
                         }
                     }
+                    if (header == null && CONTAINER != null)
+                        header = new IGMData_Container(new IGMDataItem_Box(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 23), new Rectangle(Point.Zero, new Point(CONTAINER.Width, 78)), Icons.ID.INFO, Box_Options.Middle));
                     return base.Update();
                 }
 
@@ -133,6 +137,13 @@
                 {
                     base.Init();
                     Cursor_Status |= (Cursor_Status.Hidden | (Cursor_Status.Enabled | Cursor_Status.Static));
+                }
+
+                public override void Draw()
+                {
+                    if (Enabled)
+                        header?.Draw();
+                    base.Draw();
                 }
 
                 #endregion Methods

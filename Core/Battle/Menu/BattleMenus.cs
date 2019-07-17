@@ -95,7 +95,7 @@ namespace OpenVIII
                 };
                 menus?.ForEach(m => m.Show());
             }
-            Victory_Menu?.ReInit(10000,0);
+            Victory_Menu?.ReInit(10000,1000,new Saves.Item(10,100), new Saves.Item(20, 65), new Saves.Item(28, 54));
             base.ReInit();
         }
 
