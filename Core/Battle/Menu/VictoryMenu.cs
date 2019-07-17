@@ -35,7 +35,7 @@ namespace OpenVIII
                             (byte)FF8TextTagCode.Key,
                             (byte)FF8TextTagKey.Confirm,
                             (byte)FF8TextTagCode.Color,
-                            (byte)FF8TextTagColor.White}).Append(Memory.Strings.Read(Strings.FileID.KERNEL,30,22)),new Rectangle(new Point(0,(int)Size.Y-78),new Point((int)Size.X,78)),options: Box_Options.Center| Box_Options.Middle))
+                            (byte)FF8TextTagColor.White})+" "+(Memory.Strings.Read(Strings.FileID.KERNEL,30,22)),new Rectangle(new Point(0,(int)Size.Y-78),new Point((int)Size.X,78)),options: Box_Options.Center| Box_Options.Middle))
                     )},
                 };
                 SetMode(Mode.Exp);
