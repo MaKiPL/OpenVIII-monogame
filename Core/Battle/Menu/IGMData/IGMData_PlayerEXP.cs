@@ -62,6 +62,7 @@ namespace OpenVIII
                     {
                         if (_exp == 0 || !Memory.State[Character].IsGameOver)
                         {
+                            if (value < 0) value = 0;
                             if(_exp != 0)
                                 Memory.State[Character].Experience += (uint)Math.Abs((MathHelper.Distance(_exp, value)));
                             _exp = value;
