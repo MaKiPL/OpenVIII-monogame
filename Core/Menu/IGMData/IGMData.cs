@@ -324,7 +324,7 @@ namespace OpenVIII
                         Inputs_Square();
                         return true;
                     }
-                    else if ((Cursor_Status & Cursor_Status.Horizontal) == 0)
+                    else if ((Cursor_Status & Cursor_Status.Horizontal) == 0 && (Cursor_Status & Cursor_Status.Static) == 0)
                     {
                         if (Input.Button(Buttons.Left))
                         {
@@ -412,7 +412,17 @@ namespace OpenVIII
         /// Things that change on every update.
         /// </summary>
         /// <returns>True = signifigant change</returns>
-        public virtual bool Update() => false;
+        public virtual bool Update()
+        {
+            bool ret = false;
+            if (!skipdata && ITEM != null)
+                foreach (IGMDataItem i in ITEM)
+                {
+                    if (i != null)
+                        ret = i.Update() || ret;
+                }
+            return ret;
+        }
 
         protected int GetCursor_select() => _cursor_select;
 

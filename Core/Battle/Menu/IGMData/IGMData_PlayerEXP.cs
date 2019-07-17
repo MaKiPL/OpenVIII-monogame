@@ -13,7 +13,7 @@ namespace OpenVIII
                 private int _exp;
                 private byte _lvl;
 
-                public IGMData_PlayerEXP(int exp, sbyte partypos) : base(1, 10, new IGMDataItem_Box(pos: new Rectangle(35, 78 + partypos * 150, 808, 150)), 1, 1, partypos: partypos)
+                public IGMData_PlayerEXP(int exp, sbyte partypos) : base(1, 12, new IGMDataItem_Box(pos: new Rectangle(35, 78 + partypos * 150, 808, 150)), 1, 1, partypos: partypos)
                 {
                     _exp = exp;
                     Debug.Assert(partypos >= 0 && partypos <= 2);
@@ -43,6 +43,10 @@ namespace OpenVIII
                         ITEM[0, 7] = new IGMDataItem_Icon(Icons.ID.P, new Rectangle(SIZE[0].X + SIZE[0].Width - 20, (int)(SIZE[0].Y + TextScale.Y * 12), 0, 0));
                         ITEM[0, 8] = new IGMDataItem_Int((int)expTNL, new Rectangle(SIZE[0].X + SIZE[0].Width - 160, (int)(SIZE[0].Y + TextScale.Y * 12 * 2), 0, 0), spaces: 7);
                         ITEM[0, 9] = new IGMDataItem_Icon(Icons.ID.P, new Rectangle(SIZE[0].X + SIZE[0].Width - 20, (int)(SIZE[0].Y + TextScale.Y * 12 * 2), 0, 0));
+                        ITEM[0, 10] = new IGMDataItem_IGMData(new IGMData_TimedMsgBox(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 32),SIZE[0].X+190,SIZE[0].Y));
+                        ITEM[0, 10].Hide();
+                        ITEM[0, 11] = new IGMDataItem_IGMData(new IGMData_SmallMsgBox(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 49), SIZE[0].X + 190, SIZE[0].Y));
+                        ITEM[0, 11].Hide();
                     }
                 }
 
@@ -67,6 +71,8 @@ namespace OpenVIII
                                 Memory.State[Character].Experience += (uint)Math.Abs((MathHelper.Distance(_exp, value)));
                             _exp = value;
                         }
+                        else if (Memory.State[Character].IsGameOver)
+                            ITEM[0, 11].Show();
                     }
                 }
                 public override bool Update()
@@ -82,6 +88,7 @@ namespace OpenVIII
                             _lvl = lvl;
                             //trigger level up message and sound effect
                             init_debugger_Audio.PlaySound(0x28);
+                            ITEM[0, 10].Show();
                         }
                         ((IGMDataItem_Int)ITEM[0, 2]).Data = _lvl;
 

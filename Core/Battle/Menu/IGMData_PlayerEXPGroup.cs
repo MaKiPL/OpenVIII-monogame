@@ -102,6 +102,10 @@
                         EXP = 0;
                     }
                 }
+                public override bool Inputs_CANCEL()
+                {
+                    return false;
+                }
 
                 public override bool Update()
                 {

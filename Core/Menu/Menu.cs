@@ -7,7 +7,6 @@ namespace OpenVIII
 {
     public abstract class Menu
     {
-
         #region Fields
 
         public static EventHandler FadedInHandler;
@@ -44,10 +43,12 @@ namespace OpenVIII
         /// <para>Larger is slower</para>
         /// </summary>
         private const int _fadeoutspeed = 1500;
+
         /// <summary>
         /// Scale of Menu Items (Background and Cursor)
         /// </summary>
         private const float _menuitemscale = 2f;
+
         private static BattleMenus _battlemenus;
         private static bool _blinkstate;
         private static bool _fadeout = false;
@@ -68,10 +69,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public Menu()
-        {
-            InitConstructor();
-        }
+        public Menu() => InitConstructor();
 
         public Menu(Characters character, Characters? visablecharacter = null)
         {
@@ -121,14 +119,14 @@ namespace OpenVIII
         /// </summary>
         public static IGM_Lobby IGM_Lobby => _igm_lobby;
 
-
         /// <summary>
         /// Size of text the real game doesn't use a 1:1 ratio.
         /// </summary>
         public static Vector2 TextScale { get; } = new Vector2(2.545455f, 3.0375f);
 
         /// <summary>
-        /// If enabled the menu is visable and all functionality works. Else everything is hidden and nothing functions.
+        /// If enabled the menu is visable and all functionality works. Else everything is hidden and
+        /// nothing functions.
         /// </summary>
         public bool Enabled { get; protected set; } = true;
 
@@ -141,8 +139,7 @@ namespace OpenVIII
         /// Size of the menu. If kept in a 4:3 region it won't scale down till after losing enough width.
         /// </summary>
         public Vector2 Size { get => _size; protected set => _size = value; }
-
-
+        public static Vector2 StaticSize { get; protected set; }
         /// <summary>
         /// Adjusted mouse location used to determine if mouse is highlighting a button.
         /// </summary>
@@ -155,7 +152,7 @@ namespace OpenVIII
         {
             get => _character; set
             {
-                if(_character != value && value != Characters.Blank)
+                if (_character != value && value != Characters.Blank)
                     _character = value;
             }
         }
@@ -167,7 +164,7 @@ namespace OpenVIII
         {
             get => _visableCharacter; set
             {
-                if(_visableCharacter != value && value != Characters.Blank)
+                if (_visableCharacter != value && value != Characters.Blank)
                     _visableCharacter = value;
             }
         }
@@ -176,6 +173,7 @@ namespace OpenVIII
         /// Viewport dimensions
         /// </summary>
         protected Vector2 vp => new Vector2(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height);
+
         /// <summary>
         /// if canceled don't init menu.
         /// </summary>
@@ -190,14 +188,23 @@ namespace OpenVIII
             if (textScale == null) textScale = Vector2.One;
             if (boxScale == null) boxScale = Vector2.One;
             Point cursor = Point.Zero;
-            dst.Size = (dst.Size.ToVector2()).ToPoint();
-            dst.Location = (dst.Location.ToVector2()).ToPoint();
+            Rectangle font = new Rectangle();
+            Rectangle backup = dst;
+            if (buffer != null && buffer.Length > 0)
+            {
+                font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: Fade, skipdraw: true);
+                if (dst.Size == Point.Zero)
+                {
+                    dst.Size = font.Size ;
+                    dst.Inflate(20,10);
+                    dst.Location = backup.Location;
+                    backup = dst;
+                }
+            }
             Vector2 bgscale = new Vector2(_menuitemscale) * textScale.Value;
             Rectangle box = dst.Scale(boxScale.Value);
-            Rectangle backup = dst;
-            Rectangle hotspot = new Rectangle(dst.Location, dst.Size);
-            Rectangle font = new Rectangle();
-            if ((options & Box_Options.SkipDraw) == 0)
+            Rectangle hotspot = dst;
+            if ((options & Box_Options.SkipDraw) == 0 && dst.Size != Point.Zero)
             {
                 if (dst.Width > 256 * bgscale.X)
                     Memory.Icons.Draw(Icons.ID.Menu_BG_368, 0, box, bgscale, Fade);
@@ -205,7 +212,6 @@ namespace OpenVIII
                     Memory.Icons.Draw(Icons.ID.Menu_BG_256, 0, box, bgscale, Fade);
                 if (title != null)
                 {
-                    //dst.Size = (Memory.Icons[title.Value].GetRectangle.Size.ToVector2()  * 2.823317308f).ToPoint();
                     dst.Offset(15, 0);
                     dst.Y = (int)(dst.Y * boxScale.Value.Y);
                     Memory.Icons.Draw(title.Value, 2, dst, (bgscale + new Vector2(.5f)), Fade);
@@ -213,27 +219,28 @@ namespace OpenVIII
                 dst = backup;
             }
             if (buffer != null && buffer.Length > 0)
-            {
-                font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: Fade, skipdraw: true);
-                if ((options & Box_Options.Indent) != 0)
-                    dst.Offset(70 * textScale.Value.X, 0);
-                else if ((options & Box_Options.Center) != 0)
-                    dst.Offset(dst.Width / 2 - font.Width / 2, 0);
-                else
-                    dst.Offset(25 * textScale.Value.X, 0);
+                {
+                    //font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: Fade, skipdraw: true);
+                    if ((options & Box_Options.Indent) != 0)
+                        dst.Offset(70 * textScale.Value.X, 0);
+                    else if ((options & Box_Options.Center) != 0)
+                        dst.Offset(dst.Width / 2 - font.Width / 2, 0);
+                    else
+                        dst.Offset(25 * textScale.Value.X, 0);
 
-                if ((options & Box_Options.Buttom) != 0)
-                    dst.Offset(0, (dst.Height - 48));
-                else if ((options & Box_Options.Middle) != 0)
-                    dst.Offset(0, dst.Height / 2 - font.Height / 2);
-                else
-                    dst.Offset(0, 21);
+                    if ((options & Box_Options.Buttom) != 0)
+                        dst.Offset(0, (dst.Height - 48));
+                    else if ((options & Box_Options.Middle) != 0)
+                        dst.Offset(0, dst.Height / 2 - font.Height / 2);
+                    else
+                        dst.Offset(0, 21);
 
-                dst.Y = (int)(dst.Y * boxScale.Value.Y);
-                font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: Fade, skipdraw: (options & Box_Options.SkipDraw) != 0);
-                cursor = dst.Location;
-                cursor.Y += (int)(TextScale.Y * 6); // 12 * (3.0375/2)
-            }
+                    dst.Y = (int)(dst.Y * boxScale.Value.Y);
+                    font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: Fade, skipdraw: (options & Box_Options.SkipDraw) != 0);
+                    cursor = dst.Location;
+                    cursor.Y += (int)(TextScale.Y * 6); // 12 * (3.0375/2)
+                }
+            
             return new Tuple<Rectangle, Point, Rectangle>(hotspot, cursor, font);
         }
 
@@ -286,7 +293,6 @@ namespace OpenVIII
 
         public static void UpdateFade(object sender = null)
         {
-
             if (_blinkstate)
             {
                 Blink_Amount += (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / _blinkinspeed);
@@ -343,6 +349,7 @@ namespace OpenVIII
         public abstract bool Inputs();
 
         public virtual void ReInit() => ReInit(false);
+
         public void ReInit(bool backup)
         {
             //backup memory
@@ -356,7 +363,6 @@ namespace OpenVIII
                 else
                     foreach (KeyValuePair<Enum, IGMData> i in Data)
                         i.Value.ReInit();
-
             }
         }
 
@@ -391,6 +397,7 @@ namespace OpenVIII
             bool ret = false;
             UpdateFade(this);
             GenerateFocus();
+            StaticSize = Size;
             if (Enabled)
             {
                 //todo detect when there is no saves detected.

@@ -3,30 +3,36 @@ using System;
 
 namespace OpenVIII
 {
-        #region Classes
+    #region Classes
 
-        public class IGMDataItem_Box : IGMDataItem
+    public class IGMDataItem_Box : IGMDataItem
+    {
+        public FF8String Data { get; set; }
+        public Icons.ID? Title { get; set; }
+        public Box_Options Options { get; set; }
+        public Tuple<Rectangle, Point, Rectangle> Dims { get; private set; }
+
+        public IGMDataItem_Box(FF8String data = null, Rectangle? pos = null, Icons.ID? title = null, Box_Options options = Box_Options.Default) : base(pos)
         {
-            public FF8String Data { get; set; }
-            public Icons.ID? Title { get; set; }
-            public Box_Options Options { get; set; }
-            public Tuple<Rectangle, Point, Rectangle> Dims { get; private set; }
+            Data = data;
+            Title = title;
+            Options = options;
+        }
 
-            public IGMDataItem_Box(FF8String data = null, Rectangle? pos = null, Icons.ID? title = null, Box_Options options = Box_Options.Default) : base(pos)
-            {
-                Data = data;
-                Title = title;
-                Options = options;
-            }
+        public override void Draw()
+        {
+            Draw(false);
+        }
 
-            public override void Draw()
+        public void Draw(bool skipdraw)
+        {
+
+            if (Enabled)
             {
-                if (Enabled)
-                {
-                    Dims = Menu.DrawBox(Pos, Data, Title, options: Options);
-                }
+                Dims = Menu.DrawBox(Pos, Data, Title, options: skipdraw ? (Options | Box_Options.SkipDraw):Options);
             }
         }
-        #endregion Classes
-    
+    }
+
+    #endregion Classes
 }
