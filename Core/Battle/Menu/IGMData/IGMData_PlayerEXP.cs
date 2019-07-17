@@ -62,7 +62,8 @@ namespace OpenVIII
                     {
                         if (_exp == 0 || !Memory.State[Character].IsGameOver)
                         {
-                            Memory.State[Character].Experience += (uint)Math.Abs((MathHelper.Distance(_exp, value)));
+                            if(_exp != 0)
+                                Memory.State[Character].Experience += (uint)Math.Abs((MathHelper.Distance(_exp, value)));
                             _exp = value;
                         }
                     }
@@ -79,6 +80,7 @@ namespace OpenVIII
                         {
                             _lvl = lvl;
                             //trigger level up message and sound effect
+                            init_debugger_Audio.PlaySound(0x28);
                         }
                         ((IGMDataItem_Int)ITEM[0, 2]).Data = _lvl;
 

@@ -198,12 +198,36 @@ namespace OpenVIII
                 }
 
             soundEntriesCount = soundEntries == null ? 0 : soundEntries.Length;
+            ////export sounds
+            //int item = 0;
+            //using (BinaryReader br = new BinaryReader(File.OpenRead(Path.Combine(Memory.FF8DIRdata, "Sound", "audio.dat"))))
+            //    foreach (SoundEntry s in soundEntries)
+            //    {
+            //        Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "FF8Sounds"));
+            //        if (s.HeaderData == null || s.Size == 0)
+            //        {
+            //            using (FileStream fc = File.Create(Path.Combine(Path.GetTempPath(), "FF8Sounds", $"{item++}.txt")))
+            //            using (BinaryWriter bw = new BinaryWriter(fc))
+            //            {
+            //                bw.Write($"There is no info maybe audio.fmt listed {s.Size} size or there was an issue.");
+            //            }
+            //            continue;
+            //        }
+
+            //        using (FileStream fc = File.Create(Path.Combine(Path.GetTempPath(), "FF8Sounds", $"{item++}.wav")))
+            //        using (BinaryWriter bw = new BinaryWriter(fc))
+            //        {
+            //            bw.Write(s.HeaderData);
+            //            br.BaseStream.Seek(s.Offset, SeekOrigin.Begin);
+            //            bw.Write(br.ReadBytes((int)s.Size));
+            //        }
+            //    }
         }
 
         /// <summary>
         /// Play sound effect
         /// </summary>
-        /// <param name="soundID">ID number of sound</param>
+        /// <param name="soundID">ID number of sound<para>The real game uses soundID + 1, so you may need to -1 from any scripts.</para></param>
         /// <param name="persist">
         /// <para>If set sound will not be saved to SoundChannels</para>
         /// <para>
@@ -366,10 +390,6 @@ namespace OpenVIII
 
         public static void KillAudio()
         {
-            //if (Sound != null && !Sound.IsDisposed)
-            //{
-            //    Sound.Dispose();
-            //}
             SoundChannels.Where(x => x != null).ForEach(action => action.Dispose());
 
             if (dm_Midi != null)

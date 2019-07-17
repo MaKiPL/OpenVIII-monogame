@@ -427,8 +427,10 @@ namespace OpenVIII
             {
                 get => experience; set
                 {
-                    if (experience == 0 || !IsGameOver)
+                    if (experience == 0)
                         experience = value;
+                    else if(!IsGameOver && experience != value)
+                            experience = value;
                 }
             }
 
