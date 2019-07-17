@@ -430,7 +430,7 @@ namespace OpenVIII
                     if (experience == 0)
                         experience = value;
                     else if(!IsGameOver && experience != value)
-                            experience = value;
+                            experience = value; //trying to give my self a good break point
                 }
             }
 
