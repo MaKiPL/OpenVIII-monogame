@@ -136,6 +136,7 @@
     <Compile Include="Battle\Menu\IGMData\IGMData_HP.cs" />
     <Compile Include="Battle\Menu\IGMData\IGMData_PlayerEXP.cs" />
     <Compile Include="Battle\Menu\IGMData_PlayerEXPGroup.cs" />
+    <Compile Include="Card_Game\Card_Game.cs" />
     <Compile Include="Menu\IGMData\IGMData_SmallMsgBox.cs" />
     <Compile Include="Menu\IGMData\IGMData_TimedMsgBox.cs" />
     <Compile Include="Menu\Menus.cs" />
