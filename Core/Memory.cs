@@ -185,7 +185,7 @@ namespace OpenVIII
 
         public static int InitTaskMethod(object obj)
         {
-            CancellationToken token = (CancellationToken)obj;
+               CancellationToken token = (CancellationToken)obj;
 
             if (!token.IsCancellationRequested)
                 Memory.Strings = new Strings();
@@ -227,6 +227,8 @@ namespace OpenVIII
                 if (!token.IsCancellationRequested)
                     Menu.InitStaticMembers();
             }
+
+            EXE_Offsets test = new EXE_Offsets();
             Inited = true;
             return 0;
         }

@@ -13,10 +13,11 @@ namespace OpenVIII
     /// <see cref="http://www.raphnet.net/electronique/psx_adaptor/Playstation.txt"/>
     /// <seealso cref="http://www.psxdev.net/forum/viewtopic.php?t=109"/>
     /// <seealso cref="https://mrclick.zophar.net/TilEd/download/timgfx.txt"/>
+    /// <seealso cref="http://www.elisanet.fi/6581/PSX/doc/Playstation_Hardware.pdf"/>
+    /// <seealso cref="http://www.elisanet.fi/6581/PSX/doc/psx.pdf"/>
     /// <remarks>upgraded TIM class, because that first one is a trash</remarks>
     public class TIM2
     {
-
         #region Fields
 
         private const ushort blue_mask = 0x7C00;
@@ -24,6 +25,7 @@ namespace OpenVIII
         private const ushort green_mask = 0x3E0;
 
         private const ushort red_mask = 0x1F;
+        private static readonly bool throwexc = true;
 
         /// <summary>
         /// Bits per pixel
@@ -54,7 +56,8 @@ namespace OpenVIII
         /// Start of Tim Data
         /// </summary>
         private uint timOffset;
-        private bool trimExcess=false;
+
+        private bool trimExcess = false;
 
         #endregion Fields
 
@@ -74,12 +77,8 @@ namespace OpenVIII
             }
         }
 
-        /// <summary>
-        /// <summary>
-        /// Initialize TIM class
-        /// </summary>
-        /// <param name="br">BinaryReader pointing to the file data</param>
-        /// <param name="offset">Start of Tim Data</param>
+        /// <summary> <summary> Initialize TIM class </summary> <param name="br">BinaryReader
+        /// pointing to the file data</param> <param name="offset">Start of Tim Data</param>
         public TIM2(BinaryReader br, uint offset = 0)
         {
             trimExcess = true;
@@ -167,6 +166,18 @@ namespace OpenVIII
         #endregion Properties
 
         #region Methods
+        public static void Assert(bool a)
+        {
+            if(!a)
+            {
+                if (throwexc)
+                {
+                    throw new InvalidDataException($"Invalid TIM File");
+                }
+                else
+                    Debug.Assert(a);
+            }
+        }
 
         /// <summary>
         /// Splash is 640x400 16BPP typical TIM with palette of ggg bbbbb a rrrrr gg
@@ -228,8 +239,8 @@ namespace OpenVIII
         public void Init(BinaryReader br, uint offset)
         {
             br.BaseStream.Seek(offset, SeekOrigin.Begin);
-            Debug.Assert(br.ReadByte() == 0x10); //tag
-            Debug.Assert(br.ReadByte() == 0); // version
+            Assert(br.ReadByte() == 0x10); //tag
+            Assert(br.ReadByte() == 0); // version
             br.BaseStream.Seek(2, SeekOrigin.Current);
             Bppflag b = (Bppflag)br.ReadByte();
             timOffset = offset;
@@ -238,7 +249,7 @@ namespace OpenVIII
             else if ((b & Bppflag._8bpp) != 0) bpp = 8;
             else bpp = 4;
             CLP = (b & Bppflag.CLP) != 0;
-            Debug.Assert(((bpp == 4 || bpp == 8) && CLP) || ((bpp == 16 || bpp == 24) && !CLP));
+            Assert(((bpp == 4 || bpp == 8) && CLP) || ((bpp == 16 || bpp == 24) && !CLP));
             ReadParameters(br);
         }
 
@@ -256,6 +267,7 @@ namespace OpenVIII
                     bw.Write(buffer.Skip((int)timOffset).Take((int)(texture.ImageDataSize + textureDataPointer)).ToArray());
             }
         }
+
         /// <summary>
         /// Convert ABGR1555 color to RGBA 32bit color
         /// </summary>
@@ -373,8 +385,8 @@ namespace OpenVIII
             texture = new Texture();
             texture.Read(br, (byte)bpp, CLP);
             textureDataPointer = (uint)br.BaseStream.Position;
-            if(trimExcess)
-                buffer = buffer.Skip((int)timOffset).Take((int)(texture.ImageDataSize+textureDataPointer-timOffset)).ToArray();
+            if (trimExcess)
+                buffer = buffer.Skip((int)timOffset).Take((int)(texture.ImageDataSize + textureDataPointer - timOffset)).ToArray();
         }
 
         #endregion Methods
@@ -383,7 +395,6 @@ namespace OpenVIII
 
         private struct Texture
         {
-
             #region Fields
 
             public byte[] ClutData;
@@ -427,9 +438,9 @@ namespace OpenVIII
                     NumOfColours = br.ReadUInt16();
                     NumOfCluts = br.ReadUInt16();
                     clutdataSize = (int)(clutSize - 12);//(NumOfColours * NumOfCluts*2);
-
-                    Debug.Assert(PaletteX % 16 == 0);
-                    Debug.Assert(PaletteY >= 0 && PaletteY <= 511);
+                    Assert(clutdataSize == NumOfColours * NumOfCluts * 2 || clutdataSize == NumOfColours * NumOfCluts);
+                    Assert(PaletteX % 16 == 0);
+                    Assert(PaletteY >= 0 && PaletteY <= 511);
                     ClutData = br.ReadBytes(clutdataSize);
                     //br.BaseStream.Seek(start+clutSize, SeekOrigin.Begin);
                 }
@@ -438,23 +449,39 @@ namespace OpenVIII
                 ImageSize = br.ReadUInt32(); // image size + header in bytes
                 ImageOrgX = br.ReadUInt16();
                 ImageOrgY = br.ReadUInt16();
-                if (_bpp == 4)
-                    Width = (ushort)(br.ReadUInt16() * 4);
-                if (_bpp == 8)
-                    Width = (ushort)(br.ReadUInt16() * 2);
-                if (_bpp == 16)
-                    Width = br.ReadUInt16();
-                if (_bpp == 24)
-                    Width = (ushort)(br.ReadUInt16() / 1.5);
+                Width = br.ReadUInt16();
                 Height = br.ReadUInt16();
                 ImageDataSize = (int)(ImageSize - 12);//(NumOfColours * NumOfCluts*2);
+                Assert(ImageDataSize == Width * Height * 2);
+
+                // Pixel data is stored in uint16 spots. So you use this to convert that to the
+                // correct color / CLUT colorkey If 32 bit existed it'd be 1:2 24 bit is 1:1.5 16 bit
+                // is 1:1 8 bit is 2:1 4 bit is 4:1
+
+                if (_bpp == 4)
+                    Width = (ushort)(Width * 4);
+                if (_bpp == 8)
+                    Width = (ushort)(Width * 2);
+                //if (_bpp == 16)
+                //    Width = Width;
+                if (_bpp == 24)
+                {
+                    Width = (ushort)(Width / 1.5);
+                    // The below i'm unsure if any of this effects TIM files. So I commented them out.
+                    // http://www.elisanet.fi/6581/PSX/doc/Playstation_Hardware.pdf
+                    // http://www.elisanet.fi/6581/PSX/doc/psx.pdf
+                    //24 bit color mode has different restrictions. I guess you bybass the psx gpu to draw these
+                    //Assert(Width >= 8 && Height >= 2);// &&  // not sure if the multiple of 8 for width is right.
+                }
+
+                //Assert(Width <= 256 && Height <= 256 && Width > 0 && Height > 0); // sprite max size 256x256 and min size 1x1
+
+                //Assert(Width % 8 == 0 && Height % 8 == 0); // maybe texture must be multiple of 8.
             }
 
             #endregion Methods
-
         }
 
         #endregion Structs
-
     }
 }
