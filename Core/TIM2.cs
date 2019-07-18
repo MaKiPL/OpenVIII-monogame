@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace OpenVIII
 {
@@ -15,6 +16,7 @@ namespace OpenVIII
     /// <remarks>upgraded TIM class, because that first one is a trash</remarks>
     public class TIM2
     {
+
         #region Fields
 
         private const ushort blue_mask = 0x7C00;
@@ -52,6 +54,7 @@ namespace OpenVIII
         /// Start of Tim Data
         /// </summary>
         private uint timOffset;
+        private bool trimExcess=false;
 
         #endregion Fields
 
@@ -79,32 +82,14 @@ namespace OpenVIII
         /// <param name="offset">Start of Tim Data</param>
         public TIM2(BinaryReader br, uint offset = 0)
         {
-            //br.BaseStream.Seek(offset, SeekOrigin.Begin);
+            trimExcess = true;
+            br.BaseStream.Seek(offset, SeekOrigin.Begin);
             //br.BaseStream.Seek(0, SeekOrigin.Begin);
             buffer = br.ReadBytes((int)(br.BaseStream.Length - br.BaseStream.Position));
-            Init(br, offset);
-        }
-
-        /// <summary>
-        /// Initialize TIM class
-        /// </summary>
-        /// <param name="br">BinaryReader pointing to the file data</param>
-        /// <param name="offset">Start of Tim Data</param>
-        public void Init(BinaryReader br, uint offset)
-        {
-            br.BaseStream.Seek(offset, SeekOrigin.Begin);
-            Debug.Assert(br.ReadByte() == 0x10); //tag
-            Debug.Assert(br.ReadByte() == 0); // version
-            br.BaseStream.Seek(2, SeekOrigin.Current);
-            Bppflag b = (Bppflag)br.ReadByte();
-            timOffset = offset;
-            if ((b & (Bppflag._24bpp)) >= (Bppflag._24bpp)) bpp = 24;
-            else if ((b & Bppflag._16bpp) != 0) bpp = 16;
-            else if ((b & Bppflag._8bpp) != 0) bpp = 8;
-            else bpp = 4;
-            CLP = (b & Bppflag.CLP) != 0;
-            Debug.Assert(((bpp == 4 || bpp == 8) && CLP) || ((bpp == 16 || bpp == 24) && !CLP));
-            ReadParameters(br);
+            using (BinaryReader br2 = new BinaryReader(new MemoryStream(buffer)))
+            {
+                Init(br2, 0);
+            }
         }
 
         #endregion Constructors
@@ -236,6 +221,42 @@ namespace OpenVIII
         }
 
         /// <summary>
+        /// Initialize TIM class
+        /// </summary>
+        /// <param name="br">BinaryReader pointing to the file data</param>
+        /// <param name="offset">Start of Tim Data</param>
+        public void Init(BinaryReader br, uint offset)
+        {
+            br.BaseStream.Seek(offset, SeekOrigin.Begin);
+            Debug.Assert(br.ReadByte() == 0x10); //tag
+            Debug.Assert(br.ReadByte() == 0); // version
+            br.BaseStream.Seek(2, SeekOrigin.Current);
+            Bppflag b = (Bppflag)br.ReadByte();
+            timOffset = offset;
+            if ((b & (Bppflag._24bpp)) >= (Bppflag._24bpp)) bpp = 24;
+            else if ((b & Bppflag._16bpp) != 0) bpp = 16;
+            else if ((b & Bppflag._8bpp) != 0) bpp = 8;
+            else bpp = 4;
+            CLP = (b & Bppflag.CLP) != 0;
+            Debug.Assert(((bpp == 4 || bpp == 8) && CLP) || ((bpp == 16 || bpp == 24) && !CLP));
+            ReadParameters(br);
+        }
+
+        /// <summary>
+        /// Writes the Tim file to the hard drive.
+        /// </summary>
+        /// <param name="path">Path where you want file to be saved.</param>
+        public void Save(string path)
+        {
+            using (BinaryWriter bw = new BinaryWriter(File.Create(path)))
+            {
+                if (trimExcess)
+                    bw.Write(buffer);
+                else
+                    bw.Write(buffer.Skip((int)timOffset).Take((int)(texture.ImageDataSize + textureDataPointer)).ToArray());
+            }
+        }
+        /// <summary>
         /// Convert ABGR1555 color to RGBA 32bit color
         /// </summary>
         /// <remarks>
@@ -352,6 +373,8 @@ namespace OpenVIII
             texture = new Texture();
             texture.Read(br, (byte)bpp, CLP);
             textureDataPointer = (uint)br.BaseStream.Position;
+            if(trimExcess)
+                buffer = buffer.Skip((int)timOffset).Take((int)(texture.ImageDataSize+textureDataPointer-timOffset)).ToArray();
         }
 
         #endregion Methods
@@ -360,6 +383,7 @@ namespace OpenVIII
 
         private struct Texture
         {
+
             #region Fields
 
             public byte[] ClutData;
@@ -427,8 +451,10 @@ namespace OpenVIII
             }
 
             #endregion Methods
+
         }
 
         #endregion Structs
+
     }
 }
