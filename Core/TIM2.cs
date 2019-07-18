@@ -15,7 +15,6 @@ namespace OpenVIII
     /// <remarks>upgraded TIM class, because that first one is a trash</remarks>
     public class TIM2
     {
-
         #region Fields
 
         private const ushort blue_mask = 0x7C00;
@@ -65,23 +64,47 @@ namespace OpenVIII
         /// <param name="offset">Start of Tim Data</param>
         public TIM2(byte[] buffer, uint offset = 0)
         {
+            this.buffer = buffer;
             using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
             {
-                this.buffer = buffer;
-                br.BaseStream.Seek(offset, SeekOrigin.Begin);
-                Debug.Assert(br.ReadByte() == 0x10); //tag
-                Debug.Assert(br.ReadByte() == 0); // version
-                br.BaseStream.Seek(2, SeekOrigin.Current);
-                Bppflag b = (Bppflag)br.ReadByte();
-                timOffset = offset;
-                if ((b & (Bppflag._24bpp)) >= (Bppflag._24bpp)) bpp = 24;
-                else if ((b & Bppflag._16bpp) != 0) bpp = 16;
-                else if ((b & Bppflag._8bpp) != 0) bpp = 8;
-                else bpp = 4;
-                CLP = (b & Bppflag.CLP) != 0;
-                Debug.Assert(((bpp == 4 || bpp == 8) && CLP) || ((bpp == 16 || bpp == 24) && !CLP));
-                ReadParameters(br);
+                Init(br, offset);
             }
+        }
+
+        /// <summary>
+        /// <summary>
+        /// Initialize TIM class
+        /// </summary>
+        /// <param name="br">BinaryReader pointing to the file data</param>
+        /// <param name="offset">Start of Tim Data</param>
+        public TIM2(BinaryReader br, uint offset = 0)
+        {
+            //br.BaseStream.Seek(offset, SeekOrigin.Begin);
+            //br.BaseStream.Seek(0, SeekOrigin.Begin);
+            buffer = br.ReadBytes((int)(br.BaseStream.Length - br.BaseStream.Position));
+            Init(br, offset);
+        }
+
+        /// <summary>
+        /// Initialize TIM class
+        /// </summary>
+        /// <param name="br">BinaryReader pointing to the file data</param>
+        /// <param name="offset">Start of Tim Data</param>
+        public void Init(BinaryReader br, uint offset)
+        {
+            br.BaseStream.Seek(offset, SeekOrigin.Begin);
+            Debug.Assert(br.ReadByte() == 0x10); //tag
+            Debug.Assert(br.ReadByte() == 0); // version
+            br.BaseStream.Seek(2, SeekOrigin.Current);
+            Bppflag b = (Bppflag)br.ReadByte();
+            timOffset = offset;
+            if ((b & (Bppflag._24bpp)) >= (Bppflag._24bpp)) bpp = 24;
+            else if ((b & Bppflag._16bpp) != 0) bpp = 16;
+            else if ((b & Bppflag._8bpp) != 0) bpp = 8;
+            else bpp = 4;
+            CLP = (b & Bppflag.CLP) != 0;
+            Debug.Assert(((bpp == 4 || bpp == 8) && CLP) || ((bpp == 16 || bpp == 24) && !CLP));
+            ReadParameters(br);
         }
 
         #endregion Constructors
@@ -337,7 +360,6 @@ namespace OpenVIII
 
         private struct Texture
         {
-
             #region Fields
 
             public byte[] ClutData;
@@ -405,7 +427,6 @@ namespace OpenVIII
             }
 
             #endregion Methods
-
         }
 
         #endregion Structs
