@@ -15,7 +15,7 @@ namespace OpenVIII.Core.Card_Game
         {
             using (BinaryReader br = new BinaryReader(File.OpenRead(fileName)))
             {
-                TIM2 tim = new TIM2(br);
+                TIM2 tim = new TIM2(br,exe_Offset);
             }
         }
     }
