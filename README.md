@@ -22,7 +22,7 @@ MODULE MAIN MENU
 
 MODULE IN-GAME MENU
 
-⬛⬛⬛⬛⬛⬛⬜⬜⬜⬜ 60%
+⬛⬛⬛⬛⬛⬛⬛⬜⬜⬜ 75%
 
 MODULE BATTLE
 
@@ -34,7 +34,7 @@ MODULE TRIPLE TRIAD
 
 MODULE FIELD
 
-⬛⬛⬛⬛⬛⬛⬜⬜⬜⬜ 60% 
+⬛⬛⬛⬛⬛⬜⬜⬜⬜⬜ 50% 
 
 MODULE FMV
 
@@ -42,7 +42,7 @@ MODULE FMV
 
 MODULE WORLD MAP
 
-⬛⬛⬛⬛⬛⬜⬜⬜⬜⬜ 50%
+⬛⬛⬛⬛⬛⬛⬜⬜⬜⬜ 65%
 
 
 ## Getting started (Windows)
@@ -106,6 +106,7 @@ Requirements: MonoGame + Visual Studio
 `MonoGame.Framework.DesktopGL.Core`
 
 `MonoGame.Framework.OpenGL`
+
 9. Make sure you add Final Fantasy VIII path to array at `LinuxGameLocationProvider.cs:18`
 
 10. That's all. You can now compile the executable.

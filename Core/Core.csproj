@@ -93,6 +93,8 @@
     <PlatformTarget>x64</PlatformTarget>
     <LangVersion>latest</LangVersion>
     <ErrorReport>prompt</ErrorReport>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugLinux|x86'">
     <OutputPath>bin\</OutputPath>
@@ -100,6 +102,8 @@
     <DefineConstants>TRACE</DefineConstants>
     <LangVersion>latest</LangVersion>
     <ErrorReport>prompt</ErrorReport>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -800,7 +804,7 @@
     <Compile Include="Menu\Table_Options.cs" />
     <Compile Include="Menu\Debug\Module_main_menu_DebugLobby.cs" />
     <Compile Include="PointEx.cs" />
-    <Compile Include="Strings\StringFile.cs" />
+    <Compile Include="Strings\Stringfile.cs" />
     <Compile Include="Strings\Strings.Areames.cs" />
     <Compile Include="Strings\Strings.cs" />
     <Compile Include="ModuleHandler.cs" />
@@ -838,8 +842,11 @@
     <Compile Include="TEX.cs" />
     <Compile Include="TextureHandler.cs" />
     <Compile Include="TIM2.cs" />
+    <Compile Include="World\CharaOne.cs" />
     <Compile Include="World\debug_MCH.cs" />
     <Compile Include="World\module_world_debug.cs" />
+    <Compile Include="World\texl.cs" />
+    <Compile Include="World\wmset.cs" />
   </ItemGroup>
   <ItemGroup>
     <MonoGameContentReference Include="Content\Content.mgcb" />

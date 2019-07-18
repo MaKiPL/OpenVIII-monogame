@@ -329,7 +329,7 @@ namespace OpenVIII
         /// <summary>
         /// Complex function that provides linear interpolation between two matrices of actual to-render animation frame and next frame data for blending
         /// </summary>
-        /// <param name="tuple">the tuple that contains bone identificator and vertex</param>
+        /// <param name="tuple">the tuple that contains vertex and bone ident</param>
         /// <param name="frame">current animation frame to render</param>
         /// <param name="nextFrame">animation frame to render that is AFTER the actual one. If last frame, then usually 0 is the 'next' frame</param>
         /// <param name="step">step is variable used to determinate the progress for linear interpolation. I.e. 0 for current frame and 1 for next frame; 0.5 for blend of two frames</param>

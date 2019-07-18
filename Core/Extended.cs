@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,8 +10,17 @@ using System.Threading.Tasks;
 namespace OpenVIII
 {
     //Class that provides language extensions made by Maki
-    static class Extended
+    public static class Extended
     {
+        public enum languages
+        {
+            en,
+            fr,
+            de,
+            es,
+            it
+        }
+
         //https://stackoverflow.com/a/2887/4509036
         public static T ByteArrayToStructure<T>(byte[] bytes) where T : struct
         {
@@ -34,6 +44,12 @@ namespace OpenVIII
 
         public static void DumpBuffer(System.IO.MemoryStream ms)
             => System.IO.File.WriteAllBytes(GetUnixFullPath(System.IO.Path.Combine(Memory.FF8DIR, "debugUnpack.debug")), ms.GetBuffer());
+
+        public static void DumpTexture(Texture2D tex, string s)
+        {
+            using (System.IO.FileStream fs = new System.IO.FileStream(s, System.IO.FileMode.Create, System.IO.FileAccess.Write))
+                tex.SaveAsPng(fs, tex.Width, tex.Height);
+        }
 #endif
 
         //https://stackoverflow.com/questions/1130698/checking-if-an-object-is-a-number-in-c-sharp
@@ -129,6 +145,12 @@ namespace OpenVIII
         /// <param name="x"></param>
         /// <returns></returns>
         public static float S16ToFloat(short x) => x / 4096f;
+
+        public static string GetLanguageShort(bool bUseAlternative = false)
+        {
+            string languageIndicator = Memory.languages.ToString();
+            return bUseAlternative ? languageIndicator == "en" ? "us" : languageIndicator : languageIndicator;
+        }
 
         /// <summary>
         /// Converts short to float via x/4096f

@@ -1,25 +1,43 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace OpenVIII
 {
-    //upgraded TIM class, because that first one is a trash
+    /// <summary>
+    /// Playstation TIM Texture format.
+    /// </summary>
+    /// <see cref="http://www.raphnet.net/electronique/psx_adaptor/Playstation.txt"/>
+    /// <seealso cref="http://www.psxdev.net/forum/viewtopic.php?t=109"/>
+    /// <seealso cref="https://mrclick.zophar.net/TilEd/download/timgfx.txt"/>
+    /// <remarks>upgraded TIM class, because that first one is a trash</remarks>
     public class TIM2
     {
 
         #region Fields
 
+        private const ushort blue_mask = 0x7C00;
+
+        private const ushort green_mask = 0x3E0;
+
+        private const ushort red_mask = 0x1F;
+
         /// <summary>
         /// Bits per pixel
         /// </summary>
-        private int bpp = -1;
+        private sbyte bpp = -1;
 
         /// <summary>
         /// Raw Data buffer
         /// </summary>
         private byte[] buffer;
+
+        /// <summary>
+        /// Image has a CLUT
+        /// </summary>
+        private bool CLP;
 
         /// <summary>
         /// Texture Data
@@ -51,25 +69,70 @@ namespace OpenVIII
             {
                 this.buffer = buffer;
                 br.BaseStream.Seek(offset, SeekOrigin.Begin);
-                br.BaseStream.Seek(4, SeekOrigin.Current);//clutID
+                Debug.Assert(br.ReadByte() == 0x10); //tag
+                Debug.Assert(br.ReadByte() == 0); // version
+                br.BaseStream.Seek(2, SeekOrigin.Current);
+                Bppflag b = (Bppflag)br.ReadByte();
                 timOffset = offset;
-                byte bppIndicator = br.ReadByte();
-                bppIndicator = (byte)(bppIndicator == 0x08 ? 4 :
-                    bppIndicator == 0x09 ? 8 :
-                    bppIndicator == 0x02 ? 16 :
-                    bppIndicator == 0x03 ? 24 : 8);
-                bpp = bppIndicator;
-                texture = new Texture();
-                ReadParameters(br, bppIndicator);
+                if ((b & (Bppflag._24bpp)) >= (Bppflag._24bpp)) bpp = 24;
+                else if ((b & Bppflag._16bpp) != 0) bpp = 16;
+                else if ((b & Bppflag._8bpp) != 0) bpp = 8;
+                else bpp = 4;
+                CLP = (b & Bppflag.CLP) != 0;
+                Debug.Assert(((bpp == 4 || bpp == 8) && CLP) || ((bpp == 16 || bpp == 24) && !CLP));
+                ReadParameters(br);
             }
         }
 
         #endregion Constructors
 
+        #region Enums
+
+        /// <summary>
+        /// BPP indicator
+        /// <para>4 BPP is default</para>
+        /// <para>If 8 and 16 are set then it's 24</para>
+        /// <para>CLP should always be set for 4 and 8</para>
+        /// </summary>
+        [Flags]
+        public enum Bppflag : byte
+        {
+            /// <summary>
+            /// <para>4 BPP</para>
+            /// <para>This is 0 so it will show as unset.</para>
+            /// </summary>
+            _4bpp = 0b0,
+
+            /// <summary>
+            /// <para>8 BPP</para>
+            /// <para>if _8bpp and _16bpp are set then it's 24 bit</para>
+            /// </summary>
+            _8bpp = 0b1,
+
+            /// <summary>
+            /// <para>16 BPP</para>
+            /// <para>if _8bpp and _16bpp are set then it's 24 bit</para>
+            /// </summary>
+            _16bpp = 0b10,
+
+            /// <summary>
+            /// <para>24 BPP</para>
+            /// <para>Both flags must be set for this to be right</para>
+            /// </summary>
+            _24bpp = _8bpp | _16bpp,
+
+            /// <summary>
+            /// Color Lookup table Present
+            /// </summary>
+            CLP = 0b1000,
+        }
+
+        #endregion Enums
+
         #region Properties
 
         /// <summary>
-        /// Number of cult color palettes
+        /// Number of clut color palettes
         /// </summary>
         public int GetClutCount => texture.NumOfCluts;
 
@@ -77,6 +140,16 @@ namespace OpenVIII
         /// Height
         /// </summary>
         public int GetHeight => texture.Height;
+
+        /// <summary>
+        /// Gets origin texture coordinate X for VRAM buffer
+        /// </summary>
+        public int GetOrigX => texture.ImageOrgX;
+
+        /// <summary>
+        /// Gets origin texture coordinate Y for VRAM buffer
+        /// </summary>
+        public int GetOrigY => texture.ImageOrgY;
 
         /// <summary>
         /// Width
@@ -113,14 +186,7 @@ namespace OpenVIII
                     Color[] rgbBuffer = new Color[Width * Height];
                     for (int i = 0; i < rgbBuffer.Length && ms.Position + 2 < ms.Length; i++)
                     {
-                        ushort pixel = br.ReadUInt16();
-                        rgbBuffer[i] = new Color
-                        {
-                            R = (byte)MathHelper.Clamp(((pixel) & 0x1F) * 8, 0, 255),
-                            G = (byte)MathHelper.Clamp(((pixel >> 5) & 0x1F) * 8, 0, 255),
-                            B = (byte)MathHelper.Clamp(((pixel >> 10) & 0x1F) * 8, 0, 255),
-                            A = 0xFF
-                        };
+                        rgbBuffer[i] = ABGR1555toRGBA32bit(br.ReadUInt16());
                     }
                     splashTex.SetData(rgbBuffer);
                 }
@@ -144,6 +210,28 @@ namespace OpenVIII
                 image.SetData(CreateImageBuffer(br, clut == null ? null : GetClutColors(br, clut.Value), bIgnoreSize));
                 return image;
             }
+        }
+
+        /// <summary>
+        /// Convert ABGR1555 color to RGBA 32bit color
+        /// </summary>
+        /// <remarks>
+        /// FromPsColor from TEX does the same thing I think. Unsure which is better. I like the masks
+        /// </remarks>
+        private static Color ABGR1555toRGBA32bit(ushort pixel)
+        {
+            if (pixel == 0) return Color.TransparentBlack;
+            //https://docs.microsoft.com/en-us/windows/win32/directshow/working-with-16-bit-rgb
+            // had the masks. though they were doing rgb but we are doing bgr so i switched red and blue.
+            return new Color
+            {
+                R = (byte)MathHelper.Clamp((pixel & red_mask) << 3, 0, 255),
+                G = (byte)MathHelper.Clamp(((pixel & green_mask) >> 5) << 3, 0, 255),
+                B = (byte)MathHelper.Clamp(((pixel & blue_mask) >> 10) << 3, 0, 255),
+                A = 255 //(byte)((pixel >> 11) & 1) // if bit on and not black possible semi-transparency
+            };
+            //http://www.raphnet.net/electronique/psx_adaptor/Playstation.txt
+            // Says if color isn't black theres 4 modes psx could use for Semi-Transparency.
         }
 
         /// <summary>
@@ -185,27 +273,18 @@ namespace OpenVIII
             else if (bpp == 16) //copied from overture
             {
                 for (int i = 0; i < buffer.Length && br.BaseStream.Position + 2 < br.BaseStream.Length; i++)
-                {
-                    ushort pixel = br.ReadUInt16();
-                    buffer[i] = new Color
-                    {
-                        R = (byte)MathHelper.Clamp(((pixel) & 0x1F) * 8, 0, 255),
-                        G = (byte)MathHelper.Clamp(((pixel >> 5) & 0x1F) * 8, 0, 255),
-                        B = (byte)MathHelper.Clamp(((pixel >> 10) & 0x1F) * 8, 0, 255),
-                        A = 0xFF
-                    };
-                }
+                    buffer[i] = ABGR1555toRGBA32bit(br.ReadUInt16());
             }
-            else if (bpp == 24) //could be wrong.
+            else if (bpp == 24) //could be wrong. // assuming it is BGR
             {
                 for (int i = 0; i < buffer.Length && br.BaseStream.Position + 2 < br.BaseStream.Length; i++)
                 {
                     byte[] pixel = br.ReadBytes(3);
                     buffer[i] = new Color
                     {
-                        R = pixel[0],
+                        R = pixel[2],
                         G = pixel[1],
-                        B = pixel[2],
+                        B = pixel[0],
                         A = 0xFF
                     };
                 }
@@ -228,31 +307,12 @@ namespace OpenVIII
             if (clut > texture.NumOfCluts)
                 throw new Exception("TIM_v2::GetClutColors::given clut is bigger than texture number of cluts");
 
-            Color[] colorPixels = new Color[GetWidth * GetHeight];
-            if (bpp == 8)
+            Color[] colorPixels = new Color[texture.NumOfColours];
+            if (CLP)
             {
-                br.BaseStream.Seek(timOffset + 20 + (512 * clut), SeekOrigin.Begin);
-                for (int i = 0; i < 512 / 2; i++)
-                {
-                    ushort clutPixel = br.ReadUInt16();
-                    colorPixels[i].R = (byte)MathHelper.Clamp(((clutPixel) & 0x1F) * bpp, 0, 255);
-                    colorPixels[i].G = (byte)MathHelper.Clamp(((clutPixel >> 5) & 0x1F) * bpp, 0, 255);
-                    colorPixels[i].B = (byte)MathHelper.Clamp(((clutPixel >> 10) & 0x1F) * bpp, 0, 255);
-                    if (colorPixels[i] != Color.TransparentBlack)
-                        colorPixels[i].A = 0xFF;
-                }
-            }
-            else if (bpp == 4)
-            {
-                br.BaseStream.Seek(timOffset + 20 + (32 * clut), SeekOrigin.Begin);
-                for (int i = 0; i < 16; i++)
-                {
-                    ushort clutPixel = br.ReadUInt16();
-                    colorPixels[i].R = (byte)MathHelper.Clamp(((clutPixel) & 0x1F) * bpp * 4, 0, 255);
-                    colorPixels[i].G = (byte)MathHelper.Clamp(((clutPixel >> 5) & 0x1F) * bpp * 4, 0, 255);
-                    colorPixels[i].B = (byte)MathHelper.Clamp(((clutPixel >> 10) & 0x1F) * bpp * 4, 0, 255);
-                    colorPixels[i].A = (byte)(clutPixel >> 11 & 1);
-                }
+                br.BaseStream.Seek(timOffset + 20 + (texture.NumOfColours * 2 * clut), SeekOrigin.Begin);
+                for (int i = 0; i < texture.NumOfColours; i++)
+                    colorPixels[i] = ABGR1555toRGBA32bit(br.ReadUInt16());
             }
             else if (bpp > 8) throw new Exception("TIM that has bpp mode higher than 8 has no clut data!");
 
@@ -264,9 +324,10 @@ namespace OpenVIII
         /// </summary>
         /// <param name="br">Binaryreader pointing to memorystream of data.</param>
         /// <param name="_bpp">bits per pixel</param>
-        private void ReadParameters(BinaryReader br, byte _bpp)
+        private void ReadParameters(BinaryReader br)
         {
-            texture.Read(br, _bpp);
+            texture = new Texture();
+            texture.Read(br, (byte)bpp, CLP);
             textureDataPointer = (uint)br.BaseStream.Position;
         }
 
@@ -280,10 +341,19 @@ namespace OpenVIII
             #region Fields
 
             public byte[] ClutData;
+
+            public int clutdataSize;
+
+            /// <summary>
+            /// length, in bytes, of the entire CLUT block (including the header)
+            /// </summary>
             public uint clutSize;
+
             public ushort Height;
+            public int ImageDataSize;
             public ushort ImageOrgX;
             public ushort ImageOrgY;
+            public uint ImageSize;
             public ushort NumOfCluts;
             public ushort NumOfColours;
             public ushort PaletteX;
@@ -299,72 +369,45 @@ namespace OpenVIII
             /// </summary>
             /// <param name="br">Binaryreader pointing to memorystream of data.</param>
             /// <param name="_bpp">bits per pixel</param>
-            public void Read(BinaryReader br, byte _bpp)
+            public void Read(BinaryReader br, byte _bpp, bool clp)
             {
                 br.BaseStream.Seek(3, SeekOrigin.Current);
-                if (_bpp == 4)
+                if (clp)
                 {
-                    clutSize = br.ReadUInt32() - 12;
+                    //long start = br.BaseStream.Position;
+                    clutSize = br.ReadUInt32();
                     PaletteX = br.ReadUInt16();
                     PaletteY = br.ReadUInt16();
                     NumOfColours = br.ReadUInt16();
                     NumOfCluts = br.ReadUInt16();
-                    int bppMultiplier = 16;
-                    if (NumOfColours != 16 || clutSize != (NumOfCluts * bppMultiplier)) //wmsetus uses 4BPP, but sets 256 colours, but actually is 16, but num of clut is 2* 256/16 WTF?
-                    {
-                        NumOfCluts = (ushort)(NumOfColours / 16 * NumOfCluts);
-                        bppMultiplier = 32;
-                    }
-                    byte[] buffer = new byte[NumOfCluts * bppMultiplier];
-                    for (int i = 0; i != buffer.Length; i++)
-                        buffer[i] = br.ReadByte();
-                    ClutData = buffer;
-                    br.BaseStream.Seek(4, SeekOrigin.Current);
-                    ImageOrgX = br.ReadUInt16();
-                    ImageOrgY = br.ReadUInt16();
-                    Width = (ushort)(br.ReadUInt16() * 4);
-                    Height = br.ReadUInt16();
-                    return;
+                    clutdataSize = (int)(clutSize - 12);//(NumOfColours * NumOfCluts*2);
+
+                    Debug.Assert(PaletteX % 16 == 0);
+                    Debug.Assert(PaletteY >= 0 && PaletteY <= 511);
+                    ClutData = br.ReadBytes(clutdataSize);
+                    //br.BaseStream.Seek(start+clutSize, SeekOrigin.Begin);
                 }
-                if (_bpp == 8)
-                {
-                    br.BaseStream.Seek(4, SeekOrigin.Current);
-                    PaletteX = br.ReadUInt16();
-                    PaletteY = br.ReadUInt16();
-                    br.BaseStream.Seek(2, SeekOrigin.Current);
-                    NumOfCluts = br.ReadUInt16();
-                    byte[] buffer = new byte[NumOfCluts * 512];
-                    for (int i = 0; i != buffer.Length; i++)
-                        buffer[i] = br.ReadByte();
-                    ClutData = buffer;
-                    br.BaseStream.Seek(4, SeekOrigin.Current);
-                    ImageOrgX = br.ReadUInt16();
-                    ImageOrgY = br.ReadUInt16();
-                    Width = (ushort)(br.ReadUInt16() * 2);
-                    Height = br.ReadUInt16();
-                    return;
-                }
-                if (_bpp == 16)
-                {
-                    br.BaseStream.Seek(4, SeekOrigin.Current);
-                    ImageOrgX = br.ReadUInt16();
-                    ImageOrgY = br.ReadUInt16();
-                    Width = br.ReadUInt16();
-                    Height = br.ReadUInt16();
-                    return;
-                }
-                if (_bpp != 24) return;
-                br.BaseStream.Seek(4, SeekOrigin.Current);
+                //wmsetus uses 4BPP, but sets 256 colours, but actually is 16, but num of clut is 2* 256/16 WTF?
+
+                ImageSize = br.ReadUInt32(); // image size + header in bytes
                 ImageOrgX = br.ReadUInt16();
                 ImageOrgY = br.ReadUInt16();
-                Width = (ushort)(br.ReadUInt16() / 1.5);
+                if (_bpp == 4)
+                    Width = (ushort)(br.ReadUInt16() * 4);
+                if (_bpp == 8)
+                    Width = (ushort)(br.ReadUInt16() * 2);
+                if (_bpp == 16)
+                    Width = br.ReadUInt16();
+                if (_bpp == 24)
+                    Width = (ushort)(br.ReadUInt16() / 1.5);
                 Height = br.ReadUInt16();
+                ImageDataSize = (int)(ImageSize - 12);//(NumOfColours * NumOfCluts*2);
             }
 
             #endregion Methods
+
         }
 
         #endregion Structs
-
     }
 }

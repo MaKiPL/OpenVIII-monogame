@@ -15,6 +15,8 @@ namespace OpenVIII
     /// </summary>
     public class Fluid_Midi : IDisposable
     {
+        private static bool bValid = true;
+
         private static IntPtr driver;
         private static IntPtr synth;
         private static IntPtr settings;
@@ -720,7 +722,16 @@ namespace OpenVIII
 
         public Fluid_Midi()
         {
-            settings = new_fluid_settings();
+            try
+            {
+                settings = new_fluid_settings();
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine($"Fluid_Midi disabled: {e.Message}");
+                bValid = false;
+                return;
+            }
 #if !_WINDOWS
             //Forces alsa driver- in future we should allow user to choose it by his will
             fluid_settings_setstr(settings, "audio.driver", "alsa");
@@ -1057,6 +1068,8 @@ namespace OpenVIII
 
         public void Stop()
         {
+            if (!bValid)
+                return;
             fluid_synth_all_notes_off(synth, -1);
             fluid_player_stop(player);
             fluidState = ThreadFluidState.idle;

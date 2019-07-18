@@ -31,3 +31,6 @@ obj/
 *.sdf
 *.tlog
 *.meta
+*.pfx
+
+*/publish/*
