@@ -67,6 +67,38 @@ namespace OpenVIII
 
         public static double Distance3D(Vector3 xo, Vector3 xa) => Vector3.Distance(xo, xa);
 
+        public struct Barycentric
+        {
+            public float u;
+            public float v;
+            public float w;
+
+            public Barycentric(Vector3 aV1, Vector3 aV2, Vector3 aV3, Vector3 aP)
+            {
+                Vector3 a = aV2 - aV3, b = aV1 - aV3, c = aP - aV3;
+                float aLen = a.X * a.X + a.Y * a.Y + a.Z * a.Z;
+                float bLen = b.X * b.X + b.Y * b.Y + b.Z * b.Z;
+                float ab = a.X * b.X + a.Y * b.Y + a.Z * b.Z;
+                float ac = a.X * c.X + a.Y * c.Y + a.Z * c.Z;
+                float bc = b.X * c.X + b.Y * c.Y + b.Z * c.Z;
+                float d = aLen * bLen - ab * ab;
+                u = (aLen * bc - ab * ac) / d;
+                v = (bLen * ac - ab * bc) / d;
+                w = 1.0f - u - v;
+            }
+            public bool IsInside
+            {
+                get
+                {
+                    return (u >= 0.0f) && (u <= 1.0f) && (v >= 0.0f) && (v <= 1.0f) && (w >= 0.0f); //(w <= 1.0f)
+                }
+            }
+            public Vector3 Interpolate(Vector3 v1, Vector3 v2, Vector3 v3)
+            {
+                return v1 * u + v2 * v + v3 * w;
+            }
+        }
+
         /// <summary>
         /// Some debug text is crashing due to brackets not appearing in chartable. This function removes brackets inside string
         /// </summary>
