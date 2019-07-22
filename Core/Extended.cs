@@ -127,8 +127,11 @@ namespace OpenVIII
 
         public static bool In(int _in, Vector2 range) =>
                 _in >= range.X && _in <= range.Y;
+
+        public static bool In(float _in, Vector2 range) => _in >= range.X && _in <= range.Y;
         //: false;
         public static bool In(int _in, int min, int max) => In(_in, new Vector2(min, max));
+        public static bool In(float _in, float min, float max) => In(_in, new Vector2(min, max));
 
         public static Matrix GetRotationMatrixX(float angle)
         => new Matrix(

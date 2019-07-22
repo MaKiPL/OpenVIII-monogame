@@ -19,7 +19,7 @@ namespace OpenVIII
         private static readonly float camDistance = 10.0f;
         private static readonly float renderCamDistance = 1200.0f;
         private static Vector3 camPosition, camTarget;
-        private static Vector3 playerPosition = new Vector3(-9105f, 100, -4466);
+        private static Vector3 playerPosition = new Vector3(-9105f, 30f, -4466);
         public static BasicEffect effect;
         public static AlphaTestEffect ate;
         private enum _worldState
@@ -70,8 +70,12 @@ namespace OpenVIII
 
         private struct ParsedTriangleData
         {
-            public Vector3 position;
-            public Vector2 uv;
+            public Vector3 A;
+            public Vector3 B;
+            public Vector3 C;
+            public Vector2 uvA;
+            public Vector2 uvB;
+            public Vector2 uvC;
             public Polygon parentPolygon;
         }
 
@@ -232,35 +236,25 @@ namespace OpenVIII
                     {
                         float localX = 2048 * (n % 4);
                         float localZ = -2048 * (n / 4);
-                        for (int k = 0; k < segments[i].block[n].polyCount * 3; k += 3)
-                        {
+                        for (int k = 0; k < segments[i].block[n].polyCount; k++)
                             ptd.Add(new ParsedTriangleData() {
-                                position= new Vector3(
-                                ((segments[i].block[n].vertices[segments[i].block[n].polygons[k / 3].F1].X + localX) / WORLD_SCALE_MODEL + baseX) * -1f,
-                                segments[i].block[n].vertices[segments[i].block[n].polygons[k / 3].F1].Z1 / WORLD_SCALE_MODEL,
-                                (segments[i].block[n].vertices[segments[i].block[n].polygons[k / 3].F1].Y + localZ) / WORLD_SCALE_MODEL + baseY),
-                                uv = new Vector2(segments[i].block[n].polygons[k / 3].U1 / 256.0f, segments[i].block[n].polygons[k / 3].V1 / 256.0f),
-                                parentPolygon = segments[i].block[n].polygons[k/3]
+                                A= new Vector3(
+                                ((segments[i].block[n].vertices[segments[i].block[n].polygons[k].F1].X + localX) / WORLD_SCALE_MODEL + baseX) * -1f,
+                                segments[i].block[n].vertices[segments[i].block[n].polygons[k].F1].Z1 / WORLD_SCALE_MODEL,
+                                (segments[i].block[n].vertices[segments[i].block[n].polygons[k].F1].Y + localZ) / WORLD_SCALE_MODEL + baseY),
+                                uvA = new Vector2(segments[i].block[n].polygons[k].U1 / 256.0f, segments[i].block[n].polygons[k].V1 / 256.0f),
+                                parentPolygon = segments[i].block[n].polygons[k],
+                                B = new Vector3(
+                                ((segments[i].block[n].vertices[segments[i].block[n].polygons[k].F2].X + localX) / WORLD_SCALE_MODEL + baseX) * -1f,
+                                segments[i].block[n].vertices[segments[i].block[n].polygons[k].F2].Z1 / WORLD_SCALE_MODEL,
+                                (segments[i].block[n].vertices[segments[i].block[n].polygons[k].F2].Y + localZ) / WORLD_SCALE_MODEL + baseY),
+                                uvB = new Vector2(segments[i].block[n].polygons[k].U2 / 256.0f, segments[i].block[n].polygons[k].V2 / 256.0f),
+                                C = new Vector3(
+                                ((segments[i].block[n].vertices[segments[i].block[n].polygons[k].F3].X + localX) / WORLD_SCALE_MODEL + baseX) * -1f,
+                                segments[i].block[n].vertices[segments[i].block[n].polygons[k].F3].Z1 / WORLD_SCALE_MODEL,
+                                (segments[i].block[n].vertices[segments[i].block[n].polygons[k].F3].Y + localZ) / WORLD_SCALE_MODEL + baseY),
+                                uvC = new Vector2(segments[i].block[n].polygons[k].U3 / 256.0f, segments[i].block[n].polygons[k].V3 / 256.0f)
                             });
-                            ptd.Add(new ParsedTriangleData()
-                            {
-                                position = new Vector3(
-                                ((segments[i].block[n].vertices[segments[i].block[n].polygons[k / 3].F2].X + localX) / WORLD_SCALE_MODEL + baseX) * -1f,
-                                segments[i].block[n].vertices[segments[i].block[n].polygons[k / 3].F2].Z1 / WORLD_SCALE_MODEL,
-                                (segments[i].block[n].vertices[segments[i].block[n].polygons[k / 3].F2].Y + localZ) / WORLD_SCALE_MODEL + baseY),
-                                uv = new Vector2(segments[i].block[n].polygons[k / 3].U2 / 256.0f, segments[i].block[n].polygons[k / 3].V2 / 256.0f),
-                                parentPolygon = segments[i].block[n].polygons[k / 3]
-                            });
-                            ptd.Add(new ParsedTriangleData()
-                            {
-                                position = new Vector3(
-                                ((segments[i].block[n].vertices[segments[i].block[n].polygons[k / 3].F3].X + localX) / WORLD_SCALE_MODEL + baseX) * -1f,
-                                segments[i].block[n].vertices[segments[i].block[n].polygons[k / 3].F3].Z1 / WORLD_SCALE_MODEL,
-                                (segments[i].block[n].vertices[segments[i].block[n].polygons[k / 3].F3].Y + localZ) / WORLD_SCALE_MODEL + baseY),
-                                uv = new Vector2(segments[i].block[n].polygons[k / 3].U3 / 256.0f, segments[i].block[n].polygons[k / 3].V3 / 256.0f),
-                                parentPolygon = segments[i].block[n].polygons[k / 3]
-                            });
-                        }
                     }
                     segments[i].parsedTriangle = ptd.ToArray();
                 }
@@ -337,6 +331,46 @@ namespace OpenVIII
             if (Input.Button(Keys.R))
                 worldState = _worldState._0init;
 
+            SimpleInputUpdate();
+            CollisionUpdate();
+        }
+
+        private static void SimpleInputUpdate()
+        {
+            if (Input.Button(Keys.D8))
+                playerPosition.X += 1f;
+            if (Input.Button(Keys.D2))
+                playerPosition.X -= 1f;
+        }
+
+        private static void CollisionUpdate()
+        {
+            int realSegmentId = (int)(segmentPosition.Y * 32 + segmentPosition.X);
+            var seg = segments[realSegmentId];
+            List<Tuple<ParsedTriangleData, Extended.Barycentric>> ii = new List<Tuple<ParsedTriangleData, Extended.Barycentric>>();
+            for(int i = 0; i<seg.parsedTriangle.Length; i++)
+            {
+                Extended.Barycentric bary = new Extended.Barycentric(seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C,
+                     playerPosition);
+                if (bary.IsInside)
+                    ii.Add(new Tuple<ParsedTriangleData, Extended.Barycentric>(seg.parsedTriangle[i], bary));
+            }
+            if (ii.Count == 0)
+                return;
+            foreach(var bart in ii)
+            {
+                float minimumX = (new float[] {bart.Item1.A.X, bart.Item1.B.X, bart.Item1.C.X }).Min();
+                float minimumZ = (new float[] {bart.Item1.A.Z, bart.Item1.B.Z, bart.Item1.C.Z }).Min();
+                float maximumX = (new float[] {bart.Item1.A.X, bart.Item1.B.X, bart.Item1.C.X }).Max();
+                float maximumZ = (new float[] {bart.Item1.A.Z, bart.Item1.B.Z, bart.Item1.C.Z }).Max();
+                if (!Extended.In(playerPosition.X, minimumX, maximumX))
+                    continue;
+                if (!Extended.In(playerPosition.Z, minimumZ, maximumZ))
+                    continue;
+                Vector3 squaPos = bart.Item2.Interpolate(bart.Item1.A, bart.Item1.B, bart.Item1.C);
+                playerPosition = squaPos;
+                return;
+            }
         }
 
         const float defaultmaxMoveSpeed = 1f;
@@ -479,6 +513,7 @@ namespace OpenVIII
             Memory.font.RenderBasicText(
                 $"World map MapState: {MapState}\n" +
                 $"World Map Camera: ={camPosition}\n" +
+                $"Player position: ={playerPosition}\n" +
                 $"Segment Position: ={segmentPosition}\n" +
                 $"FPS camera degrees: ={degrees}°\n" +
                 $"FOV: ={FOV}", 30, 20, lineSpacing: 5);
@@ -513,20 +548,20 @@ namespace OpenVIII
             {
                 float baseXseg = 512f * (segmentPosition.X % 32);
 
-                DrawSegment(0, baseXseg, 512f, true);
-                DrawSegment(0, baseXseg, 1024f, true);
+                DrawSegment(0, -baseXseg, 512f, true);
+                DrawSegment(0, -baseXseg, 1024f, true);
 
-                DrawSegment(0, baseXseg - 512f, 512f, true);
-                DrawSegment(0, baseXseg - 512f, 1024f, true);
+                DrawSegment(0, -baseXseg - 512f, 512f, true);
+                DrawSegment(0, -baseXseg - 512f, 1024f, true);
 
-                DrawSegment(0, baseXseg - 1024f, 512f, true);
-                DrawSegment(0, baseXseg - 1024f, 1024f, true);
+                DrawSegment(0, -baseXseg - 1024f, 512f, true);
+                DrawSegment(0, -baseXseg - 1024f, 1024f, true);
 
-                DrawSegment(0, baseXseg + 512f, 512f, true);
-                DrawSegment(0, baseXseg + 512f, 1024f, true);
+                DrawSegment(0, -baseXseg + 512f, 512f, true);
+                DrawSegment(0, -baseXseg + 512f, 1024f, true);
 
-                DrawSegment(0, baseXseg + 1024f, 512f, true);
-                DrawSegment(0, baseXseg + 1024f, 1024f, true);
+                DrawSegment(0, -baseXseg + 1024f, 512f, true);
+                DrawSegment(0, -baseXseg + 1024f, 1024f, true);
             }
 
             //left water wrap
@@ -534,20 +569,20 @@ namespace OpenVIII
             {
                 float baseYseg = -512f * (segmentPosition.Y % 24);
 
-                DrawSegment(0, -512f, baseYseg, true);
-                DrawSegment(0, -1024f, baseYseg, true);
+                DrawSegment(0, 512f, baseYseg, true);
+                DrawSegment(0, 1024f, baseYseg, true);
 
-                DrawSegment(0, -512f, baseYseg - 512f, true);
-                DrawSegment(0, -1024f, baseYseg - 512f, true);
+                DrawSegment(0, 512f, baseYseg - 512f, true);
+                DrawSegment(0, 1024f, baseYseg - 512f, true);
 
-                DrawSegment(0, -512f, baseYseg - 1024f, true);
-                DrawSegment(0, -1024f, baseYseg - 1024, true);
+                DrawSegment(0, 512f, baseYseg - 1024f, true);
+                DrawSegment(0, 1024f, baseYseg - 1024, true);
 
-                DrawSegment(0, -512f, baseYseg + 512f, true);
-                DrawSegment(0, -1024f, baseYseg + 512f, true);
+                DrawSegment(0, 512f, baseYseg + 512f, true);
+                DrawSegment(0, 1024f, baseYseg + 512f, true);
 
-                DrawSegment(0, -512f, baseYseg + 1024f, true);
-                DrawSegment(0, -1024f, baseYseg + 1024, true);
+                DrawSegment(0, 512f, baseYseg + 1024f, true);
+                DrawSegment(0, 1024f, baseYseg + 1024, true);
             }
 
             //bottom water wrap
@@ -555,20 +590,20 @@ namespace OpenVIII
             {
                 float baseXseg = 512f * (segmentPosition.X % 32);
 
-                DrawSegment(0, baseXseg, -12288f, true);
-                DrawSegment(0, baseXseg, -12800f, true);
+                DrawSegment(0, -baseXseg, -12288f, true);
+                DrawSegment(0, -baseXseg, -12800f, true);
 
-                DrawSegment(0, baseXseg - 512f, -12288f, true);
-                DrawSegment(0, baseXseg - 512f, -12800f, true);
+                DrawSegment(0, -baseXseg - 512f, -12288f, true);
+                DrawSegment(0, -baseXseg - 512f, -12800f, true);
 
-                DrawSegment(0, baseXseg - 1024f, -12288f, true);
-                DrawSegment(0, baseXseg - 1024f, -12800f, true);
+                DrawSegment(0, -baseXseg - 1024f, -12288f, true);
+                DrawSegment(0, -baseXseg - 1024f, -12800f, true);
 
-                DrawSegment(0, baseXseg + 512f, -12288f, true);
-                DrawSegment(0, baseXseg + 512f, -12800f, true);
+                DrawSegment(0, -baseXseg + 512f, -12288f, true);
+                DrawSegment(0, -baseXseg + 512f, -12800f, true);
 
-                DrawSegment(0, baseXseg + 1024f, -12288f, true);
-                DrawSegment(0, baseXseg + 1024f, -12800f, true);
+                DrawSegment(0, -baseXseg + 1024f, -12288f, true);
+                DrawSegment(0, -baseXseg + 1024f, -12800f, true);
             }
 
             //right water wrap
@@ -576,20 +611,20 @@ namespace OpenVIII
             {
                 float baseYseg = -512f * (segmentPosition.Y % 24);
 
-                DrawSegment(0, 16384f, baseYseg, true);
-                DrawSegment(0, 16896f, baseYseg, true);
+                DrawSegment(0, -16384f, baseYseg, true);
+                DrawSegment(0, -16896f, baseYseg, true);
 
-                DrawSegment(0, 16384f, baseYseg - 512f, true);
-                DrawSegment(0, 16896f, baseYseg - 512f, true);
+                DrawSegment(0, -16384f, baseYseg - 512f, true);
+                DrawSegment(0, -16896f, baseYseg - 512f, true);
 
-                DrawSegment(0, 16384f, baseYseg - 1024f, true);
-                DrawSegment(0, 16896f, baseYseg - 1024, true);
+                DrawSegment(0, -16384f, baseYseg - 1024f, true);
+                DrawSegment(0, -16896f, baseYseg - 1024, true);
 
-                DrawSegment(0, 16384f, baseYseg + 512f, true);
-                DrawSegment(0, 16896f, baseYseg + 512f, true);
+                DrawSegment(0, -16384f, baseYseg + 512f, true);
+                DrawSegment(0, -16896f, baseYseg + 512f, true);
 
-                DrawSegment(0, 16384f, baseYseg + 1024f, true);
-                DrawSegment(0, 16896f, baseYseg + 1024, true);
+                DrawSegment(0, -16384f, baseYseg + 1024f, true);
+                DrawSegment(0, -16896f, baseYseg + 1024, true);
             }
         }
 
@@ -671,14 +706,14 @@ namespace OpenVIII
                 {
                     VertexPositionTexture[] vpc = new VertexPositionTexture[3];
                     vpc[0] = new VertexPositionTexture(
-                        waterSeg.parsedTriangle[k].position + new Vector3(baseX, 0,baseY),
-                        waterSeg.parsedTriangle[k].uv);
+                        waterSeg.parsedTriangle[k].A + new Vector3(baseX, 0,baseY),
+                        waterSeg.parsedTriangle[k].uvA);
                     vpc[1] = new VertexPositionTexture(
-                        waterSeg.parsedTriangle[k + 1].position + new Vector3(baseX, 0, baseY),
-                        waterSeg.parsedTriangle[k + 1].uv);
+                        waterSeg.parsedTriangle[k].B + new Vector3(baseX, 0, baseY),
+                        waterSeg.parsedTriangle[k].uvB);
                     vpc[2] = new VertexPositionTexture(
-                        waterSeg.parsedTriangle[k + 2].position + new Vector3(baseX, 0, baseY),
-                        waterSeg.parsedTriangle[k + 2].uv);
+                        waterSeg.parsedTriangle[k].C + new Vector3(baseX, 0, baseY),
+                        waterSeg.parsedTriangle[k].uvC);
                         ate.Texture = wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0);
                     foreach (var pass in ate.CurrentTechnique.Passes)
                     {
@@ -736,23 +771,23 @@ namespace OpenVIII
 
 
             Segment seg = segments[_i];
-            for(int k = 0; k<seg.parsedTriangle.Length; k+=3)
+            for(int k = 0; k<seg.parsedTriangle.Length; k++)
             {
-                if (Extended.Distance3D(camPosition, seg.parsedTriangle[k].position) > renderCamDistance)
+                if (Extended.Distance3D(camPosition, seg.parsedTriangle[k].A) > renderCamDistance)
                     continue;
-                if (CheckFrustrumView(seg.parsedTriangle[k].position.X, seg.parsedTriangle[k].position.Z))
+                if (CheckFrustrumView(seg.parsedTriangle[k].A.X, seg.parsedTriangle[k].A.Z))
                     continue;
 
                 VertexPositionTexture[] vpc = new VertexPositionTexture[3];
                 vpc[0] = new VertexPositionTexture(
-                    seg.parsedTriangle[k].position,
-                    seg.parsedTriangle[k].uv);
+                    seg.parsedTriangle[k].A,
+                    seg.parsedTriangle[k].uvA);
                 vpc[1] = new VertexPositionTexture(
-                    seg.parsedTriangle[k+1].position,
-                    seg.parsedTriangle[k+1].uv);
+                    seg.parsedTriangle[k].B,
+                    seg.parsedTriangle[k].uvB);
                 vpc[2] = new VertexPositionTexture(
-                    seg.parsedTriangle[k+2].position,
-                    seg.parsedTriangle[k+2].uv);
+                    seg.parsedTriangle[k].C,
+                    seg.parsedTriangle[k].uvC);
                 var poly = seg.parsedTriangle[k].parentPolygon;
                 if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_ROAD))
                     ate.Texture = wmset.GetRoadsMiscTextures(wmset.Section39_Textures.asphalt, 0);
