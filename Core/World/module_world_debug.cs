@@ -19,6 +19,7 @@ namespace OpenVIII
         private static readonly float camDistance = 10.0f;
         private static readonly float renderCamDistance = 1200.0f;
         private static Vector3 camPosition, camTarget;
+        private static Vector3 playerPosition = new Vector3(-9105f, 100, -4466);
         public static BasicEffect effect;
         public static AlphaTestEffect ate;
         private enum _worldState
@@ -61,6 +62,17 @@ namespace OpenVIII
             public int segmentId;
             public SegHeader headerData;
             public Block[] block;
+            /// <summary>
+            /// parsedTriangle is a struct containing pre-calculated values for world map so the calculations are one-time operation
+            /// </summary>
+            public ParsedTriangleData[] parsedTriangle;
+        }
+
+        private struct ParsedTriangleData
+        {
+            public Vector3 position;
+            public Vector2 uv;
+            public Polygon parentPolygon;
         }
 
         private struct Block
@@ -212,7 +224,99 @@ namespace OpenVIII
                             segments[i].block[n].normals[k] = Extended.ByteArrayToStructure<Normal>(br.ReadBytes(8));
                         segments[i].block[n].unkPadd2 = br.ReadInt32();
                     }
+                    List<ParsedTriangleData> ptd = new List<ParsedTriangleData>();
+                    int interI = GetInterchangableSegmentReplacementIndex(i);
+                    float baseX = 512f * (interI % 32);
+                    float baseY = -512f * (interI / 32);
+                    for (int n = 0; n < segments[i].block.Length; n++)
+                    {
+                        float localX = 2048 * (n % 4);
+                        float localZ = -2048 * (n / 4);
+                        for (int k = 0; k < segments[i].block[n].polyCount * 3; k += 3)
+                        {
+                            ptd.Add(new ParsedTriangleData() {
+                                position= new Vector3(
+                                ((segments[i].block[n].vertices[segments[i].block[n].polygons[k / 3].F1].X + localX) / WORLD_SCALE_MODEL + baseX) * -1f,
+                                segments[i].block[n].vertices[segments[i].block[n].polygons[k / 3].F1].Z1 / WORLD_SCALE_MODEL,
+                                (segments[i].block[n].vertices[segments[i].block[n].polygons[k / 3].F1].Y + localZ) / WORLD_SCALE_MODEL + baseY),
+                                uv = new Vector2(segments[i].block[n].polygons[k / 3].U1 / 256.0f, segments[i].block[n].polygons[k / 3].V1 / 256.0f),
+                                parentPolygon = segments[i].block[n].polygons[k/3]
+                            });
+                            ptd.Add(new ParsedTriangleData()
+                            {
+                                position = new Vector3(
+                                ((segments[i].block[n].vertices[segments[i].block[n].polygons[k / 3].F2].X + localX) / WORLD_SCALE_MODEL + baseX) * -1f,
+                                segments[i].block[n].vertices[segments[i].block[n].polygons[k / 3].F2].Z1 / WORLD_SCALE_MODEL,
+                                (segments[i].block[n].vertices[segments[i].block[n].polygons[k / 3].F2].Y + localZ) / WORLD_SCALE_MODEL + baseY),
+                                uv = new Vector2(segments[i].block[n].polygons[k / 3].U2 / 256.0f, segments[i].block[n].polygons[k / 3].V2 / 256.0f),
+                                parentPolygon = segments[i].block[n].polygons[k / 3]
+                            });
+                            ptd.Add(new ParsedTriangleData()
+                            {
+                                position = new Vector3(
+                                ((segments[i].block[n].vertices[segments[i].block[n].polygons[k / 3].F3].X + localX) / WORLD_SCALE_MODEL + baseX) * -1f,
+                                segments[i].block[n].vertices[segments[i].block[n].polygons[k / 3].F3].Z1 / WORLD_SCALE_MODEL,
+                                (segments[i].block[n].vertices[segments[i].block[n].polygons[k / 3].F3].Y + localZ) / WORLD_SCALE_MODEL + baseY),
+                                uv = new Vector2(segments[i].block[n].polygons[k / 3].U3 / 256.0f, segments[i].block[n].polygons[k / 3].V3 / 256.0f),
+                                parentPolygon = segments[i].block[n].polygons[k / 3]
+                            });
+                        }
+                    }
+                    segments[i].parsedTriangle = ptd.ToArray();
                 }
+        }
+
+        /// <summary>
+        /// This method returns the origX and origY coordinates for segment replacement for pre-parsing
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        private static int GetInterchangableSegmentReplacementIndex(int i)
+        {
+            if (i < 768)
+                return i;
+
+
+            if(i>=768 && i <=775)
+                return 373 + (i - 768);
+            if(i>=776 && i <=783)
+                return 347 + (i - 776);
+            if(i>=784 && i <=791)
+                return 347 + (i - 784);
+            if(i>=792 && i <=799)
+                return 469 + (i - 792);
+
+            if (i >= 800 && i <= 807)
+                return 501 + (i - 800);
+
+            if (i >= 808 && i <= 815)
+                return 533 + (i - 808);
+
+            if (i >= 816 && i <= 823)
+                return 565 + (i - 816);
+
+            if (i >= 824 && i <= 825)
+                return 149 + (i - 824);
+
+            if (i == 826)
+                return 267;
+
+            if (i == 827) return 274;
+            if (i == 828) return 275;
+
+            if (i >= 829)
+                return 327;
+
+            if (i >= 830 && i <= 831)
+                return 214 + (i - 830);
+
+            if (i >= 832 && i <= 834)
+                return 246 + (i - 832);
+
+            if (i >= 834 && i <= 835)
+                return 361 + (i - 834);
+
+            return 0;
         }
 
         public static void Update()
@@ -342,7 +446,7 @@ namespace OpenVIII
                 testing2++;
                 if (testing2 >= testing)
                     testing2 = 0;
-                var collectionDebug = chara.GetMCH(MchIndex).GetVertexPositions(new Vector3(-9105f, 100, -4466),0,testing2);
+                var collectionDebug = chara.GetMCH(MchIndex).GetVertexPositions(playerPosition, 0, testing2);
                 if (collectionDebug.Item1.Length != 0)
                     for (int i = 0; i < collectionDebug.Item1.Length; i += 3)
                     {
@@ -558,26 +662,53 @@ namespace OpenVIII
                 if (!ShouldDrawSegment((float)baseX, (float)baseY, _i))
                     return;
 
+            effect.TextureEnabled = true;
+
+            if (bIsWrapSegment)
+            {
+                Segment waterSeg = segments[0]; //get water segment
+                for (int k = 0; k < waterSeg.parsedTriangle.Length; k += 3)
+                {
+                    VertexPositionTexture[] vpc = new VertexPositionTexture[3];
+                    vpc[0] = new VertexPositionTexture(
+                        waterSeg.parsedTriangle[k].position + new Vector3(baseX, 0,baseY),
+                        waterSeg.parsedTriangle[k].uv);
+                    vpc[1] = new VertexPositionTexture(
+                        waterSeg.parsedTriangle[k + 1].position + new Vector3(baseX, 0, baseY),
+                        waterSeg.parsedTriangle[k + 1].uv);
+                    vpc[2] = new VertexPositionTexture(
+                        waterSeg.parsedTriangle[k + 2].position + new Vector3(baseX, 0, baseY),
+                        waterSeg.parsedTriangle[k + 2].uv);
+                        ate.Texture = wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0);
+                    foreach (var pass in ate.CurrentTechnique.Passes)
+                    {
+                        pass.Apply();
+                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpc, 0, 1);
+                    }
+                }
+            }
+
             #region Interchangable zones
+            //TODO flags to switch them true or not
             //esthar
             if (Extended.In(_i, 373, 380))
                 _i += 395;
             if (Extended.In(_i, 405, 412))
                 _i += 371;
             if (Extended.In(_i, 437, 444))
-                _i += 785 - 438;
+                _i += 347;
             if (Extended.In(_i, 469, 476))
-                _i += 793 - 470;
+                _i += 323;
             if (Extended.In(_i, 501, 508))
-                _i += 801 - 502;
+                _i += 299;
             if (Extended.In(_i, 533, 540))
-                _i += 809 - 534;
+                _i += 275;
             if (Extended.In(_i, 565, 572))
-                _i += 817 - 566;
+                _i += 251;
 
             //trabia
             if (Extended.In(_i, 149, 150))
-                _i += 825 - 150;
+                _i += 675;
 
             //galbadia
             if (Extended.In(_i, 267, 267))
@@ -585,94 +716,75 @@ namespace OpenVIII
 
             ////balamb
             if (Extended.In(_i, 274, 275))
-                _i += 828 - 275;
+                _i += 553;
 
             ////base
             if (Extended.In(_i, 327, 327))
-                _i += 830 - 328;
+                _i += 502;
 
             ////trabia
             if (Extended.In(_i, 214, 215))
-                _i += 831 - 215;
+                _i += 616;
             if (Extended.In(_i, 246, 247))
-                _i += 833 - 247;
+                _i += 586;
 
             ////prison
             if (Extended.In(_i, 361, 361))
-                _i += 835 - 362;
+                _i += 473;
             #endregion
 
 
-            effect.TextureEnabled = true;
+
             Segment seg = segments[_i];
-            float localX = 0;//_i * 2048;
-            for (int i = 0; i < seg.block.Length; i++)
+            for(int k = 0; k<seg.parsedTriangle.Length; k+=3)
             {
-                localX = 2048 * (i % 4);
-                float localZ = -2048 * (i / 4);
+                if (Extended.Distance3D(camPosition, seg.parsedTriangle[k].position) > renderCamDistance)
+                    continue;
+                if (CheckFrustrumView(seg.parsedTriangle[k].position.X, seg.parsedTriangle[k].position.Z))
+                    continue;
 
-
-
-
-
-                VertexPositionTexture[] vpc = new VertexPositionTexture[seg.block[i].polygons.Length * 3];
-                for (int k = 0; k < seg.block[i].polyCount * 3; k += 3)
+                VertexPositionTexture[] vpc = new VertexPositionTexture[3];
+                vpc[0] = new VertexPositionTexture(
+                    seg.parsedTriangle[k].position,
+                    seg.parsedTriangle[k].uv);
+                vpc[1] = new VertexPositionTexture(
+                    seg.parsedTriangle[k+1].position,
+                    seg.parsedTriangle[k+1].uv);
+                vpc[2] = new VertexPositionTexture(
+                    seg.parsedTriangle[k+2].position,
+                    seg.parsedTriangle[k+2].uv);
+                var poly = seg.parsedTriangle[k].parentPolygon;
+                if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_ROAD))
+                    ate.Texture = wmset.GetRoadsMiscTextures(wmset.Section39_Textures.asphalt, 0);
+                else if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_WATER))
+                    ate.Texture = wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0);
+                else
+                    ate.Texture = texl.GetTexture(poly.TPage, poly.Clut); //there are two texs, worth looking at other parameters; to reverse! 
+                foreach (var pass in ate.CurrentTechnique.Passes)
                 {
-                    vpc[k] = new VertexPositionTexture(
-                        new Vector3(((seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].X + localX) / WORLD_SCALE_MODEL + baseX) * -1f,
-                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].Z1 / WORLD_SCALE_MODEL,
-                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F1].Y + localZ) / WORLD_SCALE_MODEL + baseY),
-                        new Vector2(seg.block[i].polygons[k / 3].U1 / 256.0f, seg.block[i].polygons[k / 3].V1 / 256.0f));
-                    vpc[k + 1] = new VertexPositionTexture(
-                        new Vector3(((seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].X + localX) / WORLD_SCALE_MODEL + baseX) * -1f,
-                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].Z1 / WORLD_SCALE_MODEL,
-                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F2].Y + localZ) / WORLD_SCALE_MODEL + baseY),
-                        new Vector2(seg.block[i].polygons[k / 3].U2 / 256.0f, seg.block[i].polygons[k / 3].V2 / 256.0f));
-                    vpc[k + 2] = new VertexPositionTexture(
-                        new Vector3(((seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].X + localX) / WORLD_SCALE_MODEL + baseX) * -1f,
-                        seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Z1 / WORLD_SCALE_MODEL,
-                        (seg.block[i].vertices[seg.block[i].polygons[k / 3].F3].Y + localZ) / WORLD_SCALE_MODEL + baseY),
-                        new Vector2(seg.block[i].polygons[k / 3].U3 / 256.0f, seg.block[i].polygons[k / 3].V3 / 256.0f));
-
-                    if (Extended.Distance3D(camPosition, vpc[k].Position) > renderCamDistance)
-                        continue;
-
-                    float ax, ay, px, py, d1, d2, d3;
-
-                    px = vpc[k].Position.X;
-                    py = vpc[k].Position.Z;
-                    ax = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(degrees)) * -50f;
-                    ay = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(degrees)) * -50f;
-
-                    Vector3 left=Vector3.Zero,right = Vector3.Zero;
-                    left.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(Extended.ClampOverload(degrees-FOV, 0, 359))) * renderCamDistance*2;
-                    left.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(Extended.ClampOverload(degrees-FOV, 0, 359))) * renderCamDistance*2;
-                    right.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(Extended.ClampOverload(degrees + FOV, 0, 359))) * renderCamDistance*2;
-                    right.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(Extended.ClampOverload(degrees + FOV, 0, 359))) * renderCamDistance*2;
-
-                    d1 = px * (ay - left.Z) + py * (left.X - ax) + (ax * left.Z - ay * left.X);
-                    d2 = px * (left.Z - right.Z) + py * (right.X - left.X) + (left.X * right.Z - left.Z * right.X);
-                    d3 = px * (right.Z - ay) + py * (ax - right.X) + (right.X * ay - right.Z * ax);
-
-                    if ((d1 > 0 || d2 > 0 || d3 > 0) && (d1 < 0 || d2 < 0 || d3 < 0))
-                        continue;
-
-                    var poly = seg.block[i].polygons[k / 3];
-
-                    if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_ROAD))
-                        ate.Texture = wmset.GetRoadsMiscTextures(wmset.Section39_Textures.asphalt, 0);
-                    else if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_WATER))
-                        ate.Texture = wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0);
-                    else
-                        ate.Texture = texl.GetTexture(seg.block[i].polygons[k / 3].TPage, seg.block[i].polygons[k / 3].Clut); //there are two texs, worth looking at other parameters; to reverse! 
-
-                    foreach (var pass in ate.CurrentTechnique.Passes)
-                    {
-                        pass.Apply();
-                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpc, k, 1);
-                    }
+                    pass.Apply();
+                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpc, 0, 1);
                 }
-            }
+            }      
+        }
+
+        private static bool CheckFrustrumView(float px, float py)
+        {
+            float ax, ay, d1, d2, d3;
+            ax = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(degrees)) * -50f;
+            ay = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(degrees)) * -50f;
+
+            Vector3 left = Vector3.Zero, right = Vector3.Zero;
+            left.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(Extended.ClampOverload(degrees - FOV, 0, 359))) * renderCamDistance * 2;
+            left.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(Extended.ClampOverload(degrees - FOV, 0, 359))) * renderCamDistance * 2;
+            right.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(Extended.ClampOverload(degrees + FOV, 0, 359))) * renderCamDistance * 2;
+            right.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(Extended.ClampOverload(degrees + FOV, 0, 359))) * renderCamDistance * 2;
+
+            d1 = px * (ay - left.Z) + py * (left.X - ax) + (ax * left.Z - ay * left.X);
+            d2 = px * (left.Z - right.Z) + py * (right.X - left.X) + (left.X * right.Z - left.Z * right.X);
+            d3 = px * (right.Z - ay) + py * (ax - right.X) + (right.X * ay - right.Z * ax);
+
+            return ((d1 > 0 || d2 > 0 || d3 > 0) && (d1 < 0 || d2 < 0 || d3 < 0));
         }
     }
-}
+ }
