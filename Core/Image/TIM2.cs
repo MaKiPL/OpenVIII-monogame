@@ -66,25 +66,17 @@ namespace OpenVIII
         /// <param name="offset">Start of Tim Data</param>
         public TIM2(byte[] buffer, uint offset = 0)
         {
-            this.buffer = buffer;
-            using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
-            {
-                Init(br, offset);
-            }
+            _Init(buffer, offset);
         }
-
         /// <summary> <summary> Initialize TIM class </summary> <param name="br">BinaryReader
         /// pointing to the file data</param> <param name="offset">Start of Tim Data</param>
         public TIM2(BinaryReader br, uint offset = 0)
         {
-            trimExcess = true;
-            br.BaseStream.Seek(offset, SeekOrigin.Begin);
-            //br.BaseStream.Seek(0, SeekOrigin.Begin);
-            buffer = br.ReadBytes((int)(br.BaseStream.Length - br.BaseStream.Position));
-            using (BinaryReader br2 = new BinaryReader(new MemoryStream(buffer)))
-            {
-                Init(br2, 0);
-            }
+            _Init(br, offset);
+        }
+
+        protected TIM2()
+        {
         }
 
         #endregion Constructors
@@ -165,7 +157,7 @@ namespace OpenVIII
 
         public static void Assert(bool a)
         {
-            if(!a)
+            if (!a)
             {
                 if (throwexc)
                 {
@@ -233,6 +225,7 @@ namespace OpenVIII
                 return GetTexture(br, clut == null || !CLP ? null : GetClutColors(br, clut.Value));
             }
         }
+
         public override Texture2D GetTexture()
         {
             using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
@@ -240,15 +233,17 @@ namespace OpenVIII
                 return GetTexture(br, !CLP ? null : GetClutColors(br, 0));
             }
         }
+
         public override Texture2D GetTexture(Color[] colors = null)
         {
             using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
             {
                 Assert(CLP);
                 Assert(colors.Length == texture.NumOfColours);
-                return GetTexture(br,colors);
+                return GetTexture(br, colors);
             }
         }
+
         /// <summary>
         /// Initialize TIM class
         /// </summary>
@@ -286,6 +281,25 @@ namespace OpenVIII
             }
         }
 
+        protected void _Init(byte[] buffer, uint offset = 0)
+        {
+            this.buffer = buffer;
+            using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+            {
+                Init(br, offset);
+            }
+        }
+        protected void _Init(BinaryReader br, uint offset)
+        {
+            trimExcess = true;
+            br.BaseStream.Seek(offset, SeekOrigin.Begin);
+            //br.BaseStream.Seek(0, SeekOrigin.Begin);
+            buffer = br.ReadBytes((int)(br.BaseStream.Length - br.BaseStream.Position));
+            using (BinaryReader br2 = new BinaryReader(new MemoryStream(buffer)))
+            {
+                Init(br2, 0);
+            }
+        }
         /// <summary>
         /// Output 32 bit Color data for image.
         /// </summary>

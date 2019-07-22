@@ -41,39 +41,11 @@ namespace OpenVIII
             sysfnt = tex.GetTexture((int)ColorID.White);
             sysfntbig = new TextureHandler("sysfld{0:00}.tex", tex, 2, 1, (int)ColorID.White);
 
-            ReadTdw(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, sysfntTdwFilepath));
-        }
-
-        public void ReadTdw(byte[] Tdw)
-        {
-            uint widthPointer = BitConverter.ToUInt32(Tdw, 0);
-            uint dataPointer = BitConverter.ToUInt32(Tdw, 4);
-
-            getWidths(Tdw, widthPointer, dataPointer - widthPointer);
-            TIM2 tim = new TIM2(Tdw, dataPointer);
+            TDW tim = new TDW(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, sysfntTdwFilepath), 0);
+            charWidths = tim.CharWidths;
             menuFont = tim.GetTexture((ushort)ColorID.White);
         }
 
-        public void getWidths(byte[] Tdw, uint offset, uint length)
-        {
-            using (MemoryStream os = new MemoryStream((int)length * 2))
-            using (BinaryWriter bw = new BinaryWriter(os))
-            using (MemoryStream ms = new MemoryStream(Tdw))
-            using (BinaryReader br = new BinaryReader(ms))
-            {
-                //bw.Write((byte)10);//width of space
-                ms.Seek(offset, SeekOrigin.Begin);
-                while (ms.Position < offset + length)
-                {
-                    byte b = br.ReadByte();
-                    byte low = (byte)(b & 0x0F);
-                    byte high = (byte)(b >> 4);
-                    bw.Write(low);
-                    bw.Write(high);
-                }
-                charWidths = os.ToArray();
-            }
-        }
 
         private byte[] charWidths;
 

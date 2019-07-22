@@ -1,9 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Diagnostics;
 
 namespace OpenVIII
 {
-
     public abstract class Texture_Base
     {
         #region Fields
@@ -11,6 +11,7 @@ namespace OpenVIII
         private const ushort blue_mask = 0x7C00;
         private const ushort green_mask = 0x3E0;
         private const ushort red_mask = 0x1F;
+
         /// <summary>
         /// Special Transparency Processing bit.
         /// </summary>
@@ -49,6 +50,7 @@ namespace OpenVIII
         public abstract Texture2D GetTexture(ushort? clut = null);
 
         public abstract void Save(string path);
+
         /// <summary>
         /// Convert ABGR1555 color to RGBA 32bit color
         /// </summary>
@@ -57,33 +59,62 @@ namespace OpenVIII
         /// </remarks>
         protected static Color ABGR1555toRGBA32bit(ushort pixel)
         {
+            // alert to let me know if we might need to check something.
             if (pixel == 0) return Color.TransparentBlack;
             //https://docs.microsoft.com/en-us/windows/win32/directshow/working-with-16-bit-rgb
             // had the masks. though they were doing rgb but we are doing bgr so i switched red and blue.
-            return new Color
+            Color ret = new Color
             {
                 R = (byte)MathHelper.Clamp((pixel & red_mask) << 3, 0, 255),
                 G = (byte)MathHelper.Clamp(((pixel & green_mask) >> 5) << 3, 0, 255),
                 B = (byte)MathHelper.Clamp(((pixel & blue_mask) >> 10) << 3, 0, 255),
                 A = 255
             };
+            //if (GetSTP(pixel))
+            //{
+            //    //ret.A = Transparency.GetAlpha;
+            //    Debug.WriteLine($"Special Transparency Processing bit set 16 bit color: {pixel & 0x7FFF}, 32 bit color: {ret}");
+            //    //Debug.Assert(false);
+            //}
+            //TDW has STP
+            return ret;
         }
+
+        //public static class Transparency
+        //{
+        //    /// <summary>
+        //    /// <para>PSX Transparency Mode</para>
+        //    /// <para>
+        //    /// GPU first reads the pixel it wants to write to, and then calculates the color it will
+        //    /// write from the 2 pixels according to the semi-transparency mode selected
+        //    /// </para>
+        //    /// <para>OFF is 100% alpha</para>
+        //    /// <para>Mode 1 is 50%</para>
+        //    /// <para>Mode 2 is supposed to be existing pixel plus value of new one.</para>
+        //    /// <para>Mode 3 is supposed to be existing pixel minus value of new one.</para>
+        //    /// <para>Mode 4 is 25%</para>
+        //    /// <para>Unsure if the pixel is supposed to be 50% alpha before this</para>
+        //    /// </summary>
+        //    /// <see cref="http://www.raphnet.net/electronique/psx_adaptor/Playstation.txt"/>
+        //    //public static readonly byte[] Modes = { 0xFF 0x7F, 0xFF, 0x7F, 0x3F }; // if 100% before calculation
+        //    public static readonly byte[] Modes = { 0xFF, 0x3F, 0x7F, 0x7F, 0x1F }; // if 50% before calculation
+
+        //    public static byte GetAlpha => Modes[0];
+        //}
 
         /// <summary>
         /// Get Special Transparency Processing bit.
         /// </summary>
-        /// <param name="pixel"> 16 bit color</param>
+        /// <param name="pixel">16 bit color</param>
         /// <returns>true if bit is set and not black, otherwise false.</returns>
-        protected static bool GetSTP(ushort pixel)
-        {
+        protected static bool GetSTP(ushort pixel) =>
             // I set this to always return false for black. As it's transparency is handled in
             // conversion method.
-            return (pixel & 0x7FFF) == 0 ? false : ((pixel & STP_mask) >> 15) > 0;
-            //If color is not black and STP bit on, possible semi-transparency.
-            //http://www.raphnet.net/electronique/psx_adaptor/Playstation.txt
-            //4 modes psx could use for Semi-Transparency. I donno which one ff8 uses or if it uses only one.
-            //If Black is transparent when bit is off. And visible when bit is on.
-        }
+            (pixel & 0x7FFF) == 0 ? false : ((pixel & STP_mask) >> 15) > 0;//If color is not black and STP bit on, possible semi-transparency.
+
+        //http://www.raphnet.net/electronique/psx_adaptor/Playstation.txt
+        //4 modes psx could use for Semi-Transparency. I donno which one ff8 uses or if it uses only one.
+        //If Black is transparent when bit is off. And visible when bit is on.
 
         ///// <summary>
         ///// Ratio needed to convert 16 bit to 32 bit color
@@ -100,6 +131,7 @@ namespace OpenVIII
         ///// <returns>byte[4] red green blue alpha, i think</returns>
         ///// <see cref="https://github.com/myst6re/vincent-tim/blob/master/PsColor.cpp"/>
         //public static Color FromPsColor(ushort color, bool useAlpha = false) => new Color((byte)Math.Round((color & 31) * COEFF_COLOR), (byte)Math.Round(((color >> 5) & 31) * COEFF_COLOR), (byte)Math.Round(((color >> 10) & 31) * COEFF_COLOR), (byte)(color == 0 && useAlpha ? 0 : 255));
+
         #endregion Methods
     }
 }
