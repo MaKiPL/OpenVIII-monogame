@@ -224,13 +224,13 @@ namespace OpenVIII
                             IGM_Junction.SetMode(Mode.Mag_ST_A);
                         }
                         Cursor_Status &= ~Cursor_Status.Enabled;
-                        IGM_Junction.ReInit();
+                        IGM_Junction.Refresh();
                     }
                 }
             }
 
             //public IGMData Values { get; private set; } = null;
-            public override void ReInit()
+            public override void Refresh()
             {
                 if (!eventAdded && IGM_Junction != null)
                 {
@@ -238,7 +238,7 @@ namespace OpenVIII
                     StatEventListener += StatChangeEvent;
                     eventAdded = true;
                 }
-                base.ReInit();
+                base.Refresh();
             }
 
             public override void UpdateTitle()

@@ -24,9 +24,9 @@ namespace OpenVIII
                     CURSOR[i].X += 40;
                 }
 
-                public override void ReInit()
+                public override void Refresh()
                 {
-                    base.ReInit();
+                    base.Refresh();
 
                     if (Memory.State.Characters != null && Character != Characters.Blank)
                     {

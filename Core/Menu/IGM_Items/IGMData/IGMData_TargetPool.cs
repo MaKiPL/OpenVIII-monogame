@@ -88,11 +88,11 @@ namespace OpenVIII
                 {
                     base.Inputs_OKAY();
                     Fill();
-                    IGM_Items.ReInit(true);
+                    IGM_Items.Refresh(true);
                 }
             }
 
-            public override void ReInit()
+            public override void Refresh()
             {
                 if (!eventSet && IGM_Items != null)
                 {
@@ -107,7 +107,7 @@ namespace OpenVIII
                 else
                     Fill();
                 ForceRefresh = true;
-                base.ReInit();
+                base.Refresh();
             }
 
             public override void ResetPages()
@@ -129,7 +129,7 @@ namespace OpenVIII
                 {
                     base.PAGE_NEXT();
                     Fill();
-                    base.ReInit();
+                    base.Refresh();
                 }
             }
 
@@ -139,7 +139,7 @@ namespace OpenVIII
                 {
                     base.PAGE_PREV();
                     Fill();
-                    base.ReInit();
+                    base.Refresh();
                 }
             }
 
@@ -216,7 +216,7 @@ namespace OpenVIII
                     if (sameTargets || ForceRefresh)
                     {
                         Fill();
-                        base.ReInit();
+                        base.Refresh();
                         ForceRefresh = false;
                     }
                 }

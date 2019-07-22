@@ -16,15 +16,11 @@ namespace OpenVIII
     /// <seealso cref="http://www.elisanet.fi/6581/PSX/doc/Playstation_Hardware.pdf"/>
     /// <seealso cref="http://www.elisanet.fi/6581/PSX/doc/psx.pdf"/>
     /// <remarks>upgraded TIM class, because that first one is a trash</remarks>
-    public class TIM2
+    public class TIM2 : Texture_Base
     {
+
         #region Fields
 
-        private const ushort blue_mask = 0x7C00;
-
-        private const ushort green_mask = 0x3E0;
-
-        private const ushort red_mask = 0x1F;
         private static readonly bool throwexc = true;
 
         /// <summary>
@@ -141,31 +137,32 @@ namespace OpenVIII
         /// <summary>
         /// Number of clut color palettes
         /// </summary>
-        public int GetClutCount => texture.NumOfCluts;
+        public override int GetClutCount => texture.NumOfCluts;
 
         /// <summary>
         /// Height
         /// </summary>
-        public int GetHeight => texture.Height;
+        public override int GetHeight => texture.Height;
 
         /// <summary>
         /// Gets origin texture coordinate X for VRAM buffer
         /// </summary>
-        public int GetOrigX => texture.ImageOrgX;
+        public override int GetOrigX => texture.ImageOrgX;
 
         /// <summary>
         /// Gets origin texture coordinate Y for VRAM buffer
         /// </summary>
-        public int GetOrigY => texture.ImageOrgY;
+        public override int GetOrigY => texture.ImageOrgY;
 
         /// <summary>
         /// Width
         /// </summary>
-        public int GetWidth => texture.Width;
+        public override int GetWidth => texture.Width;
 
         #endregion Properties
 
         #region Methods
+
         public static void Assert(bool a)
         {
             if(!a)
@@ -213,6 +210,14 @@ namespace OpenVIII
             }
         }
 
+        public override Color[] GetClutColors(ushort clut)
+        {
+            using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+            {
+                return GetClutColors(br, clut);
+            }
+        }
+
         /// <summary>
         /// Create Texture from Tim image data.
         /// </summary>
@@ -221,16 +226,29 @@ namespace OpenVIII
         /// If true skip size check useful for files with more than just Tim
         /// </param>
         /// <returns>Texture2D</returns>
-        public Texture2D GetTexture(ushort? clut = null, bool bIgnoreSize = false)
+        public override Texture2D GetTexture(ushort? clut = null)
         {
             using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
             {
-                Texture2D image = new Texture2D(Memory.graphics.GraphicsDevice, GetWidth, GetHeight, false, SurfaceFormat.Color);
-                image.SetData(CreateImageBuffer(br, clut == null ? null : GetClutColors(br, clut.Value), bIgnoreSize));
-                return image;
+                return GetTexture(br, clut == null || !CLP ? null : GetClutColors(br, clut.Value));
             }
         }
-
+        public override Texture2D GetTexture()
+        {
+            using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+            {
+                return GetTexture(br, !CLP ? null : GetClutColors(br, 0));
+            }
+        }
+        public override Texture2D GetTexture(Color[] colors = null)
+        {
+            using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+            {
+                Assert(CLP);
+                Assert(colors.Length == texture.NumOfColours);
+                return GetTexture(br,colors);
+            }
+        }
         /// <summary>
         /// Initialize TIM class
         /// </summary>
@@ -257,7 +275,7 @@ namespace OpenVIII
         /// Writes the Tim file to the hard drive.
         /// </summary>
         /// <param name="path">Path where you want file to be saved.</param>
-        public void Save(string path)
+        public override void Save(string path)
         {
             using (BinaryWriter bw = new BinaryWriter(File.Create(path)))
             {
@@ -266,28 +284,6 @@ namespace OpenVIII
                 else
                     bw.Write(buffer.Skip((int)timOffset).Take((int)(texture.ImageDataSize + textureDataPointer)).ToArray());
             }
-        }
-
-        /// <summary>
-        /// Convert ABGR1555 color to RGBA 32bit color
-        /// </summary>
-        /// <remarks>
-        /// FromPsColor from TEX does the same thing I think. Unsure which is better. I like the masks
-        /// </remarks>
-        private static Color ABGR1555toRGBA32bit(ushort pixel)
-        {
-            if (pixel == 0) return Color.TransparentBlack;
-            //https://docs.microsoft.com/en-us/windows/win32/directshow/working-with-16-bit-rgb
-            // had the masks. though they were doing rgb but we are doing bgr so i switched red and blue.
-            return new Color
-            {
-                R = (byte)MathHelper.Clamp((pixel & red_mask) << 3, 0, 255),
-                G = (byte)MathHelper.Clamp(((pixel & green_mask) >> 5) << 3, 0, 255),
-                B = (byte)MathHelper.Clamp(((pixel & blue_mask) >> 10) << 3, 0, 255),
-                A = 255 //(byte)((pixel >> 11) & 1) // if bit on and not black possible semi-transparency
-            };
-            //http://www.raphnet.net/electronique/psx_adaptor/Playstation.txt
-            // Says if color isn't black theres 4 modes psx could use for Semi-Transparency.
         }
 
         /// <summary>
@@ -302,23 +298,18 @@ namespace OpenVIII
         /// <remarks>
         /// This allows null palette but it doesn't seem to handle the palette being null
         /// </remarks>
-        private Color[] CreateImageBuffer(BinaryReader br, Color[] palette = null, bool bIgnoreSize = false)
+        private Color[] CreateImageBuffer(BinaryReader br, Color[] palette = null)
         {
             br.BaseStream.Seek(textureDataPointer, SeekOrigin.Begin);
             Color[] buffer = new Color[texture.Width * texture.Height]; //ARGB
+            Assert((buffer.Length / bpp) <= br.BaseStream.Length - br.BaseStream.Position); //make sure the buffer is large enough
             if (bpp == 8)
             {
-                if (!bIgnoreSize)
-                    if ((buffer.Length) != br.BaseStream.Length - br.BaseStream.Position)
-                        throw new Exception("TIM_v2::CreateImageBuffer::TIM texture buffer has size incosistency.");
                 for (int i = 0; i < buffer.Length; i++)
                     buffer[i] = palette[br.ReadByte()]; //colorkey
             }
             else if (bpp == 4)
             {
-                if (!bIgnoreSize)
-                    if ((buffer.Length) / 2 != br.BaseStream.Length - br.BaseStream.Position)
-                        throw new Exception("TIM_v2::CreateImageBuffer::TIM texture buffer has size incosistency.");
                 for (int i = 0; i < buffer.Length; i++)
                 {
                     byte colorkey = br.ReadByte();
@@ -375,6 +366,12 @@ namespace OpenVIII
             return colorPixels;
         }
 
+        private Texture2D GetTexture(BinaryReader br, Color[] colors)
+        {
+            Texture2D image = new Texture2D(Memory.graphics.GraphicsDevice, GetWidth, GetHeight, false, SurfaceFormat.Color);
+            image.SetData(CreateImageBuffer(br, colors));
+            return image;
+        }
         /// <summary>
         /// Populate Texture structure
         /// </summary>
@@ -395,6 +392,7 @@ namespace OpenVIII
 
         private struct Texture
         {
+
             #region Fields
 
             public byte[] ClutData;
@@ -480,8 +478,10 @@ namespace OpenVIII
             }
 
             #endregion Methods
+
         }
 
         #endregion Structs
+
     }
 }

@@ -65,15 +65,15 @@ namespace OpenVIII
                 if (Contents[CURSOR_SELECT] == Kernel_bin.Stat.None)
                 {
                     Memory.State.Characters[Character].Stat_J[Contents[CURSOR_SELECT]] = 0;
-                    IGM_Junction.ReInit();
+                    IGM_Junction.Refresh();
                 }
             }
 
-            public override void ReInit()
+            public override void Refresh()
             {
                 if (Memory.State.Characters != null && Character != Characters.Blank)
                 {
-                    base.ReInit();
+                    base.Refresh();
                     FillData(Icons.ID.Icon_Status_Attack, Kernel_bin.Stat.ST_Atk, Kernel_bin.Stat.ST_Def_1);
                 }
             }
@@ -147,7 +147,7 @@ namespace OpenVIII
 
             private void ConfirmChangeEvent(object sender, Mode e) => ConfirmChange();
 
-            private void ReInitEvent(object sender, Mode e) => ReInit();
+            private void ReInitEvent(object sender, Mode e) => Refresh();
 
             private void UndoChangeEvent(object sender, Mode e) => UndoChange();
 

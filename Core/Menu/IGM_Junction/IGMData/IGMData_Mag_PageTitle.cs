@@ -30,9 +30,9 @@ namespace OpenVIII
                     SIZE[0].Inflate(-19, -18);
                 }
 
-                public override void ReInit()
+                public override void Refresh()
                 {
-                    base.ReInit();
+                    base.Refresh();
 
                     if (IGM_Junction != null && IGM_Junction.GetMode().Equals(Mode.Mag_Stat) && Enabled)
                     {
@@ -61,7 +61,7 @@ namespace OpenVIII
 
                 public override bool Update()
                 {
-                    ReInit();
+                    Refresh();
                     return base.Update();
                 }
             }

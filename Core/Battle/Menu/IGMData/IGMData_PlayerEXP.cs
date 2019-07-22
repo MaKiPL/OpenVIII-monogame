@@ -56,9 +56,9 @@ namespace OpenVIII
                     base.InitShift(i, col, row);
                 }
 
-                public override void ReInit()
+                public override void Refresh()
                 {
-                    base.ReInit();
+                    base.Refresh();
                 }
                 public int EXP
                 {

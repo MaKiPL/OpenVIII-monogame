@@ -79,7 +79,7 @@ namespace OpenVIII
             {
                 base.Inputs_CANCEL();
                 Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.IGM;
-                IGM.ReInit();
+                IGM.Refresh();
                 FadeIn();
                 return true;
             }
@@ -90,14 +90,14 @@ namespace OpenVIII
                 Inputs_Okay_Actions[CURSOR_SELECT]();
             }
 
-            public override void ReInit()
+            public override void Refresh()
             {
                 if (!eventSet && IGM_Items != null)
                 {
                     IGM_Items.ModeChangeHandler += ModeChangeEvent;
                     eventSet = true;
                 }
-                base.ReInit();
+                base.Refresh();
             }
 
             protected override void InitShift(int i, int col, int row)

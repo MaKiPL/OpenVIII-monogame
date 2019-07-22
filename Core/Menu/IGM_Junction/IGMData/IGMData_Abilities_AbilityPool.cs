@@ -32,7 +32,7 @@ namespace OpenVIII
                         int target = IGM_Junction.Data[SectionName.TopMenu_Abilities].CURSOR_SELECT - 4;
                         Memory.State.Characters[Character].Abilities[target] = Contents[CURSOR_SELECT];
                         IGM_Junction.SetMode(Mode.Abilities);
-                        IGM_Junction.ReInit(); // can be more specific if you want to find what is being changed.
+                        IGM_Junction.Refresh(); // can be more specific if you want to find what is being changed.
                     }
                 }
 

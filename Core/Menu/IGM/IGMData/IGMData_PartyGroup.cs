@@ -55,12 +55,12 @@ namespace OpenVIII
                 {
                     case Items.Junction:
                         Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.IGM_Junction;
-                        IGM_Junction.ReInit(Contents[CURSOR_SELECT].Item1, Contents[CURSOR_SELECT].Item2);
+                        IGM_Junction.Refresh(Contents[CURSOR_SELECT].Item1, Contents[CURSOR_SELECT].Item2);
                         return;
                 }
             }
 
-            public override void ReInit()
+            public override void Refresh()
             {
                 if (!eventSet && IGM != null)
                 {
@@ -68,7 +68,7 @@ namespace OpenVIII
                     IGM.ChoiceChangeHandler += ChoiceChangeEvent;
                     eventSet = true;
                 }
-                base.ReInit();
+                base.Refresh();
 
                 if (Memory.State.Characters != null)
                 {

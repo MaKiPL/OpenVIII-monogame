@@ -24,13 +24,13 @@ namespace OpenVIII
                     if (CURSOR_SELECT < i.Data.Count)
                     {
                         Memory.State.Characters[Character].Commands[CURSOR_SELECT - 1] = Kernel_bin.Abilities.None;
-                        IGM_Junction.Data[SectionName.TopMenu_Abilities].ReInit();
-                        IGM_Junction.Data[SectionName.Commands].ReInit();
+                        IGM_Junction.Data[SectionName.TopMenu_Abilities].Refresh();
+                        IGM_Junction.Data[SectionName.Commands].Refresh();
                     }
                     else
                     {
                         Memory.State.Characters[Character].Abilities[CURSOR_SELECT - i.Data.Count] = Kernel_bin.Abilities.None;
-                        IGM_Junction.ReInit();
+                        IGM_Junction.Refresh();
                     }
                 }
             }
@@ -52,9 +52,9 @@ namespace OpenVIII
                 Hide();
             }
 
-            public override void ReInit()
+            public override void Refresh()
             {
-                base.ReInit();
+                base.Refresh();
                 IGMDataItem_IGMData i = ((IGMDataItem_IGMData)ITEM[0, 0]);
                 IGMDataItem_IGMData i2 = ((IGMDataItem_IGMData)ITEM[1, 0]);
                 if (i != null && i.Data != null && i2 != null && i2.Data != null)

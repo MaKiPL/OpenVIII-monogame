@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    public abstract class Menu
+    public abstract class Menu : Menu_Base
     {
         #region Fields
 
@@ -123,12 +123,6 @@ namespace OpenVIII
         /// Size of text the real game doesn't use a 1:1 ratio.
         /// </summary>
         public static Vector2 TextScale { get; } = new Vector2(2.545455f, 3.0375f);
-
-        /// <summary>
-        /// If enabled the menu is visable and all functionality works. Else everything is hidden and
-        /// nothing functions.
-        /// </summary>
-        public bool Enabled { get; protected set; } = true;
 
         /// <summary>
         /// If true Inputs won't be called from Update(). So will need to be called sepperately.
@@ -348,14 +342,12 @@ namespace OpenVIII
         }
 
         public Enum GetMode() => _mode;
+        
+        public override bool Inputs() => false;
 
-        public virtual void Hide() => Enabled = false;
+        public override void Refresh() => Refresh(false);
 
-        public abstract bool Inputs();
-
-        public virtual void ReInit() => ReInit(false);
-
-        public void ReInit(bool backup)
+        public void Refresh(bool backup)
         {
             //backup memory
             if (backup)
@@ -364,18 +356,18 @@ namespace OpenVIII
             {
                 if (Character != Characters.Blank)
                     foreach (KeyValuePair<Enum, IGMData> i in Data)
-                        i.Value.ReInit(Character, VisableCharacter);
+                        i.Value.Refresh(Character, VisableCharacter);
                 else
                     foreach (KeyValuePair<Enum, IGMData> i in Data)
-                        i.Value.ReInit();
+                        i.Value.Refresh();
             }
         }
 
-        public virtual void ReInit(Characters c, Characters vc, bool backup = false)
+        public virtual void Refresh(Characters c, Characters vc, bool backup = false)
         {
             Character = c;
             VisableCharacter = vc;
-            ReInit(backup);
+            Refresh(backup);
         }
 
         public virtual bool SetMode(Enum mode)
@@ -388,16 +380,14 @@ namespace OpenVIII
             }
             return false;
         }
-
-        public virtual void Show() => Enabled = true;
-
+        
         public virtual void StartDraw()
         {
             if (Enabled)
                 Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: Focus);
         }
 
-        public virtual bool Update()
+        public override bool Update()
         {
             bool ret = false;
             UpdateFade(this);
@@ -439,7 +429,7 @@ namespace OpenVIII
                 Matrix.CreateTranslation(t.X, t.Y, 0);
         }
 
-        protected virtual void Init()
+        protected override void Init()
         {
         }
 
@@ -451,19 +441,11 @@ namespace OpenVIII
                 Data = new Dictionary<Enum, IGMData>();
                 Init();
                 skipdata = true;
-                ReInit();
+                Refresh();
                 skipdata = false;
             }
         }
 
         #endregion Methods
-
-        //private async void WaitForInit()
-        //{
-        //    while (!Memory.Inited)
-        //    {
-        //        await Memory.InitTask;
-        //    }
-        //}
     }
 }

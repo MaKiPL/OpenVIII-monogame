@@ -78,21 +78,21 @@ namespace OpenVIII
             /// <summary>
             /// if you use this you will get no exp, ap, or items
             /// </summary>
-            public override void ReInit() { }
+            public override void Refresh() { }
 
             /// <summary>
             /// if you use this you will get no exp, ap, or items, No character specifics for this menu.
             /// </summary>
-            public override void ReInit(Characters c, Characters vc, bool backup = false) { }
+            public override void Refresh(Characters c, Characters vc, bool backup = false) { }
 
-            public void ReInit(int exp, int ap, params Saves.Item[] items)
+            public void Refresh(int exp, int ap, params Saves.Item[] items)
             {
                 _exp = exp;
                 ((IGMData_PlayerEXPGroup)Data[Mode.Exp]).EXP = _exp;
                 _ap = ap;
                 _items = items;
                 ((IGMData_PartyItems)Data[Mode.Items]).Items = _items;
-                base.ReInit();
+                base.Refresh();
             }
 
             /// <summary>
@@ -151,9 +151,9 @@ namespace OpenVIII
                     Item = 0;
                     Cursor_Status |= (Cursor_Status.Hidden | (Cursor_Status.Enabled | Cursor_Status.Static));
                 }
-                public override void ReInit()
+                public override void Refresh()
                 {
-                    base.ReInit();
+                    base.Refresh();
                     ((IGMDataItem_Box)ITEM[0, 1]).Data = _items?[_item].DATA?.Name;
                     ((IGMDataItem_Box)ITEM[0, 2]).Data = $"{_items?[_item].QTY}";
                     ((IGMDataItem_Box)ITEM[0, 3]).Data = _items?[_item].DATA?.Description;
@@ -164,7 +164,7 @@ namespace OpenVIII
                 public override void Inputs_OKAY()
                 {
                     Item++;
-                    ReInit();
+                    Refresh();
                     base.Inputs_OKAY();
                 }
             }

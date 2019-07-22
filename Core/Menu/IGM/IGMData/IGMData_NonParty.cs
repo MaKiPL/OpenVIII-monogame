@@ -44,7 +44,7 @@ namespace OpenVIII
                         base.Draw();
                 }
 
-                public override void ReInit()
+                public override void Refresh()
                 {
                     if (Memory.State.Characters != null)
                     {
@@ -57,7 +57,7 @@ namespace OpenVIII
                                 if (!Memory.State.Party.Contains((Characters)i) && Memory.State.Characters[(Characters)i].Available)
                                 {
                                     BLANKS[pos] = false;
-                                    ReInit(pos++, (Characters)i);
+                                    Refresh(pos++, (Characters)i);
                                 }
                             }
                         }
@@ -89,7 +89,7 @@ namespace OpenVIII
                     if (row >= 1) SIZE[i].Y -= 4;
                     if (row >= 2) SIZE[i].Y -= 4;
                 }
-                private void ReInit(sbyte pos, Characters character)
+                private void Refresh(sbyte pos, Characters character)
                 {
 
                     Contents[pos] = new Tuple<Characters, Characters>(character, character);

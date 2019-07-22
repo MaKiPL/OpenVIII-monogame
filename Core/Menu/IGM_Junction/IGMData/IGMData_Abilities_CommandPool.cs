@@ -26,8 +26,8 @@ namespace OpenVIII
                         int target = IGM_Junction.Data[SectionName.TopMenu_Abilities].CURSOR_SELECT - 1;
                         Memory.State.Characters[Character].Commands[target] = Contents[CURSOR_SELECT];
                         IGM_Junction.SetMode(Mode.Abilities);
-                        IGM_Junction.Data[SectionName.TopMenu_Abilities].ReInit();
-                        IGM_Junction.Data[SectionName.Commands].ReInit();
+                        IGM_Junction.Data[SectionName.TopMenu_Abilities].Refresh();
+                        IGM_Junction.Data[SectionName.Commands].Refresh();
                     }
                 }
 

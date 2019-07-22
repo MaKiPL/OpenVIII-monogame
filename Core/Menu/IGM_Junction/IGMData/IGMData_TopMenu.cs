@@ -35,7 +35,7 @@ namespace OpenVIII
                     };
             }
 
-            public override void ReInit()
+            public override void Refresh()
             {
                 if (Memory.State.Characters != null)
                 {
@@ -47,7 +47,7 @@ namespace OpenVIII
                     for (int i = 1; i <= 3; i++)
                         BLANKS[i] = Memory.State.Characters[Character].JunctionnedGFs == Saves.GFflags.None;
                 }
-                base.ReInit();
+                base.Refresh();
             }
 
             public override bool Inputs_CANCEL()
@@ -63,7 +63,7 @@ namespace OpenVIII
                     if (Module_main_menu_debug.State == Module_main_menu_debug.MainMenuStates.IGM_Junction)
                     {
                         Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.IGM;
-                        IGM.ReInit();
+                        IGM.Refresh();
                         FadeIn();
                     }
                 }

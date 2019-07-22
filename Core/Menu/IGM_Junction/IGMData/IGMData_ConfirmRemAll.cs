@@ -22,7 +22,7 @@ namespace OpenVIII
                         IGM_Junction.Data[SectionName.TopMenu_Off].Hide();
                         IGM_Junction.SetMode(Mode.TopMenu);
                         IGM_Junction.Data[SectionName.TopMenu].CURSOR_SELECT = 0;
-                        IGM_Junction.ReInit();
+                        IGM_Junction.Refresh();
                         break;
 
                     case 1:

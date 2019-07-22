@@ -26,7 +26,7 @@ namespace OpenVIII
                 State = MainMenuStates.IGM; // start loaded game.
                 Memory.State = Saves.FileList[SlotLoc, BlockLoc + blockpage * 3].Clone();
 
-                Menu.IGM.ReInit();
+                Menu.IGM.Refresh();
                 //till we have a game to load i'm going to display ingame menu.
 
                 init_debugger_Audio.PlaySound(36);

@@ -37,7 +37,7 @@ namespace OpenVIII
                 if (Module_main_menu_debug.State == Module_main_menu_debug.MainMenuStates.IGM_Junction)
                 {
                     Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.IGM;
-                    IGM.ReInit();
+                    IGM.Refresh();
                     FadeIn();
                 }
             }

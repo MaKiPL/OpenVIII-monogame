@@ -6,75 +6,116 @@ namespace OpenVIII
     internal class EXE_Offsets
     {
         public readonly uint[] tim =
-        {
-            //cards
-            0x7A9B10,
-            //UNK
-            0x796A90,
-            0x7A96B0,
-            //0x875C09,
-            //0x875C2D,
-            //0xC892D3,
-            //0xC893CF,
-            //0xC8EF37,
-            //0xC8F067,
-            //0xC8F197,
-            //0xC8F2EF,
-            //0xC8F447,
-            //0xC8F59F,
-            //0xC8F707,
-            //0xC8F86F,
-            //0xC8F9D7,
-            //0xD87D8B,
-            //0xDC8E77,
-            //0xE00CE7,
-            //0xE9670F,
-            //0xE96A4B,
-            //0xEA9123,
-            //0xF0C9D7,
-            //0x102F4BF,
-            //0x102F617,
-            //0x1069E6B,
-            //0x106A26F,
-            //0x106A3E7,
-            //0x12F2D17,
-            //0x12F2E27,
-            //0x130C387,
-            //0x130C73F,
-            //0x131A5C9,
-            //0x131A60D,
-        };
+        {// The ones commented out weren't real tim files. But were close enough to not set off exceptions.
+            //4 bpp
+            0x796A90, // Card game symbols and numbers.
+            0x7A96B0, // Random Letters
+            
+            //8 bpp
+            0x7A9B10, // cards
+            0x945EAC,
+            0xA96B00,
+            0xACC40C,
+            //0xAF4C30,
+            0xB1E920,
+            0xB47340,
+            0xB57D60,
+            //0xB78384,
+            //0xBAD4A8,
+            0xC05E64,
+            0xF76698,
+            0xF7A8B8,
+            0xF9B8D8,
+            0xFBBBEC,
+            0xFED20C,
+            0x100016C,
+            0x102938C,
+            0x103CC90,
+            0x1070DC4,
+            0x10AF700,
+            0x10B7B20,
+            0x10D8F58,
+            0x10FA790,
+            //0x12146E8,
+            //0x1214908,
+            //0x1214B28,
+            //0x1214D48,
+            0x124A678,
+            0x1252A98,
+            0x125BCCC,
+            0x12704DC,
+            0x1279714,
+            0x1288434,
+            0x12ADE90,
+            0x12B8990,
+            0x12C12C8,
+            0x12CF8B0,
+            0x12F3000,
+            0x12FB420,
+            0x12FDF78,
+            0x130CDCC,
+            0x13243F8,
+            0x1338C08,
+            0x135AC20,
+            0x1378F3C,
+            0x138135C,
+            0x1408FB0,
+            0x14113D0,
+            0x141CFAC,
+            0x14253CC,
+            0x14295EC,
 
+            //16 bbp
+            0x820B30,
+            0x84AB44,
+
+
+
+        };
+        /// <summary>
+        /// If error occurs the bad offsets are added to list.
+        /// Use Debugger to check what is bad.
+        /// </summary>
         private List<uint> badoffset;
         public string FileName => Path.Combine(Memory.FF8DIR, "FF8_EN.exe");
 
         public EXE_Offsets()
         {
             badoffset = new List<uint>();
-            using (BinaryReader br = new BinaryReader(File.OpenRead(FileName)))
-            {
-                foreach (uint t in tim)
+            //try
+            //{
+                using (BinaryReader br = new BinaryReader(File.OpenRead(FileName)))
                 {
-                    try
+                    foreach (uint t in tim)
                     {
-                        TIM2 timdata = new TIM2(br, t);
-                        Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "Timages"));
-                        timdata.Save(Path.Combine(Path.GetTempPath(), "Timages", string.Format("0x{0:X}.tim", t)));
-                    }
-                    catch (InvalidDataException e)
-                    {
-                        if (e.Message == "Invalid TIM File")
+                        try
                         {
-                            badoffset.Add(t);
+                        if (0x84AB44 == t)
+                        {
                         }
-                        else e.Rethrow();
+                            TIM2 timdata = new TIM2(br, t);
+                            Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "Timages"));
+                            timdata.Save(Path.Combine(Path.GetTempPath(), "Timages", string.Format("0x{0:X}.tim", t)));
+                        }
+                        catch (InvalidDataException e)
+                        {
+                            if (e.Message == "Invalid TIM File")
+                            {
+                                badoffset.Add(t);
+                            }
+                            else e.Rethrow();
+                        }
                     }
                 }
-            }
+            //}
+            //catch (IOException e)
+            //{
+            //    //search is locking down the file woot.
+            //}
         }
     }
 
-    internal class Card_Game
+    public class Card_Game
     {
         private const int exe_Offset = 0x7A9B10;
 

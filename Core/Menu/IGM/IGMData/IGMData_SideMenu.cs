@@ -95,18 +95,18 @@ namespace OpenVIII
 
                     case Items.Item:
                         Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.IGM_Items;
-                        IGM_Items.ReInit();
+                        IGM_Items.Refresh();
                         return;
 
                     case Items.Battle:
                         Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.BattleMenu;
-                        BattleMenus.ReInit();
+                        BattleMenus.Refresh();
                         FadeIn();
                         return;
                 }
             }
 
-            public override void ReInit()
+            public override void Refresh()
             {
                 if (!eventSet && IGM != null)
                 {
@@ -114,7 +114,7 @@ namespace OpenVIII
                     eventSet = true;
                 }
                 IGM?.ChoiceChangeHandler?.Invoke(this, new KeyValuePair<Items, FF8String>((Items)CURSOR_SELECT, _helpStr[CURSOR_SELECT]));
-                base.ReInit();
+                base.Refresh();
             }
 
             protected override void InitShift(int i, int col, int row)

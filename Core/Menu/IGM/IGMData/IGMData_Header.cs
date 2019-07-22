@@ -27,14 +27,14 @@ namespace OpenVIII
 
                 #region Methods
 
-                public override void ReInit()
+                public override void Refresh()
                 {
                     if (!eventSet && IGM != null)
                     {                        
                         IGM.ChoiceChangeHandler += ChoiceChangeEvent;
                         eventSet = true;
                     }
-                    base.ReInit();
+                    base.Refresh();
                 }
 
                 private void ChoiceChangeEvent(object sender, KeyValuePair<Items, FF8String> e)

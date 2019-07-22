@@ -57,7 +57,7 @@ namespace OpenVIII
                     Target = Faces.ID.Blank;
                 }
 
-                public override void ReInit()
+                public override void Refresh()
                 {
                     if (IGM_Items != null)
                     {

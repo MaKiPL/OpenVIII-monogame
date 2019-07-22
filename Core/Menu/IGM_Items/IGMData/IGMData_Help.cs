@@ -13,7 +13,7 @@ namespace OpenVIII
                 {
                 }
 
-                public override void ReInit()
+                public override void Refresh()
                 {
                     if (!eventSet && IGM_Items != null)
                     {

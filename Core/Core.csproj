@@ -141,6 +141,7 @@
     <Compile Include="Battle\Menu\IGMData\IGMData_PlayerEXP.cs" />
     <Compile Include="Battle\Menu\IGMData_PlayerEXPGroup.cs" />
     <Compile Include="Card_Game\Card_Game.cs" />
+    <Compile Include="Image\Texture_Base.cs" />
     <Compile Include="Menu\IGMData\IGMData_SmallMsgBox.cs" />
     <Compile Include="Menu\IGMData\IGMData_TimedMsgBox.cs" />
     <Compile Include="Menu\Menus.cs" />
@@ -158,6 +159,7 @@
     <Compile Include="Menu\IGMDataItem\IGMDataItem_TextureHandler.cs" />
     <Compile Include="Menu\Images\Box_Options.cs" />
     <Compile Include="Menu\Lobby\IGM_Lobby.cs" />
+    <Compile Include="Menu\Menu_Base.cs" />
     <Compile Include="Saves\Damageable.cs" />
     <Compile Include="Strings\FF8String.cs" />
     <Compile Include="Strings\FF8StringReference.cs" />
@@ -840,9 +842,9 @@
     <Compile Include="SP2.cs" />
     <Compile Include="Strings\Strings.Kernel.cs" />
     <Compile Include="Strings\StringsBase.cs" />
-    <Compile Include="TEX.cs" />
-    <Compile Include="TextureHandler.cs" />
-    <Compile Include="TIM2.cs" />
+    <Compile Include="Image\TEX.cs" />
+    <Compile Include="Image\TextureHandler.cs" />
+    <Compile Include="Image\TIM2.cs" />
     <Compile Include="World\CharaOne.cs" />
     <Compile Include="World\debug_MCH.cs" />
     <Compile Include="World\module_world_debug.cs" />

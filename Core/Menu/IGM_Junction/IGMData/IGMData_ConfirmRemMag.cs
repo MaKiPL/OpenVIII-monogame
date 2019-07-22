@@ -18,7 +18,7 @@ namespace OpenVIII
                         base.Inputs_OKAY();
                         Memory.State.Characters[Character].RemoveMagic();
                         Inputs_CANCEL();
-                        IGM_Junction.ReInit();
+                        IGM_Junction.Refresh();
                         break;
 
                     case 1:

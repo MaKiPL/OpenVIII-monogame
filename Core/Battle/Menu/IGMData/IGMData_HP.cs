@@ -30,7 +30,7 @@ namespace OpenVIII
 
             #region Methods
 
-            public override void ReInit()
+            public override void Refresh()
             {
                 if (Memory.State?.Characters != null)
                 {
@@ -77,7 +77,7 @@ namespace OpenVIII
                         ITEM[pos, 3] = new IGMDataItem_Icon(Icons.ID.Size_08x64_Bar, new Rectangle(SIZE[pos].X + 230, SIZE[pos].Y + 12, 150, 15), 0);
                         pos++;
                     }
-                    base.ReInit();
+                    base.Refresh();
                 }
             }
 
@@ -97,7 +97,7 @@ namespace OpenVIII
                 if (e.GetType() == typeof(Mode))
                 {
                     mode = (Mode)e;
-                    ReInit();
+                    Refresh();
                 }
             }
 

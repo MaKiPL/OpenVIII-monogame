@@ -31,9 +31,9 @@ namespace OpenVIII
             Hide();
         }
 
-        public override void ReInit()
+        public override void Refresh()
         {
-            base.ReInit();
+            base.Refresh();
             CURSOR_SELECT = startcursor;
             Cursor_Status |= Cursor_Status.Enabled;
             Cursor_Status |= Cursor_Status.Vertical;

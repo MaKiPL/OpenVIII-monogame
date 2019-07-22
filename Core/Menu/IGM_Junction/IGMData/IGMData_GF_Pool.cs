@@ -40,7 +40,7 @@ namespace OpenVIII
                 ITEM[rows, 2] = new IGMDataItem_Icon(Icons.ID.Size_16x08_Lv_, new Rectangle(SIZE[rows].X + SIZE[rows].Width - 30, SIZE[rows].Y, 0, 0), scale: new Vector2(2.5f));
             }
 
-            public override void ReInit()
+            public override void Refresh()
             {
                 Source = Memory.State;
                 JunctionedGFs = Source.JunctionedGFs();
@@ -79,7 +79,7 @@ namespace OpenVIII
                     ITEM[pos, 2] = null;
                     BLANKS[pos] = true;
                 }
-                base.ReInit();
+                base.Refresh();
                 UpdateTitle();
                 UpdateCharacter();
             }
@@ -127,14 +127,14 @@ namespace OpenVIII
             {
                 base.PAGE_PREV();
                 UpdateCharacter();
-                ReInit();
+                Refresh();
             }
 
             protected override void PAGE_NEXT()
             {
                 base.PAGE_NEXT();
                 UpdateCharacter();
-                ReInit();
+                Refresh();
             }
 
             protected override void SetCursor_select(int value)
@@ -243,7 +243,7 @@ namespace OpenVIII
                                         break;
                                 }
                         }
-                        IGM_Junction.ReInit();
+                        IGM_Junction.Refresh();
                     }
                 }
             }

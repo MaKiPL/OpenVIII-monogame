@@ -71,7 +71,7 @@ namespace OpenVIII
                     //{2, DebugModeOkayAction },
                 };
             }
-            public override void ReInit()
+            public override void Refresh()
             {
 
                 if (!eventset)
@@ -79,7 +79,7 @@ namespace OpenVIII
                     Menu.FadedOutHandler += FadedOutEvent;
                     eventset = true;
                 }
-                base.ReInit();
+                base.Refresh();
             }
 
             private void FadedOutEvent(object sender, EventArgs e)

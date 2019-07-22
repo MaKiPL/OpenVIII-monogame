@@ -73,24 +73,24 @@
             return ret;
         }
 
-        public override void ReInit()
+        public override void Refresh()
         {
-            base.ReInit();
+            base.Refresh();
             if (!skipdata)
             {
                 int pos = 0;
                 foreach (IGMDataItem i in ITEM)
                 {
                     if (i != null)
-                        ITEMReInit((IGMDataItem_IGMData)i, pos);
+                        ITEMRefresh((IGMDataItem_IGMData)i, pos);
                 }
             }
-            void ITEMReInit(IGMDataItem_IGMData i, int pos = 0)
+            void ITEMRefresh(IGMDataItem_IGMData i, int pos = 0)
             {
                 if (Character != Characters.Blank)
-                    i.Data.ReInit(Character, VisableCharacter);
+                    i.Data.Refresh(Character, VisableCharacter);
                 else
-                    i.Data.ReInit();
+                    i.Data.Refresh();
             }
         }
 

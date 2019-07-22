@@ -178,7 +178,7 @@ namespace OpenVIII
             /// </summary>
             /// <param name="c"></param>
             /// <param name="vc"></param>
-            public override void ReInit(Characters c, Characters vc, bool backup = true) => base.ReInit(c, vc, backup);
+            public override void Refresh(Characters c, Characters vc, bool backup = true) => base.Refresh(c, vc, backup);
 
             protected override void Init()
             {

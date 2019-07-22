@@ -57,15 +57,15 @@ namespace OpenVIII
             #region Methods
 
 
-            public override void ReInit()
+            public override void Refresh()
             {
-                ReInit(false);
+                Refresh(false);
             }
-            public void ReInit(bool skipmode)
+            public new void Refresh(bool skipmode)
             {
                 if(!skipmode)
                     SetMode(Mode.SelectItem);
-                base.ReInit();
+                base.Refresh();
                 ReInitCompletedHandler?.Invoke(this, null);
             }
 

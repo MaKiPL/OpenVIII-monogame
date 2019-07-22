@@ -21,9 +21,9 @@ namespace OpenVIII
 
             #region Methods
 
-            public override void ReInit()
+            public override void Refresh()
                 {
-                    base.ReInit();
+                    base.Refresh();
                     Rectangle r;
 
                     r = CONTAINER;

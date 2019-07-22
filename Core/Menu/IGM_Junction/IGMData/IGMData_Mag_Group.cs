@@ -5,9 +5,9 @@
             private class IGMData_Mag_Group : IGMData_Group
             {
                 public IGMData_Mag_Group(params IGMData[] d) : base(d) { }
-                public override void ReInit()
+                public override void Refresh()
                 {
-                    base.ReInit();
+                    base.Refresh();
                     Show();
                 }
 

@@ -34,7 +34,7 @@ namespace OpenVIII
 
                 #region Methods
 
-                public override void ReInit()
+                public override void Refresh()
                 {
                     //prevSetting = prevSetting;
                     if (!eventAdded)
@@ -42,7 +42,7 @@ namespace OpenVIII
                         IGMData_Mag_ST_A_D_Slots.PrevSettingUpdateEventListener += PrevSettingEvent;
                         eventAdded = true;
                     }
-                    base.ReInit();
+                    base.Refresh();
                 }
 
                 protected void FillData<T>(Dictionary<T, byte> oldtotal, Dictionary<T, byte> total, Enum[] availableFlagsarray, Icons.ID starticon, sbyte offset = 0,byte palette=2, Icons.ID[] skip = null) where T : Enum

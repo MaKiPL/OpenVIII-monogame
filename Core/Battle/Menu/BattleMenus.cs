@@ -57,7 +57,7 @@ namespace OpenVIII
             return ret;
         }
 
-        public override void ReInit()
+        public override void Refresh()
         {
             if (Memory.State?.Characters != null)
             {
@@ -95,8 +95,8 @@ namespace OpenVIII
                 };
                 menus?.ForEach(m => m.Show());
             }
-            Victory_Menu?.ReInit(10000,1000,new Saves.Item(10,100), new Saves.Item(20, 65), new Saves.Item(28, 54));
-            base.ReInit();
+            Victory_Menu?.Refresh(10000,1000,new Saves.Item(10,100), new Saves.Item(20, 65), new Saves.Item(28, 54));
+            base.Refresh();
         }
 
         public override bool Update()

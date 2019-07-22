@@ -111,7 +111,7 @@ namespace OpenVIII
                         break;
                 }
                 Inputs_CANCEL();
-                IGM_Junction.ReInit();
+                IGM_Junction.Refresh();
             }
 
             public override bool Inputs_CANCEL()

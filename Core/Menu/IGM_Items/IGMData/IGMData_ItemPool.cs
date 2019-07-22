@@ -51,7 +51,7 @@ namespace OpenVIII
                 return true;
             }
 
-            public override void ReInit()
+            public override void Refresh()
             {
                 if (!eventSet && IGM_Items != null)
                 {
@@ -59,7 +59,7 @@ namespace OpenVIII
                     IGM_Items.ReInitCompletedHandler += ReInitCompletedEvent;
                     eventSet = true;
                 }
-                base.ReInit();
+                base.Refresh();
                 Source = Memory.State;
                 if (Source != null && Source.Items != null)
                 {
@@ -133,7 +133,7 @@ namespace OpenVIII
                 do
                 {
                     base.PAGE_NEXT();
-                    ReInit();
+                    Refresh();
                     skipsnd = true;
                 }
                 while (cnt-- > 0 && !((IGMDataItem_Int)(ITEM[0, 1])).Enabled);
@@ -146,7 +146,7 @@ namespace OpenVIII
                 do
                 {
                     base.PAGE_PREV();
-                    ReInit();
+                    Refresh();
 
                     skipsnd = true;
                 }

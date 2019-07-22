@@ -59,10 +59,10 @@ namespace OpenVIII
             }
         }
 
-        public override void ReInit()
+        public override void Refresh()
         {
-            base.ReInit();
-            Data.ReInit();
+            base.Refresh();
+            Data.Refresh();
         }
     }
 

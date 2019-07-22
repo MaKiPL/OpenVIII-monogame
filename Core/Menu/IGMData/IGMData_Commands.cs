@@ -15,7 +15,7 @@ namespace OpenVIII
             Battle = battle;
             nonbattleWidth = Width;
             skipReinit = true;
-            ReInit();
+            Refresh();
         }
         public override bool Inputs()
         {
@@ -25,11 +25,11 @@ namespace OpenVIII
         /// <summary>
         /// Things that may of changed before screen loads or junction is changed.
         /// </summary>
-        public override void ReInit()
+        public override void Refresh()
         {
             if (Memory.State.Characters != null && !skipReinit)
             {
-                base.ReInit();
+                base.Refresh();
                 page = 0;
                 Cursor_Status &= ~Cursor_Status.Horizontal;
                 ITEM[0, 0] = new IGMDataItem_String(
@@ -81,7 +81,7 @@ namespace OpenVIII
                 if (mode.Equals(BattleMenu.Mode.YourTurn))
                 {
                     Show();
-                    ReInit();
+                    Refresh();
                 }
                 else Hide();
             }
@@ -118,7 +118,7 @@ namespace OpenVIII
             {
                 if (page == 1)
                 {
-                    ReInit();
+                    Refresh();
                     base.Inputs_Left();
                     //for (int i = 1; i < Count; i++)
                     //{

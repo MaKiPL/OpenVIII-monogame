@@ -638,7 +638,7 @@ namespace OpenVIII
             {
                 ms.Seek(v + textures.pTims[i], SeekOrigin.Begin);
                 TIM2 tm = new TIM2(buffer, (uint)ms.Position); //broken
-                textures.textures[i] = tm.GetTexture(0, true);
+                textures.textures[i] = tm.GetTexture(0);
             }
         }
         public Textures textures;

@@ -49,7 +49,7 @@ namespace OpenVIII
 
                 #region Methods
 
-                public override void ReInit()
+                public override void Refresh()
                 {
                     if (Memory.State.Characters != null && !skipReInit)
                     {

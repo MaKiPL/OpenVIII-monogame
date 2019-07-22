@@ -30,9 +30,9 @@
             }
             public virtual void ResetPages() =>
                 Pages = DefaultPages;
-            public override void ReInit()
+            public override void Refresh()
             {
-                base.ReInit();
+                base.Refresh();
                 ResetPages();
                 if (Pages > 1)
                 {

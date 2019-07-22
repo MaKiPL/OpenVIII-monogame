@@ -21,9 +21,9 @@ namespace OpenVIII
 
             #region Methods
 
-            public override void ReInit()
+            public override void Refresh()
                 {
-                    base.ReInit();
+                    base.Refresh();
                     ((IGMDataItem_Box)CONTAINER).Data = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Memory.State.LocationID);
             }
 

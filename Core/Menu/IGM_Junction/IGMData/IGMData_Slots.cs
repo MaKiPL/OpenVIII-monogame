@@ -95,14 +95,14 @@ namespace OpenVIII
                     return ret;
                 }
 
-                public override void ReInit()
+                public override void Refresh()
                 {
                     if (Character != Characters.Blank)
                     {
                         unlocked = Memory.State.Characters[Character].UnlockedGFAbilities;
                         AddEventListener();
                         CheckMode();
-                        base.ReInit();
+                        base.Refresh();
                     }
                 }
 
@@ -126,7 +126,7 @@ namespace OpenVIII
                     if (colorid != e)
                     {
                         colorid = e;
-                        ReInit();
+                        Refresh();
                     }
                 }
 
@@ -188,7 +188,7 @@ namespace OpenVIII
                 /// </summary>
                 /// <param name="sender"></param>
                 /// <param name="e"></param>
-                protected override void ModeChangeEvent(object sender, Enum e) => ReInit();
+                protected override void ModeChangeEvent(object sender, Enum e) => Refresh();
 
                 protected abstract void PageLeft();
 

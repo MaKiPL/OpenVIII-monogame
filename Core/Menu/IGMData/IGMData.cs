@@ -7,7 +7,7 @@ using System.Linq;
 namespace OpenVIII
 {
 
-    public class IGMData
+    public class IGMData : Menu_Base
     {
 
         #region Fields
@@ -90,7 +90,6 @@ namespace OpenVIII
         public byte Depth { get; private set; }
 
         public Dictionary<int, FF8String> Descriptions { get; protected set; }
-        public bool Enabled { get; private set; } = true;
 
         public int rows { get; private set; }
         public Table_Options Table_Options { get; set; } = Table_Options.Default;
@@ -220,9 +219,7 @@ namespace OpenVIII
                 }
             }
         }
-
-        public virtual void Hide() => Enabled = false;
-
+        
         public void Init(int count, int depth, IGMDataItem container = null, int? cols = null, int? rows = null)
         {
             if (count <= 0 || depth <= 0)
@@ -251,7 +248,7 @@ namespace OpenVIII
                 CONTAINER = container;
             }
             Init();
-            ReInit();
+            Refresh();
             Update();
         }
 
@@ -259,7 +256,7 @@ namespace OpenVIII
         /// Check inputs
         /// </summary>
         /// <returns>True = input detected</returns>
-        public virtual bool Inputs()
+        public override bool Inputs()
         {
             bool ret = false;
             bool mouse = false;
@@ -392,27 +389,26 @@ namespace OpenVIII
                 init_debugger_Audio.PlaySound(0);
         }
 
-        public virtual void ReInit(Characters character, Characters? visablecharacter = null)
+        public virtual void Refresh(Characters character, Characters? visablecharacter = null)
         {
             Character = character;
             VisableCharacter = visablecharacter ?? character;
             PartyPos = (sbyte)(Memory.State?.PartyData?.FindIndex(x => x.Equals(Character)) ?? -1);
-            ReInit();
+            Refresh();
         }
         /// <summary>
         /// Things that change rarely. Like a party member changes or Laguna dream happens.
         /// </summary>
-        public virtual void ReInit()
+        public override void Refresh()
         {
         }
 
-        public virtual void Show() => Enabled = true;
 
         /// <summary>
         /// Things that change on every update.
         /// </summary>
         /// <returns>True = signifigant change</returns>
-        public virtual bool Update()
+        public override bool Update()
         {
             bool ret = false;
             if (!skipdata && ITEM != null)
@@ -429,7 +425,7 @@ namespace OpenVIII
         /// <summary>
         /// Things that are fixed values at startup.
         /// </summary>
-        protected virtual void Init()
+        protected override void Init()
         {
             if (SIZE != null && SIZE.Length > 0)
             {

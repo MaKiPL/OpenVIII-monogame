@@ -111,7 +111,7 @@ namespace OpenVIII.Core.World
                     TIM2 tim = new TIM2(buffer, (uint)(sectionPointers[38 - 1] + innerSec[i]));
                     sec38_textures.Add(new Texture2D[tim.GetClutCount]);
                     for (ushort k = 0; k < sec38_textures[i].Length; k++)
-                        sec38_textures[i][k] = tim.GetTexture(k, true);
+                        sec38_textures[i][k] = tim.GetTexture(k);
                 }
             }
         }
@@ -150,7 +150,7 @@ namespace OpenVIII.Core.World
                 for (int i = 0; i < innerSec.Length; i++)
                 {
                     TIM2 tim = new TIM2(buffer, (uint)(sectionPointers[39 - 1] + innerSec[i]));
-                    Texture2D atlasChunk = tim.GetTexture(0, true);
+                    Texture2D atlasChunk = tim.GetTexture(0);
                     byte[] chunkBuffer = new byte[atlasChunk.Width * atlasChunk.Height * 4];
                     atlasChunk.GetData(chunkBuffer,0, chunkBuffer.Length);
                     int newX = tim.GetOrigX - SEC39_VRAM_STARTX;
