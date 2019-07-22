@@ -327,7 +327,7 @@ namespace OpenVIII
         /// <param name="animationId">absolute index of animation 0-based</param>
         /// <param name="animationFrame">index of animation frame- 0-based, length vary</param>
         /// <returns>Tuple{item1= VertexPositionColorTexture; item2= clutIndex</returns>
-        public Tuple<VertexPositionColorTexture[], byte[]> GetVertexPositions(Vector3 position, int animationId, int animationFrame)
+        public Tuple<VertexPositionColorTexture[], byte[]> GetVertexPositions(Vector3 position, Quaternion rotation, int animationId, int animationFrame)
         {
             List<VertexPositionColorTexture> facesVertices = new List<VertexPositionColorTexture>();
             List<byte> texIndexes = new List<byte>();
@@ -344,6 +344,7 @@ namespace OpenVIII
                     for (int k = 0; k < 3; k++)
                     {
                         var face = CalculateFinalVertex(gVertices[vertsCollection[k]], animationId, animationFrame);
+                        face = Vector3.Transform(face, Matrix.CreateFromQuaternion(rotation));
                         face = Vector3.Transform(face, Matrix.CreateTranslation(position));
 
                         Color clr = new Color(faces[i].vertColor[0], faces[i].vertColor[1], faces[i].vertColor[2], faces[i].vertColor[3]);
@@ -356,15 +357,19 @@ namespace OpenVIII
                 else //retriangulation
                 {
                     var faceA = CalculateFinalVertex(gVertices[vertsCollection[0]], animationId, animationFrame);
+                    faceA = Vector3.Transform(faceA, Matrix.CreateFromQuaternion(rotation));
                     faceA = Vector3.Transform(faceA, Matrix.CreateTranslation(position));
 
                     var faceB = CalculateFinalVertex(gVertices[vertsCollection[1]], animationId, animationFrame);
+                    faceB = Vector3.Transform(faceB, Matrix.CreateFromQuaternion(rotation));
                     faceB = Vector3.Transform(faceB, Matrix.CreateTranslation(position));
 
                     var faceC = CalculateFinalVertex(gVertices[vertsCollection[2]], animationId, animationFrame);
+                    faceC = Vector3.Transform(faceC, Matrix.CreateFromQuaternion(rotation));
                     faceC = Vector3.Transform(faceC, Matrix.CreateTranslation(position));
 
                     var faceD = CalculateFinalVertex(gVertices[vertsCollection[3]], animationId, animationFrame);
+                    faceD = Vector3.Transform(faceD, Matrix.CreateFromQuaternion(rotation));
                     faceD = Vector3.Transform(faceD, Matrix.CreateTranslation(position));
 
                     Vector2 t1 = new Vector2(faces[i].TextureMap[0].u / TEX_SIZEW, faces[i].TextureMap[0].v / TEX_SIZEH);

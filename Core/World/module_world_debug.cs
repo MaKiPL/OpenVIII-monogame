@@ -361,12 +361,14 @@ namespace OpenVIII
                 animationId = 1;
                 playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees));
                 playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees));
+                localMchRotation = (float)(Extended.Radians(-degrees - 90f));
             }
             if(Input.Button(Buttons.Down))
             {
                 animationId = 1;
                 camPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees));
                 camPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees));
+                localMchRotation = (float)(Extended.Radians(-degrees - 90f));
             }
         }
 
@@ -547,6 +549,9 @@ namespace OpenVIII
         }
 
         private static int animationId = 0;
+        static Vector3 localMchTranslation = new Vector3(0, 15f, 0);
+
+        static float localMchRotation = -90f;
 
         private static void DrawCharacter(int charaIndex)
         {
@@ -555,13 +560,11 @@ namespace OpenVIII
             animationTestVariable++;
             if (animationTestVariable >= testing)
                 animationTestVariable = 0;
-            var collectionDebug = chara.GetMCH(MchIndex).GetVertexPositions(playerPosition+ new Vector3(0,15f,0), animationId, animationTestVariable);
+            var collectionDebug = chara.GetMCH(MchIndex).GetVertexPositions(playerPosition+ localMchTranslation, Quaternion.CreateFromYawPitchRoll(localMchRotation,0f,0f),animationId, animationTestVariable);
             if (collectionDebug.Item1.Length != 0)
                 for (int i = 0; i < collectionDebug.Item1.Length; i += 3)
                 {
                     ate.Texture = chara.GetCharaTexture(collectionDebug.Item2[i]);
-                    if (collectionDebug.Item2[i / 3] == 0)
-                        ;
                     foreach (var pass in ate.CurrentTechnique.Passes)
                     {
                         pass.Apply();
