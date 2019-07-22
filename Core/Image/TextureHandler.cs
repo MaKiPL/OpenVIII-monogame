@@ -13,7 +13,7 @@ namespace OpenVIII
     {
         #region Fields
 
-        private TEX _classic;
+        private Texture_Base _classic;
 
         #endregion Fields
 
@@ -25,20 +25,20 @@ namespace OpenVIII
 
         public TextureHandler(string filename, uint cols, uint rows)
         {
-            if (cols == 1 && rows == 1)
-            {
-                ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
-                filename = aw.GetListOfFiles().First(x => x.IndexOf(filename, StringComparison.OrdinalIgnoreCase) >= 0);
-                TEX tex = new TEX(aw.GetBinaryFile(filename));
-                Init(filename, tex, cols, rows);
-            }
-            else
+            //if (cols == 1 && rows == 1)
+            //{
+            //    ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
+            //    filename = aw.GetListOfFiles().First(x => x.IndexOf(filename, StringComparison.OrdinalIgnoreCase) >= 0);
+            //    Texture_Base tex = new TEX(aw.GetBinaryFile(filename));
+            //    Init(filename, tex, cols, rows);
+            //}
+            //else
                 Init(filename, null, cols, rows);
         }
 
-        public TextureHandler(string filename, TEX classic, ushort palette = 0, Color[] colors = null) => Init(filename, classic, 1, 1, palette: palette, colors: colors);
+        public TextureHandler(string filename, Texture_Base classic, ushort palette = 0, Color[] colors = null) => Init(filename, classic, 1, 1, palette: palette, colors: colors);
 
-        public TextureHandler(string filename, TEX classic, uint cols, uint rows, ushort palette = 0, Color[] colors = null) => Init(filename, classic, cols, rows, palette, colors);
+        public TextureHandler(string filename, Texture_Base classic, uint cols, uint rows, ushort palette = 0, Color[] colors = null) => Init(filename, classic, cols, rows, palette, colors);
 
         #endregion Constructors
 
@@ -47,7 +47,7 @@ namespace OpenVIII
         /// <summary>
         /// Original sub 256x265 texture, required for fallback when issues happen.
         /// </summary>
-        public TEX Classic { get => _classic; private set { _classic = value; if (value != null) ClassicSize = new Vector2(value.GetWidth, value.GetHeight); } }
+        public Texture_Base Classic { get => _classic; private set { _classic = value; if (value != null) ClassicSize = new Vector2(value.GetWidth, value.GetHeight); } }
 
         /// <summary>
         /// X = width and Y = height. The Size of original texture. Will be used in scaling
@@ -122,7 +122,7 @@ namespace OpenVIII
 
         public static Vector2 GetScale(Vector2 _old, Texture2D _new) => new Vector2(_new.Width / _old.X, _new.Height / _old.Y);
 
-        public static Vector2 GetScale(TEX _old, Texture2D _new) => new Vector2((float)_new.Width / _old.GetWidth, (float)_new.Height / _old.GetHeight);
+        public static Vector2 GetScale(Texture_Base _old, Texture2D _new) => new Vector2((float)_new.Width / _old.GetWidth, (float)_new.Height / _old.GetHeight);
 
         public static Vector2 GetScale(Texture2D _old, Texture2D _new) => new Vector2((float)_new.Width / _old.Width, (float)_new.Height / _old.Height);
 
@@ -198,9 +198,9 @@ namespace OpenVIII
             }
         }
 
-        public static Texture2D UseBest(TEX _old, Texture2D _new, ushort palette = 0, Color[] colors = null) => UseBest(_old, _new, out Vector2 scale, palette, colors);
+        public static Texture2D UseBest(Texture_Base _old, Texture2D _new, ushort palette = 0, Color[] colors = null) => UseBest(_old, _new, out Vector2 scale, palette, colors);
 
-        public static Texture2D UseBest(TEX _old, Texture2D _new, out Vector2 scale, ushort palette = 0, Color[] colors = null)
+        public static Texture2D UseBest(Texture_Base _old, Texture2D _new, out Vector2 scale, ushort palette = 0, Color[] colors = null)
         {
             Texture2D tex;
             if (_new == null)
@@ -208,7 +208,7 @@ namespace OpenVIII
                 scale = Vector2.One;
                 if (_old.GetClutCount <= 1)
                     return _old.GetTexture();
-                tex = colors !=null? _old.GetTexture(colors): _old.GetTexture(palette);
+                tex = colors != null ? _old.GetTexture(colors) : _old.GetTexture(palette);
                 return tex;
             }
             else
@@ -292,7 +292,7 @@ namespace OpenVIII
         {
             Vector2 size = Vector2.Zero;
             Vector2 oldsize = Vector2.Zero;
-            TEX tex = null;
+            Texture_Base tex = null;
             uint c2 = 0;
             uint r2 = 0;
             for (uint r = 0; r < Rows; r++)
@@ -301,21 +301,21 @@ namespace OpenVIII
                 {
                     ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
                     string path = aw.GetListOfFiles().First(x => (x.IndexOf(string.Format(Filename, c + r * Cols + StartOffset), StringComparison.OrdinalIgnoreCase) >= 0));
-                    tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
+                    tex = Texture_Base.Open(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
                     if (Classic == null && c2 < Cols) oldsize.X += tex.GetWidth;
                     Texture2D pngTex = LoadPNG(path, Palette);
                     Textures[c, r] = (UseBest(tex, pngTex, Palette, Colors));
                     if (pngTex != null) Modded = true;
-                    if (c2 < Cols && Textures[c2,r2] != null) size.X += Textures[c2++, r2].Width;
+                    if (c2 < Cols && Textures[c2, r2] != null) size.X += Textures[c2++, r2].Width;
                 }
                 if (Classic == null && r2 < Rows) oldsize.Y += tex.GetHeight;
-                if (r2 < Rows && Textures.LongLength > r2+c2-1 && Textures[c2 - 1, r2] != null) size.Y += Textures[c2 - 1, r2++].Height;
+                if (r2 < Rows && Textures.LongLength > r2 + c2 - 1 && Textures[c2 - 1, r2] != null) size.Y += Textures[c2 - 1, r2++].Height;
             }
             Size = size;
             if (Classic == null) ClassicSize = oldsize;
         }
 
-        private void Init(string filename, TEX classic, uint cols, uint rows, ushort palette = 0, Color[] colors = null)
+        private void Init(string filename, Texture_Base classic, uint cols, uint rows, ushort palette = 0, Color[] colors = null)
         {
             Classic = classic;
             Size = Vector2.Zero;
