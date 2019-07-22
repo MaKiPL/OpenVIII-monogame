@@ -16,16 +16,18 @@ namespace OpenVIII
     {
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
         private static float degrees, Yshift;
-        private static readonly float camDistance = 10.0f;
+        private static float camDistance = 10.0f;
         private static readonly float renderCamDistance = 1200.0f;
         private static Vector3 camPosition, camTarget;
         private static Vector3 playerPosition = new Vector3(-9105f, 30f, -4466);
+        private static Vector3 lastPlayerPosition = playerPosition;
         public static BasicEffect effect;
         public static AlphaTestEffect ate;
         private enum _worldState
         {
             _0init,
-            _1debugFly
+            _1active,
+            _9debugFly
         }
 
         private enum MiniMapState
@@ -109,7 +111,7 @@ namespace OpenVIII
 
             public byte TPage { get => (byte)((TPage_clut >> 4) & 0x0F); }
             public byte Clut { get => (byte)(TPage_clut & 0x0F); }
-            private Texflags TexFlags { get => Texflags.TEXFLAGS_ISENTERABLE|Texflags.TEXFLAGS_MISC|Texflags.TEXFLAGS_ROAD|Texflags.TEXFLAGS_SHADOW|Texflags.TEXFLAGS_UNK|Texflags.TEXFLAGS_UNK2|Texflags.TEXFLAGS_WATER; set => texFlags = value; }
+            private Texflags TexFlags { get => Texflags.TEXFLAGS_ISENTERABLE | Texflags.TEXFLAGS_MISC | Texflags.TEXFLAGS_ROAD | Texflags.TEXFLAGS_SHADOW | Texflags.TEXFLAGS_UNK | Texflags.TEXFLAGS_UNK2 | Texflags.TEXFLAGS_WATER; set => texFlags = value; }
             //public byte TPage_clut1 { set => TPage_clut = value; }
         }
         private struct Vertex
@@ -137,19 +139,21 @@ namespace OpenVIII
         private static _worldState worldState;
         private static MiniMapState MapState = MiniMapState.rectangle;
 
-        [Flags] enum Texflags : byte
+        [Flags]
+        enum Texflags : byte
         {
-            TEXFLAGS_SHADOW =       0b11,
-            TEXFLAGS_UNK =          0b100,
-            TEXFLAGS_ISENTERABLE =  0b00001000,
-            TEXFLAGS_UNK2 =         0b00010000,
-            TEXFLAGS_ROAD =         0b00100000,
-            TEXFLAGS_WATER =        0b01000000,
-            TEXFLAGS_MISC =         0b10000000
-    }
-        [Flags] enum VertFlags
+            TEXFLAGS_SHADOW = 0b11,
+            TEXFLAGS_UNK = 0b100,
+            TEXFLAGS_ISENTERABLE = 0b00001000,
+            TEXFLAGS_UNK2 = 0b00010000,
+            TEXFLAGS_ROAD = 0b00100000,
+            TEXFLAGS_WATER = 0b01000000,
+            TEXFLAGS_MISC = 0b10000000
+        }
+        [Flags]
+        enum VertFlags
         {
-            bWalkable =             0b10000000
+            bWalkable = 0b10000000
         }
 
         const byte TRIFLAGS_COLLIDE = 0b10000000;
@@ -237,8 +241,9 @@ namespace OpenVIII
                         float localX = 2048 * (n % 4);
                         float localZ = -2048 * (n / 4);
                         for (int k = 0; k < segments[i].block[n].polyCount; k++)
-                            ptd.Add(new ParsedTriangleData() {
-                                A= new Vector3(
+                            ptd.Add(new ParsedTriangleData()
+                            {
+                                A = new Vector3(
                                 ((segments[i].block[n].vertices[segments[i].block[n].polygons[k].F1].X + localX) / WORLD_SCALE_MODEL + baseX) * -1f,
                                 segments[i].block[n].vertices[segments[i].block[n].polygons[k].F1].Z1 / WORLD_SCALE_MODEL,
                                 (segments[i].block[n].vertices[segments[i].block[n].polygons[k].F1].Y + localZ) / WORLD_SCALE_MODEL + baseY),
@@ -271,13 +276,13 @@ namespace OpenVIII
                 return i;
 
 
-            if(i>=768 && i <=775)
+            if (i >= 768 && i <= 775)
                 return 373 + (i - 768);
-            if(i>=776 && i <=783)
+            if (i >= 776 && i <= 783)
                 return 347 + (i - 776);
-            if(i>=784 && i <=791)
+            if (i >= 784 && i <= 791)
                 return 347 + (i - 784);
-            if(i>=792 && i <=799)
+            if (i >= 792 && i <= 799)
                 return 469 + (i - 792);
 
             if (i >= 800 && i <= 807)
@@ -315,12 +320,16 @@ namespace OpenVIII
 
         public static void Update()
         {
+            animationId = 0;
             switch (worldState)
             {
                 case _worldState._0init:
                     InitWorld();
                     break;
-                case _worldState._1debugFly:
+                case _worldState._1active:
+                    OrbitCamera();
+                    break;
+                case _worldState._9debugFly:
                     FPSCamera();
                     break;
             }
@@ -331,16 +340,34 @@ namespace OpenVIII
             if (Input.Button(Keys.R))
                 worldState = _worldState._0init;
 
+            if (Input.Button(Keys.D9))
+                worldState = worldState == _worldState._1active ? _worldState._9debugFly : _worldState._1active;
+
             SimpleInputUpdate();
             CollisionUpdate();
         }
 
+        /// <summary>
+        /// Simple input handling- it doesn't work really with collision and lastPlayerPosition for non-walkable areas
+        /// </summary>
         private static void SimpleInputUpdate()
         {
             if (Input.Button(Keys.D8))
                 playerPosition.X += 1f;
             if (Input.Button(Keys.D2))
                 playerPosition.X -= 1f;
+            if (Input.Button(Buttons.Up))
+            {
+                animationId = 1;
+                playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees));
+                playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees));
+            }
+            if(Input.Button(Buttons.Down))
+            {
+                animationId = 1;
+                camPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees));
+                camPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees));
+            }
         }
 
         private static void CollisionUpdate()
@@ -348,7 +375,7 @@ namespace OpenVIII
             int realSegmentId = (int)(segmentPosition.Y * 32 + segmentPosition.X);
             var seg = segments[realSegmentId];
             List<Tuple<ParsedTriangleData, Extended.Barycentric>> ii = new List<Tuple<ParsedTriangleData, Extended.Barycentric>>();
-            for(int i = 0; i<seg.parsedTriangle.Length; i++)
+            for (int i = 0; i < seg.parsedTriangle.Length; i++)
             {
                 Extended.Barycentric bary = new Extended.Barycentric(seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C,
                      playerPosition);
@@ -357,12 +384,12 @@ namespace OpenVIII
             }
             if (ii.Count == 0)
                 return;
-            foreach(var bart in ii)
+            foreach (var bart in ii)
             {
-                float minimumX = (new float[] {bart.Item1.A.X, bart.Item1.B.X, bart.Item1.C.X }).Min();
-                float minimumZ = (new float[] {bart.Item1.A.Z, bart.Item1.B.Z, bart.Item1.C.Z }).Min();
-                float maximumX = (new float[] {bart.Item1.A.X, bart.Item1.B.X, bart.Item1.C.X }).Max();
-                float maximumZ = (new float[] {bart.Item1.A.Z, bart.Item1.B.Z, bart.Item1.C.Z }).Max();
+                float minimumX = (new float[] { bart.Item1.A.X, bart.Item1.B.X, bart.Item1.C.X }).Min();
+                float minimumZ = (new float[] { bart.Item1.A.Z, bart.Item1.B.Z, bart.Item1.C.Z }).Min();
+                float maximumX = (new float[] { bart.Item1.A.X, bart.Item1.B.X, bart.Item1.C.X }).Max();
+                float maximumZ = (new float[] { bart.Item1.A.Z, bart.Item1.B.Z, bart.Item1.C.Z }).Max();
                 if (!Extended.In(playerPosition.X, minimumX, maximumX))
                     continue;
                 if (!Extended.In(playerPosition.Z, minimumZ, maximumZ))
@@ -379,7 +406,7 @@ namespace OpenVIII
         const float maxLookSpeed = 0.25f;
         public static void FPSCamera()
         {
-            #region FPScamera
+            camDistance = 10.0f;
             float x_shift = 0.0f, y_shift = 0.0f, leftdistX = 0.0f, leftdistY = 0.0f;
 
             //speedcontrols
@@ -438,16 +465,33 @@ namespace OpenVIII
                 camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees + 90)) * leftdistX / 10;
                 camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees + 90)) * leftdistX / 10;
             }
-            
+
             camTarget.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(degrees)) * camDistance;
             camTarget.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(degrees)) * camDistance;
             camTarget.Y = camPosition.Y - Yshift / 5;
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          Vector3.Up);
-            #endregion
         }
 
-        public static int testing2 = 0;
+        public static void OrbitCamera()
+        {
+            camDistance = 100f;
+            camPosition = new Vector3(
+                (float)(playerPosition.X + camDistance * Extended.Cos(degrees-180f)),
+                playerPosition.Y + 50f,
+                (float)(playerPosition.Z + camDistance * Extended.Sin(degrees-180f))
+                );
+            if (Input.Button(Buttons.Left))
+                degrees--;
+            if (Input.Button(Buttons.Right))
+                degrees++;
+            degrees = degrees % 360;
+            camTarget = playerPosition;
+            viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
+                         Vector3.Up);
+        }
+
+        public static int animationTestVariable = 0;
 
         public static void Draw()
         {
@@ -471,30 +515,9 @@ namespace OpenVIII
 
             WrapWaterSegments();
 
-            TeleportCameraWrap();
+            TeleportPlayerWarp();
 
-            if (true) //DEBUG
-            {
-                int MchIndex = 0;
-                uint testing = chara.GetMCH(MchIndex).GetAnimationFramesCount(0);
-                testing2++;
-                if (testing2 >= testing)
-                    testing2 = 0;
-                var collectionDebug = chara.GetMCH(MchIndex).GetVertexPositions(playerPosition, 0, testing2);
-                if (collectionDebug.Item1.Length != 0)
-                    for (int i = 0; i < collectionDebug.Item1.Length; i += 3)
-                    {
-                            ate.Texture = chara.GetCharaTexture(collectionDebug.Item2[i]);
-                        if (collectionDebug.Item2[i / 3] == 0)
-                            ;
-                        foreach (var pass in ate.CurrentTechnique.Passes)
-                        {
-                            pass.Apply();
-                            Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, collectionDebug.Item1, i, 1);
-                        }
-                    }
-            }
-
+            DrawCharacter(0);
 
             switch (MapState)
             {
@@ -515,27 +538,52 @@ namespace OpenVIII
                 $"World Map Camera: ={camPosition}\n" +
                 $"Player position: ={playerPosition}\n" +
                 $"Segment Position: ={segmentPosition}\n" +
-                $"FPS camera degrees: ={degrees}°\n" +
+                $"Press 9 to enable debug FPS camera: ={(worldState== _worldState._1active ? "orbit camera" : "FPS debug camera")}\n" +
+                $"FPS camera degrees: ={degrees}° (WARNING! Frustum cull disabled!)\n" +
                 $"FOV: ={FOV}", 30, 20, lineSpacing: 5);
             Memory.SpriteBatchEnd();
 
 
         }
 
+        private static int animationId = 0;
+
+        private static void DrawCharacter(int charaIndex)
+        {
+            int MchIndex = charaIndex;
+            uint testing = chara.GetMCH(MchIndex).GetAnimationFramesCount(animationId);
+            animationTestVariable++;
+            if (animationTestVariable >= testing)
+                animationTestVariable = 0;
+            var collectionDebug = chara.GetMCH(MchIndex).GetVertexPositions(playerPosition+ new Vector3(0,15f,0), animationId, animationTestVariable);
+            if (collectionDebug.Item1.Length != 0)
+                for (int i = 0; i < collectionDebug.Item1.Length; i += 3)
+                {
+                    ate.Texture = chara.GetCharaTexture(collectionDebug.Item2[i]);
+                    if (collectionDebug.Item2[i / 3] == 0)
+                        ;
+                    foreach (var pass in ate.CurrentTechnique.Passes)
+                    {
+                        pass.Apply();
+                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, collectionDebug.Item1, i, 1);
+                    }
+                }
+        }
+
         /// <summary>
         /// This prevents camera/player to get out of playable zone and wraps it to the other side like it's 360o
         /// </summary>
-        private static void TeleportCameraWrap()
+        private static void TeleportPlayerWarp()
         {
-            if (camPosition.X > 0)
-                camPosition.X = 32 * 512 * -1;
-            if (camPosition.X < 32 * 512 * -1)
-                camPosition.X = 0;
+            if (playerPosition.X > 0)
+                playerPosition.X = 32 * 512 * -1;
+            if (playerPosition.X < 32 * 512 * -1)
+                playerPosition.X = 0;
 
-            if (camPosition.Z > 0)
-                camPosition.Z = 24 * 512 * -1;
-            if (camPosition.Z < 24 * 512 * -1)
-                camPosition.Z = 0;
+            if (playerPosition.Z > 0)
+                playerPosition.Z = 24 * 512 * -1;
+            if (playerPosition.Z < 24 * 512 * -1)
+                playerPosition.Z = 0;
         }
 
         /// <summary>
@@ -650,7 +698,7 @@ namespace OpenVIII
             topY += Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f * bc;
 
             Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, Memory.blendState_BasicAdd);
-            Memory.spriteBatch.Draw(wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap,1), new Rectangle((int)(Memory.graphics.GraphicsDevice.Viewport.Width * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f)), Color.White * .7f);
+            Memory.spriteBatch.Draw(wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap, 1), new Rectangle((int)(Memory.graphics.GraphicsDevice.Viewport.Width * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f)), Color.White * .7f);
             Memory.spriteBatch.End();
 
 
@@ -682,7 +730,7 @@ namespace OpenVIII
 
         private static void DrawSegment(int _i, float? baseXf = null, float? baseYf = null, bool bIsWrapSegment = false)
         {
-            float baseX=0f, baseY = 0f;
+            float baseX = 0f, baseY = 0f;
             if (baseXf == null || baseYf == null)
             {
                 baseX = 512f * (_i % 32);
@@ -693,7 +741,7 @@ namespace OpenVIII
                 baseX = (float)baseXf; //31
                 baseY = (float)baseYf; //23
             }
-            if(!bIsWrapSegment)
+            if (!bIsWrapSegment)
                 if (!ShouldDrawSegment((float)baseX, (float)baseY, _i))
                     return;
 
@@ -706,7 +754,7 @@ namespace OpenVIII
                 {
                     VertexPositionTexture[] vpc = new VertexPositionTexture[3];
                     vpc[0] = new VertexPositionTexture(
-                        waterSeg.parsedTriangle[k].A + new Vector3(baseX, 0,baseY),
+                        waterSeg.parsedTriangle[k].A + new Vector3(baseX, 0, baseY),
                         waterSeg.parsedTriangle[k].uvA);
                     vpc[1] = new VertexPositionTexture(
                         waterSeg.parsedTriangle[k].B + new Vector3(baseX, 0, baseY),
@@ -714,7 +762,7 @@ namespace OpenVIII
                     vpc[2] = new VertexPositionTexture(
                         waterSeg.parsedTriangle[k].C + new Vector3(baseX, 0, baseY),
                         waterSeg.parsedTriangle[k].uvC);
-                        ate.Texture = wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0);
+                    ate.Texture = wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0);
                     foreach (var pass in ate.CurrentTechnique.Passes)
                     {
                         pass.Apply();
@@ -771,7 +819,7 @@ namespace OpenVIII
 
 
             Segment seg = segments[_i];
-            for(int k = 0; k<seg.parsedTriangle.Length; k++)
+            for (int k = 0; k < seg.parsedTriangle.Length; k++)
             {
                 if (Extended.Distance3D(camPosition, seg.parsedTriangle[k].A) > renderCamDistance)
                     continue;
@@ -800,14 +848,15 @@ namespace OpenVIII
                     pass.Apply();
                     Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpc, 0, 1);
                 }
-            }      
+            }
         }
 
         private static bool CheckFrustrumView(float px, float py)
         {
+            return false; //ENABLE LATER!!!
             float ax, ay, d1, d2, d3;
-            ax = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(degrees)) * -50f;
-            ay = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(degrees)) * -50f;
+            ax = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(degrees)) * -100f;
+            ay = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(degrees)) * -100f;
 
             Vector3 left = Vector3.Zero, right = Vector3.Zero;
             left.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(Extended.ClampOverload(degrees - FOV, 0, 359))) * renderCamDistance * 2;
@@ -822,4 +871,4 @@ namespace OpenVIII
             return ((d1 > 0 || d2 > 0 || d3 > 0) && (d1 < 0 || d2 < 0 || d3 < 0));
         }
     }
- }
+}
