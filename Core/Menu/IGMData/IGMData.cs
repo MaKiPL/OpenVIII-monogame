@@ -2,39 +2,32 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace OpenVIII
 {
-
     public class IGMData : Menu_Base
     {
-
         #region Fields
 
         public bool[] BLANKS;
+
         /// <summary>
         /// location of where pointer finger will point.
         /// </summary>
         public Point[] CURSOR;
 
         public IGMDataItem[,] ITEM;
+
         /// <summary>
         /// Size of the entire area
         /// </summary>
         public Rectangle[] SIZE;
 
-        private Characters character = Characters.Blank;
         protected bool skipdata = false;
         protected bool skipsnd = false;
-        private Characters visableCharacter = Characters.Blank;
-
-        /// <summary>
-        /// Position of party member 0,1,2. If -1 at the time of setting the character wasn't in the party.
-        /// </summary>
-        protected sbyte PartyPos { get; private set; }
-
         private int _cursor_select;
+        private Characters character = Characters.Blank;
+        private Characters visableCharacter = Characters.Blank;
 
         #endregion Fields
 
@@ -52,20 +45,14 @@ namespace OpenVIII
             {
                 Character = character ?? Characters.Blank;
                 VisableCharacter = visablecharacter ?? Character;
-                PartyPos = (sbyte)(Memory.State?.PartyData?.FindIndex(x=>x.Equals(Character)) ?? -1);
+                PartyPos = (sbyte)(Memory.State?.PartyData?.FindIndex(x => x.Equals(Character)) ?? -1);
             }
             Init(count, depth, container, cols, rows);
         }
 
-
         #endregion Constructors
 
         #region Properties
-        public void SetModeChangeEvent(ref EventHandler<Enum> eventHandler) => eventHandler += ModeChangeEvent;
-
-        protected virtual void ModeChangeEvent(object sender, Enum e)
-        {
-        }
 
         public int cols { get; private set; }
         public IGMDataItem CONTAINER { get; set; }
@@ -90,13 +77,10 @@ namespace OpenVIII
         public byte Depth { get; private set; }
 
         public Dictionary<int, FF8String> Descriptions { get; protected set; }
-
         public int rows { get; private set; }
         public Table_Options Table_Options { get; set; } = Table_Options.Default;
         public static Point MouseLocation => Menu.MouseLocation;
-
         public static Vector2 TextScale => Menu.TextScale;
-
         /// <summary>
         /// Container's Height
         /// </summary>
@@ -121,15 +105,21 @@ namespace OpenVIII
         {
             get => character; set
             {
-                if(character != value && value != Characters.Blank)
+                if (character != value && value != Characters.Blank)
                     character = value;
             }
         }
+
+        /// <summary>
+        /// Position of party member 0,1,2. If -1 at the time of setting the character wasn't in the party.
+        /// </summary>
+        protected sbyte PartyPos { get; private set; }
+
         protected Characters VisableCharacter
         {
             get => visableCharacter; set
             {
-                if(visableCharacter != value && value != Characters.Blank)
+                if (visableCharacter != value && value != Characters.Blank)
                     visableCharacter = value;
             }
         }
@@ -143,12 +133,6 @@ namespace OpenVIII
         #endregion Indexers
 
         #region Methods
-
-        public void DrawPointer(Point cursor, Vector2? offset = null, bool blink = false)
-        {
-            if ((Cursor_Status & Cursor_Status.Hidden) == 0)
-            Menu.DrawPointer(cursor, offset, blink);
-        }
 
         /// <summary>
         /// Convert to rectangle based on container.
@@ -219,7 +203,13 @@ namespace OpenVIII
                 }
             }
         }
-        
+
+        public void DrawPointer(Point cursor, Vector2? offset = null, bool blink = false)
+        {
+            if ((Cursor_Status & Cursor_Status.Hidden) == 0)
+                Menu.DrawPointer(cursor, offset, blink);
+        }
+
         public void Init(int count, int depth, IGMDataItem container = null, int? cols = null, int? rows = null)
         {
             if (count <= 0 || depth <= 0)
@@ -260,21 +250,20 @@ namespace OpenVIII
         {
             bool ret = false;
             bool mouse = false;
-
             if ((Cursor_Status & Cursor_Status.Enabled) != 0)
             {
                 Cursor_Status &= ~Cursor_Status.Blinking;
                 if ((Cursor_Status & Cursor_Status.Static) == 0)
-                for (int i = 0; i < SIZE.Length; i++)
-                {
-                    if (SIZE[i].Contains(MouseLocation) && !SIZE[i].IsEmpty && CURSOR[i] != Point.Zero && !BLANKS[i])
+                    for (int i = 0; i < SIZE.Length; i++)
                     {
-                        CURSOR_SELECT = i;
-                        ret = true;
-                        mouse = true;
+                        if (SIZE[i].Contains(MouseLocation) && !SIZE[i].IsEmpty && CURSOR[i] != Point.Zero && !BLANKS[i])
+                        {
+                            CURSOR_SELECT = i;
+                            ret = true;
+                            mouse = true;
+                        }
                     }
-                }
-                if (!ret && (Cursor_Status & Cursor_Status.Horizontal) != 0 && (Cursor_Status & Cursor_Status.Static)==0)
+                if (!ret && (Cursor_Status & Cursor_Status.Horizontal) != 0 && (Cursor_Status & Cursor_Status.Static) == 0)
                 {
                     if (Input.Button(Buttons.Left))
                     {
@@ -396,6 +385,7 @@ namespace OpenVIII
             PartyPos = (sbyte)(Memory.State?.PartyData?.FindIndex(x => x.Equals(Character)) ?? -1);
             Refresh();
         }
+
         /// <summary>
         /// Things that change rarely. Like a party member changes or Laguna dream happens.
         /// </summary>
@@ -403,6 +393,7 @@ namespace OpenVIII
         {
         }
 
+        public void SetModeChangeEvent(ref EventHandler<Enum> eventHandler) => eventHandler += ModeChangeEvent;
 
         /// <summary>
         /// Things that change on every update.
@@ -469,9 +460,12 @@ namespace OpenVIII
         {
         }
 
+        protected virtual void ModeChangeEvent(object sender, Enum e)
+        {
+        }
+
         protected virtual void SetCursor_select(int value) => _cursor_select = value;
 
         #endregion Methods
     }
-
 }

@@ -2,7 +2,6 @@
 
 namespace OpenVIII
 {
-
     public abstract class IGMDataItem : Menu_Base
     {
         #region Fields
@@ -44,6 +43,7 @@ namespace OpenVIII
         #region Methods
 
         public static void DrawPointer(Point cursor, Vector2? offset = null, bool blink = false) => Menu.DrawPointer(cursor, offset, blink);
+
         public static implicit operator Color(IGMDataItem v) => v.Color;
 
         public static implicit operator IGMDataItem(IGMData v) => new IGMDataItem_IGMData(v);
@@ -53,14 +53,18 @@ namespace OpenVIII
         //public virtual object Data { get; public set; }
         //public virtual FF8String Data { get; public set; }
         public abstract void Draw();
+
         public override bool Inputs() => false;
-        protected override void Init() { }
+
         public override void Refresh()
         { }
 
         public override bool Update() => false;
 
+        protected override void Init()
+        {
+        }
+
         #endregion Methods
     }
-
 }

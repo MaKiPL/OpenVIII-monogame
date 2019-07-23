@@ -4,8 +4,6 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    #region Classes
-
     public partial class IGM_Junction
     {
         #region Classes
@@ -49,6 +47,12 @@ namespace OpenVIII
                    IGM_Junction != null && (IGM_Junction.GetMode().Equals(Mode.Mag_Stat)),
                    IGM_Junction != null && (IGM_Junction.GetMode().Equals(Mode.Mag_Pool_Stat)),
                    (IGM_Junction.GetMode().Equals(Mode.Mag_Stat) || IGM_Junction.GetMode().Equals(Mode.Mag_Pool_Stat)) && cursor);
+
+            public override bool Inputs()
+            {
+                if (Enabled) Cursor_Status |= Cursor_Status.Enabled;
+                return base.Inputs();
+            }
 
             public override bool Inputs_CANCEL()
             {
@@ -252,6 +256,4 @@ namespace OpenVIII
 
         #endregion Classes
     }
-
-    #endregion Classes
 }

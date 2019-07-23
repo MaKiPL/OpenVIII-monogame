@@ -61,8 +61,8 @@ namespace OpenVIII
         private static IGM_Lobby _igm_lobby;
 
         private static object _igm_lock = new object();
-        private Vector2 _size;
         private Characters _character = Characters.Blank;
+        private Vector2 _size;
         private Characters _visableCharacter = Characters.Blank;
 
         #endregion Fields
@@ -119,6 +119,7 @@ namespace OpenVIII
         /// </summary>
         public static IGM_Lobby IGM_Lobby => _igm_lobby;
 
+        public static Vector2 StaticSize { get; protected set; }
         /// <summary>
         /// Size of text the real game doesn't use a 1:1 ratio.
         /// </summary>
@@ -133,7 +134,7 @@ namespace OpenVIII
         /// Size of the menu. If kept in a 4:3 region it won't scale down till after losing enough width.
         /// </summary>
         public Vector2 Size { get => _size; protected set => _size = value; }
-        public static Vector2 StaticSize { get; protected set; }
+
         /// <summary>
         /// Adjusted mouse location used to determine if mouse is highlighting a button.
         /// </summary>
@@ -189,7 +190,7 @@ namespace OpenVIII
                 font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: Fade, skipdraw: true);
                 if (dst.Size == Point.Zero)
                 {
-                    dst.Size = font.Size ;
+                    dst.Size = font.Size;
                     if (title == null)
                     {
                         dst.Inflate(20, 10);
@@ -218,28 +219,28 @@ namespace OpenVIII
                 dst = backup;
             }
             if (buffer != null && buffer.Length > 0)
-                {
-                    //font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: Fade, skipdraw: true);
-                    if ((options & Box_Options.Indent) != 0)
-                        dst.Offset(70 * textScale.Value.X, 0);
-                    else if ((options & Box_Options.Center) != 0)
-                        dst.Offset(dst.Width / 2 - font.Width / 2, 0);
-                    else
-                        dst.Offset(25 * textScale.Value.X, 0);
+            {
+                //font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: Fade, skipdraw: true);
+                if ((options & Box_Options.Indent) != 0)
+                    dst.Offset(70 * textScale.Value.X, 0);
+                else if ((options & Box_Options.Center) != 0)
+                    dst.Offset(dst.Width / 2 - font.Width / 2, 0);
+                else
+                    dst.Offset(25 * textScale.Value.X, 0);
 
-                    if ((options & Box_Options.Buttom) != 0)
-                        dst.Offset(0, (dst.Height - 48));
-                    else if ((options & Box_Options.Middle) != 0)
-                        dst.Offset(0, dst.Height / 2 - font.Height / 2);
-                    else
-                        dst.Offset(0, 21);
+                if ((options & Box_Options.Buttom) != 0)
+                    dst.Offset(0, (dst.Height - 48));
+                else if ((options & Box_Options.Middle) != 0)
+                    dst.Offset(0, dst.Height / 2 - font.Height / 2);
+                else
+                    dst.Offset(0, 21);
 
-                    dst.Y = (int)(dst.Y * boxScale.Value.Y);
-                    font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: Fade, skipdraw: (options & Box_Options.SkipDraw) != 0);
-                    cursor = dst.Location;
-                    cursor.Y += (int)(TextScale.Y * 6); // 12 * (3.0375/2)
-                }
-            
+                dst.Y = (int)(dst.Y * boxScale.Value.Y);
+                font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: Fade, skipdraw: (options & Box_Options.SkipDraw) != 0);
+                cursor = dst.Location;
+                cursor.Y += (int)(TextScale.Y * 6); // 12 * (3.0375/2)
+            }
+
             return new Tuple<Rectangle, Point, Rectangle>(hotspot, cursor, font);
         }
 
@@ -342,7 +343,7 @@ namespace OpenVIII
         }
 
         public Enum GetMode() => _mode;
-        
+
         public override bool Inputs() => false;
 
         public override void Refresh() => Refresh(false);
@@ -380,7 +381,7 @@ namespace OpenVIII
             }
             return false;
         }
-        
+
         public virtual void StartDraw()
         {
             if (Enabled)
