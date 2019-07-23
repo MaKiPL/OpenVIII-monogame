@@ -107,7 +107,7 @@ namespace OpenVIII
             //private byte texSwitch, flags;
 
             public Texflags texFlags;
-            public VertFlags vertFlags;
+            public byte vertFlags;
 
             public byte TPage { get => (byte)((TPage_clut >> 4) & 0x0F); }
             public byte Clut { get => (byte)(TPage_clut & 0x0F); }
@@ -156,7 +156,8 @@ namespace OpenVIII
             bWalkable = 0b10000000
         }
 
-        const byte TRIFLAGS_COLLIDE = 0b10000000;
+        const byte TRIFLAGS_COLLIDE =    0b10000000;
+        const byte TRIFLAGS_FORESTTEST = 0b01000000; 
 
         private static int GetSegment(int segID) => segID * WM_SEG_SIZE;
         private static void InitWorld()
@@ -343,7 +344,7 @@ namespace OpenVIII
             if (Input.Button(Keys.D9))
                 worldState = worldState == _worldState._1active ? _worldState._9debugFly : _worldState._1active;
 
-            SimpleInputUpdate();
+            SimpleInputUpdate(); //lastplayerposition = playerposition here
             CollisionUpdate();
         }
 
@@ -352,6 +353,7 @@ namespace OpenVIII
         /// </summary>
         private static void SimpleInputUpdate()
         {
+            lastPlayerPosition = playerPosition;
             if (Input.Button(Keys.D8))
                 playerPosition.X += 1f;
             if (Input.Button(Keys.D2))
@@ -366,11 +368,14 @@ namespace OpenVIII
             if(Input.Button(Buttons.Down))
             {
                 animationId = 1;
-                camPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees));
-                camPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees));
-                localMchRotation = (float)(Extended.Radians(-degrees - 90f));
+                playerPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees));
+                playerPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees));
+                localMchRotation = (float)(Extended.Radians(-degrees + 90f));
             }
         }
+
+        private static byte bSelectedWalkable = 0;
+        private static int countofDebugFaces = 0;
 
         private static void CollisionUpdate()
         {
@@ -386,25 +391,36 @@ namespace OpenVIII
             }
             if (ii.Count == 0)
                 return;
+            countofDebugFaces = ii.Count;
             foreach (var bart in ii)
             {
-                float minimumX = (new float[] { bart.Item1.A.X, bart.Item1.B.X, bart.Item1.C.X }).Min();
-                float minimumZ = (new float[] { bart.Item1.A.Z, bart.Item1.B.Z, bart.Item1.C.Z }).Min();
-                float maximumX = (new float[] { bart.Item1.A.X, bart.Item1.B.X, bart.Item1.C.X }).Max();
-                float maximumZ = (new float[] { bart.Item1.A.Z, bart.Item1.B.Z, bart.Item1.C.Z }).Max();
-                if (!Extended.In(playerPosition.X, minimumX, maximumX))
-                    continue;
-                if (!Extended.In(playerPosition.Z, minimumZ, maximumZ))
-                    continue;
-                Vector3 squaPos = bart.Item2.Interpolate(bart.Item1.A, bart.Item1.B, bart.Item1.C);
-                //tunnels debug
-                if(true)
-                    if (Math.Abs(squaPos.Y - playerPosition.Y) > 10f)
+                //if (ii.Count != 1)
+                //{
+                    float minimumX = (new float[] { bart.Item1.A.X, bart.Item1.B.X, bart.Item1.C.X }).Min();
+                    float minimumZ = (new float[] { bart.Item1.A.Z, bart.Item1.B.Z, bart.Item1.C.Z }).Min();
+                    float maximumX = (new float[] { bart.Item1.A.X, bart.Item1.B.X, bart.Item1.C.X }).Max();
+                    float maximumZ = (new float[] { bart.Item1.A.Z, bart.Item1.B.Z, bart.Item1.C.Z }).Max();
+                    if (!Extended.In(playerPosition.X, minimumX, maximumX))
                         continue;
+                    if (!Extended.In(playerPosition.Z, minimumZ, maximumZ))
+                        continue;
+                //}
+                Vector3 squaPos = bart.Item2.Interpolate(bart.Item1.A, bart.Item1.B, bart.Item1.C);
+                bSelectedWalkable = (byte)bart.Item1.parentPolygon.vertFlags;
+                //tunnels debug
+
+                //if ((bSelectedWalkable & TRIFLAGS_FORESTTEST)!=0)
+                //    if (Math.Abs(squaPos.Y - playerPosition.Y) > 10f)
+                //        continue;
+
                 //tunnels debug end
+                if ((byte)(bSelectedWalkable&TRIFLAGS_COLLIDE) == 0)
+                    continue;
                 playerPosition.Y = squaPos.Y;
                 return;
             }
+            //out of loop- failed to obtain collision or abandon move
+            playerPosition = lastPlayerPosition;
         }
 
         const float defaultmaxMoveSpeed = 1f;
@@ -545,6 +561,7 @@ namespace OpenVIII
                 $"World Map Camera: ={camPosition}\n" +
                 $"Player position: ={playerPosition}\n" +
                 $"Segment Position: ={segmentPosition}\n" +
+                $"selWalk: =0b{Convert.ToString(bSelectedWalkable,2).PadLeft(8, '0')} of {countofDebugFaces}\n" +
                 $"Press 9 to enable debug FPS camera: ={(worldState== _worldState._1active ? "orbit camera" : "FPS debug camera")}\n" +
                 $"FPS camera degrees: ={degrees}° (WARNING! Frustum cull disabled!)\n" +
                 $"FOV: ={FOV}", 30, 20, lineSpacing: 5);
