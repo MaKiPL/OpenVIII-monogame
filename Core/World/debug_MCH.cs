@@ -12,7 +12,7 @@ namespace OpenVIII
 {
     public class Debug_MCH
     {
-        const float MODEL_SCALE = 10f;
+        const float MODEL_SCALE = 20f;
         private const float TEX_SIZEW = 44.0f;
         private const float TEX_SIZEH = 64.0f;
         private uint pBase;

@@ -397,7 +397,7 @@ namespace OpenVIII
                 if (!Extended.In(playerPosition.Z, minimumZ, maximumZ))
                     continue;
                 Vector3 squaPos = bart.Item2.Interpolate(bart.Item1.A, bart.Item1.B, bart.Item1.C);
-                playerPosition = squaPos;
+                playerPosition.Y = squaPos.Y;
                 return;
             }
         }
@@ -511,7 +511,7 @@ namespace OpenVIII
 
 
 
-            segmentPosition = new Vector2((int)(camPosition.X / 512) * -1, (int)(camPosition.Z / 512) * -1);
+            segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1);
             for (int i = 0; i < 768; i++)
                 DrawSegment(i);
 
@@ -549,7 +549,7 @@ namespace OpenVIII
         }
 
         private static int animationId = 0;
-        static Vector3 localMchTranslation = new Vector3(0, 15f, 0);
+        static Vector3 localMchTranslation = new Vector3(0, 6f, 0);
 
         static float localMchRotation = -90f;
 
