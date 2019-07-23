@@ -19,7 +19,7 @@ namespace OpenVIII
 
             protected override void Init()
             {
-                Pos =  new Rectangle(0,0,881, 606);
+                Size = new Vector2(881, 606);
                 Data = new Dictionary<Enum, IGMData>
                 {
                     { Mode.All, new IGMData_Group(
@@ -29,15 +29,15 @@ namespace OpenVIII
                             (byte)FF8TextTagCode.Key,
                             (byte)FF8TextTagKey.Confirm,
                             (byte)FF8TextTagCode.Color,
-                            (byte)FF8TextTagColor.White})+" "+(Memory.Strings.Read(Strings.FileID.KERNEL,30,22)),new Rectangle(new Point(0,(int)Pos.Height-78),new Point((int)Pos.Height,78)),options: Box_Options.Center| Box_Options.Middle))
+                            (byte)FF8TextTagColor.White})+" "+(Memory.Strings.Read(Strings.FileID.KERNEL,30,22)),new Rectangle(new Point(0,(int)Size.Y-78),new Point((int)Size.X,78)),options: Box_Options.Center| Box_Options.Middle))
                     )},
                     { Mode.Exp,
                     new IGMData_PlayerEXPGroup (
                         new IGMData_PlayerEXP(_exp,0),new IGMData_PlayerEXP(_exp,1),new IGMData_PlayerEXP(_exp,2)
                         )
-                    { CONTAINER = new IGMDataItem_Empty(new Rectangle(Point.Zero,Pos.Size))} },
+                    { CONTAINER = new IGMDataItem_Empty(new Rectangle(Point.Zero,Size.ToPoint()))} },
                     { Mode.Items,
-                    new IGMData_PartyItems(_items,new IGMDataItem_Empty(new Rectangle(Point.Zero,Pos.Size))) },
+                    new IGMData_PartyItems(_items,new IGMDataItem_Empty(new Rectangle(Point.Zero,Size.ToPoint()))) },
 
                 };
                 SetMode(Mode.Items);

@@ -7,6 +7,8 @@ namespace OpenVIII
     {
         #region Fields
 
+        //protected T _data;
+        protected Rectangle _pos;
 
         #endregion Fields
 
@@ -14,7 +16,7 @@ namespace OpenVIII
 
         public IGMDataItem(Rectangle? pos = null, Vector2? scale = null)
         {
-            Pos = pos ?? Rectangle.Empty;
+            _pos = pos ?? Rectangle.Empty;
             Scale = scale ?? TextScale;
         }
 
@@ -23,8 +25,16 @@ namespace OpenVIII
         #region Properties
 
         public Color Color { get; set; } = Color.White;
+        public int Height { get => _pos.Height; set => _pos.Height = value; }
+        /// <summary>
+        /// Where to draw this item.
+        /// </summary>
+        public virtual Rectangle Pos { get => _pos; set => _pos = value; }
 
         public Vector2 Scale { get; set; }
+        public int Width { get => _pos.Width; set => _pos.Width = value; }
+        public int X { get => _pos.X; set => _pos.X = value; }
+        public int Y { get => _pos.Y; set => _pos.Y = value; }
         public static float Blink_Amount => Menu.Blink_Amount;
         public static float Fade => Menu.Fade;
         public static Vector2 TextScale => Menu.TextScale;
@@ -38,10 +48,11 @@ namespace OpenVIII
 
         public static implicit operator IGMDataItem(IGMData v) => new IGMDataItem_IGMData(v);
 
+        public static implicit operator Rectangle(IGMDataItem v) => v.Pos;
 
         //public virtual object Data { get; public set; }
         //public virtual FF8String Data { get; public set; }
-        public override void Draw() { }
+        public abstract void Draw();
         public override bool Inputs() => false;
         protected override void Init() { }
         public override void Refresh()

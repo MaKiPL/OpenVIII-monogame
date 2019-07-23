@@ -8,9 +8,11 @@ namespace OpenVIII
     public abstract class Menu : Menu_Base
     {
         #region Fields
+
         public static EventHandler FadedInHandler;
         public static EventHandler FadedOutHandler;
         public Dictionary<Enum, IGMData> Data;
+
         public EventHandler<Enum> ModeChangeHandler;
         protected Enum _mode;
         protected bool skipdata;
@@ -59,6 +61,9 @@ namespace OpenVIII
         private static IGM_Lobby _igm_lobby;
 
         private static object _igm_lock = new object();
+        private Vector2 _size;
+        private Characters _character = Characters.Blank;
+        private Characters _visableCharacter = Characters.Blank;
 
         #endregion Fields
 
@@ -127,14 +132,36 @@ namespace OpenVIII
         /// <summary>
         /// Size of the menu. If kept in a 4:3 region it won't scale down till after losing enough width.
         /// </summary>
+        public Vector2 Size { get => _size; protected set => _size = value; }
         public static Vector2 StaticSize { get; protected set; }
         /// <summary>
         /// Adjusted mouse location used to determine if mouse is highlighting a button.
         /// </summary>
         public static Point MouseLocation => Input.MouseLocation.Transform(Menu.Focus);
 
-   
-        
+        /// <summary>
+        /// Character who has the junctions and inventory. Same as VisableCharacter unless TeamLaguna.
+        /// </summary>
+        protected Characters Character
+        {
+            get => _character; set
+            {
+                if (_character != value && value != Characters.Blank)
+                    _character = value;
+            }
+        }
+
+        /// <summary>
+        /// Required to support Laguna's Party. They have unique stats but share junctions and inventory.
+        /// </summary>
+        protected Characters VisableCharacter
+        {
+            get => _visableCharacter; set
+            {
+                if (_visableCharacter != value && value != Characters.Blank)
+                    _visableCharacter = value;
+            }
+        }
 
         /// <summary>
         /// Viewport dimensions
@@ -294,7 +321,7 @@ namespace OpenVIII
             }
         }
 
-        public override void Draw()
+        public virtual void Draw()
         {
             StartDraw();
             DrawData();
@@ -365,7 +392,7 @@ namespace OpenVIII
             bool ret = false;
             UpdateFade(this);
             GenerateFocus();
-            StaticSize = Pos.Size.ToVector2();
+            StaticSize = Size;
             if (Enabled)
             {
                 //todo detect when there is no saves detected.
@@ -383,7 +410,7 @@ namespace OpenVIII
 
         protected void GenerateFocus(Vector2? inputsize = null, Box_Options options = Box_Options.Default)
         {
-            Vector2 size = inputsize ?? Pos.Size.ToVector2();
+            Vector2 size = inputsize ?? Size;
             Vector2 Zoom = Memory.Scale(size.X, size.Y, Memory.ScaleMode.FitBoth);
             size /= 2;
             Vector2 t = new Vector2(vp.X / 2, vp.Y / 2);

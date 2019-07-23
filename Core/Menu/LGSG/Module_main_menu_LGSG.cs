@@ -19,8 +19,8 @@ namespace OpenVIII
         private static Vector2 scale;
         private static Point ml;
         private static Tuple<FF8String, FF8String, FF8String> LGSGHEADER;
-        private static Matrix IGM_focus;
         private static Vector2 IGM_Size;
+        private static Matrix IGM_focus;
 
         #endregion Fields
 
@@ -125,7 +125,7 @@ namespace OpenVIII
                 Width = 840,
                 Height = 477,
             };
-            IGM_Size = new Vector2 (843,630);
+            IGM_Size = new Vector2 { X = 843, Y = 630 };
             Vector2 Zoom = Memory.Scale(IGM_Size.X, IGM_Size.Y, Memory.ScaleMode.FitBoth);
 
             IGM_focus = Matrix.CreateTranslation(-dst.X + (IGM_Size.X / -2), -dst.Y + (IGM_Size.Y / -2), 0) *

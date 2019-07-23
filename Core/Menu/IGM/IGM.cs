@@ -59,7 +59,7 @@ namespace OpenVIII
 
         protected override void Init()
         {
-            Pos = new Rectangle (0,0,843,630);
+            Size = new Vector2 { X = 843, Y = 630 };
             //TextScale = new Vector2(2.545455f, 3.0375f);
             Data.Add(SectionName.Header, new IGMData_Header());
             Data.Add(SectionName.Footer, new IGMData_Footer());

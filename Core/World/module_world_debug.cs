@@ -348,7 +348,7 @@ namespace OpenVIII
                     {
                             ate.Texture = chara.GetCharaTexture(collectionDebug.Item2[i]);
                         if (collectionDebug.Item2[i / 3] == 0)
-                            
+                            ;
                         foreach (var pass in ate.CurrentTechnique.Passes)
                         {
                             pass.Apply();

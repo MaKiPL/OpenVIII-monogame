@@ -16,6 +16,7 @@ namespace OpenVIII
         /// <summary>
         /// location of where pointer finger will point.
         /// </summary>
+        public Point[] CURSOR;
 
         public IGMDataItem[,] ITEM;
         /// <summary>
@@ -23,14 +24,17 @@ namespace OpenVIII
         /// </summary>
         public Rectangle[] SIZE;
 
+        private Characters character = Characters.Blank;
         protected bool skipdata = false;
         protected bool skipsnd = false;
+        private Characters visableCharacter = Characters.Blank;
 
         /// <summary>
         /// Position of party member 0,1,2. If -1 at the time of setting the character wasn't in the party.
         /// </summary>
         protected sbyte PartyPos { get; private set; }
 
+        private int _cursor_select;
 
         #endregion Fields
 
@@ -57,20 +61,29 @@ namespace OpenVIII
         #endregion Constructors
 
         #region Properties
-        public override void SetModeChangeEvent(ref EventHandler<Enum> eventHandler) => eventHandler += ModeChangeEvent;
+        public void SetModeChangeEvent(ref EventHandler<Enum> eventHandler) => eventHandler += ModeChangeEvent;
 
         protected virtual void ModeChangeEvent(object sender, Enum e)
         {
         }
 
         public int cols { get; private set; }
+        public IGMDataItem CONTAINER { get; set; }
         /// <summary>
         /// Total number of items
         /// </summary>
         public byte Count { get; private set; }
 
+        public int CURSOR_SELECT
+        {
+            get => GetCursor_select(); set
+            {
+                if ((Cursor_Status & Cursor_Status.Enabled) != 0 && value >= 0 && value < CURSOR.Length && CURSOR[value] != Point.Zero)
+                    SetCursor_select(value);
+            }
+        }
 
-
+        public Cursor_Status Cursor_Status { get; set; } = Cursor_Status.Disabled;
         /// <summary>
         /// How many Peices per Item. Example 1 box could have 9 things to draw in it.
         /// </summary>
@@ -87,24 +100,39 @@ namespace OpenVIII
         /// <summary>
         /// Container's Height
         /// </summary>
-        public override int Height => CONTAINER != null ? CONTAINER.Pos.Height : 0;
+        public int Height => CONTAINER != null ? CONTAINER.Pos.Height : 0;
 
         /// <summary>
         /// Container's Width
         /// </summary>
-        public override int Width => CONTAINER != null ? CONTAINER.Pos.Width : 0;
+        public int Width => CONTAINER != null ? CONTAINER.Pos.Width : 0;
 
         /// <summary>
         /// Container's X Position
         /// </summary>
-        public override int X => CONTAINER != null ? CONTAINER.Pos.X : 0;
+        public int X => CONTAINER != null ? CONTAINER.Pos.X : 0;
 
         /// <summary>
         /// Container's Y Position
         /// </summary>
-        public override int Y => CONTAINER != null ? CONTAINER.Pos.Y : 0;
+        public int Y => CONTAINER != null ? CONTAINER.Pos.Y : 0;
 
-
+        protected Characters Character
+        {
+            get => character; set
+            {
+                if(character != value && value != Characters.Blank)
+                    character = value;
+            }
+        }
+        protected Characters VisableCharacter
+        {
+            get => visableCharacter; set
+            {
+                if(visableCharacter != value && value != Characters.Blank)
+                    visableCharacter = value;
+            }
+        }
 
         #endregion Properties
 
@@ -173,7 +201,7 @@ namespace OpenVIII
         /// <summary>
         /// Draw all items
         /// </summary>
-        public override void Draw()
+        public virtual void Draw()
         {
             if (Enabled)
             {
@@ -361,7 +389,7 @@ namespace OpenVIII
                 init_debugger_Audio.PlaySound(0);
         }
 
-        public override void Refresh(Characters character, Characters? visablecharacter = null)
+        public virtual void Refresh(Characters character, Characters? visablecharacter = null)
         {
             Character = character;
             VisableCharacter = visablecharacter ?? character;
@@ -392,6 +420,7 @@ namespace OpenVIII
             return ret;
         }
 
+        protected int GetCursor_select() => _cursor_select;
 
         /// <summary>
         /// Things that are fixed values at startup.
@@ -440,6 +469,7 @@ namespace OpenVIII
         {
         }
 
+        protected virtual void SetCursor_select(int value) => _cursor_select = value;
 
         #endregion Methods
     }
