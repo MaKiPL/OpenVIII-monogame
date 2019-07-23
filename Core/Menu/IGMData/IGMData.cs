@@ -185,7 +185,7 @@ namespace OpenVIII
         /// <summary>
         /// Draw all items
         /// </summary>
-        public virtual void Draw()
+        public override void Draw()
         {
             if (Enabled)
             {

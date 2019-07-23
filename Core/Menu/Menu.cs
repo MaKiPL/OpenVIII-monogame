@@ -322,7 +322,7 @@ namespace OpenVIII
             }
         }
 
-        public virtual void Draw()
+        public override void Draw()
         {
             StartDraw();
             DrawData();

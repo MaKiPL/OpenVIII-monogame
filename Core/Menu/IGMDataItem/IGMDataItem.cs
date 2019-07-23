@@ -52,7 +52,8 @@ namespace OpenVIII
 
         //public virtual object Data { get; public set; }
         //public virtual FF8String Data { get; public set; }
-        public abstract void Draw();
+        public override void Draw()
+        { }
 
         public override bool Inputs() => false;
 

@@ -17,6 +17,8 @@
 
         #region Methods
 
+        public abstract void Draw();
+
         /// <summary>
         /// Hide object prevents drawing, update, inputs.
         /// </summary>

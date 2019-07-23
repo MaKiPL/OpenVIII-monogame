@@ -6,7 +6,6 @@ namespace OpenVIII
 
     public class IGMDataItem_Int : IGMDataItem//<Int>
     {
-        private byte _palette;
         private int _spaces;
         private int SpaceWidth;
         private Rectangle original_pos;
