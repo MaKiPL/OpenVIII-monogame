@@ -2,7 +2,7 @@
 
 namespace OpenVIII
 {
-    public class IGMDataItem_Face : IGMDataItem<Faces.ID>
+    public class IGMDataItem_Face : IGMDataItem, I_Data<Faces.ID>
     {
         #region Fields
 
@@ -12,8 +12,9 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMDataItem_Face(Faces.ID data, Rectangle? pos = null, bool blink = false, float blink_adjustment = 1f) : base(data, pos)
+        public IGMDataItem_Face(Faces.ID data, Rectangle? pos = null, bool blink = false, float blink_adjustment = 1f) : base(pos)
         {
+            Data = data;
             Blink = blink;
             Blink_Adjustment = blink_adjustment;
         }
@@ -22,6 +23,7 @@ namespace OpenVIII
 
         #region Properties
 
+        public Faces.ID Data { get; set; }
         public byte Palette
         {
             get => _palette; set

@@ -3,26 +3,27 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace OpenVIII
 {
-    public abstract class IGMDataItem<T> : IGMDataItem
-    {
-        #region Fields
+    //public abstract class IGMDataItem, IIGMDataItem<T> : IGMDataItem, IIGMDataItem, IIGMDataItem<T>
+    //{
+    //    #region Fields
 
-        private T _data;
+    // private T _data;
 
-        #endregion Fields
+    // #endregion Fields
 
-        #region Constructors
+    // #region Constructors
 
-        public IGMDataItem(T data, Rectangle? pos = null, Vector2? scale = null) : base(pos, scale) => Data = data;
+    // public IGMDataItem(T data, Rectangle? pos = null, Vector2? scale = null) : base(pos, scale) =>
+    // Data = data;
 
-        #endregion Constructors
+    // #endregion Constructors
 
-        #region Properties
+    // #region Properties
 
-        public virtual T Data { get => _data; set => _data = value; }
+    // public virtual T Data { get => _data; set => _data = value; }
 
-        #endregion Properties
-    }
+    //    #endregion Properties
+    //}
 
     public abstract class IGMDataItem : Menu_Base
     {

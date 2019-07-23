@@ -3,12 +3,13 @@ using System;
 
 namespace OpenVIII
 {
-    public class IGMDataItem_Box : IGMDataItem<FF8String>
+    public class IGMDataItem_Box : IGMDataItem, I_Data<FF8String>
     {
         #region Constructors
 
-        public IGMDataItem_Box(FF8String data = null, Rectangle? pos = null, Icons.ID? title = null, Box_Options options = Box_Options.Default) : base(data, pos)
+        public IGMDataItem_Box(FF8String data = null, Rectangle? pos = null, Icons.ID? title = null, Box_Options options = Box_Options.Default) : base(pos)
         {
+            Data = data;
             Title = title;
             Options = options;
         }
@@ -17,6 +18,7 @@ namespace OpenVIII
 
         #region Properties
 
+        public FF8String Data { get; set; }
         public Tuple<Rectangle, Point, Rectangle> Dims { get; private set; }
         public Box_Options Options { get; set; }
         public Icons.ID? Title { get; set; }

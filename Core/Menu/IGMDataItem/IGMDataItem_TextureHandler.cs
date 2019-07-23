@@ -2,15 +2,19 @@
 
 namespace OpenVIII
 {
-    public class IGMDataItem_TextureHandler : IGMDataItem<TextureHandler>
+    public class IGMDataItem_TextureHandler : IGMDataItem, I_Data<TextureHandler>
     {
         #region Constructors
 
-        public IGMDataItem_TextureHandler(TextureHandler data, Rectangle? pos = null) : base(data, pos)
-        {
-        }
+        public IGMDataItem_TextureHandler(TextureHandler data, Rectangle? pos = null) : base(pos) => Data = data;
 
         #endregion Constructors
+
+        #region Properties
+
+        public TextureHandler Data { get; set; }
+
+        #endregion Properties
 
         #region Methods
 

@@ -2,7 +2,7 @@
 
 namespace OpenVIII
 {
-    public class IGMDataItem_String : IGMDataItem<FF8String>
+    public class IGMDataItem_String : IGMDataItem, I_Data<FF8String>
     {
         #region Fields
 
@@ -12,8 +12,9 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMDataItem_String(FF8String data, Rectangle? pos = null, Font.ColorID? color = null, Font.ColorID? faded_color = null, float blink_adjustment = 1f) : base(data, pos)
+        public IGMDataItem_String(FF8String data, Rectangle? pos = null, Font.ColorID? color = null, Font.ColorID? faded_color = null, float blink_adjustment = 1f) : base(pos)
         {
+            Data = data;
             Colorid = color ?? Font.ColorID.White;
             Faded_Colorid = faded_color ?? Colorid;
             Blink_Adjustment = blink_adjustment;
@@ -32,6 +33,7 @@ namespace OpenVIII
 
         public override bool Blink { get => base.Blink && (Palette != Faded_Palette || Colorid != Faded_Colorid); set => base.Blink = value; }
         public Font.ColorID Colorid { get; set; }
+        public FF8String Data { get; set; }
         public Font.ColorID Faded_Colorid { get; set; }
         public byte Faded_Palette { get; set; }
         public Icons.ID? Icon { get; set; }
