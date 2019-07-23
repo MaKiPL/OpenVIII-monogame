@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 
 namespace OpenVIII
 {
@@ -61,13 +62,16 @@ namespace OpenVIII
         protected override void Init()
         {
             NoInputOnUpdate = true;
-            Size = new Vector2 { X = 881, Y = 636 };
-            Data.Add(SectionName.Commands, new IGMData_Commands(new Rectangle(50, (int)(Size.Y - 204), 210, 192), Character, VisableCharacter, true));
-            Data.Add(SectionName.HP, new IGMData_HP(new Rectangle((int)(Size.X - 389), 507, 389, 126), Character, VisableCharacter));
+            Pos = new Rectangle ( 0,0,881, 636 );
+            Data.Add(SectionName.Commands, new IGMData_Commands(new Rectangle(50, (int)(Pos.Height - 204), 210, 192), Character, VisableCharacter, true));
+            Data.Add(SectionName.HP, new IGMData_HP(new Rectangle((int)(Pos.Width - 389), 507, 389, 126), Character, VisableCharacter));
             Data.ForEach(x => x.Value.SetModeChangeEvent(ref ModeChangeHandler));
             SetMode(Mode.ATB_Charging);
             base.Init();
         }
+
+        public override void SetModeChangeEvent(ref EventHandler<Enum> modeChangeHandler) => throw new NotImplementedException();
+        public override void Refresh(Characters character, Characters? visableCharacter) => throw new NotImplementedException();
 
         #endregion Methods
 

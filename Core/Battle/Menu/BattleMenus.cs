@@ -110,7 +110,7 @@ namespace OpenVIII
 
         protected override void Init()
         {
-            Size = new Vector2 { X = 881, Y = 636 };
+            Pos = new Rectangle (0,0,881,636);
             Data = new Dictionary<Enum, IGMData>()
             {
                 //{SectionName.HP, new IGMData_HP(new Rectangle((int)(Size.X-389),507,389,126))}

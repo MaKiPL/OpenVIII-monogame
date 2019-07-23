@@ -146,6 +146,7 @@
     <Compile Include="Image\Texture_Base.cs" />
     <Compile Include="Menu\IGMData\IGMData_SmallMsgBox.cs" />
     <Compile Include="Menu\IGMData\IGMData_TimedMsgBox.cs" />
+    <Compile Include="Menu\Lobby\IGMData_Selections.cs" />
     <Compile Include="Menu\Menus.cs" />
     <Compile Include="Battle\Menu\VictoryMenu.cs" />
     <Compile Include="Battle\module_battle.cs" />

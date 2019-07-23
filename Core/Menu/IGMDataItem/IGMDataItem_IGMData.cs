@@ -50,11 +50,11 @@ namespace OpenVIII
 
         public override Rectangle Pos
         {
-            get => Data.CONTAINER == null ? base.Pos : Data.CONTAINER.Pos;
+            get => Data?.CONTAINER == null ? base.Pos : Data.CONTAINER.Pos;
             set
             {
                 base.Pos = value;
-                if (Data.CONTAINER != null)
+                if (Data?.CONTAINER != null)
                     Data.CONTAINER.Pos = value;
             }
         }

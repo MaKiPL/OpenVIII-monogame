@@ -6,7 +6,6 @@ namespace OpenVIII
 
     public class IGMDataItem_Int : IGMDataItem//<Int>
     {
-        private byte _palette;
         private int _spaces;
         private int SpaceWidth;
         private Rectangle original_pos;
@@ -20,8 +19,8 @@ namespace OpenVIII
                 _digits = _data.ToString().Length;
                 if (_digits < _padding) _digits = _padding;
 
-                _pos = original_pos;
-                _pos.Offset(SpaceWidth * (_spaces - _digits), 0);
+                Pos = original_pos;
+                Pos.Offset(SpaceWidth * (_spaces - _digits), 0);
             }
         }
 
@@ -39,7 +38,7 @@ namespace OpenVIII
 
         public IGMDataItem_Int(int data, Rectangle? pos = null, byte? palette = null, Icons.NumType? numtype = null, byte? padding = null, int? spaces = null, int? spacewidth = null, Font.ColorID? colorid = null, byte? faded_palette = null, Font.ColorID? faded_colorid = null, float blink_adjustment = 1f) : base(pos)
         {
-            original_pos = _pos;
+            original_pos = Pos;
             _padding = padding ?? 1;
             Palette = palette ?? 2;
             NumType = numtype ?? 0;
