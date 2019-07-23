@@ -397,6 +397,11 @@ namespace OpenVIII
                 if (!Extended.In(playerPosition.Z, minimumZ, maximumZ))
                     continue;
                 Vector3 squaPos = bart.Item2.Interpolate(bart.Item1.A, bart.Item1.B, bart.Item1.C);
+                //tunnels debug
+                if(true)
+                    if (Math.Abs(squaPos.Y - playerPosition.Y) > 10f)
+                        continue;
+                //tunnels debug end
                 playerPosition.Y = squaPos.Y;
                 return;
             }
