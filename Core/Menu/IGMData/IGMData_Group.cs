@@ -1,9 +1,9 @@
 ﻿namespace OpenVIII
 {
-    #region Classes
-
     public class IGMData_Group : IGMData
     {
+        #region Constructors
+
         public IGMData_Group(params IGMData[] d) : base(d.Length, 1)
         {
             for (int i = 0; i < d.Length; i++)
@@ -12,7 +12,13 @@
             }
         }
 
-        public virtual void ITEMHide(IGMDataItem_IGMData i, int pos = 0) => i.Hide();
+        #endregion Constructors
+
+        #region Methods
+
+        public int cnv(int pos) => pos / Depth;
+
+        public int deep(int pos) => pos % Depth;
 
         public override void Hide()
         {
@@ -32,28 +38,6 @@
             }
         }
 
-        public virtual void ITEMShow(IGMDataItem_IGMData i, int pos = 0) => i.Show();
-
-        public override void Show()
-        {
-            base.Show();
-            if (!skipdata)
-            {
-                int pos = 0;
-                foreach (IGMDataItem i in ITEM)
-                {
-                    if (i != null)
-                        ITEMShow((IGMDataItem_IGMData)i, pos++);
-                }
-            }
-        }
-
-        public int cnv(int pos) => pos / Depth;
-
-        public int deep(int pos) => pos % Depth;
-
-        public virtual bool ITEMInputs(IGMDataItem_IGMData i, int pos = 0) => i.Inputs();
-
         public override bool Inputs()
         {
             bool ret = false;
@@ -72,6 +56,14 @@
             }
             return ret;
         }
+
+        public virtual void ITEMHide(IGMDataItem_IGMData i, int pos = 0) => i.Hide();
+
+        public virtual bool ITEMInputs(IGMDataItem_IGMData i, int pos = 0) => i.Inputs();
+
+        public virtual void ITEMShow(IGMDataItem_IGMData i, int pos = 0) => i.Show();
+
+        public virtual bool ITEMUpdate(IGMDataItem_IGMData i, int pos = 0) => i.Update();
 
         public override void Refresh()
         {
@@ -94,7 +86,19 @@
             }
         }
 
-        public virtual bool ITEMUpdate(IGMDataItem_IGMData i, int pos = 0) => i.Update();
+        public override void Show()
+        {
+            base.Show();
+            if (!skipdata)
+            {
+                int pos = 0;
+                foreach (IGMDataItem i in ITEM)
+                {
+                    if (i != null)
+                        ITEMShow((IGMDataItem_IGMData)i, pos++);
+                }
+            }
+        }
 
         public override bool Update()
         {
@@ -114,7 +118,7 @@
             }
             return false;
         }
-    }
 
-    #endregion Classes
+        #endregion Methods
+    }
 }

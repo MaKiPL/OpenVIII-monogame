@@ -2,8 +2,6 @@
 
 namespace OpenVIII
 {
-    #region Classes
-
     public partial class IGM_Junction
     {
         #region Classes
@@ -156,6 +154,4 @@ namespace OpenVIII
 
         #endregion Classes
     }
-
-    #endregion Classes
 }

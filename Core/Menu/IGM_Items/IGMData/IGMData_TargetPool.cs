@@ -4,8 +4,6 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    #region Classes
-
     public partial class IGM_Items
     {
         #region Classes
@@ -123,6 +121,14 @@ namespace OpenVIII
                 SIZE[i].Height = (int)(12 * TextScale.Y);
             }
 
+            protected override void ModeChangeEvent(object sender, Enum e)
+            {
+                if (!IsMe)
+                    Cursor_Status &= ~Cursor_Status.Enabled;
+                else
+                    IGM_Items.TargetChangeHandler?.Invoke(this, Contents[CURSOR_SELECT]);
+            }
+
             protected override void PAGE_NEXT()
             {
                 if (Pages > 1)
@@ -222,19 +228,9 @@ namespace OpenVIII
                 }
             }
 
-            protected override void ModeChangeEvent(object sender, Enum e)
-            {
-                if (!IsMe)
-                    Cursor_Status &= ~Cursor_Status.Enabled;
-                else
-                    IGM_Items.TargetChangeHandler?.Invoke(this, Contents[CURSOR_SELECT]);
-            }
-
             #endregion Methods
         }
 
         #endregion Classes
     }
-
-    #endregion Classes
 }

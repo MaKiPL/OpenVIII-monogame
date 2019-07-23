@@ -4,8 +4,6 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    #region Classes
-
     public partial class IGM
     {
         #region Classes
@@ -126,6 +124,14 @@ namespace OpenVIII
                 SIZE[i].Height = largestheight;
             }
 
+            protected override void ModeChangeEvent(object sender, Enum e)
+            {
+                if (!e.Equals(Mode.ChooseItem))
+                {
+                    Cursor_Status |= Cursor_Status.Blinking;
+                }
+            }
+
             protected override void SetCursor_select(int value)
             {
                 if (!value.Equals(GetCursor_select()))
@@ -137,19 +143,9 @@ namespace OpenVIII
 
             private void ChoiceChangeEvent(object sender, FF8String e) => ((IGMDataItem_Box)CONTAINER).Data = e;
 
-            protected override void ModeChangeEvent(object sender, Enum e)
-            {
-                if (!e.Equals(Mode.ChooseItem))
-                {
-                    Cursor_Status |= Cursor_Status.Blinking;
-                }
-            }
-
             #endregion Methods
         }
 
         #endregion Classes
     }
-
-    #endregion Classes
 }

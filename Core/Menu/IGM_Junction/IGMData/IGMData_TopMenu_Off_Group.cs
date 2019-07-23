@@ -3,32 +3,43 @@ using System;
 
 namespace OpenVIII
 {
-        public partial class IGM_Junction
+    public partial class IGM_Junction
+    {
+        #region Classes
+
+        private class IGMData_TopMenu_Off_Group : IGMData_Group
         {
-            private class IGMData_TopMenu_Off_Group : IGMData_Group
+            #region Constructors
+
+            public IGMData_TopMenu_Off_Group(params IGMData[] d) : base(d)
             {
-                public IGMData_TopMenu_Off_Group(params IGMData[] d) : base( d)
-                {
-                }
+            }
 
-                public override void Draw()
-                {
-                    if (Enabled)
-                    {
-                        Cursor_Status |= (Cursor_Status.Draw | Cursor_Status.Blinking);
-                        base.Draw();
-                        Tuple<Rectangle, Point, Rectangle> i = ((IGMDataItem_Box)(((IGMData_Container)(((IGMDataItem_IGMData)ITEM[0, 0]).Data)).CONTAINER)).Dims;
-                        if (i != null)
-                            CURSOR[0] = i.Item2;
-                    }
-                }
+            #endregion Constructors
 
-                protected override void Init()
+            #region Methods
+
+            public override void Draw()
+            {
+                if (Enabled)
                 {
-                    base.Init();
-                    Hide();
+                    Cursor_Status |= (Cursor_Status.Draw | Cursor_Status.Blinking);
+                    base.Draw();
+                    Tuple<Rectangle, Point, Rectangle> i = ((IGMDataItem_Box)(((IGMData_Container)(((IGMDataItem_IGMData)ITEM[0, 0]).Data)).CONTAINER)).Dims;
+                    if (i != null)
+                        CURSOR[0] = i.Item2;
                 }
             }
+
+            protected override void Init()
+            {
+                base.Init();
+                Hide();
+            }
+
+            #endregion Methods
         }
-    
+
+        #endregion Classes
+    }
 }

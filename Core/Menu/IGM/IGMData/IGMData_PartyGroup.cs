@@ -4,8 +4,6 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    #region Classes
-
     public partial class IGM
     {
         #region Classes
@@ -92,8 +90,6 @@ namespace OpenVIII
                 }
             }
 
-            private void ChoiceChangeEvent(object sender, KeyValuePair<Items, FF8String> e) => Choice = e.Key;
-
             protected override void ModeChangeEvent(object sender, Enum e)
             {
                 if (!e.Equals(Mode.ChooseChar))
@@ -102,10 +98,10 @@ namespace OpenVIII
                 }
             }
 
+            private void ChoiceChangeEvent(object sender, KeyValuePair<Items, FF8String> e) => Choice = e.Key;
+
             #endregion Methods
         }
-
-        #endregion Classes
 
         #endregion Classes
     }

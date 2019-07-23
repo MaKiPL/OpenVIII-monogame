@@ -5,9 +5,25 @@ namespace OpenVIII
 {
     public partial class IGM_Junction
     {
+        #region Classes
+
         private class IGMData_TopMenu_Junction : IGMData
         {
+            #region Constructors
+
+            public IGMData_TopMenu_Junction() : base(2, 1, new IGMDataItem_Box(pos: new Rectangle(210, 12, 400, 54)), 2, 1)
+            {
+            }
+
+            #endregion Constructors
+
+            #region Properties
+
             public new Dictionary<Items, FF8String> Descriptions { get; private set; }
+
+            #endregion Properties
+
+            #region Methods
 
             public override bool Inputs_CANCEL()
             {
@@ -32,10 +48,6 @@ namespace OpenVIII
                 }
             }
 
-            public IGMData_TopMenu_Junction() : base(2, 1, new IGMDataItem_Box(pos: new Rectangle(210, 12, 400, 54)), 2, 1)
-            {
-            }
-
             public override bool Update()
             {
                 Update_String();
@@ -47,13 +59,6 @@ namespace OpenVIII
                         Cursor_Status |= Cursor_Status.Blinking;
                 }
                 return base.Update();
-            }
-
-            protected override void InitShift(int i, int col, int row)
-            {
-                base.InitShift(i, col, row);
-                SIZE[i].Inflate(-40, -12);
-                SIZE[i].Offset(20 + (-20 * (col > 1 ? col : 0)), 0);
             }
 
             protected override void Init()
@@ -71,6 +76,13 @@ namespace OpenVIII
                     };
 
                 Hide();
+            }
+
+            protected override void InitShift(int i, int col, int row)
+            {
+                base.InitShift(i, col, row);
+                SIZE[i].Inflate(-40, -12);
+                SIZE[i].Offset(20 + (-20 * (col > 1 ? col : 0)), 0);
             }
 
             private void Update_String()
@@ -92,6 +104,10 @@ namespace OpenVIII
                         IGM_Junction.ChangeHelp(Changed);
                 }
             }
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

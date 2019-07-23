@@ -5,10 +5,59 @@ namespace OpenVIII
 {
     public partial class IGM_Junction
     {
+        #region Classes
+
         private class IGMData_Abilities_Group : IGMData_Group
         {
+            #region Constructors
+
             public IGMData_Abilities_Group(params IGMData[] d) : base(d)
             {
+            }
+
+            #endregion Constructors
+
+            #region Methods
+
+            public override bool Inputs()
+            {
+                skipdata = true;
+                bool ret = base.Inputs();
+                skipdata = false;
+                IGMDataItem_IGMData i = ((IGMDataItem_IGMData)ITEM[0, 0]);
+                IGMDataItem_IGMData i2 = ((IGMDataItem_IGMData)ITEM[3, 0]);
+                if (ret && i != null && i.Data != null)
+                {
+                    if (CURSOR_SELECT >= i.Data.Count)
+                        i2.Data.Show();
+                    else
+                        i2.Data.Hide();
+                }
+                return ret;
+            }
+
+            public override bool Inputs_CANCEL()
+            {
+                skipdata = true;
+                base.Inputs_CANCEL();
+                skipdata = false;
+                IGM_Junction.Data[SectionName.TopMenu_Abilities].Hide();
+                IGM_Junction.SetMode(Mode.TopMenu);
+                return true;
+            }
+
+            public override void Inputs_OKAY()
+            {
+                base.Inputs_OKAY();
+                IGMDataItem_IGMData i = ((IGMDataItem_IGMData)ITEM[0, 0]);
+                IGMDataItem_IGMData i2 = ((IGMDataItem_IGMData)ITEM[3, 0]);
+                if (i != null && i.Data != null)
+                {
+                    if (CURSOR_SELECT >= i.Data.Count)
+                        IGM_Junction.SetMode(Mode.Abilities_Abilities);
+                    else
+                        IGM_Junction.SetMode(Mode.Abilities_Commands);
+                }
             }
 
             public override void Inputs_Square()
@@ -33,23 +82,6 @@ namespace OpenVIII
                         IGM_Junction.Refresh();
                     }
                 }
-            }
-
-            public override bool Inputs_CANCEL()
-            {
-                skipdata = true;
-                base.Inputs_CANCEL();
-                skipdata = false;
-                IGM_Junction.Data[SectionName.TopMenu_Abilities].Hide();
-                IGM_Junction.SetMode(Mode.TopMenu);
-                return true;
-            }
-
-            protected override void Init()
-            {
-                base.Init();
-                Cursor_Status |= Cursor_Status.Enabled;
-                Hide();
             }
 
             public override void Refresh()
@@ -107,36 +139,16 @@ namespace OpenVIII
                 return ret;
             }
 
-            public override bool Inputs()
+            protected override void Init()
             {
-                skipdata = true;
-                bool ret = base.Inputs();
-                skipdata = false;
-                IGMDataItem_IGMData i = ((IGMDataItem_IGMData)ITEM[0, 0]);
-                IGMDataItem_IGMData i2 = ((IGMDataItem_IGMData)ITEM[3, 0]);
-                if (ret && i != null && i.Data != null)
-                {
-                    if (CURSOR_SELECT >= i.Data.Count)
-                        i2.Data.Show();
-                    else
-                        i2.Data.Hide();
-                }
-                return ret;
+                base.Init();
+                Cursor_Status |= Cursor_Status.Enabled;
+                Hide();
             }
 
-            public override void Inputs_OKAY()
-            {
-                base.Inputs_OKAY();
-                IGMDataItem_IGMData i = ((IGMDataItem_IGMData)ITEM[0, 0]);
-                IGMDataItem_IGMData i2 = ((IGMDataItem_IGMData)ITEM[3, 0]);
-                if (i != null && i.Data != null)
-                {
-                    if (CURSOR_SELECT >= i.Data.Count)
-                        IGM_Junction.SetMode(Mode.Abilities_Abilities);
-                    else
-                        IGM_Junction.SetMode(Mode.Abilities_Commands);
-                }
-            }
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

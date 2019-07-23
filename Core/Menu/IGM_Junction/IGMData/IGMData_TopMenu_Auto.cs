@@ -5,43 +5,54 @@ namespace OpenVIII
 {
     public partial class IGM_Junction
     {
+        #region Classes
+
         private class IGMData_TopMenu_Auto : IGMData
         {
+            #region Constructors
+
             public IGMData_TopMenu_Auto() : base(3, 1, new IGMDataItem_Box(pos: new Rectangle(165, 12, 445, 54)), 3, 1)
             {
             }
 
-            protected override void InitShift(int i, int col, int row)
-            {
-                base.InitShift(i, col, row);
-                SIZE[i].Inflate(-40, -12);
-                SIZE[i].Offset(20 + (-20 * (col > 1 ? col : 0)), 0);
-            }
+            #endregion Constructors
+
+            #region Properties
 
             public new Dictionary<Items, FF8String> Descriptions { get; private set; }
 
-            private void Update_String()
+            #endregion Properties
+
+            #region Methods
+
+            public override bool Inputs_CANCEL()
             {
-                if (IGM_Junction != null && IGM_Junction.GetMode().Equals(Mode.TopMenu_Auto) && Enabled)
+                base.Inputs_CANCEL();
+                IGM_Junction.Data[SectionName.TopMenu_Auto].Hide();
+                IGM_Junction.SetMode(Mode.TopMenu);
+                return true;
+            }
+
+            public override void Inputs_OKAY()
+            {
+                skipsnd = true;
+                init_debugger_Audio.PlaySound(31);
+                switch (CURSOR_SELECT)
                 {
-                    FF8String Changed = null;
-                    switch (CURSOR_SELECT)
-                    {
-                        case 0:
-                            Changed = Descriptions[Items.AutoAtk];
-                            break;
+                    case 0:
+                        Memory.State.Characters[Character].AutoATK();
+                        break;
 
-                        case 1:
-                            Changed = Descriptions[Items.AutoDef];
-                            break;
+                    case 1:
+                        Memory.State.Characters[Character].AutoDEF();
+                        break;
 
-                        case 2:
-                            Changed = Descriptions[Items.AutoMag];
-                            break;
-                    }
-                    if (Changed != null && IGM_Junction != null)
-                        IGM_Junction.ChangeHelp(Changed);
+                    case 2:
+                        Memory.State.Characters[Character].AutoMAG();
+                        break;
                 }
+                Inputs_CANCEL();
+                IGM_Junction.Refresh();
             }
 
             public override bool Update()
@@ -92,35 +103,40 @@ namespace OpenVIII
                     };
             }
 
-            public override void Inputs_OKAY()
+            protected override void InitShift(int i, int col, int row)
             {
-                skipsnd = true;
-                init_debugger_Audio.PlaySound(31);
-                switch (CURSOR_SELECT)
+                base.InitShift(i, col, row);
+                SIZE[i].Inflate(-40, -12);
+                SIZE[i].Offset(20 + (-20 * (col > 1 ? col : 0)), 0);
+            }
+
+            private void Update_String()
+            {
+                if (IGM_Junction != null && IGM_Junction.GetMode().Equals(Mode.TopMenu_Auto) && Enabled)
                 {
-                    case 0:
-                        Memory.State.Characters[Character].AutoATK();
-                        break;
+                    FF8String Changed = null;
+                    switch (CURSOR_SELECT)
+                    {
+                        case 0:
+                            Changed = Descriptions[Items.AutoAtk];
+                            break;
 
-                    case 1:
-                        Memory.State.Characters[Character].AutoDEF();
-                        break;
+                        case 1:
+                            Changed = Descriptions[Items.AutoDef];
+                            break;
 
-                    case 2:
-                        Memory.State.Characters[Character].AutoMAG();
-                        break;
+                        case 2:
+                            Changed = Descriptions[Items.AutoMag];
+                            break;
+                    }
+                    if (Changed != null && IGM_Junction != null)
+                        IGM_Junction.ChangeHelp(Changed);
                 }
-                Inputs_CANCEL();
-                IGM_Junction.Refresh();
             }
 
-            public override bool Inputs_CANCEL()
-            {
-                base.Inputs_CANCEL();
-                IGM_Junction.Data[SectionName.TopMenu_Auto].Hide();
-                IGM_Junction.SetMode(Mode.TopMenu);
-                return true;
-            }
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

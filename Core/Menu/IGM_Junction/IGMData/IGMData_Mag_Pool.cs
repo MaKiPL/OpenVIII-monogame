@@ -5,8 +5,6 @@ using System.Linq;
 
 namespace OpenVIII
 {
-    #region Classes
-
     public partial class IGM_Junction
     {
         #region Classes
@@ -282,6 +280,8 @@ namespace OpenVIII
                 SIZE[i].Offset(0, 12 + (-8 * row));
             }
 
+            protected override void ModeChangeEvent(object sender, Enum e) => UpdateOnEvent(sender, (Mode)e);
+
             protected override void PAGE_NEXT()
             {
                 base.PAGE_NEXT();
@@ -365,8 +365,6 @@ namespace OpenVIII
                 }
             }
 
-            protected override void ModeChangeEvent(object sender, Enum e) => UpdateOnEvent(sender, (Mode)e);
-
             private void StatChangeEvent(object sender, Kernel_bin.Stat e) => UpdateOnEvent(sender, null, e);
 
             private bool Undo()
@@ -428,6 +426,4 @@ namespace OpenVIII
 
         #endregion Classes
     }
-
-    #endregion Classes
 }

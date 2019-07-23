@@ -5,50 +5,25 @@ namespace OpenVIII
 {
     public partial class IGM_Junction
     {
+        #region Classes
+
         private class IGMData_TopMenu : IGMData
         {
-            public new Dictionary<Items, FF8String> Descriptions { get; private set; }
+            #region Constructors
 
             public IGMData_TopMenu() : base(4, 1, new IGMDataItem_Box(pos: new Rectangle(0, 12, 610, 54)), 4, 1)
             {
             }
 
-            protected override void InitShift(int i, int col, int row)
-            {
-                base.InitShift(i, col, row);
-                SIZE[i].Inflate(-40, -12);
-                SIZE[i].Offset(20 + (-20 * (col > 1 ? col : 0)), 0);
-            }
+            #endregion Constructors
 
-            protected override void Init()
-            {
-                base.Init();
-                ITEM[0, 0] = new IGMDataItem_String(Titles[Items.Junction], SIZE[0]);
-                Cursor_Status |= Cursor_Status.Enabled;
-                Cursor_Status |= Cursor_Status.Horizontal;
-                Cursor_Status |= Cursor_Status.Vertical;
-                Descriptions = new Dictionary<Items, FF8String> {
-                        {Items.Junction, Memory.Strings.Read(Strings.FileID.MNGRP,2,218) },
-                        {Items.Off, Memory.Strings.Read(Strings.FileID.MNGRP,2,220) },
-                        {Items.Auto, Memory.Strings.Read(Strings.FileID.MNGRP,2,222) },
-                        {Items.Ability, Memory.Strings.Read(Strings.FileID.MNGRP,2,224) },
-                    };
-            }
+            #region Properties
 
-            public override void Refresh()
-            {
-                if (Memory.State.Characters != null)
-                {
-                    Font.ColorID color = (Memory.State.Characters[Character].JunctionnedGFs == Saves.GFflags.None) ? Font.ColorID.Grey : Font.ColorID.White;
+            public new Dictionary<Items, FF8String> Descriptions { get; private set; }
 
-                    ITEM[1, 0] = new IGMDataItem_String(Titles[Items.Off], SIZE[1], color);
-                    ITEM[2, 0] = new IGMDataItem_String(Titles[Items.Auto], SIZE[2], color);
-                    ITEM[3, 0] = new IGMDataItem_String(Titles[Items.Ability], SIZE[3], color);
-                    for (int i = 1; i <= 3; i++)
-                        BLANKS[i] = Memory.State.Characters[Character].JunctionnedGFs == Saves.GFflags.None;
-                }
-                base.Refresh();
-            }
+            #endregion Properties
+
+            #region Methods
 
             public override bool Inputs_CANCEL()
             {
@@ -102,6 +77,21 @@ namespace OpenVIII
                 base.Inputs_OKAY();
             }
 
+            public override void Refresh()
+            {
+                if (Memory.State.Characters != null)
+                {
+                    Font.ColorID color = (Memory.State.Characters[Character].JunctionnedGFs == Saves.GFflags.None) ? Font.ColorID.Grey : Font.ColorID.White;
+
+                    ITEM[1, 0] = new IGMDataItem_String(Titles[Items.Off], SIZE[1], color);
+                    ITEM[2, 0] = new IGMDataItem_String(Titles[Items.Auto], SIZE[2], color);
+                    ITEM[3, 0] = new IGMDataItem_String(Titles[Items.Ability], SIZE[3], color);
+                    for (int i = 1; i <= 3; i++)
+                        BLANKS[i] = Memory.State.Characters[Character].JunctionnedGFs == Saves.GFflags.None;
+                }
+                base.Refresh();
+            }
+
             public override bool Update()
             {
                 bool ret = base.Update();
@@ -131,6 +121,32 @@ namespace OpenVIII
                 }
                 return ret;
             }
+
+            protected override void Init()
+            {
+                base.Init();
+                ITEM[0, 0] = new IGMDataItem_String(Titles[Items.Junction], SIZE[0]);
+                Cursor_Status |= Cursor_Status.Enabled;
+                Cursor_Status |= Cursor_Status.Horizontal;
+                Cursor_Status |= Cursor_Status.Vertical;
+                Descriptions = new Dictionary<Items, FF8String> {
+                        {Items.Junction, Memory.Strings.Read(Strings.FileID.MNGRP,2,218) },
+                        {Items.Off, Memory.Strings.Read(Strings.FileID.MNGRP,2,220) },
+                        {Items.Auto, Memory.Strings.Read(Strings.FileID.MNGRP,2,222) },
+                        {Items.Ability, Memory.Strings.Read(Strings.FileID.MNGRP,2,224) },
+                    };
+            }
+
+            protected override void InitShift(int i, int col, int row)
+            {
+                base.InitShift(i, col, row);
+                SIZE[i].Inflate(-40, -12);
+                SIZE[i].Offset(20 + (-20 * (col > 1 ? col : 0)), 0);
+            }
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

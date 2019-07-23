@@ -23,7 +23,7 @@ namespace OpenVIII
             if (Enabled)
             {
                 Data.Draw(Pos, null, Color * Fade);//4
-                if(Blink)
+                if (Blink)
                     Data.Draw(Pos, null, Color.DarkGray * Blink_Amount * Blink_Adjustment * Fade);//4
             }
         }

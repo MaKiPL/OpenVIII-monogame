@@ -4,8 +4,6 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    #region Classes
-
     public partial class IGM_Items
     {
         #region Classes
@@ -108,20 +106,6 @@ namespace OpenVIII
                 SIZE[i].Height = largestheight;
             }
 
-            private void Inputs_Okay_BattleRearrange()
-            {
-            }
-
-            private void Inputs_Okay_Rearrange()
-            {
-            }
-
-            private void Inputs_Okay_Sort()
-            {
-            }
-
-            private void Inputs_Okay_UseItem() => IGM_Items.SetMode(Mode.SelectItem);
-
             protected override void ModeChangeEvent(object sender, Enum e)
             {
                 if (!e.Equals(Mode.TopMenu))
@@ -139,11 +123,23 @@ namespace OpenVIII
                 }
             }
 
+            private void Inputs_Okay_BattleRearrange()
+            {
+            }
+
+            private void Inputs_Okay_Rearrange()
+            {
+            }
+
+            private void Inputs_Okay_Sort()
+            {
+            }
+
+            private void Inputs_Okay_UseItem() => IGM_Items.SetMode(Mode.SelectItem);
+
             #endregion Methods
         }
 
         #endregion Classes
     }
-
-    #endregion Classes
 }

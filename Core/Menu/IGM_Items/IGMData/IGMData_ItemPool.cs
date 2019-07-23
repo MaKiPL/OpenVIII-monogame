@@ -4,8 +4,6 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    #region Classes
-
     public partial class IGM_Items
     {
         #region Classes
@@ -49,6 +47,15 @@ namespace OpenVIII
                 IGM_Items.SetMode(Mode.TopMenu);
                 base.Inputs_CANCEL();
                 return true;
+            }
+
+            public override void Inputs_OKAY()
+            {
+                Item_In_Menu item = Contents[CURSOR_SELECT];
+                if (item.Target == Item_In_Menu._Target.None)
+                    return;
+                base.Inputs_OKAY();
+                IGM_Items.SetMode(Mode.UseItemOnTarget);
             }
 
             public override void Refresh()
@@ -106,8 +113,6 @@ namespace OpenVIII
                 }
             }
 
-            private void ReInitCompletedEvent(object sender, EventArgs e) => IGM_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
-
             protected override void Init()
             {
                 base.Init();
@@ -125,6 +130,22 @@ namespace OpenVIII
                 SIZE[i].Inflate(-18, -20);
                 SIZE[i].Y -= 5 * row;
                 SIZE[i].Height = (int)(12 * TextScale.Y);
+            }
+
+            protected override void ModeChangeEvent(object sender, Enum e)
+            {
+                if (e.Equals(Mode.SelectItem))
+                {
+                    Cursor_Status |= Cursor_Status.Enabled;
+                }
+                else if (e.Equals(Mode.UseItemOnTarget))
+                {
+                    Cursor_Status |= Cursor_Status.Blinking;
+                }
+                else
+                {
+                    Cursor_Status &= ~Cursor_Status.Enabled;
+                }
             }
 
             protected override void PAGE_NEXT()
@@ -163,36 +184,11 @@ namespace OpenVIII
                 }
             }
 
-            public override void Inputs_OKAY()
-            {
-                Item_In_Menu item = Contents[CURSOR_SELECT];
-                if (item.Target == Item_In_Menu._Target.None)
-                    return;
-                base.Inputs_OKAY();
-                IGM_Items.SetMode(Mode.UseItemOnTarget);
-            }
-
-            protected override void ModeChangeEvent(object sender, Enum e)
-            {
-                if (e.Equals(Mode.SelectItem))
-                {
-                    Cursor_Status |= Cursor_Status.Enabled;
-                }
-                else if (e.Equals(Mode.UseItemOnTarget))
-                {
-                    Cursor_Status |= Cursor_Status.Blinking;
-                }
-                else
-                {
-                    Cursor_Status &= ~Cursor_Status.Enabled;
-                }
-            }
+            private void ReInitCompletedEvent(object sender, EventArgs e) => IGM_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
 
             #endregion Methods
         }
 
         #endregion Classes
     }
-
-    #endregion Classes
 }

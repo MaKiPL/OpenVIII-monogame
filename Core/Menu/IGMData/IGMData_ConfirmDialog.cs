@@ -2,11 +2,16 @@
 
 namespace OpenVIII
 {
-
     public abstract class IGMData_ConfirmDialog : IGMData
     {
-        protected int startcursor;
+        #region Fields
+
         protected FF8String[] opt;
+        protected int startcursor;
+
+        #endregion Fields
+
+        #region Constructors
 
         public IGMData_ConfirmDialog(FF8String data, Icons.ID title, FF8String opt1, FF8String opt2, Rectangle? pos, int startcursor = 0) : base(2, 1, new IGMDataItem_Box(data, pos, title), 1, 2)
         {
@@ -18,18 +23,9 @@ namespace OpenVIII
             ITEM[1, 0] = new IGMDataItem_String(opt[1], SIZE[1]);
         }
 
-        protected virtual void SetSize()
-        {
-            SIZE[0] = new Rectangle(212 + X, 117 + Y, 52, 30);
-            SIZE[1] = new Rectangle(212 + X, 156 + Y, 52, 30);
-        }
+        #endregion Constructors
 
-        protected override void Init()
-        {
-            SetSize();
-            base.Init();
-            Hide();
-        }
+        #region Methods
 
         public override void Refresh()
         {
@@ -39,5 +35,20 @@ namespace OpenVIII
             Cursor_Status |= Cursor_Status.Vertical;
             Cursor_Status |= Cursor_Status.Horizontal;
         }
+
+        protected override void Init()
+        {
+            SetSize();
+            base.Init();
+            Hide();
+        }
+
+        protected virtual void SetSize()
+        {
+            SIZE[0] = new Rectangle(212 + X, 117 + Y, 52, 30);
+            SIZE[1] = new Rectangle(212 + X, 156 + Y, 52, 30);
+        }
+
+        #endregion Methods
     }
 }

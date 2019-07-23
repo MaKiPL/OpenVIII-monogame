@@ -7,19 +7,22 @@ namespace OpenVIII
     {
         #region Fields
 
+        protected static Texture2D blank;
+
         //protected T _data;
         protected Rectangle _pos;
+
+        private bool _blink = false;
 
         #endregion Fields
 
         #region Constructors
-        protected static Texture2D blank;
-        private bool _blink = false;
+
         public IGMDataItem(Rectangle? pos = null, Vector2? scale = null)
         {
             _pos = pos ?? Rectangle.Empty;
             Scale = scale ?? TextScale;
-            if (blank==null)
+            if (blank == null)
             {
                 blank = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
                 blank.SetData(new Color[] { Color.White });
@@ -30,6 +33,8 @@ namespace OpenVIII
 
         #region Properties
 
+        public virtual bool Blink { get => _blink; set => _blink = value; }
+        public float Blink_Adjustment { get; set; }
         public Color Color { get; set; } = Color.White;
         public int Height { get => _pos.Height; set => _pos.Height = value; }
         /// <summary>
@@ -44,8 +49,7 @@ namespace OpenVIII
         public static float Blink_Amount => Menu.Blink_Amount;
         public static float Fade => Menu.Fade;
         public static Vector2 TextScale => Menu.TextScale;
-        public virtual bool Blink { get => _blink; set => _blink = value; }
-        public float Blink_Adjustment { get; set; }
+
         #endregion Properties
 
         #region Methods

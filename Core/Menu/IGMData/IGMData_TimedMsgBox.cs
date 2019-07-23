@@ -2,12 +2,22 @@
 {
     public class IGMData_TimedMsgBox : IGMData_SmallMsgBox
     {
-        private double timeelapsed = 0;
-        private double maxtime = 3000;
+        #region Fields
 
-        public IGMData_TimedMsgBox(FF8String data, int x, int y, Icons.ID? title = null, Box_Options options = Box_Options.Default) : base(data, x, y,title, options)
+        private double maxtime = 3000;
+        private double timeelapsed = 0;
+
+        #endregion Fields
+
+        #region Constructors
+
+        public IGMData_TimedMsgBox(FF8String data, int x, int y, Icons.ID? title = null, Box_Options options = Box_Options.Default) : base(data, x, y, title, options)
         {
         }
+
+        #endregion Constructors
+
+        #region Methods
 
         public override void Show()
         {
@@ -26,5 +36,7 @@
             { Hide(); }
             return false;
         }
+
+        #endregion Methods
     }
-} 
+}
