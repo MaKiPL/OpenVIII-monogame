@@ -3,14 +3,9 @@ using System;
 
 namespace OpenVIII
 {
-    #region Classes
-
     public class IGMDataItem_Box : IGMDataItem
     {
-        public FF8String Data { get; set; }
-        public Icons.ID? Title { get; set; }
-        public Box_Options Options { get; set; }
-        public Tuple<Rectangle, Point, Rectangle> Dims { get; private set; }
+        #region Constructors
 
         public IGMDataItem_Box(FF8String data = null, Rectangle? pos = null, Icons.ID? title = null, Box_Options options = Box_Options.Default) : base(pos)
         {
@@ -19,20 +14,31 @@ namespace OpenVIII
             Options = options;
         }
 
-        public override void Draw()
-        {
-            Draw(false);
-        }
+        #endregion Constructors
+
+        #region Properties
+
+        public FF8String Data { get; set; }
+        public Tuple<Rectangle, Point, Rectangle> Dims { get; private set; }
+        public Box_Options Options { get; set; }
+        public Icons.ID? Title { get; set; }
+
+        #endregion Properties
+
+        #region Methods
+
+        public override void Draw() => Draw(false);
 
         public void Draw(bool skipdraw)
         {
-
             if (Enabled)
             {
-                Dims = Menu.DrawBox(Pos, Data, Title, options: skipdraw ? (Options | Box_Options.SkipDraw):Options);
+                Dims = Menu.DrawBox(Pos, Data, Title, options: skipdraw ? (Options | Box_Options.SkipDraw) : Options);
+                if (Blink) //needs tested and tuned
+                    Memory.spriteBatch.Draw(blank, Pos, Color.DarkGray * Fade * .5f * Blink_Amount * Blink_Adjustment);
             }
         }
-    }
 
-    #endregion Classes
+        #endregion Methods
+    }
 }

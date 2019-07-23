@@ -19,9 +19,7 @@ namespace OpenVIII
         private Dictionary<Mode, Func<bool>> UpdateFunctions;
 
         #endregion Fields
-
-        //private Mode _mode = Mode.Starting;
-
+        
         #region Enums
 
         public enum Mode : byte
@@ -71,7 +69,7 @@ namespace OpenVIII
                     menus.Add(tmp);
                 }
                 menus.Add(new VictoryMenu());
-                SetMode(Mode.Victory);
+                SetMode(Mode.Battle);
                 UpdateFunctions = new Dictionary<Mode, Func<bool>>()
                 {
                     {Mode.Starting, UpdateStartingFunction},
@@ -135,7 +133,7 @@ namespace OpenVIII
         private bool InputBattleFunction()
         {
             bool ret = false;
-            foreach (var m in menus.Where(m => (BattleMenu.Mode)m.GetMode() == BattleMenu.Mode.YourTurn))
+            foreach (var m in menus.Where(m => m.GetType().Equals(typeof(BattleMenu)) && (BattleMenu.Mode)m.GetMode() == BattleMenu.Mode.YourTurn))
             {
                 ret = m.Inputs() || ret;
                 if (ret) return ret;

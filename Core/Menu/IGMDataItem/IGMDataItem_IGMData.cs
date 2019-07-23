@@ -2,13 +2,31 @@
 
 namespace OpenVIII
 {
-    #region Classes
-
     public class IGMDataItem_IGMData : IGMDataItem
     {
-        public IGMData Data { get; set; }
+        #region Constructors
 
         public IGMDataItem_IGMData(IGMData data, Rectangle? pos = null) : base(pos) => Data = data;
+
+        #endregion Constructors
+
+        #region Properties
+
+        public IGMData Data { get; set; }
+        public override Rectangle Pos
+        {
+            get => Data.CONTAINER == null ? base.Pos : Data.CONTAINER.Pos;
+            set
+            {
+                base.Pos = value;
+                if (Data.CONTAINER != null)
+                    Data.CONTAINER.Pos = value;
+            }
+        }
+
+        #endregion Properties
+
+        #region Methods
 
         public override void Draw()
         {
@@ -16,14 +34,10 @@ namespace OpenVIII
                 Data.Draw();
         }
 
-        public override bool Update()
+        public override void Hide()
         {
-            if (Enabled)
-            {
-                bool ret = base.Update();
-                return Data.Update() || ret;
-            }
-            return false;
+            base.Hide();
+            Data.Hide();
         }
 
         public override bool Inputs()
@@ -36,10 +50,10 @@ namespace OpenVIII
             return false;
         }
 
-        public override void Hide()
+        public override void Refresh()
         {
-            base.Hide();
-            Data.Hide();
+            base.Refresh();
+            Data.Refresh();
         }
 
         public override void Show()
@@ -48,23 +62,16 @@ namespace OpenVIII
             Data.Show();
         }
 
-        public override Rectangle Pos
+        public override bool Update()
         {
-            get => Data.CONTAINER == null ? base.Pos : Data.CONTAINER.Pos;
-            set
+            if (Enabled)
             {
-                base.Pos = value;
-                if (Data.CONTAINER != null)
-                    Data.CONTAINER.Pos = value;
+                bool ret = base.Update();
+                return Data.Update() || ret;
             }
+            return false;
         }
 
-        public override void Refresh()
-        {
-            base.Refresh();
-            Data.Refresh();
-        }
+        #endregion Methods
     }
-
-    #endregion Classes
 }

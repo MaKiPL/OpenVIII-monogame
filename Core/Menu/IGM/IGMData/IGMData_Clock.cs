@@ -72,7 +72,7 @@ namespace OpenVIII
 
                     r = CONTAINER;
                     r.Offset(145, 14);
-                    ITEM[0, 2] = new IGMDataItem_Icon(Icons.ID.Colon, r, 13, 2, .5f);
+                    ITEM[0, 2] = new IGMDataItem_Icon(Icons.ID.Colon, r, 13, 2, .5f) { Blink = true };
 
                     r = CONTAINER;
                     r.Offset(185, 81);

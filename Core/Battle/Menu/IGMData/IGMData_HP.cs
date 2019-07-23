@@ -8,7 +8,6 @@ namespace OpenVIII
 {
     public partial class BattleMenu
     {
-
         #region Classes
 
         private class IGMData_HP : IGMData
@@ -58,11 +57,13 @@ namespace OpenVIII
                         }
                         byte? fadedpalette = null;
                         Font.ColorID? fadedcolorid = null;
+                        bool blink = false;
                         if (mode == Mode.YourTurn)
                         {
+                            blink = true;
                             fadedpalette = 7;
                             fadedcolorid = Font.ColorID.Grey;
-                            ITEM[pos, 2] = new IGMDataItem_Texture(dot, new Rectangle(SIZE[pos].X + 230, SIZE[pos].Y + 12, 150, 15), Color.Yellow * .8f, Color.LightYellow);
+                            ITEM[pos, 2] = new IGMDataItem_Texture(dot, new Rectangle(SIZE[pos].X + 230, SIZE[pos].Y + 12, 150, 15), Color.LightYellow * .8f, new Color(125,125,0,255) * .8f) { Blink = blink };
                         }
                         else if (mode == Mode.ATB_Charged)
                             ITEM[pos, 2] = new IGMDataItem_Texture(dot, new Rectangle(SIZE[pos].X + 230, SIZE[pos].Y + 12, 150, 15), Color.Yellow * .8f);
@@ -71,8 +72,8 @@ namespace OpenVIII
                         else ITEM[pos, 2] = null;
 
                         // TODO: make a font render that can draw right to left from a point. For Right aligning the names.
-                        ITEM[pos, 0] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), colorid, faded_color: fadedcolorid);
-                        ITEM[pos, 1] = new IGMDataItem_Int(HP, new Rectangle(SIZE[pos].X + 128, SIZE[pos].Y, 0, 0), palette: palette, faded_palette: fadedpalette, spaces: 4, numtype: Icons.NumType.Num_8x16_1);
+                        ITEM[pos, 0] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), colorid, faded_color: fadedcolorid) { Blink = blink };
+                        ITEM[pos, 1] = new IGMDataItem_Int(HP, new Rectangle(SIZE[pos].X + 128, SIZE[pos].Y, 0, 0), palette: palette, faded_palette: fadedpalette, spaces: 4, numtype: Icons.NumType.Num_8x16_1) { Blink = blink };
 
                         ITEM[pos, 3] = new IGMDataItem_Icon(Icons.ID.Size_08x64_Bar, new Rectangle(SIZE[pos].X + 230, SIZE[pos].Y + 12, 150, 15), 0);
                         pos++;
@@ -91,6 +92,7 @@ namespace OpenVIII
                 }
                 base.Init();
             }
+
             protected override void ModeChangeEvent(object sender, Enum e)
             {
                 base.ModeChangeEvent(sender, e);

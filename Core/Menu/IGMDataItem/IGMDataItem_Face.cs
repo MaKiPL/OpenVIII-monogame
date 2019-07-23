@@ -2,43 +2,52 @@
 
 namespace OpenVIII
 {
-        #region Classes
+    public class IGMDataItem_Face : IGMDataItem
+    {
+        #region Fields
 
-        public class IGMDataItem_Face : IGMDataItem
+        private byte _palette;
+
+        #endregion Fields
+
+        #region Constructors
+
+        public IGMDataItem_Face(Faces.ID data, Rectangle? pos = null, bool blink = false, float blink_adjustment = 1f) : base(pos)
         {
-            private byte _palette;
+            Data = data;
+            Blink = blink;
+            Blink_Adjustment = blink_adjustment;
+        }
 
-            public Faces.ID Data { get; set; }
+        #endregion Constructors
 
-            public byte Palette
+        #region Properties
+
+        public Faces.ID Data { get; set; }
+
+        public byte Palette
+        {
+            get => _palette; set
             {
-                get => _palette; set
-                {
-                    if (value >= 16) value = 2;
-                    _palette = value;
-                }
-            }
-
-            public bool Blink { get; private set; }
-            public float Blink_Adjustment { get; set; }
-
-            public IGMDataItem_Face(Faces.ID data, Rectangle? pos = null, bool blink=false, float blink_adjustment = 1f) : base(pos)
-            {
-                Data = data;
-                Blink = blink;
-                Blink_Adjustment = blink_adjustment;
-            }
-
-            public override void Draw()
-            {
-                if (Enabled)
-                {
-                    Memory.Faces.Draw(Data, Pos, Vector2.UnitY, Fade);
-                    if (Blink)
-                        Memory.Faces.Draw(Data, Pos, Vector2.UnitY, Fade * Blink_Amount * Blink_Adjustment);
-                }
+                if (value >= 16) value = 2;
+                _palette = value;
             }
         }
-        #endregion Classes
-    
+
+        #endregion Properties
+
+        #region Methods
+
+        public override void Draw()
+        {
+            if (Enabled)
+            {
+                Memory.Faces.Draw(Data, Pos, Vector2.UnitY, Fade);
+                if (Blink)
+                    Memory.Faces.Draw(Data, Pos, Vector2.UnitY, Fade * Blink_Amount * Blink_Adjustment);
+            }
+        }
+
+        #endregion Methods
+    }
 }

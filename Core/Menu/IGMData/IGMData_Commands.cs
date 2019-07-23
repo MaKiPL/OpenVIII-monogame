@@ -61,7 +61,7 @@ namespace OpenVIII
                 if (Battle && Memory.State.Characters[Character].GenerateCrisisLevel() >= 0 || true) //TODO remove true for testing limitbreak
                 {
                     CONTAINER.Width = 294;
-                    ITEM[Count-1, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right, new Rectangle(SIZE[0].X+Width - 55, SIZE[0].Y, 0, 0), 2, 7);
+                    ITEM[Count-1, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right, new Rectangle(SIZE[0].X + Width - 55, SIZE[0].Y, 0, 0), 2, 7) {Blink = true};
                 }
                 else
                 {
