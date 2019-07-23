@@ -9,65 +9,61 @@ namespace OpenVIII
         {// The ones commented out weren't real tim files. But were close enough to not set off exceptions.
             //4 bpp
             0x796A90, // Card game symbols and numbers.
-            0x7A96B0, // Random Letters
+            0x7A96B0, // Random Letters, Numbers, Symbols
             
             //8 bpp
-            0x7A9B10, // cards
-            0x945EAC,
-            0xA96B00,
-            0xACC40C,
-            //0xAF4C30,
-            0xB1E920,
-            0xB47340,
-            0xB57D60,
-            //0xB78384,
-            //0xBAD4A8,
-            0xC05E64,
-            0xF76698,
-            0xF7A8B8,
-            0xF9B8D8,
-            0xFBBBEC,
-            0xFED20C,
-            0x100016C,
-            0x102938C,
-            0x103CC90,
-            0x1070DC4,
-            0x10AF700,
-            0x10B7B20,
-            0x10D8F58,
-            0x10FA790,
-            //0x12146E8,
-            //0x1214908,
-            //0x1214B28,
-            //0x1214D48,
-            0x124A678,
-            0x1252A98,
-            0x125BCCC,
-            0x12704DC,
-            0x1279714,
-            0x1288434,
-            0x12ADE90,
-            0x12B8990,
-            0x12C12C8,
-            0x12CF8B0,
-            0x12F3000,
-            0x12FB420,
-            0x12FDF78,
-            0x130CDCC,
-            0x13243F8,
-            0x1338C08,
-            0x135AC20,
-            0x1378F3C,
-            0x138135C,
-            0x1408FB0,
-            0x14113D0,
-            0x141CFAC,
-            0x14253CC,
-            0x14295EC,
+            0x7A9B10, // Card faces
+            0x945EAC, // Magic effect
+            0xA96B00, // Cactar?
+            0xACC40C, // Magic effect
+            0xAF4C30, // Magic effect // failed to load? timviewer says it's valid 11488304
+            0xB1E920, // Magic effect
+            0xB47340, // Magic effect
+            0xB57D60, // Magic effect
+            0xB78384, // Magic effect // failed to load? timviewer says it's valid 12026756
+            0xBAD4A8, // magic effect // failed to load? timviewer says it's valid 12244136
+            0xC05E64, // magic effect
+            0xF76698, // Moomba
+            0xF7A8B8, // magic effect
+            0xF9B8D8, // magic effect
+            0xFBBBEC, // magic effect
+            0xFED20C, // magic effect
+            0x100016C, // magic effect
+            0x102938C, // magic effect
+            0x103CC90, // magic effect
+            0x1070DC4, // magic effect
+            0x10AF700, // Angelo 
+            0x10B7B20, // magic effect
+            0x10D8F58, // magic effect
+            0x10FA790, // magic effect
+            0x124A678, // monster skin or reaper?
+            0x1252A98, // bat wings
+            0x125BCCC, // chocobo
+            0x12704DC, // chocobo dup
+            0x1279714, // chocobo dup
+            0x1288434, // chocobo dup
+            0x12ADE90, // Angelo dup
+            0x12B8990, // Angelo dup
+            0x12C12C8, // Angelo dup
+            0x12CF8B0, // Angelo dup
+            0x12F3000, // Angelo dup
+            0x12FB420, // umm?
+            0x12FDF78, // Angelo dup
+            0x130CDCC, // Angelo dup
+            0x13243F8, // Angel wings
+            0x1338C08, // Cherub
+            0x135AC20, // magic effect
+            0x1378F3C, // monster skin or reaper? dup
+            0x138135C, // bat wings dup
+            0x1408FB0, // monster skin or reaper? dup
+            0x14113D0, // bat wings dup
+            0x141CFAC, // monster skin or reaper? dup
+            0x14253CC, // bat wings dup
+            0x14295EC, // spell effect
 
             //16 bbp
-            0x820B30,
-            0x84AB44,
+            0x820B30, // Card game board
+            0x84AB44, // Card loading background?
 
 
 
