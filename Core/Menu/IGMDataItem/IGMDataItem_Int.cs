@@ -2,11 +2,10 @@
 
 namespace OpenVIII
 {
-    public class IGMDataItem_Int : IGMDataItem//<Int>
+    public class IGMDataItem_Int : IGMDataItem<int>
     {
         #region Fields
 
-        private int _data;
         private int _digits;
         private byte _padding;
         private int _spaces;
@@ -17,9 +16,9 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMDataItem_Int(int data, Rectangle? pos = null, byte? palette = null, Icons.NumType? numtype = null, byte? padding = null, int? spaces = null, int? spacewidth = null, Font.ColorID? colorid = null, byte? faded_palette = null, Font.ColorID? faded_colorid = null, float blink_adjustment = 1f) : base(pos)
+        public IGMDataItem_Int(int data, Rectangle? pos = null, byte? palette = null, Icons.NumType? numtype = null, byte? padding = null, int? spaces = null, int? spacewidth = null, Font.ColorID? colorid = null, byte? faded_palette = null, Font.ColorID? faded_colorid = null, float blink_adjustment = 1f) : base(0, pos)
         {
-            original_pos = _pos;
+            original_pos = _pos = pos ?? Rectangle.Empty;
             _padding = padding ?? 1;
             Palette = palette ?? 2;
             NumType = numtype ?? 0;
@@ -38,13 +37,15 @@ namespace OpenVIII
 
         public override bool Blink { get => base.Blink && (Palette != Faded_Palette || Colorid != Faded_Colorid); set => base.Blink = value; }
         public Font.ColorID Colorid { get; set; }
-        public int Data
+        public override int Data
         {
-            get => _data; set
-            {
-                _data = value;
+            get => base.Data;
 
-                _digits = _data.ToString().Length;
+            set
+            {
+                base.Data = value;
+
+                _digits = Data.ToString().Length;
                 if (_digits < _padding) _digits = _padding;
 
                 _pos = original_pos;

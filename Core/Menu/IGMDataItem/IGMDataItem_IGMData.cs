@@ -2,24 +2,25 @@
 
 namespace OpenVIII
 {
-    public class IGMDataItem_IGMData : IGMDataItem
+    public class IGMDataItem_IGMData : IGMDataItem<IGMData>
     {
         #region Constructors
 
-        public IGMDataItem_IGMData(IGMData data, Rectangle? pos = null) : base(pos) => Data = data;
+        public IGMDataItem_IGMData(IGMData data, Rectangle? pos = null) : base(data, pos)
+        {
+        }
 
         #endregion Constructors
 
         #region Properties
 
-        public IGMData Data { get; set; }
         public override Rectangle Pos
         {
             get => Data.CONTAINER == null ? base.Pos : Data.CONTAINER.Pos;
             set
             {
                 base.Pos = value;
-                if (Data.CONTAINER != null)
+                if (Data?.CONTAINER != null)
                     Data.CONTAINER.Pos = value;
             }
         }

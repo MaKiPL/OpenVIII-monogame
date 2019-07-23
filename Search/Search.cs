@@ -8,6 +8,8 @@ namespace OpenVIII.Search
 {
     public class Search
     {
+        #region Fields
+
         public List<Tuple<string, string, long>> results = new List<Tuple<string, string, long>>();
 
         private static readonly Memory.Archive[] ArchiveList = new Memory.Archive[]
@@ -19,19 +21,26 @@ namespace OpenVIII.Search
             //Memory.Archives.A_WORLD,
             //Memory.Archives.A_BATTLE,
         };
+
         private static readonly string[] Files = new string[]
         {
             Path.Combine(Memory.FF8DIR,"FF8_EN.exe"),
             //Path.Combine(Memory.FF8DIR,"AF3DN.P"),
             //Path.Combine(Memory.FF8DIR,"AF4DN.P")
         };
-        string[] skipext = new string[]
-        {
+
+        private byte[] s;
+
+        private string[] skipext = new string[]
+                {
             ".tim",
             ".tex",
             ".obj"
         };
-        byte[] s;
+
+        #endregion Fields
+
+        #region Constructors
 
         public Search(FF8String searchstring)
         {
@@ -47,7 +56,7 @@ namespace OpenVIII.Search
                     Debug.WriteLine($"Searching {f}, in {a} for {searchstring}");
                     //byte[] bf = aw.GetBinaryFile(f);
                     //SearchBin(bf, a.ToString(), f);
-                    using (var br = new BinaryReader(new MemoryStream(aw.GetBinaryFile(f))))
+                    using (BinaryReader br = new BinaryReader(new MemoryStream(aw.GetBinaryFile(f))))
                     {
                         SearchBin(br, a.ToString(), f);
                     }
@@ -56,7 +65,7 @@ namespace OpenVIII.Search
             foreach (string a in Files)
             {
                 Debug.WriteLine($"Searching {a}, for {searchstring}");
-                using (var br = new BinaryReader(File.OpenRead(a))) //new FileStream(a, FileMode.Open, FileAccess.Read, FileShare.None, 65536)))//
+                using (BinaryReader br = new BinaryReader(File.OpenRead(a))) //new FileStream(a, FileMode.Open, FileAccess.Read, FileShare.None, 65536)))//
                 {
                     br.BaseStream.Seek(0, SeekOrigin.Begin);
                     //byte[] bf = br.ReadBytes((int)br.BaseStream.Length);
@@ -66,6 +75,11 @@ namespace OpenVIII.Search
                 }
             }
         }
+
+        #endregion Constructors
+
+        #region Methods
+
         /// <summary>
         /// Less Slow search.
         /// </summary>
@@ -78,7 +92,7 @@ namespace OpenVIII.Search
             while ((offset = br.BaseStream.Position) < br.BaseStream.Length)
             {
                 int pos = 0;
-                foreach (var i in s)
+                foreach (byte i in s)
                 {
                     if (br.ReadByte() == i)
                     {
@@ -88,11 +102,12 @@ namespace OpenVIII.Search
                 }
                 if (pos == s.Length)
                 {
-                    Debug.WriteLine(string.Format("Found a match at: offset {0:X}",offset));
+                    Debug.WriteLine(string.Format("Found a match at: offset {0:X}", offset));
                     results.Add(new Tuple<string, string, long>(a, f, offset));
                 }
             }
         }
+
         /// <summary>
         /// Slow AF search.
         /// </summary>
@@ -141,5 +156,7 @@ namespace OpenVIII.Search
             //    results.Add(new Tuple<string, string, long>(a, f, m.Index));
             //}
         }
+
+        #endregion Methods
     }
 }

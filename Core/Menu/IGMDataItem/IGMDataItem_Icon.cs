@@ -2,7 +2,7 @@
 
 namespace OpenVIII
 {
-    public class IGMDataItem_Icon : IGMDataItem
+    public class IGMDataItem_Icon : IGMDataItem<Icons.ID>
     {
         #region Fields
 
@@ -13,9 +13,8 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMDataItem_Icon(Icons.ID data, Rectangle? pos = null, byte? palette = null, byte? faded_palette = null, float blink_adjustment = 1f, Vector2? scale = null) : base(pos, scale)
+        public IGMDataItem_Icon(Icons.ID data, Rectangle? pos = null, byte? palette = null, byte? faded_palette = null, float blink_adjustment = 1f, Vector2? scale = null) : base(data, pos, scale)
         {
-            Data = data;
             Palette = palette ?? 2;
             Faded_Palette = faded_palette ?? Palette;
             Blink_Adjustment = blink_adjustment;
@@ -29,8 +28,6 @@ namespace OpenVIII
         {
             get => base.Blink && (Faded_Palette != Palette); set => base.Blink = value;
         }
-
-        public Icons.ID Data { get; set; }
 
         public byte Faded_Palette
         {

@@ -3,13 +3,33 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace OpenVIII
 {
+    public abstract class IGMDataItem<T> : IGMDataItem
+    {
+        #region Fields
+
+        private T _data;
+
+        #endregion Fields
+
+        #region Constructors
+
+        public IGMDataItem(T data, Rectangle? pos = null, Vector2? scale = null) : base(pos, scale) => Data = data;
+
+        #endregion Constructors
+
+        #region Properties
+
+        public virtual T Data { get => _data; set => _data = value; }
+
+        #endregion Properties
+    }
+
     public abstract class IGMDataItem : Menu_Base
     {
         #region Fields
 
         protected static Texture2D blank;
 
-        //protected T _data;
         protected Rectangle _pos;
 
         private bool _blink = false;
@@ -20,7 +40,7 @@ namespace OpenVIII
 
         public IGMDataItem(Rectangle? pos = null, Vector2? scale = null)
         {
-            _pos = pos ?? Rectangle.Empty;
+            Pos = pos ?? Rectangle.Empty;
             Scale = scale ?? TextScale;
             if (blank == null)
             {
