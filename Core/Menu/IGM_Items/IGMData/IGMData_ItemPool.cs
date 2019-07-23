@@ -93,10 +93,10 @@ namespace OpenVIII
                         ((IGMDataItem_String)(ITEM[pos, 0])).Data = itemdata.Name;
                         ((IGMDataItem_String)(ITEM[pos, 0])).Icon = itemdata.Icon;
                         ((IGMDataItem_String)(ITEM[pos, 0])).Palette = palette;
-                        ((IGMDataItem_String)(ITEM[pos, 0])).Colorid = color;
+                        ((IGMDataItem_String)(ITEM[pos, 0])).FontColor = color;
                         ((IGMDataItem_Int)(ITEM[pos, 1])).Data = item.QTY;
                         ((IGMDataItem_Int)(ITEM[pos, 1])).Show();
-                        ((IGMDataItem_Int)(ITEM[pos, 1])).Colorid = color;
+                        ((IGMDataItem_Int)(ITEM[pos, 1])).FontColor = color;
                         _helpStr[pos] = itemdata.Description;
                         Contents[pos] = itemdata;
                         pos++;

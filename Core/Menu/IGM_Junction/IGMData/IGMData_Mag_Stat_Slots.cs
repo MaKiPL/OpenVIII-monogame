@@ -151,7 +151,7 @@ namespace OpenVIII
                                 if (!unlocked.Contains(Kernel_bin.Stat2Ability[stat]))
                                 {
                                     ((IGMDataItem_Icon)ITEM[pos, 0]).Palette = ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Palette = 7;
-                                    ((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Grey;
+                                    ((IGMDataItem_String)ITEM[pos, 1]).FontColor = Font.ColorID.Grey;
                                     BLANKS[pos] = true;
                                 }
                                 else BLANKS[pos] = false;
@@ -168,20 +168,20 @@ namespace OpenVIII
                                 {
                                     ((IGMDataItem_Icon)ITEM[pos, 0]).Palette = 5;
                                     ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Palette = 5;
-                                    ((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Red;
-                                    ((IGMDataItem_Int)ITEM[pos, 2]).Colorid = Font.ColorID.Red;
+                                    ((IGMDataItem_String)ITEM[pos, 1]).FontColor = Font.ColorID.Red;
+                                    ((IGMDataItem_Int)ITEM[pos, 2]).FontColor = Font.ColorID.Red;
                                     if (ITEM[pos, 3] != null)
-                                        ((IGMDataItem_String)ITEM[pos, 3]).Colorid = Font.ColorID.Red;
+                                        ((IGMDataItem_String)ITEM[pos, 3]).FontColor = Font.ColorID.Red;
                                     ITEM[pos, 4] = new IGMDataItem_Icon(Icons.ID.Arrow_Down, new Rectangle(SIZE[pos].X + 250, SIZE[pos].Y, 0, 0), 16);
                                 }
                                 else
                                 {
                                     ((IGMDataItem_Icon)ITEM[pos, 0]).Palette = 6;
                                     ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Palette = 6;
-                                    ((IGMDataItem_String)ITEM[pos, 1]).Colorid = Font.ColorID.Yellow;
-                                    ((IGMDataItem_Int)ITEM[pos, 2]).Colorid = Font.ColorID.Yellow;
+                                    ((IGMDataItem_String)ITEM[pos, 1]).FontColor = Font.ColorID.Yellow;
+                                    ((IGMDataItem_Int)ITEM[pos, 2]).FontColor = Font.ColorID.Yellow;
                                     if (ITEM[pos, 3] != null)
-                                        ((IGMDataItem_String)ITEM[pos, 3]).Colorid = Font.ColorID.Yellow;
+                                        ((IGMDataItem_String)ITEM[pos, 3]).FontColor = Font.ColorID.Yellow;
                                     ITEM[pos, 4] = new IGMDataItem_Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos].X + 250, SIZE[pos].Y, 0, 0), 17);
                                 }
                             }

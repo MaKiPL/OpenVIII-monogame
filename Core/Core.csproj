@@ -144,7 +144,10 @@
     <Compile Include="Card_Game\EXE_Offsets.cs" />
     <Compile Include="Image\TDW.cs" />
     <Compile Include="Image\Texture_Base.cs" />
+    <Compile Include="Menu\IGMDataItem\I_Color.cs" />
     <Compile Include="Menu\IGMDataItem\I_Data.cs" />
+    <Compile Include="Menu\IGMDataItem\I_FontColor.cs" />
+    <Compile Include="Menu\IGMDataItem\I_Palette.cs" />
     <Compile Include="Menu\IGMData\IGMData_SmallMsgBox.cs" />
     <Compile Include="Menu\IGMData\IGMData_TimedMsgBox.cs" />
     <Compile Include="Menu\Menus.cs" />

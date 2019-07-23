@@ -2,7 +2,7 @@
 
 namespace OpenVIII
 {
-    public class IGMDataItem_Icon : IGMDataItem, I_Data<Icons.ID>
+    public class IGMDataItem_Icon : IGMDataItem, I_Data<Icons.ID>, I_Palette
     {
         #region Fields
 
@@ -30,7 +30,7 @@ namespace OpenVIII
             get => base.Blink && (Faded_Palette != Palette); set => base.Blink = value;
         }
 
-        public Icons.ID Data { get;set; }
+        public Icons.ID Data { get; set; }
         public byte Faded_Palette
         {
             get => _faded_palette; set

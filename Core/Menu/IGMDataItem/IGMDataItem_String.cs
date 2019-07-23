@@ -2,7 +2,7 @@
 
 namespace OpenVIII
 {
-    public class IGMDataItem_String : IGMDataItem, I_Data<FF8String>
+    public class IGMDataItem_String : IGMDataItem, I_Data<FF8String>, I_Palette, I_FontColor
     {
         #region Fields
 
@@ -12,11 +12,11 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMDataItem_String(FF8String data, Rectangle? pos = null, Font.ColorID? color = null, Font.ColorID? faded_color = null, float blink_adjustment = 1f) : base(pos)
+        public IGMDataItem_String(FF8String data, Rectangle? pos = null, Font.ColorID? fontcolor = null, Font.ColorID? faded_fontcolor = null, float blink_adjustment = 1f) : base(pos)
         {
             Data = data;
-            Colorid = color ?? Font.ColorID.White;
-            Faded_Colorid = faded_color ?? Colorid;
+            FontColor = fontcolor ?? Font.ColorID.White;
+            Faded_FontColor = faded_fontcolor ?? FontColor;
             Blink_Adjustment = blink_adjustment;
         }
 
@@ -31,11 +31,11 @@ namespace OpenVIII
 
         #region Properties
 
-        public override bool Blink { get => base.Blink && (Palette != Faded_Palette || Colorid != Faded_Colorid); set => base.Blink = value; }
-        public Font.ColorID Colorid { get; set; }
+        public override bool Blink { get => base.Blink && (Palette != Faded_Palette || FontColor != Faded_FontColor); set => base.Blink = value; }
         public FF8String Data { get; set; }
-        public Font.ColorID Faded_Colorid { get; set; }
+        public Font.ColorID Faded_FontColor { get; set; }
         public byte Faded_Palette { get; set; }
+        public Font.ColorID FontColor { get; set; }
         public Icons.ID? Icon { get; set; }
         public byte Palette
         {
@@ -61,9 +61,9 @@ namespace OpenVIII
                         Memory.Icons.Draw(Icon, Faded_Palette, r2, new Vector2(Scale.X), Fade * Blink_Amount * Blink_Adjustment);
                     r.Offset(Memory.Icons.GetEntryGroup(Icon).Width * Scale.X, 0);
                 }
-                Memory.font.RenderBasicText(Data, r.Location, Scale, Fade: Fade, color: Colorid);
+                Memory.font.RenderBasicText(Data, r.Location, Scale, Fade: Fade, color: FontColor);
                 if (Blink)
-                    Memory.font.RenderBasicText(Data, r.Location, Scale, Fade: Fade * Blink_Amount * Blink_Adjustment, color: Faded_Colorid);
+                    Memory.font.RenderBasicText(Data, r.Location, Scale, Fade: Fade * Blink_Amount * Blink_Adjustment, color: Faded_FontColor);
             }
         }
 

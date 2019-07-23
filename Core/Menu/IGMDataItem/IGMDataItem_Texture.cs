@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace OpenVIII
 {
-    public class IGMDataItem_Texture : IGMDataItem, I_Data<Texture2D>
+    public class IGMDataItem_Texture : IGMDataItem, I_Data<Texture2D>, I_Color
     {
         #region Constructors
 

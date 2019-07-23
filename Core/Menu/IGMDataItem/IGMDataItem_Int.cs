@@ -2,7 +2,7 @@
 
 namespace OpenVIII
 {
-    public class IGMDataItem_Int : IGMDataItem, I_Data<int>
+    public class IGMDataItem_Int : IGMDataItem, I_Data<int>, I_Palette, I_FontColor
     {
         #region Fields
 
@@ -17,7 +17,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMDataItem_Int(int data, Rectangle? pos = null, byte? palette = null, Icons.NumType? numtype = null, byte? padding = null, int? spaces = null, int? spacewidth = null, Font.ColorID? colorid = null, byte? faded_palette = null, Font.ColorID? faded_colorid = null, float blink_adjustment = 1f) : base(pos)
+        public IGMDataItem_Int(int data, Rectangle? pos = null, byte? palette = null, Icons.NumType? numtype = null, byte? padding = null, int? spaces = null, int? spacewidth = null, Font.ColorID? fontcolor = null, byte? faded_palette = null, Font.ColorID? faded_fontcolor = null, float blink_adjustment = 1f) : base(pos)
         {
             original_pos = _pos; //= pos ?? Rectangle.Empty;
             _padding = padding ?? 1;
@@ -25,8 +25,8 @@ namespace OpenVIII
             NumType = numtype ?? 0;
             _spaces = spaces ?? 1;
             SpaceWidth = spacewidth ?? 20;
-            Colorid = colorid ?? Font.ColorID.White;
-            Faded_Colorid = faded_colorid ?? Colorid;
+            FontColor = fontcolor ?? Font.ColorID.White;
+            Faded_FontColor = faded_fontcolor ?? FontColor;
             Faded_Palette = faded_palette ?? Palette;
             Blink_Adjustment = blink_adjustment;
             Data = data;
@@ -36,8 +36,7 @@ namespace OpenVIII
 
         #region Properties
 
-        public override bool Blink { get => base.Blink && (Palette != Faded_Palette || Colorid != Faded_Colorid); set => base.Blink = value; }
-        public Font.ColorID Colorid { get; set; }
+        public override bool Blink { get => base.Blink && (Palette != Faded_Palette || FontColor != Faded_FontColor); set => base.Blink = value; }
         public int Data
         {
             get => _data;
@@ -54,8 +53,9 @@ namespace OpenVIII
             }
         }
 
-        public Font.ColorID Faded_Colorid { get; set; }
+        public Font.ColorID Faded_FontColor { get; set; }
         public byte Faded_Palette { get; set; }
+        public Font.ColorID FontColor { get; set; }
         public byte Palette { get; set; }
 
         public Icons.NumType NumType { get; set; }
@@ -68,9 +68,9 @@ namespace OpenVIII
         {
             if (Enabled)
             {
-                Memory.Icons.Draw(Data, NumType, Palette, $"D{_padding}", Pos.Location.ToVector2(), Scale, Fade, Colorid);
+                Memory.Icons.Draw(Data, NumType, Palette, $"D{_padding}", Pos.Location.ToVector2(), Scale, Fade, FontColor);
                 if (Blink)
-                    Memory.Icons.Draw(Data, NumType, Faded_Palette, $"D{_padding}", Pos.Location.ToVector2(), Scale, Fade * Blink_Amount * Blink_Adjustment, Faded_Colorid);
+                    Memory.Icons.Draw(Data, NumType, Faded_Palette, $"D{_padding}", Pos.Location.ToVector2(), Scale, Fade * Blink_Amount * Blink_Adjustment, Faded_FontColor);
             }
         }
 
