@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 
 namespace OpenVIII
 {
@@ -40,15 +41,19 @@ namespace OpenVIII
                 QTY = 0;
                 ID = 0;
             }
-            public void Add(byte qty, byte? id = null)
+            public bool Add(byte qty, byte? id = null)
             {
                 ID = id ?? ID;
                 if (ID > 0)
                 {
-                    int x = QTY + qty;
-                    if (x > 100) x = 100;
-                    QTY = (byte)x;
+                    byte Q = (byte)MathHelper.Clamp(qty + QTY, 0, 100);
+                    if (Q > QTY)
+                    {
+                        QTY = Q;
+                        return true;
+                    }
                 }
+                return false;
             }
 
             public Item Clone()

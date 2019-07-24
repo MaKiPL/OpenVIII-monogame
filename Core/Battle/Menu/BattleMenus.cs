@@ -69,7 +69,7 @@ namespace OpenVIII
                     menus.Add(tmp);
                 }
                 menus.Add(new VictoryMenu());
-                SetMode(Mode.Battle);
+                SetMode(Mode.Victory);
                 UpdateFunctions = new Dictionary<Mode, Func<bool>>()
                 {
                     {Mode.Starting, UpdateStartingFunction},

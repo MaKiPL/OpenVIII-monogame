@@ -1,75 +1,139 @@
 ﻿using Microsoft.Xna.Framework;
+using System.Collections.Generic;
 
 namespace OpenVIII
 {
     public partial class BattleMenus
     {
+        #region Classes
+
         public partial class VictoryMenu
         {
+            #region Classes
+
             private class IGMData_PartyItems : IGMData
             {
-                private Saves.Item[] _items;
-                private int _item;
+                #region Fields
 
-                public int Item
+                private Queue<Saves.Item> _items;
+                private FF8StringReference str_NotFound;
+                private FF8StringReference str_Over100;
+                private FF8StringReference str_Recieved;
+                private readonly byte[] DialogSelectedItem = new byte[] { (byte) Encoding.Tags.FF8TextTagCode.Dialog, (byte) Encoding.Tags.FF8TextTagDialog.SelectedItem };
+
+            #endregion Fields
+
+            #region Constructors
+
+            public IGMData_PartyItems(IGMDataItem container) : base()
                 {
-                    get => _item; protected set
-                    {
-                        if (_items != null&&  value < _items.Length)
-                            _item = value;
-                        else
-                        {
-                            _items = null;
-                            _item = 0;
-                        }
-                    }
+                    Items = null;
+                    Init(1, 7, container, 1, 1);
                 }
 
-                public Saves.Item[] Items
+                #endregion Constructors
+
+                #region Properties
+
+                public Queue<Saves.Item> Items
                 {
                     get => _items; set
                     {
                         _items = value;
-                        _item = 0;
+                        Refresh();
                     }
                 }
 
-                public IGMData_PartyItems(Saves.Item[] items, IGMDataItem container) : base()
+                public Saves.Item Item { get; private set; }
+
+                #endregion Properties
+
+                #region Methods
+
+                public void Earn()
                 {
-                    _items = items;
-                    Init(1, 7, container, 1, 1);
+                    skipsnd = true;
+                    init_debugger_Audio.PlaySound(17);
+                }
+
+                public override void Inputs_OKAY()
+                {
+                    if (ITEM[0, 5].Enabled || ITEM[0, 6].Enabled)
+                    {
+                        if (Items != null && Items.Count > 0)
+                        {
+                            Refresh();
+                            base.Inputs_OKAY();
+                        }
+                    }
+                    else if (Items != null && Items.Count > 0)
+                    {
+                        if (Memory.State.EarnItem(Items.Dequeue()))
+                        {
+                            ITEM?[0, 6]?.Show();
+                            Earn();
+                        }
+                        else
+                        {
+                            ITEM?[0, 5]?.Show();
+                            Earn();
+                        }
+
+                        base.Inputs_OKAY();
+                    }
+                }
+
+                public override void Refresh()
+                {
+                    base.Refresh();
+                    if (Items != null && Items.Count > 0)
+                    {
+                        Item = Items.Peek();
+                        ((IGMDataItem_Box)ITEM[0, 1]).Data = Item.DATA?.Name;
+                        ((IGMDataItem_Box)ITEM[0, 2]).Data = $"{Item.QTY}";
+                        ((IGMDataItem_Box)ITEM[0, 3]).Data = Item.DATA?.Description;
+                        ((IGMData_SmallMsgBox)((IGMDataItem_IGMData)ITEM[0, 5]).Data).Data = str_Over100.Clone().Replace(DialogSelectedItem, Item.DATA?.Name);
+                        ((IGMData_SmallMsgBox)((IGMDataItem_IGMData)ITEM[0, 6]).Data).Data = str_Recieved.Clone().Replace(DialogSelectedItem, Item.DATA?.Name);
+                        ITEM[0, 1].Show();
+                        ITEM[0, 2].Show();
+                        ITEM[0, 3].Show();
+                        ITEM[0, 4].Hide();
+                        ITEM[0, 5].Hide();
+                        ITEM[0, 6].Hide();
+                    }
+                    else
+                    {
+                        ITEM?[0, 1]?.Hide();
+                        ITEM?[0, 2]?.Hide();
+                        ITEM?[0, 3]?.Hide();
+                        ITEM?[0, 4]?.Show();
+                        ITEM?[0, 5]?.Hide();
+                        ITEM?[0, 6]?.Hide();
+                    }
                 }
 
                 protected override void Init()
                 {
+                    str_NotFound = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 28);
+                    str_Over100 = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 24);
+                    str_Recieved = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 6);
                     base.Init();
                     ITEM[0, 0] = new IGMDataItem_Box(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 21), new Rectangle(SIZE[0].X, SIZE[0].Y, SIZE[0].Width, 78), Icons.ID.INFO, options: Box_Options.Middle);
                     ITEM[0, 1] = new IGMDataItem_Box(null, new Rectangle(SIZE[0].X + 140, SIZE[0].Y + 189, 475, 78), Icons.ID.ITEM, options: Box_Options.Middle); // item name
                     ITEM[0, 2] = new IGMDataItem_Box(null, new Rectangle(SIZE[0].X + 615, SIZE[0].Y + 189, 125, 78), Icons.ID.NUM_, options: Box_Options.Middle | Box_Options.Center); // item count
                     ITEM[0, 3] = new IGMDataItem_Box(null, new Rectangle(SIZE[0].X, SIZE[0].Y + 444, SIZE[0].Width, 78), Icons.ID.HELP, options: Box_Options.Middle); // item description
-                    ITEM[0, 4] = new IGMDataItem_IGMData(new IGMData_SmallMsgBox(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 28),SIZE[0].X+232,SIZE[0].Y+315, Icons.ID.NOTICE,Box_Options.Center, SIZE[0])); // Couldn't find any items 
-                    ITEM[0, 5] = new IGMDataItem_IGMData(new IGMData_SmallMsgBox(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 24), SIZE[0].X + 230, SIZE[0].Y + 291, Icons.ID.NOTICE, Box_Options.Center, SIZE[0])); // over 100 discarded
-                    ITEM[0, 6] = new IGMDataItem_IGMData(new IGMData_SmallMsgBox(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 6), SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center, SIZE[0])); // Recieved item
-                    Item = 0;
+                    ITEM[0, 4] = new IGMDataItem_IGMData(new IGMData_SmallMsgBox(str_NotFound, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0])); // Couldn't find any items
+                    ITEM[0, 5] = new IGMDataItem_IGMData(new IGMData_SmallMsgBox(str_Over100, SIZE[0].X + 230, SIZE[0].Y + 291, Icons.ID.NOTICE, Box_Options.Center, SIZE[0])); // over 100 discarded
+                    ITEM[0, 6] = new IGMDataItem_IGMData(new IGMData_SmallMsgBox(str_Recieved, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center, SIZE[0])); // Recieved item
                     Cursor_Status |= (Cursor_Status.Hidden | (Cursor_Status.Enabled | Cursor_Status.Static));
                 }
-                public override void Refresh()
-                {
-                    base.Refresh();
-                    ((IGMDataItem_Box)ITEM[0, 1]).Data = _items?[_item].DATA?.Name;
-                    ((IGMDataItem_Box)ITEM[0, 2]).Data = $"{_items?[_item].QTY}";
-                    ((IGMDataItem_Box)ITEM[0, 3]).Data = _items?[_item].DATA?.Description;
-                    ITEM[0, 4].Hide();
-                    ITEM[0, 5].Hide();
-                    ITEM[0, 6].Hide();
-                }
-                public override void Inputs_OKAY()
-                {
-                    Item++;
-                    Refresh();
-                    base.Inputs_OKAY();
-                }
+
+                #endregion Methods
             }
+
+            #endregion Classes
         }
+
+        #endregion Classes
     }
 }

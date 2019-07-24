@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -104,6 +105,21 @@ namespace OpenVIII
             public ChocoboWorld ChocoboWorld; //0x1370
 
             public bool TeamLaguna => Party != null && (Party[0] == OpenVIII.Characters.Laguna_Loire || Party[1] == OpenVIII.Characters.Laguna_Loire || Party[2] == OpenVIII.Characters.Laguna_Loire);
+
+            public bool EarnItem(Item item)
+            {
+                Item f;
+                if ((f = Items.FirstOrDefault(i=>i.ID == item.ID))!=null)
+                {
+                    return f.Add(item.QTY);
+                }
+                else if ((f = Items.FirstOrDefault(i => i.ID == 0)) != null)
+                {
+                    return f.Add(item.QTY,item.ID);
+                }
+
+                return false;
+            }
 
             public Dictionary<GFs, Characters> JunctionedGFs()
             {

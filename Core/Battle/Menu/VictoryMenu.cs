@@ -33,11 +33,11 @@ namespace OpenVIII
                     )},
                     { Mode.Exp,
                     new IGMData_PlayerEXPGroup (
-                        new IGMData_PlayerEXP(_exp,0),new IGMData_PlayerEXP(_exp,1),new IGMData_PlayerEXP(_exp,2)
+                        new IGMData_PlayerEXP(0),new IGMData_PlayerEXP(1),new IGMData_PlayerEXP(2)
                         )
                     { CONTAINER = new IGMDataItem_Empty(new Rectangle(Point.Zero,Size.ToPoint()))} },
                     { Mode.Items,
-                    new IGMData_PartyItems(_items,new IGMDataItem_Empty(new Rectangle(Point.Zero,Size.ToPoint()))) },
+                    new IGMData_PartyItems(new IGMDataItem_Empty(new Rectangle(Point.Zero,Size.ToPoint()))) },
 
                 };
                 SetMode(Mode.Items);
@@ -91,7 +91,7 @@ namespace OpenVIII
                 ((IGMData_PlayerEXPGroup)Data[Mode.Exp]).EXP = _exp;
                 _ap = ap;
                 _items = items;
-                ((IGMData_PartyItems)Data[Mode.Items]).Items = _items;
+                ((IGMData_PartyItems)Data[Mode.Items]).Items = new Queue<Saves.Item>(_items);
                 base.Refresh();
             }
 

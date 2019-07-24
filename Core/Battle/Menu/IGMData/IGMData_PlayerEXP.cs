@@ -13,9 +13,9 @@ namespace OpenVIII
                 private int _exp;
                 private byte _lvl;
 
-                public IGMData_PlayerEXP(int exp, sbyte partypos) : base(1, 12, new IGMDataItem_Box(pos: new Rectangle(35, 78 + partypos * 150, 808, 150)), 1, 1, partypos: partypos)
+                public IGMData_PlayerEXP(sbyte partypos) : base(1, 12, new IGMDataItem_Box(pos: new Rectangle(35, 78 + partypos * 150, 808, 150)), 1, 1, partypos: partypos)
                 {
-                    _exp = exp;
+                    _exp = 0;
                     Debug.Assert(partypos >= 0 && partypos <= 2);
                 }
 
