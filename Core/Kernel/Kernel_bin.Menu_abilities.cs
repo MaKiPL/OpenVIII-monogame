@@ -22,6 +22,7 @@ namespace OpenVIII
 
             public override void Read(BinaryReader br, int i)
             {
+                Icon = Icons.ID.Ability_Menu;
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 //0x0000	2 bytes Offset to name
                 Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);

@@ -120,7 +120,11 @@ namespace OpenVIII
                     ((IGMData_SmallMsgBox)((IGMDataItem_IGMData)ITEM[0, 3]).Data).Data =
                         str_Learn.Clone()
                         .Replace(DialogSelectedGF, Memory.Strings.GetName(GF))
-                        .Replace(DialogSelectedIcon, DialogSelectedIcon.Clone() + new byte[] { (byte)Kernel_bin.AllAbilities[Ability.Value].Icon })
+                        .Replace(DialogSelectedIcon, DialogSelectedIcon.Clone() + new byte[] {
+                            (byte)((short)Kernel_bin.AllAbilities[Ability.Value].Icon & 0xFF),
+                            (byte)(((short)Kernel_bin.AllAbilities[Ability.Value].Icon & 0xFF00)>>8),
+                            (Kernel_bin.AllAbilities[Ability.Value].Palette)
+                        })
                         .Replace(DialogSelectedAbility, Kernel_bin.AllAbilities[Ability.Value].Name);
                     skipsnd = true;
                     init_debugger_Audio.PlaySound(0x28);
