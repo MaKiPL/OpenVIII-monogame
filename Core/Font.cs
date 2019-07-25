@@ -1,8 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
+using OpenVIII.Encoding.Tags;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace OpenVIII
@@ -15,7 +14,9 @@ namespace OpenVIII
 
         public enum ColorID
         {
-            Dark_Gray, Grey, Yellow, Red, Green, Blue, Purple, White
+            Dark_Gray, Grey, Yellow, Red, Green, Blue, Purple, White,
+            //these are darker versions that are faded to when blinking
+            //Dark_GrayBlink, GreyBlink, YellowBlink, RedBlink, GreenBlink, BlueBlink, PurpleBlink, WhiteBlink
         }
 
         public static Dictionary<ColorID, Color> ColorID2Color = new Dictionary<ColorID, Color>
@@ -27,7 +28,19 @@ namespace OpenVIII
             { ColorID.Green, new Color(0,255,0,255) },
             { ColorID.Blue, new Color(106,180,238,255) },
             { ColorID.Purple, new Color(255,0,255,255) },
-            { ColorID.White, Color.White }
+            { ColorID.White, Color.White },
+        };
+
+        public static Dictionary<ColorID, Color> ColorID2Blink = new Dictionary<ColorID, Color>
+        {
+            { ColorID.Dark_Gray, new Color(12,15,12,255) },
+            { ColorID.Grey, new Color(41,49,41,255) },
+            { ColorID.Yellow, new Color(222,222,8,255) },
+            { ColorID.Red, new Color(128,24,24,255) },
+            { ColorID.Green, new Color(0,128,0,255) },
+            { ColorID.Blue, new Color(53,90,128,255) },
+            { ColorID.Purple, new Color(128,0,128,255) },
+            { ColorID.White, new Color(148,148,164,255) }
         };
 
         public Font() => LoadFonts();
@@ -45,7 +58,6 @@ namespace OpenVIII
             charWidths = tim.CharWidths;
             menuFont = tim.GetTexture((ushort)ColorID.White);
         }
-
 
         private byte[] charWidths;
 
@@ -65,9 +77,59 @@ namespace OpenVIII
             int charSize = 12; //pixelhandler does the 2x scaling on the fly.
             Point size = (new Vector2(0, charSize) * zoom).RoundedPoint();
             int width;
-            if(buffer.Length > 0)
-            foreach (byte c in buffer)
+            ColorID colorbak = color;
+            bool blink = false;
+            for (int i = 0; i < buffer.Length; i++)
             {
+                byte c = buffer[i];
+                if (c == (byte)FF8TextTagCode.Color)
+                {
+                    if (++i < buffer.Length - 1)
+                    {
+                        c = buffer[i];
+                        blink = c >= (byte)FF8TextTagColor.Dark_GrayBlink ? true : false;
+                        switch ((FF8TextTagColor)c)
+                        {
+                            case FF8TextTagColor.Blue:
+                            case FF8TextTagColor.BlueBlink:
+                                color = ColorID.Blue;
+                                break;
+                            case FF8TextTagColor.Green:
+                            case FF8TextTagColor.GreenBlink:
+                                color = ColorID.Green;
+                                break;
+                            case FF8TextTagColor.Grey:
+                            case FF8TextTagColor.GreyBlink:
+                                color = ColorID.Grey;
+                                break;
+                            case FF8TextTagColor.Purple:
+                            case FF8TextTagColor.PurpleBlink:
+                                color = ColorID.Purple;
+                                break;
+                            case FF8TextTagColor.Red:
+                            case FF8TextTagColor.RedBlink:
+                                color = ColorID.Red;
+                                break;
+                            case FF8TextTagColor.White:
+                            case FF8TextTagColor.WhiteBlink:
+                                color = colorbak; 
+                                // since ending color change reverts color to white.
+                                // if you have a custom color set this will allow reverting to that.
+                                break;
+                            case FF8TextTagColor.Yellow:
+                            case FF8TextTagColor.YellowBlink:
+                                color = ColorID.Yellow;
+                                break;
+                            case FF8TextTagColor.Dark_Gray:
+                            case FF8TextTagColor.Dark_GrayBlink:
+                                color = ColorID.Dark_Gray;
+                                break;
+                        }
+
+                        c = buffer[++i];
+                    }
+                }
+
                 if (c == 0) continue;
                 int deltaChar = (c - 32);
                 if (deltaChar >= 0 && deltaChar < charWidths.Length)
