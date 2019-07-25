@@ -158,6 +158,16 @@ namespace OpenVIII
             value = default;
             return false;
         }
+        public Boolean TryGetIndexByKey(TKey key, out int value)
+        {
+            if (ContainsKey(key))
+            {
+                value = _list.FindIndex(kvp => kvp.Key.Equals(key));
+                return true;
+            }
+            value = -1;
+            return false;
+        }
 
         public Boolean TryGetKeyByIndex(Int32 index, out TKey value)
         {
