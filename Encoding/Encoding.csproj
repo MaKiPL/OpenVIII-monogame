@@ -86,6 +86,7 @@
     <Compile Include="Sources\Tags\FF8TextTagColor.cs" />
     <Compile Include="Sources\Tags\FF8TextTagDialog.cs" />
     <Compile Include="Sources\Tags\FF8TextTagKey.cs" />
+    <Compile Include="Sources\Tags\FF8TextTagOption.cs" />
     <Compile Include="Sources\Tags\FF8TextTagParam.cs" />
     <Compile Include="Sources\Tags\FF8TextTagTerm.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
