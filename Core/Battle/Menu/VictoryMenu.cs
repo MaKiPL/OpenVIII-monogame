@@ -38,13 +38,16 @@ namespace OpenVIII
                     { CONTAINER = new IGMDataItem_Empty(new Rectangle(Point.Zero,Size.ToPoint()))} },
                     { Mode.Items,
                     new IGMData_PartyItems(new IGMDataItem_Empty(new Rectangle(Point.Zero,Size.ToPoint()))) },
+                    { Mode.AP,
+                    new IGMData_PartyAP(new IGMDataItem_Empty(new Rectangle(Point.Zero,Size.ToPoint()))) },
 
                 };
-                SetMode(Mode.Items);
+                SetMode(Mode.AP);
                 InputFunctions = new Dictionary<Mode, Func<bool>>
                 {
                     { Mode.Exp, Data[Mode.Exp].Inputs},
-                    { Mode.Items, Data[Mode.Items].Inputs}
+                    { Mode.Items, Data[Mode.Items].Inputs},
+                    { Mode.AP, Data[Mode.AP].Inputs}
                 };
                 base.Init();
             }
@@ -52,13 +55,20 @@ namespace OpenVIII
             {
                 switch ((Mode)mode)
                 {
+                    case Mode.AP:
+                        Data[Mode.Exp].Hide();
+                        Data[Mode.Items].Hide();
+                        Data[Mode.AP].Show();
+                        break;
                     case Mode.Exp:
                         Data[Mode.Exp].Show();
                         Data[Mode.Items].Hide();
+                        Data[Mode.AP].Hide();
                         break;
                     case Mode.Items:
                         Data[Mode.Exp].Hide();
                         Data[Mode.Items].Show();
+                        Data[Mode.AP].Hide();
                         break;
                 }
                 return base.SetMode((Mode)mode);
@@ -71,7 +81,7 @@ namespace OpenVIII
                 return false;
             }
 
-            private int _ap = 0;
+            private uint _ap = 0;
             private int _exp = 0;
             private Saves.Item[] _items = null;
 
@@ -85,11 +95,12 @@ namespace OpenVIII
             /// </summary>
             public override void Refresh(Characters c, Characters vc, bool backup = false) { }
 
-            public void Refresh(int exp, int ap, params Saves.Item[] items)
+            public void Refresh(int exp, uint ap, params Saves.Item[] items)
             {
                 _exp = exp;
                 ((IGMData_PlayerEXPGroup)Data[Mode.Exp]).EXP = _exp;
                 _ap = ap;
+                ((IGMData_PartyAP)Data[Mode.AP]).AP = _ap;
                 _items = items;
                 ((IGMData_PartyItems)Data[Mode.Items]).Items = new Queue<Saves.Item>(_items);
                 base.Refresh();

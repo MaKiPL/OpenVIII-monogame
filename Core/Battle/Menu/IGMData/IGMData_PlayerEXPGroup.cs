@@ -54,12 +54,12 @@ namespace OpenVIII
                 /// </summary>
                 private Ffcc EXPsnd = null;
 
+                private IGMData_Container header;
+
                 /// <summary>
                 /// Keeps remainder between cycles
                 /// </summary>
                 private double remaining = 0;
-
-                private IGMData_Container header;
 
                 #endregion Fields
 
@@ -89,6 +89,15 @@ namespace OpenVIII
 
                 #region Methods
 
+                public override void Draw()
+                {
+                    if (Enabled)
+                        header?.Draw();
+                    base.Draw();
+                }
+
+                public override bool Inputs_CANCEL() => false;
+
                 public override void Inputs_OKAY()
                 {
                     base.Inputs_OKAY();
@@ -106,8 +115,6 @@ namespace OpenVIII
                         EXP = 0;
                     }
                 }
-
-                public override bool Inputs_CANCEL() => false;
 
                 public override bool Update()
                 {
@@ -137,13 +144,6 @@ namespace OpenVIII
                 {
                     base.Init();
                     Cursor_Status |= (Cursor_Status.Hidden | (Cursor_Status.Enabled | Cursor_Status.Static));
-                }
-
-                public override void Draw()
-                {
-                    if (Enabled)
-                        header?.Draw();
-                    base.Draw();
                 }
 
                 #endregion Methods

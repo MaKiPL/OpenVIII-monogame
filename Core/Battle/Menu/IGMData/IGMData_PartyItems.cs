@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using OpenVIII.Encoding.Tags;
 using System.Collections.Generic;
 
 namespace OpenVIII
@@ -15,19 +16,23 @@ namespace OpenVIII
             {
                 #region Fields
 
+                private readonly FF8String DialogSelectedItem;
+                private readonly FF8String str_NotFound;
+                private readonly FF8String str_Over100;
+                private readonly FF8String str_Recieved;
                 private Queue<Saves.Item> _items;
-                private FF8StringReference str_NotFound;
-                private FF8StringReference str_Over100;
-                private FF8StringReference str_Recieved;
-                private readonly byte[] DialogSelectedItem = new byte[] { (byte) Encoding.Tags.FF8TextTagCode.Dialog, (byte) Encoding.Tags.FF8TextTagDialog.SelectedItem };
 
-            #endregion Fields
+                #endregion Fields
 
-            #region Constructors
+                #region Constructors
 
-            public IGMData_PartyItems(IGMDataItem container) : base()
+                public IGMData_PartyItems(IGMDataItem container) : base()
                 {
-                    Items = null;
+                    str_NotFound = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 28);
+                    str_Over100 = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 24);
+                    str_Recieved = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 6);
+                    DialogSelectedItem = new byte[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.SelectedItem };
+
                     Init(1, 7, container, 1, 1);
                 }
 
@@ -55,6 +60,8 @@ namespace OpenVIII
                     skipsnd = true;
                     init_debugger_Audio.PlaySound(17);
                 }
+
+                public override bool Inputs_CANCEL() => false;
 
                 public override void Inputs_OKAY()
                 {
@@ -93,7 +100,7 @@ namespace OpenVIII
                         ((IGMDataItem_Box)ITEM[0, 2]).Data = $"{Item.QTY}";
                         ((IGMDataItem_Box)ITEM[0, 3]).Data = Item.DATA?.Description;
                         ((IGMData_SmallMsgBox)((IGMDataItem_IGMData)ITEM[0, 5]).Data).Data = str_Over100.Clone().Replace(DialogSelectedItem, Item.DATA?.Name);
-                        ((IGMData_SmallMsgBox)((IGMDataItem_IGMData)ITEM[0, 6]).Data).Data = str_Recieved.Clone().Replace(DialogSelectedItem, Item.DATA?.Name);
+                        ((IGMData_SmallMsgBox)((IGMDataItem_IGMData)ITEM[0, 5]).Data).Data = str_Over100.Clone().Replace(DialogSelectedItem, Item.DATA?.Name);
                         ITEM[0, 1].Show();
                         ITEM[0, 2].Show();
                         ITEM[0, 3].Show();
@@ -114,17 +121,14 @@ namespace OpenVIII
 
                 protected override void Init()
                 {
-                    str_NotFound = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 28);
-                    str_Over100 = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 24);
-                    str_Recieved = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 6);
                     base.Init();
                     ITEM[0, 0] = new IGMDataItem_Box(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 21), new Rectangle(SIZE[0].X, SIZE[0].Y, SIZE[0].Width, 78), Icons.ID.INFO, options: Box_Options.Middle);
                     ITEM[0, 1] = new IGMDataItem_Box(null, new Rectangle(SIZE[0].X + 140, SIZE[0].Y + 189, 475, 78), Icons.ID.ITEM, options: Box_Options.Middle); // item name
                     ITEM[0, 2] = new IGMDataItem_Box(null, new Rectangle(SIZE[0].X + 615, SIZE[0].Y + 189, 125, 78), Icons.ID.NUM_, options: Box_Options.Middle | Box_Options.Center); // item count
                     ITEM[0, 3] = new IGMDataItem_Box(null, new Rectangle(SIZE[0].X, SIZE[0].Y + 444, SIZE[0].Width, 78), Icons.ID.HELP, options: Box_Options.Middle); // item description
-                    ITEM[0, 4] = new IGMDataItem_IGMData(new IGMData_SmallMsgBox(str_NotFound, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0])); // Couldn't find any items
-                    ITEM[0, 5] = new IGMDataItem_IGMData(new IGMData_SmallMsgBox(str_Over100, SIZE[0].X + 230, SIZE[0].Y + 291, Icons.ID.NOTICE, Box_Options.Center, SIZE[0])); // over 100 discarded
-                    ITEM[0, 6] = new IGMDataItem_IGMData(new IGMData_SmallMsgBox(str_Recieved, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center, SIZE[0])); // Recieved item
+                    ITEM[0, 4] = new IGMDataItem_IGMData(new IGMData_SmallMsgBox(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0])); // Couldn't find any items
+                    ITEM[0, 5] = new IGMDataItem_IGMData(new IGMData_SmallMsgBox(null, SIZE[0].X + 230, SIZE[0].Y + 291, Icons.ID.NOTICE, Box_Options.Center, SIZE[0])); // over 100 discarded
+                    ITEM[0, 6] = new IGMDataItem_IGMData(new IGMData_SmallMsgBox(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center, SIZE[0])); // Recieved item
                     Cursor_Status |= (Cursor_Status.Hidden | (Cursor_Status.Enabled | Cursor_Status.Static));
                 }
 
