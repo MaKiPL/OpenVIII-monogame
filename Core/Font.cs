@@ -94,32 +94,39 @@ namespace OpenVIII
                             case FF8TextTagColor.BlueBlink:
                                 color = ColorID.Blue;
                                 break;
+
                             case FF8TextTagColor.Green:
                             case FF8TextTagColor.GreenBlink:
                                 color = ColorID.Green;
                                 break;
+
                             case FF8TextTagColor.Grey:
                             case FF8TextTagColor.GreyBlink:
                                 color = ColorID.Grey;
                                 break;
+
                             case FF8TextTagColor.Purple:
                             case FF8TextTagColor.PurpleBlink:
                                 color = ColorID.Purple;
                                 break;
+
                             case FF8TextTagColor.Red:
                             case FF8TextTagColor.RedBlink:
                                 color = ColorID.Red;
                                 break;
+
                             case FF8TextTagColor.White:
                             case FF8TextTagColor.WhiteBlink:
-                                color = colorbak; 
-                                // since ending color change reverts color to white.
-                                // if you have a custom color set this will allow reverting to that.
+                                color = colorbak;
+                                // since ending color change reverts color to white. if you have a
+                                // custom color set this will allow reverting to that.
                                 break;
+
                             case FF8TextTagColor.Yellow:
                             case FF8TextTagColor.YellowBlink:
                                 color = ColorID.Yellow;
                                 break;
+
                             case FF8TextTagColor.Dark_Gray:
                             case FF8TextTagColor.Dark_GrayBlink:
                                 color = ColorID.Dark_Gray;
@@ -168,10 +175,17 @@ namespace OpenVIII
                             //trim pixels to remove texture filtering artifacts.
                             sourceRect.Width -= 1;
                             sourceRect.Height -= 1;
+
                             Memory.spriteBatch.Draw(whichFont == Type.menuFont ? menuFont : sysfnt,
+                            destRect,
+                            sourceRect,
+                        ColorID2Color[color] * Fade);
+
+                            if (blink)
+                                Memory.spriteBatch.Draw(whichFont == Type.menuFont ? menuFont : sysfnt,
                                 destRect,
                                 sourceRect,
-                            ColorID2Color[color] * Fade);
+                            ColorID2Blink[color] * Fade * Menu.Blink_Amount);
                             break;
 
                         case Type.sysFntBig:
@@ -182,6 +196,8 @@ namespace OpenVIII
                                 sysfntbig.Draw(ShadowdestRect, sourceRect, Color.Black * Fade * .5f);
                             }
                             sysfntbig.Draw(destRect, sourceRect, ColorID2Color[color] * Fade);
+                            if (blink)
+                                sysfntbig.Draw(destRect, sourceRect, ColorID2Blink[color] * Fade * Menu.Blink_Amount);
                             break;
                     }
                 }
