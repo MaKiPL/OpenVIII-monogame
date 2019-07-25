@@ -126,7 +126,7 @@ namespace OpenVIII
                                 break;
                         }
 
-                        c = buffer[++i];
+                        continue;
                     }
                 }
 
