@@ -35,7 +35,7 @@ namespace OpenVIII
             public FF8String Angelosname;//0x0040 //12 characters 0x00 terminated
             public FF8String Bokosname;//0x004C //12 characters 0x00 terminated
 
-            // 0 = Disc 1
+            /// 0 = Disc 1
             public uint CurrentDisk;//0x0058
 
             public uint Currentsave;//0x005C
@@ -49,14 +49,21 @@ namespace OpenVIII
             public FF8String Grieversname; //0x0B0C // 12 bytes
 
             public ushort Unknown1; //0x0B18  (always 7966?)
-
-            public Queue<GFs> EarnAP(uint ap)
+            
+            public Queue<GFs> EarnAP(uint ap,out Queue<KeyValuePair<GFs,Kernel_bin.Abilities>> abilities)
             {
                 Queue<GFs> ret = new Queue<GFs>();
+                abilities = new Queue<KeyValuePair<GFs, Kernel_bin.Abilities>>();
                 foreach (var g in GFs.Where(i => i.Value.Exists))
                 {
-                    if (g.Value.EarnExp(ap))
+                    if (g.Value.EarnExp(ap, out Kernel_bin.Abilities ability))
+                    {
+                        if(ability != Kernel_bin.Abilities.None)
+                        {
+                            abilities.Enqueue(new KeyValuePair<GFs, Kernel_bin.Abilities>(g.Key,ability));
+                        }
                         ret.Enqueue(g.Key);
+                    }
                 }
                 return ret;
             }
