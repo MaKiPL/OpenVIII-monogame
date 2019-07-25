@@ -33,7 +33,7 @@ namespace OpenVIII
         public static Icons Icons;
         public static Strings Strings;
         public static Kernel_bin Kernel_Bin;
-
+        
         public static Texture2D shadowTexture;
         public static VertexPositionTexture[] shadowGeometry;
 
@@ -193,6 +193,8 @@ namespace OpenVIII
             if (!token.IsCancellationRequested) // requires strings because it uses an array generated in strings.
                 Kernel_Bin = new Kernel_bin();
 
+            //FF8String test = Strings.Read(Strings.FileID.MNGRP, 38, 58);
+
             if (!token.IsCancellationRequested)
                 Memory.MItems = Items_In_Menu.Read(); // this has a soft requirement on kernel_bin. It checks for null so should work without it.
 
@@ -228,7 +230,7 @@ namespace OpenVIII
                     Menu.InitStaticMembers();
             }
 
-            EXE_Offsets test = new EXE_Offsets();
+            //EXE_Offsets test = new EXE_Offsets();
             Inited = true;
             return 0;
         }
