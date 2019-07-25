@@ -49,6 +49,18 @@ namespace OpenVIII
             public FF8String Grieversname; //0x0B0C // 12 bytes
 
             public ushort Unknown1; //0x0B18  (always 7966?)
+
+            public Queue<GFs> EarnAP(uint ap)
+            {
+                Queue<GFs> ret = new Queue<GFs>();
+                foreach (var g in GFs.Where(i => i.Value.Exists))
+                {
+                    if (g.Value.EarnExp(ap))
+                        ret.Enqueue(g.Key);
+                }
+                return ret;
+            }
+
             public ushort Unknown2; //0x0B1A
             public uint AmountofGil2; //0x0B1C
             public uint AmountofGil_Laguna; //0x0B20

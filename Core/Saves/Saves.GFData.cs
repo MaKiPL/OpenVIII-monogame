@@ -106,6 +106,23 @@ namespace OpenVIII
                     return ret > 100 ? (byte)100 : (byte)ret;
                 }
             }
+            public bool UnlockerTest(Kernel_bin.Abilities a, Kernel_bin.Unlocker u)
+            {
+                if (u == Kernel_bin.Unlocker.None)
+                { }
+                else if (u < Kernel_bin.Unlocker.GFLevel100)
+                {
+                    return ((byte)u <= Level);
+                }
+                else
+                {
+                    int ind = (u - Kernel_bin.Unlocker.GFLevel100);
+                    bool ret = Complete[(byte)a];
+                    var kvp = JunctionableGFsData.Ability[ind];
+                    return ret && UnlockerTest(kvp.Key, kvp.Value);
+                }
+                return false;
+            }
 
             /// <summary>
             /// True if at max.
@@ -182,6 +199,16 @@ namespace OpenVIII
                 return c;
             }
 
+            public bool EarnExp(uint ap)
+            {
+                bool ret = false;
+                if (EXPtoNextLevel <= ap && Level < 100)
+                    ret = true;
+                byte ap_tolearn = Kernel_bin.AllAbilities[Learning].AP;
+                Experience += ap;
+                return ret;
+            }
+
             /// <summary>
             /// Learn this ability
             /// </summary>
@@ -234,7 +261,7 @@ namespace OpenVIII
                 Learning = (Kernel_bin.Abilities)br.ReadByte();//0x41 ability
                 Forgotten = new BitArray(br.ReadBytes(3));//0x42 abilities (1 bit = 1 ability of the GF forgotten, 2 bits unused)
             }
-
+            
             /// <summary>
             /// <para>Set which Ability the GF is learning.</para>
             /// <para>Could actually be a byte to corrispond to APs and Forgotten.</para>
