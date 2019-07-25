@@ -16,7 +16,6 @@ namespace OpenVIII
         {
             Dark_Gray, Grey, Yellow, Red, Green, Blue, Purple, White,
             //these are darker versions that are faded to when blinking
-            //Dark_GrayBlink, GreyBlink, YellowBlink, RedBlink, GreenBlink, BlueBlink, PurpleBlink, WhiteBlink
         }
 
         public static Dictionary<ColorID, Color> ColorID2Color = new Dictionary<ColorID, Color>
@@ -82,63 +81,21 @@ namespace OpenVIII
             for (int i = 0; i < buffer.Length; i++)
             {
                 byte c = buffer[i];
-                if (c == (byte)FF8TextTagCode.Color)
+                if (c == 0) continue;
+                else if (c == (byte)FF8TextTagCode.Color)
                 {
                     if (++i < buffer.Length - 1)
                     {
                         c = buffer[i];
                         blink = c >= (byte)FF8TextTagColor.Dark_GrayBlink ? true : false;
-                        switch ((FF8TextTagColor)c)
-                        {
-                            case FF8TextTagColor.Blue:
-                            case FF8TextTagColor.BlueBlink:
-                                color = ColorID.Blue;
-                                break;
-
-                            case FF8TextTagColor.Green:
-                            case FF8TextTagColor.GreenBlink:
-                                color = ColorID.Green;
-                                break;
-
-                            case FF8TextTagColor.Grey:
-                            case FF8TextTagColor.GreyBlink:
-                                color = ColorID.Grey;
-                                break;
-
-                            case FF8TextTagColor.Purple:
-                            case FF8TextTagColor.PurpleBlink:
-                                color = ColorID.Purple;
-                                break;
-
-                            case FF8TextTagColor.Red:
-                            case FF8TextTagColor.RedBlink:
-                                color = ColorID.Red;
-                                break;
-
-                            case FF8TextTagColor.White:
-                            case FF8TextTagColor.WhiteBlink:
-                                color = colorbak;
-                                // since ending color change reverts color to white. if you have a
-                                // custom color set this will allow reverting to that.
-                                break;
-
-                            case FF8TextTagColor.Yellow:
-                            case FF8TextTagColor.YellowBlink:
-                                color = ColorID.Yellow;
-                                break;
-
-                            case FF8TextTagColor.Dark_Gray:
-                            case FF8TextTagColor.Dark_GrayBlink:
-                                color = ColorID.Dark_Gray;
-                                break;
-                        }
+                        color = GetColorFromTag(c, colorbak);
 
                         continue;
                     }
                 }
-
-                if (c == 0) continue;
-                int deltaChar = (c - 32);
+                else if (c == (byte)FF8TextTagCode.Line && NewLine(pos, lineSpacing, ref real, size))
+                    continue;
+                int deltaChar = GetDeltaChar(c);
                 if (deltaChar >= 0 && deltaChar < charWidths.Length)
                 {
                     width = charWidths[deltaChar];
@@ -152,54 +109,15 @@ namespace OpenVIII
                 Point curSize = size;
                 int verticalPosition = deltaChar / charCountWidth;
                 //i.e. 1280 is 100%, 640 is 50% and therefore 2560 is 200% which means multiply by 0.5f or 2.0f
-                if (c == 0x02)// \n
-                {
-                    real.X = (int)pos.X;
-                    real.Y += size.Y + lineSpacing;
-                    continue;
-                }
+
                 Rectangle destRect = new Rectangle(real, size);
-                // if you use Memory.SpriteBatchStartAlpha(SamplerState.PointClamp); you won't need
-                // to trim last pixel. but it doesn't look good on low res fonts.
                 if (!skipdraw)
                 {
                     Rectangle sourceRect = new Rectangle((deltaChar - (verticalPosition * charCountWidth)) * charSize,
                         verticalPosition * charSize,
                         width,
                         charSize);
-
-                    switch (whichFont)
-                    {
-                        case Type.menuFont:
-                        case Type.sysfnt:
-                            //trim pixels to remove texture filtering artifacts.
-                            sourceRect.Width -= 1;
-                            sourceRect.Height -= 1;
-
-                            Memory.spriteBatch.Draw(whichFont == Type.menuFont ? menuFont : sysfnt,
-                            destRect,
-                            sourceRect,
-                        ColorID2Color[color] * Fade);
-
-                            if (blink)
-                                Memory.spriteBatch.Draw(whichFont == Type.menuFont ? menuFont : sysfnt,
-                                destRect,
-                                sourceRect,
-                            ColorID2Blink[color] * Fade * Menu.Blink_Amount);
-                            break;
-
-                        case Type.sysFntBig:
-                            if (!sysfntbig.Modded)
-                            {
-                                Rectangle ShadowdestRect = new Rectangle(destRect.Location, destRect.Size);
-                                ShadowdestRect.Offset(zoom);
-                                sysfntbig.Draw(ShadowdestRect, sourceRect, Color.Black * Fade * .5f);
-                            }
-                            sysfntbig.Draw(destRect, sourceRect, ColorID2Color[color] * Fade);
-                            if (blink)
-                                sysfntbig.Draw(destRect, sourceRect, ColorID2Blink[color] * Fade * Menu.Blink_Amount);
-                            break;
-                    }
+                    DrawLetter(zoom, whichFont, Fade, color, blink, destRect, sourceRect);
                 }
                 real.X += size.X;
                 int curWidth = real.X - (int)pos.X;
@@ -209,6 +127,106 @@ namespace OpenVIII
 
             ret.Height = size.Y + (real.Y - (int)pos.Y);
             return ret;
+        }
+
+        private static bool NewLine(Vector2 pos, int lineSpacing, ref Point real, Point size)
+        {
+            bool gonext;
+            real.X = (int)pos.X;
+            real.Y += size.Y + lineSpacing;
+            gonext = true;
+            return gonext;
+        }
+
+        private static int GetDeltaChar(byte c) => (c - 32);
+
+        private void DrawLetter(Vector2 zoom, Type whichFont, float Fade, ColorID color, bool blink, Rectangle destRect, Rectangle sourceRect)
+        {
+            switch (whichFont)
+            {
+                case Type.menuFont:
+                case Type.sysfnt:
+                    // if you use Memory.SpriteBatchStartAlpha(SamplerState.PointClamp); you won't need
+                    // to trim last pixel. but it doesn't look good on low res fonts.
+                    //trim pixels to remove texture filtering artifacts.
+                    //sourceRect.Width -= 1;
+                    //sourceRect.Height -= 1;
+
+                    Memory.spriteBatch.Draw(whichFont == Type.menuFont ? menuFont : sysfnt,
+                    destRect,
+                    sourceRect,
+                ColorID2Color[color] * Fade);
+
+                    if (blink)
+                        Memory.spriteBatch.Draw(whichFont == Type.menuFont ? menuFont : sysfnt,
+                        destRect,
+                        sourceRect,
+                    ColorID2Blink[color] * Fade * Menu.Blink_Amount);
+                    break;
+
+                case Type.sysFntBig:
+                    if (!sysfntbig.Modded)
+                    {
+                        Rectangle ShadowdestRect = new Rectangle(destRect.Location, destRect.Size);
+                        ShadowdestRect.Offset(zoom);
+                        sysfntbig.Draw(ShadowdestRect, sourceRect, Color.Black * Fade * .5f);
+                    }
+                    sysfntbig.Draw(destRect, sourceRect, ColorID2Color[color] * Fade);
+                    if (blink)
+                        sysfntbig.Draw(destRect, sourceRect, ColorID2Blink[color] * Fade * Menu.Blink_Amount);
+                    break;
+            }
+        }
+
+        private static ColorID GetColorFromTag(byte c, ColorID colorbak = Font.ColorID.White)
+        {
+            ColorID color = colorbak;
+            switch ((FF8TextTagColor)c)
+            {
+                case FF8TextTagColor.Blue:
+                case FF8TextTagColor.BlueBlink:
+                    color = ColorID.Blue;
+                    break;
+
+                case FF8TextTagColor.Green:
+                case FF8TextTagColor.GreenBlink:
+                    color = ColorID.Green;
+                    break;
+
+                case FF8TextTagColor.Grey:
+                case FF8TextTagColor.GreyBlink:
+                    color = ColorID.Grey;
+                    break;
+
+                case FF8TextTagColor.Purple:
+                case FF8TextTagColor.PurpleBlink:
+                    color = ColorID.Purple;
+                    break;
+
+                case FF8TextTagColor.Red:
+                case FF8TextTagColor.RedBlink:
+                    color = ColorID.Red;
+                    break;
+
+                case FF8TextTagColor.White:
+                case FF8TextTagColor.WhiteBlink:
+                    color = colorbak;
+                    // since ending color change reverts color to white. if you have a custom color
+                    // set this will allow reverting to that.
+                    break;
+
+                case FF8TextTagColor.Yellow:
+                case FF8TextTagColor.YellowBlink:
+                    color = ColorID.Yellow;
+                    break;
+
+                case FF8TextTagColor.Dark_Gray:
+                case FF8TextTagColor.Dark_GrayBlink:
+                    color = ColorID.Dark_Gray;
+                    break;
+            }
+
+            return color;
         }
 
         public Rectangle RenderBasicText(FF8String buffer, Point pos, Vector2 zoom, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false, ColorID color = ColorID.White)
