@@ -146,6 +146,9 @@
     <Compile Include="Card_Game\EXE_Offsets.cs" />
     <Compile Include="Image\TDW.cs" />
     <Compile Include="Image\Texture_Base.cs" />
+    <Compile Include="Input\Buttons.cs" />
+    <Compile Include="Input\Button_Flags.cs" />
+    <Compile Include="Input\MouseLockMode.cs" />
     <Compile Include="Menu\IGMDataItem\I_Color.cs" />
     <Compile Include="Menu\IGMDataItem\I_Data.cs" />
     <Compile Include="Menu\IGMDataItem\I_FontColor.cs" />
@@ -672,7 +675,7 @@
     <Compile Include="Game1.cs" />
     <Compile Include="GFs.cs" />
     <Compile Include="init_debugger_Audio.cs" />
-    <Compile Include="Input.cs" />
+    <Compile Include="Input\Input.cs" />
     <Compile Include="Kernel\Kernel_bin.Abilities.cs" />
     <Compile Include="Kernel\Kernel_bin.Ability.cs" />
     <Compile Include="Kernel\Kernel_bin.AbilityFlags2.cs" />
