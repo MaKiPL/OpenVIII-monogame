@@ -3,67 +3,59 @@
     public enum FF8TextTagKey : byte
     {
         /// <summary>
-        /// Left Escape Button, (D), (L2)
+        /// Left Escape Button, (D), (L2), 2000_(Z)
         /// </summary>
         EscapeKey1 = 0x20,
         /// <summary>
-        /// Right Escape Button, Switch POV on world, (F),(R2)
+        /// Right Escape Button, Switch POV on world, (F),(R2), 2000_(C)
         /// </summary>
         EscapeKey2 = 0x21,
         /// <summary>
-        /// Rotate Left/Show Target Window in battle, Switch Character or GF Left in Menu, (H), (L1)
+        /// Rotate Left/Show Target Window in battle, Switch Character or GF Left in Menu, (H), (L1), 2000_(Q)
         /// </summary>
         RotateLeft = 0x22,
         /// <summary>
-        /// Rotate Right/Gunblade trigger in battle, Switch Character or GF Right in Menu, (G), (R1)
+        /// Rotate Right/Gunblade trigger in battle, Switch Character or GF Right in Menu, (G), (R1), 2000_(E)
         /// </summary>
         RotateRight = 0x23,
         /// <summary>
-        /// Walk/Cancel, (C), (Triangle), Drive backward (Right stick down)
+        /// Walk/Cancel, (C), (Triangle), Drive backward (Right stick down), 2000_(W)
         /// </summary>
         Cancel = 0x24,
         /// <summary>
-        /// Menu, Switch Character in Battle, (V), (Circle)
+        /// Menu, Switch Character in Battle, (V), (Circle), 2000_(D)
         /// </summary>
         Menu = 0x25,
         /// <summary>
-        /// Talk/Confirm, (X) (Cross)
+        /// Talk/Confirm, (X), (Cross), 2000_(X)
         /// </summary>
         Confirm = 0x26,
         /// <summary>
-        /// Talk/Card Game,Show Status in battle, (S) (Square), Drive forward (Right stick up), Tap in battle boost gf if hit while holding Select
+        /// Talk/Card Game,Show Status in battle, (S), (Square), 2000_(A), Drive forward (Right stick up), Tap in battle boost gf if hit while holding Select
         /// </summary>
         Cards = 0x27,
         /// <summary>
-        /// Toggle Display,Default, (J) (Select)
+        /// Toggle Display,Default, (J) (Select), 2000_(Q)
         /// </summary>
         Select = 0x28,
         /// <summary>
-        /// Shows as blank in game
-        /// </summary>
-        UNK0x29 = 0x29,
-        /// <summary>
-        /// Shows as blank in game
-        /// </summary>
-        UNK0x2A = 0x2A,
-        /// <summary>
-        /// Pause / End Concert Key / Toggle Viberation Mode, (A) (Start)
+        /// Pause / Display Help Info in battle, End Concert Key / Toggle Viberation Mode, (A) (Start), 2000_(S)
         /// </summary>
         Pause = 0x2B,
         /// <summary>
-        /// Up D-PAD
+        /// Up D-PAD, or left stick
         /// </summary>
         Up = 0x2C,
         /// <summary>
-        /// Right D-PAD
+        /// Right D-PAD, or left stick
         /// </summary>
         Right = 0x2D,
         /// <summary>
-        /// Down D-PAD
+        /// Down D-PAD, or left stick
         /// </summary>
         Down = 0x2E,
         /// <summary>
-        /// Left D-PAD
+        /// Left D-PAD, or left stick
         /// </summary>
         Left = 0x2F,
         /// <summary>
@@ -130,10 +122,6 @@
         /// Same as 0x2F
         /// </summary>
         x3F = 0x3F,
-        /// <summary>
-        /// Shows blank in game
-        /// </summary>
-        UNK0x40 = 0x40,
         /// <summary>
         /// Shows Icons.ID.JunctionSYM, Palette 2
         /// </summary>
