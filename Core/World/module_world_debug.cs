@@ -572,6 +572,27 @@ namespace OpenVIII
         private static void DrawDebug()
         {
             var verts = new[] { new VertexPositionColor(playerPosition, Color.White), new VertexPositionColor(new Vector3(playerPosition.X, -1, playerPosition.Z), Color.White) };
+
+            Vector3 rise = new Vector3(0, 5f, 0);
+            float raw = (float)Extended.Radians(-degrees + 90f);
+
+            Vector3 addRise = new Vector3
+                (
+                (float)Math.Sin(raw) * 15f,
+                5f,
+                (float)Math.Cos(raw) * 15f
+                );
+
+            var testForwardVector = new[]
+            {
+                new VertexPositionColor(playerPosition + rise, Color.White), //draw line from player to mockup of forward
+                new VertexPositionColor(playerPosition + addRise, Color.White),
+
+                new VertexPositionColor(playerPosition + addRise + rise*3f, Color.White), //draw line from mockup up to the bottom fake infinity
+                new VertexPositionColor(playerPosition + addRise - new Vector3(0,500f,0), Color.White)
+
+
+            };
             if(ii.Count != 0)
             foreach (var tt in ii)
             {
@@ -595,9 +616,8 @@ namespace OpenVIII
             {
                 pass.Apply();
                 Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, verts, 0, 1);
+                Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, testForwardVector, 0, 2);
             }
-
-            
         }
 
         private static int animationId = 0;
