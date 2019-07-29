@@ -67,35 +67,51 @@ namespace OpenVIII
 
         public static double Distance3D(Vector3 xo, Vector3 xa) => Vector3.Distance(xo, xa);
 
-        public struct Barycentric
+        /// <summary>
+        /// Real-time collision 3D Raycast on plane + barycentric calculation
+        /// </summary>
+        /// <param name="R">ray with origin + given direction</param>
+        /// <param name="a">vertex A</param>
+        /// <param name="b">vertex B</param>
+        /// <param name="c">vertex C</param>
+        /// <param name="barycentric">out param for barycentric vector</param>
+        /// <returns>0 - not applicable, 1- intersects;</returns>
+        public static int RayIntersection3D(Ray R, Vector3 a, Vector3 b, Vector3 c, out Vector3 barycentric)
         {
-            public float u;
-            public float v;
-            public float w;
-
-            public Barycentric(Vector3 aV1, Vector3 aV2, Vector3 aV3, Vector3 aP)
+            barycentric = Vector3.Zero;
+            Vector3 p1 = b - a;
+            Vector3 p2 = c - a;
+            Vector3 lhs = Vector3.Cross(p1, p2);
+            if (lhs == Vector3.Zero)
+                return -1;
+            Vector3 direction = R.Direction;
+            Vector3 rhs = R.Position - a;
+            float dot00 = -Vector3.Dot(lhs, rhs);
+            float dot01 = Vector3.Dot(lhs, direction);
+            if (Math.Abs(dot01) < 1E-08f)
+                if (dot00 == 0f)
+                    return 2;
+                else return 0;
+            else
             {
-                Vector3 a = aV2 - aV3, b = aV1 - aV3, c = aP - aV3;
-                float aLen = a.X * a.X + a.Y * a.Y + a.Z * a.Z;
-                float bLen = b.X * b.X + b.Y * b.Y + b.Z * b.Z;
-                float ab = a.X * b.X + a.Y * b.Y + a.Z * b.Z;
-                float ac = a.X * c.X + a.Y * c.Y + a.Z * c.Z;
-                float bc = b.X * c.X + b.Y * c.Y + b.Z * c.Z;
-                float d = aLen * bLen - ab * ab;
-                u = (aLen * bc - ab * ac) / d;
-                v = (bLen * ac - ab * bc) / d;
-                w = 1.0f - u - v;
-            }
-            public bool IsInside
-            {
-                get
-                {
-                    return (u >= 0.0f) && (u <= 1.0f) && (v >= 0.0f) && (v <= 1.0f) && (w >= 0.0f); //(w <= 1.0f)
-                }
-            }
-            public Vector3 Interpolate(Vector3 v1, Vector3 v2, Vector3 v3)
-            {
-                return v1 * u + v2 * v + v3 * w;
+                float dot02 = dot00 / dot01;
+                if (dot02 < 0.0)
+                    return 0;
+                barycentric = R.Position + dot02 * direction;
+                float dot10 = Vector3.Dot(p1, p1);
+                float dot11 = Vector3.Dot(p1, p2);
+                float dot12 = Vector3.Dot(p2, p2);
+                Vector3 lhs2 = barycentric - a;
+                float dot21 = Vector3.Dot(lhs2, p1);
+                float dot22 = Vector3.Dot(lhs2, p2);
+                float dot30 = dot11 * dot11 - dot10 * dot12;
+                float dot31 = (dot11 * dot22 - dot12 * dot21) / dot30;
+                if (dot31 < 0.0 || dot31 > 1.0)
+                    return 0;
+                float dot32 = (dot11 * dot21 - dot10 * dot22) / dot30;
+                if (dot32 < 0.0 || (dot31 + dot32) > 1.0)
+                    return 0;
+                return 1;
             }
         }
 

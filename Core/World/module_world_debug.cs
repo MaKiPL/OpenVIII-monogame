@@ -383,62 +383,35 @@ namespace OpenVIII
         private static byte bSelectedWalkable = 0;
         private static int countofDebugFaces = 0;
 
-        private static List<Tuple<ParsedTriangleData,Extended.Barycentric, float?>> ii;
+        private static List<Tuple<ParsedTriangleData, Vector3>> ii;
 
         private static void CollisionUpdate()
         {
-            //Forest comment- see 0b01000000 to check for forest- if zero ii test next n forward for 0b01000000 and if yes then warp Y to jump on top
             segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1); //needs to be updated on pre-new values of movement
             int realSegmentId = (int)(segmentPosition.Y * 32 + segmentPosition.X);
             var seg = segments[realSegmentId];
-            ii = new List<Tuple<ParsedTriangleData, Extended.Barycentric,float?>>();
-            Ray ray = new Ray(playerPosition + new Vector3(0,10f,0), Vector3.Down);
+            ii = new List<Tuple<ParsedTriangleData, Vector3>>();
+            Ray characterRay = new Ray(playerPosition + new Vector3(0,10f,0), Vector3.Down); //sets ray origin
+            
+            //loop through current block triangles
             for (int i = 0; i < seg.parsedTriangle.Length; i++)
-            {
-                Plane plane = new Plane(seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C);
-                float? interDistance = ray.Intersects(plane);
-                float? testerTwo = ray.Intersects(seg.parsedTriangle[i].boundingBox);
-                
-                if (testerTwo != null)
-                    ii.Add(new Tuple<ParsedTriangleData, Extended.Barycentric,float?>(
-                        seg.parsedTriangle[i], 
-                        new Extended.Barycentric(seg.parsedTriangle[i].A,seg.parsedTriangle[i].B,seg.parsedTriangle[i].C,playerPosition),
-                        testerTwo));
-                //var pb = plane.Intersects(bb);
-                //if (pb == PlaneIntersectionType.Intersecting)
-                //    ii.Add(new Tuple<ParsedTriangleData, float?>(seg.parsedTriangle[i], 0));
-            }
-            if (ii.Count == 0)
-            {
-                playerPosition = lastPlayerPosition;
-                countofDebugFaces = 0;
-                return;
+                if(Extended.RayIntersection3D(characterRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out var barycentric) != 0)
+                    ii.Add(new Tuple<ParsedTriangleData, Vector3>(seg.parsedTriangle[i], barycentric));
 
-            }
-            ii = ii.Where(x => x.Item2.IsInside).ToList();
+            //don't allow walking over non-walkable faces
             ii = ii.Where(x => (x.Item1.parentPolygon.vertFlags & TRIFLAGS_COLLIDE) != 0).ToList();
-            if (ii.Count > 1)
-                ii = ii.Where(x => x.Item3 == ii.Min(y => y.Item3)).ToList();
 
             countofDebugFaces = ii.Count;
-            foreach (var bart in ii)
+            foreach (var prt in ii)
             {
-                //if (ii.Count != 1)
-                //{
-                if (!bart.Item2.IsInside)
-                    continue;
-                float minimumX = (new float[] { bart.Item1.A.X, bart.Item1.B.X, bart.Item1.C.X }).Min();
-                float minimumZ = (new float[] { bart.Item1.A.Z, bart.Item1.B.Z, bart.Item1.C.Z }).Min();
-                float maximumX = (new float[] { bart.Item1.A.X, bart.Item1.B.X, bart.Item1.C.X }).Max();
-                float maximumZ = (new float[] { bart.Item1.A.Z, bart.Item1.B.Z, bart.Item1.C.Z }).Max();
-                if (!Extended.In(playerPosition.X, minimumX, maximumX))
-                    continue;
-                if (!Extended.In(playerPosition.Z, minimumZ, maximumZ))
-                    continue;
-                //}
-                Vector3 squaPos = bart.Item2.Interpolate(bart.Item1.A, bart.Item1.B, bart.Item1.C);
+                Vector3 distance = playerPosition - prt.Item2;
+                float distY = Math.Abs(distance.Y);
+                if((prt.Item1.parentPolygon.vertFlags & 0b01000000) == 0)
+                    if (distY > 10f)
+                        continue;
+                Vector3 squaPos = prt.Item2;
                 playerPosition.Y = squaPos.Y;
-                bSelectedWalkable = bart.Item1.parentPolygon.vertFlags;
+                bSelectedWalkable = prt.Item1.parentPolygon.vertFlags;
                 return;
             }
             ////out of loop- failed to obtain collision or abandon move
