@@ -79,6 +79,7 @@ namespace OpenVIII
             public Vector2 uvB;
             public Vector2 uvC;
             public Polygon parentPolygon;
+            public BoundingBox boundingBox;
         }
 
         private struct Block
@@ -242,6 +243,7 @@ namespace OpenVIII
                         float localX = 2048 * (n % 4);
                         float localZ = -2048 * (n / 4);
                         for (int k = 0; k < segments[i].block[n].polyCount; k++)
+                        {
                             ptd.Add(new ParsedTriangleData()
                             {
                                 A = new Vector3(
@@ -261,6 +263,10 @@ namespace OpenVIII
                                 (segments[i].block[n].vertices[segments[i].block[n].polygons[k].F3].Y + localZ) / WORLD_SCALE_MODEL + baseY),
                                 uvC = new Vector2(segments[i].block[n].polygons[k].U3 / 256.0f, segments[i].block[n].polygons[k].V3 / 256.0f)
                             });
+                            var ptda = ptd[ptd.Count - 1];
+                            ptda.boundingBox = Extended.GetBoundingBox(ptda.A, ptda.B, ptda.C);
+                            ptd[ptd.Count - 1] = ptda;
+                        }
                     }
                     segments[i].parsedTriangle = ptd.ToArray();
                 }
@@ -361,15 +367,15 @@ namespace OpenVIII
             if (Input.Button(Buttons.Up))
             {
                 animationId = 1;
-                playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees));
-                playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees));
+                playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees))*2f;
+                playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees))*2f;
                 localMchRotation = (float)(Extended.Radians(-degrees - 90f));
             }
             if(Input.Button(Buttons.Down))
             {
                 animationId = 1;
-                playerPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees));
-                playerPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees));
+                playerPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees))*2f;
+                playerPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees))*2f;
                 localMchRotation = (float)(Extended.Radians(-degrees + 90f));
             }
         }
@@ -377,49 +383,65 @@ namespace OpenVIII
         private static byte bSelectedWalkable = 0;
         private static int countofDebugFaces = 0;
 
+        private static List<Tuple<ParsedTriangleData,Extended.Barycentric, float?>> ii;
+
         private static void CollisionUpdate()
         {
+            //Forest comment- see 0b01000000 to check for forest- if zero ii test next n forward for 0b01000000 and if yes then warp Y to jump on top
+            segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1); //needs to be updated on pre-new values of movement
             int realSegmentId = (int)(segmentPosition.Y * 32 + segmentPosition.X);
             var seg = segments[realSegmentId];
-            List<Tuple<ParsedTriangleData, Extended.Barycentric>> ii = new List<Tuple<ParsedTriangleData, Extended.Barycentric>>();
+            ii = new List<Tuple<ParsedTriangleData, Extended.Barycentric,float?>>();
+            Ray ray = new Ray(playerPosition + new Vector3(0,10f,0), Vector3.Down);
             for (int i = 0; i < seg.parsedTriangle.Length; i++)
             {
-                Extended.Barycentric bary = new Extended.Barycentric(seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C,
-                     playerPosition);
-                if (bary.IsInside)
-                    ii.Add(new Tuple<ParsedTriangleData, Extended.Barycentric>(seg.parsedTriangle[i], bary));
+                Plane plane = new Plane(seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C);
+                float? interDistance = ray.Intersects(plane);
+                float? testerTwo = ray.Intersects(seg.parsedTriangle[i].boundingBox);
+                
+                if (testerTwo != null)
+                    ii.Add(new Tuple<ParsedTriangleData, Extended.Barycentric,float?>(
+                        seg.parsedTriangle[i], 
+                        new Extended.Barycentric(seg.parsedTriangle[i].A,seg.parsedTriangle[i].B,seg.parsedTriangle[i].C,playerPosition),
+                        testerTwo));
+                //var pb = plane.Intersects(bb);
+                //if (pb == PlaneIntersectionType.Intersecting)
+                //    ii.Add(new Tuple<ParsedTriangleData, float?>(seg.parsedTriangle[i], 0));
             }
             if (ii.Count == 0)
+            {
+                playerPosition = lastPlayerPosition;
+                countofDebugFaces = 0;
                 return;
+
+            }
+            ii = ii.Where(x => x.Item2.IsInside).ToList();
+            ii = ii.Where(x => (x.Item1.parentPolygon.vertFlags & TRIFLAGS_COLLIDE) != 0).ToList();
+            if (ii.Count > 1)
+                ii = ii.Where(x => x.Item3 == ii.Min(y => y.Item3)).ToList();
+
             countofDebugFaces = ii.Count;
             foreach (var bart in ii)
             {
                 //if (ii.Count != 1)
                 //{
-                    float minimumX = (new float[] { bart.Item1.A.X, bart.Item1.B.X, bart.Item1.C.X }).Min();
-                    float minimumZ = (new float[] { bart.Item1.A.Z, bart.Item1.B.Z, bart.Item1.C.Z }).Min();
-                    float maximumX = (new float[] { bart.Item1.A.X, bart.Item1.B.X, bart.Item1.C.X }).Max();
-                    float maximumZ = (new float[] { bart.Item1.A.Z, bart.Item1.B.Z, bart.Item1.C.Z }).Max();
-                    if (!Extended.In(playerPosition.X, minimumX, maximumX))
-                        continue;
-                    if (!Extended.In(playerPosition.Z, minimumZ, maximumZ))
-                        continue;
+                if (!bart.Item2.IsInside)
+                    continue;
+                float minimumX = (new float[] { bart.Item1.A.X, bart.Item1.B.X, bart.Item1.C.X }).Min();
+                float minimumZ = (new float[] { bart.Item1.A.Z, bart.Item1.B.Z, bart.Item1.C.Z }).Min();
+                float maximumX = (new float[] { bart.Item1.A.X, bart.Item1.B.X, bart.Item1.C.X }).Max();
+                float maximumZ = (new float[] { bart.Item1.A.Z, bart.Item1.B.Z, bart.Item1.C.Z }).Max();
+                if (!Extended.In(playerPosition.X, minimumX, maximumX))
+                    continue;
+                if (!Extended.In(playerPosition.Z, minimumZ, maximumZ))
+                    continue;
                 //}
                 Vector3 squaPos = bart.Item2.Interpolate(bart.Item1.A, bart.Item1.B, bart.Item1.C);
-                bSelectedWalkable = (byte)bart.Item1.parentPolygon.vertFlags;
-                //tunnels debug
-
-                //if ((bSelectedWalkable & TRIFLAGS_FORESTTEST)!=0)
-                //    if (Math.Abs(squaPos.Y - playerPosition.Y) > 10f)
-                //        continue;
-
-                //tunnels debug end
-                if ((byte)(bSelectedWalkable&TRIFLAGS_COLLIDE) == 0)
-                    continue;
                 playerPosition.Y = squaPos.Y;
+                bSelectedWalkable = bart.Item1.parentPolygon.vertFlags;
                 return;
             }
-            //out of loop- failed to obtain collision or abandon move
+            ////out of loop- failed to obtain collision or abandon move
             playerPosition = lastPlayerPosition;
         }
 
@@ -542,6 +564,8 @@ namespace OpenVIII
 
             DrawCharacter(0);
 
+            DrawDebug();
+
             switch (MapState)
             {
                 case MiniMapState.noMinimap:
@@ -568,6 +592,39 @@ namespace OpenVIII
             Memory.SpriteBatchEnd();
 
 
+        }
+
+        
+
+        private static void DrawDebug()
+        {
+            var verts = new[] { new VertexPositionColor(playerPosition, Color.White), new VertexPositionColor(new Vector3(playerPosition.X, -1, playerPosition.Z), Color.White) };
+            if(ii.Count != 0)
+            foreach (var tt in ii)
+            {
+                var triangle = tt.Item1;
+                var verts2 = new[] {new VertexPositionColor(triangle.A, Color.White),
+                new VertexPositionColor(triangle.B, Color.White),
+
+                new VertexPositionColor(triangle.B, Color.White),
+                new VertexPositionColor(triangle.C, Color.White),
+
+                new VertexPositionColor(triangle.C, Color.White),
+                new VertexPositionColor(triangle.A, Color.White)
+                };
+                foreach (var pass in ate.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, verts2, 0, 3);
+                }
+            }
+            foreach (var pass in ate.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, verts, 0, 1);
+            }
+
+            
         }
 
         private static int animationId = 0;

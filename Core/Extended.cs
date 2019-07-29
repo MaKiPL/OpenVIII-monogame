@@ -99,6 +99,19 @@ namespace OpenVIII
             }
         }
 
+        public static BoundingBox GetBoundingBox(Vector3 a, Vector3 b, Vector3 c)
+        {
+            float Minx = (new float[] { a.X, b.X, c.X }).Min();
+            float Maxx = (new float[] { a.X, b.X, c.X }).Max();
+            float Miny = (new float[] { a.Y, b.Y, c.Y }).Min();
+            float Maxy = (new float[] { a.Y, b.Y, c.Y }).Max();
+            float Minz = (new float[] { a.Z, b.Z, c.Z }).Min();
+            float Maxz = (new float[] { a.Z, b.Z, c.Z }).Max();
+            Vector3 min = new Vector3(Minx, Miny, Minz);
+            Vector3 max = new Vector3(Maxx, Maxy, Maxz);
+            return new BoundingBox(min, max);
+        }
+
         /// <summary>
         /// Some debug text is crashing due to brackets not appearing in chartable. This function removes brackets inside string
         /// </summary>
