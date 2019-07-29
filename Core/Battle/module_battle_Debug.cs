@@ -811,7 +811,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
             //MakiExtended.Debugger_Spawn();
             //MakiExtended.Debugger_Feed(typeof(Module_battle_debug), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
             Input.OverrideLockMouse=true;
-            Input.CurrentMode = Input.MouseLockMode.Center;
+            Input.CurrentMode = MouseLockMode.Center;
 
             Init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
             int stage = enc.Scenario;

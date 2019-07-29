@@ -142,7 +142,7 @@ namespace OpenVIII
         private static void InitWorld()
         {
             Input.OverrideLockMouse = true;
-            Input.CurrentMode = Input.MouseLockMode.Center;
+            Input.CurrentMode = MouseLockMode.Center;
             //init renderer
             effect = new BasicEffect(Memory.graphics.GraphicsDevice);
             effect.EnableDefaultLighting();

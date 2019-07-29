@@ -29,7 +29,7 @@ namespace OpenVIII
             {
                 Memory.module = Memory.MODULE_MAINMENU_DEBUG;
                 Input.OverrideLockMouse = false;
-                Input.CurrentMode = Input.MouseLockMode.Screen;
+                Input.CurrentMode = MouseLockMode.Screen;
             }
             //#endif
 
