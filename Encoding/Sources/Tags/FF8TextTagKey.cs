@@ -188,7 +188,15 @@
         Stats_Hit = 0x7D, //Stats Hit Palette 0
         Stats_Luck = 0x7E, //Stats Luck Palette 0
         Finger_Right = 0x7F, //Finger Right Palette 2
-        //everything I've tested beyond here showed up blank in game. Though I only went to about C0
+        /// <remarks>Everything I've tested beyond here showed up blank in game. Though I only went to about C0</remarks>
+        ///// <summary>
+        ///// Custom Entry: If mouse over a multi paged screen mousewheel down becomes left.
+        ///// </summary>
+        //ScrollLeft = 0xFB,
+        ///// <summary>
+        ///// Custom Entry: If mouse over a multi paged screen mousewheel down becomes right.
+        ///// </summary>
+        //ScrollRight = 0xFC,
         /// <summary>
         /// Custom Entry: Shows an "Are you sure you want to quit?" screen. (Escape)
         /// </summary>
