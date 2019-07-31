@@ -148,6 +148,7 @@
     <Compile Include="Image\Texture_Base.cs" />
     <Compile Include="Input\Buttons.cs" />
     <Compile Include="Input\Button_Flags.cs" />
+    <Compile Include="Input\Input2.cs" />
     <Compile Include="Input\MouseLockMode.cs" />
     <Compile Include="Menu\IGMDataItem\I_Color.cs" />
     <Compile Include="Menu\IGMDataItem\I_Data.cs" />
