@@ -5,11 +5,11 @@
         /// <summary>
         /// Left Escape Button, (D), (L2), 2000_(Z)
         /// </summary>
-        EscapeKey1 = 0x20,
+        EscapeLeft = 0x20,
         /// <summary>
         /// Right Escape Button, Switch POV on world, (F),(R2), 2000_(C)
         /// </summary>
-        EscapeKey2 = 0x21,
+        EscapeRight = 0x21,
         /// <summary>
         /// Rotate Left/Show Target Window in battle, Switch Character or GF Left in Menu, (H), (L1), 2000_(Q)
         /// </summary>
@@ -189,5 +189,17 @@
         Stats_Luck = 0x7E, //Stats Luck Palette 0
         Finger_Right = 0x7F, //Finger Right Palette 2
         //everything I've tested beyond here showed up blank in game. Though I only went to about C0
+        /// <summary>
+        /// Custom Entry: Shows an "Are you sure you want to quit?" screen. (Escape)
+        /// </summary>
+        ExitMenu = 0xFD,
+        /// <summary>
+        /// Custom Entry: Button that goes directly to Lobby Menu. (Control-R) (Start+Select+L1+R1+L2+R2)
+        /// </summary>
+        Reset = 0xFE,
+        /// <summary>
+        /// Custom Entry: Directly Exit (Control-Q)
+        /// </summary>
+        Exit = 0xFF
     }
 }
