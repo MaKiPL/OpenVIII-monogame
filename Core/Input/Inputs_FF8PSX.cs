@@ -11,33 +11,33 @@ namespace OpenVIII
 
         public Inputs_FF8PSX() => Data = new Dictionary<List<FF8TextTagKey>, List<InputButton>>
         {
-            { InputActions.EscapeLeft , new List<InputButton>{ new InputButton { ControllerButton = ControllerButtons.L2 } } },
-            { InputActions.EscapeRight, new List<InputButton>{new InputButton { ControllerButton = ControllerButtons.R2 } } },
+            { InputActions.EscapeLeft , new List<InputButton>{ new InputButton { GamePadButton = GamePadButtons.L2 } } },
+            { InputActions.EscapeRight, new List<InputButton>{new InputButton { GamePadButton = GamePadButtons.R2 } } },
 
-            { InputActions.RotateLeft, new List<InputButton>{new InputButton { ControllerButton = ControllerButtons.L1 } } },
-            { InputActions.RotateRight, new List<InputButton>{new InputButton { ControllerButton = ControllerButtons.R1 } } },
+            { InputActions.RotateLeft, new List<InputButton>{new InputButton { GamePadButton = GamePadButtons.L1 } } },
+            { InputActions.RotateRight, new List<InputButton>{new InputButton { GamePadButton = GamePadButtons.R1 } } },
 
-            { InputActions.Cancel, new List<InputButton>{new InputButton { ControllerButton = ControllerButtons.Triangle } } },
-            { InputActions.Menu, new List<InputButton>{new InputButton { ControllerButton = ControllerButtons.Circle } } },
-            { InputActions.Confirm, new List<InputButton>{new InputButton { ControllerButton = ControllerButtons.Cross } } },
-            { InputActions.Cards, new List<InputButton>{new InputButton { ControllerButton = ControllerButtons.Square } } },
+            { InputActions.Cancel, new List<InputButton>{new InputButton { GamePadButton = GamePadButtons.Triangle } } },
+            { InputActions.Menu, new List<InputButton>{new InputButton { GamePadButton = GamePadButtons.Circle } } },
+            { InputActions.Confirm, new List<InputButton>{new InputButton { GamePadButton = GamePadButtons.Cross } } },
+            { InputActions.Cards, new List<InputButton>{new InputButton { GamePadButton = GamePadButtons.Square } } },
 
-            { InputActions.Select, new List<InputButton>{new InputButton { ControllerButton = ControllerButtons.Select } } },
-            { InputActions.Pause, new List<InputButton>{new InputButton { ControllerButton = ControllerButtons.Start } } },
+            { InputActions.Select, new List<InputButton>{new InputButton { GamePadButton = GamePadButtons.Select } } },
+            { InputActions.Pause, new List<InputButton>{new InputButton { GamePadButton = GamePadButtons.Start } } },
 
-            { InputActions.Up, new List<InputButton>{new InputButton { ControllerButton = ControllerButtons.Up, Trigger = ButtonTrigger.Press }} },
-            { InputActions.Down, new List<InputButton>{new InputButton { ControllerButton = ControllerButtons.Down, Trigger = ButtonTrigger.Press } } },
-            { InputActions.Left, new List<InputButton>{new InputButton { ControllerButton = ControllerButtons.Left, Trigger = ButtonTrigger.Press } } },
-            { InputActions.Right, new List<InputButton>{new InputButton { ControllerButton = ControllerButtons.Right, Trigger = ButtonTrigger.Press } } },
+            { InputActions.Up, new List<InputButton>{new InputButton { GamePadButton = GamePadButtons.Up, Trigger = ButtonTrigger.Press }} },
+            { InputActions.Down, new List<InputButton>{new InputButton { GamePadButton = GamePadButtons.Down, Trigger = ButtonTrigger.Press } } },
+            { InputActions.Left, new List<InputButton>{new InputButton { GamePadButton = GamePadButtons.Left, Trigger = ButtonTrigger.Press } } },
+            { InputActions.Right, new List<InputButton>{new InputButton { GamePadButton = GamePadButtons.Right, Trigger = ButtonTrigger.Press } } },
 
             //{ InputActions.ExitMenu, new List<InputButton>{new InputButton { Key = Keys.Escape }} },
             { InputActions.Reset, new List<InputButton>{
-                new InputButton { ControllerButton = ControllerButtons.Start, Combo =
-                new InputButton { ControllerButton = ControllerButtons.Select, Combo =
-                new InputButton { ControllerButton = ControllerButtons.L1, Combo =
-                new InputButton { ControllerButton = ControllerButtons.L2, Combo =
-                new InputButton { ControllerButton = ControllerButtons.R1, Combo =
-                new InputButton { ControllerButton = ControllerButtons.R2
+                new InputButton { GamePadButton = GamePadButtons.Start, Combo =
+                new InputButton { GamePadButton = GamePadButtons.Select, Combo =
+                new InputButton { GamePadButton = GamePadButtons.L1, Combo =
+                new InputButton { GamePadButton = GamePadButtons.L2, Combo =
+                new InputButton { GamePadButton = GamePadButtons.R1, Combo =
+                new InputButton { GamePadButton = GamePadButtons.R2
             }}}}}}}},
             //{ InputActions.Exit, new List<InputButton>{new InputButton { Key = Keys.Q, Combo = new InputButton { Key = Keys.LeftControl } } } },
         };

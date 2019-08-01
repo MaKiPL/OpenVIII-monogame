@@ -20,12 +20,12 @@ namespace OpenVIII
 
             { InputActions.Cancel, new List<InputButton>{
                 new InputButton { Key = Keys.Enter },
-                new InputButton { MouseButton = MouseButtons.MouseRight }
+                new InputButton { MouseButton = MouseButtons.RightButton }
             }},
             //{ InputActions.Menu, new List<InputButton>{new InputButton { Key = Keys.V }} },
             { InputActions.Confirm, new List<InputButton>{
                 new InputButton { Key = Keys.Back },
-                new InputButton { MouseButton = MouseButtons.MouseLeft, Trigger = ButtonTrigger.MouseOver | ButtonTrigger.OnPress }
+                new InputButton { MouseButton = MouseButtons.LeftButton, Trigger = ButtonTrigger.MouseOver | ButtonTrigger.OnPress }
             }},
             //{ InputActions.Cards, new List<InputButton>{new InputButton { Key = Keys.S }} },
 

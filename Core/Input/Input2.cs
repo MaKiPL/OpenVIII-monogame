@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Xna.Framework.Input;
+using OpenVIII.Encoding.Tags;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace OpenVIII
 {
@@ -7,7 +11,9 @@ namespace OpenVIII
         #region Fields
 
         protected static bool bLimitInput;
-        protected static List<Input2> Data;
+        public static InputKeyboard Keyboard { get; private set; }
+        public static InputGamePad GamePad { get; private set; }
+        public static InputMouse Mouse { get; private set; }
         protected static double msDelay;
         private static readonly int msDelayLimit = 100;
 
@@ -17,13 +23,12 @@ namespace OpenVIII
 
         public Input2()
         {
-            if (Data != null)
-                Data = new List<Input2>
-                {
-                    new InputKeyboard(),
-                    new InputMouse(),
-                    new InputGamePad(),
-                };
+            if (Keyboard != null)
+                Keyboard = new InputKeyboard();
+            if (Mouse != null)
+                Mouse = new InputMouse();
+            if (GamePad != null)
+                GamePad = new InputGamePad();
             if (InputList != null)
                 InputList = new List<Inputs>
                 {
@@ -41,10 +46,38 @@ namespace OpenVIII
         public static bool Update()
         {
             CheckInputLimit();
-            Data.ForEach(a => a.UpdateOnce());
+            Keyboard.UpdateOnce();
+            GamePad.UpdateOnce();
+            Mouse.UpdateOnce();
             return false;
         }
 
+        protected bool ButtonTriggered(FF8TextTagKey key)
+        {
+            foreach (var list in InputList.Where(x => x.Data.Any(y => y.Key.Contains(key))))
+            {
+                foreach (var kvp in list.Data.Where(y => y.Key.Contains(key)))
+                {
+                    foreach (var test in kvp.Value)
+                    {
+                        ButtonTriggered(test);
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        protected virtual bool ButtonTriggered(InputButton test)
+        {
+            if (Keyboard.ButtonTriggered(test))
+                return true;
+            if (Mouse.ButtonTriggered(test))
+                return true;
+            if (GamePad.ButtonTriggered(test))
+                return true;
+            return false;
+        }
         protected abstract bool UpdateOnce();
 
         private static void CheckInputLimit()

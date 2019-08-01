@@ -9,7 +9,7 @@ namespace OpenVIII
         #region Fields
 
         public InputButton Combo;
-        public ControllerButtons ControllerButton;
+        public GamePadButtons GamePadButton;
         public double HoldMS;
         public Keys Key;
         public MouseButtons MouseButton;
