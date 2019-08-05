@@ -689,7 +689,6 @@
     <Compile Include="Game1.cs" />
     <Compile Include="GFs.cs" />
     <Compile Include="init_debugger_Audio.cs" />
-    <Compile Include="Input\Input.cs" />
     <Compile Include="Kernel\Kernel_bin.Abilities.cs" />
     <Compile Include="Kernel\Kernel_bin.Ability.cs" />
     <Compile Include="Kernel\Kernel_bin.AbilityFlags2.cs" />
