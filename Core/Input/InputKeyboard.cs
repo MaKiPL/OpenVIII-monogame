@@ -29,7 +29,12 @@ namespace OpenVIII
             }
         }
 
-        private bool Press(Keys k) => state.IsKeyDown(k);
+        private bool Press(Keys k)
+        {
+            if (state.IsKeyDown(k))
+                return true;
+            return false;
+        }
         private bool OnPress(Keys k) => state.IsKeyDown(k) && last_state.IsKeyUp(k);
         private bool OnRelease(Keys k) => state.IsKeyUp(k) && last_state.IsKeyDown(k);
         protected override bool ButtonTriggered(InputButton test)

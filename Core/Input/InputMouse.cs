@@ -131,10 +131,14 @@ namespace OpenVIII
                 }
                 else if (Mode == MouseLockMode.Screen) //alt lock that clamps to viewport every frame. would be useful if using mouse to navigate menus and stuff.
                 {
+                    var vpb = Memory.graphics.GraphicsDevice.Viewport.Bounds;
                     //there is a better way to clamp as if you move mouse fast enough it will escape for a short time.
-                    Microsoft.Xna.Framework.Input.Mouse.SetPosition(
-                        MathHelper.Clamp(state.X, 0, Memory.graphics.GraphicsDevice.Viewport.Bounds.Width),
-                        MathHelper.Clamp(state.Y, 0, Memory.graphics.GraphicsDevice.Viewport.Bounds.Height));
+                    if (!(state.X >= 0 && state.X <= vpb.Width) || !(state.Y >= 0 && state.Y <= vpb.Height))
+                    {
+                        Microsoft.Xna.Framework.Input.Mouse.SetPosition(
+                            MathHelper.Clamp(state.X, 0, vpb.Width),
+                            MathHelper.Clamp(state.Y, 0, vpb.Height));
+                    }
                 }
             }
         }

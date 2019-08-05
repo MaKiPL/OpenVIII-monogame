@@ -19,12 +19,12 @@ namespace OpenVIII
             { InputActions.RotateRight, new List<InputButton>{new InputButton { Key = Keys.PageDown }} },
 
             { InputActions.Cancel, new List<InputButton>{
-                new InputButton { Key = Keys.Enter },
+                new InputButton { Key = Keys.Back },
                 new InputButton { MouseButton = MouseButtons.RightButton }
             }},
             { InputActions.Menu, new List<InputButton>{new InputButton { Key = Keys.M }} },
             { InputActions.Confirm, new List<InputButton>{
-                new InputButton { Key = Keys.Back },
+                new InputButton { Key = Keys.Enter },
                 new InputButton { MouseButton = MouseButtons.LeftButton, Trigger = ButtonTrigger.MouseOver | ButtonTrigger.OnPress }
             }},
             { InputActions.Cards, new List<InputButton>{new InputButton { Key = Keys.Space }} },

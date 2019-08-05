@@ -27,13 +27,13 @@ namespace OpenVIII
         {
             if (!skip)
             {
-                if (Keyboard != null)
+                if (Keyboard == null)
                     Keyboard = new InputKeyboard();
-                if (Mouse != null)
+                if (Mouse == null)
                     Mouse = new InputMouse();
-                if (GamePad != null)
+                if (GamePad == null)
                     GamePad = new InputGamePad();
-                if (InputList != null)
+                if (InputList == null)
                     InputList = new List<Inputs>
                 {
                     new Inputs_OpenVIII(),
@@ -41,9 +41,9 @@ namespace OpenVIII
                     new Inputs_FF8Steam(),
                     new Inputs_FF82000()
                 };
-                if (main != null)
+                if (main == null)
                     main = new Input2(true);
-                if (Convert_Button != null)
+                if (Convert_Button == null)
                 {
                     Convert_Button = new Dictionary<Button_Flags, FF8TextTagKey>()
                     {
@@ -103,7 +103,8 @@ namespace OpenVIII
                 {
                     foreach (InputButton test in kvp.Value)
                     {
-                        ButtonTriggered(test);
+                        if(ButtonTriggered(test))
+                        return true;
                     }
                 }
             }
