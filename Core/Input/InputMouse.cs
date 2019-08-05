@@ -5,15 +5,10 @@ namespace OpenVIII
 {
     public class InputMouse : Input2
     {
-
         #region Fields
 
-        private static object hscrollwheel = 0;
-        private static object last_hscrollwheel = 0;
         private static MouseState last_state;
-        private static int last_vscrollwheel = 0;
         private static MouseState state;
-        private static int vscrollwheel = 0;
 
         #endregion Fields
 
@@ -36,12 +31,8 @@ namespace OpenVIII
         {
             get => state; set
             {
-                last_vscrollwheel = vscrollwheel;
-                last_hscrollwheel = hscrollwheel;
                 last_state = state;
                 state = value;
-                vscrollwheel = state.ScrollWheelValue - last_state.ScrollWheelValue;
-                hscrollwheel = state.HorizontalScrollWheelValue - last_state.HorizontalScrollWheelValue;
             }
         }
 
@@ -49,10 +40,7 @@ namespace OpenVIII
 
         #region Methods
 
-        public static Vector2 Distance(MouseButtons mouseToStick, float speed)
-        {
-            return Translate_Stick(mouseToStick, state) * (float)Distance(speed);
-        }
+        public static Vector2 Distance(MouseButtons mouseToStick, float speed) => Translate_Stick(mouseToStick, state) * (float)Distance(speed);
 
         public void LockMouse()
         {
@@ -64,7 +52,7 @@ namespace OpenVIII
                 }
                 else if (Mode == MouseLockMode.Screen) //alt lock that clamps to viewport every frame. would be useful if using mouse to navigate menus and stuff.
                 {
-                    var vpb = Memory.graphics.GraphicsDevice.Viewport.Bounds;
+                    Rectangle vpb = Memory.graphics.GraphicsDevice.Viewport.Bounds;
                     //there is a better way to clamp as if you move mouse fast enough it will escape for a short time.
                     if (!(state.X >= 0 && state.X <= vpb.Width) || !(state.Y >= 0 && state.Y <= vpb.Height))
                     {
@@ -83,7 +71,7 @@ namespace OpenVIII
                 bool combotest = false;
                 if (test.Combo != null)
                 {
-                    foreach (var item in test.Combo)
+                    foreach (InputButton item in test.Combo)
                     {
                         item.Trigger = ButtonTrigger.Press;
                         if (!base.ButtonTriggered(item))
@@ -93,7 +81,7 @@ namespace OpenVIII
                     }
                     combotest = true;
                 }
-                var triggertest = test.Trigger | trigger;
+                ButtonTrigger triggertest = test.Trigger | trigger;
                 return ((test.Combo == null || combotest) &&
                     ((triggertest & ButtonTrigger.OnPress) != 0 && OnPress(test.MouseButton)) ||
                     ((triggertest & ButtonTrigger.OnRelease) != 0 && OnRelease(test.MouseButton)) ||
@@ -129,13 +117,28 @@ namespace OpenVIII
                     return _state.RightButton;
 
                 case MouseButtons.MouseWheelup:
-                    return vscrollwheel < 0 ? ButtonState.Pressed : ButtonState.Released;
+                    if (state.Equals(_state))
+                        return state.ScrollWheelValue > last_state.ScrollWheelValue ? ButtonState.Pressed : ButtonState.Released;
+                    break;
 
                 case MouseButtons.MouseWheeldown:
-                    return vscrollwheel > 0 ? ButtonState.Pressed : ButtonState.Released;
+                    if (state.Equals(_state))
+                        return state.ScrollWheelValue < last_state.ScrollWheelValue ? ButtonState.Pressed : ButtonState.Released;
+                    break;
+
+                case MouseButtons.HorizMouseWheelup:
+                    if (state.Equals(_state))
+                        return state.HorizontalScrollWheelValue > last_state.HorizontalScrollWheelValue ? ButtonState.Pressed : ButtonState.Released;
+                    break;
+
+                case MouseButtons.HorizMouseWheeldown:
+                    if (state.Equals(_state))
+                        return state.HorizontalScrollWheelValue < last_state.HorizontalScrollWheelValue ? ButtonState.Pressed : ButtonState.Released;
+                    break;
             }
             return ButtonState.Released;
         }
+
         private static Vector2 Translate_Stick(MouseButtons k, MouseState _state)
         {
             switch (k)

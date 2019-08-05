@@ -253,11 +253,11 @@ namespace OpenVIII
                     Dchoose = (Ditems)entry.Key;
                     ret = true;
 
-                    if (Input2.DelayedButton(MouseButtons.MouseWheelup))
+                    if (Input2.Button(MouseButtons.MouseWheelup))
                     {
                         return UpdateDebugLobbyLEFT();
                     }
-                    if (Input2.DelayedButton(MouseButtons.MouseWheeldown))
+                    if (Input2.Button(MouseButtons.MouseWheeldown))
                     {
                         return UpdateDebugLobbyRIGHT();
                     }

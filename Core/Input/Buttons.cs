@@ -27,5 +27,6 @@
     {
         None, MouseToStick,
         LeftButton, MiddleButton, RightButton, XButton1, XButton2, MouseWheelup, MouseWheeldown,
+        HorizMouseWheelup, HorizMouseWheeldown
     }
 }
