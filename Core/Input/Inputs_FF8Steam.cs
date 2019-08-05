@@ -32,8 +32,8 @@ namespace OpenVIII
             { InputActions.Right, new List<InputButton>{new InputButton { Key = Keys.Right, Trigger = ButtonTrigger.Press } } },
 
             { InputActions.ExitMenu, new List<InputButton>{new InputButton { Key = Keys.Escape }} },
-            { InputActions.Reset, new List<InputButton>{new InputButton { Key = Keys.R, Combo = new InputButton { Key = Keys.LeftControl } }} },
-            { InputActions.Exit, new List<InputButton>{new InputButton { Key = Keys.Q, Combo = new InputButton { Key = Keys.LeftControl } } } },
+            { InputActions.Reset, new List<InputButton>{new InputButton { Key = Keys.R, Combo = new List<InputButton>{ new InputButton { Key = Keys.LeftControl } }} } },
+            { InputActions.Exit, new List<InputButton>{new InputButton { Key = Keys.Q, Combo = new List<InputButton>{new InputButton { Key = Keys.LeftControl } } } } },
         };
 
         #endregion Constructors

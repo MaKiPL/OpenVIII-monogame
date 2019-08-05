@@ -40,15 +40,28 @@ namespace OpenVIII
 
         public static Vector2 Distance(GamePadButtons stick, float speed) => Translate_Stick(stick, state) * (float)Distance(speed);
 
-        protected override bool ButtonTriggered(InputButton test)
+        protected override bool ButtonTriggered(InputButton test, ButtonTrigger trigger = ButtonTrigger.None)
         {
             if (test != null && test.GamePadButton != GamePadButtons.None)
             {
-                if (test.Combo != null) test.Combo.Trigger = ButtonTrigger.Press;
-                return ((test.Combo == null || base.ButtonTriggered(test.Combo)) &&
-                    ((test.Trigger & ButtonTrigger.OnPress) != 0 && OnPress(test.GamePadButton)) ||
-                    ((test.Trigger & ButtonTrigger.OnRelease) != 0 && OnRelease(test.GamePadButton)) ||
-                    ((test.Trigger & ButtonTrigger.Press) != 0 && Press(test.GamePadButton, state)));
+                bool combotest = false;
+                if (test.Combo != null)
+                {
+                    foreach (var item in test.Combo)
+                    {
+                        item.Trigger = ButtonTrigger.Press;
+                        if(!base.ButtonTriggered(item))
+                        {
+                            return false;
+                        }
+                    }
+                    combotest = true;
+                }
+                var triggertest = test.Trigger | trigger;
+                return ((test.Combo == null || combotest) &&
+                    ((triggertest & ButtonTrigger.OnPress) != 0 && OnPress(test.GamePadButton)) ||
+                    ((triggertest & ButtonTrigger.OnRelease) != 0 && OnRelease(test.GamePadButton)) ||
+                    ((triggertest & ButtonTrigger.Press) != 0 && Press(test.GamePadButton, state)));
             }
             return false;
         }

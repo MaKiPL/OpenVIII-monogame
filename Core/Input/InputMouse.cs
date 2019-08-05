@@ -76,16 +76,28 @@ namespace OpenVIII
             }
         }
 
-        protected override bool ButtonTriggered(InputButton test)
+        protected override bool ButtonTriggered(InputButton test, ButtonTrigger trigger = ButtonTrigger.None)
         {
             if (test != null && test.MouseButton != MouseButtons.None)
             {
-
-                if (test.Combo != null) test.Combo.Trigger = ButtonTrigger.Press;
-                return ((test.Combo == null || base.ButtonTriggered(test.Combo)) &&
-                    ((test.Trigger & ButtonTrigger.OnPress) != 0 && OnPress(test.MouseButton)) ||
-                    ((test.Trigger & ButtonTrigger.OnRelease) != 0 && OnRelease(test.MouseButton)) ||
-                    ((test.Trigger & ButtonTrigger.Press) != 0 && Press(test.MouseButton, state)));
+                bool combotest = false;
+                if (test.Combo != null)
+                {
+                    foreach (var item in test.Combo)
+                    {
+                        item.Trigger = ButtonTrigger.Press;
+                        if (!base.ButtonTriggered(item))
+                        {
+                            return false;
+                        }
+                    }
+                    combotest = true;
+                }
+                var triggertest = test.Trigger | trigger;
+                return ((test.Combo == null || combotest) &&
+                    ((triggertest & ButtonTrigger.OnPress) != 0 && OnPress(test.MouseButton)) ||
+                    ((triggertest & ButtonTrigger.OnRelease) != 0 && OnRelease(test.MouseButton)) ||
+                    ((triggertest & ButtonTrigger.Press) != 0 && Press(test.MouseButton, state)));
             }
             return false;
         }

@@ -36,16 +36,29 @@ namespace OpenVIII
 
         #region Methods
 
-        protected override bool ButtonTriggered(InputButton test)
+        protected override bool ButtonTriggered(InputButton test,ButtonTrigger trigger = ButtonTrigger.None)
         {
             if (test != null && test.Key != Keys.None &&
                 (state.GetPressedKeys().Contains(test.Key) || last_state.GetPressedKeys().Contains(test.Key)))
             {
-                if (test.Combo != null) test.Combo.Trigger = ButtonTrigger.Press;
-                return ((test.Combo == null || base.ButtonTriggered(test.Combo)) &&
-                    ((test.Trigger & ButtonTrigger.OnPress) != 0 && OnPress(test.Key)) ||
-                    ((test.Trigger & ButtonTrigger.OnRelease) != 0 && OnRelease(test.Key)) ||
-                    ((test.Trigger & ButtonTrigger.Press) != 0 && Press(test.Key)));
+                bool combotest = false;
+                if (test.Combo != null)
+                {
+                    foreach (var item in test.Combo)
+                    {
+                        item.Trigger = ButtonTrigger.Press;
+                        if (!base.ButtonTriggered(item))
+                        {
+                            return false;
+                        }
+                    }
+                    combotest = true;
+                }
+                var triggertest = test.Trigger | trigger;
+                return ((test.Combo == null || combotest) &&
+                    ((triggertest & ButtonTrigger.OnPress) != 0 && OnPress(test.Key)) ||
+                    ((triggertest & ButtonTrigger.OnRelease) != 0 && OnRelease(test.Key)) ||
+                    ((triggertest & ButtonTrigger.Press) != 0 && Press(test.Key)));
             }
             return false;
         }

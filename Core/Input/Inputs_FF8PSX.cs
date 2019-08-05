@@ -32,13 +32,15 @@ namespace OpenVIII
 
             //{ InputActions.ExitMenu, new List<InputButton>{new InputButton { Key = Keys.Escape }} },
             { InputActions.Reset, new List<InputButton>{
-                new InputButton { GamePadButton = GamePadButtons.Start, Trigger = ButtonTrigger.Press, Combo =
-                new InputButton { GamePadButton = GamePadButtons.Select, Combo =
-                new InputButton { GamePadButton = GamePadButtons.L1, Combo =
-                new InputButton { GamePadButton = GamePadButtons.L2, Combo =
-                new InputButton { GamePadButton = GamePadButtons.R1, Combo =
-                new InputButton { GamePadButton = GamePadButtons.R2
-            }}}}}}}},
+                new InputButton { GamePadButton = GamePadButtons.Start, Combo = new List<InputButton>
+                {
+                new InputButton { GamePadButton = GamePadButtons.Select },
+                new InputButton { GamePadButton = GamePadButtons.L1 },
+                new InputButton { GamePadButton = GamePadButtons.L2 },
+                new InputButton { GamePadButton = GamePadButtons.R1 },
+                new InputButton { GamePadButton = GamePadButtons.R2 }
+                }
+            }}},
             //{ InputActions.Exit, new List<InputButton>{new InputButton { Key = Keys.Q, Combo = new InputButton { Key = Keys.LeftControl } } } },
         };
 

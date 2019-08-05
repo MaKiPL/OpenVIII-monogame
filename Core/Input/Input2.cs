@@ -122,29 +122,29 @@ namespace OpenVIII
             return false;
         }
 
-        protected bool ButtonTriggered(FF8TextTagKey key)
+        protected bool ButtonTriggered(FF8TextTagKey key, ButtonTrigger trigger = ButtonTrigger.None)
         {
             foreach (Inputs list in InputList)
                 foreach (KeyValuePair<List<FF8TextTagKey>, List<InputButton>> kvp in list.Data.Where(y => y.Key.Contains(key)))
 
                     foreach (InputButton test in kvp.Value)
                     {
-                        if (ButtonTriggered(test))
+                        if (ButtonTriggered(test,trigger))
                             return true;
                     }
 
             return false;
         }
 
-        protected virtual bool ButtonTriggered(InputButton test)
+        protected virtual bool ButtonTriggered(InputButton test, ButtonTrigger trigger = ButtonTrigger.None)
         {
-            if (!bLimitInput || (test.Trigger & ButtonTrigger.IgnoreDelay) != 0)
+            if (!bLimitInput || ((test.Trigger | trigger) & ButtonTrigger.IgnoreDelay) != 0)
             {
-                if (Keyboard.ButtonTriggered(test))
+                if (Keyboard.ButtonTriggered(test,trigger))
                     return true;
-                if (Mouse.ButtonTriggered(test))
+                if (Mouse.ButtonTriggered(test,trigger))
                     return true;
-                if (GamePad.ButtonTriggered(test))
+                if (GamePad.ButtonTriggered(test,trigger))
                     return true;
             }
             return false;
@@ -161,59 +161,59 @@ namespace OpenVIII
 
         public static List<Inputs> InputList { get; private set; }
 
-        public static bool Button(FF8TextTagKey k) => main?.ButtonTriggered(k) ?? false;
+        public static bool Button(FF8TextTagKey k, ButtonTrigger trigger = ButtonTrigger.None) => main?.ButtonTriggered(k,trigger) ?? false;
 
-        public static bool Button(InputButton k) => main?.ButtonTriggered(k) ?? false;
+        public static bool Button(InputButton k, ButtonTrigger trigger = ButtonTrigger.None) => main?.ButtonTriggered(k, trigger) ?? false;
 
-        public static bool Button(Keys k) => main?.ButtonTriggered(new InputButton() { Key = k }) ?? false;
+        public static bool Button(Keys k, ButtonTrigger trigger = ButtonTrigger.OnPress) => main?.ButtonTriggered(new InputButton() { Key = k, Trigger = trigger }) ?? false;
 
-        public static bool Button(GamePadButtons k) => main?.ButtonTriggered(new InputButton() { GamePadButton = k }) ?? false;
+        public static bool Button(GamePadButtons k, ButtonTrigger trigger = ButtonTrigger.OnPress) => main?.ButtonTriggered(new InputButton() { GamePadButton = k, Trigger = trigger }) ?? false;
 
-        public static bool Button(MouseButtons k) => main?.ButtonTriggered(new InputButton() { MouseButton = k }) ?? false;
+        public static bool Button(MouseButtons k, ButtonTrigger trigger = ButtonTrigger.OnPress) => main?.ButtonTriggered(new InputButton() { MouseButton = k, Trigger = trigger }) ?? false;
 
-        public static bool DelayedButton(FF8TextTagKey k)
+        public static bool DelayedButton(FF8TextTagKey k, ButtonTrigger trigger = ButtonTrigger.None)
         {
-            bool ret = Button(k);
+            bool ret = Button(k,trigger);
             if (ret)
                 ResetInputLimit();
             return ret;
         }
 
-        public static bool DelayedButton(InputButton k)
+        public static bool DelayedButton(InputButton k, ButtonTrigger trigger = ButtonTrigger.None)
         {
-            bool ret = Button(k);
+            bool ret = Button(k, trigger);
             if (ret)
                 ResetInputLimit();
             return ret;
         }
 
-        public static bool DelayedButton(Keys k)
+        public static bool DelayedButton(Keys k, ButtonTrigger trigger = ButtonTrigger.OnPress)
         {
-            bool ret = Button(k);
+            bool ret = Button(k, trigger);
             if (ret)
                 ResetInputLimit();
             return ret;
         }
 
-        public static bool DelayedButton(MouseButtons k)
+        public static bool DelayedButton(MouseButtons k, ButtonTrigger trigger = ButtonTrigger.OnPress)
         {
-            bool ret = Button(k);
+            bool ret = Button(k, trigger);
             if (ret)
                 ResetInputLimit();
             return ret;
         }
 
-        public static bool DelayedButton(GamePadButtons k)
+        public static bool DelayedButton(GamePadButtons k, ButtonTrigger trigger = ButtonTrigger.OnPress)
         {
-            bool ret = Button(k);
+            bool ret = Button(k, trigger);
             if (ret)
                 ResetInputLimit();
             return ret;
         }
 
-        public static bool Button(Button_Flags k) => Convert_Button.ContainsKey(k) && Button(Convert_Button[k]);
+        public static bool Button(Button_Flags k, ButtonTrigger trigger = ButtonTrigger.OnPress) => Convert_Button.ContainsKey(k) && Button(Convert_Button[k], trigger);
 
-        public static bool DelayedButton(Button_Flags k) => Convert_Button.ContainsKey(k) && Button(Convert_Button[k]);
+        public static bool DelayedButton(Button_Flags k, ButtonTrigger trigger = ButtonTrigger.OnPress) => Convert_Button.ContainsKey(k) && Button(Convert_Button[k],trigger);
 
         public static IReadOnlyList<FF8TextTagKey> Convert_Flags(Button_Flags k)
         {

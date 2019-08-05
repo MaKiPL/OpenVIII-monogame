@@ -9,7 +9,7 @@ namespace OpenVIII
     {
         #region Fields
 
-        public InputButton Combo;
+        public List<InputButton> Combo;
         public GamePadButtons GamePadButton;
         public double HoldMS;
         public Keys Key;
@@ -18,7 +18,7 @@ namespace OpenVIII
 
         public override bool Equals(object obj)
         {
-            var o = (InputButton)obj;
+            InputButton o = (InputButton)obj;
             if (o.Key == Key &&
                 o.MouseButton == MouseButton &&
                 o.GamePadButton == GamePadButton &&
@@ -28,10 +28,24 @@ namespace OpenVIII
             return false;
         }
 
+
+    
+
+        public InputButton Clone()
+        {
+            InputButton i = (InputButton)MemberwiseClone();
+            i.Combo = new List<InputButton>(Combo.Count);
+            foreach (InputButton item in Combo)
+            {
+                i.Combo.Add(item.Clone());
+            }
+            return i;
+        }
+
         public override int GetHashCode()
         {
             var hashCode = 37823841;
-            hashCode = hashCode * -1521134295 + EqualityComparer<InputButton>.Default.GetHashCode(Combo);
+            hashCode = hashCode * -1521134295 + EqualityComparer<List<InputButton>>.Default.GetHashCode(Combo);
             hashCode = hashCode * -1521134295 + GamePadButton.GetHashCode();
             hashCode = hashCode * -1521134295 + Key.GetHashCode();
             hashCode = hashCode * -1521134295 + MouseButton.GetHashCode();
@@ -39,6 +53,5 @@ namespace OpenVIII
         }
 
         #endregion Fields
-
     }
 }
