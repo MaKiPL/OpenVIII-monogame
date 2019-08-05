@@ -12,11 +12,15 @@ namespace OpenVIII
         private static GamePadState last_state;
         private static GamePadState state;
 
+        #endregion Fields
+
+        #region Constructors
+
         public InputGamePad(bool skip = true) : base(skip)
         {
         }
 
-        #endregion Fields
+        #endregion Constructors
 
         #region Properties
 
@@ -34,10 +38,13 @@ namespace OpenVIII
 
         #region Methods
 
+        public static Vector2 Distance(GamePadButtons stick, float speed) => Translate_Stick(stick, state) * (float)Distance(speed);
+
         protected override bool ButtonTriggered(InputButton test)
         {
             if (test != null && test.GamePadButton != GamePadButtons.None)
             {
+                if (test.Combo != null) test.Combo.Trigger = ButtonTrigger.Press;
                 return ((test.Combo == null || base.ButtonTriggered(test.Combo)) &&
                     ((test.Trigger & ButtonTrigger.OnPress) != 0 && OnPress(test.GamePadButton)) ||
                     ((test.Trigger & ButtonTrigger.OnRelease) != 0 && OnRelease(test.GamePadButton)) ||
@@ -52,37 +59,6 @@ namespace OpenVIII
             return false;
         }
 
-        private Vector2 DeadZoneTest(Vector2 v)
-        {
-            if (Vector2.Distance(Vector2.Zero, v) > deadzone_r &&
-                Math.Abs(v.X) > deadzone_r && Math.Abs(v.Y) > deadzone_r)
-            {
-                return v;
-            }
-            return Vector2.Zero;
-        }
-
-        private bool OnPress(GamePadButtons k) => Release(k, last_state) && Press(k, state);
-
-        private bool OnRelease(GamePadButtons k) => Release(k, last_state) && Press(k, state);
-
-        private bool Press(GamePadButtons k, GamePadState _state)
-        {
-            ButtonState bs = Translate_Button(k, _state);
-            float ts = Translate_Trigger(k, _state);
-            Vector2 ss = Translate_Stick(k, _state);
-            if ((ss != Vector2.Zero) ||
-                (ts != 0f) ||
-                (bs == ButtonState.Pressed))
-                return true;
-            return false;
-        }
-
-        private bool Release(GamePadButtons k, GamePadState _state) => !Press(k, _state);
-        public static Vector2 Distance(GamePadButtons stick, float speed)
-        {
-            return Translate_Stick(stick, state) * (float)Distance(speed);
-        }
         private static ButtonState Translate_Button(GamePadButtons k, GamePadState _state)
         {
             switch (k)
@@ -157,6 +133,34 @@ namespace OpenVIII
             }
             return 0f;
         }
+
+        private Vector2 DeadZoneTest(Vector2 v)
+        {
+            if (Vector2.Distance(Vector2.Zero, v) > deadzone_r &&
+                Math.Abs(v.X) > deadzone_r && Math.Abs(v.Y) > deadzone_r)
+            {
+                return v;
+            }
+            return Vector2.Zero;
+        }
+
+        private bool OnPress(GamePadButtons k) => Release(k, last_state) && Press(k, state);
+
+        private bool OnRelease(GamePadButtons k) => Release(k, last_state) && Press(k, state);
+
+        private bool Press(GamePadButtons k, GamePadState _state)
+        {
+            ButtonState bs = Translate_Button(k, _state);
+            float ts = Translate_Trigger(k, _state);
+            Vector2 ss = Translate_Stick(k, _state);
+            if ((ss != Vector2.Zero) ||
+                (ts != 0f) ||
+                (bs == ButtonState.Pressed))
+                return true;
+            return false;
+        }
+
+        private bool Release(GamePadButtons k, GamePadState _state) => !Press(k, _state);
 
         #endregion Methods
     }

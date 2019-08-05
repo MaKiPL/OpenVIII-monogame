@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework.Input;
-using OpenVIII.Encoding.Tags;
 using System.Linq;
 
 namespace OpenVIII
@@ -11,11 +10,15 @@ namespace OpenVIII
         private static KeyboardState last_state;
         private static KeyboardState state;
 
+        #endregion Fields
+
+        #region Constructors
+
         public InputKeyboard(bool skip = true) : base(skip)
         {
         }
 
-        #endregion Fields
+        #endregion Constructors
 
         #region Properties
 
@@ -29,18 +32,16 @@ namespace OpenVIII
             }
         }
 
-        private bool Press(Keys k)
-        {
-            if (state.IsKeyDown(k))
-                return true;
-            return false;
-        }
-        private bool OnPress(Keys k) => state.IsKeyDown(k) && last_state.IsKeyUp(k);
-        private bool OnRelease(Keys k) => state.IsKeyUp(k) && last_state.IsKeyDown(k);
+        #endregion Properties
+
+        #region Methods
+
         protected override bool ButtonTriggered(InputButton test)
         {
-            if(test != null && test.Key != Keys.None)
+            if (test != null && test.Key != Keys.None &&
+                (state.GetPressedKeys().Contains(test.Key) || last_state.GetPressedKeys().Contains(test.Key)))
             {
+                if (test.Combo != null) test.Combo.Trigger = ButtonTrigger.Press;
                 return ((test.Combo == null || base.ButtonTriggered(test.Combo)) &&
                     ((test.Trigger & ButtonTrigger.OnPress) != 0 && OnPress(test.Key)) ||
                     ((test.Trigger & ButtonTrigger.OnRelease) != 0 && OnRelease(test.Key)) ||
@@ -49,15 +50,20 @@ namespace OpenVIII
             return false;
         }
 
-
-
-        #endregion Properties
-
-        #region Methods
-
         protected override bool UpdateOnce()
         {
             State = Microsoft.Xna.Framework.Input.Keyboard.GetState();
+            return false;
+        }
+
+        private bool OnPress(Keys k) => Press(k) && last_state.IsKeyUp(k);
+
+        private bool OnRelease(Keys k) => !OnPress(k);
+
+        private bool Press(Keys k)
+        {
+            if (state.IsKeyDown(k))
+                return true;
             return false;
         }
 

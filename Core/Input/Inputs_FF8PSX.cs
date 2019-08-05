@@ -32,7 +32,7 @@ namespace OpenVIII
 
             //{ InputActions.ExitMenu, new List<InputButton>{new InputButton { Key = Keys.Escape }} },
             { InputActions.Reset, new List<InputButton>{
-                new InputButton { GamePadButton = GamePadButtons.Start, Combo =
+                new InputButton { GamePadButton = GamePadButtons.Start, Trigger = ButtonTrigger.Press, Combo =
                 new InputButton { GamePadButton = GamePadButtons.Select, Combo =
                 new InputButton { GamePadButton = GamePadButtons.L1, Combo =
                 new InputButton { GamePadButton = GamePadButtons.L2, Combo =

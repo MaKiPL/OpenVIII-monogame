@@ -228,7 +228,7 @@ namespace OpenVIII
 
                 case _worldState._1debugFly:
                     viewMatrix = fps_camera.Update(ref camPosition, ref camTarget, ref degrees);
-                    viewMatrix.Decompose(out Vector3 scale, out Quaternion q, out Vector3 translation);
+                    //viewMatrix.Decompose(out Vector3 scale, out Quaternion q, out Vector3 translation);
                     //degrees = MathHelper.ToDegrees((float)(2*Math.Acos(rotation.W)));
                     //Vector3 pitchYawRoll;
                     //pitchYawRoll.Y = MathHelper.ToDegrees((float)Math.Atan2(2f * q.X * q.W + 2f * q.Y * q.Z, 1 - 2f * ((q.Z*q.Z) + (q.W*q.W))));     // Yaw 

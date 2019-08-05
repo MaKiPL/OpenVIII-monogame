@@ -137,7 +137,7 @@ namespace OpenVIII
 
             Input2.Update();
 
-            if (Input2.Button(FF8TextTagKey.Exit))
+            if (Input2.Button(FF8TextTagKey.Exit) || Input2.Button(FF8TextTagKey.ExitMenu))
                 Exit();
             init_debugger_Audio.Update();
             ModuleHandler.Update(gameTime);

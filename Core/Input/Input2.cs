@@ -34,13 +34,40 @@ namespace OpenVIII
                 if (GamePad == null)
                     GamePad = new InputGamePad();
                 if (InputList == null)
-                    InputList = new List<Inputs>
                 {
-                    new Inputs_OpenVIII(),
-                    new Inputs_FF8PSX(),
-                    new Inputs_FF8Steam(),
-                    new Inputs_FF82000()
-                };
+                    InputList = new List<Inputs>
+                    {
+                        new Inputs_OpenVIII(),
+                        new Inputs_FF8PSX(),
+                        new Inputs_FF8Steam(),
+                        new Inputs_FF82000()
+                    };
+
+                    //remove duplicate inputs. 
+                    int j = 1;
+                    foreach (Inputs list in InputList)
+                    {
+                        for(int i=j;i< InputList.Count;i++)
+                        {
+                            foreach (KeyValuePair<List<FF8TextTagKey>, List<InputButton>> kvp in InputList[i].Data)
+                            {
+                                foreach (var inputs in kvp.Value.ToArray())
+                                    if (
+                                        list.Data.Any(
+                                            x => x.Value.Any(y => y.Equals(inputs)
+                                            //x => x.Value.Any(y=>y.Key == inputs.Key &&
+                                            //y.MouseButton == inputs.MouseButton && 
+                                            //y.GamePadButton == inputs.GamePadButton &&
+                                            ////y.Trigger == inputs.Trigger //&&
+                                            //y.Combo == null//inputs.Combo
+                                        )))
+                                        kvp.Value.Remove(inputs);
+                            }
+                        }
+                        j++;
+                    }
+                }
+
                 if (main == null)
                     main = new Input2(true);
                 if (Convert_Button == null)
@@ -97,17 +124,14 @@ namespace OpenVIII
 
         protected bool ButtonTriggered(FF8TextTagKey key)
         {
-            foreach (Inputs list in InputList.Where(x => x.Data.Any(y => y.Key.Contains(key))))
-            {
+            foreach (Inputs list in InputList)
                 foreach (KeyValuePair<List<FF8TextTagKey>, List<InputButton>> kvp in list.Data.Where(y => y.Key.Contains(key)))
-                {
+
                     foreach (InputButton test in kvp.Value)
                     {
-                        if(ButtonTriggered(test))
-                        return true;
+                        if (ButtonTriggered(test))
+                            return true;
                     }
-                }
-            }
 
             return false;
         }
@@ -188,7 +212,9 @@ namespace OpenVIII
         }
 
         public static bool Button(Button_Flags k) => Convert_Button.ContainsKey(k) && Button(Convert_Button[k]);
+
         public static bool DelayedButton(Button_Flags k) => Convert_Button.ContainsKey(k) && Button(Convert_Button[k]);
+
         public static IReadOnlyList<FF8TextTagKey> Convert_Flags(Button_Flags k)
         {
             List<FF8TextTagKey> ret = new List<FF8TextTagKey>(1);
@@ -202,6 +228,7 @@ namespace OpenVIII
             }
             return ret;
         }
+
         public static double Distance(float speed) =>
             // no input throttle but still take the max speed * time; for non analog controls
             speed * Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
