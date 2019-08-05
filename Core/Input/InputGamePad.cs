@@ -12,6 +12,10 @@ namespace OpenVIII
         private static GamePadState last_state;
         private static GamePadState state;
 
+        public InputGamePad(bool skip = true) : base(skip)
+        {
+        }
+
         #endregion Fields
 
         #region Properties

@@ -11,6 +11,10 @@ namespace OpenVIII
         private static KeyboardState last_state;
         private static KeyboardState state;
 
+        public InputKeyboard(bool skip = true) : base(skip)
+        {
+        }
+
         #endregion Fields
 
         #region Properties

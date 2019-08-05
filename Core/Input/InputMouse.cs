@@ -14,6 +14,10 @@ namespace OpenVIII
         private static int vscrollwheel = 0;
         private static object hscrollwheel = 0;
 
+        public InputMouse(bool skip = true) : base(skip)
+        {
+        }
+
         #endregion Fields
 
         #region Properties
