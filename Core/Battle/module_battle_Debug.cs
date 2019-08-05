@@ -14,8 +14,8 @@ namespace OpenVIII
     {
         private static uint bs_cameraPointer;
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
-        private static float degrees=90, Yshift;
-        private static readonly float camDistance = 10.0f;
+        private static float degrees = 90;
+        
         private static Vector3 camPosition, camTarget;
         private static TIM2 textureInterface;
         private static Texture2D[] textures;
@@ -197,7 +197,7 @@ namespace OpenVIII
                     break;
                 case BATTLEMODULE_DRAWGEOMETRY:
                     if (bUseFPSCamera)
-                        viewMatrix = fps_camera.Update(ref camPosition, ref camTarget);
+                        viewMatrix = fps_camera.Update(ref camPosition, ref camTarget, ref degrees);
                     else UpdateCamera();
                     LogicUpdate();
                     break;

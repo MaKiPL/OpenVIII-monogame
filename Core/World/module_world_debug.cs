@@ -14,8 +14,7 @@ namespace OpenVIII
     {
         private static FPS_Camera fps_camera;
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
-        private static float degrees, Yshift;
-        private static readonly float camDistance = 10.0f;
+        private static float degrees;
         private static readonly float renderCamDistance = 1200.0f;
         private static Vector3 camPosition, camTarget;
         public static BasicEffect effect;
@@ -228,7 +227,14 @@ namespace OpenVIII
                     break;
 
                 case _worldState._1debugFly:
-                    viewMatrix = fps_camera.Update(ref camPosition, ref camTarget);
+                    viewMatrix = fps_camera.Update(ref camPosition, ref camTarget, ref degrees);
+                    viewMatrix.Decompose(out Vector3 scale, out Quaternion q, out Vector3 translation);
+                    //degrees = MathHelper.ToDegrees((float)(2*Math.Acos(rotation.W)));
+                    //Vector3 pitchYawRoll;
+                    //pitchYawRoll.Y = MathHelper.ToDegrees((float)Math.Atan2(2f * q.X * q.W + 2f * q.Y * q.Z, 1 - 2f * ((q.Z*q.Z) + (q.W*q.W))));     // Yaw 
+                    //pitchYawRoll.X = MathHelper.ToDegrees((float)Math.Asin(2f * (q.X * q.Z - q.W * q.Y)))+40;                             // Pitch 
+                    //pitchYawRoll.Z = MathHelper.ToDegrees((float)Math.Atan2(2f * q.X * q.Y + 2f * q.Z * q.W, 1 - 2f * ((q.Y * q.Y) + (q.Z * q.Z))));      // Roll 
+                    //degrees = pitchYawRoll.Y;
                     break;
             }
 

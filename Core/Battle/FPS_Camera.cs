@@ -14,7 +14,8 @@ namespace OpenVIII
         private static readonly float maxLookSpeed = 0.25f;
         private static readonly float MoveSpeedChange = 1f;
         //private static Vector3 camPosition, camTarget;
-        private float degrees = 90, Yshift;
+        //private float degrees = 90;
+        private float Yshift;
         private Vector2 left;
         private float maxMoveSpeed = defaultmaxMoveSpeed;
         private Vector2 shift;
@@ -43,7 +44,7 @@ namespace OpenVIII
 
             //speed is effected by the milliseconds between frames. so alittle goes a long way. :P
         }
-        private void Inputs_Sticks()
+        private void Inputs_Sticks(ref float degrees)
         {
             //require mouselock to center of screen for mouse joystick mode.
             InputMouse.Mode = MouseLockMode.Center;
@@ -66,7 +67,7 @@ namespace OpenVIII
                 leftdist.Y = leftdist.X = (float)Input2.Distance(maxMoveSpeed);
             }
         }
-        private void Inputs_D_Pad( ref Vector3 camPosition)
+        private void Inputs_D_Pad( ref Vector3 camPosition, ref float degrees)
         { 
             // using the calcuated direction and distance to move camera position
             // also fall back to arrow keys to move when not using a left stick
@@ -93,12 +94,12 @@ namespace OpenVIII
                 camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees + 90)) * leftdist.X / 10;
             }
         }
-        public Matrix Update(ref Vector3 camPosition,ref Vector3 camTarget)
+        public Matrix Update(ref Vector3 camPosition,ref Vector3 camTarget, ref float degrees)
         {
 
             Inputs_Speed();
-            Inputs_Sticks();
-            Inputs_D_Pad(ref camPosition);
+            Inputs_Sticks(ref degrees);
+            Inputs_D_Pad(ref camPosition, ref degrees);
 
             // adjust the camera target
             camTarget.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(degrees)) * camDistance;
