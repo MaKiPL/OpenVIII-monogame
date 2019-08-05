@@ -197,7 +197,7 @@ namespace OpenVIII
                     break;
                 case BATTLEMODULE_DRAWGEOMETRY:
                     if (bUseFPSCamera)
-                        viewMatrix = fps_camera.Update();
+                        viewMatrix = fps_camera.Update(ref camPosition, ref camTarget);
                     else UpdateCamera();
                     LogicUpdate();
                     break;

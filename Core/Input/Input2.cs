@@ -133,7 +133,6 @@ namespace OpenVIII
             //issue here if CheckInputLimit is checked more than once per update cycle this will be wrong.
             if (Memory.gameTime != null)
                 bLimitInput = (msDelay += Memory.gameTime.ElapsedGameTime.TotalMilliseconds) < msDelayLimit;
-            if (!bLimitInput) msDelay = 0;
         }
 
         public static List<Inputs> InputList { get; private set; }
