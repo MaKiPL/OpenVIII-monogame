@@ -1,9 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using System;
 using System.Collections.Generic;
 
 namespace OpenVIII
 {
+    [Obsolete("Input2 to replace input")]
     public partial class Input
     {
         #region Fields

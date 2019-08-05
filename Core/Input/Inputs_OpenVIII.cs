@@ -12,24 +12,24 @@ namespace OpenVIII
 
         public Inputs_OpenVIII() => Data = new Dictionary<List<FF8TextTagKey>, List<InputButton>>
         {
-            //{ InputActions.EscapeLeft , new List<InputButton>{ new InputButton { Key = Keys.D } } },
-            //{ InputActions.EscapeRight, new List<InputButton>{new InputButton { Key = Keys.F }} },
+            { InputActions.EscapeLeft , new List<InputButton>{ new InputButton { Key = Keys.Home } } },
+            { InputActions.EscapeRight, new List<InputButton>{new InputButton { Key = Keys.End }} },
 
-            //{ InputActions.RotateLeft, new List<InputButton>{new InputButton { Key = Keys.H }} },
-            //{ InputActions.RotateRight, new List<InputButton>{new InputButton { Key = Keys.G }} },
+            { InputActions.RotateLeft, new List<InputButton>{new InputButton { Key = Keys.PageUp }} },
+            { InputActions.RotateRight, new List<InputButton>{new InputButton { Key = Keys.PageDown }} },
 
             { InputActions.Cancel, new List<InputButton>{
                 new InputButton { Key = Keys.Enter },
                 new InputButton { MouseButton = MouseButtons.RightButton }
             }},
-            //{ InputActions.Menu, new List<InputButton>{new InputButton { Key = Keys.V }} },
+            { InputActions.Menu, new List<InputButton>{new InputButton { Key = Keys.M }} },
             { InputActions.Confirm, new List<InputButton>{
                 new InputButton { Key = Keys.Back },
                 new InputButton { MouseButton = MouseButtons.LeftButton, Trigger = ButtonTrigger.MouseOver | ButtonTrigger.OnPress }
             }},
-            //{ InputActions.Cards, new List<InputButton>{new InputButton { Key = Keys.S }} },
+            { InputActions.Cards, new List<InputButton>{new InputButton { Key = Keys.Space }} },
 
-            //{ InputActions.Select, new List<InputButton>{new InputButton { Key = Keys.J }} },
+            { InputActions.Select, new List<InputButton>{new InputButton { Key = Keys.Tab }} },
             { InputActions.Pause, new List<InputButton>{new InputButton { Key = Keys.Pause }} },
 
             { InputActions.Up, new List<InputButton>{

@@ -23,7 +23,7 @@ namespace OpenVIII
             { InputActions.Confirm, new List<InputButton>{new InputButton { Key = Keys.X }} },
             { InputActions.Cards, new List<InputButton>{new InputButton { Key = Keys.A }} },
 
-            { InputActions.Select, new List<InputButton>{new InputButton { Key = Keys.Q }} },
+            { InputActions.Select, new List<InputButton>{new InputButton { Key = Keys.F }} },
             { InputActions.Pause, new List<InputButton>{new InputButton { Key = Keys.S }} },
 
             { InputActions.Up, new List<InputButton>{new InputButton { Key = Keys.Up, Trigger = ButtonTrigger.Press }} },

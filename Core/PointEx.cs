@@ -76,6 +76,8 @@ namespace OpenVIII
 
         public static Vector2 Ceiling(this Vector2 v) => new Vector2((float)Math.Ceiling(v.X), (float)Math.Ceiling(v.Y));
 
+        public static Vector2 Abs(this Vector2 v) => new Vector2((float)Math.Abs(v.X), (float)Math.Abs(v.Y));
+
         public static Vector2 Floor(this Vector2 v) => new Vector2((float)Math.Floor(v.X), (float)Math.Floor(v.Y));
 
         public static Vector2 FloorOrCeiling(this Vector2 v, Vector2 target)

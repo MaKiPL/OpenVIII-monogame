@@ -23,14 +23,14 @@
         public override bool Inputs()
         {
             bool ret = false;
-            if (Pages > 1 && CONTAINER.Pos.Contains(Input.MouseLocation.Transform(Menu.Focus)))
+            if (Pages > 1 && CONTAINER.Pos.Contains(InputMouse.Location.Transform(Menu.Focus)))
             {
-                if (Input.Button(Buttons.MouseWheelup))
+                if (Input2.DelayedButton(MouseButtons.MouseWheelup))
                 {
                     Inputs_Left();
                     ret = true;
                 }
-                else if (Input.Button(Buttons.MouseWheeldown))
+                else if (Input2.DelayedButton(MouseButtons.MouseWheeldown))
                 {
                     Inputs_Right();
                     ret = true;

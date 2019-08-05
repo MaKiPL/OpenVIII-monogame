@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using OpenVIII.Encoding.Tags;
 using System;
 using System.IO;
 using System.Linq;
@@ -36,9 +37,8 @@ namespace OpenVIII
 
         public static void Update()
         {
-            if (Input.Button(Buttons.Okay) || Input.Button(Buttons.Cancel) || Input.Button(Keys.Space))
+            if (Input2.DelayedButton(FF8TextTagKey.Confirm) || Input2.DelayedButton(FF8TextTagKey.Cancel) || Input2.DelayedButton(Keys.Space))
             {
-                Input.ResetInputLimit();
                 init_debugger_Audio.StopMusic();
                 Memory.module = Memory.MODULE_MAINMENU_DEBUG;
 

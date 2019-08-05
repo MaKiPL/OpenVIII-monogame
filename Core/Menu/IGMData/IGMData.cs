@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -265,12 +266,12 @@ namespace OpenVIII
                     }
                 if (!ret && (Cursor_Status & Cursor_Status.Horizontal) != 0 && (Cursor_Status & Cursor_Status.Static) == 0)
                 {
-                    if (Input.Button(Buttons.Left))
+                    if (Input2.DelayedButton(FF8TextTagKey.Left))
                     {
                         CURSOR_PREV();
                         ret = true;
                     }
-                    else if (Input.Button(Buttons.Right))
+                    else if (Input2.DelayedButton(FF8TextTagKey.Right))
                     {
                         CURSOR_NEXT();
                         ret = true;
@@ -278,12 +279,12 @@ namespace OpenVIII
                 }
                 if ((!ret && (Cursor_Status & Cursor_Status.Horizontal) == 0 || (Cursor_Status & Cursor_Status.Vertical) != 0) && (Cursor_Status & Cursor_Status.Static) == 0)
                 {
-                    if (Input.Button(Buttons.Up))
+                    if (Input2.DelayedButton(FF8TextTagKey.Up))
                     {
                         CURSOR_PREV();
                         ret = true;
                     }
-                    else if (Input.Button(Buttons.Down))
+                    else if (Input2.DelayedButton(FF8TextTagKey.Down))
                     {
                         CURSOR_NEXT();
                         ret = true;
@@ -291,33 +292,33 @@ namespace OpenVIII
                 }
                 if (mouse || !ret)
                 {
-                    if (Input.Button(Buttons.Okay))
+                    if (Input2.DelayedButton(FF8TextTagKey.Confirm))
                     {
                         Inputs_OKAY();
                         return true;
                     }
-                    else if (Input.Button(Buttons.Cancel))
+                    else if (Input2.DelayedButton(FF8TextTagKey.Cancel))
                     {
                         return Inputs_CANCEL();
                     }
-                    else if (Input.Button(Buttons.Triangle))
+                    else if (Input2.DelayedButton(FF8TextTagKey.Cards))
                     {
-                        Inputs_Triangle();
+                        Inputs_Cards();
                         return true;
                     }
-                    else if (Input.Button(Buttons.Square))
+                    else if (Input2.DelayedButton(FF8TextTagKey.Menu))
                     {
-                        Inputs_Square();
+                        Inputs_Menu();
                         return true;
                     }
                     else if ((Cursor_Status & Cursor_Status.Horizontal) == 0 && (Cursor_Status & Cursor_Status.Static) == 0)
                     {
-                        if (Input.Button(Buttons.Left))
+                        if (Input2.DelayedButton(FF8TextTagKey.Left))
                         {
                             Inputs_Left();
                             return true;
                         }
-                        else if (Input.Button(Buttons.Right))
+                        else if (Input2.DelayedButton(FF8TextTagKey.Right))
                         {
                             Inputs_Right();
                             return true;
@@ -326,7 +327,6 @@ namespace OpenVIII
                 }
                 if (ret && !mouse)
                 {
-                    Input.ResetInputLimit();
                     if (!skipsnd)
                         init_debugger_Audio.PlaySound(0);
                 }
@@ -337,7 +337,6 @@ namespace OpenVIII
 
         public virtual bool Inputs_CANCEL()
         {
-            Input.ResetInputLimit();
             if (!skipsnd)
                 init_debugger_Audio.PlaySound(8);
             return false;
@@ -345,35 +344,30 @@ namespace OpenVIII
 
         public virtual void Inputs_Left()
         {
-            Input.ResetInputLimit();
             if (!skipsnd)
                 init_debugger_Audio.PlaySound(0);
         }
 
         public virtual void Inputs_OKAY()
         {
-            Input.ResetInputLimit();
             if (!skipsnd)
                 init_debugger_Audio.PlaySound(0);
         }
 
         public virtual void Inputs_Right()
         {
-            Input.ResetInputLimit();
             if (!skipsnd)
                 init_debugger_Audio.PlaySound(0);
         }
 
-        public virtual void Inputs_Square()
+        public virtual void Inputs_Menu()
         {
-            Input.ResetInputLimit();
             if (!skipsnd)
                 init_debugger_Audio.PlaySound(31);
         }
 
-        public virtual void Inputs_Triangle()
+        public virtual void Inputs_Cards()
         {
-            Input.ResetInputLimit();
             if (!skipsnd)
                 init_debugger_Audio.PlaySound(0);
         }

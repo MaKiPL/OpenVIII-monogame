@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using OpenVIII.Encoding.Tags;
 using System;
 using System.IO;
 using System.Linq;
@@ -49,7 +50,7 @@ namespace OpenVIII
 
         public static void Update()
         {
-            if (Input.Button(Keys.Up))
+            if (Input2.Button(FF8TextTagKey.Up))
             {
                 if (palette <= 0)
                     palette = (int)Memory.Icons.PaletteCount - 1;
@@ -58,7 +59,7 @@ namespace OpenVIII
                 currentMode = Mode.Draw;
             }
 
-            if (Input.Button(Keys.Down))
+            if (Input2.Button(FF8TextTagKey.Down))
             {
                 if (palette >= Memory.Icons.PaletteCount - 1)
                     palette = 0;
@@ -68,7 +69,7 @@ namespace OpenVIII
             }
             //if ((Input.Button(Keys.Up) || Input.Button(Keys.Down)) && Memory.Icons.GetEntry(icon) != null && (Memory.Icons.GetEntry(icon).GetLoc.count > 1))
             //    icon -= (Memory.Icons.GetEntry(icon).GetLoc.count - 1);
-            if (Input.Button(Keys.Right))
+            if (Input2.Button(FF8TextTagKey.Right))
             {
                 do
                 {
@@ -80,7 +81,7 @@ namespace OpenVIII
                 while (Memory.Icons.GetEntry(icon) == null);
                 currentMode = Mode.Draw;
             }
-            if (Input.Button(Keys.Left))
+            if (Input2.Button(FF8TextTagKey.Left))
             {
                 do
                 {

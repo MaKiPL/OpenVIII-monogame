@@ -134,6 +134,7 @@
   <ItemGroup>
     <Compile Include="ArchiveWorker.cs" />
     <Compile Include="Battle\debug_battleDat.cs" />
+    <Compile Include="Battle\FPS_Camera.cs" />
     <Compile Include="Battle\init_debugger_battle.cs" />
     <Compile Include="Battle\Menu\BattleMenu.cs" />
     <Compile Include="Battle\Menu\BattleMenus.cs" />

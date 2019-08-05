@@ -25,7 +25,7 @@
     }
     public enum MouseButtons
     {
-        None, MouseX, MouseY, MouseXjoy, MouseYjoy,
+        None, MouseToStick,
         LeftButton, MiddleButton, RightButton, XButton1, XButton2, MouseWheelup, MouseWheeldown,
     }
 }

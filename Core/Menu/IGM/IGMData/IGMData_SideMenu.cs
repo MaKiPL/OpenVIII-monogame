@@ -74,7 +74,6 @@ namespace OpenVIII
             public override bool Inputs_CANCEL()
             {
                 base.Inputs_CANCEL();
-                Input.ResetInputLimit();
                 FadeIn();
                 Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.LoadGameChooseGame;
                 return true;

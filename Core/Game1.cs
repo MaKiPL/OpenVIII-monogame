@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using OpenVIII.Encoding.Tags;
 using System;
 
 namespace OpenVIII
@@ -21,7 +22,8 @@ namespace OpenVIII
         protected override void Initialize()
         {
             FFmpeg.AutoGen.Example.FFmpegBinariesHelper.RegisterFFmpegBinaries();
-            Input.Init();
+            //Input.Init();
+            Memory.Input2 = new Input2();
             Memory.Init(graphics, spriteBatch, Content);
             init_debugger_Audio.Init(); //this initializes the DirectAudio, it's true that it gets loaded AFTER logo, but we will do the opposite
             init_debugger_Audio.Init_SoundAudio(); //this initalizes the WAVE format audio.dat
@@ -133,9 +135,9 @@ namespace OpenVIII
             //Memory.PreferredViewportWidth = graphics.GraphicsDevice.Viewport.Width;
             //Memory.PreferredViewportHeight = graphics.GraphicsDevice.Viewport.Height;
 
-            Input.Update();
+            Input2.Update();
 
-            if (Input.Button(Buttons.Exit))
+            if (Input2.Button(FF8TextTagKey.Exit))
                 Exit();
             init_debugger_Audio.Update();
             ModuleHandler.Update(gameTime);

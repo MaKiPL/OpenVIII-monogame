@@ -68,21 +68,20 @@ namespace OpenVIII
             public override bool Inputs()
             {
                 bool ret = false;
-                if (CONTAINER.Pos.Contains(Input.MouseLocation.Transform(Menu.Focus)))
+                if (CONTAINER.Pos.Contains(InputMouse.Location.Transform(Menu.Focus)))
                 {
-                    if (Input.Button(Buttons.MouseWheelup))
+                    if (Input2.DelayedButton(MouseButtons.MouseWheelup))
                     {
                         PageLeft();
                         ret = true;
                     }
-                    else if (Input.Button(Buttons.MouseWheeldown))
+                    else if (Input2.DelayedButton(MouseButtons.MouseWheeldown))
                     {
                         PageRight();
                         ret = true;
                     }
                     if (ret)
                     {
-                        Input.ResetInputLimit();
                         if (!skipsnd)
                             init_debugger_Audio.PlaySound(0);
                     }

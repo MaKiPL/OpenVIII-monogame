@@ -31,11 +31,13 @@
         /// </summary>
         Confirm = 0x26,
         /// <summary>
-        /// Talk/Card Game,Show Status in battle, (S), (Square), 2000_(A), Drive forward (Right stick up), Tap in battle boost gf if hit while holding Select
+        /// Talk/Card Game,Show Status in battle, (S), (Square), 2000_(A), Drive forward (Right stick up),
+        /// Tap in battle boost gf if hit while holding Select.
+        /// Remove junction/Discard magic/Open special windows in menus.
         /// </summary>
         Cards = 0x27,
         /// <summary>
-        /// Toggle Display,Default, (J) (Select), 2000_(Q)
+        /// Toggle Display,Default, (J) (Select), 2000_(F)
         /// </summary>
         Select = 0x28,
         /// <summary>

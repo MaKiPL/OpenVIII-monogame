@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -138,7 +139,7 @@ namespace OpenVIII
                 ret = m.Inputs() || ret;
                 if (ret) return ret;
             }
-            if (Input.Button(Buttons.Cancel))
+            if (Input2.DelayedButton(FF8TextTagKey.Cancel))
             {
                 switch ((BattleMenu.Mode)menus[_player].GetMode())
                 {

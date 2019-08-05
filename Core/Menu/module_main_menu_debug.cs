@@ -156,7 +156,7 @@ namespace OpenVIII
                 Matrix.CreateScale(new Vector3(scale.X, scale.Y, 1)) * 
                 Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
 
-            ml = Input.MouseLocation.Transform(IGM_focus);
+            ml = InputMouse.Location.Transform(IGM_focus);
             switch (State)
             {
                 //case MainMenuStates.Init:

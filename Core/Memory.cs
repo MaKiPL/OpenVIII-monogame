@@ -775,6 +775,7 @@ namespace OpenVIII
 
         public static Dictionary<byte, FF8String> DrawPointMagic;
         public static Random random;
+        public static Input2 Input2;
 
         #endregion DrawPointMagic
 

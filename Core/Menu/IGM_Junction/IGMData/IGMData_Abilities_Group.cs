@@ -60,10 +60,10 @@ namespace OpenVIII
                 }
             }
 
-            public override void Inputs_Square()
+            public override void Inputs_Menu()
             {
                 skipdata = true;
-                base.Inputs_Square();
+                base.Inputs_Menu();
                 skipdata = false;
 
                 IGMDataItem_IGMData i = ((IGMDataItem_IGMData)ITEM[0, 0]);

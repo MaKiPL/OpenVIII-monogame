@@ -99,10 +99,10 @@ namespace OpenVIII
                 }
             }
 
-            public override void Inputs_Square()
+            public override void Inputs_Menu()
             {
                 skipdata = true;
-                base.Inputs_Square();
+                base.Inputs_Menu();
                 skipdata = false;
                 if (Contents[CURSOR_SELECT] == Kernel_bin.Stat.None)
                 {

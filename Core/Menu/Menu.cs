@@ -138,7 +138,7 @@ namespace OpenVIII
         /// <summary>
         /// Adjusted mouse location used to determine if mouse is highlighting a button.
         /// </summary>
-        public static Point MouseLocation => Input.MouseLocation.Transform(Menu.Focus);
+        public static Point MouseLocation => InputMouse.Location.Transform(Menu.Focus);
 
         /// <summary>
         /// Character who has the junctions and inventory. Same as VisableCharacter unless TeamLaguna.

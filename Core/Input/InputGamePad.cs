@@ -66,7 +66,7 @@ namespace OpenVIII
         {
             ButtonState bs = Translate_Button(k, _state);
             float ts = Translate_Trigger(k, _state);
-            Vector2 ss = Translate_Sticks(k, _state);
+            Vector2 ss = Translate_Stick(k, _state);
             if ((ss != Vector2.Zero) ||
                 (ts != 0f) ||
                 (bs == ButtonState.Pressed))
@@ -75,8 +75,11 @@ namespace OpenVIII
         }
 
         private bool Release(GamePadButtons k, GamePadState _state) => !Press(k, _state);
-
-        private ButtonState Translate_Button(GamePadButtons k, GamePadState _state)
+        public static Vector2 Distance(GamePadButtons stick, float speed)
+        {
+            return Translate_Stick(stick, state) * (float)Distance(speed);
+        }
+        private static ButtonState Translate_Button(GamePadButtons k, GamePadState _state)
         {
             switch (k)
             {
@@ -125,7 +128,7 @@ namespace OpenVIII
             return ButtonState.Released;
         }
 
-        private Vector2 Translate_Sticks(GamePadButtons k, GamePadState _state)
+        private static Vector2 Translate_Stick(GamePadButtons k, GamePadState _state)
         {
             switch (k)
             {
@@ -138,7 +141,7 @@ namespace OpenVIII
             return Vector2.Zero;
         }
 
-        private float Translate_Trigger(GamePadButtons k, GamePadState _state)
+        private static float Translate_Trigger(GamePadButtons k, GamePadState _state)
         {
             switch (k)
             {

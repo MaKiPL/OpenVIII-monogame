@@ -132,7 +132,7 @@ namespace OpenVIII
                 Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) *
                 Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
             Memory.IsMouseVisible = true;
-            ml = Input.MouseLocation.Transform(IGM_focus);
+            ml = InputMouse.Location.Transform(IGM_focus);
             switch (State)
             {
                 case MainMenuStates.LoadGameChooseSlot:
