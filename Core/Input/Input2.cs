@@ -229,6 +229,7 @@ namespace OpenVIII
             return ret;
         }
 
+
         public static double Distance(float speed) =>
             // no input throttle but still take the max speed * time; for non analog controls
             speed * Memory.gameTime.ElapsedGameTime.TotalMilliseconds;

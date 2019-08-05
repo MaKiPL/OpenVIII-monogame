@@ -16,20 +16,9 @@ namespace OpenVIII
         public MouseButtons MouseButton;
         public ButtonTrigger Trigger = ButtonTrigger.OnPress;
 
-        public override bool Equals(object obj)
-        {
-            InputButton o = (InputButton)obj;
-            if (o.Key == Key &&
-                o.MouseButton == MouseButton &&
-                o.GamePadButton == GamePadButton &&
-                //(o.Trigger & Trigger)!=0 &&
-                (o.Combo == null || o.Combo.Equals(Combo)))
-                return true;
-            return false;
-        }
+        #endregion Fields
 
-
-    
+        #region Methods
 
         public InputButton Clone()
         {
@@ -42,9 +31,21 @@ namespace OpenVIII
             return i;
         }
 
+        public override bool Equals(object obj)
+        {
+            InputButton o = (InputButton)obj;
+            if (o.Key == Key &&
+                o.MouseButton == MouseButton &&
+                o.GamePadButton == GamePadButton &&
+                //(o.Trigger & Trigger)!=0 &&
+                (o.Combo == null || o.Combo.Equals(Combo)))
+                return true;
+            return false;
+        }
+
         public override int GetHashCode()
         {
-            var hashCode = 37823841;
+            int hashCode = 37823841;
             hashCode = hashCode * -1521134295 + EqualityComparer<List<InputButton>>.Default.GetHashCode(Combo);
             hashCode = hashCode * -1521134295 + GamePadButton.GetHashCode();
             hashCode = hashCode * -1521134295 + Key.GetHashCode();
@@ -52,6 +53,26 @@ namespace OpenVIII
             return hashCode;
         }
 
-        #endregion Fields
+        public override string ToString()
+        {
+            string s = "";
+            if (Key != Keys.None)
+                s = Key.ToString();
+            if (GamePadButton != GamePadButtons.None)
+                s = GamePadButton.ToString();
+            if (MouseButton != MouseButtons.None)
+                s = MouseButton.ToString();
+
+            if (Combo != null)
+            {
+                foreach (InputButton item in Combo)
+                {
+                    s = $"{s}+{item}";
+                }
+            }
+            return s;
+        }
+
+        #endregion Methods
     }
 }
