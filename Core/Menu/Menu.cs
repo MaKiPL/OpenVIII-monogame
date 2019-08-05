@@ -272,7 +272,7 @@ namespace OpenVIII
             Fade = _fadedin;
             _fadeout = true;
         }
-
+        public static bool FadingOut => _fadeout;
         public static void InitStaticMembers()
         {
             lock (_igm_lock)

@@ -103,12 +103,15 @@ namespace OpenVIII
                 Module_movie_test.ReturnState = Memory.MODULE_FIELD_DEBUG;
                 Memory.module = Memory.MODULE_MOVIETEST;
                 Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.MainLobby;
+                Memory.IsMouseVisible = false;
             }
             public override void Inputs_OKAY()
             {
                 if (OkayActions.ContainsKey(CURSOR_SELECT))
                     OkayActions[CURSOR_SELECT]();
             }
+            public override void Inputs_Cards() { }
+            public override void Inputs_Menu() { }
             public override bool Inputs_CANCEL()
             {
                 return false;
@@ -131,6 +134,13 @@ namespace OpenVIII
                 FadeIn();
                 Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.DebugScreen;
             }
+            public override bool Inputs()
+            {
+                if (!FadingOut)
+                    return base.Inputs();
+                return false;
+            }
+
             public override void Draw()
             {
                 base.Draw();
