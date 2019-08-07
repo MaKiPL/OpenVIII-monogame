@@ -140,6 +140,22 @@ namespace OpenVIII
 
         #endregion
 
+        /// <summary>
+        /// This is index to characters in chara.one file of worldmap
+        /// </summary>
+        enum worldCharacters
+        {
+            SquallCasual,
+            Ragnarok,
+            Chocobo,
+            BokoChocobo,
+            SquallSeed,
+            ZellCasual,
+            SelphieCasual
+        }
+
+        private static worldCharacters activeCharacter = worldCharacters.SquallCasual;
+
         private static _worldState worldState;
         private static MiniMapState MapState = MiniMapState.rectangle;
 
@@ -212,6 +228,13 @@ namespace OpenVIII
             texl = new texl(ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, texlPath));
             chara = new CharaOne(ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, charaOne));
             wmset = new wmset(ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, wmPath));
+
+            //let's update chara texture indexes due to worldmap VRAM tex atlas behaviour
+            chara.AssignTextureSizesForMchInstance(0, new int[] { 0, 1 }); //naturally
+            chara.AssignTextureSizesForMchInstance(1, new int[] { 2, 3, 4, 5 }); //ragnarok uses 4 textures!
+            for (int i = 2; i < Enum.GetNames(typeof(worldCharacters)).Length; i++)
+                chara.AssignTextureSizesForMchInstance(i, new int[] { i * 2 + 2, i * 2 + 3 }); //after ragnarok casual two textures per mesh + two additional due to ragnarok
+
 
             segments = new Segment[WM_SEGMENTS_COUNT];
 
@@ -578,7 +601,7 @@ namespace OpenVIII
 
             TeleportPlayerWarp();
 
-            DrawCharacter(0);
+            DrawCharacter(activeCharacter);
 
 #if DEBUG
             DrawDebug();
@@ -687,9 +710,9 @@ namespace OpenVIII
         /// </summary>
         static float localMchRotation = -90f;
 
-        private static void DrawCharacter(int charaIndex)
+        private static void DrawCharacter(worldCharacters charaIndex)
         {
-            int MchIndex = charaIndex;
+            int MchIndex = (int)charaIndex;
             if (animationId >= chara.GetMCH(MchIndex).GetAnimationCount())
                 animationId = 0;
             uint testing = chara.GetMCH(MchIndex).GetAnimationFramesCount(animationId);
@@ -697,10 +720,38 @@ namespace OpenVIII
             if (animationTestVariable >= testing)
                 animationTestVariable = 0;
             var collectionDebug = chara.GetMCH(MchIndex).GetVertexPositions(playerPosition+ localMchTranslation, Quaternion.CreateFromYawPitchRoll(localMchRotation,0f,0f),animationId, animationTestVariable);
+
+            int textureIndexBase; //chara.one contains textures one-by-one but mch indexes are based from zero for each character. That's why we have to sum texIndexes from previous meshes
+            switch (charaIndex)
+            {
+                case worldCharacters.Ragnarok:
+                    textureIndexBase = 2;
+                    break;
+                case worldCharacters.Chocobo:
+                    textureIndexBase = 6;
+                    break;
+                case worldCharacters.BokoChocobo:
+                    textureIndexBase = 8;
+                    break;
+                case worldCharacters.SquallSeed:
+                    textureIndexBase = 10;
+                    break;
+                case worldCharacters.ZellCasual:
+                    textureIndexBase = 12;
+                    break;
+                case worldCharacters.SelphieCasual:
+                    textureIndexBase = 14;
+                    break;
+                case worldCharacters.SquallCasual:
+                default:
+                    textureIndexBase = 0;
+                    break;
+            }
+
             if (collectionDebug.Item1.Length != 0)
                 for (int i = 0; i < collectionDebug.Item1.Length; i += 3)
                 {
-                    ate.Texture = chara.GetCharaTexture(collectionDebug.Item2[i]);
+                    ate.Texture = chara.GetCharaTexture(textureIndexBase+ collectionDebug.Item2[i]);
                     foreach (var pass in ate.CurrentTechnique.Passes)
                     {
                         pass.Apply();

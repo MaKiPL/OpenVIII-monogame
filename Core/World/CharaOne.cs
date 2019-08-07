@@ -55,5 +55,8 @@ namespace OpenVIII.Core.World
         public Debug_MCH GetMCH(int i) => i>=mchInstances.Length ? mchInstances[0]: mchInstances[i];
 
         public Texture2D GetCharaTexture(int i) => textures[i];
+
+        public void AssignTextureSizesForMchInstance(int mchInstanceIndex, int[] textureIndexes) =>
+            mchInstances[mchInstanceIndex].AssignTextureSizes(textures, textureIndexes);
     }
 }

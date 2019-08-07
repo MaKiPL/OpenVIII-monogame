@@ -13,8 +13,9 @@ namespace OpenVIII
     public class Debug_MCH
     {
         const float MODEL_SCALE = 20f;
-        private const float TEX_SIZEW = 44.0f;
-        private const float TEX_SIZEH = 64.0f;
+        private const float TEX_SIZEW = 256.0f;
+        private const float TEX_SIZEH = 256.0f;
+        private Vector2[] textureSizes;
         private uint pBase;
         private MemoryStream ms;
         private BinaryReader br;
@@ -159,6 +160,18 @@ namespace OpenVIII
             ReadSkeleton();
             ReadAnimation();
             PairSkinWithVertex();
+        }
+
+        /// <summary>
+        /// to be used for VRAM atlases- it provides the texture sizes relative to texIndexes in GetVertexPositions. If not called then default 256x256 range is used
+        /// </summary>
+        /// <param name="textures"></param>
+        /// <param name="textureIndexes"></param>
+        public void AssignTextureSizes(Texture2D[] textures, int[] textureIndexes)
+        {
+            textureSizes = new Vector2[textureIndexes.Length];
+            for (int i = 0; i < textureIndexes.Length; i++)
+                textureSizes[i] = new Vector2(textures[textureIndexes[i]].Width, textures[textureIndexes[i]].Height);
         }
 
         public bool bValid() => header.Unk == 0;
@@ -348,7 +361,11 @@ namespace OpenVIII
                         face = Vector3.Transform(face, Matrix.CreateTranslation(position));
 
                         Color clr = new Color(faces[i].vertColor[0], faces[i].vertColor[1], faces[i].vertColor[2], faces[i].vertColor[3]);
-                        Vector2 texData = new Vector2(faces[i].TextureMap[k].u/ TEX_SIZEW, faces[i].TextureMap[k].v/ TEX_SIZEH);
+                        Vector2 texData;
+                        if(textureSizes != null)
+                            texData = new Vector2(faces[i].TextureMap[k].u/ textureSizes[faces[i].texIndex].X, faces[i].TextureMap[k].v/ textureSizes[faces[i].texIndex].Y);
+                        else
+                            texData = new Vector2(faces[i].TextureMap[k].u / TEX_SIZEW, faces[i].TextureMap[k].v / TEX_SIZEH);
                         facesVertices.Add( new VertexPositionColorTexture(face, clr, texData));
                         texIndexes.Add((byte)faces[i].texIndex);
                     }
@@ -372,10 +389,12 @@ namespace OpenVIII
                     faceD = Vector3.Transform(faceD, Matrix.CreateFromQuaternion(rotation));
                     faceD = Vector3.Transform(faceD, Matrix.CreateTranslation(position));
 
-                    Vector2 t1 = new Vector2(faces[i].TextureMap[0].u / TEX_SIZEW, faces[i].TextureMap[0].v / TEX_SIZEH);
-                    Vector2 t2 = new Vector2(faces[i].TextureMap[1].u / TEX_SIZEW, faces[i].TextureMap[1].v / TEX_SIZEH);
-                    Vector2 t3 = new Vector2(faces[i].TextureMap[2].u / TEX_SIZEW, faces[i].TextureMap[2].v / TEX_SIZEH);
-                    Vector2 t4 = new Vector2(faces[i].TextureMap[3].u / TEX_SIZEW, faces[i].TextureMap[3].v / TEX_SIZEH);
+                    float widthDividor = textureSizes == null ? TEX_SIZEW : textureSizes[faces[i].texIndex].X; //if VRAM indexes of tex sizes are not null, then use them for UV calculation
+                    float heightDividor = textureSizes == null ? TEX_SIZEH : textureSizes[faces[i].texIndex].Y;
+                    Vector2 t1 = new Vector2(faces[i].TextureMap[0].u / widthDividor, faces[i].TextureMap[0].v / heightDividor);
+                    Vector2 t2 = new Vector2(faces[i].TextureMap[1].u / widthDividor, faces[i].TextureMap[1].v / heightDividor);
+                    Vector2 t3 = new Vector2(faces[i].TextureMap[2].u / widthDividor, faces[i].TextureMap[2].v / heightDividor);
+                    Vector2 t4 = new Vector2(faces[i].TextureMap[3].u / widthDividor, faces[i].TextureMap[3].v / heightDividor);
 
                     Color clr = new Color(faces[i].vertColor[0], faces[i].vertColor[1], faces[i].vertColor[2], faces[i].vertColor[3]);
 
