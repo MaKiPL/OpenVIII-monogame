@@ -1,8 +1,10 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -33,8 +35,46 @@ namespace OpenVIII.Core.World
                     sectionPointers[i] = br.ReadInt32();
             }
 
-            Section38();
-            Section39();
+            //Section1();
+            Section2(); //Finished
+            //Section3();
+            //Section4();
+            //Section5();
+            //Section6();
+            //Section7();
+            //Section8();
+            //Section9();
+            //Section10();
+            //Section11();
+            //Section12();
+            //Section13();
+            //Section14();
+            Section16();
+            //Section17();
+            //Section18();
+            //Section19();
+            //Section20();
+            //Section21();
+            //Section29();
+            //Section30();
+            //Section31();
+            //Section32();
+            //Section33();
+            //Section34();
+            //Section35();
+            //Section36();
+            //Section37();
+            Section38(); //Finished
+            Section39(); //Finished
+            //Section40();
+            //Section41();
+            //Section42();
+            //Section43();
+            //Section44();
+            //Section45();
+            //Section46();
+            //Section47();
+            //Section48();
         }
 
         /// <summary>
@@ -53,7 +93,97 @@ namespace OpenVIII.Core.World
 
         #region Sections parsing
 
-        #region Section38
+        #region Section 2 - world map regions
+        private byte[] regionsBuffer;
+
+        private void Section2()
+        {
+            using (MemoryStream ms = new MemoryStream(buffer))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                ms.Seek(sectionPointers[2 - 1], SeekOrigin.Begin);
+                regionsBuffer = br.ReadBytes(768);
+            }
+        }
+
+        public byte GetWorldRegionByBlock(int blockId) => regionsBuffer[blockId];
+        #endregion
+
+        #region Section 16 - World map objects and vehicles
+
+        private struct s16Model
+        {
+            public ushort cTriangles;
+            public ushort cQuads;
+            public ushort texPage;
+            public ushort cVerts;
+            public s16Triangle[] triangles;
+            public s16Quad[] quads;
+            public Vector4[] vertices;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack =1, Size =12)]
+        private struct s16Triangle
+        {
+            public byte A, B, C;
+            public byte semitransp;
+            public byte ua, va;
+            public byte ub, vb;
+            public byte uc, vc;
+            public ushort clut;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
+        private struct s16Quad
+        {
+            public byte A, B, C, D;
+            public byte ua, va;
+            public byte ub, vb;
+            public byte uc, vc;
+            public byte ud, vd;
+            public ushort clut;
+            public byte semitransp;
+            public byte unk;
+        }
+
+        private s16Model[] s16Models;
+
+        private const float s16Scale = 2048f;
+
+        private void Section16()
+        {
+            using (MemoryStream ms = new MemoryStream(buffer))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                ms.Seek(sectionPointers[16 - 1], SeekOrigin.Begin);
+                var innerSec = GetInnerPointers(br);
+                s16Models = new s16Model[innerSec.Length];
+                for (int i = 0; i < innerSec.Length; i++)
+                {
+                    ms.Seek(sectionPointers[16 - 1] + innerSec[i], SeekOrigin.Begin);
+                    s16Models[i] = Extended.ByteArrayToStructure<s16Model>(br.ReadBytes(8));
+                    s16Models[i].triangles = new s16Triangle[s16Models[i].cTriangles];
+                    s16Models[i].quads = new s16Quad[s16Models[i].cQuads];
+                    s16Models[i].vertices = new Vector4[s16Models[i].cVerts];
+                    for (int n = 0; n < s16Models[i].cTriangles; n++)
+                        s16Models[i].triangles[n] = Extended.ByteArrayToStructure<s16Triangle>(br.ReadBytes(Marshal.SizeOf(typeof(s16Triangle))));
+                    for (int n = 0; n < s16Models[i].cQuads; n++)
+                        s16Models[i].quads[n] = Extended.ByteArrayToStructure<s16Quad>(br.ReadBytes(Marshal.SizeOf(typeof(s16Quad))));
+                    for (int n = 0; n < s16Models[i].cVerts; n++)
+                        s16Models[i].vertices[n] = new Vector4(
+                            br.ReadInt16() / s16Scale,
+                            br.ReadInt16() / s16Scale,
+                            br.ReadInt16() / s16Scale,
+                            br.ReadUInt16()
+                            );
+
+                }
+            }
+        }
+
+        #endregion
+
+        #region Section 38 - World map textures archive
         /// <summary>
         /// Section 38: World map textures archive
         /// </summary>
@@ -127,7 +257,7 @@ namespace OpenVIII.Core.World
 
         #endregion
 
-        #region Section39
+        #region Section 39 - Textures of roads, train tracks and bridges
 
         const int SEC39_VRAM_STARTX = 832; //this is beginning of origX to map to one texture
         const int SEC39_VRAM_STARTY = 256; //used to map VRAM, but here it's used to create new atlas
