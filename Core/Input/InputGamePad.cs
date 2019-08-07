@@ -1,16 +1,31 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using OpenVIII.Encoding.Tags;
 using System;
+using System.Collections.Generic;
 
 namespace OpenVIII
 {
     public class InputGamePad : Input2
     {
+        protected struct Iap
+        {
+            public Icons.ID id;
+            public byte palette;
+
+            public Iap(Icons.ID id = Icons.ID.None, byte palette = 2)
+            {
+                this.id = id;
+                this.palette = palette;
+            }
+        }
         #region Fields
 
         private static readonly float deadzone_r = 1f / 100;
         private static GamePadState last_state;
         private static GamePadState state;
+
+        private static Dictionary<GamePadButtons,Iap> iap;
 
         #endregion Fields
 
@@ -18,6 +33,26 @@ namespace OpenVIII
 
         public InputGamePad(bool skip = true) : base(skip)
         {
+            if(iap == null)
+            {
+                iap = new Dictionary<GamePadButtons, Iap>
+                {
+                    { GamePadButtons.Up, new Iap{ id= Icons.ID.D_Pad_Up } },
+                    { GamePadButtons.Down, new Iap{ id= Icons.ID.D_Pad_Down } },
+                    { GamePadButtons.Left, new Iap{ id= Icons.ID.D_Pad_Left } },
+                    { GamePadButtons.Right, new Iap{ id= Icons.ID.D_Pad_Right } },
+                    { GamePadButtons.X, new Iap {id = Icons.ID.Size_16x16_PSX_Square, palette = 4} },
+                    { GamePadButtons.Y, new Iap {id = Icons.ID.Size_16x16_PSX_Triangle, palette = 4} },
+                    { GamePadButtons.A, new Iap {id = Icons.ID.Size_16x16_PSX_Cross, palette = 4} },
+                    { GamePadButtons.B, new Iap {id = Icons.ID.Size_16x16_PSX_Circle, palette = 4} },
+                    { GamePadButtons.Back, new Iap {id = Icons.ID.SELECT} },
+                    { GamePadButtons.Start, new Iap {id = Icons.ID.START} },
+                    { GamePadButtons.Left_Shoulder, new Iap {id = Icons.ID.Size_16x08_PSX_L1} },
+                    { GamePadButtons.Right_Shoulder, new Iap {id = Icons.ID.Size_16x08_PSX_R1} },
+                    { GamePadButtons.Left_Trigger, new Iap {id = Icons.ID.Size_16x08_PSX_L2} },
+                    { GamePadButtons.Right_Trigger, new Iap {id = Icons.ID.Size_16x08_PSX_R2} },
+                };
+            }
         }
 
         #endregion Constructors
@@ -40,7 +75,7 @@ namespace OpenVIII
 
         public static Vector2 Distance(GamePadButtons stick, float speed) => Translate_Stick(stick, state) * (float)Distance(speed);
 
-        protected override bool ButtonTriggered(InputButton test, ButtonTrigger trigger = ButtonTrigger.None)
+        public override bool ButtonTriggered(InputButton test, ButtonTrigger trigger = ButtonTrigger.None)
         {
             if (test != null && test.GamePadButton != GamePadButtons.None)
             {
@@ -138,10 +173,10 @@ namespace OpenVIII
         {
             switch (k)
             {
-                case GamePadButtons.Triggers_Left:
+                case GamePadButtons.Left_Trigger:
                     return _state.Triggers.Left > deadzone_r ? _state.Triggers.Left : 0f;
 
-                case GamePadButtons.Triggers_Right:
+                case GamePadButtons.Right_Trigger:
                     return _state.Triggers.Right > deadzone_r ? _state.Triggers.Right : 0f;
             }
             return 0f;
@@ -174,6 +209,19 @@ namespace OpenVIII
         }
 
         private bool Release(GamePadButtons k, GamePadState _state) => !Press(k, _state);
+        public FF8String ButtonString(GamePadButtons gamePadButton, FF8TextTagKey key)
+        {
+            if (iap.ContainsKey(gamePadButton))
+            {
+                return (ButtonString(iap[gamePadButton]));
+            }
+            return "";
+        }
+        protected FF8String ButtonString(Iap i)
+        {
+            short id = (short)i.id;
+            return new FF8String(new byte[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.CustomICON, (byte)(id & 0xFF), (byte)((id & 0xFF00) >> 8), i.palette });
+        }
 
         #endregion Methods
     }
