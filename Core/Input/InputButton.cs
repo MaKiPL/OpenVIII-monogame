@@ -52,7 +52,6 @@ namespace OpenVIII
             hashCode = hashCode * -1521134295 + MouseButton.GetHashCode();
             return hashCode;
         }
-
         public override string ToString()
         {
             string s = "";
@@ -70,7 +69,7 @@ namespace OpenVIII
                     s = $"{s}+{item}";
                 }
             }
-            return s;
+            return s.Replace('_',' ').Trim();
         }
 
         #endregion Methods
