@@ -64,7 +64,7 @@ namespace OpenVIII
             }
         }
 
-        protected override bool ButtonTriggered(InputButton test, ButtonTrigger trigger = ButtonTrigger.None)
+        public override bool ButtonTriggered(InputButton test, ButtonTrigger trigger = ButtonTrigger.None)
         {
             if (test != null && test.MouseButton != MouseButtons.None)
             {

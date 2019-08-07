@@ -36,7 +36,7 @@ namespace OpenVIII
 
         #region Methods
 
-        protected override bool ButtonTriggered(InputButton test,ButtonTrigger trigger = ButtonTrigger.None)
+        public override bool ButtonTriggered(InputButton test,ButtonTrigger trigger = ButtonTrigger.None)
         {
             if (test != null && test.Key != Keys.None &&
                 (state.GetPressedKeys().Contains(test.Key) || last_state.GetPressedKeys().Contains(test.Key)))
