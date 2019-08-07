@@ -69,8 +69,6 @@ namespace OpenVIII
 
         #endregion Properties
 
-        // this really isn't improtant to icons. this really isn't improtant to icons.
-
         #region Indexers
 
         public new EntryGroup this[Enum id] => GetEntryGroup(id);
