@@ -690,6 +690,8 @@ namespace OpenVIII
         private static void DrawCharacter(int charaIndex)
         {
             int MchIndex = charaIndex;
+            if (animationId >= chara.GetMCH(MchIndex).GetAnimationCount())
+                animationId = 0;
             uint testing = chara.GetMCH(MchIndex).GetAnimationFramesCount(animationId);
             animationTestVariable++;
             if (animationTestVariable >= testing)

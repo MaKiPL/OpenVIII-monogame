@@ -52,7 +52,7 @@ namespace OpenVIII.Core.World
             textures = texturesList.ToArray();
         }
 
-        public Debug_MCH GetMCH(int i) => mchInstances[i];
+        public Debug_MCH GetMCH(int i) => i>=mchInstances.Length ? mchInstances[0]: mchInstances[i];
 
         public Texture2D GetCharaTexture(int i) => textures[i];
     }
