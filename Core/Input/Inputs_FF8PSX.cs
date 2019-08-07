@@ -54,7 +54,7 @@ namespace OpenVIII
             protected set;
         }
 
-        public override bool DrawControllerButtons => true;
+        public override bool DrawGamePadButtons => true;
 
         #endregion Properties
     }

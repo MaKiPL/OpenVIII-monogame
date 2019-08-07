@@ -9,7 +9,7 @@ namespace OpenVIII
 
         public abstract Dictionary<List<FF8TextTagKey>, List<InputButton>> Data { get; protected set; }
 
-        public abstract bool DrawControllerButtons { get; }
+        public abstract bool DrawGamePadButtons { get; }
 
         #endregion Properties
     }
