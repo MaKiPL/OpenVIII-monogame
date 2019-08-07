@@ -148,7 +148,7 @@ namespace OpenVIII.Core.World
 
         private s16Model[] s16Models;
 
-        private const float s16Scale = 2048f;
+        private const float s16Scale = 16f;
 
         private void Section16()
         {
@@ -161,7 +161,10 @@ namespace OpenVIII.Core.World
                 for (int i = 0; i < innerSec.Length; i++)
                 {
                     ms.Seek(sectionPointers[16 - 1] + innerSec[i], SeekOrigin.Begin);
-                    s16Models[i] = Extended.ByteArrayToStructure<s16Model>(br.ReadBytes(8));
+                    s16Models[i].cTriangles = br.ReadUInt16();
+                    s16Models[i].cQuads = br.ReadUInt16();
+                    s16Models[i].texPage = br.ReadUInt16();
+                    s16Models[i].cVerts = br.ReadUInt16();
                     s16Models[i].triangles = new s16Triangle[s16Models[i].cTriangles];
                     s16Models[i].quads = new s16Quad[s16Models[i].cQuads];
                     s16Models[i].vertices = new Vector4[s16Models[i].cVerts];
@@ -179,6 +182,89 @@ namespace OpenVIII.Core.World
 
                 }
             }
+        }
+
+        public Tuple<VertexPositionTexture[], byte[]> GetVehicleGeometry(int objectId, Vector3 localTranslation, Quaternion rotation)
+        {
+            //This ones are simple- static meshes that are translated only by basic localTranslation and quaternion. Nothing much
+
+            List<VertexPositionTexture> vptList = new List<VertexPositionTexture>();
+            List<byte> vptTextureIndexList = new List<byte>();
+            //step 1. grab triangles
+            if (objectId > s16Models.Length)
+                return new Tuple<VertexPositionTexture[], byte[]>(new VertexPositionTexture[0], new byte[0]); //error
+            s16Model Model = s16Models[objectId];
+            for(int i = 0; i<Model.cTriangles; i++)
+            {
+                Vector3 a = Extended.ShrinkVector4ToVector3(Model.vertices[Model.triangles[i].A], true);
+                Vector3 b = Extended.ShrinkVector4ToVector3(Model.vertices[Model.triangles[i].B], true);
+                Vector3 c = Extended.ShrinkVector4ToVector3(Model.vertices[Model.triangles[i].C], true);
+                a= Vector3.Transform(a, Matrix.CreateFromQuaternion(rotation));
+                b= Vector3.Transform(b, Matrix.CreateFromQuaternion(rotation));
+                c= Vector3.Transform(c, Matrix.CreateFromQuaternion(rotation));
+                a += localTranslation;
+                b += localTranslation;
+                c += localTranslation;
+
+                vptList.Add(new VertexPositionTexture(
+                    a, new Vector2(Model.triangles[i].ua/256f, Model.triangles[i].va/256f)
+                    ));
+                vptList.Add(new VertexPositionTexture(
+                    b, new Vector2(Model.triangles[i].ub/256f, Model.triangles[i].vb/256f)
+                    ));
+                vptList.Add(new VertexPositionTexture(
+                    c, new Vector2(Model.triangles[i].uc/256f, Model.triangles[i].vc/256f)
+                    ));
+
+                vptTextureIndexList.Add((byte)Model.triangles[i].clut);
+                vptTextureIndexList.Add((byte)Model.triangles[i].clut);
+                vptTextureIndexList.Add((byte)Model.triangles[i].clut);
+            }
+
+            for (int i = 0; i < Model.cQuads; i++)
+            {
+                Vector3 a = Extended.ShrinkVector4ToVector3(Model.vertices[Model.quads[i].A], true);
+                Vector3 b = Extended.ShrinkVector4ToVector3(Model.vertices[Model.quads[i].B], true);
+                Vector3 c = Extended.ShrinkVector4ToVector3(Model.vertices[Model.quads[i].C], true);
+                Vector3 d = Extended.ShrinkVector4ToVector3(Model.vertices[Model.quads[i].D], true);
+                a = Vector3.Transform(a, Matrix.CreateFromQuaternion(rotation));
+                b = Vector3.Transform(b, Matrix.CreateFromQuaternion(rotation));
+                c = Vector3.Transform(c, Matrix.CreateFromQuaternion(rotation));
+                d = Vector3.Transform(d, Matrix.CreateFromQuaternion(rotation));
+                a += localTranslation;
+                b += localTranslation;
+                c += localTranslation;
+                d += localTranslation;
+
+                vptList.Add(new VertexPositionTexture(
+                    a, new Vector2(Model.quads[i].ua / 256f, Model.quads[i].va / 256f)
+                    ));
+                vptList.Add(new VertexPositionTexture(
+                    b, new Vector2(Model.quads[i].ub / 256f, Model.quads[i].vb / 256f)
+                    ));
+                vptList.Add(new VertexPositionTexture(
+                    d, new Vector2(Model.quads[i].ud / 256f, Model.quads[i].vd / 256f)
+                    ));
+
+                vptList.Add(new VertexPositionTexture(
+                    a, new Vector2(Model.quads[i].ua / 256f, Model.quads[i].va / 256f)
+                    ));
+                vptList.Add(new VertexPositionTexture(
+                    c, new Vector2(Model.quads[i].uc / 256f, Model.quads[i].vc / 256f)
+                    ));
+                vptList.Add(new VertexPositionTexture(
+                    d, new Vector2(Model.quads[i].ud / 256f, Model.quads[i].vd / 256f)
+                    ));
+
+                vptTextureIndexList.Add((byte)Model.quads[i].clut);
+                vptTextureIndexList.Add((byte)Model.quads[i].clut);
+                vptTextureIndexList.Add((byte)Model.quads[i].clut);
+                vptTextureIndexList.Add((byte)Model.quads[i].clut);
+                vptTextureIndexList.Add((byte)Model.quads[i].clut);
+                vptTextureIndexList.Add((byte)Model.quads[i].clut);
+            }
+
+            return new Tuple<VertexPositionTexture[], byte[]>(vptList.ToArray(), vptTextureIndexList.ToArray());
         }
 
         #endregion

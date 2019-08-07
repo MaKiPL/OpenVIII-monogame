@@ -667,6 +667,24 @@ namespace OpenVIII
         private static void DrawDebug()
         {
             //DrawDebug_Rays(); //uncomment to enable drawing rays for collision
+            DrawDebug_VehiclePreview();
+        }
+
+        private static void DrawDebug_VehiclePreview()
+        {
+            Vector3 localTranslation = playerPosition + new Vector3(20f, 20f, 20f);
+
+            var collectionDebug = wmset.GetVehicleGeometry(0, localTranslation, Quaternion.Identity);
+
+            for (int i = 0; i < collectionDebug.Item1.Length; i += 3)
+            {
+                ate.Texture = null;
+                foreach (var pass in ate.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, collectionDebug.Item1, i, 1);
+                }
+            }
         }
 
         private static void DrawDebug_Rays()

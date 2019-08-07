@@ -216,6 +216,15 @@ namespace OpenVIII
             return bUseAlternative ? languageIndicator == "en" ? "us" : languageIndicator : languageIndicator;
         }
 
+        public static Vector3 ShrinkVector4ToVector3(Vector4 reference, bool bMirrorY = false)
+        {
+            float x, y, z;
+            reference.Deconstruct(out x, out y, out z, out _);
+            if (bMirrorY)
+                y = -y;
+            return new Vector3(x, y, z);
+        }
+
         /// <summary>
         /// Converts short to float via x/4096f
         /// </summary>
