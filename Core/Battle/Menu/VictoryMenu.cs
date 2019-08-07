@@ -24,12 +24,11 @@ namespace OpenVIII
                 {
                     { Mode.All, new IGMData_Group(
                     new IGMData_Container(new IGMDataItem_Box(new FF8String(new byte[] {
-                            (byte)FF8TextTagCode.Color,
-                            (byte)FF8TextTagColor.Green,
                             (byte)FF8TextTagCode.Key,
-                            (byte)FF8TextTagKey.Confirm,
-                            (byte)FF8TextTagCode.Color,
-                            (byte)FF8TextTagColor.White})+" "+(Memory.Strings.Read(Strings.FileID.KERNEL,30,22)),new Rectangle(new Point(0,(int)Size.Y-78),new Point((int)Size.X,78)),options: Box_Options.Center| Box_Options.Middle))
+                            (byte)FF8TextTagKey.Confirm})+
+                            " "+
+                            (Memory.Strings.Read(Strings.FileID.KERNEL,30,22)),
+                            new Rectangle(new Point(0,(int)Size.Y-78),new Point((int)Size.X,78)),options: Box_Options.Center| Box_Options.Middle))
                     )},
                     { Mode.Exp,
                     new IGMData_PlayerEXPGroup (
