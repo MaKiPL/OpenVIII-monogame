@@ -381,29 +381,43 @@ namespace OpenVIII
         }
 
         private static byte bSelectedWalkable = 0;
-        private static int countofDebugFaces = 0;
+        private static Vector2 countofDebugFaces = Vector2.Zero;
 
-        private static List<Tuple<ParsedTriangleData, Vector3>> ii;
+        /// <summary>
+        /// ParsedTriangleData- struct contains all available data paired with found triangle
+        /// Vector3 - contains barycentric based on playerPosition
+        /// bool - bIsSkyRaycasted - used for sky raycast
+        /// </summary>
+        private static List<Tuple<ParsedTriangleData, Vector3, bool>> RaycastedTris;
 
         private static void CollisionUpdate()
         {
             segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1); //needs to be updated on pre-new values of movement
             int realSegmentId = (int)(segmentPosition.Y * 32 + segmentPosition.X);
             var seg = segments[realSegmentId];
-            ii = new List<Tuple<ParsedTriangleData, Vector3>>();
+            RaycastedTris = new List<Tuple<ParsedTriangleData, Vector3, bool>>(); 
             Ray characterRay = new Ray(playerPosition + new Vector3(0,10f,0), Vector3.Down); //sets ray origin
+            Ray skyRay = new Ray(GetForwardSkyRaycastVector(), Vector3.Down);
             
-            //loop through current block triangles
+            //loop through current block triangles - two rays at the same time. There are only two rays and multi triangles, so iterate triangles and check rays instead of double checking
             for (int i = 0; i < seg.parsedTriangle.Length; i++)
-                if(Extended.RayIntersection3D(characterRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out var barycentric) != 0)
-                    ii.Add(new Tuple<ParsedTriangleData, Vector3>(seg.parsedTriangle[i], barycentric));
+                if(Extended.RayIntersection3D(characterRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out var characterBarycentric) != 0)
+                    RaycastedTris.Add(new Tuple<ParsedTriangleData, Vector3, bool>(seg.parsedTriangle[i], characterBarycentric, false));
+                else if (Extended.RayIntersection3D(skyRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out var skyBarycentric) != 0)
+                    RaycastedTris.Add(new Tuple<ParsedTriangleData, Vector3, bool>(seg.parsedTriangle[i], skyBarycentric, true));
 
-            //don't allow walking over non-walkable faces
-            ii = ii.Where(x => (x.Item1.parentPolygon.vertFlags & TRIFLAGS_COLLIDE) != 0).ToList();
 
-            countofDebugFaces = ii.Count;
-            foreach (var prt in ii)
+            //don't allow walking over non-walkable faces - just because we tested both rays we can make this linq appear only once
+            RaycastedTris = RaycastedTris.Where(x => (x.Item1.parentPolygon.vertFlags & TRIFLAGS_COLLIDE) != 0).ToList();
+
+            countofDebugFaces = new Vector2(
+                RaycastedTris.Where(x=>!x.Item3).Count(),
+                RaycastedTris.Where(x => x.Item3).Count()
+                );
+            foreach (var prt in RaycastedTris)
             {
+                if (prt.Item3) //we do not want skyRaycasts here, iterate only characterRay
+                    continue; 
                 Vector3 distance = playerPosition - prt.Item2;
                 float distY = Math.Abs(distance.Y);
                 if((prt.Item1.parentPolygon.vertFlags & 0b01000000) == 0)
@@ -414,7 +428,9 @@ namespace OpenVIII
                 bSelectedWalkable = prt.Item1.parentPolygon.vertFlags;
                 return;
             }
-            ////out of loop- failed to obtain collision or abandon move
+            //out of loop- failed to obtain collision or abandon move - we need to check now if player wanted to get to forest
+
+
             playerPosition = lastPlayerPosition;
         }
 
@@ -558,7 +574,7 @@ namespace OpenVIII
                 $"World Map Camera: ={camPosition}\n" +
                 $"Player position: ={playerPosition}\n" +
                 $"Segment Position: ={segmentPosition}\n" +
-                $"selWalk: =0b{Convert.ToString(bSelectedWalkable,2).PadLeft(8, '0')} of {countofDebugFaces}\n" +
+                $"selWalk: =0b{Convert.ToString(bSelectedWalkable,2).PadLeft(8, '0')} of charaRay={countofDebugFaces.X}, skyRay={countofDebugFaces.Y}\n" +
                 $"Press 9 to enable debug FPS camera: ={(worldState== _worldState._1active ? "orbit camera" : "FPS debug camera")}\n" +
                 $"FPS camera degrees: ={degrees}° (WARNING! Frustum cull disabled!)\n" +
                 $"FOV: ={FOV}", 30, 20, lineSpacing: 5);
@@ -567,34 +583,35 @@ namespace OpenVIII
 
         }
 
-        
+        /// <summary>
+        /// Gets the vector3 position of the raycast that drops from sky and is used for forest
+        /// </summary>
+        /// <returns></returns>
+        private static Vector3 GetForwardSkyRaycastVector(float distance = 15f)
+        {
+            float degreesRadians = (float)Extended.Radians(-degrees + 90f); //gets radians value of current degrees
+            Vector3 relativeTranslation = new Vector3(
+                (float)Math.Sin(degreesRadians) * distance,
+                5000f,
+                (float)Math.Cos(degreesRadians) * distance
+                );
+            return new Vector3(playerPosition.X + relativeTranslation.X,
+                relativeTranslation.Y,
+                playerPosition.Z + relativeTranslation.Z);
+        }
 
         private static void DrawDebug()
         {
-            var verts = new[] { new VertexPositionColor(playerPosition, Color.White), new VertexPositionColor(new Vector3(playerPosition.X, -1, playerPosition.Z), Color.White) };
-
-            Vector3 rise = new Vector3(0, 5f, 0);
-            float raw = (float)Extended.Radians(-degrees + 90f);
-
-            Vector3 addRise = new Vector3
-                (
-                (float)Math.Sin(raw) * 15f,
-                5f,
-                (float)Math.Cos(raw) * 15f
-                );
-
-            var testForwardVector = new[]
+            var playerRaycastDownVerts = new[] { new VertexPositionColor(playerPosition, Color.White), new VertexPositionColor(new Vector3(playerPosition.X, -1, playerPosition.Z), Color.White) };
+            var skyRaycastDownVerts = GetForwardSkyRaycastVector();
+            var skyVectorDropVerts = new[]
             {
-                new VertexPositionColor(playerPosition + rise, Color.White), //draw line from player to mockup of forward
-                new VertexPositionColor(playerPosition + addRise, Color.White),
-
-                new VertexPositionColor(playerPosition + addRise + rise*3f, Color.White), //draw line from mockup up to the bottom fake infinity
-                new VertexPositionColor(playerPosition + addRise - new Vector3(0,500f,0), Color.White)
-
-
+                new VertexPositionColor(skyRaycastDownVerts, Color.White), //draw line from mockup up to the bottom fake infinity
+                new VertexPositionColor(new Vector3(skyRaycastDownVerts.X, -5000f, skyRaycastDownVerts.Z), Color.White)
             };
-            if(ii.Count != 0)
-            foreach (var tt in ii)
+
+            if(RaycastedTris.Count != 0)
+            foreach (var tt in RaycastedTris)
             {
                 var triangle = tt.Item1;
                 var verts2 = new[] {new VertexPositionColor(triangle.A, Color.White),
@@ -612,11 +629,12 @@ namespace OpenVIII
                     Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, verts2, 0, 3);
                 }
             }
+
             foreach (var pass in ate.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, verts, 0, 1);
-                Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, testForwardVector, 0, 2);
+                Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, playerRaycastDownVerts, 0, 1);
+                Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, skyVectorDropVerts, 0, 1);
             }
         }
 
