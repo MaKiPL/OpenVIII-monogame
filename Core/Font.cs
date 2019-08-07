@@ -96,7 +96,7 @@ namespace OpenVIII
             int charCountWidth = 21;
             int charSize = 12; //pixelhandler does the 2x scaling on the fly.
             Point size = (new Vector2(0, charSize) * zoom).RoundedPoint();
-            int width=0;
+            int width = 0;
             ColorID colorbak = color;
             bool blink = false;
             bool skipletter = false;
@@ -111,7 +111,8 @@ namespace OpenVIII
                         c = buffer[i];
                         switch ((FF8TextTagDialog)c)
                         {
-                            // Most of these should be replaced before it gets here becuase they have values set by other objects.
+                            // Most of these should be replaced before it gets here becuase they have
+                            // values set by other objects.
                             case FF8TextTagDialog.CustomICON:
                                 DrawIcon(buffer, zoom, Fade, skipdraw, ref destRect, real, ref size, ref width, ref skipletter, ref i, ref c);
                                 break;
@@ -124,8 +125,12 @@ namespace OpenVIII
                 {
                     if (++i < buffer.Length - 1)
                     {
+                        FF8TextTagKey k = (FF8TextTagKey)buffer[i];
+                        FF8String str = Input2.ButtonString(k);
+                        Rectangle retpos = RenderBasicText(str, real, zoom, whichFont, Fade, lineSpacing, skipdraw, ColorID.Green);
+                        real.X += retpos.Width;
                         //TODO add key/controller input icons/text here.
-                        if (!skipletter)
+                        //if (!skipletter)
                             continue;
                     }
                 }
