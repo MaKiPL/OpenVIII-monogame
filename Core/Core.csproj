@@ -176,8 +176,8 @@
     <Compile Include="Characters.cs" />
     <Compile Include="DictionaryEx.cs" />
     <Compile Include="DM_Midi.cs" />
-    <Compile Include="Entry.cs" />
-    <Compile Include="EntryGroup.cs" />
+    <Compile Include="Image\Entry.cs" />
+    <Compile Include="Image\EntryGroup.cs" />
     <Compile Include="ExtapathyExtended.cs" />
     <Compile Include="Extended.cs" />
     <Compile Include="Fluid_Midi.cs" />
@@ -863,7 +863,7 @@
     <Compile Include="Sources\MonoGame\Hooks\MonoGameHooks.cs" />
     <Compile Include="Sources\MonoGame\Hooks\OpenALWindowsHook.cs" />
     <Compile Include="Sources\NetFramework\TypeExtensionMethods.cs" />
-    <Compile Include="SP2.cs" />
+    <Compile Include="Image\SP2.cs" />
     <Compile Include="Strings\Strings.Kernel.cs" />
     <Compile Include="Strings\StringsBase.cs" />
     <Compile Include="Image\TEX.cs" />
