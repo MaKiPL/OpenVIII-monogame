@@ -47,6 +47,7 @@ namespace OpenVIII
         private static CharaOne chara;
         private static texl texl;
         private static wmset wmset;
+        private static wm2field wm2field;
 
 
         private static byte[] wmx;
@@ -212,22 +213,29 @@ namespace OpenVIII
                 FogEnd = 1000.00f
             };
 
-            ReadWMX();
+            ReadWorldMapFiles();
             worldState++;
             return;
         }
 
-        private static void ReadWMX()
+        private static void ReadWorldMapFiles()
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_WORLD);
+            ArchiveWorker awMain = new ArchiveWorker(Memory.Archives.A_MAIN);
+
             string wmxPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("wmx.obj")).Select(x => x).First();
             string texlPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("texl.obj")).Select(x => x).First();
             string wmPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains($"wmset{Extended.GetLanguageShort(true)}.obj")).Select(x => x).First();
             string charaOne = aw.GetListOfFiles().Where(x => x.ToLower().Contains("chara.one")).Select(x => x).First();
+
             wmx = ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, wmxPath);
             texl = new texl(ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, texlPath));
             chara = new CharaOne(ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, charaOne));
             wmset = new wmset(ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, wmPath));
+
+            string wm2fieldPath = awMain.GetListOfFiles().Where(x => x.ToLower().Contains("wm2field.tbl")).Select(x => x).First();
+
+            wm2field = new wm2field(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MAIN, wm2fieldPath));
 
             //let's update chara texture indexes due to worldmap VRAM tex atlas behaviour
             chara.AssignTextureSizesForMchInstance(0, new int[] { 0, 1 }); //naturally
