@@ -33,7 +33,7 @@ namespace OpenVIII
             //    Init(filename, tex, cols, rows);
             //}
             //else
-                Init(filename, null, cols, rows);
+            Init(filename, null, cols, rows);
         }
 
         public TextureHandler(string filename, Texture_Base classic, ushort palette = 0, Color[] colors = null) => Init(filename, classic, 1, 1, palette: palette, colors: colors);
@@ -164,6 +164,8 @@ namespace OpenVIII
             return null;
         }
 
+
+
         public static Rectangle Scale(Rectangle mat1, Vector2 mat2)
         {
             mat1.Location = (mat1.Location.ToVector2() * mat2).RoundedPoint();
@@ -218,71 +220,96 @@ namespace OpenVIII
             }
         }
 
+
         public void Draw(Rectangle dst, Rectangle? src, Color color)
         {
-            Vector2 dstOffset = Vector2.Zero;
+            
             if (src != null)
             {
-                bool drawn = false;
-                Vector2 offset = Vector2.Zero;
-                Rectangle dst2 = new Rectangle();
-                Rectangle cnt = new Rectangle();
-                for (uint r = 0; r < Rows; r++)
-                {
-                    offset.X = 0;
-                    //dstOffset.X = 0;
-                    for (uint c = 0; c < Cols; c++)
-                    {
-                        drawn = false;
-                        dst2 = new Rectangle();
-                        //if all the pieces of Scales are correct they should all have the same scale.
-                        Rectangle _src = Scale(src.Value, ScaleFactor);
-                        cnt = ToRectangle(Textures[c, r]);
-                        cnt.Offset(offset);
-                        if (cnt.Contains(_src))
-                        {
-                            //got lucky the whole thing is in this rectangle
-                            _src.Location = (GetOffset(cnt, _src)).ToPoint();
-                            Memory.spriteBatch.Draw(Textures[c, r], dst, _src, color);
-                            return;
-                        }
-                        else if (cnt.Intersects(_src))
-                        {
-                            //Gotta draw more than once.
-                            Rectangle src2 = Rectangle.Intersect(cnt, _src);
-                            src2.Location = (GetOffset(cnt, src2)).ToPoint();
-                            dst2 = Scale(dst, GetScale(_src.Size, src2.Size));
-                            dst2.Location = (dst.Location);
-                            dst2.Offset(dstOffset);
-                            Memory.spriteBatch.Draw(Textures[c, r], dst2, src2, color);
-                            drawn = true;
-                            dstOffset.X += dst2.Width;
-                        }
-                        offset.X += cnt.Width;
-                    }
-                    offset.Y += cnt.Height;
-                    if (drawn)
-                        dstOffset.Y += dst2.Height;
-                }
+                _Draw(dst, src.Value, color);
+                return;
             }
             //drawing texture directly
             else
             {
-                Vector2 dstV = Vector2.Zero;
-                dstOffset.X = dst.X;
-                dstOffset.Y = dst.Y;
-                for (uint r = 0; r < Rows; r++)
-                {
-                    for (uint c = 0; c < Cols; c++)
-                    {
-                        Vector2 scale = GetScale(Size, dst.Size.ToVector2());
-                        dstV = ToVector2(Textures[c, r]) * scale;
-                        Memory.spriteBatch.Draw(Textures[c, r], dstOffset, null, color, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
+                _Draw(dst, color);
+            }
+        }
 
-                        dstOffset.X += dstV.X;
+        private void _Draw(Rectangle dst, Rectangle src, Color color)
+        {
+            Vector2 dstOffset = Vector2.Zero;
+            bool drawn = false;
+            Vector2 offset = Vector2.Zero;
+            Rectangle dst2 = new Rectangle();
+            Rectangle cnt = new Rectangle();
+            for (uint r = 0; r < Rows; r++)
+            {
+                offset.X = 0;
+                //dstOffset.X = 0;
+                for (uint c = 0; c < Cols; c++)
+                {
+                    drawn = false;
+                    dst2 = new Rectangle();
+                    //if all the pieces of Scales are correct they should all have the same scale.
+                    Rectangle _src = Scale(src, ScaleFactor);
+                    cnt = ToRectangle(Textures[c, r]);
+                    cnt.Offset(offset);
+                    if (cnt.Contains(_src))
+                    {
+                        //got lucky the whole thing is in this rectangle
+                        _Draw(Textures[c, r], dst, _src, color, cnt);
+                        return;
                     }
-                    dstOffset.Y += dstV.Y;
+                    else if (cnt.Intersects(_src))
+                    {
+                        //Gotta draw more than once.
+                        _Draw(Textures[c, r], ref dst, _src, color, cnt, ref dstOffset, out drawn, out dst2);
+                    }
+                    offset.X += cnt.Width;
                 }
+                offset.Y += cnt.Height;
+                if (drawn)
+                    dstOffset.Y += dst2.Height;
+            }
+            return;
+        }
+
+        private void _Draw(Texture2D tex, ref Rectangle dst, Rectangle _src, Color color, Rectangle cnt, ref Vector2 dstOffset, out bool drawn, out Rectangle dst2)
+        {
+            Rectangle src2 = Rectangle.Intersect(cnt, _src);
+            src2.Location = (GetOffset(cnt, src2)).ToPoint();
+            dst2 = Scale(dst, GetScale(_src.Size, src2.Size));
+            dst2.Location = (dst.Location);
+            dst2.Offset(dstOffset);
+            Memory.spriteBatch.Draw(tex, dst2, src2, color);
+            drawn = true;
+            dstOffset.X += dst2.Width;
+        }
+
+        private void _Draw(Texture2D tex, Rectangle dst, Rectangle _src, Color color, Rectangle cnt)
+        {
+            _src.Location = (GetOffset(cnt, _src)).ToPoint();
+            Memory.spriteBatch.Draw(tex, dst, _src, color);
+        }
+
+        private void _Draw(Rectangle dst, Color color)
+        {
+            Vector2 dstOffset = Vector2.Zero;
+            Vector2 dstV = Vector2.Zero;
+            dstOffset.X = dst.X;
+            dstOffset.Y = dst.Y;
+            for (uint r = 0; r < Rows; r++)
+            {
+                for (uint c = 0; c < Cols; c++)
+                {
+                    Vector2 scale = GetScale(Size, dst.Size.ToVector2());
+                    dstV = ToVector2(Textures[c, r]) * scale;
+                    Memory.spriteBatch.Draw(Textures[c, r], dstOffset, null, color, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
+
+                    dstOffset.X += dstV.X;
+                }
+                dstOffset.Y += dstV.Y;
             }
         }
 

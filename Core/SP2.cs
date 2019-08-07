@@ -165,6 +165,8 @@ namespace OpenVIII
             }
         }
 
+
+
         protected virtual void InitEntries(ArchiveWorker aw = null)
         {
             if (Entries == null)
@@ -270,7 +272,6 @@ namespace OpenVIII
             /// </summary>
             public uint Split;
 
-
             /// <summary>
             /// leave null unless big version has a different custom palette than normal.
             /// </summary>
@@ -280,7 +281,7 @@ namespace OpenVIII
 
             #region Constructors
 
-            public BigTexProps(string filename, uint split,Color[] colors=null)
+            public BigTexProps(string filename, uint split, Color[] colors = null)
             {
                 Filename = filename;
                 Split = split;
