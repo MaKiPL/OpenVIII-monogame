@@ -101,7 +101,7 @@ namespace OpenVIII
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
             public uint[] blockOffsets;
         }
-
+#pragma warning disable 0649 //Yes, we know- it's expected here
         private struct Polygon
         {
             public byte F1, F2, F3, N1, N2, N3, U1, V1, U2, V2, U3, V3, TPage_clut, groundtype;
@@ -115,6 +115,7 @@ namespace OpenVIII
             private Texflags TexFlags { get => Texflags.TEXFLAGS_ISENTERABLE | Texflags.TEXFLAGS_MISC | Texflags.TEXFLAGS_ROAD | Texflags.TEXFLAGS_SHADOW | Texflags.TEXFLAGS_UNK | Texflags.TEXFLAGS_UNK2 | Texflags.TEXFLAGS_WATER; set => texFlags = value; }
             //public byte TPage_clut1 { set => TPage_clut = value; }
         }
+#pragma warning disable 169
         private struct Vertex
         {
             public short X;
@@ -134,6 +135,8 @@ namespace OpenVIII
 
             public short Z1 { get => (short)(Z * -1); set => Z = value; }
         }
+#pragma warning restore 169
+#pragma warning restore 0649
 
         #endregion
 
@@ -275,7 +278,7 @@ namespace OpenVIII
         /// <summary>
         /// This method returns the origX and origY coordinates for segment replacement for pre-parsing
         /// </summary>
-        /// <param name="i"></param>
+        /// <param name="i">index of wm block</param>
         /// <returns></returns>
         private static int GetInterchangableSegmentReplacementIndex(int i)
         {
@@ -355,7 +358,7 @@ namespace OpenVIII
         }
 
         /// <summary>
-        /// Simple input handling- it doesn't work really with collision and lastPlayerPosition for non-walkable areas
+        /// Simple input handling- It's mockup of walking forward and backward. It's not the vanilla style input- used for testing collision
         /// </summary>
         private static void SimpleInputUpdate()
         {
@@ -380,8 +383,6 @@ namespace OpenVIII
             }
         }
 
-        private static byte bSelectedWalkable = 0;
-        private static Vector2 countofDebugFaces = Vector2.Zero;
 
         /// <summary>
         /// ParsedTriangleData- struct contains all available data paired with found triangle
@@ -390,6 +391,9 @@ namespace OpenVIII
         /// </summary>
         private static List<Tuple<ParsedTriangleData, Vector3, bool>> RaycastedTris;
 
+        /// <summary>
+        /// This method checks for collision- uses raycasting and 3Dintersection to either allow movement, update it and/or warp player. If all checks fails it returns to last known correct player position
+        /// </summary>
         private static void CollisionUpdate()
         {
             segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1); //needs to be updated on pre-new values of movement
@@ -397,7 +401,7 @@ namespace OpenVIII
             var seg = segments[realSegmentId];
             RaycastedTris = new List<Tuple<ParsedTriangleData, Vector3, bool>>(); 
             Ray characterRay = new Ray(playerPosition + new Vector3(0,10f,0), Vector3.Down); //sets ray origin
-            Ray skyRay = new Ray(GetForwardSkyRaycastVector(), Vector3.Down);
+            Ray skyRay = new Ray(GetForwardSkyRaycastVector(SKYRAYCAST_FIXEDDISTANCE), Vector3.Down);
             
             //loop through current block triangles - two rays at the same time. There are only two rays and multi triangles, so iterate triangles and check rays instead of double checking
             for (int i = 0; i < seg.parsedTriangle.Length; i++)
@@ -410,26 +414,44 @@ namespace OpenVIII
             //don't allow walking over non-walkable faces - just because we tested both rays we can make this linq appear only once
             RaycastedTris = RaycastedTris.Where(x => (x.Item1.parentPolygon.vertFlags & TRIFLAGS_COLLIDE) != 0).ToList();
 
+#if DEBUG
             countofDebugFaces = new Vector2(
                 RaycastedTris.Where(x=>!x.Item3).Count(),
                 RaycastedTris.Where(x => x.Item3).Count()
                 );
+#endif
             foreach (var prt in RaycastedTris)
             {
                 if (prt.Item3) //we do not want skyRaycasts here, iterate only characterRay
                     continue; 
                 Vector3 distance = playerPosition - prt.Item2;
                 float distY = Math.Abs(distance.Y);
-                if((prt.Item1.parentPolygon.vertFlags & 0b01000000) == 0)
+                if((prt.Item1.parentPolygon.vertFlags & TRIFLAGS_FORESTTEST) == 0)
                     if (distY > 10f)
                         continue;
                 Vector3 squaPos = prt.Item2;
                 playerPosition.Y = squaPos.Y;
+#if DEBUG
                 bSelectedWalkable = prt.Item1.parentPolygon.vertFlags;
+#endif
                 return;
             }
             //out of loop- failed to obtain collision or abandon move - we need to check now if player wanted to get to forest
 
+            foreach (var prt in RaycastedTris)
+            {
+                if (!prt.Item3) //we do not want skyRaycasts here, iterate only characterRay
+                    continue;
+                //we do not want to check for Y here
+                if ((prt.Item1.parentPolygon.vertFlags & TRIFLAGS_FORESTTEST) != 0) //this opts out non-forest faces
+                    continue;
+                Vector3 squaPos = prt.Item2;
+                playerPosition.Y = squaPos.Y;
+#if DEBUG
+                bSelectedWalkable = prt.Item1.parentPolygon.vertFlags;
+#endif
+                return;
+            }
 
             playerPosition = lastPlayerPosition;
         }
@@ -438,6 +460,11 @@ namespace OpenVIII
         const float MoveSpeedChange = 1f;
         static float maxMoveSpeed = defaultmaxMoveSpeed;
         const float maxLookSpeed = 0.25f;
+        /// <summary>
+        /// This is the relative distance that is added to forward vector of character and then casted from sky to bottom of the level
+        /// </summary>
+        private const float SKYRAYCAST_FIXEDDISTANCE = 5f;
+
         public static void FPSCamera()
         {
             camDistance = 10.0f;
@@ -553,7 +580,9 @@ namespace OpenVIII
 
             DrawCharacter(0);
 
+#if DEBUG
             DrawDebug();
+#endif
 
             switch (MapState)
             {
@@ -574,9 +603,9 @@ namespace OpenVIII
                 $"World Map Camera: ={camPosition}\n" +
                 $"Player position: ={playerPosition}\n" +
                 $"Segment Position: ={segmentPosition}\n" +
-                $"selWalk: =0b{Convert.ToString(bSelectedWalkable,2).PadLeft(8, '0')} of charaRay={countofDebugFaces.X}, skyRay={countofDebugFaces.Y}\n" +
+                //$"selWalk: =0b{Convert.ToString(bSelectedWalkable,2).PadLeft(8, '0')} of charaRay={countofDebugFaces.X}, skyRay={countofDebugFaces.Y}\n" +
                 $"Press 9 to enable debug FPS camera: ={(worldState== _worldState._1active ? "orbit camera" : "FPS debug camera")}\n" +
-                $"FPS camera degrees: ={degrees}° (WARNING! Frustum cull disabled!)\n" +
+                $"FPS camera degrees: ={degrees}°\n" +
                 $"FOV: ={FOV}", 30, 20, lineSpacing: 5);
             Memory.SpriteBatchEnd();
 
@@ -600,21 +629,30 @@ namespace OpenVIII
                 playerPosition.Z + relativeTranslation.Z);
         }
 
+#if DEBUG
+
+        private static byte bSelectedWalkable = 0;
+        private static Vector2 countofDebugFaces = Vector2.Zero;
         private static void DrawDebug()
         {
+            //DrawDebug_Rays(); //uncomment to enable drawing rays for collision
+        }
+
+        private static void DrawDebug_Rays()
+        {
             var playerRaycastDownVerts = new[] { new VertexPositionColor(playerPosition, Color.White), new VertexPositionColor(new Vector3(playerPosition.X, -1, playerPosition.Z), Color.White) };
-            var skyRaycastDownVerts = GetForwardSkyRaycastVector();
+            var skyRaycastDownVerts = GetForwardSkyRaycastVector(SKYRAYCAST_FIXEDDISTANCE);
             var skyVectorDropVerts = new[]
             {
                 new VertexPositionColor(skyRaycastDownVerts, Color.White), //draw line from mockup up to the bottom fake infinity
                 new VertexPositionColor(new Vector3(skyRaycastDownVerts.X, -5000f, skyRaycastDownVerts.Z), Color.White)
             };
 
-            if(RaycastedTris.Count != 0)
-            foreach (var tt in RaycastedTris)
-            {
-                var triangle = tt.Item1;
-                var verts2 = new[] {new VertexPositionColor(triangle.A, Color.White),
+            if (RaycastedTris.Count != 0)
+                foreach (var tt in RaycastedTris)
+                {
+                    var triangle = tt.Item1;
+                    var verts2 = new[] {new VertexPositionColor(triangle.A, Color.White),
                 new VertexPositionColor(triangle.B, Color.White),
 
                 new VertexPositionColor(triangle.B, Color.White),
@@ -623,12 +661,12 @@ namespace OpenVIII
                 new VertexPositionColor(triangle.C, Color.White),
                 new VertexPositionColor(triangle.A, Color.White)
                 };
-                foreach (var pass in ate.CurrentTechnique.Passes)
-                {
-                    pass.Apply();
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, verts2, 0, 3);
+                    foreach (var pass in ate.CurrentTechnique.Passes)
+                    {
+                        pass.Apply();
+                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, verts2, 0, 3);
+                    }
                 }
-            }
 
             foreach (var pass in ate.CurrentTechnique.Passes)
             {
@@ -637,10 +675,16 @@ namespace OpenVIII
                 Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, skyVectorDropVerts, 0, 1);
             }
         }
+#endif
 
         private static int animationId = 0;
+        /// <summary>
+        /// translates the world map model so it's vertices are drawn as close to playerPosition vector as possible
+        /// </summary>
         static Vector3 localMchTranslation = new Vector3(0, 6f, 0);
-
+        /// <summary>
+        /// Rotates the model to work with current coordinate system and for correct movement vectors model translation
+        /// </summary>
         static float localMchRotation = -90f;
 
         private static void DrawCharacter(int charaIndex)
@@ -864,7 +908,7 @@ namespace OpenVIII
                 }
             }
 
-            #region Interchangable zones
+#region Interchangable zones
             //TODO flags to switch them true or not
             //esthar
             if (Extended.In(_i, 373, 380))
@@ -907,7 +951,7 @@ namespace OpenVIII
             ////prison
             if (Extended.In(_i, 361, 361))
                 _i += 473;
-            #endregion
+#endregion
 
 
 
@@ -944,9 +988,14 @@ namespace OpenVIII
             }
         }
 
-        private static bool CheckFrustrumView(float px, float py)
+        /// <summary>
+        /// This method checks if it should not draw some faces based on frustum culling method of checking point in triangle (2D geometry)
+        /// </summary>
+        /// <param name="pointX">X coordinate</param>
+        /// <param name="pointY">Y (actually Z from 3D) coordinate</param>
+        /// <returns></returns>
+        private static bool CheckFrustrumView(float pointX, float pointY)
         {
-            return false; //ENABLE LATER!!!
             float ax, ay, d1, d2, d3;
             ax = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(degrees)) * -100f;
             ay = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(degrees)) * -100f;
@@ -957,9 +1006,9 @@ namespace OpenVIII
             right.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(Extended.ClampOverload(degrees + FOV, 0, 359))) * renderCamDistance * 2;
             right.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(Extended.ClampOverload(degrees + FOV, 0, 359))) * renderCamDistance * 2;
 
-            d1 = px * (ay - left.Z) + py * (left.X - ax) + (ax * left.Z - ay * left.X);
-            d2 = px * (left.Z - right.Z) + py * (right.X - left.X) + (left.X * right.Z - left.Z * right.X);
-            d3 = px * (right.Z - ay) + py * (ax - right.X) + (right.X * ay - right.Z * ax);
+            d1 = pointX * (ay - left.Z) + pointY * (left.X - ax) + (ax * left.Z - ay * left.X);
+            d2 = pointX * (left.Z - right.Z) + pointY * (right.X - left.X) + (left.X * right.Z - left.Z * right.X);
+            d3 = pointX * (right.Z - ay) + pointY * (ax - right.X) + (right.X * ay - right.Z * ax);
 
             return ((d1 > 0 || d2 > 0 || d3 > 0) && (d1 < 0 || d2 < 0 || d3 < 0));
         }
