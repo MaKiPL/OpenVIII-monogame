@@ -14,13 +14,13 @@
         // DPad Buttons
         Up, Down, Left, Right,
         // Buttons
-        Back, Start, X, Y, B, A, LeftShoulder, RightShoulder, LeftStick, RightStick,
+        Back, Start, X, Y, B, A, Left_Shoulder, Right_Shoulder, LeftStick, RightStick,
         // Thumbsticks
         ThumbSticks_Left, ThumbSticks_Right,
         // Triggers
-        Triggers_Left, Triggers_Right,
+        Left_Trigger, Right_Trigger,
         // PSX Alias
-        L1 = LeftShoulder, L2= Triggers_Left, L3= LeftStick, R1= RightShoulder, R2= Triggers_Right, R3= RightStick,
+        L1 = Left_Shoulder, L2= Left_Trigger, L3= LeftStick, R1= Right_Shoulder, R2= Right_Trigger, R3= RightStick,
         Select = Back, Triangle = Y, Square = X, Circle = B, Cross = A
     }
     public enum MouseButtons
