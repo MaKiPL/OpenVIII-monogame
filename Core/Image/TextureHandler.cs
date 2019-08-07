@@ -23,8 +23,7 @@ namespace OpenVIII
         {
         }
 
-        public TextureHandler(string filename, uint cols, uint rows)
-        {
+        public TextureHandler(string filename, uint cols, uint rows) =>
             //if (cols == 1 && rows == 1)
             //{
             //    ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
@@ -34,7 +33,6 @@ namespace OpenVIII
             //}
             //else
             Init(filename, null, cols, rows);
-        }
 
         public TextureHandler(string filename, Texture_Base classic, ushort palette = 0, Color[] colors = null) => Init(filename, classic, 1, 1, palette: palette, colors: colors);
 
@@ -77,10 +75,6 @@ namespace OpenVIII
 
         protected uint StartOffset { get; set; }
 
-        /// <summary>
-        /// Scale vector big to modded or orignal to modded.
-        /// </summary>
-        //protected Vector2[,] Scales { get; private set; }
         protected Texture2D[,] Textures { get; private set; }
 
         #endregion Properties
@@ -92,6 +86,53 @@ namespace OpenVIII
         #endregion Indexers
 
         #region Methods
+
+        public void Merge()
+        {
+            int width = 0;
+            int height = 0;
+            for (int r = 0; r < (int)Rows; r++)
+            {
+                int rowwidth = 0;
+                int rowheight = 0;
+                for (int c = 0; c < (int)Cols; c++)
+                {
+                    rowwidth += Textures[c, r].Width;
+                    if (rowheight < Textures[c, r].Height)
+                        rowheight = Textures[c, r].Height;
+                }
+                if (width < rowwidth)
+                    width = rowwidth;
+                height += rowheight;
+            }
+
+            //lock (Memory.spritebatchlock)
+            //{
+                RenderTarget2D renderTarget2D = new RenderTarget2D(Memory.graphics.GraphicsDevice, width, height);
+                Memory.graphics.GraphicsDevice.SetRenderTarget(renderTarget2D);
+                Memory.spriteBatch.Begin(sortMode: SpriteSortMode.Deferred, blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
+                Rectangle dst = new Rectangle();
+                for (int r = 0; r < (int)Rows; r++)
+                {
+                    for (int c = 0; c < (int)Cols; c++)
+                    {
+                        dst.Height = Textures[c, r].Height;
+                        dst.Width = Textures[c, r].Width;
+                        dst.X += c > 0 ? Textures[c - 1, r].Width : 0;
+                        dst.Y += r > 0 ? Textures[c, r - 1].Height : 0;
+                        Memory.spriteBatch.Draw(Textures[c, r], dst, Color.White);
+                        Textures[c, r].Dispose();
+                    }
+                    dst.X = 0;
+                }
+                Memory.SpriteBatchEnd();
+                Memory.graphics.GraphicsDevice.SetRenderTarget(null);
+                Textures = new Texture2D[1, 1];
+                Textures[0, 0] = renderTarget2D;
+                Rows = 1;
+                Cols = 1;
+            //}
+        }
 
         public static Vector2 Abs(Vector2 v) => new Vector2(Math.Abs(v.X), Math.Abs(v.Y));
 
@@ -164,8 +205,6 @@ namespace OpenVIII
             return null;
         }
 
-
-
         public static Rectangle Scale(Rectangle mat1, Vector2 mat2)
         {
             mat1.Location = (mat1.Location.ToVector2() * mat2).RoundedPoint();
@@ -220,10 +259,8 @@ namespace OpenVIII
             }
         }
 
-
         public void Draw(Rectangle dst, Rectangle? src, Color color)
         {
-            
             if (src != null)
             {
                 _Draw(dst, src.Value, color);
@@ -359,6 +396,8 @@ namespace OpenVIII
             Init();
             //unload Classic
             Classic = null;
+            //Merge the texture pieces into one.
+            Merge();
         }
 
         #endregion Methods
