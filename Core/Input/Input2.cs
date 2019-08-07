@@ -11,13 +11,10 @@ namespace OpenVIII
     {
         #region Fields
 
-        private static Dictionary<Button_Flags, FF8TextTagKey> Convert_Button { get; set; }
         protected static bool bLimitInput;
-        public static InputKeyboard Keyboard { get; private set; }
-        public static InputGamePad GamePad { get; private set; }
-        public static InputMouse Mouse { get; private set; }
         protected static double msDelay;
         private static readonly int msDelayLimit = 100;
+        private static Input2 main;
 
         #endregion Fields
 
@@ -37,26 +34,26 @@ namespace OpenVIII
                 {
                     InputList = new List<Inputs>
                     {
-                        new Inputs_OpenVIII(),
                         new Inputs_FF8PSX(),
+                        new Inputs_OpenVIII(),
                         new Inputs_FF8Steam(),
                         new Inputs_FF82000()
                     };
 
-                    //remove duplicate inputs. 
+                    //remove duplicate inputs.
                     int j = 1;
                     foreach (Inputs list in InputList)
                     {
-                        for(int i=j;i< InputList.Count;i++)
+                        for (int i = j; i < InputList.Count; i++)
                         {
                             foreach (KeyValuePair<List<FF8TextTagKey>, List<InputButton>> kvp in InputList[i].Data)
                             {
-                                foreach (var inputs in kvp.Value.ToArray())
+                                foreach (InputButton inputs in kvp.Value.ToArray())
                                     if (
                                         list.Data.Any(
                                             x => x.Value.Any(y => y.Equals(inputs)
                                             //x => x.Value.Any(y=>y.Key == inputs.Key &&
-                                            //y.MouseButton == inputs.MouseButton && 
+                                            //y.MouseButton == inputs.MouseButton &&
                                             //y.GamePadButton == inputs.GamePadButton &&
                                             ////y.Trigger == inputs.Trigger //&&
                                             //y.Combo == null//inputs.Combo
@@ -107,61 +104,21 @@ namespace OpenVIII
             }
         }
 
-        private static Input2 main;
-
         #endregion Constructors
+
+        #region Properties
+
+        public static InputGamePad GamePad { get; private set; }
+        public static List<Inputs> InputList { get; private set; }
+        public static InputKeyboard Keyboard { get; private set; }
+        public static InputMouse Mouse { get; private set; }
+        private static Dictionary<Button_Flags, FF8TextTagKey> Convert_Button { get; set; }
+
+        #endregion Properties
 
         #region Methods
 
-        public static bool Update()
-        {
-            CheckInputLimit();
-            Keyboard?.UpdateOnce();
-            GamePad?.UpdateOnce();
-            Mouse?.UpdateOnce();
-            return false;
-        }
-
-        protected bool ButtonTriggered(FF8TextTagKey key, ButtonTrigger trigger = ButtonTrigger.None)
-        {
-            foreach (Inputs list in InputList)
-                foreach (KeyValuePair<List<FF8TextTagKey>, List<InputButton>> kvp in list.Data.Where(y => y.Key.Contains(key)))
-
-                    foreach (InputButton test in kvp.Value)
-                    {
-                        if (ButtonTriggered(test,trigger))
-                            return true;
-                    }
-
-            return false;
-        }
-
-        protected virtual bool ButtonTriggered(InputButton test, ButtonTrigger trigger = ButtonTrigger.None)
-        {
-            if (!bLimitInput || ((test.Trigger | trigger) & ButtonTrigger.IgnoreDelay) != 0)
-            {
-                if (Keyboard.ButtonTriggered(test,trigger))
-                    return true;
-                if (Mouse.ButtonTriggered(test,trigger))
-                    return true;
-                if (GamePad.ButtonTriggered(test,trigger))
-                    return true;
-            }
-            return false;
-        }
-
-        protected virtual bool UpdateOnce() => false;
-
-        private static void CheckInputLimit()
-        {
-            //issue here if CheckInputLimit is checked more than once per update cycle this will be wrong.
-            if (Memory.gameTime != null)
-                bLimitInput = (msDelay += Memory.gameTime.ElapsedGameTime.TotalMilliseconds) < msDelayLimit;
-        }
-
-        public static List<Inputs> InputList { get; private set; }
-
-        public static bool Button(FF8TextTagKey k, ButtonTrigger trigger = ButtonTrigger.None) => main?.ButtonTriggered(k,trigger) ?? false;
+        public static bool Button(FF8TextTagKey k, ButtonTrigger trigger = ButtonTrigger.None) => main?.ButtonTriggered(k, trigger) ?? false;
 
         public static bool Button(InputButton k, ButtonTrigger trigger = ButtonTrigger.None) => main?.ButtonTriggered(k, trigger) ?? false;
 
@@ -171,9 +128,25 @@ namespace OpenVIII
 
         public static bool Button(MouseButtons k, ButtonTrigger trigger = ButtonTrigger.OnPress) => main?.ButtonTriggered(new InputButton() { MouseButton = k, Trigger = trigger }) ?? false;
 
+        public static bool Button(Button_Flags k, ButtonTrigger trigger = ButtonTrigger.OnPress) => Convert_Button.ContainsKey(k) && Button(Convert_Button[k], trigger);
+
+        public static IReadOnlyList<FF8TextTagKey> Convert_Flags(Button_Flags k)
+        {
+            List<FF8TextTagKey> ret = new List<FF8TextTagKey>(1);
+            foreach (Button_Flags x in Enum.GetValues(typeof(Button_Flags)))
+            {
+                if (k.HasFlag(x) && Convert_Button.ContainsKey(k))
+                {
+                    Debug.WriteLine("{0} set", x);
+                    ret.Add(Convert_Button[k]);
+                }
+            }
+            return ret;
+        }
+
         public static bool DelayedButton(FF8TextTagKey k, ButtonTrigger trigger = ButtonTrigger.None)
         {
-            bool ret = Button(k,trigger);
+            bool ret = Button(k, trigger);
             if (ret)
                 ResetInputLimit();
             return ret;
@@ -211,24 +184,7 @@ namespace OpenVIII
             return ret;
         }
 
-        public static bool Button(Button_Flags k, ButtonTrigger trigger = ButtonTrigger.OnPress) => Convert_Button.ContainsKey(k) && Button(Convert_Button[k], trigger);
-
-        public static bool DelayedButton(Button_Flags k, ButtonTrigger trigger = ButtonTrigger.OnPress) => Convert_Button.ContainsKey(k) && Button(Convert_Button[k],trigger);
-
-        public static IReadOnlyList<FF8TextTagKey> Convert_Flags(Button_Flags k)
-        {
-            List<FF8TextTagKey> ret = new List<FF8TextTagKey>(1);
-            foreach (Button_Flags x in Enum.GetValues(typeof(Button_Flags)))
-            {
-                if (k.HasFlag(x) && Convert_Button.ContainsKey(k))
-                {
-                    Debug.WriteLine("{0} set", x);
-                    ret.Add(Convert_Button[k]);
-                }
-            }
-            return ret;
-        }
-
+        public static bool DelayedButton(Button_Flags k, ButtonTrigger trigger = ButtonTrigger.OnPress) => Convert_Button.ContainsKey(k) && Button(Convert_Button[k], trigger);
 
         public static double Distance(float speed) =>
             // no input throttle but still take the max speed * time; for non analog controls
@@ -238,6 +194,64 @@ namespace OpenVIII
         {
             msDelay = 0;
             bLimitInput = false;
+        }
+
+        public static bool Update()
+        {
+            CheckInputLimit();
+            Keyboard?.UpdateOnce();
+            GamePad?.UpdateOnce();
+            Mouse?.UpdateOnce();
+            return false;
+        }
+
+        public static FF8String ButtonString(FF8TextTagKey key, ButtonTrigger trigger = ButtonTrigger.None)
+        {
+            foreach (Inputs list in InputList)
+                foreach (KeyValuePair<List<FF8TextTagKey>, List<InputButton>> kvp in list.Data.Where(y => y.Key.Contains(key)))
+                    foreach (InputButton test in kvp.Value)
+                        if (!list.DrawGamePadButtons)
+                        {
+                            return test.ToString();
+                        }
+                        else if(test.GamePadButton != GamePadButtons.None)
+                        {
+                            return GamePad.ButtonString(test.GamePadButton,key);
+                        }
+            return "";
+        }
+        
+        protected bool ButtonTriggered(FF8TextTagKey key, ButtonTrigger trigger = ButtonTrigger.None)
+        {
+            foreach (Inputs list in InputList)
+                foreach (KeyValuePair<List<FF8TextTagKey>, List<InputButton>> kvp in list.Data.Where(y => y.Key.Contains(key)))
+                    foreach (InputButton test in kvp.Value)
+                        if (main.ButtonTriggered(test, trigger))
+                            return true;
+            return false;
+        }
+
+        public virtual bool ButtonTriggered(InputButton test, ButtonTrigger trigger = ButtonTrigger.None)
+        {
+            if (!bLimitInput || ((test.Trigger | trigger) & ButtonTrigger.IgnoreDelay) != 0)
+            {
+                if (Keyboard.ButtonTriggered(test, trigger))
+                    return true;
+                if (Mouse.ButtonTriggered(test, trigger))
+                    return true;
+                if (GamePad.ButtonTriggered(test, trigger))
+                    return true;
+            }
+            return false;
+        }
+
+        protected virtual bool UpdateOnce() => false;
+
+        private static void CheckInputLimit()
+        {
+            //issue here if CheckInputLimit is checked more than once per update cycle this will be wrong.
+            if (Memory.gameTime != null)
+                bLimitInput = (msDelay += Memory.gameTime.ElapsedGameTime.TotalMilliseconds) < msDelayLimit;
         }
 
         #endregion Methods
