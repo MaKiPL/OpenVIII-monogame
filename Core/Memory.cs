@@ -19,6 +19,7 @@ namespace OpenVIII
 
         public static SpriteBatch spriteBatch;
 
+        private static int mainThreadID;
 
         public static ContentManager content;
 
@@ -148,12 +149,24 @@ namespace OpenVIII
         }
 
         public static readonly Dictionary<ushort, List<string>> dicMusic = new Dictionary<ushort, List<string>>(); //ogg and sgt files have same 3 digit prefix.
+        //public static object spritebatchlock = new object();
+        public static void SpriteBatchStartStencil(SamplerState ss = null)
+        {
+            //lock (spritebatchlock)
+            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, ss, graphics.GraphicsDevice.DepthStencilState);
+        }
 
-        public static void SpriteBatchStartStencil(SamplerState ss = null) => spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, ss, graphics.GraphicsDevice.DepthStencilState);
+        public static void SpriteBatchStartAlpha(SamplerState ss = null, Matrix? tm = null)
+        {
 
-        public static void SpriteBatchStartAlpha(SamplerState ss = null, Matrix? tm = null) => spriteBatch.Begin(sortMode: SpriteSortMode.Deferred, blendState: BlendState.AlphaBlend, samplerState: ss ?? SamplerState.PointClamp, transformMatrix: tm);
+            //lock (spritebatchlock)
+                spriteBatch.Begin(sortMode: SpriteSortMode.Deferred, blendState: BlendState.AlphaBlend, samplerState: ss ?? SamplerState.PointClamp, transformMatrix: tm);
+        }
 
-        public static void SpriteBatchEnd() => spriteBatch.End();
+        public static void SpriteBatchEnd()
+        {
+            spriteBatch.End();            
+        }
 
         public static readonly BlendState blendState_BasicAdd = new BlendState()
         {
@@ -235,8 +248,16 @@ namespace OpenVIII
             return 0;
         }
         public static bool Inited { get; private set; } = false;
+        public static bool IsMainThread
+        {
+            get { return Thread.CurrentThread.ManagedThreadId == mainThreadID; }
+        }
+        public static Queue<Action> MainThreadOnlyActions;
         public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
         {
+            mainThreadID = Thread.CurrentThread.ManagedThreadId;
+            MainThreadOnlyActions = new Queue<Action>();
+
             FF8DIR = GameLocation.Current.DataPath;
             FF8DIRdata = Extended.GetUnixFullPath(Path.Combine(FF8DIR, "Data"));
             string testdir = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata, $"lang-{Extended.GetLanguageShort()}"));
@@ -779,6 +800,12 @@ namespace OpenVIII
 
         #endregion DrawPointMagic
 
+        public static void Update()
+        {            
+            while(IsMainThread && MainThreadOnlyActions.Count>0)
+                { MainThreadOnlyActions.Dequeue()(); }
+
+        }
         /// <summary>
         /// Archive class handles the filename formatting and extensions for archive files.
         /// </summary>

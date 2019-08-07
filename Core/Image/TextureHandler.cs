@@ -89,47 +89,60 @@ namespace OpenVIII
 
         public void Merge()
         {
-            int width = 0;
-            int height = 0;
-            for (int r = 0; r < (int)Rows; r++)
+            if (Rows * Cols > 1)
             {
-                int rowwidth = 0;
-                int rowheight = 0;
-                for (int c = 0; c < (int)Cols; c++)
+                if (Memory.IsMainThread)
                 {
-                    rowwidth += Textures[c, r].Width;
-                    if (rowheight < Textures[c, r].Height)
-                        rowheight = Textures[c, r].Height;
-                }
-                if (width < rowwidth)
-                    width = rowwidth;
-                height += rowheight;
-            }
 
 
-            RenderTarget2D renderTarget2D = new RenderTarget2D(Memory.graphics.GraphicsDevice, width, height);
-            Memory.graphics.GraphicsDevice.SetRenderTarget(renderTarget2D);
-            Memory.spriteBatch.Begin(sortMode: SpriteSortMode.Deferred, blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
-            Rectangle dst = new Rectangle();
-            for (int r = 0; r < (int)Rows; r++)
-            {
-                for (int c = 0; c < (int)Cols; c++)
-                {
-                    dst.Height = Textures[c, r].Height;
-                    dst.Width = Textures[c, r].Width;
-                    dst.X += c > 0 ? Textures[c - 1, r].Width : 0;
-                    dst.Y += r > 0 ? Textures[c, r - 1].Height : 0;
-                    Memory.spriteBatch.Draw(Textures[c, r], dst, Color.White);
-                    Textures[c, r].Dispose();
+                    int width = 0;
+                    int height = 0;
+                    for (int r = 0; r < (int)Rows; r++)
+                    {
+                        int rowwidth = 0;
+                        int rowheight = 0;
+                        for (int c = 0; c < (int)Cols; c++)
+                        {
+                            rowwidth += Textures[c, r].Width;
+                            if (rowheight < Textures[c, r].Height)
+                                rowheight = Textures[c, r].Height;
+                        }
+                        if (width < rowwidth)
+                            width = rowwidth;
+                        height += rowheight;
+                    }
+
+
+                    Texture2D tex = new Texture2D(Memory.graphics.GraphicsDevice, width, height, false, SurfaceFormat.Color);
+                    Rectangle dst = new Rectangle();
+                    for (int r = 0; r < (int)Rows; r++)
+                    {
+                        dst.Y += r > 0 ? Textures[0, r - 1].Height : 0;
+                        for (int c = 0; c < (int)Cols; c++)
+                        {
+                            dst.Height = Textures[c, r].Height;
+                            dst.Width = Textures[c, r].Width;
+                            dst.X += c > 0 ? Textures[c - 1, r].Width : 0;
+                            Color[] buffer = new Color[dst.Height * dst.Width];
+                            Textures[c, r].GetData<Color>(buffer);
+                            tex.SetData(0, dst, buffer, 0, buffer.Length);
+                            //Textures[c, r].Dispose();
+                        }
+                        dst.X = 0;
+                    }
+                    foreach (var t in Textures)
+                        t.Dispose();
+                    Textures = new Texture2D[1, 1];
+                    Textures[0, 0] = tex;
+                    Rows = 1;
+                    Cols = 1;
+
                 }
-                dst.X = 0;
+                else
+                {
+                    Memory.MainThreadOnlyActions.Enqueue(this.Merge);
+                }
             }
-            Memory.SpriteBatchEnd();
-            Memory.graphics.GraphicsDevice.SetRenderTarget(null);
-            Textures = new Texture2D[1, 1];
-            Textures[0, 0] = renderTarget2D;
-            Rows = 1;
-            Cols = 1;            
         }
 
         public static Vector2 Abs(Vector2 v) => new Vector2(Math.Abs(v.X), Math.Abs(v.Y));

@@ -136,6 +136,7 @@ namespace OpenVIII
             //Memory.PreferredViewportHeight = graphics.GraphicsDevice.Viewport.Height;
 
             Input2.Update();
+            Memory.Update();
 
             if (Input2.Button(FF8TextTagKey.Exit) || Input2.Button(FF8TextTagKey.ExitMenu))
                 Exit();
