@@ -1,4 +1,6 @@
-﻿namespace OpenVIII
+﻿using Microsoft.Xna.Framework;
+
+namespace OpenVIII
 {
     public partial class Icons
     {
@@ -342,18 +344,23 @@
             DISC,
             Bar_BG,
             Bar_Fill,
+
             /// <summary>
             /// Menu background 256 px wide. Also draws border around BG
             /// </summary>
             Menu_BG_256,
+
             /// <summary>
             /// Menu background 368 px wide, comes in two peices. Also draws border around BG.
             /// </summary>
             Menu_BG_368,
+
             /// <summary>
-            /// Word DEBUG made from peices of of words. Might look terrible on mods unless they align exactly to the same grid.
+            /// Word DEBUG made from peices of of words. Might look terrible on mods unless they
+            /// align exactly to the same grid.
             /// </summary>
             DEBUG,
+
             MenuBorder,
             COMMAND_PG1,
             COMMAND_PG2,
@@ -396,6 +403,16 @@
             ITEM_PG16,
             ITEM_PG17,
             ITEM_PG18,
+        }
+
+        public void Trim(ID ic, byte pal)
+        {
+            EntryGroup eg = this[ic];
+            if (!eg.Trimmed)
+            {
+                Rectangle ret = Textures[pal].Trim(eg.Rectangle);
+                eg.SetRectangle(ret, true);
+            }
         }
 
         #endregion Enums

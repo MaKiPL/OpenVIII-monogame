@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace OpenVIII
 {
@@ -63,6 +64,11 @@ namespace OpenVIII
         public Vector2 ScaleFactor => Size == Vector2.Zero || ClassicSize == Vector2.Zero ? Vector2.One : Size / ClassicSize;
 
         /// <summary>
+        /// Scale vector from big to original
+        /// </summary>
+        public Vector2 ReverseScaleFactor => Size == Vector2.Zero || ClassicSize == Vector2.Zero ? Vector2.One : ClassicSize / Size;
+
+        /// <summary>
         /// X = width and Y = height. The Size of big version texture. Will be used in scaling
         /// </summary>
         public Vector2 Size { get; private set; }
@@ -93,8 +99,6 @@ namespace OpenVIII
             {
                 if (Memory.IsMainThread)
                 {
-
-
                     int width = 0;
                     int height = 0;
                     for (int r = 0; r < (int)Rows; r++)
@@ -111,7 +115,6 @@ namespace OpenVIII
                             width = rowwidth;
                         height += rowheight;
                     }
-
 
                     Texture2D tex = new Texture2D(Memory.graphics.GraphicsDevice, width, height, false, SurfaceFormat.Color);
                     Rectangle dst = new Rectangle();
@@ -130,17 +133,17 @@ namespace OpenVIII
                         }
                         dst.X = 0;
                     }
-                    foreach (var t in Textures)
+                    foreach (Texture2D t in Textures)
                         t.Dispose();
                     Textures = new Texture2D[1, 1];
                     Textures[0, 0] = tex;
                     Rows = 1;
                     Cols = 1;
-
                 }
                 else
                 {
                     Memory.MainThreadOnlyActions.Enqueue(this.Merge);
+                    Memory.MainThreadOnlyActions.Enqueue(this.Save);
                 }
             }
         }
@@ -284,6 +287,92 @@ namespace OpenVIII
             }
         }
 
+        /// <summary>
+        /// Remove all transparenct rows and cols of pixels
+        /// </summary>
+        /// <param name="src"></param>
+        /// <returns></returns>
+        public Rectangle Trim(Rectangle src)
+        {
+            Rectangle ret = Rectangle.Empty;
+
+            if (Memory.IsMainThread)
+            {
+                Vector2 offset = Vector2.Zero;
+                Rectangle cnt = Rectangle.Empty;
+                for (uint r = 0; r < Rows; r++)
+                {
+                    offset.X = 0;
+                    for (uint c = 0; c < Cols; c++)
+                    {
+                        Rectangle _src = Scale(src, ScaleFactor);
+                        cnt = ContainerRectangle(offset, Textures[c, r]);
+                        if (cnt.Contains(_src))
+                        {
+                            _src.Location = (GetOffset(cnt, _src)).ToPoint();
+                            return Trim_SingleTexture(Textures[c, r], _src);
+                        }
+                        else if (cnt.Intersects(_src))
+                        {
+                            throw new NotImplementedException($"{this} Not setup to run on overlapping texture atlases.");
+                        }
+                        offset.X += cnt.Width;
+                    }
+                    offset.Y += cnt.Height;
+                }
+            }
+            else throw new InvalidOperationException($"{this} Must run in main thread.");
+            return ret;
+        }
+
+        private Rectangle Trim_SingleTexture(Texture2D tex, Rectangle _src)
+        {
+            Rectangle ret = Rectangle.Empty;
+            ret.Offset(-1, -1);
+            // storage of colors.
+            Color[] tmp = new Color[_src.Width * _src.Height];
+            // colors of all pixels
+            tex.GetData<Color>(0, _src, tmp, 0, tmp.Length);
+            // max x and y values
+            int x2 = _src.Width;
+            int y2 = _src.Height;
+            // check each pixel's color
+            for (int y1 = 0; y1 < y2; y1++)
+            {
+                for (int x1 = 0; x1 < x2; x1++)
+                {
+                    Color a = tmp[x1 + y1 * _src.Width];
+                    if (a.A != 0)
+                    {
+                        // grab high and low bounds of non transparent pixels.
+                        if (ret.Y < 0 || ret.X > x1)
+                        {
+                            ret.X = x1;
+                        }
+                        else if (ret.Width == 0 || ret.Width < x1)
+                            ret.Width = x1;
+                        // do same for Y axis.
+                        if (ret.Y <0 || ret.Y > y1)
+                        {
+                            ret.Y = y1;
+                        }
+                        else if (ret.Height == 0 || ret.Height < y1)
+                            ret.Height = y1;
+                    }
+                }
+            }
+            //using height and width as a bottom and right x/y
+            //converting them back to height and width.
+            ret.Width -= ret.X;
+            ret.Height -= ret.Y;
+            ret.Width += 1;
+            ret.Height += 1;
+            ret.Offset(_src.X, _src.Y);
+            ret = Scale(ret, ReverseScaleFactor);
+            _src = Scale(_src, ReverseScaleFactor);
+            return ret;
+        }
+
         private void _Draw(Rectangle dst, Rectangle src, Color color)
         {
             Vector2 dstOffset = Vector2.Zero;
@@ -301,8 +390,7 @@ namespace OpenVIII
                     dst2 = new Rectangle();
                     //if all the pieces of Scales are correct they should all have the same scale.
                     Rectangle _src = Scale(src, ScaleFactor);
-                    cnt = ToRectangle(Textures[c, r]);
-                    cnt.Offset(offset);
+                    cnt = ContainerRectangle(offset, Textures[c, r]);
                     if (cnt.Contains(_src))
                     {
                         //got lucky the whole thing is in this rectangle
@@ -321,6 +409,13 @@ namespace OpenVIII
                     dstOffset.Y += dst2.Height;
             }
             return;
+        }
+
+        private Rectangle ContainerRectangle(Vector2 offset, Texture2D tex)
+        {
+            Rectangle cnt = ToRectangle(tex);
+            cnt.Offset(offset);
+            return cnt;
         }
 
         private void _Draw(Texture2D tex, ref Rectangle dst, Rectangle _src, Color color, Rectangle cnt, ref Vector2 dstOffset, out bool drawn, out Rectangle dst2)
@@ -411,6 +506,15 @@ namespace OpenVIII
             Merge();
         }
 
+        
+        public void Save()
+        {
+            string clean =Regex.Replace(Filename, @"{[^}]+}", "");
+            string outpath = Path.Combine(Path.GetTempPath(),Path.GetFileName(clean)+  $"{Palette}.png");
+            using (FileStream fs = File.Create(outpath))
+                Textures[0, 0].SaveAsPng(fs, Textures[0, 0].Width, Textures[0, 0].Height);
+            
+        }
         #endregion Methods
     }
 }

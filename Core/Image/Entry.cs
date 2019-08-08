@@ -47,6 +47,12 @@ namespace OpenVIII
 
         public byte Part { get; set; } = 1;
 
+        public void SetRectangle(Rectangle value)
+        {
+            Location = value.Location.ToVector2();
+            Size = value.Size.ToVector2();
+        }
+
         /// <summary>
         /// point where you want to stop drawing from bottom side so -8 would stop 8*scale pixels
         /// from edge

@@ -193,13 +193,15 @@ namespace OpenVIII
                 c = buffer[++i];
                 ic |= (short)(c << 8);
                 byte pal = buffer[++i];
+                Memory.Icons.Trim((Icons.ID)ic,pal);
                 EntryGroup icon = Memory.Icons[(Icons.ID)ic];
                 if (icon != null)
                 {
                     width = icon.Width;
                     Point iconsize;
-                    iconsize.X = size.X = (int)(icon.Width * zoom.X);
-                    iconsize.Y = (int)(icon.Height * zoom.X);
+                    float adj = (12/(float)(icon.Height));
+                    iconsize.X = size.X = (int)(icon.Width * zoom.X* adj);
+                    iconsize.Y = (int)(icon.Height * zoom.X* adj);
 
                     destRect = new Rectangle(real, iconsize);
                     skipletter = true;

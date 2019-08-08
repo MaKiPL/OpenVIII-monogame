@@ -44,7 +44,7 @@ namespace OpenVIII
                         Memory.Strings.Read(Strings.FileID.KERNEL, 30, 121) +
                         DialogSelectedGF + "\n  " +
                         Memory.Strings.Read(Strings.FileID.KERNEL, 30, 120) + "\n     " +
-                        DialogSelectedIcon +
+                        DialogSelectedIcon + " " +
                         DialogSelectedAbility +
                         Memory.Strings.Read(Strings.FileID.KERNEL, 30, 118);
                     str_GF_AP = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 109);

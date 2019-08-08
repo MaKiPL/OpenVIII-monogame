@@ -12,6 +12,8 @@ namespace OpenVIII
         private List<Entry> list;
         private Rectangle rectangle;
 
+        public bool Trimmed { get; private set; } = false;
+
         public EntryGroup(int capacity = 1)
         {
             list = new List<Entry>(capacity);
@@ -28,11 +30,16 @@ namespace OpenVIII
 
         #region Properties
         public int Count => list.Count;
-        public int Height { get => rectangle.Height; private set => rectangle.Height = value; }
+        //public int Height { get => Rectangle.Height; private set => Rectangle = new Rectangle(Rectangle.X, Rectangle.Y, value, Rectangle.Height); }
 
-        public int Width { get => rectangle.Width; private set => rectangle.Width = value; }
+        //public int Width { get => Rectangle.Width; private set => Rectangle = new Rectangle(Rectangle.X,Rectangle.Y, value,Rectangle.Width); }
+        public int Height { get => rectangle.Height; set => rectangle.Height = value; }
+        public int Width { get => rectangle.Width; set => rectangle.Width = value; }
 
-        public Rectangle GetRectangle => rectangle;
+        public Rectangle Rectangle {
+            get => list.Count == 1 ? list[0].GetRectangle: rectangle;
+            set { if (list.Count == 1) list[0].SetRectangle(value); rectangle.Size = value.Size; }
+        }
 
         public object Current
         {
@@ -213,6 +220,11 @@ namespace OpenVIII
         public bool MoveNext() => ++position<=list.Count;
         public void Reset() => position = 0;
         public IEnumerator GetEnumerator() => this;
+        public void SetRectangle(Rectangle ret, bool trimmed)
+        {
+            Rectangle = ret;
+            Trimmed = true;
+        }
 
         #endregion Methods
     }
