@@ -836,6 +836,7 @@
     <Compile Include="World\CharaOne.cs" />
     <Compile Include="World\debug_MCH.cs" />
     <Compile Include="World\module_world_debug.cs" />
+    <Compile Include="World\rail.cs" />
     <Compile Include="World\texl.cs" />
     <Compile Include="World\wm2field.cs" />
     <Compile Include="World\wmset.cs" />

@@ -48,7 +48,7 @@ namespace OpenVIII
         private static texl texl;
         private static wmset wmset;
         private static wm2field wm2field;
-
+        private static rail rail;
 
         private static byte[] wmx;
 
@@ -227,11 +227,13 @@ namespace OpenVIII
             string texlPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("texl.obj")).Select(x => x).First();
             string wmPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains($"wmset{Extended.GetLanguageShort(true)}.obj")).Select(x => x).First();
             string charaOne = aw.GetListOfFiles().Where(x => x.ToLower().Contains("chara.one")).Select(x => x).First();
+            string railFile = aw.GetListOfFiles().Where(x => x.ToLower().Contains("rail.obj")).Select(x => x).First();
 
             wmx = ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, wmxPath);
             texl = new texl(ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, texlPath));
             chara = new CharaOne(ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, charaOne));
             wmset = new wmset(ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, wmPath));
+            rail = new rail(ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, railFile));
 
             string wm2fieldPath = awMain.GetListOfFiles().Where(x => x.ToLower().Contains("wm2field.tbl")).Select(x => x).First();
 
