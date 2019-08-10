@@ -16,9 +16,6 @@ namespace OpenVIII.Core.World
         private byte[] buffer;
         private int[] sectionPointers;
 
-        private List<Texture2D[]> sec38_textures;
-        private Texture2D sec39_texture;
-
 
         /// <summary>
         /// wmset file is pseudo-archive containing 48 sections in which every 'chunk' has different data and meaning
@@ -49,7 +46,7 @@ namespace OpenVIII.Core.World
             //Section12();
             //Section13();
             //Section14();
-            Section16();
+            Section16(); //no textures finished
             //Section17();
             //Section18();
             //Section19();
@@ -68,7 +65,7 @@ namespace OpenVIII.Core.World
             Section39(); //Finished
             //Section40();
             //Section41();
-            //Section42();
+            Section42();
             //Section43();
             //Section44();
             //Section45();
@@ -273,6 +270,8 @@ namespace OpenVIII.Core.World
         /// <summary>
         /// Section 38: World map textures archive
         /// </summary>
+        /// 
+        private List<Texture2D[]> sec38_textures;
 
         public enum Section38_textures
         {
@@ -352,6 +351,8 @@ namespace OpenVIII.Core.World
         private const int VRAM_BLOCKSIZE = 32; // =VRAM_BLOCKSTEP*4 - one origX of 16 is actually 16/2=8*32=finalXorig
         private const int VRAM_BLOCKSTEP = 8;
 
+        private Texture2D sec39_texture;
+
         /// <summary>
         /// Section 39: Textures of roads, train tracks and bridge
         /// </summary>
@@ -401,6 +402,71 @@ namespace OpenVIII.Core.World
         public Texture2D GetRoadsMiscTextures(Section39_Textures index, int clut) => sec39_texture;
         #endregion
 
+        #region Section 42 - objects and vehicles textures
+
+        #endregion
+        Texture2D[][] vehicleTextures;
+
+        public enum VehicleTextureEnum
+        {
+            BalambGarden,
+            BalambHalo,
+            TrainA_locomotive,
+            TrainA_cab,
+            TrainB_locomotive,
+            TrainB_cab,
+            TrainC_locomotive,
+            TrainC_cab,
+            TrainC_cab2,
+            Car1,
+            Car2,
+            Car3,
+            TrainRoadBlockade,
+            unk2,
+            Vessel,
+            GalbadiaGarden,
+            GalbadiaHalo,
+            Car4,
+            Car5,
+            Car6,
+            Car7,
+            Car8,
+            Car9,
+            Car10,
+            WhiteSeed,
+            LunaticPandora,
+            LunaticPandora2,
+            LunaticPanodra_inside,
+            Car11,
+            UltimeciaBarrier,
+            Cactuar,
+            RoadBlockade,
+            UltimeciaBarrier2
+        }
+
+        private void Section42()
+        {
+            List<Texture2D[]> vehTextures = new List<Texture2D[]>();
+            using (MemoryStream ms = new MemoryStream(buffer))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                ms.Seek(sectionPointers[38 - 1], SeekOrigin.Begin);
+                var innerSec = GetInnerPointers(br);
+                for (int i = 0; i < innerSec.Length; i++)
+                {
+                    TIM2 tim = new TIM2(buffer, (uint)(sectionPointers[38 - 1] + innerSec[i]));
+                    vehTextures.Add(new Texture2D[tim.GetClutCount]);
+                    for (ushort k = 0; k < sec38_textures[i].Length; k++)
+                        vehTextures[i][k] = tim.GetTexture(k, true);
+                }
+            }
+            vehicleTextures = vehTextures.ToArray();
+        }
+
+        public Texture2D GetVehicleTexture(int index, int clut)
+            => vehicleTextures[index][clut];
+
+        public Texture2D GetVehicleTexture(VehicleTextureEnum index, int clut) => vehicleTextures[(int)index][clut];
 
         #endregion
     }
