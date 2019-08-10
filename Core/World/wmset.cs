@@ -190,8 +190,10 @@ namespace OpenVIII.Core.World
         /// <param name="objectId"></param>
         /// <param name="localTranslation"></param>
         /// <param name="rotation"></param>
+        /// <param name="textureResolution">texture resolution for custom UV recalculation</param>
+        /// <param name="textureOriginVector">texture vector for origin (x-832 based) and y zero based for custom UV recalculation</param>
         /// <returns></returns>
-        public Tuple<VertexPositionTexture[], byte[]> GetVehicleGeometry(int objectId, Vector3 localTranslation, Quaternion rotation)
+        public Tuple<VertexPositionTexture[], byte[]> GetVehicleGeometry(int objectId, Vector3 localTranslation, Quaternion rotation, Vector2? textureResolution = null, Vector2? textureOriginVector = null)
         {
             //This ones are simple- static meshes that are translated only by basic localTranslation and quaternion. Nothing much
 
@@ -201,6 +203,15 @@ namespace OpenVIII.Core.World
             if (objectId > s16Models.Length)
                 return new Tuple<VertexPositionTexture[], byte[]>(new VertexPositionTexture[0], new byte[0]); //error
             s16Model Model = s16Models[objectId];
+            float texWidth = 256f;
+            float texHeight = 256f;
+            byte localXadd = 0;
+            byte localYadd = 0;
+            if(textureResolution != null)
+            { texWidth = textureResolution.Value.X; texHeight = textureResolution.Value.Y; };
+            if(textureOriginVector != null)
+            { localXadd = (byte)textureOriginVector.Value.X; localYadd = (byte)textureOriginVector.Value.Y; }
+
             for(int i = 0; i<Model.cTriangles; i++)
             {
                 Vector3 a = Extended.ShrinkVector4ToVector3(Model.vertices[Model.triangles[i].A], true);
@@ -214,13 +225,19 @@ namespace OpenVIII.Core.World
                 c += localTranslation;
 
                 vptList.Add(new VertexPositionTexture(
-                    a, new Vector2(Model.triangles[i].ua/256f, Model.triangles[i].va/256f)
+                    a, new Vector2(
+                        (Model.triangles[i].ua-localXadd)/texWidth, 
+                        (Model.triangles[i].va-localYadd)/texHeight)
                     ));
                 vptList.Add(new VertexPositionTexture(
-                    b, new Vector2(Model.triangles[i].ub/256f, Model.triangles[i].vb/256f)
+                    b, new Vector2(
+                        (Model.triangles[i].ub-localXadd)/texWidth, 
+                        (Model.triangles[i].vb-localYadd)/texHeight)
                     ));
                 vptList.Add(new VertexPositionTexture(
-                    c, new Vector2(Model.triangles[i].uc/256f, Model.triangles[i].vc/256f)
+                    c, new Vector2(
+                        (Model.triangles[i].uc-localXadd)/texWidth, 
+                        (Model.triangles[i].vc-localYadd)/texHeight)
                     ));
 
                 vptTextureIndexList.Add((byte)Model.triangles[i].clut);
@@ -244,23 +261,35 @@ namespace OpenVIII.Core.World
                 d += localTranslation;
 
                 vptList.Add(new VertexPositionTexture(
-                    a, new Vector2(Model.quads[i].ua / 256f, Model.quads[i].va / 256f)
+                    a, new Vector2(
+                        (Model.quads[i].ua-localXadd) / texWidth,
+                        (Model.quads[i].va-localYadd) / texHeight)
                     ));
                 vptList.Add(new VertexPositionTexture(
-                    b, new Vector2(Model.quads[i].ub / 256f, Model.quads[i].vb / 256f)
+                    b, new Vector2(
+                        (Model.quads[i].ub - localXadd) / texWidth, 
+                        (Model.quads[i].vb - localYadd) / texHeight)
                     ));
                 vptList.Add(new VertexPositionTexture(
-                    d, new Vector2(Model.quads[i].ud / 256f, Model.quads[i].vd / 256f)
+                    d, new Vector2(
+                        (Model.quads[i].ud - localXadd) / texWidth,
+                        (Model.quads[i].vd - localYadd) / texHeight)
                     ));
 
                 vptList.Add(new VertexPositionTexture(
-                    a, new Vector2(Model.quads[i].ua / 256f, Model.quads[i].va / 256f)
+                    a, new Vector2(
+                        (Model.quads[i].ua - localXadd) / texWidth, 
+                        (Model.quads[i].va - localYadd) / texHeight)
                     ));
                 vptList.Add(new VertexPositionTexture(
-                    c, new Vector2(Model.quads[i].uc / 256f, Model.quads[i].vc / 256f)
+                    c, new Vector2(
+                        (Model.quads[i].uc - localXadd) / texWidth,
+                        (Model.quads[i].vc - localYadd) / texHeight)
                     ));
                 vptList.Add(new VertexPositionTexture(
-                    d, new Vector2(Model.quads[i].ud / 256f, Model.quads[i].vd / 256f)
+                    d, new Vector2(
+                        (Model.quads[i].ud - localXadd) / texWidth,
+                        (Model.quads[i].vd - localYadd) / texHeight)
                     ));
 
                 vptTextureIndexList.Add((byte)Model.quads[i].clut);
@@ -272,7 +301,9 @@ namespace OpenVIII.Core.World
             }
 
             return new Tuple<VertexPositionTexture[], byte[]>(vptList.ToArray(), vptTextureIndexList.ToArray());
+
         }
+        public int GetVehicleModelsCount() => s16Models.Length;
 
         #endregion
 
@@ -413,8 +444,10 @@ namespace OpenVIII.Core.World
         #endregion
 
         #region Section 42 - objects and vehicles textures
+        const int SEC42_VRAM_STARTX = 832; //this is beginning of origX to map to one texture
 
         Texture2D[][] vehicleTextures;
+        Vector2[] timOrigHolder;
 
         public enum VehicleTextureEnum
         {
@@ -446,7 +479,7 @@ namespace OpenVIII.Core.World
             LunaticPandora,
             LunaticPandora2,
             LunaticPanodra_inside,
-            Car11,
+            UltimeciaGate,
             UltimeciaBarrier,
             Cactuar,
             RoadBlockade,
@@ -456,6 +489,7 @@ namespace OpenVIII.Core.World
         private void Section42()
         {
             List<Texture2D[]> vehTextures = new List<Texture2D[]>();
+            List<Vector2> timOriginHolderList = new List<Vector2>(); //VRAM atlas, holds X and Y origins for atlasing- here for calculating new UV
             using (MemoryStream ms = new MemoryStream(buffer))
             using (BinaryReader br = new BinaryReader(ms))
             {
@@ -464,18 +498,35 @@ namespace OpenVIII.Core.World
                 for (int i = 0; i < innerSec.Length; i++)
                 {
                     TIM2 tim = new TIM2(buffer, (uint)(sectionPointers[42 - 1] + innerSec[i]));
+                    timOriginHolderList.Add(new Vector2((tim.GetOrigX - SEC42_VRAM_STARTX)*4, tim.GetOrigY));
                     vehTextures.Add(new Texture2D[tim.GetClutCount]);
                     for (ushort k = 0; k < vehTextures[i].Length; k++)
                         vehTextures[i][k] = tim.GetTexture(k, true);
                 }
             }
             vehicleTextures = vehTextures.ToArray();
+            timOrigHolder = timOriginHolderList.ToArray();
         }
 
         public Texture2D GetVehicleTexture(int index, int clut)
             => vehicleTextures[index][clut];
 
         public Texture2D GetVehicleTexture(VehicleTextureEnum index, int clut) => vehicleTextures[(int)index][clut];
+
+        /// <summary>
+        /// Gets X and Y tim origin (psx VRAM) for recalculating UV
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="clut"></param>
+        /// <returns></returns>
+        public Vector2 GetVehicleTextureOriginVector(VehicleTextureEnum index, int clut) => timOrigHolder[(int)index];
+        /// <summary>
+        /// Gets X and Y tim origin (psx VRAM) for recalculating UV
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="clut"></param>
+        /// <returns></returns>
+        public Vector2 GetVehicleTextureOriginVector(int index, int clut) => timOrigHolder[index];
 
         #endregion
 

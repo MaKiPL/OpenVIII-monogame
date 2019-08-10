@@ -667,22 +667,25 @@ namespace OpenVIII
         private static void DrawDebug()
         {
             //DrawDebug_Rays(); //uncomment to enable drawing rays for collision
-            DrawDebug_VehiclePreview();
+            //DrawDebug_VehiclePreview(); //uncomment to enable drawing all vehicles in row
         }
 
         private static void DrawDebug_VehiclePreview()
         {
-            Vector3 localTranslation = playerPosition + new Vector3(20f, 20f, 20f);
-
-            var collectionDebug = wmset.GetVehicleGeometry(0, localTranslation, Quaternion.Identity);
-
-            for (int i = 0; i < collectionDebug.Item1.Length; i += 3)
+            Vector3 localTranslation = playerPosition + new Vector3(20f, 10f, 20f);
+            for (int i = 0; i < wmset.GetVehicleModelsCount(); i++)
             {
-                ate.Texture = wmset.GetVehicleTexture(wmset.VehicleTextureEnum.BalambGarden, 0);
-                foreach (var pass in ate.CurrentTechnique.Passes)
+                Texture2D vehTex = wmset.GetVehicleTexture(i, 0);
+                Vector2 originVector = wmset.GetVehicleTextureOriginVector(i, 0);
+                var dMod = wmset.GetVehicleGeometry(i, localTranslation+Vector3.Left*50f*i, Quaternion.Identity, new Vector2(vehTex.Width, vehTex.Height), originVector);
+                for (int n = 0; n < dMod.Item1.Length; n += 3)
                 {
-                    pass.Apply();
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, collectionDebug.Item1, i, 1);
+                    ate.Texture = wmset.GetVehicleTexture(i, 0);
+                    foreach (var pass in ate.CurrentTechnique.Passes)
+                    {
+                        pass.Apply();
+                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, dMod.Item1, n, 1);
+                    }
                 }
             }
         }
