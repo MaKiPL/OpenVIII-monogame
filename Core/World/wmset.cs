@@ -32,6 +32,8 @@ namespace OpenVIII.Core.World
                     sectionPointers[i] = br.ReadInt32();
             }
 
+            //if there's no section method either uncommented or commented out, then the section that is lacking is 4 byte NULL
+
             //Section1();
             Section2(); //Finished
             //Section3();
@@ -46,7 +48,7 @@ namespace OpenVIII.Core.World
             //Section12();
             //Section13();
             //Section14();
-            Section16(); //no textures finished
+            Section16(); //Finished
             //Section17();
             //Section18();
             //Section19();
@@ -65,7 +67,7 @@ namespace OpenVIII.Core.World
             Section39(); //Finished
             //Section40();
             //Section41();
-            Section42();
+            Section42(); //Finished
             //Section43();
             //Section44();
             //Section45();
@@ -181,6 +183,14 @@ namespace OpenVIII.Core.World
             }
         }
 
+        /// <summary>
+        /// Gets simple geometry for vehicles. Takes the objectId, local Vector3 and quaternion for rotation. Returns tuple with data for
+        /// renderer and byte[] with clut Ids
+        /// </summary>
+        /// <param name="objectId"></param>
+        /// <param name="localTranslation"></param>
+        /// <param name="rotation"></param>
+        /// <returns></returns>
         public Tuple<VertexPositionTexture[], byte[]> GetVehicleGeometry(int objectId, Vector3 localTranslation, Quaternion rotation)
         {
             //This ones are simple- static meshes that are translated only by basic localTranslation and quaternion. Nothing much
@@ -404,7 +414,6 @@ namespace OpenVIII.Core.World
 
         #region Section 42 - objects and vehicles textures
 
-        #endregion
         Texture2D[][] vehicleTextures;
 
         public enum VehicleTextureEnum
@@ -450,13 +459,13 @@ namespace OpenVIII.Core.World
             using (MemoryStream ms = new MemoryStream(buffer))
             using (BinaryReader br = new BinaryReader(ms))
             {
-                ms.Seek(sectionPointers[38 - 1], SeekOrigin.Begin);
+                ms.Seek(sectionPointers[42 - 1], SeekOrigin.Begin);
                 var innerSec = GetInnerPointers(br);
                 for (int i = 0; i < innerSec.Length; i++)
                 {
-                    TIM2 tim = new TIM2(buffer, (uint)(sectionPointers[38 - 1] + innerSec[i]));
+                    TIM2 tim = new TIM2(buffer, (uint)(sectionPointers[42 - 1] + innerSec[i]));
                     vehTextures.Add(new Texture2D[tim.GetClutCount]);
-                    for (ushort k = 0; k < sec38_textures[i].Length; k++)
+                    for (ushort k = 0; k < vehTextures[i].Length; k++)
                         vehTextures[i][k] = tim.GetTexture(k, true);
                 }
             }
@@ -467,6 +476,8 @@ namespace OpenVIII.Core.World
             => vehicleTextures[index][clut];
 
         public Texture2D GetVehicleTexture(VehicleTextureEnum index, int clut) => vehicleTextures[(int)index][clut];
+
+        #endregion
 
         #endregion
     }

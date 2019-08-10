@@ -678,7 +678,7 @@ namespace OpenVIII
 
             for (int i = 0; i < collectionDebug.Item1.Length; i += 3)
             {
-                ate.Texture = null;
+                ate.Texture = wmset.GetVehicleTexture(wmset.VehicleTextureEnum.BalambGarden, 0);
                 foreach (var pass in ate.CurrentTechnique.Passes)
                 {
                     pass.Apply();
