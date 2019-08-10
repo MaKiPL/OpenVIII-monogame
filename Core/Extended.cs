@@ -21,6 +21,74 @@ namespace OpenVIII
             it
         }
 
+        //WORLD MAP COORDINATES HELPER
+        /// <summary>
+        /// Indicates vanilla game X axis coordinate for minimum possible X - visually the nearest to left on worldmap
+        /// </summary>
+        public static int WORLD_COORDS_MINLEFT = unchecked((int)0xFFFE0000);
+        /// <summary>
+        /// Indicates vanilla game X axis coordinate for maximum possible X - visually the furthest to right on worldmap
+        /// </summary>
+        public static int WORLD_COORDS_MAXRIGHT = unchecked((int)0x0001FFFF);
+
+        /// <summary>
+        /// zero based range of maximum left-right for worldmap coordinates
+        /// </summary>
+        public static int WORLD_COORDS_XRANGE = Math.Abs(WORLD_COORDS_MINLEFT) + WORLD_COORDS_MAXRIGHT;
+
+        /// <summary>
+        /// Indicates vanilla game Y axis coordinate for minimum possible Y - visually at the semi top of worldmap
+        /// </summary>
+        public static int WORLD_COORDS_MINTOP = unchecked((int)0xFFFE8000);
+        /// <summary>
+        /// Indicates vanilla game Y axis coordinate for maximum possible Y - visually at the very bottom of worldmap
+        /// </summary>
+        public static int WORLD_COORDS_MAXBOTTOM = unchecked((int)0x00017FFF);
+
+        /// <summary>
+        /// zero based range of maximum left-right for worldmap coordinates
+        /// </summary>
+        public static int WORLD_COORDS_ZRANGE = Math.Abs(WORLD_COORDS_MINTOP) + WORLD_COORDS_MAXBOTTOM;
+
+        /// <summary>
+        /// Indicates the OpenVIII coordinate system which shows maximum X axis. Minimum is always zero (it's the nearest to left side of worldmap)
+        /// </summary>
+        public static int WORLD_OPENVIII_MAXRIGHT = -(32 * 512);
+        /// <summary>
+        /// Indicates the OpenVIII coordinate system which shows maximum Y axis. Minimum is always zero (it's the furthest to bottom of worldmap)
+        /// </summary>
+        public static int WORLD_OPENVIII_MAXBOTTOM = -(24 * 512);
+
+#warning Wrong formula!
+        /// <summary>
+        /// This method converts vanilla world map coordinates to openVIII equivalent. 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        public static float ConvertVanillaWorldXAxisToOpenVIII(float x)
+        {
+            float newX = x + Math.Abs(WORLD_COORDS_MINLEFT);
+            newX /= WORLD_COORDS_XRANGE; //normalized
+            newX *= WORLD_OPENVIII_MAXRIGHT;
+            return newX;
+        }
+
+#warning Wrong formula!
+        /// <summary>
+        /// This method converts vanilla world map coordinates to openVIII equivalent. 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        public static float ConvertVanillaWorldZAxisToOpenVIII(float z)
+        {
+            float newZ = z + Math.Abs(WORLD_COORDS_MINTOP);
+            newZ /= WORLD_COORDS_ZRANGE; //normalized
+            newZ *= WORLD_OPENVIII_MAXBOTTOM;
+            return newZ;
+        }
+
+
+
         //https://stackoverflow.com/a/2887/4509036
         public static T ByteArrayToStructure<T>(byte[] bytes) where T : struct
         {

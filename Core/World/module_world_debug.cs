@@ -177,8 +177,8 @@ namespace OpenVIII
             bWalkable = 0b10000000
         }
 
-        const byte TRIFLAGS_COLLIDE =    0b10000000;
-        const byte TRIFLAGS_FORESTTEST = 0b01000000; 
+        const byte TRIFLAGS_COLLIDE = 0b10000000;
+        const byte TRIFLAGS_FORESTTEST = 0b01000000;
 
         private static int GetSegment(int segID) => segID * WM_SEG_SIZE;
         private static void InitWorld()
@@ -386,6 +386,9 @@ namespace OpenVIII
             if (Input.Button(Keys.D9))
                 worldState = worldState == _worldState._1active ? _worldState._9debugFly : _worldState._1active;
 
+            if (Input.Button(Keys.D8))
+                bDebugDisableCollision = !bDebugDisableCollision;
+
             SimpleInputUpdate(); //lastplayerposition = playerposition here
             CollisionUpdate();
         }
@@ -403,15 +406,15 @@ namespace OpenVIII
             if (Input.Button(Buttons.Up))
             {
                 animationId = 1;
-                playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees))*2f;
-                playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees))*2f;
+                playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees)) * 2f;
+                playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees)) * 2f;
                 localMchRotation = (float)(Extended.Radians(-degrees - 90f));
             }
-            if(Input.Button(Buttons.Down))
+            if (Input.Button(Buttons.Down))
             {
                 animationId = 1;
-                playerPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees))*2f;
-                playerPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees))*2f;
+                playerPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees)) * 2f;
+                playerPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees)) * 2f;
                 localMchRotation = (float)(Extended.Radians(-degrees + 90f));
             }
         }
@@ -432,34 +435,35 @@ namespace OpenVIII
             segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1); //needs to be updated on pre-new values of movement
             int realSegmentId = (int)(segmentPosition.Y * 32 + segmentPosition.X);
             var seg = segments[realSegmentId];
-            RaycastedTris = new List<Tuple<ParsedTriangleData, Vector3, bool>>(); 
-            Ray characterRay = new Ray(playerPosition + new Vector3(0,10f,0), Vector3.Down); //sets ray origin
+            RaycastedTris = new List<Tuple<ParsedTriangleData, Vector3, bool>>();
+            Ray characterRay = new Ray(playerPosition + new Vector3(0, 10f, 0), Vector3.Down); //sets ray origin
             Ray skyRay = new Ray(GetForwardSkyRaycastVector(SKYRAYCAST_FIXEDDISTANCE), Vector3.Down);
-            
+
             //loop through current block triangles - two rays at the same time. There are only two rays and multi triangles, so iterate triangles and check rays instead of double checking
             for (int i = 0; i < seg.parsedTriangle.Length; i++)
-                if(Extended.RayIntersection3D(characterRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out var characterBarycentric) != 0)
+                if (Extended.RayIntersection3D(characterRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out var characterBarycentric) != 0)
                     RaycastedTris.Add(new Tuple<ParsedTriangleData, Vector3, bool>(seg.parsedTriangle[i], characterBarycentric, false));
                 else if (Extended.RayIntersection3D(skyRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out var skyBarycentric) != 0)
                     RaycastedTris.Add(new Tuple<ParsedTriangleData, Vector3, bool>(seg.parsedTriangle[i], skyBarycentric, true));
 
 
             //don't allow walking over non-walkable faces - just because we tested both rays we can make this linq appear only once
-            RaycastedTris = RaycastedTris.Where(x => (x.Item1.parentPolygon.vertFlags & TRIFLAGS_COLLIDE) != 0).ToList();
+            if(!bDebugDisableCollision)
+                RaycastedTris = RaycastedTris.Where(x => (x.Item1.parentPolygon.vertFlags & TRIFLAGS_COLLIDE) != 0).ToList();
 
 #if DEBUG
             countofDebugFaces = new Vector2(
-                RaycastedTris.Where(x=>!x.Item3).Count(),
+                RaycastedTris.Where(x => !x.Item3).Count(),
                 RaycastedTris.Where(x => x.Item3).Count()
                 );
 #endif
             foreach (var prt in RaycastedTris)
             {
                 if (prt.Item3) //we do not want skyRaycasts here, iterate only characterRay
-                    continue; 
+                    continue;
                 Vector3 distance = playerPosition - prt.Item2;
                 float distY = Math.Abs(distance.Y);
-                if((prt.Item1.parentPolygon.vertFlags & TRIFLAGS_FORESTTEST) == 0)
+                if ((prt.Item1.parentPolygon.vertFlags & TRIFLAGS_FORESTTEST) == 0)
                     if (distY > 10f)
                         continue;
                 Vector3 squaPos = prt.Item2;
@@ -571,9 +575,9 @@ namespace OpenVIII
         {
             camDistance = 100f;
             camPosition = new Vector3(
-                (float)(playerPosition.X + camDistance * Extended.Cos(degrees-180f)),
+                (float)(playerPosition.X + camDistance * Extended.Cos(degrees - 180f)),
                 playerPosition.Y + 50f,
-                (float)(playerPosition.Z + camDistance * Extended.Sin(degrees-180f))
+                (float)(playerPosition.Z + camDistance * Extended.Sin(degrees - 180f))
                 );
             if (Input.Button(Buttons.Left))
                 degrees--;
@@ -636,8 +640,10 @@ namespace OpenVIII
                 $"World Map Camera: ={camPosition}\n" +
                 $"Player position: ={playerPosition}\n" +
                 $"Segment Position: ={segmentPosition}\n" +
+                $"rail debug: trackid={trackId} frameid={frameId}\n" +
+                $"Press 8 to enable/disable collision: {bDebugDisableCollision}\n" +
                 //$"selWalk: =0b{Convert.ToString(bSelectedWalkable,2).PadLeft(8, '0')} of charaRay={countofDebugFaces.X}, skyRay={countofDebugFaces.Y}\n" +
-                $"Press 9 to enable debug FPS camera: ={(worldState== _worldState._1active ? "orbit camera" : "FPS debug camera")}\n" +
+                $"Press 9 to enable debug FPS camera: ={(worldState == _worldState._1active ? "orbit camera" : "FPS debug camera")}\n" +
                 $"FPS camera degrees: ={degrees}°\n" +
                 $"FOV: ={FOV}", 30, 20, lineSpacing: 5);
             Memory.SpriteBatchEnd();
@@ -666,10 +672,36 @@ namespace OpenVIII
 
         private static byte bSelectedWalkable = 0;
         private static Vector2 countofDebugFaces = Vector2.Zero;
+        static bool bDebugDisableCollision = false;
+
+        static int trackId = 0;
+        static int frameId = 0;
+
         private static void DrawDebug()
         {
             //DrawDebug_Rays(); //uncomment to enable drawing rays for collision
             //DrawDebug_VehiclePreview(); //uncomment to enable drawing all vehicles in row
+            Debug_DrawRailPaths();
+        }
+
+        private static void Debug_DrawRailPaths()
+        {
+            //playerPosition = rail.GetTrainTrack(trackId, frameId);
+            for (int i = 0; i < rail.GetTrainTrackCount(); i++)
+            {
+                    List<VertexPositionColor> vpc = new List<VertexPositionColor>();
+                for (int n = 0; n < rail.GetTrainTrackFrameCount(i); n++)
+                {
+                    Vector3 vec = rail.GetTrainTrack(i, n);
+                    vec = new Vector3(Extended.ConvertVanillaWorldXAxisToOpenVIII(vec.X), 30f, Extended.ConvertVanillaWorldZAxisToOpenVIII(vec.Z));
+                    vpc.Add(new VertexPositionColor(vec, Color.Yellow));
+                }
+                foreach (var pass in ate.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, vpc.ToArray(), 0, vpc.Count/2);
+                }
+            }
         }
 
         private static void DrawDebug_VehiclePreview()

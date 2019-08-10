@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -37,8 +38,8 @@ namespace OpenVIII.Core.World
         private struct Keypoint
         {
             public int x;
-            public int z;
             public int y;
+            public int z;
             public int padd;
         }
 
@@ -69,6 +70,33 @@ namespace OpenVIII.Core.World
             for(int i = 0; i<entry.cKeypoints; i++)
                 entry.keypoints[i] = Extended.ByteArrayToStructure<Keypoint>(block.Skip(BLOCK_HEADER_SIZE+(i*16)).Take(16).ToArray());
             return entry;
+        }
+
+        /// <summary>
+        /// Gets count of all keypoints associated with provided trackId
+        /// </summary>
+        /// <param name="trackId"></param>
+        /// <returns></returns>
+        public int GetTrainTrackFrameCount(int trackId) => railEntries[trackId].keypoints.Length;
+        /// <summary>
+        /// Gets count of all available tracks
+        /// </summary>
+        /// <returns></returns>
+        public int GetTrainTrackCount() => railEntries.Length;
+        /// <summary>
+        /// Gets Vector3 translated to openviii coordinates from given track animation's frame id
+        /// </summary>
+        /// <param name="trackId"></param>
+        /// <param name="frameId"></param>
+        /// <returns></returns>
+        public Vector3 GetTrainTrack(int trackId, int frameId)
+        {
+            Keypoint kp = railEntries[trackId].keypoints[frameId];
+
+            float newX = Extended.ConvertVanillaWorldXAxisToOpenVIII(kp.x);
+            float newZ = Extended.ConvertVanillaWorldZAxisToOpenVIII(kp.z);
+
+            return new Vector3(newX, 10f, newZ);
         }
     }
 }
