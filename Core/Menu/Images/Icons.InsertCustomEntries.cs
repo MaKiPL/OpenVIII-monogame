@@ -343,6 +343,14 @@ namespace OpenVIII
             Center.Tile = Vector2.UnitX;
             Right.Snap_Right = true;
             Entries[ID.Size_08x64_Bar] = new EntryGroup(Center, Left, Right);
+            ID tmp = ID.D_Pad_Up;
+            Entries[tmp] = new EntryGroup(Entries[tmp][0],Entries[tmp][2], Entries[tmp][1], Entries[tmp][3]);
+            tmp = ID.D_Pad_Down;
+            Entries[tmp] = new EntryGroup(Entries[tmp][0], Entries[tmp][2], Entries[tmp][1], Entries[tmp][3]);
+            tmp = ID.D_Pad_Left;
+            Entries[tmp] = new EntryGroup(Entries[tmp][0], Entries[tmp][2], Entries[tmp][1], Entries[tmp][3]);
+            tmp = ID.D_Pad_Right;
+            Entries[tmp] = new EntryGroup(Entries[tmp][0], Entries[tmp][2], Entries[tmp][1], Entries[tmp][3]);
         }
     }
 }
