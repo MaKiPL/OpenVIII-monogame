@@ -1144,7 +1144,7 @@ EOF:
 #if _WINDOWS
             if (useNaudio)
             {
-                while (nAudioOut.PlaybackState != PlaybackState.Stopped)
+                while (nAudioOut.PlaybackState != PlaybackState.Stopped && !cancellationToken.IsCancellationRequested)
                     Thread.Sleep(NextAsyncSleep);
                 try
                 {
