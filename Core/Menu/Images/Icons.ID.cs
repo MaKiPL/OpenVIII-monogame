@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
 
 namespace OpenVIII
 {
@@ -409,9 +410,28 @@ namespace OpenVIII
         {
             EntryGroup eg = this[ic];
             if (!eg.Trimmed)
-            {
-                Rectangle ret = Textures[pal].Trim(eg.Rectangle);
-                eg.SetRectangle(ret, true);
+            { if(eg.Count >=1)
+                {
+                    eg.Width = 0;
+                    eg.Height = 0;
+                    eg.Trimmed = true;
+                    Vector2 offset = new Vector2(float.MaxValue);
+                    for (int i = 0; i<eg.Count; i ++)
+                    {
+                        Rectangle ret = Textures[pal].Trim(eg[i].GetRectangle);
+                        eg[i].SetTrim_1stPass(ret,eg.Count == 1 ? true:false);
+                        if (eg[i].Offset.X < offset.X) offset.X = eg[i].Offset.X;
+                        if (eg[i].Offset.Y < offset.Y) offset.Y = eg[i].Offset.Y;
+                    }
+
+                    for (int i = 0; i < eg.Count; i++)
+                    {
+                        eg[i].SetTrim_2ndPass(offset);
+                        Point size = new Point((int)Math.Abs(eg[i].Width + eg[i].Offset.X), (int)Math.Abs(eg[i].Height + eg[i].Offset.Y));
+                        if (eg.Width < size.X) eg.Width = (int)size.X;
+                        if (eg.Height < size.Y) eg.Height = (int)size.Y;
+                    }
+                }
             }
         }
 
