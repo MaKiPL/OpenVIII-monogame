@@ -6,6 +6,10 @@ using System.Linq;
 
 namespace OpenVIII
 {
+    /// <summary>
+    /// SP2 is a handler for .sp1 and .sp2 files. They are texture atlas coordinates
+    /// <para>This stores the entries in Entry objects or EntryGroup objects</para>
+    /// </summary>
     public abstract class SP2
     {
 
