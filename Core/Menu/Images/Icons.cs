@@ -169,7 +169,11 @@ namespace OpenVIII
                 }
             }
         }
-
+        public void Trim(ID ic, byte pal)
+        {
+            EntryGroup eg = this[ic];
+            eg.Trim(Textures[pal]);
+        }
         protected override void InitTextures(ArchiveWorker aw = null)
         {
             Textures = new List<TextureHandler>();
