@@ -302,7 +302,7 @@ namespace OpenVIII
         /// </summary>
         /// <param name="src"></param>
         /// <returns></returns>
-        public Rectangle Trim(Rectangle src) => _process(src, Trim_SingleTexture);
+        public Rectangle Trim(Rectangle src) => _process(Rectangle.Empty, src, Color.TransparentBlack, _Trim_SingleTexture);
 
         protected void Init()
         {
@@ -332,59 +332,12 @@ namespace OpenVIII
         }
 
         private void _Draw(Rectangle dst, Rectangle src, Color color)
-        {
-            Vector2 dstOffset = Vector2.Zero;
-            bool drawn = false;
-            Vector2 offset = Vector2.Zero;
-            Rectangle dst2 = new Rectangle();
-            Rectangle cnt = new Rectangle();
-            for (uint r = 0; r < Rows; r++)
-            {
-                offset.X = 0;
-                //dstOffset.X = 0;
-                for (uint c = 0; c < Cols; c++)
-                {
-                    drawn = false;
-                    dst2 = new Rectangle();
-                    //if all the pieces of Scales are correct they should all have the same scale.
-                    Rectangle _src = Scale(src, ScaleFactor);
-                    cnt = ContainerRectangle(offset, Textures[c, r]);
-                    if (cnt.Contains(_src))
-                    {
-                        //got lucky the whole thing is in this rectangle
-                        _Draw(Textures[c, r], dst, _src, color, cnt);
-                        return;
-                    }
-                    else if (cnt.Intersects(_src))
-                    {
-                        //Gotta draw more than once.
-                        _Draw(Textures[c, r], ref dst, _src, color, cnt, ref dstOffset, out drawn, out dst2);
-                    }
-                    offset.X += cnt.Width;
-                }
-                offset.Y += cnt.Height;
-                if (drawn)
-                    dstOffset.Y += dst2.Height;
-            }
-            return;
-        }
+        => _process(dst, src, color, _Draw);
 
-        private void _Draw(Texture2D tex, ref Rectangle dst, Rectangle _src, Color color, Rectangle cnt, ref Vector2 dstOffset, out bool drawn, out Rectangle dst2)
+        private Rectangle _Draw(Texture2D tex, Rectangle dst, Rectangle src, Color color)
         {
-            Rectangle src2 = Rectangle.Intersect(cnt, _src);
-            src2.Location = (GetOffset(cnt, src2)).ToPoint();
-            dst2 = Scale(dst, GetScale(_src.Size, src2.Size));
-            dst2.Location = (dst.Location);
-            dst2.Offset(dstOffset);
-            Memory.spriteBatch.Draw(tex, dst2, src2, color);
-            drawn = true;
-            dstOffset.X += dst2.Width;
-        }
-
-        private void _Draw(Texture2D tex, Rectangle dst, Rectangle _src, Color color, Rectangle cnt)
-        {
-            _src.Location = (GetOffset(cnt, _src)).ToPoint();
-            Memory.spriteBatch.Draw(tex, dst, _src, color);
+            Memory.spriteBatch.Draw(tex, dst, src, color);
+            return src;
         }
 
         private void _Draw(Rectangle dst, Color color)
@@ -407,36 +360,115 @@ namespace OpenVIII
             }
         }
 
-        private Rectangle _process(Rectangle src, Func<Texture2D, Rectangle, Rectangle> single)
+        /// <summary>
+        /// Process the texture with the given varibles.
+        /// <para>Only used by trim and draw.</para>
+        /// <para>Trim really only needs src varible</para>
+        /// </summary>
+        /// <param name="dst"></param>
+        /// <param name="src"></param>
+        /// <param name="color"></param>
+        /// <param name="single"></param>
+        /// <returns></returns>
+        private Rectangle _process(
+            Rectangle dst, Rectangle src, Color color,
+            Func<Texture2D, Rectangle, Rectangle, Color, Rectangle> single)
         {
             Rectangle ret = Rectangle.Empty;
 
-            if (Memory.IsMainThread)
+            if (Memory.IsMainThread) // Some code may only work on main thread.
             {
+                //all extra code is only used for multiple pcs
+                Vector2 dstOffset = Vector2.Zero; // only if Intersects
+                Rectangle dst2 = Rectangle.Empty; // only if Intersects
                 Vector2 offset = Vector2.Zero;
                 Rectangle cnt = Rectangle.Empty;
                 for (uint r = 0; r < Rows; r++)
                 {
+                    bool drawn = false; // only if Intersects
                     offset.X = 0;
                     for (uint c = 0; c < Cols; c++)
                     {
+                        //Start: if were always only one texture pcs
                         Rectangle _src = Scale(src, ScaleFactor);
                         cnt = ContainerRectangle(offset, Textures[c, r]);
                         if (cnt.Contains(_src))
                         {
                             _src.Location = (GetOffset(cnt, _src)).ToPoint();
-                            return single(Textures[c, r], _src);
+                            return single(Textures[c, r], dst, _src, color);
                         }
+                        //End
+                        //This part is for if a given src rectangle overlaps >=2 textures
                         else if (cnt.Intersects(_src))
                         {
-                            throw new NotImplementedException($"{this} Not setup to run on overlapping texture atlases.");
+                            Rectangle src2 = Rectangle.Intersect(cnt, _src);
+                            src2.Location = (GetOffset(cnt, src2)).ToPoint();
+                            dst2 = Scale(dst, GetScale(_src.Size, src2.Size));
+                            dst2.Location = (dst.Location);
+                            dst2.Offset(dstOffset);
+                            if (ret == Rectangle.Empty)
+                                ret = single(Textures[c, r], dst2, src2, color);
+                            else
+                                Rectangle.Union(ret, single(Textures[c, r], dst2, src2, color));
+                            drawn = true;
+                            dstOffset.X += dst2.Width;
                         }
                         offset.X += cnt.Width;
                     }
                     offset.Y += cnt.Height;
+                    if (drawn)
+                        dstOffset.Y += dst2.Height;
                 }
             }
             else throw new InvalidOperationException($"{this} Must run in main thread.");
+            return ret;
+        }
+
+        private Rectangle _Trim_SingleTexture(Texture2D tex, Rectangle dst, Rectangle src, Color color)
+        {
+            Rectangle ret = Rectangle.Empty;
+            ret.Offset(-1, -1);
+            // storage of colors.
+            Color[] tmp = new Color[src.Width * src.Height];
+            // colors of all pixels
+            tex.GetData<Color>(0, src, tmp, 0, tmp.Length);
+            // max x and y values
+            int x2 = src.Width;
+            int y2 = src.Height;
+            // check each pixel's color
+            for (int y1 = 0; y1 < y2; y1++)
+            {
+                for (int x1 = 0; x1 < x2; x1++)
+                {
+                    Color a = tmp[x1 + y1 * src.Width];
+                    if (a.A != 0)
+                    {
+                        // grab high and low bounds of non transparent pixels.
+                        if (ret.Y < 0 || ret.X > x1)
+                        {
+                            ret.X = x1;
+                        }
+                        else if (ret.Width == 0 || ret.Width < x1)
+                            ret.Width = x1;
+                        // do same for Y axis.
+                        if (ret.Y < 0 || ret.Y > y1)
+                        {
+                            ret.Y = y1;
+                        }
+                        else if (ret.Height == 0 || ret.Height < y1)
+                            ret.Height = y1;
+                    }
+                }
+            }
+            //using height and width as a bottom and right x/y
+            //converting them back to height and width.
+            ret.Width -= ret.X;
+            ret.Height -= ret.Y;
+            ret.Width += 1;
+            ret.Height += 1;
+            ret.Offset(src.X, src.Y);
+            ret = Scale(ret, ReverseScaleFactor);
+            src = Scale(src, ReverseScaleFactor);
             return ret;
         }
 
@@ -466,54 +498,6 @@ namespace OpenVIII
             Classic = null;
             //Merge the texture pieces into one.
             Merge();
-        }
-
-        private Rectangle Trim_SingleTexture(Texture2D tex, Rectangle _src)
-        {
-            Rectangle ret = Rectangle.Empty;
-            ret.Offset(-1, -1);
-            // storage of colors.
-            Color[] tmp = new Color[_src.Width * _src.Height];
-            // colors of all pixels
-            tex.GetData<Color>(0, _src, tmp, 0, tmp.Length);
-            // max x and y values
-            int x2 = _src.Width;
-            int y2 = _src.Height;
-            // check each pixel's color
-            for (int y1 = 0; y1 < y2; y1++)
-            {
-                for (int x1 = 0; x1 < x2; x1++)
-                {
-                    Color a = tmp[x1 + y1 * _src.Width];
-                    if (a.A != 0)
-                    {
-                        // grab high and low bounds of non transparent pixels.
-                        if (ret.Y < 0 || ret.X > x1)
-                        {
-                            ret.X = x1;
-                        }
-                        else if (ret.Width == 0 || ret.Width < x1)
-                            ret.Width = x1;
-                        // do same for Y axis.
-                        if (ret.Y < 0 || ret.Y > y1)
-                        {
-                            ret.Y = y1;
-                        }
-                        else if (ret.Height == 0 || ret.Height < y1)
-                            ret.Height = y1;
-                    }
-                }
-            }
-            //using height and width as a bottom and right x/y
-            //converting them back to height and width.
-            ret.Width -= ret.X;
-            ret.Height -= ret.Y;
-            ret.Width += 1;
-            ret.Height += 1;
-            ret.Offset(_src.X, _src.Y);
-            ret = Scale(ret, ReverseScaleFactor);
-            _src = Scale(_src, ReverseScaleFactor);
-            return ret;
         }
 
         #endregion Methods
