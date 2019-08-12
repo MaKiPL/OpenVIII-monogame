@@ -37,20 +37,20 @@ namespace OpenVIII
             {
                 iap = new Dictionary<GamePadButtons, Iap>
                 {
-                    { GamePadButtons.Up, new Iap{ id= Icons.ID.D_Pad_Up } },
-                    { GamePadButtons.Down, new Iap{ id= Icons.ID.D_Pad_Down } },
-                    { GamePadButtons.Left, new Iap{ id= Icons.ID.D_Pad_Left } },
-                    { GamePadButtons.Right, new Iap{ id= Icons.ID.D_Pad_Right } },
+                    { GamePadButtons.Up, new Iap{ id= Icons.ID.D_Pad_Up, palette = 2 } },
+                    { GamePadButtons.Down, new Iap{ id= Icons.ID.D_Pad_Down, palette = 2 } },
+                    { GamePadButtons.Left, new Iap{ id= Icons.ID.D_Pad_Left, palette = 2 } },
+                    { GamePadButtons.Right, new Iap{ id= Icons.ID.D_Pad_Right, palette = 2 } },
                     { GamePadButtons.X, new Iap {id = Icons.ID.Size_16x16_PSX_Square, palette = 4} },
                     { GamePadButtons.Y, new Iap {id = Icons.ID.Size_16x16_PSX_Triangle, palette = 4} },
                     { GamePadButtons.A, new Iap {id = Icons.ID.Size_16x16_PSX_Cross, palette = 4} },
                     { GamePadButtons.B, new Iap {id = Icons.ID.Size_16x16_PSX_Circle, palette = 4} },
-                    { GamePadButtons.Back, new Iap {id = Icons.ID.SELECT} },
-                    { GamePadButtons.Start, new Iap {id = Icons.ID.START} },
-                    { GamePadButtons.Left_Shoulder, new Iap {id = Icons.ID.Size_16x08_PSX_L1} },
-                    { GamePadButtons.Right_Shoulder, new Iap {id = Icons.ID.Size_16x08_PSX_R1} },
-                    { GamePadButtons.Left_Trigger, new Iap {id = Icons.ID.Size_16x08_PSX_L2} },
-                    { GamePadButtons.Right_Trigger, new Iap {id = Icons.ID.Size_16x08_PSX_R2} },
+                    { GamePadButtons.Back, new Iap {id = Icons.ID.SELECT, palette = 2} },
+                    { GamePadButtons.Start, new Iap {id = Icons.ID.START, palette = 2} },
+                    { GamePadButtons.Left_Shoulder, new Iap {id = Icons.ID.Size_16x08_PSX_L1, palette = 2} },
+                    { GamePadButtons.Right_Shoulder, new Iap {id = Icons.ID.Size_16x08_PSX_R1, palette = 2} },
+                    { GamePadButtons.Left_Trigger, new Iap {id = Icons.ID.Size_16x08_PSX_L2, palette = 2} },
+                    { GamePadButtons.Right_Trigger, new Iap {id = Icons.ID.Size_16x08_PSX_R2, palette = 2} },
                 };
             }
         }
