@@ -294,6 +294,11 @@ namespace OpenVIII
         /// <returns></returns>
         public Rectangle Trim(Rectangle src)
         {
+            return _process(src, Trim_SingleTexture);
+        }
+
+        private Rectangle _process(Rectangle src, Func<Texture2D, Rectangle, Rectangle> single)
+        {
             Rectangle ret = Rectangle.Empty;
 
             if (Memory.IsMainThread)
@@ -310,7 +315,7 @@ namespace OpenVIII
                         if (cnt.Contains(_src))
                         {
                             _src.Location = (GetOffset(cnt, _src)).ToPoint();
-                            return Trim_SingleTexture(Textures[c, r], _src);
+                            return single(Textures[c, r], _src);
                         }
                         else if (cnt.Intersects(_src))
                         {
