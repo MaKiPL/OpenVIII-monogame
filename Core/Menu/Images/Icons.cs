@@ -111,7 +111,7 @@ namespace OpenVIII
             foreach (int i in intList)
             {
                 Draw(nums[(int)type][i], palette, dst, scale, fade);
-                dst.Offset(Entries[nums[(int)type][i]].Rectangle.Width * scale.X, 0);
+                dst.Offset(Entries[nums[(int)type][i]].GetRectangle.Width * scale.X, 0);
             }
         }
 
