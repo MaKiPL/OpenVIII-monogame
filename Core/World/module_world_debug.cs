@@ -640,7 +640,6 @@ namespace OpenVIII
                 $"World Map Camera: ={camPosition}\n" +
                 $"Player position: ={playerPosition}\n" +
                 $"Segment Position: ={segmentPosition}\n" +
-                $"rail debug: trackid={trackId} frameid={frameId}\n" +
                 $"Press 8 to enable/disable collision: {bDebugDisableCollision}\n" +
                 //$"selWalk: =0b{Convert.ToString(bSelectedWalkable,2).PadLeft(8, '0')} of charaRay={countofDebugFaces.X}, skyRay={countofDebugFaces.Y}\n" +
                 $"Press 9 to enable debug FPS camera: ={(worldState == _worldState._1active ? "orbit camera" : "FPS debug camera")}\n" +
@@ -674,26 +673,21 @@ namespace OpenVIII
         private static Vector2 countofDebugFaces = Vector2.Zero;
         static bool bDebugDisableCollision = false;
 
-        static int trackId = 0;
-        static int frameId = 0;
-
         private static void DrawDebug()
         {
             //DrawDebug_Rays(); //uncomment to enable drawing rays for collision
             //DrawDebug_VehiclePreview(); //uncomment to enable drawing all vehicles in row
-            Debug_DrawRailPaths();
+            //Debug_DrawRailPaths(); //uncomment to enable draw lines showing rail keypoints
         }
 
         private static void Debug_DrawRailPaths()
         {
-            //playerPosition = rail.GetTrainTrack(trackId, frameId);
             for (int i = 0; i < rail.GetTrainTrackCount(); i++)
             {
                     List<VertexPositionColor> vpc = new List<VertexPositionColor>();
                 for (int n = 0; n < rail.GetTrainTrackFrameCount(i); n++)
                 {
-                    Vector3 vec = rail.GetTrainTrack(i, n);
-                    vec = new Vector3(Extended.ConvertVanillaWorldXAxisToOpenVIII(vec.X), 30f, Extended.ConvertVanillaWorldZAxisToOpenVIII(vec.Z));
+                    Vector3 vec = rail.GetTrackFrameVector(i, n) + Vector3.Up*10f;
                     vpc.Add(new VertexPositionColor(vec, Color.Yellow));
                 }
                 foreach (var pass in ate.CurrentTechnique.Passes)

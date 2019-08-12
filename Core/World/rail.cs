@@ -39,8 +39,10 @@ namespace OpenVIII.Core.World
         {
             public int x;
             public int y;
-            public int z;
+            private int z;
             public int padd;
+
+            public int Z => -z;
         }
 
         RailEntry[] railEntries;
@@ -89,14 +91,13 @@ namespace OpenVIII.Core.World
         /// <param name="trackId"></param>
         /// <param name="frameId"></param>
         /// <returns></returns>
-        public Vector3 GetTrainTrack(int trackId, int frameId)
+        public Vector3 GetTrackFrameVector(int trackId, int frameId)
         {
             Keypoint kp = railEntries[trackId].keypoints[frameId];
-
-            float newX = Extended.ConvertVanillaWorldXAxisToOpenVIII(kp.x);
-            float newZ = Extended.ConvertVanillaWorldZAxisToOpenVIII(kp.z);
-
-            return new Vector3(newX, 10f, newZ);
+            return new Vector3(Extended.ConvertVanillaWorldXAxisToOpenVIII(kp.x),
+                               Extended.ConvertVanillaWorldYAxisToOpenVIII(kp.y),
+                               Extended.ConvertVanillaWorldZAxisToOpenVIII(kp.Z)
+                               );
         }
     }
 }

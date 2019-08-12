@@ -59,7 +59,11 @@ namespace OpenVIII
         /// </summary>
         public static int WORLD_OPENVIII_MAXBOTTOM = -(24 * 512);
 
-#warning Wrong formula!
+        /// <summary>
+        /// Result of Vanilla.Y * x = openviii.Y equation
+        /// </summary>
+        public static float WORLD_COORD_YHELPER = -0.06f;
+
         /// <summary>
         /// This method converts vanilla world map coordinates to openVIII equivalent. 
         /// </summary>
@@ -73,7 +77,6 @@ namespace OpenVIII
             return newX;
         }
 
-#warning Wrong formula!
         /// <summary>
         /// This method converts vanilla world map coordinates to openVIII equivalent. 
         /// </summary>
@@ -86,6 +89,14 @@ namespace OpenVIII
             newZ *= WORLD_OPENVIII_MAXBOTTOM;
             return newZ;
         }
+
+        /// <summary>
+        /// This method converts vanilla world map coordinates to openVIII equivalent 
+        /// </summary>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public static float ConvertVanillaWorldYAxisToOpenVIII(float y)
+        => y * WORLD_COORD_YHELPER;
 
 
 
