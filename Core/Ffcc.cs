@@ -1154,6 +1154,10 @@ EOF:
                 }
                 catch (InvalidOperationException)
                 {
+
+                    if (nAudioOut != null)
+                        Memory.MainThreadOnlyActions.Enqueue(nAudioOut.Dispose);
+                    Memory.MainThreadOnlyActions.Enqueue(bufferedWaveProvider.ClearBuffer);
                     //doesn't like threads...
                 }
             }
