@@ -83,7 +83,7 @@ namespace OpenVIII
                     {Mode.Starting, DrawStartingAction},
                     {Mode.Battle, DrawBattleAction},
                     {Mode.Victory, DrawVictoryAction},
-                    //{Mode.GameOver, DrawGameOverAction},
+                    {Mode.GameOver, DrawGameOverAction},
                 };
                 InputFunctions = new Dictionary<Mode, Func<bool>>()
                 {
