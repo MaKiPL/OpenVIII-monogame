@@ -12,7 +12,7 @@ namespace OpenVIII
         private List<Entry> list;
         private Rectangle rectangle;
 
-        public bool Trimmed { get; private set; } = false;
+        public bool Trimmed { get; set; } = false;
 
         public EntryGroup(int capacity = 1)
         {
@@ -36,9 +36,8 @@ namespace OpenVIII
         public int Height { get => rectangle.Height; set => rectangle.Height = value; }
         public int Width { get => rectangle.Width; set => rectangle.Width = value; }
 
-        public Rectangle Rectangle {
-            get => list.Count == 1 ? list[0].GetRectangle: rectangle;
-            set { if (list.Count == 1) list[0].SetRectangle(value); rectangle.Size = value.Size; }
+        public Rectangle GetRectangle {
+            get => rectangle;
         }
 
         public object Current
@@ -98,6 +97,8 @@ namespace OpenVIII
                 if (Height < size.Y) Height = (int)size.Y;
             }
         }
+
+
 
         public static Vector2 Abs(Vector2 v2) => new Vector2(Math.Abs(v2.X), Math.Abs(v2.Y));
 
@@ -220,11 +221,6 @@ namespace OpenVIII
         public bool MoveNext() => ++position<=list.Count;
         public void Reset() => position = 0;
         public IEnumerator GetEnumerator() => this;
-        public void SetRectangle(Rectangle ret, bool trimmed)
-        {
-            Rectangle = ret;
-            Trimmed = true;
-        }
 
         #endregion Methods
     }
