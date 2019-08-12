@@ -117,7 +117,7 @@ namespace OpenVIII
             Memory.SpriteBatchEnd();
             Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
 
-            Vector2 scale = new Vector2(4f);
+            Vector2 scale = new Vector2(40f);
             Rectangle dst = new Rectangle()
             {
                 Width = (int)(Memory.Icons.GetEntryGroup(icon).Width * scale.X),
@@ -134,7 +134,7 @@ namespace OpenVIII
                 dst.X = vp.Width / 2 - dst.Width / 2;
                 dst.Y = vp.Height / 2 - dst.Height / 2;
             }
-
+            dst.Size = Point.Zero;
             Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
             Memory.Icons.Draw(icon, palette, dst, scale);
             Memory.font.RenderBasicText(
