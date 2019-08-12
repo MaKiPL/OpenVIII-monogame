@@ -135,7 +135,7 @@ namespace OpenVIII
             return null;
         }
 
-        public virtual TextureHandler GetTexture(Enum id, out Vector2 scale)
+        public virtual TextureHandler GetTexture(Enum id)
         {
             uint pos = Convert.ToUInt32(id);
             uint File = GetEntry(id).File;
@@ -150,10 +150,14 @@ namespace OpenVIII
                     File %= j;
                 }
             }
-            scale = Scale[File];
             return Textures[(int)File];
         }
-
+    
+        public virtual TextureHandler GetTexture(Enum id, out Vector2 scale)
+        {
+                scale = Scale[GetEntry(id).File];
+                return GetTexture(id);
+        }
         protected virtual void Init()
         {
             if (Entries == null)
@@ -246,8 +250,6 @@ namespace OpenVIII
         protected virtual void InsertCustomEntries()
         {
         }
-
-        private TextureHandler GetTexture(Enum id) => GetTexture(id, out Vector2 scale);
 
         #endregion Methods
 
