@@ -158,7 +158,7 @@ namespace OpenVIII
             //Memory.Icons.Draw(Icons.ID.Menu_BG_256, 0, dst, new Vector2(2f), Fade);
             item = 0;
             dst.Offset(4 * 3.5f, 0);
-            dst.Size = (Memory.Icons[Icons.ID.DEBUG].Rectangle.Size.ToVector2()  * 3.5f).ToPoint();
+            dst.Size = (Memory.Icons[Icons.ID.DEBUG].GetRectangle.Size.ToVector2()  * 3.5f).ToPoint();
             //Memory.Icons.Draw(Icons.ID.DEBUG, 2, dst, Vector2.Zero, fade);
             dst.Location = DFontPos.ToPoint();
             dst.Size = new Point((int)(24 * 2 ), (int)(16 * 2 ));
