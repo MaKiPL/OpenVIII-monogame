@@ -47,12 +47,28 @@ namespace OpenVIII
 
         public byte Part { get; set; } = 1;
 
-        public void SetRectangle(Rectangle value)
+        public void SetTrim_1stPass(Rectangle value,bool skipoffset = false)
         {
-            Location = value.Location.ToVector2();
+            Vector2 newLoc = value.Location.ToVector2();
+            //Offset may need to change.
+            //I had to preserve a good offset for the D-pad to work. 
+            //So i was getting the difference in the two locations and adding to the offset.
+            //skipoffset can be used if the entry is solo so you don't need to alter the offset.
+            if(!skipoffset)
+            Offset += (newLoc - Location).Abs();
+            Location = newLoc;
             Size = value.Size.ToVector2();
         }
-
+        /// <summary>
+        /// After determining the trimmed dim.
+        /// There will be code in entrygroup that finds the actual top left and then passes to this function
+        /// This will take that offset and subtract it from the current Offset value.
+        /// </summary>
+        /// <param name="offset"></param>
+        public void SetTrim_2ndPass(Vector2 offset)
+        {
+            Offset -= offset;
+        }
         /// <summary>
         /// point where you want to stop drawing from bottom side so -8 would stop 8*scale pixels
         /// from edge
