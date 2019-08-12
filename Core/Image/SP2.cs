@@ -8,6 +8,7 @@ namespace OpenVIII
 {
     public abstract class SP2
     {
+
         #region Constructors
 
         protected SP2()
@@ -152,11 +153,17 @@ namespace OpenVIII
             }
             return Textures[(int)File];
         }
-    
+
         public virtual TextureHandler GetTexture(Enum id, out Vector2 scale)
         {
-                scale = Scale[GetEntry(id).File];
-                return GetTexture(id);
+            scale = Scale[GetEntry(id).File];
+            return GetTexture(id);
+        }
+
+        public void Trim(Enum ic, byte pal)
+        {
+            Entry eg = this[ic];
+            eg.SetTrimNonGroup(Textures[pal]);
         }
         protected virtual void Init()
         {
@@ -260,7 +267,13 @@ namespace OpenVIII
         /// </summary>
         public class BigTexProps
         {
+
             #region Fields
+
+            /// <summary>
+            /// leave null unless big version has a different custom palette than normal.
+            /// </summary>
+            public Color[] Colors;
 
             /// <summary>
             /// Filename; To match more than one number use {0:00} or {00:00} for ones with leading zeros.
@@ -274,11 +287,6 @@ namespace OpenVIII
             /// </summary>
             public uint Split;
 
-            /// <summary>
-            /// leave null unless big version has a different custom palette than normal.
-            /// </summary>
-            public Color[] Colors;
-
             #endregion Fields
 
             #region Constructors
@@ -291,10 +299,12 @@ namespace OpenVIII
             }
 
             #endregion Constructors
+
         }
 
         public class TexProps
         {  /// <summary>
+
             #region Fields
 
             /// <summary>
@@ -341,8 +351,10 @@ namespace OpenVIII
             }
 
             #endregion Constructors
+
         }
 
         #endregion Classes
+
     }
 }

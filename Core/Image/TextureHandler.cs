@@ -59,14 +59,14 @@ namespace OpenVIII
         public ushort Palette { get; protected set; }
 
         /// <summary>
-        /// Scale vector from original to big
-        /// </summary>
-        public Vector2 ScaleFactor => Size == Vector2.Zero || ClassicSize == Vector2.Zero ? Vector2.One : Size / ClassicSize;
-
-        /// <summary>
         /// Scale vector from big to original
         /// </summary>
         public Vector2 ReverseScaleFactor => Size == Vector2.Zero || ClassicSize == Vector2.Zero ? Vector2.One : ClassicSize / Size;
+
+        /// <summary>
+        /// Scale vector from original to big
+        /// </summary>
+        public Vector2 ScaleFactor => Size == Vector2.Zero || ClassicSize == Vector2.Zero ? Vector2.One : Size / ClassicSize;
 
         /// <summary>
         /// X = width and Y = height. The Size of big version texture. Will be used in scaling
@@ -92,61 +92,6 @@ namespace OpenVIII
         #endregion Indexers
 
         #region Methods
-
-        public void Merge()
-        {
-            if (Rows * Cols > 1)
-            {
-                if (Memory.IsMainThread)
-                {
-                    int width = 0;
-                    int height = 0;
-                    for (int r = 0; r < (int)Rows; r++)
-                    {
-                        int rowwidth = 0;
-                        int rowheight = 0;
-                        for (int c = 0; c < (int)Cols; c++)
-                        {
-                            rowwidth += Textures[c, r].Width;
-                            if (rowheight < Textures[c, r].Height)
-                                rowheight = Textures[c, r].Height;
-                        }
-                        if (width < rowwidth)
-                            width = rowwidth;
-                        height += rowheight;
-                    }
-
-                    Texture2D tex = new Texture2D(Memory.graphics.GraphicsDevice, width, height, false, SurfaceFormat.Color);
-                    Rectangle dst = new Rectangle();
-                    for (int r = 0; r < (int)Rows; r++)
-                    {
-                        dst.Y += r > 0 ? Textures[0, r - 1].Height : 0;
-                        for (int c = 0; c < (int)Cols; c++)
-                        {
-                            dst.Height = Textures[c, r].Height;
-                            dst.Width = Textures[c, r].Width;
-                            dst.X += c > 0 ? Textures[c - 1, r].Width : 0;
-                            Color[] buffer = new Color[dst.Height * dst.Width];
-                            Textures[c, r].GetData<Color>(buffer);
-                            tex.SetData(0, dst, buffer, 0, buffer.Length);
-                            //Textures[c, r].Dispose();
-                        }
-                        dst.X = 0;
-                    }
-                    foreach (Texture2D t in Textures)
-                        t.Dispose();
-                    Textures = new Texture2D[1, 1];
-                    Textures[0, 0] = tex;
-                    Rows = 1;
-                    Cols = 1;
-                }
-                else
-                {
-                    Memory.MainThreadOnlyActions.Enqueue(this.Merge);
-                    Memory.MainThreadOnlyActions.Enqueue(this.Save);
-                }
-            }
-        }
 
         public static Vector2 Abs(Vector2 v) => new Vector2(Math.Abs(v.X), Math.Abs(v.Y));
 
@@ -287,95 +232,103 @@ namespace OpenVIII
             }
         }
 
+        public Vector2 GetScale(int cols = 0, int rows = 0) => ScaleFactor;
+
+        public void Merge()
+        {
+            if (Rows * Cols > 1)
+            {
+                if (Memory.IsMainThread)
+                {
+                    int width = 0;
+                    int height = 0;
+                    for (int r = 0; r < (int)Rows; r++)
+                    {
+                        int rowwidth = 0;
+                        int rowheight = 0;
+                        for (int c = 0; c < (int)Cols; c++)
+                        {
+                            rowwidth += Textures[c, r].Width;
+                            if (rowheight < Textures[c, r].Height)
+                                rowheight = Textures[c, r].Height;
+                        }
+                        if (width < rowwidth)
+                            width = rowwidth;
+                        height += rowheight;
+                    }
+
+                    Texture2D tex = new Texture2D(Memory.graphics.GraphicsDevice, width, height, false, SurfaceFormat.Color);
+                    Rectangle dst = new Rectangle();
+                    for (int r = 0; r < (int)Rows; r++)
+                    {
+                        dst.Y += r > 0 ? Textures[0, r - 1].Height : 0;
+                        for (int c = 0; c < (int)Cols; c++)
+                        {
+                            dst.Height = Textures[c, r].Height;
+                            dst.Width = Textures[c, r].Width;
+                            dst.X += c > 0 ? Textures[c - 1, r].Width : 0;
+                            Color[] buffer = new Color[dst.Height * dst.Width];
+                            Textures[c, r].GetData<Color>(buffer);
+                            tex.SetData(0, dst, buffer, 0, buffer.Length);
+                            //Textures[c, r].Dispose();
+                        }
+                        dst.X = 0;
+                    }
+                    foreach (Texture2D t in Textures)
+                        t.Dispose();
+                    Textures = new Texture2D[1, 1];
+                    Textures[0, 0] = tex;
+                    Rows = 1;
+                    Cols = 1;
+                }
+                else
+                {
+                    Memory.MainThreadOnlyActions.Enqueue(this.Merge);
+                    //Memory.MainThreadOnlyActions.Enqueue(this.Save);
+                }
+            }
+        }
+
+        public void Save()
+        {
+            string clean = Regex.Replace(Filename, @"{[^}]+}", "");
+            string outpath = Path.Combine(Path.GetTempPath(), Path.GetFileName(clean) + $"{Palette}.png");
+            using (FileStream fs = File.Create(outpath))
+                Textures[0, 0].SaveAsPng(fs, Textures[0, 0].Width, Textures[0, 0].Height);
+        }
+
         /// <summary>
         /// Remove all transparenct rows and cols of pixels
         /// </summary>
         /// <param name="src"></param>
         /// <returns></returns>
-        public Rectangle Trim(Rectangle src)
-        {
-            return _process(src, Trim_SingleTexture);
-        }
+        public Rectangle Trim(Rectangle src) => _process(src, Trim_SingleTexture);
 
-        private Rectangle _process(Rectangle src, Func<Texture2D, Rectangle, Rectangle> single)
+        protected void Init()
         {
-            Rectangle ret = Rectangle.Empty;
-
-            if (Memory.IsMainThread)
+            Vector2 size = Vector2.Zero;
+            Vector2 oldsize = Vector2.Zero;
+            Texture_Base tex = null;
+            uint c2 = 0;
+            uint r2 = 0;
+            for (uint r = 0; r < Rows; r++)
             {
-                Vector2 offset = Vector2.Zero;
-                Rectangle cnt = Rectangle.Empty;
-                for (uint r = 0; r < Rows; r++)
+                for (uint c = 0; c < Cols && Memory.graphics.GraphicsDevice != null; c++)
                 {
-                    offset.X = 0;
-                    for (uint c = 0; c < Cols; c++)
-                    {
-                        Rectangle _src = Scale(src, ScaleFactor);
-                        cnt = ContainerRectangle(offset, Textures[c, r]);
-                        if (cnt.Contains(_src))
-                        {
-                            _src.Location = (GetOffset(cnt, _src)).ToPoint();
-                            return single(Textures[c, r], _src);
-                        }
-                        else if (cnt.Intersects(_src))
-                        {
-                            throw new NotImplementedException($"{this} Not setup to run on overlapping texture atlases.");
-                        }
-                        offset.X += cnt.Width;
-                    }
-                    offset.Y += cnt.Height;
+                    ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
+                    string path = aw.GetListOfFiles().First(x => (x.IndexOf(string.Format(Filename, c + r * Cols + StartOffset), StringComparison.OrdinalIgnoreCase) >= 0));
+                    tex = Texture_Base.Open(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
+                    if (Classic == null && c2 < Cols) oldsize.X += tex.GetWidth;
+                    Texture2D pngTex = LoadPNG(path, Palette);
+                    Textures[c, r] = (UseBest(tex, pngTex, Palette, Colors));
+                    if (pngTex != null) Modded = true;
+                    if (c2 < Cols && Textures[c2, r2] != null) size.X += Textures[c2++, r2].Width;
                 }
+                if (Classic == null && r2 < Rows) oldsize.Y += tex.GetHeight;
+                if (r2 < Rows && Textures.LongLength > r2 + c2 - 1 && Textures[c2 - 1, r2] != null) size.Y += Textures[c2 - 1, r2++].Height;
             }
-            else throw new InvalidOperationException($"{this} Must run in main thread.");
-            return ret;
-        }
-
-        private Rectangle Trim_SingleTexture(Texture2D tex, Rectangle _src)
-        {
-            Rectangle ret = Rectangle.Empty;
-            ret.Offset(-1, -1);
-            // storage of colors.
-            Color[] tmp = new Color[_src.Width * _src.Height];
-            // colors of all pixels
-            tex.GetData<Color>(0, _src, tmp, 0, tmp.Length);
-            // max x and y values
-            int x2 = _src.Width;
-            int y2 = _src.Height;
-            // check each pixel's color
-            for (int y1 = 0; y1 < y2; y1++)
-            {
-                for (int x1 = 0; x1 < x2; x1++)
-                {
-                    Color a = tmp[x1 + y1 * _src.Width];
-                    if (a.A != 0)
-                    {
-                        // grab high and low bounds of non transparent pixels.
-                        if (ret.Y < 0 || ret.X > x1)
-                        {
-                            ret.X = x1;
-                        }
-                        else if (ret.Width == 0 || ret.Width < x1)
-                            ret.Width = x1;
-                        // do same for Y axis.
-                        if (ret.Y <0 || ret.Y > y1)
-                        {
-                            ret.Y = y1;
-                        }
-                        else if (ret.Height == 0 || ret.Height < y1)
-                            ret.Height = y1;
-                    }
-                }
-            }
-            //using height and width as a bottom and right x/y
-            //converting them back to height and width.
-            ret.Width -= ret.X;
-            ret.Height -= ret.Y;
-            ret.Width += 1;
-            ret.Height += 1;
-            ret.Offset(_src.X, _src.Y);
-            ret = Scale(ret, ReverseScaleFactor);
-            _src = Scale(_src, ReverseScaleFactor);
-            return ret;
+            Size = size;
+            if (Classic == null) ClassicSize = oldsize;
         }
 
         private void _Draw(Rectangle dst, Rectangle src, Color color)
@@ -416,13 +369,6 @@ namespace OpenVIII
             return;
         }
 
-        private Rectangle ContainerRectangle(Vector2 offset, Texture2D tex)
-        {
-            Rectangle cnt = ToRectangle(tex);
-            cnt.Offset(offset);
-            return cnt;
-        }
-
         private void _Draw(Texture2D tex, ref Rectangle dst, Rectangle _src, Color color, Rectangle cnt, ref Vector2 dstOffset, out bool drawn, out Rectangle dst2)
         {
             Rectangle src2 = Rectangle.Intersect(cnt, _src);
@@ -461,33 +407,44 @@ namespace OpenVIII
             }
         }
 
-        public Vector2 GetScale(int cols = 0, int rows = 0) => ScaleFactor;
-
-        protected void Init()
+        private Rectangle _process(Rectangle src, Func<Texture2D, Rectangle, Rectangle> single)
         {
-            Vector2 size = Vector2.Zero;
-            Vector2 oldsize = Vector2.Zero;
-            Texture_Base tex = null;
-            uint c2 = 0;
-            uint r2 = 0;
-            for (uint r = 0; r < Rows; r++)
+            Rectangle ret = Rectangle.Empty;
+
+            if (Memory.IsMainThread)
             {
-                for (uint c = 0; c < Cols && Memory.graphics.GraphicsDevice != null; c++)
+                Vector2 offset = Vector2.Zero;
+                Rectangle cnt = Rectangle.Empty;
+                for (uint r = 0; r < Rows; r++)
                 {
-                    ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
-                    string path = aw.GetListOfFiles().First(x => (x.IndexOf(string.Format(Filename, c + r * Cols + StartOffset), StringComparison.OrdinalIgnoreCase) >= 0));
-                    tex = Texture_Base.Open(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
-                    if (Classic == null && c2 < Cols) oldsize.X += tex.GetWidth;
-                    Texture2D pngTex = LoadPNG(path, Palette);
-                    Textures[c, r] = (UseBest(tex, pngTex, Palette, Colors));
-                    if (pngTex != null) Modded = true;
-                    if (c2 < Cols && Textures[c2, r2] != null) size.X += Textures[c2++, r2].Width;
+                    offset.X = 0;
+                    for (uint c = 0; c < Cols; c++)
+                    {
+                        Rectangle _src = Scale(src, ScaleFactor);
+                        cnt = ContainerRectangle(offset, Textures[c, r]);
+                        if (cnt.Contains(_src))
+                        {
+                            _src.Location = (GetOffset(cnt, _src)).ToPoint();
+                            return single(Textures[c, r], _src);
+                        }
+                        else if (cnt.Intersects(_src))
+                        {
+                            throw new NotImplementedException($"{this} Not setup to run on overlapping texture atlases.");
+                        }
+                        offset.X += cnt.Width;
+                    }
+                    offset.Y += cnt.Height;
                 }
-                if (Classic == null && r2 < Rows) oldsize.Y += tex.GetHeight;
-                if (r2 < Rows && Textures.LongLength > r2 + c2 - 1 && Textures[c2 - 1, r2] != null) size.Y += Textures[c2 - 1, r2++].Height;
             }
-            Size = size;
-            if (Classic == null) ClassicSize = oldsize;
+            else throw new InvalidOperationException($"{this} Must run in main thread.");
+            return ret;
+        }
+
+        private Rectangle ContainerRectangle(Vector2 offset, Texture2D tex)
+        {
+            Rectangle cnt = ToRectangle(tex);
+            cnt.Offset(offset);
+            return cnt;
         }
 
         private void Init(string filename, Texture_Base classic, uint cols, uint rows, ushort palette = 0, Color[] colors = null)
@@ -511,15 +468,54 @@ namespace OpenVIII
             Merge();
         }
 
-        
-        public void Save()
+        private Rectangle Trim_SingleTexture(Texture2D tex, Rectangle _src)
         {
-            string clean =Regex.Replace(Filename, @"{[^}]+}", "");
-            string outpath = Path.Combine(Path.GetTempPath(),Path.GetFileName(clean)+  $"{Palette}.png");
-            using (FileStream fs = File.Create(outpath))
-                Textures[0, 0].SaveAsPng(fs, Textures[0, 0].Width, Textures[0, 0].Height);
-            
+            Rectangle ret = Rectangle.Empty;
+            ret.Offset(-1, -1);
+            // storage of colors.
+            Color[] tmp = new Color[_src.Width * _src.Height];
+            // colors of all pixels
+            tex.GetData<Color>(0, _src, tmp, 0, tmp.Length);
+            // max x and y values
+            int x2 = _src.Width;
+            int y2 = _src.Height;
+            // check each pixel's color
+            for (int y1 = 0; y1 < y2; y1++)
+            {
+                for (int x1 = 0; x1 < x2; x1++)
+                {
+                    Color a = tmp[x1 + y1 * _src.Width];
+                    if (a.A != 0)
+                    {
+                        // grab high and low bounds of non transparent pixels.
+                        if (ret.Y < 0 || ret.X > x1)
+                        {
+                            ret.X = x1;
+                        }
+                        else if (ret.Width == 0 || ret.Width < x1)
+                            ret.Width = x1;
+                        // do same for Y axis.
+                        if (ret.Y < 0 || ret.Y > y1)
+                        {
+                            ret.Y = y1;
+                        }
+                        else if (ret.Height == 0 || ret.Height < y1)
+                            ret.Height = y1;
+                    }
+                }
+            }
+            //using height and width as a bottom and right x/y
+            //converting them back to height and width.
+            ret.Width -= ret.X;
+            ret.Height -= ret.Y;
+            ret.Width += 1;
+            ret.Height += 1;
+            ret.Offset(_src.X, _src.Y);
+            ret = Scale(ret, ReverseScaleFactor);
+            _src = Scale(_src, ReverseScaleFactor);
+            return ret;
         }
+
         #endregion Methods
     }
 }

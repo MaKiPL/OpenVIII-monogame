@@ -11,6 +11,7 @@ namespace OpenVIII
     /// </summary>
     public partial class Icons : SP2
     {
+
         #region Fields
 
         private new Dictionary<ID, EntryGroup> Entries = null;
@@ -134,6 +135,12 @@ namespace OpenVIII
             return null;
         }
 
+        public new void Trim(Enum ic, byte pal)
+        {
+            EntryGroup eg = this[(ID)ic];
+            eg.Trim(Textures[pal]);
+        }
+
         protected override void InitEntries(ArchiveWorker aw = null)
         {
             if (Entries == null)
@@ -169,11 +176,6 @@ namespace OpenVIII
                 }
             }
         }
-        public void Trim(ID ic, byte pal)
-        {
-            EntryGroup eg = this[ic];
-            eg.Trim(Textures[pal]);
-        }
         protected override void InitTextures(ArchiveWorker aw = null)
         {
             Textures = new List<TextureHandler>();
@@ -202,7 +204,7 @@ namespace OpenVIII
             }
         }
 
-
         #endregion Methods
+
     }
 }
