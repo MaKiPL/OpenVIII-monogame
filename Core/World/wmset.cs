@@ -34,24 +34,24 @@ namespace OpenVIII.Core.World
 
             //if there's no section method either uncommented or commented out, then the section that is lacking is 4 byte NULL
 
-            //Section1();
+            //Section1(); //=encounter
             Section2(); //Finished
-            //Section3();
-            //Section4();
-            //Section5();
-            //Section6();
-            //Section7();
+            //Section3(); //=encounter
+            //Section4(); //=encounter
+            //Section5(); //=encounter
+            //Section6(); //=encounter
+            //Section7(); //=something with roads colours, cluts. Can't really understand why it's needed, looks like some kind of helper for VRAM?
             //Section8();
-            //Section9();
+            //Section9(); //=related to field2wm?
             //Section10();
             //Section11();
             //Section12();
             //Section13();
             //Section14();
             Section16(); //Finished
-            //Section17();
+            Section17(); //=beach animations
             //Section18();
-            //Section19();
+            //Section19(); //=something with regions: wm_getRegionNumber(SquallPos) + wmsets19
             //Section20();
             //Section21();
             //Section29();
@@ -90,8 +90,6 @@ namespace OpenVIII.Core.World
             return innerSections.ToArray();
         }
 
-        #region Sections parsing
-
         #region Section 2 - world map regions
         private byte[] regionsBuffer;
 
@@ -106,6 +104,7 @@ namespace OpenVIII.Core.World
         }
 
         public byte GetWorldRegionByBlock(int blockId) => regionsBuffer[blockId];
+        public byte GetWorldRegionBySegmentPosition(int x, int y) => regionsBuffer[y * 32 + x];
         #endregion
 
         #region Section 16 - World map objects and vehicles
@@ -304,6 +303,59 @@ namespace OpenVIII.Core.World
 
         }
         public int GetVehicleModelsCount() => s16Models.Length;
+
+        #endregion
+
+        #region Section 17 - World map texture animations for beach
+        /*
+         * Section 17 is responsible for beach texture animations. It's a double file- first it contains chunks. Every chunk contains 
+         * animation frames information. It's constant as I can see 4 frames per animation. Despite the header there's nothing much to it.
+         * oh, also the texture data is not casual TIM nor TEX. Probably raw, no palette inside. Needs testing!
+         */
+
+        public void Section17()
+        {
+            int[] innerPointers;
+            using (MemoryStream ms = new MemoryStream(buffer))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                ms.Seek(sectionPointers[17 - 1], SeekOrigin.Begin);
+                innerPointers = GetInnerPointers(br);
+
+                for (int i = 0; i < innerPointers.Length; i++)
+                    Section17_ParseBlock(sectionPointers[17 - 1] + innerPointers[i], ms, br);
+
+            }
+        }
+
+        private void Section17_ParseBlock(int offset, MemoryStream ms, BinaryReader br)
+        {
+            ms.Seek(offset, SeekOrigin.Begin);
+            byte unk = br.ReadByte(); //not sure, something like starting delay or I don't know. Like some sort of extension to timeout?
+            byte animationTimeout = br.ReadByte(); //controls how fast the animation frames pass-by. 1 is the fastest. 0 means invalid? here usually 0x20
+
+            byte framesCount = br.ReadByte();   /* usually 4, but there are 8 pointers, so any value bigger than 8 may work, but not suitable with
+                                                * current file. Actually in section17 there are always eight pointers, but 5th and bigger pointer
+                                                * is always pointing to the same frame which is the 4th frame. Therefore engine reads this variable
+                                                * and skips any additional pointers BUT! if you designed the file to have 12-16 pointers in anim 
+                                                * frames, then it would totally work. The engine (at least in vanilla) would normally read the pointers
+                                                * and play the animation. Cool, huh?  */
+
+            byte bLoop = br.ReadByte(); //if 1 then loops backward. If 0 then sequential from zero i.e. 0>1>2>3> 0>1>2>3; if 1 then i.e. 0>1>2>3 X >2>1> 0>1>2>3...
+
+            ushort VRAMpalX = br.ReadUInt16(); //example entry 0 has 832 (816+16)
+            ushort VRAMpalY = br.ReadUInt16(); //example entry 0 has 384
+
+
+
+            uint preImagePosition = (uint)ms.Position;
+            uint[] imagePointers = new uint[framesCount]; //looks like 8 is fixed? NOTE: it's not fixed, some bitshit is deciding whether read or not next pointer bleh...
+            for (int i = 0; i < framesCount; i++) 
+                imagePointers[i] = br.ReadUInt32() + preImagePosition;
+
+            //TODO- what about the texture? I wonder if it's actually used or the other wmset section texture kicks in. 
+            //TODO - try to destroy the texture and see what happens
+        }
 
         #endregion
 
@@ -527,8 +579,6 @@ namespace OpenVIII.Core.World
         /// <param name="clut"></param>
         /// <returns></returns>
         public Vector2 GetVehicleTextureOriginVector(int index, int clut) => timOrigHolder[index];
-
-        #endregion
 
         #endregion
     }
