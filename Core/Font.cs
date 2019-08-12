@@ -96,12 +96,14 @@ namespace OpenVIII
             int charCountWidth = 21;
             int charSize = 12; //pixelhandler does the 2x scaling on the fly.
             Point size = (new Vector2(0, charSize) * zoom).RoundedPoint();
+            Point baksize = size;
             int width = 0;
             ColorID colorbak = color;
             bool blink = false;
             bool skipletter = false;
             for (int i = 0; i < buffer.Length; i++)
             {
+                size = baksize;
                 byte c = buffer[i];
                 if (c == 0) continue;
                 else if (c == (byte)FF8TextTagCode.Dialog)
@@ -114,11 +116,12 @@ namespace OpenVIII
                             // Most of these should be replaced before it gets here becuase they have
                             // values set by other objects.
                             case FF8TextTagDialog.CustomICON:
-                                DrawIcon(buffer, zoom, Fade, skipdraw, ref destRect, real, ref size, ref width, ref skipletter, ref i, ref c);
+                                DrawIcon(buffer, zoom, Fade, skipdraw, real, ref size, ref skipletter, ref i, ref c);
                                 break;
                         }
-                        if (!skipletter)
-                            continue;
+                        //if (!skipletter)
+                        SetRetRec(pos, ref ret, ref real, size);
+                        continue;
                     }
                 }
                 else if (c == (byte)FF8TextTagCode.Key)
@@ -128,10 +131,13 @@ namespace OpenVIII
                         FF8TextTagKey k = (FF8TextTagKey)buffer[i];
                         FF8String str = Input2.ButtonString(k);
                         Rectangle retpos = RenderBasicText(str, real, zoom, whichFont, Fade, lineSpacing, skipdraw, ColorID.Green);
-                        real.X += retpos.Width;
+                        size.X = retpos.Width;
+                        //size.Y = retpos.Height;
+                        //real.X += retpos.Width;
                         //TODO add key/controller input icons/text here.
                         //if (!skipletter)
-                            continue;
+                        SetRetRec(pos, ref ret, ref real, size);
+                        continue;
                     }
                 }
                 else if (c == (byte)FF8TextTagCode.Color)
@@ -141,11 +147,15 @@ namespace OpenVIII
                         c = buffer[i];
                         blink = c >= (byte)FF8TextTagColor.Dark_GrayBlink ? true : false;
                         color = GetColorFromTag(c, colorbak);
+                        SetRetRec(pos, ref ret, ref real, size);
                         continue;
                     }
                 }
                 else if (c == (byte)FF8TextTagCode.Line && NewLine(pos, lineSpacing, ref real, size))
+                {
+                    SetRetRec(pos, ref ret, ref real, size);
                     continue;
+                }
                 if (!skipletter)
                 {
                     int deltaChar = GetDeltaChar(c);
@@ -174,17 +184,22 @@ namespace OpenVIII
                     }
                 }
                 skipletter = false;
-                real.X += size.X;
-                int curWidth = real.X - (int)pos.X;
-                if (curWidth > ret.Width)
-                    ret.Width = curWidth;
+                SetRetRec(pos, ref ret, ref real, size);
             }
 
             ret.Height = size.Y + (real.Y - (int)pos.Y);
             return ret;
         }
 
-        private static void DrawIcon(FF8String buffer, Vector2 zoom, float Fade, bool skipdraw, ref Rectangle destRect, Point real, ref Point size, ref int width, ref bool skipletter, ref int i, ref byte c)
+        private static void SetRetRec(Vector2 pos, ref Rectangle ret, ref Point real, Point size)
+        {
+            real.X += size.X;
+            int curWidth = real.X - (int)pos.X;
+            if (curWidth > ret.Width)
+                ret.Width = curWidth;
+        }
+
+        private static void DrawIcon(FF8String buffer, Vector2 zoom, float Fade, bool skipdraw, Point real, ref Point size, ref bool skipletter, ref int i, ref byte c)
         {
             if (i + 3 < buffer.Length)
             {
@@ -195,16 +210,16 @@ namespace OpenVIII
                 byte pal = buffer[++i];
                 Memory.Icons.Trim((Icons.ID)ic,pal);
                 EntryGroup icon = Memory.Icons[(Icons.ID)ic];
+                //Vector2 scale = Memory.Icons.GetTexture((Icons.ID)ic).ScaleFactor;
                 if (icon != null)
                 {
-                    width = icon.Width;
-                    Point iconsize;
                     float adj = (12/(float)(icon.Height));
-                    iconsize.X = size.X = (int)(icon.Width * zoom.X* adj);
-                    iconsize.Y = (int)(icon.Height * zoom.X* adj);
-
-                    destRect = new Rectangle(real, iconsize);
-                    skipletter = true;
+                    Vector2 scale = new Vector2(adj * zoom.X);
+                    size.X = (int)(icon.Width * scale.X);
+                    size.Y = (int)(icon.Height * scale.X);
+                    Rectangle destRect = new Rectangle(real, size);
+                    //real.X += size.X;
+                    //skipletter = true;
                     if (!skipdraw)
                         Memory.Icons.Draw((Icons.ID)ic, pal, destRect, Vector2.Zero, Fade);
                 }
