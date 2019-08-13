@@ -17,10 +17,13 @@ namespace OpenVIII
         private int _player = 0;
         private Dictionary<Mode, Action> DrawActions;
         private Dictionary<Mode, Func<bool>> InputFunctions;
+        private Dictionary<Mode, Action> ReturnAction;
         private Dictionary<Mode, Func<bool>> UpdateFunctions;
+        private Module_main_menu_debug.MainMenuStates lastmenu;
+        private int lastgamestate;
 
         #endregion Fields
-        
+
         #region Enums
 
         public enum Mode : byte
@@ -35,7 +38,6 @@ namespace OpenVIII
         {
             HP
         }
-
         #endregion Enums
 
         #region Methods
@@ -92,11 +94,33 @@ namespace OpenVIII
                     //{Mode.Victory, InputVictoryFunction},
                     //{Mode.GameOver, InputGameOverFunction},
                 };
+                ReturnAction = new Dictionary<Mode, Action>()
+                {
+                    {Mode.Starting, ReturnStartingFunction},
+                    {Mode.Battle, ReturnBattleFunction},
+                    {Mode.Victory, ReturnVictoryFunction},
+                    {Mode.GameOver, ReturnGameOverFunction},
+                };
                 menus?.ForEach(m => m.Show());
             }
             Victory_Menu?.Refresh(10000,1000,new Saves.Item(10,100), new Saves.Item(20, 65), new Saves.Item(28, 54));
             base.Refresh();
         }
+
+        public void  CameFrom()
+        {
+            lastmenu = Module_main_menu_debug.State;
+            lastgamestate = Memory.module;
+        }
+        public void ReturnTo()
+        {
+            Module_main_menu_debug.State = lastmenu;
+            Memory.module = lastgamestate;
+        }
+        private void ReturnGameOverFunction() { }
+        private void ReturnVictoryFunction() { }
+        private void ReturnBattleFunction() { }
+        private void ReturnStartingFunction() { }
 
         public override bool Update()
         {
