@@ -41,39 +41,42 @@ namespace OpenVIII.Core.World
             //Section5(); //=encounter
             //Section6(); //=encounter
             //Section7(); //=something with roads colours, cluts. Can't really understand why it's needed, looks like some kind of helper for VRAM?
-            //Section8();
+            Section8();
             //Section9(); //=related to field2wm?
             //Section10();
-            //Section11();
+            //Section11(); //??????
             //Section12();
             //Section13();
-            //Section14();
+            //Section14(); //=STRINGS- side quests
             Section16(); //Finished
             Section17(); //=beach animations
-            //Section18();
+            //Section18(); //?????
             //Section19(); //=something with regions: wm_getRegionNumber(SquallPos) + wmsets19
-            //Section20();
-            //Section21();
-            //Section29();
-            //Section30();
-            //Section31();
-            //Section32();
-            //Section33();
-            //Section34();
-            //Section35();
-            //Section36();
-            //Section37();
+            //Section31(); //?????
+            //Section32(); //=STRINGS- location names
+            //Section33(); //=SKY GRADIENT/REGION COLOURING
+            //Section34(); //?????????
+            //Section35(); //=draw points
+            //Section36(); //?????????
+            //Section37(); //ENCOUNTERS??????
             Section38(); //Finished
             Section39(); //Finished
-            //Section40();
-            //Section41();
+            //Section41(); //=Water animation info
             Section42(); //Finished
+
+            //AKAO BELOW
+            //Section20();
+            //Section21();
             //Section43();
             //Section44();
             //Section45();
             //Section46();
             //Section47();
             //Section48();
+
+            //-not important in openviii implementation/ sections used for limited memory solutions/psx hardware limitations
+            //Section29(); //water block for limited memory rendering- not important in today
+            //Section40(); //can't understand this one
         }
 
         /// <summary>
@@ -105,6 +108,23 @@ namespace OpenVIII.Core.World
 
         public byte GetWorldRegionByBlock(int blockId) => regionsBuffer[blockId];
         public byte GetWorldRegionBySegmentPosition(int x, int y) => regionsBuffer[y * 32 + x];
+        #endregion
+
+        #region Section 8 - World map to field
+
+        public void Section8()
+        {
+            using (MemoryStream ms = new MemoryStream(buffer))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                ms.Seek(sectionPointers[8 - 1], SeekOrigin.Begin);
+                var innerSec = GetInnerPointers(br);
+                for(int i = 0; i<innerSec.Length; i++)
+                {
+                    //???
+                }
+            }
+        }
         #endregion
 
         #region Section 16 - World map objects and vehicles
@@ -344,6 +364,7 @@ namespace OpenVIII.Core.World
             byte bLoop = br.ReadByte(); //if 1 then loops backward. If 0 then sequential from zero i.e. 0>1>2>3> 0>1>2>3; if 1 then i.e. 0>1>2>3 X >2>1> 0>1>2>3...
 
             ushort VRAMpalX = br.ReadUInt16(); //example entry 0 has 832 (816+16)
+            /* in assembly VRAMpalX is actually the byte count-> 4 * (v6>>2), therefore (VRAMpalX/4)*4*/
             ushort VRAMpalY = br.ReadUInt16(); //example entry 0 has 384
 
 
@@ -352,9 +373,6 @@ namespace OpenVIII.Core.World
             uint[] imagePointers = new uint[framesCount]; //looks like 8 is fixed? NOTE: it's not fixed, some bitshit is deciding whether read or not next pointer bleh...
             for (int i = 0; i < framesCount; i++) 
                 imagePointers[i] = br.ReadUInt32() + preImagePosition;
-
-            //TODO- what about the texture? I wonder if it's actually used or the other wmset section texture kicks in. 
-            //TODO - try to destroy the texture and see what happens
         }
 
         #endregion
@@ -583,3 +601,15 @@ namespace OpenVIII.Core.World
         #endregion
     }
 }
+
+/*
+ * Snippet for section w/ inner pointers
+ * 
+ *          
+            using (MemoryStream ms = new MemoryStream(buffer))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                ms.Seek(sectionPointers[8 - 1], SeekOrigin.Begin);
+                var innerSec = GetInnerPointers(br);
+            }
+*/
