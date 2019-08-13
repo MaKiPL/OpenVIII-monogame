@@ -79,7 +79,7 @@ namespace OpenVIII
                 return true;
             }
 
-            public override void Inputs_OKAY()
+            public override bool Inputs_OKAY()
             {
                 base.Inputs_OKAY();
                 switch ((Items)CURSOR_SELECT)
@@ -88,19 +88,21 @@ namespace OpenVIII
                     case Items.Magic:
                     case Items.Status:
                         IGM.SetMode(Mode.ChooseChar);
-                        return;
+                        return true;
 
                     case Items.Item:
                         Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.IGM_Items;
                         IGM_Items.Refresh();
-                        return;
+                        return true;
 
                     case Items.Battle:
+                        BattleMenus.CameFrom();
                         Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.BattleMenu;
                         BattleMenus.Refresh();
                         FadeIn();
-                        return;
+                        return true;
                 }
+                return false;
             }
 
             public override void Refresh()

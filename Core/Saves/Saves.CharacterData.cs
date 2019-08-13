@@ -85,43 +85,44 @@ namespace OpenVIII
             /// </summary>
             /// <returns>-1 - 4</returns>
             /// <remarks>https://finalfantasy.fandom.com/wiki/Crisis_Level</remarks>
+            /// <remarks>TODO: Need to confirm the formula is correct via reverse</remarks>
             public sbyte GenerateCrisisLevel()
             {
                 ushort current = CurrentHP();
                 ushort max = MaxHP();
-                if ((ID == Characters.Seifer_Almasy && CurrentHP() < (max * 84 / 100)))
+                //if ((ID == Characters.Seifer_Almasy && CurrentHP() < (max * 84 / 100)))
+                //{
+                int HPMod = CharacterStats.Crisis * 10 * current / max;
+                int DeathBonus = Memory.State.DeadPartyMembers() * 200 + 1600;
+                int StatusBonus = (int)(Statuses0.Count() * 10); // I think this is status of all party members
+                int RandomMod = random.Next(0, 255) + 160;
+                int crisislevel = (StatusBonus + DeathBonus - HPMod) / RandomMod; // better random number?
+                if (crisislevel == 5)
                 {
-                    int HPMod = CharacterStats.Crisis * 10 * current / max;
-                    int DeathBonus = Memory.State.DeadPartyMembers() * 200 + 1600;
-                    int StatusBonus = (int)(Statuses0.Count() * 10);
-                    int RandomMod = random.Next(0, 255) + 160;
-                    int crisislevel = (StatusBonus + DeathBonus - HPMod) / RandomMod;
-                    if (crisislevel == 5)
-                    {
-                        CurrentCrisisLevel = 0;
-                        return CurrentCrisisLevel;
-                    }
-                    else if (crisislevel == 6)
-                    {
-                        CurrentCrisisLevel = 1;
-                        return CurrentCrisisLevel;
-                    }
-                    else if (crisislevel == 7)
-                    {
-                        CurrentCrisisLevel = 2;
-                        return CurrentCrisisLevel;
-                    }
-                    else if (crisislevel >= 8)
-                    {
-                        CurrentCrisisLevel = 3;
-                        return CurrentCrisisLevel;
-                    }
+                    CurrentCrisisLevel = 0;
+                    return CurrentCrisisLevel;
                 }
+                else if (crisislevel == 6)
+                {
+                    CurrentCrisisLevel = 1;
+                    return CurrentCrisisLevel;
+                }
+                else if (crisislevel == 7)
+                {
+                    CurrentCrisisLevel = 2;
+                    return CurrentCrisisLevel;
+                }
+                else if (crisislevel >= 8)
+                {
+                    CurrentCrisisLevel = 3;
+                    return CurrentCrisisLevel;
+                }
+                //}
                 return CurrentCrisisLevel = -1;
             }
 
             /// <summary>
-            /// Set by CrisisLevel(), -1 means no limit break. &gt;=0 has a limit break.
+            /// Set by GenerateCrisisLevel(), -1 means no limit break. &gt;=0 has a limit break.
             /// </summary>
             /// <returns>-1 - 4</returns>
             /// <remarks>https://finalfantasy.fandom.com/wiki/Crisis_Level</remarks>
@@ -429,8 +430,8 @@ namespace OpenVIII
                 {
                     if (experience == 0)
                         experience = value;
-                    else if(!IsGameOver && experience != value)
-                            experience = value; //trying to give my self a good break point
+                    else if (!IsGameOver && experience != value)
+                        experience = value; //trying to give my self a good break point
                 }
             }
 

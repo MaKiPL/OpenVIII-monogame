@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,8 @@ namespace OpenVIII
         private Dictionary<Mode, Func<bool>> UpdateFunctions;
         private Module_main_menu_debug.MainMenuStates lastmenu;
         private int lastgamestate;
+        private ushort lastmusic;
+        private bool lastmusicplaying;
 
         #endregion Fields
 
@@ -55,6 +58,14 @@ namespace OpenVIII
             bool ret = false;
             if (InputFunctions.ContainsKey((Mode)GetMode()))
                 ret = InputFunctions[(Mode)GetMode()]() && ret;
+            if (Input2.DelayedButton(Keys.D1))
+            {
+                SetMode(Mode.Victory);
+            }
+            else if (Input2.DelayedButton(Keys.D2))
+            {
+                SetMode(Mode.GameOver);
+            }
             return ret;
         }
 
@@ -72,7 +83,7 @@ namespace OpenVIII
                     menus.Add(tmp);
                 }
                 menus.Add(new VictoryMenu());
-                SetMode(Mode.Victory);
+                SetMode(Mode.Battle);
                 UpdateFunctions = new Dictionary<Mode, Func<bool>>()
                 {
                     {Mode.Starting, UpdateStartingFunction},
@@ -111,11 +122,17 @@ namespace OpenVIII
         {
             lastmenu = Module_main_menu_debug.State;
             lastgamestate = Memory.module;
+            lastmusic = Memory.MusicIndex;
+            lastmusicplaying = init_debugger_Audio.MusicPlaying;
         }
         public void ReturnTo()
         {
             Module_main_menu_debug.State = lastmenu;
             Memory.module = lastgamestate;
+            if (lastmusicplaying)
+                init_debugger_Audio.PlayMusic(lastmusic);
+            else
+                init_debugger_Audio.StopMusic();
         }
         private void ReturnGameOverFunction() { }
         private void ReturnVictoryFunction() { }
@@ -125,8 +142,11 @@ namespace OpenVIII
         public override bool Update()
         {
             bool ret = false;
-            if (UpdateFunctions.ContainsKey((Mode)GetMode()))
-                UpdateFunctions[(Mode)GetMode()]();
+            if (UpdateFunctions.TryGetValue((Mode)GetMode(),out Func<bool> u))
+            {
+                ret = u();
+            }
+                
             ret = base.Update() || ret;
             return ret;
         }
@@ -172,8 +192,11 @@ namespace OpenVIII
                         break;
                 }
                 if (++_player > 2) _player = 0;
-                init_debugger_Audio.PlaySound(14);
                 menus[_player].SetMode(BattleMenu.Mode.YourTurn);
+                if(((BattleMenu)menus[_player]).CrisisLevel)
+                    init_debugger_Audio.PlaySound(94);
+                else
+                    init_debugger_Audio.PlaySound(14);
                 switch ((BattleMenu.Mode)menus[_player].GetMode())
                 {
                     case BattleMenu.Mode.ATB_Charged:
@@ -192,7 +215,7 @@ namespace OpenVIII
         {
             menus?[_player].SetMode(BattleMenu.Mode.YourTurn);
             bool ret = false;
-            foreach (var m in menus)
+            foreach (var m in menus?.Where(m => m.GetType().Equals(typeof(BattleMenu))))
             {
                 ret = m.Update() || ret;
             }

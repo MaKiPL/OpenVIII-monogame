@@ -82,10 +82,15 @@ namespace OpenVIII
                 return true;
             }
 
-            public override void Inputs_OKAY()
+            public override bool Inputs_OKAY()
             {
-                base.Inputs_OKAY();
-                Inputs_Okay_Actions[CURSOR_SELECT]();
+                if (CURSOR_SELECT < Inputs_Okay_Actions.Count)
+                {
+                    base.Inputs_OKAY();
+                    Inputs_Okay_Actions[CURSOR_SELECT]();
+                    return true;
+                }
+                return false;
             }
 
             public override void Refresh()

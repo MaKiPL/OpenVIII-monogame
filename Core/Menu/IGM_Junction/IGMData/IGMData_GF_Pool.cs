@@ -36,7 +36,7 @@ namespace OpenVIII
                 return true;
             }
 
-            public override void Inputs_OKAY()
+            public override bool Inputs_OKAY()
             {
                 skipsnd = true;
                 init_debugger_Audio.PlaySound(31);
@@ -126,8 +126,10 @@ namespace OpenVIII
                                 }
                         }
                         IGM_Junction.Refresh();
+                        return true;
                     }
                 }
+                return false;
             }
 
             public override void Refresh()

@@ -63,7 +63,7 @@ namespace OpenVIII
 
                 public override bool Inputs_CANCEL() => false;
 
-                public override void Inputs_OKAY()
+                public override bool Inputs_OKAY()
                 {
                     if (ITEM[0, 5].Enabled || ITEM[0, 6].Enabled)
                     {
@@ -71,6 +71,7 @@ namespace OpenVIII
                         {
                             Refresh();
                             base.Inputs_OKAY();
+                            return true;
                         }
                     }
                     else if (Items != null && Items.Count > 0)
@@ -87,7 +88,9 @@ namespace OpenVIII
                         }
 
                         base.Inputs_OKAY();
+                        return true;
                     }
+                    return false;
                 }
 
                 public override void Refresh()
@@ -122,6 +125,7 @@ namespace OpenVIII
                 protected override void Init()
                 {
                     base.Init();
+                    Hide();
                     ITEM[0, 0] = new IGMDataItem_Box(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 21), new Rectangle(SIZE[0].X, SIZE[0].Y, SIZE[0].Width, 78), Icons.ID.INFO, options: Box_Options.Middle);
                     ITEM[0, 1] = new IGMDataItem_Box(null, new Rectangle(SIZE[0].X + 140, SIZE[0].Y + 189, 475, 78), Icons.ID.ITEM, options: Box_Options.Middle); // item name
                     ITEM[0, 2] = new IGMDataItem_Box(null, new Rectangle(SIZE[0].X + 615, SIZE[0].Y + 189, 125, 78), Icons.ID.NUM_, options: Box_Options.Middle | Box_Options.Center); // item count

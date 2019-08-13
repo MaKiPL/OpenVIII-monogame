@@ -98,7 +98,7 @@ namespace OpenVIII
 
                 public override bool Inputs_CANCEL() => false;
 
-                public override void Inputs_OKAY()
+                public override bool Inputs_OKAY()
                 {
                     base.Inputs_OKAY();
                     if (!countingDown && _exp > 0)
@@ -106,6 +106,7 @@ namespace OpenVIII
                         countingDown = true;
                         if (EXPsnd == null)
                             EXPsnd = init_debugger_Audio.PlaySound(34, loop: true);
+                        return true;
                     }
                     else if (countingDown && _exp > 0)
                     {
@@ -113,7 +114,9 @@ namespace OpenVIII
                         EXPsnd.Stop();
                         EXPsnd = null;
                         EXP = 0;
+                        return true;
                     }
+                    return false;
                 }
 
                 public override bool Update()

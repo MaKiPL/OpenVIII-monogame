@@ -46,7 +46,7 @@ namespace OpenVIII
                 return true;
             }
 
-            public override void Inputs_OKAY()
+            public override bool Inputs_OKAY()
             {
                 switch (CURSOR_SELECT)
                 {
@@ -73,8 +73,11 @@ namespace OpenVIII
                         Cursor_Status |= Cursor_Status.Blinking;
                         IGM_Junction.SetMode(Mode.Abilities);
                         break;
+                    default:
+                        return false;
                 }
                 base.Inputs_OKAY();
+                return true;
             }
 
             public override void Refresh()

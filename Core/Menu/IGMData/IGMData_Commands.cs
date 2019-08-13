@@ -10,6 +10,7 @@ namespace OpenVIII
         private int nonbattleWidth;
         private sbyte page = 0;
         private bool skipReinit;
+        private bool _chrsisLevel;
 
         #endregion Fields
 
@@ -18,7 +19,6 @@ namespace OpenVIII
         public IGMData_Commands(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null, bool battle = false) : base(5, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.COMMAND), 1, 4, character, visablecharacter)
         {
             Battle = battle;
-            nonbattleWidth = Width;
             skipReinit = true;
             Refresh();
         }
@@ -43,36 +43,28 @@ namespace OpenVIII
 
         public override void Inputs_Left()
         {
-            if (Battle && Memory.State.Characters[Character].GenerateCrisisLevel() >= 0 && CURSOR_SELECT == 1 || true)
+            if (Battle && CURSOR_SELECT == 0 && CrisisLevel)
             {
                 if (page == 1)
                 {
                     Refresh();
+                    skipsnd = true;
                     base.Inputs_Left();
-                    //for (int i = 1; i < Count; i++)
-                    //{
-                    //    ITEM[i, 0].Hide();
-                    //    BLANKS[i] = true;
-                    //}
                 }
             }
         }
-
+        public bool CrisisLevel { get => _chrsisLevel; set => _chrsisLevel = value; }
         public override void Inputs_Right()
         {
-            if (Battle && Memory.State.Characters[Character].GenerateCrisisLevel() >= 0 && CURSOR_SELECT == 1 || true)
+            if (Battle && CURSOR_SELECT == 0 && CrisisLevel)
             {
                 if (page == 0)
                 {
                     ((IGMDataItem_String)ITEM[0, 0]).Data = Memory.State.Characters[Character].CharacterStats.Limit.Name;
+                    skipsnd = true;
                     base.Inputs_Right();
                     page++;
                     ITEM[Count - 1, 0].Hide();
-                    //for (int i = 1; i < Count; i++)
-                    //{
-                    //    ITEM[i, 0].Hide();
-                    //    BLANKS[i] = true;
-                    //}
                 }
             }
         }
@@ -112,10 +104,12 @@ namespace OpenVIII
                         BLANKS[pos] = true;
                     }
                 }
-
-                if (Battle && Memory.State.Characters[Character].GenerateCrisisLevel() >= 0 || true) //TODO remove true for testing limitbreak
+                const int crisiswidth = 294;
+                if (Width != crisiswidth)
+                nonbattleWidth = Width;
+                if (Battle && CrisisLevel) 
                 {
-                    CONTAINER.Width = 294;
+                    CONTAINER.Width = crisiswidth;
                     ITEM[Count - 1, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right, new Rectangle(SIZE[0].X + Width - 55, SIZE[0].Y, 0, 0), 2, 7) { Blink = true };
                 }
                 else
@@ -151,6 +145,7 @@ namespace OpenVIII
                 BattleMenu.Mode mode = (BattleMenu.Mode)e;
                 if (mode.Equals(BattleMenu.Mode.YourTurn))
                 {
+                    CrisisLevel = Memory.State.Characters[Character].GenerateCrisisLevel() >= 0;
                     Show();
                     Refresh();
                 }

@@ -45,17 +45,18 @@ namespace OpenVIII
                 return true;
             }
 
-            public override void Inputs_OKAY()
+            public override bool Inputs_OKAY()
             {
-                base.Inputs_OKAY();
+                bool ret = base.Inputs_OKAY();
                 FadeIn();
                 switch (Choice)
                 {
                     case Items.Junction:
                         Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.IGM_Junction;
                         IGM_Junction.Refresh(Contents[CURSOR_SELECT].Item1, Contents[CURSOR_SELECT].Item2);
-                        return;
+                        return true;
                 }
+                return ret;
             }
 
             public override void Refresh()

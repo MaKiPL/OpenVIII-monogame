@@ -33,10 +33,8 @@ namespace OpenVIII
                 return true;
             }
 
-            public override void Inputs_OKAY()
+            public override bool Inputs_OKAY()
             {
-                skipsnd = true;
-                init_debugger_Audio.PlaySound(31);
                 switch (CURSOR_SELECT)
                 {
                     case 0:
@@ -50,9 +48,13 @@ namespace OpenVIII
                     case 2:
                         Memory.State.Characters[Character].AutoMAG();
                         break;
+                    default: return false;
                 }
+                skipsnd = true;
+                init_debugger_Audio.PlaySound(31);
                 Inputs_CANCEL();
                 IGM_Junction.Refresh();
+                return true;
             }
 
             public override bool Update()

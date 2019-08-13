@@ -294,8 +294,7 @@ namespace OpenVIII
                 {
                     if (Input2.DelayedButton(FF8TextTagKey.Confirm))
                     {
-                        Inputs_OKAY();
-                        return true;
+                        return Inputs_OKAY();
                     }
                     else if (Input2.DelayedButton(FF8TextTagKey.Cancel))
                     {
@@ -348,10 +347,11 @@ namespace OpenVIII
                 init_debugger_Audio.PlaySound(0);
         }
 
-        public virtual void Inputs_OKAY()
+        public virtual bool Inputs_OKAY()
         {
             if (!skipsnd)
                 init_debugger_Audio.PlaySound(0);
+            return false;
         }
 
         public virtual void Inputs_Right()

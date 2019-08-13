@@ -7,6 +7,8 @@ namespace OpenVIII
     /// </summary>
     public partial class BattleMenu : Menu
     {
+        public bool CrisisLevel { get => ((IGMData_Commands)Data[SectionName.Commands]).CrisisLevel; }
+
         //private Mode _mode = Mode.Waiting;
 
         #region Constructors

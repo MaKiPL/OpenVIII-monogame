@@ -33,7 +33,7 @@ namespace OpenVIII
                 return true;
             }
 
-            public override void Inputs_OKAY()
+            public override bool Inputs_OKAY()
             {
                 base.Inputs_OKAY();
                 switch (CURSOR_SELECT)
@@ -47,7 +47,10 @@ namespace OpenVIII
                         IGM_Junction.Data[SectionName.RemAll].Show();
                         IGM_Junction.SetMode(Mode.RemAll);
                         break;
+                    default:
+                        return false;
                 }
+                return true;
             }
 
             public override bool Update()

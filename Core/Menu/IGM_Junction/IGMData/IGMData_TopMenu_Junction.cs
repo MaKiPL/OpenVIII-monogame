@@ -33,7 +33,7 @@ namespace OpenVIII
                 return true;
             }
 
-            public override void Inputs_OKAY()
+            public override bool Inputs_OKAY()
             {
                 base.Inputs_OKAY();
                 if (CURSOR_SELECT == 0)
@@ -46,6 +46,7 @@ namespace OpenVIII
                     IGM_Junction.SetMode(Mode.Mag_Stat);
                     IGM_Junction.Data[SectionName.Mag_Group].Show();
                 }
+                return true;
             }
 
             public override bool Update()

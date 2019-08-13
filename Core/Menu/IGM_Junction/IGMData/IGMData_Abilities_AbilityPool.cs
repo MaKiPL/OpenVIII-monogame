@@ -24,18 +24,20 @@ namespace OpenVIII
                 return true;
             }
 
-            public override void Inputs_OKAY()
+            public override bool Inputs_OKAY()
             {
-                skipsnd = true;
-                init_debugger_Audio.PlaySound(31);
-                base.Inputs_OKAY();
                 if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && !BLANKS[CURSOR_SELECT])
                 {
+                    skipsnd = true;
+                    init_debugger_Audio.PlaySound(31);
+                    base.Inputs_OKAY();
                     int target = IGM_Junction.Data[SectionName.TopMenu_Abilities].CURSOR_SELECT - 4;
                     Memory.State.Characters[Character].Abilities[target] = Contents[CURSOR_SELECT];
                     IGM_Junction.SetMode(Mode.Abilities);
                     IGM_Junction.Refresh(); // can be more specific if you want to find what is being changed.
+                    return true;
                 }
+                return false;
             }
 
             public override bool Update()

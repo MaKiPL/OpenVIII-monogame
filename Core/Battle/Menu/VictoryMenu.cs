@@ -41,7 +41,7 @@ namespace OpenVIII
                     new IGMData_PartyAP(new IGMDataItem_Empty(new Rectangle(Point.Zero,Size.ToPoint()))) },
 
                 };
-                SetMode(Mode.AP);
+                SetMode(Mode.Exp);
                 InputFunctions = new Dictionary<Mode, Func<bool>>
                 {
                     { Mode.Exp, Data[Mode.Exp].Inputs},
@@ -58,16 +58,22 @@ namespace OpenVIII
                         Data[Mode.Exp].Hide();
                         Data[Mode.Items].Hide();
                         Data[Mode.AP].Show();
+                        Data[Mode.AP].Refresh();
                         break;
                     case Mode.Exp:
                         Data[Mode.Exp].Show();
                         Data[Mode.Items].Hide();
                         Data[Mode.AP].Hide();
+                        Data[Mode.Exp].Refresh();
                         break;
                     case Mode.Items:
                         Data[Mode.Exp].Hide();
                         Data[Mode.Items].Show();
                         Data[Mode.AP].Hide();
+                        Data[Mode.Items].Refresh();
+                        break;
+                    default:
+                        Menu.BattleMenus.ReturnTo();
                         break;
                 }
                 return base.SetMode((Mode)mode);
@@ -75,9 +81,16 @@ namespace OpenVIII
 
             public override bool Inputs()
             {
-                if (InputFunctions != null && InputFunctions.ContainsKey((Mode)GetMode()))
-                    return InputFunctions[(Mode)GetMode()]();
-                return false;
+                bool ret = false;
+                if (InputFunctions != null && InputFunctions.TryGetValue((Mode)GetMode(), out Func<bool> fun))
+                {
+                    ret = fun();
+                }
+                if(!ret && Input2.Button(FF8TextTagKey.Confirm))
+                {
+                    SetMode(((Mode)GetMode())+1);
+                }
+                return true;
             }
 
             private uint _ap = 0;

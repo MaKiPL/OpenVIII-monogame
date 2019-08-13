@@ -103,6 +103,8 @@ namespace OpenVIII
             }
         }
 
+        public static bool MusicPlaying { get => musicplaying; }
+
         public static void Init()
         {
             // PC 2000 version has an CD audio track for eyes on me. I don't think we can play that.

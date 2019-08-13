@@ -24,7 +24,7 @@ namespace OpenVIII
                 return true;
             }
 
-            public override void Inputs_OKAY()
+            public override bool Inputs_OKAY()
             {
                 switch (CURSOR_SELECT)
                 {
@@ -44,7 +44,9 @@ namespace OpenVIII
                     case 1:
                         Inputs_CANCEL();
                         break;
+                    default: return false;
                 }
+                return true;
             }
 
             #endregion Methods

@@ -105,10 +105,14 @@ namespace OpenVIII
                 Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.MainLobby;
                 Memory.IsMouseVisible = false;
             }
-            public override void Inputs_OKAY()
+            public override bool Inputs_OKAY()
             {
-                if (OkayActions.ContainsKey(CURSOR_SELECT))
-                    OkayActions[CURSOR_SELECT]();
+                if (OkayActions.TryGetValue(CURSOR_SELECT, out Action a))
+                {
+                    a();
+                    return true;
+                }
+                return false;
             }
             public override void Inputs_Cards() { }
             public override void Inputs_Menu() { }

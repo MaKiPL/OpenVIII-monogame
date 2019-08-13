@@ -81,6 +81,8 @@ namespace OpenVIII
                 {
                     if (Character != Characters.Blank)
                     {
+
+                        Hide();
                         if (ECN == null)
                             ECN = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 29) + "\n" +
                                 Memory.Strings.Read(Strings.FileID.KERNEL, 30, 30) + "\n" +

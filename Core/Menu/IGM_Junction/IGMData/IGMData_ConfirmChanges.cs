@@ -24,7 +24,7 @@ namespace OpenVIII
                 return true;
             }
 
-            public override void Inputs_OKAY()
+            public override bool Inputs_OKAY()
             {
                 skipsnd = true;
                 init_debugger_Audio.PlaySound(31);
@@ -40,13 +40,16 @@ namespace OpenVIII
                     case 1:
                         Memory.State = Memory.PrevState.Clone();
                         break;
+                    
                 }
                 if (Module_main_menu_debug.State == Module_main_menu_debug.MainMenuStates.IGM_Junction)
                 {
                     Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.IGM;
                     IGM.Refresh();
                     FadeIn();
+                    return true;
                 }
+                return false;
             }
 
             protected override void SetSize()

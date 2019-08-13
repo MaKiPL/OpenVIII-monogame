@@ -46,7 +46,7 @@ namespace OpenVIII
                 return true;
             }
 
-            public override void Inputs_OKAY()
+            public override bool Inputs_OKAY()
             {
                 base.Inputs_OKAY();
                 IGMDataItem_IGMData i = ((IGMDataItem_IGMData)ITEM[0, 0]);
@@ -57,7 +57,9 @@ namespace OpenVIII
                         IGM_Junction.SetMode(Mode.Abilities_Abilities);
                     else
                         IGM_Junction.SetMode(Mode.Abilities_Commands);
+                    return true;
                 }
+                return false;
             }
 
             public override void Inputs_Menu()

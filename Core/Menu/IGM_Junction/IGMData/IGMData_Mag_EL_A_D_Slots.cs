@@ -45,14 +45,16 @@ namespace OpenVIII
                 PageLeft();
             }
 
-            public override void Inputs_OKAY()
+            public override bool Inputs_OKAY()
             {
                 if (!BLANKS[CURSOR_SELECT])
                 {
                     base.Inputs_OKAY();
                     BackupSetting();
                     IGM_Junction.SetMode(CURSOR_SELECT == 0 ? Mode.Mag_Pool_EL_A : Mode.Mag_Pool_EL_D);
+                    return true;
                 }
+                return false;
             }
 
             public override void Inputs_Right()

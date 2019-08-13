@@ -199,7 +199,7 @@ namespace OpenVIII
                 return false;
             }
 
-            public override void Inputs_OKAY()
+            public override bool Inputs_OKAY()
             {
                 if (Memory.State.Characters != null)
                 {
@@ -223,8 +223,10 @@ namespace OpenVIII
                         }
                         Cursor_Status &= ~Cursor_Status.Enabled;
                         IGM_Junction.Refresh();
+                        return true;
                     }
                 }
+                return false;
             }
 
             //public IGMData Values { get; private set; } = null;

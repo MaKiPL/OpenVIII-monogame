@@ -49,13 +49,14 @@ namespace OpenVIII
                 return true;
             }
 
-            public override void Inputs_OKAY()
+            public override bool Inputs_OKAY()
             {
                 Item_In_Menu item = Contents[CURSOR_SELECT];
                 if (item.Target == Item_In_Menu._Target.None)
-                    return;
+                    return false;
                 base.Inputs_OKAY();
                 IGM_Items.SetMode(Mode.UseItemOnTarget);
+                return true;
             }
 
             public override void Refresh()

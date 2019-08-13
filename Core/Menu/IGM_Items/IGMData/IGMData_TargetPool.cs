@@ -75,7 +75,7 @@ namespace OpenVIII
                 return true;
             }
 
-            public override void Inputs_OKAY()
+            public override bool Inputs_OKAY()
             {
                 bool ret = false;
                 if (All)
@@ -87,7 +87,9 @@ namespace OpenVIII
                     base.Inputs_OKAY();
                     Fill();
                     IGM_Items.Refresh(true);
+                    return true;
                 }
+                return false;
             }
 
             public override void Refresh()
