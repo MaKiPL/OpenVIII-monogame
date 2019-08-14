@@ -15,11 +15,15 @@ namespace OpenVIII
             private FF8String[] _helpStr;
 
             private bool eventSet = false;
+            private bool Battle = false;
 
             #endregion Fields
 
             #region Constructors
-
+            public IGMData_ItemPool(Rectangle pos, bool battle, int count = 4) : base(count, 2, new IGMDataItem_Box(pos: pos, title: Icons.ID.ITEM), count, 198/count + 1)
+            {
+                Battle = battle;
+            }
             public IGMData_ItemPool() : base(11, 2, new IGMDataItem_Box(pos: new Rectangle(5, 150, 415, 480), title: Icons.ID.ITEM), 11, 18)
             {
             }
