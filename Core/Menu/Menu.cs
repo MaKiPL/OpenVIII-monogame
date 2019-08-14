@@ -375,8 +375,8 @@ namespace OpenVIII
         {
             if (!mode.Equals(_mode))
             {
-                ModeChangeHandler?.Invoke(this, mode);
                 _mode = mode;
+                ModeChangeHandler?.Invoke(this, mode);
                 return true;
             }
             return false;
