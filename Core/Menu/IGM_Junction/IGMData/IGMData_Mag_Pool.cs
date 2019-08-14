@@ -7,7 +7,6 @@ namespace OpenVIII
 {
     public class IGMData_Mag_Pool : IGMData_Pool<Saves.CharacterData, byte>
     {
-
         #region Fields
 
         public static EventHandler<IGM_Junction.Mode> SlotConfirmListener;
@@ -16,7 +15,7 @@ namespace OpenVIII
         public static EventHandler<Kernel_bin.Stat> StatEventListener;
         private bool Battle = false;
         private bool eventAdded = false;
-        private bool skipReinit=false;
+        private bool skipReinit = false;
 
         #endregion Fields
 
@@ -181,6 +180,7 @@ namespace OpenVIII
             Cursor_Status |= Cursor_Status.Enabled;
             return base.Inputs();
         }
+
         public override bool Inputs_CANCEL()
         {
             if (Memory.State.Characters != null)
@@ -359,8 +359,8 @@ namespace OpenVIII
             if (color == Font.ColorID.White && Source.Stat_J.ContainsValue(spell.ID))
             {
                 //spell is junctioned
-                if(!Battle)
-                color = Font.ColorID.Grey;
+                if (!Battle)
+                    color = Font.ColorID.Grey;
                 j = true;
             }
             ITEM[pos, 0] = new IGMDataItem_String(spell.Name, SIZE[pos], color);
@@ -471,6 +471,5 @@ namespace OpenVIII
         }
 
         #endregion Methods
-
     }
 }
