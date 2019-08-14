@@ -275,6 +275,7 @@ namespace OpenVIII
                     eventAdded = true;
                 }
                 base.Refresh();
+                UpdateTitle();
             }
             else skipReinit = false;
         }
@@ -285,7 +286,7 @@ namespace OpenVIII
             if (Pages == 1)
             {
                 ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.MAGIC;
-                ITEM[Count - 1, 0] = ITEM[Count - 2, 0] = null;
+                //ITEM[Count - 1, 0] = ITEM[Count - 2, 0] = null;
             }
             else
                 if (Page < Pages)
