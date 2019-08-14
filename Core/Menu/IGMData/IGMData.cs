@@ -387,7 +387,7 @@ namespace OpenVIII
         {
         }
 
-        public void SetModeChangeEvent(ref EventHandler<Enum> eventHandler) => eventHandler += ModeChangeEvent;
+        public virtual void SetModeChangeEvent(ref EventHandler<Enum> eventHandler) => eventHandler += ModeChangeEvent;
 
         /// <summary>
         /// Things that change on every update.
