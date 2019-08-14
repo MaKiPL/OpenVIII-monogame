@@ -144,7 +144,7 @@ namespace OpenVIII
             //public byte _SPR; //0x0C
             //public byte _SPD; //0x0D
             //public byte _LCK; //0x0E
-            public Dictionary<byte, byte> Magics;
+            public OrderedDictionary<byte, byte> Magics;
 
             /// <summary>
             /// Junctioned Commands
@@ -281,7 +281,7 @@ namespace OpenVIII
                     [Kernel_bin.Stat.SPD] = br.ReadByte(),//0x0E
                     [Kernel_bin.Stat.LUCK] = br.ReadByte()//0x0F
                 };
-                Magics = new Dictionary<byte, byte>(33);
+                Magics = new OrderedDictionary<byte, byte>(33);
                 for (int i = 0; i < 32; i++)
                 {
                     byte key = br.ReadByte();
@@ -547,7 +547,9 @@ namespace OpenVIII
                 c.Name = Name.Clone();
                 c.CompatibilitywithGFs = CompatibilitywithGFs.ToDictionary(e => e.Key, e => e.Value);
                 c.Stat_J = Stat_J.ToDictionary(e => e.Key, e => e.Value);
-                c.Magics = Magics.ToDictionary(e => e.Key, e => e.Value);
+                c.Magics = new OrderedDictionary<byte, byte>(Magics.Count);
+                foreach (KeyValuePair<byte, byte> magic in Magics)
+                    c.Magics.Add(magic.Key, magic.Value);
                 c.RawStats = RawStats.ToDictionary(e => e.Key, e => e.Value);
                 c.Commands = Commands.ConvertAll(Item => Item);
                 c.Abilities = Abilities.ConvertAll(Item => Item);
