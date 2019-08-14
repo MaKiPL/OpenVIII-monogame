@@ -18,7 +18,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_Commands(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null, bool battle = false) : base(6, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.COMMAND), 1, 4, character, visablecharacter)
+        public IGMData_Commands(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null, bool battle = false) : base(7, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.COMMAND), 1, 4, character, visablecharacter)
         {
             Battle = battle;
             skipReinit = true;
@@ -32,8 +32,9 @@ namespace OpenVIII
         public bool Battle { get; }
 
         public bool CrisisLevel { get => _chrsisLevel; set => _chrsisLevel = value; }
-        int Limit_Arrow => Count - 2;
-        int Mag_Pool => Count - 1;
+        int Limit_Arrow => Count - 3;
+        int Mag_Pool => Count - 2;
+        int Item_Pool => Count - 1;
 
         #endregion Properties
 
@@ -45,6 +46,11 @@ namespace OpenVIII
             {
                 Cursor_Status |= (Cursor_Status.Enabled | Cursor_Status.Blinking);
                 return (((IGMDataItem_IGMData)ITEM[Mag_Pool, 0]).Data).Inputs();
+            }
+            if (ITEM[Item_Pool, 0].Enabled && (((IGMDataItem_IGMData)ITEM[Item_Pool, 0]).Data).Enabled)
+            {
+                Cursor_Status |= (Cursor_Status.Enabled | Cursor_Status.Blinking);
+                return (((IGMDataItem_IGMData)ITEM[Item_Pool, 0]).Data).Inputs();
             }
             else
             {
@@ -88,6 +94,10 @@ namespace OpenVIII
             base.Inputs_OKAY();
             switch (A)
             {
+                case 72:
+                    ITEM[Item_Pool, 0].Show();
+                    ITEM[Item_Pool, 0].Refresh();
+                    return true;
                 case 184:
                     ITEM[Mag_Pool, 0].Show();
                     ITEM[Mag_Pool, 0].Refresh();
@@ -151,6 +161,7 @@ namespace OpenVIII
         public override void SetModeChangeEvent(ref EventHandler<Enum> eventHandler)
         {
             base.SetModeChangeEvent(ref eventHandler);
+            (((IGMDataItem_IGMData)ITEM[Item_Pool, 0]).Data).SetModeChangeEvent(ref eventHandler);
             (((IGMDataItem_IGMData)ITEM[Mag_Pool, 0]).Data).SetModeChangeEvent(ref eventHandler);
         }
 
@@ -161,8 +172,10 @@ namespace OpenVIII
         {
             BLANKS[Limit_Arrow] = true;
             base.Init();
-            ITEM[Mag_Pool, 0] = new IGMDataItem_IGMData(new IGMData_Mag_Pool(new Rectangle(X + 40, Y - 20, 300, 192), Character, VisableCharacter, true));
+            ITEM[Mag_Pool, 0] = new IGMDataItem_IGMData(new IGMData_Mag_Pool(new Rectangle(X + 50, Y - 20, 300, 192), Character, VisableCharacter, true));
             ITEM[Mag_Pool, 0].Hide();
+            ITEM[Item_Pool, 0] = new IGMDataItem_IGMData(new IGMData_ItemPool(new Rectangle(X + 50, Y - 22, 400, 194), true));
+            ITEM[Item_Pool, 0].Hide();
             commands = new Kernel_bin.Battle_Commands[rows];
         }
 
