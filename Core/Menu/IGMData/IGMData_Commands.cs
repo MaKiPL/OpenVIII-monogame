@@ -101,11 +101,11 @@ namespace OpenVIII
         }
         public override bool Inputs_OKAY()
         {
-            var A = commands[CURSOR_SELECT].Ability;
             base.Inputs_OKAY();
-            switch (A)
+            switch (commands[CURSOR_SELECT].Ability)
             {
-                case 8: // blue magic
+                case 32: // Renzokuken
+                case 8: // blue magic                
                     return false;
                 case 120: //attack
                     Menu.BattleMenus.Target_Group.Show();
@@ -127,6 +127,8 @@ namespace OpenVIII
                     ITEM[Mag_Pool, 0].Show();
                     ITEM[Mag_Pool, 0].Refresh();
                     return true;
+                default:
+                    break;
             }
             return false;
         }
