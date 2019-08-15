@@ -310,6 +310,7 @@ namespace OpenVIII
             base.InitShift(i, col, row);
             SIZE[i].Inflate(-22, -8);
             SIZE[i].Offset(0, 12 + (-8 * row));
+            SIZE[i].Height = (int)(12 * TextScale.Y);
         }
 
         protected override void ModeChangeEvent(object sender, Enum e)
