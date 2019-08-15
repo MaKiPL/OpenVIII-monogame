@@ -194,7 +194,7 @@ namespace OpenVIII
                     Color[] rgbBuffer = new Color[Width * Height];
                     for (int i = 0; i < rgbBuffer.Length && ms.Position + 2 < ms.Length; i++)
                     {
-                        rgbBuffer[i] = ABGR1555toRGBA32bit(br.ReadUInt16());
+                        rgbBuffer[i] = ABGR1555toRGBA32bit(br.ReadUInt16(),true);
                     }
                     splashTex.SetData(rgbBuffer);
                 }
