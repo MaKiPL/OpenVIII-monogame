@@ -332,9 +332,10 @@ namespace OpenVIII
         private static Ffcc ffccMusic = null; // testing using class to play music instead of Naudio / Nvorbis
         private static int _currentSoundChannel;
 
-        public static void PlayMusic(ushort? index = null, float volume = 0.5f, float pitch = 0.0f, float pan = 0.0f)
+        public static void PlayMusic(ushort? index = null, float volume = 0.5f, float pitch = 0.0f, float pan = 0.0f, bool loop = true)
         {
             Memory.MusicIndex = index ?? Memory.MusicIndex;
+            
 
             if (musicplaying && lastplayed == Memory.MusicIndex) return;
             string ext = "";
@@ -358,7 +359,9 @@ namespace OpenVIII
                     //ffccMusic = new Ffcc(@"c:\eyes_on_me.wav", AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
                     if (ffccMusic != null)
                         ffccMusic.Dispose();
-                    ffccMusic = new Ffcc(pt, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH, 0);
+                    ffccMusic = new Ffcc(pt, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH, loop?0:-1);
+                    if(!loop)
+                        ffccMusic.LOOPSTART = -1;
                     ffccMusic.PlayInTask(volume, pitch, pan);
                     break;
 
@@ -379,7 +382,7 @@ namespace OpenVIII
                     {
                         if (dm_Midi == null)
                             dm_Midi = new DM_Midi();
-                        dm_Midi.Play(pt);
+                        dm_Midi.Play(pt,loop);
                     }
 #endif
 
