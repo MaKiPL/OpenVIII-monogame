@@ -254,6 +254,7 @@ namespace OpenVIII
             byte pallet = 2;
             byte fadedpallet = 7;
             dst.Offset(size * offset.Value);
+            Memory.Icons.Trim(Icons.ID.Finger_Right,pallet);
             if (blink)
             {
                 Memory.Icons.Draw(Icons.ID.Finger_Right, fadedpallet, dst, scale, Fade);
