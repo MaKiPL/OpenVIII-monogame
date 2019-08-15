@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -303,21 +302,7 @@ namespace OpenVIII
         /// </summary>
         /// <param name="src"></param>
         /// <returns></returns>
-        public Rectangle Trim(Rectangle src)
-        {
-            List<Tuple<Texture2D, Rectangle, Rectangle>> ret = _process(Rectangle.Empty, src);
-
-            Rectangle rect = Rectangle.Empty;
-            foreach (Tuple<Texture2D, Rectangle, Rectangle> r in ret)
-            {
-                Rectangle tmp = _Trim_SingleTexture(r.Item1, r.Item3);
-                if (rect == Rectangle.Empty)
-                    rect = tmp;
-                else
-                    Rectangle.Union(rect, tmp);
-            }
-            return rect;
-        }
+        public Rectangle Trim(Rectangle src) => _process(Rectangle.Empty, src, Color.TransparentBlack, _Trim_SingleTexture);
 
         protected void Init()
         {
@@ -345,20 +330,9 @@ namespace OpenVIII
             Size = size;
             if (Classic == null) ClassicSize = oldsize;
         }
-        private Func<Rectangle, Rectangle, List<Tuple<Texture2D, Rectangle, Rectangle>>> b;
+
         private void _Draw(Rectangle dst, Rectangle src, Color color)
-        {
-            //Func<Rectangle,Rectangle, List<Tuple<Texture2D, Rectangle, Rectangle>>> a = _process;
-            if (b == null)
-                b = PointEx.Memoize<Rectangle, Rectangle, List<Tuple<Texture2D, Rectangle, Rectangle>>>(_process);
-
-            List<Tuple<Texture2D, Rectangle, Rectangle>> ret = b(dst, src);
-
-            foreach (Tuple<Texture2D, Rectangle, Rectangle> r in ret)
-            {
-                _Draw(r.Item1, r.Item2, r.Item3, color);
-            }
-        }
+        => _process(dst, src, color, _Draw);
 
         private Rectangle _Draw(Texture2D tex, Rectangle dst, Rectangle src, Color color)
         {
@@ -396,11 +370,11 @@ namespace OpenVIII
         /// <param name="color"></param>
         /// <param name="single"></param>
         /// <returns></returns>
-        private List<Tuple<Texture2D, Rectangle, Rectangle>> _process(
-            Rectangle dst, Rectangle src)
+        private Rectangle _process(
+            Rectangle dst, Rectangle src, Color color,
+            Func<Texture2D, Rectangle, Rectangle, Color, Rectangle> single)
         {
-            List<Tuple<Texture2D, Rectangle, Rectangle>> ret = new List<Tuple<Texture2D, Rectangle, Rectangle>>(2);
-            //Rectangle rect = Rectangle.Empty;
+            Rectangle ret = Rectangle.Empty;
 
             if (Memory.IsMainThread) // Some code may only work on main thread.
             {
@@ -421,11 +395,7 @@ namespace OpenVIII
                         if (cnt.Contains(_src))
                         {
                             _src.Location = (GetOffset(cnt, _src)).ToPoint();
-                            //return single(, dst, _src, color);
-                            return new List<Tuple<Texture2D, Rectangle, Rectangle>>
-                            {
-                                new Tuple<Texture2D, Rectangle, Rectangle>(Textures[c, r],dst,_src)
-                            };
+                            return single(Textures[c, r], dst, _src, color);
                         }
                         //End
                         //This part is for if a given src rectangle overlaps >=2 textures
@@ -436,7 +406,10 @@ namespace OpenVIII
                             dst2 = Scale(dst, GetScale(_src.Size, src2.Size));
                             dst2.Location = (dst.Location);
                             dst2.Offset(dstOffset);
-                            ret.Add(new Tuple<Texture2D, Rectangle, Rectangle>(Textures[c, r], dst2, src2));
+                            if (ret == Rectangle.Empty)
+                                ret = single(Textures[c, r], dst2, src2, color);
+                            else
+                                Rectangle.Union(ret, single(Textures[c, r], dst2, src2, color));
                             drawn = true;
                             dstOffset.X += dst2.Width;
                         }
@@ -451,7 +424,7 @@ namespace OpenVIII
             return ret;
         }
 
-        private Rectangle _Trim_SingleTexture(Texture2D tex, Rectangle src)
+        private Rectangle _Trim_SingleTexture(Texture2D tex, Rectangle dst, Rectangle src, Color color)
         {
             Rectangle ret = Rectangle.Empty;
             ret.Offset(-1, -1);

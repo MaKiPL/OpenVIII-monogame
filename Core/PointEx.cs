@@ -1,7 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 
 namespace OpenVIII
 {
@@ -11,28 +9,7 @@ namespace OpenVIII
     public static class PointEx
     {
         #region Methods
-        /// <summary>
-        /// Memoize function.
-        /// </summary>
-        /// <typeparam name="Arg"></typeparam>
-        /// <typeparam name="Ret"></typeparam>
-        /// <param name="functor"></param>
-        /// <returns></returns>
-        /// <see cref="https://www.youtube.com/watch?v=rtzaZC30fhc&list=PLe_UYsOXi1mb6FhNhfzDPMuqJ9bCxrcms&index=5&t=0s"/>
-        public static Func<Arg1,Arg2,Ret> Memoize<Arg1,Arg2,Ret>( this Func<Arg1,Arg2,Ret> functor)
-        {
-            var memo_table = new ConcurrentDictionary<Tuple<Arg1,Arg2>, Ret>();
-            return (arg0,arg1) =>
-            {
-                var tmp = new Tuple<Arg1, Arg2>(arg0, arg1);
-                if (!memo_table.TryGetValue(tmp, out Ret func_return_val))
-                {
-                    func_return_val = functor(arg0,arg1);
-                    memo_table.TryAdd(tmp, func_return_val);
-                }
-                return func_return_val;
-            };
-        }
+
         public static Point Offset(this ref Point source, Point offset)
         {
             source = (source.ToVector2() + offset.ToVector2()).ToPoint();
