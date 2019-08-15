@@ -5,9 +5,25 @@ using System.Linq;
 
 namespace OpenVIII
 {
+    public class Enemy : Damageable
+    {
+        public static List<Enemy> EnemyParty { get; set; } = new List<Enemy>(6) {
+            new Enemy { Name = "Jellyeye" },
+            new Enemy { Name = "Jellyeye" },
+            new Enemy { Name = "Jellyeye" },
+            new Enemy { Name = "Jellyeye" },
+            new Enemy { Name = "Jellyeye" },
+            new Enemy { Name = "Jellyeye" }, };
+    }
     public abstract class Damageable
     {
         #region Fields
+
+        /// <summary>
+        /// Name
+        /// </summary>
+        /// <remarks>not saved to file</remarks>
+        public FF8String Name { get; set; }
 
         protected ushort _CurrentHP;
 
@@ -15,7 +31,6 @@ namespace OpenVIII
 
         private Dictionary<Kernel_bin.Attack_Type, Func<Kernel_bin.Persistant_Statuses, Kernel_bin.Battle_Only_Statuses, Kernel_bin.Attack_Flags, int>> _statusesActions;
 
-        //0x00 -- forgot this one heh
         private Kernel_bin.Persistant_Statuses _statuses0;
 
         private Kernel_bin.Battle_Only_Statuses _statuses1;
