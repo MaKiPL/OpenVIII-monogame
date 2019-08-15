@@ -214,34 +214,36 @@ namespace OpenVIII
                         {
                             return test.ToString();
                         }
-                        else if(test.GamePadButton != GamePadButtons.None)
+                        else if (test.GamePadButton != GamePadButtons.None)
                         {
-                            return GamePad.ButtonString(test.GamePadButton,key);
+                            return GamePad.ButtonString(test.GamePadButton, key);
                         }
             return "";
         }
-        
+
         protected bool ButtonTriggered(FF8TextTagKey key, ButtonTrigger trigger = ButtonTrigger.None)
         {
-            foreach (Inputs list in InputList)
-                foreach (KeyValuePair<List<FF8TextTagKey>, List<InputButton>> kvp in list.Data.Where(y => y.Key.Contains(key)))
-                    foreach (InputButton test in kvp.Value)
-                        if (main.ButtonTriggered(test, trigger))
-                            return true;
+            if (Memory.IsActive)
+                foreach (Inputs list in InputList)
+                    foreach (KeyValuePair<List<FF8TextTagKey>, List<InputButton>> kvp in list.Data.Where(y => y.Key.Contains(key)))
+                        foreach (InputButton test in kvp.Value)
+                            if (main.ButtonTriggered(test, trigger))
+                                return true;
             return false;
         }
 
         public virtual bool ButtonTriggered(InputButton test, ButtonTrigger trigger = ButtonTrigger.None)
         {
-            if (!bLimitInput || ((test.Trigger | trigger) & ButtonTrigger.IgnoreDelay) != 0)
-            {
-                if (Keyboard.ButtonTriggered(test, trigger))
-                    return true;
-                if (Mouse.ButtonTriggered(test, trigger))
-                    return true;
-                if (GamePad.ButtonTriggered(test, trigger))
-                    return true;
-            }
+            if (Memory.IsActive)
+                if (!bLimitInput || ((test.Trigger | trigger) & ButtonTrigger.IgnoreDelay) != 0)
+                {
+                    if (Keyboard.ButtonTriggered(test, trigger))
+                        return true;
+                    if (Mouse.ButtonTriggered(test, trigger))
+                        return true;
+                    if (GamePad.ButtonTriggered(test, trigger))
+                        return true;
+                }
             return false;
         }
 
