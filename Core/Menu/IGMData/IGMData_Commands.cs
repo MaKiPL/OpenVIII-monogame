@@ -8,7 +8,7 @@ namespace OpenVIII
 
         #region Fields
 
-        private bool _chrsisLevel;
+        private bool _crisisLevel;
         private int nonbattleWidth;
         private sbyte page = 0;
         private bool skipReinit;
@@ -31,7 +31,7 @@ namespace OpenVIII
 
         public bool Battle { get; }
 
-        public bool CrisisLevel { get => _chrsisLevel; set => _chrsisLevel = value; }
+        public bool CrisisLevel { get => _crisisLevel; set => _crisisLevel = value; }
         int Limit_Arrow => Count - 3;
         int Mag_Pool => Count - 2;
         int Item_Pool => Count - 1;
