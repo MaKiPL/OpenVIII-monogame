@@ -383,7 +383,7 @@ namespace OpenVIII
             return false;
         }
 
-        public bool ValidTarget()
+        public bool ValidTarget(bool b = false)
         {
             if (Type == _Type.Magazine) return true; //TODO pressing okay display Magazine.
             else if (Type == _Type.SolomonRing) return !Memory.State[GFs.Doomtrain]?.Exists ?? true; //TODO detect doomtrain and return false if unlocked
@@ -397,6 +397,7 @@ namespace OpenVIII
                     return true;
                 }
             }
+            if (Battle != null && b) return true;
             return false;
         }
 
