@@ -17,6 +17,8 @@ namespace OpenVIII
             graphics.PreferredBackBufferWidth = Memory.PreferredViewportWidth;
             graphics.PreferredBackBufferHeight = Memory.PreferredViewportHeight;
             Window.AllowUserResizing = true;
+            IsFixedTimeStep = false;
+            graphics.SynchronizeWithVerticalRetrace = false;
         }
 
         protected override void Initialize()
