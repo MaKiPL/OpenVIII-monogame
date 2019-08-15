@@ -3,6 +3,16 @@ using System;
 
 namespace OpenVIII
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <see cref="https://www.youtube.com/watch?v=BhgixAEvuu0"/>
+    public class IGMData_BlueMagic_Pool : IGMData_Pool<Saves.Data, Kernel_bin.Blue_Magic>
+    {
+        public IGMData_BlueMagic_Pool(int count, int depth, IGMDataItem container = null, int? rows = null, int? pages = null, Characters character = Characters.Blank, Characters? visablecharacter = null) : base(count, depth, container, rows, pages, character, visablecharacter)
+        {
+        }
+    }
     public class IGMData_Commands : IGMData
     {
 
@@ -80,7 +90,8 @@ namespace OpenVIII
             {
                 if (page == 0)
                 {
-                    ((IGMDataItem_String)ITEM[0, 0]).Data = Memory.State.Characters[Character].CharacterStats.Limit.Name;
+                    commands[CURSOR_SELECT] = Memory.State.Characters[Character].CharacterStats.Limit;
+                    ((IGMDataItem_String)ITEM[0, 0]).Data = commands[CURSOR_SELECT].Name;
                     skipsnd = true;
                     base.Inputs_Right();
                     page++;
@@ -94,11 +105,25 @@ namespace OpenVIII
             base.Inputs_OKAY();
             switch (A)
             {
-                case 72:
+                case 8: // blue magic
+                    return false;
+                case 120: //attack
+                    Menu.BattleMenus.Target_Group.Show();
+                    Menu.BattleMenus.Target_Enemies.Show();
+                    Menu.BattleMenus.Target_Party.Show();
+                    Menu.BattleMenus.Target_Group.Refresh();
+                    return true;
+                case 128: //draw
+                    Menu.BattleMenus.Target_Group.Show();
+                    Menu.BattleMenus.Target_Enemies.Show();
+                    Menu.BattleMenus.Target_Party.Hide();
+                    Menu.BattleMenus.Target_Group.Refresh();
+                    return true;
+                case 72: //items
                     ITEM[Item_Pool, 0].Show();
                     ITEM[Item_Pool, 0].Refresh();
                     return true;
-                case 184:
+                case 184: //magic
                     ITEM[Mag_Pool, 0].Show();
                     ITEM[Mag_Pool, 0].Refresh();
                     return true;

@@ -46,7 +46,7 @@ namespace OpenVIII
         #region Properties
 
         public VictoryMenu Victory_Menu => (VictoryMenu)(menus?.Where(m => m.GetType().Equals(typeof(VictoryMenu))).First());
-
+        public IGMData_TargetGroup Target_Group => (IGMData_TargetGroup)Data[SectionName.Targets];
         public IGMData_TargetEnemies Target_Enemies => ((IGMData_TargetEnemies)((IGMDataItem_IGMData)Data[SectionName.Targets].ITEM[0, 0]).Data);
         public IGMData_TargetParty Target_Party => ((IGMData_TargetParty)((IGMDataItem_IGMData)Data[SectionName.Targets].ITEM[1, 0]).Data);
 
