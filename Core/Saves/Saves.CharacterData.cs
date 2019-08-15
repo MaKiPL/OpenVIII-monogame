@@ -49,7 +49,6 @@ namespace OpenVIII
         /// <see cref="http://wiki.ffrtt.ru/index.php/FF8/GameSaveFormat#Characters"/>
         public class CharacterData : Damageable
         {
-            public FF8String Name; //not saved to file.
 
             /// <summary>
             /// Raw HP buff from items.

@@ -45,11 +45,6 @@ namespace OpenVIII
             /// </summary>
             public BitArray Forgotten;
 
-            /// <summary>
-            /// <para>0x00 String (0x00 terminated)</para>
-            /// <para>Name of GF</para>
-            /// </summary>
-            public FF8String Name;
 
             /// <summary>
             /// <para>0x24 Number of kills</para>
