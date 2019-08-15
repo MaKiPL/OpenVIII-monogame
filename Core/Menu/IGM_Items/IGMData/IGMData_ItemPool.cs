@@ -68,7 +68,7 @@ namespace OpenVIII
 
         public override void Refresh()
         {
-            if (!eventSet && Menu.IGM_Items != null)
+            if (!Battle && !eventSet && Menu.IGM_Items != null)
             {
                 Menu.IGM_Items.ModeChangeHandler += ModeChangeEvent;
                 Menu.IGM_Items.ReInitCompletedHandler += ReInitCompletedEvent;
@@ -87,10 +87,11 @@ namespace OpenVIII
                     if (item.ID == 0 || item.QTY == 0) continue; // skip empty values.
                     if (skip-- > 0) continue; //skip items that are on prev pages.
                     Item_In_Menu itemdata = item.DATA ?? new Item_In_Menu();
+                    if (Battle && itemdata.Battle == null) continue;
                     if (itemdata.ID == 0) continue; // skip empty values.
                     Font.ColorID color = Font.ColorID.White;
                     byte palette = itemdata.Palette;
-                    if (!itemdata.ValidTarget())
+                    if (!itemdata.ValidTarget(Battle))
                     {
                         color = Font.ColorID.Grey;
                         BLANKS[pos] = true;
@@ -137,14 +138,16 @@ namespace OpenVIII
         protected override void InitShift(int i, int col, int row)
         {
             base.InitShift(i, col, row);
-            SIZE[i].Inflate(-18, -20);
-            SIZE[i].Y -= 5 * row;
+            //SIZE[i].Inflate(-18, -20);
+            //SIZE[i].Y -= 5 * row;
+            SIZE[i].Inflate(-22, -8);
+            SIZE[i].Offset(0, 12 + (-8 * row));
             SIZE[i].Height = (int)(12 * TextScale.Y);
         }
 
         protected override void ModeChangeEvent(object sender, Enum e)
         {
-            if (e.Equals(IGM_Items.Mode.SelectItem))
+            if (e.Equals(IGM_Items.Mode.SelectItem) || Battle)
             {
                 Cursor_Status |= Cursor_Status.Enabled;
             }
