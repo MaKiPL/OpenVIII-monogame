@@ -18,6 +18,9 @@ namespace OpenVIII
         public static GraphicsDeviceManager graphics;
 
         public static SpriteBatch spriteBatch;
+
+        private static int mainThreadID;
+
         public static ContentManager content;
 
         public static bool IsActive = true;
@@ -31,7 +34,7 @@ namespace OpenVIII
         public static Icons Icons;
         public static Strings Strings;
         public static Kernel_bin Kernel_Bin;
-
+        
         public static Texture2D shadowTexture;
         public static VertexPositionTexture[] shadowGeometry;
 
@@ -145,14 +148,25 @@ namespace OpenVIII
             }
         }
 
-        public static string[] musices;
         public static readonly Dictionary<ushort, List<string>> dicMusic = new Dictionary<ushort, List<string>>(); //ogg and sgt files have same 3 digit prefix.
+        //public static object spritebatchlock = new object();
+        public static void SpriteBatchStartStencil(SamplerState ss = null)
+        {
+            //lock (spritebatchlock)
+            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, ss, graphics.GraphicsDevice.DepthStencilState);
+        }
 
-        public static void SpriteBatchStartStencil(SamplerState ss = null) => spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, ss, graphics.GraphicsDevice.DepthStencilState);
+        public static void SpriteBatchStartAlpha(SamplerState ss = null, Matrix? tm = null)
+        {
 
-        public static void SpriteBatchStartAlpha(SamplerState ss = null, Matrix? tm = null) => spriteBatch.Begin(sortMode: SpriteSortMode.Deferred, blendState: BlendState.AlphaBlend, samplerState: ss ?? SamplerState.PointClamp, transformMatrix: tm);
+            //lock (spritebatchlock)
+                spriteBatch.Begin(sortMode: SpriteSortMode.Deferred, blendState: BlendState.AlphaBlend, samplerState: ss ?? SamplerState.PointClamp, transformMatrix: tm);
+        }
 
-        public static void SpriteBatchEnd() => spriteBatch.End();
+        public static void SpriteBatchEnd()
+        {
+            spriteBatch.End();            
+        }
 
         public static readonly BlendState blendState_BasicAdd = new BlendState()
         {
@@ -184,13 +198,15 @@ namespace OpenVIII
 
         public static int InitTaskMethod(object obj)
         {
-            CancellationToken token = (CancellationToken)obj;
+               CancellationToken token = (CancellationToken)obj;
 
             if (!token.IsCancellationRequested)
                 Memory.Strings = new Strings();
 
             if (!token.IsCancellationRequested) // requires strings because it uses an array generated in strings.
                 Kernel_Bin = new Kernel_bin();
+
+            //FF8String test = Strings.Read(Strings.FileID.MNGRP, 38, 58);
 
             if (!token.IsCancellationRequested)
                 Memory.MItems = Items_In_Menu.Read(); // this has a soft requirement on kernel_bin. It checks for null so should work without it.
@@ -220,12 +236,28 @@ namespace OpenVIII
                 // currently cards only used in debug menu. will have support for cards when added to menu.
                 if (!token.IsCancellationRequested)
                     Module_main_menu_debug.Init();
+
+                // requires font, faces, and icons.
+                // currently cards only used in debug menu. will have support for cards when added to menu.
+                if (!token.IsCancellationRequested)
+                    Menu.InitStaticMembers();
             }
+
+            //EXE_Offsets test = new EXE_Offsets();
+            Inited = true;
             return 0;
         }
-
+        public static bool Inited { get; private set; } = false;
+        public static bool IsMainThread
+        {
+            get { return Thread.CurrentThread.ManagedThreadId == mainThreadID; }
+        }
+        public static Queue<Action> MainThreadOnlyActions;
         public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
         {
+            mainThreadID = Thread.CurrentThread.ManagedThreadId;
+            MainThreadOnlyActions = new Queue<Action>();
+
             FF8DIR = GameLocation.Current.DataPath;
             FF8DIRdata = Extended.GetUnixFullPath(Path.Combine(FF8DIR, "Data"));
             string testdir = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata, $"lang-{Extended.GetLanguageShort()}"));
@@ -764,9 +796,16 @@ namespace OpenVIII
 
         public static Dictionary<byte, FF8String> DrawPointMagic;
         public static Random random;
+        public static Input2 Input2;
 
         #endregion DrawPointMagic
 
+        public static void Update()
+        {            
+            while(IsMainThread && MainThreadOnlyActions.Count>0)
+                { MainThreadOnlyActions.Dequeue()(); }
+
+        }
         /// <summary>
         /// Archive class handles the filename formatting and extensions for archive files.
         /// </summary>

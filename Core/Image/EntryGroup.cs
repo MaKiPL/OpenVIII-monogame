@@ -12,6 +12,8 @@ namespace OpenVIII
         private List<Entry> list;
         private Rectangle rectangle;
 
+        public bool Trimmed { get; set; } = false;
+
         public EntryGroup(int capacity = 1)
         {
             list = new List<Entry>(capacity);
@@ -24,20 +26,22 @@ namespace OpenVIII
             rectangle = new Rectangle();
             Add(entries);
         }
+
         #endregion Fields
 
         #region Properties
-        public int Count => list.Count;
-        public int Height { get => rectangle.Height; private set => rectangle.Height = value; }
 
-        public int Width { get => rectangle.Width; private set => rectangle.Width = value; }
+        public int Count => list.Count;
+        //public int Height { get => Rectangle.Height; private set => Rectangle = new Rectangle(Rectangle.X, Rectangle.Y, value, Rectangle.Height); }
+
+        //public int Width { get => Rectangle.Width; private set => Rectangle = new Rectangle(Rectangle.X,Rectangle.Y, value,Rectangle.Width); }
+        public int Height { get => rectangle.Height; set => rectangle.Height = value; }
+
+        public int Width { get => rectangle.Width; set => rectangle.Width = value; }
 
         public Rectangle GetRectangle => rectangle;
 
-        public object Current
-        {
-            get { return list[position-1]; }
-        }
+        public object Current => list[position - 1];
 
         #endregion Properties
 
@@ -92,17 +96,48 @@ namespace OpenVIII
             }
         }
 
+        public void Trim(TextureHandler tex)
+        {
+            if (!Trimmed)
+            {
+                if (Count >= 1)
+                {
+                    Width = 0;
+                    Height = 0;
+                    Trimmed = true;
+                    Vector2 offset = new Vector2(float.MaxValue);
+                    for (int i = 0; i < Count; i++)
+                    {
+                        Rectangle ret = tex.Trim(this[i].GetRectangle);
+                        this[i].SetTrim_1stPass(ret, Count == 1 ? true : false);
+                        if (Count > 1)
+                        {
+                            if (this[i].Offset.X < offset.X) offset.X = this[i].Offset.X;
+                            if (this[i].Offset.Y < offset.Y) offset.Y = this[i].Offset.Y;
+                        }
+                    }
+                    for (int i = 0; i < Count; i++)
+                    {
+                        if (offset != Vector2.Zero && Count > 1)
+                            this[i].SetTrim_2ndPass(offset);
+                        Point size = new Point((int)Math.Abs(this[i].Width + this[i].Offset.X), (int)Math.Abs(this[i].Height + this[i].Offset.Y));
+                        if (Width < size.X) Width = size.X;
+                        if (Height < size.Y) Height = size.Y;
+                    }
+                }
+            }
+        }
+
         public static Vector2 Abs(Vector2 v2) => new Vector2(Math.Abs(v2.X), Math.Abs(v2.Y));
 
         public static Point RoundedPoint(Vector2 v) => v.RoundedPoint();
 
         public void Draw(List<TextureHandler> textures, int palette, Rectangle inputdst, Vector2 inscale, float fade = 1f) =>
             Draw(textures, list, palette, inputdst, inscale, fade, new Point(Width, Height));
-        public static int GetChange(int tot,int goal, float scale = 1f)
-        {
-           return (int) Math.Round(Math.Abs(tot* scale - goal));
-        }
-        public static void Draw(List<TextureHandler> textures,List<Entry> elist, int palette, Rectangle inputdst, Vector2 inscale, float fade, Point totalSize)
+
+        public static int GetChange(int tot, int goal, float scale = 1f) => (int)Math.Round(Math.Abs(tot * scale - goal));
+
+        public static void Draw(List<TextureHandler> textures, List<Entry> elist, int palette, Rectangle inputdst, Vector2 inscale, float fade, Point totalSize)
         {
             Rectangle dst;
             inscale = Abs(inscale);
@@ -140,18 +175,18 @@ namespace OpenVIII
                 Rectangle src = e.GetRectangle;
                 bool testY = false;
                 bool testX = false;
-                if ((inputdst.Width!=0) && dst.X + dst.Width > inputdst.X + inputdst.Width)
+                if ((inputdst.Width != 0) && dst.X + dst.Width > inputdst.X + inputdst.Width)
                 {
-                    int change = GetChange(totalSize.X,inputdst.Width,scale.X);
+                    int change = GetChange(totalSize.X, inputdst.Width, scale.X);
                     src.Width -= (int)Math.Round(change / scale.X);
                     dst.Width -= change;
                 }
                 else if (e.Fill.X > 0 && autoscale.X > scale.X)
                 {
                     scale.X = autoscale.X;
-                    dst.Width = (int)Math.Ceiling((src.Width * autoscale.X+0.5f));
+                    dst.Width = (int)Math.Ceiling((src.Width * autoscale.X + 0.5f));
                 }
-                
+
                 if ((inputdst.Height != 0) && dst.Y + dst.Height > inputdst.Y + inputdst.Height)
                 {
                     int change = GetChange(totalSize.Y, inputdst.Height, scale.Y); ;
@@ -161,8 +196,7 @@ namespace OpenVIII
                 else if (e.Fill.Y > 0 && autoscale.Y > scale.Y)
                 {
                     scale.Y = autoscale.Y;
-                    dst.Height = (int)Math.Ceiling((src.Height * autoscale.Y+0.5f));
-                 
+                    dst.Height = (int)Math.Ceiling((src.Height * autoscale.Y + 0.5f));
                 }
 
                 if (dst.Height <= 0 || dst.Height <= 0) continue; //infinate loop prevention
@@ -206,12 +240,15 @@ namespace OpenVIII
                 while (e.Tile.X > 0 && testX);
             }
         }
-        int position = 0;
+
+        private int position = 0;
         private static int minx;
         private static int miny;
 
-        public bool MoveNext() => ++position<=list.Count;
+        public bool MoveNext() => ++position <= list.Count;
+
         public void Reset() => position = 0;
+
         public IEnumerator GetEnumerator() => this;
 
         #endregion Methods

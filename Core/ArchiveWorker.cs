@@ -109,7 +109,7 @@ namespace OpenVIII
             if (fileName.Length < 1)
                 throw new FileNotFoundException("NO FILENAME");
 
-            int loc = FindFile(ref fileName, File.OpenRead(_path.FL));
+            int loc = FindFile(ref fileName, new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)); //File.OpenRead(_path.FL));
 
             // read file list
 
@@ -180,7 +180,7 @@ namespace OpenVIII
             if (ArchiveCache.ContainsKey(_path) && ArchiveCache[_path].ContainsKey(fileName))
                 return (ArchiveCache[_path][fileName]);
             //read index data
-            using (BinaryReader br = new BinaryReader(File.OpenRead(_path.FI)))
+            using (BinaryReader br = new BinaryReader(new FileStream(_path.FI, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))//File.OpenRead(_path.FI)))
             {
                 br.BaseStream.Seek(loc * 12, SeekOrigin.Begin);
                 _unpackedFileSize = br.ReadUInt32(); //fs.Seek(4, SeekOrigin.Current);
@@ -188,7 +188,7 @@ namespace OpenVIII
                 _compressed = br.ReadUInt32() != 0;
             }
             //read binary data.
-            using (BinaryReader br = new BinaryReader(File.OpenRead(_path.FS)))
+            using (BinaryReader br = new BinaryReader(new FileStream(_path.FS, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))//File.OpenRead(_path.FS)))
             {
                 br.BaseStream.Seek(_locationInFs, SeekOrigin.Begin);
                 temp = br.ReadBytes(_compressed ? br.ReadInt32() : (int)_unpackedFileSize);
@@ -201,7 +201,18 @@ namespace OpenVIII
         /// <summary>
         /// Generate a file list from raw text file.
         /// </summary>
-        private string[] ProduceFileLists() => File.ReadAllLines(_path.FL, System.Text.Encoding.ASCII);
+        /// <see cref="https://stackoverflow.com/questions/12744725/how-do-i-perform-file-readalllines-on-a-file-that-is-also-open-in-excel"/>
+        private string[] ProduceFileLists()
+        {
+            //return File.ReadAllLines(_path.FL, System.Text.Encoding.ASCII);
+            using (var sr = new StreamReader(new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), System.Text.Encoding.ASCII))
+            {
+                List<string> fl = new List<string>();
+                while(!sr.EndOfStream)
+                    fl.Add(sr.ReadLine());
+                return fl.ToArray();
+            }
+        }
 
         #endregion Methods
 

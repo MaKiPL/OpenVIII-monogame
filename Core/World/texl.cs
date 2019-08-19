@@ -27,7 +27,7 @@ namespace OpenVIII.Core.World
                     TIM2 tim = new TIM2(texlBuffer, (uint)timOffset);
                     textures[i] = new Texture2D[tim.GetClutCount];
                     for (ushort k = 0; k < textures[i].Length; k++)
-                        textures[i][k] = tim.GetTexture(k, true);
+                        textures[i][k] = tim.GetTexture(k);
             }
         }
 

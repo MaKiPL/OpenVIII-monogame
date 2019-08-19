@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,8 +14,8 @@ namespace OpenVIII
     {
         private static uint bs_cameraPointer;
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
-        private static float degrees=90, Yshift;
-        private static readonly float camDistance = 10.0f;
+        private static float degrees = 90;
+        
         private static Vector3 camPosition, camTarget;
         private static TIM2 textureInterface;
         private static Texture2D[] textures;
@@ -34,6 +35,8 @@ namespace OpenVIII
         private static byte[] stageBuffer;
 
         private static int battleModule = 0;
+
+        private static FPS_Camera fps_camera;
 
         //This should be enum btw
         private const int BATTLEMODULE_INIT = 0; //basic init stuff; renderer; core
@@ -194,34 +197,34 @@ namespace OpenVIII
                     break;
                 case BATTLEMODULE_DRAWGEOMETRY:
                     if (bUseFPSCamera)
-                        FPSCamera();
+                        viewMatrix = fps_camera.Update(ref camPosition, ref camTarget, ref degrees);
                     else UpdateCamera();
                     LogicUpdate();
                     break;
             }
 #if DEBUG
-            if (Input.Button(Keys.D1))
+            if (Input2.Button(Keys.D1))
                 if ((DEBUGframe & 0b1111) >= 7)
                 {
                     DEBUGframe += 0b00010000;
                     DEBUGframe -= 7;
                 }
                 else DEBUGframe += 1;
-            if (Input.Button(Keys.D2))
+            if (Input2.Button(Keys.D2))
                 if ((DEBUGframe & 0b1111) == 0)
                 {
                     DEBUGframe -= 0b00010000;
                     DEBUGframe += 7;
                 }
                 else DEBUGframe--;
-            if (Input.Button(Keys.D3))
+            if (Input2.Button(Keys.D3))
                 battleModule = BATTLEMODULE_INIT;
-            if(Input.Button(Keys.D4))
+            if(Input2.Button(Keys.D4))
             {
                 battleModule = BATTLEMODULE_INIT;
                 Memory.battle_encounter++;
             }
-            if(Input.Button(Keys.D5))
+            if(Input2.Button(Keys.D5))
             {
                 AddAnimationToQueue(Debug_battleDat.EntityType.Monster, 0, 3);
                 AddAnimationToQueue(Debug_battleDat.EntityType.Monster, 0, 0);
@@ -245,7 +248,7 @@ namespace OpenVIII
         }
         private static void LogicUpdate()
         {
-            if (Input.Button(Keys.D0))
+            if (Input2.Button(Keys.D0))
                 bUseFPSCamera = !bUseFPSCamera;
         }
         //private static float x = 0;
@@ -587,79 +590,74 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
             }
         }
 
-        const float defaultmaxMoveSpeed = 1f;
-        const float MoveSpeedChange = 1f;
-        static float maxMoveSpeed = defaultmaxMoveSpeed;
-        const float maxLookSpeed = 0.25f;
-        public static void FPSCamera()
-        {
-            #region FPScamera
-            //speedcontrols
-            //+ to increase
-            //- to decrease
-            //* to reset            
-            if (Input.Button(Keys.OemPlus) || Input.Button(Keys.Add))
-            {
-                maxMoveSpeed += MoveSpeedChange;
-            }
-            if (Input.Button(Keys.OemMinus) || Input.Button(Keys.Subtract))
-            {
-                maxMoveSpeed -= MoveSpeedChange;
-                if (maxMoveSpeed < defaultmaxMoveSpeed) maxMoveSpeed = defaultmaxMoveSpeed;
-            }
-            if (Input.Button(Keys.Multiply)) maxMoveSpeed = defaultmaxMoveSpeed;
+        //const float defaultmaxMoveSpeed = 1f;
+        //const float MoveSpeedChange = 1f;
+        //static float maxMoveSpeed = defaultmaxMoveSpeed;
+        //const float maxLookSpeed = 0.25f;
+        
+        //public static void FPSCamera()
+        //{
+        //    #region FPScamera
+        //    //speedcontrols
+        //    //+ to increase
+        //    //- to decrease
+        //    //* to reset            
+        //    if (Input2.Button(Keys.OemPlus) || Input2.Button(Keys.Add))
+        //    {
+        //        maxMoveSpeed += MoveSpeedChange;
+        //    }
+        //    if (Input2.Button(Keys.OemMinus) || Input2.Button(Keys.Subtract))
+        //    {
+        //        maxMoveSpeed -= MoveSpeedChange;
+        //        if (maxMoveSpeed < defaultmaxMoveSpeed) maxMoveSpeed = defaultmaxMoveSpeed;
+        //    }
+        //    if (Input2.Button(Keys.Multiply)) maxMoveSpeed = defaultmaxMoveSpeed;
 
-            //speed is effected by the milliseconds between frames. so alittle goes a long way. :P
-            float x_shift = Input.Distance(Buttons.MouseXjoy, maxLookSpeed);
-            float y_shift = Input.Distance(Buttons.MouseYjoy, maxLookSpeed);
-            float leftdistX = Math.Abs(Input.Distance(Buttons.LeftStickX, maxMoveSpeed));
-            float leftdistY = Math.Abs(Input.Distance(Buttons.LeftStickY, maxMoveSpeed));
-            x_shift += Input.Distance(Buttons.RightStickX, maxLookSpeed);
-            y_shift += Input.Distance(Buttons.RightStickY, maxLookSpeed);
-            Yshift -= y_shift;
-            degrees = (degrees + (int)x_shift) % 360;
-            Yshift = MathHelper.Clamp(Yshift, -80, 80);
-            if (leftdistY == 0)
-            {
-                leftdistY = Input.Distance(maxMoveSpeed);
-            }
-            if (leftdistX == 0)
-            {
-                leftdistX = Input.Distance(maxMoveSpeed);
-            }
+        //    //speed is effected by the milliseconds between frames. so alittle goes a long way. :P
+        //    Vector2 shift = InputMouse.Distance(MouseButtons.MouseToStick, maxLookSpeed);
+        //    Vector2 leftdist = InputGamePad.Distance(GamePadButtons.LeftStick, maxMoveSpeed).Abs();
+        //    shift += InputGamePad.Distance(GamePadButtons.RightStick, maxMoveSpeed);
+        //    Yshift -= shift.Y;
+        //    degrees = (degrees + (int)shift.X) % 360;
+        //    Yshift = MathHelper.Clamp(Yshift, -80, 80);
+        //    if (leftdist == Vector2.Zero)
+        //    {
+        //        leftdist.Y = (float)Input2.Distance(maxMoveSpeed);            
+        //        leftdist.X = (float)Input2.Distance(maxMoveSpeed);
+        //    }
 
-            if (Input.Button(Buttons.Up))
-            {
-                camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees)) * leftdistY / 10;
-                camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees)) * leftdistY / 10;
-                camPosition.Y -= Yshift / 50;
-            }
-            if (Input.Button(Buttons.Down))
-            {
-                camPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees)) * leftdistY / 10;
-                camPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees)) * leftdistY / 10;
-                camPosition.Y += Yshift / 50;
-            }
-            if (Input.Button(Buttons.Left))
-            {
-                camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees - 90)) * leftdistX / 10;
-                camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees - 90)) * leftdistX / 10;
-            }
-            if (Input.Button(Buttons.Right))
-            {
-                camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees + 90)) * leftdistX / 10;
-                camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees + 90)) * leftdistX / 10;
-            }
+        //    if (Input2.Button(FF8TextTagKey.Up))
+        //    {
+        //        camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees)) * leftdist.Y / 10;
+        //        camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees)) * leftdist.Y / 10;
+        //        camPosition.Y -= Yshift / 50;
+        //    }
+        //    if (Input2.Button(FF8TextTagKey.Down))
+        //    {
+        //        camPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees)) * leftdist.Y / 10;
+        //        camPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees)) * leftdist.Y / 10;
+        //        camPosition.Y += Yshift / 50;
+        //    }
+        //    if (Input2.Button(FF8TextTagKey.Left))
+        //    {
+        //        camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees - 90)) * leftdist.X / 10;
+        //        camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees - 90)) * leftdist.X / 10;
+        //    }
+        //    if (Input2.Button(FF8TextTagKey.Right))
+        //    {
+        //        camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees + 90)) * leftdist.X / 10;
+        //        camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees + 90)) * leftdist.X / 10;
+        //    }
 
-            //Input.LockMouse();
+        //    //Input.LockMouse();
 
-            camTarget.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(degrees)) * camDistance;
-            camTarget.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(degrees)) * camDistance;
-            camTarget.Y = camPosition.Y - Yshift / 5;
-            viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
-                         Vector3.Up);
-            #endregion
-        }
+        //    camTarget.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(degrees)) * camDistance;
+        //    camTarget.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(degrees)) * camDistance;
+        //    camTarget.Y = camPosition.Y - Yshift / 5;
+        //    viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
+        //                 Vector3.Up);
+        //    #endregion
+        //}
         private static void DrawGeometry()
         {
             Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
@@ -810,9 +808,8 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) +0;
         {
             //MakiExtended.Debugger_Spawn();
             //MakiExtended.Debugger_Feed(typeof(Module_battle_debug), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
-            Input.OverrideLockMouse=true;
-            Input.CurrentMode = Input.MouseLockMode.Center;
-
+            InputMouse.Mode = MouseLockMode.Center;
+            fps_camera = new FPS_Camera();
             Init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
             int stage = enc.Scenario;
             battlename = $"a0stg{stage.ToString("000")}.x";

@@ -33,7 +33,7 @@ namespace OpenVIII
             /// <summary>
             /// Target
             /// </summary>
-            public byte Target { get; private set; }            //0x0006	1 byte Target
+            public Target Target { get; private set; }            //0x0006	1 byte Target
             /// <summary>
             /// Unknown / Unused
             /// </summary>
@@ -46,7 +46,7 @@ namespace OpenVIII
                 br.BaseStream.Seek(4, SeekOrigin.Current);
                 Ability = br.ReadByte();
                 Flags = new BitArray(br.ReadBytes(1));
-                Target = br.ReadByte();
+                Target = (Target)br.ReadByte();
                 Unknown = br.ReadByte();
             }
 

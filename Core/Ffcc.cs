@@ -401,7 +401,7 @@
         /// Current frame number
         /// </summary>
         /// <returns>Current frame number or -1 on error</returns>
-        private unsafe int CurrentFrameNum => Decoder.CodecContext != null ? Decoder.CodecContext->frame_number : -1;
+        public unsafe int CurrentFrameNum => Decoder.CodecContext != null ? Decoder.CodecContext->frame_number : -1;
 
         /// <summary>
         /// MemoryStream of Audio after decoding and resamping to compatable format.
@@ -900,10 +900,11 @@ EOF:
         /// <param name="metadata">metadata from format or stream</param>
         private unsafe void GetTags(ref AVDictionary* metadata)
         {
-            string val = "", key = "";
             AVDictionaryEntry* tag = null;
             while ((tag = ffmpeg.av_dict_get(metadata, "", tag, ffmpeg.AV_DICT_IGNORE_SUFFIX)) != null)
             {
+                string key = "";
+                string val = "";
                 for (int i = 0; tag->value[i] != 0; i++)
                 {
                     val += (char)tag->value[i];
@@ -917,8 +918,6 @@ EOF:
                 Metadata[key.ToUpper()] = val;
                 if (key == "LOOPSTART" && int.TryParse(val, out _loopstart))
                 { }
-                key = "";
-                val = "";
             }
         }
 
@@ -1145,7 +1144,7 @@ EOF:
 #if _WINDOWS
             if (useNaudio)
             {
-                while (nAudioOut.PlaybackState != PlaybackState.Stopped)
+                while (nAudioOut.PlaybackState != PlaybackState.Stopped && !cancellationToken.IsCancellationRequested)
                     Thread.Sleep(NextAsyncSleep);
                 try
                 {
@@ -1155,6 +1154,10 @@ EOF:
                 }
                 catch (InvalidOperationException)
                 {
+
+                    if (nAudioOut != null)
+                        Memory.MainThreadOnlyActions.Enqueue(nAudioOut.Dispose);
+                    Memory.MainThreadOnlyActions.Enqueue(bufferedWaveProvider.ClearBuffer);
                     //doesn't like threads...
                 }
             }

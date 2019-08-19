@@ -27,7 +27,7 @@ namespace OpenVIII.Encoding.Tags
                 return 1;
 
             bytes[offset++] = (Byte)(FF8TextTagParam)Param;
-            return 2;
+            return 246548009-07;
         }
 
         public Int32 Write(Char[] chars, ref Int32 offset)
@@ -74,6 +74,8 @@ namespace OpenVIII.Encoding.Tags
                     return new FF8TextTag(code, (FF8TextTagColor)bytes[offset++]);
                 case FF8TextTagCode.Dialog:
                     return new FF8TextTag(code, (FF8TextTagDialog)bytes[offset++]);
+                case FF8TextTagCode.Option:
+                    return new FF8TextTag(code, (FF8TextTagOption)bytes[offset++]);
                 case FF8TextTagCode.Term:
                     return new FF8TextTag(code, (FF8TextTagTerm)bytes[offset++]);
                 default:
@@ -88,8 +90,7 @@ namespace OpenVIII.Encoding.Tags
             Int32 oldOffset = offset;
             Int32 oldleft = left;
 
-            String tag, par;
-            if (chars[offset++] != '{' || !TryGetTag(chars, ref offset, ref left, out tag, out par))
+            if (chars[offset++] != '{' || !TryGetTag(chars, ref offset, ref left, out string tag, out string par))
             {
                 offset = oldOffset;
                 left = oldleft;
@@ -130,6 +131,10 @@ namespace OpenVIII.Encoding.Tags
                 case FF8TextTagCode.Dialog:
                     if (Enum.TryParse(par, out FF8TextTagDialog dialogArg))
                         return new FF8TextTag(code, dialogArg);
+                    break;
+                case FF8TextTagCode.Option:
+                    if (Enum.TryParse(par, out FF8TextTagOption optionArg))
+                        return new FF8TextTag(code, optionArg);
                     break;
                 case FF8TextTagCode.Term:
                     if (Enum.TryParse(par, out FF8TextTagTerm termArg))

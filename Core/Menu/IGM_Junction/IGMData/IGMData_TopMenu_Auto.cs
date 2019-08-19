@@ -3,66 +3,77 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
+    public partial class IGM_Junction
     {
-        private partial class IGM_Junction
+        #region Classes
+
+        private class IGMData_TopMenu_Auto : IGMData
         {
-            private class IGMData_TopMenu_Auto : IGMData
+            #region Constructors
+
+            public IGMData_TopMenu_Auto() : base(3, 1, new IGMDataItem_Box(pos: new Rectangle(165, 12, 445, 54)), 3, 1)
             {
-                public IGMData_TopMenu_Auto() : base( 3, 1, new IGMDataItem_Box(pos: new Rectangle(165, 12, 445, 54)), 3, 1)
+            }
+
+            #endregion Constructors
+
+            #region Properties
+
+            public new Dictionary<Items, FF8String> Descriptions { get; private set; }
+
+            #endregion Properties
+
+            #region Methods
+
+            public override bool Inputs_CANCEL()
+            {
+                base.Inputs_CANCEL();
+                IGM_Junction.Data[SectionName.TopMenu_Auto].Hide();
+                IGM_Junction.SetMode(Mode.TopMenu);
+                return true;
+            }
+
+            public override bool Inputs_OKAY()
+            {
+                switch (CURSOR_SELECT)
                 {
+                    case 0:
+                        Memory.State.Characters[Character].AutoATK();
+                        break;
+
+                    case 1:
+                        Memory.State.Characters[Character].AutoDEF();
+                        break;
+
+                    case 2:
+                        Memory.State.Characters[Character].AutoMAG();
+                        break;
+                    default: return false;
                 }
+                skipsnd = true;
+                init_debugger_Audio.PlaySound(31);
+                Inputs_CANCEL();
+                IGM_Junction.Refresh();
+                return true;
+            }
 
-                protected override void InitShift(int i, int col, int row)
-                {
-                    base.InitShift(i, col, row);
-                    SIZE[i].Inflate(-40, -12);
-                    SIZE[i].Offset(20 + (-20 * (col > 1 ? col : 0)), 0);
-                }
+            public override bool Update()
+            {
+                bool ret = base.Update();
+                Update_String();
+                return ret;
+            }
 
-                public new Dictionary<Items, FF8String> Descriptions { get; private set; }
-
-                private void Update_String()
-                {
-                    if (InGameMenu_Junction != null && InGameMenu_Junction.GetMode().Equals(Mode.TopMenu_Auto) && Enabled)
-                    {
-                        FF8String Changed = null;
-                        switch (CURSOR_SELECT)
-                        {
-                            case 0:
-                                Changed = Descriptions[Items.AutoAtk];
-                                break;
-
-                            case 1:
-                                Changed = Descriptions[Items.AutoDef];
-                                break;
-
-                            case 2:
-                                Changed = Descriptions[Items.AutoMag];
-                                break;
-                        }
-                        if (Changed != null && InGameMenu_Junction != null)
-                            InGameMenu_Junction.ChangeHelp(Changed);
-                    }
-                }
-
-                public override bool Update()
-                {
-                    bool ret = base.Update();
-                    Update_String();
-                    return ret;
-                }
-
-                protected override void Init()
-                {
-                    base.Init();
-                    ITEM[0, 0] = new IGMDataItem_String(Titles[Items.AutoAtk], SIZE[0]);
-                    ITEM[1, 0] = new IGMDataItem_String(Titles[Items.AutoDef], SIZE[1]);
-                    ITEM[2, 0] = new IGMDataItem_String(Titles[Items.AutoMag], SIZE[2]);
-                    Cursor_Status |= Cursor_Status.Enabled;
-                    Cursor_Status |= Cursor_Status.Horizontal;
-                    Cursor_Status |= Cursor_Status.Vertical;
-                    Descriptions = new Dictionary<Items, FF8String> {
+            protected override void Init()
+            {
+                base.Init();
+                ITEM[0, 0] = new IGMDataItem_String(Titles[Items.AutoAtk], SIZE[0]);
+                ITEM[1, 0] = new IGMDataItem_String(Titles[Items.AutoDef], SIZE[1]);
+                ITEM[2, 0] = new IGMDataItem_String(Titles[Items.AutoMag], SIZE[2]);
+                Cursor_Status |= Cursor_Status.Enabled;
+                Cursor_Status |= Cursor_Status.Horizontal;
+                Cursor_Status |= Cursor_Status.Vertical;
+                Descriptions = new Dictionary<Items, FF8String> {
                         //{Items.HP, Memory.Strings.Read(Strings.FileID.MNGRP,2,226) },
                         //{Items.Str, Memory.Strings.Read(Strings.FileID.MNGRP,2,228) },
                         //{Items.Vit, Memory.Strings.Read(Strings.FileID.MNGRP,2,230) },
@@ -92,35 +103,42 @@ namespace OpenVIII
                         //{Items.Chooseslottojunction,Memory.Strings.Read(Strings.FileID.MNGRP,2,282)},
                         //{Items.Choosemagictojunction,Memory.Strings.Read(Strings.FileID.MNGRP,2,283)},
                     };
-                }
+            }
 
-                public override void Inputs_OKAY()
+            protected override void InitShift(int i, int col, int row)
+            {
+                base.InitShift(i, col, row);
+                SIZE[i].Inflate(-40, -12);
+                SIZE[i].Offset(20 + (-20 * (col > 1 ? col : 0)), 0);
+            }
+
+            private void Update_String()
+            {
+                if (IGM_Junction != null && IGM_Junction.GetMode().Equals(Mode.TopMenu_Auto) && Enabled)
                 {
-                    skipsnd = true;
-                    init_debugger_Audio.PlaySound(31);
+                    FF8String Changed = null;
                     switch (CURSOR_SELECT)
                     {
                         case 0:
-                            Memory.State.Characters[Character].AutoATK();
+                            Changed = Descriptions[Items.AutoAtk];
                             break;
+
                         case 1:
-                            Memory.State.Characters[Character].AutoDEF();
+                            Changed = Descriptions[Items.AutoDef];
                             break;
+
                         case 2:
-                            Memory.State.Characters[Character].AutoMAG();
+                            Changed = Descriptions[Items.AutoMag];
                             break;
                     }
-                    Inputs_CANCEL();
-                    InGameMenu_Junction.ReInit();
-                }
-
-                public override void Inputs_CANCEL()
-                {
-                    base.Inputs_CANCEL();
-                    InGameMenu_Junction.Data[SectionName.TopMenu_Auto].Hide();
-                    InGameMenu_Junction.SetMode(Mode.TopMenu);
+                    if (Changed != null && IGM_Junction != null)
+                        IGM_Junction.ChangeHelp(Changed);
                 }
             }
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

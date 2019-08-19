@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Xna.Framework;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 namespace OpenVIII
@@ -28,7 +30,8 @@ namespace OpenVIII
             public byte Crisis { get; private set; } //0x0002; 1 byte; Crisis level hp multiplier
 
             public Gender Gender { get; private set; } //0x0003; 1 byte; Gender; 0x00 - Male 0x01 - Female
-            public byte LimitID { get; private set; } //0x0004; 1 byte; Limit Break ID
+            private byte _limitid; //0x0004; 1 byte; Limit Break ID
+            public Battle_Commands Limit => BattleCommands[_limitid];
             public byte LimitParam { get; private set; } //0x0005; 1 byte; Limit Break Param used for the power of each renzokuken hit before finisher
             private byte[] _EXP { get; set; } //0x0006; 2 bytes; EXP modifier
             private byte[] _HP { get; set; } //0x0008; 4 bytes; HP modifiers
@@ -47,7 +50,7 @@ namespace OpenVIII
                 br.BaseStream.Seek(2, SeekOrigin.Current);
                 Crisis = br.ReadByte(); //0x0002; 1 byte; Crisis level hp multiplier
                 Gender = br.ReadByte() == 0 ? Gender.Male : Gender.Female; //0x0003; 1 byte; Gender; 0x00 - Male 0x01 - Female
-                LimitID = br.ReadByte(); //0x0004; 1 byte; Limit Break ID
+                _limitid = br.ReadByte(); //0x0004; 1 byte; Limit Break ID
                 LimitParam = br.ReadByte(); //0x0005; 1 byte; Limit Break Param used for the power of each renzokuken hit before finisher
                 _EXP = br.ReadBytes(2); //0x0006; 2 bytes; EXP modifier
                 _HP = br.ReadBytes(4); //0x0008; 4 bytes; HP modifiers
@@ -87,13 +90,21 @@ namespace OpenVIII
             //}
 
             private const int _percent_mod = 100;
+            private const int MAXLEVEL = 100;
 
             /// <summary>
             /// Experence to reach level
             /// </summary>
             /// <param name="lvl">Level</param>
             /// <returns></returns>
-            public int EXP(sbyte lvl) => ((lvl - 1) * (lvl - 1) * _EXP[1]) / 256 + (lvl - 1) * _EXP[0] * 10;
+            public int EXP(byte lvl) => ((lvl - 1) * (lvl - 1) * _EXP[1]) / 256 + (lvl - 1) * _EXP[0] * 10;
+
+            public byte LEVEL(uint exp)
+            {
+                //by default no character has this set.
+                Debug.Assert(_EXP[1] == 0); // if set we need to update the formula.
+                return (byte) MathHelper.Clamp(exp / (_EXP[0] * 10) + 1,0, MAXLEVEL);
+            }
 
             /// <summary>
             /// </summary>
@@ -106,7 +117,7 @@ namespace OpenVIII
             public ushort HP(sbyte lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = 0)
             {
                 int value = (((MagicData[MagicID].J_Val[Stat.HP] * magic_count) + stat_bonus + (lvl * _HP[0]) - ((10 * lvl * lvl) / _HP[1]) + _HP[2]) * (percent_mod + _percent_mod)) / 100;
-                return (ushort)(value > MAX_HP_VALUE ? MAX_HP_VALUE : value);
+                return (ushort)MathHelper.Clamp(value, 0, MAX_HP_VALUE);
             }
 
             public byte STR(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod, int weapon = 0)
@@ -125,7 +136,7 @@ namespace OpenVIII
             {
                 int value = ((UNK + (magic_J_val * magic_count) / 100 + stat_bonus + ((lvl * a) / 10 + lvl / b - (lvl * lvl) / d / 2 + c) / 4) * (percent_mod + _percent_mod)) / 100;
 
-                return (byte)(value > MAX_STAT_VALUE ? MAX_STAT_VALUE : value);
+                return (byte)MathHelper.Clamp(value, 0, MAX_STAT_VALUE);
             }
 
             public byte SPD(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
@@ -137,19 +148,19 @@ namespace OpenVIII
             private byte SPD_LUCK(int a, int b, int c, int d, int lvl, int magic_J_val, int magic_count, int stat_bonus, int percent_mod = 0, int UNK = 0)
             {
                 int value = ((UNK + (magic_J_val * magic_count) / 100 + stat_bonus + lvl / b - lvl / d + lvl * a + c) * (percent_mod + _percent_mod)) / 100;
-                return (byte)(value > MAX_STAT_VALUE ? MAX_STAT_VALUE : value);
+                return (byte)MathHelper.Clamp(value, 0, MAX_STAT_VALUE);
             }
 
             public byte EVA(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int spd = 0, int percent_mod = 0)
             {
                 int value = (((MagicData[MagicID].J_Val[Stat.EVA] * magic_count) / 100 + spd / 4) * (percent_mod + _percent_mod)) / 100;
-                return (byte)(value > MAX_STAT_VALUE ? MAX_STAT_VALUE : value);
+                return (byte)MathHelper.Clamp(value, 0, MAX_STAT_VALUE);
             }
 
             public byte HIT(int MagicID = 0, int magic_count = 0, int weapon = 0)
             {
                 int value = MagicData[MagicID].J_Val[Stat.HIT] * magic_count + WeaponsData[weapon].HIT;
-                return (byte)(value > MAX_STAT_VALUE ? MAX_STAT_VALUE : value);
+                return (byte)MathHelper.Clamp(value, 0, MAX_STAT_VALUE);
             }
         }
     }

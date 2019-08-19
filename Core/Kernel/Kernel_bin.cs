@@ -41,6 +41,7 @@ namespace OpenVIII
         private static List<Devour> s_devour_;
         private static List<Misc_section> s_miscsection;
         private static List<Misc_text_pointers> s_misctextpointers;
+        private static Dictionary<Abilities, Ability> s_allAbilities;
         private static Dictionary<Abilities, Equipable_Ability> s_equipableAbilities;
 
         private ArchiveWorker aw { get; set; }
@@ -77,6 +78,7 @@ namespace OpenVIII
         public static IReadOnlyList<Misc_section> Miscsection { get => s_miscsection;  }//29 //only_strings
         public static IReadOnlyList<Misc_text_pointers> Misctextpointers { get => s_misctextpointers;  }//30
 
+        public static IReadOnlyDictionary<Abilities,Ability> AllAbilities { get => s_allAbilities;  } // should contain all abilities
         public static IReadOnlyDictionary<Abilities, Equipable_Ability> EquipableAbilities { get => s_equipableAbilities;  } // contains 4 types;
 
         /// <summary>
@@ -153,6 +155,33 @@ namespace OpenVIII
                 ms.Seek(subPositions[Misc_section.id], SeekOrigin.Begin);
                 s_miscsection = Misc_section.Read(br);
                 s_misctextpointers = Misc_text_pointers.Read();
+
+
+                s_allAbilities = new Dictionary<Abilities, Ability>(
+                    Menu_abilities.count +
+                    Junction_abilities.count + 
+                    Command_abilities.count +
+                    Stat_percent_abilities.count +
+                    Character_abilities.count +
+                    Party_abilities.count +
+                    GF_abilities.count);
+                foreach (Abilities ability in (Abilities[])(Enum.GetValues(typeof(Abilities))))
+                {
+                    if (Menuabilities.ContainsKey(ability))
+                        s_allAbilities[ability] = Menuabilities[ability];
+                    else if (Statpercentabilities.ContainsKey(ability))
+                        s_allAbilities[ability] = Statpercentabilities[ability];
+                    else if (Junctionabilities.ContainsKey(ability))
+                        s_allAbilities[ability] = Junctionabilities[ability];
+                    else if (Commandabilities.ContainsKey(ability))
+                        s_allAbilities[ability] = Commandabilities[ability];
+                    else if (Characterabilities.ContainsKey(ability))
+                        s_allAbilities[ability] = Characterabilities[ability];
+                    else if (Partyabilities.ContainsKey(ability))
+                        s_allAbilities[ability] = Partyabilities[ability];
+                    else if (Characterabilities.ContainsKey(ability))
+                        s_allAbilities[ability] = Characterabilities[ability];
+                }
 
                 s_equipableAbilities = new Dictionary<Abilities, Equipable_Ability>(
                     Stat_percent_abilities.count +

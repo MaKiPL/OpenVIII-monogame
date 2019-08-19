@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
 using System.IO;
+using OpenVIII.Encoding.Tags;
 
 namespace OpenVIII
 {
@@ -78,16 +79,14 @@ namespace OpenVIII
         {
 #if DEBUG
             // lets you move through all the feilds just holding left or right. it will just loop when it runs out.
-            if (Input.Button(Buttons.Left) )
+            if (Input2.DelayedButton(FF8TextTagKey.Left) )
             {
-                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 Module_main_menu_debug.FieldPointer--;
                 ResetField();
             }
-            if (Input.Button(Buttons.Right) )
+            if (Input2.DelayedButton(FF8TextTagKey.Right) )
             {
-                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 Module_main_menu_debug.FieldPointer++;
                 ResetField();

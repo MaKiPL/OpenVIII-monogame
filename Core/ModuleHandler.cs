@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,11 +26,10 @@ namespace OpenVIII
 
 
             //#if DEBUG
-            if (Input.Button(Buttons.Back) || Input.Button(Buttons.Cancel))
+            if (Input2.DelayedButton(FF8TextTagKey.Reset) || Input2.DelayedButton(FF8TextTagKey.Cancel))
             {
                 Memory.module = Memory.MODULE_MAINMENU_DEBUG;
-                Input.OverrideLockMouse = false;
-                Input.CurrentMode = Input.MouseLockMode.Screen;
+                InputMouse.Mode = MouseLockMode.Screen;
             }
             //#endif
 

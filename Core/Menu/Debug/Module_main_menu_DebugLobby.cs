@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -153,7 +154,7 @@ namespace OpenVIII
             float item = 0;
             Rectangle dst = FontBoxCalc<Ditems>(strDebugLobby);
             Memory.SpriteBatchStartAlpha(tm: IGM_focus);
-            DrawBox(dst, title: Icons.ID.DEBUG);
+            Menu.DrawBox(dst, title: Icons.ID.DEBUG);
             //Memory.Icons.Draw(Icons.ID.Menu_BG_256, 0, dst, new Vector2(2f), Fade);
             item = 0;
             dst.Offset(4 * 3.5f, 0);
@@ -252,34 +253,32 @@ namespace OpenVIII
                     Dchoose = (Ditems)entry.Key;
                     ret = true;
 
-                    if (Input.Button(Buttons.MouseWheelup))
+                    if (Input2.Button(MouseButtons.MouseWheelup))
                     {
                         return UpdateDebugLobbyLEFT();
                     }
-                    if (Input.Button(Buttons.MouseWheeldown))
+                    if (Input2.Button(MouseButtons.MouseWheeldown))
                     {
                         return UpdateDebugLobbyRIGHT();
                     }
                     break;
                 }
             }
-            if (Input.Button(Buttons.Down))
+            if (Input2.DelayedButton(FF8TextTagKey.Down))
             {
-                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 Dchoose++;
                 ret = true;
             }
-            if (Input.Button(Buttons.Up))
+            if (Input2.DelayedButton(FF8TextTagKey.Up))
             {
-                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 Dchoose--;
                 ret = true;
             }
-            if (Input.Button(Buttons.Okay) && Dchoose == Ditems.Reset || Input.Button(Buttons.Cancel))
+            if (Input2.Button(FF8TextTagKey.Confirm) && Dchoose == Ditems.Reset || Input2.Button(FF8TextTagKey.Cancel))
             {
-                Input.ResetInputLimit();
+                Input2.ResetInputLimit();
                 init_debugger_Audio.PlaySound(8);
                 init_debugger_Audio.StopMusic();
                 Dchoose = 0;
@@ -287,15 +286,15 @@ namespace OpenVIII
                 State = MainMenuStates.MainLobby;
                 ret = true;
             }
-            else if (Input.Button(Buttons.Okay))
+            else if (Input2.DelayedButton(FF8TextTagKey.Confirm))
             {
                 ret = UpdateDebugLobbyOKAY();
             }
-            else if (Input.Button(Buttons.Left))
+            else if (Input2.DelayedButton(FF8TextTagKey.Left))
             {
                 ret = UpdateDebugLobbyLEFT();
             }
-            else if (Input.Button(Buttons.Right))
+            else if (Input2.DelayedButton(FF8TextTagKey.Right))
             {
                 ret = UpdateDebugLobbyRIGHT();
             }
@@ -305,7 +304,6 @@ namespace OpenVIII
         private static bool UpdateDebugLobbyLEFT()
         {
             bool ret = true;
-            Input.ResetInputLimit();
             switch (Dchoose)
             {
                 case Ditems.Sounds:
@@ -364,7 +362,6 @@ namespace OpenVIII
         private static bool UpdateDebugLobbyOKAY()
         {
             bool ret = true;
-            Input.ResetInputLimit();
             switch (Dchoose)
             {
                 case Ditems.Overture:
@@ -444,7 +441,6 @@ namespace OpenVIII
         private static bool UpdateDebugLobbyRIGHT()
         {
             bool ret = true;
-            Input.ResetInputLimit();
             switch (Dchoose)
             {
                 case Ditems.Sounds:

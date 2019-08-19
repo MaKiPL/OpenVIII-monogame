@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -67,9 +68,8 @@ namespace OpenVIII
 
         public static void Update()
         {
-            if (Input.Button(Buttons.Okay) || Input.Button(Buttons.Cancel) || Input.Button(Keys.Space))
+            if (Input2.DelayedButton(FF8TextTagKey.Confirm) || Input2.DelayedButton(FF8TextTagKey.Cancel) || Input2.DelayedButton(Keys.Space))
             {
-                Input.ResetInputLimit();
                 //init_debugger_Audio.StopAudio();
                 //Memory.module = Memory.MODULE_MAINMENU_DEBUG;
                 MovieState = STATE_RETURN;
@@ -77,16 +77,14 @@ namespace OpenVIII
 #if DEBUG
             // lets you move through all the feilds just holding left or right. it will just loop
             // when it runs out.
-            if (Input.Button(Buttons.Left))
+            if (Input2.DelayedButton(FF8TextTagKey.Left))
             {
-                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 Module_main_menu_debug.MoviePointer--;
                 Reset();
             }
-            if (Input.Button(Buttons.Right))
+            if (Input2.DelayedButton(FF8TextTagKey.Right))
             {
-                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 Module_main_menu_debug.MoviePointer++;
                 Reset();
@@ -145,7 +143,11 @@ namespace OpenVIII
                     if (frameTex == null)
                     {
                         if (FfccVideo != null)
+                        {
+                            if (Memory.State?.Fieldvars != null)
+                                Memory.State.Fieldvars.FMVFrames = (ulong)FfccVideo.CurrentFrameNum;
                             frameTex = FfccVideo.Texture2D();
+                        }
                     }
                     break;
 
@@ -169,8 +171,10 @@ namespace OpenVIII
                     break;
             }
         }
+
         /// <summary>
-        /// Sets the movie player back to default state. Use when exiting or otherwise it shouldn't be required.
+        /// Sets the movie player back to default state. Use when exiting or otherwise it shouldn't
+        /// be required.
         /// </summary>
         public static void Reset()
         {

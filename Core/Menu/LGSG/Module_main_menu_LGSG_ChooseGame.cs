@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
 
@@ -101,7 +102,7 @@ namespace OpenVIII
             else //if(BlockLocs[BlockLoc] != null)
             {
                 Point ptr = BlockLocs[BlockLoc].Item2;
-                DrawPointer(ptr);
+                Menu.DrawPointer(ptr);
             }
         }
 
@@ -119,12 +120,12 @@ namespace OpenVIII
                         BlockLoc = (sbyte)i;
                         ret = true;
 
-                        if (Input.Button(Buttons.MouseWheelup))
+                        if (Input2.DelayedButton(MouseButtons.MouseWheelup))
                         {
                             UpdateLGChooseGameLEFT();
                             return true;
                         }
-                        else if (Input.Button(Buttons.MouseWheeldown))
+                        else if (Input2.DelayedButton(MouseButtons.MouseWheeldown))
                         {
                             UpdateLGChooseGameRIGHT();
                             return true;
@@ -133,47 +134,42 @@ namespace OpenVIII
                     }
                 }
 
-                if (Input.Button(Buttons.Down))
+                if (Input2.Button(FF8TextTagKey.Down))
                 {
-                    Input.ResetInputLimit();
                     init_debugger_Audio.PlaySound(0);
                     BlockLoc++;
                     ret = true;
                 }
-                else if (Input.Button(Buttons.Left))
+                else if (Input2.Button(FF8TextTagKey.Left))
                 {
                     UpdateLGChooseGameLEFT();
                     ret = true;
                 }
-                else if (Input.Button(Buttons.Right))
+                else if (Input2.Button(FF8TextTagKey.Right))
                 {
                     UpdateLGChooseGameRIGHT();
                     ret = true;
                 }
-                else if (Input.Button(Buttons.Up))
+                else if (Input2.Button(FF8TextTagKey.Up))
                 {
-                    Input.ResetInputLimit();
                     init_debugger_Audio.PlaySound(0);
                     BlockLoc--;
                     ret = true;
                 }
-                else if (Input.Button(Keys.PageDown))
+                else if (Input2.Button(FF8TextTagKey.RotateLeft))//(Input2.Button(Keys.PageDown))
                 {
-                    Input.ResetInputLimit();
                     init_debugger_Audio.PlaySound(0);
                     SlotLoc++;
                     ret = true;
                 }
-                else if (Input.Button(Keys.PageUp))
+                else if (Input2.Button(FF8TextTagKey.RotateRight)) // (Input2.Button(Keys.PageUp))
                 {
-                    Input.ResetInputLimit();
                     init_debugger_Audio.PlaySound(0);
                     SlotLoc--;
                     ret = true;
                 }
-                else if (Input.Button(Buttons.Cancel))
+                else if (Input2.DelayedButton(FF8TextTagKey.Cancel))
                 {
-                    Input.ResetInputLimit();
                     init_debugger_Audio.PlaySound(8);
                     init_debugger_Audio.StopMusic();
                     Dchoose = 0;
@@ -182,7 +178,7 @@ namespace OpenVIII
 
                     ret = true;
                 }
-                else if (Input.Button(Buttons.Okay))
+                else if (Input2.DelayedButton(FF8TextTagKey.Confirm))
                 {
                     PercentLoaded = 0f;
                     //State = MainMenuStates.LoadGameCheckingSlot;
@@ -200,7 +196,6 @@ namespace OpenVIII
 
         private static void UpdateLGChooseGameRIGHT()
         {
-            Input.ResetInputLimit();
             init_debugger_Audio.PlaySound(0);
             if (LastPage != null && !LastPage.IsDisposed)
             {
@@ -227,7 +222,6 @@ namespace OpenVIII
 
         private static void UpdateLGChooseGameLEFT()
         {
-            Input.ResetInputLimit();
             init_debugger_Audio.PlaySound(0);
             if (LastPage != null && !LastPage.IsDisposed)
             {
@@ -267,7 +261,7 @@ namespace OpenVIII
             };
             Vector2 offset = dst.Location.ToVector2();
 
-            DrawBox(dst);
+            Menu.DrawBox(dst);
 
             Vector2 blocknumpos = new Vector2
             {
@@ -348,7 +342,7 @@ namespace OpenVIII
                     Height = (int)(OffScreenBuffer.Height * 0.138364779874214f),
                 };
                 locbox.Offset(offset);
-                DrawBox(locbox);
+                Menu.DrawBox(locbox);
                 FF8String loc = Memory.Strings.Read(Strings.FileID.AREAMES, 0, d.LocationID);
                 locbox.Offset(0.0297619047619048f * OffScreenBuffer.Width, 0.0440251572327044f * OffScreenBuffer.Height);
                 Memory.font.RenderBasicText(loc, locbox.Location, TextScale, Fade: fade);

@@ -1,21 +1,32 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using OpenVIII.Encoding.Tags;
 using System;
-using System.IO;
 using System.Linq;
 
 namespace OpenVIII
 {
     public static class Module_overture_debug
     {
-        private static OverturepublicModule publicModule = OverturepublicModule._4Squaresoft;
-        private static ArchiveWorker aw;
-        private const string names = "name";
-        private const string loops = "loop";
+        #region Fields
 
-        private static Texture2D splashTex = null;
-        private static Texture2D white = null;
+        private const float speed = 1f;
+        private static bool bFadingIn = true;
+        private static bool bNames = true;
+
+        //by default first should fade in, wait, then fire fading out and wait for finish, then loop
+        private static bool bWaitingSplash, bFadingOut;
+
+        private static float fSplashWait, Fade;
+        private static OverturepublicModule publicModule = OverturepublicModule._4Squaresoft;
+        private static double publicTimer;
+        private static int splashIndex, splashName = 1, splashLoop = 1;
+        private static Splash splashTex = null;
+
+        #endregion Fields
+
+        #region Enums
 
         private enum OverturepublicModule
         {
@@ -26,87 +37,18 @@ namespace OpenVIII
             _4Squaresoft
         }
 
-        private static double publicTimer;
-        private static bool bNames = true; //by default we are starting with names
-        private static int splashIndex, splashName = 1, splashLoop = 1;
+        #endregion Enums
 
-        private static bool bFadingIn = true; //by default first should fade in, wait, then fire fading out and wait for finish, then loop
-        private static bool bWaitingSplash, bFadingOut;
-        private static float fSplashWait, Fade;
+        #region Properties
+        private static float Fadespd1 => (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 500f) * speed;
+        private static float Fadespd2 => (float)Fadespd5;
+        private static float Fadespd3 => (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 5000.0f) * speed;
+        private static float Fadespd4 => (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 2000.0f) * speed;
+        private static double Fadespd5 => (Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0d) * speed;
 
-        public static void Update()
-        {
-            if (Input.Button(Buttons.Okay) || Input.Button(Buttons.Cancel) || Input.Button(Keys.Space))
-            {
-                Input.ResetInputLimit();
-                init_debugger_Audio.StopMusic();
-                Memory.module = Memory.MODULE_MAINMENU_DEBUG;
+        #endregion Properties
 
-                if (splashTex != null && !splashTex.IsDisposed)
-                    splashTex.Dispose();
-                if (white != null && !white.IsDisposed)
-                    white.Dispose();
-            }
-            switch (publicModule)
-            {
-                case OverturepublicModule._0InitSound:
-                    InitSound();
-                    break;
-
-                case OverturepublicModule._1WaitBeforeFirst:
-                    Memory.SuppressDraw = true;
-                    WaitForFirst();
-                    break;
-
-                case OverturepublicModule._2PlaySequence:
-                    SplashUpdate(ref splashIndex);
-                    break;
-            }
-        }
-
-        public static void ResetModule()
-        {
-            publicModule = 0;
-            publicTimer = 0.0f;
-            bFadingIn = true;
-            bWaitingSplash = false;
-            fSplashWait = 0.0f;
-            bFadingOut = false;
-            Fade = 0;
-            Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
-            Memory.module = Memory.MODULE_OVERTURE_DEBUG;
-            publicModule = OverturepublicModule._4Squaresoft;
-            Module_movie_test.ReturnState = Memory.MODULE_OVERTURE_DEBUG;
-            aw = null; // was getting exception when running the overture again as the aw target changed.
-        }
-
-        private static void WaitForFirst()
-        {
-            if (publicTimer > 6.0f)
-            {
-                publicModule++;
-                Console.WriteLine("MODULE_OVERTURE: DEBUG MODULE 2");
-            }
-            publicTimer += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0d;
-        }
-
-        private static void InitSound()
-        {
-            Memory.MusicIndex = 79;//79; //Overture
-            init_debugger_Audio.PlayMusic();
-            Memory.MusicIndex = ushort.MaxValue; // reset pos after playing overture; will loop back to start if push next
-
-            if (white != null && !white.IsDisposed)
-                white.Dispose();
-            white = new Texture2D(Memory.graphics.GraphicsDevice, 4, 4, false, SurfaceFormat.Color);
-            byte[] whiteBuffer = new byte[16];
-            for (int i = 0; i < 16; i++)
-            {
-                whiteBuffer[i] = 255;
-            }
-
-            publicModule++;
-        }
+        #region Methods
 
         public static void Draw()
         {
@@ -134,83 +76,25 @@ namespace OpenVIII
             }
         }
 
-        private static void DrawLogo()
+        public static void ResetModule()
         {
-            //fade to white
-            if (!bWaitingSplash)
-            {
-                Memory.graphics.GraphicsDevice.Clear(Color.White);
-            }
-            else
-            {
-                Memory.graphics.GraphicsDevice.Clear(Color.Black);
-            }
-
-            Memory.SpriteBatchStartAlpha(ss: SamplerState.AnisotropicClamp);
-            Memory.spriteBatch.Draw(splashTex,
-                new Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
-                new Rectangle(0, 0, splashTex.Width, splashTex.Height)
-                , Color.White * Fade);
-            if (bFadingIn)
-            {
-                Fade += Memory.gameTime.ElapsedGameTime.Milliseconds / 5000.0f;
-            }
-
-            if (bFadingOut)
-            {
-                Fade -= Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f;
-            }
-
-            if (Fade < 0.0f)
-            {
-                bFadingIn = true;
-                ReadSplash(true);
-                bFadingOut = false;
-            }
-            if (bFadingIn && Fade > 1.0f && !bWaitingSplash)
-            {
-                publicTimer += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
-            }
-
-            if (publicTimer > 5.0f)
-            {
-                bWaitingSplash = true;
-                bFadingOut = true;
-            }
-            Memory.SpriteBatchEnd();
-            if (bWaitingSplash && Fade < 0.0f)
-            {
-                init_debugger_Audio.StopMusic();
-                Memory.module = Memory.MODULE_MAINMENU_DEBUG;
-                if (splashTex != null && !splashTex.IsDisposed)
-                    splashTex.Dispose();
-                if (white != null && !white.IsDisposed)
-                    white.Dispose();
-            }
-        }
-
-        private static void DrawSplash()
-        {
-            if (splashTex == null)
-            {
-                return;
-            }
-
-            Memory.SpriteBatchStartAlpha(ss: SamplerState.AnisotropicClamp);
-            Memory.spriteBatch.Draw(splashTex,
-                new Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
-                new Rectangle(0, 0, splashTex.Width, splashTex.Height)
-                , Color.White * Fade);
-            Memory.SpriteBatchEnd();
+            publicModule = 0;
+            publicTimer = 0.0f;
+            bFadingIn = true;
+            bWaitingSplash = false;
+            fSplashWait = 0.0f;
+            bFadingOut = false;
+            Fade = 0;
+            splashIndex = 0;
+            splashName = splashLoop = 1;
+            Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
+            Memory.module = Memory.MODULE_OVERTURE_DEBUG;
+            publicModule = OverturepublicModule._4Squaresoft;
+            Module_movie_test.ReturnState = Memory.MODULE_OVERTURE_DEBUG;
         }
 
         public static void SplashUpdate(ref int _splashIndex)
         {
-            if (aw == null)
-            {
-                aw = new ArchiveWorker(Memory.Archives.A_MAIN);
-            }
-
             if (splashTex == null)
             {
                 ReadSplash();
@@ -218,7 +102,7 @@ namespace OpenVIII
 
             if (bFadingIn)
             {
-                Fade += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 2f;
+                Fade += Fadespd1;
                 if (Fade > 1.0f)
                 {
                     Fade = 1.0f;
@@ -238,7 +122,7 @@ namespace OpenVIII
                     publicModule++;
                     return;
                 }
-                Fade -= Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 2f;
+                Fade -= Fadespd1;
                 if (Fade < 0.0f)
                 {
                     bFadingIn = true;
@@ -284,40 +168,211 @@ namespace OpenVIII
                     }
                 }
                 Memory.SuppressDraw = true;
-                fSplashWait += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
+                fSplashWait += Fadespd2;
             }
             //loop 01-14 + name01-14;
         }
 
-        //Splash is 640x400 16BPP typical TIM with palette of ggg bbbbb a rrrrr gg
-        public static void ReadSplash(bool bLogo = false)
+        public static void Update()
         {
-            string[] lof = aw.GetListOfFiles();
-            string filename;
-            if (splashName > 0x0f)
+            if (Input2.DelayedButton(FF8TextTagKey.Confirm) || Input2.DelayedButton(FF8TextTagKey.Cancel) || Input2.DelayedButton(Keys.Space))
+            {
+                init_debugger_Audio.StopMusic();
+                Memory.module = Memory.MODULE_MAINMENU_DEBUG;
+            }
+            switch (publicModule)
+            {
+                case OverturepublicModule._0InitSound:
+                    InitSound();
+                    break;
+
+                case OverturepublicModule._1WaitBeforeFirst:
+                    Memory.SuppressDraw = true;
+                    WaitForFirst();
+                    break;
+
+                case OverturepublicModule._2PlaySequence:
+                    SplashUpdate(ref splashIndex);
+                    break;
+            }
+        }
+
+        private static void DrawLogo()
+        {
+            if (splashTex != null)
+            {
+                if (!bWaitingSplash)
+                {
+                    Memory.graphics.GraphicsDevice.Clear(Color.White);
+                    Memory.SpriteBatchStartAlpha(ss: SamplerState.AnisotropicClamp);
+                }
+                else
+                {
+                    Memory.SpriteBatchStartStencil(ss: SamplerState.AnisotropicClamp);
+                }
+                Memory.spriteBatch.Draw(splashTex,
+                    new Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
+                    new Rectangle(0, 0, splashTex.Width, splashTex.Height)
+                    , Color.White * Fade);
+                if (bFadingIn)
+                {
+                    Fade += Fadespd3;
+                }
+
+                if (bFadingOut)
+                {
+                    Fade -= Fadespd4;
+                }
+
+                if (Fade < 0.0f)
+                {
+                    bFadingIn = true;
+                    ReadSplash(true);
+                    bFadingOut = false;
+                }
+                if (bFadingIn && Fade > 1.0f && !bWaitingSplash)
+                {
+                    publicTimer += Fadespd5;
+                }
+
+                if (publicTimer > 5.0f)
+                {
+                    bWaitingSplash = true;
+                    bFadingOut = true;
+                }
+                Memory.SpriteBatchEnd();
+                if (bWaitingSplash && Fade < 0.0f)
+                {
+                    Memory.module = Memory.MODULE_MAINMENU_DEBUG;
+                }
+            }
+        }
+
+        private static void DrawSplash()
+        {
+            if (splashTex == null)
             {
                 return;
             }
+
+            Memory.SpriteBatchStartStencil(ss: SamplerState.AnisotropicClamp);
+            Memory.spriteBatch.Draw(splashTex,
+                new Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
+                new Rectangle(0, 0, splashTex.Width, splashTex.Height)
+                , Color.White * Fade);
+            Memory.SpriteBatchEnd();
+        }
+
+        private static void InitSound()
+        {
+            init_debugger_Audio.PlayMusic(79,loop:false);
+            Memory.MusicIndex = ushort.MaxValue; // reset pos after playing overture; will loop back to start if push next
+            publicModule++;
+        }
+
+        private static void ReadSplash(bool bLogo = false) => splashTex = new Splash(bNames ? splashName : splashLoop, bNames, bLogo);
+
+        private static void WaitForFirst()
+        {
+            if (publicTimer > 6.0f)
+            {
+                publicModule++;
+                Console.WriteLine("MODULE_OVERTURE: DEBUG MODULE 2");
+            }
+            publicTimer += Fadespd5;
+        }
+
+        #endregion Methods
+    }
+
+    public class Splash : IDisposable
+    {
+        #region Fields
+
+        private const string loops = "loop";
+
+        private const string names = "name";
+
+        private ArchiveWorker aw;
+
+        private string filename;
+
+        #endregion Fields
+
+        #region Constructors
+
+        public Splash(int splashNum, bool bNames = true, bool bLogo = false)
+        {
+            if (splashNum > 0x0f)
+            {
+                return;
+            }
+            aw = new ArchiveWorker(Memory.Archives.A_MAIN);
+            GetName(splashNum, bNames, bLogo);
+            ReadSplash();
+        }
+
+        #endregion Constructors
+
+        #region Destructors
+
+        ~Splash()
+        {
+            Dispose();
+        }
+
+        #endregion Destructors
+
+        #region Properties
+
+        public bool IsDisposed { get; private set; } = false;
+        public Texture2D tex { get; private set; }
+        public int Height => tex?.Height ?? 0;
+        public int Width => tex?.Width ?? 0;
+
+        #endregion Properties
+
+        #region Methods
+
+        public static implicit operator Texture2D(Splash s) => s.tex;
+
+        public void Dispose()
+        {
+            if (!IsDisposed)
+            {
+                IsDisposed = true;
+                tex.Dispose();
+            }
+        }
+
+        public override string ToString() => filename;
+
+        private void GetName(int splashNum, bool bNames, bool bLogo)
+        {
+            string[] lof = aw.GetListOfFiles();
             filename = !bLogo
                 ? bNames
-                    ? lof.First(x => x.ToLower().Contains($"{names}{splashName.ToString("D2")}"))
-                    : lof.First(x => x.ToLower().Contains($"{loops}{splashLoop.ToString("D2")}"))
+                    ? lof.First(x => x.ToLower().Contains($"{names}{splashNum.ToString("D2")}"))
+                    : lof.First(x => x.ToLower().Contains($"{loops}{splashNum.ToString("D2")}"))
                 : lof.First(x => x.ToLower().Contains($"ff8.lzs"));
+        }
 
+        //Splash is 640x400 16BPP typical TIM with palette of ggg bbbbb a rrrrr gg
+        private void ReadSplash()
+        {
             byte[] buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_MAIN, filename);
             uint uncompSize = BitConverter.ToUInt32(buffer, 0);
             buffer = buffer.Skip(4).ToArray(); //hotfix for new LZSS
             buffer = LZSS.DecompressAllNew(buffer);
 
-            if (splashTex != null && !splashTex.IsDisposed)
-                splashTex.Dispose();
-
-            splashTex = TIM2.Overture(buffer);
+            tex = TIM2.Overture(buffer);
             //using (FileStream fs = File.Create(Path.Combine("D:\\main", Path.GetFileNameWithoutExtension(filename) + ".png")))
             //    splashTex.SaveAsPng(fs, splashTex.Width, splashTex.Height);
 
             GC.Collect();
             GC.WaitForPendingFinalizers();
         }
+
+        #endregion Methods
     }
 }

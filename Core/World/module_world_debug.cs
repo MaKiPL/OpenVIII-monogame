@@ -2,18 +2,17 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using OpenVIII.Core.World;
+using OpenVIII.Encoding.Tags;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OpenVIII
 {
-    class Module_world_debug
+    public class Module_world_debug
     {
+        private static FPS_Camera fps_camera;
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
         private static float degrees, Yshift;
         private static float camDistance = 10.0f;
@@ -23,6 +22,7 @@ namespace OpenVIII
         private static Vector3 lastPlayerPosition = playerPosition;
         public static BasicEffect effect;
         public static AlphaTestEffect ate;
+
         private enum _worldState
         {
             _0init,
@@ -40,6 +40,7 @@ namespace OpenVIII
 
         //DEBUG
         private const float WORLD_SCALE_MODEL = 16f;
+
         private static readonly int renderDistance = 4;
         private static readonly float FOV = 60;
 
@@ -51,8 +52,7 @@ namespace OpenVIII
         private static rail rail;
 
         private static byte[] wmx;
-
-        static float DEBUGshit = FOV;
+        private static float DEBUGshit = FOV;
         private const int WM_SEG_SIZE = 0x9000; //World map segment size in file
         private const int WM_SEGMENTS_COUNT = 835;
 
@@ -99,6 +99,7 @@ namespace OpenVIII
         private struct SegHeader
         {
             public uint groupId;
+
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
             public uint[] blockOffsets;
         }
@@ -116,7 +117,6 @@ namespace OpenVIII
             private Texflags TexFlags { get => Texflags.TEXFLAGS_ISENTERABLE | Texflags.TEXFLAGS_MISC | Texflags.TEXFLAGS_ROAD | Texflags.TEXFLAGS_SHADOW | Texflags.TEXFLAGS_UNK | Texflags.TEXFLAGS_UNK2 | Texflags.TEXFLAGS_WATER; set => texFlags = value; }
             //public byte TPage_clut1 { set => TPage_clut = value; }
         }
-#pragma warning disable 169
         private struct Vertex
         {
             public short X;
@@ -139,7 +139,7 @@ namespace OpenVIII
 #pragma warning restore 169
 #pragma warning restore 0649
 
-        #endregion
+        #endregion structures
 
         /// <summary>
         /// This is index to characters in chara.one file of worldmap
@@ -161,7 +161,7 @@ namespace OpenVIII
         private static MiniMapState MapState = MiniMapState.rectangle;
 
         [Flags]
-        enum Texflags : byte
+        private enum Texflags : byte
         {
             TEXFLAGS_SHADOW = 0b11,
             TEXFLAGS_UNK = 0b100,
@@ -172,7 +172,7 @@ namespace OpenVIII
             TEXFLAGS_MISC = 0b10000000
         }
         [Flags]
-        enum VertFlags
+        private enum VertFlags
         {
             bWalkable = 0b10000000
         }
@@ -181,10 +181,10 @@ namespace OpenVIII
         const byte TRIFLAGS_FORESTTEST = 0b01000000;
 
         private static int GetSegment(int segID) => segID * WM_SEG_SIZE;
+
         private static void InitWorld()
         {
-            Input.OverrideLockMouse = true;
-            Input.CurrentMode = Input.MouseLockMode.Center;
+            fps_camera = new FPS_Camera();
             //init renderer
             effect = new BasicEffect(Memory.graphics.GraphicsDevice);
             effect.EnableDefaultLighting();
@@ -377,10 +377,10 @@ namespace OpenVIII
                     break;
             }
 
-            if (Input.Button(Keys.J))
+            if (Input2.DelayedButton(Keys.J) || Input2.DelayedButton(FF8TextTagKey.Select))
                 MapState = MapState >= MiniMapState.fullscreen ? MapState = 0 : MapState + 1;
 
-            if (Input.Button(Keys.R))
+            if (Input2.DelayedButton(Keys.R))
                 worldState = _worldState._0init;
 
             if (Input.Button(Keys.D9))
@@ -571,6 +571,7 @@ namespace OpenVIII
                          Vector3.Up);
         }
 
+
         public static void OrbitCamera()
         {
             camDistance = 100f;
@@ -591,6 +592,9 @@ namespace OpenVIII
 
         public static int animationTestVariable = 0;
 
+
+        double RadianAngleFromVector3s(Vector3 a, Vector3 b) => Math.Acos(Vector3.Dot(Vector3.Normalize(a), Vector3.Normalize(b)));
+
         public static void Draw()
         {
             Memory.spriteBatch.GraphicsDevice.Clear(Color.CornflowerBlue);
@@ -606,7 +610,6 @@ namespace OpenVIII
             ate.World = worldMatrix;
 
 
-
             segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1);
             for (int i = 0; i < 768; i++)
                 DrawSegment(i);
@@ -614,6 +617,7 @@ namespace OpenVIII
             WrapWaterSegments();
 
             TeleportPlayerWarp();
+
 
             DrawCharacter(activeCharacter);
 
@@ -625,11 +629,14 @@ namespace OpenVIII
             {
                 case MiniMapState.noMinimap:
                     break;
+
                 case MiniMapState.planet:
                     break;
+
                 case MiniMapState.rectangle:
                     DrawRectangleMiniMap();
                     break;
+
                 case MiniMapState.fullscreen:
                     break;
             }
@@ -646,12 +653,12 @@ namespace OpenVIII
                 $"FPS camera degrees: ={degrees}°\n" +
                 $"FOV: ={FOV}", 30, 20, lineSpacing: 5);
             Memory.SpriteBatchEnd();
-
-
         }
 
         /// <summary>
         /// Gets the vector3 position of the raycast that drops from sky and is used for forest
+        /// This prevents camera/player to get out of playable zone and wraps it to the other side
+        /// like it's 360o
         /// </summary>
         /// <returns></returns>
         private static Vector3 GetForwardSkyRaycastVector(float distance = 15f)
@@ -938,7 +945,6 @@ namespace OpenVIII
             float topX = Memory.graphics.GraphicsDevice.Viewport.Width * .6f; //6
             float topY = Memory.graphics.GraphicsDevice.Viewport.Height * .6f;
 
-
             float bc = Math.Abs(camPosition.X / 16384.0f);
             topX += Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f * bc;
             bc = Math.Abs(camPosition.Z / 12288f);
@@ -948,14 +954,14 @@ namespace OpenVIII
             Memory.spriteBatch.Draw(wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap, 1), new Rectangle((int)(Memory.graphics.GraphicsDevice.Viewport.Width * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f)), Color.White * .7f);
             Memory.spriteBatch.End();
 
-
             Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
             Memory.spriteBatch.Draw(wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0), new Rectangle((int)topX, (int)topY, (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 32.0f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 32.0f)), null, Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
             Memory.SpriteBatchEnd();
         }
 
         /// <summary>
-        /// Determines either to draw the segment or ignore. Example of ignore case is when the distance is bigger than X
+        /// Determines either to draw the segment or ignore. Example of ignore case is when the
+        /// distance is bigger than X
         /// </summary>
         /// <param name="baseX"></param>
         /// <param name="baseY"></param>
@@ -1060,10 +1066,11 @@ namespace OpenVIII
 
             ////prison
             if (Extended.In(_i, 361, 361))
+
                 _i += 473;
 #endregion
 
-
+            #endregion Interchangable zones
 
             Segment seg = segments[_i];
             for (int k = 0; k < seg.parsedTriangle.Length; k++)
@@ -1098,6 +1105,7 @@ namespace OpenVIII
             }
         }
 
+
         /// <summary>
         /// This method checks if it should not draw some faces based on frustum culling method of checking point in triangle (2D geometry)
         /// </summary>
@@ -1121,6 +1129,7 @@ namespace OpenVIII
             d3 = pointX * (right.Z - ay) + pointY * (ax - right.X) + (right.X * ay - right.Z * ax);
 
             return ((d1 > 0 || d2 > 0 || d3 > 0) && (d1 < 0 || d2 < 0 || d3 < 0));
+
         }
     }
 }
