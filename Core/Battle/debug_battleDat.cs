@@ -520,14 +520,16 @@ namespace OpenVIII
         public AnimationData animHeader;
         public int frame;
         public float frameperFPS = 0.0f;
-#endregion
+        #endregion
 
-#region section 7 Information
-        [StructLayout(LayoutKind.Sequential, Pack =1, Size =380)]
+        #region section 7 Information
+        private const int Section7Size = 380;
+
+        [StructLayout(LayoutKind.Sequential, Pack =1, Size =Section7Size)]
         public struct Information
         {
             [MarshalAs(UnmanagedType.ByValArray,SizeConst =24)]
-            private char[] monsterName;
+            private byte[] monsterName;
             public uint hp;
             public uint str;
             public uint vit;
@@ -597,7 +599,7 @@ namespace OpenVIII
             public byte explusionResistanceMental;
             public byte unkResistanceMental;
 
-            public string GetNameNormal => new string(monsterName);
+            public FF8String GetNameNormal => monsterName;
         }
 
         public struct Abilities
@@ -611,6 +613,7 @@ namespace OpenVIII
         private void ReadSection7(uint v, MemoryStream ms, BinaryReader br)
         {
             ms.Seek(v, SeekOrigin.Begin);
+            information = Extended.ByteArrayToStructure<Information>(br.ReadBytes(Section7Size));
         }
 
         public Information information;
