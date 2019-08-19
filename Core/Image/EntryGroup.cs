@@ -128,6 +128,16 @@ namespace OpenVIII
             }
         }
 
+        public void BakeInScale(Vector2 scale)
+        {
+            foreach (Entry e in list)
+            {
+                e.BakeInScale(scale);
+            }
+            Width *= (int)scale.X;
+            Height *= (int)scale.Y;
+        }
+
         public static Vector2 Abs(Vector2 v2) => new Vector2(Math.Abs(v2.X), Math.Abs(v2.Y));
 
         public static Point RoundedPoint(Vector2 v) => v.RoundedPoint();

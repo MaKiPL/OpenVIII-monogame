@@ -47,7 +47,6 @@ namespace OpenVIII
         /// <summary>
         /// Scale of Menu Items (Background and Cursor)
         /// </summary>
-        private const float _menuitemscale = 2f;
 
         private static BattleMenus _battlemenus;
         private static bool _blinkstate;
@@ -201,12 +200,12 @@ namespace OpenVIII
                     backup = dst;
                 }
             }
-            Vector2 bgscale = new Vector2(_menuitemscale) * textScale.Value;
+            Vector2 bgscale = Memory.Icons.UI_Scale * textScale.Value;
             Rectangle box = dst.Scale(boxScale.Value);
             Rectangle hotspot = dst;
             if ((options & Box_Options.SkipDraw) == 0 && dst.Size != Point.Zero)
             {
-                if (dst.Width > 256 * bgscale.X)
+                if (dst.Width > Memory.Icons.GetEntryGroup(Icons.ID.Menu_BG_256).Width * bgscale.X)
                     Memory.Icons.Draw(Icons.ID.Menu_BG_368, 0, box, bgscale, Fade);
                 else
                     Memory.Icons.Draw(Icons.ID.Menu_BG_256, 0, box, bgscale, Fade);
@@ -248,7 +247,7 @@ namespace OpenVIII
         {
             if (offset == null)
                 offset = new Vector2(-1.15f, -.3f);
-            Vector2 scale = new Vector2(_menuitemscale);
+            Vector2 scale = Memory.Icons.UI_Scale;
             Vector2 size = Memory.Icons.GetEntry(Icons.ID.Finger_Right, 0).Size * scale;
             Rectangle dst = new Rectangle(cursor, Point.Zero);
             byte pallet = 2;

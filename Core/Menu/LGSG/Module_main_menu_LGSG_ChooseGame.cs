@@ -62,18 +62,18 @@ namespace OpenVIII
                 Entry e = Memory.Icons.GetEntry(Icons.ID.Arrow_Left);
                 Rectangle arrow = new Rectangle
                 {
-                    X = (int)(dst.X - ((e.Width - 2) * 3f)),
+                    X = (int)(dst.X - ((e.Width - 2) * Memory.Icons.UI_Scale.X * 1.5f)),
                     Y = (dst.Y + dst.Height / 2)
                 };
-                Memory.Icons.Draw(Icons.ID.Arrow_Left, 1, arrow, new Vector2(3f), fade);
-                Memory.Icons.Draw(Icons.ID.Arrow_Left, 2, arrow, new Vector2(3f), fade * blink_Amount);
+                Memory.Icons.Draw(Icons.ID.Arrow_Left, 1, arrow, Memory.Icons.UI_Scale * 1.5f, fade);
+                Memory.Icons.Draw(Icons.ID.Arrow_Left, 2, arrow, Memory.Icons.UI_Scale * 1.5f, fade * blink_Amount);
                 arrow = new Rectangle
                 {
-                    X = (int)((dst.X + dst.Width) + -2 * 3f),
+                    X = (int)((dst.X + dst.Width) + -2 * Memory.Icons.UI_Scale.X * 1.5f),
                     Y = arrow.Y
                 };
-                Memory.Icons.Draw(Icons.ID.Arrow_Right2, 1, arrow, new Vector2(3f), fade);
-                Memory.Icons.Draw(Icons.ID.Arrow_Right2, 2, arrow, new Vector2(3f), fade * blink_Amount);
+                Memory.Icons.Draw(Icons.ID.Arrow_Right2, 1, arrow, Memory.Icons.UI_Scale * 1.5f, fade);
+                Memory.Icons.Draw(Icons.ID.Arrow_Right2, 2, arrow, Memory.Icons.UI_Scale * 1.5f, fade * blink_Amount);
             }
             float speed = .17f;
             if (OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)
@@ -268,8 +268,8 @@ namespace OpenVIII
                 X = (OffScreenBuffer.Width * 0.00952381f),
                 Y = 0,
             } + offset;
-            Vector2 blocknumsize = new Vector2(OffScreenBuffer.Height * 0.00628930817610063f);
-            Memory.Icons.Draw(block, Icons.NumType.Num_8x16_0, 2, "D2", blocknumpos, blocknumsize, fade); // 2,2 looks close
+            //Vector2 blocknumsize = new Vector2(OffScreenBuffer.Height * 0.00628930817610063f);
+            Memory.Icons.Draw(block, Icons.NumType.Num_8x16_0, 2, "D2", blocknumpos, Memory.Icons.UI_Scale * 1.5f, fade); // 2,2 looks close
 
             Rectangle faceRect = new Rectangle
             {
@@ -287,7 +287,7 @@ namespace OpenVIII
                 if (d.Party[face] != Characters.Blank)
                 {
                     Memory.Faces.Draw(d.Party[face], faceRect, Vector2.UnitY, fade);
-                    Memory.Icons.Draw(Icons.ID.MenuBorder, 2, faceRect, new Vector2(1f), fade);
+                    Memory.Icons.Draw(Icons.ID.MenuBorder, 2, faceRect, Memory.Faces.UI_Scale *.5f, fade);
                     if (mainchar == -1) mainchar = (sbyte)face;
                 }
             }
@@ -308,32 +308,33 @@ namespace OpenVIII
                 Rectangle disc = Memory.font.RenderBasicText(lv_, detailsLoc, TextScale, Fade: fade);
                 disc.Offset(0, (int)(OffScreenBuffer.Height * 0.0125786163522013f));
                 disc.X = (int)(OffScreenBuffer.Width * 0.583333333333333f);
-                Vector2 DiscScale = new Vector2(OffScreenBuffer.Height * 0.0060987230787661f);
-                Memory.Icons.Draw(Icons.ID.DISC, 2, disc, DiscScale, fade);
+                //Vector2 DiscScale = new Vector2(OffScreenBuffer.Height * 0.0060987230787661f);
+
+                Memory.Icons.Draw(Icons.ID.DISC, 2, disc, Memory.Icons.UI_Scale * 1.5f, fade);
                 Vector2 CurrDiscLoc = new Vector2(disc.X + (0.119047619047619f * OffScreenBuffer.Width), disc.Y);
-                Memory.Icons.Draw((int)d.CurrentDisk + 1, 0, 2, "D1", CurrDiscLoc, DiscScale, fade);
+                Memory.Icons.Draw((int)d.CurrentDisk + 1, 0, 2, "D1", CurrDiscLoc, Memory.Icons.UI_Scale * 1.5f, fade);
                 float X1 = OffScreenBuffer.Width * 0.952380952380952f;
                 float X2 = OffScreenBuffer.Width * -0.0238095238095238f;
                 float X3 = OffScreenBuffer.Width * -0.0952380952380952f;
                 disc.Location = new Vector2 { X = X1, Y = disc.Y }.ToPoint();
-                Memory.Icons.Draw(Icons.ID.G, 2, disc, DiscScale, fade);
+                Memory.Icons.Draw(Icons.ID.G, 2, disc, Memory.Icons.UI_Scale * 1.5f, fade);
                 double digits = (d.AmountofGil==0?1:Math.Floor(Math.Log10(d.AmountofGil)+2));
                 
                 disc.Offset(new Vector2 { X = (float)(digits * X2) });
-                Memory.Icons.Draw((int)d.AmountofGil, 0, 2, "D1", disc.Location.ToVector2(), DiscScale, fade);
+                Memory.Icons.Draw((int)d.AmountofGil, 0, 2, "D1", disc.Location.ToVector2(), Memory.Icons.UI_Scale * 1.5f, fade);
                 disc.Location = new Vector2 { X = X1, Y = playy }.ToPoint();
                 disc.Offset(new Vector2 { X = X2 });
-                Memory.Icons.Draw(d.Timeplayed.Minutes, 0, 2, "D2", disc.Location.ToVector2(), DiscScale, fade);
+                Memory.Icons.Draw(d.Timeplayed.Minutes, 0, 2, "D2", disc.Location.ToVector2(), Memory.Icons.UI_Scale * 1.5f, fade);
 
                 if ((int)d.Timeplayed.TotalHours > 0)
                 {
                     disc.Offset(new Vector2 { X = 1 * X2 });
-                    Memory.Icons.Draw(Icons.ID.Colon, 13, disc, DiscScale, fade);
+                    Memory.Icons.Draw(Icons.ID.Colon, 13, disc, Memory.Icons.UI_Scale * 1.5f, fade);
                     disc.Offset(new Vector2 { X = (float)Math.Floor(Math.Log10((int)d.Timeplayed.TotalHours) + 1) * X2 });
-                    Memory.Icons.Draw((int)d.Timeplayed.TotalHours, 0, 2, "D1", disc.Location.ToVector2(), DiscScale, fade);
+                    Memory.Icons.Draw((int)d.Timeplayed.TotalHours, 0, 2, "D1", disc.Location.ToVector2(), Memory.Icons.UI_Scale * 1.5f, fade);
                 }
                 disc.Offset(new Vector2 { X = X3 + X2 });
-                Memory.Icons.Draw(Icons.ID.PLAY, 13, disc, DiscScale, fade);
+                Memory.Icons.Draw(Icons.ID.PLAY, 13, disc, Memory.Icons.UI_Scale * 1.5f, fade);
                 Rectangle locbox = new Rectangle
                 {
                     X = faceRect.Width + faceRect.X,
