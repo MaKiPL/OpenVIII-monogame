@@ -21,6 +21,85 @@ namespace OpenVIII
             it
         }
 
+        //WORLD MAP COORDINATES HELPER
+        /// <summary>
+        /// Indicates vanilla game X axis coordinate for minimum possible X - visually the nearest to left on worldmap
+        /// </summary>
+        public static int WORLD_COORDS_MINLEFT = unchecked((int)0xFFFE0000);
+        /// <summary>
+        /// Indicates vanilla game X axis coordinate for maximum possible X - visually the furthest to right on worldmap
+        /// </summary>
+        public static int WORLD_COORDS_MAXRIGHT = unchecked((int)0x0001FFFF);
+
+        /// <summary>
+        /// zero based range of maximum left-right for worldmap coordinates
+        /// </summary>
+        public static int WORLD_COORDS_XRANGE = Math.Abs(WORLD_COORDS_MINLEFT) + WORLD_COORDS_MAXRIGHT;
+
+        /// <summary>
+        /// Indicates vanilla game Y axis coordinate for minimum possible Y - visually at the semi top of worldmap
+        /// </summary>
+        public static int WORLD_COORDS_MINTOP = unchecked((int)0xFFFE8000);
+        /// <summary>
+        /// Indicates vanilla game Y axis coordinate for maximum possible Y - visually at the very bottom of worldmap
+        /// </summary>
+        public static int WORLD_COORDS_MAXBOTTOM = unchecked((int)0x00017FFF);
+
+        /// <summary>
+        /// zero based range of maximum left-right for worldmap coordinates
+        /// </summary>
+        public static int WORLD_COORDS_ZRANGE = Math.Abs(WORLD_COORDS_MINTOP) + WORLD_COORDS_MAXBOTTOM;
+
+        /// <summary>
+        /// Indicates the OpenVIII coordinate system which shows maximum X axis. Minimum is always zero (it's the nearest to left side of worldmap)
+        /// </summary>
+        public static int WORLD_OPENVIII_MAXRIGHT = -(32 * 512);
+        /// <summary>
+        /// Indicates the OpenVIII coordinate system which shows maximum Y axis. Minimum is always zero (it's the furthest to bottom of worldmap)
+        /// </summary>
+        public static int WORLD_OPENVIII_MAXBOTTOM = -(24 * 512);
+
+        /// <summary>
+        /// Result of Vanilla.Y * x = openviii.Y equation
+        /// </summary>
+        public static float WORLD_COORD_YHELPER = -0.06f;
+
+        /// <summary>
+        /// This method converts vanilla world map coordinates to openVIII equivalent. 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        public static float ConvertVanillaWorldXAxisToOpenVIII(float x)
+        {
+            float newX = x + Math.Abs(WORLD_COORDS_MINLEFT);
+            newX /= WORLD_COORDS_XRANGE; //normalized
+            newX *= WORLD_OPENVIII_MAXRIGHT;
+            return newX;
+        }
+
+        /// <summary>
+        /// This method converts vanilla world map coordinates to openVIII equivalent. 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        public static float ConvertVanillaWorldZAxisToOpenVIII(float z)
+        {
+            float newZ = z + Math.Abs(WORLD_COORDS_MINTOP);
+            newZ /= WORLD_COORDS_ZRANGE; //normalized
+            newZ *= WORLD_OPENVIII_MAXBOTTOM;
+            return newZ;
+        }
+
+        /// <summary>
+        /// This method converts vanilla world map coordinates to openVIII equivalent 
+        /// </summary>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public static float ConvertVanillaWorldYAxisToOpenVIII(float y)
+        => y * WORLD_COORD_YHELPER;
+
+
+
         //https://stackoverflow.com/a/2887/4509036
         public static T ByteArrayToStructure<T>(byte[] bytes) where T : struct
         {
@@ -68,6 +147,67 @@ namespace OpenVIII
         public static double Distance3D(Vector3 xo, Vector3 xa) => Vector3.Distance(xo, xa);
 
         /// <summary>
+        /// Real-time collision 3D Raycast on plane + barycentric calculation
+        /// </summary>
+        /// <param name="R">ray with origin + given direction</param>
+        /// <param name="a">vertex A</param>
+        /// <param name="b">vertex B</param>
+        /// <param name="c">vertex C</param>
+        /// <param name="barycentric">out param for barycentric vector</param>
+        /// <returns>0 - not applicable, 1- intersects;</returns>
+        public static int RayIntersection3D(Ray R, Vector3 a, Vector3 b, Vector3 c, out Vector3 barycentric)
+        {
+            barycentric = Vector3.Zero;
+            Vector3 p1 = b - a;
+            Vector3 p2 = c - a;
+            Vector3 lhs = Vector3.Cross(p1, p2);
+            if (lhs == Vector3.Zero)
+                return -1;
+            Vector3 direction = R.Direction;
+            Vector3 rhs = R.Position - a;
+            float dot00 = -Vector3.Dot(lhs, rhs);
+            float dot01 = Vector3.Dot(lhs, direction);
+            if (Math.Abs(dot01) < 1E-08f)
+                if (dot00 == 0f)
+                    return 2;
+                else return 0;
+            else
+            {
+                float dot02 = dot00 / dot01;
+                if (dot02 < 0.0)
+                    return 0;
+                barycentric = R.Position + dot02 * direction;
+                float dot10 = Vector3.Dot(p1, p1);
+                float dot11 = Vector3.Dot(p1, p2);
+                float dot12 = Vector3.Dot(p2, p2);
+                Vector3 lhs2 = barycentric - a;
+                float dot21 = Vector3.Dot(lhs2, p1);
+                float dot22 = Vector3.Dot(lhs2, p2);
+                float dot30 = dot11 * dot11 - dot10 * dot12;
+                float dot31 = (dot11 * dot22 - dot12 * dot21) / dot30;
+                if (dot31 < 0.0 || dot31 > 1.0)
+                    return 0;
+                float dot32 = (dot11 * dot21 - dot10 * dot22) / dot30;
+                if (dot32 < 0.0 || (dot31 + dot32) > 1.0)
+                    return 0;
+                return 1;
+            }
+        }
+
+        public static BoundingBox GetBoundingBox(Vector3 a, Vector3 b, Vector3 c)
+        {
+            float Minx = (new float[] { a.X, b.X, c.X }).Min();
+            float Maxx = (new float[] { a.X, b.X, c.X }).Max();
+            float Miny = (new float[] { a.Y, b.Y, c.Y }).Min();
+            float Maxy = (new float[] { a.Y, b.Y, c.Y }).Max();
+            float Minz = (new float[] { a.Z, b.Z, c.Z }).Min();
+            float Maxz = (new float[] { a.Z, b.Z, c.Z }).Max();
+            Vector3 min = new Vector3(Minx, Miny, Minz);
+            Vector3 max = new Vector3(Maxx, Maxy, Maxz);
+            return new BoundingBox(min, max);
+        }
+
+        /// <summary>
         /// Some debug text is crashing due to brackets not appearing in chartable. This function removes brackets inside string
         /// </summary>
         /// <param name="s"></param>
@@ -95,8 +235,11 @@ namespace OpenVIII
 
         public static bool In(int _in, Vector2 range) =>
                 _in >= range.X && _in <= range.Y;
+
+        public static bool In(float _in, Vector2 range) => _in >= range.X && _in <= range.Y;
         //: false;
         public static bool In(int _in, int min, int max) => In(_in, new Vector2(min, max));
+        public static bool In(float _in, float min, float max) => In(_in, new Vector2(min, max));
 
         public static Matrix GetRotationMatrixX(float angle)
         => new Matrix(
@@ -150,6 +293,15 @@ namespace OpenVIII
         {
             string languageIndicator = Memory.languages.ToString();
             return bUseAlternative ? languageIndicator == "en" ? "us" : languageIndicator : languageIndicator;
+        }
+
+        public static Vector3 ShrinkVector4ToVector3(Vector4 reference, bool bMirrorY = false)
+        {
+            float x, y, z;
+            reference.Deconstruct(out x, out y, out z, out _);
+            if (bMirrorY)
+                y = -y;
+            return new Vector3(x, y, z);
         }
 
         /// <summary>
