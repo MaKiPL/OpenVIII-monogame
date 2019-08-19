@@ -96,7 +96,7 @@ namespace OpenVIII
         }
         public Matrix Update(ref Vector3 camPosition,ref Vector3 camTarget, ref float degrees)
         {
-
+            InputMouse.Mode = MouseLockMode.Center;
             Inputs_Speed();
             Inputs_Sticks(ref degrees);
             Inputs_D_Pad(ref camPosition, ref degrees);

@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using OpenVIII.Core.World;
 using OpenVIII.Encoding.Tags;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -373,7 +374,7 @@ namespace OpenVIII
                     OrbitCamera();
                     break;
                 case _worldState._9debugFly:
-                    FPSCamera();
+                    viewMatrix = fps_camera.Update(ref camPosition,ref camTarget,ref degrees);
                     break;
             }
 
@@ -383,10 +384,10 @@ namespace OpenVIII
             if (Input2.DelayedButton(Keys.R))
                 worldState = _worldState._0init;
 
-            if (Input.Button(Keys.D9))
+            if (Input2.Button(Keys.D9))
                 worldState = worldState == _worldState._1active ? _worldState._9debugFly : _worldState._1active;
 
-            if (Input.Button(Keys.D8))
+            if (Input2.Button(Keys.D8))
                 bDebugDisableCollision = !bDebugDisableCollision;
 
             SimpleInputUpdate(); //lastplayerposition = playerposition here
@@ -399,23 +400,26 @@ namespace OpenVIII
         private static void SimpleInputUpdate()
         {
             lastPlayerPosition = playerPosition;
-            if (Input.Button(Keys.D8))
+            if (Input2.Button(Keys.D8))
                 playerPosition.X += 1f;
-            if (Input.Button(Keys.D2))
+            if (Input2.Button(Keys.D2))
                 playerPosition.X -= 1f;
-            if (Input.Button(Buttons.Up))
+            if (worldState != _worldState._9debugFly)
             {
-                animationId = 1;
-                playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees)) * 2f;
-                playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees)) * 2f;
-                localMchRotation = (float)(Extended.Radians(-degrees - 90f));
-            }
-            if (Input.Button(Buttons.Down))
-            {
-                animationId = 1;
-                playerPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees)) * 2f;
-                playerPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees)) * 2f;
-                localMchRotation = (float)(Extended.Radians(-degrees + 90f));
+                if (Input2.Button(FF8TextTagKey.Up))
+                {
+                    animationId = 1;
+                    playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees)) * 2f;
+                    playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees)) * 2f;
+                    localMchRotation = (float)(Extended.Radians(-degrees - 90f));
+                }
+                if (Input2.Button(FF8TextTagKey.Down))
+                {
+                    animationId = 1;
+                    playerPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees)) * 2f;
+                    playerPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees)) * 2f;
+                    localMchRotation = (float)(Extended.Radians(-degrees + 90f));
+                }
             }
         }
 
@@ -502,74 +506,8 @@ namespace OpenVIII
         /// </summary>
         private const float SKYRAYCAST_FIXEDDISTANCE = 5f;
 
-        public static void FPSCamera()
-        {
-            camDistance = 10.0f;
-            float x_shift = 0.0f, y_shift = 0.0f, leftdistX = 0.0f, leftdistY = 0.0f;
+       
 
-            //speedcontrols
-            //+ to increase
-            //- to decrease
-            //* to reset            
-            if (Input.Button(Keys.OemPlus) || Input.Button(Keys.Add))
-            {
-                maxMoveSpeed += MoveSpeedChange;
-            }
-            if (Input.Button(Keys.OemMinus) || Input.Button(Keys.Subtract))
-            {
-                maxMoveSpeed -= MoveSpeedChange;
-                if (maxMoveSpeed < defaultmaxMoveSpeed) maxMoveSpeed = defaultmaxMoveSpeed;
-            }
-            if (Input.Button(Keys.Multiply)) maxMoveSpeed = defaultmaxMoveSpeed;
-
-            //speed is effected by the milliseconds between frames. so alittle goes a long way. :P
-            x_shift = Input.Distance(Buttons.MouseXjoy, maxLookSpeed);
-            y_shift = Input.Distance(Buttons.MouseYjoy, maxLookSpeed);
-            leftdistX = Math.Abs(Input.Distance(Buttons.LeftStickX, maxMoveSpeed));
-            leftdistY = Math.Abs(Input.Distance(Buttons.LeftStickY, maxMoveSpeed));
-            x_shift += Input.Distance(Buttons.RightStickX, maxLookSpeed);
-            y_shift += Input.Distance(Buttons.RightStickY, maxLookSpeed);
-            Yshift -= y_shift;
-            degrees = (degrees + (int)x_shift) % 360;
-            Yshift = MathHelper.Clamp(Yshift, -80, 80);
-            if (leftdistY == 0)
-            {
-                leftdistY = Input.Distance(maxMoveSpeed);
-            }
-            if (leftdistX == 0)
-            {
-                leftdistX = Input.Distance(maxMoveSpeed);
-            }
-
-            if (Input.Button(Buttons.Up))//(Keyboard.GetState().IsKeyDown(Keys.W) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y > 0.0f)
-            {
-                camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees)) * leftdistY / 10;
-                camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees)) * leftdistY / 10;
-                camPosition.Y -= Yshift / 50;
-            }
-            if (Input.Button(Buttons.Down))//(Keyboard.GetState().IsKeyDown(Keys.S) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y < 0.0f)
-            {
-                camPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees)) * leftdistY / 10;
-                camPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees)) * leftdistY / 10;
-                camPosition.Y += Yshift / 50;
-            }
-            if (Input.Button(Buttons.Left))//(Keyboard.GetState().IsKeyDown(Keys.A) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X < 0.0f)
-            {
-                camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees - 90)) * leftdistX / 10;
-                camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees - 90)) * leftdistX / 10;
-            }
-            if (Input.Button(Buttons.Right))//(Keyboard.GetState().IsKeyDown(Keys.D) || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X > 0.0f)
-            {
-                camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees + 90)) * leftdistX / 10;
-                camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees + 90)) * leftdistX / 10;
-            }
-
-            camTarget.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(degrees)) * camDistance;
-            camTarget.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(degrees)) * camDistance;
-            camTarget.Y = camPosition.Y - Yshift / 5;
-            viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
-                         Vector3.Up);
-        }
 
 
         public static void OrbitCamera()
@@ -580,9 +518,9 @@ namespace OpenVIII
                 playerPosition.Y + 50f,
                 (float)(playerPosition.Z + camDistance * Extended.Sin(degrees - 180f))
                 );
-            if (Input.Button(Buttons.Left))
+            if (Input2.Button( FF8TextTagKey.Left))
                 degrees--;
-            if (Input.Button(Buttons.Right))
+            if (Input2.Button( FF8TextTagKey.Right))
                 degrees++;
             degrees = degrees % 360;
             camTarget = playerPosition;
@@ -1069,8 +1007,6 @@ namespace OpenVIII
 
                 _i += 473;
 #endregion
-
-            #endregion Interchangable zones
 
             Segment seg = segments[_i];
             for (int k = 0; k < seg.parsedTriangle.Length; k++)
