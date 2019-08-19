@@ -101,22 +101,6 @@ namespace OpenVIII
 
         #region Methods
 
-        public virtual void BakeInScale()
-        {
-            if (CanBakeInScale())
-            {
-                Vector2 scale = Textures[0].BakeInScale();
-                foreach (KeyValuePair<uint, Entry> e in Entries)
-                {
-                    e.Value.BakeInScale(scale);
-                }
-                foreach (TextureHandler t in Textures)
-                {
-                    t.BakeInScale();
-                }
-            }
-        }
-
         /// <summary>
         /// Draw Item
         /// </summary>
@@ -185,37 +169,6 @@ namespace OpenVIII
             Entry eg = this[ic];
             eg.SetTrimNonGroup(Textures[pal]);
         }
-
-        /// <summary>
-        /// You can only back in scale into entries if all the scalefactors match.
-        /// </summary>
-        /// <returns></returns>
-        protected bool CanBakeInScale()
-        {
-            Vector2 last = Textures[0].ScaleFactor;
-            if (last == Vector2.One)
-                return false;
-            foreach (TextureHandler t in Textures)
-            {
-               if (t.ScaleFactor != last)
-                    return false;
-            }
-            return true;
-        }
-        //private void BakeInScale(byte pal)
-        //{
-        //    foreach(var e in Entries)
-        //    {
-        //        Vector2 scale = Textures[pal].BakeInScale();
-        //        e.Value.BakeInScale(scale);
-        //    }
-        //}
-        //private void BakeInScale(Enum ic, byte pal)
-        //{
-        //    Entry eg = this[ic];
-        //    Vector2 scale = Textures[pal].BakeInScale();
-        //    eg.BakeInScale(scale);
-        //}
         protected virtual void Init()
         {
             if (Entries == null)
@@ -224,11 +177,11 @@ namespace OpenVIII
                 InitEntries(aw);
                 InsertCustomEntries();
                 InitTextures(aw);
-                //attempt to bake in the scaled cords.
-                //BakeInScale();
             }
         }
-        public Vector2 UI_Scale { get => Textures[0].UI_Scale; }
+
+
+
         protected virtual void InitEntries(ArchiveWorker aw = null)
         {
             if (Entries == null)

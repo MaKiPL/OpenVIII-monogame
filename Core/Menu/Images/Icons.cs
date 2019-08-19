@@ -115,21 +115,6 @@ namespace OpenVIII
                 dst.Offset(Entries[nums[(int)type][i]].GetRectangle.Width * scale.X, 0);
             }
         }
-        public override void BakeInScale()
-        {
-            if (CanBakeInScale())
-            {
-                Vector2 scale = Textures[0].BakeInScale();
-                foreach (KeyValuePair<ID, EntryGroup> e in Entries)
-                {
-                    e.Value.BakeInScale(scale);
-                }
-                foreach (TextureHandler t in Textures)
-                {
-                    t.BakeInScale();
-                }
-            }
-        }
 
         public void Draw(Enum id, int palette, Rectangle dst, Vector2 scale, float fade = 1f)
         {

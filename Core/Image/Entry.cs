@@ -15,7 +15,6 @@ namespace OpenVIII
         public Vector2 Size;
         public byte[] UNK;
         private Loc loc;
-        private bool baked = false;
 
         #endregion Fields
 
@@ -138,17 +137,6 @@ namespace OpenVIII
         }
 
         public override string ToString() => $"{File},{Part},{CustomPalette},{Location.X},{Location.Y},{Size.X},{Size.Y},{Offset.X},{Offset.Y},{End.X},{End.Y},{Tile.X},{Tile.Y},{Fill.X},{Fill.Y},{Snap_Right},{Snap_Bottom}\n";
-        public void BakeInScale(Vector2 scale)
-        {
-            if (!baked)
-            {
-                Location *= scale;
-                Size *= scale;
-                Offset *= scale;
-                End *= scale;
-                baked = true;
-            }
-        }
 
         #endregion Methods
     }

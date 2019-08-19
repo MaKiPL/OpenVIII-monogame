@@ -82,7 +82,6 @@ namespace OpenVIII
         protected uint StartOffset { get; set; }
 
         protected Texture2D[,] Textures { get; private set; }
-        public Vector2 UI_Scale { get; private set; }
 
         #endregion Properties
 
@@ -93,7 +92,7 @@ namespace OpenVIII
         #endregion Indexers
 
         #region Methods
-        
+
         public static Vector2 Abs(Vector2 v) => new Vector2(Math.Abs(v.X), Math.Abs(v.Y));
 
         public static explicit operator Texture2D(TextureHandler t)
@@ -297,13 +296,6 @@ namespace OpenVIII
             using (FileStream fs = File.Create(outpath))
                 Textures[0, 0].SaveAsPng(fs, Textures[0, 0].Width, Textures[0, 0].Height);
         }
-        public Vector2 BakeInScale()
-        {
-            var ret = ScaleFactor;
-            ClassicSize = Vector2.Zero;
-            UI_Scale = ScaleFactor;
-            return ret;
-        }
 
         /// <summary>
         /// Remove all transparenct rows and cols of pixels
@@ -505,7 +497,6 @@ namespace OpenVIII
             //unload Classic
             Classic = null;
             //Merge the texture pieces into one.
-            UI_Scale = ScaleFactor; // save scale vector before we remove it.
             Merge();
         }
 
