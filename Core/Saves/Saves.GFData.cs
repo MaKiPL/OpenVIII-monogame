@@ -187,18 +187,21 @@ namespace OpenVIII
                     if (EXPtoNextLevel <= ap && Level < 100)
                         ret = true;
                     Experience += ap;
-                    byte ap_tolearn = Kernel_bin.AllAbilities[Learning].AP;
-                    if (JunctionableGFsData.Ability.TryGetIndexByKey(Learning, out int ind) && TestGFCanLearn(Learning, false))
+                    if (Kernel_bin.AllAbilities.ContainsKey(Learning))
                     {
-                        if (ap_tolearn < APs[ind] + ap)
+                        byte ap_tolearn = Kernel_bin.AllAbilities[Learning].AP;
+                        if (JunctionableGFsData.Ability.TryGetIndexByKey(Learning, out int ind) && TestGFCanLearn(Learning, false))
                         {
-                            APs[ind] = ap_tolearn;
-                            ability = Learning;
-                            Learn(Learning);
-                        }
-                        else
-                        {
-                            APs[ind] += (byte)ap;
+                            if (ap_tolearn < APs[ind] + ap)
+                            {
+                                APs[ind] = ap_tolearn;
+                                ability = Learning;
+                                Learn(Learning);
+                            }
+                            else
+                            {
+                                APs[ind] += (byte)ap;
+                            }
                         }
                     }
                 }
