@@ -1,10 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 using OpenVIII.Encoding.Tags;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace OpenVIII
@@ -24,15 +20,16 @@ namespace OpenVIII
             }
             module = Memory.module;
 
-
-            //#if DEBUG
+#if DEBUG
             if (Input2.DelayedButton(FF8TextTagKey.Reset) || Input2.DelayedButton(FF8TextTagKey.Cancel))
             {
-                Memory.module = MODULE.MAINMENU_DEBUG;
-                InputMouse.Mode = MouseLockMode.Screen;
+                if (Memory.module != MODULE.MAINMENU_DEBUG && Memory.module != MODULE.BATTLE_DEBUG)
+                {
+                    Memory.module = MODULE.MAINMENU_DEBUG;
+                    InputMouse.Mode = MouseLockMode.Screen;
+                }
             }
-            //#endif
-
+#endif
 
             switch (module)
             {
@@ -40,6 +37,7 @@ namespace OpenVIII
                 case MODULE.OVERTURE_DEBUG:
                 case MODULE.MOVIETEST:
                     break;
+
                 default:
                     //requires memory to be loaded.
                     if ((Memory.InitTask != null) && (Memory.InitTask.IsCompleted == false ||
@@ -61,30 +59,39 @@ namespace OpenVIII
                 case MODULE.BATTLE:
                     module_battle.Update();
                     break;
+
                 case MODULE.BATTLE_DEBUG:
                     Module_battle_debug.Update();
                     break;
+
                 case MODULE.MOVIETEST:
                     Module_movie_test.Update();
                     break;
+
                 case MODULE.FIELD_DEBUG:
                     Module_field_debug.Update();
                     break;
+
                 case MODULE.OVERTURE_DEBUG:
                     Module_overture_debug.Update();
                     break;
+
                 case MODULE.MAINMENU_DEBUG:
                     Module_main_menu_debug.Update();
                     break;
+
                 case MODULE.WORLD_DEBUG:
                     Module_world_debug.Update();
                     break;
+
                 case MODULE.FACE_TEST:
                     Module_face_test.Update();
                     break;
+
                 case MODULE.ICON_TEST:
                     Module_icon_test.Update();
                     break;
+
                 case MODULE.CARD_TEST:
                     Module_card_test.Update();
                     break;
@@ -93,13 +100,13 @@ namespace OpenVIII
 
         public static void Draw(GameTime gameTime)
         {
-
             switch (module)
             {
                 //doesn't need memory
                 case MODULE.OVERTURE_DEBUG:
                 case MODULE.MOVIETEST:
                     break;
+
                 default:
                     //requires memory to be loaded.
                     if ((Memory.InitTask != null) && (Memory.InitTask.IsCompleted == false ||
@@ -118,30 +125,39 @@ namespace OpenVIII
                 case MODULE.BATTLE:
                     module_battle.Draw();
                     break;
+
                 case MODULE.BATTLE_DEBUG:
                     Module_battle_debug.Draw();
                     break;
+
                 case MODULE.MOVIETEST:
                     Module_movie_test.Draw();
                     break;
+
                 case MODULE.FIELD_DEBUG:
                     Module_field_debug.Draw();
                     break;
+
                 case MODULE.OVERTURE_DEBUG:
                     Module_overture_debug.Draw();
                     break;
+
                 case MODULE.MAINMENU_DEBUG:
                     Module_main_menu_debug.Draw();
                     break;
+
                 case MODULE.WORLD_DEBUG:
                     Module_world_debug.Draw();
                     break;
+
                 case MODULE.FACE_TEST:
                     Module_face_test.Draw();
                     break;
+
                 case MODULE.ICON_TEST:
                     Module_icon_test.Draw();
                     break;
+
                 case MODULE.CARD_TEST:
                     Module_card_test.Draw();
                     break;
