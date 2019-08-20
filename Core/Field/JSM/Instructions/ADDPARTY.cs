@@ -5,16 +5,16 @@ namespace OpenVIII
 {
     internal sealed class ADDPARTY : JsmInstruction
     {
-        private CharacterId _characterId;
+        private Characters _characterId;
 
-        public ADDPARTY(CharacterId characterId)
+        public ADDPARTY(Characters characterId)
         {
             _characterId = characterId;
         }
 
         public ADDPARTY(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
-                characterId: (CharacterId)((Jsm.Expression.PSHN_L)stack.Pop()).Int32())
+                characterId: (Characters)((Jsm.Expression.PSHN_L)stack.Pop()).Int32())
         {
         }
 
