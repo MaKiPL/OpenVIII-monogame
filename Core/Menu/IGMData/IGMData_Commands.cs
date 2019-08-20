@@ -105,15 +105,20 @@ namespace OpenVIII
             switch (commands[CURSOR_SELECT].Ability)
             {
                 case 32: // Renzokuken
-                case 8: // blue magic                
+                case 8: // blue magic     
+                case 208: // nomsg
                     return false;
                 case 120: //attack
+                case 92: //mug
                     Menu.BattleMenus.Target_Group.Show();
                     Menu.BattleMenus.Target_Enemies.Show();
                     Menu.BattleMenus.Target_Party.Show();
                     Menu.BattleMenus.Target_Group.Refresh();
                     return true;
                 case 128: //draw
+                case 0: //card
+                case 117: //lvl up
+                case 84: //lvl dn
                     Menu.BattleMenus.Target_Group.Show();
                     Menu.BattleMenus.Target_Enemies.Show();
                     Menu.BattleMenus.Target_Party.Hide();
@@ -143,7 +148,7 @@ namespace OpenVIII
                 base.Refresh();
                 page = 0;
                 Cursor_Status &= ~Cursor_Status.Horizontal;
-                commands[0] = Kernel_bin.BattleCommands[(Memory.State.Characters[Character].Abilities.Contains(Kernel_bin.Abilities.Mug) ? 13 : 1)];
+                commands[0] = Kernel_bin.BattleCommands[(Memory.State.Characters[Character].Abilities.Contains(Kernel_bin.Abilities.Mug) ? 12 : 1)];
                 ITEM[0, 0] = new IGMDataItem_String(
                         commands[0].Name,
                         SIZE[0]);
