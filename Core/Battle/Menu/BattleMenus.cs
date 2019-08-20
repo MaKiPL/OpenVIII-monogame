@@ -30,14 +30,29 @@ namespace OpenVIII
 
         public enum Mode : byte
         {
+            /// <summary>
+            /// Spawning character's and enemies and flying the camera around
+            /// </summary>
             Starting,
+            /// <summary>
+            /// running atb and using battle menus.
+            /// </summary>
             Battle,
+            /// <summary>
+            /// Fade out and goto victory menu.
+            /// </summary>
             Victory,
+            /// <summary>
+            /// Fade out and goto game over screen.
+            /// </summary>
             GameOver,
         }
 
         public enum SectionName
         {
+            /// <summary>
+            /// Target window
+            /// </summary>
             Targets
         }
 
@@ -54,6 +69,9 @@ namespace OpenVIII
 
         #region Methods
 
+        /// <summary>
+        /// Save pre battle state.
+        /// </summary>
         public void CameFrom()
         {
             lastmenu = Module_main_menu_debug.State;
@@ -73,10 +91,12 @@ namespace OpenVIII
             bool ret = false;
             if (InputFunctions.ContainsKey((Mode)GetMode()))
                 ret = InputFunctions[(Mode)GetMode()]() && ret;
+            // press 1 to force victory
             if (Input2.DelayedButton(Keys.D1))
             {
                 SetMode(Mode.Victory);
             }
+            // press 2 to force game over
             else if (Input2.DelayedButton(Keys.D2))
             {
                 SetMode(Mode.GameOver);
@@ -129,10 +149,15 @@ namespace OpenVIII
                 };
                 menus?.ForEach(m => m.Show());
             }
+            // exp, items and ap you are going to get after the battle is over.
             Victory_Menu?.Refresh(10000, 1000, new Saves.Item(10, 100), new Saves.Item(20, 65), new Saves.Item(28, 54));
             base.Refresh();
         }
 
+
+        /// <summary>
+        /// Go back to pre battle state.
+        /// </summary>
         public void ReturnTo()
         {
             Module_main_menu_debug.State = lastmenu;
@@ -168,7 +193,7 @@ namespace OpenVIII
                     new IGMData_TargetParty(new Rectangle(25+w, (int)(Size.Y -h- 6), 210, h)))
                 }
             };
-            Data.ForEach(x => x.Value.Show());
+            Data.ForEach(x => x.Value.Hide());
             base.Init();
         }
 
