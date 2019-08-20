@@ -600,6 +600,7 @@ namespace OpenVIII
             public byte unkResistanceMental;
 
             public FF8String GetNameNormal => monsterName;
+            public override string ToString() => GetNameNormal.Value_str;
         }
 
         public struct Abilities
