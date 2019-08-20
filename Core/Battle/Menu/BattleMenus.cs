@@ -17,7 +17,7 @@ namespace OpenVIII
         private int _player = 0;
         private Dictionary<Mode, Action> DrawActions;
         private Dictionary<Mode, Func<bool>> InputFunctions;
-        private int lastgamestate;
+        private MODULE lastgamestate;
         private Module_main_menu_debug.MainMenuStates lastmenu;
         private ushort lastmusic;
         private bool lastmusicplaying;
@@ -82,8 +82,11 @@ namespace OpenVIII
 
         public override void Draw()
         {
-            if (DrawActions.ContainsKey((Mode)GetMode()))
-                DrawActions[(Mode)GetMode()]();
+            if (GetMode() != null)
+            {
+                if (DrawActions.ContainsKey((Mode)GetMode()))
+                    DrawActions[(Mode)GetMode()]();
+            }
         }
 
         public override bool Inputs()
@@ -170,13 +173,17 @@ namespace OpenVIII
 
         public override bool Update()
         {
+            
             bool ret = false;
-            if (UpdateFunctions.TryGetValue((Mode)GetMode(), out Func<bool> u))
+            if (GetMode() != null)
             {
-                ret = u();
-            }
+                if (UpdateFunctions.TryGetValue((Mode)GetMode(), out Func<bool> u))
+                {
+                    ret = u();
+                }
 
-            ret = base.Update() || ret;
+                ret = base.Update() || ret;
+            }
             return ret;
         }
 
@@ -288,7 +295,7 @@ namespace OpenVIII
 
         private bool UpdateGameOverFunction()
         {
-            Memory.module = Memory.MODULE_FIELD_DEBUG;
+            Memory.module = MODULE.FIELD_DEBUG;
             Memory.FieldHolder.FieldID = 75; //gover
             init_debugger_Audio.PlayMusic(0);
             Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.MainLobby;

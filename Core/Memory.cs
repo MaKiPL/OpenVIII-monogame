@@ -12,6 +12,20 @@ using System.Threading.Tasks;
 
 namespace OpenVIII
 {
+    public enum MODULE : int
+    {
+        BATTLE = 3,
+        FIELD = 5,
+        FIELD_DEBUG = -5,
+        BATTLE_DEBUG = -3,
+        MOVIETEST = -9,
+        OVERTURE_DEBUG = -12,
+        MAINMENU_DEBUG = -13,
+        WORLD_DEBUG = -17,
+        FACE_TEST = -20,
+        ICON_TEST = -21,
+        CARD_TEST = -22,
+    }
     public static class Memory
     {
         //monogame
@@ -34,7 +48,7 @@ namespace OpenVIII
         public static Icons Icons;
         public static Strings Strings;
         public static Kernel_bin Kernel_Bin;
-        
+
         public static Texture2D shadowTexture;
         public static VertexPositionTexture[] shadowGeometry;
 
@@ -160,12 +174,12 @@ namespace OpenVIII
         {
 
             //lock (spritebatchlock)
-                spriteBatch.Begin(sortMode: SpriteSortMode.Deferred, blendState: BlendState.AlphaBlend, samplerState: ss ?? SamplerState.PointClamp, transformMatrix: tm);
+            spriteBatch.Begin(sortMode: SpriteSortMode.Deferred, blendState: BlendState.AlphaBlend, samplerState: ss ?? SamplerState.PointClamp, transformMatrix: tm);
         }
 
         public static void SpriteBatchEnd()
         {
-            spriteBatch.End();            
+            spriteBatch.End();
         }
 
         public static readonly BlendState blendState_BasicAdd = new BlendState()
@@ -190,7 +204,7 @@ namespace OpenVIII
             AlphaBlendFunction = BlendFunction.Add,
         };
 
-        public static int module = MODULE_OVERTURE_DEBUG;
+        public static MODULE module = MODULE.OVERTURE_DEBUG;
 
         public static string FF8DIR { get; private set; }
         public static string FF8DIRdata { get; private set; }
@@ -198,7 +212,7 @@ namespace OpenVIII
 
         public static int InitTaskMethod(object obj)
         {
-               CancellationToken token = (CancellationToken)obj;
+            CancellationToken token = (CancellationToken)obj;
 
             if (!token.IsCancellationRequested)
                 Memory.Strings = new Strings();
@@ -296,21 +310,6 @@ namespace OpenVIII
         public static CancellationToken Token { get; private set; }
         public static Items_In_Menu MItems { get; private set; }
 
-        #region modules
-
-        public const int MODULE_BATTLE = 3;
-        public const int MODULE_FIELD = 5;
-        public const int MODULE_FIELD_DEBUG = -5;
-        public const int MODULE_BATTLE_DEBUG = -3;
-        public const int MODULE_MOVIETEST = -9;
-        public const int MODULE_OVERTURE_DEBUG = -12;
-        public const int MODULE_MAINMENU_DEBUG = -13;
-        public const int MODULE_WORLD_DEBUG = -17;
-        public const int MODULE_FACE_TEST = -20;
-        public const int MODULE_ICON_TEST = -21;
-        public const int MODULE_CARD_TEST = -22;
-
-        #endregion modules
 
         #region battleProvider
 

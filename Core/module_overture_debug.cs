@@ -70,8 +70,8 @@ namespace OpenVIII
                 case OverturepublicModule._4Squaresoft:
                     publicModule = OverturepublicModule._0InitSound;
                     Module_movie_test.Index = 103;//103;
-                    Module_movie_test.ReturnState = Memory.MODULE_OVERTURE_DEBUG;
-                    Memory.module = Memory.MODULE_MOVIETEST;
+                    Module_movie_test.ReturnState = MODULE.OVERTURE_DEBUG;
+                    Memory.module = MODULE.MOVIETEST;
                     break;
             }
         }
@@ -88,9 +88,9 @@ namespace OpenVIII
             splashIndex = 0;
             splashName = splashLoop = 1;
             Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
-            Memory.module = Memory.MODULE_OVERTURE_DEBUG;
+            Memory.module = MODULE.OVERTURE_DEBUG;
             publicModule = OverturepublicModule._4Squaresoft;
-            Module_movie_test.ReturnState = Memory.MODULE_OVERTURE_DEBUG;
+            Module_movie_test.ReturnState = MODULE.OVERTURE_DEBUG;
         }
 
         public static void SplashUpdate(ref int _splashIndex)
@@ -178,7 +178,7 @@ namespace OpenVIII
             if (Input2.DelayedButton(FF8TextTagKey.Confirm) || Input2.DelayedButton(FF8TextTagKey.Cancel) || Input2.DelayedButton(Keys.Space))
             {
                 init_debugger_Audio.StopMusic();
-                Memory.module = Memory.MODULE_MAINMENU_DEBUG;
+                Memory.module = MODULE.MAINMENU_DEBUG;
             }
             switch (publicModule)
             {
@@ -243,7 +243,7 @@ namespace OpenVIII
                 Memory.SpriteBatchEnd();
                 if (bWaitingSplash && Fade < 0.0f)
                 {
-                    Memory.module = Memory.MODULE_MAINMENU_DEBUG;
+                    Memory.module = MODULE.MAINMENU_DEBUG;
                 }
             }
         }

@@ -100,8 +100,8 @@ namespace OpenVIII
                 Module_field_debug.ResetField();
 
                 Module_movie_test.Index = 30;
-                Module_movie_test.ReturnState = Memory.MODULE_FIELD_DEBUG;
-                Memory.module = Memory.MODULE_MOVIETEST;
+                Module_movie_test.ReturnState = MODULE.FIELD_DEBUG;
+                Memory.module = MODULE.MOVIETEST;
                 Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.MainLobby;
                 Memory.IsMouseVisible = false;
             }

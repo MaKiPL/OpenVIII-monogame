@@ -200,6 +200,7 @@ namespace OpenVIII
                         viewMatrix = fps_camera.Update(ref camPosition, ref camTarget, ref degrees);
                     else UpdateCamera();
                     LogicUpdate();
+                    Menu.BattleMenus.Update();
                     break;
             }
 #if DEBUG
@@ -242,6 +243,7 @@ namespace OpenVIII
                     DrawMonsters();
                     DrawCharactersWeapons();
                     UpdateFrames();
+                    Menu.BattleMenus.Draw();
                     break;
 
             }

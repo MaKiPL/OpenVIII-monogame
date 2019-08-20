@@ -369,7 +369,7 @@ namespace OpenVIII
                     Fade = 0.0f;
                     State = MainMenuStates.MainLobby;
                     Module_overture_debug.ResetModule();
-                    Memory.module = Memory.MODULE_OVERTURE_DEBUG;
+                    Memory.module = MODULE.OVERTURE_DEBUG;
                     Memory.IsMouseVisible = false;
                     init_debugger_Audio.StopMusic();
                     break;
@@ -377,7 +377,7 @@ namespace OpenVIII
                 case Ditems.Field:
                     Fade = 0.0f;
                     Module_field_debug.ResetField();
-                    Memory.module = Memory.MODULE_FIELD_DEBUG;
+                    Memory.module = MODULE.FIELD_DEBUG;
                     Memory.IsMouseVisible = false;
                     break;
 
@@ -390,7 +390,7 @@ namespace OpenVIII
                     Fade = 0.0f;
                     Memory.battle_encounter = debug_choosedBS;
                     Module_battle_debug.ResetState();
-                    Memory.module = Memory.MODULE_BATTLE_DEBUG;
+                    Memory.module = MODULE.BATTLE_DEBUG;
                     Memory.IsMouseVisible = false;
                     break;
 
@@ -401,30 +401,30 @@ namespace OpenVIII
                 case Ditems.Movie:
                     Fade = 0.0f;
                     MoviePointer = MoviePointer; //makes movieindex in player match the moviepointer, it is set when ever this is.
-                    Memory.module = Memory.MODULE_MOVIETEST;
+                    Memory.module = MODULE.MOVIETEST;
                     Module_movie_test.MovieState = 0;
                     Memory.IsMouseVisible = false;
                     break;
 
                 case Ditems.World:
                     Fade = 0.0f;
-                    Memory.module = Memory.MODULE_WORLD_DEBUG;
+                    Memory.module = MODULE.WORLD_DEBUG;
                     Memory.IsMouseVisible = false;
                     break;
 
                 case Ditems.Faces:
                     Fade = 0.0f;
-                    Memory.module = Memory.MODULE_FACE_TEST;
+                    Memory.module = MODULE.FACE_TEST;
                     break;
 
                 case Ditems.Icons:
                     Fade = 0.0f;
-                    Memory.module = Memory.MODULE_ICON_TEST;
+                    Memory.module = MODULE.ICON_TEST;
                     break;
 
                 case Ditems.Cards:
                     Fade = 0.0f;
-                    Memory.module = Memory.MODULE_CARD_TEST;
+                    Memory.module = MODULE.CARD_TEST;
                     break;
 
                 default:

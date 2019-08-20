@@ -42,7 +42,7 @@ namespace OpenVIII
                       x.EndsWith(".bik", StringComparison.OrdinalIgnoreCase)));
                 }
             }
-            ReturnState = Memory.MODULE_MAINMENU_DEBUG;
+            ReturnState = MODULE.MAINMENU_DEBUG;
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace OpenVIII
 
         private static Texture2D frameTex { get; set; }
         private static Ffcc FfccAudio { get; set; }
-        public static int ReturnState { get; set; }
+        public static MODULE ReturnState { get; set; }
         /// <summary>
         /// Index in movie file list
         /// </summary>
@@ -71,7 +71,7 @@ namespace OpenVIII
             if (Input2.DelayedButton(FF8TextTagKey.Confirm) || Input2.DelayedButton(FF8TextTagKey.Cancel) || Input2.DelayedButton(Keys.Space))
             {
                 //init_debugger_Audio.StopAudio();
-                //Memory.module = Memory.MODULE_MAINMENU_DEBUG;
+                //Memory.module = MODULE.MAINMENU_DEBUG;
                 MovieState = STATE_RETURN;
             }
 #if DEBUG
@@ -167,7 +167,7 @@ namespace OpenVIII
                 default:
                     Reset();
                     Memory.module = ReturnState;
-                    ReturnState = Memory.MODULE_MAINMENU_DEBUG;
+                    ReturnState = MODULE.MAINMENU_DEBUG;
                     break;
             }
         }
@@ -264,7 +264,7 @@ namespace OpenVIII
                 Memory.SpriteBatchEnd();
             }
             //movieState = STATE_INIT;
-            //Memory.module = Memory.MODULE_BATTLE_DEBUG;
+            //Memory.module = MODULE.BATTLE_DEBUG;
         }
 
         //private static Bitmap lastframe = null;

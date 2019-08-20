@@ -97,7 +97,8 @@ namespace OpenVIII
 
                     case Items.Battle:
                         BattleMenus.CameFrom();
-                        Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.BattleMenu;
+                        //Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.BattleMenu;
+                        Memory.module = MODULE.BATTLE_DEBUG;
                         BattleMenus.Refresh();
                         FadeIn();
                         return true;

@@ -41,7 +41,7 @@ namespace OpenVIII
             IGM,
             IGM_Junction,
             IGM_Items,
-            BattleMenu
+            //BattleMenu
         }
 
         #endregion Enums
@@ -108,9 +108,9 @@ namespace OpenVIII
                 case MainMenuStates.IGM_Items:
                     Menu.IGM_Items.Draw();                
                     break;
-                case MainMenuStates.BattleMenu:
-                    Menu.BattleMenus.Draw();
-                    break;
+                //case MainMenuStates.BattleMenu:
+                //    Menu.BattleMenus.Draw();
+                //    break;
             }
         }
 
@@ -218,9 +218,9 @@ namespace OpenVIII
                     Menu.IGM_Items.Update();
                     break;
 
-                case MainMenuStates.BattleMenu:
-                    Menu.BattleMenus.Update();
-                    break;
+                //case MainMenuStates.BattleMenu:
+                //    Menu.BattleMenus.Update();
+                //    break;
                 default:
                     goto case 0;
             }
