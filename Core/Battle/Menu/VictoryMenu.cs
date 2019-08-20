@@ -52,31 +52,35 @@ namespace OpenVIII
             }
             public override bool SetMode(Enum mode)
             {
-                switch ((Mode)mode)
+                if (mode.GetType() == typeof(Mode))
                 {
-                    case Mode.AP:
-                        Data[Mode.Exp].Hide();
-                        Data[Mode.Items].Hide();
-                        Data[Mode.AP].Show();
-                        Data[Mode.AP].Refresh();
-                        break;
-                    case Mode.Exp:
-                        Data[Mode.Exp].Show();
-                        Data[Mode.Items].Hide();
-                        Data[Mode.AP].Hide();
-                        Data[Mode.Exp].Refresh();
-                        break;
-                    case Mode.Items:
-                        Data[Mode.Exp].Hide();
-                        Data[Mode.Items].Show();
-                        Data[Mode.AP].Hide();
-                        Data[Mode.Items].Refresh();
-                        break;
-                    default:
-                        Menu.BattleMenus.ReturnTo();
-                        break;
+                    switch ((Mode)mode)
+                    {
+                        case Mode.AP:
+                            Data[Mode.Exp].Hide();
+                            Data[Mode.Items].Hide();
+                            Data[Mode.AP].Show();
+                            Data[Mode.AP].Refresh();
+                            break;
+                        case Mode.Exp:
+                            Data[Mode.Exp].Show();
+                            Data[Mode.Items].Hide();
+                            Data[Mode.AP].Hide();
+                            Data[Mode.Exp].Refresh();
+                            break;
+                        case Mode.Items:
+                            Data[Mode.Exp].Hide();
+                            Data[Mode.Items].Show();
+                            Data[Mode.AP].Hide();
+                            Data[Mode.Items].Refresh();
+                            break;
+                        default:
+                            Menu.BattleMenus.ReturnTo();
+                            break;
+                    }
+                    return base.SetMode((Mode)mode);
                 }
-                return base.SetMode((Mode)mode);
+                return false;
             }
 
             public override bool Inputs()
