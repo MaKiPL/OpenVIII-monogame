@@ -180,7 +180,7 @@ namespace OpenVIII
                     else if (Partyabilities.ContainsKey(ability))
                         s_allAbilities[ability] = Partyabilities[ability];
                     else if (Characterabilities.ContainsKey(ability))
-                        s_allAbilities[ability] = Characterabilities[ability];
+                        s_allAbilities[ability] = GFabilities[ability];
                 }
 
                 s_equipableAbilities = new Dictionary<Abilities, Equipable_Ability>(
