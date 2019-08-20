@@ -195,6 +195,7 @@ namespace OpenVIII
 
         public static void Update()
         {
+            bool ret = false;
             switch (battleModule)
             {
                 case BATTLEMODULE_INIT:
@@ -208,14 +209,25 @@ namespace OpenVIII
                     break;
 
                 case BATTLEMODULE_DRAWGEOMETRY:
+                    Menu.BattleMenus.Update();
                     if (bUseFPSCamera)
                         viewMatrix = fps_camera.Update(ref camPosition, ref camTarget, ref degrees);
-                    else UpdateCamera();
-                    LogicUpdate();
-                    Menu.BattleMenus.Update();
+                    else
+                    {
+                        UpdateCamera();
+                        ret = Menu.BattleMenus.Inputs();
+                    }
                     break;
             }
+            if (!ret) Inputs();
+        }
+
+        public static void Inputs()
+        {
 #if DEBUG
+
+            if (Input2.Button(Keys.D0))
+                bUseFPSCamera = !bUseFPSCamera;
             if (Input2.Button(Keys.D1))
                 if ((DEBUGframe & 0b1111) >= 7)
                 {
@@ -242,6 +254,7 @@ namespace OpenVIII
                 AddAnimationToQueue(Debug_battleDat.EntityType.Monster, 0, 3);
                 AddAnimationToQueue(Debug_battleDat.EntityType.Monster, 0, 0);
             }
+
 #endif
         }
 
@@ -258,16 +271,6 @@ namespace OpenVIII
                     break;
             }
         }
-
-        private static void LogicUpdate()
-        {
-            if (Input2.Button(Keys.D0))
-                bUseFPSCamera = !bUseFPSCamera;
-        }
-
-        //private static float x = 0;
-        //private static float y = 0;
-        //private static float z = 0;
 
         private static void UpdateCamera()
         {
@@ -893,7 +896,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
 
         private static void FillCostumes()
         {
-            if(Costumes == null)
+            if (Costumes == null)
             {
                 Costumes = new ConcurrentDictionary<Characters, SortedSet<byte>>();
                 Regex r = new Regex(@"d([\da-fA-F]+)c(\d+)\.dat", RegexOptions.IgnoreCase);
@@ -918,33 +921,29 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 }
             }
         }
-        public static ConcurrentDictionary<Characters, SortedSet<byte>> Weapons { get; private set; }
+
+        public static List<byte> Weapons { get; private set; }
 
         private static void FillWeapons()
         {
             if (Weapons == null)
             {
-                Weapons = new ConcurrentDictionary<Characters, SortedSet<byte>>();
-                Regex r = new Regex(@"d([\da-fA-F]+)c(\d+)\.dat", RegexOptions.IgnoreCase);
+                SortedSet<byte> _weapons = new SortedSet<byte>();
+                Regex r = new Regex(@"d([\da-fA-F]+)w(\d+)\.dat", RegexOptions.IgnoreCase);
                 ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
-                foreach (string s in aw.FileList)
+
+                foreach (string s in aw.FileList.OrderBy(q => Path.GetFileName(q), StringComparer.InvariantCultureIgnoreCase))
                 {
                     Match match = r.Match(s);
                     if (match != null)
                     {
-                        Characters c = Characters.Blank;
-                        if (byte.TryParse(match.Groups[1].Value,NumberStyles.HexNumber, CultureInfo.InvariantCulture, out byte ci))
+                        if (byte.TryParse(match.Groups[2].Value, out byte a))
                         {
-                            c = (Characters)ci;
-
-                            if (byte.TryParse(match.Groups[2].Value, out byte a))
-                            {
-                                Weapons.TryAdd(c, new SortedSet<byte>());
-                                Weapons[c].Add(a);
-                            }
+                            _weapons.Add(a);
                         }
                     }
                 }
+                Weapons = _weapons.ToList();
             }
         }
 
@@ -966,7 +965,9 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                     {
                         CharacterInstanceInformation cii = new CharacterInstanceInformation
                         {
-                            Data = ReadCharacterData((int)c, Costumes[c].First(), Weapons[c].First()),//Memory.State[c].Alternativemodel, Memory.State[c].WeaponID),
+                            Data = ReadCharacterData((int)c,
+                                Memory.State[c].Alternativemodel == 0? Costumes[c].First(): Costumes[c].Last(),
+                                Weapons[Memory.State[c].WeaponID]),
                             animationSystem = new AnimationSystem() { AnimationQueue = new List<int>() },
                             characterId = cid++,
                         };
@@ -1391,7 +1392,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
         }
 
         private static BattleCamera battleCamera;
-        private static bool bUseFPSCamera = true;
+        private static bool bUseFPSCamera = false;
 
         /// <summary>
         /// Battle camera settings are about 32 bytes of unknown flags and variables used in whole
