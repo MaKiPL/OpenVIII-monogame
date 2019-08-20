@@ -92,18 +92,22 @@ namespace OpenVIII
         public override bool Inputs()
         {
             bool ret = false;
+            InputMouse.Mode = MouseLockMode.Screen;
+            Memory.IsMouseVisible = true;
             if (InputFunctions.ContainsKey((Mode)GetMode()))
                 ret = InputFunctions[(Mode)GetMode()]() && ret;
             // press 1 to force victory
-            if (Input2.DelayedButton(Keys.D1))
+            if (Input2.DelayedButton(Keys.D6))
             {
                 SetMode(Mode.Victory);
             }
             // press 2 to force game over
-            else if (Input2.DelayedButton(Keys.D2))
+            else if (Input2.DelayedButton(Keys.D7))
             {
                 SetMode(Mode.GameOver);
             }
+            else if (Input2.DelayedButton(Keys.D9))
+                ReturnTo();
             return ret;
         }
 
@@ -165,6 +169,7 @@ namespace OpenVIII
         {
             Module_main_menu_debug.State = lastmenu;
             Memory.module = lastgamestate;
+            Module_battle_debug.ResetState();
             if (lastmusicplaying)
                 init_debugger_Audio.PlayMusic(lastmusic);
             else
@@ -189,6 +194,7 @@ namespace OpenVIII
 
         protected override void Init()
         {
+            NoInputOnUpdate = true;
             Size = new Vector2 { X = 881, Y = 636 };
             const int w = 380;
             const int h = 140;
@@ -226,37 +232,42 @@ namespace OpenVIII
 
         private bool InputBattleFunction()
         {
-            bool ret = false;
-            if (Data[SectionName.Targets].Enabled)
-            {
-                return Data[SectionName.Targets].Inputs();
-            }
-            foreach (Menu m in menus.Where(m => m.GetType().Equals(typeof(BattleMenu)) && (BattleMenu.Mode)m.GetMode() == BattleMenu.Mode.YourTurn))
-            {
-                ret = m.Inputs() || ret;
-                if (ret) return ret;
-            }
-            if (Input2.DelayedButton(FF8TextTagKey.Cancel))
-            {
-                switch ((BattleMenu.Mode)menus[_player].GetMode())
+            bool ret = false;            
+                if (Data[SectionName.Targets].Enabled)
                 {
-                    case BattleMenu.Mode.YourTurn:
-                        menus[_player].SetMode(BattleMenu.Mode.ATB_Charged);
-                        break;
+                    return Data[SectionName.Targets].Inputs();
                 }
-                if (++_player > 2) _player = 0;
+                foreach (Menu m in menus.Where(m => m.GetType().Equals(typeof(BattleMenu)) && (BattleMenu.Mode)m.GetMode() == BattleMenu.Mode.YourTurn))
+                {
+                    ret = m.Inputs() || ret;
+                    if (ret) return ret;
+                }
+                if (Input2.DelayedButton(FF8TextTagKey.Cancel))
+                {
+                    switch ((BattleMenu.Mode)menus[_player].GetMode())
+                    {
+                        case BattleMenu.Mode.YourTurn:
+                            menus[_player].SetMode(BattleMenu.Mode.ATB_Charged);
+                            break;
+                    }
+                do
+                {
+                    if (++_player > 2) _player = 0;
+                }
+                while (menus.Count <= _player || menus[_player] == null|| menus[_player].GetType() != typeof(BattleMenu));
                 menus[_player].SetMode(BattleMenu.Mode.YourTurn);
-                if (((BattleMenu)menus[_player]).CrisisLevel)
-                    init_debugger_Audio.PlaySound(94);
-                else
-                    init_debugger_Audio.PlaySound(14);
-                switch ((BattleMenu.Mode)menus[_player].GetMode())
-                {
-                    case BattleMenu.Mode.ATB_Charged:
-                        menus[_player].SetMode(BattleMenu.Mode.YourTurn);
-                        break;
+                    if (((BattleMenu)menus[_player]).CrisisLevel)
+                        init_debugger_Audio.PlaySound(94);
+                    else
+                        init_debugger_Audio.PlaySound(14);
+                    switch ((BattleMenu.Mode)menus[_player].GetMode())
+                    {
+                        case BattleMenu.Mode.ATB_Charged:
+                            menus[_player].SetMode(BattleMenu.Mode.YourTurn);
+                            break;
+                    }
                 }
-            }
+            
             return ret;
         }
 
