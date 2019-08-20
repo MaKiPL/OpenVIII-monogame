@@ -37,15 +37,18 @@ namespace OpenVIII
                 {
                     get => _exp; set
                     {
-                        if (_exp == 0 || !Memory.State[Character].IsGameOver)
+                        if (Character != Characters.Blank)
                         {
-                            if (value < 0) value = 0;
-                            if (_exp != 0)
-                                Memory.State[Character].Experience += (uint)Math.Abs((MathHelper.Distance(_exp, value)));
-                            _exp = value;
+                            if (_exp == 0 || !Memory.State[Character].IsGameOver)
+                            {
+                                if (value < 0) value = 0;
+                                if (_exp != 0)
+                                    Memory.State[Character].Experience += (uint)Math.Abs((MathHelper.Distance(_exp, value)));
+                                _exp = value;
+                            }
+                            else if (Memory.State[Character].IsGameOver)
+                                ITEM[0, 11].Show();
                         }
-                        else if (Memory.State[Character].IsGameOver)
-                            ITEM[0, 11].Show();
                     }
                 }
 
