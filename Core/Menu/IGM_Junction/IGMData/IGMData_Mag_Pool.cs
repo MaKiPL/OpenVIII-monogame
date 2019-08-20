@@ -68,7 +68,7 @@ namespace OpenVIII
                     // magic id and count
                     KeyValuePair<byte, byte> dat = Source.Magics[i];
                     // if invalid
-                    if (dat.Key == 0 || Kernel_bin.MagicData.Count >= dat.Key || dat.Value == 0 || skip-- > 0) continue;
+                    if (dat.Key == 0 || Kernel_bin.MagicData.Count <= dat.Key || dat.Value == 0 || skip-- > 0) continue;
                     addMagic(ref pos, Kernel_bin.MagicData[dat.Key], @default);
                 }
             else
@@ -459,7 +459,7 @@ namespace OpenVIII
                 if (SortMode != LastMode || this.Stat != LastStat || Character != LastCharacter)
                     Get_Sort();
                 bool skipundo = false;
-                if (!(SortMode == LastMode && Character == LastCharacter && this.Stat == LastStat && Page == LastPage))
+                if (Battle || !(SortMode == LastMode && Character == LastCharacter && this.Stat == LastStat && Page == LastPage))
                 {
                     LastCharacter = Character;
                     LastStat = this.Stat;
