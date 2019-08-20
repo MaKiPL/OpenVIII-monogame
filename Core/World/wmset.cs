@@ -571,7 +571,7 @@ namespace OpenVIII.Core.World
                     timOriginHolderList.Add(new Vector2((tim.GetOrigX - SEC42_VRAM_STARTX)*4, tim.GetOrigY));
                     vehTextures.Add(new Texture2D[tim.GetClutCount]);
                     for (ushort k = 0; k < vehTextures[i].Length; k++)
-                        vehTextures[i][k] = tim.GetTexture(k, true);
+                        vehTextures[i][k] = tim.GetTexture(k);
                 }
             }
             vehicleTextures = vehTextures.ToArray();
