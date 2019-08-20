@@ -150,6 +150,7 @@ namespace OpenVIII
 
                 for (int pos = 1; pos < rows; pos++)
                 {
+
                     Kernel_bin.Abilities cmd = Memory.State.Characters[Character].Commands[pos - 1];
 
                     if (cmd != Kernel_bin.Abilities.None)
@@ -163,7 +164,7 @@ namespace OpenVIII
                     }
                     else
                     {
-                        ITEM[pos, 0].Hide();
+                        ITEM[pos, 0]?.Hide();
                         BLANKS[pos] = true;
                     }
                 }
