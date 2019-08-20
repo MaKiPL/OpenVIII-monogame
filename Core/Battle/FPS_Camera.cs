@@ -48,6 +48,7 @@ namespace OpenVIII
         {
             //require mouselock to center of screen for mouse joystick mode.
             InputMouse.Mode = MouseLockMode.Center;
+            Memory.IsMouseVisible = false;
             // check mouse to move camera
             shift = InputMouse.Distance(MouseButtons.MouseToStick, maxLookSpeed);
             // check right stick to adjust camera
