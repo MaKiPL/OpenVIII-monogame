@@ -7,6 +7,9 @@ namespace OpenVIII
 {
     public class IGMData_Mag_Pool : IGMData_Pool<Saves.CharacterData, byte>
     {
+        private const Font.ColorID nostat = Font.ColorID.Dark_Gray;
+        private const Font.ColorID @default = Font.ColorID.White;
+        private const Font.ColorID junctioned = Font.ColorID.Grey;
         #region Fields
 
         public static EventHandler<IGM_Junction.Mode> SlotConfirmListener;
@@ -58,56 +61,64 @@ namespace OpenVIII
         {
             int pos = 0;
             int skip = Page * rows;
-            if (Sort != null)
+
+            if (Battle || Sort == null)
+                for (int i = 0; pos < rows && i < Source.Magics.Count; i++)
+                {
+                    // magic id and count
+                    KeyValuePair<byte, byte> dat = Source.Magics[i];
+                    // if invalid
+                    if (dat.Key == 0 || Kernel_bin.MagicData.Count >= dat.Key || dat.Value == 0 || skip-- > 0) continue;
+                    addMagic(ref pos, Kernel_bin.MagicData[dat.Key], @default);
+                }
+            else
                 foreach (Kernel_bin.Magic_Data i in Sort)
                 {
                     if (pos >= rows) break;
-                    if (Source.Magics.ContainsKey(i.ID) && skip-- <= 0 && i.ID > 0)
+                    if (skip-- > 0) continue;
+                    if (Source.Magics.ContainsKey(i.ID) && i.ID > 0 && skip-- <= 0)
                     {
-                        if (Battle)
-                            addMagic(ref pos, i, Font.ColorID.White);
-                        else
-                            switch (SortMode)
-                            {
-                                case IGM_Junction.Mode.Mag_Pool_Stat:
-                                    if (i.J_Val[Stat] == 0)
-                                        addMagic(ref pos, i, Font.ColorID.Dark_Gray);
-                                    else
-                                        addMagic(ref pos, i, Font.ColorID.White);
-                                    break;
+                        switch (SortMode)
+                        {
+                            case IGM_Junction.Mode.Mag_Pool_Stat:
+                                if (i.J_Val[Stat] == 0)
+                                    addMagic(ref pos, i, nostat);
+                                else
+                                    addMagic(ref pos, i, @default);
+                                break;
 
-                                case IGM_Junction.Mode.Mag_Pool_EL_D:
-                                    if (i.J_Val[Stat] * i.EL_Def.Count() == 0)
-                                        addMagic(ref pos, i, Font.ColorID.Dark_Gray);
-                                    else
-                                        addMagic(ref pos, i, Font.ColorID.White);
-                                    break;
+                            case IGM_Junction.Mode.Mag_Pool_EL_D:
+                                if (i.J_Val[Stat] * i.EL_Def.Count() == 0)
+                                    addMagic(ref pos, i, nostat);
+                                else
+                                    addMagic(ref pos, i, @default);
+                                break;
 
-                                case IGM_Junction.Mode.Mag_Pool_EL_A:
-                                    if (i.J_Val[Stat] * i.EL_Atk.Count() == 0)
-                                        addMagic(ref pos, i, Font.ColorID.Dark_Gray);
-                                    else
-                                        addMagic(ref pos, i, Font.ColorID.White);
-                                    break;
+                            case IGM_Junction.Mode.Mag_Pool_EL_A:
+                                if (i.J_Val[Stat] * i.EL_Atk.Count() == 0)
+                                    addMagic(ref pos, i, nostat);
+                                else
+                                    addMagic(ref pos, i, @default);
+                                break;
 
-                                case IGM_Junction.Mode.Mag_Pool_ST_D:
-                                    if (i.J_Val[Stat] * i.ST_Def.Count() == 0)
-                                        addMagic(ref pos, i, Font.ColorID.Dark_Gray);
-                                    else
-                                        addMagic(ref pos, i, Font.ColorID.White);
-                                    break;
+                            case IGM_Junction.Mode.Mag_Pool_ST_D:
+                                if (i.J_Val[Stat] * i.ST_Def.Count() == 0)
+                                    addMagic(ref pos, i, nostat);
+                                else
+                                    addMagic(ref pos, i, @default);
+                                break;
 
-                                case IGM_Junction.Mode.Mag_Pool_ST_A:
-                                    if (i.J_Val[Stat] * i.ST_Atk.Count() == 0)
-                                        addMagic(ref pos, i, Font.ColorID.Dark_Gray);
-                                    else
-                                        addMagic(ref pos, i, Font.ColorID.White);
-                                    break;
+                            case IGM_Junction.Mode.Mag_Pool_ST_A:
+                                if (i.J_Val[Stat] * i.ST_Atk.Count() == 0)
+                                    addMagic(ref pos, i, nostat);
+                                else
+                                    addMagic(ref pos, i, @default);
+                                break;
 
-                                default:
-                                    addMagic(ref pos, i, Font.ColorID.White);
-                                    break;
-                            }
+                            default:
+                                addMagic(ref pos, i, @default);
+                                break;
+                        }
                     }
                 }
             for (; pos < rows; pos++)
@@ -143,9 +154,7 @@ namespace OpenVIII
 
         public void Get_Sort()
         {
-            if (Battle)
-                Sort = Kernel_bin.MagicData.AsEnumerable();
-            else
+            if (!Battle)
                 switch (SortMode)
                 {
                     case IGM_Junction.Mode.Mag_Pool_Stat:
@@ -354,20 +363,21 @@ namespace OpenVIII
             }
         }
 
-        private void addMagic(ref int pos, Kernel_bin.Magic_Data spell, Font.ColorID color = Font.ColorID.White)
+        private void addMagic(ref int pos, Kernel_bin.Magic_Data spell, Font.ColorID color = @default)
         {
             bool j = false;
-            if (color == Font.ColorID.White && Source.Stat_J.ContainsValue(spell.ID))
+            if (color == @default && Source.Stat_J.ContainsValue(spell.ID))
             {
                 //spell is junctioned
                 if (!Battle)
-                    color = Font.ColorID.Grey;
+                    color = junctioned;
                 j = true;
             }
             ITEM[pos, 0] = new IGMDataItem_String(spell.Name, SIZE[pos], color);
             ITEM[pos, 1] = j ? new IGMDataItem_Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 75, SIZE[pos].Y, 0, 0)) : null;
             ITEM[pos, 2] = new IGMDataItem_Int(Source.Magics[spell.ID], new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), spaces: 3);
-            BLANKS[pos] = color == Font.ColorID.Dark_Gray ? true : false;
+            //makes it so you cannot junction a magic to a stat that does nothing.
+            BLANKS[pos] = color == nostat ? true : false;
             Contents[pos] = spell.ID;
             pos++;
         }
@@ -376,7 +386,7 @@ namespace OpenVIII
         {
             if (Battle)
             {
-                SortMode = IGM_Junction.Mode.Mag_Pool_Stat;
+                //SortMode = IGM_Junction.Mode.Mag_Pool_Stat;
             }
             else
             {
