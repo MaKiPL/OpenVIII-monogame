@@ -193,7 +193,6 @@
     <Compile Include="FFmpegBinariesHelper.cs" />
     <Compile Include="Field\Core\AreaName.cs" />
     <Compile Include="Field\Core\BreakAwaitable.cs" />
-    <Compile Include="Field\Core\CharacterId.cs" />
     <Compile Include="Field\Core\Coords3D.cs" />
     <Compile Include="Field\Core\Degrees.cs" />
     <Compile Include="Field\Core\DummyAwaitable.cs" />
