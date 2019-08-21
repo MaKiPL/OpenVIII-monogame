@@ -64,6 +64,5 @@ namespace OpenVIII
             #endregion Methods
         }
 
-        #endregion Classes
     }
 }

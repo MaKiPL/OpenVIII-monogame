@@ -2,7 +2,6 @@
 {
     public partial class BattleMenus
     {
-        #endregion Methods
 
         #region Classes
 

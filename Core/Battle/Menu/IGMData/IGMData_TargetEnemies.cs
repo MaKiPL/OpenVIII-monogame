@@ -4,7 +4,6 @@ namespace OpenVIII
 {
     public partial class BattleMenus
     {
-        #endregion Methods
         #region Classes
 
         public class IGMData_TargetEnemies : IGMData
