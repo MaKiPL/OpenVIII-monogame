@@ -664,10 +664,10 @@ namespace OpenVIII
             public Flag1 bitSwitch;
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
-            public byte[] card;
+            private Cards.ID[] card;
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
-            public byte[] devour;
+            private byte[] devour;
 
             public Flag2 bitSwitch2;
             public UnkFlag2 unkflag2;
@@ -735,6 +735,18 @@ namespace OpenVIII
 
             public FF8String GetNameNormal => monsterName;
 
+            private int levelgroup()
+            {
+                byte l = Level;
+                if (l > highLevelStart)
+                    return 2;
+                if (l > medLevelStart)
+                    return 1;
+                else return 0;
+            }
+
+            public Kernel_bin.Devour Devour => devour[levelgroup()] >= Kernel_bin.Devour_.Count ? Kernel_bin.Devour_[Kernel_bin.Devour_.Count - 1] : Kernel_bin.Devour_[devour[levelgroup()]];
+            public Cards.ID Card => card[levelgroup()];
             public Magic[] Draw
             {
                 get
@@ -870,6 +882,114 @@ namespace OpenVIII
             public override string ToString() => GetNameNormal.Value_str;
 
             public IReadOnlyDictionary<Kernel_bin.Element, byte> Resistance => resistance.Select((v, i) => new { Key = i, Value = v }).ToDictionary(o => (Enum.GetValues(typeof(Kernel_bin.Element))).Cast<Kernel_bin.Element>().ToList()[o.Key + 1], o => o.Value);
+
+            public sbyte StatusResistance(Kernel_bin.Persistant_Statuses s)
+            {
+                byte r = 100;
+                switch (s)
+                {
+                    case Kernel_bin.Persistant_Statuses.Death:
+                        r = deathResistanceMental;
+                        break;
+
+                    case Kernel_bin.Persistant_Statuses.Poison:
+                        r = poisonResistanceMental;
+                        break;
+
+                    case Kernel_bin.Persistant_Statuses.Petrify:
+                        r = petrifyResistanceMental;
+                        break;
+
+                    case Kernel_bin.Persistant_Statuses.Darkness:
+                        r = darknessResistanceMental;
+                        break;
+
+                    case Kernel_bin.Persistant_Statuses.Silence:
+                        r = silenceResistanceMental;
+                        break;
+
+                    case Kernel_bin.Persistant_Statuses.Berserk:
+                        r = berserkResistanceMental;
+                        break;
+
+                    case Kernel_bin.Persistant_Statuses.Zombie:
+                        r = zombieResistanceMental;
+                        break;
+                }
+
+                return (sbyte)MathHelper.Clamp(r - 100, -100, 100);
+            }
+
+            public sbyte StatusResistance(Kernel_bin.Battle_Only_Statuses s)
+            {
+                byte r = 100;
+                switch (s)
+                {
+                    case Kernel_bin.Battle_Only_Statuses.Sleep:
+                        r = sleepResistanceMental;
+                        break;
+
+                    case Kernel_bin.Battle_Only_Statuses.Haste:
+                        r = hasteResistanceMental;
+                        break;
+
+                    case Kernel_bin.Battle_Only_Statuses.Slow:
+                        r = slowResistanceMental;
+                        break;
+
+                    case Kernel_bin.Battle_Only_Statuses.Stop:
+                        r = stopResistanceMental;
+                        break;
+
+                    case Kernel_bin.Battle_Only_Statuses.Regen:
+                        r = regenResistanceMental;
+                        break;
+
+                    case Kernel_bin.Battle_Only_Statuses.Protect:
+                        break;
+
+                    case Kernel_bin.Battle_Only_Statuses.Shell:
+                        break;
+
+                    case Kernel_bin.Battle_Only_Statuses.Reflect:
+                        r = reflectResistanceMental;
+                        break;
+
+                    case Kernel_bin.Battle_Only_Statuses.Aura:
+                        break;
+
+                    case Kernel_bin.Battle_Only_Statuses.Curse:
+                        break;
+
+                    case Kernel_bin.Battle_Only_Statuses.Doom:
+                        r = doomResistanceMental;
+                        break;
+
+                    case Kernel_bin.Battle_Only_Statuses.Invincible:
+                        break;
+
+                    case Kernel_bin.Battle_Only_Statuses.Petrifying:
+                        r = slowPetrifyResistanceMental;
+                        break;
+
+                    case Kernel_bin.Battle_Only_Statuses.Float:
+                        r = floatResistanceMental;
+                        break;
+
+                    case Kernel_bin.Battle_Only_Statuses.Confuse:
+                        r = confuseResistanceMental;
+                        break;
+
+                    case Kernel_bin.Battle_Only_Statuses.Drain:
+                        r = drainResistanceMental;
+                        break;
+
+                    case Kernel_bin.Battle_Only_Statuses.Eject:
+                        r = explusionResistanceMental;
+                        break;
+                }
+                return (sbyte)MathHelper.Clamp(r - 100, -100, 100);
+            }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 2)]
@@ -883,7 +1003,7 @@ namespace OpenVIII
             public override string ToString() => DATA?.Name;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
+        [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 4)]
         public struct Abilities
         {
             [Flags]
@@ -900,21 +1020,30 @@ namespace OpenVIII
                 unk4 = 0x80,
             }
 
-            public KernelFlag kernelId; //0x2 magic, 0x4 item, 0x8 mosterAbility;
+            [FieldOffset(0)]
+            public KernelFlag kernelId; //0x2 magic, 0x4 item, 0x8 monsterAbility;
+
+            [FieldOffset(1)]
             public byte animation; // ifrit states one of theses is an animation id.
+
+            [FieldOffset(2)]
             public ushort abilityId;
 
+            private const string unk = "Unknown";
+
             public Kernel_bin.Magic_Data MAGIC => (kernelId & KernelFlag.magic) != 0 && Kernel_bin.MagicData.Count > abilityId ? Kernel_bin.MagicData[abilityId] : null;
-            public Item_In_Menu? ITEM => (kernelId & KernelFlag.item) != 0 && Memory.MItems != null && Memory.MItems.Items.Count>abilityId ? Memory.MItems?.Items[abilityId] : null;
+            public Item_In_Menu? ITEM => (kernelId & KernelFlag.item) != 0 && Memory.MItems != null && Memory.MItems.Items.Count > abilityId ? Memory.MItems?.Items[abilityId] : null;
             public Kernel_bin.Enemy_Attacks_Data MONSTER => (kernelId & KernelFlag.monster) != 0 && Kernel_bin.EnemyAttacksData.Count > abilityId ? Kernel_bin.EnemyAttacksData[abilityId] : null;
+
             public override string ToString()
             {
                 if (MAGIC != null)
-                    return MAGIC.Name;
+                    return MAGIC.Name ?? unk;
                 if (ITEM != null)
-                    return ITEM.Value.Name;
+                    return ITEM.Value.Name ?? unk;
                 if (MONSTER != null)
-                    return MONSTER.Name;
+                    return MONSTER.Name ?? unk;
+
                 return "";
             }
         }

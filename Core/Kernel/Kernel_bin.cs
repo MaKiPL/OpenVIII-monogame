@@ -152,6 +152,7 @@ namespace OpenVIII
                 s_selphielimitbreaksets = Selphie_limit_break_sets.Read(br);
                 ms.Seek(subPositions[Devour.id], SeekOrigin.Begin);
                 s_devour_ = Devour.Read(br);
+                s_devour_.Add(new Devour { Description = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 112) });
                 ms.Seek(subPositions[Misc_section.id], SeekOrigin.Begin);
                 s_miscsection = Misc_section.Read(br);
                 s_misctextpointers = Misc_text_pointers.Read();
