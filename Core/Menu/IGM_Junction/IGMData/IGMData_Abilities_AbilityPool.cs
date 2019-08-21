@@ -47,11 +47,11 @@ namespace OpenVIII
                 else
                     Cursor_Status |= Cursor_Status.Enabled;
                 int pos = 0;
-                int skip = Page * rows;
+                int skip = Page * Rows;
                 for (int i = 0;
                     Memory.State.Characters != null &&
                     i < Memory.State.Characters[Character].UnlockedGFAbilities.Count &&
-                    pos < rows; i++)
+                    pos < Rows; i++)
                 {
                     if (Memory.State.Characters[Character].UnlockedGFAbilities[i] != Kernel_bin.Abilities.None)
                     {
@@ -75,7 +75,7 @@ namespace OpenVIII
                         }
                     }
                 }
-                for (; pos < rows; pos++)
+                for (; pos < Rows; pos++)
                 {
                     ITEM[pos, 0] = null;
                     BLANKS[pos] = true;
@@ -94,7 +94,7 @@ namespace OpenVIII
                         PAGE_NEXT();
                         return Update();
                     }
-                    else if (Contents[rows - 1] == Kernel_bin.Abilities.None)
+                    else if (Contents[Rows - 1] == Kernel_bin.Abilities.None)
                         Pages = Page + 1;
                 }
                 return base.Update();

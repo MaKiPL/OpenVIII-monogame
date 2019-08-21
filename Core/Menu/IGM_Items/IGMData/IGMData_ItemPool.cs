@@ -80,8 +80,8 @@ namespace OpenVIII
             {
                 ((IGMDataItem_Box)CONTAINER).Title = Pages <= 1 ? (Icons.ID?)Icons.ID.ITEM : (Icons.ID?)(Icons.ID.ITEM_PG1 + (byte)Page);
                 byte pos = 0;
-                int skip = Page * rows;
-                for (byte i = 0; pos < rows && i < Source.Items.Count; i++)
+                int skip = Page * Rows;
+                for (byte i = 0; pos < Rows && i < Source.Items.Count; i++)
                 {
                     Saves.Item item = Source.Items[i];
                     if (item.ID == 0 || item.QTY == 0) continue; // skip empty values.
@@ -110,7 +110,7 @@ namespace OpenVIII
                     Contents[pos] = itemdata;
                     pos++;
                 }
-                for (; pos < rows; pos++)
+                for (; pos < Rows; pos++)
                 {
                     ((IGMDataItem_Int)(ITEM[pos, 1])).Hide();
                     if (pos == 0) return; // if page turning. this till be enough to trigger a try next page.
@@ -126,13 +126,13 @@ namespace OpenVIII
         {
             base.Init();
             _helpStr = new FF8String[Count];
-            for (byte pos = 0; pos < rows; pos++)
+            for (byte pos = 0; pos < Rows; pos++)
             {
                 ITEM[pos, 0] = new IGMDataItem_String(null, SIZE[pos]);
                 ITEM[pos, 1] = new IGMDataItem_Int(0, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0), numtype: Icons.NumType.sysFntBig, spaces: 3);
             }
 
-            ITEM[rows-1, 2] = new IGMDataItem_Icon(Icons.ID.NUM_, new Rectangle(SIZE[rows - 1].X + SIZE[rows-1].Width-60, Y, 0, 0), scale: new Vector2(2.5f));
+            ITEM[Rows-1, 2] = new IGMDataItem_Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows - 1].X + SIZE[Rows-1].Width-60, Y, 0, 0), scale: new Vector2(2.5f));
         }
 
         protected override void InitShift(int i, int col, int row)

@@ -65,13 +65,13 @@ namespace OpenVIII
             public override void Inputs_Left()
             {
                 base.Inputs_Left();
-                if (CURSOR_SELECT < Count / cols || BLANKS[CURSOR_SELECT - Count / cols])
+                if (CURSOR_SELECT < Count / Cols || BLANKS[CURSOR_SELECT - Count / Cols])
                 {
                     PageLeft();
                 }
                 else
                 {
-                    CURSOR_SELECT -= Count / cols;
+                    CURSOR_SELECT -= Count / Cols;
                 }
             }
 
@@ -90,10 +90,10 @@ namespace OpenVIII
             public override void Inputs_Right()
             {
                 base.Inputs_Right();
-                if (CURSOR_SELECT < Count / cols && !BLANKS[CURSOR_SELECT + Count / cols])
+                if (CURSOR_SELECT < Count / Cols && !BLANKS[CURSOR_SELECT + Count / Cols])
                 {
                     //if (CURSOR_SELECT == 0) CURSOR_SELECT++;
-                    CURSOR_SELECT += Count / cols;
+                    CURSOR_SELECT += Count / Cols;
                 }
                 else
                 {

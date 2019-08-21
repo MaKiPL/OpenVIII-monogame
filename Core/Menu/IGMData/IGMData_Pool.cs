@@ -88,7 +88,7 @@
             Cursor_Status |= Cursor_Status.Enabled;
             Cursor_Status |= Cursor_Status.Vertical;
             Page = 0;
-            Contents = new T2[rows];
+            Contents = new T2[Rows];
             SIZE[Count - 2].X = X + 6;
             SIZE[Count - 2].Y = Y + Height - 28;
             SIZE[Count - 1].X = X + Width - 24;

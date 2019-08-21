@@ -161,7 +161,7 @@ namespace OpenVIII
                         commands[0].Name,
                         SIZE[0]);
 
-                for (int pos = 1; pos < rows; pos++)
+                for (int pos = 1; pos < Rows; pos++)
                 {
 
                     Kernel_bin.Abilities cmd = Memory.State.Characters[Character].Commands[pos - 1];
@@ -217,7 +217,7 @@ namespace OpenVIII
             ITEM[Mag_Pool, 0].Hide();
             ITEM[Item_Pool, 0] = new IGMDataItem_IGMData(new IGMData_ItemPool(new Rectangle(X + 50, Y - 22, 400, 194), true));
             ITEM[Item_Pool, 0].Hide();
-            commands = new Kernel_bin.Battle_Commands[rows];
+            commands = new Kernel_bin.Battle_Commands[Rows];
         }
 
         protected override void InitShift(int i, int col, int row)

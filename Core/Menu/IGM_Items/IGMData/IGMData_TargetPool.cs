@@ -165,8 +165,8 @@ namespace OpenVIII
             private void Fill()
             {
                 Faces.ID id = 0;
-                int skip = Page * rows;
-                for (int i = 0; i < rows; i++)
+                int skip = Page * Rows;
+                for (int i = 0; i < Rows; i++)
                 {
                     bool gftest = false;
                     bool ctest = false;
@@ -177,7 +177,7 @@ namespace OpenVIII
                         || skip-- > 0)
                         if ((byte)++id > 32)
                         {
-                            for (; i < rows; i++)
+                            for (; i < Rows; i++)
                             {
                                 ITEM[i, 0] = null;
                                 ITEM[i, 1] = null;

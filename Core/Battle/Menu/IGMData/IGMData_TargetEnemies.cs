@@ -45,29 +45,45 @@ namespace OpenVIII
 
             public override void Inputs_Left()
             {
-                if (CURSOR_SELECT < 3)
+                if (CURSOR_SELECT - Rows < 0)
                 {
                     Cursor_Status &= ~Cursor_Status.Enabled;
                     Menu.BattleMenus.Target_Party.Cursor_Status |= Cursor_Status.Enabled;
-                    Menu.BattleMenus.Target_Party.CURSOR_SELECT = CURSOR_SELECT % 3;
+                    Menu.BattleMenus.Target_Party.CURSOR_SELECT = CURSOR_SELECT % Rows;
+                    while (Menu.BattleMenus.Target_Party.BLANKS[Menu.BattleMenus.Target_Party.CURSOR_SELECT] && Menu.BattleMenus.Target_Party.CURSOR_SELECT > 0)
+                    {
+                        Menu.BattleMenus.Target_Party.CURSOR_SELECT--;
+                    }
                 }
                 else
                 {
-                    SetCursor_select(CURSOR_SELECT - 3);
+                    SetCursor_select(CURSOR_SELECT - Rows);
+                    while (BLANKS[CURSOR_SELECT] && CURSOR_SELECT != 0)
+                    {
+                        CURSOR_SELECT--;
+                    }
                 }
                 base.Inputs_Left();
             }
             public override void Inputs_Right()
             {
-                if (CURSOR_SELECT >= 3 || (ITEM[3, 0] == null || !ITEM[3, 0].Enabled))
+                if (CURSOR_SELECT + Rows > Count || (ITEM[CURSOR_SELECT + Rows, 0] == null || !ITEM[CURSOR_SELECT + Rows, 0].Enabled) || BLANKS[CURSOR_SELECT + Rows])
                 {
                     Cursor_Status &= ~Cursor_Status.Enabled;
                     Menu.BattleMenus.Target_Party.Cursor_Status |= Cursor_Status.Enabled;
-                    Menu.BattleMenus.Target_Party.CURSOR_SELECT = CURSOR_SELECT % 3;
+                    Menu.BattleMenus.Target_Party.CURSOR_SELECT = CURSOR_SELECT % Rows;
+                    while(Menu.BattleMenus.Target_Party.BLANKS[Menu.BattleMenus.Target_Party.CURSOR_SELECT] && Menu.BattleMenus.Target_Party.CURSOR_SELECT > 0)
+                    {
+                        Menu.BattleMenus.Target_Party.CURSOR_SELECT--;
+                    }
                 }
                 else
                 {
-                    SetCursor_select(CURSOR_SELECT + 3);
+                    SetCursor_select(CURSOR_SELECT + Rows);
+                    while (BLANKS[CURSOR_SELECT] && CURSOR_SELECT != 0)
+                    {
+                        CURSOR_SELECT--;
+                    }
                 }
                 base.Inputs_Right();
             }

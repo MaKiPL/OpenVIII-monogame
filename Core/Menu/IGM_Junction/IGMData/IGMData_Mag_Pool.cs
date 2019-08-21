@@ -60,10 +60,10 @@ namespace OpenVIII
         public void FillMagic()
         {
             int pos = 0;
-            int skip = Page * rows;
+            int skip = Page * Rows;
 
             if (Battle || Sort == null)
-                for (int i = 0; pos < rows && i < Source.Magics.Count; i++)
+                for (int i = 0; pos < Rows && i < Source.Magics.Count; i++)
                 {
                     // magic id and count
                     KeyValuePair<byte, byte> dat = Source.Magics[i];
@@ -74,7 +74,7 @@ namespace OpenVIII
             else
                 foreach (Kernel_bin.Magic_Data i in Sort)
                 {
-                    if (pos >= rows) break;
+                    if (pos >= Rows) break;
                     if (skip-- > 0) continue;
                     if (Source.Magics.ContainsKey(i.ID) && i.ID > 0 && skip-- <= 0)
                     {
@@ -121,7 +121,7 @@ namespace OpenVIII
                         }
                     }
                 }
-            for (; pos < rows; pos++)
+            for (; pos < Rows; pos++)
             {
                 ITEM[pos, 0] = null;
                 ITEM[pos, 1] = null;
@@ -305,10 +305,10 @@ namespace OpenVIII
         protected override void Init()
         {
             base.Init();
-            SIZE[rows] = SIZE[0];
-            SIZE[rows].Y = Y;
-            ITEM[rows, 2] = new IGMDataItem_Icon(Icons.ID.NUM_, new Rectangle(SIZE[rows].X + SIZE[rows].Width - 45, SIZE[rows].Y, 0, 0), scale: new Vector2(2.5f));
-            BLANKS[rows] = true;
+            SIZE[Rows] = SIZE[0];
+            SIZE[Rows].Y = Y;
+            ITEM[Rows, 2] = new IGMDataItem_Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 45, SIZE[Rows].Y, 0, 0), scale: new Vector2(2.5f));
+            BLANKS[Rows] = true;
             Cursor_Status &= ~Cursor_Status.Horizontal;
             Cursor_Status |= Cursor_Status.Vertical;
             Cursor_Status &= ~Cursor_Status.Blinking;

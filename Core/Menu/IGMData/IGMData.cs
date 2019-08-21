@@ -55,7 +55,7 @@ namespace OpenVIII
 
         #region Properties
 
-        public int cols { get; private set; }
+        public int Cols { get; private set; }
         public IGMDataItem CONTAINER { get; set; }
         /// <summary>
         /// Total number of items
@@ -78,7 +78,7 @@ namespace OpenVIII
         public byte Depth { get; private set; }
 
         public Dictionary<int, FF8String> Descriptions { get; protected set; }
-        public int rows { get; private set; }
+        public int Rows { get; private set; }
         public Table_Options Table_Options { get; set; } = Table_Options.Default;
         public static Point MouseLocation => Menu.MouseLocation;
         public static Vector2 TextScale => Menu.TextScale;
@@ -231,8 +231,8 @@ namespace OpenVIII
                 Depth = (byte)depth;
                 BLANKS = new bool[count];
                 Descriptions = new Dictionary<int, FF8String>(count);
-                this.cols = cols ?? 1;
-                this.rows = rows ?? 1;
+                this.Cols = cols ?? 1;
+                this.Rows = rows ?? 1;
             }
             if (container != null)
             {
@@ -416,18 +416,18 @@ namespace OpenVIII
             {
                 for (int i = 0; i < SIZE.Length; i++)
                 {
-                    int col = (Table_Options & Table_Options.FillRows) != 0 ? i % cols : i / rows;
-                    int row = (Table_Options & Table_Options.FillRows) != 0 ? i / cols : i % rows;
-                    if (col < cols && row < rows)
+                    int col = (Table_Options & Table_Options.FillRows) != 0 ? i % Cols : i / Rows;
+                    int row = (Table_Options & Table_Options.FillRows) != 0 ? i / Cols : i % Rows;
+                    if (col < Cols && row < Rows)
                     {
                         if (SIZE[i].IsEmpty) //allows for override a size value before the loop.
                         {
                             SIZE[i] = new Rectangle
                             {
-                                X = X + (Width * col) / cols,
-                                Y = Y + (Height * row) / rows,
-                                Width = Width / cols,
-                                Height = Height / rows,
+                                X = X + (Width * col) / Cols,
+                                Y = Y + (Height * row) / Rows,
+                                Width = Width / Cols,
+                                Height = Height / Rows,
                             };
                         }
                         CURSOR[i] = Point.Zero;

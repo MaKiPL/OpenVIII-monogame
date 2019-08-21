@@ -139,10 +139,10 @@ namespace OpenVIII
                 UnlockedGFs = Source.UnlockedGFs();
 
                 int pos = 0;
-                int skip = Page * rows;
+                int skip = Page * Rows;
                 foreach (GFs g in UnlockedGFs.Where(g => !JunctionedGFs.ContainsKey(g)))
                 {
-                    if (pos >= rows) break;
+                    if (pos >= Rows) break;
                     if (skip-- <= 0)
                     {
                         addGF(ref pos, g);
@@ -150,7 +150,7 @@ namespace OpenVIII
                 }
                 foreach (GFs g in UnlockedGFs.Where(g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] == Character))
                 {
-                    if (pos >= rows) break;
+                    if (pos >= Rows) break;
                     if (skip-- <= 0)
                     {
                         addGF(ref pos, g, Font.ColorID.Grey);
@@ -158,13 +158,13 @@ namespace OpenVIII
                 }
                 foreach (GFs g in UnlockedGFs.Where(g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] != Character))
                 {
-                    if (pos >= rows) break;
+                    if (pos >= Rows) break;
                     if (skip-- <= 0)
                     {
                         addGF(ref pos, g, Font.ColorID.Dark_Gray);
                     }
                 }
-                for (; pos < rows; pos++)
+                for (; pos < Rows; pos++)
                 {
                     ITEM[pos, 0] = null;
                     ITEM[pos, 1] = null;
@@ -208,9 +208,9 @@ namespace OpenVIII
             protected override void Init()
             {
                 base.Init();
-                SIZE[rows] = SIZE[0];
-                SIZE[rows].Y = Y;
-                ITEM[rows, 2] = new IGMDataItem_Icon(Icons.ID.Size_16x08_Lv_, new Rectangle(SIZE[rows].X + SIZE[rows].Width - 30, SIZE[rows].Y, 0, 0), scale: new Vector2(2.5f));
+                SIZE[Rows] = SIZE[0];
+                SIZE[Rows].Y = Y;
+                ITEM[Rows, 2] = new IGMDataItem_Icon(Icons.ID.Size_16x08_Lv_, new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 30, SIZE[Rows].Y, 0, 0), scale: new Vector2(2.5f));
             }
 
             protected override void InitShift(int i, int col, int row)

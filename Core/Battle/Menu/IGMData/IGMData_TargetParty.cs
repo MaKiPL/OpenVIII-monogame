@@ -49,7 +49,10 @@ namespace OpenVIII
             {
                 Cursor_Status &= ~Cursor_Status.Enabled;
                 Menu.BattleMenus.Target_Enemies.Cursor_Status |= Cursor_Status.Enabled;
-                Menu.BattleMenus.Target_Enemies.CURSOR_SELECT = (CURSOR_SELECT +3) % 6;
+                Menu.BattleMenus.Target_Enemies.CURSOR_SELECT = (CURSOR_SELECT + Menu.BattleMenus.Target_Enemies.Rows) %
+                    (Menu.BattleMenus.Target_Enemies.Rows * Menu.BattleMenus.Target_Enemies.Cols);
+                while(Menu.BattleMenus.Target_Enemies.BLANKS[Menu.BattleMenus.Target_Enemies.CURSOR_SELECT] && Menu.BattleMenus.Target_Enemies.CURSOR_SELECT >0)
+                    Menu.BattleMenus.Target_Enemies.CURSOR_SELECT--;
                 base.Inputs_Left();
             }
 
@@ -57,7 +60,9 @@ namespace OpenVIII
             {
                 Cursor_Status &= ~Cursor_Status.Enabled;
                 Menu.BattleMenus.Target_Enemies.Cursor_Status |= Cursor_Status.Enabled;
-                Menu.BattleMenus.Target_Enemies.CURSOR_SELECT = CURSOR_SELECT % 3;
+                Menu.BattleMenus.Target_Enemies.CURSOR_SELECT = CURSOR_SELECT % Menu.BattleMenus.Target_Enemies.Rows;
+                while (Menu.BattleMenus.Target_Enemies.BLANKS[Menu.BattleMenus.Target_Enemies.CURSOR_SELECT] && Menu.BattleMenus.Target_Enemies.CURSOR_SELECT > 0)
+                    Menu.BattleMenus.Target_Enemies.CURSOR_SELECT--;
                 base.Inputs_Right();
             }
 
