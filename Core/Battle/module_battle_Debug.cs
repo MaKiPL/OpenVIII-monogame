@@ -45,7 +45,7 @@ namespace OpenVIII
         private const int BATTLEMODULE_READDATA = 1; //parses battle stage and all monsters
         private const int BATTLEMODULE_DRAWGEOMETRY = 2; //draw geometry also supports updateCamera
         private const int BATTLEMODULE_ACTIVE = 3;
-        private const float FPS = 1000.0f / 15f; //Natively the game we are rewritting works in 15 FPS per second
+        private const double FPS = 66d; //1000.0d / 15d; //Natively the game we are rewritting works in 15 FPS per second
 
         /// <summary>
         /// This is helper struct that works along with VertexPosition to provide Clut, texture page
@@ -533,7 +533,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
         /// </summary>
         private static void UpdateFrames()
         {
-            float tick = Memory.gameTime.ElapsedGameTime.Milliseconds;
+            double tick = (float)Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
             frameperFPS += tick;
             if (frameperFPS > FPS)
             {
@@ -890,7 +890,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
         }
 
         public static int DEBUG = 0;
-        private static float frameperFPS = 0.0f;
+        private static double frameperFPS = 0.0d;
 
         public static ConcurrentDictionary<Characters, SortedSet<byte>> Costumes { get; private set; }
 

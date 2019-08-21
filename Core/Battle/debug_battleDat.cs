@@ -277,7 +277,7 @@ namespace OpenVIII
         ///          than constant 15 FPS
         /// </param>
         /// <returns></returns>
-        public Tuple<VertexPositionTexture[], byte[]> GetVertexPositions(int objectId, Vector3 position, Quaternion rotation, int animationId, int animationFrame, float step)
+        public Tuple<VertexPositionTexture[], byte[]> GetVertexPositions(int objectId, Vector3 position, Quaternion rotation, int animationId, int animationFrame, double step)
         {
             Object obj = geometry.objects[objectId];
             if (animationFrame >= animHeader.animations[animationId].animationFrames.Length || animationFrame < 0)
@@ -357,7 +357,7 @@ namespace OpenVIII
         /// current frame and 1 for next frame; 0.5 for blend of two frames
         /// </param>
         /// <returns></returns>
-        private Tuple<Vector3, int> CalculateFrame(Tuple<Vector3, int> tuple, AnimationFrame frame, AnimationFrame nextFrame, float step)
+        private Tuple<Vector3, int> CalculateFrame(Tuple<Vector3, int> tuple, AnimationFrame frame, AnimationFrame nextFrame, double step)
         {
             Matrix matrix = frame.boneMatrix[tuple.Item2]; //get's bone matrix
             Vector3 rootFramePos = new Vector3(
@@ -371,7 +371,7 @@ namespace OpenVIII
                 matrix.M31 * tuple.Item1.X + matrix.M43 + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
             rootFramePos = Vector3.Transform(rootFramePos, Matrix.CreateScale(skeleton.GetScale));
             nextFramePos = Vector3.Transform(nextFramePos, Matrix.CreateScale(skeleton.GetScale));
-            rootFramePos = Vector3.SmoothStep(rootFramePos, nextFramePos, step);
+            rootFramePos = Vector3.SmoothStep(rootFramePos, nextFramePos, (float) step);
             return new Tuple<Vector3, int>(rootFramePos, tuple.Item2);
         }
 
