@@ -143,6 +143,9 @@
     <Compile Include="Battle\Menu\IGMData\IGMData_PartyItems.cs" />
     <Compile Include="Battle\Menu\IGMData\IGMData_PlayerEXPGroup.cs" />
     <Compile Include="Battle\Menu\IGMData\IGMData_PartyAP.cs" />
+    <Compile Include="Battle\Menu\IGMData\IGMData_TargetEnemies.cs" />
+    <Compile Include="Battle\Menu\IGMData\IGMData_TargetGroup.cs" />
+    <Compile Include="Battle\Menu\IGMData\IGMData_TargetParty.cs" />
     <Compile Include="Card_Game\Card_Game.cs" />
     <Compile Include="Card_Game\EXE_Offsets.cs" />
     <Compile Include="Image\TDW.cs" />
