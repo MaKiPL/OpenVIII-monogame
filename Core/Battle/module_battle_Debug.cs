@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using FFmpeg.AutoGen;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -45,7 +46,7 @@ namespace OpenVIII
         private const int BATTLEMODULE_READDATA = 1; //parses battle stage and all monsters
         private const int BATTLEMODULE_DRAWGEOMETRY = 2; //draw geometry also supports updateCamera
         private const int BATTLEMODULE_ACTIVE = 3;
-        private const double FPS = 66d; //1000.0d / 15d; //Natively the game we are rewritting works in 15 FPS per second
+        private const double FPS = 1000.0d / 15d; //Natively the game we are rewritting works in 15 FPS per second
 
         /// <summary>
         /// This is helper struct that works along with VertexPosition to provide Clut, texture page
