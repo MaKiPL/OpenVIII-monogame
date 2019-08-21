@@ -381,11 +381,22 @@ namespace OpenVIII
                 if (Memory.State?.Characters != null)
                 {
                     int pos = 0;
-                    foreach (Enemy e in Enemy.EnemyParty)
+                    if (Enemy.EnemyParty != null)
                     {
-                        ITEM[pos, 0] = new IGMDataItem_String(e.Name, SIZE[pos], Font.ColorID.White);
+                        foreach (Enemy e in Enemy.EnemyParty)
+                        {
+                            //if(e.EII)
+                            ITEM[pos, 0] = new IGMDataItem_String(e.Name, SIZE[pos], Font.ColorID.White);
+                            ITEM[pos, 0].Show();
+                            BLANKS[pos] = false;
 
-                        pos++;
+                            pos++;
+                        }
+                        for (; pos < Count; pos++)
+                        {
+                            ITEM[pos, 0]?.Hide();
+                            BLANKS[pos] = true;
+                        }
                     }
                 }
             }
