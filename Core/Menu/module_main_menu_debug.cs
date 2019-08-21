@@ -141,7 +141,7 @@ namespace OpenVIII
             }
             if (Fade < 1.0f && State != MainMenuStates.NewGameChoosed)
             {
-                Fade += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 3;
+                Fade += (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0f);
             }
 
             vp_per.X = Memory.PreferredViewportWidth;//Memory.graphics.GraphicsDevice.Viewport.Width;

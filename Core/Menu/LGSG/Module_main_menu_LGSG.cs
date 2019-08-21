@@ -61,7 +61,7 @@ namespace OpenVIII
             }
         }
 
-        private static float PercentLoaded { get; set; } = .5f;
+        private static double PercentLoaded { get; set; } = .5f;
         public static Vector2 TextScale { get; } = new Vector2(2.545455f, 3.0375f);
 
         #endregion Properties
