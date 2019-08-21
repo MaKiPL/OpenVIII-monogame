@@ -798,6 +798,7 @@ namespace OpenVIII
                 //from Ifrit's help file
                 int i = Level * str[1] / 10 + Level / str[2] - Level * Level / 2 / (str[4] + str[3]) / 4;
                 //PLEASE NOTE: I'm not 100% sure on the STR formula, but it should be accurate enough to get the general idea.
+                // wiki states something like ([3(Lv)] + [(Lv) / 5] - [(Lv)² / 260] + 12) / 4
 
                 return (byte)MathHelper.Clamp(i, 0, byte.MaxValue);
             }
@@ -882,7 +883,12 @@ namespace OpenVIII
             public override string ToString() => GetNameNormal.Value_str;
 
             public IReadOnlyDictionary<Kernel_bin.Element, byte> Resistance => resistance.Select((v, i) => new { Key = i, Value = v }).ToDictionary(o => (Enum.GetValues(typeof(Kernel_bin.Element))).Cast<Kernel_bin.Element>().ToList()[o.Key + 1], o => o.Value);
-
+            /// <summary>
+            /// I notice that the resistance reported on the wiki is 100 less than the number in the data.
+            /// </summary>
+            /// <param name="s">status effect</param>
+            /// <returns>percent of resistance</returns>
+            /// <see cref="https://finalfantasy.fandom.com/wiki/G-Soldier#Stats"/>
             public sbyte StatusResistance(Kernel_bin.Persistant_Statuses s)
             {
                 byte r = 100;
@@ -919,7 +925,12 @@ namespace OpenVIII
 
                 return (sbyte)MathHelper.Clamp(r - 100, -100, 100);
             }
-
+            /// <summary>
+            /// I notice that the resistance reported on the wiki is 100 less than the number in the data.
+            /// </summary>
+            /// <param name="s">status effect</param>
+            /// <returns>percent of resistance</returns>
+            /// <see cref="https://finalfantasy.fandom.com/wiki/G-Soldier#Stats"/>
             public sbyte StatusResistance(Kernel_bin.Battle_Only_Statuses s)
             {
                 byte r = 100;
