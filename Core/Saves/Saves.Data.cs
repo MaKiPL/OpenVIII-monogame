@@ -49,18 +49,18 @@ namespace OpenVIII
             public FF8String Grieversname; //0x0B0C // 12 bytes
 
             public ushort Unknown1; //0x0B18  (always 7966?)
-            
-            public Queue<GFs> EarnAP(uint ap,out Queue<KeyValuePair<GFs,Kernel_bin.Abilities>> abilities)
+
+            public Queue<GFs> EarnAP(uint ap, out Queue<KeyValuePair<GFs, Kernel_bin.Abilities>> abilities)
             {
                 Queue<GFs> ret = new Queue<GFs>();
                 abilities = new Queue<KeyValuePair<GFs, Kernel_bin.Abilities>>();
-                foreach (var g in GFs.Where(i => i.Value.Exists))
+                foreach (KeyValuePair<GFs, GFData> g in GFs.Where(i => i.Value.Exists))
                 {
                     if (g.Value.EarnExp(ap, out Kernel_bin.Abilities ability))
                     {
-                        if(ability != Kernel_bin.Abilities.None)
+                        if (ability != Kernel_bin.Abilities.None)
                         {
-                            abilities.Enqueue(new KeyValuePair<GFs, Kernel_bin.Abilities>(g.Key,ability));
+                            abilities.Enqueue(new KeyValuePair<GFs, Kernel_bin.Abilities>(g.Key, ability));
                         }
                         ret.Enqueue(g.Key);
                     }
@@ -128,13 +128,17 @@ namespace OpenVIII
             public bool EarnItem(Item item)
             {
                 Item f;
-                if ((f = Items.FirstOrDefault(i=>i.ID == item.ID))!=null)
+                IEnumerable<Item> tmp = Items.Where(i => i.ID == item.ID);
+                IEnumerable<Item> tmp2 = Items.Where(i => i.ID == 0);
+                if (tmp.Count() > 0)
                 {
+                    f = tmp.First();
                     return f.Add(item.QTY);
                 }
-                else if ((f = Items.FirstOrDefault(i => i.ID == 0)) != null)
+                else if (tmp2.Count() > 0)
                 {
-                    return f.Add(item.QTY,item.ID);
+                    f = tmp2.First();
+                    return f.Add(item.QTY, item.ID);
                 }
 
                 return false;
@@ -176,17 +180,15 @@ namespace OpenVIII
                 }
                 return r;
             }
+
             public GFData this[GFs id] => GetDamagable(id);
             public CharacterData this[Characters id] => GetDamagable(id);
             public Damageable this[Faces.ID id] => GetDamagable(id);
-            private CharacterData GetDamagable(Characters id)
-            {
-                return Characters.ContainsKey(id) ? Characters[id] : null;
-            }
-            private GFData GetDamagable(GFs id)
-            {
-                return GFs.ContainsKey(id) ? GFs[id] : null;
-            }
+
+            private CharacterData GetDamagable(Characters id) => Characters.ContainsKey(id) ? Characters[id] : null;
+
+            private GFData GetDamagable(GFs id) => GFs.ContainsKey(id) ? GFs[id] : null;
+
             private Damageable GetDamagable(Faces.ID id)
             {
                 GFs gf = id.ToGFs();
@@ -256,6 +258,25 @@ namespace OpenVIII
             /// </summary>
             public TimeSpan ElapsedTimeSinceLoad => Memory.gameTime != null && Loadtime != null ? (Memory.gameTime.TotalGameTime - Loadtime) : new TimeSpan();
 
+            public byte AveragePartyLevel
+            {
+                get
+                {
+                    int level = 0;
+                    int cnt = 0;
+                    for (int p = 0; p < 3; p++)
+                    {
+                        Characters c = PartyData[p];
+                        if (c != OpenVIII.Characters.Blank)
+                        {
+                            level += Characters[c].Level;
+                            cnt++;
+                        }
+                    }
+                    return (byte)MathHelper.Clamp(level / cnt, 0, 100);
+                }
+            }
+
             public void Read(BinaryReader br)
             {
                 Timeplayed = new TimeSpan();
@@ -310,7 +331,7 @@ namespace OpenVIII
                 Itemsbattleorder = br.ReadBytes(32);//0x0B34
                 Items = new List<Item>(198);
                 for (int i = 0; i < 198; i++)
-                    Items.Add(new Item (br.ReadByte(), br.ReadByte()) ); //0x0B54 198 items (Item ID and Quantity)
+                    Items.Add(new Item(br.ReadByte(), br.ReadByte())); //0x0B54 198 items (Item ID and Quantity)
                 Gametime = new TimeSpan(0, 0, (int)br.ReadUInt32());//0x0CE0
                 Countdown = br.ReadUInt32();//0x0CE4
                 Unknown3 = br.ReadUInt32();//0x0CE8
@@ -379,14 +400,14 @@ namespace OpenVIII
             /// <summary>
             /// How many dead party members there are.
             /// </summary>
-            /// <returns>>=0</returns>
+            /// <returns>&gt;=0</returns>
             public int DeadPartyMembers() => PartyData.Where(m => m != OpenVIII.Characters.Blank && Characters[m].IsDead).Count();
 
             /// <summary>
             /// How many dead characters there are.
             /// </summary>
-            /// <returns>>=0</returns>
-            public int DeadCharacters() => Characters.Where(m=>m.Value.Available && m.Value.CurrentHP() == 0 || (m.Value.Statuses0 & Kernel_bin.Persistant_Statuses.Death) != 0).Count();
+            /// <returns>&gt;=0</returns>
+            public int DeadCharacters() => Characters.Where(m => m.Value.Available && m.Value.CurrentHP() == 0 || (m.Value.Statuses0 & Kernel_bin.Persistant_Statuses.Death) != 0).Count();
 
             /// <summary>
             /// preforms a Shadow Copy. Then does deep copy on any required objects.

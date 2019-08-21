@@ -138,7 +138,7 @@ namespace OpenVIII
                         foreach (Enum flag in availableFlags.Where(flags.HasFlag))
                         {
                             int t = total[(T)flag] + ((Kernel_bin.MagicData[spell[i]].J_Val[stat] * Memory.State.Characters[Character].Magics[spell[i]]) / 100);
-                            total[(T)flag] = (byte)(t > max ? max : t);
+                            total[(T)flag] = (byte)MathHelper.Clamp(t,0,max);
                         }
                     else
                         throw new Exception($"Unknown stat, {stat}");

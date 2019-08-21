@@ -272,9 +272,9 @@ namespace OpenVIII
         /// </param>
         /// <param name="step">
         /// FEATURE: This float (0.0 - 1.0) is used in Linear interpolation in animation frames
-        ///          blending. 0.0 means frameN, 1.0 means FrameN+1. Usually this should be a result
-        ///          of deltaTime to see if computer is capable of rendering smooth animations rather
-        ///          than constant 15 FPS
+        /// blending. 0.0 means frameN, 1.0 means FrameN+1. Usually this should be a result of
+        /// deltaTime to see if computer is capable of rendering smooth animations rather than
+        /// constant 15 FPS
         /// </param>
         /// <returns></returns>
         public Tuple<VertexPositionTexture[], byte[]> GetVertexPositions(int objectId, Vector3 position, Quaternion rotation, int animationId, int animationFrame, double step)
@@ -371,7 +371,7 @@ namespace OpenVIII
                 matrix.M31 * tuple.Item1.X + matrix.M43 + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
             rootFramePos = Vector3.Transform(rootFramePos, Matrix.CreateScale(skeleton.GetScale));
             nextFramePos = Vector3.Transform(nextFramePos, Matrix.CreateScale(skeleton.GetScale));
-            rootFramePos = Vector3.SmoothStep(rootFramePos, nextFramePos, (float) step);
+            rootFramePos = Vector3.SmoothStep(rootFramePos, nextFramePos, (float)step);
             return new Tuple<Vector3, int>(rootFramePos, tuple.Item2);
         }
 
@@ -553,45 +553,154 @@ namespace OpenVIII
 
         private const int Section7Size = 380;
 
+        /// <summary>
+        /// </summary>
+        /// <see cref="http://forums.qhimm.com/index.php?topic=8741.0"/>
+        /// <seealso cref="http://wiki.ffrtt.ru/index.php/FF8/FileFormat_DAT#Section_7:_Informations_.26_stats"/>
+        /// <seealso cref="http://www.gjoerulv.com/"/>
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = Section7Size)]
         public struct Information
         {
+            [Flags]
+            public enum Flag1 : byte
+            {
+                None = 0,
+                Zombie = 0x1,
+                Fly = 0x2,
+                zz1 = 0x4,
+                zz2 = 0x8,
+                zz3 = 0x10,
+                Auto_Reflect = 0x20,
+                Auto_Shell = 0x40,
+                Auto_Protect = 0x80,
+            }
+
+            [Flags]
+            public enum Flag2 : byte
+            {
+                None = 0,
+                zz1 = 0x1,
+                zz2 = 0x2,
+                unused1 = 0x4,
+                unused2 = 0x8,
+                unused3 = 0x10,
+                unused4 = 0x20,
+                DiablosMissed = 0x40,
+                AlwaysCard = 0x80,
+            }
+
+            [Flags]
+            public enum UnkFlag : byte
+            {
+                None = 0,
+                unk0 = 0x1,
+                unk1 = 0x2,
+                unk2 = 0x4,
+                unk3 = 0x8,
+                unk4 = 0x10,
+                unk5 = 0x20,
+                unk6 = 0x40,
+                unk7 = 0x80,
+            }
+
+            [Flags]
+            public enum UnkFlag2 : byte
+            {
+                None = 0,
+                unk0 = 0x1,
+                unk1 = 0x2,
+                unk2 = 0x4,
+                unk3 = 0x8,
+                unk4 = 0x10,
+                unk5 = 0x20,
+                unk6 = 0x40,
+                unk7 = 0x80,
+            }
+
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 24)]
             private byte[] monsterName;
 
-            public uint hp;
-            public uint str;
-            public uint vit;
-            public uint mag;
-            public uint spr;
-            public uint spd;
-            public uint eva;
-            public Abilities abilitiesLow;
-            public Abilities abilitiesMed;
-            public Abilities abilitiesHigh;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            private byte[] hp;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            private byte[] str;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            public byte[] vit;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            private byte[] mag;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            public byte[] spr;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            public byte[] spd;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            public byte[] eva;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+            public Abilities[] abilitiesLow;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+            public Abilities[] abilitiesMed;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+            public Abilities[] abilitiesHigh;
+
+            /// <summary>
+            /// Level med stats start
+            /// </summary>
             public byte medLevelStart;
+
+            /// <summary>
+            /// Level high stats start
+            /// </summary>
             public byte highLevelStart;
-            public byte unk;
-            public byte bitSwitch;
-            public byte cardLow;
-            public byte cardMed;
-            public byte cardHigh;
-            public byte devourLow;
-            public byte devourMed;
-            public byte devourHigh;
-            public byte bitSwitch2;
-            public byte unk2;
-            public ushort extraExp;
-            public ushort exp;
-            public ulong drawLow;
-            public ulong drawMed;
-            public ulong drawHigh;
-            public ulong mugLow;
-            public ulong mugMed;
-            public ulong mugHigh;
-            public ulong dropLow;
-            public ulong dropMed;
-            public ulong dropHigh;
+
+            public UnkFlag unkflag;
+            public Flag1 bitSwitch;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+            public byte[] card;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+            public byte[] devour;
+
+            public Flag2 bitSwitch2;
+            public UnkFlag2 unkflag2;
+            private ushort expExtra;
+            private ushort exp;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            private Magic[] drawlow;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            private Magic[] drawmed;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            private Magic[] drawhigh;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            private Saves.Item[] muglow;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            private Saves.Item[] mugmed;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            private Saves.Item[] mughigh;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            private Saves.Item[] droplow;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            private Saves.Item[] dropmed;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            private Saves.Item[] drophigh;
+
             public byte mugRate;
             public byte dropRate;
             public byte padding;
@@ -600,14 +709,8 @@ namespace OpenVIII
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
             public byte[] unk3;
 
-            public byte fireResistance;
-            public byte iceResistance;
-            public byte thunderResistance;
-            public byte earthResistance;
-            public byte poisonResistance;
-            public byte windResistance;
-            public byte waterResistance;
-            public byte holyResistance;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
+            private byte[] resistance;
 
             public byte deathResistanceMental;
             public byte poisonResistanceMental;
@@ -628,18 +731,192 @@ namespace OpenVIII
             public byte confuseResistanceMental;
             public byte drainResistanceMental;
             public byte explusionResistanceMental;
-            public byte unkResistanceMental;
+            public byte percentResistanceMental;
 
             public FF8String GetNameNormal => monsterName;
 
+            public Magic[] Draw
+            {
+                get
+                {
+                    if (Level > highLevelStart)
+                        return drawhigh;
+                    else if (Level > medLevelStart)
+                        return drawmed;
+                    else
+                        return drawlow;
+                }
+            }
+
+            public Saves.Item[] Mug
+            {
+                get
+                {
+                    if (Level > highLevelStart)
+                        return mughigh;
+                    else if (Level > medLevelStart)
+                        return mugmed;
+                    else
+                        return muglow;
+                }
+            }
+
+            public Saves.Item[] Drop
+            {
+                get
+                {
+                    if (Level > highLevelStart)
+                        return drophigh;
+                    else if (Level > medLevelStart)
+                        return dropmed;
+                    else
+                        return droplow;
+                }
+            }
+
+            public ushort MaxHP()
+            {
+                //from Ifrit's help file
+                int i = (hp[1] * Level * Level / 20) + (hp[1] + hp[3] * 100) * Level + hp[2] * 10 + hp[4] * 1000;
+                return (ushort)MathHelper.Clamp(i, 0, ushort.MaxValue);
+            }
+
+            public byte STR()
+            {
+                //from Ifrit's help file
+                int i = Level * str[1] / 10 + Level / str[2] - Level * Level / 2 / (str[4] + str[3]) / 4;
+                //PLEASE NOTE: I'm not 100% sure on the STR formula, but it should be accurate enough to get the general idea.
+
+                return (byte)MathHelper.Clamp(i, 0, byte.MaxValue);
+            }
+
+            public byte MAG()
+            {
+                //from Ifrit's help file
+                int i = Level * mag[1] / 10 + Level / mag[2] - Level * Level / 2 / (mag[4] + mag[3]) / 4;
+                //PLEASE NOTE: I'm not 100% sure on the STR formula, but it should be accurate enough to get the general idea.
+                return (byte)MathHelper.Clamp(i, 0, byte.MaxValue);
+            }
+
+            public byte VIT()
+            {
+                //from Ifrit's help file
+                int i = Level / vit[2] - Level / vit[4] + Level * vit[1] + vit[3];
+                return (byte)MathHelper.Clamp(i, 0, byte.MaxValue);
+            }
+
+            public byte SPR()
+            {
+                //from Ifrit's help file
+                int i = Level / spr[2] - Level / spr[4] + Level * spr[1] + spr[3];
+                return (byte)MathHelper.Clamp(i, 0, byte.MaxValue);
+            }
+
+            public byte SPD()
+            {
+                //from Ifrit's help file
+                int i = Level / spd[2] - Level / spd[4] + Level * spd[1] + spd[3];
+                return (byte)MathHelper.Clamp(i, 0, byte.MaxValue);
+            }
+
+            public byte EVA()
+            {
+                //from Ifrit's help file
+                int i = Level / eva[2] - Level / eva[4] + Level * eva[1] + eva[3];
+                return (byte)MathHelper.Clamp(i, 0, byte.MaxValue);
+            }
+
+            /// <summary>
+            /// The EXP everyone gets.
+            /// </summary>
+            public int EXP()
+            {
+                byte a = Memory.State.AveragePartyLevel;
+                //from Ifrit's help file
+                return exp * (5 * (Level - a) / a + 4);
+            }
+
+            /// <summary>
+            /// The character whom lands the last hit gets alittle bonus xp.
+            /// </summary>
+            /// <param name="lasthitlevel">Level of character whom got last hit.</param>
+            /// <returns></returns>
+            public int EXPExtra(byte lasthitlevel) =>
+                //from Ifrit's help file
+                expExtra * (5 * (Level - lasthitlevel) / lasthitlevel + 4);
+
+            /// <summary>
+            /// Level of enemy based on average of party or fixed value.
+            /// </summary>
+            /// <see cref="https://finalfantasy.fandom.com/wiki/Level#Enemy_levels"/>
+            public byte Level
+            {
+                get
+                {
+                    if (FixedLevel != default)
+                        return FixedLevel;
+                    byte a = Memory.State.AveragePartyLevel;
+                    byte d = (byte)(a / 5);
+                    return (byte)MathHelper.Clamp(a + d, 1, 100);
+                }
+            }
+
+            /// <summary>
+            /// The wiki says some areas have forced or random levels. This lets you override the level.
+            /// </summary>
+            /// <see cref="https://finalfantasy.fandom.com/wiki/Level#Enemy_levels"/>
+            public byte FixedLevel { get; set; }
+
             public override string ToString() => GetNameNormal.Value_str;
+
+            public IReadOnlyDictionary<Kernel_bin.Element, byte> Resistance => resistance.Select((v, i) => new { Key = i, Value = v }).ToDictionary(o => (Enum.GetValues(typeof(Kernel_bin.Element))).Cast<Kernel_bin.Element>().ToList()[o.Key + 1], o => o.Value);
         }
 
+        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 2)]
+        public struct Magic
+        {
+            private byte ID;
+            private byte unk;
+
+            private Kernel_bin.Magic_Data DATA => Kernel_bin.MagicData.Count > ID ? Kernel_bin.MagicData[ID] : null;
+
+            public override string ToString() => DATA?.Name;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
         public struct Abilities
         {
-            public byte kernelId; //0x2 magic, 0x4 item, 0x8 mosterAbility;
-            public byte unk;
+            [Flags]
+            public enum KernelFlag : byte
+            {
+                None = 0,
+                unk0 = 0x1,
+                magic = 0x2,
+                item = 0x4,
+                monster = 0x8,
+                unk1 = 0x10,
+                unk2 = 0x20,
+                unk3 = 0x40,
+                unk4 = 0x80,
+            }
+
+            public KernelFlag kernelId; //0x2 magic, 0x4 item, 0x8 mosterAbility;
+            public byte animation; // ifrit states one of theses is an animation id.
             public ushort abilityId;
+
+            public Kernel_bin.Magic_Data MAGIC => (kernelId & KernelFlag.magic) != 0 && Kernel_bin.MagicData.Count > abilityId ? Kernel_bin.MagicData[abilityId] : null;
+            public Item_In_Menu? ITEM => (kernelId & KernelFlag.item) != 0 && Memory.MItems != null && Memory.MItems.Items.Count>abilityId ? Memory.MItems?.Items[abilityId] : null;
+            public Kernel_bin.Enemy_Attacks_Data MONSTER => (kernelId & KernelFlag.monster) != 0 && Kernel_bin.EnemyAttacksData.Count > abilityId ? Kernel_bin.EnemyAttacksData[abilityId] : null;
+            public override string ToString()
+            {
+                if (MAGIC != null)
+                    return MAGIC.Name;
+                if (ITEM != null)
+                    return ITEM.Value.Name;
+                if (MONSTER != null)
+                    return MONSTER.Name;
+                return "";
+            }
         }
 
         private void ReadSection7(uint v, MemoryStream ms, BinaryReader br)

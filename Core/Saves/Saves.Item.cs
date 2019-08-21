@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
+using System.Runtime.InteropServices;
 
 namespace OpenVIII
 {
@@ -8,12 +9,14 @@ namespace OpenVIII
 
         #region Structs
 
-        public class Item
+        [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 2)]
+        public struct Item
         {
 
             #region Fields
-
+            [FieldOffset(0)]
             public byte ID;
+            [FieldOffset(1)]
             public byte QTY;
 
             #endregion Fields
@@ -27,7 +30,7 @@ namespace OpenVIII
             #region Properties
 
             public Item_In_Menu? DATA => Memory.MItems?.Items[ID];
-
+            public override string ToString() => DATA?.Name;
             public void UsedOne()
             {
                 if(QTY <= 1)
