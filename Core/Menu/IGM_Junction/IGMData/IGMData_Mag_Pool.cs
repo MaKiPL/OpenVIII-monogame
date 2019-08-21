@@ -461,6 +461,7 @@ namespace OpenVIII
                 bool skipundo = false;
                 if (Battle || !(SortMode == LastMode && Character == LastCharacter && this.Stat == LastStat && Page == LastPage))
                 {
+                    // goal of these checks were to avoid updating the whole list if we don't need to.
                     LastCharacter = Character;
                     LastStat = this.Stat;
                     LastPage = Page;

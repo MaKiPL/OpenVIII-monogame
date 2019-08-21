@@ -12,7 +12,7 @@ using System.Text.RegularExpressions;
 
 namespace OpenVIII
 {
-    internal static class Module_battle_debug
+    public static class Module_battle_debug
     {
         private static uint bs_cameraPointer;
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
@@ -21,7 +21,7 @@ namespace OpenVIII
         private static Vector3 camPosition, camTarget;
         private static TIM2 textureInterface;
         private static Texture2D[] textures;
-        private static List<EnemyInstanceInformation> EnemyInstances;
+        //private static List<EnemyInstanceInformation> EnemyInstances;
         private static List<CharacterInstanceInformation> CharacterInstances;
 
         //skyRotating floats are hardcoded
@@ -58,7 +58,7 @@ namespace OpenVIII
             public byte texPage;
         }
 
-        private struct EnemyInstanceInformation
+        public struct EnemyInstanceInformation
         {
             public Debug_battleDat Data;
 
@@ -406,17 +406,17 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             switch (type)
             {
                 case Debug_battleDat.EntityType.Monster:
-                    animationSystem = EnemyInstances[n].Data.animHeader.animations[EnemyInstances[n].animationSystem.animationId];
-                    if (EnemyInstances[n].animationSystem.animationFrame >= animationSystem.cFrames)
+                    animationSystem = Enemy.EnemyParty[n].EII.Data.animHeader.animations[Enemy.EnemyParty[n].EII.animationSystem.animationId];
+                    if (Enemy.EnemyParty[n].EII.animationSystem.animationFrame >= animationSystem.cFrames)
                     {
-                        EnemyInstanceInformation InstanceInformationProvider = EnemyInstances[n];
+                        EnemyInstanceInformation InstanceInformationProvider = Enemy.EnemyParty[n].EII;
                         InstanceInformationProvider.animationSystem.animationFrame = 0;
-                        if (EnemyInstances[n].animationSystem.AnimationQueue.Count > 0)
+                        if (Enemy.EnemyParty[n].EII.animationSystem.AnimationQueue.Count > 0)
                         {
-                            InstanceInformationProvider.animationSystem.animationId = EnemyInstances[n].animationSystem.AnimationQueue.First();
-                            EnemyInstances[n].animationSystem.AnimationQueue.RemoveAt(0);
+                            InstanceInformationProvider.animationSystem.animationId = Enemy.EnemyParty[n].EII.animationSystem.AnimationQueue.First();
+                            Enemy.EnemyParty[n].EII.animationSystem.AnimationQueue.RemoveAt(0);
                         }
-                        EnemyInstances[n] = InstanceInformationProvider;
+                        Enemy.EnemyParty[n].EII = InstanceInformationProvider;
                     }
                     return;
 
@@ -445,7 +445,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
         /// Animation system. Decided to go for struct, so I can attach it to instance and manipulate
         /// easily grouped. It's also open for modifications
         /// </summary>
-        private struct AnimationSystem
+        public struct AnimationSystem
         {
             public int animationId;
             public int animationFrame;
@@ -464,11 +464,11 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
             effect.TextureEnabled = true;
 
-            if (EnemyInstances == null)
+            if (Enemy.EnemyParty == null)
                 return;
-            for (int n = 0; n < EnemyInstances.Count; n++)
+            for (int n = 0; n < Enemy.EnemyParty.Count; n++)
             {
-                if (EnemyInstances[n].Data.GetId == 127)
+                if (Enemy.EnemyParty[n].EII.Data.GetId == 127)
                 {
                     //TODO;
                     continue;
@@ -476,22 +476,22 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
 
                 CheckAnimationFrame(Debug_battleDat.EntityType.Monster, n);
 
-                Init_debugger_battle.Coordinate enemyPosition = Memory.encounters[Memory.battle_encounter].enemyCoordinates.GetEnemyCoordinateByIndex(EnemyInstances[n].index);
+                Init_debugger_battle.Coordinate enemyPosition = Memory.encounters[Memory.battle_encounter].enemyCoordinates.GetEnemyCoordinateByIndex(Enemy.EnemyParty[n].EII.index);
 
-                for (int i = 0; i < EnemyInstances[n].Data.geometry.cObjects; i++)
+                for (int i = 0; i < Enemy.EnemyParty[n].EII.Data.geometry.cObjects; i++)
                 {
-                    Tuple<VertexPositionTexture[], byte[]> a = EnemyInstances[n].Data.GetVertexPositions(
+                    Tuple<VertexPositionTexture[], byte[]> a = Enemy.EnemyParty[n].EII.Data.GetVertexPositions(
                         objectId: i,
                         position: enemyPosition.GetVector(),
                         rotation: Quaternion.CreateFromYawPitchRoll(0, 0, 0),
-                        animationId: EnemyInstances[n].animationSystem.animationId,
-                        animationFrame: EnemyInstances[n].animationSystem.animationFrame,
+                        animationId: Enemy.EnemyParty[n].EII.animationSystem.animationId,
+                        animationFrame: Enemy.EnemyParty[n].EII.animationSystem.animationFrame,
                         step: frameperFPS / FPS);
                     if (a == null || a.Item1.Length == 0)
                         return;
                     for (int k = 0; k < a.Item1.Length / 3; k++)
                     {
-                        ate.Texture = EnemyInstances[n].Data.textures.textures[a.Item2[k]];
+                        ate.Texture = Enemy.EnemyParty[n].EII.Data.textures.textures[a.Item2[k]];
                         foreach (EffectPass pass in ate.CurrentTechnique.Passes)
                         {
                             pass.Apply();
@@ -500,7 +500,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                         }
                     }
                 }
-                DrawShadow(enemyPosition.GetVector(), ate, EnemyInstances[n].Data.skeleton.GetScale.X / 5);
+                DrawShadow(enemyPosition.GetVector(), ate, Enemy.EnemyParty[n].EII.Data.skeleton.GetScale.X / 5);
             }
         }
 
@@ -537,11 +537,11 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             frameperFPS += tick;
             if (frameperFPS > FPS)
             {
-                for (int x = 0; x < EnemyInstances.Count; x++)
+                for (int x = 0; x < Enemy.EnemyParty.Count; x++)
                 {
-                    EnemyInstanceInformation InstanceInformationProvider = EnemyInstances[x];
+                    EnemyInstanceInformation InstanceInformationProvider = Enemy.EnemyParty[x].EII;
                     InstanceInformationProvider.animationSystem.animationFrame++;
-                    EnemyInstances[x] = InstanceInformationProvider;
+                    Enemy.EnemyParty[x].EII = InstanceInformationProvider;
                 }
                 if (CharacterInstances != null)
                     for (int x = 0; x < CharacterInstances.Count; x++)
@@ -568,10 +568,10 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             switch (entityType)
             {
                 case Debug_battleDat.EntityType.Monster:
-                    EnemyInstanceInformation MInstanceInformationProvider = EnemyInstances[nIndex];
+                    EnemyInstanceInformation MInstanceInformationProvider = Enemy.EnemyParty[nIndex].EII;
                     MInstanceInformationProvider.animationSystem.animationId = newAnimId;
                     MInstanceInformationProvider.animationSystem.animationFrame = 0;
-                    EnemyInstances[nIndex] = MInstanceInformationProvider;
+                    Enemy.EnemyParty[nIndex].EII = MInstanceInformationProvider;
                     return;
 
                 case Debug_battleDat.EntityType.Character:
@@ -592,9 +592,9 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             switch (entityType)
             {
                 case Debug_battleDat.EntityType.Monster:
-                    EnemyInstanceInformation MInstanceInformationProvider = EnemyInstances[nIndex];
+                    EnemyInstanceInformation MInstanceInformationProvider = Enemy.EnemyParty[nIndex].EII;
                     MInstanceInformationProvider.animationSystem.AnimationQueue.Add(newAnimId);
-                    EnemyInstances[nIndex] = MInstanceInformationProvider;
+                    Enemy.EnemyParty[nIndex].EII = MInstanceInformationProvider;
                     return;
 
                 case Debug_battleDat.EntityType.Character:
@@ -1043,10 +1043,11 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 monstersData[n] = new Debug_battleDat(DistinctMonsterPointers[n].Key, Debug_battleDat.EntityType.Monster);
             if (monstersData == null)
                 monstersData = new Debug_battleDat[0];
-            EnemyInstances = new List<EnemyInstanceInformation>();
+            Enemy.EnemyParty = new List<Enemy>(8);
+            //EnemyInstances = new List<EnemyInstanceInformation>();
             for (int i = 0; i < 8; i++)
                 if (Extended.GetBit(enc.EnabledEnemy, 7 - i))
-                    EnemyInstances.Add(new EnemyInstanceInformation()
+                    Enemy.EnemyParty.Add(new EnemyInstanceInformation()
                     {
                         Data = monstersData.Where(x => x.GetId == enc.BEnemies[i]).First(),
                         bIsHidden = Extended.GetBit(enc.HiddenEnemies, 7 - i),

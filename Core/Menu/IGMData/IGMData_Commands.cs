@@ -105,8 +105,14 @@ namespace OpenVIII
             switch (commands[CURSOR_SELECT].Ability)
             {
                 case 32: // Renzokuken
-                case 8: // blue magic     
                 case 208: // nomsg
+                    return false;
+
+                case 8: // blue magic
+                    // magic pool containing the unlocked blue magic.
+                    return false;
+                case 164: // GF
+                    // gf pool with gf names and hp of junctioned gfs.
                     return false;
                 case 120: //attack
                 case 92: //mug
@@ -116,6 +122,8 @@ namespace OpenVIII
                     Menu.BattleMenus.Target_Group.Refresh();
                     return true;
                 case 128: //draw
+                    // after choosing a target display what magic they have that you can draw from.
+                    // then choose to cast with a another target window or draw it.
                 case 0: //card
                 case 117: //lvl up
                 case 84: //lvl dn

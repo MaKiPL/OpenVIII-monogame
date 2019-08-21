@@ -7,14 +7,23 @@ namespace OpenVIII
 {
     public class Enemy : Damageable
     {
-        public static List<Enemy> EnemyParty { get; set; } = new List<Enemy>(6) {
-            new Enemy { Name = "Jellyeye" },
-            new Enemy { Name = "Jellyeye" },
-            new Enemy { Name = "Jellyeye" },
-            new Enemy { Name = "Jellyeye" },
-            new Enemy { Name = "Jellyeye" },
-            new Enemy { Name = "Jellyeye" }, };
+        public static List<Enemy> EnemyParty { get; set; }// = new List<Enemy>(6) {
+                                                          //new Enemy { Name = "Jellyeye" },
+                                                          //new Enemy { Name = "Jellyeye" },
+                                                          //new Enemy { Name = "Jellyeye" },
+                                                          //new Enemy { Name = "Jellyeye" },
+                                                          //new Enemy { Name = "Jellyeye" },
+                                                          //new Enemy { Name = "Jellyeye" }, };
+
+        public Module_battle_debug.EnemyInstanceInformation EII { get; set; }
+
+        public static implicit operator Enemy(Module_battle_debug.EnemyInstanceInformation @in) => new Enemy { EII = @in };
+
+        public static implicit operator Module_battle_debug.EnemyInstanceInformation(Enemy @in) => @in.EII;
+
+        public override FF8String Name => EII.Data.information.GetNameNormal;
     }
+
     public abstract class Damageable
     {
         #region Fields
@@ -23,7 +32,7 @@ namespace OpenVIII
         /// Name
         /// </summary>
         /// <remarks>not saved to file</remarks>
-        public FF8String Name { get; set; }
+        public virtual FF8String Name { get; set; }
 
         protected ushort _CurrentHP;
 
@@ -263,28 +272,36 @@ namespace OpenVIII
             Debug.WriteLine($"{this}: Dealt {dmg}, previous hp: {lasthp}, current hp: {_CurrentHP}");
             return true;
         }
+
         public bool IsDead => CurrentHP() == 0 || (Statuses0 & Kernel_bin.Persistant_Statuses.Death) != 0;
         public bool IsPetrify => (Statuses0 & (Kernel_bin.Persistant_Statuses.Petrify)) != 0;
         /// <summary>
-        /// If all partymemembers are in gameover trigger Phoenix Pinion if CanPhoenixPinion or trigger Game over
+        /// If all partymemembers are in gameover trigger Phoenix Pinion if CanPhoenixPinion or
+        /// trigger Game over
         /// </summary>
         public bool IsGameOver => IsDead || IsPetrify || (Statuses1 & (Kernel_bin.Battle_Only_Statuses.Eject)) != 0;
 
         /// <summary>
         /// 25.4% chance to cast automaticly on gameover, if used once in battle
         /// </summary>
-        /// <remarks>Memory.State.Fieldvars. has a value that tracks if PhoenixPinion is used just need to find it</remarks>
+        /// <remarks>
+        /// Memory.State.Fieldvars. has a value that tracks if PhoenixPinion is used just need to
+        /// find it
+        /// </remarks>
         public bool CanPhoenixPinion => IsDead && !(IsPetrify || (Statuses1 & (Kernel_bin.Battle_Only_Statuses.Eject)) != 0) && Memory.State.Items.Where(m => m.ID == 31 && m.QTY >= 1).Count() > 0;
+
         /// <summary>
         /// ATB frozen
         /// </summary>
         public bool IsInactive => IsGameOver ||
-            (Statuses1 & (Kernel_bin.Battle_Only_Statuses.Stop))!=0;
+            (Statuses1 & (Kernel_bin.Battle_Only_Statuses.Stop)) != 0;
+
         /// <summary>
         /// Menu disabled
         /// </summary>
         public bool IsNonInteractive => IsInactive ||
             (Statuses0 & Kernel_bin.Persistant_Statuses.Berserk) != 0;
+
         private int Damage__1_HP_Damage_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
 
         private int Damage_Angelo_Search_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
@@ -347,7 +364,6 @@ namespace OpenVIII
 
         private int Damage_Revive_Action(int dmg, Kernel_bin.Attack_Flags flags)
         {
-
             ushort r = ReviveHP();
 
             if ((Statuses0 & Kernel_bin.Persistant_Statuses.Zombie) != 0)
@@ -368,7 +384,7 @@ namespace OpenVIII
         {
             ushort r = MaxHP();
             if ((Statuses0 & Kernel_bin.Persistant_Statuses.Zombie) != 0)
-            { 
+            {
                 //Debug.WriteLine($"{this}: Dealt {r}, previous hp: {_CurrentHP}, current hp: {_CurrentHP-r}");
                 return Damage_Curative_Item_Action(MaxHP(), flags);
             }
