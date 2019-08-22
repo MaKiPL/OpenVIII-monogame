@@ -5,24 +5,7 @@ using System.Linq;
 
 namespace OpenVIII
 {
-    public class Enemy : Damageable
-    {
-        public static List<Enemy> EnemyParty { get; set; }// = new List<Enemy>(6) {
-                                                          //new Enemy { Name = "Jellyeye" },
-                                                          //new Enemy { Name = "Jellyeye" },
-                                                          //new Enemy { Name = "Jellyeye" },
-                                                          //new Enemy { Name = "Jellyeye" },
-                                                          //new Enemy { Name = "Jellyeye" },
-                                                          //new Enemy { Name = "Jellyeye" }, };
-
-        public Module_battle_debug.EnemyInstanceInformation EII { get; set; }
-
-        public static implicit operator Enemy(Module_battle_debug.EnemyInstanceInformation @in) => new Enemy { EII = @in };
-
-        public static implicit operator Module_battle_debug.EnemyInstanceInformation(Enemy @in) => @in.EII;
-
-        public override FF8String Name => EII.Data.information.GetNameNormal;
-    }
+    
 
     public abstract class Damageable
     {

@@ -70,10 +70,6 @@ namespace OpenVIII
             /// </summary>
             public byte WeaponID;
 
-            /// <summary>
-            /// Random number generator seeded with time.
-            /// </summary>
-            private static Random random = new Random((int)DateTime.Now.Ticks);
 
             /// <summary>
             /// <para>
@@ -94,7 +90,7 @@ namespace OpenVIII
                 int HPMod = CharacterStats.Crisis * 10 * current / max;
                 int DeathBonus = Memory.State.DeadPartyMembers() * 200 + 1600;
                 int StatusBonus = (int)(Statuses0.Count() * 10); // I think this is status of all party members
-                int RandomMod = random.Next(0, 255) + 160;
+                int RandomMod = Memory.Random.Next(0, 255) + 160;
                 int crisislevel = (StatusBonus + DeathBonus - HPMod) / RandomMod; // better random number?
                 if (crisislevel == 5)
                 {
@@ -434,6 +430,8 @@ namespace OpenVIII
                 }
             }
 
+            public Module_battle_debug.CharacterInstanceInformation CII { get; private set; }
+
             /// <summary>
             /// Max HP
             /// </summary>
@@ -538,6 +536,19 @@ namespace OpenVIII
 
             public override string ToString() => Name.Length > 0 ? Name.ToString() : base.ToString();
 
+            public void BattleStart(Module_battle_debug.CharacterInstanceInformation cii)
+            {
+                CII = cii;
+                Statuses1 = Kernel_bin.Battle_Only_Statuses.None;
+                if (Abilities.Contains(Kernel_bin.Abilities.Auto_Haste))
+                    Statuses1 |= Kernel_bin.Battle_Only_Statuses.Haste;
+                if (Abilities.Contains(Kernel_bin.Abilities.Auto_Protect))
+                    Statuses1 |= Kernel_bin.Battle_Only_Statuses.Protect;
+                if (Abilities.Contains(Kernel_bin.Abilities.Auto_Reflect))
+                    Statuses1 |= Kernel_bin.Battle_Only_Statuses.Reflect;
+                if (Abilities.Contains(Kernel_bin.Abilities.Auto_Shell))
+                    Statuses1 |= Kernel_bin.Battle_Only_Statuses.Shell;
+            }
             public CharacterData Clone()
             {
                 //Shadowcopy

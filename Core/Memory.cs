@@ -794,9 +794,12 @@ namespace OpenVIII
         #region DrawPointMagic
 
         public static Dictionary<byte, FF8String> DrawPointMagic;
-        public static Random random;
         public static Input2 Input2;
 
+        /// <summary>
+        /// Random number generator seeded with time.
+        /// </summary>
+        public static Random Random;
         #endregion DrawPointMagic
 
         public static void Update()

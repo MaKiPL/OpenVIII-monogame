@@ -23,9 +23,9 @@ namespace OpenVIII
                 if (Memory.State?.Characters != null)
                 {
                     int pos = 0;
-                    if (Enemy.EnemyParty != null)
+                    if (Enemy.Party != null)
                     {
-                        foreach (Enemy e in Enemy.EnemyParty)
+                        foreach (Enemy e in Enemy.Party)
                         {
                             //if(e.EII)
                             ITEM[pos, 0] = new IGMDataItem_String(e.Name, SIZE[pos], Font.ColorID.White);
