@@ -107,7 +107,7 @@ namespace OpenVIII
         {
             base.Inputs_OKAY();
             Kernel_bin.Battle_Commands c = commands[CURSOR_SELECT];
-            Menu.BattleMenus.Target_Group.SelectTargetWindows(c.Target);
+            Menu.BattleMenus.Target_Group.SelectTargetWindows(c);
             switch (c.ID)
             {
                 default:
