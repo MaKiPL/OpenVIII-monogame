@@ -15,6 +15,8 @@ namespace OpenVIII
 
             public const int id = 0;
             public const int count = 39;
+
+            public int ID { get; private set; }
             public FF8String Name { get; private set; }
             public FF8String Description { get; private set; }
             public override string ToString() => Name;
@@ -29,7 +31,7 @@ namespace OpenVIII
             /// <summary>
             /// Unknown Flags
             /// </summary>
-            public BitArray Flags { get; private set; }             //0x0005	1 byte Unknown Flags
+            public Debug_battleDat.Information.UnkFlag Flags { get; private set; }             //0x0005	1 byte Unknown Flags
             /// <summary>
             /// Target
             /// </summary>
@@ -41,11 +43,12 @@ namespace OpenVIII
 
             public void Read(BinaryReader br, int i)
             {
+                ID = i;
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2+1);
                 br.BaseStream.Seek(4, SeekOrigin.Current);
                 Ability = br.ReadByte();
-                Flags = new BitArray(br.ReadBytes(1));
+                Flags = (Debug_battleDat.Information.UnkFlag)br.ReadByte();
                 Target = (Target)br.ReadByte();
                 Unknown = br.ReadByte();
             }

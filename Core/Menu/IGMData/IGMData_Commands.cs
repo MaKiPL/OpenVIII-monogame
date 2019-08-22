@@ -4,7 +4,6 @@ using System;
 namespace OpenVIII
 {
     /// <summary>
-    /// 
     /// </summary>
     /// <see cref="https://www.youtube.com/watch?v=BhgixAEvuu0"/>
     public class IGMData_BlueMagic_Pool : IGMData_Pool<Saves.Data, Kernel_bin.Blue_Magic>
@@ -13,9 +12,9 @@ namespace OpenVIII
         {
         }
     }
+
     public class IGMData_Commands : IGMData
     {
-
         #region Fields
 
         private bool _crisisLevel;
@@ -42,9 +41,12 @@ namespace OpenVIII
         public bool Battle { get; }
 
         public bool CrisisLevel { get => _crisisLevel; set => _crisisLevel = value; }
-        int Limit_Arrow => Count - 3;
-        int Mag_Pool => Count - 2;
-        int Item_Pool => Count - 1;
+
+        private int Limit_Arrow => Count - 3;
+
+        private int Mag_Pool => Count - 2;
+
+        private int Item_Pool => Count - 1;
 
         #endregion Properties
 
@@ -84,6 +86,7 @@ namespace OpenVIII
                 }
             }
         }
+
         public override void Inputs_Right()
         {
             if (Battle && CURSOR_SELECT == 0 && CrisisLevel)
@@ -99,52 +102,31 @@ namespace OpenVIII
                 }
             }
         }
+
         public override bool Inputs_OKAY()
         {
             base.Inputs_OKAY();
-            switch (commands[CURSOR_SELECT].Ability)
+            Kernel_bin.Battle_Commands c = commands[CURSOR_SELECT];
+            Menu.BattleMenus.Target_Group.SelectTargetWindows(c.Target);
+            switch (c.ID)
             {
-                case 32: // Renzokuken
-                case 208: // nomsg
-                    return false;
-
-                case 8: // blue magic
-                    // magic pool containing the unlocked blue magic.
-                    return false;
-                case 164: // GF
-                    // gf pool with gf names and hp of junctioned gfs.
-                    return false;
-                case 120: //attack
-                case 92: //mug
-                    Menu.BattleMenus.Target_Group.Show();
-                    Menu.BattleMenus.Target_Enemies.Show();
-                    Menu.BattleMenus.Target_Party.Show();
-                    Menu.BattleMenus.Target_Group.Refresh();
+                default:
+                    Menu.BattleMenus.Target_Group.ShowTargetWindows();
                     return true;
-                case 128: //draw
-                    // after choosing a target display what magic they have that you can draw from.
-                    // then choose to cast with a another target window or draw it.
-                case 0: //card
-                case 117: //lvl up
-                case 84: //lvl dn
-                    Menu.BattleMenus.Target_Group.Show();
-                    Menu.BattleMenus.Target_Enemies.Show();
-                    Menu.BattleMenus.Target_Party.Hide();
-                    Menu.BattleMenus.Target_Group.Refresh();
-                    return true;
-                case 72: //items
-                    ITEM[Item_Pool, 0].Show();
-                    ITEM[Item_Pool, 0].Refresh();
-                    return true;
-                case 184: //magic
+                case 0: //null
+                case 7: //nomsg
+                    return false;
+                case 2: //magic
                     ITEM[Mag_Pool, 0].Show();
                     ITEM[Mag_Pool, 0].Refresh();
                     return true;
-                default:
-                    break;
+                case 4: //items
+                    ITEM[Item_Pool, 0].Show();
+                    ITEM[Item_Pool, 0].Refresh();
+                    return true;
             }
-            return false;
         }
+
 
         /// <summary>
         /// Things that may of changed before screen loads or junction is changed.
@@ -152,7 +134,7 @@ namespace OpenVIII
         public override void Refresh()
         {
             if (Memory.State.Characters != null && !skipReinit)
-            {   
+            {
                 base.Refresh();
                 page = 0;
                 Cursor_Status &= ~Cursor_Status.Horizontal;
@@ -163,7 +145,6 @@ namespace OpenVIII
 
                 for (int pos = 1; pos < Rows; pos++)
                 {
-
                     Kernel_bin.Abilities cmd = Memory.State.Characters[Character].Commands[pos - 1];
 
                     if (cmd != Kernel_bin.Abilities.None)
@@ -194,7 +175,6 @@ namespace OpenVIII
                     CONTAINER.Width = nonbattleWidth;
                     ITEM[Limit_Arrow, 0] = null;
                 }
-
             }
             skipReinit = false;
         }
@@ -226,6 +206,7 @@ namespace OpenVIII
             SIZE[i].Inflate(-22, -8);
             SIZE[i].Offset(0, 12 + (-8 * row));
         }
+
         protected override void ModeChangeEvent(object sender, Enum e)
         {
             base.ModeChangeEvent(sender, e);
@@ -243,6 +224,5 @@ namespace OpenVIII
         }
 
         #endregion Methods
-
     }
 }

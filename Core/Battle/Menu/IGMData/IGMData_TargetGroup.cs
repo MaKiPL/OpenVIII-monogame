@@ -50,6 +50,26 @@ namespace OpenVIII
                 return ret;
             }
 
+            public void ShowTargetWindows()
+            {
+                skipdata = true;
+                Show();
+                skipdata = false;
+                Refresh();
+            }
+
+            public void SelectTargetWindows(Kernel_bin.Target t)
+            {
+                if ((t & Kernel_bin.Target.Ally) != 0)
+                    BattleMenus.Target_Party.Show();
+                else
+                    BattleMenus.Target_Party.Hide();
+                if ((t & Kernel_bin.Target.Enemy) != 0)
+                    BattleMenus.Target_Enemies.Show();
+                else
+                    BattleMenus.Target_Enemies.Hide();
+            }
+
             public override bool Inputs_CANCEL()
             {
                 Hide();

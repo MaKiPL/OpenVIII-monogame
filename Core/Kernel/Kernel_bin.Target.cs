@@ -14,7 +14,7 @@ namespace OpenVIII
             None = 0x0,
             Dead = 0x1,
             UNK02 = 0x2,
-            UNK04 = 0x4,
+            Ally = 0x4,// was unk04
             Single_Side = 0x8,
             Single_Target = 0x10,
             UNK20 = 0x20,

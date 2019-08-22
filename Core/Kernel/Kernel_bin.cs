@@ -96,6 +96,7 @@ namespace OpenVIII
             using (MemoryStream ms = new MemoryStream(buffer))
             using (BinaryReader br = new BinaryReader(ms))
             {
+                ms.Seek(subPositions[Battle_Commands.id], SeekOrigin.Begin);
                 s_battleCommands = Battle_Commands.Read(br);
                 ms.Seek(subPositions[Magic_Data.id], SeekOrigin.Begin);
                 s_magicData = Magic_Data.Read(br);
