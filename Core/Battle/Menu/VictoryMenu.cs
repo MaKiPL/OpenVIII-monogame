@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using OpenVIII.Encoding.Tags;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace OpenVIII
@@ -98,6 +99,7 @@ namespace OpenVIII
             }
 
             private uint _ap = 0;
+            private ConcurrentDictionary<Characters, int> _expextra;
             private int _exp = 0;
             private Saves.Item[] _items = null;
 
@@ -111,10 +113,12 @@ namespace OpenVIII
             /// </summary>
             public override void Refresh(Characters c, Characters vc, bool backup = false) { }
 
-            public void Refresh(int exp, uint ap, params Saves.Item[] items)
+            public void Refresh(int exp, uint ap, ConcurrentDictionary<Characters,int> expextra, params Saves.Item[] items)
             {
+                _expextra = expextra;
                 _exp = exp;
                 ((IGMData_PlayerEXPGroup)Data[Mode.Exp]).EXP = _exp;
+                ((IGMData_PlayerEXPGroup)Data[Mode.Exp]).EXPExtra = _expextra;
                 _ap = ap;
                 ((IGMData_PartyAP)Data[Mode.AP]).AP = _ap;
                 _items = items;
