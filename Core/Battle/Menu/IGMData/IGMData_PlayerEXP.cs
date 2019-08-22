@@ -94,7 +94,7 @@ namespace OpenVIII
                         uint exp = Memory.State[Character].Experience;
                         ushort expTNL = Memory.State[Character].ExperienceToNextLevel;
                         _lvl = Memory.State[Character].Level;
-                        FF8String name = Memory.State[Character].Name;
+                        FF8String name = Memory.Strings.GetName(VisableCharacter);
 
                         ITEM[0, 0] = new IGMDataItem_String(name, new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0));
                         ITEM[0, 1] = new IGMDataItem_Icon(Icons.ID.Size_16x16_Lv_, new Rectangle(SIZE[0].X, SIZE[0].Y + 34, 0, 0), 13);
