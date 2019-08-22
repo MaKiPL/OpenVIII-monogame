@@ -27,7 +27,7 @@ namespace OpenVIII
             public Attack_Type Attack_type { get; private set; }   //0x0007  1 byte  Attack type
             public byte Spellpower { get; private set; }    //0x0008  1 byte  Spell power(used in damage formula)
             public byte Unknown2 { get; private set; }      //0x0009  1 byte  Unknown
-            public Target Default_target { get; private set; }//0x000A  1 byte  Default_target
+            public Target Target { get; private set; }//0x000A  1 byte  Default_target
             public Attack_Flags Attack_flags { get; private set; }  //0x000B  1 byte  Attack Flags
             public byte Draw_resist { get; private set; }   //0x000C  1 byte  Draw resist(how hard is the magic to draw)
             public byte Hit_count { get; private set; }     //0x000D  1 byte  Hit count(works with meteor animation, not sure about others)
@@ -86,7 +86,7 @@ namespace OpenVIII
                 Attack_type = (Attack_Type)br.ReadByte();
                 Spellpower = br.ReadByte();
                 Unknown2 = br.ReadByte();
-                Default_target = (Target)br.ReadByte();
+                Target = (Target)br.ReadByte();
                 Attack_flags = (Attack_Flags)br.ReadByte();
                 Draw_resist = br.ReadByte();
                 Hit_count = br.ReadByte();
