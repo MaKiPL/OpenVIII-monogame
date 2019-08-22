@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace OpenVIII
@@ -24,6 +25,9 @@ namespace OpenVIII
             #region Constructors
 
             public Item(byte ID, byte QTY) { this.ID = ID; this.QTY = QTY; }
+
+            public Item(KeyValuePair<byte, byte> e) : this(e.Key, e.Value)
+            { }
 
             #endregion Constructors
 
