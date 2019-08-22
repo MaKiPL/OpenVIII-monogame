@@ -6,6 +6,8 @@ namespace OpenVIII
 {
     public partial class BattleMenus
     {
+        #region Classes
+
         public class IGMData_TargetParty : IGMData
         {
             #region Constructors
@@ -17,6 +19,29 @@ namespace OpenVIII
             #endregion Constructors
 
             #region Methods
+
+            public override void Inputs_Left()
+            {
+                Cursor_Status &= ~Cursor_Status.Enabled;
+                Menu.BattleMenus.Target_Enemies.Cursor_Status |= Cursor_Status.Enabled;
+                Menu.BattleMenus.Target_Enemies.CURSOR_SELECT = (CURSOR_SELECT + Menu.BattleMenus.Target_Enemies.Rows) %
+                    (Menu.BattleMenus.Target_Enemies.Rows * Menu.BattleMenus.Target_Enemies.Cols);
+                while (Menu.BattleMenus.Target_Enemies.BLANKS[Menu.BattleMenus.Target_Enemies.CURSOR_SELECT] && Menu.BattleMenus.Target_Enemies.CURSOR_SELECT > 0)
+                    Menu.BattleMenus.Target_Enemies.CURSOR_SELECT--;
+                base.Inputs_Left();
+            }
+
+            public override bool Inputs_OKAY() => false;
+
+            public override void Inputs_Right()
+            {
+                Cursor_Status &= ~Cursor_Status.Enabled;
+                Menu.BattleMenus.Target_Enemies.Cursor_Status |= Cursor_Status.Enabled;
+                Menu.BattleMenus.Target_Enemies.CURSOR_SELECT = CURSOR_SELECT % Menu.BattleMenus.Target_Enemies.Rows;
+                while (Menu.BattleMenus.Target_Enemies.BLANKS[Menu.BattleMenus.Target_Enemies.CURSOR_SELECT] && Menu.BattleMenus.Target_Enemies.CURSOR_SELECT > 0)
+                    Menu.BattleMenus.Target_Enemies.CURSOR_SELECT--;
+                base.Inputs_Right();
+            }
 
             public override void Refresh()
             {
@@ -45,29 +70,9 @@ namespace OpenVIII
                 SIZE[i].Height = (int)(12 * TextScale.Y);
             }
 
-            public override void Inputs_Left()
-            {
-                Cursor_Status &= ~Cursor_Status.Enabled;
-                Menu.BattleMenus.Target_Enemies.Cursor_Status |= Cursor_Status.Enabled;
-                Menu.BattleMenus.Target_Enemies.CURSOR_SELECT = (CURSOR_SELECT + Menu.BattleMenus.Target_Enemies.Rows) %
-                    (Menu.BattleMenus.Target_Enemies.Rows * Menu.BattleMenus.Target_Enemies.Cols);
-                while(Menu.BattleMenus.Target_Enemies.BLANKS[Menu.BattleMenus.Target_Enemies.CURSOR_SELECT] && Menu.BattleMenus.Target_Enemies.CURSOR_SELECT >0)
-                    Menu.BattleMenus.Target_Enemies.CURSOR_SELECT--;
-                base.Inputs_Left();
-            }
-
-            public override void Inputs_Right()
-            {
-                Cursor_Status &= ~Cursor_Status.Enabled;
-                Menu.BattleMenus.Target_Enemies.Cursor_Status |= Cursor_Status.Enabled;
-                Menu.BattleMenus.Target_Enemies.CURSOR_SELECT = CURSOR_SELECT % Menu.BattleMenus.Target_Enemies.Rows;
-                while (Menu.BattleMenus.Target_Enemies.BLANKS[Menu.BattleMenus.Target_Enemies.CURSOR_SELECT] && Menu.BattleMenus.Target_Enemies.CURSOR_SELECT > 0)
-                    Menu.BattleMenus.Target_Enemies.CURSOR_SELECT--;
-                base.Inputs_Right();
-            }
-
             #endregion Methods
         }
 
+        #endregion Classes
     }
 }
