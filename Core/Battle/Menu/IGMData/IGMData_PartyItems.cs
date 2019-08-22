@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using OpenVIII.Encoding.Tags;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OpenVIII
 {
@@ -44,7 +46,23 @@ namespace OpenVIII
                 {
                     get => _items; set
                     {
-                        _items = value;
+                        //i noticed that sometimes enemies drop the same items. This totals them all together.
+                        ConcurrentDictionary<byte, byte> items = new ConcurrentDictionary<byte, byte>();
+                        while(value.Count>0)
+                        {
+                            Saves.Item item = value.Dequeue();
+                            if(!items.TryAdd(item.ID,item.QTY))
+                            {
+                                items[item.ID] += item.QTY;
+                            }
+                        }
+                        if (items.Count > 0)
+                        {
+                            _items = new Queue<Saves.Item>(items.Count);
+                            foreach (var e in items)
+                                _items.Enqueue(new Saves.Item(e));
+                        }
+                        else _items = null;
                         Refresh();
                     }
                 }
