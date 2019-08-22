@@ -102,9 +102,9 @@ namespace OpenVIII
         /// </summary>
         public int Y => CONTAINER != null ? CONTAINER.Pos.Y : 0;
 
-        protected Characters Character
+        public Characters Character
         {
-            get => character; set
+            get => character; protected set
             {
                 if (character != value && value != Characters.Blank)
                     character = value;
@@ -116,9 +116,9 @@ namespace OpenVIII
         /// </summary>
         protected sbyte PartyPos { get; private set; }
 
-        protected Characters VisableCharacter
+        public Characters VisableCharacter
         {
-            get => visableCharacter; set
+            get => visableCharacter; protected set
             {
                 if (visableCharacter != value && value != Characters.Blank)
                     visableCharacter = value;
