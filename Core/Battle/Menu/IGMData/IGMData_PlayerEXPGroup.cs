@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System.Collections.Concurrent;
 
 namespace OpenVIII
 {
@@ -77,13 +78,14 @@ namespace OpenVIII
                 {
                     get => _exp; set
                     {
-                        foreach (IGMDataItem_IGMData i in ITEM)
-                        {
-                            ((IGMData_PlayerEXP)i.Data).EXP = value;
-                        }
                         _exp = value;
+                        RefreshEXP();
                     }
                 }
+
+                public ConcurrentDictionary<Characters, int> EXPExtra { get; set; }
+
+                private bool remainEXP => (_exp > 0 || EXPExtra != null && EXPExtra.Count > 0);
 
                 #endregion Properties
 
@@ -101,14 +103,14 @@ namespace OpenVIII
                 public override bool Inputs_OKAY()
                 {
                     base.Inputs_OKAY();
-                    if (!countingDown && _exp > 0)
+                    if (!countingDown && remainEXP)
                     {
                         countingDown = true;
                         if (EXPsnd == null)
                             EXPsnd = init_debugger_Audio.PlaySound(34, loop: true);
                         return true;
                     }
-                    else if (countingDown && _exp > 0)
+                    else if (countingDown && remainEXP)
                     {
                         countingDown = false;
                         EXPsnd.Stop();
@@ -123,11 +125,26 @@ namespace OpenVIII
                 {
                     if (countingDown)
                     {
-                        if (_exp > 0)
+                        if (remainEXP)
                         {
                             if ((remaining += Memory.gameTime.ElapsedGameTime.TotalMilliseconds / speedOfEarningExp) > 1)
                             {
-                                EXP -= (int)remaining;
+                                if (EXP > 0)
+                                {
+                                    EXP -= (int)remaining;
+                                }
+                                else
+                                {
+                                    int total = 0;
+                                    foreach(var e in EXPExtra)
+                                    {
+                                        if (e.Value > 0)
+                                        total += (EXPExtra[e.Key] -= (int)remaining);
+                                        RefreshEXP();
+                                    }
+                                    if (total <= 0)
+                                        EXPExtra = null;
+                                }
                                 remaining -= (int)remaining;
                             }
                         }
@@ -147,6 +164,22 @@ namespace OpenVIII
                 {
                     base.Init();
                     Cursor_Status |= (Cursor_Status.Hidden | (Cursor_Status.Enabled | Cursor_Status.Static));
+                }
+
+                private void RefreshEXP()
+                {
+                    foreach (IGMDataItem_IGMData i in ITEM)
+                    {
+                        int tmpexp = EXP;
+                        if (EXPExtra != null)
+                        {
+                            if (EXPExtra.TryGetValue(((IGMData_PlayerEXP)i.Data).Character, out int bonus))
+                                tmpexp += bonus;
+                            else if (EXPExtra.TryGetValue(((IGMData_PlayerEXP)i.Data).VisableCharacter, out int bonus2))
+                                tmpexp += bonus2;
+                        }
+                        ((IGMData_PlayerEXP)i.Data).EXP = tmpexp;
+                    }
                 }
 
                 #endregion Methods
