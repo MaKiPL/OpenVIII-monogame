@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Input;
 using OpenVIII.Encoding.Tags;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -65,6 +66,8 @@ namespace OpenVIII
         public IGMData_TargetEnemies Target_Enemies => ((IGMData_TargetEnemies)((IGMDataItem_IGMData)Data[SectionName.Targets].ITEM[0, 0]).Data);
         public IGMData_TargetParty Target_Party => ((IGMData_TargetParty)((IGMDataItem_IGMData)Data[SectionName.Targets].ITEM[1, 0]).Data);
 
+        public int Player { get => _player; protected set => _player = value; }
+
         #endregion Properties
 
         #region Methods
@@ -96,19 +99,40 @@ namespace OpenVIII
             Memory.IsMouseVisible = true;
             if (InputFunctions.ContainsKey((Mode)GetMode()))
                 ret = InputFunctions[(Mode)GetMode()]() && ret;
-            // press 1 to force victory
+            // press 6 to force victory
             if (Input2.DelayedButton(Keys.D6))
             {
-                SetMode(Mode.Victory);
+                TriggerVictory();
             }
-            // press 2 to force game over
+            // press 7 to force game over
             else if (Input2.DelayedButton(Keys.D7))
             {
                 SetMode(Mode.GameOver);
             }
+            // press 9 to go back to last state.
             else if (Input2.DelayedButton(Keys.D9))
                 ReturnTo();
             return ret;
+        }
+        private void TriggerVictory(ConcurrentDictionary<Characters, int> expextra = null)
+        {
+            int exp = 0;
+            uint ap = 0;
+            List<Saves.Item> items = new List<Saves.Item>();
+            foreach (var e in Enemy.Party)
+            {
+                exp += e.EXP;
+                ap += e.AP;
+                Saves.Item drop = e.Drop();
+                if (drop.QTY > 0 && drop.ID > 0)
+                    items.Add(drop);
+            }
+            TriggerVictory(exp, ap, expextra, items.ToArray());
+        }
+        private void TriggerVictory(int exp, uint ap, ConcurrentDictionary<Characters, int> expextra, params Saves.Item[] items)
+        {
+            SetMode(Mode.Victory);
+            Victory_Menu?.Refresh(exp, ap, expextra, items);
         }
 
         public override void Refresh()
@@ -157,7 +181,6 @@ namespace OpenVIII
                 menus?.ForEach(m => m.Show());
             }
             // exp, items and ap you are going to get after the battle is over.
-            Victory_Menu?.Refresh(10000, 1000, new Saves.Item(10, 100), new Saves.Item(20, 65), new Saves.Item(28, 54));
             base.Refresh();
         }
 
@@ -169,6 +192,7 @@ namespace OpenVIII
         {
             Module_main_menu_debug.State = lastmenu;
             Memory.module = lastgamestate;
+            Menu.IGM.Refresh(); // else the menu stats won't update.
             Module_battle_debug.ResetState();
             if (lastmusicplaying)
                 init_debugger_Audio.PlayMusic(lastmusic);
