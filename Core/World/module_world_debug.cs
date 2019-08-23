@@ -43,7 +43,7 @@ namespace OpenVIII
         private static readonly int renderDistance = 4;
         private static readonly float FOV = 60;
 
-        private static Vector2 segmentPosition;
+        public static Vector2 segmentPosition;
         private static CharaOne chara;
         private static texl texl;
         private static wmset wmset;
@@ -400,6 +400,7 @@ namespace OpenVIII
         /// </summary>
         private static void EncounterUpdate()
         {
+            //RE: if ((world_currentVehicle < 0 || world_currentVehicle > 9) && world_currentVehicle != 128 || !isStateOfMovement   //Naturally, we don't want encounters if in vehicle
             int regionId = wmset.GetWorldRegionBySegmentPosition((int)segmentPosition.X, (int)segmentPosition.Y); //section2
             if (activeCollidePolygon == null)
                 return;
@@ -454,13 +455,15 @@ namespace OpenVIII
         /// </summary>
         private static Polygon? activeCollidePolygon = null;
 
+        public static int GetRealSegmentId() => (int)(segmentPosition.Y * 32 + segmentPosition.X); //explicit public for wmset and warping sections
+
         /// <summary>
         /// This method checks for collision- uses raycasting and 3Dintersection to either allow movement, update it and/or warp player. If all checks fails it returns to last known correct player position
         /// </summary>
         private static void CollisionUpdate()
         {
             segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1); //needs to be updated on pre-new values of movement
-            int realSegmentId = (int)(segmentPosition.Y * 32 + segmentPosition.X);
+            int realSegmentId = GetRealSegmentId();
             var seg = segments[realSegmentId];
             RaycastedTris = new List<Tuple<ParsedTriangleData, Vector3, bool>>();
             Ray characterRay = new Ray(playerPosition + new Vector3(0, 10f, 0), Vector3.Down); //sets ray origin

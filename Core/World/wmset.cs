@@ -36,14 +36,13 @@ namespace OpenVIII.Core.World
 
             Section1(); //======FINISHED
             Section2(); //======FINISHED
-            //Section3(); //=encounter
+            //Section3(); //=encounter - looks like it's some supply helping data or roll data? Not sure, it's way before getting encounters
             Section4(); //======FINISHED
-            //Section5(); //=encounter
-            //Section6(); //=encounter
+            Section6(); //======FINISHED
             //Section7(); //=something with roads colours, cluts. Can't really understand why it's needed, looks like some kind of helper for VRAM?
             Section8(); //wm2field WIP
             //Section9(); //=related to field2wm?
-            //Section10();
+            Section10(); //I still don't know what it is for- something with vehicles- maybe wm2field with vehicle? -> same structure as section8
             //Section11(); //??????
             //Section12();
             //Section13();
@@ -154,7 +153,7 @@ namespace OpenVIII.Core.World
         public byte GetWorldRegionBySegmentPosition(int x, int y) => regionsBuffer[y * 32 + x];
         #endregion
 
-        #region Section 4 - encounter pointer
+        #region Section 4 - Encounter pointer
         private const int SEC4_ENC_PER_CHUNK = 8; //there are 8 scene.out pointers per one block/entry
         private ushort[][] encounters;
         private void Section4()
@@ -182,10 +181,51 @@ namespace OpenVIII.Core.World
         public ushort[] GetEncounters(int pointer) => encounters[pointer];
         #endregion
 
+        #region Section 6 - Encounter pointer (Lunar Cry)
+        private ushort[][] encountersLunar;
+        private void Section6()
+        {
+            using (MemoryStream ms = new MemoryStream(buffer))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                ms.Seek(sectionPointers[6 - 1], SeekOrigin.Begin);
+                List<ushort[]> encounterList = new List<ushort[]>();
+                while (true)
+                {
+                    uint dwordTester = br.ReadUInt32();
+                    if (dwordTester == 0)
+                        break;
+                    ms.Seek(-4, SeekOrigin.Current);
+                    ushort[] sceneOutPointers = new ushort[SEC4_ENC_PER_CHUNK];
+                    for (int i = 0; i < SEC4_ENC_PER_CHUNK; i++)
+                        sceneOutPointers[i] = br.ReadUInt16();
+                    encounterList.Add(sceneOutPointers);
+                }
+                encountersLunar = encounterList.ToArray();
+            }
+        }
+
+        public ushort[] GetEncountersLunar(int pointer) => encountersLunar[pointer];
+        #endregion
+
         #region Section 8 - World map to field
 
+        /// <summary>
+        /// I have to just understand the algorithm and then I'll be able to upgrade it. Right now
+        /// it looks like it's reading 0xFF01 and setting the start modes (there are two)
+        /// and it normally goes like checkCondition-> FAIL=get next entry; SUCCESS= parse next opcodes of this given entry
+        /// so for sure the labeltest goto algorithm needs to be redone- there are two modes but we can still read the same entry if success
+        /// I still don't know what happens when all the conditions will success- if they are only condiditions or actions?
+        /// because if it succedes- then it just simply goes to next condition and next...nextt...next but I don't see anything like changing
+        /// module when wm2field
+        /// </summary>
         public void Section8()
         {
+            /*
+             * Test case available!
+             * Stand before the entrance to Balamb and it would be the [848]/ so-> 12th entry in section8!
+             * It passes first check of 0xFF06 for segment id = 273 and moves further
+             */
             using (MemoryStream ms = new MemoryStream(buffer))
             using (BinaryReader br = new BinaryReader(ms))
             {
@@ -193,9 +233,226 @@ namespace OpenVIII.Core.World
                 var innerSec = GetInnerPointers(br);
                 for(int i = 0; i<innerSec.Length; i++)
                 {
-                    //???
+                    ms.Seek(sectionPointers[8 - 1] + innerSec[i], SeekOrigin.Begin);
+                    labeltest:
+                    short Mode = 0;
+                    uint controlVar = 0;
+                    int v4 = (int)ms.Position;
+                    while (true)
+                    {
+                        while (true)
+                        {
+                            controlVar = br.ReadUInt32();
+                            if ((controlVar&0xFFFF) != 0xFF01)
+                                break;
+                            Mode = 1;
+                        }
+                        if ((controlVar & 0xFFFF) == 0xFF04)
+                        {
+                            Mode = 2;
+                            v4 = 3;
+                            continue;
+                        }
+                        if (Mode > 0)
+                            break;
+                    }
+
+                    if(Mode == 1)
+                    {
+                        if (!bSec8_conditionals(controlVar))
+                            continue; //parse next entry
+                        else
+                            goto labeltest;
+                        
+                    }
+                    else //Mode 2
+                    {
+                        if(controlVar == 0xFF16)
+                        {
+                            //;something?
+                            continue;
+                        }
+                        switch(controlVar)
+                        {
+                            case 0xFF05:
+                                if (v4 == 2)
+                                {
+                                    //here is goto label- miracle of assembly- make sure to rewrite this shit later
+                                    goto labeltest;
+                                }
+                                if (v4 != 5)
+                                    continue;
+                                goto labeltest;
+                            case 0xFF0A:
+                                v4 = 1;
+                                goto labeltest;
+                            case 0xFF0B:
+                                if(v4==1)
+                                {
+                                    v4 = 3;
+                                    goto labeltest;
+                                }
+                                if (v4 != 4)
+                                    goto labeltest;
+                                v4 = 3;
+                                goto labeltest;
+                            case 0xFF0C:
+                                if (v4 != 2 && v4 != 5)
+                                    goto labeltest;
+                                v4 = 4;
+                                goto labeltest;
+                            case 0xFF0D:
+                                if (v4 != 2 && v4 != 5)
+                                    goto labeltest;
+                                v4 = 6;
+                                goto labeltest;
+                            default: //[sub_545D60:132]
+                                //TODO
+                                break;
+                        }
+                    }
                 }
             }
+        }
+
+        enum sec8_conditional : ushort
+        {
+            /// <summary>
+            /// Checks for segment number (as in wmx.obj- e.g. 273)
+            /// See: ModuleWorld::GetRealSegmentId();
+            /// </summary>
+            SegmentId = 0xFF06,
+            unk02 = 0xFF02,
+            unk03 = 0xFF03,
+            unk07 = 0xFF07,
+            unk09 = 0xFF09,
+            unk0f = 0xFF0F,
+            unk10 = 0xFF10,
+            unk11 = 0xFF11,
+            unk12 = 0xFF12,
+            unk17 = 0xFF17,
+            unk1a = 0xFF1A,
+            unk1b = 0xFF1B,
+            unk1c = 0xFF1C,
+            unk1d = 0xFF1D,
+            unk20 = 0xFF20,
+            unk18 = 0xFF18,
+            unk19 = 0xFF19,
+            unk1e = 0xFF1E,
+            unk21 = 0xFF21,
+            unk22 = 0xFF22,
+            unk25 = 0xFF25,
+            unk27 = 0xFF27,
+            unk29 = 0xFF29,
+            unk2a = 0xFF2A,
+            unk2c = 0xFF2C,
+            unk2d = 0xFF2D,
+            unk2f = 0xFF2F,
+            unk30 = 0xFF30,
+            unk31 = 0xFF31,
+            unk32 = 0xFF32,
+            unk33 = 0xFF33,
+            unk34 = 0xFF34,
+            unk35 = 0xFF35,
+            unk38 = 0xFF38,
+            unk39 = 0xFF39
+        }
+
+        /// <summary>
+        /// Some wmset sections work on some conditional file structure- therefore during e.g. warping from wm2field it checks entries one-by-one and the one that successively happen to get along with all conditions is parsed/pushed through- if not read next entry
+        /// </summary>
+        /// <param name="controlVar"></param>
+        /// <returns></returns>
+        private bool bSec8_conditionals(uint controlVar)
+        {
+            ushort controlValue = (ushort)(controlVar >> 16);
+            sec8_conditional condition = (sec8_conditional)controlVar;
+            switch (condition)
+            {
+                case sec8_conditional.unk02:
+                    break;
+                case sec8_conditional.unk03:
+                    break;
+                case sec8_conditional.SegmentId: //[145F7F]
+                    return Module_world_debug.GetRealSegmentId() == controlValue;
+                case sec8_conditional.unk07:
+                    break;
+                case sec8_conditional.unk09:
+                    break;
+                case sec8_conditional.unk0f:
+                    break;
+                case sec8_conditional.unk10:
+                    break;
+                case sec8_conditional.unk11:
+                    break;
+                case sec8_conditional.unk12:
+                    break;
+                case sec8_conditional.unk17:
+                    break;
+                case sec8_conditional.unk18:
+                    break;
+                case sec8_conditional.unk19:
+                    break;
+                case sec8_conditional.unk1a:
+                    break;
+                case sec8_conditional.unk1b:
+                    break;
+                case sec8_conditional.unk1c:
+                    break;
+                case sec8_conditional.unk1d:
+                    break;
+                case sec8_conditional.unk1e:
+                    break;
+                case sec8_conditional.unk20:
+                    break;
+                case sec8_conditional.unk21:
+                    break;
+                case sec8_conditional.unk22:
+                    break;
+                case sec8_conditional.unk25:
+                    break;
+                case sec8_conditional.unk27:
+                    break;
+                case sec8_conditional.unk29:
+                    break;
+                case sec8_conditional.unk2a:
+                    break;
+                case sec8_conditional.unk2c:
+                    break;
+                case sec8_conditional.unk2d:
+                    break;
+                case sec8_conditional.unk2f:
+                    break;
+                case sec8_conditional.unk30:
+                    break;
+                case sec8_conditional.unk31:
+                    break;
+                case sec8_conditional.unk32:
+                    break;
+                case sec8_conditional.unk33:
+                    break;
+                case sec8_conditional.unk34:
+                    break;
+                case sec8_conditional.unk35:
+                    break;
+                case sec8_conditional.unk38:
+                    break;
+                case sec8_conditional.unk39:
+                    break;
+                default:
+                    break;
+            }
+            return false;
+        }
+        #endregion
+
+        #region Section 10 - [UNKNOWN]/ Something with vehicles, positions- probably wm2field in vehicle (?)
+        /// <summary>
+        /// This file follows some schema of 0xFF01->0xFF04
+        /// </summary>
+        private void Section10()
+        {
+
         }
         #endregion
 
