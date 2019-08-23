@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -215,6 +216,20 @@ namespace OpenVIII
         public static string RemoveBrackets(string s) => s.Replace('{', ' ').Replace('}', ' ');
         public static bool GetBit(byte @object, int positionFromRight) => ((@object >> positionFromRight) & 1) > 0;
         public static bool GetBit(int @object, int positionFromRight) => ((@object >> positionFromRight) & 1) > 0;
+
+        /// <summary>
+        /// Reads given char[] until null terminator, but returns as byte[]- to be used with FF8String
+        /// </summary>
+        /// <param name=""></param>
+        /// <returns></returns>
+        public static byte[] GetBinaryString(BinaryReader br)
+        {
+            List<byte> bb = new List<byte>();
+            byte b;
+            while ((b = br.ReadByte()) != 0x00)
+                bb.Add(b);
+            return bb.ToArray();
+        }
 
         public static bool IsLinux
         {

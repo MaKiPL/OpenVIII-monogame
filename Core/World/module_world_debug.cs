@@ -389,15 +389,35 @@ namespace OpenVIII
             if (Input.Button(Keys.D8))
                 bDebugDisableCollision = !bDebugDisableCollision;
 
-            SimpleInputUpdate(); //lastplayerposition = playerposition here
+            SimpleInputUpdate(out var bHasMoved); //lastplayerposition = playerposition here
             CollisionUpdate();
+            if(bHasMoved)
+                EncounterUpdate();
+        }
+
+        /// <summary>
+        /// If player moved then check for available encounters and if we should play it
+        /// </summary>
+        private static void EncounterUpdate()
+        {
+            int regionId = wmset.GetWorldRegionBySegmentPosition((int)segmentPosition.X, (int)segmentPosition.Y); //section2
+            if (activeCollidePolygon == null)
+                return;
+            int groundId = activeCollidePolygon.Value.groundtype;
+            int encPointer = wmset.GetEncounterHelperPointer(regionId, groundId); //section1
+            ushort[] AvailableEncounters = wmset.GetEncounters(encPointer); //section4
+
+            //we now have 8 encounters-> 4 casual; 2 mid and 2 rare
+
+            //TODO random + enc.half/none junction + warping to battle
         }
 
         /// <summary>
         /// Simple input handling- It's mockup of walking forward and backward. It's not the vanilla style input- used for testing collision
         /// </summary>
-        private static void SimpleInputUpdate()
+        private static void SimpleInputUpdate(out bool bHasMoved)
         {
+            bHasMoved = false;
             lastPlayerPosition = playerPosition;
             if (Input.Button(Keys.D8))
                 playerPosition.X += 1f;
@@ -409,6 +429,7 @@ namespace OpenVIII
                 playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees)) * 2f;
                 playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees)) * 2f;
                 localMchRotation = (float)(Extended.Radians(-degrees - 90f));
+                bHasMoved = true;
             }
             if (Input.Button(Buttons.Down))
             {
@@ -416,6 +437,7 @@ namespace OpenVIII
                 playerPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees)) * 2f;
                 playerPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees)) * 2f;
                 localMchRotation = (float)(Extended.Radians(-degrees + 90f));
+                bHasMoved = true;
             }
         }
 
@@ -426,6 +448,11 @@ namespace OpenVIII
         /// bool - bIsSkyRaycasted - used for sky raycast
         /// </summary>
         private static List<Tuple<ParsedTriangleData, Vector3, bool>> RaycastedTris;
+
+        /// <summary>
+        /// This points to polygon structure that is actively used/ character stomps on it
+        /// </summary>
+        private static Polygon? activeCollidePolygon = null;
 
         /// <summary>
         /// This method checks for collision- uses raycasting and 3Dintersection to either allow movement, update it and/or warp player. If all checks fails it returns to last known correct player position
@@ -468,6 +495,7 @@ namespace OpenVIII
                         continue;
                 Vector3 squaPos = prt.Item2;
                 playerPosition.Y = squaPos.Y;
+                activeCollidePolygon = prt.Item1.parentPolygon;
 #if DEBUG
                 bSelectedWalkable = prt.Item1.parentPolygon.vertFlags;
 #endif
@@ -484,6 +512,7 @@ namespace OpenVIII
                     continue;
                 Vector3 squaPos = prt.Item2;
                 playerPosition.Y = squaPos.Y;
+                activeCollidePolygon = prt.Item1.parentPolygon;
 #if DEBUG
                 bSelectedWalkable = prt.Item1.parentPolygon.vertFlags;
 #endif

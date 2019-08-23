@@ -34,35 +34,35 @@ namespace OpenVIII.Core.World
 
             //if there's no section method either uncommented or commented out, then the section that is lacking is 4 byte NULL
 
-            //Section1(); //=encounter
-            Section2(); //Finished
+            Section1(); //======FINISHED
+            Section2(); //======FINISHED
             //Section3(); //=encounter
-            //Section4(); //=encounter
+            Section4(); //======FINISHED
             //Section5(); //=encounter
             //Section6(); //=encounter
             //Section7(); //=something with roads colours, cluts. Can't really understand why it's needed, looks like some kind of helper for VRAM?
-            Section8();
+            Section8(); //wm2field WIP
             //Section9(); //=related to field2wm?
             //Section10();
             //Section11(); //??????
             //Section12();
             //Section13();
-            //Section14(); //=STRINGS- side quests
-            Section16(); //Finished
+            Section14(); //======FINISHED
+            Section16(); //======FINISHED
             Section17(); //=beach animations
             //Section18(); //?????
             //Section19(); //=something with regions: wm_getRegionNumber(SquallPos) + wmsets19
             //Section31(); //?????
-            //Section32(); //=STRINGS- location names
+            Section32(); //======FINISHED
             //Section33(); //=SKY GRADIENT/REGION COLOURING
             //Section34(); //?????????
             //Section35(); //=draw points
             //Section36(); //?????????
             //Section37(); //ENCOUNTERS??????
-            Section38(); //Finished
-            Section39(); //Finished
+            Section38(); //======FINISHED
+            Section39(); //======FINISHED
             //Section41(); //=Water animation info
-            Section42(); //Finished
+            Section42(); //======FINISHED
 
             //AKAO BELOW
             //Section20();
@@ -93,6 +93,50 @@ namespace OpenVIII.Core.World
             return innerSections.ToArray();
         }
 
+
+
+        #region Section 1 - Encounter setting
+        /// <summary>
+        /// Section1 helps providing the correct encounter based on groundId and regionId, then provides the pointer to struct of section4
+        /// </summary>
+        private const int SECTION1ENTRYCOUNT = 96;
+        [StructLayout(LayoutKind.Sequential, Pack =1, Size =4)]
+        private struct EncounterHelper
+        {
+            public byte regionId;
+            public byte groundId;
+            public ushort encounterPointer; 
+        }
+        private EncounterHelper[] encounterHelpEntries;
+        private void Section1()
+        {
+            using (MemoryStream ms = new MemoryStream(buffer))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                ms.Seek(sectionPointers[1- 1], SeekOrigin.Begin);
+                ms.Seek(4, SeekOrigin.Current); //skip first DWORD- it's EOF of global file
+                List<EncounterHelper> encounterHelperList = new List<EncounterHelper>();
+                while(true)
+                {
+                    EncounterHelper entry = Extended.ByteArrayToStructure<EncounterHelper>(br.ReadBytes(4));
+                    if (entry.groundId == 0 && entry.regionId == 0 && entry.encounterPointer == 0)
+                        break;
+                    encounterHelperList.Add(entry);
+                }
+                encounterHelpEntries = encounterHelperList.ToArray();
+            }
+        }
+
+        public ushort GetEncounterHelperPointer(int regionId, int groundId)
+        {
+            var encList = encounterHelpEntries.Where(x => x.groundId == groundId).Where(n => n.regionId == regionId);
+            if (encList.Count() == 0)
+                return 0xFFFF;
+            var enc = encList.First(); //always first, if there are two the same entries then it doesn't make sense- priority is over that one that is first
+            return enc.encounterPointer;
+        }
+        #endregion
+
         #region Section 2 - world map regions
         private byte[] regionsBuffer;
 
@@ -110,6 +154,34 @@ namespace OpenVIII.Core.World
         public byte GetWorldRegionBySegmentPosition(int x, int y) => regionsBuffer[y * 32 + x];
         #endregion
 
+        #region Section 4 - encounter pointer
+        private const int SEC4_ENC_PER_CHUNK = 8; //there are 8 scene.out pointers per one block/entry
+        private ushort[][] encounters;
+        private void Section4()
+        {
+            using (MemoryStream ms = new MemoryStream(buffer))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                ms.Seek(sectionPointers[4 - 1], SeekOrigin.Begin);
+                List<ushort[]> encounterList = new List<ushort[]>();
+                while(true)
+                {
+                    uint dwordTester = br.ReadUInt32();
+                    if (dwordTester == 0)
+                        break;
+                    ms.Seek(-4, SeekOrigin.Current);
+                    ushort[] sceneOutPointers = new ushort[SEC4_ENC_PER_CHUNK];
+                    for(int i = 0; i<SEC4_ENC_PER_CHUNK; i++)
+                        sceneOutPointers[i] = br.ReadUInt16();
+                    encounterList.Add(sceneOutPointers);
+                }
+                encounters = encounterList.ToArray();
+            }
+        }
+
+        public ushort[] GetEncounters(int pointer) => encounters[pointer];
+        #endregion
+
         #region Section 8 - World map to field
 
         public void Section8()
@@ -125,6 +197,28 @@ namespace OpenVIII.Core.World
                 }
             }
         }
+        #endregion
+
+        #region Section 14 - Side quest strings
+        FF8String[] sideQuestDialogues;
+
+        private void Section14()
+        {
+            using (MemoryStream ms = new MemoryStream(buffer))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                ms.Seek(sectionPointers[14 - 1], SeekOrigin.Begin);
+                var innerSec = GetInnerPointers(br);
+                sideQuestDialogues = new FF8String[innerSec.Length];
+                for(int i = 0; i<innerSec.Length; i++)
+                {
+                    ms.Seek(sectionPointers[14 - 1] + innerSec[i], SeekOrigin.Begin);
+                    sideQuestDialogues[i] = Extended.GetBinaryString(br);
+                }
+            }
+        }
+
+        public FF8String GetSection14Text(int index) => sideQuestDialogues[index];
         #endregion
 
         #region Section 16 - World map objects and vehicles
@@ -375,6 +469,27 @@ namespace OpenVIII.Core.World
                 imagePointers[i] = br.ReadUInt32() + preImagePosition;
         }
 
+        #endregion
+
+        #region Section 32 - World map location names
+        FF8String[] locationsNames;
+        private void Section32()
+        {
+            using (MemoryStream ms = new MemoryStream(buffer))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                ms.Seek(sectionPointers[32 - 1], SeekOrigin.Begin);
+                var innerSec = GetInnerPointers(br);
+                locationsNames = new FF8String[innerSec.Length];
+                for(int i = 0; i<locationsNames.Length; i++)
+                {
+                    ms.Seek(sectionPointers[32 - 1] + innerSec[i], SeekOrigin.Begin);
+                    locationsNames[i] = Extended.GetBinaryString(br);
+                }
+            }
+        }
+
+        public FF8String GetLocationName(int index) => locationsNames[index];
         #endregion
 
         #region Section 38 - World map textures archive
