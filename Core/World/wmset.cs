@@ -59,9 +59,9 @@ namespace OpenVIII.Core.World
             //Section37(); //ENCOUNTERS??????
             Section38(); //======FINISHED
             Section39(); //======FINISHED
-            //Section41(); //=Water animation info
             Section42(); //======FINISHED
-            Section17(); //=beach animations->let's read that at the end due to references to wmset38
+            Section41(); //=Water animation info - 256x1 texture- how to use it?
+            Section17(); //=======FINISHED=beach animations->let's read that at the end due to references to wmset38
 
             //AKAO BELOW
             //Section20();
@@ -677,7 +677,7 @@ namespace OpenVIII.Core.World
 
         #endregion
 
-        #region Section 17 - World map texture animations for beach
+        #region Section 17 + 41 - World map texture animations for beach[17] and water[41]
         /*
          * Section 17 is responsible for beach texture animations. It's a double file- first it contains chunks. Every chunk contains 
          * animation frames information.
@@ -687,7 +687,7 @@ namespace OpenVIII.Core.World
          //MODDING NOTE: Thanks to OpenVIII you can now create bigger chunks than 64x64/64x32 without worrying about SSIGPU VRAM!
 
             [StructLayout(LayoutKind.Sequential, Pack =1, Size =8)]
-        public struct beachAnimation
+        public struct textureAnimation
         {
             /// <summary>
             /// Unknown
@@ -720,7 +720,8 @@ namespace OpenVIII.Core.World
             public Texture2D[][] framesTextures;
         }
 
-        private beachAnimation[] beachAnimations;
+        private textureAnimation[] beachAnimations;
+        private textureAnimation[] waterAnimations;
         public void Section17()
         {
             int[] innerPointers;
@@ -729,19 +730,45 @@ namespace OpenVIII.Core.World
             {
                 ms.Seek(sectionPointers[17 - 1], SeekOrigin.Begin);
                 innerPointers = GetInnerPointers(br);
-                beachAnimations = new beachAnimation[innerPointers.Length];
+                beachAnimations = new textureAnimation[innerPointers.Length];
                 for (int i = 0; i < innerPointers.Length; i++)
-                    beachAnimations[i] = Section17_ParseBlock(sectionPointers[17 - 1] + innerPointers[i], i ,ms, br);
+                    beachAnimations[i] = textureAnimation_ParseBlock(sectionPointers[17 - 1] + innerPointers[i], i ,ms, br);
             }
+        }
+
+        public void Section41()
+        {
+            int[] innerPointers;
+            using (MemoryStream ms = new MemoryStream(buffer))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                ms.Seek(sectionPointers[41 - 1], SeekOrigin.Begin);
+                innerPointers = GetInnerPointers(br);
+                waterAnimations = new textureAnimation[innerPointers.Length];
+                for (int i = 0; i < innerPointers.Length; i++)
+                    waterAnimations[i] = textureAnimation_ParseBlock(sectionPointers[41 - 1] + innerPointers[i], -1, ms, br);
+            }
+            //for (int i = 0; i < waterAnimations.Length; i++)
+            //    for (int n = 0; n < waterAnimations[i].framesCount; n++)
+            //        for (int k = 0; k < waterAnimations[i].framesTextures[n].Length; k++)
+            //            Extended.DumpTexture(waterAnimations[i].framesTextures[n][k], $"D:\\d_{i}_{k}_{n}.png");
         }
 
         private const int sec17_imageHeaderSize = 12; //dword;dword; sizeDword
 
-        private beachAnimation Section17_ParseBlock(int offset, int texturePointer, MemoryStream ms, BinaryReader br)
+        /// <summary>
+        /// Valid for section 41 and 17!
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="texturePointer"></param>
+        /// <param name="ms"></param>
+        /// <param name="br"></param>
+        /// <returns></returns>
+        private textureAnimation textureAnimation_ParseBlock(int offset, int texturePointer, MemoryStream ms, BinaryReader br)
         {
             ms.Seek(offset, SeekOrigin.Begin);
             //beachAnimation animation = Extended.ByteArrayToStructure<beachAnimation>(br.ReadBytes(8));
-            beachAnimation animation = new beachAnimation() //not using Extension because Marshalling doesn't go well with [][] even 
+            textureAnimation animation = new textureAnimation() //not using Extension because Marshalling doesn't go well with [][] even 
                                                             //though it's not really even used!
             {
                 unk = br.ReadByte(),
@@ -751,9 +778,13 @@ namespace OpenVIII.Core.World
                 vramOrigX = br.ReadUInt16(),
                 vramOrigY = br.ReadUInt16()
             };
+            if (texturePointer == -1)
+                ms.Seek(4, SeekOrigin.Current); //there are two WORD's that feel like they have again the palette X and Y but why??
             uint preImagePosition = (uint)ms.Position;
             uint[] imagePointers = new uint[animation.framesCount];
-            Color[] palette = GetWorldMapTexturePalette(texturePointer==0 ? Section38_textures.beach : Section38_textures.beachE, 0);
+            Color[] palette = GetWorldMapTexturePalette(texturePointer==0 ? 
+                Section38_textures.beach : texturePointer==-1 ? 
+                Section38_textures.waterTex : Section38_textures.beachE, 0);
             for (int i = 0; i < animation.framesCount; i++) 
                 imagePointers[i] = br.ReadUInt32() + preImagePosition;
             Texture2D[][] animationFrames = new Texture2D[imagePointers.Length][];
@@ -761,14 +792,16 @@ namespace OpenVIII.Core.World
             {
                 if (texturePointer == 0)
                     animationFrames[i] = new Texture2D[4];
-                else
+                else if (texturePointer != -1)
                     animationFrames[i] = new Texture2D[2];
+                else
+                    animationFrames[i] = new Texture2D[1]; 
 
                 ms.Seek(imagePointers[i], SeekOrigin.Begin);
                 uint unknownHeader = br.ReadUInt32();
                 uint unknownHeader_ = br.ReadUInt32();
-                if (unknownHeader != 18) //I don't know why 18
-                    throw new Exception("wmset::section17::texturePointerHeader != 18");
+                if (unknownHeader != 18 && unknownHeader != 17) //I don't know why 18
+                    throw new Exception("wmset::section17::texturePointerHeader != 17 or 18");
                 if (unknownHeader_ != 1) //I don't know why 1
                     throw new Exception("wmset::section17::texturePointerHeader+4 != 1");
                 uint imageSize = br.ReadUInt32() - sec17_imageHeaderSize; //imageSize, but doesn't really matter here
@@ -784,24 +817,24 @@ namespace OpenVIII.Core.World
                 }
                 texture.SetData(texBuffer);
 
-                if(texturePointer == 0) //slice to 2x2
+                if (texturePointer == 0) //slice to 2x2
                 {
                     Color[] upperLeft = new Color[width / 2 * height / 2];
                     Color[] upperRight = new Color[width / 2 * height / 2];
                     Color[] bottomLeft = new Color[width / 2 * height / 2];
                     Color[] bottomRight = new Color[width / 2 * height / 2];
                     texture.GetData(0, new Rectangle(0, 0, width / 2, height / 2), upperLeft, 0, upperLeft.Length);
-                    texture.GetData(0, new Rectangle(width/2, 0, width / 2, height / 2), upperRight, 0, upperRight.Length);
-                    texture.GetData(0, new Rectangle(0, height/2, width / 2, height / 2), bottomLeft, 0, bottomLeft.Length);
-                    texture.GetData(0, new Rectangle(width/2, height/2, width / 2, height / 2), bottomRight, 0, bottomRight.Length);
-                    for(int p = 0; p<animationFrames[i].Length; p++)
+                    texture.GetData(0, new Rectangle(width / 2, 0, width / 2, height / 2), upperRight, 0, upperRight.Length);
+                    texture.GetData(0, new Rectangle(0, height / 2, width / 2, height / 2), bottomLeft, 0, bottomLeft.Length);
+                    texture.GetData(0, new Rectangle(width / 2, height / 2, width / 2, height / 2), bottomRight, 0, bottomRight.Length);
+                    for (int p = 0; p < animationFrames[i].Length; p++)
                         animationFrames[i][p] = new Texture2D(Memory.graphics.GraphicsDevice, width / 2, height / 2, false, SurfaceFormat.Color);
                     animationFrames[i][0].SetData(upperLeft);
                     animationFrames[i][1].SetData(upperRight);
                     animationFrames[i][2].SetData(bottomLeft);
                     animationFrames[i][3].SetData(bottomRight);
                 }
-                else //slice to 2x1
+                else if (texturePointer != -1) //slice to 2x1
                 {
                     Color[] upperLeft = new Color[width / 2 * height];
                     Color[] upperRight = new Color[width / 2 * height];
@@ -812,12 +845,14 @@ namespace OpenVIII.Core.World
                     animationFrames[i][0].SetData(upperLeft);
                     animationFrames[i][1].SetData(upperRight);
                 }
+                else
+                    animationFrames[i][0] = texture; //if section41 do not decimate/slice;
             }
             animation.framesTextures = animationFrames;
             return animation;
         }
 
-        public beachAnimation GetBeachAnimation(int animationId) => beachAnimations[animationId];
+        public textureAnimation GetBeachAnimation(int animationId) => beachAnimations[animationId];
 
         /// <summary>
         /// Gets chunk from beachAnim atlas (because they are structured 2x2)
