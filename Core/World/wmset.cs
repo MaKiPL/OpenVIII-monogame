@@ -48,7 +48,6 @@ namespace OpenVIII.Core.World
             //Section13();
             Section14(); //======FINISHED
             Section16(); //======FINISHED
-            Section17(); //=beach animations
             //Section18(); //?????
             //Section19(); //=something with regions: wm_getRegionNumber(SquallPos) + wmsets19
             //Section31(); //?????
@@ -62,6 +61,7 @@ namespace OpenVIII.Core.World
             Section39(); //======FINISHED
             //Section41(); //=Water animation info
             Section42(); //======FINISHED
+            Section17(); //=beach animations->let's read that at the end due to references to wmset38
 
             //AKAO BELOW
             //Section20();
@@ -684,6 +684,41 @@ namespace OpenVIII.Core.World
          * oh, also the texture data is not casual TIM nor TEX. Probably raw, no palette inside. Needs testing!
          */
 
+            [StructLayout(LayoutKind.Sequential, Pack =1, Size =8)]
+        public struct beachAnimation
+        {
+            /// <summary>
+            /// Unknown
+            /// </summary>
+            public byte unk;
+            /// <summary>
+            /// Animation speed/timeout between frames- usually 0x20. 1 is the fastest. 0 is invalid. 0xFF is long
+            /// </summary>
+            public byte animTimeout;
+            /// <summary>
+            /// Frames count- controls how many frames are valid. Usually 4
+            /// </summary>
+            public byte framesCount;
+            /// <summary>
+            /// If true then frames loop backward. For example 0-1-2-3-2-1-0. If false, then 0-1-2-3-0-1-2-3
+            /// </summary>
+            public byte bLooping;
+            /// <summary>
+            /// Unused in openviii. It is starting VRAM offset for this texture to be stored
+            /// </summary>
+            public ushort vramOrigX;
+            /// <summary>
+            /// Unused in openviii. It is starting VRAM offset for this texture to be stored
+            /// </summary>
+            public ushort vramOrigY;
+            /// <summary>
+            /// Contains texture data for given frame
+            /// </summary>
+            /// Did you know that there's no way to tell C# to not marshal one field?
+            public Texture2D[] framesTextures;
+        }
+
+        private beachAnimation[] beachAnimations;
         public void Section17()
         {
             int[] innerPointers;
@@ -692,38 +727,67 @@ namespace OpenVIII.Core.World
             {
                 ms.Seek(sectionPointers[17 - 1], SeekOrigin.Begin);
                 innerPointers = GetInnerPointers(br);
-
+                beachAnimations = new beachAnimation[innerPointers.Length];
                 for (int i = 0; i < innerPointers.Length; i++)
-                    Section17_ParseBlock(sectionPointers[17 - 1] + innerPointers[i], ms, br);
+                    beachAnimations[i] = Section17_ParseBlock(sectionPointers[17 - 1] + innerPointers[i], i ,ms, br);
 
             }
         }
 
-        private void Section17_ParseBlock(int offset, MemoryStream ms, BinaryReader br)
+        private const int sec17_imageHeaderSize = 12; //dword;dword; sizeDword
+
+        private beachAnimation Section17_ParseBlock(int offset, int texturePointer, MemoryStream ms, BinaryReader br)
         {
             ms.Seek(offset, SeekOrigin.Begin);
-            byte unk = br.ReadByte(); //not sure, something like starting delay or I don't know. Like some sort of extension to timeout?
-            byte animationTimeout = br.ReadByte(); //controls how fast the animation frames pass-by. 1 is the fastest. 0 means invalid? here usually 0x20
-
-            byte framesCount = br.ReadByte();   /* usually 4, but there are 8 pointers, so any value bigger than 8 may work, but not suitable with
-                                                * current file. Actually in section17 there are always eight pointers, but 5th and bigger pointer
-                                                * is always pointing to the same frame which is the 4th frame. Therefore engine reads this variable
-                                                * and skips any additional pointers BUT! if you designed the file to have 12-16 pointers in anim 
-                                                * frames, then it would totally work. The engine (at least in vanilla) would normally read the pointers
-                                                * and play the animation. Cool, huh?  */
-
-            byte bLoop = br.ReadByte(); //if 1 then loops backward. If 0 then sequential from zero i.e. 0>1>2>3> 0>1>2>3; if 1 then i.e. 0>1>2>3 X >2>1> 0>1>2>3...
-
-            ushort VRAMpalX = br.ReadUInt16(); //example entry 0 has 832 (816+16)
-            /* in assembly VRAMpalX is actually the byte count-> 4 * (v6>>2), therefore (VRAMpalX/4)*4*/
-            ushort VRAMpalY = br.ReadUInt16(); //example entry 0 has 384
-
-
-
+            beachAnimation animation = Extended.ByteArrayToStructure<beachAnimation>(br.ReadBytes(8));
             uint preImagePosition = (uint)ms.Position;
-            uint[] imagePointers = new uint[framesCount]; //looks like 8 is fixed? NOTE: it's not fixed, some bitshit is deciding whether read or not next pointer bleh...
-            for (int i = 0; i < framesCount; i++) 
+            uint[] imagePointers = new uint[animation.framesCount];
+            Color[] palette = GetWorldMapTexturePalette(texturePointer==0 ? Section38_textures.beach : Section38_textures.beachE, 0);
+            for (int i = 0; i < animation.framesCount; i++) 
                 imagePointers[i] = br.ReadUInt32() + preImagePosition;
+            Texture2D[] animationFrames = new Texture2D[imagePointers.Length];
+            for(int i = 0; i<animation.framesCount; i++)
+            {
+                ms.Seek(imagePointers[i], SeekOrigin.Begin);
+                uint unknownHeader = br.ReadUInt32();
+                uint unknownHeader_ = br.ReadUInt32();
+                if (unknownHeader != 18) //I don't know why 18
+                    throw new Exception("wmset::section17::texturePointerHeader != 18");
+                if (unknownHeader_ != 1) //I don't know why 1
+                    throw new Exception("wmset::section17::texturePointerHeader+4 != 1");
+                uint imageSize = br.ReadUInt32() - sec17_imageHeaderSize;
+                uint unk2 = br.ReadUInt32();
+                ushort width = (ushort)(br.ReadUInt16()*2);
+                ushort height = br.ReadUInt16();
+                Texture2D texture = new Texture2D(Memory.graphics.GraphicsDevice, width, height, false, SurfaceFormat.Color);
+                Color[] texBuffer = new Color[width * height]; //32bpp because Color is ARGB byte : struct
+                for(int m = 0; m<texBuffer.Length; m++)
+                {
+                    byte b = br.ReadByte();
+                    texBuffer[m] = palette[b];
+                }
+                texture.SetData(texBuffer);
+                animationFrames[i] = texture;
+                //Extended.DumpTexture(texture, $"D:\\dupa{offset}_{i}.png");
+            }
+            animation.framesTextures = animationFrames;
+            return animation;
+        }
+
+        public beachAnimation GetBeachAnimation(int animationId) => beachAnimations[animationId];
+
+        /// <summary>
+        /// Gets chunk from beachAnim atlas (because they are structured 2x2)
+        /// </summary>
+        /// <param name="animationId">index of the animation wanted- there are two beach anim sets and one unknown</param>
+        /// <param name="frameId">naturally the frame/keyframe of the animation</param>
+        /// <param name="chunkId">chunk from the atlas. 0 means top left, 1 means top right, 2 means bottom left, 3 means bottom right</param>
+        /// <returns></returns>
+        public Texture2D GetBeachAnimationTextureFrame(int animationId, int frameId, int chunkId)
+        {
+            beachAnimation anim = beachAnimations[animationId];
+            throw new NotImplementedException();
+            
         }
 
         #endregion
@@ -755,6 +819,7 @@ namespace OpenVIII.Core.World
         /// </summary>
         /// 
         private List<Texture2D[]> sec38_textures;
+        private List<Color[][]> sec38_pals; //because other sections rely on palettes of wmset.38
 
         public enum Section38_textures
         {
@@ -798,6 +863,7 @@ namespace OpenVIII.Core.World
 
         private void Section38()
         {
+            sec38_pals = new List<Color[][]>();
             using (MemoryStream ms = new MemoryStream(buffer))
             using (BinaryReader br = new BinaryReader(ms))
             {
@@ -808,8 +874,12 @@ namespace OpenVIII.Core.World
                 {
                     TIM2 tim = new TIM2(buffer, (uint)(sectionPointers[38 - 1] + innerSec[i]));
                     sec38_textures.Add(new Texture2D[tim.GetClutCount]);
+                    sec38_pals.Add(new Color[tim.GetClutCount][]);
                     for (ushort k = 0; k < sec38_textures[i].Length; k++)
+                    {
+                        sec38_pals[i][k] = tim.GetPalette(k);
                         sec38_textures[i][k] = tim.GetTexture(k, true);
+                    }
                 }
             }
         }
@@ -822,6 +892,9 @@ namespace OpenVIII.Core.World
         /// <returns></returns>
         public Texture2D GetWorldMapTexture(Section38_textures index, int clut)
             => sec38_textures[(int)index][clut];
+
+        public Color[] GetWorldMapTexturePalette(Section38_textures index, int clut)
+        => sec38_pals[(int)index][clut];
 
         #endregion
 

@@ -213,6 +213,19 @@ namespace OpenVIII
         }
 
         /// <summary>
+        /// Gets Color[] palette from TIM image data
+        /// </summary>
+        /// <param name="clut">clut index</param>
+        /// <returns></returns>
+        public Color[] GetPalette(ushort clut = 0)
+        {
+            Color[] colors;
+            using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+                colors = GetClutColors(br, clut);
+            return colors;
+        }
+
+        /// <summary>
         /// Convert ABGR1555 color to RGBA 32bit color
         /// </summary>
         /// <remarks>
