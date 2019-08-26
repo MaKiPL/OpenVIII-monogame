@@ -27,7 +27,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_Commands(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null, bool battle = false) : base(7, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.COMMAND), 1, 4, character, visablecharacter)
+        public IGMData_Commands(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null, bool battle = false) : base(8, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.COMMAND), 1, 4, character, visablecharacter)
         {
             Battle = battle;
             skipReinit = true;
@@ -42,34 +42,35 @@ namespace OpenVIII
 
         public bool CrisisLevel { get => _crisisLevel; set => _crisisLevel = value; }
 
-        private int Limit_Arrow => Count - 3;
+        private int Limit_Arrow => Count - 4;
 
-        private int Mag_Pool => Count - 2;
+        private int Mag_Pool => Count - 3;
 
-        private int Item_Pool => Count - 1;
+        private int Item_Pool => Count - 2;
+
+        private int Targets_Window => Count - 1;
+
+        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMDataItem_IGMData)ITEM[Targets_Window, 0]).Data);
 
         #endregion Properties
 
         #region Methods
-
         public override bool Inputs()
         {
-            if (ITEM[Mag_Pool, 0].Enabled && (((IGMDataItem_IGMData)ITEM[Mag_Pool, 0]).Data).Enabled)
-            {
-                Cursor_Status |= (Cursor_Status.Enabled | Cursor_Status.Blinking);
-                return (((IGMDataItem_IGMData)ITEM[Mag_Pool, 0]).Data).Inputs();
-            }
-            if (ITEM[Item_Pool, 0].Enabled && (((IGMDataItem_IGMData)ITEM[Item_Pool, 0]).Data).Enabled)
-            {
-                Cursor_Status |= (Cursor_Status.Enabled | Cursor_Status.Blinking);
-                return (((IGMDataItem_IGMData)ITEM[Item_Pool, 0]).Data).Inputs();
-            }
+            bool ret = false;
+            if (InputITEM(Mag_Pool, 0, ref ret))
+            { }
+            else if (InputITEM(Item_Pool, 0, ref ret))
+            { }
+            else if (InputITEM(Targets_Window, 0, ref ret))
+            { }
             else
             {
                 Cursor_Status |= Cursor_Status.Enabled;
                 Cursor_Status &= ~Cursor_Status.Blinking;
+                ret = base.Inputs();
             }
-            return base.Inputs();
+            return ret;
         }
 
         public override bool Inputs_CANCEL() => false;//base.Inputs_CANCEL();
@@ -107,11 +108,11 @@ namespace OpenVIII
         {
             base.Inputs_OKAY();
             Kernel_bin.Battle_Commands c = commands[CURSOR_SELECT];
-            Menu.BattleMenus.Target_Group.SelectTargetWindows(c);
+            Target_Group.SelectTargetWindows(c);
             switch (c.ID)
             {
                 default:
-                    Menu.BattleMenus.Target_Group.ShowTargetWindows();
+                    Target_Group.ShowTargetWindows();
                     return true;
                 case 0: //null
                 case 7: //nomsg
@@ -123,6 +124,10 @@ namespace OpenVIII
                 case 4: //items
                     ITEM[Item_Pool, 0].Show();
                     ITEM[Item_Pool, 0].Refresh();
+                    return true;
+                case 15: //Blue magic
+                    ITEM[Mag_Pool, 0].Show();
+                    ITEM[Mag_Pool, 0].Refresh();
                     return true;
             }
         }
@@ -197,7 +202,10 @@ namespace OpenVIII
             ITEM[Mag_Pool, 0].Hide();
             ITEM[Item_Pool, 0] = new IGMDataItem_IGMData(new IGMData_ItemPool(new Rectangle(X + 50, Y - 22, 400, 194), true));
             ITEM[Item_Pool, 0].Hide();
+            ITEM[Targets_Window, 0] = new IGMDataItem_IGMData(
+                    new BattleMenus.IGMData_TargetGroup());
             commands = new Kernel_bin.Battle_Commands[Rows];
+            PointerZIndex = Limit_Arrow;
         }
 
         protected override void InitShift(int i, int col, int row)

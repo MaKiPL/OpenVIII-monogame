@@ -16,6 +16,8 @@ namespace OpenVIII
             {
             }
 
+            public IGMData_TargetEnemies Target_Enemies { get; set; }
+
             #endregion Constructors
 
             #region Methods
@@ -23,11 +25,11 @@ namespace OpenVIII
             public override void Inputs_Left()
             {
                 Cursor_Status &= ~Cursor_Status.Enabled;
-                Menu.BattleMenus.Target_Enemies.Cursor_Status |= Cursor_Status.Enabled;
-                Menu.BattleMenus.Target_Enemies.CURSOR_SELECT = (CURSOR_SELECT + Menu.BattleMenus.Target_Enemies.Rows) %
-                    (Menu.BattleMenus.Target_Enemies.Rows * Menu.BattleMenus.Target_Enemies.Cols);
-                while (Menu.BattleMenus.Target_Enemies.BLANKS[Menu.BattleMenus.Target_Enemies.CURSOR_SELECT] && Menu.BattleMenus.Target_Enemies.CURSOR_SELECT > 0)
-                    Menu.BattleMenus.Target_Enemies.CURSOR_SELECT--;
+                Target_Enemies.Cursor_Status |= Cursor_Status.Enabled;
+                Target_Enemies.CURSOR_SELECT = (CURSOR_SELECT + Target_Enemies.Rows) %
+                     (Target_Enemies.Rows * Target_Enemies.Cols);
+                while (Target_Enemies.BLANKS[Target_Enemies.CURSOR_SELECT] && Target_Enemies.CURSOR_SELECT > 0)
+                    Target_Enemies.CURSOR_SELECT--;
                 base.Inputs_Left();
             }
 
@@ -36,10 +38,10 @@ namespace OpenVIII
             public override void Inputs_Right()
             {
                 Cursor_Status &= ~Cursor_Status.Enabled;
-                Menu.BattleMenus.Target_Enemies.Cursor_Status |= Cursor_Status.Enabled;
-                Menu.BattleMenus.Target_Enemies.CURSOR_SELECT = CURSOR_SELECT % Menu.BattleMenus.Target_Enemies.Rows;
-                while (Menu.BattleMenus.Target_Enemies.BLANKS[Menu.BattleMenus.Target_Enemies.CURSOR_SELECT] && Menu.BattleMenus.Target_Enemies.CURSOR_SELECT > 0)
-                    Menu.BattleMenus.Target_Enemies.CURSOR_SELECT--;
+                Target_Enemies.Cursor_Status |= Cursor_Status.Enabled;
+                Target_Enemies.CURSOR_SELECT = CURSOR_SELECT % Target_Enemies.Rows;
+                while (Target_Enemies.BLANKS[Target_Enemies.CURSOR_SELECT] && Target_Enemies.CURSOR_SELECT > 0)
+                    Target_Enemies.CURSOR_SELECT--;
                 base.Inputs_Right();
             }
 

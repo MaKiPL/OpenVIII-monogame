@@ -36,6 +36,12 @@ namespace OpenVIII
 
         public IGMData(int count = 0, int depth = 0, IGMDataItem container = null, int? cols = null, int? rows = null, Characters? character = null, Characters? visablecharacter = null, sbyte? partypos = null)
         {
+            Init(character, visablecharacter, partypos);
+            Init(count, depth, container, cols, rows);
+        }
+
+        protected void Init(Characters? character, Characters? visablecharacter, sbyte? partypos)
+        {
             if (partypos != null)
             {
                 Character = Memory.State?.PartyData?[partypos.Value] ?? Characters.Blank;
@@ -48,7 +54,6 @@ namespace OpenVIII
                 VisableCharacter = visablecharacter ?? Character;
                 PartyPos = (sbyte)(Memory.State?.PartyData?.FindIndex(x => x.Equals(Character)) ?? -1);
             }
-            Init(count, depth, container, cols, rows);
         }
 
         #endregion Constructors
@@ -182,7 +187,7 @@ namespace OpenVIII
             }
             return GetCursor_select();
         }
-
+        public int PointerZIndex = byte.MaxValue;
         /// <summary>
         /// Draw all items
         /// </summary>
@@ -192,32 +197,56 @@ namespace OpenVIII
             {
                 if (CONTAINER != null)
                     CONTAINER.Draw();
+                bool pointer = false;
                 if (!skipdata && ITEM != null)
-                    foreach (IGMDataItem i in ITEM)
-                    {
-                        if (i != null)
-                            i.Draw();
-                    }
-                if ((Cursor_Status & (Cursor_Status.Enabled | Cursor_Status.Draw)) != 0)
+                    for (int i = 0; i < Count; i++)
+                        for (int d = 0; d < Depth; d++)
+                        {
+                            ITEM[i, d]?.Draw();
+                            if(i == PointerZIndex)
+                                pointer = testthanpointer();
+                        }
+
+                if (!pointer)
+                { 
+                    pointer = testthanpointer();
+                }
+            }
+            bool testthanpointer()
+            {
+                if ((Cursor_Status & (Cursor_Status.Enabled | Cursor_Status.Draw)) != 0 &&
+                    (Cursor_Status & Cursor_Status.Hidden) == 0)
                 {
                     DrawPointer(CURSOR[CURSOR_SELECT], blink: ((Cursor_Status & Cursor_Status.Blinking) != 0));
+                    return true;
                 }
+                return false;
             }
         }
 
         public void DrawPointer(Point cursor, Vector2? offset = null, bool blink = false)
         {
-            if ((Cursor_Status & Cursor_Status.Hidden) == 0)
                 Menu.DrawPointer(cursor, offset, blink);
         }
 
-        public void Init(int count, int depth, IGMDataItem container = null, int? cols = null, int? rows = null)
+        protected bool InputITEM(int i, int d, ref bool ret)
         {
+            if (ITEM[i, d].Enabled && (((IGMDataItem_IGMData)ITEM[i, d]).Data).Enabled)
+            {
+                Cursor_Status |= (Cursor_Status.Enabled | Cursor_Status.Blinking);
+                ret = (((IGMDataItem_IGMData)ITEM[i, d]).Data).Inputs();
+                return true;
+            }
+            return false;
+        }
+        protected void Init(int count, int depth, IGMDataItem container = null, int? cols = null, int? rows = null)
+        {
+            CONTAINER = container ?? new IGMDataItem_Empty();
             if (count <= 0 || depth <= 0)
             {
-                if (container == null)
+                if (CONTAINER.Pos == Rectangle.Empty)
                 {
-                    Debug.WriteLine($"{this}:: count {count} or depth {depth}, is invalid must be >= 1, or a container {container} must be set instead, Skipping Init()");
+                    Debug.WriteLine($"{this}:: count {count} or depth {depth}, is invalid must be >= 1, or a CONTAINER {CONTAINER} and CONTAINER.Pos { CONTAINER.Pos.ToString() } must be set instead, Skipping Init()");
                     return;
                 }
             }
@@ -233,10 +262,6 @@ namespace OpenVIII
                 Descriptions = new Dictionary<int, FF8String>(count);
                 this.Cols = cols ?? 1;
                 this.Rows = rows ?? 1;
-            }
-            if (container != null)
-            {
-                CONTAINER = container;
             }
             Init();
             Refresh();

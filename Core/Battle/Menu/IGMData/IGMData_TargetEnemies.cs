@@ -14,6 +14,8 @@ namespace OpenVIII
             {
             }
 
+            public IGMData_TargetParty Target_Party { get; set; }
+
             #endregion Constructors
 
             #region Methods
@@ -23,11 +25,11 @@ namespace OpenVIII
                 if (CURSOR_SELECT - Rows < 0)
                 {
                     Cursor_Status &= ~Cursor_Status.Enabled;
-                    Menu.BattleMenus.Target_Party.Cursor_Status |= Cursor_Status.Enabled;
-                    Menu.BattleMenus.Target_Party.CURSOR_SELECT = CURSOR_SELECT % Rows;
-                    while (Menu.BattleMenus.Target_Party.BLANKS[Menu.BattleMenus.Target_Party.CURSOR_SELECT] && Menu.BattleMenus.Target_Party.CURSOR_SELECT > 0)
+                    Target_Party.Cursor_Status |= Cursor_Status.Enabled;
+                    Target_Party.CURSOR_SELECT = CURSOR_SELECT % Rows;
+                    while (Target_Party.BLANKS[Target_Party.CURSOR_SELECT] && Target_Party.CURSOR_SELECT > 0)
                     {
-                        Menu.BattleMenus.Target_Party.CURSOR_SELECT--;
+                        Target_Party.CURSOR_SELECT--;
                     }
                 }
                 else
@@ -48,11 +50,11 @@ namespace OpenVIII
                 if (CURSOR_SELECT + Rows > Count || (ITEM[CURSOR_SELECT + Rows, 0] == null || !ITEM[CURSOR_SELECT + Rows, 0].Enabled) || BLANKS[CURSOR_SELECT + Rows])
                 {
                     Cursor_Status &= ~Cursor_Status.Enabled;
-                    Menu.BattleMenus.Target_Party.Cursor_Status |= Cursor_Status.Enabled;
-                    Menu.BattleMenus.Target_Party.CURSOR_SELECT = CURSOR_SELECT % Rows;
-                    while (Menu.BattleMenus.Target_Party.BLANKS[Menu.BattleMenus.Target_Party.CURSOR_SELECT] && Menu.BattleMenus.Target_Party.CURSOR_SELECT > 0)
+                    Target_Party.Cursor_Status |= Cursor_Status.Enabled;
+                    Target_Party.CURSOR_SELECT = CURSOR_SELECT % Rows;
+                    while (Target_Party.BLANKS[Target_Party.CURSOR_SELECT] && Target_Party.CURSOR_SELECT > 0)
                     {
-                        Menu.BattleMenus.Target_Party.CURSOR_SELECT--;
+                        Target_Party.CURSOR_SELECT--;
                     }
                 }
                 else

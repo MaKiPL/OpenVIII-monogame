@@ -62,9 +62,6 @@ namespace OpenVIII
         #region Properties
 
         public VictoryMenu Victory_Menu => (VictoryMenu)(menus?.Where(m => m.GetType().Equals(typeof(VictoryMenu))).First());
-        public IGMData_TargetGroup Target_Group => (IGMData_TargetGroup)Data[SectionName.Targets];
-        public IGMData_TargetEnemies Target_Enemies => ((IGMData_TargetEnemies)((IGMDataItem_IGMData)Data[SectionName.Targets].ITEM[0, 0]).Data);
-        public IGMData_TargetParty Target_Party => ((IGMData_TargetParty)((IGMDataItem_IGMData)Data[SectionName.Targets].ITEM[1, 0]).Data);
 
         public int Player { get => _player; protected set => _player = value; }
 
@@ -220,16 +217,6 @@ namespace OpenVIII
         {
             NoInputOnUpdate = true;
             Size = new Vector2 { X = 881, Y = 636 };
-            const int w = 380;
-            const int h = 140;
-            Data = new Dictionary<Enum, IGMData>()
-            {
-                {
-                    SectionName.Targets, new IGMData_TargetGroup(
-                    new IGMData_TargetEnemies(new Rectangle(25, (int)(Size.Y - h-6), w, h)) ,
-                    new IGMData_TargetParty(new Rectangle(25+w, (int)(Size.Y -h- 6), 210, h)))
-                }
-            };
             Data.ForEach(x => x.Value.Hide());
             base.Init();
         }
@@ -257,10 +244,7 @@ namespace OpenVIII
         private bool InputBattleFunction()
         {
             bool ret = false;            
-                if (Data[SectionName.Targets].Enabled)
-                {
-                    return Data[SectionName.Targets].Inputs();
-                }
+
                 foreach (Menu m in menus.Where(m => m.GetType().Equals(typeof(BattleMenu)) && (BattleMenu.Mode)m.GetMode() == BattleMenu.Mode.YourTurn))
                 {
                     ret = m.Inputs() || ret;

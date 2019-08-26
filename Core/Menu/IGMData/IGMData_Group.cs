@@ -1,11 +1,24 @@
-﻿namespace OpenVIII
+﻿using System.Diagnostics;
+
+namespace OpenVIII
 {
     public class IGMData_Group : IGMData
     {
         #region Constructors
-
-        public IGMData_Group(params IGMData[] d) : base(d.Length, 1)
+        public IGMData_Group(params IGMData[] d) : base(d.Length, 1,container:new IGMDataItem_Empty())
         {
+            Init(d);
+        }
+
+        public IGMData_Group() :base(container: new IGMDataItem_Empty())
+        {
+            Debug.WriteLine($"{this} :: Not init may need to call it later");
+        }
+
+        protected virtual void Init(IGMData[] d,bool baseinit = false)
+        {
+            if (baseinit)
+                Init(d.Length, 1);
             for (int i = 0; i < d.Length; i++)
             {
                 ITEM[i, 0] = d[i];
