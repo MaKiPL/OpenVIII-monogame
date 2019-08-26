@@ -7,6 +7,8 @@ namespace OpenVIII
 {
     public class EntryGroup : IEnumerator, IEnumerable
     {
+        private const int minx = -200;
+        private const int miny = -100;
         #region Fields
 
         private List<Entry> list;
@@ -143,9 +145,7 @@ namespace OpenVIII
             inscale = Abs(inscale);
             inputdst.Width = Math.Abs(inputdst.Width);
             inputdst.Height = Math.Abs(inputdst.Height);
-            minx = -200;
-            miny = -100;
-            if (inputdst.X + inputdst.Width < minx || inputdst.Y + inputdst.Height < miny) return;
+            if (inputdst.Right < minx || inputdst.Bottom < miny) return;
 
             Vector2 autoscale = new Vector2((float)inputdst.Width / totalSize.X, (float)inputdst.Height / totalSize.Y);
             Vector2 scale;
@@ -175,75 +175,97 @@ namespace OpenVIII
                 Rectangle src = e.GetRectangle;
                 bool testY = false;
                 bool testX = false;
-                if ((inputdst.Width != 0) && dst.X + dst.Width > inputdst.X + inputdst.Width)
-                {
-                    int change = GetChange(totalSize.X, inputdst.Width, scale.X);
-                    src.Width -= (int)Math.Round(change / scale.X);
-                    dst.Width -= change;
-                }
-                else if (e.Fill.X > 0 && autoscale.X > scale.X)
-                {
-                    scale.X = autoscale.X;
-                    dst.Width = (int)Math.Ceiling((src.Width * autoscale.X + 0.5f));
-                }
+                CorrectX(inputdst, totalSize, ref dst, autoscale, ref scale, e, ref src);
+                CorrectY(inputdst, totalSize, ref dst, autoscale, ref scale, e, ref src);
 
-                if ((inputdst.Height != 0) && dst.Y + dst.Height > inputdst.Y + inputdst.Height)
-                {
-                    int change = GetChange(totalSize.Y, inputdst.Height, scale.Y); ;
-                    src.Height -= (int)Math.Round(change / scale.Y);
-                    dst.Height -= change;
-                }
-                else if (e.Fill.Y > 0 && autoscale.Y > scale.Y)
-                {
-                    scale.Y = autoscale.Y;
-                    dst.Height = (int)Math.Ceiling((src.Height * autoscale.Y + 0.5f));
-                }
+                if (dst.Width <= 0 || dst.Height <= 0) continue; //infinate loop prevention
 
-                if (dst.Height <= 0 || dst.Height <= 0) continue; //infinate loop prevention
-
-                do
+                if (e.Tile != Vector2.Zero)
                 {
                     do
                     {
-                        if (e.Tile.Y > 0)
+                        do
                         {
-                            testY = (dst.Y + dst.Height) < (inputdst.Y + inputdst.Height + offset2.Y);
-                            if (!testY)
-                            {
-                                int correction = (inputdst.Y + inputdst.Height + offset2.Y) - (dst.Y + dst.Height);
-                                dst.Height += correction;
-                                src.Height += (int)Math.Round(correction / scale.Y);
-                            }
+                            Point correction = Correction(inputdst, dst, offset2);
+                            testY = testYfunct(dst, inputdst, offset2);
+                            testX = testXfunct(dst, inputdst, offset2);
+                            TileBounds(correction, ref dst, scale, e, ref src, ref testY, ref testX);
+                            textures[cpalette].Draw(dst, src, Color.White * fade);
+                            dst = TileShift(dst, e);
                         }
-                        if (e.Tile.X > 0)
-                        {
-                            testX = (dst.X + dst.Width) < (inputdst.X + inputdst.Width + offset2.X);
-                            if (!testX)
-                            {
-                                int correction = (inputdst.X + inputdst.Width + offset2.X) - (dst.X + dst.Width);
-                                dst.Width += correction;
-                                src.Width += (int)Math.Round(correction / scale.X);
-                            }
-                        }
-                        textures[cpalette].Draw(dst, src, Color.White * fade);
-                        if (e.Tile.Y > 0)
-                        {
-                            dst.Y += dst.Height;
-                        }
-                        if (e.Tile.X > 0)
-                        {
-                            dst.X += dst.Width;
-                        }
+                        while (e.Tile.Y > 0 && testY);
                     }
-                    while (e.Tile.Y > 0 && testY);
+                    while (e.Tile.X > 0 && testX);
                 }
-                while (e.Tile.X > 0 && testX);
+                else
+                    textures[cpalette].Draw(dst, src, Color.White * fade);
             }
         }
 
+        private static void CorrectY(Rectangle inputdst, Point totalSize, ref Rectangle dst, Vector2 autoscale, ref Vector2 scale, Entry e, ref Rectangle src)
+        {
+            
+            if (inputdst.Height != 0 && dst.Bottom > inputdst.Bottom)
+            {
+                int change = GetChange(totalSize.Y, inputdst.Height, scale.Y); ;
+                src.Height -= (int)Math.Round(change / scale.Y);
+                dst.Height -= change;
+            }
+            else if (e.Fill.Y > 0 && autoscale.Y > scale.Y)
+            {
+                scale.Y = autoscale.Y;
+                dst.Height = (int)Math.Ceiling((src.Height * autoscale.Y + 0.5f));
+            }
+        }
+
+        private static void CorrectX(Rectangle inputdst, Point totalSize, ref Rectangle dst, Vector2 autoscale, ref Vector2 scale, Entry e, ref Rectangle src)
+        {
+            if ((inputdst.Width != 0) && dst.Right > inputdst.Right)
+            {
+                int change = GetChange(totalSize.X, inputdst.Width, scale.X);
+                src.Width -= (int)Math.Round(change / scale.X);
+                dst.Width -= change;
+            }
+            else if (e.Fill.X > 0 && autoscale.X > scale.X)
+            {
+                scale.X = autoscale.X;
+                dst.Width = (int)Math.Ceiling((src.Width * autoscale.X + 0.5f));
+            }
+        }
+
+        private static void TileBounds(Point correction, ref Rectangle dst, Vector2 scale, Entry e, ref Rectangle src, ref bool testY, ref bool testX)
+        {
+            if (e.Tile.Y > 0 && !testY)
+            {
+                dst.Height += correction.Y;
+                src.Height += (int)Math.Round(correction.Y / scale.Y);
+            }
+            if (e.Tile.X > 0 && !testX)
+            {
+                dst.Width += correction.X;
+                src.Width += (int)Math.Round(correction.X / scale.X);
+            }
+        }
+
+        private static bool testXfunct(Rectangle dst, Rectangle inputdst, Point offset2) => (dst.Right) < (inputdst.Right + offset2.X);
+        private static bool testYfunct(Rectangle dst, Rectangle inputdst, Point offset2) => (dst.Bottom) < (inputdst.Bottom + offset2.Y);
+        private static Point Correction(Rectangle inputdst, Rectangle dst, Point offset2) => new Point((inputdst.Right + offset2.X) - (dst.Right), (inputdst.Bottom + offset2.Y) - (dst.Bottom));
+
+        private static Rectangle TileShift(Rectangle dst, Entry e)
+        {
+            if (e.Tile.Y > 0)
+            {
+                dst.Y += dst.Height;
+            }
+            if (e.Tile.X > 0)
+            {
+                dst.X += dst.Width;
+            }
+
+            return dst;
+        }
+
         private int position = 0;
-        private static int minx;
-        private static int miny;
 
         public bool MoveNext() => ++position <= list.Count;
 
