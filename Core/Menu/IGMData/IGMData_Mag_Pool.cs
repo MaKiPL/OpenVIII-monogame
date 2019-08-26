@@ -7,15 +7,15 @@ namespace OpenVIII
 {
     public class IGMData_Mag_Pool : IGMData_Pool<Saves.CharacterData, byte>
     {
-        private const Font.ColorID nostat = Font.ColorID.Dark_Gray;
-        private const Font.ColorID @default = Font.ColorID.White;
-        private const Font.ColorID junctioned = Font.ColorID.Grey;
         #region Fields
 
         public static EventHandler<IGM_Junction.Mode> SlotConfirmListener;
         public static EventHandler<IGM_Junction.Mode> SlotReinitListener;
         public static EventHandler<IGM_Junction.Mode> SlotUndoListener;
         public static EventHandler<Kernel_bin.Stat> StatEventListener;
+        private const Font.ColorID @default = Font.ColorID.White;
+        private const Font.ColorID junctioned = Font.ColorID.Grey;
+        private const Font.ColorID nostat = Font.ColorID.Dark_Gray;
         private bool Battle = false;
         private bool eventAdded = false;
         private bool skipReinit = false;
@@ -483,5 +483,6 @@ namespace OpenVIII
         }
 
         #endregion Methods
+
     }
 }
