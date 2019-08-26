@@ -187,7 +187,9 @@ namespace OpenVIII
             }
             return GetCursor_select();
         }
+
         public int PointerZIndex = byte.MaxValue;
+
         /// <summary>
         /// Draw all items
         /// </summary>
@@ -202,13 +204,13 @@ namespace OpenVIII
                     for (int i = 0; i < Count; i++)
                         for (int d = 0; d < Depth; d++)
                         {
-                            ITEM[i, d]?.Draw();
-                            if(i == PointerZIndex)
+                            DrawITEM(i, d);
+                            if (i == PointerZIndex)
                                 pointer = testthanpointer();
                         }
 
                 if (!pointer)
-                { 
+                {
                     pointer = testthanpointer();
                 }
             }
@@ -224,10 +226,9 @@ namespace OpenVIII
             }
         }
 
-        public void DrawPointer(Point cursor, Vector2? offset = null, bool blink = false)
-        {
-                Menu.DrawPointer(cursor, offset, blink);
-        }
+        protected virtual void DrawITEM(int i, int d) => ITEM[i, d]?.Draw();
+
+        public void DrawPointer(Point cursor, Vector2? offset = null, bool blink = false) => Menu.DrawPointer(cursor, offset, blink);
 
         protected bool InputITEM(int i, int d, ref bool ret)
         {
@@ -239,6 +240,7 @@ namespace OpenVIII
             }
             return false;
         }
+
         protected void Init(int count, int depth, IGMDataItem container = null, int? cols = null, int? rows = null)
         {
             CONTAINER = container ?? new IGMDataItem_Empty();

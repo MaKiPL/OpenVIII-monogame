@@ -31,7 +31,7 @@ namespace OpenVIII
             Refresh();
         }
 
-        public IGMData_Mag_Pool() : base(5, 3, new IGMDataItem_Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.MAGIC), 4, 13)
+        public IGMData_Mag_Pool() : base(6, 3, new IGMDataItem_Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.MAGIC), 4, 13)
         {
         }
 
@@ -148,7 +148,6 @@ namespace OpenVIII
                 }
             }
         }
-
         public void Get_Slots_Values() =>
             Source = Memory.State.Characters[Character];
 
@@ -186,8 +185,15 @@ namespace OpenVIII
 
         public override bool Inputs()
         {
-            Cursor_Status |= Cursor_Status.Enabled;
-            return base.Inputs();
+            bool ret = false;
+            if (InputITEM(Targets_Window, 0, ref ret))
+            { }
+            else
+            {
+                Cursor_Status |= Cursor_Status.Enabled;
+                return base.Inputs();
+            }
+            return ret;
         }
 
         public override bool Inputs_CANCEL()
@@ -242,6 +248,8 @@ namespace OpenVIII
         {
             if (Battle)
             {
+                Target_Group.SelectTargetWindows(Kernel_bin.MagicData[Contents[CURSOR_SELECT]]);
+                Target_Group.ShowTargetWindows();
             }
             else
             if (Memory.State.Characters != null)
@@ -308,11 +316,17 @@ namespace OpenVIII
             SIZE[Rows] = SIZE[0];
             SIZE[Rows].Y = Y;
             ITEM[Rows, 2] = new IGMDataItem_Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 45, SIZE[Rows].Y, 0, 0), scale: new Vector2(2.5f));
+
+            ITEM[Targets_Window, 0] = new IGMDataItem_IGMData(new BattleMenus.IGMData_TargetGroup());
             BLANKS[Rows] = true;
             Cursor_Status &= ~Cursor_Status.Horizontal;
             Cursor_Status |= Cursor_Status.Vertical;
             Cursor_Status &= ~Cursor_Status.Blinking;
+            PointerZIndex = Rows - 1;
         }
+
+        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMDataItem_IGMData)ITEM[Targets_Window, 0]).Data);
+        private int Targets_Window => Rows;
 
         protected override void InitShift(int i, int col, int row)
         {
@@ -422,6 +436,11 @@ namespace OpenVIII
                         break;
                 }
             }
+        }
+        protected override void DrawITEM(int i, int d)
+        {
+            if(Targets_Window >= i || !Target_Group.Enabled)
+            base.DrawITEM(i, d);
         }
 
         private void StatChangeEvent(object sender, Kernel_bin.Stat e) => UpdateOnEvent(sender, null, e);

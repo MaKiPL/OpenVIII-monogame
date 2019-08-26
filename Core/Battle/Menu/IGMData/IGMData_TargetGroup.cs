@@ -29,8 +29,9 @@ namespace OpenVIII
                 IGMData_TargetParty ii = (IGMData_TargetParty)(((IGMDataItem_IGMData)ITEM[1, 0]).Data);
                 i.Target_Party = ii;
                 ii.Target_Enemies = i;
+                Hide();
             }
-
+            public override void Show() => base.Show();
 
             public IGMData_TargetGroup():base()
             {
@@ -137,11 +138,6 @@ namespace OpenVIII
 
             private readonly int[] Renzokuken_hits = { 4, 5, 6, 7 };
 
-            protected override void Init()
-            {
-                base.Init();
-                Hide();
-            }
             public override bool Inputs_OKAY()
             {
                 //TODO improve this.
@@ -163,6 +159,9 @@ namespace OpenVIII
                 switch (Command.ID)
                 {
                     case 1: //Attack
+                        break;
+                    case 2:
+                        Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} casts {Magic.Name}({Magic.ID}) spell on { (enemytarget ? $"{e.Name.Value_str}({i.CURSOR_SELECT})" : Memory.Strings.GetName(vc).Value_str) }");
                         break;
                     case 5: //Renzokuken
                         byte w = Memory.State[fromvc].WeaponID;
