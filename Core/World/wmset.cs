@@ -325,7 +325,7 @@ namespace OpenVIII.Core.World
             unk02 = 0xFF02,
             unk03 = 0xFF03,
             unk07 = 0xFF07,
-            unk09 = 0xFF09,
+            CheckForVehicleGroup = 0xFF09,
             unk0f = 0xFF0F,
             unk10 = 0xFF10,
             unk11 = 0xFF11,
@@ -377,7 +377,7 @@ namespace OpenVIII.Core.World
                     return Module_world_debug.GetRealSegmentId() == controlValue;
                 case sec8_conditional.unk07:
                     break;
-                case sec8_conditional.unk09:
+                case sec8_conditional.CheckForVehicleGroup:
                     break;
                 case sec8_conditional.unk0f:
                     break;
@@ -792,7 +792,7 @@ namespace OpenVIII.Core.World
             wmunk31,
             wmfx32,
             wmunk33,
-            wmunk34,
+            shadowBig,
             magicBarrier
         }
 

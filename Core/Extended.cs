@@ -209,6 +209,39 @@ namespace OpenVIII
         }
 
         /// <summary>
+        /// Provides VertexPositionTexture[] based on translatePosition and the scale. Result is plane geometry - 4 verts, 2 tris with UV of 0.0-1.0f
+        /// </summary>
+        /// <param name="translatePosition"></param>
+        /// <param name="scale"></param>
+        /// <returns></returns>
+        public static VertexPositionTexture[] GetShadowPlane(Vector3 translatePosition, float scale=1f)
+        {
+            /*
+             * THREE----ZERO
+             * |         |
+             * |         |
+             * |         |
+             * |         |
+             * TWO------ONE*/
+
+            Vector3 zero = new Vector3(1f * scale +translatePosition.X , translatePosition.Y, 1f * scale + translatePosition.Z);
+            Vector3 one = new Vector3(1f * scale + translatePosition.X, translatePosition.Y, translatePosition.Z);
+            Vector3 two = translatePosition;
+            Vector3 three = new Vector3(translatePosition.X, translatePosition.Y, 1f * scale + translatePosition.Z);
+
+            VertexPositionTexture[] vpt = new VertexPositionTexture[]
+            {
+                new VertexPositionTexture(zero, new Vector2(1f,1f)),
+                new VertexPositionTexture(one, new Vector2(1f,0f)),
+                new VertexPositionTexture(two, Vector2.Zero),
+                new VertexPositionTexture(two, Vector2.Zero),
+                new VertexPositionTexture(three, new Vector2(0f,1f)),
+                new VertexPositionTexture(zero, new Vector2(1f,1f)),
+            };
+            return vpt;
+        }
+
+        /// <summary>
         /// Some debug text is crashing due to brackets not appearing in chartable. This function removes brackets inside string
         /// </summary>
         /// <param name="s"></param>

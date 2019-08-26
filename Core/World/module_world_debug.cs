@@ -361,6 +361,8 @@ namespace OpenVIII
             return 0;
         }
 
+        public static bool bHasMoved = false;
+
         public static void Update()
         {
             animationId = 0;
@@ -389,7 +391,8 @@ namespace OpenVIII
             if (Input.Button(Keys.D8))
                 bDebugDisableCollision = !bDebugDisableCollision;
 
-            SimpleInputUpdate(out var bHasMoved); //lastplayerposition = playerposition here
+            SimpleInputUpdate(out var bHasMove); //lastplayerposition = playerposition here
+            bHasMoved = bHasMove;
             CollisionUpdate();
             if(bHasMoved)
                 EncounterUpdate();
@@ -406,6 +409,8 @@ namespace OpenVIII
                 return;
             int groundId = activeCollidePolygon.Value.groundtype;
             int encPointer = wmset.GetEncounterHelperPointer(regionId, groundId); //section1
+            if (encPointer == 0xffff)
+                return;
             ushort[] AvailableEncounters = wmset.GetEncounters(encPointer); //section4
 
             //we now have 8 encounters-> 4 casual; 2 mid and 2 rare
@@ -650,6 +655,7 @@ namespace OpenVIII
             DrawCharacter(activeCharacter);
 
 #if DEBUG
+            DrawCharacterShadow();
             DrawDebug();
 #endif
 
@@ -680,6 +686,45 @@ namespace OpenVIII
             Memory.SpriteBatchEnd();
 
 
+        }
+
+        /// <summary>
+        /// Takes care of drawing shadows and additional FX when needed (like in forest).
+        /// [WIP]
+        /// </summary>
+        private static void DrawCharacterShadow()
+        {
+            if (activeCollidePolygon == null)
+                return;
+            if((activeCollidePolygon.Value.vertFlags & TRIFLAGS_FORESTTEST) > 0)
+            {
+                var shadowGeom = Extended.GetShadowPlane(playerPosition + new Vector3(-2.2f, .1f, -2.2f), 4f);
+                ate.Texture = wmset.GetWorldMapTexture(wmset.Section38_textures.shadowBig, 0);
+                ate.Alpha = .25f;
+                foreach(var pass in ate.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+                    ate.GraphicsDevice.DepthStencilState = DepthStencilState.None;
+                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, shadowGeom, 0, shadowGeom.Length / 3);
+                }
+                ate.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+                ate.Alpha = 1f;
+            }
+            else if ((activeCollidePolygon.Value.vertFlags & TRIFLAGS_FORESTTEST) == 0)
+            {
+                if(bHasMoved)
+                {
+                    var shadowGeom = Extended.GetShadowPlane(playerPosition + new Vector3(-2.2f, .1f, -2.2f), 4f);
+                    ate.Texture = wmset.GetWorldMapTexture(wmset.Section38_textures.wmfx_bush, 0);
+                    foreach (var pass in ate.CurrentTechnique.Passes)
+                    {
+                        pass.Apply();
+                        ate.GraphicsDevice.DepthStencilState = DepthStencilState.None;
+                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, shadowGeom, 0, shadowGeom.Length / 3);
+                    }
+                    ate.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+                }
+            }
         }
 
         /// <summary>
