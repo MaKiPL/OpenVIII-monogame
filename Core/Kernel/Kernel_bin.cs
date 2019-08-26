@@ -16,7 +16,7 @@ namespace OpenVIII
         private static List<Enemy_Attacks_Data> s_enemyAttacksData;
         private static List<Battle_Commands> s_battleCommands;
         private static List<Weapons_Data> s_weaponsData;
-        private static Dictionary<Renzokeken_Level, Renzokuken_Finishers_Data> s_renzokukenFinishersData;
+        private static Dictionary<Renzokeken_Finisher, Renzokuken_Finishers_Data> s_renzokukenFinishersData;
         private static Dictionary<Characters, Character_Stats> s_characterStats;
         private static List<Battle_Items_Data> s_battleItemsData;
         public static List<Non_battle_Items_Data> s_nonbattleItemsData;
@@ -51,7 +51,7 @@ namespace OpenVIII
         public static IReadOnlyList<Enemy_Attacks_Data> EnemyAttacksData { get => s_enemyAttacksData; }//2
         public static IReadOnlyList<Battle_Commands> BattleCommands { get => s_battleCommands; }//3
         public static IReadOnlyList<Weapons_Data> WeaponsData { get => s_weaponsData; }//4
-        public static IReadOnlyDictionary<Renzokeken_Level, Renzokuken_Finishers_Data> RenzokukenFinishersData { get => s_renzokukenFinishersData; } //5
+        public static IReadOnlyDictionary<Renzokeken_Finisher, Renzokuken_Finishers_Data> RenzokukenFinishersData { get => s_renzokukenFinishersData; } //5
         public static IReadOnlyDictionary<Characters, Character_Stats> CharacterStats { get => s_characterStats; }//6
         public static IReadOnlyList<Battle_Items_Data> BattleItemsData { get => s_battleItemsData; }//7
         public static IReadOnlyList<Non_battle_Items_Data> NonbattleItemsData { get => s_nonbattleItemsData; } //8 //only strings
