@@ -4,6 +4,7 @@ using System;
 
 namespace OpenVIII
 {
+
     public abstract class Texture_Base
     {
         #region Fields

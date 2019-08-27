@@ -463,7 +463,7 @@ namespace OpenVIII.Core.World
         private const int VRAM_BLOCKSIZE = 32; // =VRAM_BLOCKSTEP*4 - one origX of 16 is actually 16/2=8*32=finalXorig
         private const int VRAM_BLOCKSTEP = 8;
 
-        private Texture2D sec39_texture;
+        private TextureHandler sec39_texture;
 
         /// <summary>
         /// Section 39: Textures of roads, train tracks and bridge
@@ -475,7 +475,8 @@ namespace OpenVIII.Core.World
             {
                 ms.Seek(sectionPointers[39 - 1], SeekOrigin.Begin);
                 var innerSec = GetInnerPointers(br);
-                sec39_texture = new Texture2D(Memory.graphics.GraphicsDevice, VRAM_TEXBLOCKWIDTH, VRAM_TEXBLOCKHEIGHT, false, SurfaceFormat.Color);
+                Texture2D sec39_texture = new Texture2D(Memory.graphics.GraphicsDevice, VRAM_TEXBLOCKWIDTH, VRAM_TEXBLOCKHEIGHT, false, SurfaceFormat.Color);
+
                 for (int i = 0; i < innerSec.Length; i++)
                 {
                     TIM2 tim = new TIM2(buffer, (uint)(sectionPointers[39 - 1] + innerSec[i]));
@@ -487,6 +488,7 @@ namespace OpenVIII.Core.World
                     newX = (newX / VRAM_BLOCKSTEP) * VRAM_BLOCKSIZE;
                     sec39_texture.SetData(0, new Rectangle(newX, newY, atlasChunk.Width, atlasChunk.Height), chunkBuffer, 0, chunkBuffer.Length);
                 }
+                this.sec39_texture = new TextureHandler($"wmset_tim39.tim", new Texture2DWrapper(sec39_texture), 0, null);
                 //sec39_texture = new TextureHandler($"wmset_tim{(i + 1).ToString("D2")}.tim", new TIM2(buffer, (uint)(sectionPointers[39 - 1] + innerSec[i])), k, null);
             }
         }
@@ -512,7 +514,7 @@ namespace OpenVIII.Core.World
         /// Gets textures from Section39
         /// </summary>
         /// <returns></returns>
-        public Texture2D GetRoadsMiscTextures(Section39_Textures index, int clut) => sec39_texture;
+        public Texture2D GetRoadsMiscTextures(Section39_Textures index, int clut) => (Texture2D)sec39_texture;
         #endregion
 
         #region Section 42 - objects and vehicles textures
@@ -573,7 +575,7 @@ namespace OpenVIII.Core.World
                     timOriginHolderList.Add(new Vector2((tim.GetOrigX - SEC42_VRAM_STARTX)*4, tim.GetOrigY));
                     vehTextures.Add(new TextureHandler[tim.GetClutCount]);
                     for (ushort k = 0; k < vehTextures[i].Length; k++)
-                        vehTextures[i][k] = new TextureHandler($"wmset_tim{(i + 1).ToString("D2")}.tim", tim, k, null);
+                        vehTextures[i][k] = new TextureHandler($"wmset_tim42_{(i + 1).ToString("D2")}.tim", tim, k, null);
                 }
             }
             vehicleTextures = vehTextures.ToArray();

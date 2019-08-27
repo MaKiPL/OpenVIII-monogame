@@ -162,7 +162,7 @@ namespace OpenVIII
             SelphieCasual
         }
 
-        private static worldCharacters activeCharacter = worldCharacters.SquallCasual;
+        private static worldCharacters activeCharacter = worldCharacters.SquallSeed; //worldCharacters.SquallCasual;
 
         private static _worldState worldState;
         private static MiniMapState MapState = MiniMapState.rectangle;
@@ -895,65 +895,62 @@ namespace OpenVIII
 
         private static void DrawRectangleMiniMap()
         {
-            //Rectangle src = new Rectangle(Point.Zero, wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap, 1).Size.ToPoint());
-            //Scale = Memory.Scale(src.Width, src.Height, Memory.ScaleMode.FitBoth);
-            //Vector2 Scale2 = Memory.Scale(scaleMode: Memory.ScaleMode.Stretch, targetX: src.Width, targetY: src.Height);
-            //src.Width = (int)(src.Width * Scale.X);
-            //src.Height = (int)(src.Height * Scale.Y);
-            //src.Height /= 2;
-            //src.Width /= 2;
-            //Rectangle dst =
-            //    new Rectangle(
-            //        (int)(Memory.graphics.GraphicsDevice.Viewport.Width-(src.Width)),
-            //        (int)(Memory.graphics.GraphicsDevice.Viewport.Height-(src.Height)),
-            //        (int)(src.Width),
-            //        (int)(src.Height));
+            Rectangle src = new Rectangle(Point.Zero, wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap, 1).Size.ToPoint());
+            Scale = Memory.Scale(src.Width, src.Height, Memory.ScaleMode.FitBoth);
+            src.Width = (int)(src.Width * Scale.X);
+            src.Height = (int)(src.Height * Scale.Y);
+            src.Height /= 2;
+            src.Width /= 2;
+            Rectangle dst =
+                new Rectangle(
+                    (int)(Memory.graphics.GraphicsDevice.Viewport.Width - (src.Width))-50,
+                    (int)(Memory.graphics.GraphicsDevice.Viewport.Height - (src.Height))-50,
+                    (int)(src.Width),
+                    (int)(src.Height));
 
 
-            //float bc = Math.Abs(camPosition.X / 16384.0f);
-
-            ////float bc = Math.Abs(camPosition.X / 12288f);
-            //float topX = dst.X + (dst.Width * bc)+ (dst.Width * (1f-(Scale2.X)));
-            //bc = Math.Abs(camPosition.Z / 12288f);
-            //float topY = dst.Y + (dst.Height * bc);
-
-            ////Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, Memory.blendState_BasicAdd);
-            //Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
-            //wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap, 1).Draw(dst, Color.White * .7f);
-            //Memory.spriteBatch.End();
-
-            //src = new Rectangle(Point.Zero, wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0).Size.ToPoint());
-            //Scale = Memory.Scale(src.Width, src.Height, Memory.ScaleMode.FitBoth);
-            //src.Height = (int)((src.Width * Scale.X) / 30);
-            //src.Width = (int)((src.Height *Scale.Y) /30);
-            //dst = new Rectangle(
-            //    (int)topX, 
-            //    (int)topY, 
-            //    (int)src.Width, 
-            //    (int)src.Height);
-
-            ////Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
-            //Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
-            //wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0).Draw(dst, Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
-            //Memory.SpriteBatchEnd();
-
-
-            float topX = Memory.graphics.GraphicsDevice.Viewport.Width * .6f; //6
-            float topY = Memory.graphics.GraphicsDevice.Viewport.Height * .6f;
-
-            float bc = Math.Abs(camPosition.X / 16384.0f);
-            topX += Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f * bc;
+            float bc = Math.Abs(camPosition.X / 16384.0f);           
+            float topX = dst.X + (dst.Width * bc);
             bc = Math.Abs(camPosition.Z / 12288f);
-            topY += Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f * bc;
+            float topY = dst.Y + (dst.Height * bc);
 
             //Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, Memory.blendState_BasicAdd);
             Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
-            wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap, 1).Draw(new Rectangle((int)(Memory.graphics.GraphicsDevice.Viewport.Width * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f)), Color.White * .7f);
+            wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap, 1).Draw(dst, Color.White * .7f);
             Memory.spriteBatch.End();
 
+            src = new Rectangle(Point.Zero, wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0).Size.ToPoint());
+            Scale = Memory.Scale(src.Width, src.Height, Memory.ScaleMode.FitBoth);
+            src.Height = (int)((src.Width * Scale.X) / 30);
+            src.Width = (int)((src.Height * Scale.Y) / 30);
+            dst = new Rectangle(
+                (int)topX,
+                (int)topY,
+                (int)src.Width,
+                (int)src.Height);
+
+            //Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
             Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
-            wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0).Draw(new Rectangle((int)topX, (int)topY, (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 32.0f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 32.0f)), Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
+            wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0).Draw(dst, Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
             Memory.SpriteBatchEnd();
+
+
+            //float topX = Memory.graphics.GraphicsDevice.Viewport.Width * .6f; //6
+            //float topY = Memory.graphics.GraphicsDevice.Viewport.Height * .6f;
+
+            //float bc = Math.Abs(camPosition.X / 16384.0f);
+            //topX += Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f * bc;
+            //bc = Math.Abs(camPosition.Z / 12288f);
+            //topY += Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f * bc;
+
+            ////Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, Memory.blendState_BasicAdd);
+            //Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
+            //wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap, 1).Draw(new Rectangle((int)(Memory.graphics.GraphicsDevice.Viewport.Width * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f)), Color.White * .7f);
+            //Memory.spriteBatch.End();
+
+            //Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
+            //wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0).Draw(new Rectangle((int)topX, (int)topY, (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 32.0f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 32.0f)), Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
+            //Memory.SpriteBatchEnd();
         }
 
         /// <summary>
@@ -1089,7 +1086,7 @@ namespace OpenVIII
                     seg.parsedTriangle[k].uvC);
                 Polygon poly = seg.parsedTriangle[k].parentPolygon;
                 if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_ROAD))
-                    ate.Texture = wmset.GetRoadsMiscTextures(wmset.Section39_Textures.asphalt, 0);
+                    ate.Texture = wmset.GetRoadsMiscTextures(wmset.Section39_Textures.asphalt, 0); // the enum does nothing there is only 1 texture.
                 else if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_WATER))
                     ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0);
                 else

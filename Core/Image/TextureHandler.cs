@@ -75,6 +75,31 @@ namespace OpenVIII
         protected uint StartOffset { get; set; }
 
         protected Texture2D[,] Textures { get; private set; }
+        public int Width
+        {
+            get
+            {
+                int ret = 0;
+                for (uint c = 0; c < Cols && Memory.graphics.GraphicsDevice != null; c++)
+                {
+                    ret += Textures[c,0].Width;
+                }
+                return ret;
+            }
+        }
+
+        public int Height
+        {
+            get
+            {
+                int ret = 0;
+                for (uint r = 0; r < Rows && Memory.graphics.GraphicsDevice != null; r++)
+                {
+                    ret += Textures[0,r].Height;
+                }
+                return ret;
+            }
+        }
 
         #endregion Properties
 
@@ -309,8 +334,8 @@ namespace OpenVIII
 
         public void Save()
         {
-            string clean = Regex.Replace(Filename, @"{[^}]+}", "");
-            string outpath = Path.Combine(Path.GetTempPath(), Path.GetFileName(clean) + $"{Palette}.png");
+            string clean = Path.GetFileNameWithoutExtension(Regex.Replace(Filename, @"{[^}]+}", ""));
+            string outpath = Path.Combine(Path.GetTempPath(), Path.GetFileName(clean) + $"_{(Palette+1).ToString("D2")}.png");
             using (FileStream fs = File.Create(outpath))
                 Textures[0, 0].SaveAsPng(fs, Textures[0, 0].Width, Textures[0, 0].Height);
         }
@@ -369,21 +394,27 @@ namespace OpenVIII
 
         private void _Draw(Rectangle dst, Color color)
         {
-            Vector2 dstOffset = Vector2.Zero;
-            Vector2 dstV = Vector2.Zero;
-            dstOffset.X = dst.X;
-            dstOffset.Y = dst.Y;
-            for (uint r = 0; r < Rows; r++)
+            if (Rows == 1 && Cols == 1 && dst.Height > 0 && dst.Width > 0)
+                Memory.spriteBatch.Draw(Textures[0, 0], dst, color);
+            else
             {
-                for (uint c = 0; c < Cols; c++)
+                //throw new Exception($"{this}::code broken for multiple pcs. I think");
+                Vector2 dstOffset = Vector2.Zero;
+                Vector2 dstV = Vector2.Zero;
+                dstOffset.X = dst.X;
+                dstOffset.Y = dst.Y;
+                for (uint r = 0; r < Rows; r++)
                 {
-                    Vector2 scale = GetScale(Size, dst.Size.ToVector2());
-                    dstV = ToVector2(Textures[c, r]) * scale;
-                    Memory.spriteBatch.Draw(Textures[c, r], dstOffset, null, color, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
+                    for (uint c = 0; c < Cols; c++)
+                    {
+                        Vector2 scale = GetScale(Size, dst.Size.ToVector2());
+                        dstV = ToVector2(Textures[c, r]) * scale;
+                        Memory.spriteBatch.Draw(Textures[c, r], dstOffset, null, color, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
 
-                    dstOffset.X += dstV.X;
+                        dstOffset.X += dstV.X;
+                    }
+                    dstOffset.Y += dstV.Y;
                 }
-                dstOffset.Y += dstV.Y;
             }
         }
 
@@ -525,13 +556,16 @@ namespace OpenVIII
             Classic = null;
             //Merge the texture pieces into one.
             Merge();
+            if (!Modded)
+                Memory.MainThreadOnlyActions.Enqueue(this.Save);
         }
 
-        public void Draw(Rectangle dst, Color color) => Draw(dst,null,color);
+        public void Draw(Rectangle dst, Color color) => Draw(dst, null, color);
+
         public void Draw(Rectangle dst, Color color, float rotation, Vector2 origin, SpriteEffects effects, float depth)
         {
-            if(Rows == 1 && Cols == 1)
-            Memory.spriteBatch.Draw(Textures[0, 0], dst, null, color, rotation, origin, effects, depth);
+            if (Rows == 1 && Cols == 1)
+                Memory.spriteBatch.Draw(Textures[0, 0], dst, null, color, rotation, origin, effects, depth);
             else
             {
                 throw new Exception("had not coded this to draw from multiple textures");
