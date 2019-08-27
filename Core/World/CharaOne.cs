@@ -11,7 +11,7 @@ namespace OpenVIII.Core.World
     class CharaOne
     {
         Debug_MCH[] mchInstances;
-        Texture2D[] textures;
+        TextureHandler[] textures;
         private byte[] buffer;
 
         /// <summary>
@@ -22,7 +22,8 @@ namespace OpenVIII.Core.World
         {
             this.buffer = buffer;
             List<Debug_MCH> mchs = new List<Debug_MCH>();
-            List<Texture2D> texturesList = new List<Texture2D>();
+            List<TextureHandler> texturesList = new List<TextureHandler>();
+            int i = 0;
             using (MemoryStream ms = new MemoryStream(this.buffer))
             using (BinaryReader br = new BinaryReader(ms))
             {
@@ -38,7 +39,7 @@ namespace OpenVIII.Core.World
                         ms.Seek(-8, SeekOrigin.Current);
                         tim = new TIM2(this.buffer, (uint)ms.Position);
                         ms.Seek(tim.GetHeight * tim.GetWidth / 2 + 64, SeekOrigin.Current); //i.e. 64*20=1280/2=640 + 64= 704 + eof
-                        texturesList.Add(tim.GetTexture(0, true));
+                        texturesList.Add(new TextureHandler ($"chara_tim{(i++).ToString("D2")}", tim,0,null));
                     }
                     else //is geometry structure
                     {
@@ -54,7 +55,7 @@ namespace OpenVIII.Core.World
 
         public Debug_MCH GetMCH(int i) => i>=mchInstances.Length ? mchInstances[0]: mchInstances[i];
 
-        public Texture2D GetCharaTexture(int i) => textures[i];
+        public Texture2D GetCharaTexture(int i) => (Texture2D)textures[i];
 
         public void AssignTextureSizesForMchInstance(int mchInstanceIndex, int[] textureIndexes) =>
             mchInstances[mchInstanceIndex].AssignTextureSizes(textures, textureIndexes);

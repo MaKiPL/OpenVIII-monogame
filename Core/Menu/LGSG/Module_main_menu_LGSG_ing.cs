@@ -19,14 +19,14 @@ namespace OpenVIII
         {
             if (PercentLoaded < 1.0f)
             {
-                PercentLoaded += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 3;
+                PercentLoaded += Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0f;
             }
-            else if(InGameMenu != null)
+            else if(Menu.IGM != null)
             {
-                State = MainMenuStates.InGameMenu; // start loaded game.
+                State = MainMenuStates.IGM; // start loaded game.
                 Memory.State = Saves.FileList[SlotLoc, BlockLoc + blockpage * 3].Clone();
 
-                InGameMenu.ReInit();
+                Menu.IGM.Refresh();
                 //till we have a game to load i'm going to display ingame menu.
 
                 init_debugger_Audio.PlaySound(36);

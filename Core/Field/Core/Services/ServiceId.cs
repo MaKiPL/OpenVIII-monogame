@@ -97,12 +97,12 @@ namespace OpenVIII
                 set => throw new NotSupportedException();
             }
 
-            public void AddPlayableCharacter(CharacterId characterId) => throw new NotSupportedException();
-            public void RemovePlayableCharacter(CharacterId characterId) => throw new NotSupportedException();
-            public void AddPartyCharacter(CharacterId characterId) => throw new NotSupportedException();
-            public void RemovePartyCharacter(CharacterId characterId) => throw new NotSupportedException();
-            public void ChangeCharacterState(CharacterId characterId, Boolean isSwitchable, Boolean isSelectable) => throw new NotSupportedException();
-            public void ChangeParty(CharacterId characterId1, CharacterId characterId2, CharacterId characterId3) => throw new NotSupportedException();
+            public void AddPlayableCharacter(Characters characterId) => throw new NotSupportedException();
+            public void RemovePlayableCharacter(Characters characterId) => throw new NotSupportedException();
+            public void AddPartyCharacter(Characters characterId) => throw new NotSupportedException();
+            public void RemovePartyCharacter(Characters characterId) => throw new NotSupportedException();
+            public void ChangeCharacterState(Characters characterId, Boolean isSwitchable, Boolean isSelectable) => throw new NotSupportedException();
+            public void ChangeParty(Characters characterId1, Characters characterId2, Characters characterId3) => throw new NotSupportedException();
             public FieldObject FindPartyCharacterObject(Int32 partyId) => throw new NotSupportedException();
         }
 

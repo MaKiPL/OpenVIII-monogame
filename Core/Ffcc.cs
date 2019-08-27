@@ -69,11 +69,13 @@
         private CancellationToken cancellationToken;
 #if _WINDOWS
         private BufferedWaveProvider bufferedWaveProvider;
+
         /// <summary>
         /// Wave out for naudio only works in windows.
         /// </summary>
         /// <see cref="https://markheath.net/post/how-to-record-and-play-audio-at-same"/>
         private DirectSoundOut nAudioOut;
+
         /// <summary>
         /// Directsound requires VolumeSampleProvider to change volume.
         /// </summary>
@@ -83,6 +85,7 @@
         /// Required by naudio to pan the sound.
         /// </summary>
         private PanningSampleProvider panningSampleProvider;
+
 #endif
         private avio_alloc_context_read_packet rf;
         private CancellationTokenSource sourceToken;
@@ -91,10 +94,9 @@
 
         private Task task;
 
+        #endregion Fields
 
-#endregion Fields
-
-#region Constructors
+        #region Constructors
 
         /// <summary>
         /// Opens filename and init class.
@@ -134,18 +136,18 @@
             }
         }
 
-#endregion Constructors
+        #endregion Constructors
 
-#region Destructors
+        #region Destructors
 
         ~Ffcc()
         {
             Dispose();
         }
 
-#endregion Destructors
+        #endregion Destructors
 
-#region Enums
+        #region Enums
 
         //public FileStream DecodeFileStream { get => _decodeFileStream; set => _decodeFileStream = value; }
         public enum FfccMode
@@ -222,9 +224,9 @@
             PREPARE_SWR
         }
 
-#endregion Enums
+        #endregion Enums
 
-#region Properties
+        #region Properties
 
         public static string DataFileName { get; set; }
 
@@ -401,7 +403,7 @@
         /// Current frame number
         /// </summary>
         /// <returns>Current frame number or -1 on error</returns>
-        private unsafe int CurrentFrameNum => Decoder.CodecContext != null ? Decoder.CodecContext->frame_number : -1;
+        public unsafe int CurrentFrameNum => Decoder.CodecContext != null ? Decoder.CodecContext->frame_number : -1;
 
         /// <summary>
         /// MemoryStream of Audio after decoding and resamping to compatable format.
@@ -472,9 +474,9 @@
         /// </summary>
         private FfccState State { get; set; }
 
-#endregion Properties
+        #endregion Properties
 
-#region Methods
+        #region Methods
 
         /// <summary>
         /// Dispose of all leaky varibles.
@@ -629,7 +631,7 @@
                 {
                     if (AudioEnabled)
                     {
-                        DynamicSound.Stop();
+                        DynamicSound?.Stop();
                     }
 
                     DynamicSound.Dispose();
@@ -694,7 +696,14 @@
 
         protected virtual unsafe void Dispose(bool disposing)
         {
-            lock (Decoder)
+            if (Decoder != null)
+            {
+                lock (Decoder)
+                { dis(); }
+            }
+            else dis();
+
+            void dis()
             {
                 if (disposing)
                 {
@@ -900,10 +909,11 @@ EOF:
         /// <param name="metadata">metadata from format or stream</param>
         private unsafe void GetTags(ref AVDictionary* metadata)
         {
-            string val = "", key = "";
             AVDictionaryEntry* tag = null;
             while ((tag = ffmpeg.av_dict_get(metadata, "", tag, ffmpeg.AV_DICT_IGNORE_SUFFIX)) != null)
             {
+                string key = "";
+                string val = "";
                 for (int i = 0; tag->value[i] != 0; i++)
                 {
                     val += (char)tag->value[i];
@@ -917,8 +927,6 @@ EOF:
                 Metadata[key.ToUpper()] = val;
                 if (key == "LOOPSTART" && int.TryParse(val, out _loopstart))
                 { }
-                key = "";
-                val = "";
             }
         }
 
@@ -1145,7 +1153,7 @@ EOF:
 #if _WINDOWS
             if (useNaudio)
             {
-                while (nAudioOut.PlaybackState != PlaybackState.Stopped)
+                while (nAudioOut.PlaybackState != PlaybackState.Stopped && !cancellationToken.IsCancellationRequested)
                     Thread.Sleep(NextAsyncSleep);
                 try
                 {
@@ -1155,6 +1163,9 @@ EOF:
                 }
                 catch (InvalidOperationException)
                 {
+                    if (nAudioOut != null)
+                        Memory.MainThreadOnlyActions.Enqueue(nAudioOut.Dispose);
+                    Memory.MainThreadOnlyActions.Enqueue(bufferedWaveProvider.ClearBuffer);
                     //doesn't like threads...
                 }
             }
@@ -1367,6 +1378,7 @@ EOF:
                 DecodeFlush(ref Decoder._codecContext, ref *Decoder.Packet); //calling this twice was causing issues.
             }
         }
+
         /// <summary>
         /// </summary>
         /// <param name="sender"></param>
@@ -1374,7 +1386,6 @@ EOF:
         /// <see cref="https://markheath.net/post/how-to-record-and-play-audio-at-same"/>
         private void RecorderOnDataAvailable(object sender, WaveInEventArgs waveInEventArgs)
         {
-
 #if _WINDOWS
             if (bufferedWaveProvider == null)
                 initNaudio();
@@ -1556,25 +1567,25 @@ EOF:
             }
         }
 
-#endregion Methods
+        #endregion Methods
 
-#region Structs
+        #region Structs
 
         /// <summary>
         /// Used only when reading ADPCM data from memory.
         /// </summary>
         public struct Buffer_Data
         {
-#region Fields
+            #region Fields
 
             public UInt32 DataSeekLoc;
             public UInt32 DataSize;
             public IntPtr Header;
             public UInt32 HeaderSize;
 
-#endregion Fields
+            #endregion Fields
 
-#region Methods
+            #region Methods
 
             public unsafe int Read(byte* buf, int buf_size)
             {
@@ -1632,7 +1643,7 @@ EOF:
                 return buf_size;
             }
 
-#endregion Methods
+            #endregion Methods
 
             //can't do this because soon as fixed block ends the pointer is no good.
             //private void SetHeader(byte[] value)
@@ -1646,6 +1657,6 @@ EOF:
             //< size left in the buffer
         };
 
-#endregion Structs
+        #endregion Structs
     }
 }

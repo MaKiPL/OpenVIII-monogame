@@ -10,11 +10,11 @@ namespace OpenVIII
 
         private static float s_blink;
 
-        private static Vector2 PageTarget;
+        private static Vector2 _pageTarget;
         private static Vector2 PageSize;
         private static Vector2 CurrentPageLoc;
         private static Vector2 CurrentLastPageLoc;
-        private static Vector2 LastPageTarget;
+        private static Vector2 _lastPageTarget;
         private static Vector2 lastscale;
         private static Vector2 scale;
         private static Point ml;
@@ -61,8 +61,25 @@ namespace OpenVIII
             }
         }
 
-        private static float PercentLoaded { get; set; } = .5f;
+        private static double PercentLoaded { get; set; } = .5f;
         public static Vector2 TextScale { get; } = new Vector2(2.545455f, 3.0375f);
+        public static Vector2 PageTarget
+        {
+            get => _pageTarget; set
+            {
+                _pageTarget = value;
+                CurrentTime = 0;
+            }
+        }
+
+        public static Vector2 LastPageTarget
+        {
+            get => _lastPageTarget; set
+            {
+                _lastPageTarget = value;
+                CurrentTime = 0;
+            }
+        }
 
         #endregion Properties
         #region Methods
@@ -132,7 +149,7 @@ namespace OpenVIII
                 Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) *
                 Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
             Memory.IsMouseVisible = true;
-            ml = Input.MouseLocation.Transform(IGM_focus);
+            ml = InputMouse.Location.Transform(IGM_focus);
             switch (State)
             {
                 case MainMenuStates.LoadGameChooseSlot:
@@ -186,11 +203,11 @@ namespace OpenVIII
             Vector2 BoxZoom = new Vector2(1, TextZoom.Y);
 
             Rectangle dst = new Rectangle((int)(vp.X * 0.82421875f), 0, (int)(vp.X * 0.17578125f), (int)(vp_per.Y * 0.0916666666666667f));
-            DrawBox(dst, name, boxScale: BoxZoom, textScale: TextZoom);
+            Menu.DrawBox(dst, name, boxScale: BoxZoom, textScale: TextZoom);
             dst = new Rectangle(0, dst.Y, (int)(vp.X * 0.8203125f), dst.Height);
-            DrawBox(dst, info, Icons.ID.INFO, boxScale: BoxZoom, textScale: TextZoom, options: Box_Options.Indent);
+            Menu.DrawBox(dst, info, Icons.ID.INFO, boxScale: BoxZoom, textScale: TextZoom, options: Box_Options.Indent);
             dst = new Rectangle((int)(vp.X * 0.0282101167315175f), (int)(dst.Height + dst.Y + vp_per.Y * 0.0041666666666667f), (int)(vp.X * 0.943579766536965f), dst.Height);
-            DrawBox(dst, help, Icons.ID.HELP, boxScale: BoxZoom, textScale: TextZoom);
+            Menu.DrawBox(dst, help, Icons.ID.HELP, boxScale: BoxZoom, textScale: TextZoom);
             return dst;
         }
 
@@ -203,7 +220,7 @@ namespace OpenVIII
                 Width = (int)(vp_per.X * 0.34375f),
                 Height = (int)(vp_per.Y * 0.1f),
             };
-            dst = DrawBox(dst, null, Icons.ID.INFO).Item1;
+            dst = Menu.DrawBox(dst, null, Icons.ID.INFO).Item1;
 
             dst.Offset(new Vector2
             {
@@ -227,8 +244,8 @@ namespace OpenVIII
             slot.Offset(vp_per.X * -0.00859375f, vp_per.Y * -0.033333333f);
             slot.Offset(offset);
             dst.Offset(offset);
-            Tuple<Rectangle, Point, Rectangle> location = DrawBox(dst, main, options: Box_Options.Buttom);
-            DrawBox(slot, title);
+            Tuple<Rectangle, Point, Rectangle> location = Menu.DrawBox(dst, main, options: Box_Options.Buttom);
+            Menu.DrawBox(slot, title);
             return location;
         }
 

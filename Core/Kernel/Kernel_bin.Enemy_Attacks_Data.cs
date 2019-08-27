@@ -33,7 +33,12 @@ namespace OpenVIII
             public Battle_Only_Statuses Statuses1 { get; private set; }//0x10	4 bytes status_1; //statuses 8-31
             public void Read(BinaryReader br, int i)
             {
-                Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i);
+                if(i == 2)
+                {
+                    Name = Kernel_bin.BattleCommands[1].Name;
+                }
+                else
+                    Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i);
                 br.BaseStream.Seek(2, SeekOrigin.Current);
                 MagicID = (Magic_ID)br.ReadUInt16(); //0x02	2 bytes Magic ID
                 CameraChange = br.ReadByte(); //0x04	1 byte Camera Change

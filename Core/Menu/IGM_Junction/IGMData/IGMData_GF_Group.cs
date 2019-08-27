@@ -1,13 +1,18 @@
 ﻿namespace OpenVIII
 {
-    public partial class Module_main_menu_debug
+    public partial class IGM_Junction
     {
-        private partial class IGM_Junction
+        #region Classes
+
+        private class IGMData_GF_Group : IGMData_Group
         {
-            private class IGMData_GF_Group : IGMData_Group
-            {
-                public IGMData_GF_Group(params IGMData[] d) : base( d) => Hide();
-            }
+            #region Constructors
+
+            public IGMData_GF_Group(params IGMData[] d) : base(d) => Hide();
+
+            #endregion Constructors
         }
+
+        #endregion Classes
     }
 }

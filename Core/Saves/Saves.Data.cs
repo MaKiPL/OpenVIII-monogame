@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -34,7 +35,7 @@ namespace OpenVIII
             public FF8String Angelosname;//0x0040 //12 characters 0x00 terminated
             public FF8String Bokosname;//0x004C //12 characters 0x00 terminated
 
-            // 0 = Disc 1
+            /// 0 = Disc 1
             public uint CurrentDisk;//0x0058
 
             public uint Currentsave;//0x005C
@@ -48,6 +49,25 @@ namespace OpenVIII
             public FF8String Grieversname; //0x0B0C // 12 bytes
 
             public ushort Unknown1; //0x0B18  (always 7966?)
+
+            public Queue<GFs> EarnAP(uint ap, out Queue<KeyValuePair<GFs, Kernel_bin.Abilities>> abilities)
+            {
+                Queue<GFs> ret = new Queue<GFs>();
+                abilities = new Queue<KeyValuePair<GFs, Kernel_bin.Abilities>>();
+                foreach (KeyValuePair<GFs, GFData> g in GFs.Where(i => i.Value.Exists))
+                {
+                    if (g.Value.EarnExp(ap, out Kernel_bin.Abilities ability))
+                    {
+                        if (ability != Kernel_bin.Abilities.None)
+                        {
+                            abilities.Enqueue(new KeyValuePair<GFs, Kernel_bin.Abilities>(g.Key, ability));
+                        }
+                        ret.Enqueue(g.Key);
+                    }
+                }
+                return ret;
+            }
+
             public ushort Unknown2; //0x0B1A
             public uint AmountofGil2; //0x0B1C
             public uint AmountofGil_Laguna; //0x0B20
@@ -105,6 +125,25 @@ namespace OpenVIII
 
             public bool TeamLaguna => Party != null && (Party[0] == OpenVIII.Characters.Laguna_Loire || Party[1] == OpenVIII.Characters.Laguna_Loire || Party[2] == OpenVIII.Characters.Laguna_Loire);
 
+            public bool EarnItem(Item item)
+            {
+                Item f;
+                IEnumerable<Item> tmp = Items.Where(i => i.ID == item.ID);
+                IEnumerable<Item> tmp2 = Items.Where(i => i.ID == 0);
+                if (tmp.Count() > 0)
+                {
+                    f = tmp.First();
+                    return f.Add(item.QTY);
+                }
+                else if (tmp2.Count() > 0)
+                {
+                    f = tmp2.First();
+                    return f.Add(item.QTY, item.ID);
+                }
+
+                return false;
+            }
+
             public Dictionary<GFs, Characters> JunctionedGFs()
             {
                 Dictionary<GFs, Characters> r = new Dictionary<GFs, Characters>(16);
@@ -141,17 +180,15 @@ namespace OpenVIII
                 }
                 return r;
             }
-            public Damageable this[GFs id] => GetDamagable(id);
-            public Damageable this[Characters id] => GetDamagable(id);
+
+            public GFData this[GFs id] => GetDamagable(id);
+            public CharacterData this[Characters id] => GetDamagable(id);
             public Damageable this[Faces.ID id] => GetDamagable(id);
-            private Damageable GetDamagable(Characters id)
-            {
-                return Characters.ContainsKey(id) ? Characters[id] : null;
-            }
-            private Damageable GetDamagable(GFs id)
-            {
-                return GFs.ContainsKey(id) ? GFs[id] : null;
-            }
+
+            private CharacterData GetDamagable(Characters id) => Characters.ContainsKey(id) ? Characters[id] : null;
+
+            private GFData GetDamagable(GFs id) => GFs.ContainsKey(id) ? GFs[id] : null;
+
             private Damageable GetDamagable(Faces.ID id)
             {
                 GFs gf = id.ToGFs();
@@ -170,7 +207,7 @@ namespace OpenVIII
                     {
                         foreach (KeyValuePair<Characters, CharacterData> i in Characters)
                         {
-                            if (!Party.Contains(i.Key) && i.Value.VisibleInMenu)
+                            if (!Party.Contains(i.Key) && i.Value.Available)
                             {
                                 return false;
                             }
@@ -191,7 +228,7 @@ namespace OpenVIII
                         c = new List<CharacterData>();
                         foreach (KeyValuePair<Characters, CharacterData> i in Characters)
                         {
-                            if (!Party.Contains(i.Key) && i.Value.VisibleInMenu)
+                            if (!Party.Contains(i.Key) && i.Value.Available)
                             {
                                 c.Add(i.Value);
                             }
@@ -220,6 +257,25 @@ namespace OpenVIII
             /// Time since loaded
             /// </summary>
             public TimeSpan ElapsedTimeSinceLoad => Memory.gameTime != null && Loadtime != null ? (Memory.gameTime.TotalGameTime - Loadtime) : new TimeSpan();
+
+            public byte AveragePartyLevel
+            {
+                get
+                {
+                    int level = 0;
+                    int cnt = 0;
+                    for (int p = 0; p < 3; p++)
+                    {
+                        Characters c = PartyData[p];
+                        if (c != OpenVIII.Characters.Blank)
+                        {
+                            level += Characters[c].Level;
+                            cnt++;
+                        }
+                    }
+                    return (byte)MathHelper.Clamp(level / cnt, 0, 100);
+                }
+            }
 
             public void Read(BinaryReader br)
             {
@@ -275,7 +331,7 @@ namespace OpenVIII
                 Itemsbattleorder = br.ReadBytes(32);//0x0B34
                 Items = new List<Item>(198);
                 for (int i = 0; i < 198; i++)
-                    Items.Add(new Item (br.ReadByte(), br.ReadByte()) ); //0x0B54 198 items (Item ID and Quantity)
+                    Items.Add(new Item(br.ReadByte(), br.ReadByte())); //0x0B54 198 items (Item ID and Quantity)
                 Gametime = new TimeSpan(0, 0, (int)br.ReadUInt32());//0x0CE0
                 Countdown = br.ReadUInt32();//0x0CE4
                 Unknown3 = br.ReadUInt32();//0x0CE8
@@ -344,14 +400,14 @@ namespace OpenVIII
             /// <summary>
             /// How many dead party members there are.
             /// </summary>
-            /// <returns>>=0</returns>
-            public int DeadPartyMembers() => PartyData.Where(m => m != OpenVIII.Characters.Blank && (Characters[m].CurrentHP() == 0 || (Characters[m].Statuses0 & Kernel_bin.Persistant_Statuses.Death) != 0)).Count();
+            /// <returns>&gt;=0</returns>
+            public int DeadPartyMembers() => PartyData.Where(m => m != OpenVIII.Characters.Blank && Characters[m].IsDead).Count();
 
             /// <summary>
             /// How many dead characters there are.
             /// </summary>
-            /// <returns>>=0</returns>
-            public int DeadCharacters() => Characters.Where(m=>m.Value.VisibleInMenu && m.Value.CurrentHP() == 0 || (m.Value.Statuses0 & Kernel_bin.Persistant_Statuses.Death) != 0).Count();
+            /// <returns>&gt;=0</returns>
+            public int DeadCharacters() => Characters.Where(m => m.Value.Available && m.Value.CurrentHP() == 0 || (m.Value.Statuses0 & Kernel_bin.Persistant_Statuses.Death) != 0).Count();
 
             /// <summary>
             /// preforms a Shadow Copy. Then does deep copy on any required objects.

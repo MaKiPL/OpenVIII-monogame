@@ -17,7 +17,7 @@ namespace OpenVIII
 
             public override string ToString() => Description;
 
-            public FF8String Description { get; private set; }
+            public FF8String Description { get; set; }
             public float Amount { get; private set; }
 
             /// <summary>
