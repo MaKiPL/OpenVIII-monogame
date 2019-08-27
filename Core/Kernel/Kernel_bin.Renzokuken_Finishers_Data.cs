@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace OpenVIII
 {
@@ -54,15 +56,18 @@ namespace OpenVIII
                 Statuses1 = (Battle_Only_Statuses)br.ReadUInt32();       //0x0014	4 bytes status_1; //statuses 8-39
             }
 
-            public static Dictionary<Renzokeken_Level, Renzokuken_Finishers_Data> Read(BinaryReader br)
+            public static Dictionary<Renzokeken_Finisher, Renzokuken_Finishers_Data> Read(BinaryReader br)
             {
-                var ret = new Dictionary<Renzokeken_Level, Renzokuken_Finishers_Data>(count);
+                List<Kernel_bin.Renzokeken_Finisher> flags = Enum.GetValues(typeof(Kernel_bin.Renzokeken_Finisher))
+                   .Cast<Kernel_bin.Renzokeken_Finisher>()
+                   .ToList();
+                var ret = new Dictionary<Renzokeken_Finisher, Renzokuken_Finishers_Data>(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     Renzokuken_Finishers_Data tmp = new Renzokuken_Finishers_Data();
                     tmp.Read(br, i);
-                    ret[(Renzokeken_Level)i] = tmp;
+                    ret[flags[i]] = tmp;
                 }
                 return ret;
             }

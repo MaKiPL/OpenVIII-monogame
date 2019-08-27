@@ -37,18 +37,18 @@ namespace OpenVIII
             sw.Format(formatterContext, services)
                 .StaticType(nameof(IPartyService))
                 .Method(nameof(IPartyService.ChangeParty))
-                .Enum<CharacterId>(_character1)
-                .Enum<CharacterId>(_character2)
-                .Enum<CharacterId>(_character3)
+                .Enum<Characters>(_character1)
+                .Enum<Characters>(_character2)
+                .Enum<Characters>(_character3)
                 .Comment(nameof(SETPARTY));
         }
 
         public override IAwaitable TestExecute(IServices services)
         {
             ServiceId.Party[services].ChangeParty(
-                (CharacterId)_character1.Int32(services),
-                (CharacterId)_character1.Int32(services),
-                (CharacterId)_character1.Int32(services));
+                (Characters)_character1.Int32(services),
+                (Characters)_character1.Int32(services),
+                (Characters)_character1.Int32(services));
             return DummyAwaitable.Instance;
         }
     }

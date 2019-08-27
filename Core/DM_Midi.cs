@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Microsoft.Xna.Framework;
 
 #if _WINDOWS && !_X64
 
@@ -11,6 +12,11 @@ using System.Diagnostics;
 
 namespace OpenVIII
 {
+    /// <summary>
+    /// Direct Music
+    /// </summary>
+    /// <see cref="http://directmidi.sourceforge.net/"/>
+    /// <seealso cref="http://directmidinet.sourceforge.net/"/>
     public class DM_Midi : IDisposable
     {
 #if _WINDOWS && !_X64
@@ -25,7 +31,7 @@ namespace OpenVIII
 
         public const int S_OK = 0x00000000;
 
-        public void Play(string pt)
+        public void Play(string pt, bool loop = true)
         {
             if (cdm == null)
             {
@@ -75,6 +81,9 @@ namespace OpenVIII
                     outport.DownloadInstrument(instruments[i]);
                 }
                 segment.Download(cport);
+                if(!loop)
+                    segment.SetRepeats(0);
+
                 cport.PlaySegment(segment);
             }
             else
@@ -84,6 +93,8 @@ namespace OpenVIII
                 //segment.ConnectToDLS
                 loader.LoadSegment(pt, out segment);
                 segment.Download(cport);
+                if (!loop)
+                    segment.SetRepeats(0);
                 cport.PlaySegment(segment);
                 cdm.Dispose();
             }

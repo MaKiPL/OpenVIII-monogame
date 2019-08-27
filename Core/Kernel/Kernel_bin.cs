@@ -16,7 +16,7 @@ namespace OpenVIII
         private static List<Enemy_Attacks_Data> s_enemyAttacksData;
         private static List<Battle_Commands> s_battleCommands;
         private static List<Weapons_Data> s_weaponsData;
-        private static Dictionary<Renzokeken_Level, Renzokuken_Finishers_Data> s_renzokukenFinishersData;
+        private static Dictionary<Renzokeken_Finisher, Renzokuken_Finishers_Data> s_renzokukenFinishersData;
         private static Dictionary<Characters, Character_Stats> s_characterStats;
         private static List<Battle_Items_Data> s_battleItemsData;
         public static List<Non_battle_Items_Data> s_nonbattleItemsData;
@@ -41,6 +41,7 @@ namespace OpenVIII
         private static List<Devour> s_devour_;
         private static List<Misc_section> s_miscsection;
         private static List<Misc_text_pointers> s_misctextpointers;
+        private static Dictionary<Abilities, Ability> s_allAbilities;
         private static Dictionary<Abilities, Equipable_Ability> s_equipableAbilities;
 
         private ArchiveWorker aw { get; set; }
@@ -50,7 +51,7 @@ namespace OpenVIII
         public static IReadOnlyList<Enemy_Attacks_Data> EnemyAttacksData { get => s_enemyAttacksData; }//2
         public static IReadOnlyList<Battle_Commands> BattleCommands { get => s_battleCommands; }//3
         public static IReadOnlyList<Weapons_Data> WeaponsData { get => s_weaponsData; }//4
-        public static IReadOnlyDictionary<Renzokeken_Level, Renzokuken_Finishers_Data> RenzokukenFinishersData { get => s_renzokukenFinishersData; } //5
+        public static IReadOnlyDictionary<Renzokeken_Finisher, Renzokuken_Finishers_Data> RenzokukenFinishersData { get => s_renzokukenFinishersData; } //5
         public static IReadOnlyDictionary<Characters, Character_Stats> CharacterStats { get => s_characterStats; }//6
         public static IReadOnlyList<Battle_Items_Data> BattleItemsData { get => s_battleItemsData; }//7
         public static IReadOnlyList<Non_battle_Items_Data> NonbattleItemsData { get => s_nonbattleItemsData; } //8 //only strings
@@ -77,6 +78,7 @@ namespace OpenVIII
         public static IReadOnlyList<Misc_section> Miscsection { get => s_miscsection;  }//29 //only_strings
         public static IReadOnlyList<Misc_text_pointers> Misctextpointers { get => s_misctextpointers;  }//30
 
+        public static IReadOnlyDictionary<Abilities,Ability> AllAbilities { get => s_allAbilities;  } // should contain all abilities
         public static IReadOnlyDictionary<Abilities, Equipable_Ability> EquipableAbilities { get => s_equipableAbilities;  } // contains 4 types;
 
         /// <summary>
@@ -94,6 +96,7 @@ namespace OpenVIII
             using (MemoryStream ms = new MemoryStream(buffer))
             using (BinaryReader br = new BinaryReader(ms))
             {
+                ms.Seek(subPositions[Battle_Commands.id], SeekOrigin.Begin);
                 s_battleCommands = Battle_Commands.Read(br);
                 ms.Seek(subPositions[Magic_Data.id], SeekOrigin.Begin);
                 s_magicData = Magic_Data.Read(br);
@@ -150,9 +153,37 @@ namespace OpenVIII
                 s_selphielimitbreaksets = Selphie_limit_break_sets.Read(br);
                 ms.Seek(subPositions[Devour.id], SeekOrigin.Begin);
                 s_devour_ = Devour.Read(br);
+                s_devour_.Add(new Devour { Description = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 112) });
                 ms.Seek(subPositions[Misc_section.id], SeekOrigin.Begin);
                 s_miscsection = Misc_section.Read(br);
                 s_misctextpointers = Misc_text_pointers.Read();
+
+
+                s_allAbilities = new Dictionary<Abilities, Ability>(
+                    Menu_abilities.count +
+                    Junction_abilities.count + 
+                    Command_abilities.count +
+                    Stat_percent_abilities.count +
+                    Character_abilities.count +
+                    Party_abilities.count +
+                    GF_abilities.count);
+                foreach (Abilities ability in (Abilities[])(Enum.GetValues(typeof(Abilities))))
+                {
+                    if (Menuabilities.ContainsKey(ability))
+                        s_allAbilities[ability] = Menuabilities[ability];
+                    else if (Statpercentabilities.ContainsKey(ability))
+                        s_allAbilities[ability] = Statpercentabilities[ability];
+                    else if (Junctionabilities.ContainsKey(ability))
+                        s_allAbilities[ability] = Junctionabilities[ability];
+                    else if (Commandabilities.ContainsKey(ability))
+                        s_allAbilities[ability] = Commandabilities[ability];
+                    else if (Characterabilities.ContainsKey(ability))
+                        s_allAbilities[ability] = Characterabilities[ability];
+                    else if (Partyabilities.ContainsKey(ability))
+                        s_allAbilities[ability] = Partyabilities[ability];
+                    else if (Characterabilities.ContainsKey(ability))
+                        s_allAbilities[ability] = GFabilities[ability];
+                }
 
                 s_equipableAbilities = new Dictionary<Abilities, Equipable_Ability>(
                     Stat_percent_abilities.count +

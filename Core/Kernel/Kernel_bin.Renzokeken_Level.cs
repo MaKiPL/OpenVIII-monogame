@@ -5,7 +5,7 @@ namespace OpenVIII
     public partial class Kernel_bin
     {
         [Flags]
-        public enum Renzokeken_Level : byte
+        public enum Renzokeken_Finisher : byte
         {
             Rough_Divide = 0x01,
             Fated_Circle = 0x02,

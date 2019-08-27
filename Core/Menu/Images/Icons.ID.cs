@@ -1,4 +1,7 @@
-﻿namespace OpenVIII
+﻿using Microsoft.Xna.Framework;
+using System;
+
+namespace OpenVIII
 {
     public partial class Icons
     {
@@ -342,18 +345,23 @@
             DISC,
             Bar_BG,
             Bar_Fill,
+
             /// <summary>
             /// Menu background 256 px wide. Also draws border around BG
             /// </summary>
             Menu_BG_256,
+
             /// <summary>
             /// Menu background 368 px wide, comes in two peices. Also draws border around BG.
             /// </summary>
             Menu_BG_368,
+
             /// <summary>
-            /// Word DEBUG made from peices of of words. Might look terrible on mods unless they align exactly to the same grid.
+            /// Word DEBUG made from peices of of words. Might look terrible on mods unless they
+            /// align exactly to the same grid.
             /// </summary>
             DEBUG,
+
             MenuBorder,
             COMMAND_PG1,
             COMMAND_PG2,
@@ -396,7 +404,39 @@
             ITEM_PG16,
             ITEM_PG17,
             ITEM_PG18,
-        }
+            ITEM_PG19,
+            ITEM_PG20,
+            ITEM_PG21,
+            ITEM_PG22,
+            ITEM_PG23,
+            ITEM_PG24,
+            ITEM_PG25,
+            ITEM_PG26,
+            ITEM_PG27,
+            ITEM_PG28,
+            ITEM_PG29,
+            ITEM_PG30,
+            ITEM_PG31,
+            ITEM_PG32,
+            ITEM_PG33,
+            ITEM_PG34,
+            ITEM_PG35,
+            ITEM_PG36,
+            ITEM_PG37,
+            ITEM_PG38,
+            ITEM_PG39,
+            ITEM_PG40,
+            ITEM_PG41,
+            ITEM_PG42,
+            ITEM_PG43,
+            ITEM_PG44,
+            ITEM_PG45,
+            ITEM_PG46,
+            ITEM_PG47,
+            ITEM_PG48,
+            ITEM_PG49,
+            ITEM_PG50,
+        }        
 
         #endregion Enums
     }

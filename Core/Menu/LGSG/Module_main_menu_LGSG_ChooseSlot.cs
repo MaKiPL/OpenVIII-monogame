@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
 
@@ -24,7 +25,7 @@ namespace OpenVIII
             DrawLGSGHeader(strLoadScreen[Litems.GameFolder].Text, topright, help);
             SlotLocs[0] = DrawLGSGSlot(Vector2.Zero, strLoadScreen[Litems.Slot1].Text, strLoadScreen[Litems.FF8].Text);
             SlotLocs[1] = DrawLGSGSlot(new Vector2(0, vp_per.Y * 0.216666667f), strLoadScreen[Litems.Slot2].Text, strLoadScreen[Litems.FF8].Text);
-            DrawPointer(SlotLocs[SlotLoc].Item2);
+            Menu.DrawPointer(SlotLocs[SlotLoc].Item2);
         }
         /// <summary>
         /// Draw Save Choose Slot Screen
@@ -43,30 +44,27 @@ namespace OpenVIII
                     SlotLoc = (sbyte)i;
                     ret = true;
 
-                    if (Input.Button(Buttons.MouseWheelup) || Input.Button(Buttons.MouseWheeldown))
+                    if (Input2.Button(MouseButtons.MouseWheelup) || Input2.Button(MouseButtons.MouseWheeldown))
                     {
                         return ret;
                     }
                     break;
                 }
             }
-            if (Input.Button(Buttons.Down))
+            if (Input2.DelayedButton(FF8TextTagKey.Down))
             {
-                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 SlotLoc++;
                 ret = true;
             }
-            else if (Input.Button(Buttons.Up))
+            else if (Input2.DelayedButton(FF8TextTagKey.Up))
             {
-                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 SlotLoc--;
                 ret = true;
             }
-            if (Input.Button(Buttons.Cancel))
+            if (Input2.DelayedButton(FF8TextTagKey.Cancel))
             {
-                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(8);
                 init_debugger_Audio.StopMusic();
                 Dchoose = 0;
@@ -75,7 +73,7 @@ namespace OpenVIII
 
                 ret = true;
             }
-            else if (Input.Button(Buttons.Okay))
+            else if (Input2.DelayedButton(FF8TextTagKey.Confirm))
             {
                 PercentLoaded = 0f;
                 State = MainMenuStates.LoadGameCheckingSlot;

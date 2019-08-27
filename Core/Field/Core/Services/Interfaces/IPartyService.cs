@@ -8,14 +8,14 @@ namespace OpenVIII
 
         Boolean IsPartySwitchEnabled { get; set; }
 
-        void AddPlayableCharacter(CharacterId characterId);
-        void RemovePlayableCharacter(CharacterId characterId);
+        void AddPlayableCharacter(Characters characterId);
+        void RemovePlayableCharacter(Characters characterId);
 
-        void AddPartyCharacter(CharacterId characterId);
-        void RemovePartyCharacter(CharacterId characterId);
+        void AddPartyCharacter(Characters characterId);
+        void RemovePartyCharacter(Characters characterId);
 
-        void ChangeCharacterState(CharacterId characterId, Boolean isSwitchable, Boolean isSelectable);
-        void ChangeParty(CharacterId characterId1, CharacterId characterId2, CharacterId characterId3);
+        void ChangeCharacterState(Characters characterId, Boolean isSwitchable, Boolean isSelectable);
+        void ChangeParty(Characters characterId1, Characters characterId2, Characters characterId3);
         
         FieldObject FindPartyCharacterObject(Int32 partyId);
     }

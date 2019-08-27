@@ -4,7 +4,7 @@
     {
         #region Enums
 
-        public new enum ID
+        public new enum ID : byte
         {
             //Level 1
             Geezard,
@@ -150,7 +150,11 @@
             Squall,
 
             //Custom Entry
-            Card_Back
+            Card_Back,
+            /// <summary>
+            /// for using in battle if a enemy is immune the value will be 0xff
+            /// </summary>
+            Immune = 0xff
         }
 
         #endregion Enums

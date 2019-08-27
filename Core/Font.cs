@@ -1,22 +1,33 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
+using OpenVIII.Encoding.Tags;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace OpenVIII
 {
+    /// <summary>
+    /// Font Module
+    /// </summary>
+    /// <remarks>
+    /// 21x10 characters; char is always 24x24; 2 files side by side; sysfnt00 is same as sysfld00,
+    /// but sysfnt00 is missing sysfnt01
+    /// </remarks>
     public class Font
     {
-        private Texture2D sysfnt; //21x10 characters; char is always 12x12
-        private TextureHandler sysfntbig; //21x10 characters; char is always 24x24; 2 files side by side; sysfnt00 is same as sysfld00, but sysfnt00 is missing sysfnt01
-        private Texture2D menuFont;
+        #region Fields
 
-        public enum ColorID
+        public static Dictionary<ColorID, Color> ColorID2Blink = new Dictionary<ColorID, Color>
         {
-            Dark_Gray, Grey, Yellow, Red, Green, Blue, Purple, White
-        }
+            { ColorID.Dark_Gray, new Color(12,15,12,255) },
+            { ColorID.Grey, new Color(41,49,41,255) },
+            { ColorID.Yellow, new Color(222,222,8,255) },
+            { ColorID.Red, new Color(128,24,24,255) },
+            { ColorID.Green, new Color(0,128,0,255) },
+            { ColorID.Blue, new Color(53,90,128,255) },
+            { ColorID.Purple, new Color(128,0,128,255) },
+            { ColorID.White, new Color(148,148,164,255) }
+        };
 
         public static Dictionary<ColorID, Color> ColorID2Color = new Dictionary<ColorID, Color>
         {
@@ -27,10 +38,40 @@ namespace OpenVIII
             { ColorID.Green, new Color(0,255,0,255) },
             { ColorID.Blue, new Color(106,180,238,255) },
             { ColorID.Purple, new Color(255,0,255,255) },
-            { ColorID.White, Color.White }
+            { ColorID.White, Color.White },
         };
 
+        private byte[] charWidths;
+        private Texture2D menuFont;
+        private Texture2D sysfnt; //21x10 characters; char is always 12x12
+        private TextureHandler sysfntbig;
+
+        #endregion Fields
+
+        #region Constructors
+
         public Font() => LoadFonts();
+
+        #endregion Constructors
+
+        #region Enums
+
+        public enum ColorID
+        {
+            Dark_Gray, Grey, Yellow, Red, Green, Blue, Purple, White,
+            //these are darker versions that are faded to when blinking
+        }
+
+        public enum Type
+        {
+            sysFntBig,
+            sysfnt,
+            menuFont,
+        }
+
+        #endregion Enums
+
+        #region Methods
 
         public void LoadFonts()
         {
@@ -41,124 +82,148 @@ namespace OpenVIII
             sysfnt = tex.GetTexture((int)ColorID.White);
             sysfntbig = new TextureHandler("sysfld{0:00}.tex", tex, 2, 1, (int)ColorID.White);
 
-            ReadTdw(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, sysfntTdwFilepath));
-        }
-
-        public void ReadTdw(byte[] Tdw)
-        {
-            uint widthPointer = BitConverter.ToUInt32(Tdw, 0);
-            uint dataPointer = BitConverter.ToUInt32(Tdw, 4);
-
-            getWidths(Tdw, widthPointer, dataPointer - widthPointer);
-            TIM2 tim = new TIM2(Tdw, dataPointer);
+            TDW tim = new TDW(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, sysfntTdwFilepath), 0);
+            charWidths = tim.CharWidths;
             menuFont = tim.GetTexture((ushort)ColorID.White);
-        }
-
-        public void getWidths(byte[] Tdw, uint offset, uint length)
-        {
-            using (MemoryStream os = new MemoryStream((int)length * 2))
-            using (BinaryWriter bw = new BinaryWriter(os))
-            using (MemoryStream ms = new MemoryStream(Tdw))
-            using (BinaryReader br = new BinaryReader(ms))
-            {
-                //bw.Write((byte)10);//width of space
-                ms.Seek(offset, SeekOrigin.Begin);
-                while (ms.Position < offset + length)
-                {
-                    byte b = br.ReadByte();
-                    byte low = (byte)(b & 0x0F);
-                    byte high = (byte)(b >> 4);
-                    bw.Write(low);
-                    bw.Write(high);
-                }
-                charWidths = os.ToArray();
-            }
-        }
-
-        private byte[] charWidths;
-
-        public enum Type
-        {
-            sysFntBig,
-            sysfnt,
-            menuFont,
         }
 
         public Rectangle RenderBasicText(FF8String buffer, Vector2 pos, Vector2 zoom, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false, ColorID color = ColorID.White)
         {
             if (buffer == null) return new Rectangle();
             Rectangle ret = new Rectangle(pos.RoundedPoint(), new Point(0));
+            Rectangle destRect = Rectangle.Empty;
             Point real = pos.RoundedPoint();
             int charCountWidth = 21;
             int charSize = 12; //pixelhandler does the 2x scaling on the fly.
             Point size = (new Vector2(0, charSize) * zoom).RoundedPoint();
-            int width;
-            if(buffer.Length > 0)
-            foreach (byte c in buffer)
+            Point baksize = size;
+            int width = 0;
+            ColorID colorbak = color;
+            bool blink = false;
+            bool skipletter = false;
+            for (int i = 0; i < buffer.Length; i++)
             {
+                size = baksize;
+                byte c = buffer[i];
                 if (c == 0) continue;
-                int deltaChar = (c - 32);
-                if (deltaChar >= 0 && deltaChar < charWidths.Length)
+                else if (c == (byte)FF8TextTagCode.Dialog)
                 {
-                    width = charWidths[deltaChar];
-                    size.X = (int)(charWidths[deltaChar] * zoom.X);
-                }
-                else
-                {
-                    width = charSize;
-                    size.X = (int)(charSize * zoom.X);
-                }
-                Point curSize = size;
-                int verticalPosition = deltaChar / charCountWidth;
-                //i.e. 1280 is 100%, 640 is 50% and therefore 2560 is 200% which means multiply by 0.5f or 2.0f
-                if (c == 0x02)// \n
-                {
-                    real.X = (int)pos.X;
-                    real.Y += size.Y + lineSpacing;
-                    continue;
-                }
-                Rectangle destRect = new Rectangle(real, size);
-                // if you use Memory.SpriteBatchStartAlpha(SamplerState.PointClamp); you won't need
-                // to trim last pixel. but it doesn't look good on low res fonts.
-                if (!skipdraw)
-                {
-                    Rectangle sourceRect = new Rectangle((deltaChar - (verticalPosition * charCountWidth)) * charSize,
-                        verticalPosition * charSize,
-                        width,
-                        charSize);
-
-                    switch (whichFont)
+                    if (++i < buffer.Length - 1)
                     {
-                        case Type.menuFont:
-                        case Type.sysfnt:
-                            //trim pixels to remove texture filtering artifacts.
-                            sourceRect.Width -= 1;
-                            sourceRect.Height -= 1;
-                            Memory.spriteBatch.Draw(whichFont == Type.menuFont ? menuFont : sysfnt,
-                                destRect,
-                                sourceRect,
-                            ColorID2Color[color] * Fade);
-                            break;
-
-                        case Type.sysFntBig:
-                            if (!sysfntbig.Modded)
-                            {
-                                Rectangle ShadowdestRect = new Rectangle(destRect.Location, destRect.Size);
-                                ShadowdestRect.Offset(zoom);
-                                sysfntbig.Draw(ShadowdestRect, sourceRect, Color.Black * Fade * .5f);
-                            }
-                            sysfntbig.Draw(destRect, sourceRect, ColorID2Color[color] * Fade);
-                            break;
+                        c = buffer[i];
+                        switch ((FF8TextTagDialog)c)
+                        {
+                            // Most of these should be replaced before it gets here becuase they have
+                            // values set by other objects.
+                            case FF8TextTagDialog.CustomICON:
+                                DrawIcon(buffer, zoom, Fade, skipdraw, real, ref size, ref skipletter, ref i, ref c);
+                                break;
+                        }
+                        //if (!skipletter)
+                        SetRetRec(pos, ref ret, ref real, size);
+                        continue;
                     }
                 }
-                real.X += size.X;
-                int curWidth = real.X - (int)pos.X;
-                if (curWidth > ret.Width)
-                    ret.Width = curWidth;
+                else if (c == (byte)FF8TextTagCode.Key)
+                {
+                    if (++i < buffer.Length - 1)
+                    {
+                        FF8TextTagKey k = (FF8TextTagKey)buffer[i];
+                        FF8String str = Input2.ButtonString(k);
+                        Rectangle retpos = RenderBasicText(str, real, zoom, whichFont, Fade, lineSpacing, skipdraw, ColorID.Green);
+                        size.X = retpos.Width;
+                        //size.Y = retpos.Height;
+                        //real.X += retpos.Width;
+                        //TODO add key/controller input icons/text here.
+                        //if (!skipletter)
+                        SetRetRec(pos, ref ret, ref real, size);
+                        continue;
+                    }
+                }
+                else if (c == (byte)FF8TextTagCode.Color)
+                {
+                    if (++i < buffer.Length - 1)
+                    {
+                        c = buffer[i];
+                        blink = c >= (byte)FF8TextTagColor.Dark_GrayBlink ? true : false;
+                        color = GetColorFromTag(c, colorbak);
+                        SetRetRec(pos, ref ret, ref real, size);
+                        continue;
+                    }
+                }
+                else if (c == (byte)FF8TextTagCode.Line && NewLine(pos, lineSpacing, ref real, size))
+                {
+                    SetRetRec(pos, ref ret, ref real, size);
+                    continue;
+                }
+                if (!skipletter)
+                {
+                    int deltaChar = GetDeltaChar(c);
+                    if (deltaChar >= 0 && deltaChar < charWidths.Length)
+                    {
+                        width = charWidths[deltaChar];
+                        size.X = (int)(charWidths[deltaChar] * zoom.X);
+                    }
+                    else
+                    {
+                        width = charSize;
+                        size.X = (int)(charSize * zoom.X);
+                    }
+                    Point curSize = size;
+                    int verticalPosition = deltaChar / charCountWidth;
+                    //i.e. 1280 is 100%, 640 is 50% and therefore 2560 is 200% which means multiply by 0.5f or 2.0f
+
+                    destRect = new Rectangle(real, size);
+                    if (!skipdraw)
+                    {
+                        Rectangle sourceRect = new Rectangle((deltaChar - (verticalPosition * charCountWidth)) * charSize,
+                            verticalPosition * charSize,
+                            width,
+                            charSize);
+                        DrawLetter(zoom, whichFont, Fade, color, blink, destRect, sourceRect);
+                    }
+                }
+                skipletter = false;
+                SetRetRec(pos, ref ret, ref real, size);
             }
 
             ret.Height = size.Y + (real.Y - (int)pos.Y);
             return ret;
+        }
+
+        private static void SetRetRec(Vector2 pos, ref Rectangle ret, ref Point real, Point size)
+        {
+            real.X += size.X;
+            int curWidth = real.X - (int)pos.X;
+            if (curWidth > ret.Width)
+                ret.Width = curWidth;
+        }
+
+        private static void DrawIcon(FF8String buffer, Vector2 zoom, float Fade, bool skipdraw, Point real, ref Point size, ref bool skipletter, ref int i, ref byte c)
+        {
+            if (i + 3 < buffer.Length)
+            {
+                c = buffer[++i];
+                short ic = c;
+                c = buffer[++i];
+                ic |= (short)(c << 8);
+                byte pal = buffer[++i];
+                Memory.Icons.Trim((Icons.ID)ic,pal);
+                EntryGroup icon = Memory.Icons[(Icons.ID)ic];
+                //Vector2 scale = Memory.Icons.GetTexture((Icons.ID)ic).ScaleFactor;
+                if (icon != null)
+                {
+                    float adj = (12/(float)(icon.Height));
+                    Vector2 scale = new Vector2(adj * zoom.X);
+                    size.X = (int)(icon.Width * scale.X);
+                    size.Y = (int)(icon.Height * scale.X);
+                    Rectangle destRect = new Rectangle(real, size);
+                    //real.X += size.X;
+                    //skipletter = true;
+                    if (!skipdraw)
+                        Memory.Icons.Draw((Icons.ID)ic, pal, destRect, Vector2.Zero, Fade);
+                }
+            }
         }
 
         public Rectangle RenderBasicText(FF8String buffer, Point pos, Vector2 zoom, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false, ColorID color = ColorID.White)
@@ -166,5 +231,107 @@ namespace OpenVIII
 
         public Rectangle RenderBasicText(FF8String buffer, int x, int y, float zoomWidth = 2.545455f, float zoomHeight = 3.0375f, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false, ColorID color = ColorID.White)
             => RenderBasicText(buffer, new Vector2(x, y), new Vector2(zoomWidth, zoomHeight), whichFont, Fade, lineSpacing, skipdraw, color);
+
+        private static ColorID GetColorFromTag(byte c, ColorID colorbak = Font.ColorID.White)
+        {
+            ColorID color = colorbak;
+            switch ((FF8TextTagColor)c)
+            {
+                case FF8TextTagColor.Blue:
+                case FF8TextTagColor.BlueBlink:
+                    color = ColorID.Blue;
+                    break;
+
+                case FF8TextTagColor.Green:
+                case FF8TextTagColor.GreenBlink:
+                    color = ColorID.Green;
+                    break;
+
+                case FF8TextTagColor.Grey:
+                case FF8TextTagColor.GreyBlink:
+                    color = ColorID.Grey;
+                    break;
+
+                case FF8TextTagColor.Purple:
+                case FF8TextTagColor.PurpleBlink:
+                    color = ColorID.Purple;
+                    break;
+
+                case FF8TextTagColor.Red:
+                case FF8TextTagColor.RedBlink:
+                    color = ColorID.Red;
+                    break;
+
+                case FF8TextTagColor.White:
+                case FF8TextTagColor.WhiteBlink:
+                    color = colorbak;
+                    // since ending color change reverts color to white. if you have a custom color
+                    // set this will allow reverting to that.
+                    break;
+
+                case FF8TextTagColor.Yellow:
+                case FF8TextTagColor.YellowBlink:
+                    color = ColorID.Yellow;
+                    break;
+
+                case FF8TextTagColor.Dark_Gray:
+                case FF8TextTagColor.Dark_GrayBlink:
+                    color = ColorID.Dark_Gray;
+                    break;
+            }
+
+            return color;
+        }
+
+        private static int GetDeltaChar(byte c) => (c - 32);
+
+        private static bool NewLine(Vector2 pos, int lineSpacing, ref Point real, Point size)
+        {
+            bool gonext;
+            real.X = (int)pos.X;
+            real.Y += size.Y + lineSpacing;
+            gonext = true;
+            return gonext;
+        }
+
+        private void DrawLetter(Vector2 zoom, Type whichFont, float Fade, ColorID color, bool blink, Rectangle destRect, Rectangle sourceRect)
+        {
+            switch (whichFont)
+            {
+                case Type.menuFont:
+                case Type.sysfnt:
+                    // if you use Memory.SpriteBatchStartAlpha(SamplerState.PointClamp); you won't need
+                    // to trim last pixel. but it doesn't look good on low res fonts.
+                    //trim pixels to remove texture filtering artifacts.
+                    //sourceRect.Width -= 1;
+                    //sourceRect.Height -= 1;
+
+                    Memory.spriteBatch.Draw(whichFont == Type.menuFont ? menuFont : sysfnt,
+                    destRect,
+                    sourceRect,
+                ColorID2Color[color] * Fade);
+
+                    if (blink)
+                        Memory.spriteBatch.Draw(whichFont == Type.menuFont ? menuFont : sysfnt,
+                        destRect,
+                        sourceRect,
+                    ColorID2Blink[color] * Fade * Menu.Blink_Amount);
+                    break;
+
+                case Type.sysFntBig:
+                    if (!sysfntbig.Modded)
+                    {
+                        Rectangle ShadowdestRect = new Rectangle(destRect.Location, destRect.Size);
+                        ShadowdestRect.Offset(zoom);
+                        sysfntbig.Draw(ShadowdestRect, sourceRect, Color.Black * Fade * .5f);
+                    }
+                    sysfntbig.Draw(destRect, sourceRect, ColorID2Color[color] * Fade);
+                    if (blink)
+                        sysfntbig.Draw(destRect, sourceRect, ColorID2Blink[color] * Fade * Menu.Blink_Amount);
+                    break;
+            }
+        }
+
+        #endregion Methods
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 
 namespace OpenVIII
@@ -145,7 +146,7 @@ namespace OpenVIII
         {
             public const int id = 2;
             public const int count = 16;
-            private Dictionary<Abilities, Unlocker> _ability;
+            private OrderedDictionary<Abilities, Unlocker> _ability;
             private Dictionary<GFs, decimal> _gF_Compatibility;
 
             public FF8String Name { get; private set; }
@@ -167,91 +168,7 @@ namespace OpenVIII
             public ushort EXPperLevel { get; private set; }             //0x18  1 byte *10;
             public byte[] Unknown2_2 { get; private set; }            //0x0019  2 bytes Unknown
             public byte Status_attack { get; private set; }         //0x001B  1 byte  Status attack enabler
-            public IReadOnlyDictionary<Abilities, Unlocker> Ability { get => _ability; }
-            //0x001C  1 byte[[Ability 1 Unlocker
-            //0x001D  1 byte  Unknown
-            //0x001E  1 byte[[Ability 1
-            //0x001F  1 byte  Unknown
-            //0x0020  1 byte[[Ability 2 Unlocker
-            //0x0021  1 byte  Unknown
-            //0x0022  1 byte[[Ability 2
-            //0x0023  1 byte  Unknown
-            //0x0024  1 byte[[Ability 3 Unlocker
-            //0x0025  1 byte  Unknown
-            //0x0026  1 byte[[Ability 3
-            //0x0027  1 byte  Unknown
-            //0x0028  1 byte[[Ability 4 Unlocker
-            //0x0029  1 byte  Unknown
-            //0x002A  1 byte[[Ability 4
-            //0x002B  1 byte  Unknown
-            //0x002C  1 byte[[Ability 5 Unlocker
-            //0x002D  1 byte  Unknown
-            //0x002E  1 byte[[Ability 5
-            //0x002F  1 byte  Unknown
-            //0x0030  1 byte[[Ability 6 Unlocker
-            //0x0031  1 byte  Unknown
-            //0x0032  1 byte[[Ability 6
-            //0x0033  1 byte  Unknown
-            //0x0034  1 byte[[Ability 7 Unlocker
-            //0x0035  1 byte  Unknown
-            //0x0036  1 byte[[Ability 7
-            //0x0037  1 byte  Unknown
-            //0x0038  1 byte[[Ability 8 Unlocker
-            //0x0039  1 byte  Unknown
-            //0x003A  1 byte[[Ability 8
-            //0x003B  1 byte  Unknown
-            //0x003C  1 byte[[Ability 9 Unlocker
-            //0x003D  1 byte  Unknown
-            //0x003E  1 byte[[Ability 9
-            //0x003F  1 byte  Unknown
-            //0x0040  1 byte[[Ability 10 Unlocker
-            //0x0041  1 byte  Unknown
-            //0x0042  1 byte[[Ability 10
-            //0x0043  1 byte  Unknown
-            //0x0044  1 byte[[Ability 11 Unlocker
-            //0x0045  1 byte  Unknown
-            //0x0046  1 byte[[Ability 11
-            //0x0047  1 byte  Unknown
-            //0x0048  1 byte[[Ability 12 Unlocker
-            //0x0049  1 byte  Unknown
-            //0x004A  1 byte[[Ability 12
-            //0x004B  1 byte  Unknown
-            //0x004C  1 byte[[Ability 13 Unlocker
-            //0x004D  1 byte  Unknown
-            //0x004E  1 byte[[Ability 13
-            //0x004F  1 byte  Unknown
-            //0x0050  1 byte[[Ability 14 Unlocker
-            //0x0051  1 byte  Unknown
-            //0x0052  1 byte[[Ability 14
-            //0x0053  1 byte  Unknown
-            //0x0054  1 byte[[Ability 15 Unlocker
-            //0x0055  1 byte  Unknown
-            //0x0056  1 byte[[Ability 15
-            //0x0057  1 byte  Unknown
-            //0x0058  1 byte[[Ability 16 Unlocker
-            //0x0059  1 byte  Unknown
-            //0x005A  1 byte[[Ability 16
-            //0x005B  1 byte  Unknown
-            //0x005C  1 byte[[Ability 17 Unlocker
-            //0x005D  1 byte  Unknown
-            //0x005E  1 byte[[Ability 17
-            //0x005F  1 byte  Unknown
-            //0x0060  1 byte[[Ability 18 Unlocker
-            //0x0061  1 byte  Unknown
-            //0x0062  1 byte[[Ability 18
-            //0x0063  1 byte  Unknown
-            //0x0064  1 byte[[Ability 19 Unlocker
-            //0x0065  1 byte  Unknown
-            //0x0066  1 byte[[Ability 19
-            //0x0067  1 byte  Unknown
-            //0x0068  1 byte[[Ability 20 Unlocker
-            //0x0069  1 byte  Unknown
-            //0x006A  1 byte[[Ability 20
-            //0x006B  1 byte  Unknown
-            //0x006C  1 byte[[Ability 21 Unlocker
-            //0x006D  1 byte  Unknown
-            //0x006E  1 byte[[Ability 21
-            //0x006F  1 byte  Unknown
+            public OrderedDictionary<Abilities, Unlocker> Ability { get => _ability; }
             public IReadOnlyDictionary<GFs, decimal> GF_Compatibility { get => _gF_Compatibility; }
             //0x0070  1 byte  Quezacolt compatibility
             //0x0071  1 byte  Shiva compatibility
@@ -293,14 +210,13 @@ namespace OpenVIII
                 EXPperLevel = (ushort)((br.ReadByte()) * 10); //0x0018
                 Unknown2_2 = br.ReadBytes(2);            //0x0019  2 bytes Unknown
                 Status_attack = br.ReadByte();         //0x001B  1 byte  Status attack enabler
-                _ability = new Dictionary<Abilities, Unlocker>(21);
+                _ability = new OrderedDictionary<Abilities,Unlocker>(21);
                 for (i = 0; i < 21; i++)
                 {
                     Unlocker val = (Unlocker)br.ReadByte();
                     br.BaseStream.Seek(1, SeekOrigin.Current);
                     Abilities key = (Abilities)br.ReadUInt16();
                     _ability.Add(key, val);
-
                 }
                 _gF_Compatibility = new Dictionary<GFs, decimal>(16);
                 for (i = 0; i < 16; i++)

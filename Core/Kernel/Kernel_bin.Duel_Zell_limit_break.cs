@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using OpenVIII.Encoding.Tags;
+using System.Collections.Generic;
 using System.IO;
 
 namespace OpenVIII
@@ -31,7 +32,7 @@ namespace OpenVIII
             public Element Element { get; private set; }
             public byte Element_Percent { get; private set; }
             public byte Status_Attack { get; private set; }
-            public Buttons[] Button_Combo { get; private set; }
+            public List<IReadOnlyList<FF8TextTagKey>> Button_Combo { get; private set; }
             public Persistant_Statuses Statuses0 { get; private set; }
             public Battle_Only_Statuses Statuses1 { get; private set; }
 
@@ -64,12 +65,10 @@ namespace OpenVIII
                 //0x000E  1 byte Element Attack %
                 Status_Attack = br.ReadByte();
                 //0x000F  1 byte Status Attack Enabler
-                Button_Combo = new Buttons[5];
-                for (int b = 0; b < Button_Combo.Length; b++)
+                Button_Combo = new List<IReadOnlyList<FF8TextTagKey>>(5);
+                for (int b = 0; b < 5; b++)
                 {
-                    Button_Flags key = (Button_Flags)br.ReadUInt16();
-                    if (Input.Convert_Button.ContainsKey(key))
-                        Button_Combo[b] = Input.Convert_Button[key];
+                    Button_Combo.Add(Input2.Convert_Flags((Button_Flags)br.ReadUInt16()));
                 }
                 //0x0010  2 bytes Sequence Button 1
                 //0x0012  2 bytes Sequence Button 2

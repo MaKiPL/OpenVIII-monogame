@@ -150,187 +150,82 @@ namespace OpenVIII
                 new Entry { X = 104, Y = 16, Width = 6, Height = 8, Offset = new Vector2(25 + 4, 0) }
                 );
 
-            Entry P_ = Entries[ID.Size_08x08_P_][0].Clone();
-            P_.Offset.X += Entries[ID.COMMAND][0].Width + 4;
-            P_.CustomPalette = 2;
-            Entry _1 = Entries[ID.Num_8x8_1_1][0].Clone();
-            _1.Offset.X += P_.Offset.X + P_.Width + 2;
-            _1.CustomPalette = 7;
-            Entry _2 = Entries[ID.Num_8x8_1_2][0].Clone();
-            _2.Offset.X += P_.Offset.X + P_.Width + 2;
-            _2.CustomPalette = 7;
-
-            Entries[ID.COMMAND_PG1] = new EntryGroup(Entries[ID.COMMAND][0], P_, _1);
-            Entries[ID.COMMAND_PG2] = new EntryGroup(Entries[ID.COMMAND][0], P_, _2);
-
-            P_ = Entries[ID.Size_08x08_P_][0].Clone();
-            P_.Offset.X += Entries[ID.ABILITY][0].Width + 8;
-            P_.CustomPalette = 2;
-            _1 = Entries[ID.Num_8x8_1_1][0].Clone();
-            _1.Offset.X += P_.Offset.X + P_.Width + 2;
-            _1.CustomPalette = 7;
-            _2 = Entries[ID.Num_8x8_1_2][0].Clone();
-            _2.Offset.X += P_.Offset.X + P_.Width + 2;
-            _2.CustomPalette = 7;
-            Entry _3 = Entries[ID.Num_8x8_1_3][0].Clone();
-            _3.Offset.X += P_.Offset.X + P_.Width + 2;
-            _3.CustomPalette = 7;
-            Entry _4 = Entries[ID.Num_8x8_1_4][0].Clone();
-            _4.Offset.X += P_.Offset.X + P_.Width + 2;
-            _4.CustomPalette = 7;
-            Entries[ID.ABILITY_PG1] = new EntryGroup(Entries[ID.ABILITY][0], P_, _1);
-            Entries[ID.ABILITY_PG2] = new EntryGroup(Entries[ID.ABILITY][0], P_, _2);
-            Entries[ID.ABILITY_PG3] = new EntryGroup(Entries[ID.ABILITY][0], P_, _3);
-            Entries[ID.ABILITY_PG4] = new EntryGroup(Entries[ID.ABILITY][0], P_, _4);
-
-            P_ = Entries[ID.Size_08x08_P_][0].Clone();
-            P_.Offset.X += Entries[ID.GF][0].Width + 8;
-            P_.CustomPalette = 2;
-            _1 = Entries[ID.Num_8x8_1_1][0].Clone();
-            _1.Offset.X += P_.Offset.X + P_.Width + 2;
-            _1.CustomPalette = 7;
-            _2 = Entries[ID.Num_8x8_1_2][0].Clone();
-            _2.Offset.X += P_.Offset.X + P_.Width + 2;
-            _2.CustomPalette = 7;
-            _3 = Entries[ID.Num_8x8_1_3][0].Clone();
-            _3.Offset.X += P_.Offset.X + P_.Width + 2;
-            _3.CustomPalette = 7;
-            _4 = Entries[ID.Num_8x8_1_4][0].Clone();
-            _4.Offset.X += P_.Offset.X + P_.Width + 2;
-            _4.CustomPalette = 7;
-            Entries[ID.GF_PG1] = new EntryGroup(Entries[ID.GF][0], P_, _1);
-            Entries[ID.GF_PG2] = new EntryGroup(Entries[ID.GF][0], P_, _2);
-            Entries[ID.GF_PG3] = new EntryGroup(Entries[ID.GF][0], P_, _3);
-            Entries[ID.GF_PG4] = new EntryGroup(Entries[ID.GF][0], P_, _4);
-
+            //2 pages
+            GeneratePages(ID.COMMAND, ID.COMMAND_PG1, 4, 4);
+            //4 pages
+            GeneratePages(ID.ABILITY, ID.ABILITY_PG1, 4, 8);
+            //4 pages for 16 gfs
+            GeneratePages(ID.GF, ID.GF_PG1, 4, 8);
             //13 pages for 50 spells
-            P_ = Entries[ID.Size_08x08_P_][0].Clone();
-            P_.Offset.X += Entries[ID.MAGIC][0].Width + 8;
-            P_.CustomPalette = 2;
-            _1 = Entries[ID.Num_8x8_1_1][0].Clone();
-            _1.Offset.X += P_.Offset.X + P_.Width + 2;
-            _1.CustomPalette = 7;
-            _2 = Entries[ID.Num_8x8_1_2][0].Clone();
-            _2.Offset.X += P_.Offset.X + P_.Width + 2;
-            _2.CustomPalette = 7;
-            _3 = Entries[ID.Num_8x8_1_3][0].Clone();
-            _3.Offset.X += P_.Offset.X + P_.Width + 2;
-            _3.CustomPalette = 7;
-            _4 = Entries[ID.Num_8x8_1_4][0].Clone();
-            _4.Offset.X += P_.Offset.X + P_.Width + 2;
-            _4.CustomPalette = 7;
-            Entry _5 = Entries[ID.Num_8x8_1_5][0].Clone();
-            _5.Offset.X += P_.Offset.X + P_.Width + 2;
-            _5.CustomPalette = 7;
-            Entry _6 = Entries[ID.Num_8x8_1_6][0].Clone();
-            _6.Offset.X += P_.Offset.X + P_.Width + 2;
-            _6.CustomPalette = 7;
-            Entry _7 = Entries[ID.Num_8x8_1_7][0].Clone();
-            _7.Offset.X += P_.Offset.X + P_.Width + 2;
-            _7.CustomPalette = 7;
-            Entry _8 = Entries[ID.Num_8x8_1_8][0].Clone();
-            _8.Offset.X += P_.Offset.X + P_.Width + 2;
-            _8.CustomPalette = 7;
-            Entry _9 = Entries[ID.Num_8x8_1_9][0].Clone();
-            _9.Offset.X += P_.Offset.X + P_.Width + 2;
-            _9.CustomPalette = 7;
-            Entry __0 = Entries[ID.Num_8x8_1_0][0].Clone();
-            __0.Offset.X += P_.Offset.X + P_.Width + 2 + _1.Width;
-            __0.CustomPalette = 7;
-            Entry __1 = _1.Clone();
-            __1.Offset.X = __0.Offset.X;
-            Entry __2 = _2.Clone();
-            __2.Offset.X = __0.Offset.X;
-            Entry __3 = _3.Clone();
-            __3.Offset.X = __0.Offset.X;
-            Entries[ID.MAGIC_PG1] = new EntryGroup(Entries[ID.MAGIC][0], P_, _1);
-            Entries[ID.MAGIC_PG2] = new EntryGroup(Entries[ID.MAGIC][0], P_, _2);
-            Entries[ID.MAGIC_PG3] = new EntryGroup(Entries[ID.MAGIC][0], P_, _3);
-            Entries[ID.MAGIC_PG4] = new EntryGroup(Entries[ID.MAGIC][0], P_, _4);
-            Entries[ID.MAGIC_PG5] = new EntryGroup(Entries[ID.MAGIC][0], P_, _5);
-            Entries[ID.MAGIC_PG6] = new EntryGroup(Entries[ID.MAGIC][0], P_, _6);
-            Entries[ID.MAGIC_PG7] = new EntryGroup(Entries[ID.MAGIC][0], P_, _7);
-            Entries[ID.MAGIC_PG8] = new EntryGroup(Entries[ID.MAGIC][0], P_, _8);
-            Entries[ID.MAGIC_PG9] = new EntryGroup(Entries[ID.MAGIC][0], P_, _9);
-            Entries[ID.MAGIC_PG10] = new EntryGroup(Entries[ID.MAGIC][0], P_, _1, __0);
-            Entries[ID.MAGIC_PG11] = new EntryGroup(Entries[ID.MAGIC][0], P_, _1, __1);
-            Entries[ID.MAGIC_PG12] = new EntryGroup(Entries[ID.MAGIC][0], P_, _1, __2);
-            Entries[ID.MAGIC_PG13] = new EntryGroup(Entries[ID.MAGIC][0], P_, _1, __3);
-
+            GeneratePages(ID.MAGIC, ID.MAGIC_PG1, 13, 8);
 
             //18 pages for 198 Items
-            P_ = Entries[ID.Size_08x08_P_][0].Clone();
-            P_.Offset.X += Entries[ID.ITEM][0].Width - 4;
-            P_.CustomPalette = 2;
-            _1 = Entries[ID.Num_8x8_1_1][0].Clone();
-            _1.Offset.X += P_.Offset.X + P_.Width + 2;
-            _1.CustomPalette = 7;
-            _2 = Entries[ID.Num_8x8_1_2][0].Clone();
-            _2.Offset.X += P_.Offset.X + P_.Width + 2;
-            _2.CustomPalette = 7;
-            _3 = Entries[ID.Num_8x8_1_3][0].Clone();
-            _3.Offset.X += P_.Offset.X + P_.Width + 2;
-            _3.CustomPalette = 7;
-            _4 = Entries[ID.Num_8x8_1_4][0].Clone();
-            _4.Offset.X += P_.Offset.X + P_.Width + 2;
-            _4.CustomPalette = 7;
-            _5 = Entries[ID.Num_8x8_1_5][0].Clone();
-            _5.Offset.X += P_.Offset.X + P_.Width + 2;
-            _5.CustomPalette = 7;
-            _6 = Entries[ID.Num_8x8_1_6][0].Clone();
-            _6.Offset.X += P_.Offset.X + P_.Width + 2;
-            _6.CustomPalette = 7;
-            _7 = Entries[ID.Num_8x8_1_7][0].Clone();
-            _7.Offset.X += P_.Offset.X + P_.Width + 2;
-            _7.CustomPalette = 7;
-            _8 = Entries[ID.Num_8x8_1_8][0].Clone();
-            _8.Offset.X += P_.Offset.X + P_.Width + 2;
-            _8.CustomPalette = 7;
-            _9 = Entries[ID.Num_8x8_1_9][0].Clone();
-            _9.Offset.X += P_.Offset.X + P_.Width + 2;
-            _9.CustomPalette = 7;
-            __0 = Entries[ID.Num_8x8_1_0][0].Clone();
-            __0.Offset.X += P_.Offset.X + P_.Width + 2 + _1.Width;
-            __0.CustomPalette = 7;
-            __1 = _1.Clone();
-            __1.Offset.X = __0.Offset.X;
-            __2 = _2.Clone();
-            __2.Offset.X = __0.Offset.X;
-            __3 = _3.Clone();
-            __3.Offset.X = __0.Offset.X;
-            Entry __4 = _4.Clone();
-            __4.Offset.X = __0.Offset.X;
-            Entry __5 = _5.Clone();
-            __5.Offset.X = __0.Offset.X;
-            Entry __6 = _6.Clone();
-            __6.Offset.X = __0.Offset.X;
-            Entry __7 = _7.Clone();
-            __7.Offset.X = __0.Offset.X;
-            Entry __8 = _8.Clone();
-            __8.Offset.X = __0.Offset.X;
-            Entries[ID.ITEM_PG1] = new EntryGroup(Entries[ID.ITEM][0], P_, _1);
-            Entries[ID.ITEM_PG2] = new EntryGroup(Entries[ID.ITEM][0], P_, _2);
-            Entries[ID.ITEM_PG3] = new EntryGroup(Entries[ID.ITEM][0], P_, _3);
-            Entries[ID.ITEM_PG4] = new EntryGroup(Entries[ID.ITEM][0], P_, _4);
-            Entries[ID.ITEM_PG5] = new EntryGroup(Entries[ID.ITEM][0], P_, _5);
-            Entries[ID.ITEM_PG6] = new EntryGroup(Entries[ID.ITEM][0], P_, _6);
-            Entries[ID.ITEM_PG7] = new EntryGroup(Entries[ID.ITEM][0], P_, _7);
-            Entries[ID.ITEM_PG8] = new EntryGroup(Entries[ID.ITEM][0], P_, _8);
-            Entries[ID.ITEM_PG9] = new EntryGroup(Entries[ID.ITEM][0], P_, _9);
-            Entries[ID.ITEM_PG10] = new EntryGroup(Entries[ID.ITEM][0], P_, _1, __0);
-            Entries[ID.ITEM_PG11] = new EntryGroup(Entries[ID.ITEM][0], P_, _1, __1);
-            Entries[ID.ITEM_PG12] = new EntryGroup(Entries[ID.ITEM][0], P_, _1, __2);
-            Entries[ID.ITEM_PG13] = new EntryGroup(Entries[ID.ITEM][0], P_, _1, __3);
-            Entries[ID.ITEM_PG14] = new EntryGroup(Entries[ID.ITEM][0], P_, _1, __4);
-            Entries[ID.ITEM_PG15] = new EntryGroup(Entries[ID.ITEM][0], P_, _1, __5);
-            Entries[ID.ITEM_PG16] = new EntryGroup(Entries[ID.ITEM][0], P_, _1, __6);
-            Entries[ID.ITEM_PG17] = new EntryGroup(Entries[ID.ITEM][0], P_, _1, __7);
-            Entries[ID.ITEM_PG18] = new EntryGroup(Entries[ID.ITEM][0], P_, _1, __8);
+            //50 pages if squashed to 4 items per page.
+            GeneratePages(ID.ITEM, ID.ITEM_PG1, 50, -4);
 
             //revese order of rewind so arrows draw correctly
             Entry _RR_0 = Entries[ID.Rewind_Fast][0].Clone();
             Entry _RR_1 = Entries[ID.Rewind_Fast][1].Clone();
             Entries[ID.Rewind_Fast] = new EntryGroup(_RR_1, _RR_0);
+
+            //override this entry to make it tile instead of have set number of elements.
+            EntryGroup b = Entries[ID.Size_08x64_Bar];
+            Entry Left = b[0].Clone();
+            Entry Center = b[1].Clone();
+            Entry Right = b[7].Clone();
+            Left.Offset = Vector2.Zero;
+            Center.Offset = Vector2.Zero;
+            Right.Offset = new Vector2(-8f, 0);
+            Center.Tile = Vector2.UnitX;
+            Right.Snap_Right = true;
+            Entries[ID.Size_08x64_Bar] = new EntryGroup(Center, Left, Right);
+            ID tmp = ID.D_Pad_Up;
+            Entries[tmp] = new EntryGroup(Entries[tmp][0], Entries[tmp][2], Entries[tmp][1], Entries[tmp][3]);
+            tmp = ID.D_Pad_Down;
+            Entries[tmp] = new EntryGroup(Entries[tmp][0], Entries[tmp][2], Entries[tmp][1], Entries[tmp][3]);
+            tmp = ID.D_Pad_Left;
+            Entries[tmp] = new EntryGroup(Entries[tmp][0], Entries[tmp][2], Entries[tmp][1], Entries[tmp][3]);
+            tmp = ID.D_Pad_Right;
+            Entries[tmp] = new EntryGroup(Entries[tmp][0], Entries[tmp][2], Entries[tmp][1], Entries[tmp][3]);
+        }
+
+        private void GeneratePages(ID label, ID label_pg1, byte count, sbyte offset)
+        {
+            count = (byte)MathHelper.Clamp(count, 1, 99);
+            Entry P_ = Entries[ID.Size_08x08_P_][0].Clone();
+            P_.Offset.X += Entries[label][0].Width + offset;
+            P_.CustomPalette = 2;
+
+            Entry[] _ = new Entry[10];
+            _[1] = Entries[ID.Num_8x8_1_1][0].Clone();
+            _[1].Offset.X += P_.Offset.X + P_.Width + 2;
+            _[1].CustomPalette = 7;
+            for (byte i = 2; i <= 9 && i <= count; i++)
+            {
+                _[i] = Entries[ID.Num_8x8_1_1 + i - 1][0].Clone();
+                _[i].Offset.X = _[1].Offset.X;
+                _[i].CustomPalette = _[1].CustomPalette;
+            }
+            Entry[] __ = null;
+            if (count > 9)
+            {
+                __ = new Entry[10];
+                __[0] = Entries[ID.Num_8x8_1_0][0].Clone();
+                __[0].Offset.X += P_.Offset.X + P_.Width + 2 + _[1].Width;
+                __[0].CustomPalette = 7;
+                for (byte i = 1; i <= 9; i++)
+                {
+                    __[i] = _[i].Clone();
+                    __[i].Offset.X = __[0].Offset.X;
+                }
+            }
+            for (byte i = 1; i <= count; i++)
+            {
+                if (i < 10)
+                    Entries[label_pg1 + i - 1] = new EntryGroup(Entries[label][0], P_, _[i]);
+                else if (i >= 10 && __ !=null)
+                    Entries[label_pg1 + i - 1] = new EntryGroup(Entries[label][0], P_, _[i / 10], __[i % 10]);
+            }
         }
     }
 }

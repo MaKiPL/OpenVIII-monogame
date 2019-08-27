@@ -2,42 +2,46 @@
 
 namespace OpenVIII
 {
-    public static partial class Module_main_menu_debug
+    public partial class IGM_Items
     {
-        private partial class IGM_Items
+        #region Classes
+
+        private class IGMData_Help : IGMData_Container
         {
-            private class IGMData_Help : IGMData_Container
+            #region Fields
+
+            private bool eventSet = false;
+
+            #endregion Fields
+
+            #region Constructors
+
+            public IGMData_Help(IGMDataItem container) : base(container)
             {
-                private bool eventSet =false;
+            }
 
-                public IGMData_Help(IGMDataItem container) : base(container)
-                {
-                }
+            #endregion Constructors
 
-                private void ModeChangeEvent(object sender, Mode e)
-                {
-                }
-                public override void ReInit()
-                {
-                    if (!eventSet && InGameMenu_Items != null)
-                    {
-                        InGameMenu_Items.ModeChangeHandler += ModeChangeEvent;
-                        InGameMenu_Items.ChoiceChangeHandler += ChoiceChangeEvent;
-                        InGameMenu_Items.ItemChangeHandler += ItemChangeEvent;
-                        eventSet = true;
-                    }
-                }
+            #region Methods
 
-                private void ItemChangeEvent(object sender, KeyValuePair<Item_In_Menu, FF8String> e)
+            public override void Refresh()
+            {
+                if (!eventSet && IGM_Items != null)
                 {
-                    ((IGMDataItem_Box)CONTAINER).Data = e.Value;
-                }
-
-                private void ChoiceChangeEvent(object sender, KeyValuePair<byte, FF8String> e)
-                {
-                    ((IGMDataItem_Box)CONTAINER).Data = e.Value;
+                    IGM_Items.ModeChangeHandler += ModeChangeEvent;
+                    IGM_Items.ChoiceChangeHandler += ChoiceChangeEvent;
+                    IGM_Items.ItemChangeHandler += ItemChangeEvent;
+                    eventSet = true;
                 }
             }
+
+            private void ChoiceChangeEvent(object sender, KeyValuePair<byte, FF8String> e) => ((IGMDataItem_Box)CONTAINER).Data = e.Value;
+
+            private void ItemChangeEvent(object sender, KeyValuePair<Item_In_Menu, FF8String> e) => ((IGMDataItem_Box)CONTAINER).Data = e.Value;
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }
