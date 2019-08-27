@@ -8,6 +8,7 @@ namespace OpenVIII
 {
     public partial class BattleMenus
     {
+
         #region Methods
 
         private void DrawMagic(Debug_battleDat.Magic[] drawList) =>
@@ -20,6 +21,7 @@ namespace OpenVIII
 
         public class IGMData_TargetGroup : IGMData_Group
         {
+
             #region Fields
 
             private readonly int[] Renzokuken_hits = { 4, 5, 6, 7 };
@@ -50,6 +52,7 @@ namespace OpenVIII
 
             public Kernel_bin.Blue_magic_Quistis_limit_break BlueMagic { get; private set; }
             public Kernel_bin.Battle_Commands Command { get; private set; }
+            public Item_In_Menu Item { get; private set; }
             public Kernel_bin.Magic_Data Magic { get; private set; }
 
             #endregion Properties
@@ -103,6 +106,13 @@ namespace OpenVIII
                     return CommandDefault();
             }
 
+            public void SelectTargetWindows(Item_In_Menu c)
+            {
+                Kernel_bin.Target t = c.Battle.Target;
+                SelectTargetWindows(t);
+                Command = Kernel_bin.BattleCommands[4];
+                Item = c;
+            }
             public void SelectTargetWindows(Kernel_bin.Battle_Commands c)
             {
                 Kernel_bin.Target t = c.Target;
@@ -149,7 +159,7 @@ namespace OpenVIII
                         {1,Command01_ATTACK },
                         {2,Command02_MAGIC },
                         {3,Command03 },
-                        {4,Command04 },
+                        {4,Command04_ITEM },
                         {5,Command05_RENZOKUKEN },
                         {6,Command06_DRAW },
                         {7,Command07 },
@@ -215,7 +225,12 @@ namespace OpenVIII
 
             private bool Command03() => throw new NotImplementedException();
 
-            private bool Command04() => throw new NotImplementedException();
+            private bool Command04_ITEM()
+            {
+                Neededvaribles(out IGMData_TargetEnemies i, out Enemy e, out Characters vc, out Characters fromvc, out bool enemytarget);
+                Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} uses {Item.Name}({Item.ID}) item on { (enemytarget ? $"{e.Name.Value_str}({i.CURSOR_SELECT})" : Memory.Strings.GetName(vc).Value_str) }");
+                return true;
+            }
 
             private bool Command05_RENZOKUKEN()
             {
@@ -358,8 +373,10 @@ namespace OpenVIII
             }
 
             #endregion Methods
+
         }
 
         #endregion Classes
+
     }
 }

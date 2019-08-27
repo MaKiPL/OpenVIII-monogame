@@ -17,7 +17,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_ItemPool(Rectangle pos, bool battle, int count = 4) : base(count, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.ITEM), count, 198 / count + 1) => Battle = battle;
+        public IGMData_ItemPool(Rectangle pos, bool battle, int count = 4) : base(count+1, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.ITEM), count, 198 / count + 1) => Battle = battle;
 
         public IGMData_ItemPool() : base(11, 3, new IGMDataItem_Box(pos: new Rectangle(5, 150, 415, 480), title: Icons.ID.ITEM), 11, 18)
         {
@@ -32,16 +32,29 @@ namespace OpenVIII
         #endregion Properties
 
         #region Methods
-
+        private int Targets_Window => Rows;
         public override void Draw() => base.Draw();
 
         public override bool Inputs()
         {
-            Cursor_Status &= ~Cursor_Status.Blinking;
-            Cursor_Status |= Cursor_Status.Enabled;
-            return base.Inputs();
+            bool ret = false;
+            if (InputITEM(Targets_Window, 0, ref ret))
+            {
+            }
+            else
+            {
+                Cursor_Status &= ~Cursor_Status.Blinking;
+                Cursor_Status |= Cursor_Status.Enabled;
+                return base.Inputs();
+            }
+            return ret;
         }
 
+        protected override void DrawITEM(int i, int d)
+        {
+            if (Targets_Window >= i || !Target_Group.Enabled)
+                base.DrawITEM(i, d);
+        }
         public override bool Inputs_CANCEL()
         {
             if (Battle)
@@ -56,9 +69,15 @@ namespace OpenVIII
             return true;
         }
 
+        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMDataItem_IGMData)ITEM[Targets_Window, 0]).Data);
         public override bool Inputs_OKAY()
         {
             Item_In_Menu item = Contents[CURSOR_SELECT];
+            if (Battle)
+            {
+                Target_Group.SelectTargetWindows(item);
+                Target_Group.ShowTargetWindows();
+            }
             if (item.Target == Item_In_Menu._Target.None)
                 return false;
             base.Inputs_OKAY();
@@ -131,8 +150,9 @@ namespace OpenVIII
                 ITEM[pos, 0] = new IGMDataItem_String(null, SIZE[pos]);
                 ITEM[pos, 1] = new IGMDataItem_Int(0, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0), numtype: Icons.NumType.sysFntBig, spaces: 3);
             }
-
+            ITEM[Targets_Window, 0] = new IGMDataItem_IGMData(new BattleMenus.IGMData_TargetGroup());
             ITEM[Rows-1, 2] = new IGMDataItem_Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows - 1].X + SIZE[Rows-1].Width-60, Y, 0, 0), scale: new Vector2(2.5f));
+            PointerZIndex = Rows - 1;
         }
 
         protected override void InitShift(int i, int col, int row)
