@@ -948,14 +948,12 @@ namespace OpenVIII.Core.World
                 {
                     TIM2 tim = new TIM2(buffer, (uint)(sectionPointers[38 - 1] + innerSec[i]));
                     sec38_textures.Add(new TextureHandler[tim.GetClutCount]);
-                    for (ushort k = 0; k < sec38_textures[i].Length; k++)
-                        sec38_textures[i][k] = new TextureHandler($"wmset_tim38_{(i + 1).ToString("D2")}.tim", tim, k, null);
                     //support mods using no palettes.
                     sec38_pals.Add(new Color[tim.GetClutCount][]);
                     for (ushort k = 0; k < sec38_textures[i].Length; k++)
                     {
                         sec38_pals[i][k] = tim.GetPalette(k);
-                        sec38_textures[i][k] = tim.GetTexture(k, true);
+                        sec38_textures[i][k] = new TextureHandler($"wmset_tim38_{(i + 1).ToString("D2")}.tim", tim, k, null);
                     }
                 }
             }

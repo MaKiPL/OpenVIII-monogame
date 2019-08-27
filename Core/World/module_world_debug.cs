@@ -645,7 +645,7 @@ namespace OpenVIII
             if((activeCollidePolygon.Value.vertFlags & TRIFLAGS_FORESTTEST) > 0)
             {
                 var shadowGeom = Extended.GetShadowPlane(playerPosition + new Vector3(-2.2f, .1f, -2.2f), 4f);
-                ate.Texture = wmset.GetWorldMapTexture(wmset.Section38_textures.shadowBig, 0);
+                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.shadowBig, 0);
                 ate.Alpha = .25f;
                 foreach(var pass in ate.CurrentTechnique.Passes)
                 {
@@ -661,7 +661,7 @@ namespace OpenVIII
                 if(bHasMoved)
                 {
                     var shadowGeom = Extended.GetShadowPlane(playerPosition + new Vector3(-2.2f, .1f, -2.2f), 4f);
-                    ate.Texture = wmset.GetWorldMapTexture(wmset.Section38_textures.wmfx_bush, 0);
+                    ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.wmfx_bush, 0);
                     foreach (var pass in ate.CurrentTechnique.Passes)
                     {
                         pass.Apply();
