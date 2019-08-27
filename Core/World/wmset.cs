@@ -34,35 +34,34 @@ namespace OpenVIII.Core.World
 
             //if there's no section method either uncommented or commented out, then the section that is lacking is 4 byte NULL
 
-            //Section1(); //=encounter
-            Section2(); //Finished
-            //Section3(); //=encounter
-            //Section4(); //=encounter
-            //Section5(); //=encounter
-            //Section6(); //=encounter
+            Section1(); //======FINISHED
+            Section2(); //======FINISHED
+            //Section3(); //=encounter - looks like it's some supply helping data or roll data? Not sure, it's way before getting encounters
+            Section4(); //======FINISHED
+            Section6(); //======FINISHED
             //Section7(); //=something with roads colours, cluts. Can't really understand why it's needed, looks like some kind of helper for VRAM?
-            Section8();
+            Section8(); //wm2field WIP
             //Section9(); //=related to field2wm?
-            //Section10();
+            Section10(); //I still don't know what it is for- something with vehicles- maybe wm2field with vehicle? -> same structure as section8
             //Section11(); //??????
             //Section12();
             //Section13();
-            //Section14(); //=STRINGS- side quests
-            Section16(); //Finished
-            Section17(); //=beach animations
+            Section14(); //======FINISHED
+            Section16(); //======FINISHED
             //Section18(); //?????
             //Section19(); //=something with regions: wm_getRegionNumber(SquallPos) + wmsets19
             //Section31(); //?????
-            //Section32(); //=STRINGS- location names
+            Section32(); //======FINISHED
             //Section33(); //=SKY GRADIENT/REGION COLOURING
             //Section34(); //?????????
             //Section35(); //=draw points
             //Section36(); //?????????
             //Section37(); //ENCOUNTERS??????
-            Section38(); //Finished
-            Section39(); //Finished
-            //Section41(); //=Water animation info
-            Section42(); //Finished
+            Section38(); //======FINISHED
+            Section39(); //======FINISHED
+            Section42(); //======FINISHED
+            Section41(); //=Water animation info - 256x1 texture- how to use it?
+            Section17(); //=======FINISHED=beach animations->let's read that at the end due to references to wmset38
 
             //AKAO BELOW
             //Section20();
@@ -93,6 +92,50 @@ namespace OpenVIII.Core.World
             return innerSections.ToArray();
         }
 
+
+
+        #region Section 1 - Encounter setting
+        /// <summary>
+        /// Section1 helps providing the correct encounter based on groundId and regionId, then provides the pointer to struct of section4
+        /// </summary>
+        private const int SECTION1ENTRYCOUNT = 96;
+        [StructLayout(LayoutKind.Sequential, Pack =1, Size =4)]
+        private struct EncounterHelper
+        {
+            public byte regionId;
+            public byte groundId;
+            public ushort encounterPointer;
+        }
+        private EncounterHelper[] encounterHelpEntries;
+        private void Section1()
+        {
+            using (MemoryStream ms = new MemoryStream(buffer))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                ms.Seek(sectionPointers[1- 1], SeekOrigin.Begin);
+                ms.Seek(4, SeekOrigin.Current); //skip first DWORD- it's EOF of global file
+                List<EncounterHelper> encounterHelperList = new List<EncounterHelper>();
+                while(true)
+                {
+                    EncounterHelper entry = Extended.ByteArrayToStructure<EncounterHelper>(br.ReadBytes(4));
+                    if (entry.groundId == 0 && entry.regionId == 0 && entry.encounterPointer == 0)
+                        break;
+                    encounterHelperList.Add(entry);
+                }
+                encounterHelpEntries = encounterHelperList.ToArray();
+            }
+        }
+
+        public ushort GetEncounterHelperPointer(int regionId, int groundId)
+        {
+            var encList = encounterHelpEntries.Where(x => x.groundId == groundId).Where(n => n.regionId == regionId);
+            if (encList.Count() == 0)
+                return 0xFFFF;
+            var enc = encList.First(); //always first, if there are two the same entries then it doesn't make sense- priority is over that one that is first
+            return enc.encounterPointer;
+        }
+        #endregion
+
         #region Section 2 - world map regions
         private byte[] regionsBuffer;
 
@@ -110,10 +153,79 @@ namespace OpenVIII.Core.World
         public byte GetWorldRegionBySegmentPosition(int x, int y) => regionsBuffer[y * 32 + x];
         #endregion
 
+        #region Section 4 - Encounter pointer
+        private const int SEC4_ENC_PER_CHUNK = 8; //there are 8 scene.out pointers per one block/entry
+        private ushort[][] encounters;
+        private void Section4()
+        {
+            using (MemoryStream ms = new MemoryStream(buffer))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                ms.Seek(sectionPointers[4 - 1], SeekOrigin.Begin);
+                List<ushort[]> encounterList = new List<ushort[]>();
+                while(true)
+                {
+                    uint dwordTester = br.ReadUInt32();
+                    if (dwordTester == 0)
+                        break;
+                    ms.Seek(-4, SeekOrigin.Current);
+                    ushort[] sceneOutPointers = new ushort[SEC4_ENC_PER_CHUNK];
+                    for(int i = 0; i<SEC4_ENC_PER_CHUNK; i++)
+                        sceneOutPointers[i] = br.ReadUInt16();
+                    encounterList.Add(sceneOutPointers);
+                }
+                encounters = encounterList.ToArray();
+            }
+        }
+
+        public ushort[] GetEncounters(int pointer) => encounters[pointer];
+        #endregion
+
+        #region Section 6 - Encounter pointer (Lunar Cry)
+        private ushort[][] encountersLunar;
+        private void Section6()
+        {
+            using (MemoryStream ms = new MemoryStream(buffer))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                ms.Seek(sectionPointers[6 - 1], SeekOrigin.Begin);
+                List<ushort[]> encounterList = new List<ushort[]>();
+                while (true)
+                {
+                    uint dwordTester = br.ReadUInt32();
+                    if (dwordTester == 0)
+                        break;
+                    ms.Seek(-4, SeekOrigin.Current);
+                    ushort[] sceneOutPointers = new ushort[SEC4_ENC_PER_CHUNK];
+                    for (int i = 0; i < SEC4_ENC_PER_CHUNK; i++)
+                        sceneOutPointers[i] = br.ReadUInt16();
+                    encounterList.Add(sceneOutPointers);
+                }
+                encountersLunar = encounterList.ToArray();
+            }
+        }
+
+        public ushort[] GetEncountersLunar(int pointer) => encountersLunar[pointer];
+        #endregion
+
         #region Section 8 - World map to field
 
+        /// <summary>
+        /// I have to just understand the algorithm and then I'll be able to upgrade it. Right now
+        /// it looks like it's reading 0xFF01 and setting the start modes (there are two)
+        /// and it normally goes like checkCondition-> FAIL=get next entry; SUCCESS= parse next opcodes of this given entry
+        /// so for sure the labeltest goto algorithm needs to be redone- there are two modes but we can still read the same entry if success
+        /// I still don't know what happens when all the conditions will success- if they are only condiditions or actions?
+        /// because if it succedes- then it just simply goes to next condition and next...nextt...next but I don't see anything like changing
+        /// module when wm2field
+        /// </summary>
         public void Section8()
         {
+            /*
+             * Test case available!
+             * Stand before the entrance to Balamb and it would be the [848]/ so-> 12th entry in section8!
+             * It passes first check of 0xFF06 for segment id = 273 and moves further
+             */
             using (MemoryStream ms = new MemoryStream(buffer))
             using (BinaryReader br = new BinaryReader(ms))
             {
@@ -121,10 +233,249 @@ namespace OpenVIII.Core.World
                 var innerSec = GetInnerPointers(br);
                 for(int i = 0; i<innerSec.Length; i++)
                 {
-                    //???
+                    ms.Seek(sectionPointers[8 - 1] + innerSec[i], SeekOrigin.Begin);
+                    labeltest:
+                    short Mode = 0;
+                    uint controlVar = 0;
+                    int v4 = (int)ms.Position;
+                    while (true)
+                    {
+                        while (true)
+                        {
+                            controlVar = br.ReadUInt32();
+                            if ((controlVar&0xFFFF) != 0xFF01)
+                                break;
+                            Mode = 1;
+                        }
+                        if ((controlVar & 0xFFFF) == 0xFF04)
+                        {
+                            Mode = 2;
+                            v4 = 3;
+                            continue;
+                        }
+                        if (Mode > 0)
+                            break;
+                    }
+
+                    if(Mode == 1)
+                    {
+                        if (!bSec8_conditionals(controlVar))
+                            continue; //parse next entry
+                        else
+                            goto labeltest;
+
+                    }
+                    else //Mode 2
+                    {
+                        if(controlVar == 0xFF16)
+                        {
+                            //;something?
+                            continue;
+                        }
+                        switch(controlVar)
+                        {
+                            case 0xFF05:
+                                if (v4 == 2)
+                                {
+                                    //here is goto label- miracle of assembly- make sure to rewrite this shit later
+                                    goto labeltest;
+                                }
+                                if (v4 != 5)
+                                    continue;
+                                goto labeltest;
+                            case 0xFF0A:
+                                v4 = 1;
+                                goto labeltest;
+                            case 0xFF0B:
+                                if(v4==1)
+                                {
+                                    v4 = 3;
+                                    goto labeltest;
+                                }
+                                if (v4 != 4)
+                                    goto labeltest;
+                                v4 = 3;
+                                goto labeltest;
+                            case 0xFF0C:
+                                if (v4 != 2 && v4 != 5)
+                                    goto labeltest;
+                                v4 = 4;
+                                goto labeltest;
+                            case 0xFF0D:
+                                if (v4 != 2 && v4 != 5)
+                                    goto labeltest;
+                                v4 = 6;
+                                goto labeltest;
+                            default: //[sub_545D60:132]
+                                //TODO
+                                break;
+                        }
+                    }
                 }
             }
         }
+
+        enum sec8_conditional : ushort
+        {
+            /// <summary>
+            /// Checks for segment number (as in wmx.obj- e.g. 273)
+            /// See: ModuleWorld::GetRealSegmentId();
+            /// </summary>
+            SegmentId = 0xFF06,
+            unk02 = 0xFF02,
+            unk03 = 0xFF03,
+            unk07 = 0xFF07,
+            CheckForVehicleGroup = 0xFF09,
+            unk0f = 0xFF0F,
+            unk10 = 0xFF10,
+            unk11 = 0xFF11,
+            unk12 = 0xFF12,
+            unk17 = 0xFF17,
+            unk1a = 0xFF1A,
+            unk1b = 0xFF1B,
+            unk1c = 0xFF1C,
+            unk1d = 0xFF1D,
+            unk20 = 0xFF20,
+            unk18 = 0xFF18,
+            unk19 = 0xFF19,
+            unk1e = 0xFF1E,
+            unk21 = 0xFF21,
+            unk22 = 0xFF22,
+            unk25 = 0xFF25,
+            unk27 = 0xFF27,
+            unk29 = 0xFF29,
+            unk2a = 0xFF2A,
+            unk2c = 0xFF2C,
+            unk2d = 0xFF2D,
+            unk2f = 0xFF2F,
+            unk30 = 0xFF30,
+            unk31 = 0xFF31,
+            unk32 = 0xFF32,
+            unk33 = 0xFF33,
+            unk34 = 0xFF34,
+            unk35 = 0xFF35,
+            unk38 = 0xFF38,
+            unk39 = 0xFF39
+        }
+
+        /// <summary>
+        /// Some wmset sections work on some conditional file structure- therefore during e.g. warping from wm2field it checks entries one-by-one and the one that successively happen to get along with all conditions is parsed/pushed through- if not read next entry
+        /// </summary>
+        /// <param name="controlVar"></param>
+        /// <returns></returns>
+        private bool bSec8_conditionals(uint controlVar)
+        {
+            ushort controlValue = (ushort)(controlVar >> 16);
+            sec8_conditional condition = (sec8_conditional)controlVar;
+            switch (condition)
+            {
+                case sec8_conditional.unk02:
+                    break;
+                case sec8_conditional.unk03:
+                    break;
+                case sec8_conditional.SegmentId: //[145F7F]
+                    return Module_world_debug.GetRealSegmentId() == controlValue;
+                case sec8_conditional.unk07:
+                    break;
+                case sec8_conditional.CheckForVehicleGroup:
+                    break;
+                case sec8_conditional.unk0f:
+                    break;
+                case sec8_conditional.unk10:
+                    break;
+                case sec8_conditional.unk11:
+                    break;
+                case sec8_conditional.unk12:
+                    break;
+                case sec8_conditional.unk17:
+                    break;
+                case sec8_conditional.unk18:
+                    break;
+                case sec8_conditional.unk19:
+                    break;
+                case sec8_conditional.unk1a:
+                    break;
+                case sec8_conditional.unk1b:
+                    break;
+                case sec8_conditional.unk1c:
+                    break;
+                case sec8_conditional.unk1d:
+                    break;
+                case sec8_conditional.unk1e:
+                    break;
+                case sec8_conditional.unk20:
+                    break;
+                case sec8_conditional.unk21:
+                    break;
+                case sec8_conditional.unk22:
+                    break;
+                case sec8_conditional.unk25:
+                    break;
+                case sec8_conditional.unk27:
+                    break;
+                case sec8_conditional.unk29:
+                    break;
+                case sec8_conditional.unk2a:
+                    break;
+                case sec8_conditional.unk2c:
+                    break;
+                case sec8_conditional.unk2d:
+                    break;
+                case sec8_conditional.unk2f:
+                    break;
+                case sec8_conditional.unk30:
+                    break;
+                case sec8_conditional.unk31:
+                    break;
+                case sec8_conditional.unk32:
+                    break;
+                case sec8_conditional.unk33:
+                    break;
+                case sec8_conditional.unk34:
+                    break;
+                case sec8_conditional.unk35:
+                    break;
+                case sec8_conditional.unk38:
+                    break;
+                case sec8_conditional.unk39:
+                    break;
+                default:
+                    break;
+            }
+            return false;
+        }
+        #endregion
+
+        #region Section 10 - [UNKNOWN]/ Something with vehicles, positions- probably wm2field in vehicle (?)
+        /// <summary>
+        /// This file follows some schema of 0xFF01->0xFF04
+        /// </summary>
+        private void Section10()
+        {
+
+        }
+        #endregion
+
+        #region Section 14 - Side quest strings
+        FF8String[] sideQuestDialogues;
+
+        private void Section14()
+        {
+            using (MemoryStream ms = new MemoryStream(buffer))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                ms.Seek(sectionPointers[14 - 1], SeekOrigin.Begin);
+                var innerSec = GetInnerPointers(br);
+                sideQuestDialogues = new FF8String[innerSec.Length];
+                for(int i = 0; i<innerSec.Length; i++)
+                {
+                    ms.Seek(sectionPointers[14 - 1] + innerSec[i], SeekOrigin.Begin);
+                    sideQuestDialogues[i] = Extended.GetBinaryString(br);
+                }
+            }
+        }
+
+        public FF8String GetSection14Text(int index) => sideQuestDialogues[index];
         #endregion
 
         #region Section 16 - World map objects and vehicles
@@ -245,17 +596,17 @@ namespace OpenVIII.Core.World
 
                 vptList.Add(new VertexPositionTexture(
                     a, new Vector2(
-                        (Model.triangles[i].ua-localXadd)/texWidth, 
+                        (Model.triangles[i].ua-localXadd)/texWidth,
                         (Model.triangles[i].va-localYadd)/texHeight)
                     ));
                 vptList.Add(new VertexPositionTexture(
                     b, new Vector2(
-                        (Model.triangles[i].ub-localXadd)/texWidth, 
+                        (Model.triangles[i].ub-localXadd)/texWidth,
                         (Model.triangles[i].vb-localYadd)/texHeight)
                     ));
                 vptList.Add(new VertexPositionTexture(
                     c, new Vector2(
-                        (Model.triangles[i].uc-localXadd)/texWidth, 
+                        (Model.triangles[i].uc-localXadd)/texWidth,
                         (Model.triangles[i].vc-localYadd)/texHeight)
                     ));
 
@@ -286,7 +637,7 @@ namespace OpenVIII.Core.World
                     ));
                 vptList.Add(new VertexPositionTexture(
                     b, new Vector2(
-                        (Model.quads[i].ub - localXadd) / texWidth, 
+                        (Model.quads[i].ub - localXadd) / texWidth,
                         (Model.quads[i].vb - localYadd) / texHeight)
                     ));
                 vptList.Add(new VertexPositionTexture(
@@ -297,7 +648,7 @@ namespace OpenVIII.Core.World
 
                 vptList.Add(new VertexPositionTexture(
                     a, new Vector2(
-                        (Model.quads[i].ua - localXadd) / texWidth, 
+                        (Model.quads[i].ua - localXadd) / texWidth,
                         (Model.quads[i].va - localYadd) / texHeight)
                     ));
                 vptList.Add(new VertexPositionTexture(
@@ -326,13 +677,51 @@ namespace OpenVIII.Core.World
 
         #endregion
 
-        #region Section 17 - World map texture animations for beach
+        #region Section 17 + 41 - World map texture animations for beach[17] and water[41]
         /*
-         * Section 17 is responsible for beach texture animations. It's a double file- first it contains chunks. Every chunk contains 
-         * animation frames information. It's constant as I can see 4 frames per animation. Despite the header there's nothing much to it.
-         * oh, also the texture data is not casual TIM nor TEX. Probably raw, no palette inside. Needs testing!
+         * Section 17 is responsible for beach texture animations. It's a double file- first it contains chunks. Every chunk contains
+         * animation frames information.
+         * There's also new texture structure; I haven't seen such structures earlier. Palette is grabbed from section38
          */
 
+         //MODDING NOTE: Thanks to OpenVIII you can now create bigger chunks than 64x64/64x32 without worrying about SSIGPU VRAM!
+
+            [StructLayout(LayoutKind.Sequential, Pack =1, Size =8)]
+        public struct textureAnimation
+        {
+            /// <summary>
+            /// Unknown
+            /// </summary>
+            public byte unk;
+            /// <summary>
+            /// Animation speed/timeout between frames- usually 0x20. 1 is the fastest. 0 is invalid. 0xFF is long
+            /// </summary>
+            public byte animTimeout;
+            /// <summary>
+            /// Frames count- controls how many frames are valid. Usually 4
+            /// </summary>
+            public byte framesCount;
+            /// <summary>
+            /// If true then frames loop backward. For example 0-1-2-3-2-1-0. If false, then 0-1-2-3-0-1-2-3
+            /// </summary>
+            public byte bLooping;
+            /// <summary>
+            /// Unused in openviii. It is starting VRAM offset for this texture to be stored
+            /// </summary>
+            public ushort vramOrigX;
+            /// <summary>
+            /// Unused in openviii. It is starting VRAM offset for this texture to be stored
+            /// </summary>
+            public ushort vramOrigY;
+            /// <summary>
+            /// Contains texture data for given frame
+            /// </summary>
+            /// Did you know that there's no way to tell C# to not marshal one field?
+            public Texture2D[][] framesTextures;
+        }
+
+        private textureAnimation[] beachAnimations;
+        private textureAnimation[] waterAnimations;
         public void Section17()
         {
             int[] innerPointers;
@@ -341,48 +730,170 @@ namespace OpenVIII.Core.World
             {
                 ms.Seek(sectionPointers[17 - 1], SeekOrigin.Begin);
                 innerPointers = GetInnerPointers(br);
-
+                beachAnimations = new textureAnimation[innerPointers.Length];
                 for (int i = 0; i < innerPointers.Length; i++)
-                    Section17_ParseBlock(sectionPointers[17 - 1] + innerPointers[i], ms, br);
-
+                    beachAnimations[i] = textureAnimation_ParseBlock(sectionPointers[17 - 1] + innerPointers[i], i ,ms, br);
             }
         }
 
-        private void Section17_ParseBlock(int offset, MemoryStream ms, BinaryReader br)
+        public void Section41()
         {
-            ms.Seek(offset, SeekOrigin.Begin);
-            byte unk = br.ReadByte(); //not sure, something like starting delay or I don't know. Like some sort of extension to timeout?
-            byte animationTimeout = br.ReadByte(); //controls how fast the animation frames pass-by. 1 is the fastest. 0 means invalid? here usually 0x20
-
-            byte framesCount = br.ReadByte();   /* usually 4, but there are 8 pointers, so any value bigger than 8 may work, but not suitable with
-                                                * current file. Actually in section17 there are always eight pointers, but 5th and bigger pointer
-                                                * is always pointing to the same frame which is the 4th frame. Therefore engine reads this variable
-                                                * and skips any additional pointers BUT! if you designed the file to have 12-16 pointers in anim 
-                                                * frames, then it would totally work. The engine (at least in vanilla) would normally read the pointers
-                                                * and play the animation. Cool, huh?  */
-
-            byte bLoop = br.ReadByte(); //if 1 then loops backward. If 0 then sequential from zero i.e. 0>1>2>3> 0>1>2>3; if 1 then i.e. 0>1>2>3 X >2>1> 0>1>2>3...
-
-            ushort VRAMpalX = br.ReadUInt16(); //example entry 0 has 832 (816+16)
-            /* in assembly VRAMpalX is actually the byte count-> 4 * (v6>>2), therefore (VRAMpalX/4)*4*/
-            ushort VRAMpalY = br.ReadUInt16(); //example entry 0 has 384
-
-
-
-            uint preImagePosition = (uint)ms.Position;
-            uint[] imagePointers = new uint[framesCount]; //looks like 8 is fixed? NOTE: it's not fixed, some bitshit is deciding whether read or not next pointer bleh...
-            for (int i = 0; i < framesCount; i++) 
-                imagePointers[i] = br.ReadUInt32() + preImagePosition;
+            int[] innerPointers;
+            using (MemoryStream ms = new MemoryStream(buffer))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                ms.Seek(sectionPointers[41 - 1], SeekOrigin.Begin);
+                innerPointers = GetInnerPointers(br);
+                waterAnimations = new textureAnimation[innerPointers.Length];
+                for (int i = 0; i < innerPointers.Length; i++)
+                    waterAnimations[i] = textureAnimation_ParseBlock(sectionPointers[41 - 1] + innerPointers[i], -1, ms, br);
+            }
+            //for (int i = 0; i < waterAnimations.Length; i++)
+            //    for (int n = 0; n < waterAnimations[i].framesCount; n++)
+            //        for (int k = 0; k < waterAnimations[i].framesTextures[n].Length; k++)
+            //            Extended.DumpTexture(waterAnimations[i].framesTextures[n][k], $"D:\\d_{i}_{k}_{n}.png");
         }
 
+        private const int sec17_imageHeaderSize = 12; //dword;dword; sizeDword
+
+        /// <summary>
+        /// Valid for section 41 and 17!
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="texturePointer"></param>
+        /// <param name="ms"></param>
+        /// <param name="br"></param>
+        /// <returns></returns>
+        private textureAnimation textureAnimation_ParseBlock(int offset, int texturePointer, MemoryStream ms, BinaryReader br)
+        {
+            ms.Seek(offset, SeekOrigin.Begin);
+            //beachAnimation animation = Extended.ByteArrayToStructure<beachAnimation>(br.ReadBytes(8));
+            textureAnimation animation = new textureAnimation() //not using Extension because Marshalling doesn't go well with [][] even
+                                                            //though it's not really even used!
+            {
+                unk = br.ReadByte(),
+                animTimeout = br.ReadByte(),
+                framesCount = br.ReadByte(),
+                bLooping = br.ReadByte(),
+                vramOrigX = br.ReadUInt16(),
+                vramOrigY = br.ReadUInt16()
+            };
+            if (texturePointer == -1)
+                ms.Seek(4, SeekOrigin.Current); //there are two WORD's that feel like they have again the palette X and Y but why??
+            uint preImagePosition = (uint)ms.Position;
+            uint[] imagePointers = new uint[animation.framesCount];
+            Color[] palette = GetWorldMapTexturePalette(texturePointer==0 ?
+                Section38_textures.beach : texturePointer==-1 ?
+                Section38_textures.waterTex : Section38_textures.beachE, 0);
+            for (int i = 0; i < animation.framesCount; i++)
+                imagePointers[i] = br.ReadUInt32() + preImagePosition;
+            Texture2D[][] animationFrames = new Texture2D[imagePointers.Length][];
+            for(int i = 0; i<animation.framesCount; i++)
+            {
+                if (texturePointer == 0)
+                    animationFrames[i] = new Texture2D[4];
+                else if (texturePointer != -1)
+                    animationFrames[i] = new Texture2D[2];
+                else
+                    animationFrames[i] = new Texture2D[1];
+
+                ms.Seek(imagePointers[i], SeekOrigin.Begin);
+                uint unknownHeader = br.ReadUInt32();
+                uint unknownHeader_ = br.ReadUInt32();
+                if (unknownHeader != 18 && unknownHeader != 17) //I don't know why 18
+                    throw new Exception("wmset::section17::texturePointerHeader != 17 or 18");
+                if (unknownHeader_ != 1) //I don't know why 1
+                    throw new Exception("wmset::section17::texturePointerHeader+4 != 1");
+                uint imageSize = br.ReadUInt32() - sec17_imageHeaderSize; //imageSize, but doesn't really matter here
+                _ = br.ReadUInt32(); //unknown
+                ushort width = (ushort)(br.ReadUInt16()*2);
+                ushort height = br.ReadUInt16();
+                Texture2D texture = new Texture2D(Memory.graphics.GraphicsDevice, width, height, false, SurfaceFormat.Color);
+                Color[] texBuffer = new Color[width * height]; //32bpp because Color is ARGB byte : struct
+                for(int m = 0; m<texBuffer.Length; m++)
+                {
+                    byte b = br.ReadByte();
+                    texBuffer[m] = palette[b];
+                }
+                texture.SetData(texBuffer);
+
+                if (texturePointer == 0) //slice to 2x2
+                {
+                    Color[] upperLeft = new Color[width / 2 * height / 2];
+                    Color[] upperRight = new Color[width / 2 * height / 2];
+                    Color[] bottomLeft = new Color[width / 2 * height / 2];
+                    Color[] bottomRight = new Color[width / 2 * height / 2];
+                    texture.GetData(0, new Rectangle(0, 0, width / 2, height / 2), upperLeft, 0, upperLeft.Length);
+                    texture.GetData(0, new Rectangle(width / 2, 0, width / 2, height / 2), upperRight, 0, upperRight.Length);
+                    texture.GetData(0, new Rectangle(0, height / 2, width / 2, height / 2), bottomLeft, 0, bottomLeft.Length);
+                    texture.GetData(0, new Rectangle(width / 2, height / 2, width / 2, height / 2), bottomRight, 0, bottomRight.Length);
+                    for (int p = 0; p < animationFrames[i].Length; p++)
+                        animationFrames[i][p] = new Texture2D(Memory.graphics.GraphicsDevice, width / 2, height / 2, false, SurfaceFormat.Color);
+                    animationFrames[i][0].SetData(upperLeft);
+                    animationFrames[i][1].SetData(upperRight);
+                    animationFrames[i][2].SetData(bottomLeft);
+                    animationFrames[i][3].SetData(bottomRight);
+                }
+                else if (texturePointer != -1) //slice to 2x1
+                {
+                    Color[] upperLeft = new Color[width / 2 * height];
+                    Color[] upperRight = new Color[width / 2 * height];
+                    texture.GetData(0, new Rectangle(0, 0, width / 2, height), upperLeft, 0, upperLeft.Length);
+                    texture.GetData(0, new Rectangle(width / 2, 0, width / 2, height), upperRight, 0, upperRight.Length);
+                    for (int p = 0; p < animationFrames[i].Length; p++)
+                        animationFrames[i][p] = new Texture2D(Memory.graphics.GraphicsDevice, width / 2, height, false, SurfaceFormat.Color);
+                    animationFrames[i][0].SetData(upperLeft);
+                    animationFrames[i][1].SetData(upperRight);
+                }
+                else
+                    animationFrames[i][0] = texture; //if section41 do not decimate/slice;
+            }
+            animation.framesTextures = animationFrames;
+            return animation;
+        }
+
+        public textureAnimation GetBeachAnimation(int animationId) => beachAnimations[animationId];
+
+        /// <summary>
+        /// Gets chunk from beachAnim atlas (because they are structured 2x2)
+        /// </summary>
+        /// <param name="animationId">index of the animation wanted- there are two beach anim sets and one unknown</param>
+        /// <param name="frameId">naturally the frame/keyframe of the animation</param>
+        /// <param name="chunkId">chunk from the atlas. 0 means top left, 1 means top right, 2 means bottom left, 3 means bottom right</param>
+        /// <returns></returns>
+        public Texture2D GetBeachAnimationTextureFrame(int animationId, int frameId, int chunkId)
+            => beachAnimations[animationId].framesTextures[frameId][chunkId];
+
+        #endregion
+
+        #region Section 32 - World map location names
+        FF8String[] locationsNames;
+        private void Section32()
+        {
+            using (MemoryStream ms = new MemoryStream(buffer))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                ms.Seek(sectionPointers[32 - 1], SeekOrigin.Begin);
+                var innerSec = GetInnerPointers(br);
+                locationsNames = new FF8String[innerSec.Length];
+                for(int i = 0; i<locationsNames.Length; i++)
+                {
+                    ms.Seek(sectionPointers[32 - 1] + innerSec[i], SeekOrigin.Begin);
+                    locationsNames[i] = Extended.GetBinaryString(br);
+                }
+            }
+        }
+
+        public FF8String GetLocationName(int index) => locationsNames[index];
         #endregion
 
         #region Section 38 - World map textures archive
         /// <summary>
         /// Section 38: World map textures archive
         /// </summary>
-        /// 
+        ///
         private List<TextureHandler[]> sec38_textures;
+        private List<Color[][]> sec38_pals; //because other sections rely on palettes of wmset.38
 
         public enum Section38_textures
         {
@@ -420,12 +931,13 @@ namespace OpenVIII.Core.World
             wmunk31,
             wmfx32,
             wmunk33,
-            wmunk34,
+            shadowBig,
             magicBarrier
         }
 
         private void Section38()
         {
+            sec38_pals = new List<Color[][]>();
             using (MemoryStream ms = new MemoryStream(buffer))
             using (BinaryReader br = new BinaryReader(ms))
             {
@@ -439,6 +951,12 @@ namespace OpenVIII.Core.World
                     for (ushort k = 0; k < sec38_textures[i].Length; k++)
                         sec38_textures[i][k] = new TextureHandler($"wmset_tim38_{(i + 1).ToString("D2")}.tim", tim, k, null);
                     //support mods using no palettes.
+                    sec38_pals.Add(new Color[tim.GetClutCount][]);
+                    for (ushort k = 0; k < sec38_textures[i].Length; k++)
+                    {
+                        sec38_pals[i][k] = tim.GetPalette(k);
+                        sec38_textures[i][k] = tim.GetTexture(k, true);
+                    }
                 }
             }
         }
@@ -451,6 +969,9 @@ namespace OpenVIII.Core.World
         /// <returns></returns>
         public TextureHandler GetWorldMapTexture(Section38_textures index, int clut)
             => sec38_textures[(int)index][clut];
+
+        public Color[] GetWorldMapTexturePalette(Section38_textures index, int clut)
+        => sec38_pals[(int)index][clut];
 
         #endregion
 
@@ -608,8 +1129,8 @@ namespace OpenVIII.Core.World
 
 /*
  * Snippet for section w/ inner pointers
- * 
- *          
+ *
+ *
             using (MemoryStream ms = new MemoryStream(buffer))
             using (BinaryReader br = new BinaryReader(ms))
             {

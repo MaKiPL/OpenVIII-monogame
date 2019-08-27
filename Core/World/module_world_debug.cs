@@ -45,7 +45,7 @@ namespace OpenVIII
         private static readonly int renderDistance = 4;
         private static readonly float FOV = 60;
 
-        private static Vector2 segmentPosition;
+        public static Vector2 segmentPosition;
         private static CharaOne chara;
         private static texl texl;
         private static wmset wmset;
@@ -367,6 +367,8 @@ namespace OpenVIII
             return 0;
         }
 
+        public static bool bHasMoved = false;
+
         public static void Update()
         {
             animationId = 0;
@@ -397,16 +399,40 @@ namespace OpenVIII
             if (Input2.Button(Keys.D8))
                 bDebugDisableCollision = !bDebugDisableCollision;
 
-            SimpleInputUpdate(); //lastplayerposition = playerposition here
+            SimpleInputUpdate(out var bHasMove); //lastplayerposition = playerposition here
+            bHasMoved = bHasMove;
             CollisionUpdate();
+            if(bHasMoved)
+                EncounterUpdate();
+        }
+
+        /// <summary>
+        /// If player moved then check for available encounters and if we should play it
+        /// </summary>
+        private static void EncounterUpdate()
+        {
+            //RE: if ((world_currentVehicle < 0 || world_currentVehicle > 9) && world_currentVehicle != 128 || !isStateOfMovement   //Naturally, we don't want encounters if in vehicle
+            int regionId = wmset.GetWorldRegionBySegmentPosition((int)segmentPosition.X, (int)segmentPosition.Y); //section2
+            if (activeCollidePolygon == null)
+                return;
+            int groundId = activeCollidePolygon.Value.groundtype;
+            int encPointer = wmset.GetEncounterHelperPointer(regionId, groundId); //section1
+            if (encPointer == 0xffff)
+                return;
+            ushort[] AvailableEncounters = wmset.GetEncounters(encPointer); //section4
+
+            //we now have 8 encounters-> 4 casual; 2 mid and 2 rare
+
+            //TODO random + enc.half/none junction + warping to battle
         }
 
         /// <summary>
         /// Simple input handling- It's mockup of walking forward and backward. It's not the vanilla
         /// style input- used for testing collision
         /// </summary>
-        private static void SimpleInputUpdate()
+        private static void SimpleInputUpdate(out bool bHasMoved)
         {
+            bHasMoved = false;
             lastPlayerPosition = playerPosition;
             if (Input2.Button(Keys.D8))
                 playerPosition.X += 1f;
@@ -438,15 +464,25 @@ namespace OpenVIII
         private static List<Tuple<ParsedTriangleData, Vector3, bool>> RaycastedTris;
 
         /// <summary>
+
         /// This method checks for collision- uses raycasting and 3Dintersection to either allow
         /// movement, update it and/or warp player. If all checks fails it returns to last known
         /// correct player position
+        /// This points to polygon structure that is actively used/ character stomps on it
+        /// </summary>
+        private static Polygon? activeCollidePolygon = null;
+
+        public static int GetRealSegmentId() => (int)(segmentPosition.Y * 32 + segmentPosition.X); //explicit public for wmset and warping sections
+
+        /// <summary>
+        /// This method checks for collision- uses raycasting and 3Dintersection to either allow movement, update it and/or warp player. If all checks fails it returns to last known correct player position
+
         /// </summary>
         private static void CollisionUpdate()
         {
             segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1); //needs to be updated on pre-new values of movement
-            int realSegmentId = (int)(segmentPosition.Y * 32 + segmentPosition.X);
-            Segment seg = segments[realSegmentId];
+            int realSegmentId = GetRealSegmentId();
+            var seg = segments[realSegmentId];
             RaycastedTris = new List<Tuple<ParsedTriangleData, Vector3, bool>>();
             Ray characterRay = new Ray(playerPosition + new Vector3(0, 10f, 0), Vector3.Down); //sets ray origin
             Ray skyRay = new Ray(GetForwardSkyRaycastVector(SKYRAYCAST_FIXEDDISTANCE), Vector3.Down);
@@ -479,6 +515,7 @@ namespace OpenVIII
                         continue;
                 Vector3 squaPos = prt.Item2;
                 playerPosition.Y = squaPos.Y;
+                activeCollidePolygon = prt.Item1.parentPolygon;
 #if DEBUG
                 bSelectedWalkable = prt.Item1.parentPolygon.vertFlags;
 #endif
@@ -495,6 +532,7 @@ namespace OpenVIII
                     continue;
                 Vector3 squaPos = prt.Item2;
                 playerPosition.Y = squaPos.Y;
+                activeCollidePolygon = prt.Item1.parentPolygon;
 #if DEBUG
                 bSelectedWalkable = prt.Item1.parentPolygon.vertFlags;
 #endif
@@ -562,6 +600,7 @@ namespace OpenVIII
             DrawCharacter(activeCharacter);
 
 #if DEBUG
+            DrawCharacterShadow();
             DrawDebug();
 #endif
 
@@ -596,9 +635,46 @@ namespace OpenVIII
         }
 
         /// <summary>
-        /// Gets the vector3 position of the raycast that drops from sky and is used for forest This
-        /// prevents camera/player to get out of playable zone and wraps it to the other side like
-        /// it's 360o
+        /// Takes care of drawing shadows and additional FX when needed (like in forest).
+        /// [WIP]
+        /// </summary>
+        private static void DrawCharacterShadow()
+        {
+            if (activeCollidePolygon == null)
+                return;
+            if((activeCollidePolygon.Value.vertFlags & TRIFLAGS_FORESTTEST) > 0)
+            {
+                var shadowGeom = Extended.GetShadowPlane(playerPosition + new Vector3(-2.2f, .1f, -2.2f), 4f);
+                ate.Texture = wmset.GetWorldMapTexture(wmset.Section38_textures.shadowBig, 0);
+                ate.Alpha = .25f;
+                foreach(var pass in ate.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+                    ate.GraphicsDevice.DepthStencilState = DepthStencilState.None;
+                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, shadowGeom, 0, shadowGeom.Length / 3);
+                }
+                ate.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+                ate.Alpha = 1f;
+            }
+            else if ((activeCollidePolygon.Value.vertFlags & TRIFLAGS_FORESTTEST) == 0)
+            {
+                if(bHasMoved)
+                {
+                    var shadowGeom = Extended.GetShadowPlane(playerPosition + new Vector3(-2.2f, .1f, -2.2f), 4f);
+                    ate.Texture = wmset.GetWorldMapTexture(wmset.Section38_textures.wmfx_bush, 0);
+                    foreach (var pass in ate.CurrentTechnique.Passes)
+                    {
+                        pass.Apply();
+                        ate.GraphicsDevice.DepthStencilState = DepthStencilState.None;
+                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, shadowGeom, 0, shadowGeom.Length / 3);
+                    }
+                    ate.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the vector3 position of the raycast that drops from sky and is used for forest
         /// </summary>
         /// <returns></returns>
         private static Vector3 GetForwardSkyRaycastVector(float distance = 15f)

@@ -244,8 +244,24 @@ namespace OpenVIII
             }
         }
 
-        /// <summary>
-        /// Initialize TIM class
+
+
+                /// <summary>
+                /// Gets Color[] palette from TIM image data
+        /// </summary>
+        /// <param name="clut">clut index</param>
+        /// <returns></returns>
+        public Color[] GetPalette(ushort clut = 0)
+        {
+            Color[] colors;
+            using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+                colors = GetClutColors(br, clut);
+            return colors;
+        }
+
+
+                /// <summary>
+/// Initialize TIM class
         /// </summary>
         /// <param name="br">BinaryReader pointing to the file data</param>
         /// <param name="offset">Start of Tim Data</param>
