@@ -170,11 +170,11 @@ namespace OpenVIII
             spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, ss, graphics.GraphicsDevice.DepthStencilState);
         }
 
-        public static void SpriteBatchStartAlpha(SamplerState ss = null, Matrix? tm = null)
+        public static void SpriteBatchStartAlpha(SpriteSortMode sortMode= SpriteSortMode.Deferred, SamplerState ss = null, Matrix? tm = null)
         {
 
             //lock (spritebatchlock)
-            spriteBatch.Begin(sortMode: SpriteSortMode.Deferred, blendState: BlendState.AlphaBlend, samplerState: ss ?? SamplerState.PointClamp, transformMatrix: tm);
+            spriteBatch.Begin(sortMode: sortMode, blendState: BlendState.AlphaBlend, samplerState: ss ?? SamplerState.PointClamp, transformMatrix: tm);
         }
 
         public static void SpriteBatchEnd()

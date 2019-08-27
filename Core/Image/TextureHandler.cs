@@ -25,14 +25,7 @@ namespace OpenVIII
         }
 
         public TextureHandler(string filename, uint cols, uint rows) =>
-            //if (cols == 1 && rows == 1)
-            //{
-            //    ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
-            //    filename = aw.GetListOfFiles().First(x => x.IndexOf(filename, StringComparison.OrdinalIgnoreCase) >= 0);
-            //    Texture_Base tex = new TEX(aw.GetBinaryFile(filename));
-            //    Init(filename, tex, cols, rows);
-            //}
-            //else
+
             Init(filename, null, cols, rows);
 
         public TextureHandler(string filename, Texture_Base classic, ushort palette = 0, Color[] colors = null) => Init(filename, classic, 1, 1, palette: palette, colors: colors);
@@ -139,7 +132,8 @@ namespace OpenVIII
         {
             string bn = Path.GetFileNameWithoutExtension(path);
             string prefix = bn.Substring(0, 2);
-            string pngpath = Path.Combine(Memory.FF8DIR, "textures", prefix, bn);
+            string textures = Path.Combine(Memory.FF8DIR, "textures");
+            string pngpath = Path.Combine(textures, prefix, bn);
             // this isn't working correctly unless mod authors have the this-> 13=0, 14=1... for palettes
             //https://github.com/MaKiPL/OpenVIII/issues/73
             string suffix = palette > -1 ? $"{palette + 13}" : "";
@@ -159,6 +153,30 @@ namespace OpenVIII
                 catch (InvalidOperationException)
                 {
                     // couldn't find a match.
+                }
+            }
+            if (Directory.Exists(textures))
+            {
+                string[] pngs = Directory.GetFiles(textures, "*.png", SearchOption.AllDirectories);
+                for (int i = 0; i < pngs.Length; i++)
+                {
+                    if (palette > -1 && pngs[i].IndexOf($"{bn}+ _{ (palette + 1).ToString("D2")}", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        using (FileStream fs = File.OpenRead(pngs[i]))
+                        {
+                            return Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
+                        }
+                    }
+                }
+                for (int i = 0; i < pngs.Length; i++)
+                {
+                    if (pngs[i].IndexOf(bn, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        using (FileStream fs = File.OpenRead(pngs[i]))
+                        {
+                            return Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
+                        }
+                    }
                 }
             }
             return null;
@@ -315,11 +333,20 @@ namespace OpenVIII
             {
                 for (uint c = 0; c < Cols && Memory.graphics.GraphicsDevice != null; c++)
                 {
+                    Texture2D pngTex;
                     ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
-                    string path = aw.GetListOfFiles().First(x => (x.IndexOf(string.Format(Filename, c + r * Cols + StartOffset), StringComparison.OrdinalIgnoreCase) >= 0));
-                    tex = Texture_Base.Open(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
-                    if (Classic == null && c2 < Cols) oldsize.X += tex.GetWidth;
-                    Texture2D pngTex = LoadPNG(path, Palette);
+                    string path = aw.GetListOfFiles().FirstOrDefault(x => (x.IndexOf(string.Format(Filename, c + r * Cols + StartOffset), StringComparison.OrdinalIgnoreCase) >= 0));
+                    if (!string.IsNullOrWhiteSpace(path))
+                    {
+                        tex = Texture_Base.Open(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
+                        if (Classic == null && c2 < Cols) oldsize.X += tex.GetWidth;
+                        pngTex = LoadPNG(path, Palette);
+                    }
+                    else
+                    {
+                        pngTex = LoadPNG(Filename, Palette);
+                    }
+                    if (tex == null) tex = Classic;
                     Textures[c, r] = (UseBest(tex, pngTex, Palette, Colors));
                     if (pngTex != null) Modded = true;
                     if (c2 < Cols && Textures[c2, r2] != null) size.X += Textures[c2++, r2].Width;
@@ -498,6 +525,17 @@ namespace OpenVIII
             Classic = null;
             //Merge the texture pieces into one.
             Merge();
+        }
+
+        public void Draw(Rectangle dst, Color color) => Draw(dst,null,color);
+        public void Draw(Rectangle dst, Color color, float rotation, Vector2 origin, SpriteEffects effects, float depth)
+        {
+            if(Rows == 1 && Cols == 1)
+            Memory.spriteBatch.Draw(Textures[0, 0], dst, null, color, rotation, origin, effects, depth);
+            else
+            {
+                throw new Exception("had not coded this to draw from multiple textures");
+            }
         }
 
         #endregion Methods
