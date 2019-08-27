@@ -2,6 +2,8 @@
 
 namespace OpenVIII
 {
+    public partial class Module_main_menu_debug
+    {
 
         #region Enums
 
@@ -21,5 +23,5 @@ namespace OpenVIII
 
         #endregion Enums
 
-    
+    }
 }

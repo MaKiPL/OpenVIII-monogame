@@ -1,12 +1,14 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using OpenVIII.Encoding.Tags;
+using Microsoft.Xna.Framework.Input;
 using System;
+using System.Collections.Generic;
 
 namespace OpenVIII
 {
     public static partial class Module_main_menu_debug
     {
+
         private static void DrawLGSGChooseBlocks()
         {
             Rectangle dst = new Rectangle
@@ -72,20 +74,20 @@ namespace OpenVIII
                 Memory.Icons.Draw(Icons.ID.Arrow_Right2, 1, arrow, new Vector2(3f), fade);
                 Memory.Icons.Draw(Icons.ID.Arrow_Right2, 2, arrow, new Vector2(3f), fade * blink_Amount);
             }
-            UpdateTime();
+            float speed = .17f;
             if (OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)
             {
                 dst.Location = (dst.Location.ToVector2()).ToPoint();
                 PageTarget = dst.Location.ToVector2();
                 dst.Size = (dst.Size.ToVector2()).ToPoint();
                 PageSize = dst.Size.ToVector2();
-                CurrentPageLoc = CurrentPageLoc == Vector2.Zero || speed == 0f ? PageTarget : Vector2.Lerp(CurrentPageLoc, PageTarget, speed);//.FloorOrCeiling(PageTarget);
+                CurrentPageLoc = CurrentPageLoc == Vector2.Zero ? PageTarget : Vector2.SmoothStep(CurrentPageLoc, PageTarget, speed).FloorOrCeiling(PageTarget);
                 dst.Location = CurrentPageLoc.RoundedPoint();
                 Memory.spriteBatch.Draw(OffScreenBuffer, dst, Color.White * fade);
             }
             if (LastPage != null && !LastPage.IsDisposed)
             {
-                CurrentLastPageLoc = CurrentLastPageLoc == Vector2.Zero || speed == 0f ? PageTarget : Vector2.Lerp(CurrentLastPageLoc, LastPageTarget, speed);//.FloorOrCeiling(LastPageTarget);
+                CurrentLastPageLoc = CurrentLastPageLoc == Vector2.Zero ? PageTarget : Vector2.SmoothStep(CurrentLastPageLoc, LastPageTarget, speed).FloorOrCeiling(LastPageTarget);
                 if (LastPageTarget == CurrentLastPageLoc)
                 {
                     LastPage.Dispose(); CurrentLastPageLoc = Vector2.Zero;
@@ -99,12 +101,11 @@ namespace OpenVIII
             else //if(BlockLocs[BlockLoc] != null)
             {
                 Point ptr = BlockLocs[BlockLoc].Item2;
-                Menu.DrawPointer(ptr);
+                DrawPointer(ptr);
             }
         }
 
         private static void DrawSGChooseGame() => DrawLGSGChooseGame(strLoadScreen[Litems.Save].Text, strLoadScreen[Litems.BlockToSave].Text);
-
         private static bool UpdateLGChooseGame()
         {
             bool ret = false;
@@ -118,12 +119,12 @@ namespace OpenVIII
                         BlockLoc = (sbyte)i;
                         ret = true;
 
-                        if (Input2.DelayedButton(MouseButtons.MouseWheelup))
+                        if (Input.Button(Buttons.MouseWheelup))
                         {
                             UpdateLGChooseGameLEFT();
                             return true;
                         }
-                        else if (Input2.DelayedButton(MouseButtons.MouseWheeldown))
+                        else if (Input.Button(Buttons.MouseWheeldown))
                         {
                             UpdateLGChooseGameRIGHT();
                             return true;
@@ -132,42 +133,47 @@ namespace OpenVIII
                     }
                 }
 
-                if (Input2.Button(FF8TextTagKey.Down))
+                if (Input.Button(Buttons.Down))
                 {
+                    Input.ResetInputLimit();
                     init_debugger_Audio.PlaySound(0);
                     BlockLoc++;
                     ret = true;
                 }
-                else if (Input2.DelayedButton(FF8TextTagKey.Left))
+                else if (Input.Button(Buttons.Left))
                 {
                     UpdateLGChooseGameLEFT();
                     ret = true;
                 }
-                else if (Input2.DelayedButton(FF8TextTagKey.Right))
+                else if (Input.Button(Buttons.Right))
                 {
                     UpdateLGChooseGameRIGHT();
                     ret = true;
                 }
-                else if (Input2.DelayedButton(FF8TextTagKey.Up))
+                else if (Input.Button(Buttons.Up))
                 {
+                    Input.ResetInputLimit();
                     init_debugger_Audio.PlaySound(0);
                     BlockLoc--;
                     ret = true;
                 }
-                else if (Input2.DelayedButton(FF8TextTagKey.RotateLeft))//(Input2.Button(Keys.PageDown))
+                else if (Input.Button(Keys.PageDown))
                 {
+                    Input.ResetInputLimit();
                     init_debugger_Audio.PlaySound(0);
                     SlotLoc++;
                     ret = true;
                 }
-                else if (Input2.DelayedButton(FF8TextTagKey.RotateRight)) // (Input2.Button(Keys.PageUp))
+                else if (Input.Button(Keys.PageUp))
                 {
+                    Input.ResetInputLimit();
                     init_debugger_Audio.PlaySound(0);
                     SlotLoc--;
                     ret = true;
                 }
-                else if (Input2.DelayedButton(FF8TextTagKey.Cancel))
+                else if (Input.Button(Buttons.Cancel))
                 {
+                    Input.ResetInputLimit();
                     init_debugger_Audio.PlaySound(8);
                     init_debugger_Audio.StopMusic();
                     Dchoose = 0;
@@ -176,7 +182,7 @@ namespace OpenVIII
 
                     ret = true;
                 }
-                else if (Input2.DelayedButton(FF8TextTagKey.Confirm))
+                else if (Input.Button(Buttons.Okay))
                 {
                     PercentLoaded = 0f;
                     //State = MainMenuStates.LoadGameCheckingSlot;
@@ -194,6 +200,7 @@ namespace OpenVIII
 
         private static void UpdateLGChooseGameRIGHT()
         {
+            Input.ResetInputLimit();
             init_debugger_Audio.PlaySound(0);
             if (LastPage != null && !LastPage.IsDisposed)
             {
@@ -220,6 +227,7 @@ namespace OpenVIII
 
         private static void UpdateLGChooseGameLEFT()
         {
+            Input.ResetInputLimit();
             init_debugger_Audio.PlaySound(0);
             if (LastPage != null && !LastPage.IsDisposed)
             {
@@ -243,13 +251,10 @@ namespace OpenVIII
             }
             Blockpage--;
         }
-
         private static void UpdateSGChooseGame() => throw new NotImplementedException();
-
         private static void DrawLGChooseGame() => DrawLGSGChooseGame(strLoadScreen[Litems.Load].Text, strLoadScreen[Litems.BlockToLoad].Text);
 
         private static RenderTarget2D OffScreenBuffer;
-
         private static Tuple<Rectangle, Point> DrawBlock(int block, Saves.Data d)
         {
             block++;
@@ -262,7 +267,7 @@ namespace OpenVIII
             };
             Vector2 offset = dst.Location.ToVector2();
 
-            Menu.DrawBox(dst);
+            DrawBox(dst);
 
             Vector2 blocknumpos = new Vector2
             {
@@ -318,8 +323,8 @@ namespace OpenVIII
                 float X3 = OffScreenBuffer.Width * -0.0952380952380952f;
                 disc.Location = new Vector2 { X = X1, Y = disc.Y }.ToPoint();
                 Memory.Icons.Draw(Icons.ID.G, 2, disc, DiscScale, fade);
-                double digits = (d.AmountofGil == 0 ? 1 : Math.Floor(Math.Log10(d.AmountofGil) + 2));
-
+                double digits = (d.AmountofGil==0?1:Math.Floor(Math.Log10(d.AmountofGil)+2));
+                
                 disc.Offset(new Vector2 { X = (float)(digits * X2) });
                 Memory.Icons.Draw((int)d.AmountofGil, 0, 2, "D1", disc.Location.ToVector2(), DiscScale, fade);
                 disc.Location = new Vector2 { X = X1, Y = playy }.ToPoint();
@@ -343,7 +348,7 @@ namespace OpenVIII
                     Height = (int)(OffScreenBuffer.Height * 0.138364779874214f),
                 };
                 locbox.Offset(offset);
-                Menu.DrawBox(locbox);
+                DrawBox(locbox);
                 FF8String loc = Memory.Strings.Read(Strings.FileID.AREAMES, 0, d.LocationID);
                 locbox.Offset(0.0297619047619048f * OffScreenBuffer.Width, 0.0440251572327044f * OffScreenBuffer.Height);
                 Memory.font.RenderBasicText(loc, locbox.Location, TextScale, Fade: fade);
@@ -367,7 +372,6 @@ namespace OpenVIII
                 _blockLoc = value;
             }
         }
-
         private static sbyte _blockLoc;
 
         private static sbyte blockpage;
@@ -382,30 +386,8 @@ namespace OpenVIII
                 blockpage = value;
             }
         }
-
-        public static float speed
-        {
-            get;set;
-        }
-
-        private static void UpdateTime()
-        {
-            if (CurrentTime < TotalTime)
-            {
-                CurrentTime += Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
-
-                speed = (float)(CurrentTime / TotalTime);
-            }
-            else
-            {
-                CurrentTime = 0;
-                speed = 0f;
-            }
-        }
-
         private static Tuple<Rectangle, Point, Rectangle>[] BlockLocs = new Tuple<Rectangle, Point, Rectangle>[3];
         private static Texture2D LastPage;
-        private static double CurrentTime;
-        private static double TotalTime => 200d;
     }
+
 }

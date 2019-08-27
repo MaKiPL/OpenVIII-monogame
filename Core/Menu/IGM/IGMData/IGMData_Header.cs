@@ -1,42 +1,54 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    public partial class IGM
+    public partial class Module_main_menu_debug
     {
         #region Classes
 
-        protected class IGMData_Header : IGMData
+        private partial class IGM
         {
-            #region Fields
+            #region Classes
 
-            private bool eventSet = false;
-
-            #endregion Fields
-
-            #region Constructors
-
-            public IGMData_Header() : base(0, 0, new IGMDataItem_Box(pos: new Rectangle { Width = 610, Height = 75 }, title: Icons.ID.HELP))
-            { }
-
-            #endregion Constructors
-
-            #region Methods
-
-            public override void Refresh()
+            protected class IGMData_Header : IGMData
             {
-                if (!eventSet && IGM != null)
+                #region Fields
+
+                private bool eventSet= false;
+
+                #endregion Fields
+
+                #region Constructors
+
+                public IGMData_Header() : base(0, 0, new IGMDataItem_Box(pos: new Rectangle { Width = 610, Height = 75 }, title: Icons.ID.HELP))
+                { }
+                #endregion Constructors
+
+
+                #region Methods
+
+                public override void ReInit()
                 {
-                    IGM.ChoiceChangeHandler += ChoiceChangeEvent;
-                    eventSet = true;
+                    if (!eventSet && InGameMenu != null)
+                    {                        
+                        InGameMenu.ChoiceChangeHandler += ChoiceChangeEvent;
+                        eventSet = true;
+                    }
+                    base.ReInit();
                 }
-                base.Refresh();
+
+                private void ChoiceChangeEvent(object sender, KeyValuePair<Items, FF8String> e)
+                { 
+                    ((IGMDataItem_Box)CONTAINER).Data = e.Value;
+                }
+
+                #endregion Methods
             }
 
-            private void ChoiceChangeEvent(object sender, KeyValuePair<Items, FF8String> e) => ((IGMDataItem_Box)CONTAINER).Data = e.Value;
+            #endregion Classes
 
-            #endregion Methods
         }
 
         #endregion Classes

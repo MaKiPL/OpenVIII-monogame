@@ -1,104 +1,56 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace OpenVIII
 {
-    //public abstract class IGMDataItem, IIGMDataItem<T> : IGMDataItem, IIGMDataItem, IIGMDataItem<T>
-    //{
-    //    #region Fields
-
-    // private T _data;
-
-    // #endregion Fields
-
-    // #region Constructors
-
-    // public IGMDataItem(T data, Rectangle? pos = null, Vector2? scale = null) : base(pos, scale) =>
-    // Data = data;
-
-    // #endregion Constructors
-
-    // #region Properties
-
-    // public virtual T Data { get => _data; set => _data = value; }
-
-    //    #endregion Properties
-    //}
-
-    public abstract class IGMDataItem : Menu_Base
+    public partial class Module_main_menu_debug
     {
-        #region Fields
+        #region Classes
 
-        protected static Texture2D blank;
-
-        protected Rectangle _pos;
-
-        private bool _blink = false;
-
-        #endregion Fields
-
-        #region Constructors
-
-        public IGMDataItem(Rectangle? pos = null, Vector2? scale = null)
+        public abstract class IGMDataItem//<T>
         {
-            Pos = pos ?? Rectangle.Empty;
-            Scale = scale ?? TextScale;
-            if (blank == null)
+            //protected T _data;
+            protected Rectangle _pos;
+            public bool Enabled { get; private set; } = true;
+            public Vector2 Scale { get; set; }
+
+            public IGMDataItem(Rectangle? pos = null, Vector2? scale = null)
             {
-                blank = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
-                blank.SetData(new Color[] { Color.White });
+                _pos = pos ?? Rectangle.Empty;
+                Scale = scale ?? TextScale;
             }
+
+            public virtual void Show() => Enabled = true;
+            public virtual void Hide() => Enabled = false;
+
+            /// <summary>
+            /// Where to draw this item.
+            /// </summary>
+            public virtual Rectangle Pos { get => _pos; set => _pos = value; }
+
+            public Color Color { get; set; } = Color.White;
+
+            //public virtual object Data { get; public set; }
+            //public virtual FF8String Data { get; public set; }
+            public abstract void Draw();
+
+            public static implicit operator Rectangle(IGMDataItem v) => v.Pos;
+
+            public static implicit operator Color(IGMDataItem v) => v.Color;
+
+            public static implicit operator IGMDataItem(IGMData v)
+            {
+                return new IGMDataItem_IGMData(v);
+            }
+
+            public virtual void ReInit()
+            { }
+
+            public virtual bool Update()
+            { return false; }
+
+            public virtual bool Inputs()
+            { return false; }
         }
-
-        #endregion Constructors
-
-        #region Properties
-
-        public virtual bool Blink { get => _blink; set => _blink = value; }
-        public float Blink_Adjustment { get; set; }
-        public Color Color { get; set; } = Color.White;
-        public int Height { get => _pos.Height; set => _pos.Height = value; }
-        /// <summary>
-        /// Where to draw this item.
-        /// </summary>
-        public virtual Rectangle Pos { get => _pos; set => _pos = value; }
-
-        public Vector2 Scale { get; set; }
-        public int Width { get => _pos.Width; set => _pos.Width = value; }
-        public int X { get => _pos.X; set => _pos.X = value; }
-        public int Y { get => _pos.Y; set => _pos.Y = value; }
-        public static float Blink_Amount => Menu.Blink_Amount;
-        public static float Fade => Menu.Fade;
-        public static Vector2 TextScale => Menu.TextScale;
-
-        #endregion Properties
-
-        #region Methods
-
-        public static void DrawPointer(Point cursor, Vector2? offset = null, bool blink = false) => Menu.DrawPointer(cursor, offset, blink);
-
-        public static implicit operator Color(IGMDataItem v) => v.Color;
-
-        public static implicit operator IGMDataItem(IGMData v) => new IGMDataItem_IGMData(v);
-
-        public static implicit operator Rectangle(IGMDataItem v) => v.Pos;
-
-        //public virtual object Data { get; public set; }
-        //public virtual FF8String Data { get; public set; }
-        public override void Draw()
-        { }
-
-        public override bool Inputs() => false;
-
-        public override void Refresh()
-        { }
-
-        public override bool Update() => false;
-
-        protected override void Init()
-        {
-        }
-
-        #endregion Methods
+        #endregion Classes
     }
 }

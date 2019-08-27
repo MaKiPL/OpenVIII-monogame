@@ -168,7 +168,6 @@ namespace OpenVIII
         }
 
         private bool All => (Target & (_Target.All | _Target.All2)) != 0;
-        private Kernel_bin.Attack_Type Attack_Type => Battle?.Attack_Type ?? Kernel_bin.Attack_Type.None;
         public Kernel_bin.Battle_Items_Data Battle => (Kernel_bin.BattleItemsData?.Count ?? 0) > ID ? Kernel_bin.BattleItemsData[ID] : null;
         public FF8String Description => Battle?.Description ?? Non_Battle?.Description;
         public FF8String Name => Battle?.Name ?? Non_Battle?.Name;
@@ -333,7 +332,7 @@ namespace OpenVIII
             }
             if (character == Characters.Blank || (Target & _Target.Character) == 0)
                 return false;
-            if (Memory.State.Characters.ContainsKey(character) && Memory.State.Characters[character].Available)
+            if (Memory.State.Characters.ContainsKey(character) && Memory.State.Characters[character].VisibleInMenu)
                 return true;
             return false;
         }
@@ -383,76 +382,7 @@ namespace OpenVIII
             return false;
         }
 
-        public bool ValidTarget(bool b = false)
-        {
-            if (Type == _Type.Magazine) return true; //TODO pressing okay display Magazine.
-            else if (Type == _Type.SolomonRing) return !Memory.State[GFs.Doomtrain]?.Exists ?? true; //TODO detect doomtrain and return false if unlocked
-            else if (Type == _Type.Lamp) return !Memory.State[GFs.Diablos]?.Exists ?? true;  //TODO detect diablo and return false if unlocked
-            Faces.ID _face;
-            foreach (Faces.ID face in (Faces.ID[])Enum.GetValues(typeof(Faces.ID)))
-            {
-                _face = face;
-                if (TestCharacter(ref _face, out Characters character) || TestGF(ref _face, out GFs gf))
-                {
-                    return true;
-                }
-            }
-            if (Battle != null && b) return true;
-            return false;
-        }
-
-        private bool AmmoAction(Faces.ID obj, bool battle = false) => false;
-
-        private bool AngeloAction(Faces.ID obj, bool battle = false) => false;
-
-        private bool BattleAction(Faces.ID obj, bool battle = false) => false;
-
-        private bool Blue_MagicAction(Faces.ID obj, bool battle = false) => false;
-
-        private bool CharAction(Func<Faces.ID, bool, bool> func, Faces.ID obj, bool battle = false)
-        {
-            bool ret = false;
-            if (All)
-            {
-                foreach (KeyValuePair<Characters, Saves.CharacterData> c in Memory.State.Characters.Where(x => (battle && Memory.State.PartyData.Contains(x.Key)) || x.Value.Available))
-                {
-                    obj = c.Key.ToFacesID();
-                    if (TestCharacter(ref obj, out Characters character))
-                        ret = func(obj, battle) || ret;
-                }
-                return ret;
-            }
-            else if (TestCharacter(ref obj, out Characters character))
-                ret = func(obj, battle);
-
-            return ret;
-        }
-
-        private bool ChocoboAction(Faces.ID obj, bool battle = false) => false;
-
-        private bool Cure_Abnormal_StatusAction(Faces.ID obj, bool battle = false) => Cure_Abnormal_StatusAction(Memory.State[obj], battle);
-
-        private bool Cure_Abnormal_StatusAction(Damageable c, bool battle)
-        {
-            bool ret = false;
-            if (c != null && !c.StatusImmune)
-                ret = c.DealStatus(Cleansed_Statuses, Battle?.Statuses1, Battle?.Attack_Type ?? Kernel_bin.Attack_Type.Curative_Item, Battle?.Attack_Flags);
-            return ret;
-        }
-
-        private bool GF_CompatabilityAction(Faces.ID obj, bool battle = false) => false;
-
-        /// <summary>
-        /// Spawn a menu of GF's unlocked abilities and you select one to remove.
-        /// </summary>
-        private bool GF_ForgetAction(Faces.ID obj, bool battle = false) => false;
-
-        /// <summary>
-        /// GF learns new skill if below max abilities
-        /// </summary>
-        private bool GF_LearnAction(Faces.ID obj, bool battle = false) => GF_LearnAction(Memory.State[obj.ToGFs()]);
-
-        private bool GF_LearnAction(Saves.GFData gf) => gf.Learn(Learn);
+        private Kernel_bin.Attack_Type Attack_Type => Battle?.Attack_Type ?? Kernel_bin.Attack_Type.None;
 
         private bool GFAction(Func<Faces.ID, bool, bool> func, Faces.ID obj, bool battle = false)
         {
@@ -473,6 +403,76 @@ namespace OpenVIII
             return ret;
         }
 
+        private bool CharAction(Func<Faces.ID, bool, bool> func, Faces.ID obj, bool battle = false)
+        {
+            bool ret = false;
+            if (All)
+            {
+                foreach (KeyValuePair<Characters, Saves.CharacterData> c in Memory.State.Characters.Where(x => (battle && Memory.State.PartyData.Contains(x.Key)) || x.Value.VisibleInMenu))
+                {
+                    obj = c.Key.ToFacesID();
+                    if (TestCharacter(ref obj, out Characters character))
+                        ret = func(obj, battle) || ret;
+                }
+                return ret;
+            }
+            else if (TestCharacter(ref obj, out Characters character))
+                ret = func(obj, battle);
+
+            return ret;
+        }
+
+        public bool ValidTarget()
+        {
+            if (Type == _Type.Magazine) return true; //TODO pressing okay display Magazine.
+            else if (Type == _Type.SolomonRing) return !((Saves.GFData)Memory.State[GFs.Doomtrain])?.Exists ?? true; //TODO detect doomtrain and return false if unlocked
+            else if (Type == _Type.Lamp) return !((Saves.GFData)Memory.State[GFs.Diablos])?.Exists ?? true;  //TODO detect diablo and return false if unlocked
+            Faces.ID _face;
+            foreach (Faces.ID face in (Faces.ID[])Enum.GetValues(typeof(Faces.ID)))
+            {
+                _face = face;
+                if (TestCharacter(ref _face, out Characters character) || TestGF(ref _face, out GFs gf))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool AmmoAction(Faces.ID obj, bool battle = false) => false;
+
+        private bool AngeloAction(Faces.ID obj, bool battle = false) => false;
+
+        private bool BattleAction(Faces.ID obj, bool battle = false) => false;
+
+        private bool Blue_MagicAction(Faces.ID obj, bool battle = false) => false;
+
+        private bool ChocoboAction(Faces.ID obj, bool battle = false) => false;
+
+        private bool Cure_Abnormal_StatusAction(Faces.ID obj, bool battle = false) => Cure_Abnormal_StatusAction(Memory.State[obj],battle);
+
+        private bool Cure_Abnormal_StatusAction(Damageable c, bool battle)
+        {
+            bool ret = false;
+            if (c != null && !c.StatusImmune)
+                ret = c.DealStatus(Cleansed_Statuses, Battle?.Statuses1, Battle?.Attack_Type ?? Kernel_bin.Attack_Type.Curative_Item, Battle?.Attack_Flags);
+            return ret;
+        }
+
+        private bool GF_CompatabilityAction(Faces.ID obj, bool battle = false) => false;
+
+        /// <summary>
+        /// Spawn a menu of GF's unlocked abilities and you select one to remove.
+        /// </summary>
+        private bool GF_ForgetAction(Faces.ID obj, bool battle = false) => false;
+
+        /// <summary>
+        /// GF learns new skill if below max abilities
+        /// </summary>
+        private bool GF_LearnAction(Faces.ID obj, bool battle = false) => GF_LearnAction((Saves.GFData)Memory.State[obj.ToGFs()]);
+
+        private bool GF_LearnAction(Saves.GFData gf) => gf.Learn(Learn);
+
         private bool GFAction(Faces.ID obj, bool battle = false) => false;
 
         private bool HealAction(Faces.ID obj, bool battle = false) =>
@@ -483,15 +483,18 @@ namespace OpenVIII
             //    ret = Memory.State[obj.ToCharacters()]?.DealStatus(Cleansed_Statuses, Battle?.Statuses1, Battle?.Attack_Type ?? Kernel_bin.Attack_Type.Curative_Item, Battle?.Attack_Flags) ?? false;
             //ret = Memory.State[obj.ToCharacters()]?.DealDamage(Heals, Battle?.Attack_Type ?? Kernel_bin.Attack_Type.Curative_Item, Battle?.Attack_Flags) ?? false || ret;
             //return ret;
-            HealAction(Memory.State[obj], battle);
-
+            HealAction(Memory.State[obj],battle);
+        private bool ZombieCheck(Kernel_bin.Persistant_Statuses statuses0, bool battle = false) =>
+            (statuses0 & Kernel_bin.Persistant_Statuses.Zombie) != 0 && 
+            (Cleansed_Statuses & Kernel_bin.Persistant_Statuses.Zombie) == 0 && 
+            !battle;
         private bool HealAction(Damageable c, bool battle)
         {
             //c.ChangeHP(-Heals);
             bool ret = false;
 
-            if (c != null && !ZombieCheck(c.Statuses0, battle))
-            {
+            if (c != null && !ZombieCheck(c.Statuses0,battle))
+            {                
                 if (!c.StatusImmune && Cleansed_Statuses != Kernel_bin.Persistant_Statuses.None)
                     ret = c.DealStatus(Cleansed_Statuses, Battle?.Statuses1, Battle?.Attack_Type ?? Kernel_bin.Attack_Type.Curative_Item, Battle?.Attack_Flags);
                 ret = c.DealDamage(Heals, Battle?.Attack_Type ?? Kernel_bin.Attack_Type.Curative_Item, Battle?.Attack_Flags) || ret;
@@ -499,7 +502,7 @@ namespace OpenVIII
             return ret;
         }
 
-        private bool HealGFAction(Faces.ID obj, bool battle = false) => HealAction(Memory.State[obj.ToGFs()], battle);
+        private bool HealGFAction(Faces.ID obj, bool battle = false) => HealAction(Memory.State[obj.ToGFs()],battle);
 
         private bool LampAction(Faces.ID obj, bool battle = false) => false;
 
@@ -511,7 +514,7 @@ namespace OpenVIII
 
         private bool ReviveAction(Faces.ID obj, bool battle = false) => ReviveAction(Memory.State[obj], battle);
 
-        private bool ReviveAction(Damageable c, bool battle)
+        private bool ReviveAction(Damageable c,bool battle)
         {
             bool ret = false;
             if (c != null && !ZombieCheck(c.Statuses0, battle))
@@ -523,18 +526,13 @@ namespace OpenVIII
             return ret;
         }
 
-        private bool ReviveGFAction(Faces.ID obj, bool battle = false) => ReviveAction(Memory.State[obj], battle);
+        private bool ReviveGFAction(Faces.ID obj, bool battle = false) => ReviveAction(Memory.State[obj],battle);
 
         private bool SavePointHealAction(Faces.ID obj, bool battle = false) => false;
 
         private bool SolomonRingAction(Faces.ID obj, bool battle = false) => false;
 
         private bool StatAction(Faces.ID obj, bool battle = false) => false;
-
-        private bool ZombieCheck(Kernel_bin.Persistant_Statuses statuses0, bool battle = false) =>
-                                                                                                    (statuses0 & Kernel_bin.Persistant_Statuses.Zombie) != 0 &&
-            (Cleansed_Statuses & Kernel_bin.Persistant_Statuses.Zombie) == 0 &&
-            !battle;
 
         #endregion Methods
     }

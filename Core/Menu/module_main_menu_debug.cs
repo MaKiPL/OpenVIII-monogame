@@ -16,6 +16,9 @@ namespace OpenVIII
         private static Vector2 vp_per;
         private static Vector2 vp;
         private static bool blinkstate;
+        private static IGM InGameMenu;
+        private static IGM_Junction InGameMenu_Junction;
+        private static IGM_Items InGameMenu_Items;
 
         #endregion Fields
 
@@ -24,7 +27,7 @@ namespace OpenVIII
         /// <summary>
         /// What state the menus are in.
         /// </summary>
-        public enum MainMenuStates
+        private enum MainMenuStates
         {
             //Init,
             MainLobby,
@@ -38,10 +41,9 @@ namespace OpenVIII
             SaveGameCheckingSlot,
             LoadGameLoading,
             SaveGameSaving,
-            IGM,
+            InGameMenu,
             IGM_Junction,
-            IGM_Items,
-            //BattleMenu
+            IGM_Items
         }
 
         #endregion Enums
@@ -52,7 +54,7 @@ namespace OpenVIII
         private static float Fade { get => fade; set => fade = value; }
 
         private static Dictionary<Enum, Item> strLoadScreen { get; set; }
-        public static MainMenuStates State
+        private static MainMenuStates State
         {
             get => state; set
             {
@@ -77,17 +79,16 @@ namespace OpenVIII
             {
                 //case MainMenuStates.Init:
                 case MainMenuStates.MainLobby:
-                    //DrawMainLobby();
-                    Menu.IGM_Lobby.Draw();
+                    DrawMainLobby();
                     break;
 
                 case MainMenuStates.DebugScreen:
                     DrawDebugLobby();
                     break;
 
-                //case MainMenuStates.NewGameChoosed:
-                //    DrawMainLobby();
-                //    break;
+                case MainMenuStates.NewGameChoosed:
+                    DrawMainLobby();
+                    break;
 
                 case MainMenuStates.LoadGameLoading:
                 case MainMenuStates.LoadGameChooseSlot:
@@ -99,18 +100,15 @@ namespace OpenVIII
                 case MainMenuStates.SaveGameSaving:
                     DrawLGSG();
                     break;
-                case MainMenuStates.IGM:
-                    Menu.IGM.Draw();
+                case MainMenuStates.InGameMenu:
+                    InGameMenu.Draw();
                     break;
                 case MainMenuStates.IGM_Junction:
-                    Menu.IGM_Junction.Draw();
+                    InGameMenu_Junction.Draw();
                     break;
                 case MainMenuStates.IGM_Items:
-                    Menu.IGM_Items.Draw();                
+                    InGameMenu_Items.Draw();
                     break;
-                //case MainMenuStates.BattleMenu:
-                //    Menu.BattleMenus.Draw();
-                //    break;
             }
         }
 
@@ -123,7 +121,6 @@ namespace OpenVIII
                 blink_Amount += Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
             else
                 blink_Amount -= Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
-            
             lastscale = scale;
             scale = Memory.Scale();
 #pragma warning disable CS0219 // Variable is assigned but its value is never used
@@ -141,7 +138,7 @@ namespace OpenVIII
             }
             if (Fade < 1.0f && State != MainMenuStates.NewGameChoosed)
             {
-                Fade += (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0f);
+                Fade += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 3;
             }
 
             vp_per.X = Memory.PreferredViewportWidth;//Memory.graphics.GraphicsDevice.Viewport.Width;
@@ -156,7 +153,7 @@ namespace OpenVIII
                 Matrix.CreateScale(new Vector3(scale.X, scale.Y, 1)) * 
                 Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
 
-            ml = InputMouse.Location.Transform(IGM_focus);
+            ml = Input.MouseLocation.Transform(IGM_focus);
             switch (State)
             {
                 //case MainMenuStates.Init:
@@ -167,16 +164,14 @@ namespace OpenVIII
                 case MainMenuStates.MainLobby:
                     Memory.IsMouseVisible = true;
                     Offset = new Vector2(-1000, 0);
-                    //if (UpdateMainLobby() || (lastfade != fade))
-                    //{
-                    //    forceupdate = true;
-                    //}
+                    if (UpdateMainLobby() || (lastfade != fade))
+                    {
+                        forceupdate = true;
+                    }
 
-                    Menu.IGM_Lobby.Update();
                     break;
 
                 case MainMenuStates.DebugScreen:
-                    Menu.UpdateFade();
                     Memory.IsMouseVisible = true;
                     if (Offset != Vector2.Zero)
                     {
@@ -189,10 +184,10 @@ namespace OpenVIII
 
                     break;
 
-                //case MainMenuStates.NewGameChoosed:
-                //    Memory.IsMouseVisible = false;
-                //    UpdateNewGame();
-                //    break;
+                case MainMenuStates.NewGameChoosed:
+                    Memory.IsMouseVisible = false;
+                    UpdateNewGame();
+                    break;
 
                 case MainMenuStates.LoadGameChooseSlot:
                 case MainMenuStates.LoadGameCheckingSlot:
@@ -202,25 +197,21 @@ namespace OpenVIII
                 case MainMenuStates.SaveGameCheckingSlot:
                 case MainMenuStates.SaveGameChooseGame:
                 case MainMenuStates.SaveGameSaving:
-                    Menu.UpdateFade();
                     UpdateLGSG();
                     break;
-                case MainMenuStates.IGM:
+                case MainMenuStates.InGameMenu:
                     Memory.IsMouseVisible = true;
-                    Menu.IGM.Update();
+                    InGameMenu.Update();
                     break;
                 case MainMenuStates.IGM_Junction:
                     Memory.IsMouseVisible = true;
-                    Menu.IGM_Junction.Update();
+                    InGameMenu_Junction.Update();
                     break;
                 case MainMenuStates.IGM_Items:
                     Memory.IsMouseVisible = true;
-                    Menu.IGM_Items.Update();
+                    InGameMenu_Items.Update();
                     break;
 
-                //case MainMenuStates.BattleMenu:
-                //    Menu.BattleMenus.Update();
-                //    break;
                 default:
                     goto case 0;
             }
@@ -238,14 +229,13 @@ namespace OpenVIII
         /// </summary>
         public static void Init()
         {
-            //InitMain();
-            //Menu.IGM_Lobby = new IGM_Lobby();
+            InitMain();
             InitLoad();
             InitDebug();
 
-            //IGM = new IGM();
-            //IGM_Junction = new IGM_Junction();
-            //IGM_Items = new IGM_Items();
+            InGameMenu = new IGM();
+            InGameMenu_Junction = new IGM_Junction();
+            InGameMenu_Items = new IGM_Items();
         }
 
         #endregion Methods

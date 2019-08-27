@@ -1,7 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
+﻿using System;
 
 namespace OpenVIII
 {
@@ -10,14 +7,12 @@ namespace OpenVIII
 
         #region Structs
 
-        [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 2)]
-        public struct Item
+        public class Item
         {
 
             #region Fields
-            [FieldOffset(0)]
+
             public byte ID;
-            [FieldOffset(1)]
             public byte QTY;
 
             #endregion Fields
@@ -26,15 +21,12 @@ namespace OpenVIII
 
             public Item(byte ID, byte QTY) { this.ID = ID; this.QTY = QTY; }
 
-            public Item(KeyValuePair<byte, byte> e) : this(e.Key, e.Value)
-            { }
-
             #endregion Constructors
 
             #region Properties
 
             public Item_In_Menu? DATA => Memory.MItems?.Items[ID];
-            public override string ToString() => DATA?.Name;
+
             public void UsedOne()
             {
                 if(QTY <= 1)
@@ -48,19 +40,15 @@ namespace OpenVIII
                 QTY = 0;
                 ID = 0;
             }
-            public bool Add(byte qty, byte? id = null)
+            public void Add(byte qty, byte? id = null)
             {
                 ID = id ?? ID;
                 if (ID > 0)
                 {
-                    byte Q = (byte)MathHelper.Clamp(qty + QTY, 0, 100);
-                    if (Q > QTY)
-                    {
-                        QTY = Q;
-                        return true;
-                    }
+                    int x = QTY + qty;
+                    if (x > 100) x = 100;
+                    QTY = (byte)x;
                 }
-                return false;
             }
 
             public Item Clone()

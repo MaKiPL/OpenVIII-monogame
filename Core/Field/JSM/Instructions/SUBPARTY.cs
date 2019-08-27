@@ -28,13 +28,13 @@ namespace OpenVIII
             sw.Format(formatterContext, services)
                 .StaticType(nameof(IPartyService))
                 .Method(nameof(IPartyService.RemovePartyCharacter))
-                .Enum<Characters>(_characterId)
+                .Enum<CharacterId>(_characterId)
                 .Comment(nameof(SUBPARTY));
         }
 
         public override IAwaitable TestExecute(IServices services)
         {
-            Characters characterId = (Characters)_characterId.Int32(services);
+            CharacterId characterId = (CharacterId)_characterId.Int32(services);
             ServiceId.Party[services].RemovePartyCharacter(characterId);
             return DummyAwaitable.Instance;
         }

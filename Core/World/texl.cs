@@ -15,24 +15,23 @@ namespace OpenVIII.Core.World
     {
         private const int TEX_SIZE = 0x12800;
         private const int TEX_COUNT = 20;
-        private TextureHandler[][] textures;
+        private Texture2D[][] textures;
         public texl(byte[] texlBuffer)
         {
-            textures = new TextureHandler[20][];
+            textures = new Texture2D[20][];
             using (MemoryStream ms = new MemoryStream(texlBuffer))
             using (BinaryReader br = new BinaryReader(ms))
             for (int i = 0; i < TEX_COUNT; i++)
             {
                     int timOffset = i * TEX_SIZE;
                     TIM2 tim = new TIM2(texlBuffer, (uint)timOffset);
-                    textures[i] = new TextureHandler[tim.GetClutCount];
+                    textures[i] = new Texture2D[tim.GetClutCount];
                     for (ushort k = 0; k < textures[i].Length; k++)
-                        textures[i][k] = new TextureHandler($"texl_tim{(i + 1).ToString("D2")}.tim", tim, k, null);
-                    //todo detect if mods aren't using palettes.
-                }
+                        textures[i][k] = tim.GetTexture(k, true);
+            }
         }
 
-        public TextureHandler GetTexture(int index, int clut)
+        public Texture2D GetTexture(int index, int clut)
             => textures[index][clut];
     }
 }

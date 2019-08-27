@@ -13,9 +13,15 @@ namespace OpenVIII
     /// </remarks>
     /// <see cref="https://github.com/MaKiPL/FF8-Rinoa-s-Toolset/blob/master/SerahToolkit_SharpGL/FF8_Core/TEX.cs"/>
     /// <seealso cref="https://github.com/myst6re/vincent-tim/blob/master/TexFile.cpp"/>
-    public class TEX : Texture_Base
+    public class TEX
     {
         #region Fields
+
+        /// <summary>
+        /// Ratio needed to convert 16 bit to 32 bit color
+        /// </summary>
+        /// <seealso cref="https://github.com/myst6re/vincent-tim/blob/master/PsColor.h"/>
+        public const double COEFF_COLOR = (double)255 / 31;
 
         /// <summary>
         /// Raw data of TEX file
@@ -37,23 +43,17 @@ namespace OpenVIII
 
         #endregion Constructors
 
-        ///// <summary>
-        ///// Contains header info and Palette data of TEX file.
-        ///// </summary>
-        //public Texture TextureData => texture;  //added to get texturedata outside of class.
-
         #region Properties
 
-        public bool CLP => texture.PaletteFlag != 0;
-        public override int GetClutCount => texture.NumOfPalettes;
-        public override int GetHeight => texture.Height;
-        public override int GetOrigX => 0;
-        public override int GetOrigY => 0;
-        public override int GetWidth => texture.Width;
         /// <summary>
-        /// size of header section
+        /// Contains header info and Palette data of TEX file.
         /// </summary>
-        private int Headersize => texture.Version <= 1 ? 0xEC : 0xF0;
+        public Texture TextureData => texture;  //added to get texturedata outside of class.
+
+        /// <summary>
+        /// start of texture section
+        /// </summary>
+        private int TextureLocator => Headersize + PaletteSectionSize;
 
         /// <summary>
         /// size of palette section
@@ -61,23 +61,44 @@ namespace OpenVIII
         private int PaletteSectionSize => (int)(texture.PaletteSize * 4);
 
         /// <summary>
-        /// start of texture section
+        /// size of header section
         /// </summary>
-        private int TextureLocator => Headersize + PaletteSectionSize;
+        private int Headersize => texture.Version <= 1 ? 0xEC : 0xF0;
 
         #endregion Properties
 
         #region Methods
 
-        public override Color[] GetClutColors(ushort clut)
+        /// <summary>
+        /// Read header data from TEX file.
+        /// </summary>
+        /// <see cref="https://github.com/MaKiPL/FF8-Rinoa-s-Toolset/blob/master/SerahToolkit_SharpGL/FF8_Core/TEX.cs"/>
+        /// <seealso cref="https://github.com/myst6re/vincent-tim/blob/master/TexFile.h"/>
+        private void ReadParameters()
         {
-            if (!CLP) return null;
-            else if (clut >= texture.NumOfPalettes)
-                throw new Exception($"Desired palette is incorrect use -1 for default or use a smaller number: {clut} > {texture.NumOfPalettes}");
+            texture.Version = BitConverter.ToUInt32(buffer, 0x00);
+            texture.Width = BitConverter.ToUInt32(buffer, 0x3C);
+            texture.Height = BitConverter.ToUInt32(buffer, 0x40);
+            texture.bytesPerPixel = buffer[0x68];
+            texture.NumOfPalettes = buffer[0x30];
+            texture.NumOfColorsPerPalette = BitConverter.ToUInt32(buffer, 0x34);
+            texture.bitDepth = BitConverter.ToUInt32(buffer, 0x38);
+            texture.PaletteFlag = buffer[0x4C];
+            texture.PaletteSize = BitConverter.ToUInt32(buffer, 0x58);
+            if (texture.PaletteFlag != 0)
+            {
+                texture.paletteData = new byte[PaletteSectionSize];
+                Buffer.BlockCopy(buffer, 0xF0, texture.paletteData, 0, PaletteSectionSize);
+            }
+        }
+
+        public Color[] GetPalette(int forcePalette)
+        {
+            if (forcePalette < 0) forcePalette = 0;
 
             Color[] colors = new Color[texture.NumOfColorsPerPalette];
             int k = 0;
-            for (uint i = clut * texture.NumOfColorsPerPalette * 4; i < texture.paletteData.Length && k < colors.Length; i += 4)
+            for (uint i = (uint)(forcePalette * texture.NumOfColorsPerPalette * 4); i < texture.paletteData.Length && k < colors.Length; i += 4)
             {
                 colors[k].B = texture.paletteData[i];
                 colors[k].G = texture.paletteData[i + 1];
@@ -99,7 +120,7 @@ namespace OpenVIII
         /// more lax and allow any size array and only throw errors if the colorkey is greater than
         /// size of array. Or we could treat any of those bad matches as transparent.
         /// </remarks>
-        public override Texture2D GetTexture(Color[] colors = null)
+        public Texture2D GetTexture(int forcePalette = -1, Color[] colors = null)
         {
             if (Memory.graphics.GraphicsDevice != null)
             {
@@ -107,14 +128,20 @@ namespace OpenVIII
                 {
                     if (colors != null && colors.Length != texture.NumOfColorsPerPalette)
                         throw new Exception($" custom colors parameter set but array size to match palette size: {texture.NumOfColorsPerPalette}");
+                    else if (colors == null)
+                    {
+                        if (forcePalette >= texture.NumOfPalettes) //prevents exception for forcing a palette that doesn't exist.
+                            throw new Exception($"Desired palette is incorrect use -1 for default or use a smaller number: {forcePalette} > {texture.NumOfPalettes}");
+                        colors = GetPalette(forcePalette);
+                    }
                     using (MemoryStream ms = new MemoryStream(buffer))
                     using (BinaryReader br = new BinaryReader(ms))
                     {
                         try
                         {
                             ms.Seek(TextureLocator, SeekOrigin.Begin);
-                            Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, texture.Width, texture.Height, false, SurfaceFormat.Color);
-                            Color[] convertBuffer = new Color[texture.Width * texture.Height];
+                            Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
+                            Color[] convertBuffer = new Color[(int)texture.Width * (int)texture.Height];
                             for (int i = 0; i < convertBuffer.Length && ms.Position < ms.Length; i++)
                             {
                                 convertBuffer[i] = colors[br.ReadByte()]; //colorkey
@@ -140,11 +167,11 @@ namespace OpenVIII
                         try
                         {
                             ms.Seek(TextureLocator, SeekOrigin.Begin);
-                            Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, texture.Width, texture.Height, false, SurfaceFormat.Color);
-                            colors = new Color[texture.Width * texture.Height];
+                            Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
+                            colors = new Color[(int)texture.Width * (int)texture.Height];
                             for (int i = 0; i < colors.Length && ms.Position + 2 < ms.Length; i++)
                             {
-                                colors[i] = ABGR1555toRGBA32bit(br.ReadUInt16());
+                                colors[i] = FromPsColor(br.ReadUInt16());
                             }
                             bmp.SetData(colors);
                             return bmp;
@@ -166,8 +193,8 @@ namespace OpenVIII
                     using (BinaryReader br = new BinaryReader(ms))
                     {
                         ms.Seek(TextureLocator, SeekOrigin.Begin);
-                        Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, texture.Width, texture.Height, false, SurfaceFormat.Color);
-                        colors = new Color[texture.Width * texture.Height];
+                        Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, (int)texture.Width, (int)texture.Height, false, SurfaceFormat.Color);
+                        colors = new Color[(int)texture.Width * (int)texture.Height];
                         for (int i = 0; i < colors.Length && ms.Position + 3 < ms.Length; i++)
                         {
                             //RGB or BGR so might need to reorder things to RGB
@@ -184,44 +211,15 @@ namespace OpenVIII
             return null;
         }
 
-        public override Texture2D GetTexture(ushort? clut = null) => GetTexture(GetClutColors(clut ?? 0));
-
-        public override Texture2D GetTexture() => GetTexture(0);
-
         /// <summary>
-        /// Writes the Tim file to the hard drive.
+        /// converts 16 bit color to 32bit with alpha. alpha needs to be set true manually per pixel
+        /// unless you know the color value.
         /// </summary>
-        /// <param name="path">Path where you want file to be saved.</param>
-        public override void Save(string path)
-        {
-            using (BinaryWriter bw = new BinaryWriter(File.Create(path)))
-            {
-                bw.Write(buffer);
-            }
-        }
-
-        /// <summary>
-        /// Read header data from TEX file.
-        /// </summary>
-        /// <see cref="https://github.com/MaKiPL/FF8-Rinoa-s-Toolset/blob/master/SerahToolkit_SharpGL/FF8_Core/TEX.cs"/>
-        /// <seealso cref="https://github.com/myst6re/vincent-tim/blob/master/TexFile.h"/>
-        private void ReadParameters()
-        {
-            texture.Version = BitConverter.ToUInt32(buffer, 0x00);
-            texture.Width = (int)BitConverter.ToUInt32(buffer, 0x3C); //nothing will be uint size big.
-            texture.Height = (int)BitConverter.ToUInt32(buffer, 0x40);
-            texture.bytesPerPixel = buffer[0x68];
-            texture.NumOfPalettes = buffer[0x30];
-            texture.NumOfColorsPerPalette = BitConverter.ToUInt32(buffer, 0x34);
-            texture.bitDepth = BitConverter.ToUInt32(buffer, 0x38);
-            texture.PaletteFlag = buffer[0x4C];
-            texture.PaletteSize = BitConverter.ToUInt32(buffer, 0x58);
-            if (texture.PaletteFlag != 0)
-            {
-                texture.paletteData = new byte[PaletteSectionSize];
-                Buffer.BlockCopy(buffer, 0xF0, texture.paletteData, 0, PaletteSectionSize);
-            }
-        }
+        /// <param name="color">16 bit color</param>
+        /// <param name="useAlpha">area is visable or not</param>
+        /// <returns>byte[4] red green blue alpha, i think</returns>
+        /// <see cref="https://github.com/myst6re/vincent-tim/blob/master/PsColor.cpp"/>
+        public static Color FromPsColor(ushort color, bool useAlpha = false) => new Color((byte)Math.Round((color & 31) * COEFF_COLOR), (byte)Math.Round(((color >> 5) & 31) * COEFF_COLOR), (byte)Math.Round(((color >> 10) & 31) * COEFF_COLOR), (byte)(color == 0 && useAlpha ? 0 : 255));
 
         #endregion Methods
 
@@ -232,14 +230,9 @@ namespace OpenVIII
         /// </summary>
         /// <see cref="https://github.com/MaKiPL/FF8-Rinoa-s-Toolset/blob/master/SerahToolkit_SharpGL/FF8_Core/TEX.cs"/>
         /// <seealso cref="https://github.com/myst6re/vincent-tim/blob/master/TexFile.h"/>
-        private struct Texture
+        public struct Texture
         {
             #region Fields
-
-            /// <summary>
-            /// 0x38
-            /// </summary>
-            public uint bitDepth;
 
             /// <summary>
             /// 0x68
@@ -249,12 +242,7 @@ namespace OpenVIII
             /// <summary>
             /// 0x40
             /// </summary>
-            public int Height;
-
-            /// <summary>
-            /// 0x34
-            /// </summary>
-            public uint NumOfColorsPerPalette;
+            public uint Height;
 
             /// <summary>
             /// 0x30
@@ -277,19 +265,27 @@ namespace OpenVIII
             public uint PaletteSize;
 
             /// <summary>
+            /// 0x3C
+            /// </summary>
+            public uint Width;
+
+            /// <summary>
+            /// 0x38
+            /// </summary>
+            public uint bitDepth;
+
+            /// <summary>
+            /// 0x34
+            /// </summary>
+            public uint NumOfColorsPerPalette;
+
+            /// <summary>
             /// 0x00; 1=FF7 | 2=FF8
             /// </summary>
             public uint Version;
 
-            /// <summary>
-            /// 0x3C
-            /// </summary>
-            public int Width;
-
             #endregion Fields
         }
-
-        #endregion Structs
 
         //public struct Color
         //{
@@ -299,5 +295,7 @@ namespace OpenVIII
 
         //    #endregion Fields
         //}
+
+        #endregion Structs
     }
 }

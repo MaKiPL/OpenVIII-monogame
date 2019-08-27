@@ -1,14 +1,13 @@
-﻿using FFmpeg.AutoGen;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
+using FFmpeg.AutoGen;
+using System.Linq;
 
 namespace OpenVIII
 {
 #pragma warning disable IDE1006 // Naming Styles
-
     public static class init_debugger_Audio
 #pragma warning restore IDE1006 // Naming Styles
     {
@@ -103,70 +102,152 @@ namespace OpenVIII
             }
         }
 
-        public static bool MusicPlaying { get => musicplaying; }
-
         public static void Init()
         {
-            // PC 2000 version has an CD audio track for eyes on me. I don't think we can play that.
-            const int unkPrefix = 999;
-            const int altLoserPrefix = 512;
-            const int loserPrefix = 0;
-            const int eyesOnMePrefix = 513;
-            const int altEyesOnMePrefix = 22;
-            string[] ext = { ".ogg", ".sgt", ".wav", ".mp3" };
+            string dmusic_pt = "", RaW_ogg_pt = "", music_pt = "", music_wav_pt = "";
             //Roses and Wine V07 moves most of the sgt files to dmusic_backup
             //it leaves a few files behind. I think because RaW doesn't replace everything.
             //ogg files stored in:
-            string RaW_ogg_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "RaW", "GLOBAL", "Music"));
+            RaW_ogg_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "RaW/GLOBAL/Music"));
+            if (!Directory.Exists(RaW_ogg_pt))
+            {
+                RaW_ogg_pt = null;
+            }
             // From what I gather the OGG files and the sgt files have the same numerical prefix. I
             // might try to add the functionality to the debug screen monday.
 
-            string dmusic_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music", "dmusic_backup"));
-            string music_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music", "dmusic"));
-            string music_wav_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music"));
+            dmusic_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music", "dmusic_backup"));
+            if (!Directory.Exists(dmusic_pt))
+            {
+                dmusic_pt = null;
+            }
+
+            music_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music", "dmusic"));
+            if (!Directory.Exists(music_pt))
+            {
+                music_pt = null;
+            }
+
+            music_wav_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music"));
+            if (!Directory.Exists(music_wav_pt))
+            {
+                music_wav_pt = null;
+            }
 
             // goal of dicmusic is to be able to select a track by prefix. it adds an list of files
             // with the same prefix. so you can later on switch out which one you want.
-            AddMusicPath(RaW_ogg_pt);
-            AddMusicPath(music_wav_pt);
-            AddMusicPath(dmusic_pt);
-            AddMusicPath(music_pt);
-            if (!Memory.dicMusic.ContainsKey(eyesOnMePrefix) && Memory.dicMusic.ContainsKey(altEyesOnMePrefix))
+            if (RaW_ogg_pt != null)
             {
-                Memory.dicMusic.Add(eyesOnMePrefix, Memory.dicMusic[altEyesOnMePrefix]);
-            }
-            void AddMusicPath(string p)
-            {
-                if (!string.IsNullOrWhiteSpace(p) && Directory.Exists(p))
+                Memory.musices = Directory.GetFiles(RaW_ogg_pt).Where(x => x.EndsWith(".ogg", StringComparison.OrdinalIgnoreCase)).ToArray();
+                foreach (string m in Memory.musices)
                 {
-                    foreach (string m in Directory.GetFiles(p).Where(x => ext.Any(y => x.EndsWith(y, StringComparison.OrdinalIgnoreCase))))
+                    if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
                     {
-                        AddMusic(m);
-                    }
-                }
-            }
-            void AddMusic(string m)
-            {
-                if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
-                {
-                    //mismatched prefix's go here
-                    if (key == altLoserPrefix)
-                    {
-                        key = loserPrefix; //loser.ogg and sgt don't match.
-                    }
-                }
-                else if (m.IndexOf("eyes_on_me", StringComparison.OrdinalIgnoreCase) >= 0)
-                    key = eyesOnMePrefix;
-                else
-                    key = unkPrefix;
+                        //mismatched prefix's go here
+                        if (key == 512)
+                        {
+                            key = 0; //loser.ogg and sgt don't match.
+                        }
 
-                if (!Memory.dicMusic.ContainsKey(key))
-                {
-                    Memory.dicMusic.Add(key, new List<string> { m });
+                        if (!Memory.dicMusic.ContainsKey(key))
+                        {
+                            Memory.dicMusic.Add(key, new List<string> { m });
+                        }
+                        else
+                        {
+                            Memory.dicMusic[key].Add(m);
+                        }
+                    }
                 }
-                else
+            }
+            if (dmusic_pt != null)
+            {
+                Memory.musices = Directory.GetFiles(dmusic_pt).Where(x => x.EndsWith(".sgt", StringComparison.OrdinalIgnoreCase)).ToArray();
+
+                foreach (string m in Memory.musices)
                 {
-                    Memory.dicMusic[key].Add(m);
+                    if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
+                    {
+                        if (!Memory.dicMusic.ContainsKey(key))
+                        {
+                            Memory.dicMusic.Add(key, new List<string> { m });
+                        }
+                        else
+                        {
+                            Memory.dicMusic[key].Add(m);
+                        }
+                    }
+                    else
+                    {
+                        if (!Memory.dicMusic.ContainsKey(999)) //gets any music w/o prefix
+                        {
+                            Memory.dicMusic.Add(999, new List<string> { m });
+                        }
+                        else
+                        {
+                            Memory.dicMusic[999].Add(m);
+                        }
+                    }
+                }
+            }
+            if (music_pt != null)
+            {
+                Memory.musices = Directory.GetFiles(music_pt).Where(x => x.EndsWith(".sgt", StringComparison.OrdinalIgnoreCase)).ToArray();
+
+                foreach (string m in Memory.musices)
+                {
+                    if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
+                    {
+                        if (!Memory.dicMusic.ContainsKey(key))
+                        {
+                            Memory.dicMusic.Add(key, new List<string> { m });
+                        }
+                        else
+                        {
+                            Memory.dicMusic[key].Add(m);
+                        }
+                    }
+                    else
+                    {
+                        if (!Memory.dicMusic.ContainsKey(999)) //gets any music w/o prefix
+                        {
+                            Memory.dicMusic.Add(999, new List<string> { m });
+                        }
+                        else
+                        {
+                            Memory.dicMusic[999].Add(m);
+                        }
+                    }
+                }
+            }
+            if (music_wav_pt != null)
+            {
+                Memory.musices = Directory.GetFiles(music_wav_pt).Where(x => x.EndsWith(".wav", StringComparison.OrdinalIgnoreCase)).ToArray();
+
+                foreach (string m in Memory.musices)
+                {
+                    if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
+                    {
+                        if (!Memory.dicMusic.ContainsKey(key))
+                        {
+                            Memory.dicMusic.Add(key, new List<string> { m });
+                        }
+                        else
+                        {
+                            Memory.dicMusic[key].Add(m);
+                        }
+                    }
+                    else
+                    {
+                        if (!Memory.dicMusic.ContainsKey(999)) //gets any music w/o prefix
+                        {
+                            Memory.dicMusic.Add(999, new List<string> { m });
+                        }
+                        else
+                        {
+                            Memory.dicMusic[999].Add(m);
+                        }
+                    }
                 }
             }
         }
@@ -200,57 +281,19 @@ namespace OpenVIII
                 }
 
             soundEntriesCount = soundEntries == null ? 0 : soundEntries.Length;
-            ////export sounds
-            //int item = 0;
-            //using (BinaryReader br = new BinaryReader(File.OpenRead(Path.Combine(Memory.FF8DIRdata, "Sound", "audio.dat"))))
-            //    foreach (SoundEntry s in soundEntries)
-            //    {
-            //        Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "FF8Sounds"));
-            //        if (s.HeaderData == null || s.Size == 0)
-            //        {
-            //            using (FileStream fc = File.Create(Path.Combine(Path.GetTempPath(), "FF8Sounds", $"{item++}.txt")))
-            //            using (BinaryWriter bw = new BinaryWriter(fc))
-            //            {
-            //                bw.Write($"There is no info maybe audio.fmt listed {s.Size} size or there was an issue.");
-            //            }
-            //            continue;
-            //        }
-
-            //        using (FileStream fc = File.Create(Path.Combine(Path.GetTempPath(), "FF8Sounds", $"{item++}.wav")))
-            //        using (BinaryWriter bw = new BinaryWriter(fc))
-            //        {
-            //            bw.Write(s.HeaderData);
-            //            br.BaseStream.Seek(s.Offset, SeekOrigin.Begin);
-            //            bw.Write(br.ReadBytes((int)s.Size));
-            //        }
-            //    }
         }
 
-        /// <summary>
-        /// Play sound effect
-        /// </summary>
-        /// <param name="soundID">ID number of sound<para>The real game uses soundID + 1, so you may need to -1 from any scripts.</para></param>
-        /// <param name="persist">
-        /// <para>If set sound will not be saved to SoundChannels</para>
-        /// <para>
-        /// It will be up to the calling object to keep track of the sound object that is returned.
-        /// </para>
-        /// </param>
-        /// <param name="loop">If loop, sound will loop from the set sample number.</param>
-        public static Ffcc PlaySound(int soundID, float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f, bool persist = false, bool loop = false)
+        public static void PlaySound(int soundID)
         {
             if (soundEntries == null || soundEntries[soundID].Size == 0)
             {
-                return null;
+                return;
             }
-            Ffcc ffcc = new Ffcc(
+            SoundChannels[CurrentSoundChannel] = new Ffcc(
                 new Ffcc.Buffer_Data { DataSeekLoc = soundEntries[soundID].Offset, DataSize = soundEntries[soundID].Size, HeaderSize = (uint)soundEntries[soundID].HeaderData.Length },
                 soundEntries[soundID].HeaderData,
-                Path.Combine(Memory.FF8DIRdata, "Sound", "audio.dat"), loop ? 0 : -1);
-            if (!persist)
-                SoundChannels[CurrentSoundChannel++] = ffcc;
-            ffcc.Play(volume, pitch, pan);
-            return ffcc;
+                Path.Combine(Memory.FF8DIRdata, "Sound", "audio.dat"));
+            SoundChannels[CurrentSoundChannel++].Play();
         }
 
         public static void StopSound()
@@ -267,6 +310,8 @@ namespace OpenVIII
             //}
             //if played in task we don't need to do this.
         }
+
+        //callable test
 
         public static byte[] ReadFullyByte(Stream stream)
         {
@@ -317,11 +362,11 @@ namespace OpenVIII
         private static bool musicplaying = false;
         private static int lastplayed = -1;
 
-        public static void PlayStopMusic(ushort? index = null, float volume = 0.5f, float pitch = 0.0f, float pan = 0.0f)
+        public static void PlayStopMusic()
         {
             if (!musicplaying || lastplayed != Memory.MusicIndex)
             {
-                PlayMusic(index: index, volume: volume, pitch: pitch, pan: pan);
+                PlayMusic();
             }
             else
             {
@@ -332,12 +377,8 @@ namespace OpenVIII
         private static Ffcc ffccMusic = null; // testing using class to play music instead of Naudio / Nvorbis
         private static int _currentSoundChannel;
 
-        public static void PlayMusic(ushort? index = null, float volume = 0.5f, float pitch = 0.0f, float pan = 0.0f, bool loop = true)
+        public static void PlayMusic()
         {
-            Memory.MusicIndex = index ?? Memory.MusicIndex;
-            
-
-            if (musicplaying && lastplayed == Memory.MusicIndex) return;
             string ext = "";
 
             if (Memory.dicMusic.Count > 0 && Memory.dicMusic[Memory.MusicIndex].Count > 0)
@@ -354,15 +395,11 @@ namespace OpenVIII
             switch (ext)
             {
                 case ".ogg":
-                case ".wav":
-                default:
                     //ffccMusic = new Ffcc(@"c:\eyes_on_me.wav", AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
                     if (ffccMusic != null)
                         ffccMusic.Dispose();
-                    ffccMusic = new Ffcc(pt, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH, loop?0:-1);
-                    if(!loop)
-                        ffccMusic.LOOPSTART = -1;
-                    ffccMusic.PlayInTask(volume, pitch, pan);
+                    ffccMusic = new Ffcc(pt, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
+                    ffccMusic.PlayInTask(.5f);
                     break;
 
                 case ".sgt":
@@ -371,7 +408,8 @@ namespace OpenVIII
                         fluid_Midi = new Fluid_Midi();
                     fluid_Midi.ReadSegmentFileManually(pt);
                     fluid_Midi.Play();
-#else
+                    break;
+#endif
                     if (Extended.IsLinux)
                     {
                         fluid_Midi.ReadSegmentFileManually(pt);
@@ -382,9 +420,8 @@ namespace OpenVIII
                     {
                         if (dm_Midi == null)
                             dm_Midi = new DM_Midi();
-                        dm_Midi.Play(pt,loop);
+                        dm_Midi.Play(pt);
                     }
-#endif
 
                     break;
             }
@@ -395,6 +432,10 @@ namespace OpenVIII
 
         public static void KillAudio()
         {
+            //if (Sound != null && !Sound.IsDisposed)
+            //{
+            //    Sound.Dispose();
+            //}
             SoundChannels.Where(x => x != null).ForEach(action => action.Dispose());
 
             if (dm_Midi != null)

@@ -3,7 +3,7 @@
     public partial class Kernel_bin
     {
         /// <summary>
-        /// 115 abilities. GF unlockable ones only.
+        /// 115 abilities. Flags version in AbilityFlags and AbilitiyFlags2
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Junctionable-Abilities"/>
         public enum Abilities :byte

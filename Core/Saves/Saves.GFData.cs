@@ -45,6 +45,11 @@ namespace OpenVIII
             /// </summary>
             public BitArray Forgotten;
 
+            /// <summary>
+            /// <para>0x00 String (0x00 terminated)</para>
+            /// <para>Name of GF</para>
+            /// </summary>
+            public FF8String Name;
 
             /// <summary>
             /// <para>0x24 Number of kills</para>
@@ -177,37 +182,6 @@ namespace OpenVIII
                 return c;
             }
 
-            public bool EarnExp(uint ap, out Kernel_bin.Abilities ability)
-            {
-                bool ret = false;
-                ability = Kernel_bin.Abilities.None;
-
-                if (!IsGameOver)
-                {
-                    if (EXPtoNextLevel <= ap && Level < 100)
-                        ret = true;
-                    Experience += ap;
-                    if (Kernel_bin.AllAbilities.ContainsKey(Learning))
-                    {
-                        byte ap_tolearn = Kernel_bin.AllAbilities[Learning].AP;
-                        if (JunctionableGFsData.Ability.TryGetIndexByKey(Learning, out int ind) && TestGFCanLearn(Learning, false))
-                        {
-                            if (ap_tolearn < APs[ind] + ap)
-                            {
-                                APs[ind] = ap_tolearn;
-                                ability = Learning;
-                                Learn(Learning);
-                            }
-                            else
-                            {
-                                APs[ind] += (byte)ap;
-                            }
-                        }
-                    }
-                }
-                return ret;
-            }
-
             /// <summary>
             /// Learn this ability
             /// </summary>
@@ -266,29 +240,22 @@ namespace OpenVIII
             /// <para>Could actually be a byte to corrispond to APs and Forgotten.</para>
             /// </summary>
             /// <param name="ability">If null sets to first in learnable list</param>
-            public void SetLearning(Kernel_bin.Abilities? _ability = null)
+            public void SetLearning(Kernel_bin.Abilities? ability = null)
             {
-                Kernel_bin.Abilities a = _ability ?? Kernel_bin.Abilities.None;
-                bool _set = false;
-                if (a == Kernel_bin.Abilities.None)
+                Kernel_bin.Abilities a = ability ?? Kernel_bin.Abilities.None;
+                if (!MaxGFAbilities)
                 {
-                    foreach (KeyValuePair<Kernel_bin.Abilities, Kernel_bin.Unlocker> kvp in JunctionableGFsData.Ability)
+                    if (ability == null)
                     {
-                        if (TestGFCanLearn(kvp.Key, false))
-                        {
-                            Learning = kvp.Key;
-                            _set = true;
-                            break;
-                        }
+                        // if ability is null set learning to the next ability that can be learned
+                        // check if max abilities is known already.
+                    }
+                    else if (a != Kernel_bin.Abilities.None)
+                    {
+                        // if ability isn't none. confirm if can learn it set ability to be learned
                     }
                 }
-                else if (TestGFCanLearn(a, false))
-                {
-                    Learning = a;
-                    _set = true;
-                }
-
-                if (!_set)
+                else
                     Learning = Kernel_bin.Abilities.None;
             }
 
@@ -296,45 +263,12 @@ namespace OpenVIII
             /// False if gf knows ability, True if can learn it.
             /// </summary>
             /// <param name="ability">Ability you want to learn.</param>
-            /// <param name="item">
-            /// If using an Item you don't need the prereq, set to false if need prereq
-            /// </param>
-            public bool TestGFCanLearn(Kernel_bin.Abilities ability, bool item = true) => !Complete[(int)ability] && ((item) || UnlockerTest(ability));
+            public bool TestGFCanLearn(Kernel_bin.Abilities ability) => !Complete[(int)ability];
 
             /// <summary>
             /// If converting to string display GF's Name.
             /// </summary>
             public override string ToString() => Name.ToString();
-
-            public bool UnlockerTest(Kernel_bin.Abilities a)
-            {
-                if (JunctionableGFsData.Ability.TryGetByKey(a, out Kernel_bin.Unlocker u))
-                {
-                    return UnlockerTest(u);
-                }
-                //return true if there is no prereq.
-                return true;
-            }
-
-            public bool UnlockerTest(Kernel_bin.Unlocker u)
-            {
-                if (u == Kernel_bin.Unlocker.None)
-                {
-                    return true;
-                }
-                else if (u < Kernel_bin.Unlocker.GFLevel100)
-                {
-                    return ((byte)u <= Level);
-                }
-                else
-                {
-                    int ind = (u - Kernel_bin.Unlocker.GFLevel100);
-                    if (JunctionableGFsData.Ability.TryGetKeyByIndex(ind, out Kernel_bin.Abilities key))
-                        return Complete[(int)key];
-                    else
-                        return false;
-                }
-            }
 
             #endregion Methods
         }

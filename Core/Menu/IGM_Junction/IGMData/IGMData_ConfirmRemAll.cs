@@ -1,57 +1,46 @@
 ﻿using Microsoft.Xna.Framework;
+using System.Linq;
 
 namespace OpenVIII
 {
-    public partial class IGM_Junction
+    public partial class Module_main_menu_debug
     {
-        #region Classes
-
-        private sealed class IGMData_ConfirmRemAll : IGMData_ConfirmDialog
+        private partial class IGM_Junction
         {
-            #region Constructors
-
-            public IGMData_ConfirmRemAll(FF8String data, Icons.ID title, FF8String opt1, FF8String opt2, Rectangle pos) : base(data, title, opt1, opt2, pos) => startcursor = 1;
-
-            #endregion Constructors
-
-            #region Methods
-
-            public override bool Inputs_CANCEL()
+            private sealed class IGMData_ConfirmRemAll : IGMData_ConfirmDialog
             {
-                base.Inputs_CANCEL();
-                IGM_Junction.Data[SectionName.RemAll].Hide();
-                IGM_Junction.SetMode(Mode.TopMenu_Off);
-                return true;
-            }
+                public IGMData_ConfirmRemAll(FF8String data, Icons.ID title, FF8String opt1, FF8String opt2, Rectangle pos) : base( data, title, opt1, opt2, pos) => startcursor = 1;
 
-            public override bool Inputs_OKAY()
-            {
-                switch (CURSOR_SELECT)
+                public override void Inputs_OKAY()
                 {
-                    case 0:
-                        skipsnd = true;
-                        init_debugger_Audio.PlaySound(31);
-                        base.Inputs_OKAY();
-                        Memory.State.Characters[Character].RemoveAll();
+                    switch (CURSOR_SELECT)
+                    {
+                        case 0:
+                            skipsnd = true;
+                            init_debugger_Audio.PlaySound(31);
+                            base.Inputs_OKAY();
+                            Memory.State.Characters[Character].RemoveAll();
 
-                        IGM_Junction.Data[SectionName.RemAll].Hide();
-                        IGM_Junction.Data[SectionName.TopMenu_Off].Hide();
-                        IGM_Junction.SetMode(Mode.TopMenu);
-                        IGM_Junction.Data[SectionName.TopMenu].CURSOR_SELECT = 0;
-                        IGM_Junction.Refresh();
-                        break;
+                            InGameMenu_Junction.Data[SectionName.RemAll].Hide();
+                            InGameMenu_Junction.Data[SectionName.TopMenu_Off].Hide();
+                            InGameMenu_Junction.SetMode(Mode.TopMenu);
+                            InGameMenu_Junction.Data[SectionName.TopMenu].CURSOR_SELECT = 0;
+                            InGameMenu_Junction.ReInit();
+                            break;
 
-                    case 1:
-                        Inputs_CANCEL();
-                        break;
-                    default: return false;
+                        case 1:
+                            Inputs_CANCEL();
+                            break;
+                    }
                 }
-                return true;
+
+                public override void Inputs_CANCEL()
+                {
+                    base.Inputs_CANCEL();
+                    InGameMenu_Junction.Data[SectionName.RemAll].Hide();
+                    InGameMenu_Junction.SetMode(Mode.TopMenu_Off);
+                }
             }
-
-            #endregion Methods
         }
-
-        #endregion Classes
     }
 }

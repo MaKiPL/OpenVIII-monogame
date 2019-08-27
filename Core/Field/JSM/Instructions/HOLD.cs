@@ -36,7 +36,7 @@ namespace OpenVIII
             sw.Format(formatterContext, services)
                 .StaticType(nameof(IPartyService))
                 .Method(nameof(IPartyService.ChangeCharacterState))
-                .Enum<Characters>(_characterId)
+                .Enum<CharacterId>(_characterId)
                 .Argument("isSwitchable", _isSwitchable)
                 .Argument("isSelectable", _isSelectable)
                 .Comment(nameof(HOLD));
@@ -44,7 +44,7 @@ namespace OpenVIII
 
         public override IAwaitable TestExecute(IServices services)
         {
-            Characters characterId = (Characters)_characterId.Int32(services);
+            CharacterId characterId = (CharacterId)_characterId.Int32(services);
             ServiceId.Party[services].ChangeCharacterState(characterId, _isSwitchable, _isSelectable);
             return DummyAwaitable.Instance;
         }

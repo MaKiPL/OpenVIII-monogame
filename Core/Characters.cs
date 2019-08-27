@@ -1,5 +1,12 @@
 ﻿namespace OpenVIII
 {
+
+
+
+
+
+
+  
         public enum Characters
         {
             // I noticed some values were in order of these characters so I made those values into arrays
@@ -17,4 +24,5 @@
             Ward_Zabac,
             Blank = 0xFF
         }
+  
 }

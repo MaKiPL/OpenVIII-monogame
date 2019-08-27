@@ -19,7 +19,7 @@ namespace OpenVIII
         {
             if (PercentLoaded < 1.0f)
             {
-                PercentLoaded += Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0f;
+                PercentLoaded += Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f * 3;
             }
             else
             {

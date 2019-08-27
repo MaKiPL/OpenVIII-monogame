@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -42,7 +41,7 @@ namespace OpenVIII
                       x.EndsWith(".bik", StringComparison.OrdinalIgnoreCase)));
                 }
             }
-            ReturnState = MODULE.MAINMENU_DEBUG;
+            ReturnState = Memory.MODULE_MAINMENU_DEBUG;
         }
 
         /// <summary>
@@ -55,7 +54,7 @@ namespace OpenVIII
 
         private static Texture2D frameTex { get; set; }
         private static Ffcc FfccAudio { get; set; }
-        public static MODULE ReturnState { get; set; }
+        public static int ReturnState { get; set; }
         /// <summary>
         /// Index in movie file list
         /// </summary>
@@ -68,23 +67,26 @@ namespace OpenVIII
 
         public static void Update()
         {
-            if (Input2.DelayedButton(FF8TextTagKey.Confirm) || Input2.DelayedButton(FF8TextTagKey.Cancel) || Input2.DelayedButton(Keys.Space))
+            if (Input.Button(Buttons.Okay) || Input.Button(Buttons.Cancel) || Input.Button(Keys.Space))
             {
+                Input.ResetInputLimit();
                 //init_debugger_Audio.StopAudio();
-                //Memory.module = MODULE.MAINMENU_DEBUG;
+                //Memory.module = Memory.MODULE_MAINMENU_DEBUG;
                 MovieState = STATE_RETURN;
             }
 #if DEBUG
             // lets you move through all the feilds just holding left or right. it will just loop
             // when it runs out.
-            if (Input2.DelayedButton(FF8TextTagKey.Left))
+            if (Input.Button(Buttons.Left))
             {
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 Module_main_menu_debug.MoviePointer--;
                 Reset();
             }
-            if (Input2.DelayedButton(FF8TextTagKey.Right))
+            if (Input.Button(Buttons.Right))
             {
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 Module_main_menu_debug.MoviePointer++;
                 Reset();
@@ -143,11 +145,7 @@ namespace OpenVIII
                     if (frameTex == null)
                     {
                         if (FfccVideo != null)
-                        {
-                            if (Memory.State?.Fieldvars != null)
-                                Memory.State.Fieldvars.FMVFrames = (ulong)FfccVideo.CurrentFrameNum;
                             frameTex = FfccVideo.Texture2D();
-                        }
                     }
                     break;
 
@@ -167,14 +165,12 @@ namespace OpenVIII
                 default:
                     Reset();
                     Memory.module = ReturnState;
-                    ReturnState = MODULE.MAINMENU_DEBUG;
+                    ReturnState = Memory.MODULE_MAINMENU_DEBUG;
                     break;
             }
         }
-
         /// <summary>
-        /// Sets the movie player back to default state. Use when exiting or otherwise it shouldn't
-        /// be required.
+        /// Sets the movie player back to default state. Use when exiting or otherwise it shouldn't be required.
         /// </summary>
         public static void Reset()
         {
@@ -264,7 +260,7 @@ namespace OpenVIII
                 Memory.SpriteBatchEnd();
             }
             //movieState = STATE_INIT;
-            //Memory.module = MODULE.BATTLE_DEBUG;
+            //Memory.module = Memory.MODULE_BATTLE_DEBUG;
         }
 
         //private static Bitmap lastframe = null;

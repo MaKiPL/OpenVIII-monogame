@@ -3,42 +3,32 @@ using System;
 
 namespace OpenVIII
 {
-    public class IGMDataItem_Box : IGMDataItem, I_Data<FF8String>
+    public partial class Module_main_menu_debug
     {
-        #region Constructors
+        #region Classes
 
-        public IGMDataItem_Box(FF8String data = null, Rectangle? pos = null, Icons.ID? title = null, Box_Options options = Box_Options.Default) : base(pos)
+        private class IGMDataItem_Box : IGMDataItem
         {
-            Data = data;
-            Title = title;
-            Options = options;
-        }
+            public FF8String Data { get; set; }
+            public Icons.ID? Title { get; set; }
+            public Box_Options Options { get; set; }
+            public Tuple<Rectangle, Point, Rectangle> Dims { get; private set; }
 
-        #endregion Constructors
-
-        #region Properties
-
-        public FF8String Data { get; set; }
-        public Tuple<Rectangle, Point, Rectangle> Dims { get; private set; }
-        public Box_Options Options { get; set; }
-        public Icons.ID? Title { get; set; }
-
-        #endregion Properties
-
-        #region Methods
-
-        public override void Draw() => Draw(false);
-
-        public void Draw(bool skipdraw)
-        {
-            if (Enabled)
+            public IGMDataItem_Box(FF8String data = null, Rectangle? pos = null, Icons.ID? title = null, Box_Options options = Box_Options.Default) : base(pos)
             {
-                Dims = Menu.DrawBox(Pos, Data, Title, options: skipdraw ? (Options | Box_Options.SkipDraw) : Options);
-                if (Blink) //needs tested and tuned
-                    Memory.spriteBatch.Draw(blank, Pos, Color.DarkGray * Fade * .5f * Blink_Amount * Blink_Adjustment);
+                Data = data;
+                Title = title;
+                Options = options;
+            }
+
+            public override void Draw()
+            {
+                if (Enabled)
+                {
+                    Dims = DrawBox(Pos, Data, Title, options: Options);
+                }
             }
         }
-
-        #endregion Methods
+        #endregion Classes
     }
 }

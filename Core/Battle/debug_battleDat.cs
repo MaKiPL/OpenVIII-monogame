@@ -1,19 +1,18 @@
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace OpenVIII
 {
-    public partial class Debug_battleDat
+    public class Debug_battleDat
     {
-        private int id;
-        private readonly EntityType entityType;
-        private byte[] buffer;
+        int id;
+        readonly EntityType entityType;
+        byte[] buffer;
 
         public const float SCALEHELPER = 2048.0f;
         private const float DEGREES = 360f;
@@ -25,11 +24,10 @@ namespace OpenVIII
             public uint eof;
         }
 
-        public DatFile datFile;
+        public DatFile datFile;        
 
         #region section 1 Skeleton
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
+        [StructLayout(LayoutKind.Sequential,Pack = 1,Size =16)]
         public struct Skeleton
         {
             public ushort cBones;
@@ -42,7 +40,7 @@ namespace OpenVIII
             public ushort unk7;
             public Bone[] bones;
 
-            public Vector3 GetScale => new Vector3(scale / SCALEHELPER * 12, scale / SCALEHELPER * 12, scale / SCALEHELPER * 12);
+            public Vector3 GetScale => new Vector3(scale/SCALEHELPER*12, scale/SCALEHELPER*12, scale/SCALEHELPER*12);
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 48)]
@@ -56,17 +54,16 @@ namespace OpenVIII
             private short unk4;
             private short unk5;
             private short unk6;
-
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 28)]
+            [MarshalAs(UnmanagedType.ByValArray,SizeConst = 28 )]
             public byte[] Unk;
 
-            public float Size => boneSize / SCALEHELPER;
-            public float Unk1 => unk1 / 4096.0f * 360.0f;  //rotX
-            public float Unk2 => unk2 / 4096.0f * 360.0f;  //rotY
-            public float Unk3 => unk3 / 4096.0f * 360.0f;  //rotZ
-            public float Unk4 => unk4 / 4096.0f;  //unk1v
-            public float Unk5 => unk5 / 4096.0f;  //unk2v
-            public float Unk6 => unk6 / 4096.0f;  //unk3v
+            public float Size { get => boneSize / SCALEHELPER; }
+            public float Unk1 { get => unk1 / 4096.0f * 360.0f; } //rotX
+            public float Unk2 { get => unk2 / 4096.0f * 360.0f; } //rotY
+            public float Unk3 { get => unk3 / 4096.0f * 360.0f; } //rotZ
+            public float Unk4 { get => unk4 / 4096.0f; } //unk1v
+            public float Unk5 { get => unk5 / 4096.0f; } //unk2v
+            public float Unk6 { get => unk6 / 4096.0f; } //unk3v
         }
 
         /// <summary>
@@ -105,10 +102,9 @@ namespace OpenVIII
 
         public Skeleton skeleton;
 
-        #endregion section 1 Skeleton
+#endregion
 
-        #region section 2 Geometry
-
+#region section 2 Geometry
         public struct Geometry
         {
             public uint cObjects;
@@ -142,10 +138,10 @@ namespace OpenVIII
             public short y;
             public short z;
 
-            public Vector3 GetVector => new Vector3(-x / SCALEHELPER, -z / SCALEHELPER, -y / SCALEHELPER);
+            public Vector3 GetVector => new Vector3(-x/ SCALEHELPER, -z/SCALEHELPER, -y/SCALEHELPER);
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
+        [StructLayout(LayoutKind.Sequential, Pack =1, Size =16)]
         public struct Triangle
         {
             private ushort A;
@@ -160,7 +156,7 @@ namespace OpenVIII
             public ushort A1 { get => (ushort)(A & 0xFFF); set => A = value; }
             public ushort B1 { get => (ushort)(B & 0xFFF); set => B = value; }
             public ushort C1 { get => (ushort)(C & 0xFFF); set => C = value; }
-            public byte textureIndex => (byte)((texUnk >> 6) & 0b111);
+            public byte textureIndex { get => (byte)((texUnk >> 6) & 0b111); }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 20)]
@@ -181,24 +177,26 @@ namespace OpenVIII
             public ushort B1 { get => (ushort)(B & 0xFFF); set => B = value; }
             public ushort C1 { get => (ushort)(C & 0xFFF); set => C = value; }
             public ushort D1 { get => (ushort)(D & 0xFFF); set => D = value; }
-            public byte textureIndex => (byte)((texUnk >> 6) & 0b111);
+            public byte textureIndex { get => (byte)((texUnk >> 6) & 0b111); }
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 2)]
+        [StructLayout(LayoutKind.Sequential, Pack =1,Size =2)]
         public struct UV
         {
             public byte U;
             public byte V;
 
-            public float U1(float h = 128f) => U / h;
+            public float U1(float h=128f) { return U / h; }
+            public float V1(float w=128f) { return V > 128 ? //if bigger than 128, then multitexture index to odd
+                    (V - 128f)/w 
+                    : w==32 ?  //if equals 32, then it's weapon texture and should be in range of 96-128
+                        (V-96)/w 
+                        : V/w; } //if none of these cases, then divide by resolution;
 
-            public float V1(float w = 128f) => V > 128 ? //if bigger than 128, then multitexture index to odd
-                    (V - 128f) / w
-                    : w == 32 ?  //if equals 32, then it's weapon texture and should be in range of 96-128
-                        (V - 96) / w
-                        : V / w;  //if none of these cases, then divide by resolution;
-
-            public override string ToString() => $"{U};{U1()};{V};{V1()}";
+            public override string ToString()
+            {
+                return $"{U};{U1()};{V};{V1()}";
+            }
         }
 
         public Geometry geometry;
@@ -218,7 +216,7 @@ namespace OpenVIII
                 geometry.pObjects[i] = br.ReadUInt32();
             geometry.objects = new Object[geometry.cObjects];
             for (int i = 0; i < geometry.cObjects; i++)
-                geometry.objects[i] = ReadGeometryObject(v + geometry.pObjects[i], ms, br);
+                geometry.objects[i] = ReadGeometryObject(v+geometry.pObjects[i], ms, br);
             geometry.cTotalVert = br.ReadUInt32();
         }
 
@@ -229,15 +227,13 @@ namespace OpenVIII
             @object.verticeData = new VerticeData[@object.cVertices];
             if (ms.Position + @object.cVertices * 6 >= ms.Length)
                 return @object;
-            for (int n = 0; n < @object.cVertices; n++)
-            {
+            for (int n = 0; n < @object.cVertices; n++){
                 @object.verticeData[n].boneId = br.ReadUInt16();
                 @object.verticeData[n].cVertices = br.ReadUInt16();
                 @object.verticeData[n].vertices = new Vertex[@object.verticeData[n].cVertices];
                 for (int i = 0; i < @object.verticeData[n].cVertices; i++)
-                    @object.verticeData[n].vertices[i] = Extended.ByteArrayToStructure<Vertex>(br.ReadBytes(6));
-            }
-            ms.Seek(4 - (ms.Position % 4 == 0 ? 4 : ms.Position % 4), SeekOrigin.Current);
+                    @object.verticeData[n].vertices[i] = Extended.ByteArrayToStructure<Vertex>(br.ReadBytes(6));}
+            ms.Seek(4-(ms.Position%4 == 0 ? 4 : ms.Position%4), SeekOrigin.Current);
             @object.cTriangles = br.ReadUInt16();
             @object.cQuads = br.ReadUInt16();
             @object.padding = br.ReadUInt64();
@@ -254,56 +250,43 @@ namespace OpenVIII
         }
 
         /// <summary>
-        /// This method returns geometry data AFTER animation matrix translations, local
-        /// position/rotation translations. This is the final step of calculation. This data should
-        /// be used only by Renderer. Any translations/vertices manipulation should happen inside
-        /// this method or earlier
+        /// This method returns geometry data AFTER animation matrix translations, local position/rotation translations. This is the final step of calculation. 
+        /// This data should be used only by Renderer. Any translations/vertices manipulation should happen inside this method or earlier
         /// </summary>
-        /// <param name="objectId">
-        /// Monsters can have more than one object. Treat it like multi-model geometry. They are all
-        /// needed to build whole model
-        /// </param>
+        /// <param name="objectId">Monsters can have more than one object. Treat it like multi-model geometry. They are all needed to build whole model</param>
         /// <param name="position">a Vector3 to set global position</param>
-        /// <param name="rotation">a Quaternion to set the correct rotation. 1=90, 2=180 ...</param>
+        /// <param name="rotation">a Quaternion to set the correct rotation. 1=90, 2=180 ... </param>
         /// <param name="animationId">an animation pointer. Animation 0 is always idle</param>
-        /// <param name="animationFrame">
-        /// an animation frame from animation id. You should pass incrementing frame and reset to 0
-        /// when frameCount max is hit
-        /// </param>
-        /// <param name="step">
-        /// FEATURE: This float (0.0 - 1.0) is used in Linear interpolation in animation frames
-        /// blending. 0.0 means frameN, 1.0 means FrameN+1. Usually this should be a result of
-        /// deltaTime to see if computer is capable of rendering smooth animations rather than
-        /// constant 15 FPS
-        /// </param>
+        /// <param name="animationFrame">an animation frame from animation id. You should pass incrementing frame and reset to 0 when frameCount max is hit</param>
+        /// <param name="step">FEATURE: This float (0.0 - 1.0) is used in Linear interpolation in animation frames blending. 0.0 means frameN, 1.0 means FrameN+1. Usually this should be a result of deltaTime to see if computer is capable of rendering smooth animations rather than constant 15 FPS</param>
         /// <returns></returns>
-        public Tuple<VertexPositionTexture[], byte[]> GetVertexPositions(int objectId, Vector3 position, Quaternion rotation, int animationId, int animationFrame, double step)
+        public Tuple<VertexPositionTexture[],byte[]> GetVertexPositions(int objectId, Vector3 position,Quaternion rotation, int animationId, int animationFrame, float step)
         {
             Object obj = geometry.objects[objectId];
-            if (animationFrame >= animHeader.animations[animationId].animationFrames.Length || animationFrame < 0)
+            if (animationFrame >= animHeader.animations[animationId].animationFrames.Length || animationFrame<0)
                 animationFrame = 0;
             AnimationFrame frame = animHeader.animations[animationId].animationFrames[animationFrame];
-            AnimationFrame nextFrame = animationFrame + 1 >= animHeader.animations[animationId].animationFrames.Length
+            AnimationFrame nextFrame = animationFrame +1 >= animHeader.animations[animationId].animationFrames.Length
                 ? animHeader.animations[animationId].animationFrames[0]
-                : animHeader.animations[animationId].animationFrames[animationFrame + 1];
+                : animHeader.animations[animationId].animationFrames[animationFrame+1];
             List<VertexPositionTexture> vpt = new List<VertexPositionTexture>();
-            List<Tuple<Vector3, int>> verts = new List<Tuple<Vector3, int>>();
+            List<Tuple<Vector3, int>> verts = new List<Tuple<Vector3, int>>();  
 
             int i = 0;
-            foreach (VerticeData a in obj.verticeData)
-                foreach (Vertex b in a.vertices)
-                    verts.Add(CalculateFrame(new Tuple<Vector3, int>(b.GetVector, a.boneId), frame, nextFrame, step));
-            byte[] texturePointers = new byte[obj.cTriangles + obj.cQuads * 2];
+            foreach (var a in obj.verticeData)
+                foreach (var b in a.vertices)
+                    verts.Add(CalculateFrame(new Tuple<Vector3, int>(b.GetVector, a.boneId),frame,nextFrame, step));
+            byte[] texturePointers = new byte[obj.cTriangles + obj.cQuads*2];
             Vector3 translationPosition = position /*+ Vector3.SmoothStep(frame.Position, nextFrame.Position, step) + snapToGround*/;
 
             //Triangle parsing
-            for (; i < obj.cTriangles; i++)
+            for (;i<obj.cTriangles; i++ )
             {
                 Vector3 VerticeDataC = TranslateVertex(verts[obj.triangles[i].C1].Item1, rotation, translationPosition);
                 Vector3 VerticeDataA = TranslateVertex(verts[obj.triangles[i].A1].Item1, rotation, translationPosition);
                 Vector3 VerticeDataB = TranslateVertex(verts[obj.triangles[i].B1].Item1, rotation, translationPosition);
 
-                Texture2D prevarTexT = textures.textures[obj.triangles[i].textureIndex];
+                var prevarTexT = textures.textures[obj.triangles[i].textureIndex];
                 vpt.Add(new VertexPositionTexture(VerticeDataC, new Vector2(obj.triangles[i].vta.U1(prevarTexT.Width), obj.triangles[i].vta.V1(prevarTexT.Height))));
                 vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.triangles[i].vtb.U1(prevarTexT.Width), obj.triangles[i].vtb.V1(prevarTexT.Height))));
                 vpt.Add(new VertexPositionTexture(VerticeDataB, new Vector2(obj.triangles[i].vtc.U1(prevarTexT.Width), obj.triangles[i].vtc.V1(prevarTexT.Height))));
@@ -313,12 +296,13 @@ namespace OpenVIII
             //Quad parsing
             for (i = 0; i < obj.cQuads; i++)
             {
+                
                 Vector3 VerticeDataA = TranslateVertex(verts[obj.quads[i].A1].Item1, rotation, translationPosition);
                 Vector3 VerticeDataB = TranslateVertex(verts[obj.quads[i].B1].Item1, rotation, translationPosition);
                 Vector3 VerticeDataC = TranslateVertex(verts[obj.quads[i].C1].Item1, rotation, translationPosition);
                 Vector3 VerticeDataD = TranslateVertex(verts[obj.quads[i].D1].Item1, rotation, translationPosition);
 
-                Texture2D preVarTex = textures.textures[obj.quads[i].textureIndex];
+                var preVarTex = textures.textures[obj.quads[i].textureIndex];
                 vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.quads[i].vta.U1(preVarTex.Width), obj.quads[i].vta.V1(preVarTex.Height))));
                 vpt.Add(new VertexPositionTexture(VerticeDataB, new Vector2(obj.quads[i].vtb.U1(preVarTex.Width), obj.quads[i].vtb.V1(preVarTex.Height))));
                 vpt.Add(new VertexPositionTexture(VerticeDataD, new Vector2(obj.quads[i].vtd.U1(preVarTex.Width), obj.quads[i].vtd.V1(preVarTex.Height))));
@@ -327,14 +311,14 @@ namespace OpenVIII
                 vpt.Add(new VertexPositionTexture(VerticeDataC, new Vector2(obj.quads[i].vtc.U1(preVarTex.Width), obj.quads[i].vtc.V1(preVarTex.Height))));
                 vpt.Add(new VertexPositionTexture(VerticeDataD, new Vector2(obj.quads[i].vtd.U1(preVarTex.Width), obj.quads[i].vtd.V1(preVarTex.Height))));
 
-                texturePointers[obj.cTriangles + i * 2] = obj.quads[i].textureIndex;
-                texturePointers[obj.cTriangles + i * 2 + 1] = obj.quads[i].textureIndex;
+                texturePointers[obj.cTriangles+i*2] = obj.quads[i].textureIndex;
+                texturePointers[obj.cTriangles + i * 2+1] = obj.quads[i].textureIndex;
             }
 
             return new Tuple<VertexPositionTexture[], byte[]>(vpt.ToArray(), texturePointers);
         }
 
-        private Vector3 TranslateVertex(Vector3 vertex, Quaternion rotation, Vector3 localTranslate)
+        Vector3 TranslateVertex(Vector3 vertex, Quaternion rotation, Vector3 localTranslate)
         {
             Vector3 verticeData = vertex;
             verticeData = Vector3.Transform(verticeData, Matrix.CreateFromQuaternion(rotation));
@@ -343,21 +327,14 @@ namespace OpenVIII
         }
 
         /// <summary>
-        /// Complex function that provides linear interpolation between two matrices of actual
-        /// to-render animation frame and next frame data for blending
+        /// Complex function that provides linear interpolation between two matrices of actual to-render animation frame and next frame data for blending
         /// </summary>
         /// <param name="tuple">the tuple that contains vertex and bone ident</param>
         /// <param name="frame">current animation frame to render</param>
-        /// <param name="nextFrame">
-        /// animation frame to render that is AFTER the actual one. If last frame, then usually 0 is
-        /// the 'next' frame
-        /// </param>
-        /// <param name="step">
-        /// step is variable used to determinate the progress for linear interpolation. I.e. 0 for
-        /// current frame and 1 for next frame; 0.5 for blend of two frames
-        /// </param>
+        /// <param name="nextFrame">animation frame to render that is AFTER the actual one. If last frame, then usually 0 is the 'next' frame</param>
+        /// <param name="step">step is variable used to determinate the progress for linear interpolation. I.e. 0 for current frame and 1 for next frame; 0.5 for blend of two frames</param>
         /// <returns></returns>
-        private Tuple<Vector3, int> CalculateFrame(Tuple<Vector3, int> tuple, AnimationFrame frame, AnimationFrame nextFrame, double step)
+        private Tuple<Vector3, int> CalculateFrame(Tuple<Vector3, int> tuple, AnimationFrame frame,AnimationFrame nextFrame, float step)
         {
             Matrix matrix = frame.boneMatrix[tuple.Item2]; //get's bone matrix
             Vector3 rootFramePos = new Vector3(
@@ -371,14 +348,12 @@ namespace OpenVIII
                 matrix.M31 * tuple.Item1.X + matrix.M43 + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
             rootFramePos = Vector3.Transform(rootFramePos, Matrix.CreateScale(skeleton.GetScale));
             nextFramePos = Vector3.Transform(nextFramePos, Matrix.CreateScale(skeleton.GetScale));
-            rootFramePos = Vector3.SmoothStep(rootFramePos, nextFramePos, (float)step);
+            rootFramePos = Vector3.SmoothStep(rootFramePos, nextFramePos, step);
             return new Tuple<Vector3, int>(rootFramePos, tuple.Item2);
         }
-
-        #endregion section 2 Geometry
+        #endregion
 
         #region section 3 Animation
-
         public struct AnimationData
         {
             public uint cAnimations;
@@ -410,7 +385,7 @@ namespace OpenVIII
         private void ReadSection3(uint v, MemoryStream ms, BinaryReader br)
         {
             ms.Seek(v, SeekOrigin.Begin);
-            animHeader = new AnimationData() { cAnimations = br.ReadUInt32() };
+            animHeader = new AnimationData() {cAnimations = br.ReadUInt32() };
             animHeader.pAnimations = new uint[animHeader.cAnimations];
             for (int i = 0; i < animHeader.cAnimations; i++)
             {
@@ -419,12 +394,12 @@ namespace OpenVIII
             }
             animHeader.animations = new Animation[animHeader.cAnimations];
             for (int i = 0; i < animHeader.cAnimations; i++) //animation
-            {
+            { 
                 ms.Seek(v + animHeader.pAnimations[i], SeekOrigin.Begin); //Get to pointer of animation Id
-                animHeader.animations[i] = new Animation() { cFrames = br.ReadByte() }; //Create new animation with cFrames frames
+                animHeader.animations[i] = new Animation() {cFrames = br.ReadByte() }; //Create new animation with cFrames frames
                 animHeader.animations[i].animationFrames = new AnimationFrame[animHeader.animations[i].cFrames];
                 ExtapathyExtended.BitReader bitReader = new ExtapathyExtended.BitReader(ms);
-                for (int n = 0; n < animHeader.animations[i].cFrames; n++) //frames
+                for(int n = 0; n<animHeader.animations[i].cFrames; n++) //frames
                 {
                     //Step 1. It starts with bone0.position. Let's read that into AnimationFrames[animId]- it's only one position per frame
 
@@ -433,16 +408,15 @@ namespace OpenVIII
                     float z = bitReader.ReadPositionType() * .01f;
                     animHeader.animations[i].animationFrames[n] = n == 0
                         ? new AnimationFrame()
-                        { Position = new Vector3(x, y, z) }
+                        {Position = new Vector3(x,y,z)}
                         : new AnimationFrame()
-                        {
-                            Position = new Vector3(
+                        {Position = new Vector3(
                     animHeader.animations[i].animationFrames[n - 1].Position.X + x,
                     animHeader.animations[i].animationFrames[n - 1].Position.Y + y,
                     animHeader.animations[i].animationFrames[n - 1].Position.Z + z)
                         };
-                    byte ModeTest = (byte)bitReader.ReadBits(1); //used to determine if additional info is required
-                    if (i == 0 && n == 0)
+                    byte ModeTest =  (byte)bitReader.ReadBits(1); //used to determine if additional info is required
+                    if(i == 0 && n == 0)
                         Console.WriteLine($"{i} {n}: {ModeTest}");
                     animHeader.animations[i].animationFrames[n].boneMatrix = new Matrix[skeleton.cBones];
                     animHeader.animations[i].animationFrames[n].bonesVectorRotations = new Vector3[skeleton.cBones];
@@ -479,7 +453,7 @@ namespace OpenVIII
                     }
 
                     //Step 3. We now have all bone rotations stored into short. We need to convert that into Matrix and 360/4096
-                    for (int k = 0; k < skeleton.cBones; k++)
+                    for(int k = 0; k<skeleton.cBones; k++)
                     {
                         Vector3 boneRotation = animHeader.animations[i].animationFrames[n].bonesVectorRotations[k];
                         boneRotation = Extended.S16VectorToFloat(boneRotation); //we had vector3 containing direct copy of short to float, now we need them in real floating point values
@@ -487,7 +461,7 @@ namespace OpenVIII
                         Matrix xRot = Extended.GetRotationMatrixX(-boneRotation.X);
                         Matrix yRot = Extended.GetRotationMatrixY(-boneRotation.Y);
                         Matrix zRot = Extended.GetRotationMatrixZ(-boneRotation.Z);
-                        Matrix MatrixZ = Extended.MatrixMultiply_transpose(yRot, xRot);
+                        var MatrixZ = Extended.MatrixMultiply_transpose(yRot, xRot);
                         MatrixZ = Extended.MatrixMultiply_transpose(zRot, MatrixZ);
 
                         if (skeleton.bones[k].parentId == 0xFFFF) //if parentId is 0xFFFF then the current bone is core aka bone0
@@ -496,6 +470,7 @@ namespace OpenVIII
                             MatrixZ.M42 = -animHeader.animations[i].animationFrames[n].Position.Y; //up/down
                             MatrixZ.M43 = animHeader.animations[i].animationFrames[n].Position.Z;
                             MatrixZ.M44 = 1;
+
                         }
                         else
                         {
@@ -516,8 +491,7 @@ namespace OpenVIII
         }
 
         /// <summary>
-        /// Some enemies use additional information that is saved for bone AFTER rotation types. We
-        /// are still not sure what it does as enemy works without it
+        /// Some enemies use additional information that is saved for bone AFTER rotation types. We are still not sure what it does as enemy works without it
         /// </summary>
         /// <param name="bitReader"></param>
         /// <returns></returns>
@@ -546,12 +520,106 @@ namespace OpenVIII
         public AnimationData animHeader;
         public int frame;
         public float frameperFPS = 0.0f;
+        #endregion
 
-        #endregion section 3 Animation
+        #region section 7 Information
+        private const int Section7Size = 380;
 
+        [StructLayout(LayoutKind.Sequential, Pack =1, Size =Section7Size)]
+        public struct Information
+        {
+            [MarshalAs(UnmanagedType.ByValArray,SizeConst =24)]
+            private byte[] monsterName;
+            public uint hp;
+            public uint str;
+            public uint vit;
+            public uint mag;
+            public uint spr;
+            public uint spd;
+            public uint eva;
+            public Abilities abilitiesLow;
+            public Abilities abilitiesMed;
+            public Abilities abilitiesHigh;
+            public byte medLevelStart;
+            public byte highLevelStart;
+            public byte unk;
+            public byte bitSwitch;
+            public byte cardLow;
+            public byte cardMed;
+            public byte cardHigh;
+            public byte devourLow;
+            public byte devourMed;
+            public byte devourHigh;
+            public byte bitSwitch2;
+            public byte unk2;
+            public ushort extraExp;
+            public ushort exp;
+            public ulong drawLow;
+            public ulong drawMed;
+            public ulong drawHigh;
+            public ulong mugLow;
+            public ulong mugMed;
+            public ulong mugHigh;
+            public ulong dropLow;
+            public ulong dropMed;
+            public ulong dropHigh;
+            public byte mugRate;
+            public byte dropRate;
+            public byte padding;
+            public byte ap;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst =16)]
+            public byte[] unk3;
+            public byte fireResistance;
+            public byte iceResistance;
+            public byte thunderResistance;
+            public byte earthResistance;
+            public byte poisonResistance;
+            public byte windResistance;
+            public byte waterResistance;
+            public byte holyResistance;
 
-        #region section 11 Textures
+            public byte deathResistanceMental;
+            public byte poisonResistanceMental;
+            public byte petrifyResistanceMental;
+            public byte darknessResistanceMental;
+            public byte silenceResistanceMental;
+            public byte berserkResistanceMental;
+            public byte zombieResistanceMental;
+            public byte sleepResistanceMental;
+            public byte hasteResistanceMental;
+            public byte slowResistanceMental;
+            public byte stopResistanceMental;
+            public byte regenResistanceMental;
+            public byte reflectResistanceMental;
+            public byte doomResistanceMental;
+            public byte slowPetrifyResistanceMental;
+            public byte floatResistanceMental;
+            public byte confuseResistanceMental;
+            public byte drainResistanceMental;
+            public byte explusionResistanceMental;
+            public byte unkResistanceMental;
 
+            public FF8String GetNameNormal => monsterName;
+        }
+
+        public struct Abilities
+        {
+            public byte kernelId; //0x2 magic, 0x4 item, 0x8 mosterAbility;
+            public byte unk;
+            public ushort abilityId;
+
+        }
+
+        private void ReadSection7(uint v, MemoryStream ms, BinaryReader br)
+        {
+            ms.Seek(v, SeekOrigin.Begin);
+            information = Extended.ByteArrayToStructure<Information>(br.ReadBytes(Section7Size));
+        }
+
+        public Information information;
+#endregion
+
+#region section 11 Textures
         public struct Textures
         {
             public uint cTims;
@@ -563,31 +631,22 @@ namespace OpenVIII
         private void ReadSection11(uint v, MemoryStream ms, BinaryReader br)
         {
             ms.Seek(v, SeekOrigin.Begin);
-            using (FileStream fs = File.Create(Path.Combine(Path.GetTempPath(), $"{v}.dump"), (int)(ms.Length - v), FileOptions.None))
-            {
-                fs.Write(ms.ToArray(), (int)v, (int)(ms.Length - v));
-            }
             textures = new Textures() { cTims = br.ReadUInt32() };
             textures.pTims = new uint[textures.cTims];
             for (int i = 0; i < textures.cTims; i++)
                 textures.pTims[i] = br.ReadUInt32();
             textures.Eof = br.ReadUInt32();
             textures.textures = new Texture2D[textures.cTims];
-            for (int i = 0; i < textures.cTims; i++)
+            for(int i = 0; i<textures.cTims; i++)
             {
-                if (buffer[v + textures.pTims[i]] == 0x10)
-                {
-                    TIM2 tm = new TIM2(buffer, v + textures.pTims[i]); //broken
-                    textures.textures[i] = tm.GetTexture(0);
-                }
-                else
-                    Debug.WriteLine($"DEBUG: {this}.{this.id}.{v + textures.pTims[i]} :: Not a tim file!");
+                ms.Seek(v + textures.pTims[i], SeekOrigin.Begin);
+                TIM2 tm = new TIM2(buffer, (uint)ms.Position); //broken
+                textures.textures[i] = tm.GetTexture(0, true);
             }
         }
-
         public Textures textures;
+#endregion
 
-        #endregion section 11 Textures
 
         public enum EntityType
         {
@@ -595,10 +654,9 @@ namespace OpenVIII
             Character,
             Weapon
         };
-
+        
         /// <summary>
-        /// Creates new instance of DAT class that provides every sections parsed into structs and
-        /// helper functions for renderer
+        /// Creates new instance of DAT class that provides every sections parsed into structs and helper functions for renderer
         /// </summary>
         /// <param name="fileId">This number is used in c0m(fileId) or d(fileId)cXYZ</param>
         /// <param name="entityType">Supply Monster, character or weapon (0,1,2)</param>
@@ -608,22 +666,13 @@ namespace OpenVIII
             id = fileId;
             Console.WriteLine($"DEBUG: Creating new BattleDat with {fileId},{entityType},{additionalFileId}");
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
-            char et = entityType == EntityType.Weapon ? 'w' : entityType == EntityType.Character ? 'c' : default;
             string fileName = entityType == EntityType.Monster ? $"c0m{id.ToString("D03")}" :
-                entityType == EntityType.Character || entityType == EntityType.Weapon ? $"d{fileId.ToString("x")}{et}{additionalFileId.ToString("D03")}"
-                : string.Empty;
+                entityType == EntityType.Character ? $"d{fileId.ToString("x")}c{additionalFileId.ToString("D03")}" :
+                entityType == EntityType.Weapon ? $"d{fileId.ToString("x")}w{additionalFileId.ToString("D03")}" : string.Empty;
             this.entityType = entityType;
             if (string.IsNullOrEmpty(fileName))
                 return;
-            string path = null;
-            if (et != default)
-            {
-                IEnumerable<string> test = aw.GetListOfFiles().Where(x => x.IndexOf($"d{fileId.ToString("x")}{et}", StringComparison.OrdinalIgnoreCase) >= 0);
-                path = test.FirstOrDefault(x => x.ToLower().Contains(fileName));
-                if (string.IsNullOrWhiteSpace(path))
-                    path = test.First();
-            }
-            else path = aw.GetListOfFiles().First(x => x.ToLower().Contains(fileName));
+            string path = aw.GetListOfFiles().First(x => x.ToLower().Contains(fileName));
             buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, path);
 
 #if _WINDOWS && DEBUG
@@ -632,13 +681,13 @@ namespace OpenVIII
                 string targetdir = @"d:\";
                 if (Directory.Exists(targetdir))
                 {
-                    DriveInfo[] drivei = DriveInfo.GetDrives().Where(x => x.Name.IndexOf(Path.GetPathRoot(targetdir), StringComparison.OrdinalIgnoreCase) >= 0).ToArray();
-                    DirectoryInfo di = new DirectoryInfo(targetdir);
-                    if (!di.Attributes.HasFlag(FileAttributes.ReadOnly) && drivei.Count() == 1 && drivei[0].DriveType == DriveType.Fixed)
-                        Extended.DumpBuffer(buffer, Path.Combine(targetdir, "out.dat"));
+                    var drivei = DriveInfo.GetDrives().Where(x => x.Name.IndexOf(Path.GetPathRoot(targetdir),StringComparison.OrdinalIgnoreCase)>=0).ToArray();                    
+                    var di = new DirectoryInfo(targetdir);
+                    if(!di.Attributes.HasFlag(FileAttributes.ReadOnly) && drivei.Count()==1 && drivei[0].DriveType == DriveType.Fixed)
+                        Extended.DumpBuffer(buffer, Path.Combine(targetdir,"out.dat"));
                 }
             }
-            catch (IOException)
+            catch(IOException)
             {
             }
 #endif
@@ -646,7 +695,7 @@ namespace OpenVIII
             using (MemoryStream ms = new MemoryStream(buffer))
             using (BinaryReader br = new BinaryReader(ms))
             {
-                datFile = new DatFile { cSections = br.ReadUInt32() };
+                datFile = new DatFile { cSections = br.ReadUInt32()};
                 datFile.pSections = new uint[datFile.cSections];
                 for (int i = 0; i < datFile.cSections; i++)
                     datFile.pSections[i] = br.ReadUInt32();
@@ -667,17 +716,15 @@ namespace OpenVIII
                         //ReadSection10(datFile.pSections[9]);
                         ReadSection11(datFile.pSections[10], ms, br);
                         break;
-
                     case EntityType.Character:
                         ReadSection1(datFile.pSections[0], ms, br);
                         ReadSection3(datFile.pSections[2], ms, br);
                         ReadSection2(datFile.pSections[1], ms, br);
-                        if (fileId == 7 && entityType == EntityType.Character)
+                        if(fileId==7 && entityType==EntityType.Character)
                             ReadSection11(datFile.pSections[8], ms, br);
                         else
                             ReadSection11(datFile.pSections[5], ms, br);
                         break;
-
                     case EntityType.Weapon:
                         if (skeletonReference == null)
                         {

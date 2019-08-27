@@ -31,8 +31,9 @@ namespace OpenVIII.Encoding.Tags
             if (commentType != CommentType.Line && commentType != CommentType.Block)
                 return null;
 
+            String finded;
             String value;
-            Int32 index = IndexOfAny(chars, offset + 2, left - 2, out string finded, commentType == CommentType.Line ? LineCommentEnd : BlockCommentEnd);
+            Int32 index = IndexOfAny(chars, offset + 2, left - 2, out finded, commentType == CommentType.Line ? LineCommentEnd : BlockCommentEnd);
 
             if (index < 0)
             {
@@ -44,7 +45,8 @@ namespace OpenVIII.Encoding.Tags
             {
                 if (commentType == CommentType.Line)
                 {
-                    if (offset != 0 && IndexOfAny(chars, offset, -6, out string prev, LineCommentEnd) < 0)
+                    String prev;
+                    if (offset != 0 && IndexOfAny(chars, offset, -6, out prev, LineCommentEnd) < 0)
                         finded = string.Empty;
                 }
 

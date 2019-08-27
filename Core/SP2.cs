@@ -6,13 +6,8 @@ using System.Linq;
 
 namespace OpenVIII
 {
-    /// <summary>
-    /// SP2 is a handler for .sp1 and .sp2 files. They are texture atlas coordinates
-    /// <para>This stores the entries in Entry objects or EntryGroup objects</para>
-    /// </summary>
     public abstract class SP2
     {
-
         #region Constructors
 
         protected SP2()
@@ -140,7 +135,7 @@ namespace OpenVIII
             return null;
         }
 
-        public virtual TextureHandler GetTexture(Enum id)
+        public virtual TextureHandler GetTexture(Enum id, out Vector2 scale)
         {
             uint pos = Convert.ToUInt32(id);
             uint File = GetEntry(id).File;
@@ -155,20 +150,10 @@ namespace OpenVIII
                     File %= j;
                 }
             }
+            scale = Scale[File];
             return Textures[(int)File];
         }
 
-        public virtual TextureHandler GetTexture(Enum id, out Vector2 scale)
-        {
-            scale = Scale[GetEntry(id).File];
-            return GetTexture(id);
-        }
-
-        public void Trim(Enum ic, byte pal)
-        {
-            Entry eg = this[ic];
-            eg.SetTrimNonGroup(Textures[pal]);
-        }
         protected virtual void Init()
         {
             if (Entries == null)
@@ -179,8 +164,6 @@ namespace OpenVIII
                 InitTextures(aw);
             }
         }
-
-
 
         protected virtual void InitEntries(ArchiveWorker aw = null)
         {
@@ -262,6 +245,8 @@ namespace OpenVIII
         {
         }
 
+        private TextureHandler GetTexture(Enum id) => GetTexture(id, out Vector2 scale);
+
         #endregion Methods
 
         #region Classes
@@ -271,13 +256,7 @@ namespace OpenVIII
         /// </summary>
         public class BigTexProps
         {
-
             #region Fields
-
-            /// <summary>
-            /// leave null unless big version has a different custom palette than normal.
-            /// </summary>
-            public Color[] Colors;
 
             /// <summary>
             /// Filename; To match more than one number use {0:00} or {00:00} for ones with leading zeros.
@@ -291,11 +270,17 @@ namespace OpenVIII
             /// </summary>
             public uint Split;
 
+
+            /// <summary>
+            /// leave null unless big version has a different custom palette than normal.
+            /// </summary>
+            public Color[] Colors;
+
             #endregion Fields
 
             #region Constructors
 
-            public BigTexProps(string filename, uint split, Color[] colors = null)
+            public BigTexProps(string filename, uint split,Color[] colors=null)
             {
                 Filename = filename;
                 Split = split;
@@ -303,12 +288,10 @@ namespace OpenVIII
             }
 
             #endregion Constructors
-
         }
 
         public class TexProps
         {  /// <summary>
-
             #region Fields
 
             /// <summary>
@@ -355,10 +338,8 @@ namespace OpenVIII
             }
 
             #endregion Constructors
-
         }
 
         #endregion Classes
-
     }
 }

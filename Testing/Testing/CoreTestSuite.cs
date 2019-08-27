@@ -28,6 +28,7 @@ namespace OpenVIII.Tests
                 "chara.one"
             };
 
+            Input.Init();
             Memory.Init(null,null, null);
             Memory.Archives.A_WORLD._Root = Memory.FF8DIRdata_lang;
             
@@ -49,7 +50,7 @@ namespace OpenVIII.Tests
         [Test]
         public void SimpleKernelTest()
         {
-            
+            Input.Init();
             Memory.Init(null,null, null);
             Memory.Archives.A_WORLD._Root = Memory.FF8DIRdata_lang;
             Memory.Archives.A_MAIN._Root = Memory.FF8DIRdata_lang;

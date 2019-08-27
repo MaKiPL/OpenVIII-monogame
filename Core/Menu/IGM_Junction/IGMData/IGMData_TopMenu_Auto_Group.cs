@@ -3,43 +3,34 @@ using System;
 
 namespace OpenVIII
 {
-    public partial class IGM_Junction
+    public partial class Module_main_menu_debug
     {
-        #region Classes
-
-        private class IGMData_TopMenu_Auto_Group : IGMData_Group
+        private partial class IGM_Junction
         {
-            #region Constructors
-
-            public IGMData_TopMenu_Auto_Group(params IGMData[] d) : base(d)
+            private class IGMData_TopMenu_Auto_Group : IGMData_Group
             {
-            }
-
-            #endregion Constructors
-
-            #region Methods
-
-            public override void Draw()
-            {
-                if (Enabled)
+                public IGMData_TopMenu_Auto_Group(params IGMData[] d) : base( d)
                 {
-                    Cursor_Status |= (Cursor_Status.Draw | Cursor_Status.Blinking);
-                    base.Draw();
-                    Tuple<Rectangle, Point, Rectangle> i = ((IGMDataItem_Box)(((IGMData_Container)(((IGMDataItem_IGMData)ITEM[0, 0]).Data)).CONTAINER)).Dims;
-                    if (i != null)
-                        CURSOR[0] = i.Item2;
+                }
+
+                public override void Draw()
+                {
+                    if (Enabled)
+                    {
+                        Cursor_Status |= (Cursor_Status.Draw | Cursor_Status.Blinking);
+                        base.Draw();
+                        Tuple<Rectangle, Point, Rectangle> i = ((IGMDataItem_Box)(((IGMData_Container)(((IGMDataItem_IGMData)ITEM[0, 0]).Data)).CONTAINER)).Dims;
+                        if (i != null)
+                            CURSOR[0] = i.Item2;
+                    }
+                }
+
+                protected override void Init()
+                {
+                    base.Init();
+                    Hide();
                 }
             }
-
-            protected override void Init()
-            {
-                base.Init();
-                Hide();
-            }
-
-            #endregion Methods
         }
-
-        #endregion Classes
     }
 }

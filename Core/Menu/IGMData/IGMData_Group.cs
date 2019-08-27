@@ -1,137 +1,121 @@
-﻿using System.Diagnostics;
-
-namespace OpenVIII
+﻿namespace OpenVIII
 {
-    public class IGMData_Group : IGMData
+    public partial class Module_main_menu_debug
     {
-        #region Constructors
-        public IGMData_Group(params IGMData[] d) : base(d.Length, 1,container:new IGMDataItem_Empty())
-        {
-            Init(d);
-        }
+        #region Classes
 
-        public IGMData_Group() :base(container: new IGMDataItem_Empty())
+        public class IGMData_Group : IGMData
         {
-            Debug.WriteLine($"{this} :: Not init may need to call it later");
-        }
-
-        protected virtual void Init(IGMData[] d,bool baseinit = false)
-        {
-            if (baseinit)
-                Init(d.Length, 1);
-            for (int i = 0; i < d.Length; i++)
+            public IGMData_Group( params IGMData[] d) : base(d.Length, 1)
             {
-                ITEM[i, 0] = d[i];
-            }
-        }
-
-        #endregion Constructors
-
-        #region Methods
-
-        public int cnv(int pos) => pos / Depth;
-
-        public int deep(int pos) => pos % Depth;
-
-        public override void Hide()
-        {
-            if (Enabled)
-            {
-                base.Hide();
-                //maybe overkill to run hide on items. if group is hidden it won't draw.
-                //if (!skipdata)
-                //{
-                //    int pos = 0;
-                //    foreach (IGMDataItem i in ITEM)
-                //    {
-                //        if (i != null)
-                //            ITEMHide((IGMDataItem_IGMData)i, pos++);
-                //    }
-                //}
-            }
-        }
-
-        public override bool Inputs()
-        {
-            bool ret = false;
-            if (Enabled)
-            {
-                if (!skipdata)
+                for (int i = 0; i < d.Length; i++)
                 {
-                    int pos = 0;
-                    foreach (IGMDataItem i in ITEM)
-                    {
-                        ret = ITEMInputs((IGMDataItem_IGMData)i, pos++);
-                        if (ret) return ret;
-                    }
-                }
-                ret = base.Inputs();
-            }
-            return ret;
-        }
-
-        public virtual void ITEMHide(IGMDataItem_IGMData i, int pos = 0) => i.Hide();
-
-        public virtual bool ITEMInputs(IGMDataItem_IGMData i, int pos = 0) => i.Inputs();
-
-        public virtual void ITEMShow(IGMDataItem_IGMData i, int pos = 0) => i.Show();
-
-        public virtual bool ITEMUpdate(IGMDataItem_IGMData i, int pos = 0) => i.Update();
-
-        public override void Refresh()
-        {
-            base.Refresh();
-            if (!skipdata)
-            {
-                int pos = 0;
-                foreach (IGMDataItem i in ITEM)
-                {
-                    if (i != null)
-                        ITEMRefresh((IGMDataItem_IGMData)i, pos);
+                    ITEM[i, 0] = d[i];
                 }
             }
-            void ITEMRefresh(IGMDataItem_IGMData i, int pos = 0)
+            public virtual void ITEMHide(IGMDataItem i, int pos=0)
             {
-                if (Character != Characters.Blank)
-                    i.Data.Refresh(Character, VisableCharacter);
-                else
-                    i.Data.Refresh();
+                i.Hide();
             }
-        }
-
-        public override void Show()
-        {
-            base.Show();
-            if (!skipdata)
+            public override void Hide()
             {
-                int pos = 0;
-                foreach (IGMDataItem i in ITEM)
+                if (Enabled)
                 {
-                    if (i != null)
-                        ITEMShow((IGMDataItem_IGMData)i, pos++);
+                    base.Hide();
+                    //maybe overkill to run hide on items. if group is hidden it won't draw.
+                    //if (!skipdata)
+                    //{
+                    //    int pos = 0;
+                    //    foreach (IGMDataItem i in ITEM)
+                    //    {
+                    //        if (i != null)
+                    //            ITEMHide(i, pos++);
+                    //    }
+                    //}
                 }
             }
-        }
-
-        public override bool Update()
-        {
-            if (Enabled)
+            public virtual void ITEMShow(IGMDataItem i, int pos = 0)
             {
-                bool ret = base.Update();
+                i.Show();
+            }
+            public override void Show()
+            {
+                base.Show();
                 if (!skipdata)
                 {
                     int pos = 0;
                     foreach (IGMDataItem i in ITEM)
                     {
                         if (i != null)
-                            ret = ITEMUpdate((IGMDataItem_IGMData)i, pos++) || ret;
+                            ITEMShow(i, pos++);
                     }
+                }             
+            }
+
+            public int cnv(int pos) => pos / Depth;
+            public int deep(int pos) => pos % Depth;
+            public virtual bool ITEMInputs(IGMDataItem i, int pos = 0)
+            {
+                return i.Inputs();
+            }
+            public override bool Inputs()
+            {
+                bool ret = false;
+                if (Enabled)
+                {
+                    if (!skipdata)
+                    {
+                        int pos = 0;
+                        foreach (IGMDataItem i in ITEM)
+                        {
+                            ret = ITEMInputs(i, pos++);
+                            if (ret) return ret;
+                        }
+                    }
+                    ret = base.Inputs();
                 }
                 return ret;
             }
-            return false;
+            public virtual void ITEMReInit(IGMDataItem i, int pos = 0)
+            {
+                i.ReInit();
+            }
+            public override void ReInit()
+            {
+                base.ReInit();
+                if (!skipdata)
+                {
+                    int pos = 0;
+                    foreach (var i in ITEM)
+                    {
+                        if (i != null)
+                            ITEMReInit(i, pos);
+                    }
+                }
+            }
+            public virtual bool ITEMUpdate(IGMDataItem i, int pos = 0)
+            {
+                return i.Update();
+            }
+            public override bool Update()
+            {
+                if (Enabled)
+                {
+                    bool ret = base.Update();
+                    if (!skipdata)
+                    {
+                        int pos = 0;
+                        foreach (var i in ITEM)
+                        {
+                            if (i != null)
+                                ret = ITEMUpdate(i, pos++) || ret;
+                        }
+                    }
+                    return ret;
+                }
+                return false;
+            }
         }
-
-        #endregion Methods
+        #endregion Classes
     }
 }

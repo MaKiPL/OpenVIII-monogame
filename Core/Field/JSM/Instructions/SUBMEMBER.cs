@@ -8,16 +8,16 @@ namespace OpenVIII
     /// </summary>
     internal sealed class SUBMEMBER : JsmInstruction
     {
-        private readonly Characters _characterId;
+        private readonly CharacterId _characterId;
 
-        public SUBMEMBER(Characters characterId)
+        public SUBMEMBER(CharacterId characterId)
         {
             _characterId = characterId;
         }
 
         public SUBMEMBER(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
-                characterId: (Characters)((Jsm.Expression.PSHN_L)stack.Pop()).Int32())
+                characterId: (CharacterId)((Jsm.Expression.PSHN_L)stack.Pop()).Int32())
         {
         }
 

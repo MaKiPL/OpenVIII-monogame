@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using OpenVIII.Encoding.Tags;
 using System;
 using System.IO;
 using System.Linq;
@@ -50,7 +49,7 @@ namespace OpenVIII
 
         public static void Update()
         {
-            if (Input2.DelayedButton(FF8TextTagKey.Up))
+            if (Input.Button(Keys.Up))
             {
                 if (palette <= 0)
                     palette = (int)Memory.Icons.PaletteCount - 1;
@@ -59,7 +58,7 @@ namespace OpenVIII
                 currentMode = Mode.Draw;
             }
 
-            if (Input2.DelayedButton(FF8TextTagKey.Down))
+            if (Input.Button(Keys.Down))
             {
                 if (palette >= Memory.Icons.PaletteCount - 1)
                     palette = 0;
@@ -67,7 +66,9 @@ namespace OpenVIII
                     palette++;
                 currentMode = Mode.Draw;
             }
-            if (Input2.DelayedButton(FF8TextTagKey.Right) || Input2.Button(Keys.PageDown))
+            //if ((Input.Button(Keys.Up) || Input.Button(Keys.Down)) && Memory.Icons.GetEntry(icon) != null && (Memory.Icons.GetEntry(icon).GetLoc.count > 1))
+            //    icon -= (Memory.Icons.GetEntry(icon).GetLoc.count - 1);
+            if (Input.Button(Keys.Right))
             {
                 do
                 {
@@ -79,7 +80,7 @@ namespace OpenVIII
                 while (Memory.Icons.GetEntry(icon) == null);
                 currentMode = Mode.Draw;
             }
-            if (Input2.DelayedButton(FF8TextTagKey.Left) || Input2.Button(Keys.PageUp))
+            if (Input.Button(Keys.Left))
             {
                 do
                 {
@@ -112,12 +113,12 @@ namespace OpenVIII
 
         private static void DrawIcons()
         {
-            Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp);
+            Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
             Memory.spriteBatch.GraphicsDevice.Clear(Color.Gray);
             Memory.SpriteBatchEnd();
             Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
 
-            Vector2 scale = new Vector2(40f);
+            Vector2 scale = new Vector2(4f);
             Rectangle dst = new Rectangle()
             {
                 Width = (int)(Memory.Icons.GetEntryGroup(icon).Width * scale.X),
@@ -134,8 +135,8 @@ namespace OpenVIII
                 dst.X = vp.Width / 2 - dst.Width / 2;
                 dst.Y = vp.Height / 2 - dst.Height / 2;
             }
-            dst.Size = Point.Zero;
-            Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp);
+
+            Memory.SpriteBatchStartAlpha(SamplerState.PointClamp);
             Memory.Icons.Draw(icon, palette, dst, scale);
             Memory.font.RenderBasicText(
                 $"{(icon).ToString().Replace('_', ' ')}\n" +

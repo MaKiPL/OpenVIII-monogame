@@ -5,29 +5,40 @@ using System.Collections.Generic;
 
 namespace OpenVIII
 {
-    [Obsolete("Input2 to replace input")]
-    public partial class Input
+    public enum Buttons
     {
-        #region Fields
+        None, Up, Down, Left, Right, Okay, Cancel, Exit, Switch, Menu, Back, Start, X, Y, B, A, L1, L2, L3, R1, R2, R3, Select, LeftStickX, LeftStickY, RightStickX, RightStickY, MouseX, MouseY, MouseXjoy, MouseYjoy, MouseLeft, MouseMiddle, MouseRight, Mouse4, Mouse5, MouseWheelup, MouseWheeldown,
+        Triangle = Y, Square = X, Circle = B, Cross = A
+    }
 
-        public static MouseLockMode CurrentMode;
-        private static readonly int msDelayLimit = 100;
-        private static bool bLimitInput;
+    [Flags]
+    public enum Button_Flags : ushort
+    {
+        Up = 0x10,
+        Right = 0x20,
+        Down = 0x40,
+        Left = 0x80,
+        L2 = 0x100,
+        R2 = 0x200,
+        L1 = 0x400,
+        R1 = 0x800,
+        Triangle = 0x1000,
+        Circle = 0x2000,
+        Cross = 0x4000,
+        Square = 0x8000
+    }
+
+    public class Input
+    {
+        public static Dictionary<Button_Flags, Buttons> Convert_Button { get; private set; }
+       
 
         //store current input states;
         private static GamePadState m_gp_state = new GamePadState();
 
         private static KeyboardState m_kb_state = new KeyboardState();
         private static MouseState m_m_state = new MouseState();
-        private static int msDelay = 0;
 
-        #endregion Fields
-
-        #region Properties
-
-        public static Dictionary<Button_Flags, Buttons> Convert_Button { get; private set; }
-        public static Point MouseLocation => new Point(CurrentMState.X, CurrentMState.Y);
-        public static bool OverrideLockMouse { get; set; } = false;
         //properties to assign current input states and back up last input states on the fly.
         protected static GamePadState CurrentGPState { get => m_gp_state; set { LastGPState = m_gp_state; m_gp_state = value; } }
 
@@ -40,157 +51,9 @@ namespace OpenVIII
         protected static KeyboardState LastKBState { get; private set; } = new KeyboardState();
         protected static MouseState LastMState { get; private set; }
 
-        #endregion Properties
-
-        #region Methods
-
-        public static float Analog(Buttons b, bool last = false)
-        {
-            //get output from analog controls
-            //mousexjoy and mouseyjoy attempt to convert mouse input to a joystick like input 1.0f to -1.0f
-            float tmp = 0f;
-            if (last)
-            {
-                switch (b)
-                {
-                    case Buttons.LeftStickX:
-                        return LastGPState.ThumbSticks.Left.X;
-
-                    case Buttons.LeftStickY:
-                        return LastGPState.ThumbSticks.Left.Y;
-
-                    case Buttons.RightStickX:
-                        return LastGPState.ThumbSticks.Right.X;
-
-                    case Buttons.RightStickY:
-                        return LastGPState.ThumbSticks.Right.Y;
-
-                    case Buttons.L2:
-                        return LastGPState.Triggers.Left;
-
-                    case Buttons.R2:
-                        return LastGPState.Triggers.Right;
-                }
-                if (Memory.IsActive)
-                {
-                    switch (b)
-                    {
-                        case Buttons.MouseX:
-                            return LastMState.X;
-
-                        case Buttons.MouseY:
-                            return LastMState.Y;
-
-                        case Buttons.MouseXjoy:
-                            tmp = (LastMState.X - Memory.graphics.GraphicsDevice.Viewport.Bounds.Width / 2) / (50f);
-                            return MathHelper.Clamp(tmp, -1f, 1f);
-
-                        case Buttons.MouseYjoy:
-                            tmp = (Memory.graphics.GraphicsDevice.Viewport.Bounds.Height / 2 - LastMState.Y) / (50f);
-                            return MathHelper.Clamp(tmp, -1f, 1f);
-                    }
-                }
-            }
-            else
-            {
-                switch (b)
-                {
-                    case Buttons.LeftStickX:
-                        return CurrentGPState.ThumbSticks.Left.X;
-
-                    case Buttons.LeftStickY:
-                        return CurrentGPState.ThumbSticks.Left.Y;
-
-                    case Buttons.RightStickX:
-                        return CurrentGPState.ThumbSticks.Right.X;
-
-                    case Buttons.RightStickY:
-                        return CurrentGPState.ThumbSticks.Right.Y;
-
-                    case Buttons.L2:
-                        return CurrentGPState.Triggers.Left;
-
-                    case Buttons.R2:
-                        return CurrentGPState.Triggers.Right;
-                }
-                if (Memory.IsActive)
-                {
-                    switch (b)
-                    {
-                        case Buttons.MouseX:
-                            return LastMState.X;
-
-                        case Buttons.MouseY:
-                            return LastMState.Y;
-
-                        case Buttons.MouseXjoy:
-                            tmp = (CurrentMState.X - Memory.graphics.GraphicsDevice.Viewport.Bounds.Width / 2) / (50f);
-                            return MathHelper.Clamp(tmp, -1f, 1f);
-
-                        case Buttons.MouseYjoy:
-                            tmp = (Memory.graphics.GraphicsDevice.Viewport.Bounds.Height / 2 - CurrentMState.Y) / (50f);
-                            return MathHelper.Clamp(tmp, -1f, 1f);
-                    }
-                }
-            }
-            return 0.0f;
-        }
-
-        public static bool Button(Keys k, bool dblinput = false) => IsPressed(k, dblinput);
-
-        public static bool Button(Buttons b, bool dblinput = false)
-        {
-            // To add support for controller I was extracting the boolean bits from the if
-            // statements. Maybe it could be a scheme in future. When these are configureable. This
-            // function mostly translates the function to the button(s) or key(s).
-            switch (b)
-            {
-                case Buttons.Up:
-                    return (IsPressed(Keys.Up, true) || IsPressed(Buttons.MouseWheelup) || IsPressed(Keys.W, true) || (CurrentGPState.IsConnected && (IsPressed(b, true) || Analog(Buttons.LeftStickY) > 0.0f))) && !bLimitInput;
-
-                case Buttons.Down:
-                    return (IsPressed(Keys.Down, true) || IsPressed(Buttons.MouseWheeldown) || IsPressed(Keys.S, true) || (CurrentGPState.IsConnected && (IsPressed(b, true) || Analog(Buttons.LeftStickY) < 0.0f))) && !bLimitInput;
-
-                case Buttons.Left:
-                    return (IsPressed(Keys.Left, true) || IsPressed(Keys.A, true) || (CurrentGPState.IsConnected && (IsPressed(b, true) || Analog(Buttons.LeftStickX) < 0.0f))) && !bLimitInput;
-
-                case Buttons.Right:
-                    return (IsPressed(Keys.Right, true) || IsPressed(Keys.D, true) || (CurrentGPState.IsConnected && (IsPressed(b, true) || Analog(Buttons.LeftStickX) > 0.0f))) && !bLimitInput;
-
-                case Buttons.Okay:
-                    return IsPressed(Keys.Enter, dblinput) || IsPressed(Buttons.B, dblinput) || IsPressed(Buttons.MouseLeft);
-
-                case Buttons.Cancel:
-                    return IsPressed(Keys.Back, dblinput) || IsPressed(Buttons.A, dblinput) || IsPressed(Buttons.MouseRight);
-
-                case Buttons.Menu:
-                    return IsPressed(Keys.PageUp, dblinput) || IsPressed(Buttons.Y, dblinput);
-
-                case Buttons.Switch:
-                    return IsPressed(Keys.PageDown, dblinput) || IsPressed(Buttons.X, dblinput);
-
-                case Buttons.Start:
-                    return IsPressed(Keys.Home, dblinput) || IsPressed(Buttons.Start, dblinput);
-
-                case Buttons.Select:
-                    return IsPressed(Keys.End, dblinput) || IsPressed(Buttons.Back, dblinput);
-
-                case Buttons.Exit:
-                    return IsPressed(Keys.Escape, dblinput);
-
-                default:
-                    return IsPressed(b, dblinput); // fail over to IsPressed if no custom input is avalible above
-            }
-        }
-
-        public static float Distance(float speed) =>
-            // no input throttle but still take the max speed * time; for non analog controls
-            speed * Memory.gameTime.ElapsedGameTime.Milliseconds;
-
-        public static float Distance(Buttons b, float speed, bool last = false) =>
-            // (speed * stickvalue) * time = distance idea is you get the distance traveled per ms
-            // value the speed being the max speed. your sticks value being the throttle.
-            (speed * Analog(b, last)) * Memory.gameTime.ElapsedGameTime.Milliseconds;
+        private static bool bLimitInput;
+        private static int msDelay = 0;
+        private static readonly int msDelayLimit = 100;
 
         public static bool GetInputDelayed(Keys key)
         {
@@ -203,7 +66,6 @@ namespace OpenVIII
             }
             return false;
         }
-
         public static void Init()
         {
             Convert_Button = new Dictionary<Button_Flags, Buttons>()
@@ -239,34 +101,6 @@ namespace OpenVIII
             };
             Update();
         }
-
-        public static void LockMouse()
-        {
-            if (Memory.IsActive && OverrideLockMouse) // check for focus to allow for tabbing out with out taking over mouse.
-            {
-                if (CurrentMode == MouseLockMode.Center) //center mouse in screen after grabbing state, release mouse if alt tabbed out.
-                {
-                    Mouse.SetPosition(Memory.graphics.GraphicsDevice.Viewport.Bounds.Width / 2, Memory.graphics.GraphicsDevice.Viewport.Bounds.Height / 2);
-                }
-                else if (CurrentMode == MouseLockMode.Screen) //alt lock that clamps to viewport every frame. would be useful if using mouse to navigate menus and stuff.
-                {
-                    //there is a better way to clamp as if you move mouse fast enough it will escape for a short time.
-                    Mouse.SetPosition(
-                        MathHelper.Clamp(CurrentMState.X, 0, Memory.graphics.GraphicsDevice.Viewport.Bounds.Width),
-                        MathHelper.Clamp(CurrentMState.Y, 0, Memory.graphics.GraphicsDevice.Viewport.Bounds.Height));
-                }
-            }
-        }
-
-        /// <summary>
-        /// Input was grabbed, reset for next update cycle.
-        /// </summary>
-        public static void ResetInputLimit()
-        {
-            msDelay = 0;
-            bLimitInput = false;
-        }
-
         public static void Update()
         {
             CurrentGPState = GamePad.GetState(PlayerIndex.One, GamePadDeadZone.Circular);
@@ -279,8 +113,16 @@ namespace OpenVIII
         private static void CheckInputLimit()
         {
             //issue here if CheckInputLimit is checked more than once per update cycle this will be wrong.
-            if (Memory.gameTime != null)
-                bLimitInput = (msDelay += Memory.gameTime.ElapsedGameTime.Milliseconds) < msDelayLimit;
+            if(Memory.gameTime!= null)
+            bLimitInput = (msDelay += Memory.gameTime.ElapsedGameTime.Milliseconds) < msDelayLimit;
+        }
+        /// <summary>
+        /// Input was grabbed, reset for next update cycle.
+        /// </summary>
+        public static void ResetInputLimit()
+        {
+            msDelay = 0;
+            bLimitInput = false;            
         }
 
         private static bool IsPressed(Keys k, bool dblinput = false)
@@ -531,8 +373,182 @@ namespace OpenVIII
             return boolRT;
         }
 
-        #endregion Methods
+        public static float Distance(float speed) =>
+            // no input throttle but still take the max speed * time; for non analog controls
+            speed * Memory.gameTime.ElapsedGameTime.Milliseconds;
 
-        // fail over to IsPressed
+        public static float Distance(Buttons b, float speed, bool last = false) =>
+            // (speed * stickvalue) * time = distance idea is you get the distance traveled per ms
+            // value the speed being the max speed. your sticks value being the throttle.
+            (speed * Analog(b, last)) * Memory.gameTime.ElapsedGameTime.Milliseconds;
+
+        public static float Analog(Buttons b, bool last = false)
+        {
+            //get output from analog controls
+            //mousexjoy and mouseyjoy attempt to convert mouse input to a joystick like input 1.0f to -1.0f
+            float tmp = 0f;
+            if (last)
+            {
+                switch (b)
+                {
+                    case Buttons.LeftStickX:
+                        return LastGPState.ThumbSticks.Left.X;
+
+                    case Buttons.LeftStickY:
+                        return LastGPState.ThumbSticks.Left.Y;
+
+                    case Buttons.RightStickX:
+                        return LastGPState.ThumbSticks.Right.X;
+
+                    case Buttons.RightStickY:
+                        return LastGPState.ThumbSticks.Right.Y;
+
+                    case Buttons.L2:
+                        return LastGPState.Triggers.Left;
+
+                    case Buttons.R2:
+                        return LastGPState.Triggers.Right;
+                }
+                if (Memory.IsActive)
+                {
+                    switch (b)
+                    {
+                        case Buttons.MouseX:
+                            return LastMState.X;
+
+                        case Buttons.MouseY:
+                            return LastMState.Y;
+
+                        case Buttons.MouseXjoy:
+                            tmp = (LastMState.X - Memory.graphics.GraphicsDevice.Viewport.Bounds.Width / 2) / (50f);
+                            return MathHelper.Clamp(tmp, -1f, 1f);
+
+                        case Buttons.MouseYjoy:
+                            tmp = (Memory.graphics.GraphicsDevice.Viewport.Bounds.Height / 2 - LastMState.Y) / (50f);
+                            return MathHelper.Clamp(tmp, -1f, 1f);
+                    }
+                }
+            }
+            else
+            {
+                switch (b)
+                {
+                    case Buttons.LeftStickX:
+                        return CurrentGPState.ThumbSticks.Left.X;
+
+                    case Buttons.LeftStickY:
+                        return CurrentGPState.ThumbSticks.Left.Y;
+
+                    case Buttons.RightStickX:
+                        return CurrentGPState.ThumbSticks.Right.X;
+
+                    case Buttons.RightStickY:
+                        return CurrentGPState.ThumbSticks.Right.Y;
+
+                    case Buttons.L2:
+                        return CurrentGPState.Triggers.Left;
+
+                    case Buttons.R2:
+                        return CurrentGPState.Triggers.Right;
+                }
+                if (Memory.IsActive)
+                {
+                    switch (b)
+                    {
+                        case Buttons.MouseX:
+                            return LastMState.X;
+
+                        case Buttons.MouseY:
+                            return LastMState.Y;
+
+                        case Buttons.MouseXjoy:
+                            tmp = (CurrentMState.X - Memory.graphics.GraphicsDevice.Viewport.Bounds.Width / 2) / (50f);
+                            return MathHelper.Clamp(tmp, -1f, 1f);
+
+                        case Buttons.MouseYjoy:
+                            tmp = (Memory.graphics.GraphicsDevice.Viewport.Bounds.Height / 2 - CurrentMState.Y) / (50f);
+                            return MathHelper.Clamp(tmp, -1f, 1f);
+                    }
+                }
+            }
+            return 0.0f;
+        }
+
+        public static MouseLockMode CurrentMode;
+
+        public static bool OverrideLockMouse { get; set; } = false;
+
+        public enum MouseLockMode
+        {
+            Center,
+            Screen
+        }
+
+        public static void LockMouse()
+        {
+            if (Memory.IsActive && OverrideLockMouse) // check for focus to allow for tabbing out with out taking over mouse.
+            {
+                if (CurrentMode == MouseLockMode.Center) //center mouse in screen after grabbing state, release mouse if alt tabbed out.
+                {
+                    Mouse.SetPosition(Memory.graphics.GraphicsDevice.Viewport.Bounds.Width / 2, Memory.graphics.GraphicsDevice.Viewport.Bounds.Height / 2);
+                }
+                else if (CurrentMode == MouseLockMode.Screen) //alt lock that clamps to viewport every frame. would be useful if using mouse to navigate menus and stuff.
+                {
+                    //there is a better way to clamp as if you move mouse fast enough it will escape for a short time.
+                    Mouse.SetPosition(
+                        MathHelper.Clamp(CurrentMState.X, 0, Memory.graphics.GraphicsDevice.Viewport.Bounds.Width),
+                        MathHelper.Clamp(CurrentMState.Y, 0, Memory.graphics.GraphicsDevice.Viewport.Bounds.Height));
+                }
+            }
+        }
+
+        public static Point MouseLocation => new Point(CurrentMState.X, CurrentMState.Y);
+
+        public static bool Button(Keys k, bool dblinput = false) => IsPressed(k, dblinput); // fail over to IsPressed
+
+        public static bool Button(Buttons b, bool dblinput = false)
+        {
+            // To add support for controller I was extracting the boolean bits from the if
+            // statements. Maybe it could be a scheme in future. When these are configureable. This
+            // function mostly translates the function to the button(s) or key(s).
+            switch (b)
+            {
+                case Buttons.Up:
+                    return (IsPressed(Keys.Up, true) || IsPressed(Buttons.MouseWheelup) || IsPressed(Keys.W, true) || (CurrentGPState.IsConnected && (IsPressed(b, true) || Analog(Buttons.LeftStickY) > 0.0f))) && !bLimitInput;
+
+                case Buttons.Down:
+                    return (IsPressed(Keys.Down, true) || IsPressed(Buttons.MouseWheeldown) || IsPressed(Keys.S, true) || (CurrentGPState.IsConnected && (IsPressed(b, true) || Analog(Buttons.LeftStickY) < 0.0f))) && !bLimitInput;
+
+                case Buttons.Left:
+                    return (IsPressed(Keys.Left, true) || IsPressed(Keys.A, true) || (CurrentGPState.IsConnected && (IsPressed(b, true) || Analog(Buttons.LeftStickX) < 0.0f))) && !bLimitInput;
+
+                case Buttons.Right:
+                    return (IsPressed(Keys.Right, true) || IsPressed(Keys.D, true) || (CurrentGPState.IsConnected && (IsPressed(b, true) || Analog(Buttons.LeftStickX) > 0.0f))) && !bLimitInput;
+
+                case Buttons.Okay:
+                    return IsPressed(Keys.Enter, dblinput) || IsPressed(Buttons.B, dblinput) || IsPressed(Buttons.MouseLeft);
+
+                case Buttons.Cancel:
+                    return IsPressed(Keys.Back, dblinput) || IsPressed(Buttons.A, dblinput) || IsPressed(Buttons.MouseRight);
+
+                case Buttons.Menu:
+                    return IsPressed(Keys.PageUp, dblinput) || IsPressed(Buttons.Y, dblinput);
+
+                case Buttons.Switch:
+                    return IsPressed(Keys.PageDown, dblinput) || IsPressed(Buttons.X, dblinput);
+
+                case Buttons.Start:
+                    return IsPressed(Keys.Home, dblinput) || IsPressed(Buttons.Start, dblinput);
+
+                case Buttons.Select:
+                    return IsPressed(Keys.End, dblinput) || IsPressed(Buttons.Back, dblinput);
+
+                case Buttons.Exit:
+                    return IsPressed(Keys.Escape, dblinput);
+
+                default:
+                    return IsPressed(b, dblinput); // fail over to IsPressed if no custom input is avalible above
+            }
+        }
     }
 }

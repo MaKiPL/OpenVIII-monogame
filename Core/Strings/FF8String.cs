@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Linq;
 
 namespace OpenVIII
 {
@@ -116,37 +115,7 @@ namespace OpenVIII
                 };
             else return new FF8String();
         }
-        public FF8String Replace(FF8String a,FF8String b)
-        {
-            if (Length > 0)
-            {
-                int i = 0;
-                do
-                {
-                    i = Array.FindIndex(value, i, Length - i, x => x == a[0]);
 
-                    if (i >= 0)
-                    {
-                        if (value.Skip(i).Take(a.Length).ToArray().SequenceEqual(a.Value))
-                        {
-                            byte[] end = value.Skip(a.Length + i).ToArray();
-
-                            Array.Resize(ref value, Length + b.Length - a.Length);
-                            Array.Copy(b, 0, value, i, b.Length);
-                            Array.Copy(end, 0, value, i + b.Length, end.Length);
-                            i += b.Length;
-                        }
-                        else
-                        {
-                            i++;
-                        }
-                    }
-                    else break;
-                }
-                while (i < Length);
-            }
-            return this;
-        }
         public IEnumerator GetEnumerator()
         {
             if (Value != null && Value.Length > 0)

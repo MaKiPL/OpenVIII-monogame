@@ -1,6 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -154,7 +153,7 @@ namespace OpenVIII
             float item = 0;
             Rectangle dst = FontBoxCalc<Ditems>(strDebugLobby);
             Memory.SpriteBatchStartAlpha(tm: IGM_focus);
-            Menu.DrawBox(dst, title: Icons.ID.DEBUG);
+            DrawBox(dst, title: Icons.ID.DEBUG);
             //Memory.Icons.Draw(Icons.ID.Menu_BG_256, 0, dst, new Vector2(2f), Fade);
             item = 0;
             dst.Offset(4 * 3.5f, 0);
@@ -253,32 +252,34 @@ namespace OpenVIII
                     Dchoose = (Ditems)entry.Key;
                     ret = true;
 
-                    if (Input2.Button(MouseButtons.MouseWheelup))
+                    if (Input.Button(Buttons.MouseWheelup))
                     {
                         return UpdateDebugLobbyLEFT();
                     }
-                    if (Input2.Button(MouseButtons.MouseWheeldown))
+                    if (Input.Button(Buttons.MouseWheeldown))
                     {
                         return UpdateDebugLobbyRIGHT();
                     }
                     break;
                 }
             }
-            if (Input2.DelayedButton(FF8TextTagKey.Down))
+            if (Input.Button(Buttons.Down))
             {
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 Dchoose++;
                 ret = true;
             }
-            if (Input2.DelayedButton(FF8TextTagKey.Up))
+            if (Input.Button(Buttons.Up))
             {
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(0);
                 Dchoose--;
                 ret = true;
             }
-            if (Input2.Button(FF8TextTagKey.Confirm) && Dchoose == Ditems.Reset || Input2.Button(FF8TextTagKey.Cancel))
+            if (Input.Button(Buttons.Okay) && Dchoose == Ditems.Reset || Input.Button(Buttons.Cancel))
             {
-                Input2.ResetInputLimit();
+                Input.ResetInputLimit();
                 init_debugger_Audio.PlaySound(8);
                 init_debugger_Audio.StopMusic();
                 Dchoose = 0;
@@ -286,15 +287,15 @@ namespace OpenVIII
                 State = MainMenuStates.MainLobby;
                 ret = true;
             }
-            else if (Input2.DelayedButton(FF8TextTagKey.Confirm))
+            else if (Input.Button(Buttons.Okay))
             {
                 ret = UpdateDebugLobbyOKAY();
             }
-            else if (Input2.DelayedButton(FF8TextTagKey.Left))
+            else if (Input.Button(Buttons.Left))
             {
                 ret = UpdateDebugLobbyLEFT();
             }
-            else if (Input2.DelayedButton(FF8TextTagKey.Right))
+            else if (Input.Button(Buttons.Right))
             {
                 ret = UpdateDebugLobbyRIGHT();
             }
@@ -304,6 +305,7 @@ namespace OpenVIII
         private static bool UpdateDebugLobbyLEFT()
         {
             bool ret = true;
+            Input.ResetInputLimit();
             switch (Dchoose)
             {
                 case Ditems.Sounds:
@@ -362,6 +364,7 @@ namespace OpenVIII
         private static bool UpdateDebugLobbyOKAY()
         {
             bool ret = true;
+            Input.ResetInputLimit();
             switch (Dchoose)
             {
                 case Ditems.Overture:
@@ -369,7 +372,7 @@ namespace OpenVIII
                     Fade = 0.0f;
                     State = MainMenuStates.MainLobby;
                     Module_overture_debug.ResetModule();
-                    Memory.module = MODULE.OVERTURE_DEBUG;
+                    Memory.module = Memory.MODULE_OVERTURE_DEBUG;
                     Memory.IsMouseVisible = false;
                     init_debugger_Audio.StopMusic();
                     break;
@@ -377,7 +380,7 @@ namespace OpenVIII
                 case Ditems.Field:
                     Fade = 0.0f;
                     Module_field_debug.ResetField();
-                    Memory.module = MODULE.FIELD_DEBUG;
+                    Memory.module = Memory.MODULE_FIELD_DEBUG;
                     Memory.IsMouseVisible = false;
                     break;
 
@@ -390,7 +393,7 @@ namespace OpenVIII
                     Fade = 0.0f;
                     Memory.battle_encounter = debug_choosedBS;
                     Module_battle_debug.ResetState();
-                    Memory.module = MODULE.BATTLE_DEBUG;
+                    Memory.module = Memory.MODULE_BATTLE_DEBUG;
                     Memory.IsMouseVisible = false;
                     break;
 
@@ -401,30 +404,30 @@ namespace OpenVIII
                 case Ditems.Movie:
                     Fade = 0.0f;
                     MoviePointer = MoviePointer; //makes movieindex in player match the moviepointer, it is set when ever this is.
-                    Memory.module = MODULE.MOVIETEST;
+                    Memory.module = Memory.MODULE_MOVIETEST;
                     Module_movie_test.MovieState = 0;
                     Memory.IsMouseVisible = false;
                     break;
 
                 case Ditems.World:
                     Fade = 0.0f;
-                    Memory.module = MODULE.WORLD_DEBUG;
+                    Memory.module = Memory.MODULE_WORLD_DEBUG;
                     Memory.IsMouseVisible = false;
                     break;
 
                 case Ditems.Faces:
                     Fade = 0.0f;
-                    Memory.module = MODULE.FACE_TEST;
+                    Memory.module = Memory.MODULE_FACE_TEST;
                     break;
 
                 case Ditems.Icons:
                     Fade = 0.0f;
-                    Memory.module = MODULE.ICON_TEST;
+                    Memory.module = Memory.MODULE_ICON_TEST;
                     break;
 
                 case Ditems.Cards:
                     Fade = 0.0f;
-                    Memory.module = MODULE.CARD_TEST;
+                    Memory.module = Memory.MODULE_CARD_TEST;
                     break;
 
                 default:
@@ -441,6 +444,7 @@ namespace OpenVIII
         private static bool UpdateDebugLobbyRIGHT()
         {
             bool ret = true;
+            Input.ResetInputLimit();
             switch (Dchoose)
             {
                 case Ditems.Sounds:

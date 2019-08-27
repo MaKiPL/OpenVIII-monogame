@@ -20,9 +20,9 @@ namespace OpenVIII
         }
 
         public Boolean IsActive { get; set; } = true;
-        public Characters CharacterId { get; private set; }
+        public CharacterId CharacterId { get; private set; }
 
-        public void BindChracter(Characters characterId)
+        public void BindChracter(CharacterId characterId)
         {
             CharacterId = characterId;
 

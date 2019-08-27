@@ -11,7 +11,7 @@ namespace OpenVIII.PAK_Extractor
 
         private static void Main(string[] args)
         {
-            
+            Input.Init();
             Memory.Init(null, null, null);
 
             string DestPath = Path.Combine(Memory.FF8DIRdata, "movies");

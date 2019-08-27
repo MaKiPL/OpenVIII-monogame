@@ -13,6 +13,7 @@ namespace OpenVIII
         {
             public new const int count = 19;
             public new const int id = 12;
+            public Icons.ID icon { get; protected set; } = Icons.ID.Ability_Command;
 
             public byte Index { get; private set; }
             public byte[] Unknown0 { get; private set; }
@@ -41,8 +42,7 @@ namespace OpenVIII
             };
             public override void Read(BinaryReader br, int i)
             {
-                Icon = Icons.ID.Ability_Command;
-                if (convert.ContainsKey(i))
+                if(convert.ContainsKey(i))
                     BattleCommand = BattleCommands[convert[i]];
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 //0x0000	2 bytes Offset to name

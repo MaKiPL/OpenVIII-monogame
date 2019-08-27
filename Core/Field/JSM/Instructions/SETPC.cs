@@ -5,16 +5,16 @@ namespace OpenVIII
 {
     internal sealed class SETPC : JsmInstruction
     {
-        private Characters _characterId;
+        private CharacterId _characterId;
 
-        public SETPC(Characters characterId)
+        public SETPC(CharacterId characterId)
         {
             _characterId = characterId;
         }
 
         public SETPC(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
-                characterId: (Characters)((Jsm.Expression.PSHN_L)stack.Pop()).Value)
+                characterId: (CharacterId)((Jsm.Expression.PSHN_L)stack.Pop()).Value)
         {
         }
 

@@ -30,7 +30,7 @@ namespace OpenVIII
         /// <summary>
         /// Check if had read already encause the actual length is 0.
         /// </summary>
-        private bool HadRead = false;
+        bool HadRead = false;
 
         private object lockvar = new object();
 
@@ -227,7 +227,7 @@ namespace OpenVIII
                             }
                         }
                     }
-                    if ((StringSettings & Settings.Namedic) != 0)
+                    if ((StringSettings & Settings.Namedic) != 0) 
                     {
                         InsertNamedic();
                     }
@@ -235,17 +235,6 @@ namespace OpenVIII
         }
 
         #endregion Methods
-
-        public static FF8String operator +(FF8StringReference a, FF8String b) => (FF8String)a + b;
-
-        public static FF8String operator +(FF8String a, FF8StringReference b) => a + (FF8String)b;
-
-        public static FF8String operator +(FF8StringReference a, FF8StringReference b) => (FF8String)a + (FF8String)b;
-
-        public static FF8String operator +(FF8StringReference a, string b) => (FF8String)a + b;
-
-        public static FF8String operator +(string a, FF8StringReference b) => a + (FF8String)b;
-
         /// old read method encase i missed something.
         //public FF8String Read(BinaryReader br, FileID fid, uint pos)
         //{

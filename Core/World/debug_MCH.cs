@@ -173,17 +173,7 @@ namespace OpenVIII
             for (int i = 0; i < textureIndexes.Length; i++)
                 textureSizes[i] = new Vector2(textures[textureIndexes[i]].Width, textures[textureIndexes[i]].Height);
         }
-        /// <summary>
-        /// to be used for VRAM atlases- it provides the texture sizes relative to texIndexes in GetVertexPositions. If not called then default 256x256 range is used
-        /// </summary>
-        /// <param name="textures"></param>
-        /// <param name="textureIndexes"></param>
-        public void AssignTextureSizes(TextureHandler[] textures, int[] textureIndexes)
-        {
-            textureSizes = new Vector2[textureIndexes.Length];
-            for (int i = 0; i < textureIndexes.Length; i++)
-                textureSizes[i] = new Vector2(textures[textureIndexes[i]].ClassicWidth, textures[textureIndexes[i]].ClassicHeight);
-        }
+
         public bool bValid() => header.Unk == 0;
 
         public uint GetAnimationCount() => animation.cAnimations;

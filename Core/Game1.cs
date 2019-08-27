@@ -1,6 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using OpenVIII.Encoding.Tags;
 using System;
 
 namespace OpenVIII
@@ -17,15 +16,12 @@ namespace OpenVIII
             graphics.PreferredBackBufferWidth = Memory.PreferredViewportWidth;
             graphics.PreferredBackBufferHeight = Memory.PreferredViewportHeight;
             Window.AllowUserResizing = true;
-            IsFixedTimeStep = false;
-            graphics.SynchronizeWithVerticalRetrace = false;
         }
 
         protected override void Initialize()
         {
             FFmpeg.AutoGen.Example.FFmpegBinariesHelper.RegisterFFmpegBinaries();
-            //Input.Init();
-            Memory.Input2 = new Input2();
+            Input.Init();
             Memory.Init(graphics, spriteBatch, Content);
             init_debugger_Audio.Init(); //this initializes the DirectAudio, it's true that it gets loaded AFTER logo, but we will do the opposite
             init_debugger_Audio.Init_SoundAudio(); //this initalizes the WAVE format audio.dat
@@ -34,7 +30,7 @@ namespace OpenVIII
 
             Module_movie_test.Init();
 
-            Memory.Random = new Random((int)DateTime.Now.Ticks); //creates global random class for all sort of things
+            Memory.random = new Random(); //creates global random class for all sort of things
 
             base.Initialize();
         }
@@ -137,10 +133,9 @@ namespace OpenVIII
             //Memory.PreferredViewportWidth = graphics.GraphicsDevice.Viewport.Width;
             //Memory.PreferredViewportHeight = graphics.GraphicsDevice.Viewport.Height;
 
-            Input2.Update();
-            Memory.Update();
+            Input.Update();
 
-            if (Input2.Button(FF8TextTagKey.Exit) || Input2.Button(FF8TextTagKey.ExitMenu))
+            if (Input.Button(Buttons.Exit))
                 Exit();
             init_debugger_Audio.Update();
             ModuleHandler.Update(gameTime);

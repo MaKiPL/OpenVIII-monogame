@@ -69,9 +69,7 @@ namespace OpenVIII
 
             public byte Unknown0 { get; private set; }
 
-            public byte Unknown1 { get; private set; }
-
-            public Target Target { get; private set; }
+            public byte[] Unknown1 { get; private set; }
 
             public byte Unknown2 { get; private set; }
 
@@ -107,10 +105,7 @@ namespace OpenVIII
                 //0x0006  1 byte Unknown
                 Attack_Type = (Attack_Type)br.ReadByte();
                 //0x0007  1 byte Attack Type
-                Unknown1 = br.ReadByte();
-                // noticed we were missing a target
-                // this byte made sense when tested.
-                Target = (Target)br.ReadByte(); 
+                Unknown1 = br.ReadBytes(2);
                 //0x0008  2 bytes Unknown
                 Attack_Flags = (Attack_Flags)br.ReadByte();
                 //0x000A  1 byte Attack Flags

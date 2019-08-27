@@ -18,7 +18,7 @@ namespace OpenVIII
             public override string ToString() => Name;
 
             //0x0000	2 bytes Offset to weapon name
-            public Renzokeken_Finisher Renzokuken { get; private set; } //0x0002	1 byte Renzokuken finishers
+            public Renzokeken_Level Renzokuken { get; private set; } //0x0002	1 byte Renzokuken finishers
 
             public byte Unknown0 { get; private set; } //0x0003	1 byte Unknown
             public Characters Character { get; private set; }//0x0004	1 byte Character ID
@@ -34,7 +34,7 @@ namespace OpenVIII
             {
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, string_id);
                 br.BaseStream.Seek(2, SeekOrigin.Current);
-                Renzokuken = (Renzokeken_Finisher)br.ReadByte(); //0x0002	1 byte Renzokuken finishers
+                Renzokuken = (Renzokeken_Level)br.ReadByte(); //0x0002	1 byte Renzokuken finishers
                 Unknown0 = br.ReadByte(); //0x0003	1 byte Unknown
                 Character = (Characters)br.ReadByte();//0x0004	1 byte Character ID
                 Attack_type = (Attack_Type)br.ReadByte();//0x0005	1 bytes Attack Type

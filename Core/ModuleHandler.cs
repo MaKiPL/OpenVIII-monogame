@@ -1,14 +1,17 @@
 ﻿using Microsoft.Xna.Framework;
-using OpenVIII.Encoding.Tags;
+using Microsoft.Xna.Framework.Input;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace OpenVIII
 {
     public static class ModuleHandler
     {
-        private static MODULE module = Memory.module;
-        private static MODULE lastModule = Memory.module;
+        private static int module = Memory.module;
+        private static int lastModule = Memory.module;
 
         public static async void Update(GameTime gameTime)
         {
@@ -20,24 +23,23 @@ namespace OpenVIII
             }
             module = Memory.module;
 
-#if DEBUG
-            if (Input2.DelayedButton(FF8TextTagKey.Reset) || Input2.DelayedButton(FF8TextTagKey.Cancel))
+
+            //#if DEBUG
+            if (Input.Button(Buttons.Back) || Input.Button(Buttons.Cancel))
             {
-                if (Memory.module != MODULE.MAINMENU_DEBUG && Memory.module != MODULE.BATTLE_DEBUG)
-                {
-                    Memory.module = MODULE.MAINMENU_DEBUG;
-                    InputMouse.Mode = MouseLockMode.Screen;
-                }
+                Memory.module = Memory.MODULE_MAINMENU_DEBUG;
+                Input.OverrideLockMouse = false;
+                Input.CurrentMode = Input.MouseLockMode.Screen;
             }
-#endif
+            //#endif
+
 
             switch (module)
             {
                 //doesn't need memory
-                case MODULE.OVERTURE_DEBUG:
-                case MODULE.MOVIETEST:
+                case Memory.MODULE_OVERTURE_DEBUG:
+                case Memory.MODULE_MOVIETEST:
                     break;
-
                 default:
                     //requires memory to be loaded.
                     if ((Memory.InitTask != null) && (Memory.InitTask.IsCompleted == false ||
@@ -56,43 +58,34 @@ namespace OpenVIII
             }
             switch (module)
             {
-                case MODULE.BATTLE:
+                case Memory.MODULE_BATTLE:
                     module_battle.Update();
                     break;
-
-                case MODULE.BATTLE_DEBUG:
+                case Memory.MODULE_BATTLE_DEBUG:
                     Module_battle_debug.Update();
                     break;
-
-                case MODULE.MOVIETEST:
+                case Memory.MODULE_MOVIETEST:
                     Module_movie_test.Update();
                     break;
-
-                case MODULE.FIELD_DEBUG:
+                case Memory.MODULE_FIELD_DEBUG:
                     Module_field_debug.Update();
                     break;
-
-                case MODULE.OVERTURE_DEBUG:
+                case Memory.MODULE_OVERTURE_DEBUG:
                     Module_overture_debug.Update();
                     break;
-
-                case MODULE.MAINMENU_DEBUG:
+                case Memory.MODULE_MAINMENU_DEBUG:
                     Module_main_menu_debug.Update();
                     break;
-
-                case MODULE.WORLD_DEBUG:
+                case Memory.MODULE_WORLD_DEBUG:
                     Module_world_debug.Update();
                     break;
-
-                case MODULE.FACE_TEST:
+                case Memory.MODULE_FACE_TEST:
                     Module_face_test.Update();
                     break;
-
-                case MODULE.ICON_TEST:
+                case Memory.MODULE_ICON_TEST:
                     Module_icon_test.Update();
                     break;
-
-                case MODULE.CARD_TEST:
+                case Memory.MODULE_CARD_TEST:
                     Module_card_test.Update();
                     break;
             }
@@ -100,13 +93,13 @@ namespace OpenVIII
 
         public static void Draw(GameTime gameTime)
         {
+
             switch (module)
             {
                 //doesn't need memory
-                case MODULE.OVERTURE_DEBUG:
-                case MODULE.MOVIETEST:
+                case Memory.MODULE_OVERTURE_DEBUG:
+                case Memory.MODULE_MOVIETEST:
                     break;
-
                 default:
                     //requires memory to be loaded.
                     if ((Memory.InitTask != null) && (Memory.InitTask.IsCompleted == false ||
@@ -122,43 +115,34 @@ namespace OpenVIII
             }
             switch (module)
             {
-                case MODULE.BATTLE:
+                case Memory.MODULE_BATTLE:
                     module_battle.Draw();
                     break;
-
-                case MODULE.BATTLE_DEBUG:
+                case Memory.MODULE_BATTLE_DEBUG:
                     Module_battle_debug.Draw();
                     break;
-
-                case MODULE.MOVIETEST:
+                case Memory.MODULE_MOVIETEST:
                     Module_movie_test.Draw();
                     break;
-
-                case MODULE.FIELD_DEBUG:
+                case Memory.MODULE_FIELD_DEBUG:
                     Module_field_debug.Draw();
                     break;
-
-                case MODULE.OVERTURE_DEBUG:
+                case Memory.MODULE_OVERTURE_DEBUG:
                     Module_overture_debug.Draw();
                     break;
-
-                case MODULE.MAINMENU_DEBUG:
+                case Memory.MODULE_MAINMENU_DEBUG:
                     Module_main_menu_debug.Draw();
                     break;
-
-                case MODULE.WORLD_DEBUG:
+                case Memory.MODULE_WORLD_DEBUG:
                     Module_world_debug.Draw();
                     break;
-
-                case MODULE.FACE_TEST:
+                case Memory.MODULE_FACE_TEST:
                     Module_face_test.Draw();
                     break;
-
-                case MODULE.ICON_TEST:
+                case Memory.MODULE_ICON_TEST:
                     Module_icon_test.Draw();
                     break;
-
-                case MODULE.CARD_TEST:
+                case Memory.MODULE_CARD_TEST:
                     Module_card_test.Draw();
                     break;
             }

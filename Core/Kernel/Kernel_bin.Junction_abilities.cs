@@ -19,7 +19,6 @@ namespace OpenVIII
 
             public override void Read(BinaryReader br, int i)
             {
-                Icon = Icons.ID.Ability_Junction;
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 //0x0000	2 bytes Offset to name
                 Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
@@ -37,10 +36,9 @@ namespace OpenVIII
             public static Dictionary<Abilities,Junction_abilities> Read(BinaryReader br)
             {
                 Dictionary<Abilities, Junction_abilities> ret = new Dictionary<Abilities, Junction_abilities>(count);
-                
+
                 for (int i = 0; i < count; i++)
                 {
-                    
                     Junction_abilities tmp = new Junction_abilities();
                     tmp.Read(br, i);
                     ret[(Abilities)i] = tmp;

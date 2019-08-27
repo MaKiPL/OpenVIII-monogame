@@ -1,6 +1,6 @@
 ﻿namespace OpenVIII.Encoding.Tags
 {
-    public enum FF8TextTagCode : byte
+    public enum FF8TextTagCode
     {
         // Без параметров
         End = 0x00,
@@ -18,8 +18,6 @@
         Key = 0x05,
         Color = 0x06,
         Dialog = 0x0A,
-        Option = 0x0B,
         Term = 0x0E,
-        UNK = 0x0C
     }
 }

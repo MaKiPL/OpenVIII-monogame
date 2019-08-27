@@ -2,67 +2,56 @@
 
 namespace OpenVIII
 {
-    public class IGMDataItem_Icon : IGMDataItem, I_Data<Icons.ID>, I_Palette
+    public partial class Module_main_menu_debug
     {
-        #region Fields
+        #region Classes
 
-        private byte _faded_palette;
-        private byte _palette;
-
-        #endregion Fields
-
-        #region Constructors
-
-        public IGMDataItem_Icon(Icons.ID data, Rectangle? pos = null, byte? palette = null, byte? faded_palette = null, float blink_adjustment = 1f, Vector2? scale = null) : base(pos, scale)
+        public class IGMDataItem_Icon : IGMDataItem//<Icons.ID>
         {
-            Data = data;
-            Palette = palette ?? 2;
-            Faded_Palette = faded_palette ?? Palette;
-            Blink_Adjustment = blink_adjustment;
-        }
+            private byte _palette;
+            private byte _faded_palette;
 
-        #endregion Constructors
+            public Icons.ID Data { get; set; }
 
-        #region Properties
-
-        public override bool Blink
-        {
-            get => base.Blink && (Faded_Palette != Palette); set => base.Blink = value;
-        }
-
-        public Icons.ID Data { get; set; }
-        public byte Faded_Palette
-        {
-            get => _faded_palette; set
+            public byte Palette
             {
-                if (value >= Memory.Icons.PaletteCount) value = 2;
-                _faded_palette = value;
+                get => _palette; set
+                {
+                    if (value >= Memory.Icons.PaletteCount) value = 2;
+                    _palette = value;
+                }
+            }
+
+            public byte Faded_Palette
+            {
+                get => _faded_palette; set
+                {
+                    if (value >= Memory.Icons.PaletteCount) value = 2;
+                    _faded_palette = value;
+                }
+            }
+
+            public bool Blink => Faded_Palette != Palette;
+            public float Blink_Adjustment { get; set; }
+
+            public IGMDataItem_Icon(Icons.ID data, Rectangle? pos = null, byte? palette = null, byte? faded_palette = null, float blink_adjustment = 1f,Vector2? scale = null) : base(pos,scale)
+            {
+                Data = data;
+                Palette = palette ?? 2;
+                Faded_Palette = faded_palette ?? Palette;
+                Blink_Adjustment = blink_adjustment;
+            }
+
+            public override void Draw()
+            {
+                if (Enabled)
+                {
+                    Memory.Icons.Draw(Data, Palette, Pos, Scale, fade);
+                    if (Blink)
+                        Memory.Icons.Draw(Data, Faded_Palette, Pos, Scale, fade * blink_Amount * Blink_Adjustment);
+                }
             }
         }
-
-        public byte Palette
-        {
-            get => _palette; set
-            {
-                if (value >= Memory.Icons.PaletteCount) value = 2;
-                _palette = value;
-            }
-        }
-
-        #endregion Properties
-
-        #region Methods
-
-        public override void Draw()
-        {
-            if (Enabled)
-            {
-                Memory.Icons.Draw(Data, Palette, Pos, Scale, Fade);
-                if (Blink)
-                    Memory.Icons.Draw(Data, Faded_Palette, Pos, Scale, Fade * Blink_Amount * Blink_Adjustment);
-            }
-        }
-
-        #endregion Methods
+        #endregion Classes
     }
 }

@@ -2,14 +2,20 @@
 
 namespace OpenVIII
 {
-    public class IGMDataItem_Empty : IGMDataItem
+    public partial class Module_main_menu_debug
     {
-        #region Constructors
+        #region Classes
 
-        public IGMDataItem_Empty(Rectangle? pos = null) : base(pos)
+        public class IGMDataItem_Empty : IGMDataItem
         {
-        }
+            public IGMDataItem_Empty(Rectangle? pos = null) : base(pos)
+            {
+            }
 
-        #endregion Constructors
+            public override void Draw()
+            {
+            }
+        }
+        #endregion Classes
     }
 }

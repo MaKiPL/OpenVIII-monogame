@@ -83,7 +83,7 @@ namespace OpenVIII
                     (int)(textStart.X), (int)(textStart.Y + ((TextScale.Y + vpSpace) * item++)), TextScale.X, TextScale.Y, 0, Fade));
                 strMainLobby[i] = c;
             }
-            Menu.DrawPointer(new Point((int)(textStart.X), (int)((((TextScale.Y + vpSpace) * (float)Mchoose)+textStart.Y+(6*TextScale.Y)))));
+            DrawPointer(new Point((int)(textStart.X), (int)((((TextScale.Y + vpSpace) * (float)Mchoose)+textStart.Y+(6*TextScale.Y)))));
             Memory.SpriteBatchEnd();
         }
 

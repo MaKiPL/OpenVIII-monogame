@@ -21,7 +21,6 @@ namespace OpenVIII
             public byte AP { get; protected set; }
             public FF8String Description { get; protected set; }
             public Icons.ID Icon { get; protected set; } = Icons.ID.None;
-            public byte Palette => 9;
             public FF8String Name { get; protected set; }
 
             #endregion Properties

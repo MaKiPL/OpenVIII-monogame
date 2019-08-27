@@ -2,7 +2,7 @@
 {
     public enum FF8TextTagColor : byte
     {
-        Dark_Gray = 0x20,
+        Disabled = 0x20,
         Grey,
         Yellow,
         Red,
@@ -10,7 +10,7 @@
         Blue,
         Purple,
         White,
-        Dark_GrayBlink,
+        DisabledBlink,
         GreyBlink,
         YellowBlink,
         RedBlink,
