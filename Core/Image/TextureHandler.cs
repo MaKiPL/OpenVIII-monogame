@@ -41,16 +41,34 @@ namespace OpenVIII
         /// </summary>
         public Texture_Base Classic { get => _classic; private set { _classic = value; if (value != null) ClassicSize = new Vector2(value.GetWidth, value.GetHeight); } }
 
+        public int ClassicHeight => (int)(ClassicSize == Vector2.Zero ? Size.Y : ClassicSize.Y);
         /// <summary>
         /// X = width and Y = height. The Size of original texture. Will be used in scaling
         /// </summary>
         public Vector2 ClassicSize { get; private set; }
 
+        //public int ClassicWidth => (int)(Width * ReverseScaleFactor.X);
+        //public int ClassicHeight => (int)(Height * ReverseScaleFactor.Y);
+        public int ClassicWidth => (int)(ClassicSize == Vector2.Zero ? Size.X : ClassicSize.X);
+
         public Color[] Colors { get; private set; }
         public uint Count { get; protected set; }
+        //public int Height
+        //{
+        //    get
+        //    {
+        //        int ret = 0;
+        //        for (uint r = 0; r < Rows && Memory.graphics.GraphicsDevice != null; r++)
+        //        {
+        //            ret += Textures[0, r].Height;
+        //        }
+        //        return ret;
+        //    }
+        //}
+        public int Height => (int)Size.Y;
+
         public bool Modded { get; private set; } = false;
         public ushort Palette { get; protected set; }
-
         /// <summary>
         /// Scale vector from big to original
         /// </summary>
@@ -66,6 +84,20 @@ namespace OpenVIII
         /// </summary>
         public Vector2 Size { get; private set; }
 
+        public int Width => (int)Size.X;
+        //public int Width
+        //{
+        //    get
+        //    {
+        //        int ret = 0;
+        //        for (uint c = 0; c < Cols && Memory.graphics.GraphicsDevice != null; c++)
+        //        {
+        //            ret += Textures[c, 0].Width;
+        //        }
+        //        return ret;
+        //    }
+        //}
+
         protected uint Cols { get; set; }
 
         protected string Filename { get; set; }
@@ -75,31 +107,6 @@ namespace OpenVIII
         protected uint StartOffset { get; set; }
 
         protected Texture2D[,] Textures { get; private set; }
-        public int Width
-        {
-            get
-            {
-                int ret = 0;
-                for (uint c = 0; c < Cols && Memory.graphics.GraphicsDevice != null; c++)
-                {
-                    ret += Textures[c,0].Width;
-                }
-                return ret;
-            }
-        }
-
-        public int Height
-        {
-            get
-            {
-                int ret = 0;
-                for (uint r = 0; r < Rows && Memory.graphics.GraphicsDevice != null; r++)
-                {
-                    ret += Textures[0,r].Height;
-                }
-                return ret;
-            }
-        }
 
         #endregion Properties
 
@@ -275,6 +282,18 @@ namespace OpenVIII
             }
         }
 
+        public void Draw(Rectangle dst, Color color) => Draw(dst, null, color);
+
+        public void Draw(Rectangle dst, Color color, float rotation, Vector2 origin, SpriteEffects effects, float depth)
+        {
+            if (Rows == 1 && Cols == 1)
+                Memory.spriteBatch.Draw(Textures[0, 0], dst, null, color, rotation, origin, effects, depth);
+            else
+            {
+                throw new Exception("had not coded this to draw from multiple textures");
+            }
+        }
+
         public Vector2 GetScale(int cols = 0, int rows = 0) => ScaleFactor;
 
         public void Merge()
@@ -335,7 +354,7 @@ namespace OpenVIII
         public void Save()
         {
             string clean = Path.GetFileNameWithoutExtension(Regex.Replace(Filename, @"{[^}]+}", ""));
-            string outpath = Path.Combine(Path.GetTempPath(), Path.GetFileName(clean) + $"_{(Palette+1).ToString("D2")}.png");
+            string outpath = Path.Combine(Path.GetTempPath(), Path.GetFileName(clean) + $"_{(Palette + 1).ToString("D2")}.png");
             using (FileStream fs = File.Create(outpath))
                 Textures[0, 0].SaveAsPng(fs, Textures[0, 0].Width, Textures[0, 0].Height);
         }
@@ -558,18 +577,6 @@ namespace OpenVIII
             Merge();
             if (!Modded)
                 Memory.MainThreadOnlyActions.Enqueue(this.Save);
-        }
-
-        public void Draw(Rectangle dst, Color color) => Draw(dst, null, color);
-
-        public void Draw(Rectangle dst, Color color, float rotation, Vector2 origin, SpriteEffects effects, float depth)
-        {
-            if (Rows == 1 && Cols == 1)
-                Memory.spriteBatch.Draw(Textures[0, 0], dst, null, color, rotation, origin, effects, depth);
-            else
-            {
-                throw new Exception("had not coded this to draw from multiple textures");
-            }
         }
 
         #endregion Methods

@@ -162,7 +162,7 @@ namespace OpenVIII
             SelphieCasual
         }
 
-        private static worldCharacters activeCharacter = worldCharacters.SquallSeed; //worldCharacters.SquallCasual;
+        private static worldCharacters activeCharacter = worldCharacters.SquallCasual;
 
         private static _worldState worldState;
         private static MiniMapState MapState = MiniMapState.rectangle;
@@ -718,6 +718,7 @@ namespace OpenVIII
         /// model translation
         /// </summary>
         private static float localMchRotation = -90f;
+
         private static Vector2 Scale;
 
         private static void DrawCharacter(worldCharacters charaIndex)
@@ -903,13 +904,12 @@ namespace OpenVIII
             src.Width /= 2;
             Rectangle dst =
                 new Rectangle(
-                    (int)(Memory.graphics.GraphicsDevice.Viewport.Width - (src.Width))-50,
-                    (int)(Memory.graphics.GraphicsDevice.Viewport.Height - (src.Height))-50,
-                    (int)(src.Width),
-                    (int)(src.Height));
+                    Memory.graphics.GraphicsDevice.Viewport.Width - (src.Width) - 50,
+                    Memory.graphics.GraphicsDevice.Viewport.Height - (src.Height) - 50,
+                    src.Width,
+                    src.Height);
 
-
-            float bc = Math.Abs(camPosition.X / 16384.0f);           
+            float bc = Math.Abs(camPosition.X / 16384.0f);
             float topX = dst.X + (dst.Width * bc);
             bc = Math.Abs(camPosition.Z / 12288f);
             float topY = dst.Y + (dst.Height * bc);
@@ -926,14 +926,13 @@ namespace OpenVIII
             dst = new Rectangle(
                 (int)topX,
                 (int)topY,
-                (int)src.Width,
-                (int)src.Height);
+                src.Width,
+                src.Height);
 
             //Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
             Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
             wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0).Draw(dst, Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
             Memory.SpriteBatchEnd();
-
 
             //float topX = Memory.graphics.GraphicsDevice.Viewport.Width * .6f; //6
             //float topY = Memory.graphics.GraphicsDevice.Viewport.Height * .6f;
