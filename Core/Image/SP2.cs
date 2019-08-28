@@ -243,14 +243,14 @@ namespace OpenVIII
                         tex = new TEX(aw.GetBinaryFile(path));
                         if (Props[j].Big != null && FORCE_ORIGINAL == false && b < Props[j].Big.Count)
                         {
-                            TextureHandler th = new TextureHandler(Props[j].Big[b].Filename, tex, 2, Props[j].Big[b++].Split / 2);
+                            TextureHandler th = TextureHandler.Create(Props[j].Big[b].Filename, tex, 2, Props[j].Big[b++].Split / 2);
 
                             Textures.Add(th);
                             Scale[i] = Vector2.One;
                         }
                         else
                         {
-                            TextureHandler th = new TextureHandler(path, tex);
+                            TextureHandler th = TextureHandler.Create(path, tex);
                             Textures.Add(th);
                             Scale[i] = th.GetScale(); //scale might not be used outside of texturehandler.
                         }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -14,23 +15,17 @@ namespace OpenVIII
     {
         #region Fields
 
+        private static ConcurrentDictionary<string, Texture2D> _pngs = new ConcurrentDictionary<string, Texture2D>();
+        private static ConcurrentDictionary<string, TextureHandler> _ths = new ConcurrentDictionary<string, TextureHandler>();
+        private static string[] pngs;
         private Texture_Base _classic;
 
         #endregion Fields
 
         #region Constructors
 
-        public TextureHandler(string filename, uint cols) : this(filename, cols, 1)
-        {
-        }
-
-        public TextureHandler(string filename, uint cols, uint rows) =>
-
-            Init(filename, null, cols, rows);
-
-        public TextureHandler(string filename, Texture_Base classic, ushort palette = 0, Color[] colors = null) => Init(filename, classic, 1, 1, palette: palette, colors: colors);
-
-        public TextureHandler(string filename, Texture_Base classic, uint cols, uint rows, ushort palette = 0, Color[] colors = null) => Init(filename, classic, cols, rows, palette, colors);
+        private TextureHandler()
+        { }
 
         #endregion Constructors
 
@@ -42,33 +37,24 @@ namespace OpenVIII
         public Texture_Base Classic { get => _classic; private set { _classic = value; if (value != null) ClassicSize = new Vector2(value.GetWidth, value.GetHeight); } }
 
         public int ClassicHeight => (int)(ClassicSize == Vector2.Zero ? Size.Y : ClassicSize.Y);
+
         /// <summary>
         /// X = width and Y = height. The Size of original texture. Will be used in scaling
         /// </summary>
         public Vector2 ClassicSize { get; private set; }
 
-        //public int ClassicWidth => (int)(Width * ReverseScaleFactor.X);
-        //public int ClassicHeight => (int)(Height * ReverseScaleFactor.Y);
         public int ClassicWidth => (int)(ClassicSize == Vector2.Zero ? Size.X : ClassicSize.X);
 
         public Color[] Colors { get; private set; }
+
         public uint Count { get; protected set; }
-        //public int Height
-        //{
-        //    get
-        //    {
-        //        int ret = 0;
-        //        for (uint r = 0; r < Rows && Memory.graphics.GraphicsDevice != null; r++)
-        //        {
-        //            ret += Textures[0, r].Height;
-        //        }
-        //        return ret;
-        //    }
-        //}
+
         public int Height => (int)Size.Y;
 
         public bool Modded { get; private set; } = false;
+
         public ushort Palette { get; protected set; }
+
         /// <summary>
         /// Scale vector from big to original
         /// </summary>
@@ -85,18 +71,6 @@ namespace OpenVIII
         public Vector2 Size { get; private set; }
 
         public int Width => (int)Size.X;
-        //public int Width
-        //{
-        //    get
-        //    {
-        //        int ret = 0;
-        //        for (uint c = 0; c < Cols && Memory.graphics.GraphicsDevice != null; c++)
-        //        {
-        //            ret += Textures[c, 0].Width;
-        //        }
-        //        return ret;
-        //    }
-        //}
 
         protected uint Cols { get; set; }
 
@@ -107,6 +81,7 @@ namespace OpenVIII
         protected uint StartOffset { get; set; }
 
         protected Texture2D[,] Textures { get; private set; }
+        public string ModdedFilename { get; private set; }
 
         #endregion Properties
 
@@ -119,6 +94,39 @@ namespace OpenVIII
         #region Methods
 
         public static Vector2 Abs(Vector2 v) => new Vector2(Math.Abs(v.X), Math.Abs(v.Y));
+
+        public static TextureHandler Create(string filename, uint cols) => Create(filename, cols, 1);
+
+        public static TextureHandler Create(string filename, uint cols, uint rows) => Create(filename, null, cols, rows);
+
+        public static TextureHandler Create(string filename, Texture_Base classic, ushort palette = 0, Color[] colors = null) => Create(filename, classic, 1, 1, palette: palette, colors: colors);
+
+        public static TextureHandler Create(string filename, Texture_Base classic, uint cols, uint rows, ushort palette = 0, Color[] colors = null)
+        {
+            string s = FindPNG(filename, palette);
+            if (string.IsNullOrWhiteSpace(s) || !_ths.TryGetValue(s, out TextureHandler ret))
+            {
+                ret = new TextureHandler
+                {
+                    ModdedFilename = s,
+                    //Modded = string.IsNullOrWhiteSpace(s),
+                    Filename = filename,
+                    Classic = classic,
+                    Cols = cols,
+                    Rows = rows,
+                    Palette = palette,
+                    Colors = colors
+                };
+                ret.Init();
+                if (ret.Modded && !string.IsNullOrWhiteSpace(ret.ModdedFilename))
+                {
+                    _ths.TryAdd(ret.ModdedFilename, ret);
+                    //if (_pngs.ContainsKey(ret.ModdedFilename))
+                    //    _pngs.TryRemove(ret.ModdedFilename,out Texture2D none);
+                }
+            }
+            return ret;
+        }
 
         public static explicit operator Texture2D(TextureHandler t)
         {
@@ -162,56 +170,46 @@ namespace OpenVIII
         /// <returns></returns>
         public static Texture2D LoadPNG(string path, int palette = -1)
         {
-            string bn = Path.GetFileNameWithoutExtension(path);
-            string prefix = bn.Substring(0, 2);
-            string textures = Path.Combine(Memory.FF8DIR, "textures");
-            string pngpath = Path.Combine(textures, prefix, bn);
-            // this isn't working correctly unless mod authors have the this-> 13=0, 14=1... for palettes
-            //https://github.com/MaKiPL/OpenVIII/issues/73
-            string suffix = palette > -1 ? $"{palette + 13}" : "";
-            suffix += ".png";
-            if (Directory.Exists(pngpath))
+            string pngpath = File.Exists(path) ? path : FindPNG(path, palette);
+            Texture2D tex = null;
+            if (!string.IsNullOrWhiteSpace(pngpath) && !_pngs.TryGetValue(pngpath, out tex))
             {
-                try
+                using (FileStream fs = File.OpenRead(pngpath))
                 {
-                    pngpath = Directory.GetFiles(pngpath).Last(x =>
-                    (x.IndexOf(bn, StringComparison.OrdinalIgnoreCase) >= 0 &&
-                    x.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)));
-                    using (FileStream fs = File.OpenRead(pngpath))
-                    {
-                        return Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
-                    }
-                }
-                catch (InvalidOperationException)
-                {
-                    // couldn't find a match.
+                    tex = Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
+                    _pngs.TryAdd(pngpath, tex);
                 }
             }
+            return tex;
+        }
+
+        public static string FindPNG(string path, int palette = -1)
+        {
+            string bn = Path.GetFileNameWithoutExtension(path);
+            string textures = Path.Combine(Memory.FF8DIR, "textures");
             if (Directory.Exists(textures))
             {
-                string[] pngs = Directory.GetFiles(textures, "*.png", SearchOption.AllDirectories);
-                for (int i = 0; i < pngs.Length; i++)
-                {
-                    if (palette > -1 && pngs[i].IndexOf($"{bn}+ _{ (palette + 1).ToString("D2")}", StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        using (FileStream fs = File.OpenRead(pngs[i]))
-                        {
-                            return Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
-                        }
-                    }
-                }
-                for (int i = 0; i < pngs.Length; i++)
-                {
-                    if (pngs[i].IndexOf(bn, StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        using (FileStream fs = File.OpenRead(pngs[i]))
-                        {
-                            return Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
-                        }
-                    }
-                }
+                if (pngs == null)
+                    pngs = Directory.GetFiles(textures, "*.png", SearchOption.AllDirectories);
+                string tex;
+                if (palette < 0 || (tex = _findPNG($"{bn}+ _{ (palette + 1).ToString("D2")}")) == null)
+                    tex = _findPNG(bn);
+
+                return tex;
             }
             return null;
+            string _findPNG(string testname)
+            {
+                for (int i = 0; i < pngs.Length; i++)
+                {
+                    if (pngs[i].IndexOf(testname, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        //possibility of collision if filenames are too similar.
+                        return pngs[i];
+                    }
+                }
+                return null;
+            }
         }
 
         public static Rectangle Scale(Rectangle mat1, Vector2 mat2)
@@ -366,7 +364,7 @@ namespace OpenVIII
         /// <returns></returns>
         public Rectangle Trim(Rectangle src) => _process(Rectangle.Empty, src, Color.TransparentBlack, _Trim_SingleTexture);
 
-        protected void Init()
+        protected void Process()
         {
             Vector2 size = Vector2.Zero;
             Vector2 oldsize = Vector2.Zero;
@@ -388,7 +386,7 @@ namespace OpenVIII
                     }
                     else
                     {
-                        pngTex = LoadPNG(Filename, Palette);
+                        pngTex = !string.IsNullOrWhiteSpace(ModdedFilename) ? LoadPNG(ModdedFilename, Palette) : LoadPNG(Filename, Palette);
                     }
                     if (tex == null) tex = Classic;
                     Textures[c, r] = (UseBest(tex, pngTex, Palette, Colors));
@@ -556,21 +554,15 @@ namespace OpenVIII
             return cnt;
         }
 
-        private void Init(string filename, Texture_Base classic, uint cols, uint rows, ushort palette = 0, Color[] colors = null)
+        private void Init()
         {
-            Classic = classic;
             Size = Vector2.Zero;
-            Count = cols * rows;
-            Textures = new Texture2D[cols, rows];
+            Count = Cols * Rows;
+            Textures = new Texture2D[Cols, Rows];
             StartOffset = 0;
-            Rows = rows;
-            Cols = cols;
-            Filename = filename;
-            Palette = palette;
-            Colors = colors;
 
             //load textures;
-            Init();
+            Process();
             //unload Classic
             Classic = null;
             //Merge the texture pieces into one.

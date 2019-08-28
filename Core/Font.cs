@@ -80,7 +80,7 @@ namespace OpenVIII
             string sysfntFilepath = aw.GetListOfFiles().First(x => x.ToLower().Contains("sysfnt.tex"));
             TEX tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, sysfntFilepath));
             sysfnt = tex.GetTexture((int)ColorID.White);
-            sysfntbig = new TextureHandler("sysfld{0:00}.tex", tex, 2, 1, (int)ColorID.White);
+            sysfntbig = TextureHandler.Create("sysfld{0:00}.tex", tex, 2, 1, (int)ColorID.White);
 
             TDW tim = new TDW(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, sysfntTdwFilepath), 0);
             charWidths = tim.CharWidths;

@@ -189,17 +189,17 @@ namespace OpenVIII
                     for (ushort i = 0; i < tex.GetClutCount; i++)
                     {
                         if (FORCE_ORIGINAL == false && Props[t].Big != null && Props[t].Big.Count > 0)
-                            Textures.Add(new TextureHandler(Props[t].Big[0].Filename, tex, 2, Props[t].Big[0].Split / 2, i));
+                            Textures.Add(TextureHandler.Create(Props[t].Big[0].Filename, tex, 2, Props[t].Big[0].Split / 2, i));
                         else
-                            Textures.Add(new TextureHandler(Props[t].Filename, tex, 1, 1, i));
+                            Textures.Add(TextureHandler.Create(Props[t].Filename, tex, 1, 1, i));
                     }
                 }
                 else
                 {
                     if (FORCE_ORIGINAL == false && Props[t].Big != null && Props[t].Big.Count > 0)
-                        Textures.Add(new TextureHandler(Props[t].Big[0].Filename, tex, 2, Props[t].Big[0].Split / 2, (ushort)Textures.Count,colors: Props[t].Big[0].Colors ?? Props[t].Colors));
+                        Textures.Add(TextureHandler.Create(Props[t].Big[0].Filename, tex, 2, Props[t].Big[0].Split / 2, (ushort)Textures.Count,colors: Props[t].Big[0].Colors ?? Props[t].Colors));
                     else
-                        Textures.Add(new TextureHandler(Props[t].Filename, tex, 1, 1, (ushort)Textures.Count, colors: Props[t].Colors));
+                        Textures.Add(TextureHandler.Create(Props[t].Filename, tex, 1, 1, (ushort)Textures.Count, colors: Props[t].Colors));
                 }
             }
         }
