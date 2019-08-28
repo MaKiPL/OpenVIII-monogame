@@ -190,14 +190,11 @@ namespace OpenVIII
             {
                 if (pngs == null)
                     pngs = Directory.GetFiles(textures, "*.png", SearchOption.AllDirectories);
-                for (int i = 0; i < pngs.Length; i++)
-                {
-                    Texture2D tex;
-                    if (palette < 0 || (tex = _loadpng($"{bn}+ _{ (palette + 1).ToString("D2")}")) == null)
-                        tex = _loadpng(bn);
-                    if (tex != null)
-                        return tex;
-                }
+                Texture2D tex;
+                if (palette < 0 || (tex = _loadpng($"{bn}+ _{ (palette + 1).ToString("D2")}")) == null)
+                    tex = _loadpng(bn);
+
+                return tex;
             }
             return null;
             Texture2D _loadpng(string testname)
