@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -163,56 +164,67 @@ namespace OpenVIII
         public static Texture2D LoadPNG(string path, int palette = -1)
         {
             string bn = Path.GetFileNameWithoutExtension(path);
-            string prefix = bn.Substring(0, 2);
             string textures = Path.Combine(Memory.FF8DIR, "textures");
-            string pngpath = Path.Combine(textures, prefix, bn);
-            // this isn't working correctly unless mod authors have the this-> 13=0, 14=1... for palettes
-            //https://github.com/MaKiPL/OpenVIII/issues/73
-            string suffix = palette > -1 ? $"{palette + 13}" : "";
-            suffix += ".png";
-            if (Directory.Exists(pngpath))
-            {
-                try
-                {
-                    pngpath = Directory.GetFiles(pngpath).Last(x =>
-                    (x.IndexOf(bn, StringComparison.OrdinalIgnoreCase) >= 0 &&
-                    x.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)));
-                    using (FileStream fs = File.OpenRead(pngpath))
-                    {
-                        return Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
-                    }
-                }
-                catch (InvalidOperationException)
-                {
-                    // couldn't find a match.
-                }
-            }
+            //old method;
+            //string prefix = bn.Substring(0, 2);
+            //string pngpath = Path.Combine(textures, prefix, bn);
+            //// this isn't working correctly unless mod authors have the this-> 13=0, 14=1... for palettes
+            ////https://github.com/MaKiPL/OpenVIII/issues/73
+            //string suffix = palette > -1 ? $"{palette + 13}" : "";
+            //suffix += ".png";
+            //if (Directory.Exists(pngpath))
+            //{
+            //    try
+            //    {
+            //        pngpath = Directory.GetFiles(pngpath).Last(x =>
+            //        (x.IndexOf(bn, StringComparison.OrdinalIgnoreCase) >= 0 &&
+            //        x.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)));
+            //        using (FileStream fs = File.OpenRead(pngpath))
+            //        {
+            //            return Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
+            //        }
+            //    }
+            //    catch (InvalidOperationException)
+            //    {
+            //        // couldn't find a match.
+            //    }
+            //}
             if (Directory.Exists(textures))
             {
-                string[] pngs = Directory.GetFiles(textures, "*.png", SearchOption.AllDirectories);
+                if (pngs == null)
+                    pngs = Directory.GetFiles(textures, "*.png", SearchOption.AllDirectories);
                 for (int i = 0; i < pngs.Length; i++)
                 {
-                    if (palette > -1 && pngs[i].IndexOf($"{bn}+ _{ (palette + 1).ToString("D2")}", StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        using (FileStream fs = File.OpenRead(pngs[i]))
-                        {
-                            return Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
-                        }
-                    }
-                }
-                for (int i = 0; i < pngs.Length; i++)
-                {
-                    if (pngs[i].IndexOf(bn, StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        using (FileStream fs = File.OpenRead(pngs[i]))
-                        {
-                            return Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
-                        }
-                    }
+                    Texture2D tex;
+                    if (palette<0 || (tex = _loadpng($"{bn}+ _{ (palette + 1).ToString("D2")}")) == null)
+                        tex = _loadpng(bn);
+                    return tex;
                 }
             }
             return null;
+            Texture2D _loadpng(string testname)
+            {
+                for (int i = 0; i < pngs.Length; i++)
+                {
+                    if (pngs[i].IndexOf(testname, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        if (!_pngs.TryGetValue(pngs[i], out Texture2D tex))
+                        {
+                            using (FileStream fs = File.OpenRead(pngs[i]))
+                            {
+                                tex = Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
+                                _pngs.TryAdd(pngs[i], tex);
+                            }
+                        }
+                        return tex;
+                    }
+                }
+                return null;
+            }
         }
+
+        private static ConcurrentDictionary<string, Texture2D> _pngs = new ConcurrentDictionary<string, Texture2D>();
+        private static string[] pngs;
 
         public static Rectangle Scale(Rectangle mat1, Vector2 mat2)
         {
