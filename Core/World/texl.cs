@@ -27,7 +27,7 @@ namespace OpenVIII.Core.World
                     TIM2 tim = new TIM2(texlBuffer, (uint)timOffset);
                     textures[i] = new TextureHandler[tim.GetClutCount];
                     for (ushort k = 0; k < textures[i].Length; k++)
-                        textures[i][k] = new TextureHandler($"texl_tim{(i + 1).ToString("D2")}.tim", tim, k, null);
+                        textures[i][k] = TextureHandler.Create($"texl_tim{(i + 1).ToString("D2")}.tim", tim, k, null);
                     //todo detect if mods aren't using palettes.
                 }
         }

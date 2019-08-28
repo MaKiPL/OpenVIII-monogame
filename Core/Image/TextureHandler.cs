@@ -21,17 +21,28 @@ namespace OpenVIII
 
         #region Constructors
 
-        public TextureHandler(string filename, uint cols) : this(filename, cols, 1)
+        public static TextureHandler Create(string filename, uint cols) => Create(filename, cols, 1);
+
+        public static TextureHandler Create(string filename, uint cols, uint rows)
         {
+            var ret = new TextureHandler();
+            ret.Init(filename, null, cols, rows);
+            return ret;
         }
 
-        public TextureHandler(string filename, uint cols, uint rows) =>
+        public static TextureHandler Create(string filename, Texture_Base classic, ushort palette = 0, Color[] colors = null)
+        {
+            var ret = new TextureHandler();
+            ret.Init(filename, classic, 1, 1, palette: palette, colors: colors);
+            return ret;
+        }
 
-            Init(filename, null, cols, rows);
-
-        public TextureHandler(string filename, Texture_Base classic, ushort palette = 0, Color[] colors = null) => Init(filename, classic, 1, 1, palette: palette, colors: colors);
-
-        public TextureHandler(string filename, Texture_Base classic, uint cols, uint rows, ushort palette = 0, Color[] colors = null) => Init(filename, classic, cols, rows, palette, colors);
+        public static TextureHandler Create(string filename, Texture_Base classic, uint cols, uint rows, ushort palette = 0, Color[] colors = null)
+        {
+            var ret = new TextureHandler();
+            ret.Init(filename, classic, cols, rows, palette, colors);
+            return ret;
+        }
 
         #endregion Constructors
 

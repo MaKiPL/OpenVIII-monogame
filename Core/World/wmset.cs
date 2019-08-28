@@ -953,7 +953,7 @@ namespace OpenVIII.Core.World
                     for (ushort k = 0; k < sec38_textures[i].Length; k++)
                     {
                         sec38_pals[i][k] = tim.GetPalette(k);
-                        sec38_textures[i][k] = new TextureHandler($"wmset_tim38_{(i + 1).ToString("D2")}.tim", tim, k, null);
+                        sec38_textures[i][k] = TextureHandler.Create($"wmset_tim38_{(i + 1).ToString("D2")}.tim", tim, k, null);
                     }
                 }
             }
@@ -1007,8 +1007,8 @@ namespace OpenVIII.Core.World
                     newX = (newX / VRAM_BLOCKSTEP) * VRAM_BLOCKSIZE;
                     sec39_texture.SetData(0, new Rectangle(newX, newY, atlasChunk.Width, atlasChunk.Height), chunkBuffer, 0, chunkBuffer.Length);
                 }
-                this.sec39_texture = new TextureHandler($"wmset_tim39.tim", new Texture2DWrapper(sec39_texture), 0, null);
-                //sec39_texture = new TextureHandler($"wmset_tim{(i + 1).ToString("D2")}.tim", new TIM2(buffer, (uint)(sectionPointers[39 - 1] + innerSec[i])), k, null);
+                this.sec39_texture = TextureHandler.Create($"wmset_tim39.tim", new Texture2DWrapper(sec39_texture), 0, null);
+                //sec39_texture = TextureHandler.Create($"wmset_tim{(i + 1).ToString("D2")}.tim", new TIM2(buffer, (uint)(sectionPointers[39 - 1] + innerSec[i])), k, null);
             }
         }
 
@@ -1094,7 +1094,7 @@ namespace OpenVIII.Core.World
                     timOriginHolderList.Add(new Vector2((tim.GetOrigX - SEC42_VRAM_STARTX)*4, tim.GetOrigY));
                     vehTextures.Add(new TextureHandler[tim.GetClutCount]);
                     for (ushort k = 0; k < vehTextures[i].Length; k++)
-                        vehTextures[i][k] = new TextureHandler($"wmset_tim42_{(i + 1).ToString("D2")}.tim", tim, k, null);
+                        vehTextures[i][k] = TextureHandler.Create($"wmset_tim42_{(i + 1).ToString("D2")}.tim", tim, k, null);
                 }
             }
             vehicleTextures = vehTextures.ToArray();

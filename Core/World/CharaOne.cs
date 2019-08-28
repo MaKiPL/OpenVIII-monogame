@@ -39,7 +39,7 @@ namespace OpenVIII.Core.World
                         ms.Seek(-8, SeekOrigin.Current);
                         tim = new TIM2(this.buffer, (uint)ms.Position);
                         ms.Seek(tim.GetHeight * tim.GetWidth / 2 + 64, SeekOrigin.Current); //i.e. 64*20=1280/2=640 + 64= 704 + eof
-                        texturesList.Add(new TextureHandler ($"chara_tim{(i++).ToString("D2")}", tim,0,null));
+                        texturesList.Add(TextureHandler.Create($"chara_tim{(i++).ToString("D2")}", tim,0,null));
                     }
                     else //is geometry structure
                     {
