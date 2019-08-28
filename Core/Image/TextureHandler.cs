@@ -15,34 +15,16 @@ namespace OpenVIII
     {
         #region Fields
 
+        private static ConcurrentDictionary<string, Texture2D> _pngs = new ConcurrentDictionary<string, Texture2D>();
+        private static string[] pngs;
         private Texture_Base _classic;
 
         #endregion Fields
 
         #region Constructors
 
-        public static TextureHandler Create(string filename, uint cols) => Create(filename, cols, 1);
-
-        public static TextureHandler Create(string filename, uint cols, uint rows)
-        {
-            var ret = new TextureHandler();
-            ret.Init(filename, null, cols, rows);
-            return ret;
-        }
-
-        public static TextureHandler Create(string filename, Texture_Base classic, ushort palette = 0, Color[] colors = null)
-        {
-            var ret = new TextureHandler();
-            ret.Init(filename, classic, 1, 1, palette: palette, colors: colors);
-            return ret;
-        }
-
-        public static TextureHandler Create(string filename, Texture_Base classic, uint cols, uint rows, ushort palette = 0, Color[] colors = null)
-        {
-            var ret = new TextureHandler();
-            ret.Init(filename, classic, cols, rows, palette, colors);
-            return ret;
-        }
+        private TextureHandler()
+        { }
 
         #endregion Constructors
 
@@ -54,6 +36,7 @@ namespace OpenVIII
         public Texture_Base Classic { get => _classic; private set { _classic = value; if (value != null) ClassicSize = new Vector2(value.GetWidth, value.GetHeight); } }
 
         public int ClassicHeight => (int)(ClassicSize == Vector2.Zero ? Size.Y : ClassicSize.Y);
+
         /// <summary>
         /// X = width and Y = height. The Size of original texture. Will be used in scaling
         /// </summary>
@@ -64,7 +47,9 @@ namespace OpenVIII
         public int ClassicWidth => (int)(ClassicSize == Vector2.Zero ? Size.X : ClassicSize.X);
 
         public Color[] Colors { get; private set; }
+
         public uint Count { get; protected set; }
+
         //public int Height
         //{
         //    get
@@ -80,7 +65,9 @@ namespace OpenVIII
         public int Height => (int)Size.Y;
 
         public bool Modded { get; private set; } = false;
+
         public ushort Palette { get; protected set; }
+
         /// <summary>
         /// Scale vector from big to original
         /// </summary>
@@ -97,6 +84,9 @@ namespace OpenVIII
         public Vector2 Size { get; private set; }
 
         public int Width => (int)Size.X;
+
+        protected uint Cols { get; set; }
+
         //public int Width
         //{
         //    get
@@ -109,9 +99,6 @@ namespace OpenVIII
         //        return ret;
         //    }
         //}
-
-        protected uint Cols { get; set; }
-
         protected string Filename { get; set; }
 
         protected uint Rows { get; set; }
@@ -131,6 +118,29 @@ namespace OpenVIII
         #region Methods
 
         public static Vector2 Abs(Vector2 v) => new Vector2(Math.Abs(v.X), Math.Abs(v.Y));
+
+        public static TextureHandler Create(string filename, uint cols) => Create(filename, cols, 1);
+
+        public static TextureHandler Create(string filename, uint cols, uint rows)
+        {
+            TextureHandler ret = new TextureHandler();
+            ret.Init(filename, null, cols, rows);
+            return ret;
+        }
+
+        public static TextureHandler Create(string filename, Texture_Base classic, ushort palette = 0, Color[] colors = null)
+        {
+            TextureHandler ret = new TextureHandler();
+            ret.Init(filename, classic, 1, 1, palette: palette, colors: colors);
+            return ret;
+        }
+
+        public static TextureHandler Create(string filename, Texture_Base classic, uint cols, uint rows, ushort palette = 0, Color[] colors = null)
+        {
+            TextureHandler ret = new TextureHandler();
+            ret.Init(filename, classic, cols, rows, palette, colors);
+            return ret;
+        }
 
         public static explicit operator Texture2D(TextureHandler t)
         {
@@ -207,7 +217,7 @@ namespace OpenVIII
                 for (int i = 0; i < pngs.Length; i++)
                 {
                     Texture2D tex;
-                    if (palette<0 || (tex = _loadpng($"{bn}+ _{ (palette + 1).ToString("D2")}")) == null)
+                    if (palette < 0 || (tex = _loadpng($"{bn}+ _{ (palette + 1).ToString("D2")}")) == null)
                         tex = _loadpng(bn);
                     return tex;
                 }
@@ -233,9 +243,6 @@ namespace OpenVIII
                 return null;
             }
         }
-
-        private static ConcurrentDictionary<string, Texture2D> _pngs = new ConcurrentDictionary<string, Texture2D>();
-        private static string[] pngs;
 
         public static Rectangle Scale(Rectangle mat1, Vector2 mat2)
         {
