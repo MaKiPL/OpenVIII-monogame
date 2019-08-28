@@ -16,6 +16,7 @@ namespace OpenVIII
         #region Fields
 
         private static ConcurrentDictionary<string, Texture2D> _pngs = new ConcurrentDictionary<string, Texture2D>();
+        private static ConcurrentDictionary<string, TextureHandler> _ths = new ConcurrentDictionary<string, TextureHandler>();
         private static string[] pngs;
         private Texture_Base _classic;
 
@@ -42,26 +43,12 @@ namespace OpenVIII
         /// </summary>
         public Vector2 ClassicSize { get; private set; }
 
-        //public int ClassicWidth => (int)(Width * ReverseScaleFactor.X);
-        //public int ClassicHeight => (int)(Height * ReverseScaleFactor.Y);
         public int ClassicWidth => (int)(ClassicSize == Vector2.Zero ? Size.X : ClassicSize.X);
 
         public Color[] Colors { get; private set; }
 
         public uint Count { get; protected set; }
 
-        //public int Height
-        //{
-        //    get
-        //    {
-        //        int ret = 0;
-        //        for (uint r = 0; r < Rows && Memory.graphics.GraphicsDevice != null; r++)
-        //        {
-        //            ret += Textures[0, r].Height;
-        //        }
-        //        return ret;
-        //    }
-        //}
         public int Height => (int)Size.Y;
 
         public bool Modded { get; private set; } = false;
@@ -87,18 +74,6 @@ namespace OpenVIII
 
         protected uint Cols { get; set; }
 
-        //public int Width
-        //{
-        //    get
-        //    {
-        //        int ret = 0;
-        //        for (uint c = 0; c < Cols && Memory.graphics.GraphicsDevice != null; c++)
-        //        {
-        //            ret += Textures[c, 0].Width;
-        //        }
-        //        return ret;
-        //    }
-        //}
         protected string Filename { get; set; }
 
         protected uint Rows { get; set; }
@@ -106,6 +81,7 @@ namespace OpenVIII
         protected uint StartOffset { get; set; }
 
         protected Texture2D[,] Textures { get; private set; }
+        public string ModdedFilename { get; private set; }
 
         #endregion Properties
 
@@ -121,24 +97,34 @@ namespace OpenVIII
 
         public static TextureHandler Create(string filename, uint cols) => Create(filename, cols, 1);
 
-        public static TextureHandler Create(string filename, uint cols, uint rows)
-        {
-            TextureHandler ret = new TextureHandler();
-            ret.Init(filename, null, cols, rows);
-            return ret;
-        }
+        public static TextureHandler Create(string filename, uint cols, uint rows) => Create(filename, null, cols, rows);
 
-        public static TextureHandler Create(string filename, Texture_Base classic, ushort palette = 0, Color[] colors = null)
-        {
-            TextureHandler ret = new TextureHandler();
-            ret.Init(filename, classic, 1, 1, palette: palette, colors: colors);
-            return ret;
-        }
+        public static TextureHandler Create(string filename, Texture_Base classic, ushort palette = 0, Color[] colors = null) => Create(filename, classic, 1, 1, palette: palette, colors: colors);
 
         public static TextureHandler Create(string filename, Texture_Base classic, uint cols, uint rows, ushort palette = 0, Color[] colors = null)
         {
-            TextureHandler ret = new TextureHandler();
-            ret.Init(filename, classic, cols, rows, palette, colors);
+            string s = FindPNG(filename, palette);
+            if (string.IsNullOrWhiteSpace(s) || !_ths.TryGetValue(s, out TextureHandler ret))
+            {
+                ret = new TextureHandler
+                {
+                    ModdedFilename = s,
+                    //Modded = string.IsNullOrWhiteSpace(s),
+                    Filename = filename,
+                    Classic = classic,
+                    Cols = cols,
+                    Rows = rows,
+                    Palette = palette,
+                    Colors = colors
+                };
+                ret.Init();
+                if (ret.Modded && !string.IsNullOrWhiteSpace(ret.ModdedFilename))
+                {
+                    _ths.TryAdd(ret.ModdedFilename, ret);
+                    //if (_pngs.ContainsKey(ret.ModdedFilename))
+                    //    _pngs.TryRemove(ret.ModdedFilename,out Texture2D none);
+                }
+            }
             return ret;
         }
 
@@ -184,8 +170,7 @@ namespace OpenVIII
         /// <returns></returns>
         public static Texture2D LoadPNG(string path, int palette = -1)
         {
-
-            string pngpath = File.Exists(path)? path : FindPNG(path, palette);
+            string pngpath = File.Exists(path) ? path : FindPNG(path, palette);
             Texture2D tex = null;
             if (!string.IsNullOrWhiteSpace(pngpath) && !_pngs.TryGetValue(pngpath, out tex))
             {
@@ -379,7 +364,7 @@ namespace OpenVIII
         /// <returns></returns>
         public Rectangle Trim(Rectangle src) => _process(Rectangle.Empty, src, Color.TransparentBlack, _Trim_SingleTexture);
 
-        protected void Init()
+        protected void Process()
         {
             Vector2 size = Vector2.Zero;
             Vector2 oldsize = Vector2.Zero;
@@ -401,7 +386,7 @@ namespace OpenVIII
                     }
                     else
                     {
-                        pngTex = LoadPNG(Filename, Palette);
+                        pngTex = !string.IsNullOrWhiteSpace(ModdedFilename) ? LoadPNG(ModdedFilename, Palette) : LoadPNG(Filename, Palette);
                     }
                     if (tex == null) tex = Classic;
                     Textures[c, r] = (UseBest(tex, pngTex, Palette, Colors));
@@ -569,21 +554,15 @@ namespace OpenVIII
             return cnt;
         }
 
-        private void Init(string filename, Texture_Base classic, uint cols, uint rows, ushort palette = 0, Color[] colors = null)
+        private void Init()
         {
-            Classic = classic;
             Size = Vector2.Zero;
-            Count = cols * rows;
-            Textures = new Texture2D[cols, rows];
+            Count = Cols * Rows;
+            Textures = new Texture2D[Cols, Rows];
             StartOffset = 0;
-            Rows = rows;
-            Cols = cols;
-            Filename = filename;
-            Palette = palette;
-            Colors = colors;
 
             //load textures;
-            Init();
+            Process();
             //unload Classic
             Classic = null;
             //Merge the texture pieces into one.
