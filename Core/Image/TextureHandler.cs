@@ -186,30 +186,6 @@ namespace OpenVIII
         {
             string bn = Path.GetFileNameWithoutExtension(path);
             string textures = Path.Combine(Memory.FF8DIR, "textures");
-            //old method;
-            //string prefix = bn.Substring(0, 2);
-            //string pngpath = Path.Combine(textures, prefix, bn);
-            //// this isn't working correctly unless mod authors have the this-> 13=0, 14=1... for palettes
-            ////https://github.com/MaKiPL/OpenVIII/issues/73
-            //string suffix = palette > -1 ? $"{palette + 13}" : "";
-            //suffix += ".png";
-            //if (Directory.Exists(pngpath))
-            //{
-            //    try
-            //    {
-            //        pngpath = Directory.GetFiles(pngpath).Last(x =>
-            //        (x.IndexOf(bn, StringComparison.OrdinalIgnoreCase) >= 0 &&
-            //        x.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)));
-            //        using (FileStream fs = File.OpenRead(pngpath))
-            //        {
-            //            return Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
-            //        }
-            //    }
-            //    catch (InvalidOperationException)
-            //    {
-            //        // couldn't find a match.
-            //    }
-            //}
             if (Directory.Exists(textures))
             {
                 if (pngs == null)
@@ -219,7 +195,8 @@ namespace OpenVIII
                     Texture2D tex;
                     if (palette < 0 || (tex = _loadpng($"{bn}+ _{ (palette + 1).ToString("D2")}")) == null)
                         tex = _loadpng(bn);
-                    return tex;
+                    if (tex != null)
+                        return tex;
                 }
             }
             return null;
