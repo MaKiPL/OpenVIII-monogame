@@ -184,34 +184,43 @@ namespace OpenVIII
         /// <returns></returns>
         public static Texture2D LoadPNG(string path, int palette = -1)
         {
+
+            string pngpath = File.Exists(path)? path : FindPNG(path, palette);
+            Texture2D tex = null;
+            if (!string.IsNullOrWhiteSpace(pngpath) && !_pngs.TryGetValue(pngpath, out tex))
+            {
+                using (FileStream fs = File.OpenRead(pngpath))
+                {
+                    tex = Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
+                    _pngs.TryAdd(pngpath, tex);
+                }
+            }
+            return tex;
+        }
+
+        public static string FindPNG(string path, int palette = -1)
+        {
             string bn = Path.GetFileNameWithoutExtension(path);
             string textures = Path.Combine(Memory.FF8DIR, "textures");
             if (Directory.Exists(textures))
             {
                 if (pngs == null)
                     pngs = Directory.GetFiles(textures, "*.png", SearchOption.AllDirectories);
-                Texture2D tex;
-                if (palette < 0 || (tex = _loadpng($"{bn}+ _{ (palette + 1).ToString("D2")}")) == null)
-                    tex = _loadpng(bn);
+                string tex;
+                if (palette < 0 || (tex = _findPNG($"{bn}+ _{ (palette + 1).ToString("D2")}")) == null)
+                    tex = _findPNG(bn);
 
                 return tex;
             }
             return null;
-            Texture2D _loadpng(string testname)
+            string _findPNG(string testname)
             {
                 for (int i = 0; i < pngs.Length; i++)
                 {
                     if (pngs[i].IndexOf(testname, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
-                        if (!_pngs.TryGetValue(pngs[i], out Texture2D tex))
-                        {
-                            using (FileStream fs = File.OpenRead(pngs[i]))
-                            {
-                                tex = Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
-                                _pngs.TryAdd(pngs[i], tex);
-                            }
-                        }
-                        return tex;
+                        //possibility of collision if filenames are too similar.
+                        return pngs[i];
                     }
                 }
                 return null;
