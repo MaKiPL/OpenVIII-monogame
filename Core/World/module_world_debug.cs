@@ -15,7 +15,7 @@ namespace OpenVIII
     {
         private static FPS_Camera fps_camera;
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
-        private static float degrees, Yshift;
+        private static float degrees;
         private static float camDistance = 10.0f;
         private static readonly float renderCamDistance = 1200.0f;
         private static Vector3 camPosition, camTarget;
@@ -23,6 +23,8 @@ namespace OpenVIII
         private static Vector3 lastPlayerPosition = playerPosition;
         public static BasicEffect effect;
         public static AlphaTestEffect ate;
+
+        private static GameTime deltaTime_;
 
         private enum _worldState
         {
@@ -121,6 +123,11 @@ namespace OpenVIII
             public byte Clut => (byte)(TPage_clut & 0x0F);
             private Texflags TexFlags { get => Texflags.TEXFLAGS_ISENTERABLE | Texflags.TEXFLAGS_MISC | Texflags.TEXFLAGS_ROAD | Texflags.TEXFLAGS_SHADOW | Texflags.TEXFLAGS_UNK | Texflags.TEXFLAGS_UNK2 | Texflags.TEXFLAGS_WATER; set => texFlags = value; }
             //public byte TPage_clut1 { set => TPage_clut = value; }
+
+            public override string ToString()
+            {
+                return $"GP={groundtype.ToString()} TP={TPage.ToString()} Clut={Clut.ToString()} TexFlags={Convert.ToString((byte)texFlags, 2).PadLeft(8, '0')} vertFlags={Convert.ToString(vertFlags, 2).PadLeft(8, '0')} UV={U1.ToString()} {V1.ToString()} {U2.ToString()} {V2.ToString()} {U3.ToString()} {V3.ToString()}";
+            }
         }
 
         private struct Vertex
@@ -369,8 +376,11 @@ namespace OpenVIII
 
         public static bool bHasMoved = false;
 
-        public static void Update()
+        public static void Update(GameTime deltaTime)
         {
+            deltaTime_ = deltaTime;
+            beachAnimCounter += deltaTime_.ElapsedGameTime.Milliseconds;
+            UpdateTextureAnimation();
             animationId = 0;
             switch (worldState)
             {
@@ -404,6 +414,39 @@ namespace OpenVIII
             CollisionUpdate();
             if(bHasMoved)
                 EncounterUpdate();
+        }
+
+        private static int currentBeachAnim = 0;
+        private static bool bBeachLoopInvert = false;
+        /// <summary>
+        /// Currently mockup- updates every animation by half-second;
+        /// </summary>
+        private static void UpdateTextureAnimation()
+        {
+            if (wmset == null)
+                return;
+            var anim = wmset.GetBeachAnimation(0); //zero- for testing
+            if(beachAnimCounter/1000f > 0.5f) //mockup
+            {
+                if (!bBeachLoopInvert)
+                    currentBeachAnim++;
+                else
+                    currentBeachAnim--;
+                beachAnimCounter = 0f;
+            }
+            if (currentBeachAnim >= anim.framesCount)
+                if (anim.bLooping > 0)
+                {
+                    bBeachLoopInvert = !bBeachLoopInvert;
+                    currentBeachAnim = anim.framesCount-2;
+                }
+                else
+                    currentBeachAnim = 0;
+            if(currentBeachAnim<0)
+            {
+                currentBeachAnim = 1;
+                bBeachLoopInvert = !bBeachLoopInvert;
+            }
         }
 
         /// <summary>
@@ -600,8 +643,8 @@ namespace OpenVIII
             DrawCharacter(activeCharacter);
 
 #if DEBUG
-            DrawCharacterShadow();
             DrawDebug();
+            DrawCharacterShadow();
 #endif
 
             switch (MapState)
@@ -627,7 +670,8 @@ namespace OpenVIII
                 $"Player position: ={playerPosition}\n" +
                 $"Segment Position: ={segmentPosition}\n" +
                 $"Press 8 to enable/disable collision: {bDebugDisableCollision}\n" +
-                //$"selWalk: =0b{Convert.ToString(bSelectedWalkable,2).PadLeft(8, '0')} of charaRay={countofDebugFaces.X}, skyRay={countofDebugFaces.Y}\n" +
+                $"selWalk: =0b{Convert.ToString(bSelectedWalkable,2).PadLeft(8, '0')} of charaRay={countofDebugFaces.X}, skyRay={countofDebugFaces.Y}\n" +
+                $"selWalk2: {(activeCollidePolygon.HasValue ? activeCollidePolygon.Value.ToString() : "N/A")}\n" +
                 $"Press 9 to enable debug FPS camera: ={(worldState == _worldState._1active ? "orbit camera" : "FPS debug camera")}\n" +
                 $"FPS camera degrees: ={degrees}°\n" +
                 $"FOV: ={FOV}", 30, 20, 1f, 2f, lineSpacing: 5);
@@ -698,7 +742,7 @@ namespace OpenVIII
 
         private static void DrawDebug()
         {
-            //DrawDebug_Rays(); //uncomment to enable drawing rays for collision
+            DrawDebug_Rays(); //uncomment to enable drawing rays for collision
             //DrawDebug_VehiclePreview(); //uncomment to enable drawing all vehicles in row
             //Debug_DrawRailPaths(); //uncomment to enable draw lines showing rail keypoints
         }
@@ -796,6 +840,7 @@ namespace OpenVIII
         private static float localMchRotation = -90f;
 
         private static Vector2 Scale;
+        private static float beachAnimCounter;
 
         private static void DrawCharacter(worldCharacters charaIndex)
         {
@@ -1163,7 +1208,14 @@ namespace OpenVIII
                 if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_ROAD))
                     ate.Texture = wmset.GetRoadsMiscTextures(wmset.Section39_Textures.asphalt, 0); // the enum does nothing there is only 1 texture.
                 else if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_WATER))
-                    ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0);
+                {
+                    if (poly.groundtype == 10)
+                    {
+                        ate.Texture = wmset.GetBeachAnimationTextureFrame(0, currentBeachAnim);
+                    }
+                    else
+                        ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0);
+                }
                 else
                     ate.Texture = (Texture2D)texl.GetTexture(poly.TPage, poly.Clut); //there are two texs, worth looking at other parameters; to reverse!
                 foreach (EffectPass pass in ate.CurrentTechnique.Passes)
