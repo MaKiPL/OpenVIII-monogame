@@ -65,7 +65,7 @@ namespace OpenVIII
         /// <remarks>
         /// FromPsColor from TEX does the same thing I think. Unsure which is better. I like the masks
         /// </remarks>
-        protected static Color ABGR1555toRGBA32bit(ushort pixel, bool ignoreAlpha = false)
+        public static Color ABGR1555toRGBA32bit(ushort pixel, bool ignoreAlpha = false)
         {
             // alert to let me know if we might need to check something.
             if (pixel == 0 && !ignoreAlpha) return Color.TransparentBlack;

@@ -718,6 +718,10 @@ namespace OpenVIII.Core.World
             /// </summary>
             /// Did you know that there's no way to tell C# to not marshal one field?
             public Texture2D[] framesTextures;
+            /// <summary>
+            /// Contains palette data for given frame- because section41 is palette (version 17)
+            /// </summary>
+            public Color[][] framesPalette;
         }
 
         private textureAnimation[] beachAnimations;
@@ -760,7 +764,7 @@ namespace OpenVIII.Core.World
         /// Valid for section 41 and 17!
         /// </summary>
         /// <param name="offset"></param>
-        /// <param name="texturePointer"></param>
+        /// <param name="texturePointer">-1 means section41</param>
         /// <param name="ms"></param>
         /// <param name="br"></param>
         /// <returns></returns>
@@ -782,12 +786,18 @@ namespace OpenVIII.Core.World
                 ms.Seek(4, SeekOrigin.Current); //there are two WORD's that feel like they have again the palette X and Y but why??
             uint preImagePosition = (uint)ms.Position;
             uint[] imagePointers = new uint[animation.framesCount];
-            Color[] palette = GetWorldMapTexturePalette(texturePointer==0 ?
-                Section38_textures.beach : texturePointer==-1 ?
-                Section38_textures.waterTex : Section38_textures.beachE, 0);
+            Color[] palette = null;
+            Color[][] customPalette = null;
+            if(texturePointer!= -1)
+                palette = GetWorldMapTexturePalette(texturePointer==0 ?
+                Section38_textures.beach : Section38_textures.beachE, 0);
             for (int i = 0; i < animation.framesCount; i++)
                 imagePointers[i] = br.ReadUInt32() + preImagePosition;
-            Texture2D[] animationFrames = new Texture2D[imagePointers.Length];
+            Texture2D[] animationFrames = null;
+            if (texturePointer != -1)
+                animationFrames = new Texture2D[imagePointers.Length];
+            else
+                customPalette = new Color[imagePointers.Length][];
             for(int i = 0; i<animation.framesCount; i++)
             {
                 //if (texturePointer == 0)
@@ -800,65 +810,51 @@ namespace OpenVIII.Core.World
                 ms.Seek(imagePointers[i], SeekOrigin.Begin);
                 uint unknownHeader = br.ReadUInt32();
                 uint unknownHeader_ = br.ReadUInt32();
-                if (unknownHeader != 18 && unknownHeader != 17) //I don't know why 18
+                if (unknownHeader != 18 && unknownHeader != 17) //I don't know why 18 [those are some version or flags?]
                     throw new Exception("wmset::section17::texturePointerHeader != 17 or 18");
                 if (unknownHeader_ != 1) //I don't know why 1
                     throw new Exception("wmset::section17::texturePointerHeader+4 != 1");
-                uint imageSize = br.ReadUInt32() - sec17_imageHeaderSize; //imageSize, but doesn't really matter here
+                _ = br.ReadUInt32() - sec17_imageHeaderSize; //imageSize, but doesn't really matter here
                 _ = br.ReadUInt32(); //unknown
                 ushort width = (ushort)(br.ReadUInt16()*2);
                 ushort height = br.ReadUInt16();
-                Texture2D texture = new Texture2D(Memory.graphics.GraphicsDevice, width, height, false, SurfaceFormat.Color);
-                Color[] texBuffer = new Color[width * height]; //32bpp because Color is ARGB byte : struct
-                if (palette.Length == 16)
+                Texture2D texture;
+                Color[] texBuffer;
+                if (texturePointer != -1)
                 {
-                    for (int m = 0; m < texBuffer.Length; m += 2)
+                    texture = new Texture2D(Memory.graphics.GraphicsDevice, width, height, false, SurfaceFormat.Color);
+                    texBuffer = new Color[width * height]; //32bpp because Color is ARGB byte : struct
+
+                    if (palette.Length == 16)
                     {
-                        byte b = br.ReadByte();
-                        texBuffer[m] = palette[b & 0xF];
-                        texBuffer[m + 1] = palette[b >> 4];
+                        for (int m = 0; m < texBuffer.Length; m += 2)
+                        {
+                            byte b = br.ReadByte();
+                            texBuffer[m] = palette[b & 0xF];
+                            texBuffer[m + 1] = palette[b >> 4];
+                        }
                     }
+                    else
+                        for (int m = 0; m < texBuffer.Length; m++)
+                        {
+                            byte b = br.ReadByte();
+                            texBuffer[m] = palette[b];
+                        }
+                    texture.SetData(texBuffer);
+                    animationFrames[i] = texture;
                 }
                 else
-                    for (int m = 0; m < texBuffer.Length; m++)
                     {
-                        byte b = br.ReadByte();
-                        texBuffer[m] = palette[b];
+                    customPalette[i] = new Color[width]; //in sec41 width is the number of colours
+                    for(int m=0; m<width; m++)
+                    {
+                        ushort color = br.ReadUInt16();
+                        customPalette[i][m] = Texture_Base.ABGR1555toRGBA32bit(color);
                     }
-                texture.SetData(texBuffer);
-
-                //if (texturePointer == 0) //slice to 2x2
-                //{
-                //    Color[] upperLeft = new Color[width / 2 * height / 2];
-                //    Color[] upperRight = new Color[width / 2 * height / 2];
-                //    Color[] bottomLeft = new Color[width / 2 * height / 2];
-                //    Color[] bottomRight = new Color[width / 2 * height / 2];
-                //    texture.GetData(0, new Rectangle(0, 0, width / 2, height / 2), upperLeft, 0, upperLeft.Length);
-                //    texture.GetData(0, new Rectangle(width / 2, 0, width / 2, height / 2), upperRight, 0, upperRight.Length);
-                //    texture.GetData(0, new Rectangle(0, height / 2, width / 2, height / 2), bottomLeft, 0, bottomLeft.Length);
-                //    texture.GetData(0, new Rectangle(width / 2, height / 2, width / 2, height / 2), bottomRight, 0, bottomRight.Length);
-                //    for (int p = 0; p < animationFrames[i].Length; p++)
-                //        animationFrames[i][p] = new Texture2D(Memory.graphics.GraphicsDevice, width / 2, height / 2, false, SurfaceFormat.Color);
-                //    animationFrames[i][0].SetData(upperLeft);
-                //    animationFrames[i][1].SetData(upperRight);
-                //    animationFrames[i][2].SetData(bottomLeft);
-                //    animationFrames[i][3].SetData(bottomRight);
-                //}
-                //else if (texturePointer != -1) //slice to 2x1
-                //{
-                //    Color[] upperLeft = new Color[width / 2 * height];
-                //    Color[] upperRight = new Color[width / 2 * height];
-                //    texture.GetData(0, new Rectangle(0, 0, width / 2, height), upperLeft, 0, upperLeft.Length);
-                //    texture.GetData(0, new Rectangle(width / 2, 0, width / 2, height), upperRight, 0, upperRight.Length);
-                //    for (int p = 0; p < animationFrames[i].Length; p++)
-                //        animationFrames[i][p] = new Texture2D(Memory.graphics.GraphicsDevice, width / 2, height, false, SurfaceFormat.Color);
-                //    animationFrames[i][0].SetData(upperLeft);
-                //    animationFrames[i][1].SetData(upperRight);
-                //}
-                //else
-                animationFrames[i] = texture; //if section41 do not decimate/slice;
+                    }
             }
             animation.framesTextures = animationFrames;
+            animation.framesPalette = customPalette;
             return animation;
         }
 
@@ -869,10 +865,11 @@ namespace OpenVIII.Core.World
         /// </summary>
         /// <param name="animationId">index of the animation wanted- there are two beach anim sets and one unknown</param>
         /// <param name="frameId">naturally the frame/keyframe of the animation</param>
-        /// <param name="chunkId">chunk from the atlas. 0 means top left, 1 means top right, 2 means bottom left, 3 means bottom right</param>
         /// <returns></returns>
         public Texture2D GetBeachAnimationTextureFrame(int animationId, int frameId)
             => beachAnimations[animationId].framesTextures[frameId];
+
+        public Color[] GetSection41Palettes(int palId, int clutId) => waterAnimations[palId].framesPalette[clutId];
 
         #endregion
 
