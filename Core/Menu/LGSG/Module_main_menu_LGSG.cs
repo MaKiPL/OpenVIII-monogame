@@ -6,9 +6,8 @@ namespace OpenVIII
 {
     public static partial class Module_main_menu_debug
     {
-        #region Fields
 
-        private static float s_blink;
+        #region Fields
 
         private static Vector2 _pageTarget;
         private static Vector2 PageSize;
@@ -49,17 +48,7 @@ namespace OpenVIII
 
         #region Properties
 
-        public static float blink_Amount
-        {
-            get => s_blink; private set
-            {
-                if (value > 1f)
-                    blinkstate = false;
-                if (value < 0f)
-                    blinkstate = true;
-                s_blink = value;
-            }
-        }
+        public static float Blink_Amount { get; private set; }
 
         private static double PercentLoaded { get; set; } = .5f;
         public static Vector2 TextScale { get; } = new Vector2(2.545455f, 3.0375f);

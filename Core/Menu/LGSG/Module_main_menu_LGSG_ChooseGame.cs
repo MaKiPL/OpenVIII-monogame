@@ -63,14 +63,14 @@ namespace OpenVIII
                     Y = (dst.Y + dst.Height / 2)
                 };
                 Memory.Icons.Draw(Icons.ID.Arrow_Left, 1, arrow, new Vector2(3f), fade);
-                Memory.Icons.Draw(Icons.ID.Arrow_Left, 2, arrow, new Vector2(3f), fade * blink_Amount);
+                Memory.Icons.Draw(Icons.ID.Arrow_Left, 2, arrow, new Vector2(3f), fade * Blink_Amount);
                 arrow = new Rectangle
                 {
                     X = (int)((dst.X + dst.Width) + -2 * 3f),
                     Y = arrow.Y
                 };
                 Memory.Icons.Draw(Icons.ID.Arrow_Right2, 1, arrow, new Vector2(3f), fade);
-                Memory.Icons.Draw(Icons.ID.Arrow_Right2, 2, arrow, new Vector2(3f), fade * blink_Amount);
+                Memory.Icons.Draw(Icons.ID.Arrow_Right2, 2, arrow, new Vector2(3f), fade * Blink_Amount);
             }
             UpdateTime();
             if (OffScreenBuffer != null && !OffScreenBuffer.IsDisposed)

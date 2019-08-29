@@ -113,17 +113,24 @@ namespace OpenVIII
                 //    break;
             }
         }
-
+        public static Slide<Vector2> OffsetSlide = new Slide<Vector2>(new Vector2(-1000, 0),Vector2.Zero, 1000, Vector2.SmoothStep);
+        public static Slide<float> BlinkSlide = new Slide<float>(1f, 0f, 300d, MathHelper.SmoothStep);
         /// <summary>
         /// Triggers functions depending on state
         /// </summary>
         public static void Update()
         {
-            if (blinkstate)
-                blink_Amount += Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
-            else
-                blink_Amount -= Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
-            
+            //if (blinkstate)
+            //    blink_Amount += Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
+            //else
+            //    blink_Amount -= Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
+            Blink_Amount = BlinkSlide.Update();
+            if (BlinkSlide.Done)
+            {
+                BlinkSlide.Reverse();
+                BlinkSlide.Restart();
+            }
+
             lastscale = scale;
             scale = Memory.Scale();
 #pragma warning disable CS0219 // Variable is assigned but its value is never used
@@ -157,6 +164,7 @@ namespace OpenVIII
                 Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
 
             ml = InputMouse.Location.Transform(IGM_focus);
+            
             switch (State)
             {
                 //case MainMenuStates.Init:
@@ -166,7 +174,7 @@ namespace OpenVIII
 
                 case MainMenuStates.MainLobby:
                     Memory.IsMouseVisible = true;
-                    Offset = new Vector2(-1000, 0);
+                    OffsetSlide.Restart();
                     //if (UpdateMainLobby() || (lastfade != fade))
                     //{
                     //    forceupdate = true;
@@ -178,13 +186,13 @@ namespace OpenVIII
                 case MainMenuStates.DebugScreen:
                     Menu.UpdateFade();
                     Memory.IsMouseVisible = true;
-                    if (Offset != Vector2.Zero)
-                    {
-                        Offset = Vector2.SmoothStep(Offset, Vector2.Zero, .15f).FloorOrCeiling(Vector2.Zero);
-                    }
                     if (UpdateDebugLobby() || (lastfade != fade) || Offset != Vector2.Zero)
                     {
                         forceupdate = true;
+                    }
+                    if (!OffsetSlide.Done)
+                    {
+                        Offset = OffsetSlide.Update();
                     }
 
                     break;
@@ -230,7 +238,6 @@ namespace OpenVIII
                 
 
         }
-
         
 
         /// <summary>
