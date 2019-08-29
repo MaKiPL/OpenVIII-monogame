@@ -47,14 +47,22 @@ namespace OpenVIII
             T tmp = _start; _start = _end; _end = tmp;
         }
 
-        public T Update()
+        public float UpdatePercent()
         {
             if (!Done)
             {
                 _currentMS += Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
-                float percent = (float)(Done ? 1f : _currentMS / _totalMS);
-                return _function(_start, _end, percent);
+                return (float)(Done ? 1f : _currentMS / _totalMS);
             }
+            else
+                return 1f;
+        }
+
+        public T Update()
+        {
+            float percent;
+            if (_function!=null && (percent = UpdatePercent())!=1f)
+                return _function(_start, _end, percent);
             return _end;
         }
 
