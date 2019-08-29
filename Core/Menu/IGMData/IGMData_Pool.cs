@@ -10,7 +10,7 @@
 
         #region Properties
 
-        public T2[] Contents { get; protected set; }
+        public T2[] Contents { get; set; }
         public int DefaultPages { get; private set; }
         public int Page { get; protected set; }
         public int Pages { get; protected set; }
