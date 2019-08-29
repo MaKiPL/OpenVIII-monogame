@@ -6,9 +6,7 @@ namespace OpenVIII
     {
         #region Fields
 
-        private T _current;
         private double _currentMS;
-        private float _currentPercent;
         private T _end;
         private Func<T, T, float, T> _function;
         private T _start;
@@ -30,9 +28,7 @@ namespace OpenVIII
 
         #region Properties
 
-        public T Current => _current;//Done ? _end : _current;
         public double CurrentMS => _currentMS;
-        public float CurrentPercent => _currentPercent;
         public bool Done => _currentMS >= _totalMS;
 
         public T End { get => _end; set => _end = value; }
@@ -51,27 +47,23 @@ namespace OpenVIII
             T tmp = _start; _start = _end; _end = tmp;
         }
 
-        public T Update()
-        {
-            if (!Done && _function != null)
-            {
-                UpdatePercent();
-                _current = _function(_start, _end, _currentPercent);
-                return _current;
-            }
-            return _end;
-        }
-
         public float UpdatePercent()
         {
-            _currentPercent = 1f;
             if (!Done)
             {
                 _currentMS += Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
-                return _currentPercent = (float)(Done ? 1f : _currentMS / _totalMS);
+                return (float)(Done ? 1f : _currentMS / _totalMS);
             }
             else
-                return _currentPercent;
+                return 1f;
+        }
+
+        public T Update()
+        {
+            float percent;
+            if (_function!=null && (percent = UpdatePercent())!=1f)
+                return _function(_start, _end, percent);
+            return _end;
         }
 
         #endregion Methods
