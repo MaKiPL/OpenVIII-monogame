@@ -192,6 +192,7 @@
     <Compile Include="Menu\Lobby\IGM_Lobby.cs" />
     <Compile Include="Menu\Menu_Base.cs" />
     <Compile Include="Saves\Damageable.cs" />
+    <Compile Include="Slide.cs" />
     <Compile Include="Strings\FF8String.cs" />
     <Compile Include="Strings\FF8StringReference.cs" />
     <Compile Include="Ffcc.cs" />

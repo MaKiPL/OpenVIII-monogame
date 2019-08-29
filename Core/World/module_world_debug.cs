@@ -15,7 +15,7 @@ namespace OpenVIII
     {
         private static FPS_Camera fps_camera;
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
-        private static float degrees, Yshift;
+        private static float degrees;
         private static float camDistance = 10.0f;
         private static readonly float renderCamDistance = 1200.0f;
         private static Vector3 camPosition, camTarget;
@@ -23,6 +23,8 @@ namespace OpenVIII
         private static Vector3 lastPlayerPosition = playerPosition;
         public static BasicEffect effect;
         public static AlphaTestEffect ate;
+
+        private static GameTime deltaTime_;
 
         private enum _worldState
         {
@@ -53,7 +55,7 @@ namespace OpenVIII
         private static rail rail;
 
         private static byte[] wmx;
-        private static float DEBUGshit = FOV;
+        private static float DEBUGshit = 0f;
         private const int WM_SEG_SIZE = 0x9000; //World map segment size in file
         private const int WM_SEGMENTS_COUNT = 835;
 
@@ -121,6 +123,11 @@ namespace OpenVIII
             public byte Clut => (byte)(TPage_clut & 0x0F);
             private Texflags TexFlags { get => Texflags.TEXFLAGS_ISENTERABLE | Texflags.TEXFLAGS_MISC | Texflags.TEXFLAGS_ROAD | Texflags.TEXFLAGS_SHADOW | Texflags.TEXFLAGS_UNK | Texflags.TEXFLAGS_UNK2 | Texflags.TEXFLAGS_WATER; set => texFlags = value; }
             //public byte TPage_clut1 { set => TPage_clut = value; }
+
+            public override string ToString()
+            {
+                return $"GP={groundtype.ToString()} TP={TPage.ToString()} Clut={Clut.ToString()} TexFlags={Convert.ToString((byte)texFlags, 2).PadLeft(8, '0')} vertFlags={Convert.ToString(vertFlags, 2).PadLeft(8, '0')} UV={U1.ToString()} {V1.ToString()} {U2.ToString()} {V2.ToString()} {U3.ToString()} {V3.ToString()}";
+            }
         }
 
         private struct Vertex
@@ -369,8 +376,11 @@ namespace OpenVIII
 
         public static bool bHasMoved = false;
 
-        public static void Update()
+        public static void Update(GameTime deltaTime)
         {
+            deltaTime_ = deltaTime;
+            beachAnimCounter += deltaTime_.ElapsedGameTime.Milliseconds;
+            UpdateTextureAnimation();
             animationId = 0;
             switch (worldState)
             {
@@ -406,6 +416,39 @@ namespace OpenVIII
                 EncounterUpdate();
         }
 
+        private static int currentBeachAnim = 0;
+        private static bool bBeachLoopInvert = false;
+        /// <summary>
+        /// Currently mockup- updates every animation by half-second;
+        /// </summary>
+        private static void UpdateTextureAnimation()
+        {
+            if (wmset == null)
+                return;
+            var anim = wmset.GetBeachAnimation(0); //zero- for testing
+            if(beachAnimCounter/1000f > 0.5f) //mockup
+            {
+                if (!bBeachLoopInvert)
+                    currentBeachAnim++;
+                else
+                    currentBeachAnim--;
+                beachAnimCounter = 0f;
+            }
+            if (currentBeachAnim >= anim.framesCount)
+                if (anim.bLooping > 0)
+                {
+                    bBeachLoopInvert = !bBeachLoopInvert;
+                    currentBeachAnim = anim.framesCount-2;
+                }
+                else
+                    currentBeachAnim = 0;
+            if(currentBeachAnim<0)
+            {
+                currentBeachAnim = 1;
+                bBeachLoopInvert = !bBeachLoopInvert;
+            }
+        }
+
         /// <summary>
         /// If player moved then check for available encounters and if we should play it
         /// </summary>
@@ -438,6 +481,10 @@ namespace OpenVIII
                 playerPosition.X += 1f;
             if (Input2.Button(Keys.D2))
                 playerPosition.X -= 1f;
+            if (Input2.Button(Keys.OemPlus))
+                DEBUGshit += 0.01f;
+            if (Input2.Button(Keys.OemMinus))
+                DEBUGshit -= 0.01f;
             if (worldState != _worldState._9debugFly)
             {
                 if (Input2.Button(FF8TextTagKey.Up))
@@ -600,8 +647,8 @@ namespace OpenVIII
             DrawCharacter(activeCharacter);
 
 #if DEBUG
-            DrawCharacterShadow();
             DrawDebug();
+            DrawCharacterShadow();
 #endif
 
             switch (MapState)
@@ -627,7 +674,9 @@ namespace OpenVIII
                 $"Player position: ={playerPosition}\n" +
                 $"Segment Position: ={segmentPosition}\n" +
                 $"Press 8 to enable/disable collision: {bDebugDisableCollision}\n" +
-                //$"selWalk: =0b{Convert.ToString(bSelectedWalkable,2).PadLeft(8, '0')} of charaRay={countofDebugFaces.X}, skyRay={countofDebugFaces.Y}\n" +
+                $"selWalk: =0b{Convert.ToString(bSelectedWalkable,2).PadLeft(8, '0')} of charaRay={countofDebugFaces.X}, skyRay={countofDebugFaces.Y}\n" +
+                $"selWalk2: {(activeCollidePolygon.HasValue ? activeCollidePolygon.Value.ToString() : "N/A")}\n" +
+                $"debugshit= {DEBUGshit}\n" +
                 $"Press 9 to enable debug FPS camera: ={(worldState == _worldState._1active ? "orbit camera" : "FPS debug camera")}\n" +
                 $"FPS camera degrees: ={degrees}°\n" +
                 $"FOV: ={FOV}", 30, 20, 1f, 2f, lineSpacing: 5);
@@ -698,7 +747,7 @@ namespace OpenVIII
 
         private static void DrawDebug()
         {
-            //DrawDebug_Rays(); //uncomment to enable drawing rays for collision
+            DrawDebug_Rays(); //uncomment to enable drawing rays for collision
             //DrawDebug_VehiclePreview(); //uncomment to enable drawing all vehicles in row
             //Debug_DrawRailPaths(); //uncomment to enable draw lines showing rail keypoints
         }
@@ -796,6 +845,7 @@ namespace OpenVIII
         private static float localMchRotation = -90f;
 
         private static Vector2 Scale;
+        private static float beachAnimCounter;
 
         private static void DrawCharacter(worldCharacters charaIndex)
         {
@@ -1163,7 +1213,33 @@ namespace OpenVIII
                 if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_ROAD))
                     ate.Texture = wmset.GetRoadsMiscTextures(wmset.Section39_Textures.asphalt, 0); // the enum does nothing there is only 1 texture.
                 else if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_WATER))
-                    ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0);
+                {
+                    if (poly.groundtype == 10 || poly.groundtype == 32) //BEACH + flat water
+                    {
+                        var @as = seg.parsedTriangle[k].parentPolygon;
+                        int animationIdPointer = @as.Clut == 2 ? 0 : 1;
+
+                        var texx = wmset.GetBeachAnimationTextureFrame(animationIdPointer, currentBeachAnim);
+                        float Ucoorder = @as.Clut == 2 ? 128f : 192;
+                        if (poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2))
+                        {
+                            vpc[0].TextureCoordinate = new Vector2((@as.U1 - Ucoorder) / texx.Width, @as.V1 / (float)texx.Height);
+                            vpc[1].TextureCoordinate = new Vector2((@as.U2 - Ucoorder) / texx.Width, @as.V2 / (float)texx.Height);
+                            vpc[2].TextureCoordinate = new Vector2((@as.U3 - Ucoorder) / texx.Width, @as.V3 / (float)texx.Height);
+                        }
+
+                        if(poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2))
+                            ate.Texture = wmset.GetBeachAnimationTextureFrame(animationIdPointer, currentBeachAnim);
+                        else if (poly.groundtype == 32)
+                            ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex, poly.Clut);
+                    }
+                    else if(Extended.In(poly.groundtype, 33, 34))
+                    {
+                        ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex, poly.Clut);
+                    }
+                    else
+                        ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0);
+                }
                 else
                     ate.Texture = (Texture2D)texl.GetTexture(poly.TPage, poly.Clut); //there are two texs, worth looking at other parameters; to reverse!
                 foreach (EffectPass pass in ate.CurrentTechnique.Passes)

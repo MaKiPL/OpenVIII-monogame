@@ -717,7 +717,7 @@ namespace OpenVIII.Core.World
             /// Contains texture data for given frame
             /// </summary>
             /// Did you know that there's no way to tell C# to not marshal one field?
-            public Texture2D[][] framesTextures;
+            public Texture2D[] framesTextures;
         }
 
         private textureAnimation[] beachAnimations;
@@ -787,15 +787,15 @@ namespace OpenVIII.Core.World
                 Section38_textures.waterTex : Section38_textures.beachE, 0);
             for (int i = 0; i < animation.framesCount; i++)
                 imagePointers[i] = br.ReadUInt32() + preImagePosition;
-            Texture2D[][] animationFrames = new Texture2D[imagePointers.Length][];
+            Texture2D[] animationFrames = new Texture2D[imagePointers.Length];
             for(int i = 0; i<animation.framesCount; i++)
             {
-                if (texturePointer == 0)
-                    animationFrames[i] = new Texture2D[4];
-                else if (texturePointer != -1)
-                    animationFrames[i] = new Texture2D[2];
-                else
-                    animationFrames[i] = new Texture2D[1];
+                //if (texturePointer == 0)
+                //    animationFrames[i] = new Texture2D[4];
+                //else if (texturePointer != -1)
+                //    animationFrames[i] = new Texture2D[2];
+                //else
+                //    animationFrames[i] = new Texture2D[1];
 
                 ms.Seek(imagePointers[i], SeekOrigin.Begin);
                 uint unknownHeader = br.ReadUInt32();
@@ -810,43 +810,53 @@ namespace OpenVIII.Core.World
                 ushort height = br.ReadUInt16();
                 Texture2D texture = new Texture2D(Memory.graphics.GraphicsDevice, width, height, false, SurfaceFormat.Color);
                 Color[] texBuffer = new Color[width * height]; //32bpp because Color is ARGB byte : struct
-                for(int m = 0; m<texBuffer.Length; m++)
+                if (palette.Length == 16)
                 {
-                    byte b = br.ReadByte();
-                    texBuffer[m] = palette[b];
-                }
-                texture.SetData(texBuffer);
-
-                if (texturePointer == 0) //slice to 2x2
-                {
-                    Color[] upperLeft = new Color[width / 2 * height / 2];
-                    Color[] upperRight = new Color[width / 2 * height / 2];
-                    Color[] bottomLeft = new Color[width / 2 * height / 2];
-                    Color[] bottomRight = new Color[width / 2 * height / 2];
-                    texture.GetData(0, new Rectangle(0, 0, width / 2, height / 2), upperLeft, 0, upperLeft.Length);
-                    texture.GetData(0, new Rectangle(width / 2, 0, width / 2, height / 2), upperRight, 0, upperRight.Length);
-                    texture.GetData(0, new Rectangle(0, height / 2, width / 2, height / 2), bottomLeft, 0, bottomLeft.Length);
-                    texture.GetData(0, new Rectangle(width / 2, height / 2, width / 2, height / 2), bottomRight, 0, bottomRight.Length);
-                    for (int p = 0; p < animationFrames[i].Length; p++)
-                        animationFrames[i][p] = new Texture2D(Memory.graphics.GraphicsDevice, width / 2, height / 2, false, SurfaceFormat.Color);
-                    animationFrames[i][0].SetData(upperLeft);
-                    animationFrames[i][1].SetData(upperRight);
-                    animationFrames[i][2].SetData(bottomLeft);
-                    animationFrames[i][3].SetData(bottomRight);
-                }
-                else if (texturePointer != -1) //slice to 2x1
-                {
-                    Color[] upperLeft = new Color[width / 2 * height];
-                    Color[] upperRight = new Color[width / 2 * height];
-                    texture.GetData(0, new Rectangle(0, 0, width / 2, height), upperLeft, 0, upperLeft.Length);
-                    texture.GetData(0, new Rectangle(width / 2, 0, width / 2, height), upperRight, 0, upperRight.Length);
-                    for (int p = 0; p < animationFrames[i].Length; p++)
-                        animationFrames[i][p] = new Texture2D(Memory.graphics.GraphicsDevice, width / 2, height, false, SurfaceFormat.Color);
-                    animationFrames[i][0].SetData(upperLeft);
-                    animationFrames[i][1].SetData(upperRight);
+                    for (int m = 0; m < texBuffer.Length; m += 2)
+                    {
+                        byte b = br.ReadByte();
+                        texBuffer[m] = palette[b & 0xF];
+                        texBuffer[m + 1] = palette[b >> 4];
+                    }
                 }
                 else
-                    animationFrames[i][0] = texture; //if section41 do not decimate/slice;
+                    for (int m = 0; m < texBuffer.Length; m++)
+                    {
+                        byte b = br.ReadByte();
+                        texBuffer[m] = palette[b];
+                    }
+                texture.SetData(texBuffer);
+
+                //if (texturePointer == 0) //slice to 2x2
+                //{
+                //    Color[] upperLeft = new Color[width / 2 * height / 2];
+                //    Color[] upperRight = new Color[width / 2 * height / 2];
+                //    Color[] bottomLeft = new Color[width / 2 * height / 2];
+                //    Color[] bottomRight = new Color[width / 2 * height / 2];
+                //    texture.GetData(0, new Rectangle(0, 0, width / 2, height / 2), upperLeft, 0, upperLeft.Length);
+                //    texture.GetData(0, new Rectangle(width / 2, 0, width / 2, height / 2), upperRight, 0, upperRight.Length);
+                //    texture.GetData(0, new Rectangle(0, height / 2, width / 2, height / 2), bottomLeft, 0, bottomLeft.Length);
+                //    texture.GetData(0, new Rectangle(width / 2, height / 2, width / 2, height / 2), bottomRight, 0, bottomRight.Length);
+                //    for (int p = 0; p < animationFrames[i].Length; p++)
+                //        animationFrames[i][p] = new Texture2D(Memory.graphics.GraphicsDevice, width / 2, height / 2, false, SurfaceFormat.Color);
+                //    animationFrames[i][0].SetData(upperLeft);
+                //    animationFrames[i][1].SetData(upperRight);
+                //    animationFrames[i][2].SetData(bottomLeft);
+                //    animationFrames[i][3].SetData(bottomRight);
+                //}
+                //else if (texturePointer != -1) //slice to 2x1
+                //{
+                //    Color[] upperLeft = new Color[width / 2 * height];
+                //    Color[] upperRight = new Color[width / 2 * height];
+                //    texture.GetData(0, new Rectangle(0, 0, width / 2, height), upperLeft, 0, upperLeft.Length);
+                //    texture.GetData(0, new Rectangle(width / 2, 0, width / 2, height), upperRight, 0, upperRight.Length);
+                //    for (int p = 0; p < animationFrames[i].Length; p++)
+                //        animationFrames[i][p] = new Texture2D(Memory.graphics.GraphicsDevice, width / 2, height, false, SurfaceFormat.Color);
+                //    animationFrames[i][0].SetData(upperLeft);
+                //    animationFrames[i][1].SetData(upperRight);
+                //}
+                //else
+                animationFrames[i] = texture; //if section41 do not decimate/slice;
             }
             animation.framesTextures = animationFrames;
             return animation;
@@ -861,8 +871,8 @@ namespace OpenVIII.Core.World
         /// <param name="frameId">naturally the frame/keyframe of the animation</param>
         /// <param name="chunkId">chunk from the atlas. 0 means top left, 1 means top right, 2 means bottom left, 3 means bottom right</param>
         /// <returns></returns>
-        public Texture2D GetBeachAnimationTextureFrame(int animationId, int frameId, int chunkId)
-            => beachAnimations[animationId].framesTextures[frameId][chunkId];
+        public Texture2D GetBeachAnimationTextureFrame(int animationId, int frameId)
+            => beachAnimations[animationId].framesTextures[frameId];
 
         #endregion
 
@@ -947,13 +957,27 @@ namespace OpenVIII.Core.World
                 for (int i = 0; i < innerSec.Length; i++)
                 {
                     TIM2 tim = new TIM2(buffer, (uint)(sectionPointers[38 - 1] + innerSec[i]));
+                    if(tim.GetBpp==4)
+                        if(tim.GetClutSize != (tim.GetClutCount*tim.GetColorsCountPerPalette)) //broken header, force our own values
+                        {
+                            tim.ForceSetClutColors(16);
+                            tim.ForceSetClutCount((ushort)(tim.GetClutSize / 16));
+                        }
                     sec38_textures.Add(new TextureHandler[tim.GetClutCount]);
-                    //support mods using no palettes.
                     sec38_pals.Add(new Color[tim.GetClutCount][]);
                     for (ushort k = 0; k < sec38_textures[i].Length; k++)
                     {
-                        sec38_pals[i][k] = tim.GetPalette(k);
-                        sec38_textures[i][k] = TextureHandler.Create($"wmset_tim38_{(i + 1).ToString("D2")}.tim", tim, k, null);
+                        Color[] table;
+                        //if (tim.GetBPP == 4)
+                        //{
+                        //    table = tim.GetPalette(k, 16);
+                        //    if (tim.GetColoursCount == 256)
+                        //        Array.Resize<Color>(ref table, 256);
+                        //}
+                        //else
+                        table = tim.GetPalette(k);
+                        sec38_pals[i][k] = table;
+                        sec38_textures[i][k] = TextureHandler.Create($"wmset_tim38_{(i + 1).ToString("D2")}.tim", tim, k, table);
                     }
                 }
             }
