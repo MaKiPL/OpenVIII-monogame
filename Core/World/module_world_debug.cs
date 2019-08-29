@@ -55,7 +55,7 @@ namespace OpenVIII
         private static rail rail;
 
         private static byte[] wmx;
-        private static float DEBUGshit = FOV;
+        private static float DEBUGshit = 0f;
         private const int WM_SEG_SIZE = 0x9000; //World map segment size in file
         private const int WM_SEGMENTS_COUNT = 835;
 
@@ -481,6 +481,10 @@ namespace OpenVIII
                 playerPosition.X += 1f;
             if (Input2.Button(Keys.D2))
                 playerPosition.X -= 1f;
+            if (Input2.Button(Keys.OemPlus))
+                DEBUGshit += 0.01f;
+            if (Input2.Button(Keys.OemMinus))
+                DEBUGshit -= 0.01f;
             if (worldState != _worldState._9debugFly)
             {
                 if (Input2.Button(FF8TextTagKey.Up))
@@ -672,6 +676,7 @@ namespace OpenVIII
                 $"Press 8 to enable/disable collision: {bDebugDisableCollision}\n" +
                 $"selWalk: =0b{Convert.ToString(bSelectedWalkable,2).PadLeft(8, '0')} of charaRay={countofDebugFaces.X}, skyRay={countofDebugFaces.Y}\n" +
                 $"selWalk2: {(activeCollidePolygon.HasValue ? activeCollidePolygon.Value.ToString() : "N/A")}\n" +
+                $"debugshit= {DEBUGshit}\n" +
                 $"Press 9 to enable debug FPS camera: ={(worldState == _worldState._1active ? "orbit camera" : "FPS debug camera")}\n" +
                 $"FPS camera degrees: ={degrees}°\n" +
                 $"FOV: ={FOV}", 30, 20, 1f, 2f, lineSpacing: 5);
@@ -1209,9 +1214,18 @@ namespace OpenVIII
                     ate.Texture = wmset.GetRoadsMiscTextures(wmset.Section39_Textures.asphalt, 0); // the enum does nothing there is only 1 texture.
                 else if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_WATER))
                 {
-                    if (poly.groundtype == 10)
+                    if (poly.groundtype == 10) //BEACH
                     {
-                        ate.Texture = wmset.GetBeachAnimationTextureFrame(0, currentBeachAnim);
+                        var @as = seg.parsedTriangle[k].parentPolygon;
+                        int animationIdPointer = @as.Clut == 2 ? 0 : 1;
+
+                        var texx = wmset.GetBeachAnimationTextureFrame(animationIdPointer, currentBeachAnim);
+                        float Ucoorder = @as.Clut == 2 ? 128f : 192;
+                        vpc[0].TextureCoordinate = new Vector2((@as.U1 - Ucoorder) /texx.Width, @as.V1/ (float)texx.Height);
+                        vpc[1].TextureCoordinate = new Vector2((@as.U2 - Ucoorder)/ texx.Width, @as.V2/ (float)texx.Height);
+                        vpc[2].TextureCoordinate = new Vector2((@as.U3 - Ucoorder)/ texx.Width, @as.V3/ (float)texx.Height);
+
+                        ate.Texture = wmset.GetBeachAnimationTextureFrame(animationIdPointer, currentBeachAnim);
                     }
                     else
                         ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0);
