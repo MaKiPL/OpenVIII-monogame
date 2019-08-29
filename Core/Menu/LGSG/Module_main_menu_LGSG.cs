@@ -8,12 +8,9 @@ namespace OpenVIII
     {
 
         #region Fields
-
-        private static Vector2 _pageTarget;
         private static Vector2 PageSize;
         private static Vector2 CurrentPageLoc;
         private static Vector2 CurrentLastPageLoc;
-        private static Vector2 _lastPageTarget;
         private static Vector2 lastscale;
         private static Vector2 scale;
         private static Point ml;
@@ -50,25 +47,8 @@ namespace OpenVIII
 
         public static float Blink_Amount { get; private set; }
 
-        private static double PercentLoaded { get; set; } = .5f;
+        private static double PercentLoaded { get; set; } = 0f;
         public static Vector2 TextScale { get; } = new Vector2(2.545455f, 3.0375f);
-        public static Vector2 PageTarget
-        {
-            get => _pageTarget; set
-            {
-                _pageTarget = value;
-                CurrentTime = 0;
-            }
-        }
-
-        public static Vector2 LastPageTarget
-        {
-            get => _lastPageTarget; set
-            {
-                _lastPageTarget = value;
-                CurrentTime = 0;
-            }
-        }
 
         #endregion Properties
         #region Methods

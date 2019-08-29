@@ -15,11 +15,13 @@ namespace OpenVIII
             DrawLGSGHeader(strLoadScreen[Litems.GameFolderSlot1 + SlotLoc].Text, topright, help);
             DrawLGSGLoadBar();
         }
+        static Slide<float> LoadBarSlide = new Slide<float>(0f, 1f, 1000d, MathHelper.SmoothStep);
         private static void UpdateLG_Loading()
         {
-            if (PercentLoaded < 1.0f)
+            if (PercentLoaded == 0) LoadBarSlide.Restart();
+            if(!LoadBarSlide.Done)
             {
-                PercentLoaded += Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0f;
+                PercentLoaded = LoadBarSlide.Update();
             }
             else if(Menu.IGM != null)
             {
