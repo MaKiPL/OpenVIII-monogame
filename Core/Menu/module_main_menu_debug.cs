@@ -28,6 +28,7 @@ namespace OpenVIII
         {
             //Init,
             MainLobby,
+
             DebugScreen,
             NewGameChoosed,
             LoadGameChooseSlot,
@@ -99,37 +100,50 @@ namespace OpenVIII
                 case MainMenuStates.SaveGameSaving:
                     DrawLGSG();
                     break;
+
                 case MainMenuStates.IGM:
                     Menu.IGM.Draw();
                     break;
+
                 case MainMenuStates.IGM_Junction:
                     Menu.IGM_Junction.Draw();
                     break;
+
                 case MainMenuStates.IGM_Items:
-                    Menu.IGM_Items.Draw();                
+                    Menu.IGM_Items.Draw();
                     break;
-                //case MainMenuStates.BattleMenu:
-                //    Menu.BattleMenus.Draw();
-                //    break;
+                    //case MainMenuStates.BattleMenu:
+                    //    Menu.BattleMenus.Draw();
+                    //    break;
             }
         }
+
+        public static Slide<Vector2> OffsetSlide = new Slide<Vector2>(new Vector2(-1000, 0), Vector2.Zero, 1000, Vector2.SmoothStep);
+        public static Slide<float> BlinkSlide = new Slide<float>(1f, 0f, 300d, MathHelper.Lerp);
+        public static Slide<float> FadeSlide = new Slide<float>(0f, 1f, 500d, MathHelper.Lerp);
 
         /// <summary>
         /// Triggers functions depending on state
         /// </summary>
         public static void Update()
         {
-            if (blinkstate)
-                blink_Amount += Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
-            else
-                blink_Amount -= Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
-            
+            //if (blinkstate)
+            //    blink_Amount += Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
+            //else
+            //    blink_Amount -= Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
+            Blink_Amount = BlinkSlide.Update();
+            if (BlinkSlide.Done)
+            {
+                BlinkSlide.Reverse();
+                BlinkSlide.Restart();
+            }
+
             lastscale = scale;
             scale = Memory.Scale();
 #pragma warning disable CS0219 // Variable is assigned but its value is never used
             bool forceupdate = false;
 #pragma warning restore CS0219 // Variable is assigned but its value is never used
-            
+
             if (LastActive != Memory.IsActive)
             {
                 forceupdate = true;
@@ -139,9 +153,12 @@ namespace OpenVIII
             {
                 forceupdate = true;
             }
-            if (Fade < 1.0f && State != MainMenuStates.NewGameChoosed)
+
+            if (Fade == 0) FadeSlide.Restart();
+            if (!FadeSlide.Done && State != MainMenuStates.NewGameChoosed)
             {
-                Fade += (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0f);
+                //Fade += (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0f);
+                Fade = FadeSlide.Update();
             }
 
             vp_per.X = Memory.PreferredViewportWidth;//Memory.graphics.GraphicsDevice.Viewport.Width;
@@ -152,11 +169,12 @@ namespace OpenVIII
             vpSpace = vp_per.Y * 0.09f;
             DFontPos = new Vector2(vp_per.X * .10f, vp_per.Y * .05f) + Offset;
 
-            IGM_focus = Matrix.CreateTranslation((vp_per.X / -2), (vp_per.Y / -2), 0) * 
-                Matrix.CreateScale(new Vector3(scale.X, scale.Y, 1)) * 
+            IGM_focus = Matrix.CreateTranslation((vp_per.X / -2), (vp_per.Y / -2), 0) *
+                Matrix.CreateScale(new Vector3(scale.X, scale.Y, 1)) *
                 Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
 
             ml = InputMouse.Location.Transform(IGM_focus);
+
             switch (State)
             {
                 //case MainMenuStates.Init:
@@ -166,7 +184,7 @@ namespace OpenVIII
 
                 case MainMenuStates.MainLobby:
                     Memory.IsMouseVisible = true;
-                    Offset = new Vector2(-1000, 0);
+                    OffsetSlide.Restart();
                     //if (UpdateMainLobby() || (lastfade != fade))
                     //{
                     //    forceupdate = true;
@@ -178,13 +196,13 @@ namespace OpenVIII
                 case MainMenuStates.DebugScreen:
                     Menu.UpdateFade();
                     Memory.IsMouseVisible = true;
-                    if (Offset != Vector2.Zero)
-                    {
-                        Offset = Vector2.SmoothStep(Offset, Vector2.Zero, .15f).FloorOrCeiling(Vector2.Zero);
-                    }
                     if (UpdateDebugLobby() || (lastfade != fade) || Offset != Vector2.Zero)
                     {
                         forceupdate = true;
+                    }
+                    if (!OffsetSlide.Done)
+                    {
+                        Offset = OffsetSlide.Update();
                     }
 
                     break;
@@ -205,14 +223,17 @@ namespace OpenVIII
                     Menu.UpdateFade();
                     UpdateLGSG();
                     break;
+
                 case MainMenuStates.IGM:
                     Memory.IsMouseVisible = true;
                     Menu.IGM.Update();
                     break;
+
                 case MainMenuStates.IGM_Junction:
                     Memory.IsMouseVisible = true;
                     Menu.IGM_Junction.Update();
                     break;
+
                 case MainMenuStates.IGM_Items:
                     Memory.IsMouseVisible = true;
                     Menu.IGM_Items.Update();
@@ -227,11 +248,7 @@ namespace OpenVIII
             //disabled because if you resize the window the next update call undoes this before drawing happens.
             //need a way to detect if drawing has happened before suppressing draw again.
             //if(forceupdate)
-                
-
         }
-
-        
 
         /// <summary>
         /// Init

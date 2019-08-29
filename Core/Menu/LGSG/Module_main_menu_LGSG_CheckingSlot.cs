@@ -17,9 +17,10 @@ namespace OpenVIII
         }
         private static void UpdateLGCheckSlot()
         {
-            if (PercentLoaded < 1.0f)
+            if (PercentLoaded == 0) LoadBarSlide.Restart();
+            if (!LoadBarSlide.Done)
             {
-                PercentLoaded += Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0f;
+                PercentLoaded = LoadBarSlide.Update();
             }
             else
             {
