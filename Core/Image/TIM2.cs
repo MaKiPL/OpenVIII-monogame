@@ -132,6 +132,21 @@ namespace OpenVIII
         public override int GetClutCount => texture.NumOfCluts;
 
         /// <summary>
+        /// Gets size of clut data as in TIM file
+        /// </summary>
+        public override int GetClutSize => texture.clutdataSize;
+
+        /// <summary>
+        /// Gets Bits per pixel
+        /// </summary>
+        public override byte GetBpp => (byte)bpp;
+
+        /// <summary>
+        /// Gets number of colours per palette
+        /// </summary>
+        public override int GetColorsCountPerPalette => texture.NumOfColours;
+
+        /// <summary>
         /// Height
         /// </summary>
         public override int GetHeight => texture.Height;
@@ -209,6 +224,10 @@ namespace OpenVIII
                 return GetClutColors(br, clut);
             }
         }
+
+        public override void ForceSetClutColors(ushort newNumOfColours) => texture.NumOfColours = newNumOfColours;
+
+        public override void ForceSetClutCount(ushort newClut) => texture.NumOfCluts = newClut;
 
         /// <summary>
         /// Create Texture from Tim image data.

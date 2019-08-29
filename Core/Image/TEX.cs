@@ -46,6 +46,9 @@ namespace OpenVIII
 
         public bool CLP => texture.PaletteFlag != 0;
         public override int GetClutCount => texture.NumOfPalettes;
+        public override int GetClutSize => (int)texture.PaletteSize;
+        public override byte GetBpp => texture.bytesPerPixel;
+        public override int GetColorsCountPerPalette => (int)texture.NumOfColorsPerPalette;
         public override int GetHeight => texture.Height;
         public override int GetOrigX => 0;
         public override int GetOrigY => 0;
@@ -68,6 +71,16 @@ namespace OpenVIII
         #endregion Properties
 
         #region Methods
+
+        public override void ForceSetClutColors(ushort newNumOfColours)
+        {
+            texture.NumOfColorsPerPalette = newNumOfColours;
+        }
+
+        public override void ForceSetClutCount(ushort newClut)
+        {
+            texture.NumOfPalettes = (byte)newClut;
+        }
 
         public override Color[] GetClutColors(ushort clut)
         {
