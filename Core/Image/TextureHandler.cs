@@ -568,7 +568,7 @@ namespace OpenVIII
             //Merge the texture pieces into one.
             Merge();
             if (!Modded)
-                ;// Memory.MainThreadOnlyActions.Enqueue(this.Save);
+                Memory.MainThreadOnlyActions.Enqueue(this.Save);
         }
 
         #endregion Methods
