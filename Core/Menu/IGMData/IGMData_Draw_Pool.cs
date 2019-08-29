@@ -4,8 +4,14 @@ namespace OpenVIII
 {
     public class IGMData_Draw_Pool : IGMData_Pool<Saves.Data, Debug_battleDat.Magic>
     {
+        #region Fields
+
         private bool Battle = true;
         private bool skipReinit = false;
+
+        #endregion Fields
+
+        #region Constructors
 
         public IGMData_Draw_Pool(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null, bool battle = false) : base(5, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.MAGIC), 4, 13, character, visablecharacter)
         {
@@ -18,23 +24,20 @@ namespace OpenVIII
         {
         }
 
-        public void Refresh(Debug_battleDat.Magic[] magics)
-        {
-            Contents = magics;
-        }
-        protected override void Init()
-        {
-            base.Init();
-            _helpStr = new FF8String[Count];
-            for (byte pos = 0; pos < Rows; pos++)
-            {
-                ITEM[pos, 0] = new IGMDataItem_String(null, SIZE[pos]);
-                ITEM[pos, 1] = new IGMDataItem_Int(0, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0), numtype: Icons.NumType.sysFntBig, spaces: 3);
-            }
-            ITEM[Targets_Window, 0] = new IGMDataItem_IGMData(new BattleMenus.IGMData_TargetGroup());
-            ITEM[Rows - 1, 2] = new IGMDataItem_Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows - 1].X + SIZE[Rows - 1].Width - 60, Y, 0, 0), scale: new Vector2(2.5f));
-            PointerZIndex = Rows - 1;
-        }
+        #endregion Constructors
+
+        #region Properties
+
+        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMDataItem_IGMData)ITEM[Targets_Window, 0]).Data);
+
+        private int Targets_Window => Rows;
+
+        #endregion Properties
+
+        #region Methods
+
+        public void Refresh(Debug_battleDat.Magic[] magics) => Contents = magics;
+
         public override void Refresh()
         {
             if (!Battle && !eventSet && Menu.IGM_Items != null)
@@ -90,6 +93,21 @@ namespace OpenVIII
                 }
             }
         }
+
+        protected override void Init()
+        {
+            base.Init();
+            _helpStr = new FF8String[Count];
+            for (byte pos = 0; pos < Rows; pos++)
+            {
+                ITEM[pos, 0] = new IGMDataItem_String(null, SIZE[pos]);
+                ITEM[pos, 1] = new IGMDataItem_Int(0, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0), numtype: Icons.NumType.sysFntBig, spaces: 3);
+            }
+            ITEM[Targets_Window, 0] = new IGMDataItem_IGMData(new BattleMenus.IGMData_TargetGroup());
+            ITEM[Rows - 1, 2] = new IGMDataItem_Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows - 1].X + SIZE[Rows - 1].Width - 60, Y, 0, 0), scale: new Vector2(2.5f));
+            PointerZIndex = Rows - 1;
+        }
+
         protected override void InitShift(int i, int col, int row)
         {
             base.InitShift(i, col, row);
@@ -99,5 +117,7 @@ namespace OpenVIII
             SIZE[i].Offset(0, 12 + (-8 * row));
             SIZE[i].Height = (int)(12 * TextScale.Y);
         }
+
+        #endregion Methods
     }
 }
