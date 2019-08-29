@@ -14,7 +14,7 @@ namespace OpenVIII
 
         private static int pointer = -1;
 
-        private static int time;
+        private static double time;
 
         #endregion Fields
 
@@ -45,6 +45,16 @@ namespace OpenVIII
             }
         }
 
+        /// <summary>
+        /// Make sure the next frame will draw.
+        /// </summary>
+        public static void Show()
+        {
+            if (currentMode == Mode.Wait)
+                currentMode = Mode.Draw;
+            Memory.SuppressDraw = false;
+        }
+
         public static void Update()
         {
             switch (currentMode)
@@ -61,7 +71,7 @@ namespace OpenVIII
                     break;
 
                 case Mode.Wait:
-                    time += Memory.gameTime.ElapsedGameTime.Milliseconds;
+                    time += Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
                     if (time > 2000)
                     {
                         currentMode--;

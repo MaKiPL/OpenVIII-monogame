@@ -8,13 +8,11 @@ namespace OpenVIII
     {
         #region Fields
 
-        private static Mode currentMode;
-
         private static Cards.ID[] CardValue;
-
+        private static Mode currentMode;
         private static int pointer = -1;
 
-        private static int time;
+        private static double time;
 
         #endregion Fields
 
@@ -45,6 +43,16 @@ namespace OpenVIII
             }
         }
 
+        /// <summary>
+        /// Make sure the next frame will draw.
+        /// </summary>
+        public static void Show()
+        {
+            if (currentMode == Mode.Wait)
+                currentMode = Mode.Draw;
+            Memory.SuppressDraw = false;
+        }
+
         public static void Update()
         {
             switch (currentMode)
@@ -61,7 +69,7 @@ namespace OpenVIII
                     break;
 
                 case Mode.Wait:
-                    time += Memory.gameTime.ElapsedGameTime.Milliseconds;
+                    time += Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
                     if (time > 2000)
                     {
                         currentMode--;
@@ -79,11 +87,11 @@ namespace OpenVIII
             {
                 Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
 
-                var id = CardValue[pointer];
+                Cards.ID id = CardValue[pointer];
                 uint pos = (uint)id;
                 //int i = cards.GetEntry(id).File;
-                uint col = (uint)(Memory.Cards.GetEntry(id).X / Memory.Cards.GetEntry(id).Width) +1;
-                uint row = (uint)(Memory.Cards.GetEntry(id).Y / Memory.Cards.GetEntry(id).Width) +1;
+                uint col = (uint)(Memory.Cards.GetEntry(id).X / Memory.Cards.GetEntry(id).Width) + 1;
+                uint row = (uint)(Memory.Cards.GetEntry(id).Y / Memory.Cards.GetEntry(id).Width) + 1;
 
                 float scale = vp.Height / Memory.Cards.GetEntry(id).Height;
                 Rectangle dst = new Rectangle(new Point(0), (Memory.Cards.GetEntry(id).Size * scale).ToPoint());

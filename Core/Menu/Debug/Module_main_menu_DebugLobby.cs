@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
@@ -82,7 +81,6 @@ namespace OpenVIII
             get => debug_moviePointer;
             set
             {
-
                 if (value >= Module_movie_test.Movies.Count)
                 {
                     value = 0;
@@ -94,7 +92,7 @@ namespace OpenVIII
 
                 debug_moviePointer = value;
                 Module_movie_test.Index = value;
-                if(Module_movie_test.Movies.Count>0)
+                if (Module_movie_test.Movies.Count > 0)
                     debug_choosedMovie = Path.GetFileNameWithoutExtension(Module_movie_test.Movies[value]);
             }
         }
@@ -124,33 +122,12 @@ namespace OpenVIII
 
         #region Methods
 
-        private static Rectangle FontBoxCalc<T>(Dictionary<Enum, Item> dict)
-        {
-            Rectangle dst = new Rectangle();
-            int item = 0;
-            foreach (Enum i in Enum.GetValues(typeof(T)))
-            {
-                Item c = dict[i];
-                c.Loc = Memory.font.RenderBasicText(FF8String.Combine(strDebugLobby[i].Text, InfoForLobby<Ditems>(i)),
-                (int)DFontPos.X, (int)(DFontPos.Y + vpSpace * item++), 2.545454545f, 3.0375f,skipdraw:true);
-                if (dst.X == 0 || dst.Y == 0)
-                    dst.Location = c.Loc.Location;
-                if (c.Loc.Width > dst.Width)
-                    dst.Width = c.Loc.Width;
-                dst.Height = c.Loc.Y + c.Loc.Height - dst.Y;
-                dict[i] = c;
-            }
-            
-            dst.Inflate(vp_per.X * .06f , vp_per.Y * .035f );
-            return dst;
-        }
         /// <summary>
         /// Draw Debug Menu
         /// </summary>
         private static void DrawDebugLobby()
         {
-            
-            vpSpace = vp_per.Y * 0.05f ;
+            vpSpace = vp_per.Y * 0.05f;
             float item = 0;
             Rectangle dst = FontBoxCalc<Ditems>(strDebugLobby);
             Memory.SpriteBatchStartAlpha(tm: IGM_focus);
@@ -158,11 +135,11 @@ namespace OpenVIII
             //Memory.Icons.Draw(Icons.ID.Menu_BG_256, 0, dst, new Vector2(2f), Fade);
             item = 0;
             dst.Offset(4 * 3.5f, 0);
-            dst.Size = (Memory.Icons[Icons.ID.DEBUG].GetRectangle.Size.ToVector2()  * 3.5f).ToPoint();
+            dst.Size = (Memory.Icons[Icons.ID.DEBUG].GetRectangle.Size.ToVector2() * 3.5f).ToPoint();
             //Memory.Icons.Draw(Icons.ID.DEBUG, 2, dst, Vector2.Zero, fade);
             dst.Location = DFontPos.ToPoint();
-            dst.Size = new Point((int)(24 * 2 ), (int)(16 * 2 ));
-            dst.Offset(-(dst.Width + 10 ), 6  + vpSpace * ((float)Dchoose));
+            dst.Size = new Point(24 * 2, 16 * 2);
+            dst.Offset(-(dst.Width + 10), 6 + vpSpace * ((float)Dchoose));
             //want to use new function brain hurts on this screen lol
             //DrawPointer(new Point((int)(textStart.X), (int)((((textSize.Y + vpSpace) * (float)Mchoose) + textStart.Y + (6 * textSize.Y)) )));
             Memory.Icons.Draw(Icons.ID.Finger_Right, 2, dst, Vector2.Zero, fade);
@@ -177,6 +154,27 @@ namespace OpenVIII
             //Memory.spriteBatch.Draw(Memory.iconsTex[2], dst,
             //    new Rectangle(232, 0, 23, 15), Color.White * Fade);
             Memory.SpriteBatchEnd();
+        }
+
+        private static Rectangle FontBoxCalc<T>(Dictionary<Enum, Item> dict)
+        {
+            Rectangle dst = new Rectangle();
+            int item = 0;
+            foreach (Enum i in Enum.GetValues(typeof(T)))
+            {
+                Item c = dict[i];
+                c.Loc = Memory.font.RenderBasicText(FF8String.Combine(strDebugLobby[i].Text, InfoForLobby<Ditems>(i)),
+                (int)DFontPos.X, (int)(DFontPos.Y + vpSpace * item++), 2.545454545f, 3.0375f, skipdraw: true);
+                if (dst.X == 0 || dst.Y == 0)
+                    dst.Location = c.Loc.Location;
+                if (c.Loc.Width > dst.Width)
+                    dst.Width = c.Loc.Width;
+                dst.Height = c.Loc.Y + c.Loc.Height - dst.Y;
+                dict[i] = c;
+            }
+
+            dst.Inflate(vp_per.X * .06f, vp_per.Y * .035f);
+            return dst;
         }
 
         /// <summary>
@@ -228,16 +226,16 @@ namespace OpenVIII
                 { Ditems.Cards, new Item{Text=new FF8String("Test Cards")} },
             };
             debug_choosedField = Memory.FieldHolder.fields[debug_fieldPointer];
-            if(Module_movie_test.Movies.Count>0)
+            if (Module_movie_test.Movies.Count > 0)
                 debug_choosedMovie = Path.GetFileNameWithoutExtension(Module_movie_test.Movies[debug_moviePointer]);
 
-            if(Memory.dicMusic.Count>0 && Memory.dicMusic[0].Count>0)
+            if (Memory.dicMusic.Count > 0 && Memory.dicMusic[0].Count > 0)
                 debug_choosedMusic = Path.GetFileNameWithoutExtension(Memory.dicMusic[0][0]);
 
             debug_fieldPointer = 90;
 
             debug_moviePointer = 0;
-    }
+        }
 
         /// <summary>
         /// Update Debug Menu
@@ -415,16 +413,19 @@ namespace OpenVIII
                 case Ditems.Faces:
                     Fade = 0.0f;
                     Memory.module = MODULE.FACE_TEST;
+                    Module_face_test.Show();
                     break;
 
                 case Ditems.Icons:
                     Fade = 0.0f;
                     Memory.module = MODULE.ICON_TEST;
+                    Module_icon_test.Show();
                     break;
 
                 case Ditems.Cards:
                     Fade = 0.0f;
                     Memory.module = MODULE.CARD_TEST;
+                    Module_card_test.Show();
                     break;
 
                 default:
