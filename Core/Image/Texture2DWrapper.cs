@@ -13,6 +13,12 @@ namespace OpenVIII
         public static implicit operator Texture2D(Texture2DWrapper right) => right.tex;
         public override int GetClutCount => 1;
 
+        public override byte GetBpp => 24;
+
+        public override int GetClutSize => 0;
+
+        public override int GetColorsCountPerPalette => 0;
+
         public override int GetHeight => tex?.Height ??0;
 
         public override int GetOrigX => 0;
@@ -22,6 +28,10 @@ namespace OpenVIII
         public override int GetWidth => tex?.Width ??0;
 
         public override Color[] GetClutColors(ushort clut) => null;
+        public override void ForceSetClutColors(ushort newNumOfColours)
+        {; }
+        public override void ForceSetClutCount(ushort newClut)
+        {; }
         public override Texture2D GetTexture() => tex;
         public override Texture2D GetTexture(Color[] colors = null) => tex;
         public override Texture2D GetTexture(ushort? clut = null) => tex;

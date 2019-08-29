@@ -33,6 +33,9 @@ namespace OpenVIII
         #region Properties
 
         public abstract int GetClutCount { get; }
+        public abstract int GetClutSize { get; }
+        public abstract int GetColorsCountPerPalette { get; }
+        public abstract byte GetBpp { get; }
         public abstract int GetHeight { get; }
         public abstract int GetOrigX { get; }
         public abstract int GetOrigY { get; }
@@ -41,6 +44,10 @@ namespace OpenVIII
         #endregion Properties
 
         #region Methods
+
+        public abstract void ForceSetClutColors(ushort newNumOfColours);
+
+        public abstract void ForceSetClutCount(ushort newClut);
 
         public abstract Color[] GetClutColors(ushort clut);
 
