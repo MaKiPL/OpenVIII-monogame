@@ -5,7 +5,6 @@ using OpenVIII.Encoding.Tags;
 using System;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace OpenVIII
 {
@@ -13,11 +12,13 @@ namespace OpenVIII
     {
         #region Fields
 
+        private const int DefaultPalette = 2;
         private static Mode currentMode;
 
         private static Icons.ID icon = Icons.ID.Arrow_Down;
-        private const int DefaultPalette = 2;
         private static int palette = DefaultPalette;
+
+        private static float zoom = 40f;
 
         #endregion Fields
 
@@ -48,15 +49,66 @@ namespace OpenVIII
             }
         }
 
+        public static void SaveStringToFile()
+        {
+            using (FileStream fs = File.Create("D:\\iconsdatadump.csv"))
+            using (BinaryWriter bw = new BinaryWriter(fs))
+            {
+                bw.Write(System.Text.Encoding.UTF8.GetBytes(ToString()));
+            }
+        }
+
+        /// <summary>
+        /// Make sure the next frame will draw.
+        /// </summary>
+        public static void Show()
+        {
+            if (currentMode == Mode.Wait)
+                currentMode = Mode.Draw;
+            Memory.SuppressDraw = false;
+        }
+
+        public static new string ToString()
+        {
+            string output = "{Enum Name},{Enum ID}," + Memory.Icons.GetEntry(Icons.ID.Finger_Right).ToStringHeader;
+            for (uint i = 0; i < Memory.Icons.Count; i++)
+            {
+                EntryGroup eg = Memory.Icons.GetEntryGroup((Icons.ID)i);
+                foreach (Entry e in eg)
+                {
+                    output += $"{((Icons.ID)i).ToString().Replace('_', ' ')},{i}," + e.ToString();
+                }
+            }
+            return output;
+        }
+
         public static void Update()
         {
+            if (Input2.DelayedButton(new InputButton() { Key = Keys.OemMinus, Trigger = ButtonTrigger.Press }) || Input2.DelayedButton(new InputButton() { Key = Keys.Subtract, Trigger = ButtonTrigger.Press }))
+            {
+                if (zoom - 1 < 1f)
+                    zoom = 1f;
+                else
+                    zoom--;
+                Show();
+            }
+
+            if (Input2.DelayedButton(new InputButton() { Key = Keys.OemPlus, Trigger = ButtonTrigger.Press }) || Input2.DelayedButton(new InputButton() { Key = Keys.Add, Trigger = ButtonTrigger.Press }))
+            {
+                if (zoom + 1 > 100f)
+                    zoom = 100f;
+                else
+                    zoom++;
+                Show();
+            }
+
             if (Input2.DelayedButton(FF8TextTagKey.Up))
             {
                 if (palette <= 0)
                     palette = (int)Memory.Icons.PaletteCount - 1;
                 else
                     palette--;
-                currentMode = Mode.Draw;
+                Show();
             }
 
             if (Input2.DelayedButton(FF8TextTagKey.Down))
@@ -65,7 +117,7 @@ namespace OpenVIII
                     palette = 0;
                 else
                     palette++;
-                currentMode = Mode.Draw;
+                Show();
             }
             if (Input2.DelayedButton(FF8TextTagKey.Right) || Input2.Button(Keys.PageDown))
             {
@@ -77,7 +129,7 @@ namespace OpenVIII
                         icon++;
                 }
                 while (Memory.Icons.GetEntry(icon) == null);
-                currentMode = Mode.Draw;
+                Show();
             }
             if (Input2.DelayedButton(FF8TextTagKey.Left) || Input2.Button(Keys.PageUp))
             {
@@ -91,7 +143,7 @@ namespace OpenVIII
                         icon--;
                 }
                 while (Memory.Icons.GetEntry(icon) == null);
-                currentMode = Mode.Draw;
+                Show();
             }
             switch (currentMode)
             {
@@ -117,7 +169,7 @@ namespace OpenVIII
             Memory.SpriteBatchEnd();
             Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
 
-            Vector2 scale = new Vector2(40f);
+            Vector2 scale = new Vector2(zoom);
             Rectangle dst = new Rectangle()
             {
                 Width = (int)(Memory.Icons.GetEntryGroup(icon).Width * scale.X),
@@ -143,31 +195,9 @@ namespace OpenVIII
                 $"palette: {palette}\n\n" +
                 $"width: {Memory.Icons[icon].Width}\n" +
                 $"height: {Memory.Icons[icon].Height}",
-                (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f),lineSpacing: 0);
+                (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), lineSpacing: 0);
             Memory.SpriteBatchEnd();
         }
-        static public void SaveStringToFile()
-        {
-            using (FileStream fs = File.Create("D:\\iconsdatadump.csv"))
-            using (BinaryWriter bw = new BinaryWriter(fs))
-            {
-                bw.Write(System.Text.Encoding.UTF8.GetBytes(ToString()));
-            }
-        }
-        static public new string ToString()
-        {
-            string output = "{Enum Name},{Enum ID}," + Memory.Icons.GetEntry(Icons.ID.Finger_Right).ToStringHeader;
-            for(uint i = 0; i < Memory.Icons.Count; i++)
-            {
-                EntryGroup eg = Memory.Icons.GetEntryGroup((Icons.ID)i);
-                foreach(Entry e in eg)
-                {
-                    output += $"{((Icons.ID)i).ToString().Replace('_', ' ')},{i}," + e.ToString();
-                }
-            }
-            return output;
-        }
-
 
         #endregion Methods
     }
