@@ -81,7 +81,7 @@ namespace OpenVIII
                     break;
 
                 case MODULE.WORLD_DEBUG:
-                    Module_world_debug.Update();
+                    Module_world_debug.Update(gameTime);
                     break;
 
                 case MODULE.FACE_TEST:
