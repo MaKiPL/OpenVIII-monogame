@@ -189,7 +189,19 @@ namespace OpenVIII
         [Flags]
         private enum VertFlags
         {
-            bWalkable = 0b10000000
+            /// <summary>
+            /// Player can walk on selected face (and only player)
+            /// </summary>
+            bWalkable = 0b10000000,
+            /// <summary>
+            /// Available exclusive to forests and tunnels
+            /// </summary>
+            bTreeZone = 0b01000000,
+            /// <summary>
+            /// Marked on faces that are NOT walkable by Player, but are by Chocobo- a thin water for example
+            /// </summary>
+            bWalkableByChocobo = 0b00010000
+              
         }
 
         private const byte TRIFLAGS_COLLIDE = 0b10000000;
