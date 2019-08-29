@@ -11,9 +11,11 @@ namespace OpenVIII
 
         #region Methods
 
-        private void DrawMagic(Debug_battleDat.Magic[] drawList) =>
+        private void DrawMagic(Debug_battleDat.Magic[] drawList)
+        {
             // display pool with list.
             Debug.WriteLine($"Display draw pool: {string.Join(", ", drawList)}");
+        }
 
         #endregion Methods
 

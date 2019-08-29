@@ -4,13 +4,13 @@
     {
         #region Constructors
 
-        public IGMData_Pool(int count, int depth, IGMDataItem container = null, int? rows = null, int? pages = null, Characters character= Characters.Blank, Characters? visablecharacter=null) : base(count + 2, depth, container, 1, rows,character, visablecharacter) => DefaultPages = pages ?? 1;
+        public IGMData_Pool(int count, int depth, IGMDataItem container = null, int? rows = null, int? pages = null, Characters character = Characters.Blank, Characters? visablecharacter = null) : base(count + 2, depth, container, 1, rows, character, visablecharacter) => DefaultPages = pages ?? 1;
 
         #endregion Constructors
 
         #region Properties
 
-        public T2[] Contents { get; private set; }
+        public T2[] Contents { get; protected set; }
         public int DefaultPages { get; private set; }
         public int Page { get; protected set; }
         public int Pages { get; protected set; }

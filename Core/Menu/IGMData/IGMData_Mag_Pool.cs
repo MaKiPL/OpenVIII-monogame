@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace OpenVIII
 {
+
     public class IGMData_Mag_Pool : IGMData_Pool<Saves.CharacterData, byte>
     {
         #region Fields
@@ -148,6 +149,7 @@ namespace OpenVIII
                 }
             }
         }
+
         public void Get_Slots_Values() =>
             Source = Memory.State.Characters[Character];
 
@@ -437,10 +439,11 @@ namespace OpenVIII
                 }
             }
         }
+
         protected override void DrawITEM(int i, int d)
         {
-            if(Targets_Window >= i || !Target_Group.Enabled)
-            base.DrawITEM(i, d);
+            if (Targets_Window >= i || !Target_Group.Enabled)
+                base.DrawITEM(i, d);
         }
 
         private void StatChangeEvent(object sender, Kernel_bin.Stat e) => UpdateOnEvent(sender, null, e);
@@ -502,6 +505,5 @@ namespace OpenVIII
         }
 
         #endregion Methods
-
     }
 }
