@@ -8,19 +8,20 @@ namespace OpenVIII
 
         private bool Battle = true;
         private bool skipReinit = false;
+        private FF8String[] _helpStr;
 
         #endregion Fields
 
         #region Constructors
 
-        public IGMData_Draw_Pool(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null, bool battle = false) : base(5, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.MAGIC), 4, 13, character, visablecharacter)
+        public IGMData_Draw_Pool(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null, bool battle = false) : base(5, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.CHOICE), 4, 13, character, visablecharacter)
         {
             Battle = battle;
             skipReinit = true;
             Refresh();
         }
 
-        public IGMData_Draw_Pool() : base(6, 3, new IGMDataItem_Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.MAGIC), 4, 13)
+        public IGMData_Draw_Pool() : base(6, 3, new IGMDataItem_Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.CHOICE), 4, 13)
         {
         }
 
@@ -50,7 +51,6 @@ namespace OpenVIII
             Source = Memory.State;
             if (Source != null && Source.Items != null)
             {
-                ((IGMDataItem_Box)CONTAINER).Title = Pages <= 1 ? (Icons.ID?)Icons.ID.ITEM : (Icons.ID?)(Icons.ID.ITEM_PG1 + (byte)Page);
                 byte pos = 0;
                 int skip = Page * Rows;
                 for (byte i = 0; pos < Rows && i < Source.Items.Count; i++)
@@ -101,7 +101,7 @@ namespace OpenVIII
             for (byte pos = 0; pos < Rows; pos++)
             {
                 ITEM[pos, 0] = new IGMDataItem_String(null, SIZE[pos]);
-                ITEM[pos, 1] = new IGMDataItem_Int(0, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0), numtype: Icons.NumType.sysFntBig, spaces: 3);
+                ITEM[pos, 1] = new IGMDataItem_Icon(Icons.ID.None, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0));
             }
             ITEM[Targets_Window, 0] = new IGMDataItem_IGMData(new BattleMenus.IGMData_TargetGroup());
             ITEM[Rows - 1, 2] = new IGMDataItem_Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows - 1].X + SIZE[Rows - 1].Width - 60, Y, 0, 0), scale: new Vector2(2.5f));
