@@ -1214,18 +1214,28 @@ namespace OpenVIII
                     ate.Texture = wmset.GetRoadsMiscTextures(wmset.Section39_Textures.asphalt, 0); // the enum does nothing there is only 1 texture.
                 else if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_WATER))
                 {
-                    if (poly.groundtype == 10) //BEACH
+                    if (poly.groundtype == 10 || poly.groundtype == 32) //BEACH + flat water
                     {
                         var @as = seg.parsedTriangle[k].parentPolygon;
                         int animationIdPointer = @as.Clut == 2 ? 0 : 1;
 
                         var texx = wmset.GetBeachAnimationTextureFrame(animationIdPointer, currentBeachAnim);
                         float Ucoorder = @as.Clut == 2 ? 128f : 192;
-                        vpc[0].TextureCoordinate = new Vector2((@as.U1 - Ucoorder) /texx.Width, @as.V1/ (float)texx.Height);
-                        vpc[1].TextureCoordinate = new Vector2((@as.U2 - Ucoorder)/ texx.Width, @as.V2/ (float)texx.Height);
-                        vpc[2].TextureCoordinate = new Vector2((@as.U3 - Ucoorder)/ texx.Width, @as.V3/ (float)texx.Height);
+                        if (poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2))
+                        {
+                            vpc[0].TextureCoordinate = new Vector2((@as.U1 - Ucoorder) / texx.Width, @as.V1 / (float)texx.Height);
+                            vpc[1].TextureCoordinate = new Vector2((@as.U2 - Ucoorder) / texx.Width, @as.V2 / (float)texx.Height);
+                            vpc[2].TextureCoordinate = new Vector2((@as.U3 - Ucoorder) / texx.Width, @as.V3 / (float)texx.Height);
+                        }
 
-                        ate.Texture = wmset.GetBeachAnimationTextureFrame(animationIdPointer, currentBeachAnim);
+                        if(poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2))
+                            ate.Texture = wmset.GetBeachAnimationTextureFrame(animationIdPointer, currentBeachAnim);
+                        else if (poly.groundtype == 32)
+                            ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex, poly.Clut);
+                    }
+                    else if(Extended.In(poly.groundtype, 33, 34))
+                    {
+                        ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex, poly.Clut);
                     }
                     else
                         ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0);

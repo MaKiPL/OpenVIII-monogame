@@ -810,11 +810,21 @@ namespace OpenVIII.Core.World
                 ushort height = br.ReadUInt16();
                 Texture2D texture = new Texture2D(Memory.graphics.GraphicsDevice, width, height, false, SurfaceFormat.Color);
                 Color[] texBuffer = new Color[width * height]; //32bpp because Color is ARGB byte : struct
-                for(int m = 0; m<texBuffer.Length; m++)
+                if (palette.Length == 16)
                 {
-                    byte b = br.ReadByte();
-                    texBuffer[m] = palette[b];
+                    for (int m = 0; m < texBuffer.Length; m += 2)
+                    {
+                        byte b = br.ReadByte();
+                        texBuffer[m] = palette[b & 0xF];
+                        texBuffer[m + 1] = palette[b >> 4];
+                    }
                 }
+                else
+                    for (int m = 0; m < texBuffer.Length; m++)
+                    {
+                        byte b = br.ReadByte();
+                        texBuffer[m] = palette[b];
+                    }
                 texture.SetData(texBuffer);
 
                 //if (texturePointer == 0) //slice to 2x2
@@ -947,13 +957,27 @@ namespace OpenVIII.Core.World
                 for (int i = 0; i < innerSec.Length; i++)
                 {
                     TIM2 tim = new TIM2(buffer, (uint)(sectionPointers[38 - 1] + innerSec[i]));
+                    if(tim.GetBpp==4)
+                        if(tim.GetClutSize != (tim.GetClutCount*tim.GetColorsCountPerPalette)) //broken header, force our own values
+                        {
+                            tim.ForceSetClutColors(16);
+                            tim.ForceSetClutCount((ushort)(tim.GetClutSize / 16));
+                        }
                     sec38_textures.Add(new TextureHandler[tim.GetClutCount]);
-                    //support mods using no palettes.
                     sec38_pals.Add(new Color[tim.GetClutCount][]);
                     for (ushort k = 0; k < sec38_textures[i].Length; k++)
                     {
-                        sec38_pals[i][k] = tim.GetPalette(k);
-                        sec38_textures[i][k] = TextureHandler.Create($"wmset_tim38_{(i + 1).ToString("D2")}.tim", tim, k, null);
+                        Color[] table;
+                        //if (tim.GetBPP == 4)
+                        //{
+                        //    table = tim.GetPalette(k, 16);
+                        //    if (tim.GetColoursCount == 256)
+                        //        Array.Resize<Color>(ref table, 256);
+                        //}
+                        //else
+                        table = tim.GetPalette(k);
+                        sec38_pals[i][k] = table;
+                        sec38_textures[i][k] = TextureHandler.Create($"wmset_tim38_{(i + 1).ToString("D2")}.tim", tim, k, table);
                     }
                 }
             }
