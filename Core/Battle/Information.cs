@@ -277,7 +277,9 @@ namespace OpenVIII
             // per IFRIT gf's id is between 0x40 and 0x4F. And they seem to be in order of GFs enum.
             public GFs GF => ID > 0x4F || ID < 0x40 ? GFs.Blank : (GFs)(ID - 0x40);
 
-            public override string ToString() => GF != GFs.Blank ? Memory.Strings.GetName(GF) : DATA?.Name;
+            public FF8String Name { get => GF != GFs.Blank ? Memory.Strings.GetName(GF) : DATA?.Name; }
+
+            public override string ToString() => Name;
         }
 
         #endregion Structs

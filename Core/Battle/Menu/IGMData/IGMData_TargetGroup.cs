@@ -8,22 +8,10 @@ namespace OpenVIII
 {
     public partial class BattleMenus
     {
-
-        #region Methods
-
-        private void DrawMagic(Debug_battleDat.Magic[] drawList)
-        {
-            // display pool with list.
-            Debug.WriteLine($"Display draw pool: {string.Join(", ", drawList)}");
-        }
-
-        #endregion Methods
-
         #region Classes
 
         public class IGMData_TargetGroup : IGMData_Group
         {
-
             #region Fields
 
             private readonly int[] Renzokuken_hits = { 4, 5, 6, 7 };
@@ -33,10 +21,11 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_TargetGroup(params IGMData[] d) : base(d) => after();
+            //public IGMData_TargetGroup(params IGMData[] d) : base(d) => after();
 
-            public IGMData_TargetGroup() : base()
+            public IGMData_TargetGroup(Characters character, Characters? visablecharacter = null, bool makesubs = true)
             {
+                VisableCharacter = visablecharacter ?? character;
                 const int X = 25;
                 const int w = 380;
                 const int w2 = 210;
@@ -44,10 +33,15 @@ namespace OpenVIII
                 const int Y1 = 630 - h;
                 CONTAINER.Pos = new Rectangle(X, Y1, w + w2, h);
                 Init(new IGMData[]{ new IGMData_TargetEnemies(new Rectangle(CONTAINER.Pos.X, CONTAINER.Pos.Y, w, h)),
-                        new IGMData_TargetParty(new Rectangle(CONTAINER.Pos.X + w, CONTAINER.Pos.Y, w2, h)) }, true);
+                    new IGMData_TargetParty(new Rectangle(CONTAINER.Pos.X + w, CONTAINER.Pos.Y, w2, h)),
+                    makesubs ? new IGMData_Draw_Pool(new Rectangle(X +50, Y - 50, 300, 192), Character, VisableCharacter, true): null}, true);
                 after();
             }
-
+            public override void Refresh(Characters character, Characters? visablecharacter = null)
+            {
+                base.Refresh(character, visablecharacter);
+                Draw_Pool?.Refresh(character, visablecharacter);
+            }
             #endregion Constructors
 
             #region Properties
@@ -57,31 +51,36 @@ namespace OpenVIII
             public Item_In_Menu Item { get; private set; }
             public Kernel_bin.Magic_Data Magic { get; private set; }
 
+            private IGMData_Draw_Pool Draw_Pool => (IGMData_Draw_Pool)(((IGMDataItem_IGMData)ITEM[2, 0])?.Data);
+            private IGMData_TargetEnemies TargetEnemies => (IGMData_TargetEnemies)(((IGMDataItem_IGMData)ITEM[0, 0])?.Data);
+
+            private IGMData_TargetParty TargetParty => (IGMData_TargetParty)(((IGMDataItem_IGMData)ITEM[1, 0])?.Data);
+
             #endregion Properties
 
             #region Methods
 
             public override bool Inputs()
             {
-                IGMData_TargetEnemies i = (IGMData_TargetEnemies)(((IGMDataItem_IGMData)ITEM[0, 0]).Data);
-                IGMData_TargetParty ii = (IGMData_TargetParty)(((IGMDataItem_IGMData)ITEM[1, 0]).Data);
                 bool ret = false;
-                if (i.Enabled && (((i.Cursor_Status | ii.Cursor_Status) & Cursor_Status.Enabled) == 0 || !ii.Enabled))
-                    i.Cursor_Status |= Cursor_Status.Enabled;
-                else if (ii.Enabled && (((i.Cursor_Status | ii.Cursor_Status) & Cursor_Status.Enabled) == 0 || !i.Enabled))
-                    ii.Cursor_Status |= Cursor_Status.Enabled;
+                if (Draw_Pool.Enabled)
+                    return Draw_Pool.Inputs();
+                if (TargetEnemies.Enabled && (((TargetEnemies.Cursor_Status | TargetParty.Cursor_Status) & Cursor_Status.Enabled) == 0 || !TargetParty.Enabled))
+                    TargetEnemies.Cursor_Status |= Cursor_Status.Enabled;
+                else if (TargetParty.Enabled && (((TargetEnemies.Cursor_Status | TargetParty.Cursor_Status) & Cursor_Status.Enabled) == 0 || !TargetEnemies.Enabled))
+                    TargetParty.Cursor_Status |= Cursor_Status.Enabled;
 
-                if (i.Enabled && ((i.Cursor_Status & Cursor_Status.Enabled) != 0 || i.CONTAINER.Pos.Contains(MouseLocation)))
+                if (TargetEnemies.Enabled && ((TargetEnemies.Cursor_Status & Cursor_Status.Enabled) != 0 || TargetEnemies.CONTAINER.Pos.Contains(MouseLocation)))
                 {
-                    i.Cursor_Status |= Cursor_Status.Enabled;
-                    ii.Cursor_Status &= ~Cursor_Status.Enabled;
-                    ret = i.Inputs();
+                    TargetEnemies.Cursor_Status |= Cursor_Status.Enabled;
+                    TargetParty.Cursor_Status &= ~Cursor_Status.Enabled;
+                    ret = TargetEnemies.Inputs();
                 }
-                if (!ret && ii.Enabled && ((ii.Cursor_Status & Cursor_Status.Enabled) != 0 || ii.CONTAINER.Pos.Contains(MouseLocation)))
+                if (!ret && TargetParty.Enabled && ((TargetParty.Cursor_Status & Cursor_Status.Enabled) != 0 || TargetParty.CONTAINER.Pos.Contains(MouseLocation)))
                 {
-                    ii.Cursor_Status |= Cursor_Status.Enabled;
-                    i.Cursor_Status &= ~Cursor_Status.Enabled;
-                    ret = ii.Inputs();
+                    TargetParty.Cursor_Status |= Cursor_Status.Enabled;
+                    TargetEnemies.Cursor_Status &= ~Cursor_Status.Enabled;
+                    ret = TargetParty.Inputs();
                 }
                 if (!ret)
                 {
@@ -115,6 +114,7 @@ namespace OpenVIII
                 Command = Kernel_bin.BattleCommands[4];
                 Item = c;
             }
+
             public void SelectTargetWindows(Kernel_bin.Battle_Commands c)
             {
                 Kernel_bin.Target t = c.Target;
@@ -203,10 +203,9 @@ namespace OpenVIII
 
             private void after()
             {
-                IGMData_TargetEnemies i = (IGMData_TargetEnemies)(((IGMDataItem_IGMData)ITEM[0, 0]).Data);
-                IGMData_TargetParty ii = (IGMData_TargetParty)(((IGMDataItem_IGMData)ITEM[1, 0]).Data);
-                i.Target_Party = ii;
-                ii.Target_Enemies = i;
+                TargetEnemies.Target_Party = TargetParty;
+                TargetParty.Target_Enemies = TargetEnemies;
+                Draw_Pool?.Hide();
                 Hide();
             }
 
@@ -214,14 +213,14 @@ namespace OpenVIII
 
             private bool Command01_ATTACK()
             {
-                Neededvaribles(out IGMData_TargetEnemies i, out Enemy e, out Characters vc, out Characters fromvc, out bool enemytarget);
+                Neededvaribles(out Enemy e, out Characters vc, out Characters fromvc, out bool enemytarget);
                 return true;
             }
 
             private bool Command02_MAGIC()
             {
-                Neededvaribles(out IGMData_TargetEnemies i, out Enemy e, out Characters vc, out Characters fromvc, out bool enemytarget);
-                Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} casts {Magic.Name}({Magic.ID}) spell on { (enemytarget ? $"{e.Name.Value_str}({i.CURSOR_SELECT})" : Memory.Strings.GetName(vc).Value_str) }");
+                Neededvaribles(out Enemy e, out Characters vc, out Characters fromvc, out bool enemytarget);
+                Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} casts {Magic.Name}({Magic.ID}) spell on { (enemytarget ? $"{e.Name.Value_str}({TargetEnemies.CURSOR_SELECT})" : Memory.Strings.GetName(vc).Value_str) }");
                 return true;
             }
 
@@ -229,14 +228,14 @@ namespace OpenVIII
 
             private bool Command04_ITEM()
             {
-                Neededvaribles(out IGMData_TargetEnemies i, out Enemy e, out Characters vc, out Characters fromvc, out bool enemytarget);
-                Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} uses {Item.Name}({Item.ID}) item on { (enemytarget ? $"{e.Name.Value_str}({i.CURSOR_SELECT})" : Memory.Strings.GetName(vc).Value_str) }");
+                Neededvaribles(out Enemy e, out Characters vc, out Characters fromvc, out bool enemytarget);
+                Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} uses {Item.Name}({Item.ID}) item on { (enemytarget ? $"{e.Name.Value_str}({TargetEnemies.CURSOR_SELECT})" : Memory.Strings.GetName(vc).Value_str) }");
                 return true;
             }
 
             private bool Command05_RENZOKUKEN()
             {
-                Neededvaribles(out IGMData_TargetEnemies i, out Enemy e, out Characters vc, out Characters fromvc, out bool enemytarget);
+                Neededvaribles(out Enemy e, out Characters vc, out Characters fromvc, out bool enemytarget);
                 //Renzokuken
                 byte w = Memory.State[fromvc].WeaponID;
                 int hits = Memory.State[fromvc].CurrentCrisisLevel < Renzokuken_hits.Length ? Renzokuken_hits[Memory.State[fromvc].CurrentCrisisLevel] : Renzokuken_hits.Last();
@@ -267,10 +266,12 @@ namespace OpenVIII
 
             private bool Command06_DRAW()
             {
-                Neededvaribles(out IGMData_TargetEnemies i, out Enemy e, out Characters vc, out Characters fromvc, out bool enemytarget);
+                Neededvaribles(out Enemy e, out Characters vc, out Characters fromvc, out bool enemytarget);
                 //draw
                 //spawn a 1 page 4 row pool of the magic/gfs that the selected enemy has.
-                BattleMenus.DrawMagic(e.DrawList);
+                DrawMagic(e.DrawList);
+                Draw_Pool.Refresh(e.DrawList);
+                Draw_Pool.Show();
                 return true;
             }
 
@@ -344,41 +345,41 @@ namespace OpenVIII
 
             private void DebugMessageCommand(IGMData_TargetEnemies i, Enemy e, Characters vc, Characters fromvc, bool enemytarget) => Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} uses {Command.Name}({Command.ID}) command on { (enemytarget ? $"{e.Name.Value_str}({i.CURSOR_SELECT})" : Memory.Strings.GetName(vc).Value_str) }");
 
-            private void Neededvaribles(out IGMData_TargetEnemies i, out Enemy e, out Characters vc, out Characters fromvc, out bool enemytarget)
+            private void DrawMagic(Debug_battleDat.Magic[] drawList) =>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                    // display
+                                                                                                                                                                                                                                                                                                                                                                                                                                                    // pool
+                                                                                                                                                                                                                                                                                                                                                                                                                                                    // with list.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                    Debug.WriteLine($"Display draw pool: {string.Join(", ", drawList)}");
+
+            private void Neededvaribles(out Enemy e, out Characters vc, out Characters fromvc, out bool enemytarget)
             {
-                i = (IGMData_TargetEnemies)(((IGMDataItem_IGMData)ITEM[0, 0]).Data);
-                IGMData_TargetParty ii = (IGMData_TargetParty)(((IGMDataItem_IGMData)ITEM[1, 0]).Data);
-                e = Enemy.Party[ii.CURSOR_SELECT < Enemy.Party.Count ? ii.CURSOR_SELECT : Enemy.Party.Count - 1];
-                Characters c = Memory.State.PartyData.Where(x => x != Characters.Blank).ToList()[ii.CURSOR_SELECT];
-                vc = Memory.State.Party.Where(x => x != Characters.Blank).ToList()[ii.CURSOR_SELECT];
+                e = Enemy.Party[TargetParty.CURSOR_SELECT < Enemy.Party.Count ? TargetParty.CURSOR_SELECT : Enemy.Party.Count - 1];
+                Characters c = Memory.State.PartyData.Where(x => x != Characters.Blank).ToList()[TargetParty.CURSOR_SELECT];
+                vc = Memory.State.Party.Where(x => x != Characters.Blank).ToList()[TargetParty.CURSOR_SELECT];
                 int p = BattleMenus.Player;
                 Characters fromc = Memory.State.PartyData.Where(x => x != Characters.Blank).ToList()[p];
                 fromvc = Memory.State.Party.Where(x => x != Characters.Blank).ToList()[p];
                 enemytarget = false;
-                if ((i.Cursor_Status & Cursor_Status.Enabled) != 0 && i.Enabled)
+                if ((TargetEnemies.Cursor_Status & Cursor_Status.Enabled) != 0 && TargetEnemies.Enabled)
                     enemytarget = true;
-                DebugMessageCommand(i, e, vc, fromvc, enemytarget);
+                DebugMessageCommand(TargetEnemies, e, vc, fromvc, enemytarget);
             }
 
             private void SelectTargetWindows(Kernel_bin.Target t)
             {
-                IGMData_TargetEnemies i = (IGMData_TargetEnemies)(((IGMDataItem_IGMData)ITEM[0, 0]).Data);
-                IGMData_TargetParty ii = (IGMData_TargetParty)(((IGMDataItem_IGMData)ITEM[1, 0]).Data);
                 if ((t & Kernel_bin.Target.Ally) != 0)
-                    ii.Show();
+                    TargetParty.Show();
                 else
-                    ii.Hide();
+                    TargetParty.Hide();
                 if ((t & Kernel_bin.Target.Enemy) != 0)
-                    i.Show();
+                    TargetEnemies.Show();
                 else
-                    i.Hide();
+                    TargetEnemies.Hide();
             }
 
             #endregion Methods
-
         }
 
         #endregion Classes
-
     }
 }

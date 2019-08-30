@@ -8,20 +8,25 @@ namespace OpenVIII
     /// <see cref="https://www.youtube.com/watch?v=BhgixAEvuu0"/>
     public class IGMData_BlueMagic_Pool : IGMData_Pool<Saves.Data, Kernel_bin.Blue_Magic>
     {
+        #region Constructors
+
         public IGMData_BlueMagic_Pool(int count, int depth, IGMDataItem container = null, int? rows = null, int? pages = null, Characters character = Characters.Blank, Characters? visablecharacter = null) : base(count, depth, container, rows, pages, character, visablecharacter)
         {
         }
+
+        #endregion Constructors
     }
 
     public class IGMData_Commands : IGMData
     {
+
         #region Fields
 
         private bool _crisisLevel;
+        private Kernel_bin.Battle_Commands[] commands;
         private int nonbattleWidth;
         private sbyte page = 0;
         private bool skipReinit;
-        private Kernel_bin.Battle_Commands[] commands;
 
         #endregion Fields
 
@@ -42,19 +47,19 @@ namespace OpenVIII
 
         public bool CrisisLevel { get => _crisisLevel; set => _crisisLevel = value; }
 
+        public IGMData_ItemPool ItemPool => (IGMData_ItemPool)(((IGMDataItem_IGMData)ITEM[Item_Pool, 0]).Data);
+        public IGMData_Mag_Pool MagPool => (IGMData_Mag_Pool)(((IGMDataItem_IGMData)ITEM[Mag_Pool, 0]).Data);
+        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMDataItem_IGMData)ITEM[Targets_Window, 0]).Data);
+        private int Item_Pool => Count - 2;
         private int Limit_Arrow => Count - 4;
 
         private int Mag_Pool => Count - 3;
-
-        private int Item_Pool => Count - 2;
-
         private int Targets_Window => Count - 1;
-
-        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMDataItem_IGMData)ITEM[Targets_Window, 0]).Data);
 
         #endregion Properties
 
         #region Methods
+
         public override bool Inputs()
         {
             bool ret = false;
@@ -88,22 +93,6 @@ namespace OpenVIII
             }
         }
 
-        public override void Inputs_Right()
-        {
-            if (Battle && CURSOR_SELECT == 0 && CrisisLevel)
-            {
-                if (page == 0)
-                {
-                    commands[CURSOR_SELECT] = Memory.State.Characters[Character].CharacterStats.Limit;
-                    ((IGMDataItem_String)ITEM[0, 0]).Data = commands[CURSOR_SELECT].Name;
-                    skipsnd = true;
-                    base.Inputs_Right();
-                    page++;
-                    ITEM[Limit_Arrow, 0].Hide();
-                }
-            }
-        }
-
         public override bool Inputs_OKAY()
         {
             base.Inputs_OKAY();
@@ -132,7 +121,21 @@ namespace OpenVIII
             }
         }
 
-
+        public override void Inputs_Right()
+        {
+            if (Battle && CURSOR_SELECT == 0 && CrisisLevel)
+            {
+                if (page == 0)
+                {
+                    commands[CURSOR_SELECT] = Memory.State.Characters[Character].CharacterStats.Limit;
+                    ((IGMDataItem_String)ITEM[0, 0]).Data = commands[CURSOR_SELECT].Name;
+                    skipsnd = true;
+                    base.Inputs_Right();
+                    page++;
+                    ITEM[Limit_Arrow, 0].Hide();
+                }
+            }
+        }
         /// <summary>
         /// Things that may of changed before screen loads or junction is changed.
         /// </summary>
@@ -180,8 +183,22 @@ namespace OpenVIII
                     CONTAINER.Width = nonbattleWidth;
                     ITEM[Limit_Arrow, 0] = null;
                 }
+                if (Character != Characters.Blank)
+                {
+                    Target_Group.Refresh(Character, VisableCharacter);
+                    MagPool.Refresh(Character, VisableCharacter);
+                    ItemPool.Refresh(Character, VisableCharacter);
+                }
             }
             skipReinit = false;
+        }
+
+        public override void Refresh(Characters character, Characters? visablecharacter = null)
+        {
+            base.Refresh(character, visablecharacter);
+            Target_Group.Refresh(Character, VisableCharacter);
+            MagPool.Refresh(Character, VisableCharacter);
+            ItemPool.Refresh(Character, VisableCharacter);
         }
 
         public override void SetModeChangeEvent(ref EventHandler<Enum> eventHandler)
@@ -202,18 +219,16 @@ namespace OpenVIII
             ITEM[Mag_Pool, 0].Hide();
             ITEM[Item_Pool, 0] = new IGMDataItem_IGMData(new IGMData_ItemPool(new Rectangle(X + 50, Y - 22, 400, 194), true));
             ITEM[Item_Pool, 0].Hide();
-            ITEM[Targets_Window, 0] = new IGMDataItem_IGMData(new BattleMenus.IGMData_TargetGroup());
+            ITEM[Targets_Window, 0] = new IGMDataItem_IGMData(new BattleMenus.IGMData_TargetGroup(Character, VisableCharacter));
             commands = new Kernel_bin.Battle_Commands[Rows];
             PointerZIndex = Limit_Arrow;
         }
-
         protected override void InitShift(int i, int col, int row)
         {
             base.InitShift(i, col, row);
             SIZE[i].Inflate(-22, -8);
             SIZE[i].Offset(0, 12 + (-8 * row));
         }
-
         protected override void ModeChangeEvent(object sender, Enum e)
         {
             base.ModeChangeEvent(sender, e);
@@ -231,5 +246,6 @@ namespace OpenVIII
         }
 
         #endregion Methods
+
     }
 }

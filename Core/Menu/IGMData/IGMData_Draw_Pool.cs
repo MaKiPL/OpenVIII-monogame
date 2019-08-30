@@ -7,22 +7,15 @@ namespace OpenVIII
         #region Fields
 
         private bool Battle = true;
-        private bool skipReinit = false;
-        private FF8String[] _helpStr;
 
         #endregion Fields
 
         #region Constructors
 
-        public IGMData_Draw_Pool(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null, bool battle = false) : base(5, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.CHOICE), 4, 13, character, visablecharacter)
+        public IGMData_Draw_Pool(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null, bool battle = false) : base(5, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.CHOICE), 4, 1, character, visablecharacter)
         {
             Battle = battle;
-            skipReinit = true;
             Refresh();
-        }
-
-        public IGMData_Draw_Pool() : base(6, 3, new IGMDataItem_Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.CHOICE), 4, 13)
-        {
         }
 
         #endregion Constructors
@@ -37,58 +30,37 @@ namespace OpenVIII
 
         #region Methods
 
-        public void Refresh(Debug_battleDat.Magic[] magics) => Contents = magics;
+        public void Refresh(Debug_battleDat.Magic[] magics)
+        {
+            Contents = magics;
+            Refresh();
+        }
 
         public override void Refresh()
         {
-            if (!Battle && !eventSet && Menu.IGM_Items != null)
-            {
-                Menu.IGM_Items.ModeChangeHandler += ModeChangeEvent;
-                Menu.IGM_Items.ReInitCompletedHandler += ReInitCompletedEvent;
-                eventSet = true;
-            }
             base.Refresh();
             Source = Memory.State;
-            if (Source != null && Source.Items != null)
+            if (Source != null && Source.Items != null && Character != Characters.Blank)
             {
                 byte pos = 0;
                 int skip = Page * Rows;
-                for (byte i = 0; pos < Rows && i < Source.Items.Count; i++)
+                for (byte i = 0; pos < Rows && i < Contents.Length; i++)
                 {
-                    Saves.Item item = Source.Items[i];
-                    if (item.ID == 0 || item.QTY == 0) continue; // skip empty values.
-                    if (skip-- > 0) continue; //skip items that are on prev pages.
-                    Item_In_Menu itemdata = item.DATA ?? new Item_In_Menu();
-                    if (Battle && itemdata.Battle == null) continue;
-                    if (itemdata.ID == 0) continue; // skip empty values.
-                    Font.ColorID color = Font.ColorID.White;
-                    byte palette = itemdata.Palette;
-                    if (!itemdata.ValidTarget(Battle))
-                    {
-                        color = Font.ColorID.Grey;
-                        BLANKS[pos] = true;
-                        palette = itemdata.Faded_Palette;
-                    }
+                    bool unlocked = Source.UnlockedGFs().Contains(Contents[i].GF);
+                    bool junctioned = Source[Character].Stat_J.ContainsValue(Contents[i].ID);
+                    ((IGMDataItem_String)(ITEM[pos, 0])).Data = Contents[i].Name;
+                    ((IGMDataItem_String)(ITEM[pos, 0])).Show();
+                    if (junctioned)
+                        ((IGMDataItem_Icon)(ITEM[pos, 1])).Show();
                     else
-                        BLANKS[pos] = false;
-                    ((IGMDataItem_String)(ITEM[pos, 0])).Data = itemdata.Name;
-                    ((IGMDataItem_String)(ITEM[pos, 0])).Icon = itemdata.Icon;
-                    ((IGMDataItem_String)(ITEM[pos, 0])).Palette = palette;
-                    ((IGMDataItem_String)(ITEM[pos, 0])).FontColor = color;
-                    ((IGMDataItem_Int)(ITEM[pos, 1])).Data = item.QTY;
-                    ((IGMDataItem_Int)(ITEM[pos, 1])).Show();
-                    ((IGMDataItem_Int)(ITEM[pos, 1])).FontColor = color;
-                    _helpStr[pos] = itemdata.Description;
-                    Contents[pos] = itemdata;
+                        ((IGMDataItem_Icon)(ITEM[pos, 1])).Hide();
+                    BLANKS[pos] = false;
                     pos++;
                 }
                 for (; pos < Rows; pos++)
                 {
-                    ((IGMDataItem_Int)(ITEM[pos, 1])).Hide();
-                    if (pos == 0) return; // if page turning. this till be enough to trigger a try next page.
-                    ((IGMDataItem_String)(ITEM[pos, 0])).Data = null;
-                    ((IGMDataItem_Int)(ITEM[pos, 1])).Data = 0;
-                    ((IGMDataItem_String)(ITEM[pos, 0])).Icon = Icons.ID.None;
+                    ((IGMDataItem_String)(ITEM[pos, 0])).Hide();
+                    ((IGMDataItem_Icon)(ITEM[pos, 1])).Hide();
                     BLANKS[pos] = true;
                 }
             }
@@ -97,17 +69,16 @@ namespace OpenVIII
         protected override void Init()
         {
             base.Init();
-            _helpStr = new FF8String[Count];
             for (byte pos = 0; pos < Rows; pos++)
             {
                 ITEM[pos, 0] = new IGMDataItem_String(null, SIZE[pos]);
-                ITEM[pos, 1] = new IGMDataItem_Icon(Icons.ID.None, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0));
+                ITEM[pos, 1] = new IGMDataItem_Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0));
             }
-            ITEM[Targets_Window, 0] = new IGMDataItem_IGMData(new BattleMenus.IGMData_TargetGroup());
-            ITEM[Rows - 1, 2] = new IGMDataItem_Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows - 1].X + SIZE[Rows - 1].Width - 60, Y, 0, 0), scale: new Vector2(2.5f));
+
+            ITEM[Targets_Window, 0] = new IGMDataItem_IGMData(new BattleMenus.IGMData_TargetGroup(Character,VisableCharacter,false));
+            
             PointerZIndex = Rows - 1;
         }
-
         protected override void InitShift(int i, int col, int row)
         {
             base.InitShift(i, col, row);
@@ -117,7 +88,11 @@ namespace OpenVIII
             SIZE[i].Offset(0, 12 + (-8 * row));
             SIZE[i].Height = (int)(12 * TextScale.Y);
         }
-
+        public override bool Inputs_CANCEL()
+        {
+            Hide();
+            return base.Inputs_CANCEL();
+        }
         #endregion Methods
     }
 }
