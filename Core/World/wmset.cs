@@ -722,6 +722,19 @@ namespace OpenVIII.Core.World
             /// Contains palette data for given frame- because section41 is palette (version 17)
             /// </summary>
             public Color[][] framesPalette;
+
+            /// <summary>
+            /// OpenVIII helper value- if true then index is incrementing- if false then index is decrementing
+            /// </summary>
+            public bool bIncrementing;
+            /// <summary>
+            /// OpenVIII helper value- holds current frame index
+            /// </summary>
+            public int currentAnimationIndex;
+            /// <summary>
+            /// OpenVIII helper value- holds total deltaTime to be used with timeout calculation
+            /// </summary>
+            public float deltaTime;
         }
 
         private textureAnimation[] beachAnimations;
@@ -734,9 +747,9 @@ namespace OpenVIII.Core.World
             {
                 ms.Seek(sectionPointers[17 - 1], SeekOrigin.Begin);
                 innerPointers = GetInnerPointers(br);
-                beachAnimations = new textureAnimation[innerPointers.Length];
+                BeachAnimations = new textureAnimation[innerPointers.Length];
                 for (int i = 0; i < innerPointers.Length; i++)
-                    beachAnimations[i] = textureAnimation_ParseBlock(sectionPointers[17 - 1] + innerPointers[i], i ,ms, br);
+                    BeachAnimations[i] = textureAnimation_ParseBlock(sectionPointers[17 - 1] + innerPointers[i], i ,ms, br);
             }
         }
 
@@ -858,7 +871,7 @@ namespace OpenVIII.Core.World
             return animation;
         }
 
-        public textureAnimation GetBeachAnimation(int animationId) => beachAnimations[animationId];
+        public textureAnimation GetBeachAnimation(int animationId) => BeachAnimations[animationId];
 
         /// <summary>
         /// Gets chunk from beachAnim atlas (because they are structured 2x2)
@@ -867,9 +880,13 @@ namespace OpenVIII.Core.World
         /// <param name="frameId">naturally the frame/keyframe of the animation</param>
         /// <returns></returns>
         public Texture2D GetBeachAnimationTextureFrame(int animationId, int frameId)
-            => beachAnimations[animationId].framesTextures[frameId];
+            => BeachAnimations[animationId].framesTextures[frameId];
 
         public Color[] GetSection41Palettes(int palId, int clutId) => waterAnimations[palId].framesPalette[clutId];
+
+        internal textureAnimation[] BeachAnimations { get => beachAnimations; set => beachAnimations = value; }
+
+        internal textureAnimation[] WaterAnimations { get => waterAnimations; set => waterAnimations = value; }
 
         #endregion
 
