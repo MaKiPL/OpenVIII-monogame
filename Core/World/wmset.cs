@@ -722,6 +722,19 @@ namespace OpenVIII.Core.World
             /// Contains palette data for given frame- because section41 is palette (version 17)
             /// </summary>
             public Color[][] framesPalette;
+
+            /// <summary>
+            /// OpenVIII helper value- if true then index is incrementing- if false then index is decrementing
+            /// </summary>
+            public bool bIncrementing;
+            /// <summary>
+            /// OpenVIII helper value- holds current frame index
+            /// </summary>
+            public int currentAnimationIndex;
+            /// <summary>
+            /// OpenVIII helper value- holds total deltaTime to be used with timeout calculation
+            /// </summary>
+            public float deltaTime;
         }
 
         private textureAnimation[] beachAnimations;
@@ -734,9 +747,9 @@ namespace OpenVIII.Core.World
             {
                 ms.Seek(sectionPointers[17 - 1], SeekOrigin.Begin);
                 innerPointers = GetInnerPointers(br);
-                beachAnimations = new textureAnimation[innerPointers.Length];
+                BeachAnimations = new textureAnimation[innerPointers.Length];
                 for (int i = 0; i < innerPointers.Length; i++)
-                    beachAnimations[i] = textureAnimation_ParseBlock(sectionPointers[17 - 1] + innerPointers[i], i ,ms, br);
+                    BeachAnimations[i] = textureAnimation_ParseBlock(sectionPointers[17 - 1] + innerPointers[i], i ,ms, br);
             }
         }
 
@@ -752,10 +765,9 @@ namespace OpenVIII.Core.World
                 for (int i = 0; i < innerPointers.Length; i++)
                     waterAnimations[i] = textureAnimation_ParseBlock(sectionPointers[41 - 1] + innerPointers[i], -1, ms, br);
             }
-            //for (int i = 0; i < waterAnimations.Length; i++)
-            //    for (int n = 0; n < waterAnimations[i].framesCount; n++)
-            //        for (int k = 0; k < waterAnimations[i].framesTextures[n].Length; k++)
-            //            Extended.DumpTexture(waterAnimations[i].framesTextures[n][k], $"D:\\d_{i}_{k}_{n}.png");
+            for (int i = 0; i < waterAnimations.Length; i++)
+                for (int n = 0; n < waterAnimations[i].framesCount; n++)
+                        Extended.DumpTexture(waterAnimations[i].framesTextures[n], $"D:\\d_{i}_{n}.png");
         }
 
         private const int sec17_imageHeaderSize = 12; //dword;dword; sizeDword
@@ -797,16 +809,12 @@ namespace OpenVIII.Core.World
             if (texturePointer != -1)
                 animationFrames = new Texture2D[imagePointers.Length];
             else
+            {
                 customPalette = new Color[imagePointers.Length][];
+                animationFrames = new Texture2D[imagePointers.Length];
+            }
             for(int i = 0; i<animation.framesCount; i++)
             {
-                //if (texturePointer == 0)
-                //    animationFrames[i] = new Texture2D[4];
-                //else if (texturePointer != -1)
-                //    animationFrames[i] = new Texture2D[2];
-                //else
-                //    animationFrames[i] = new Texture2D[1];
-
                 ms.Seek(imagePointers[i], SeekOrigin.Begin);
                 uint unknownHeader = br.ReadUInt32();
                 uint unknownHeader_ = br.ReadUInt32();
@@ -851,6 +859,8 @@ namespace OpenVIII.Core.World
                         ushort color = br.ReadUInt16();
                         customPalette[i][m] = Texture_Base.ABGR1555toRGBA32bit(color);
                     }
+                    animationFrames[i] = new Texture2D(Memory.graphics.GraphicsDevice, 16, 32, false, SurfaceFormat.Color); //16 colours and 32 palettes
+                    animationFrames[i].SetData<Color>(customPalette[i]);
                     }
             }
             animation.framesTextures = animationFrames;
@@ -858,7 +868,7 @@ namespace OpenVIII.Core.World
             return animation;
         }
 
-        public textureAnimation GetBeachAnimation(int animationId) => beachAnimations[animationId];
+        public textureAnimation GetBeachAnimation(int animationId) => BeachAnimations[animationId];
 
         /// <summary>
         /// Gets chunk from beachAnim atlas (because they are structured 2x2)
@@ -867,9 +877,15 @@ namespace OpenVIII.Core.World
         /// <param name="frameId">naturally the frame/keyframe of the animation</param>
         /// <returns></returns>
         public Texture2D GetBeachAnimationTextureFrame(int animationId, int frameId)
-            => beachAnimations[animationId].framesTextures[frameId];
+            => BeachAnimations[animationId].framesTextures[frameId];
 
-        public Color[] GetSection41Palettes(int palId, int clutId) => waterAnimations[palId].framesPalette[clutId];
+        public Color[] GetWaterAnimationPalettes(int animId, int palId, int frameId) => waterAnimations[animId].framesPalette[frameId].Skip(palId*16).Take(16).ToArray();
+
+        public Texture2D GetWaterAnimationTextureFrame(int animationId, int frameId) => WaterAnimations[animationId].framesTextures[frameId];
+
+        internal textureAnimation[] BeachAnimations { get => beachAnimations; set => beachAnimations = value; }
+
+        internal textureAnimation[] WaterAnimations { get => waterAnimations; set => waterAnimations = value; }
 
         #endregion
 
@@ -901,6 +917,8 @@ namespace OpenVIII.Core.World
         ///
         private List<TextureHandler[]> sec38_textures;
         private List<Color[][]> sec38_pals; //because other sections rely on palettes of wmset.38
+
+        TIM2 waterTim;
 
         public enum Section38_textures
         {
@@ -954,6 +972,8 @@ namespace OpenVIII.Core.World
                 for (int i = 0; i < innerSec.Length; i++)
                 {
                     TIM2 tim = new TIM2(buffer, (uint)(sectionPointers[38 - 1] + innerSec[i]));
+                    if(i==(int)Section38_textures.waterTex)
+                        waterTim = tim;
                     if(tim.GetBpp==4)
                         if(tim.GetClutSize != (tim.GetClutCount*tim.GetColorsCountPerPalette)) //broken header, force our own values
                         {
@@ -991,6 +1011,15 @@ namespace OpenVIII.Core.World
 
         public Color[] GetWorldMapTexturePalette(Section38_textures index, int clut)
         => sec38_pals[(int)index][clut];
+
+        public void UpdateWorldMapWaterTexturePaletteForAnimation(int index, Color[] palette)
+        {
+            if (waterTim != null)
+                sec38_textures[(int)Section38_textures.waterTex][index] = TextureHandler.Create(
+                    $"wmset_tim38_{((int)Section38_textures.waterTex + 1).ToString("D2")}.tim",
+                    waterTim,
+                    (ushort)index, palette);
+        }
 
         #endregion
 
@@ -1054,7 +1083,7 @@ namespace OpenVIII.Core.World
         /// Gets textures from Section39
         /// </summary>
         /// <returns></returns>
-        public Texture2D GetRoadsMiscTextures(Section39_Textures index, int clut) => (Texture2D)sec39_texture;
+        public Texture2D GetRoadsMiscTextures() => (Texture2D)sec39_texture;
         #endregion
 
         #region Section 42 - objects and vehicles textures

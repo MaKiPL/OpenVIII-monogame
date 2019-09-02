@@ -24,8 +24,6 @@ namespace OpenVIII
         public static BasicEffect effect;
         public static AlphaTestEffect ate;
 
-        private static GameTime deltaTime_;
-
         private enum _worldState
         {
             _0init,
@@ -306,24 +304,35 @@ namespace OpenVIII
                         float localZ = -2048 * (n / 4);
                         for (int k = 0; k < segments[i].block[n].polyCount; k++)
                         {
+                            Vector2[] uvs = {
+                                new Vector2(segments[i].block[n].polygons[k].U1 / 256.0f, segments[i].block[n].polygons[k].V1 / 256.0f),
+                                new Vector2(segments[i].block[n].polygons[k].U2 / 256.0f, segments[i].block[n].polygons[k].V2 / 256.0f),
+                                new Vector2(segments[i].block[n].polygons[k].U3 / 256.0f, segments[i].block[n].polygons[k].V3 / 256.0f)
+                                            };
+                            if(segments[i].block[n].polygons[k].texFlags.HasFlag(Texflags.TEXFLAGS_ROAD)) //this is roads UV fix
+                            {
+                                uvs[0] += new Vector2(0f, 0.002f);
+                                uvs[1] += new Vector2(0f, 0.002f);
+                                uvs[2] += new Vector2(0f, 0.002f);
+                            }
                             ptd.Add(new ParsedTriangleData()
                             {
                                 A = new Vector3(
                                 ((segments[i].block[n].vertices[segments[i].block[n].polygons[k].F1].X + localX) / WORLD_SCALE_MODEL + baseX) * -1f,
                                 segments[i].block[n].vertices[segments[i].block[n].polygons[k].F1].Z1 / WORLD_SCALE_MODEL,
                                 (segments[i].block[n].vertices[segments[i].block[n].polygons[k].F1].Y + localZ) / WORLD_SCALE_MODEL + baseY),
-                                uvA = new Vector2(segments[i].block[n].polygons[k].U1 / 256.0f, segments[i].block[n].polygons[k].V1 / 256.0f),
+                                uvA = uvs[0],
                                 parentPolygon = segments[i].block[n].polygons[k],
                                 B = new Vector3(
                                 ((segments[i].block[n].vertices[segments[i].block[n].polygons[k].F2].X + localX) / WORLD_SCALE_MODEL + baseX) * -1f,
                                 segments[i].block[n].vertices[segments[i].block[n].polygons[k].F2].Z1 / WORLD_SCALE_MODEL,
                                 (segments[i].block[n].vertices[segments[i].block[n].polygons[k].F2].Y + localZ) / WORLD_SCALE_MODEL + baseY),
-                                uvB = new Vector2(segments[i].block[n].polygons[k].U2 / 256.0f, segments[i].block[n].polygons[k].V2 / 256.0f),
+                                uvB = uvs[1],
                                 C = new Vector3(
                                 ((segments[i].block[n].vertices[segments[i].block[n].polygons[k].F3].X + localX) / WORLD_SCALE_MODEL + baseX) * -1f,
                                 segments[i].block[n].vertices[segments[i].block[n].polygons[k].F3].Z1 / WORLD_SCALE_MODEL,
                                 (segments[i].block[n].vertices[segments[i].block[n].polygons[k].F3].Y + localZ) / WORLD_SCALE_MODEL + baseY),
-                                uvC = new Vector2(segments[i].block[n].polygons[k].U3 / 256.0f, segments[i].block[n].polygons[k].V3 / 256.0f)
+                                uvC = uvs[2]
                             });
                             ParsedTriangleData ptda = ptd[ptd.Count - 1];
                             ptda.boundingBox = Extended.GetBoundingBox(ptda.A, ptda.B, ptda.C);
@@ -390,8 +399,6 @@ namespace OpenVIII
 
         public static void Update(GameTime deltaTime)
         {
-            deltaTime_ = deltaTime;
-            beachAnimCounter += deltaTime_.ElapsedGameTime.Milliseconds;
             UpdateTextureAnimation();
             animationId = 0;
             switch (worldState)
@@ -428,36 +435,50 @@ namespace OpenVIII
                 EncounterUpdate();
         }
 
-        private static int currentBeachAnim = 0;
-        private static bool bBeachLoopInvert = false;
-        /// <summary>
-        /// Currently mockup- updates every animation by half-second;
-        /// </summary>
         private static void UpdateTextureAnimation()
         {
             if (wmset == null)
                 return;
-            var anim = wmset.GetBeachAnimation(0); //zero- for testing
-            if(beachAnimCounter/1000f > 0.5f) //mockup
+            wmset.textureAnimation[] beachAnims = wmset.BeachAnimations;
+            wmset.textureAnimation[] waterAnims = wmset.WaterAnimations;
+            float elapsedTime = Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
+            UpdateTextureAnimation_SelectedStruct(ref beachAnims, elapsedTime);
+            UpdateTextureAnimation_SelectedStruct(ref waterAnims, elapsedTime, true);
+            wmset.BeachAnimations = beachAnims;
+            wmset.WaterAnimations = waterAnims;
+        }
+
+        private static void UpdateTextureAnimation_SelectedStruct(ref wmset.textureAnimation[] beachAnims, float elapsedTime, bool bWater = false)
+        {
+            for (int i = 0; i < beachAnims.Length; i++)
             {
-                if (!bBeachLoopInvert)
-                    currentBeachAnim++;
-                else
-                    currentBeachAnim--;
-                beachAnimCounter = 0f;
-            }
-            if (currentBeachAnim >= anim.framesCount)
-                if (anim.bLooping > 0)
+                float totalMaxValue = (15.625f * beachAnims[i].animTimeout)/1000.0f; //1 is 15.625 milliseconds, because 0x20 is 500 milliseconds
+                beachAnims[i].deltaTime += elapsedTime;
+                if (beachAnims[i].deltaTime > totalMaxValue)
                 {
-                    bBeachLoopInvert = !bBeachLoopInvert;
-                    currentBeachAnim = anim.framesCount-2;
+                    if (beachAnims[i].bIncrementing)
+                        beachAnims[i].currentAnimationIndex++;
+                    else
+                        beachAnims[i].currentAnimationIndex--;
+                    beachAnims[i].deltaTime = 0f;
+                if (beachAnims[i].currentAnimationIndex >= beachAnims[i].framesCount)
+                    if (beachAnims[i].bLooping > 0)
+                    {
+                        beachAnims[i].bIncrementing = !beachAnims[i].bIncrementing;
+                        beachAnims[i].currentAnimationIndex = beachAnims[i].framesCount - 2;
+                    }
+                    else
+                        beachAnims[i].currentAnimationIndex = 0;
+                if (beachAnims[i].currentAnimationIndex < 0)
+                {
+                    beachAnims[i].currentAnimationIndex = 1;
+                    beachAnims[i].bIncrementing = !beachAnims[i].bIncrementing;
                 }
-                else
-                    currentBeachAnim = 0;
-            if(currentBeachAnim<0)
-            {
-                currentBeachAnim = 1;
-                bBeachLoopInvert = !bBeachLoopInvert;
+                    if (bWater && i == 0)
+                        ; //HEY, TEST THE ORIGINAL waterTex palettes to find the references- how does things work and etc.
+                        //for(int m=  1; m<5; m++) //32 palettes
+                        //    wmset.UpdateWorldMapWaterTexturePaletteForAnimation(m, wmset.GetWaterAnimationPalettes(0, (int)DEBUGshit, beachAnims[1].currentAnimationIndex));
+                }
             }
         }
 
@@ -494,9 +515,9 @@ namespace OpenVIII
             if (Input2.Button(Keys.D2))
                 playerPosition.X -= 1f;
             if (Input2.Button(Keys.OemPlus))
-                DEBUGshit += 0.01f;
+                DEBUGshit += 1f;
             if (Input2.Button(Keys.OemMinus))
-                DEBUGshit -= 0.01f;
+                DEBUGshit -= 1f;
             if (worldState != _worldState._9debugFly)
             {
                 if (Input2.Button(FF8TextTagKey.Up))
@@ -1223,35 +1244,9 @@ namespace OpenVIII
                     seg.parsedTriangle[k].uvC);
                 Polygon poly = seg.parsedTriangle[k].parentPolygon;
                 if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_ROAD))
-                    ate.Texture = wmset.GetRoadsMiscTextures(wmset.Section39_Textures.asphalt, 0); // the enum does nothing there is only 1 texture.
+                    ate.Texture = wmset.GetRoadsMiscTextures();
                 else if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_WATER))
-                {
-                    if (poly.groundtype == 10 || poly.groundtype == 32) //BEACH + flat water
-                    {
-                        var @as = seg.parsedTriangle[k].parentPolygon;
-                        int animationIdPointer = @as.Clut == 2 ? 0 : 1;
-
-                        var texx = wmset.GetBeachAnimationTextureFrame(animationIdPointer, currentBeachAnim);
-                        float Ucoorder = @as.Clut == 2 ? 128f : 192;
-                        if (poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2))
-                        {
-                            vpc[0].TextureCoordinate = new Vector2((@as.U1 - Ucoorder) / texx.Width, @as.V1 / (float)texx.Height);
-                            vpc[1].TextureCoordinate = new Vector2((@as.U2 - Ucoorder) / texx.Width, @as.V2 / (float)texx.Height);
-                            vpc[2].TextureCoordinate = new Vector2((@as.U3 - Ucoorder) / texx.Width, @as.V3 / (float)texx.Height);
-                        }
-
-                        if(poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2))
-                            ate.Texture = wmset.GetBeachAnimationTextureFrame(animationIdPointer, currentBeachAnim);
-                        else if (poly.groundtype == 32)
-                            ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex, poly.Clut);
-                    }
-                    else if(Extended.In(poly.groundtype, 33, 34))
-                    {
-                        ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex, poly.Clut);
-                    }
-                    else
-                        ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0);
-                }
+                    DrawWaterAndAnimatedFaces(seg, k, vpc, poly);
                 else
                     ate.Texture = (Texture2D)texl.GetTexture(poly.TPage, poly.Clut); //there are two texs, worth looking at other parameters; to reverse!
                 foreach (EffectPass pass in ate.CurrentTechnique.Passes)
@@ -1259,7 +1254,47 @@ namespace OpenVIII
                     pass.Apply();
                     Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpc, 0, 1);
                 }
+                //if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_WATER) && Extended.In(poly.groundtype, 32, 34))
+                //{
+                //    Memory.graphics.GraphicsDevice.BlendState = BlendState.Additive;
+                //    ate.Texture = wmset.GetWaterAnimationTextureFrame(0, wmset.WaterAnimations[0].currentAnimationIndex);
+                //    foreach (EffectPass pass in ate.CurrentTechnique.Passes)
+                //    {
+                //        pass.Apply();
+                //        Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpc, 0, 1);
+                //    }
+                //    Memory.graphics.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
+                //}
             }
+        }
+
+        private static void DrawWaterAndAnimatedFaces(Segment seg, int k, VertexPositionTexture[] vpc, Polygon poly)
+        {
+            if (poly.groundtype == 10 || poly.groundtype == 32) //BEACH + flat water
+            {
+                var @as = seg.parsedTriangle[k].parentPolygon;
+                int animationIdPointer = @as.Clut == 2 ? 0 : 1;
+
+                var texx = wmset.GetBeachAnimationTextureFrame(animationIdPointer, wmset.BeachAnimations[animationIdPointer].currentAnimationIndex);
+                float Ucoorder = @as.Clut == 2 ? 128f : 192;
+                if (poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2))
+                {
+                    vpc[0].TextureCoordinate = new Vector2((@as.U1 - Ucoorder) / texx.Width, @as.V1 / (float)texx.Height);
+                    vpc[1].TextureCoordinate = new Vector2((@as.U2 - Ucoorder) / texx.Width, @as.V2 / (float)texx.Height);
+                    vpc[2].TextureCoordinate = new Vector2((@as.U3 - Ucoorder) / texx.Width, @as.V3 / (float)texx.Height);
+                }
+
+                if (poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2))
+                    ate.Texture = wmset.GetBeachAnimationTextureFrame(animationIdPointer, wmset.BeachAnimations[animationIdPointer].currentAnimationIndex);
+                else if (poly.groundtype == 32)
+                    ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex, poly.Clut);
+            }
+            else if (Extended.In(poly.groundtype, 33, 34))
+            {
+                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex, poly.Clut);
+            }
+            else
+                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0);
         }
 
         /// <summary>
