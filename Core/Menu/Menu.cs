@@ -61,9 +61,8 @@ namespace OpenVIII
         private static IGM_Lobby _igm_lobby;
 
         private static object _igm_lock = new object();
-        private Characters _character = Characters.Blank;
+        private bool _backup = false;
         private Vector2 _size;
-        private Characters _visableCharacter = Characters.Blank;
 
         #endregion Fields
 
@@ -324,18 +323,20 @@ namespace OpenVIII
 
         public override bool Inputs() => false;
 
-        public override void Refresh() => Refresh(false);
-
-        public void Refresh(bool backup)
+        public override void Refresh()
         {
-            Backup(backup);
+            Backup();
             base.Refresh();
         }
 
-        public virtual void Refresh(Characters c, Characters vc, bool backup = false)
+        public void Refresh(bool backup) => Refresh(Character, VisableCharacter, backup);
+
+        public override void Refresh(Characters character, Characters? visablecharacter = null) => Refresh(character, visablecharacter ?? character, false);
+
+        public virtual void Refresh(Characters c, Characters vc, bool backup)
         {
-            Backup(backup);
-            Refresh(c, vc);
+            _backup = backup;
+            base.Refresh(c, vc);
         }
 
         public virtual bool SetMode(Enum mode)
@@ -408,11 +409,12 @@ namespace OpenVIII
                     i.Value.Refresh(Character, VisableCharacter);
         }
 
-        private static void Backup(bool backup)
+        private void Backup()
         {
             //backup memory
-            if (backup)
+            if (_backup)
                 Memory.PrevState = Memory.State.Clone();
+            _backup = false;
         }
 
         private void InitConstructor()
