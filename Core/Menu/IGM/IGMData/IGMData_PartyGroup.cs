@@ -53,7 +53,7 @@ namespace OpenVIII
                 {
                     case Items.Junction:
                         Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.IGM_Junction;
-                        IGM_Junction.Refresh(Contents[CURSOR_SELECT].Item1, Contents[CURSOR_SELECT].Item2);
+                        IGM_Junction.Refresh(Contents[CURSOR_SELECT].Item1, Contents[CURSOR_SELECT].Item2,true);
                         return true;
                 }
                 return ret;
