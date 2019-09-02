@@ -59,6 +59,10 @@ namespace OpenVIII
                 return ret;
             }
 
+            private IGMData_Party Party => ((IGMData_Party)(((IGMDataItem_IGMData)ITEM[0, 0])?.Data));
+
+            private IGMData_NonParty Non_Party => ((IGMData_NonParty)(((IGMDataItem_IGMData)ITEM[1, 0])?.Data));
+
             public override void Refresh()
             {
                 if (!eventSet && IGM != null)
@@ -69,24 +73,28 @@ namespace OpenVIII
                 }
                 base.Refresh();
 
+                int total_Count = (Party?.Count ?? 0) + (Non_Party?.Count ?? 0);
                 if (Memory.State.Characters != null)
                 {
-                    IGMDataItem_IGMData i = ((IGMDataItem_IGMData)ITEM[0, 0]);
-                    IGMDataItem_IGMData i2 = ((IGMDataItem_IGMData)ITEM[1, 0]);
-                    if (i != null && i.Data != null && i2 != null && i2.Data != null)
+                    SIZE = new Rectangle[total_Count];
+                    CURSOR = new Point[total_Count];
+                    BLANKS = new bool[total_Count];
+                    Contents = new Tuple<Characters, Characters>[total_Count];
+                    int i = 0;
+                    test(Party, ref i, Party.Contents);
+                    test(Non_Party, ref i, Non_Party.Contents);
+                }
+
+                void test(IGMData t, ref int i, Tuple<Characters, Characters>[] contents)
+                {
+                    int pos = 0;
+                    for (; pos < t.Count && i < total_Count; i++)
                     {
-                        SIZE = new Rectangle[i.Data.Count + i2.Data.Count];
-                        Array.Copy(i.Data.SIZE, SIZE, i.Data.Count);
-                        Array.Copy(i2.Data.SIZE, 0, SIZE, i.Data.Count, i2.Data.Count);
-                        CURSOR = new Point[i.Data.Count + i2.Data.Count];
-                        Array.Copy(i.Data.CURSOR, CURSOR, i.Data.Count);
-                        Array.Copy(i2.Data.CURSOR, 0, CURSOR, i.Data.Count, i2.Data.Count);
-                        BLANKS = new bool[i.Data.Count + i2.Data.Count];
-                        Array.Copy(i.Data.BLANKS, BLANKS, i.Data.Count);
-                        Array.Copy(i2.Data.BLANKS, 0, BLANKS, i.Data.Count, i2.Data.Count);
-                        Contents = new Tuple<Characters, Characters>[i.Data.Count + i2.Data.Count];
-                        Array.Copy(((IGMData_Party)i.Data).Contents, Contents, i.Data.Count);
-                        Array.Copy(((IGMData_NonParty)i2.Data).Contents, 0, Contents, i.Data.Count, i2.Data.Count);
+                        SIZE[i] = t.SIZE[pos];
+                        CURSOR[i] = t.CURSOR[pos];
+                        BLANKS[i] = t.BLANKS[pos];
+                        Contents[i] = contents[pos];
+                        pos++;
                     }
                 }
             }

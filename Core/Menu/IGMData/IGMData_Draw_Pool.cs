@@ -80,7 +80,7 @@ namespace OpenVIII
         public override bool Inputs_CANCEL()
         {
             Hide();
-            return base.Inputs_CANCEL();
+            return true;
         }
 
         public void Refresh(Debug_battleDat.Magic[] magics)

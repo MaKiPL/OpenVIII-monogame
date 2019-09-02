@@ -14,10 +14,12 @@ namespace OpenVIII
         /// nothing functions.
         /// </summary>
         public bool Enabled { get; private set; } = true;
+
         /// <summary>
         /// Character who has the junctions and inventory. Same as VisableCharacter unless TeamLaguna.
         /// </summary>
         public Characters Character { get; protected set; } = Characters.Blank;
+
         /// <summary>
         /// Required to support Laguna's Party. They have unique stats but share junctions and inventory.
         /// </summary>
@@ -44,15 +46,13 @@ namespace OpenVIII
         /// <summary>
         /// Things that change rarely. Like a party member changes or Laguna dream happens.
         /// </summary>
-        public virtual void Refresh()
-        {
-            RefreshChild();
-        }
+        public virtual void Refresh() => RefreshChild();
 
         /// <summary>
         /// For child items.
         /// </summary>
-        protected virtual void RefreshChild() {
+        protected virtual void RefreshChild()
+        {
         }
 
         /// <summary>
@@ -66,9 +66,9 @@ namespace OpenVIII
             {
                 Character = character;
                 VisableCharacter = visablecharacter ?? character;
-                PartyPos = (sbyte)(Memory.State?.PartyData?.Where(x=>!x.Equals(Characters.Blank)).ToList().FindIndex(x => x.Equals(Character)) ?? -1);
+                PartyPos = (sbyte)(Memory.State?.PartyData?.Where(x => !x.Equals(Characters.Blank)).ToList().FindIndex(x => x.Equals(Character)) ?? -1);
             }
-            Refresh();           
+            Refresh();
         }
 
         /// <summary>

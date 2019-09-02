@@ -90,10 +90,7 @@ namespace OpenVIII
         { }
 
         public override bool Inputs() => false;
-
-        public override void Refresh()
-        { }
-
+        
         public override bool Update() => false;
 
         protected override void Init()

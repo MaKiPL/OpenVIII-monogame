@@ -101,6 +101,7 @@ namespace OpenVIII
             switch (c.ID)
             {
                 default:
+              //      ITEM[Targets_Window, 0].Show();
                     Target_Group.ShowTargetWindows();
                     return true;
                 case 0: //null

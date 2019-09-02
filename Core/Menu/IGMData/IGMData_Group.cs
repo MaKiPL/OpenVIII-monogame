@@ -5,17 +5,12 @@ namespace OpenVIII
     public class IGMData_Group : IGMData
     {
         #region Constructors
-        public IGMData_Group(params IGMData[] d) : base(d.Length, 1,container:new IGMDataItem_Empty())
-        {
-            Init(d);
-        }
 
-        public IGMData_Group() :base(container: new IGMDataItem_Empty())
-        {
-            Debug.WriteLine($"{this} :: Not init may need to call it later");
-        }
+        public IGMData_Group(params IGMData[] d) : base(d.Length, 1, container: new IGMDataItem_Empty()) => Init(d);
 
-        protected virtual void Init(IGMData[] d,bool baseinit = false)
+        public IGMData_Group() : base(container: new IGMDataItem_Empty()) => Debug.WriteLine($"{this} :: Not init may need to call it later");
+
+        protected virtual void Init(IGMData[] d, bool baseinit = false)
         {
             if (baseinit)
                 Init(d.Length, 1);
@@ -78,25 +73,11 @@ namespace OpenVIII
 
         public virtual bool ITEMUpdate(IGMDataItem_IGMData i, int pos = 0) => i.Update();
 
-        public override void Refresh()
+        protected override void RefreshChild()
         {
-            base.Refresh();
             if (!skipdata)
-            {
-                int pos = 0;
                 foreach (IGMDataItem i in ITEM)
-                {
-                    if (i != null)
-                        ITEMRefresh((IGMDataItem_IGMData)i, pos);
-                }
-            }
-            void ITEMRefresh(IGMDataItem_IGMData i, int pos = 0)
-            {
-                if (Character != Characters.Blank)
-                    i.Data.Refresh(Character, VisableCharacter);
-                else
-                    i.Data.Refresh();
-            }
+                    ((IGMDataItem_IGMData)i)?.Refresh(Character, VisableCharacter);
         }
 
         public override void Show()
