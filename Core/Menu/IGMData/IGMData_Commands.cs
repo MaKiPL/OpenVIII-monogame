@@ -216,11 +216,11 @@ namespace OpenVIII
         {
             BLANKS[Limit_Arrow] = true;
             base.Init();
-            ITEM[Mag_Pool, 0] = new IGMDataItem_IGMData(new IGMData_Mag_Pool(new Rectangle(X + 50, Y - 20, 300, 192), Character, VisableCharacter, true));
+            ITEM[Mag_Pool, 0] = new IGMData_Mag_Pool(new Rectangle(X + 50, Y - 20, 300, 192), Character, VisableCharacter, true);
             ITEM[Mag_Pool, 0].Hide();
-            ITEM[Item_Pool, 0] = new IGMDataItem_IGMData(new IGMData_ItemPool(new Rectangle(X + 50, Y - 22, 400, 194), true));
+            ITEM[Item_Pool, 0] = new IGMData_ItemPool(new Rectangle(X + 50, Y - 22, 400, 194), true);
             ITEM[Item_Pool, 0].Hide();
-            ITEM[Targets_Window, 0] = new IGMDataItem_IGMData(new BattleMenus.IGMData_TargetGroup(Character, VisableCharacter));
+            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Character, VisableCharacter);
             commands = new Kernel_bin.Battle_Commands[Rows];
             PointerZIndex = Limit_Arrow;
         }
