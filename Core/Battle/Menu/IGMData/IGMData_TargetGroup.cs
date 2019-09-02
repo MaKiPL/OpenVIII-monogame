@@ -51,10 +51,10 @@ namespace OpenVIII
             public Item_In_Menu Item { get; private set; }
             public Kernel_bin.Magic_Data Magic { get; private set; }
 
-            private IGMData_Draw_Pool Draw_Pool => (IGMData_Draw_Pool)(((IGMDataItem_IGMData)ITEM[2, 0])?.Data);
-            private IGMData_TargetEnemies TargetEnemies => (IGMData_TargetEnemies)(((IGMDataItem_IGMData)ITEM[0, 0])?.Data);
+            private IGMData_Draw_Pool Draw_Pool => (IGMData_Draw_Pool)(((IGMData)ITEM[2, 0]));
+            private IGMData_TargetEnemies TargetEnemies => (IGMData_TargetEnemies)(((IGMData)ITEM[0, 0]));
 
-            private IGMData_TargetParty TargetParty => (IGMData_TargetParty)(((IGMDataItem_IGMData)ITEM[1, 0])?.Data);
+            private IGMData_TargetParty TargetParty => (IGMData_TargetParty)(((IGMData)ITEM[1, 0]));
 
             #endregion Properties
 

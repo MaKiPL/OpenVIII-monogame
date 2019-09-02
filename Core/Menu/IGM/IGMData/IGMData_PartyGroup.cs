@@ -59,9 +59,9 @@ namespace OpenVIII
                 return ret;
             }
 
-            private IGMData_Party Party => ((IGMData_Party)(((IGMDataItem_IGMData)ITEM[0, 0])?.Data));
+            private IGMData_Party Party => ((IGMData_Party)(((IGMData)ITEM[0, 0])));
 
-            private IGMData_NonParty Non_Party => ((IGMData_NonParty)(((IGMDataItem_IGMData)ITEM[1, 0])?.Data));
+            private IGMData_NonParty Non_Party => ((IGMData_NonParty)(((IGMData)ITEM[1, 0])));
 
             public override void Refresh()
             {

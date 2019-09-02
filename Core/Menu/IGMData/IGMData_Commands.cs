@@ -47,9 +47,9 @@ namespace OpenVIII
 
         public bool CrisisLevel { get => _crisisLevel; set => _crisisLevel = value; }
 
-        public IGMData_ItemPool ItemPool => (IGMData_ItemPool)(((IGMDataItem_IGMData)ITEM[Item_Pool, 0]).Data);
-        public IGMData_Mag_Pool MagPool => (IGMData_Mag_Pool)(((IGMDataItem_IGMData)ITEM[Mag_Pool, 0]).Data);
-        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMDataItem_IGMData)ITEM[Targets_Window, 0]).Data);
+        public IGMData_ItemPool ItemPool => (IGMData_ItemPool)(((IGMData)ITEM[Item_Pool, 0]));
+        public IGMData_Mag_Pool MagPool => (IGMData_Mag_Pool)(((IGMData)ITEM[Mag_Pool, 0]));
+        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData)ITEM[Targets_Window, 0]));
         private int Item_Pool => Count - 2;
         private int Limit_Arrow => Count - 4;
 
@@ -205,8 +205,8 @@ namespace OpenVIII
         public override void SetModeChangeEvent(ref EventHandler<Enum> eventHandler)
         {
             base.SetModeChangeEvent(ref eventHandler);
-            (((IGMDataItem_IGMData)ITEM[Item_Pool, 0]).Data).SetModeChangeEvent(ref eventHandler);
-            (((IGMDataItem_IGMData)ITEM[Mag_Pool, 0]).Data).SetModeChangeEvent(ref eventHandler);
+            (((IGMData)ITEM[Item_Pool, 0])).SetModeChangeEvent(ref eventHandler);
+            (((IGMData)ITEM[Mag_Pool, 0])).SetModeChangeEvent(ref eventHandler);
         }
 
         /// <summary>

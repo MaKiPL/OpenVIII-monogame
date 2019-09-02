@@ -20,7 +20,7 @@
                 //depending on the mode it'll hide what's needed and show rest.
                 Show();
 
-            public override bool ITEMInputs(IGMDataItem_IGMData i, int pos = 0)
+            public override bool ITEMInputs(IGMData i, int pos = 0)
             {
                 bool ret = false;
                 if (InputsModeTest(pos))
@@ -36,7 +36,7 @@
                 return ret;
             }
 
-            public override void ITEMShow(IGMDataItem_IGMData i, int pos = 0)
+            public override void ITEMShow(IGMData i, int pos = 0)
             {
                 if (IGM_Junction != null)
                 {

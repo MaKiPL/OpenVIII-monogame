@@ -80,8 +80,6 @@ namespace OpenVIII
 
         public static implicit operator Color(IGMDataItem v) => v.Color;
 
-        public static implicit operator IGMDataItem(IGMData v) => new IGMDataItem_IGMData(v);
-
         public static implicit operator Rectangle(IGMDataItem v) => v.Pos;
 
         //public virtual object Data { get; public set; }

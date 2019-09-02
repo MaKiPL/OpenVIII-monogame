@@ -106,9 +106,9 @@ namespace OpenVIII
                         ITEM[0, 7] = new IGMDataItem_Icon(Icons.ID.P, new Rectangle(SIZE[0].X + SIZE[0].Width - 20, (int)(SIZE[0].Y + TextScale.Y * 12), 0, 0));
                         ITEM[0, 8] = new IGMDataItem_Int(expTNL, new Rectangle(SIZE[0].X + SIZE[0].Width - 160, (int)(SIZE[0].Y + TextScale.Y * 12 * 2), 0, 0), spaces: 7);
                         ITEM[0, 9] = new IGMDataItem_Icon(Icons.ID.P, new Rectangle(SIZE[0].X + SIZE[0].Width - 20, (int)(SIZE[0].Y + TextScale.Y * 12 * 2), 0, 0));
-                        ITEM[0, 10] = new IGMDataItem_IGMData(new IGMData_TimedMsgBox(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 32), SIZE[0].X + 190, SIZE[0].Y));
+                        ITEM[0, 10] = new IGMData_TimedMsgBox(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 32), SIZE[0].X + 190, SIZE[0].Y);
                         ITEM[0, 10].Hide();
-                        ITEM[0, 11] = new IGMDataItem_IGMData(new IGMData_SmallMsgBox(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 49), SIZE[0].X + 190, SIZE[0].Y));
+                        ITEM[0, 11] = new IGMData_SmallMsgBox(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 49), SIZE[0].X + 190, SIZE[0].Y);
                         ITEM[0, 11].Hide();
                     }
                 }

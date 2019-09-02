@@ -40,7 +40,7 @@ namespace OpenVIII
                 //    foreach (IGMDataItem i in ITEM)
                 //    {
                 //        if (i != null)
-                //            ITEMHide((IGMDataItem_IGMData)i, pos++);
+                //            ITEMHide((IGMData)i, pos++);
                 //    }
                 //}
             }
@@ -54,9 +54,9 @@ namespace OpenVIII
                 if (!skipdata)
                 {
                     int pos = 0;
-                    foreach (IGMDataItem i in ITEM)
+                    foreach (Menu_Base i in ITEM)
                     {
-                        ret = ITEMInputs((IGMDataItem_IGMData)i, pos++);
+                        ret = ITEMInputs((IGMData)i, pos++);
                         if (ret) return ret;
                     }
                 }
@@ -65,19 +65,19 @@ namespace OpenVIII
             return ret;
         }
 
-        public virtual void ITEMHide(IGMDataItem_IGMData i, int pos = 0) => i.Hide();
+        public virtual void ITEMHide(IGMData i, int pos = 0) => i.Hide();
 
-        public virtual bool ITEMInputs(IGMDataItem_IGMData i, int pos = 0) => i.Inputs();
+        public virtual bool ITEMInputs(IGMData i, int pos = 0) => i.Inputs();
 
-        public virtual void ITEMShow(IGMDataItem_IGMData i, int pos = 0) => i.Show();
+        public virtual void ITEMShow(IGMData i, int pos = 0) => i.Show();
 
-        public virtual bool ITEMUpdate(IGMDataItem_IGMData i, int pos = 0) => i.Update();
+        public virtual bool ITEMUpdate(IGMData i, int pos = 0) => i.Update();
 
         protected override void RefreshChild()
         {
             if (!skipdata)
-                foreach (IGMDataItem i in ITEM)
-                    ((IGMDataItem_IGMData)i)?.Refresh(Character, VisableCharacter);
+                foreach (Menu_Base i in ITEM)
+                    i?.Refresh(Character, VisableCharacter);
         }
 
         public override void Show()
@@ -86,10 +86,10 @@ namespace OpenVIII
             if (!skipdata)
             {
                 int pos = 0;
-                foreach (IGMDataItem i in ITEM)
+                foreach (Menu_Base i in ITEM)
                 {
                     if (i != null)
-                        ITEMShow((IGMDataItem_IGMData)i, pos++);
+                        ITEMShow((IGMData)i, pos++);
                 }
             }
         }
@@ -102,10 +102,10 @@ namespace OpenVIII
                 if (!skipdata)
                 {
                     int pos = 0;
-                    foreach (IGMDataItem i in ITEM)
+                    foreach (Menu_Base i in ITEM)
                     {
                         if (i != null)
-                            ret = ITEMUpdate((IGMDataItem_IGMData)i, pos++) || ret;
+                            ret = ITEMUpdate((IGMData)i, pos++) || ret;
                     }
                 }
                 return ret;

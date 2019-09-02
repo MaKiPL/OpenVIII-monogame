@@ -99,7 +99,7 @@ namespace OpenVIII
                         ITEM[pos, 0] = new IGMDataItem_Box(Memory.Strings.GetName(visableCharacter), title: Icons.ID.STATUS);
                         Tuple<Rectangle, Point, Rectangle> dims = DrawBox(SIZE[pos], ((IGMDataItem_Box)ITEM[pos, 0]).Data, options: Box_Options.SkipDraw);
                         Rectangle r = dims.Item3;
-                        ITEM[pos, 0].Pos = dims.Item1;
+                        ((IGMDataItem_Box)ITEM[pos, 0]).Pos = dims.Item1;
                         CURSOR[pos] = dims.Item2;
 
                         r = dims.Item3;

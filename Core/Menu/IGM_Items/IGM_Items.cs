@@ -86,8 +86,8 @@ namespace OpenVIII
                 ));
             InputsDict = new Dictionary<Mode, Func<bool>>() {
                 {Mode.TopMenu, Data[SectionName.TopMenu].Inputs},
-                {Mode.SelectItem, ((IGMDataItem_IGMData)((IGMData_Group)Data[SectionName.UseItemGroup]).ITEM[1,0]).Inputs},
-                {Mode.UseItemOnTarget, ((IGMDataItem_IGMData)((IGMData_Group)Data[SectionName.UseItemGroup]).ITEM[2,0]).Inputs}
+                {Mode.SelectItem, ((IGMData)((IGMData_Group)Data[SectionName.UseItemGroup]).ITEM[1,0]).Inputs},
+                {Mode.UseItemOnTarget, ((IGMData)((IGMData_Group)Data[SectionName.UseItemGroup]).ITEM[2,0]).Inputs}
                 };
             SetMode(Mode.SelectItem);
             base.Init();

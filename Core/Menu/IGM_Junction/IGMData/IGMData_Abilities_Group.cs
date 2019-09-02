@@ -24,14 +24,18 @@ namespace OpenVIII
                 skipdata = true;
                 bool ret = base.Inputs();
                 skipdata = false;
-                IGMDataItem_IGMData i = ((IGMDataItem_IGMData)ITEM[0, 0]);
-                IGMDataItem_IGMData i2 = ((IGMDataItem_IGMData)ITEM[3, 0]);
-                if (ret && i != null && i.Data != null)
+                if (Commands != null)
                 {
-                    if (CURSOR_SELECT >= i.Data.Count)
-                        i2.Data.Show();
+                    if (CURSOR_SELECT >= Commands.Count)
+                    {
+                        AbilityPool?.Show();
+                        CommandsPool?.Hide();
+                    }
                     else
-                        i2.Data.Hide();
+                    {
+                        AbilityPool?.Hide();
+                        CommandsPool?.Show();
+                    }
                 }
                 return ret;
             }
@@ -49,11 +53,9 @@ namespace OpenVIII
             public override bool Inputs_OKAY()
             {
                 base.Inputs_OKAY();
-                IGMDataItem_IGMData i = ((IGMDataItem_IGMData)ITEM[0, 0]);
-                IGMDataItem_IGMData i2 = ((IGMDataItem_IGMData)ITEM[3, 0]);
-                if (i != null && i.Data != null)
+                if (Commands != null)
                 {
-                    if (CURSOR_SELECT >= i.Data.Count)
+                    if (CURSOR_SELECT >= Commands.Count)
                         IGM_Junction.SetMode(Mode.Abilities_Abilities);
                     else
                         IGM_Junction.SetMode(Mode.Abilities_Commands);
@@ -68,11 +70,9 @@ namespace OpenVIII
                 base.Inputs_Menu();
                 skipdata = false;
 
-                IGMDataItem_IGMData i = ((IGMDataItem_IGMData)ITEM[0, 0]);
-                IGMDataItem_IGMData i2 = ((IGMDataItem_IGMData)ITEM[3, 0]);
-                if (i != null && i.Data != null)
+                if (Commands!=null)
                 {
-                    if (CURSOR_SELECT < i.Data.Count)
+                    if (CURSOR_SELECT < Commands.Count)
                     {
                         Memory.State.Characters[Character].Commands[CURSOR_SELECT - 1] = Kernel_bin.Abilities.None;
                         IGM_Junction.Data[SectionName.TopMenu_Abilities].Refresh();
@@ -80,32 +80,49 @@ namespace OpenVIII
                     }
                     else
                     {
-                        Memory.State.Characters[Character].Abilities[CURSOR_SELECT - i.Data.Count] = Kernel_bin.Abilities.None;
+                        Memory.State.Characters[Character].Abilities[CURSOR_SELECT - Commands.Count] = Kernel_bin.Abilities.None;
                         IGM_Junction.Refresh();
                     }
                 }
             }
+            private IGMData_Abilities_CommandSlots Commands => ((IGMData_Abilities_CommandSlots)ITEM[0, 0]);
+
+            private IGMData_Abilities_AbilitySlots Ability => ((IGMData_Abilities_AbilitySlots)ITEM[1, 0]);
+
+            private IGMData_Abilities_CommandPool CommandsPool => ((IGMData_Abilities_CommandPool)ITEM[2, 0]);
+
+            private IGMData_Abilities_AbilityPool AbilityPool => ((IGMData_Abilities_AbilityPool)ITEM[3, 0]);
 
             public override void Refresh()
             {
                 base.Refresh();
-                IGMDataItem_IGMData i = ((IGMDataItem_IGMData)ITEM[0, 0]);
-                IGMDataItem_IGMData i2 = ((IGMDataItem_IGMData)ITEM[1, 0]);
-                if (i != null && i.Data != null && i2 != null && i2.Data != null)
+
+                int total_Count = (Commands?.Count ?? 0) + (Ability?.Count ?? 0);
+                if (Memory.State.Characters != null)
                 {
-                    SIZE = new Rectangle[i.Data.Count + i2.Data.Count];
-                    Array.Copy(i.Data.SIZE, SIZE, i.Data.Count);
-                    Array.Copy(i2.Data.SIZE, 0, SIZE, i.Data.Count, i2.Data.Count);
-                    CURSOR = new Point[i.Data.Count + i2.Data.Count];
-                    Array.Copy(i.Data.CURSOR, CURSOR, i.Data.Count);
-                    Array.Copy(i2.Data.CURSOR, 0, CURSOR, i.Data.Count, i2.Data.Count);
-                    BLANKS = new bool[i.Data.Count + i2.Data.Count];
-                    Array.Copy(i.Data.BLANKS, BLANKS, i.Data.Count);
-                    Array.Copy(i2.Data.BLANKS, 0, BLANKS, i.Data.Count, i2.Data.Count);
+                    SIZE = new Rectangle[total_Count];
+                    CURSOR = new Point[total_Count];
+                    BLANKS = new bool[total_Count];
+                    int i = 0;
+                    test(Commands, ref i);
+                    test(Ability, ref i);
+                }
+
+                void test(IGMData t, ref int i)
+                {
+                    int pos = 0;
+                    for (; pos < t.Count && i < total_Count; i++)
+                    {
+                        SIZE[i] = t.SIZE[pos];
+                        CURSOR[i] = t.CURSOR[pos];
+                        BLANKS[i] = t.BLANKS[pos];
+                        pos++;
+                    }
                 }
                 if (CURSOR_SELECT == 0)
                     CURSOR_SELECT = 1;
             }
+            
 
             public override bool Update()
             {
@@ -115,22 +132,20 @@ namespace OpenVIII
                 {
                     Cursor_Status &= ~Cursor_Status.Blinking;
 
-                    IGMDataItem_IGMData i = ((IGMDataItem_IGMData)ITEM[0, 0]);
-                    IGMDataItem_IGMData i2 = ((IGMDataItem_IGMData)ITEM[1, 0]);
-                    if (i != null && i.Data != null && i2 != null && i2.Data != null)
+                    if (Commands!= null && Ability != null)
                     {
-                        if (CURSOR_SELECT >= i.Data.Count)
+                        if (CURSOR_SELECT >= Commands.Count)
                         {
-                            if (i2.Data.Descriptions != null && i2.Data.Descriptions.ContainsKey(CURSOR_SELECT - i.Data.Count))
+                            if (Ability.Descriptions != null && Ability.Descriptions.TryGetValue(CURSOR_SELECT - Commands.Count, out FF8String v))
                             {
-                                IGM_Junction.ChangeHelp(i2.Data.Descriptions[CURSOR_SELECT - i.Data.Count]);
+                                IGM_Junction.ChangeHelp(v);
                             }
                         }
                         else
                         {
-                            if (i.Data.Descriptions != null && i.Data.Descriptions.ContainsKey(CURSOR_SELECT))
+                            if (Commands.Descriptions != null && Commands.Descriptions.TryGetValue(CURSOR_SELECT, out FF8String v))
                             {
-                                IGM_Junction.ChangeHelp(i.Data.Descriptions[CURSOR_SELECT]);
+                                IGM_Junction.ChangeHelp(v);
                             }
                         }
                     }

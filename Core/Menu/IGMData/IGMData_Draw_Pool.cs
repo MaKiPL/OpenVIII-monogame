@@ -19,7 +19,7 @@ namespace OpenVIII
 
         public int _Draw => 0;
         public int Cast => 1;
-        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMDataItem_IGMData)ITEM[Targets_Window, 0]).Data);
+        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData)ITEM[Targets_Window, 0]));
         public int Targets_Window => Count - 1;
 
         #endregion Properties
@@ -31,7 +31,7 @@ namespace OpenVIII
             base.Init();
             ITEM[_Draw, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.KERNEL, 0, 12), SIZE[_Draw]);
             ITEM[Cast, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.KERNEL, 0, 18), SIZE[Cast]);
-            ITEM[Targets_Window, 0] = new IGMDataItem_IGMData(new BattleMenus.IGMData_TargetGroup(Character, VisableCharacter, false));
+            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Character, VisableCharacter, false);
             Cursor_Status = Cursor_Status.Enabled;
         }
 

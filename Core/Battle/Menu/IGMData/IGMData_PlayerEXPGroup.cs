@@ -168,17 +168,17 @@ namespace OpenVIII
 
                 private void RefreshEXP()
                 {
-                    foreach (IGMDataItem_IGMData i in ITEM)
+                    foreach (Menu_Base i in ITEM)
                     {
                         int tmpexp = EXP;
                         if (EXPExtra != null)
                         {
-                            if (EXPExtra.TryGetValue(((IGMData_PlayerEXP)i.Data).Character, out int bonus))
+                            if (EXPExtra.TryGetValue(i.Character, out int bonus))
                                 tmpexp += bonus;
-                            else if (EXPExtra.TryGetValue(((IGMData_PlayerEXP)i.Data).VisableCharacter, out int bonus2))
+                            else if (EXPExtra.TryGetValue(i.VisableCharacter, out int bonus2))
                                 tmpexp += bonus2;
                         }
-                        ((IGMData_PlayerEXP)i.Data).EXP = tmpexp;
+                        ((IGMData_PlayerEXP)i).EXP = tmpexp;
                     }
                 }
 

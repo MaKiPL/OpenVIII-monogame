@@ -258,8 +258,8 @@ namespace OpenVIII
                 if (IGM_Junction != null)
                 {
                     GFs g = Contents[CURSOR_SELECT];
-                    IGMDataItem_IGMData i = (IGMDataItem_IGMData)((IGMData_GF_Group)IGM_Junction.Data[SectionName.TopMenu_GF_Group]).ITEM[2, 0];
-                    ((IGMDataItem_Box)i.Data.CONTAINER).Data = JunctionedGFs.Count > 0 && JunctionedGFs.ContainsKey(g) ? Memory.Strings.GetName(JunctionedGFs[g]) : null;
+                    IGMData_GF_Group i = ((IGMData_GF_Group)IGM_Junction.Data[SectionName.TopMenu_GF_Group].ITEM[2, 0]);
+                    ((IGMDataItem_Box)i.CONTAINER).Data = JunctionedGFs.Count > 0 && JunctionedGFs.ContainsKey(g) ? Memory.Strings.GetName(JunctionedGFs[g]) : null;
                 }
             }
 

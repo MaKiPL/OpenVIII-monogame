@@ -319,7 +319,7 @@ namespace OpenVIII
             SIZE[Rows].Y = Y;
             ITEM[Rows, 2] = new IGMDataItem_Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 45, SIZE[Rows].Y, 0, 0), scale: new Vector2(2.5f));
 
-            ITEM[Targets_Window, 0] = new IGMDataItem_IGMData(new BattleMenus.IGMData_TargetGroup(Character, VisableCharacter));
+            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Character, VisableCharacter);
             BLANKS[Rows] = true;
             Cursor_Status &= ~Cursor_Status.Horizontal;
             Cursor_Status |= Cursor_Status.Vertical;
@@ -327,7 +327,7 @@ namespace OpenVIII
             PointerZIndex = Rows - 1;
         }
 
-        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMDataItem_IGMData)ITEM[Targets_Window, 0]).Data);
+        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData)ITEM[Targets_Window, 0]));
         private int Targets_Window => Rows;
 
         protected override void InitShift(int i, int col, int row)

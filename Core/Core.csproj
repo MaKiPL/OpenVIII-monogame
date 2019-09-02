@@ -763,7 +763,6 @@
     <Compile Include="Menu\IGMDataItem\IGMDataItem_Empty.cs" />
     <Compile Include="Menu\IGMDataItem\IGMDataItem_Face.cs" />
     <Compile Include="Menu\IGMDataItem\IGMDataItem_Icon.cs" />
-    <Compile Include="Menu\IGMDataItem\IGMDataItem_IGMData.cs" />
     <Compile Include="Menu\IGMDataItem\IGMDataItem_Int.cs" />
     <Compile Include="Menu\IGMDataItem\IGMDataItem_String.cs" />
     <Compile Include="Menu\IGMDataItem\IGMDataItem_Texture.cs" />

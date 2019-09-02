@@ -17,7 +17,7 @@ namespace OpenVIII
         /// </summary>
         public Point[] CURSOR;
 
-        public IGMDataItem[,] ITEM;
+        public Menu_Base[,] ITEM;
 
         public int PointerZIndex = byte.MaxValue;
 
@@ -103,7 +103,7 @@ namespace OpenVIII
 
         #region Indexers
 
-        public IGMDataItem this[int pos, int i] { get => ITEM[pos, i]; set => ITEM[pos, i] = value; }
+        public Menu_Base this[int pos, int i] { get => ITEM[pos, i]; set => ITEM[pos, i] = value; }
 
         #endregion Indexers
 
@@ -335,7 +335,7 @@ namespace OpenVIII
         {
             bool ret = false;
             if (!skipdata && ITEM != null)
-                foreach (IGMDataItem i in ITEM)
+                foreach (Menu_Base i in ITEM)
                 {
                     if (i != null)
                         ret = i.Update() || ret;
@@ -377,7 +377,7 @@ namespace OpenVIII
             else
             {
                 SIZE = new Rectangle[count];
-                ITEM = new IGMDataItem[count, depth];
+                ITEM = new Menu_Base[count, depth];
                 CURSOR = new Point[count];
 
                 Count = (byte)count;
@@ -441,10 +441,10 @@ namespace OpenVIII
 
         protected bool InputITEM(int i, int d, ref bool ret)
         {
-            if (ITEM[i, d].Enabled && (((IGMDataItem_IGMData)ITEM[i, d]).Data).Enabled)
+            if (ITEM[i, d].Enabled)
             {
                 Cursor_Status |= (Cursor_Status.Enabled | Cursor_Status.Blinking);
-                ret = (((IGMDataItem_IGMData)ITEM[i, d]).Data).Inputs();
+                ret = ITEM[i, d].Inputs();
                 return true;
             }
             return false;
