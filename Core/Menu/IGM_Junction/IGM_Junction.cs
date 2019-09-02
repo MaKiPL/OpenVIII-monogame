@@ -236,12 +236,6 @@ namespace OpenVIII
             return ret;
         }
 
-        /// <summary>
-        /// Refreshes Junction menu and sets character and visable character. Also resets backup of data.
-        /// </summary>
-        /// <param name="c"></param>
-        /// <param name="vc"></param>
-        public override void Refresh(Characters c, Characters vc, bool backup = true) => base.Refresh(c, vc, backup);
 
         protected override void Init()
         {
