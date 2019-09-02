@@ -29,7 +29,7 @@ namespace OpenVIII
                             (byte)FF8TextTagKey.Confirm})+
                             " "+
                             (Memory.Strings.Read(Strings.FileID.KERNEL,30,22)),
-                            new Rectangle(new Point(0,(int)Size.Y-78),new Point((int)Size.X,78)),options: Box_Options.Center| Box_Options.Middle))
+                            new Rectangle(0,(int)Size.Y-78,(int)Size.X,78),options: Box_Options.Center| Box_Options.Middle))
                     )},
                     { Mode.Exp,
                     new IGMData_PlayerEXPGroup (
