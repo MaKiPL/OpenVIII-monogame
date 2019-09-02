@@ -13,7 +13,7 @@ namespace OpenVIII
         public static implicit operator Texture2D(Texture2DWrapper right) => right.tex;
         public override int GetClutCount => 1;
 
-        public override byte GetBpp => 24;
+        public override byte GetBpp => 24; //shouldn't this be 32? because all our texture2d's are stored in RGBA
 
         public override int GetClutSize => 0;
 
