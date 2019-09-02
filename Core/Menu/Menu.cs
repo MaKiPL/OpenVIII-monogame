@@ -94,6 +94,7 @@ namespace OpenVIII
         /// </summary>
         public static float Fade { get; private set; } = _fadedin;
 
+        public static bool FadingOut => _fadeout;
         /// <summary>
         /// Focus scales and centers the menu.
         /// </summary>
@@ -119,6 +120,11 @@ namespace OpenVIII
         /// </summary>
         public static IGM_Lobby IGM_Lobby => _igm_lobby;
 
+        /// <summary>
+        /// Adjusted mouse location used to determine if mouse is highlighting a button.
+        /// </summary>
+        public static Point MouseLocation => InputMouse.Location.Transform(Menu.Focus);
+
         public static Vector2 StaticSize { get; protected set; }
         /// <summary>
         /// Size of text the real game doesn't use a 1:1 ratio.
@@ -134,35 +140,6 @@ namespace OpenVIII
         /// Size of the menu. If kept in a 4:3 region it won't scale down till after losing enough width.
         /// </summary>
         public Vector2 Size { get => _size; protected set => _size = value; }
-
-        /// <summary>
-        /// Adjusted mouse location used to determine if mouse is highlighting a button.
-        /// </summary>
-        public static Point MouseLocation => InputMouse.Location.Transform(Menu.Focus);
-
-        /// <summary>
-        /// Character who has the junctions and inventory. Same as VisableCharacter unless TeamLaguna.
-        /// </summary>
-        protected Characters Character
-        {
-            get => _character; set
-            {
-                if (_character != value && value != Characters.Blank)
-                    _character = value;
-            }
-        }
-
-        /// <summary>
-        /// Required to support Laguna's Party. They have unique stats but share junctions and inventory.
-        /// </summary>
-        protected Characters VisableCharacter
-        {
-            get => _visableCharacter; set
-            {
-                if (_visableCharacter != value && value != Characters.Blank)
-                    _visableCharacter = value;
-            }
-        }
 
         /// <summary>
         /// Viewport dimensions
@@ -254,7 +231,7 @@ namespace OpenVIII
             byte pallet = 2;
             byte fadedpallet = 7;
             dst.Offset(size * offset.Value);
-            Memory.Icons.Trim(Icons.ID.Finger_Right,pallet);
+            Memory.Icons.Trim(Icons.ID.Finger_Right, pallet);
             if (blink)
             {
                 Memory.Icons.Draw(Icons.ID.Finger_Right, fadedpallet, dst, scale, Fade);
@@ -273,7 +250,7 @@ namespace OpenVIII
             Fade = _fadedin;
             _fadeout = true;
         }
-        public static bool FadingOut => _fadeout;
+
         public static void InitStaticMembers()
         {
             lock (_igm_lock)
@@ -351,25 +328,14 @@ namespace OpenVIII
 
         public void Refresh(bool backup)
         {
-            //backup memory
-            if (backup)
-                Memory.PrevState = Memory.State.Clone();
-            if (!skipdata)
-            {
-                if (Character != Characters.Blank)
-                    foreach (KeyValuePair<Enum, IGMData> i in Data)
-                        i.Value.Refresh(Character, VisableCharacter);
-                else
-                    foreach (KeyValuePair<Enum, IGMData> i in Data)
-                        i.Value.Refresh();
-            }
+            Backup(backup);
+            base.Refresh();
         }
 
         public virtual void Refresh(Characters c, Characters vc, bool backup = false)
         {
-            Character = c;
-            VisableCharacter = vc;
-            Refresh(backup);
+            Backup(backup);
+            Refresh(c, vc);
         }
 
         public virtual bool SetMode(Enum mode)
@@ -433,6 +399,20 @@ namespace OpenVIII
 
         protected override void Init()
         {
+        }
+
+        protected override void RefreshChild()
+        {
+            if (!skipdata)
+                foreach (KeyValuePair<Enum, IGMData> i in Data)
+                    i.Value.Refresh(Character, VisableCharacter);
+        }
+
+        private static void Backup(bool backup)
+        {
+            //backup memory
+            if (backup)
+                Memory.PrevState = Memory.State.Clone();
         }
 
         private void InitConstructor()

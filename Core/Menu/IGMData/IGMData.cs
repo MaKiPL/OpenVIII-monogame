@@ -19,6 +19,8 @@ namespace OpenVIII
 
         public IGMDataItem[,] ITEM;
 
+        public int PointerZIndex = byte.MaxValue;
+
         /// <summary>
         /// Size of the entire area
         /// </summary>
@@ -27,8 +29,6 @@ namespace OpenVIII
         protected bool skipdata = false;
         protected bool skipsnd = false;
         private int _cursor_select;
-        private Characters character = Characters.Blank;
-        private Characters visableCharacter = Characters.Blank;
 
         #endregion Fields
 
@@ -40,28 +40,14 @@ namespace OpenVIII
             Init(count, depth, container, cols, rows);
         }
 
-        protected void Init(Characters? character, Characters? visablecharacter, sbyte? partypos)
-        {
-            if (partypos != null)
-            {
-                Character = Memory.State?.PartyData?[partypos.Value] ?? Characters.Blank;
-                VisableCharacter = Memory.State?.Party?[partypos.Value] ?? Character;
-                PartyPos = partypos.Value;
-            }
-            else
-            {
-                Character = character ?? Characters.Blank;
-                VisableCharacter = visablecharacter ?? Character;
-                PartyPos = (sbyte)(Memory.State?.PartyData?.FindIndex(x => x.Equals(Character)) ?? -1);
-            }
-        }
-
         #endregion Constructors
 
         #region Properties
 
         public int Cols { get; private set; }
+
         public IGMDataItem CONTAINER { get; set; }
+
         /// <summary>
         /// Total number of items
         /// </summary>
@@ -77,16 +63,22 @@ namespace OpenVIII
         }
 
         public Cursor_Status Cursor_Status { get; set; } = Cursor_Status.Disabled;
+
         /// <summary>
         /// How many Peices per Item. Example 1 box could have 9 things to draw in it.
         /// </summary>
         public byte Depth { get; private set; }
 
         public Dictionary<int, FF8String> Descriptions { get; protected set; }
+
         public int Rows { get; private set; }
+
         public Table_Options Table_Options { get; set; } = Table_Options.Default;
+
         public static Point MouseLocation => Menu.MouseLocation;
+
         public static Vector2 TextScale => Menu.TextScale;
+
         /// <summary>
         /// Container's Height
         /// </summary>
@@ -106,29 +98,6 @@ namespace OpenVIII
         /// Container's Y Position
         /// </summary>
         public int Y => CONTAINER != null ? CONTAINER.Pos.Y : 0;
-
-        public Characters Character
-        {
-            get => character; protected set
-            {
-                if (character != value && value != Characters.Blank)
-                    character = value;
-            }
-        }
-
-        /// <summary>
-        /// Position of party member 0,1,2. If -1 at the time of setting the character wasn't in the party.
-        /// </summary>
-        protected sbyte PartyPos { get; private set; }
-
-        public Characters VisableCharacter
-        {
-            get => visableCharacter; protected set
-            {
-                if (visableCharacter != value && value != Characters.Blank)
-                    visableCharacter = value;
-            }
-        }
 
         #endregion Properties
 
@@ -188,8 +157,6 @@ namespace OpenVIII
             return GetCursor_select();
         }
 
-        public int PointerZIndex = byte.MaxValue;
-
         /// <summary>
         /// Draw all items
         /// </summary>
@@ -226,49 +193,7 @@ namespace OpenVIII
             }
         }
 
-        protected virtual void DrawITEM(int i, int d) => ITEM[i, d]?.Draw();
-
         public void DrawPointer(Point cursor, Vector2? offset = null, bool blink = false) => Menu.DrawPointer(cursor, offset, blink);
-
-        protected bool InputITEM(int i, int d, ref bool ret)
-        {
-            if (ITEM[i, d].Enabled && (((IGMDataItem_IGMData)ITEM[i, d]).Data).Enabled)
-            {
-                Cursor_Status |= (Cursor_Status.Enabled | Cursor_Status.Blinking);
-                ret = (((IGMDataItem_IGMData)ITEM[i, d]).Data).Inputs();
-                return true;
-            }
-            return false;
-        }
-
-        protected void Init(int count, int depth, IGMDataItem container = null, int? cols = null, int? rows = null)
-        {
-            CONTAINER = container ?? new IGMDataItem_Empty();
-            if (count <= 0 || depth <= 0)
-            {
-                if (CONTAINER.Pos == Rectangle.Empty)
-                {
-                    Debug.WriteLine($"{this}:: count {count} or depth {depth}, is invalid must be >= 1, or a CONTAINER {CONTAINER} and CONTAINER.Pos { CONTAINER.Pos.ToString() } must be set instead, Skipping Init()");
-                    return;
-                }
-            }
-            else
-            {
-                SIZE = new Rectangle[count];
-                ITEM = new IGMDataItem[count, depth];
-                CURSOR = new Point[count];
-
-                Count = (byte)count;
-                Depth = (byte)depth;
-                BLANKS = new bool[count];
-                Descriptions = new Dictionary<int, FF8String>(count);
-                this.Cols = cols ?? 1;
-                this.Rows = rows ?? 1;
-            }
-            Init();
-            Refresh();
-            Update();
-        }
 
         /// <summary>
         /// Check inputs
@@ -368,10 +293,22 @@ namespace OpenVIII
             return false;
         }
 
+        public virtual void Inputs_Cards()
+        {
+            if (!skipsnd)
+                init_debugger_Audio.PlaySound(0);
+        }
+
         public virtual void Inputs_Left()
         {
             if (!skipsnd)
                 init_debugger_Audio.PlaySound(0);
+        }
+
+        public virtual void Inputs_Menu()
+        {
+            if (!skipsnd)
+                init_debugger_Audio.PlaySound(31);
         }
 
         public virtual bool Inputs_OKAY()
@@ -387,32 +324,6 @@ namespace OpenVIII
                 init_debugger_Audio.PlaySound(0);
         }
 
-        public virtual void Inputs_Menu()
-        {
-            if (!skipsnd)
-                init_debugger_Audio.PlaySound(31);
-        }
-
-        public virtual void Inputs_Cards()
-        {
-            if (!skipsnd)
-                init_debugger_Audio.PlaySound(0);
-        }
-
-        public virtual void Refresh(Characters character, Characters? visablecharacter = null)
-        {
-            Character = character;
-            VisableCharacter = visablecharacter ?? character;
-            PartyPos = (sbyte)(Memory.State?.PartyData?.FindIndex(x => x.Equals(Character)) ?? -1);
-            Refresh();
-        }
-
-        /// <summary>
-        /// Things that change rarely. Like a party member changes or Laguna dream happens.
-        /// </summary>
-        public override void Refresh()
-        {
-        }
 
         public virtual void SetModeChangeEvent(ref EventHandler<Enum> eventHandler) => eventHandler += ModeChangeEvent;
 
@@ -432,7 +343,54 @@ namespace OpenVIII
             return ret;
         }
 
+        protected virtual void DrawITEM(int i, int d) => ITEM[i, d]?.Draw();
+
         protected int GetCursor_select() => _cursor_select;
+
+        protected void Init(Characters? character, Characters? visablecharacter, sbyte? partypos)
+        {
+            if (partypos != null)
+            {
+                Character = Memory.State?.PartyData?[partypos.Value] ?? Characters.Blank;
+                VisableCharacter = Memory.State?.Party?[partypos.Value] ?? Character;
+                PartyPos = partypos.Value;
+            }
+            else
+            {
+                Character = character ?? Characters.Blank;
+                VisableCharacter = visablecharacter ?? Character;
+                PartyPos = (sbyte)(Memory.State?.PartyData?.FindIndex(x => x.Equals(Character)) ?? -1);
+            }
+        }
+
+        protected void Init(int count, int depth, IGMDataItem container = null, int? cols = null, int? rows = null)
+        {
+            CONTAINER = container ?? new IGMDataItem_Empty();
+            if (count <= 0 || depth <= 0)
+            {
+                if (CONTAINER.Pos == Rectangle.Empty)
+                {
+                    Debug.WriteLine($"{this}:: count {count} or depth {depth}, is invalid must be >= 1, or a CONTAINER {CONTAINER} and CONTAINER.Pos { CONTAINER.Pos.ToString() } must be set instead, Skipping Init()");
+                    return;
+                }
+            }
+            else
+            {
+                SIZE = new Rectangle[count];
+                ITEM = new IGMDataItem[count, depth];
+                CURSOR = new Point[count];
+
+                Count = (byte)count;
+                Depth = (byte)depth;
+                BLANKS = new bool[count];
+                Descriptions = new Dictionary<int, FF8String>(count);
+                this.Cols = cols ?? 1;
+                this.Rows = rows ?? 1;
+            }
+            Init();
+            Refresh();
+            Update();
+        }
 
         /// <summary>
         /// Things that are fixed values at startup.
@@ -481,8 +439,35 @@ namespace OpenVIII
         {
         }
 
+        protected bool InputITEM(int i, int d, ref bool ret)
+        {
+            if (ITEM[i, d].Enabled && (((IGMDataItem_IGMData)ITEM[i, d]).Data).Enabled)
+            {
+                Cursor_Status |= (Cursor_Status.Enabled | Cursor_Status.Blinking);
+                ret = (((IGMDataItem_IGMData)ITEM[i, d]).Data).Inputs();
+                return true;
+            }
+            return false;
+        }
+
         protected virtual void ModeChangeEvent(object sender, Enum e)
         {
+        }
+
+        protected override void RefreshChild()
+        {
+            base.RefreshChild();
+            if (!skipdata)
+            {
+                if (CONTAINER != null)
+                    CONTAINER.Refresh(Character, VisableCharacter);
+                if (ITEM != null)
+                    for (int i = 0; i < Count; i++)
+                        for (int d = 0; d < Depth; d++)
+                        {
+                            ITEM[i, d]?.Refresh(Character, VisableCharacter);
+                        }
+            }
         }
 
         protected virtual void SetCursor_select(int value) => _cursor_select = value;

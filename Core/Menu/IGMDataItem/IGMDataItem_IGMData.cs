@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 
 namespace OpenVIII
 {
@@ -49,11 +50,10 @@ namespace OpenVIII
             }
             return false;
         }
-
-        public override void Refresh()
+        protected override void RefreshChild()
         {
-            base.Refresh();
-            Data.Refresh();
+            Data.Refresh(Character,VisableCharacter);
+            base.RefreshChild();
         }
 
         public override void Show()
@@ -71,6 +71,8 @@ namespace OpenVIII
             }
             return false;
         }
+
+
 
         #endregion Methods
     }
