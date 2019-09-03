@@ -4,7 +4,6 @@ using System;
 
 namespace OpenVIII
 {
-
     public abstract class Texture_Base
     {
         #region Fields
@@ -32,10 +31,10 @@ namespace OpenVIII
 
         #region Properties
 
+        public abstract byte GetBpp { get; }
         public abstract int GetClutCount { get; }
         public abstract int GetClutSize { get; }
         public abstract int GetColorsCountPerPalette { get; }
-        public abstract byte GetBpp { get; }
         public abstract int GetHeight { get; }
         public abstract int GetOrigX { get; }
         public abstract int GetOrigY { get; }
@@ -44,20 +43,6 @@ namespace OpenVIII
         #endregion Properties
 
         #region Methods
-
-        public abstract void ForceSetClutColors(ushort newNumOfColours);
-
-        public abstract void ForceSetClutCount(ushort newClut);
-
-        public abstract Color[] GetClutColors(ushort clut);
-
-        public abstract Texture2D GetTexture();
-
-        public abstract Texture2D GetTexture(Color[] colors = null);
-
-        public abstract Texture2D GetTexture(ushort? clut = null);
-
-        public abstract void Save(string path);
 
         /// <summary>
         /// Convert ABGR1555 color to RGBA 32bit color
@@ -87,6 +72,61 @@ namespace OpenVIII
             //TDW has STP
             return ret;
         }
+
+        /// <summary>
+        /// Custom Convert 16BIT color to RGBA 32bit color
+        /// </summary>
+        /// <remarks>
+        /// TEX file actually has it's own masks and shift varibles. if these are honor'ed could have
+        /// the 16 bit color in any order. Though I think they are all the same. Unsure if these
+        /// values also work for 32 bit. or 24 bit. (Needs testing and Tex needs to be adjusted
+        /// to read those values, they are in the header)
+        /// </remarks>
+        public static Color Custom_16BITtoRGBA32bit(ushort pixel, ushort c_red_mask, ushort c_red_shift, ushort c_green_mask, ushort c_green_shift, ushort c_blue_mask, ushort c_blue_shift, bool ignoreAlpha = false)
+        {
+            // alert to let me know if we might need to check something.
+            if (pixel == 0 && !ignoreAlpha) return Color.TransparentBlack;
+            //https://docs.microsoft.com/en-us/windows/win32/directshow/working-with-16-bit-rgb
+            // had the masks. though they were doing rgb but we are doing bgr so i switched red and blue.
+            Color ret = new Color
+            {
+                R = (byte)MathHelper.Clamp(((pixel & c_red_mask) >> c_red_shift) << 3, 0, 255),
+                G = (byte)MathHelper.Clamp(((pixel & c_green_mask) >> c_green_shift) << 3, 0, 255),
+                B = (byte)MathHelper.Clamp(((pixel & c_blue_mask) >> c_blue_shift) << 3, 0, 255),
+                A = 255
+            };
+            return ret;
+        }
+
+        public static Texture_Base Open(byte[] buffer, uint offset = 0)
+        {
+            switch (BitConverter.ToUInt32(buffer, (int)(0 + offset)))
+            {
+                case 0x1:
+                case 0x2:
+                    return new TEX(buffer);
+
+                case 0x10:
+                    return new TIM2(buffer, 0);
+
+                default:
+                    return null;
+            }
+        }
+
+        public abstract void ForceSetClutColors(ushort newNumOfColours);
+
+        public abstract void ForceSetClutCount(ushort newClut);
+
+        public abstract Color[] GetClutColors(ushort clut);
+
+        public abstract Texture2D GetTexture();
+
+        public abstract Texture2D GetTexture(Color[] colors = null);
+
+        public abstract Texture2D GetTexture(ushort? clut = null);
+
+        public abstract void Save(string path);
 
         //public static class Transparency
         //{
@@ -118,7 +158,11 @@ namespace OpenVIII
         protected static bool GetSTP(ushort pixel) =>
             // I set this to always return false for black. As it's transparency is handled in
             // conversion method.
-            (pixel & 0x7FFF) == 0 ? false : ((pixel & STP_mask) >> 15) > 0;//If color is not black and STP bit on, possible semi-transparency.
+            (pixel & 0x7FFF) == 0 ? false : ((pixel & STP_mask) >> 15) > 0;
+
+        #endregion Methods
+
+        //If color is not black and STP bit on, possible semi-transparency.
 
         //http://www.raphnet.net/electronique/psx_adaptor/Playstation.txt
         //4 modes psx could use for Semi-Transparency. I donno which one ff8 uses or if it uses only one.
@@ -139,23 +183,5 @@ namespace OpenVIII
         ///// <returns>byte[4] red green blue alpha, i think</returns>
         ///// <see cref="https://github.com/myst6re/vincent-tim/blob/master/PsColor.cpp"/>
         //public static Color FromPsColor(ushort color, bool useAlpha = false) => new Color((byte)Math.Round((color & 31) * COEFF_COLOR), (byte)Math.Round(((color >> 5) & 31) * COEFF_COLOR), (byte)Math.Round(((color >> 10) & 31) * COEFF_COLOR), (byte)(color == 0 && useAlpha ? 0 : 255));
-
-        public static Texture_Base Open(byte[] buffer, uint offset = 0)
-        {
-            switch (BitConverter.ToUInt32(buffer, (int)(0 + offset)))
-            {
-                case 0x1:
-                case 0x2:
-                    return new TEX(buffer);
-
-                case 0x10:
-                    return new TIM2(buffer, 0);
-
-                default:
-                    return null;
-            }
-        }
-
-        #endregion Methods
     }
 }
