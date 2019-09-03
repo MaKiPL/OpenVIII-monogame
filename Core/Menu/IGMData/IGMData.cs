@@ -441,7 +441,7 @@ namespace OpenVIII
 
         protected bool InputITEM(int i, int d, ref bool ret)
         {
-            if (ITEM[i, d].Enabled)
+            if (ITEM[i, d] != null && ITEM[i, d].Enabled)
             {
                 Cursor_Status |= (Cursor_Status.Enabled | Cursor_Status.Blinking);
                 ret = ITEM[i, d].Inputs();
