@@ -212,11 +212,11 @@ namespace OpenVIII
             }
         }
 
-        public static Rectangle Scale(Rectangle mat1, Vector2 mat2)
+        public static Rectangle Scale(Rectangle src, Vector2 scale)
         {
-            mat1.Location = (mat1.Location.ToVector2() * mat2).RoundedPoint();
-            mat1.Size = (mat1.Size.ToVector2() * mat2).RoundedPoint();
-            return mat1;
+            src.Location = (src.Location.ToVector2() * scale).ToPoint();//.RoundedPoint();
+            src.Size = (src.Size.ToVector2() * scale).ToPoint();//.RoundedPoint();
+            return src;
         }
 
         public static Rectangle ToRectangle(Texture2D t) => new Rectangle(0, 0, t.Width, t.Height);
