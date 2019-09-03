@@ -9,28 +9,14 @@ using OpenVIII.Encoding.Tags;
 
 namespace OpenVIII
 {
-    public static class Module_field_debug
+    public static partial class Module_field_debug
     {
         private static Field_mods mod = 0;
-        private static Texture2D tex;
-        private static Texture2D texOverlap;
+        private static TextureHandler tex; //Texture2D tex;
+        private static TextureHandler texOverlap;//Texture2D texOverlap;
         private static EventEngine eventEngine;
         private static IServices services;
         private static List<Tile> tiles;
-        private struct Tile
-        {
-            public short x, y;
-            public ushort z;
-            public byte texID; // 4 bits
-            public byte pallID; //[6-10]
-            public byte srcx, srcy;
-            public byte layId;
-            public byte blendType;
-            public byte state;
-            public byte parameter;
-            public byte blend1;
-            public byte blend2;
-        }
 
         private static int width, height;
 
@@ -69,7 +55,7 @@ namespace OpenVIII
             //In game I think we'd keep the field from leaving the screen edge but would center on the Squall and the party when it can.
             //I setup scaling after noticing the field didn't size with the screen. I set it to center on screen.
             dst.Offset(Memory.Center.X - dst.Center.X, Memory.Center.Y - dst.Center.Y);
-            Memory.spriteBatch.Draw(tex,dst, src, Color.White);
+            Memory.spriteBatch.Draw((Texture2D)tex,dst, src, Color.White);
             //new Microsoft.Xna.Framework.Rectangle(0, 0, 1280 + (width - 320), 720 + (height - 224)),
             //new Microsoft.Xna.Framework.Rectangle(0, 0, tex.Width, tex.Height)
             Memory.SpriteBatchEnd();
