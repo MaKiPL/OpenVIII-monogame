@@ -44,13 +44,15 @@ namespace OpenVIII
 
         public void LockMouse()
         {
-            if (Memory.IsActive && Mode != MouseLockMode.Disabled) // check for focus to allow for tabbing out with out taking over mouse.
+            // override center lock if mouse is visible to screen. 
+            MouseLockMode mode = Mode != MouseLockMode.Disabled && Memory.IsMouseVisible ? MouseLockMode.Screen : Mode;
+            if (Memory.IsActive && mode != MouseLockMode.Disabled) // check for focus to allow for tabbing out with out taking over mouse.
             {
-                if (Mode == MouseLockMode.Center) //center mouse in screen after grabbing state, release mouse if alt tabbed out.
+                if (mode == MouseLockMode.Center) //center mouse in screen after grabbing state, release mouse if alt tabbed out.
                 {
                     Microsoft.Xna.Framework.Input.Mouse.SetPosition(Memory.graphics.GraphicsDevice.Viewport.Bounds.Width / 2, Memory.graphics.GraphicsDevice.Viewport.Bounds.Height / 2);
                 }
-                else if (Mode == MouseLockMode.Screen) //alt lock that clamps to viewport every frame. would be useful if using mouse to navigate menus and stuff.
+                else if (mode == MouseLockMode.Screen) //alt lock that clamps to viewport every frame. would be useful if using mouse to navigate menus and stuff.
                 {
                     Rectangle vpb = Memory.graphics.GraphicsDevice.Viewport.Bounds;
                     //there is a better way to clamp as if you move mouse fast enough it will escape for a short time.
