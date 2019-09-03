@@ -21,6 +21,8 @@ namespace OpenVIII
 
         public IGMData_ItemPool() : base(11, 3, new IGMDataItem_Box(pos: new Rectangle(5, 150, 415, 480), title: Icons.ID.ITEM), 11, 18)
         {
+            if (!Battle)
+                ITEM[Targets_Window, 0] = null;
         }
 
         #endregion Constructors
@@ -52,7 +54,7 @@ namespace OpenVIII
 
         protected override void DrawITEM(int i, int d)
         {
-            if (Targets_Window >= i || !Target_Group.Enabled)
+            if (Targets_Window >= i || !(Target_Group != null && Target_Group.Enabled))
                 base.DrawITEM(i, d);
         }
         public override bool Inputs_CANCEL()
@@ -75,8 +77,8 @@ namespace OpenVIII
             Item_In_Menu item = Contents[CURSOR_SELECT];
             if (Battle)
             {
-                Target_Group.SelectTargetWindows(item);
-                Target_Group.ShowTargetWindows();
+                Target_Group?.SelectTargetWindows(item);
+                Target_Group?.ShowTargetWindows();
             }
             if (item.Target == Item_In_Menu._Target.None)
                 return false;
@@ -84,7 +86,6 @@ namespace OpenVIII
             Menu.IGM_Items.SetMode(IGM_Items.Mode.UseItemOnTarget);
             return true;
         }
-
         public override void Refresh()
         {
             if (!Battle && !eventSet && Menu.IGM_Items != null)
