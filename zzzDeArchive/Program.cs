@@ -2,12 +2,14 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Linq;
 
 namespace zzzDeArchive
 {
     public class Program
     {
-        private const string _path = @"D:\ext";
+        private const string _path = @"D:\ext2";
+        private const string _out = @"D:\out.zzz";
 
         public struct ZzzHeader
         {
@@ -25,6 +27,36 @@ namespace zzzDeArchive
                     r.Data[i] = FileData.Read(br);
                 return r;
             }
+            /// <summary>
+            /// This creates the header using the files in a directory.
+            /// </summary>
+            /// <param name="path"></param>
+            /// <returns></returns>
+            public static ZzzHeader Read(string path)
+            {
+                ZzzHeader r = new ZzzHeader();
+                var f = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
+                r.Count = (uint)f.Length;
+                r.Data = new FileData[r.Count];
+                
+                for(int i = 0; i < r.Count; i++)
+                {
+                    string safe = f[i];
+                    safe = safe.Replace(path, "");
+                    safe = safe.Replace('/', '\\');
+                    safe = safe.Trim('\\');
+                    r.Data[i].Filename = safe;
+                    FileInfo fi = new FileInfo(f[i]);
+                    r.Data[i].Size = (uint)fi.Length;
+                }
+                uint pos = (uint)r.TotalBytes;
+                for (int i = 0; i < r.Count; i++)
+                {
+                    r.Data[i].Offset = pos;
+                    pos += r.Data[i].Size;
+                }
+                return r;
+            }
 
             public void Write(BinaryWriter bw)
             {
@@ -32,7 +64,7 @@ namespace zzzDeArchive
                 foreach (FileData r in Data)
                     r.Write(bw);
             }
-
+            public int TotalBytes => sizeof(uint) + (from x in Data select x.TotalBytes).Sum();
             public override string ToString() => $"({Count} files)";
         }
 
@@ -66,15 +98,34 @@ namespace zzzDeArchive
                 bw.Write(Size);
             }
 
-            public string Filename => Encoding.ASCII.GetString(filenameascii);
-
+            public string Filename
+            {
+                get => Encoding.ASCII.GetString(filenameascii); set
+                {
+                    filenameascii = Encoding.ASCII.GetBytes(value);
+                    FilenameLength = (uint)filenameascii.Length;
+                }
+            }
+            public int TotalBytes => (int)(sizeof(uint) * 4 + FilenameLength);
             public override string ToString() => $"({Filename}, {Offset}, {UnkFlag}, {Size})";
         }
 
         private static void Main(string[] args)
         {
-            string filename = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY VIII Remastered\main.zzz";
-            //string filename = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY VIII Remastered\other.zzz";
+            //Extract();
+            Compile();
+            Console.ReadLine();
+        }
+
+        private static void Compile()
+        {
+            ZzzHeader head = ZzzHeader.Read(_path);
+        }
+
+        private static void Extract()
+        {
+            //string filename = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY VIII Remastered\main.zzz";
+            string filename = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY VIII Remastered\other.zzz";
             ZzzHeader head;
             using (FileStream fs = File.OpenRead(filename))
             {
@@ -101,7 +152,6 @@ namespace zzzDeArchive
                     }
                 }
             }
-            Console.ReadLine();
         }
     }
 }
