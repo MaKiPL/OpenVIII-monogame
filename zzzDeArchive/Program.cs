@@ -10,11 +10,14 @@ namespace zzzDeArchive
     {
         #region Fields
 
-        //string filename = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY VIII Remastered\main.zzz";
-        private const string _in = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY VIII Remastered\other.zzz";
+        //private const string _in = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY VIII Remastered\main.zzz.old";
+        //private const string _in = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY VIII Remastered\other.zzz";
 
         private const string _out = @"out.zzz";
-        private const string _path = @"D:\ext";
+        private static string _path;
+        private static string _in;
+
+        //private const string _path = @"D:\ext";
 
         #endregion Fields
 
@@ -48,7 +51,7 @@ namespace zzzDeArchive
                     head = ZzzHeader.Read(br);
                     Console.WriteLine(head);
 
-                    Directory.CreateDirectory(_path);
+                    //Directory.CreateDirectory(_path);
                     foreach (FileData d in head.Data)
                     {
                         Debug.Assert(d.UnkFlag == 0);
@@ -70,9 +73,97 @@ namespace zzzDeArchive
 
         private static void Main(string[] args)
         {
-            //Extract();
+            ConsoleKeyInfo k = MainMenu();
+            if (k.Key == ConsoleKey.D1 || k.Key == ConsoleKey.NumPad1)
+            {
+                ExtractMenu();
+            }
+            else if (k.Key == ConsoleKey.D2 || k.Key == ConsoleKey.NumPad2)
+            {
+                WriteMenu();
+            }
+            //Console.ReadLine();
+        }
+
+        private static ConsoleKeyInfo MainMenu()
+        {
+            ConsoleKeyInfo k;
+            do
+            {
+                Console.Write(
+                    "            --- Welcome to the zzzDeArchive 0.1 ---\n" +
+                    "     Code C# written by Sebanisu, Reversing and Python by Maki\n\n" +
+                    "1) Extract - Extract zzz file\n" +
+                    "2) Write - Write folder contents to a zzz file\n" +
+                    "  Select: ");
+                k = Console.ReadKey();
+                Console.WriteLine();
+            }
+            while (k.Key != ConsoleKey.D1 && k.Key != ConsoleKey.D2 && k.Key != ConsoleKey.NumPad1 && k.Key != ConsoleKey.NumPad2);
+            return k;
+        }
+
+
+        private static void ExtractMenu()
+        {
+            string path;
+            bool good = false;
+            do
+            {
+                Console.Write("Extract zzz Screen\n" +
+                    "Enter the path to zzz file: ");
+                path = Console.ReadLine();
+                path = path.Trim('"');
+                path = path.Trim();
+                Console.WriteLine();
+                good = File.Exists(path);
+                if (!good)
+                    Console.WriteLine("File doesn't exist\n");
+                else break;
+            }
+            while (true);
+
+            _in = path;
+            do
+            {
+                Console.Write("Extract zzz Screen\n" +
+                    "Enter the path to extract contents: ");
+                path = Console.ReadLine();
+                path = path.Trim('"');
+                path = path.Trim();
+                Console.WriteLine();
+                Directory.CreateDirectory(path);
+                good = Directory.Exists(path);
+                if (!good)
+                    Console.WriteLine("Directory doesn't exist\n");
+                else break;
+            }
+            while (true);
+            _path = path;
+            Extract();
+        }
+
+        private static void WriteMenu()
+        {
+            string path;
+            bool good = false;
+            do
+            {
+                Console.Write("Write zzz Screen\n" +
+                    "Enter the path of files to go into out.zzz: ");
+                path = Console.ReadLine();
+                path = path.Trim('"');
+                path = path.Trim();
+                Console.WriteLine();
+                good = Directory.Exists(path);
+                if (!good)
+                    Console.WriteLine("Directory doesn't exist\n");
+                else break;
+            }
+            while (true);
+
+            _path = path;
             Write();
-            Console.ReadLine();
         }
 
         #endregion Methods
