@@ -25,7 +25,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PAK Extractor", "PAK Extrac
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{E8E40E2A-FB9B-41E9-88FF-5461A2884FCF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "zzzDeArchive", "zzzDeArchive\zzzDeArchive.csproj", "{D19BC5A5-D15E-46BB-94FB-7C4BE196D275}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "zzzDeArchive", "zzzDeArchive\zzzDeArchive\zzzDeArchive.csproj", "{D19BC5A5-D15E-46BB-94FB-7C4BE196D275}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
