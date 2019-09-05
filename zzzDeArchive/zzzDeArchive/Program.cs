@@ -26,19 +26,29 @@ namespace zzzDeArchive
         private static void Write()
         {
             ZzzHeader head = ZzzHeader.Read(_path, out string[] f);
-
+            string path = Path.Combine(Directory.GetCurrentDirectory(), _out);
             Console.WriteLine(head);
-            using (FileStream fs = File.Create(_out))
+            using (FileStream fs = File.Create(path))
             {
                 using (BinaryWriter bw = new BinaryWriter(fs))
                 {
                     head.Write(bw);
                     foreach (string file in f)
                     {
+
                         bw.Write(File.ReadAllBytes(file));
                     }
                 }
             }
+            Console.WriteLine($"Saved to: {path}");
+            try
+            {
+                Process.Start(Path.GetDirectoryName(path));
+            }
+            catch
+            {
+            }
+
         }
 
         private static void Extract()
@@ -54,7 +64,6 @@ namespace zzzDeArchive
                     //Directory.CreateDirectory(_path);
                     foreach (FileData d in head.Data)
                     {
-                        Debug.Assert(d.UnkFlag == 0);
                         Console.WriteLine($"Writing {d}");
                         string path = Path.Combine(_path, d.Filename);
                         Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -62,12 +71,25 @@ namespace zzzDeArchive
                         {
                             using (BinaryWriter bw = new BinaryWriter(fso))
                             {
-                                fs.Seek(d.Offset, SeekOrigin.Begin);
-                                bw.Write(br.ReadBytes((int)d.Size));
+                                if (d.Offset <= long.MaxValue)
+                                {
+                                    fs.Seek((long)d.Offset, SeekOrigin.Begin);
+                                    bw.Write(br.ReadBytes((int)d.Size));
+                                }
+                                else throw new ArgumentOutOfRangeException($"d.offset is too large! ({d.Offset})");
                             }
                         }
                     }
                 }
+            }
+            Console.WriteLine($"Saved to: {_path}");
+            try
+            {
+                Process.Start(_path);
+            }
+            catch
+            {
+
             }
         }
 
@@ -91,7 +113,7 @@ namespace zzzDeArchive
             do
             {
                 Console.Write(
-                    "            --- Welcome to the zzzDeArchive 0.1 ---\n" +
+                    "            --- Welcome to the zzzDeArchive 0.11 ---\n" +
                     "     Code C# written by Sebanisu, Reversing and Python by Maki\n\n" +
                     "1) Extract - Extract zzz file\n" +
                     "2) Write - Write folder contents to a zzz file\n" +
@@ -110,7 +132,8 @@ namespace zzzDeArchive
             bool good = false;
             do
             {
-                Console.Write("Extract zzz Screen\n" +
+                Console.Write(
+                    "     Extract zzz Screen\n" +
                     "Enter the path to zzz file: ");
                 path = Console.ReadLine();
                 path = path.Trim('"');
@@ -126,7 +149,8 @@ namespace zzzDeArchive
             _in = path;
             do
             {
-                Console.Write("Extract zzz Screen\n" +
+                Console.Write(
+                    "     Extract zzz Screen\n" +
                     "Enter the path to extract contents: ");
                 path = Console.ReadLine();
                 path = path.Trim('"');
@@ -149,7 +173,8 @@ namespace zzzDeArchive
             bool good = false;
             do
             {
-                Console.Write("Write zzz Screen\n" +
+                Console.Write(
+                    "     Write zzz Screen\n" +
                     "Enter the path of files to go into out.zzz: ");
                 path = Console.ReadLine();
                 path = path.Trim('"');
@@ -170,15 +195,18 @@ namespace zzzDeArchive
 
         #region Structs
 
+        /// <summary>
+        /// Part of header that contains info on the files.
+        /// </summary>
+        /// <see cref="https://github.com/myst6re/qt-zzz/blob/master/zzztoc.h"/>
         public struct FileData
         {
             #region Fields
 
             private byte[] filenameascii;
             public uint FilenameLength;
-            public uint Offset;
+            public ulong Offset;
             public uint Size;
-            public uint UnkFlag;
 
             #endregion Fields
 
@@ -207,8 +235,7 @@ namespace zzzDeArchive
                     FilenameLength = br.ReadUInt32()
                 };
                 r.filenameascii = br.ReadBytes((int)r.FilenameLength);
-                r.Offset = br.ReadUInt32();
-                r.UnkFlag = br.ReadUInt32();
+                r.Offset = br.ReadUInt64();
                 r.Size = br.ReadUInt32();
                 return r;
             }
@@ -228,20 +255,21 @@ namespace zzzDeArchive
                 return r;
             }
 
-            public override string ToString() => $"({Filename}, {Offset}, {UnkFlag}, {Size})";
+            public override string ToString() => $"({Filename}, {Offset}, {Size})";
 
             public void Write(BinaryWriter bw)
             {
                 bw.Write(FilenameLength);
                 bw.Write(filenameascii);
                 bw.Write(Offset);
-                bw.Write(UnkFlag);
                 bw.Write(Size);
             }
 
             #endregion Methods
         }
-
+        /// <summary>
+        /// Header for ZZZ file.
+        /// </summary>
         public struct ZzzHeader
         {
             #region Fields
