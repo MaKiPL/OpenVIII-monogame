@@ -157,6 +157,8 @@ namespace OpenVIII
             return GetCursor_select();
         }
 
+        protected bool DepthFirst = false;
+
         /// <summary>
         /// Draw all items
         /// </summary>
@@ -168,25 +170,34 @@ namespace OpenVIII
                     CONTAINER.Draw();
                 bool pointer = false;
                 if (!skipdata && ITEM != null)
-                    for (int i = 0; i < Count; i++)
+                    if (DepthFirst)
                         for (int d = 0; d < Depth; d++)
-                        {
-                            DrawITEM(i, d);
-                            if (i == PointerZIndex)
-                                pointer = testthanpointer();
-                        }
+                            for (int i = 0; i < Count; i++)
+                            {
+                                if (i == PointerZIndex && !pointer)
+                                    pointer = DrawPointer();
+                                DrawITEM(i, d);
+                            }
+                    else
+                        for (int i = 0; i < Count; i++)
+                            for (int d = 0; d < Depth; d++)
+                            {
+                                if (i == PointerZIndex && !pointer)
+                                    pointer = DrawPointer();
+                                DrawITEM(i, d);
+                            }
 
                 if (!pointer)
                 {
-                    pointer = testthanpointer();
+                    pointer = DrawPointer();
                 }
             }
-            bool testthanpointer()
+            bool DrawPointer()
             {
                 if ((Cursor_Status & (Cursor_Status.Enabled | Cursor_Status.Draw)) != 0 &&
                     (Cursor_Status & Cursor_Status.Hidden) == 0)
                 {
-                    DrawPointer(CURSOR[CURSOR_SELECT], blink: ((Cursor_Status & Cursor_Status.Blinking) != 0));
+                    this.DrawPointer(CURSOR[CURSOR_SELECT], blink: ((Cursor_Status & Cursor_Status.Blinking) != 0));
                     return true;
                 }
                 return false;
@@ -323,7 +334,6 @@ namespace OpenVIII
             if (!skipsnd)
                 init_debugger_Audio.PlaySound(0);
         }
-
 
         public virtual void SetModeChangeEvent(ref EventHandler<Enum> eventHandler) => eventHandler += ModeChangeEvent;
 
