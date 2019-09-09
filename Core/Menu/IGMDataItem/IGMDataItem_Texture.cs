@@ -31,9 +31,12 @@ namespace OpenVIII
         {
             if (Enabled)
             {
-                Memory.spriteBatch.Draw(Data, Pos, null, Color * Fade);
-                if (Blink)
-                    Memory.spriteBatch.Draw(Data, Pos, null, Faded_Color * Fade * Blink_Amount * Blink_Adjustment);
+                if (!Blink)
+                    Memory.spriteBatch.Draw(Data, Pos, null, Color * Fade);
+                else
+                    Memory.spriteBatch.Draw(Data, Pos, null, Color.Lerp(Color, Faded_Color, Menu.Blink_Amount) * Blink_Adjustment * Fade);
+                //    if (Blink)
+                //        Memory.spriteBatch.Draw(Data, Pos, null, Faded_Color * Fade * Blink_Amount * Blink_Adjustment);
             }
         }
 

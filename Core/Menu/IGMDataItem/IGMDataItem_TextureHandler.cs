@@ -17,14 +17,17 @@ namespace OpenVIII
         #endregion Properties
 
         #region Methods
-
+        Color Faded_Color => Color.DarkGray;
         public override void Draw()
         {
             if (Enabled)
             {
-                Data.Draw(Pos, null, Color * Fade);//4
-                if (Blink)
-                    Data.Draw(Pos, null, Color.DarkGray * Blink_Amount * Blink_Adjustment * Fade);//4
+                if (!Blink)
+                    Data.Draw(Pos, null, Color * Fade);//4
+                //if (Blink)
+                //    Data.Draw(Pos, null, Color.DarkGray * Blink_Amount * Blink_Adjustment * Fade);//4
+                else
+                    Data.Draw(Pos, null, Color.Lerp(Color, Faded_Color, Menu.Blink_Amount) * Blink_Adjustment * Fade);
             }
         }
 
