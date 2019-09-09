@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace OpenVIII
 {
@@ -13,6 +14,7 @@ namespace OpenVIII
         private Func<T, T, float, T> _function;
         private T _start;
         private double _totalMS;
+        private double _reverseMS = 0;
 
         #endregion Fields
 
@@ -39,16 +41,31 @@ namespace OpenVIII
         public Func<T, T, float, T> Function { get => _function; set => _function = value; }
         public T Start { get => _start; set => _start = value; }
         public double TotalMS { get => _totalMS; set => _totalMS = value; }
+        public double ReverseMS { get => _reverseMS; set => _reverseMS = value; }
+        public bool Reversed { get; private set; } = false;
 
         #endregion Properties
 
         #region Methods
 
         public void Restart() => _currentMS = 0d;
-
+        public void ReverseRestart()
+        {
+            Reverse();
+            Restart();
+        }
         public void Reverse()
         {
-            T tmp = _start; _start = _end; _end = tmp;
+            T tmp = _start;
+            _start = _end;
+            _end = tmp;
+            if (_reverseMS > double.Epsilon)
+            {
+                double t = _reverseMS;
+                _reverseMS = _totalMS;
+                _totalMS = t;
+            }
+            Reversed = !Reversed;
         }
 
         public T Update()
@@ -64,6 +81,7 @@ namespace OpenVIII
 
         public float UpdatePercent()
         {
+            //Debug.WriteLine($"{this}::{Memory.gameTime.ElapsedGameTime.TotalMilliseconds}");
             _currentPercent = 1f;
             if (!Done)
             {
