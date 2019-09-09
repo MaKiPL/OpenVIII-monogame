@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using OpenVIII.Encoding.Tags;
 using System;
+using System.IO;
 using System.Linq;
 
 namespace OpenVIII
@@ -40,6 +41,7 @@ namespace OpenVIII
         #endregion Enums
 
         #region Properties
+
         private static float Fadespd1 => (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 500f) * speed;
         private static float Fadespd2 => (float)Fadespd5;
         private static float Fadespd3 => (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 5000.0f) * speed;
@@ -265,7 +267,7 @@ namespace OpenVIII
 
         private static void InitSound()
         {
-            init_debugger_Audio.PlayMusic(79,loop:false);
+            init_debugger_Audio.PlayMusic(79, loop: false);
             Memory.MusicIndex = ushort.MaxValue; // reset pos after playing overture; will loop back to start if push next
             publicModule++;
         }
@@ -361,11 +363,17 @@ namespace OpenVIII
         private void ReadSplash()
         {
             byte[] buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_MAIN, filename);
+            string fn = Path.GetFileNameWithoutExtension(filename);
             uint uncompSize = BitConverter.ToUInt32(buffer, 0);
             buffer = buffer.Skip(4).ToArray(); //hotfix for new LZSS
             buffer = LZSS.DecompressAllNew(buffer);
+            TIM_OVERTURE tim = new TIM_OVERTURE(buffer);
+            if ((fn.Equals("ff8", StringComparison.OrdinalIgnoreCase))||(fn.IndexOf("loop", StringComparison.OrdinalIgnoreCase)>=0))
+            {
+                tim.IgnoreAlpha = true;
+            }
 
-            tex = TIM2.Overture(buffer);
+            tex = (Texture2D)TextureHandler.Create(fn, tim, 0);//TIM2.Overture(buffer);
             //using (FileStream fs = File.Create(Path.Combine("D:\\main", Path.GetFileNameWithoutExtension(filename) + ".png")))
             //    splashTex.SaveAsPng(fs, splashTex.Width, splashTex.Height);
 

@@ -153,6 +153,7 @@
     <Compile Include="Image\TDW.cs" />
     <Compile Include="Image\Texture2DWrapper.cs" />
     <Compile Include="Image\Texture_Base.cs" />
+    <Compile Include="Image\TIM_OVERTURE.cs" />
     <Compile Include="Input\Buttons.cs" />
     <Compile Include="Input\ButtonTrigger.cs" />
     <Compile Include="Input\Button_Flags.cs" />
