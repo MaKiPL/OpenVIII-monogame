@@ -64,7 +64,14 @@ namespace OpenVIII
             {
                 bool ret = false;
                 if (Draw_Pool.Enabled)
+                {
+                    TargetEnemies.Cursor_Status |= Cursor_Status.Blinking;
                     return Draw_Pool.Inputs();
+                }
+                else
+                {
+                    TargetEnemies.Cursor_Status &= ~Cursor_Status.Blinking;
+                }
                 if (TargetEnemies.Enabled && (((TargetEnemies.Cursor_Status | TargetParty.Cursor_Status) & Cursor_Status.Enabled) == 0 || !TargetParty.Enabled))
                     TargetEnemies.Cursor_Status |= Cursor_Status.Enabled;
                 else if (TargetParty.Enabled && (((TargetEnemies.Cursor_Status | TargetParty.Cursor_Status) & Cursor_Status.Enabled) == 0 || !TargetEnemies.Enabled))
