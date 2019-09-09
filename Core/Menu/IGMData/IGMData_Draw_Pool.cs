@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace OpenVIII
 {
@@ -19,12 +20,14 @@ namespace OpenVIII
 
         private bool Inputs_OKAY_Cast()
         {
+            Debug.WriteLine($"{Memory.Strings.GetName(VisableCharacter)} Casting {Magic.Name}({Magic.ID}) from enemy.");
             Target_Group.ShowTargetWindows();
             return true;
         }
 
         private bool Inputs_OKAY_Draw()
         {
+            Debug.WriteLine($"{Memory.Strings.GetName(VisableCharacter)} Drawing {Magic.Name}({Magic.ID}) from enemy.");
             return true;
         }
 
