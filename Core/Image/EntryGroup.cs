@@ -134,13 +134,14 @@ namespace OpenVIII
 
         public static Point RoundedPoint(Vector2 v) => v.RoundedPoint();
 
-        public void Draw(List<TextureHandler> textures, int palette, Rectangle inputdst, Vector2 inscale, float fade = 1f) =>
-            Draw(textures, list, palette, inputdst, inscale, fade, new Point(Width, Height));
+        public void Draw(List<TextureHandler> textures, int palette, Rectangle inputdst, Vector2 inscale, float fade = 1f, Color? color = null) =>
+            Draw(textures, list, palette, inputdst, inscale, fade, new Point(Width, Height),color);
 
         public static int GetChange(int tot, int goal, float scale = 1f) => (int)Math.Round(Math.Abs(tot * scale - goal));
 
-        public static void Draw(List<TextureHandler> textures, List<Entry> elist, int palette, Rectangle inputdst, Vector2 inscale, float fade, Point totalSize)
+        public static void Draw(List<TextureHandler> textures, List<Entry> elist, int palette, Rectangle inputdst, Vector2 inscale, float fade, Point totalSize,Color? color_ = null)
         {
+            Color color = color_ ?? Color.White;
             Rectangle dst;
             inscale = Abs(inscale);
             inputdst.Width = Math.Abs(inputdst.Width);
@@ -190,7 +191,7 @@ namespace OpenVIII
                             testY = testYfunct(dst, inputdst, offset2);
                             testX = testXfunct(dst, inputdst, offset2);
                             TileBounds(correction, ref dst, scale, e, ref src, ref testY, ref testX);
-                            textures[cpalette].Draw(dst, src, Color.White * fade);
+                            textures[cpalette].Draw(dst, src, color * fade);
                             dst = TileShift(dst, e);
                         }
                         while (e.Tile.Y > 0 && testY);
@@ -198,7 +199,7 @@ namespace OpenVIII
                     while (e.Tile.X > 0 && testX);
                 }
                 else
-                    textures[cpalette].Draw(dst, src, Color.White * fade);
+                    textures[cpalette].Draw(dst, src, color * fade);
             }
         }
 

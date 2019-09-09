@@ -11,7 +11,6 @@ namespace OpenVIII
     /// </summary>
     public partial class Icons : SP2
     {
-
         #region Fields
 
         private new Dictionary<ID, EntryGroup> Entries = null;
@@ -78,21 +77,21 @@ namespace OpenVIII
 
         #region Methods
 
-        public void Draw(int number, NumType type, int palette, string format, Vector2 location, Vector2 scale, float fade = 1f,Font.ColorID color = Font.ColorID.White)
+        public void Draw(int number, NumType type, int palette, string format, Vector2 location, Vector2 scale, float fade = 1f, Font.ColorID color = Font.ColorID.White, bool blink = false)
         {
             if (type == NumType.sysfnt)
             {
-                Memory.font.RenderBasicText(number.ToString(), location, scale, Font.Type.sysfnt, Fade: fade,color:color);
+                Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.sysfnt, Fade: fade, color: color, blink: blink);
                 return;
             }
             else if (type == NumType.sysFntBig)
             {
-                Memory.font.RenderBasicText(number.ToString(), location, scale, Font.Type.sysFntBig, Fade: fade, color: color);
+                Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.sysFntBig, Fade: fade, color: color, blink: blink);
                 return;
             }
             else if (type == NumType.menuFont)
             {
-                Memory.font.RenderBasicText(number.ToString(), location, scale, Font.Type.menuFont, Fade: fade, color: color);
+                Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.menuFont, Fade: fade, color: color, blink: blink);
                 return;
             }
             ID[] numberstarts = { ID.Num_8x8_0_0, ID.Num_8x8_1_0, ID.Num_8x8_2_0, ID.Num_8x16_0_0, ID.Num_8x16_1_0, ID.Num_16x16_0_0 };
@@ -111,15 +110,15 @@ namespace OpenVIII
             Rectangle dst = new Rectangle { Location = location.ToPoint() };
             foreach (int i in intList)
             {
-                Draw(nums[(int)type][i], palette, dst, scale, fade);
+                Draw(nums[(int)type][i], palette, dst, scale, fade, blink ? Color.Lerp(Font.ColorID2Color[color], Font.ColorID2Blink[color], Menu.Blink_Amount) : Font.ColorID2Color[color]);
                 dst.Offset(Entries[nums[(int)type][i]].GetRectangle.Width * scale.X, 0);
             }
         }
 
-        public void Draw(Enum id, int palette, Rectangle dst, Vector2 scale, float fade = 1f)
+        public void Draw(Enum id, int palette, Rectangle dst, Vector2 scale, float fade = 1f, Color? color = null)
         {
             if ((ID)id != ID.None)
-                Entries[(ID)id].Draw(Textures, palette, dst, scale, fade);
+                Entries[(ID)id].Draw(Textures, palette, dst, scale, fade,color);
         }
 
         public override void Draw(Enum id, Rectangle dst, float fade = 1) => Draw((ID)id, 2, dst, Vector2.One, fade);
@@ -176,6 +175,7 @@ namespace OpenVIII
                 }
             }
         }
+
         protected override void InitTextures(ArchiveWorker aw = null)
         {
             Textures = new List<TextureHandler>();
@@ -197,7 +197,7 @@ namespace OpenVIII
                 else
                 {
                     if (FORCE_ORIGINAL == false && Props[t].Big != null && Props[t].Big.Count > 0)
-                        Textures.Add(TextureHandler.Create(Props[t].Big[0].Filename, tex, 2, Props[t].Big[0].Split / 2, (ushort)Textures.Count,colors: Props[t].Big[0].Colors ?? Props[t].Colors));
+                        Textures.Add(TextureHandler.Create(Props[t].Big[0].Filename, tex, 2, Props[t].Big[0].Split / 2, (ushort)Textures.Count, colors: Props[t].Big[0].Colors ?? Props[t].Colors));
                     else
                         Textures.Add(TextureHandler.Create(Props[t].Filename, tex, 1, 1, (ushort)Textures.Count, colors: Props[t].Colors));
                 }
@@ -205,6 +205,5 @@ namespace OpenVIII
         }
 
         #endregion Methods
-
     }
 }
