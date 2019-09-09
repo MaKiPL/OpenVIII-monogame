@@ -44,25 +44,21 @@ namespace OpenVIII
                         //float HPpercent = c.PercentFullHP(pm.Value);
                         int CriticalHP = c.CriticalHP(pm.Value);
                         Font.ColorID colorid = Font.ColorID.White;
-                        byte palette = 2;
+                        byte palette = 2;                        
                         if (HP < CriticalHP)
                         {
                             colorid = Font.ColorID.Yellow;
-                            palette = 6;
+                            //palette = 6;
                         }
                         if (HP <= 0)
                         {
                             colorid = Font.ColorID.Red;
-                            palette = 5;
+                            //palette = 5;
                         }
-                        byte? fadedpalette = null;
-                        Font.ColorID? fadedcolorid = null;
                         bool blink = false;
                         if (mode == Mode.YourTurn)
                         {
                             blink = true;
-                            fadedpalette = 7;
-                            fadedcolorid = Font.ColorID.Grey;
                             ITEM[pos, 2] = new IGMDataItem_Texture(dot, new Rectangle(SIZE[pos].X + 230, SIZE[pos].Y + 12, 150, 15), Color.LightYellow * .8f, new Color(125,125,0,255) * .8f) { Blink = blink };
                         }
                         else if (mode == Mode.ATB_Charged)
@@ -72,8 +68,8 @@ namespace OpenVIII
                         else ITEM[pos, 2] = null;
 
                         // TODO: make a font render that can draw right to left from a point. For Right aligning the names.
-                        ITEM[pos, 0] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), colorid, faded_fontcolor: fadedcolorid) { Blink = blink };
-                        ITEM[pos, 1] = new IGMDataItem_Int(HP, new Rectangle(SIZE[pos].X + 128, SIZE[pos].Y, 0, 0), palette: palette, faded_palette: fadedpalette, spaces: 4, numtype: Icons.NumType.Num_8x16_1) { Blink = blink };
+                        ITEM[pos, 0] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), colorid) { Blink = blink };
+                        ITEM[pos, 1] = new IGMDataItem_Int(HP, new Rectangle(SIZE[pos].X + 128, SIZE[pos].Y, 0, 0), palette: palette, spaces: 4, numtype: Icons.NumType.Num_8x16_1,fontcolor: colorid) { Blink = blink };
 
                         ITEM[pos, 3] = new IGMDataItem_Icon(Icons.ID.Size_08x64_Bar, new Rectangle(SIZE[pos].X + 230, SIZE[pos].Y + 12, 150, 15), 0);
                         pos++;
