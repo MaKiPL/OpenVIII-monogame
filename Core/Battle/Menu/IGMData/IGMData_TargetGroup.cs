@@ -63,7 +63,7 @@ namespace OpenVIII
             public override bool Inputs()
             {
                 bool ret = false;
-                if (Draw_Pool.Enabled)
+                if (Draw_Pool?.Enabled ?? false)
                 {
                     TargetEnemies.Cursor_Status |= Cursor_Status.Blinking;
                     return Draw_Pool.Inputs();
