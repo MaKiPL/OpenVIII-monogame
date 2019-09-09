@@ -75,9 +75,9 @@ namespace OpenVIII
         /// <param name="v"></param>
         /// <param name="ms"></param>
         /// <param name="br"></param>
-        private void ReadSection1(uint v, MemoryStream ms, BinaryReader br)
+        private void ReadSection1(uint v, BinaryReader br, string fileName)
         {
-            ms.Seek(v, SeekOrigin.Begin);
+            br.BaseStream.Seek(v, SeekOrigin.Begin);
 #if _WINDOWS //looks like Linux Mono doesn't like marshalling structure with LPArray to Bone[]
             skeleton = Extended.ByteArrayToStructure<Skeleton>(br.ReadBytes(16));
 #else
@@ -209,25 +209,25 @@ namespace OpenVIII
         /// <param name="v"></param>
         /// <param name="ms"></param>
         /// <param name="br"></param>
-        private void ReadSection2(uint v, MemoryStream ms, BinaryReader br)
+        private void ReadSection2(uint v, BinaryReader br, string fileName)
         {
-            ms.Seek(v, SeekOrigin.Begin);
+            br.BaseStream.Seek(v, SeekOrigin.Begin);
             geometry = new Geometry { cObjects = br.ReadUInt32() };
             geometry.pObjects = new uint[geometry.cObjects];
             for (int i = 0; i < geometry.cObjects; i++)
                 geometry.pObjects[i] = br.ReadUInt32();
             geometry.objects = new Object[geometry.cObjects];
             for (int i = 0; i < geometry.cObjects; i++)
-                geometry.objects[i] = ReadGeometryObject(v + geometry.pObjects[i], ms, br);
+                geometry.objects[i] = ReadGeometryObject(v + geometry.pObjects[i], br);
             geometry.cTotalVert = br.ReadUInt32();
         }
 
-        private Object ReadGeometryObject(uint v, MemoryStream ms, BinaryReader br)
+        private Object ReadGeometryObject(uint v, BinaryReader br)
         {
-            ms.Seek(v, SeekOrigin.Begin);
+            br.BaseStream.Seek(v, SeekOrigin.Begin);
             Object @object = new Object { cVertices = br.ReadUInt16() };
             @object.verticeData = new VerticeData[@object.cVertices];
-            if (ms.Position + @object.cVertices * 6 >= ms.Length)
+            if (br.BaseStream.Position + @object.cVertices * 6 >= br.BaseStream.Length)
                 return @object;
             for (int n = 0; n < @object.cVertices; n++)
             {
@@ -237,7 +237,7 @@ namespace OpenVIII
                 for (int i = 0; i < @object.verticeData[n].cVertices; i++)
                     @object.verticeData[n].vertices[i] = Extended.ByteArrayToStructure<Vertex>(br.ReadBytes(6));
             }
-            ms.Seek(4 - (ms.Position % 4 == 0 ? 4 : ms.Position % 4), SeekOrigin.Current);
+            br.BaseStream.Seek(4 - (br.BaseStream.Position % 4 == 0 ? 4 : br.BaseStream.Position % 4), SeekOrigin.Current);
             @object.cTriangles = br.ReadUInt16();
             @object.cQuads = br.ReadUInt16();
             @object.padding = br.ReadUInt64();
@@ -303,7 +303,7 @@ namespace OpenVIII
                 Vector3 VerticeDataA = TranslateVertex(verts[obj.triangles[i].A1].Item1, rotation, translationPosition);
                 Vector3 VerticeDataB = TranslateVertex(verts[obj.triangles[i].B1].Item1, rotation, translationPosition);
 
-                Texture2D prevarTexT = textures.textures[obj.triangles[i].textureIndex];
+                Texture2D prevarTexT = (Texture2D)textures.textures[obj.triangles[i].textureIndex];
                 vpt.Add(new VertexPositionTexture(VerticeDataC, new Vector2(obj.triangles[i].vta.U1(prevarTexT.Width), obj.triangles[i].vta.V1(prevarTexT.Height))));
                 vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.triangles[i].vtb.U1(prevarTexT.Width), obj.triangles[i].vtb.V1(prevarTexT.Height))));
                 vpt.Add(new VertexPositionTexture(VerticeDataB, new Vector2(obj.triangles[i].vtc.U1(prevarTexT.Width), obj.triangles[i].vtc.V1(prevarTexT.Height))));
@@ -318,7 +318,7 @@ namespace OpenVIII
                 Vector3 VerticeDataC = TranslateVertex(verts[obj.quads[i].C1].Item1, rotation, translationPosition);
                 Vector3 VerticeDataD = TranslateVertex(verts[obj.quads[i].D1].Item1, rotation, translationPosition);
 
-                Texture2D preVarTex = textures.textures[obj.quads[i].textureIndex];
+                Texture2D preVarTex = (Texture2D)textures.textures[obj.quads[i].textureIndex];
                 vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.quads[i].vta.U1(preVarTex.Width), obj.quads[i].vta.V1(preVarTex.Height))));
                 vpt.Add(new VertexPositionTexture(VerticeDataB, new Vector2(obj.quads[i].vtb.U1(preVarTex.Width), obj.quads[i].vtb.V1(preVarTex.Height))));
                 vpt.Add(new VertexPositionTexture(VerticeDataD, new Vector2(obj.quads[i].vtd.U1(preVarTex.Width), obj.quads[i].vtd.V1(preVarTex.Height))));
@@ -407,9 +407,9 @@ namespace OpenVIII
         /// <param name="v"></param>
         /// <param name="ms"></param>
         /// <param name="br"></param>
-        private void ReadSection3(uint v, MemoryStream ms, BinaryReader br)
+        private void ReadSection3(uint v, BinaryReader br, string fileName)
         {
-            ms.Seek(v, SeekOrigin.Begin);
+            br.BaseStream.Seek(v, SeekOrigin.Begin);
             animHeader = new AnimationData() { cAnimations = br.ReadUInt32() };
             animHeader.pAnimations = new uint[animHeader.cAnimations];
             for (int i = 0; i < animHeader.cAnimations; i++)
@@ -420,10 +420,10 @@ namespace OpenVIII
             animHeader.animations = new Animation[animHeader.cAnimations];
             for (int i = 0; i < animHeader.cAnimations; i++) //animation
             {
-                ms.Seek(v + animHeader.pAnimations[i], SeekOrigin.Begin); //Get to pointer of animation Id
+                br.BaseStream.Seek(v + animHeader.pAnimations[i], SeekOrigin.Begin); //Get to pointer of animation Id
                 animHeader.animations[i] = new Animation() { cFrames = br.ReadByte() }; //Create new animation with cFrames frames
                 animHeader.animations[i].animationFrames = new AnimationFrame[animHeader.animations[i].cFrames];
-                ExtapathyExtended.BitReader bitReader = new ExtapathyExtended.BitReader(ms);
+                ExtapathyExtended.BitReader bitReader = new ExtapathyExtended.BitReader(br.BaseStream);
                 for (int n = 0; n < animHeader.animations[i].cFrames; n++) //frames
                 {
                     //Step 1. It starts with bone0.position. Let's read that into AnimationFrames[animId]- it's only one position per frame
@@ -554,40 +554,58 @@ namespace OpenVIII
 
         public struct Textures
         {
+            /// <summary>
+            /// TIM count
+            /// </summary>
             public uint cTims;
+            /// <summary>
+            /// File pointers
+            /// </summary>
             public uint[] pTims;
+            /// <summary>
+            /// EOF
+            /// </summary>
             public uint Eof;
-            public Texture2D[] textures;
+            /// <summary>
+            /// Texture 2D wrapped in TextureHandler for mod support
+            /// </summary>
+            public TextureHandler[] textures;
         }
 
-        private void ReadSection11(uint v, MemoryStream ms, BinaryReader br)
+        private void ReadSection11(uint v, BinaryReader br, string fileName)
         {
-            ms.Seek(v, SeekOrigin.Begin);
-            using (FileStream fs = File.Create(Path.Combine(Path.GetTempPath(), $"{v}.dump"), (int)(ms.Length - v), FileOptions.None))
-            {
-                fs.Write(ms.ToArray(), (int)v, (int)(ms.Length - v));
-            }
+#if DEBUG
+            //Dump for debug
+            br.BaseStream.Seek(v, SeekOrigin.Begin);
+            using (BinaryWriter fs = new BinaryWriter( File.Create(Path.Combine(Path.GetTempPath(), $"{v}.dump"), (int)(br.BaseStream.Length - br.BaseStream.Position), FileOptions.None)))
+                fs.Write(br.ReadBytes((int)(br.BaseStream.Length-br.BaseStream.Position)));
+#endif
+            br.BaseStream.Seek(v, SeekOrigin.Begin);
+            //Begin create Textures struct
+            //populate the tim count;
             textures = new Textures() { cTims = br.ReadUInt32() };
+            //create arrays per count.
             textures.pTims = new uint[textures.cTims];
+            textures.textures = new TextureHandler[textures.cTims];
+            //Read pointers into array
             for (int i = 0; i < textures.cTims; i++)
                 textures.pTims[i] = br.ReadUInt32();
+            //Read EOF
             textures.Eof = br.ReadUInt32();
-            textures.textures = new Texture2D[textures.cTims];
-            for (int i = 0; i < textures.cTims; i++)
-            {
+            //Read TIM -> TextureHandler into array
+            for (int i = 0; i < textures.cTims; i++)            
                 if (buffer[v + textures.pTims[i]] == 0x10)
                 {
                     TIM2 tm = new TIM2(buffer, v + textures.pTims[i]); //broken
-                    textures.textures[i] = tm.GetTexture(0);
+                    textures.textures[i] = TextureHandler.Create($"{fileName}_{i.ToString("D2")}",tm,0);// tm.GetTexture(0);
                 }
                 else
                     Debug.WriteLine($"DEBUG: {this}.{this.id}.{v + textures.pTims[i]} :: Not a tim file!");
-            }
         }
 
         public Textures textures;
 
-        #endregion section 11 Textures
+#endregion section 11 Textures
 
         public enum EntityType
         {
@@ -643,8 +661,7 @@ namespace OpenVIII
             }
 #endif
 
-            using (MemoryStream ms = new MemoryStream(buffer))
-            using (BinaryReader br = new BinaryReader(ms))
+            using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
             {
                 datFile = new DatFile { cSections = br.ReadUInt32() };
                 datFile.pSections = new uint[datFile.cSections];
@@ -655,43 +672,43 @@ namespace OpenVIII
                 {
                     case EntityType.Monster:
                         if (id == 127) return;
-                        ReadSection1(datFile.pSections[0], ms, br);
-                        ReadSection3(datFile.pSections[2], ms, br);
-                        ReadSection2(datFile.pSections[1], ms, br);
+                        ReadSection1(datFile.pSections[0], br, fileName);
+                        ReadSection3(datFile.pSections[2], br, fileName);
+                        ReadSection2(datFile.pSections[1], br, fileName);
                         //ReadSection4(datFile.pSections[3]);
                         //ReadSection5(datFile.pSections[4]);
                         //ReadSection6(datFile.pSections[5]);
-                        ReadSection7(datFile.pSections[6], ms, br);
+                        ReadSection7(datFile.pSections[6], br, fileName);
                         //ReadSection8(datFile.pSections[7]);
                         //ReadSection9(datFile.pSections[8]);
                         //ReadSection10(datFile.pSections[9]);
-                        ReadSection11(datFile.pSections[10], ms, br);
+                        ReadSection11(datFile.pSections[10], br, fileName);
                         break;
 
                     case EntityType.Character:
-                        ReadSection1(datFile.pSections[0], ms, br);
-                        ReadSection3(datFile.pSections[2], ms, br);
-                        ReadSection2(datFile.pSections[1], ms, br);
+                        ReadSection1(datFile.pSections[0], br, fileName);
+                        ReadSection3(datFile.pSections[2], br, fileName);
+                        ReadSection2(datFile.pSections[1], br, fileName);
                         if (fileId == 7 && entityType == EntityType.Character)
-                            ReadSection11(datFile.pSections[8], ms, br);
+                            ReadSection11(datFile.pSections[8], br, fileName);
                         else
-                            ReadSection11(datFile.pSections[5], ms, br);
+                            ReadSection11(datFile.pSections[5], br, fileName);
                         break;
 
                     case EntityType.Weapon:
                         if (skeletonReference == null)
                         {
-                            ReadSection1(datFile.pSections[0], ms, br);
-                            ReadSection3(datFile.pSections[2], ms, br);
-                            ReadSection2(datFile.pSections[1], ms, br);
-                            ReadSection11(datFile.pSections[6], ms, br);
+                            ReadSection1(datFile.pSections[0], br, fileName);
+                            ReadSection3(datFile.pSections[2], br, fileName);
+                            ReadSection2(datFile.pSections[1], br, fileName);
+                            ReadSection11(datFile.pSections[6], br, fileName);
                         }
                         else
                         {
                             skeleton = skeletonReference.skeleton;
                             animHeader = skeletonReference.animHeader;
-                            ReadSection2(datFile.pSections[0], ms, br);
-                            ReadSection11(datFile.pSections[4], ms, br);
+                            ReadSection2(datFile.pSections[0], br, fileName);
+                            ReadSection11(datFile.pSections[4], br, fileName);
                         }
                         break;
                 }

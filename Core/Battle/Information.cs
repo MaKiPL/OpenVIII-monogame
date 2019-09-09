@@ -16,9 +16,9 @@ namespace OpenVIII
 
         #region Methods
 
-        private void ReadSection7(uint v, MemoryStream ms, BinaryReader br)
+        private void ReadSection7(uint v, BinaryReader br, string fileName)
         {
-            ms.Seek(v, SeekOrigin.Begin);
+            br.BaseStream.Seek(v, SeekOrigin.Begin);
             information = Extended.ByteArrayToStructure<Information>(br.ReadBytes(Section7Size));
         }
 

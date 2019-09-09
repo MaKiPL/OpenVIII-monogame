@@ -361,7 +361,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                         return;
                     for (int k = 0; k < a.Item1.Length / 3; k++)
                     {
-                        ate.Texture = CharacterInstances[n].Data.character.textures.textures[a.Item2[k]];
+                        ate.Texture = (Texture2D)CharacterInstances[n].Data.character.textures.textures[a.Item2[k]];
                         foreach (EffectPass pass in ate.CurrentTechnique.Passes)
                         {
                             pass.Apply();
@@ -384,7 +384,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                         return;
                     for (int k = 0; k < a.Item1.Length / 3; k++)
                     {
-                        ate.Texture = CharacterInstances[n].Data.weapon.textures.textures[a.Item2[k]];
+                        ate.Texture = (Texture2D)CharacterInstances[n].Data.weapon.textures.textures[a.Item2[k]];
                         foreach (EffectPass pass in ate.CurrentTechnique.Passes)
                         {
                             pass.Apply();
@@ -492,7 +492,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                         return;
                     for (int k = 0; k < a.Item1.Length / 3; k++)
                     {
-                        ate.Texture = Enemy.Party[n].EII.Data.textures.textures[a.Item2[k]];
+                        ate.Texture = (Texture2D)Enemy.Party[n].EII.Data.textures.textures[a.Item2[k]];
                         foreach (EffectPass pass in ate.CurrentTechnique.Passes)
                         {
                             pass.Apply();

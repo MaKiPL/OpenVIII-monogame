@@ -24,8 +24,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        private TextureHandler()
-        { }
+   
 
         #endregion Constructors
 
@@ -567,8 +566,8 @@ namespace OpenVIII
             Classic = null;
             //Merge the texture pieces into one.
             Merge();
-            //if (!Modded)
-            //    Memory.MainThreadOnlyActions.Enqueue(this.Save);
+            if (!Modded)
+                Memory.MainThreadOnlyActions.Enqueue(this.Save);
         }
 
         #endregion Methods
