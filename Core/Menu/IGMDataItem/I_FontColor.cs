@@ -4,7 +4,7 @@
     {
         #region Properties
 
-        Font.ColorID Faded_FontColor { get; set; }
+        //Font.ColorID Faded_FontColor { get; set; }
         Font.ColorID FontColor { get; set; }
 
         #endregion Properties
