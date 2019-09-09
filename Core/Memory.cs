@@ -44,6 +44,7 @@ namespace OpenVIII
         //public static Texture2D[] iconsTex;
 
         public static Cards Cards;
+        public static Card_Game Card_Game;
         public static Faces Faces;
         public static Icons Icons;
         public static Strings Strings;
@@ -239,6 +240,9 @@ namespace OpenVIII
 
                 if (!token.IsCancellationRequested)
                     Memory.Cards = new Cards(); // card images in menu.
+
+                if (!token.IsCancellationRequested)
+                    Memory.Card_Game = new Card_Game();
 
                 if (!token.IsCancellationRequested)
                     Memory.Faces = new Faces();
