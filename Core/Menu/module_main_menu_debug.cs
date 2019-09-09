@@ -194,7 +194,7 @@ namespace OpenVIII
                     break;
 
                 case MainMenuStates.DebugScreen:
-                    Menu.UpdateFade();
+                    //Menu.UpdateFade();
                     Memory.IsMouseVisible = true;
                     if (UpdateDebugLobby() || (lastfade != fade) || Offset != Vector2.Zero)
                     {
@@ -220,7 +220,7 @@ namespace OpenVIII
                 case MainMenuStates.SaveGameCheckingSlot:
                 case MainMenuStates.SaveGameChooseGame:
                 case MainMenuStates.SaveGameSaving:
-                    Menu.UpdateFade();
+                    //Menu.UpdateFade();
                     UpdateLGSG();
                     break;
 

@@ -61,6 +61,7 @@ namespace OpenVIII
                     break;
 
                 case MODULE.BATTLE_DEBUG:
+                    Menu.UpdateOnce();
                     Module_battle_debug.Update();
                     break;
 
@@ -77,6 +78,7 @@ namespace OpenVIII
                     break;
 
                 case MODULE.MAINMENU_DEBUG:
+                    Menu.UpdateOnce();
                     Module_main_menu_debug.Update();
                     break;
 
