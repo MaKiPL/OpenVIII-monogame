@@ -21,7 +21,7 @@ namespace OpenVIII
 
         private static Vector3 camPosition, camTarget;
         private static TIM2 textureInterface;
-        private static Texture2D[] textures;
+        private static TextureHandler[] textures;
         //private static List<EnemyInstanceInformation> EnemyInstances;
         private static List<CharacterInstanceInformation> CharacterInstances;
 
@@ -684,7 +684,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                     int localVertexIndex = 0;
                     for (int i = 0; i < vpt.Item1.Length; i++)
                     {
-                        ate.Texture = textures[vpt.Item1[i].clut]; //provide texture per-face
+                        ate.Texture = (Texture2D)textures[vpt.Item1[i].clut]; //provide texture per-face
                         foreach (EffectPass pass in ate.CurrentTechnique.Passes)
                         {
                             pass.Apply();
@@ -850,6 +850,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
             string[] test = aw.GetListOfFiles();
             battlename = test.First(x => x.ToLower().Contains(battlename));
+            string fileName = Path.GetFileNameWithoutExtension(battlename);
             stageBuffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, battlename);
             ms = new MemoryStream(stageBuffer);
             br = new BinaryReader(ms);
@@ -880,7 +881,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 ReadModelGroup(objectsGroups[3].objectListPointer)
             };
 
-            ReadTexture(MainSection.TexturePointer);
+            ReadTexture(MainSection.TexturePointer, fileName);
             br.Close();
             ms.Close();
             ms.Dispose();
@@ -1065,12 +1066,12 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
         /// Method designed for Stage texture loading.
         /// </summary>
         /// <param name="texturePointer">Absolute pointer to TIM texture header in stageBuffer</param>
-        private static void ReadTexture(uint texturePointer)
+        private static void ReadTexture(uint texturePointer, string fileName)
         {
             textureInterface = new TIM2(stageBuffer, texturePointer);
-            textures = new Texture2D[textureInterface.GetClutCount];
+            textures = new TextureHandler[textureInterface.GetClutCount];
             for (ushort i = 0; i < textureInterface.GetClutCount; i++)
-                textures[i] = textureInterface.GetTexture(i);
+                textures[i] = TextureHandler.Create(fileName, textureInterface,i);
         }
 
         /// <summary>
