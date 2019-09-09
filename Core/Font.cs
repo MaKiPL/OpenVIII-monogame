@@ -87,8 +87,11 @@ namespace OpenVIII
             menuFont = tim.GetTexture((ushort)ColorID.White);
         }
 
-        public Rectangle RenderBasicText(FF8String buffer, Vector2 pos, Vector2 zoom, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false, ColorID color = ColorID.White)
+        public Rectangle RenderBasicText(FF8String buffer, Vector2 pos, Vector2 zoom, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false, ColorID color_ = ColorID.White, bool blink = false)
         {
+            ColorID colorbak = color_;
+            Color color = ColorID2Color[color_];
+            Color faded_color = ColorID2Blink[color_];
             if (buffer == null) return new Rectangle();
             Rectangle ret = new Rectangle(pos.RoundedPoint(), new Point(0));
             Rectangle destRect = Rectangle.Empty;
@@ -98,8 +101,6 @@ namespace OpenVIII
             Point size = (new Vector2(0, charSize) * zoom).RoundedPoint();
             Point baksize = size;
             int width = 0;
-            ColorID colorbak = color;
-            bool blink = false;
             bool skipletter = false;
             for (int i = 0; i < buffer.Length; i++)
             {
@@ -146,7 +147,9 @@ namespace OpenVIII
                     {
                         c = buffer[i];
                         blink = c >= (byte)FF8TextTagColor.Dark_GrayBlink ? true : false;
-                        color = GetColorFromTag(c, colorbak);
+                        GetColorFromTag(c, out Color? nc, out Color? fc);
+                        color = nc ?? ColorID2Color[colorbak];
+                        faded_color = fc ?? ColorID2Blink[colorbak];
                         SetRetRec(pos, ref ret, ref real, size);
                         continue;
                     }
@@ -180,7 +183,7 @@ namespace OpenVIII
                             verticalPosition * charSize,
                             width,
                             charSize);
-                        DrawLetter(zoom, whichFont, Fade, color, blink, destRect, sourceRect);
+                        DrawLetter(whichFont, Fade, blink ? Color.Lerp(color, faded_color, Menu.Blink_Amount) : color, destRect, sourceRect);
                     }
                 }
                 skipletter = false;
@@ -208,12 +211,12 @@ namespace OpenVIII
                 c = buffer[++i];
                 ic |= (short)(c << 8);
                 byte pal = buffer[++i];
-                Memory.Icons.Trim((Icons.ID)ic,pal);
+                Memory.Icons.Trim((Icons.ID)ic, pal);
                 EntryGroup icon = Memory.Icons[(Icons.ID)ic];
                 //Vector2 scale = Memory.Icons.GetTexture((Icons.ID)ic).ScaleFactor;
                 if (icon != null)
                 {
-                    float adj = (12/(float)(icon.Height));
+                    float adj = (12 / (float)(icon.Height));
                     Vector2 scale = new Vector2(adj * zoom.X);
                     size.X = (int)(icon.Width * scale.X);
                     size.Y = (int)(icon.Height * scale.X);
@@ -226,61 +229,65 @@ namespace OpenVIII
             }
         }
 
-        public Rectangle RenderBasicText(FF8String buffer, Point pos, Vector2 zoom, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false, ColorID color = ColorID.White)
-            => RenderBasicText(buffer, pos.ToVector2(), zoom, whichFont, Fade, lineSpacing, skipdraw, color);
+        public Rectangle RenderBasicText(FF8String buffer, Point pos, Vector2 zoom, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false, ColorID color = ColorID.White, bool blink = false)
+            => RenderBasicText(buffer, pos.ToVector2(), zoom, whichFont, Fade, lineSpacing, skipdraw, color, blink);
 
-        public Rectangle RenderBasicText(FF8String buffer, int x, int y, float zoomWidth = 2.545455f, float zoomHeight = 3.0375f, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false, ColorID color = ColorID.White)
-            => RenderBasicText(buffer, new Vector2(x, y), new Vector2(zoomWidth, zoomHeight), whichFont, Fade, lineSpacing, skipdraw, color);
+        public Rectangle RenderBasicText(FF8String buffer, int x, int y, float zoomWidth = 2.545455f, float zoomHeight = 3.0375f, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false, ColorID color = ColorID.White, bool blink = false)
+            => RenderBasicText(buffer, new Vector2(x, y), new Vector2(zoomWidth, zoomHeight), whichFont, Fade, lineSpacing, skipdraw, color,blink);
 
-        private static ColorID GetColorFromTag(byte c, ColorID colorbak = Font.ColorID.White)
+        private static void GetColorFromTag(byte c, out Color? color, out Color? faded_color)
         {
-            ColorID color = colorbak;
+            color = null;
+            faded_color = null;
+            ColorID? cid = null;
             switch ((FF8TextTagColor)c)
             {
                 case FF8TextTagColor.Blue:
                 case FF8TextTagColor.BlueBlink:
-                    color = ColorID.Blue;
+                    cid = ColorID.Blue;
                     break;
 
                 case FF8TextTagColor.Green:
                 case FF8TextTagColor.GreenBlink:
-                    color = ColorID.Green;
+                    cid = ColorID.Green;
                     break;
 
                 case FF8TextTagColor.Grey:
                 case FF8TextTagColor.GreyBlink:
-                    color = ColorID.Grey;
+                    cid = ColorID.Grey;
                     break;
 
                 case FF8TextTagColor.Purple:
                 case FF8TextTagColor.PurpleBlink:
-                    color = ColorID.Purple;
+                    cid = ColorID.Purple;
                     break;
 
                 case FF8TextTagColor.Red:
                 case FF8TextTagColor.RedBlink:
-                    color = ColorID.Red;
+                    cid = ColorID.Red;
                     break;
 
                 case FF8TextTagColor.White:
                 case FF8TextTagColor.WhiteBlink:
-                    color = colorbak;
-                    // since ending color change reverts color to white. if you have a custom color
-                    // set this will allow reverting to that.
+                    // since ending cid change reverts cid to white. if you have a custom cid set
+                    // this will allow reverting to that.
                     break;
 
                 case FF8TextTagColor.Yellow:
                 case FF8TextTagColor.YellowBlink:
-                    color = ColorID.Yellow;
+                    cid = ColorID.Yellow;
                     break;
 
                 case FF8TextTagColor.Dark_Gray:
                 case FF8TextTagColor.Dark_GrayBlink:
-                    color = ColorID.Dark_Gray;
+                    cid = ColorID.Dark_Gray;
                     break;
             }
-
-            return color;
+            if (cid.HasValue)
+            {
+                color = ColorID2Color[cid.Value];
+                faded_color = ColorID2Blink[cid.Value];
+            }
         }
 
         private static int GetDeltaChar(byte c) => (c - 32);
@@ -294,7 +301,7 @@ namespace OpenVIII
             return gonext;
         }
 
-        private void DrawLetter(Vector2 zoom, Type whichFont, float Fade, ColorID color, bool blink, Rectangle destRect, Rectangle sourceRect)
+        private void DrawLetter(Type whichFont, float Fade, Color color, Rectangle destRect, Rectangle sourceRect)
         {
             switch (whichFont)
             {
@@ -309,25 +316,18 @@ namespace OpenVIII
                     Memory.spriteBatch.Draw(whichFont == Type.menuFont ? menuFont : sysfnt,
                     destRect,
                     sourceRect,
-                ColorID2Color[color] * Fade);
+                color * Fade);
 
-                    if (blink)
-                        Memory.spriteBatch.Draw(whichFont == Type.menuFont ? menuFont : sysfnt,
-                        destRect,
-                        sourceRect,
-                    ColorID2Blink[color] * Fade * Menu.Blink_Amount);
                     break;
 
                 case Type.sysFntBig:
                     if (!sysfntbig.Modded)
                     {
                         Rectangle ShadowdestRect = new Rectangle(destRect.Location, destRect.Size);
-                        ShadowdestRect.Offset(zoom);
+                        ShadowdestRect.Offset(2, 2);
                         sysfntbig.Draw(ShadowdestRect, sourceRect, Color.Black * Fade * .5f);
                     }
-                    sysfntbig.Draw(destRect, sourceRect, ColorID2Color[color] * Fade);
-                    if (blink)
-                        sysfntbig.Draw(destRect, sourceRect, ColorID2Blink[color] * Fade * Menu.Blink_Amount);
+                    sysfntbig.Draw(destRect, sourceRect, color * Fade);
                     break;
             }
         }
