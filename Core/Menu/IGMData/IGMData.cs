@@ -297,6 +297,15 @@ namespace OpenVIII
             return ret;
         }
 
+        public override void Reset()
+        {
+            foreach (Menu_Base i in ITEM)
+            {
+                i?.Reset();
+            }
+            base.Reset();
+        }
+
         public virtual bool Inputs_CANCEL()
         {
             if (!skipsnd)

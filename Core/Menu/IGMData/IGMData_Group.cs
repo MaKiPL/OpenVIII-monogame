@@ -113,6 +113,21 @@ namespace OpenVIII
             return false;
         }
 
+        public override void Reset()
+        {
+            if (Enabled)
+            {
+                base.Reset();
+                if (!skipdata)
+                {
+                    foreach (Menu_Base i in ITEM)
+                    {
+                        i?.Reset();
+                    }
+                }
+            }
+        }
+
         #endregion Methods
     }
 }

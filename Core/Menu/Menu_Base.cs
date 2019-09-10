@@ -72,6 +72,11 @@ namespace OpenVIII
         }
 
         /// <summary>
+        /// Plan is to use this to reset values to a default state if done.
+        /// </summary>
+        public virtual void Reset() { }
+
+        /// <summary>
         /// Show object enables drawing, update, inputs.
         /// </summary>
         public virtual void Show() => Enabled = true;

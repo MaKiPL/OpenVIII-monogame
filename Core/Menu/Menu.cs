@@ -281,6 +281,16 @@ namespace OpenVIII
         public static Slide<float> BlinkSlider = new Slide<float>(_fadedout, _fadedin, _blinkinspeed, MathHelper.Lerp) { ReverseMS = _blinkoutspeed };
         public static Slide<float> FadeSlider = new Slide<float>(_fadedout, _fadedin, _fadeinspeed, MathHelper.Lerp) { ReverseMS = _fadeoutspeed };
 
+        public override void Reset()
+        {
+            if (!skipdata)
+                foreach (KeyValuePair<Enum, IGMData> i in Data)
+                {
+
+                    i.Value?.Reset();
+                }
+            base.Reset();
+        }
         private static void UpdateFade(object sender = null)
         {
             if (!BlinkSlider.Done)
@@ -314,35 +324,34 @@ namespace OpenVIII
                     }
                 }
             }
-
-            //if (_blinkstate)
-            //{
-            //    Blink_Amount += (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / _blinkinspeed);
-            //    if (Blink_Amount >= _fadedin) _blinkstate = false;
-            //}
-            //else
-            //{
-            //    Blink_Amount -= (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / _blinkoutspeed);
-            //    if (Blink_Amount <= _fadedout) _blinkstate = true;
-            //}
-            //if (!_fadeout && Fade < _fadedin)
-            //{
-            //    Fade += (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / _fadeinspeed);
-            //    if (Fade >= _fadedin)
-            //    {
-            //        FadedInHandler?.Invoke(sender, null);
-            //    }
-            //}
-            //else if (_fadeout && Fade > _fadedout)
-            //{
-            //    Fade -= (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / _fadeoutspeed);
-            //    if (Fade <= _fadedout)
-            //    {
-            //        _fadeout = false;
-            //        FadedOutHandler?.Invoke(sender, null);
-            //    }
-            //}
-        }
+        //if (_blinkstate)
+        //{
+        //    Blink_Amount += (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / _blinkinspeed);
+        //    if (Blink_Amount >= _fadedin) _blinkstate = false;
+        //}
+        //else
+        //{
+        //    Blink_Amount -= (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / _blinkoutspeed);
+        //    if (Blink_Amount <= _fadedout) _blinkstate = true;
+        //}
+        //if (!_fadeout && Fade < _fadedin)
+        //{
+        //    Fade += (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / _fadeinspeed);
+        //    if (Fade >= _fadedin)
+        //    {
+        //        FadedInHandler?.Invoke(sender, null);
+        //    }
+        //}
+        //else if (_fadeout && Fade > _fadedout)
+        //{
+        //    Fade -= (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / _fadeoutspeed);
+        //    if (Fade <= _fadedout)
+        //    {
+        //        _fadeout = false;
+        //        FadedOutHandler?.Invoke(sender, null);
+        //    }
+        //}
+    }
 
         public override void Draw()
         {
