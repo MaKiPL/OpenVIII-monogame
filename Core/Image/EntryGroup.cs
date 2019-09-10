@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ namespace OpenVIII
     {
         private const int minx = -200;
         private const int miny = -100;
+
         #region Fields
 
         private List<Entry> list;
@@ -98,6 +100,44 @@ namespace OpenVIII
             }
         }
 
+        private Dictionary<int, Color> Average;
+
+        public Color AverageColor(TextureHandler tex, int palette = 0)
+        {
+            if (!(Average?.TryGetValue(palette, out Color ret) ?? false))
+            {
+                if (Count >= 1)
+                {
+                    Rectangle r = this[0].GetRectangle;
+                    for (int i = 1; i < Count; i++)
+                        r = Rectangle.Union(r, this[i].GetRectangle);
+                    Texture2D t = (Texture2D)tex;
+                    Color[] tc = new Color[r.Width * r.Height];
+                    t.GetData(0, r, tc, 0, tc.Length);
+                    HSL test;
+                    ret = Color.TransparentBlack;
+                    foreach (Color p in tc)
+                    {
+                        if (p.A >= 250)
+                        {
+                            test = p;
+                            if (test.S > .25f)
+                            {
+                                if (ret == Color.TransparentBlack)
+                                    ret = p;
+                                else
+                                    ret = Color.Lerp(ret, p, .5f);
+                            }
+                        }
+                    }
+                }
+                if (Average == null)
+                    Average = new Dictionary<int, Color>();
+                Average.Add(palette,ret);
+            }
+            return ret;
+        }
+
         public void Trim(TextureHandler tex)
         {
             if (!Trimmed)
@@ -135,11 +175,11 @@ namespace OpenVIII
         public static Point RoundedPoint(Vector2 v) => v.RoundedPoint();
 
         public void Draw(List<TextureHandler> textures, int palette, Rectangle inputdst, Vector2 inscale, float fade = 1f, Color? color = null) =>
-            Draw(textures, list, palette, inputdst, inscale, fade, new Point(Width, Height),color);
+            Draw(textures, list, palette, inputdst, inscale, fade, new Point(Width, Height), color);
 
         public static int GetChange(int tot, int goal, float scale = 1f) => (int)Math.Round(Math.Abs(tot * scale - goal));
 
-        public static void Draw(List<TextureHandler> textures, List<Entry> elist, int palette, Rectangle inputdst, Vector2 inscale, float fade, Point totalSize,Color? color_ = null)
+        public static void Draw(List<TextureHandler> textures, List<Entry> elist, int palette, Rectangle inputdst, Vector2 inscale, float fade, Point totalSize, Color? color_ = null)
         {
             Color color = color_ ?? Color.White;
             Rectangle dst;
@@ -205,7 +245,6 @@ namespace OpenVIII
 
         private static void CorrectY(Rectangle inputdst, Point totalSize, ref Rectangle dst, Vector2 autoscale, ref Vector2 scale, Entry e, ref Rectangle src)
         {
-            
             if (inputdst.Height != 0 && dst.Bottom > inputdst.Bottom)
             {
                 int change = GetChange(totalSize.Y, inputdst.Height, scale.Y); ;
@@ -249,7 +288,9 @@ namespace OpenVIII
         }
 
         private static bool testXfunct(Rectangle dst, Rectangle inputdst, Point offset2) => (dst.Right) < (inputdst.Right + offset2.X);
+
         private static bool testYfunct(Rectangle dst, Rectangle inputdst, Point offset2) => (dst.Bottom) < (inputdst.Bottom + offset2.Y);
+
         private static Point Correction(Rectangle inputdst, Rectangle dst, Point offset2) => new Point((inputdst.Right + offset2.X) - (dst.Right), (inputdst.Bottom + offset2.Y) - (dst.Bottom));
 
         private static Rectangle TileShift(Rectangle dst, Entry e)

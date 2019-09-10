@@ -50,7 +50,15 @@ namespace OpenVIII
         #region Properties
 
         public static float vpSpace { get; private set; }
-        private static float Fade { get => fade; set => fade = value; }
+        private static float Fade
+        {
+            get => fade; set
+            {
+                fade = value;
+                if(value == 0)
+                    FadeSlide.Restart();
+            }
+        }
 
         private static Dictionary<Enum, Item> strLoadScreen { get; set; }
         public static MainMenuStates State

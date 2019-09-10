@@ -54,7 +54,8 @@ namespace OpenVIII
         public enum SectionName : byte
         {
             Commands,
-            HP
+            HP,
+            Renzokeken
         }
 
         #endregion Enums
@@ -69,6 +70,7 @@ namespace OpenVIII
             Size = new Vector2 { X = 881, Y = 636 };
             Data.Add(SectionName.HP, new IGMData_HP(new Rectangle((int)(Size.X - 389), 507, 389, 126), Character, VisableCharacter));
             Data.Add(SectionName.Commands, new IGMData_Commands(new Rectangle(50, (int)(Size.Y - 204), 210, 192), Character, VisableCharacter, true));
+            Data.Add(SectionName.Renzokeken, new IGMData_Renzokeken());
             Data.ForEach(x => x.Value.SetModeChangeEvent(ref ModeChangeHandler));
             SetMode(Mode.ATB_Charging);
             base.Init();

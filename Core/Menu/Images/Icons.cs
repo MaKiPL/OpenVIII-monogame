@@ -139,6 +139,11 @@ namespace OpenVIII
             EntryGroup eg = this[(ID)ic];
             eg.Trim(Textures[pal]);
         }
+        public Color AverageColor(Enum ic, byte pal)
+        {
+            EntryGroup eg = this[(ID)ic];
+            return eg.AverageColor(Textures[pal]);
+        }
 
         protected override void InitEntries(ArchiveWorker aw = null)
         {

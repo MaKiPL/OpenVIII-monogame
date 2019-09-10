@@ -339,6 +339,7 @@ namespace OpenVIII
                     Textures[0, 0] = tex;
                     Rows = 1;
                     Cols = 1;
+                    Count = 1;
                 }
                 else
                 {

@@ -145,6 +145,7 @@
     <Compile Include="Battle\Menu\IGMData\IGMData_PartyItems.cs" />
     <Compile Include="Battle\Menu\IGMData\IGMData_PlayerEXPGroup.cs" />
     <Compile Include="Battle\Menu\IGMData\IGMData_PartyAP.cs" />
+    <Compile Include="Battle\Menu\IGMData\IGMData_Renzokeken.cs" />
     <Compile Include="Battle\Menu\IGMData\IGMData_TargetEnemies.cs" />
     <Compile Include="Battle\Menu\IGMData\IGMData_TargetGroup.cs" />
     <Compile Include="Battle\Menu\IGMData\IGMData_TargetParty.cs" />

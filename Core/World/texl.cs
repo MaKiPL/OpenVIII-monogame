@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OpenVIII.Core.World
+namespace OpenVIII
 {
     /// <summary>
     /// Texl.obj is a file containing 20 high-res TIM textures for world map

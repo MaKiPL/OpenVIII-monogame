@@ -416,7 +416,7 @@ namespace OpenVIII
         /// </summary>
         protected override void Init()
         {
-            if (SIZE != null && SIZE.Length > 0)
+            if (SIZE != null && SIZE.Length > 0 && Rows*Cols > 0)
             {
                 for (int i = 0; i < SIZE.Length; i++)
                 {
