@@ -7,7 +7,8 @@ namespace OpenVIII
     public class IGMDataItem_Texture : IGMDataItem, I_Data<Texture2D>, I_Color
     {
         #region Constructors
-
+        protected IGMDataItem_Texture(Rectangle? pos = null) : base(pos)
+        { }
         public IGMDataItem_Texture(Texture2D data, Rectangle? pos = null, Color? color = null, Color? faded_color = null, float blink_adjustment = 1f) : base(pos)
         {
             Data = data;

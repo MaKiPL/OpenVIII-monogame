@@ -4,6 +4,28 @@ using System;
 
 namespace OpenVIII
 {
+    public class IGMDataItem_Renzokeken_Gradient : IGMDataItem_Texture
+    {
+        public IGMDataItem_Renzokeken_Gradient(Rectangle? pos = null, Color? color = null, Color? faded_color = null, float blink_adjustment = 1f) : base(pos)
+        {
+            int dark = 12;
+            int fade = 180;
+            Color lightline = new Color(118, 118, 118, 255);
+            Color darkline = new Color(58, 58, 58, 255);
+            Color[] cfade = new Color[12 + 180];
+            int i;
+            for (i = 0; i < dark; i++)
+                cfade[i] = darkline;
+            for (; i < cfade.Length; i++)
+                cfade[i] = Color.Lerp(lightline, Color.TransparentBlack, (float)(i - dark) / (fade));
+            Data = new Texture2D(Memory.graphics.GraphicsDevice, cfade.Length, 1);
+            Width = Data.Width;
+            Data.SetData(cfade);
+            Color = color ?? Color.White;
+            Faded_Color = faded_color ?? Color;
+            Blink_Adjustment = blink_adjustment;
+        }
+    }
     public class IGMData_Renzokeken : IGMData
     {
         #region Fields
@@ -24,32 +46,27 @@ namespace OpenVIII
         {
             Texture2D pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
             pixel.SetData(new Color[] { Color.White });
-            int dark = 12;
-            int fade = 180;
-            Color lightline = new Color(118, 118, 118, 255);
-            Color darkline = new Color(58, 58, 58, 255);
-            Color[] cfade = new Color[12 + 180];
-            int pos;
-            for (pos = 0; pos < dark; pos++)
-                cfade[pos] = darkline;
-            for (; pos < cfade.Length; pos++)
-                cfade[pos] = Color.Lerp(lightline, Color.TransparentBlack, (float)(pos - dark) / (fade));
-            Texture2D line = new Texture2D(Memory.graphics.GraphicsDevice, cfade.Length, 1);
-            line.SetData(cfade);
+
             Memory.Icons.Trim(Icons.ID.Text_Cursor, 6);
             EntryGroup split = Memory.Icons[Icons.ID.Text_Cursor];
             var e = Memory.Icons[Icons.ID.Text_Cursor];
-            Rectangle r = new Rectangle(40, 524, 880, 84);
+
+            Rectangle r = CONTAINER.Pos; //new Rectangle(40, 524, 880, 84);
+            r.Inflate(-16, -20);
+            r.X += r.X % 4;
+            r.Y += r.Y % 4;
+            r.Width += r.Width % 4;
+            r.Height += r.Height % 4;
             rc = Memory.Icons.MostSaturated(Icons.ID.Text_Cursor, 6);
             ITEM[0, 0] = new IGMDataItem_Texture(pixel, r, rc);
-            r.Inflate(-6, -6);
+            r.Inflate(-4, -4);
             ITEM[1, 0] = new IGMDataItem_Texture(pixel, r, Color.Black);
             int w = (int)(e.Width*((float)r.Height / e.Height));
-            ITEM[Count - 2, 0] = new IGMDataItem_Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 80, r.Y, w, r.Height), 6);
-            ITEM[Count - 1, 0] = new IGMDataItem_Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 208, r.Y, w, r.Height), 6);
+            ITEM[Count - 2, 0] = new IGMDataItem_Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 80, r.Y, w, r.Height), 6, scale: new Vector2(((float)r.Height / e.Height)));
+            ITEM[Count - 1, 0] = new IGMDataItem_Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 208, r.Y, w, r.Height), 6, scale: new Vector2(((float)r.Height / e.Height)));
             hotspot = new Rectangle(r.X + 80 + (w / 2), r.Y, 208-80, r.Height);
             newattack = new Color(104, 80, 255);
-            ITEM[2, 0] = new IGMDataItem_Texture(line, new Rectangle(r.X, r.Y+4 , line.Width, r.Height - 8), newattack);
+            ITEM[2, 0] = new IGMDataItem_Renzokeken_Gradient(new Rectangle(r.X, r.Y+4 , 0, r.Height - 8), newattack, rc);
             r.Inflate(-4, -4);
             ((IGMDataItem_Texture)ITEM[2, 0]).Restriction = r;
             HitSlide = new Slide<int>(((IGMDataItem_Texture)ITEM[1, 0]).X - ((IGMDataItem_Texture)ITEM[1, 0]).Width+4, ((IGMDataItem_Texture)ITEM[1, 0]).X + ((IGMDataItem_Texture)ITEM[1, 0]).Width-4, 5000, Lerp);
