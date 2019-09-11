@@ -6,8 +6,14 @@ namespace OpenVIII
 {
     public class IGMDataItem_Renzokeken_Gradient : IGMDataItem_Texture
     {
-        public IGMDataItem_Renzokeken_Gradient(Rectangle? pos = null, Color? color = null, Color? faded_color = null, float blink_adjustment = 1f) : base(pos)
+        private Slide<int> HitSlide;
+        private Rectangle HotSpot;
+        private Color Color_default;
+
+        public IGMDataItem_Renzokeken_Gradient(Rectangle? pos = null, Color? color = null, Color? faded_color = null, float blink_adjustment = 1f, Rectangle? hotspot = null, Rectangle? restriction = null, double time = 0d) : base(pos)
         {
+            HotSpot = hotspot ?? Rectangle.Empty;
+            Restriction = restriction ?? Rectangle.Empty;
             int dark = 12;
             int fade = 180;
             Color lightline = new Color(118, 118, 118, 255);
@@ -22,16 +28,30 @@ namespace OpenVIII
             Width = Data.Width;
             Data.SetData(cfade);
             Color = color ?? Color.White;
+            Color_default = Color;
             Faded_Color = faded_color ?? Color;
             Blink_Adjustment = blink_adjustment;
+            
+            HitSlide = new Slide<int>(Restriction.X+Restriction.Width,Restriction.X - Width,time,Lerp);
+            int Lerp(int x, int y, float p) => (int)Math.Round(MathHelper.Lerp(x, y, p));
+        }
+        public override bool Update()
+        {
+            X = HitSlide.Update();
+            
+            if (HotSpot.Contains(Pos.Location))
+                Color = Faded_Color;
+            else            
+                Color = Color_default;            
+            if (HitSlide.Done) HitSlide.Restart();
+
+            return base.Update();
         }
     }
     public class IGMData_Renzokeken : IGMData
     {
         #region Fields
 
-        private Slide<int> HitSlide;
-        private Rectangle hotspot;
         private Color newattack;
 
         private Color rc;
@@ -40,7 +60,6 @@ namespace OpenVIII
 
         #region Methods
 
-        private int Lerp(int x, int y, float p) => (int)Math.Round(MathHelper.Lerp(x, y, p));
 
         protected override void Init()
         {
@@ -64,13 +83,10 @@ namespace OpenVIII
             int w = (int)(e.Width*((float)r.Height / e.Height));
             ITEM[Count - 2, 0] = new IGMDataItem_Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 80, r.Y, w, r.Height), 6, scale: new Vector2(((float)r.Height / e.Height)));
             ITEM[Count - 1, 0] = new IGMDataItem_Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 208, r.Y, w, r.Height), 6, scale: new Vector2(((float)r.Height / e.Height)));
-            hotspot = new Rectangle(r.X + 80 + (w / 2), r.Y, 208-80, r.Height);
             newattack = new Color(104, 80, 255);
-            ITEM[2, 0] = new IGMDataItem_Renzokeken_Gradient(new Rectangle(r.X, r.Y+4 , 0, r.Height - 8), newattack, rc);
+            ITEM[2, 0] = new IGMDataItem_Renzokeken_Gradient(new Rectangle(r.X, r.Y+4 , 0, r.Height - 8), newattack, rc,1f, new Rectangle(r.X + 80 + (w / 2), r.Y, 208 - 80, r.Height),r,time:5000);
             r.Inflate(-4, -4);
-            ((IGMDataItem_Texture)ITEM[2, 0]).Restriction = r;
-            HitSlide = new Slide<int>(((IGMDataItem_Texture)ITEM[1, 0]).X - ((IGMDataItem_Texture)ITEM[1, 0]).Width+4, ((IGMDataItem_Texture)ITEM[1, 0]).X + ((IGMDataItem_Texture)ITEM[1, 0]).Width-4, 5000, Lerp);
-            HitSlide.Reverse();
+            ((IGMDataItem_Renzokeken_Gradient)ITEM[2, 0]).Restriction = r;
             Reset();
             base.Init();
             Show();
@@ -90,15 +106,5 @@ namespace OpenVIII
             //Hide();
             base.Reset();
 
-        public override bool Update()
-        {
-            ((IGMDataItem_Texture)ITEM[2, 0]).X = HitSlide.Update();
-            if (hotspot.Contains(((IGMDataItem_Texture)ITEM[2, 0]).Pos.Location))
-                ((IGMDataItem_Texture)ITEM[2, 0]).Color = rc;
-            else ((IGMDataItem_Texture)ITEM[2, 0]).Color = newattack;
-            if (HitSlide.Done) HitSlide.Restart();
-
-            return base.Update();
-        }
     }
 }
