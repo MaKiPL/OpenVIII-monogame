@@ -102,7 +102,7 @@ namespace OpenVIII
 
         private Dictionary<int, Color> Average;
 
-        public Color AverageColor(TextureHandler tex, int palette = 0)
+        public Color MostSaturated(TextureHandler tex, int palette = 0)
         {
             if (!(Average?.TryGetValue(palette, out Color ret) ?? false))
             {
@@ -111,29 +111,37 @@ namespace OpenVIII
                     Rectangle r = this[0].GetRectangle;
                     for (int i = 1; i < Count; i++)
                         r = Rectangle.Union(r, this[i].GetRectangle);
+                    r = r.Scale(tex.ScaleFactor);
                     Texture2D t = (Texture2D)tex;
                     Color[] tc = new Color[r.Width * r.Height];
                     t.GetData(0, r, tc, 0, tc.Length);
-                    HSL test;
+                    HSL test, last;
+                    last.S =0;
                     ret = Color.TransparentBlack;
+
                     foreach (Color p in tc)
                     {
                         if (p.A >= 250)
                         {
                             test = p;
-                            if (test.S > .25f)
+                            if (ret == Color.TransparentBlack)
+                                last = test;
+                            if (test.S > .25f && last.S <= test.S)
                             {
                                 if (ret == Color.TransparentBlack)
                                     ret = p;
                                 else
+                                {
                                     ret = Color.Lerp(ret, p, .5f);
+                                    last = test;
+                                }
                             }
                         }
                     }
                 }
                 if (Average == null)
                     Average = new Dictionary<int, Color>();
-                Average.Add(palette,ret);
+                Average.Add(palette, ret);
             }
             return ret;
         }
