@@ -15,6 +15,7 @@ namespace OpenVIII
         private T _start;
         private double _totalMS;
         private double _reverseMS = 0;
+        private double _delayMS = 0;
 
         #endregion Fields
 
@@ -43,6 +44,10 @@ namespace OpenVIII
         public double TotalMS { get => _totalMS; set => _totalMS = value; }
         public double ReverseMS { get => _reverseMS; set => _reverseMS = value; }
         public bool Reversed { get; private set; } = false;
+        /// <summary>
+        /// When started wait this many MS before moving.
+        /// </summary>
+        public double DelayMS { get => _delayMS; set => _delayMS = value; }
 
         #endregion Properties
 
@@ -86,7 +91,7 @@ namespace OpenVIII
             if (!Done)
             {
                 _currentMS += Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
-                return _currentPercent = (float)(Done ? 1f : _currentMS / _totalMS);
+                return _currentPercent = _currentMS > _delayMS? 0f: (float)(Done ? 1f : (_currentMS- _delayMS) / _totalMS);
             }
             else
                 return _currentPercent;
