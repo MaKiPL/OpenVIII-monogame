@@ -117,6 +117,7 @@ namespace OpenVIII
                     t.GetData(0, r, tc, 0, tc.Length);
                     HSL test, last;
                     last.S =0;
+                    last.L = 0;
                     ret = Color.TransparentBlack;
 
                     foreach (Color p in tc)
@@ -127,6 +128,16 @@ namespace OpenVIII
                             if (ret == Color.TransparentBlack)
                                 last = test;
                             if (test.S > .25f && last.S <= test.S)
+                            {
+                                if (ret == Color.TransparentBlack)
+                                    ret = p;
+                                else
+                                {
+                                    ret = Color.Lerp(ret, p, .5f);
+                                    last = test;
+                                }
+                            }
+                            else if (test.L > .25f && last.L <= test.L)
                             {
                                 if (ret == Color.TransparentBlack)
                                     ret = p;
@@ -170,7 +181,8 @@ namespace OpenVIII
                     {
                         if (offset != Vector2.Zero && Count > 1)
                             this[i].SetTrim_2ndPass(offset);
-                        Point size = new Point((int)Math.Abs(this[i].Width + this[i].Offset.X), (int)Math.Abs(this[i].Height + this[i].Offset.Y));
+                        Point size = new Point((int)(this[i].Width + Math.Abs(this[i].Offset.X)), (int)(this[i].Height + Math.Abs(this[i].Offset.Y)));
+                        
                         if (Width < size.X) Width = size.X;
                         if (Height < size.Y) Height = size.Y;
                     }
