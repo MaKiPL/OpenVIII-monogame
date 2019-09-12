@@ -36,7 +36,7 @@ namespace OpenVIII
         public T Current => _current;//Done ? _end : _current;
         public double CurrentMS => _currentMS;
         public float CurrentPercent => _currentPercent;
-        public bool Done => _currentMS >= _totalMS;
+        public bool Done => _currentMS-DelayMS >= _totalMS;
 
         public T End { get => _end; set => _end = value; }
         public Func<T, T, float, T> Function { get => _function; set => _function = value; }
