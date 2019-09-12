@@ -84,7 +84,7 @@ namespace OpenVIII
                 Y = 0,
             } + offset;
             Vector2 blocknumsize = new Vector2(OffScreenBuffer.Height * 0.00628930817610063f);
-            Memory.Icons.Draw(block, Icons.NumType.Num_8x16_0, 2, "D2", blocknumpos, blocknumsize, fade); // 2,2 looks close
+            Memory.Icons.Draw(block, Icons.NumType.Num_8x16_0, 2, "D2", blocknumpos, blocknumsize, Fade); // 2,2 looks close
 
             Rectangle faceRect = new Rectangle
             {
@@ -101,8 +101,8 @@ namespace OpenVIII
                     faceRect.Offset(faceRect.Width, 0);
                 if (d.Party[face] != Characters.Blank)
                 {
-                    Memory.Faces.Draw(d.Party[face], faceRect, Vector2.UnitY, fade);
-                    Memory.Icons.Draw(Icons.ID.MenuBorder, 2, faceRect, new Vector2(1f), fade);
+                    Memory.Faces.Draw(d.Party[face], faceRect, Vector2.UnitY, Fade);
+                    Memory.Icons.Draw(Icons.ID.MenuBorder, 2, faceRect, new Vector2(1f), Fade);
                     if (mainchar == -1) mainchar = (sbyte)face;
                 }
             }
@@ -116,39 +116,39 @@ namespace OpenVIII
                 FF8String name = Memory.Strings.GetName(d.Party[mainchar], d);
                 FF8String lv_ = new FF8String($"LV.   {d.firstcharacterslevel}");
                 //TextScale1 = new Vector2(OffScreenBuffer.Width * 0.0030303030297619f, OffScreenBuffer.Height * 0.00636792452830189f);
-                Memory.font.RenderBasicText(name, detailsLoc, TextScale, Fade: fade);
+                Memory.font.RenderBasicText(name, detailsLoc, TextScale, Fade: Fade);
 
                 int playy = (int)detailsLoc.Y;
                 detailsLoc.Y += (int)(OffScreenBuffer.Height * 0.0817610062893082f);
-                Rectangle disc = Memory.font.RenderBasicText(lv_, detailsLoc, TextScale, Fade: fade);
+                Rectangle disc = Memory.font.RenderBasicText(lv_, detailsLoc, TextScale, Fade: Fade);
                 disc.Offset(0, (int)(OffScreenBuffer.Height * 0.0125786163522013f));
                 disc.X = (int)(OffScreenBuffer.Width * 0.583333333333333f);
                 Vector2 DiscScale = new Vector2(OffScreenBuffer.Height * 0.0060987230787661f);
-                Memory.Icons.Draw(Icons.ID.DISC, 2, disc, DiscScale, fade);
+                Memory.Icons.Draw(Icons.ID.DISC, 2, disc, DiscScale, Fade);
                 Vector2 CurrDiscLoc = new Vector2(disc.X + (0.119047619047619f * OffScreenBuffer.Width), disc.Y);
-                Memory.Icons.Draw((int)d.CurrentDisk + 1, 0, 2, "D1", CurrDiscLoc, DiscScale, fade);
+                Memory.Icons.Draw((int)d.CurrentDisk + 1, 0, 2, "D1", CurrDiscLoc, DiscScale, Fade);
                 float X1 = OffScreenBuffer.Width * 0.952380952380952f;
                 float X2 = OffScreenBuffer.Width * -0.0238095238095238f;
                 float X3 = OffScreenBuffer.Width * -0.0952380952380952f;
                 disc.Location = new Vector2 { X = X1, Y = disc.Y }.ToPoint();
-                Memory.Icons.Draw(Icons.ID.G, 2, disc, DiscScale, fade);
+                Memory.Icons.Draw(Icons.ID.G, 2, disc, DiscScale, Fade);
                 double digits = (d.AmountofGil == 0 ? 1 : Math.Floor(Math.Log10(d.AmountofGil) + 2));
 
                 disc.Offset(new Vector2 { X = (float)(digits * X2) });
-                Memory.Icons.Draw((int)d.AmountofGil, 0, 2, "D1", disc.Location.ToVector2(), DiscScale, fade);
+                Memory.Icons.Draw((int)d.AmountofGil, 0, 2, "D1", disc.Location.ToVector2(), DiscScale, Fade);
                 disc.Location = new Vector2 { X = X1, Y = playy }.ToPoint();
                 disc.Offset(new Vector2 { X = X2 });
-                Memory.Icons.Draw(d.Timeplayed.Minutes, 0, 2, "D2", disc.Location.ToVector2(), DiscScale, fade);
+                Memory.Icons.Draw(d.Timeplayed.Minutes, 0, 2, "D2", disc.Location.ToVector2(), DiscScale, Fade);
 
                 if ((int)d.Timeplayed.TotalHours > 0)
                 {
                     disc.Offset(new Vector2 { X = 1 * X2 });
-                    Memory.Icons.Draw(Icons.ID.Colon, 13, disc, DiscScale, fade);
+                    Memory.Icons.Draw(Icons.ID.Colon, 13, disc, DiscScale, Fade);
                     disc.Offset(new Vector2 { X = (float)Math.Floor(Math.Log10((int)d.Timeplayed.TotalHours) + 1) * X2 });
-                    Memory.Icons.Draw((int)d.Timeplayed.TotalHours, 0, 2, "D1", disc.Location.ToVector2(), DiscScale, fade);
+                    Memory.Icons.Draw((int)d.Timeplayed.TotalHours, 0, 2, "D1", disc.Location.ToVector2(), DiscScale, Fade);
                 }
                 disc.Offset(new Vector2 { X = X3 + X2 });
-                Memory.Icons.Draw(Icons.ID.PLAY, 13, disc, DiscScale, fade);
+                Memory.Icons.Draw(Icons.ID.PLAY, 13, disc, DiscScale, Fade);
                 Rectangle locbox = new Rectangle
                 {
                     X = faceRect.Width + faceRect.X,
@@ -160,7 +160,7 @@ namespace OpenVIII
                 Menu.DrawBox(locbox);
                 FF8String loc = Memory.Strings.Read(Strings.FileID.AREAMES, 0, d.LocationID);
                 locbox.Offset(0.0297619047619048f * OffScreenBuffer.Width, 0.0440251572327044f * OffScreenBuffer.Height);
-                Memory.font.RenderBasicText(loc, locbox.Location, TextScale, Fade: fade);
+                Memory.font.RenderBasicText(loc, locbox.Location, TextScale, Fade: Fade);
             }
 
             dst.X = (int)(vp_per.X * 0f);
@@ -227,15 +227,15 @@ namespace OpenVIII
                     X = (int)(dst.X - ((e.Width - 2) * 3f)),
                     Y = (dst.Y + dst.Height / 2)
                 };
-                Memory.Icons.Draw(Icons.ID.Arrow_Left, 1, arrow, new Vector2(3f), fade);
-                Memory.Icons.Draw(Icons.ID.Arrow_Left, 2, arrow, new Vector2(3f), fade * Blink_Amount);
+                Memory.Icons.Draw(Icons.ID.Arrow_Left, 1, arrow, new Vector2(3f), Fade);
+                Memory.Icons.Draw(Icons.ID.Arrow_Left, 2, arrow, new Vector2(3f), Fade * Blink_Amount);
                 arrow = new Rectangle
                 {
                     X = (int)((dst.X + dst.Width) + -2 * 3f),
                     Y = arrow.Y
                 };
-                Memory.Icons.Draw(Icons.ID.Arrow_Right2, 1, arrow, new Vector2(3f), fade);
-                Memory.Icons.Draw(Icons.ID.Arrow_Right2, 2, arrow, new Vector2(3f), fade * Blink_Amount);
+                Memory.Icons.Draw(Icons.ID.Arrow_Right2, 1, arrow, new Vector2(3f), Fade);
+                Memory.Icons.Draw(Icons.ID.Arrow_Right2, 2, arrow, new Vector2(3f), Fade * Blink_Amount);
             }
             UpdateTime();
             dst.Location = (dst.Location.ToVector2()).ToPoint();
@@ -254,7 +254,7 @@ namespace OpenVIII
             {
                 CurrentPageLoc = LGSGSlideNew.Update();
                 dst.Location = CurrentPageLoc.RoundedPoint();
-                Memory.spriteBatch.Draw(OffScreenBuffer, dst, Color.White * fade);
+                Memory.spriteBatch.Draw(OffScreenBuffer, dst, Color.White * Fade);
             }
             if (LastPage != null && !LastPage.IsDisposed)
             {
@@ -266,7 +266,7 @@ namespace OpenVIII
                 else
                 {
                     dst.Location = CurrentLastPageLoc.RoundedPoint();
-                    Memory.spriteBatch.Draw(LastPage, dst, Color.White * fade);
+                    Memory.spriteBatch.Draw(LastPage, dst, Color.White * Fade);
                 }
             }
             else //if(BlockLocs[BlockLoc] != null)

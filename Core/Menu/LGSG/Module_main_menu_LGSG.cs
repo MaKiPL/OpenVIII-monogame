@@ -45,8 +45,7 @@ namespace OpenVIII
 
         #region Properties
 
-        public static float Blink_Amount { get; private set; }
-
+        public static float Blink_Amount { get => Menu.Blink_Amount; }
         private static double PercentLoaded { get; set; } = 0f;
         public static Vector2 TextScale { get; } = new Vector2(2.545455f, 3.0375f);
 
@@ -201,9 +200,9 @@ namespace OpenVIII
                 X = (int)(vp_per.X * 0.3171875f),
                 Y = (int)(vp_per.Y * 0.0333333333333333f),
             }.ToVector2()).ToPoint();
-            Memory.Icons.Draw(Icons.ID.Bar_BG, -1, dst, Vector2.UnitY, fade);
+            Memory.Icons.Draw(Icons.ID.Bar_BG, -1, dst, Vector2.UnitY, Fade);
             dst.Width = (int)(dst.Width * PercentLoaded);
-            Memory.Icons.Draw(Icons.ID.Bar_Fill, -1, dst, Vector2.UnitY, fade);
+            Memory.Icons.Draw(Icons.ID.Bar_Fill, -1, dst, Vector2.UnitY, Fade);
         }
 
         private static Tuple<Rectangle, Point, Rectangle> DrawLGSGSlot(Vector2 offset, FF8String title, FF8String main)

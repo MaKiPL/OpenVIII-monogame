@@ -142,7 +142,7 @@ namespace OpenVIII
             dst.Offset(-(dst.Width + 10), 6 + vpSpace * ((float)Dchoose));
             //want to use new function brain hurts on this screen lol
             //DrawPointer(new Point((int)(textStart.X), (int)((((textSize.Y + vpSpace) * (float)Mchoose) + textStart.Y + (6 * textSize.Y)) )));
-            Memory.Icons.Draw(Icons.ID.Finger_Right, 2, dst, Vector2.Zero, fade);
+            Memory.Icons.Draw(Icons.ID.Finger_Right, 2, dst, Vector2.Zero, Fade);
             //Memory.SpriteBatchEnd();
             //pointclamp looks bad on default fonts.
             //Memory.SpriteBatchStartAlpha();

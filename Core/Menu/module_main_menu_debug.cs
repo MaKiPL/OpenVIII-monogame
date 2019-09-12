@@ -8,14 +8,13 @@ namespace OpenVIII
     {
         #region Fields
 
-        private static float fade, lastfade;
+        //private static float fade, lastfade;
 
         private static bool LastActive = false;
 
         private static MainMenuStates state = 0;
         private static Vector2 vp_per;
         private static Vector2 vp;
-        private static bool blinkstate;
 
         #endregion Fields
 
@@ -52,11 +51,10 @@ namespace OpenVIII
         public static float vpSpace { get; private set; }
         private static float Fade
         {
-            get => fade; set
+            get => Menu.Fade; set
             {
-                fade = value;
                 if(value == 0)
-                    FadeSlide.Restart();
+                    Menu.FadeIn();
             }
         }
 
@@ -81,7 +79,7 @@ namespace OpenVIII
         public static void Draw()
         {
             Memory.graphics.GraphicsDevice.Clear(Color.Black);
-            lastfade = fade;
+            //lastfade = fade;
             switch (State)
             {
                 //case MainMenuStates.Init:
@@ -128,7 +126,7 @@ namespace OpenVIII
 
         public static Slide<Vector2> OffsetSlide = new Slide<Vector2>(new Vector2(-1000, 0), Vector2.Zero, 1000, Vector2.SmoothStep);
         public static Slide<float> BlinkSlide = new Slide<float>(1f, 0f, 300d, MathHelper.Lerp);
-        public static Slide<float> FadeSlide = new Slide<float>(0f, 1f, 500d, MathHelper.Lerp);
+        //public static Slide<float> FadeSlide = new Slide<float>(0f, 1f, 500d, MathHelper.Lerp);
 
         /// <summary>
         /// Triggers functions depending on state
@@ -139,12 +137,12 @@ namespace OpenVIII
             //    blink_Amount += Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
             //else
             //    blink_Amount -= Memory.gameTime.ElapsedGameTime.Milliseconds / 2000.0f * 3;
-            Blink_Amount = BlinkSlide.Update();
-            if (BlinkSlide.Done)
-            {
-                BlinkSlide.Reverse();
-                BlinkSlide.Restart();
-            }
+            //Blink_Amount = BlinkSlide.Update();
+            //if (BlinkSlide.Done)
+            //{
+            //    BlinkSlide.Reverse();
+            //    BlinkSlide.Restart();
+            //}
 
             lastscale = scale;
             scale = Memory.Scale();
@@ -162,12 +160,12 @@ namespace OpenVIII
                 forceupdate = true;
             }
 
-            if (Fade == 0) FadeSlide.Restart();
-            if (!FadeSlide.Done && State != MainMenuStates.NewGameChoosed)
-            {
-                //Fade += (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0f);
-                Fade = FadeSlide.Update();
-            }
+            //if (Fade == 0) FadeSlide.Restart();
+            //if (!FadeSlide.Done && State != MainMenuStates.NewGameChoosed)
+            //{
+            //    //Fade += (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0f);
+            //    Fade = FadeSlide.Update();
+            //}
 
             vp_per.X = Memory.PreferredViewportWidth;//Memory.graphics.GraphicsDevice.Viewport.Width;
             vp_per.Y = Memory.PreferredViewportHeight;//Memory.graphics.GraphicsDevice.Viewport.Width;
@@ -204,7 +202,7 @@ namespace OpenVIII
                 case MainMenuStates.DebugScreen:
                     //Menu.UpdateFade();
                     Memory.IsMouseVisible = true;
-                    if (UpdateDebugLobby() || (lastfade != fade) || Offset != Vector2.Zero)
+                    if (UpdateDebugLobby() || /*(lastfade != fade) ||*/ Offset != Vector2.Zero)
                     {
                         forceupdate = true;
                     }
