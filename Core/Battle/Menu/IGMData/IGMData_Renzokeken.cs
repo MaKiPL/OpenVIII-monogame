@@ -4,13 +4,79 @@ using System;
 
 namespace OpenVIII
 {
+    public class IGMData_Renzokeken : IGMData
+    {
+        #region Fields
+
+        private Color newattack;
+
+        private Color rc;
+
+        #endregion Fields
+
+        #region Methods
+
+        protected override void Init()
+        {
+            Texture2D pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
+            pixel.SetData(new Color[] { Color.White });
+
+            Memory.Icons.Trim(Icons.ID.Text_Cursor, 6);
+            EntryGroup split = Memory.Icons[Icons.ID.Text_Cursor];
+            EntryGroup e = Memory.Icons[Icons.ID.Text_Cursor];
+
+            Rectangle r = CONTAINER.Pos; //new Rectangle(40, 524, 880, 84);
+            r.Inflate(-16, -20);
+            r.X += r.X % 4;
+            r.Y += r.Y % 4;
+            r.Width += r.Width % 4;
+            r.Height += r.Height % 4;
+            rc = Memory.Icons.MostSaturated(Icons.ID.Text_Cursor, 6);
+            ITEM[0, 0] = new IGMDataItem_Texture(pixel, r, rc);
+            r.Inflate(-4, -4);
+            ITEM[1, 0] = new IGMDataItem_Texture(pixel, r, Color.Black);
+            int w = (int)(e.Width * ((float)r.Height / e.Height));
+            ITEM[Count - 2, 0] = new IGMDataItem_Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 80, r.Y, w, r.Height), 6, scale: new Vector2(((float)r.Height / e.Height)));
+            ITEM[Count - 1, 0] = new IGMDataItem_Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 208, r.Y, w, r.Height), 6, scale: new Vector2(((float)r.Height / e.Height)));
+            newattack = new Color(104, 80, 255);
+            ITEM[2, 0] = new IGMDataItem_Renzokeken_Gradient(new Rectangle(r.X, r.Y + 4, 0, r.Height - 8), newattack, rc, 1f, new Rectangle(r.X + 80 + (w / 2), r.Y, 208 - 80, r.Height), r, time: 5000);
+            r.Inflate(-4, -4);
+            ((IGMDataItem_Renzokeken_Gradient)ITEM[2, 0]).Restriction = r;
+            Reset();
+            base.Init();
+            Show();
+        }
+
+        #endregion Methods
+
+        #region Constructors
+
+        public IGMData_Renzokeken() : base(5, 1, new IGMDataItem_Box(pos: new Rectangle(24, 501, 912, 123), title: Icons.ID.SPECIAL), 0, 0, Characters.Squall_Leonhart)
+        {
+        }
+
+        #endregion Constructors
+
+        public override void Reset()
+        {
+            Hide();
+            base.Reset();
+        }
+    }
+
     public class IGMDataItem_Renzokeken_Gradient : IGMDataItem_Texture
     {
+        #region Fields
+
+        private Color Color_default;
         private Slide<int> HitSlide;
         private Rectangle HotSpot;
-        private Color Color_default;
 
-        public IGMDataItem_Renzokeken_Gradient(Rectangle? pos = null, Color? color = null, Color? faded_color = null, float blink_adjustment = 1f, Rectangle? hotspot = null, Rectangle? restriction = null, double time = 0d) : base(pos)
+        #endregion Fields
+
+        #region Constructors
+
+        public IGMDataItem_Renzokeken_Gradient(Rectangle? pos = null, Color? color = null, Color? faded_color = null, float blink_adjustment = 1f, Rectangle? hotspot = null, Rectangle? restriction = null, double time = 0d, double delay = 0d) : base(pos)
         {
             HotSpot = hotspot ?? Rectangle.Empty;
             Restriction = restriction ?? Rectangle.Empty;
@@ -31,11 +97,22 @@ namespace OpenVIII
             Color_default = Color;
             Faded_Color = faded_color ?? Color;
             Blink_Adjustment = blink_adjustment;
-            
-            HitSlide = new Slide<int>(Restriction.X+Restriction.Width,Restriction.X - Width,time,Lerp);
+
+            HitSlide = new Slide<int>(Restriction.X + Restriction.Width, Restriction.X - Width, time, Lerp) { DelayMS = delay };
             int Lerp(int x, int y, float p) => (int)Math.Round(MathHelper.Lerp(x, y, p));
         }
+
+        #endregion Constructors
+
+        #region Properties
+
         public bool Trigger { get; private set; }
+        public bool Done => HitSlide.Done;
+
+        #endregion Properties
+
+        #region Methods
+
         public override bool Update()
         {
             X = HitSlide.Update();
@@ -54,64 +131,7 @@ namespace OpenVIII
 
             return base.Update();
         }
-    }
-    public class IGMData_Renzokeken : IGMData
-    {
-        #region Fields
-
-        private Color newattack;
-
-        private Color rc;
-
-        #endregion Fields
-
-        #region Methods
-
-
-        protected override void Init()
-        {
-            Texture2D pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
-            pixel.SetData(new Color[] { Color.White });
-
-            Memory.Icons.Trim(Icons.ID.Text_Cursor, 6);
-            EntryGroup split = Memory.Icons[Icons.ID.Text_Cursor];
-            var e = Memory.Icons[Icons.ID.Text_Cursor];
-
-            Rectangle r = CONTAINER.Pos; //new Rectangle(40, 524, 880, 84);
-            r.Inflate(-16, -20);
-            r.X += r.X % 4;
-            r.Y += r.Y % 4;
-            r.Width += r.Width % 4;
-            r.Height += r.Height % 4;
-            rc = Memory.Icons.MostSaturated(Icons.ID.Text_Cursor, 6);
-            ITEM[0, 0] = new IGMDataItem_Texture(pixel, r, rc);
-            r.Inflate(-4, -4);
-            ITEM[1, 0] = new IGMDataItem_Texture(pixel, r, Color.Black);
-            int w = (int)(e.Width*((float)r.Height / e.Height));
-            ITEM[Count - 2, 0] = new IGMDataItem_Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 80, r.Y, w, r.Height), 6, scale: new Vector2(((float)r.Height / e.Height)));
-            ITEM[Count - 1, 0] = new IGMDataItem_Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 208, r.Y, w, r.Height), 6, scale: new Vector2(((float)r.Height / e.Height)));
-            newattack = new Color(104, 80, 255);
-            ITEM[2, 0] = new IGMDataItem_Renzokeken_Gradient(new Rectangle(r.X, r.Y+4 , 0, r.Height - 8), newattack, rc,1f, new Rectangle(r.X + 80 + (w / 2), r.Y, 208 - 80, r.Height),r,time:5000);
-            r.Inflate(-4, -4);
-            ((IGMDataItem_Renzokeken_Gradient)ITEM[2, 0]).Restriction = r;
-            Reset();
-            base.Init();
-            Show();
-        }
 
         #endregion Methods
-
-        #region Constructors
-
-        public IGMData_Renzokeken() : base(5, 1, new IGMDataItem_Box(pos: new Rectangle(24, 501, 912, 123), title: Icons.ID.SPECIAL), 0, 0, Characters.Squall_Leonhart)
-        {
-        }
-
-        #endregion Constructors
-
-        public override void Reset() =>
-            //Hide();
-            base.Reset();
-
     }
 }
