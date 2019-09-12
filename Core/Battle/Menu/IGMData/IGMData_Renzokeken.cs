@@ -35,14 +35,21 @@ namespace OpenVIII
             HitSlide = new Slide<int>(Restriction.X+Restriction.Width,Restriction.X - Width,time,Lerp);
             int Lerp(int x, int y, float p) => (int)Math.Round(MathHelper.Lerp(x, y, p));
         }
+        public bool Trigger { get; private set; }
         public override bool Update()
         {
             X = HitSlide.Update();
-            
+
             if (HotSpot.Contains(Pos.Location))
+            {
                 Color = Faded_Color;
-            else            
-                Color = Color_default;            
+                Trigger = true;
+            }
+            else
+            {
+                Trigger = false;
+                Color = Color_default;
+            }
             if (HitSlide.Done) HitSlide.Restart();
 
             return base.Update();
