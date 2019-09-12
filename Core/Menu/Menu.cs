@@ -312,7 +312,7 @@ namespace OpenVIII
                     if (FadeSlider.Done)
                     {
                         FadedOutHandler?.Invoke(sender, null);
-                        FadeSlider.Reverse();
+                        FadeSlider.ReverseRestart();
                     }
                 }
                 else
@@ -324,33 +324,6 @@ namespace OpenVIII
                     }
                 }
             }
-        //if (_blinkstate)
-        //{
-        //    Blink_Amount += (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / _blinkinspeed);
-        //    if (Blink_Amount >= _fadedin) _blinkstate = false;
-        //}
-        //else
-        //{
-        //    Blink_Amount -= (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / _blinkoutspeed);
-        //    if (Blink_Amount <= _fadedout) _blinkstate = true;
-        //}
-        //if (!_fadeout && Fade < _fadedin)
-        //{
-        //    Fade += (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / _fadeinspeed);
-        //    if (Fade >= _fadedin)
-        //    {
-        //        FadedInHandler?.Invoke(sender, null);
-        //    }
-        //}
-        //else if (_fadeout && Fade > _fadedout)
-        //{
-        //    Fade -= (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / _fadeoutspeed);
-        //    if (Fade <= _fadedout)
-        //    {
-        //        _fadeout = false;
-        //        FadedOutHandler?.Invoke(sender, null);
-        //    }
-        //}
     }
 
         public override void Draw()
