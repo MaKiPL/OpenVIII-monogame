@@ -125,7 +125,7 @@ namespace OpenVIII
         }
 
         public static Slide<Vector2> OffsetSlide = new Slide<Vector2>(new Vector2(-1000, 0), Vector2.Zero, 1000, Vector2.SmoothStep);
-        public static Slide<float> BlinkSlide = new Slide<float>(1f, 0f, 300d, MathHelper.Lerp);
+        //public static Slide<float> BlinkSlide = new Slide<float>(1f, 0f, 300d, MathHelper.Lerp);
         //public static Slide<float> FadeSlide = new Slide<float>(0f, 1f, 500d, MathHelper.Lerp);
 
         /// <summary>

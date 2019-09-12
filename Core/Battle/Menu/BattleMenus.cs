@@ -35,14 +35,17 @@ namespace OpenVIII
             /// Spawning character's and enemies and flying the camera around
             /// </summary>
             Starting,
+
             /// <summary>
             /// running atb and using battle menus.
             /// </summary>
             Battle,
+
             /// <summary>
             /// Fade out and goto victory menu.
             /// </summary>
             Victory,
+
             /// <summary>
             /// Fade out and goto game over screen.
             /// </summary>
@@ -111,12 +114,13 @@ namespace OpenVIII
                 ReturnTo();
             return ret;
         }
+
         private void TriggerVictory(ConcurrentDictionary<Characters, int> expextra = null)
         {
             int exp = 0;
             uint ap = 0;
             List<Saves.Item> items = new List<Saves.Item>();
-            foreach (var e in Enemy.Party)
+            foreach (Enemy e in Enemy.Party)
             {
                 exp += e.EXP;
                 ap += e.AP;
@@ -126,6 +130,7 @@ namespace OpenVIII
             }
             TriggerVictory(exp, ap, expextra, items.ToArray());
         }
+
         private void TriggerVictory(int exp, uint ap, ConcurrentDictionary<Characters, int> expextra, params Saves.Item[] items)
         {
             SetMode(Mode.Victory);
@@ -181,7 +186,6 @@ namespace OpenVIII
             base.Refresh();
         }
 
-
         /// <summary>
         /// Go back to pre battle state.
         /// </summary>
@@ -199,7 +203,6 @@ namespace OpenVIII
 
         public override bool Update()
         {
-            
             bool ret = false;
             if (GetMode() != null)
             {
@@ -225,9 +228,14 @@ namespace OpenVIII
         {
             StartDraw();
             //Had to split up the HP and Commands drawing. So that Commands would draw over HP.
-            menus?.Where(m => m.GetType().Equals(typeof(BattleMenu))).ForEach(m => ((BattleMenu)m).DrawData(BattleMenu.SectionName.HP));
-            menus?.Where(m => m.GetType().Equals(typeof(BattleMenu))).ForEach(m => ((BattleMenu)m).DrawData(BattleMenu.SectionName.Commands));
-            menus?.Where(m => m.GetType().Equals(typeof(BattleMenu))).ForEach(m => ((BattleMenu)m).DrawData(BattleMenu.SectionName.Renzokeken));
+
+            if (!(menus?.Any(m => m.GetType().Equals(typeof(BattleMenu)) && m.Enabled) ?? false))
+            {
+                menus?.Where(m => m.GetType().Equals(typeof(BattleMenu))).ForEach(m => ((BattleMenu)m).DrawData(BattleMenu.SectionName.HP));
+                menus?.Where(m => m.GetType().Equals(typeof(BattleMenu))).ForEach(m => ((BattleMenu)m).DrawData(BattleMenu.SectionName.Commands));
+            }
+            else
+                ((BattleMenu)(menus?.Where(m => m.GetType().Equals(typeof(BattleMenu)) && m.Enabled).First())).DrawData(BattleMenu.SectionName.Renzokeken);
             DrawData();
             EndDraw();
         }
@@ -244,39 +252,42 @@ namespace OpenVIII
 
         private bool InputBattleFunction()
         {
-            bool ret = false;            
-
-                foreach (Menu m in menus.Where(m => m.GetType().Equals(typeof(BattleMenu)) && (BattleMenu.Mode)m.GetMode() == BattleMenu.Mode.YourTurn))
+            bool ret = false;
+            if ((menus?.Any(m => m.GetType().Equals(typeof(BattleMenu)) && m.Enabled) ?? false))
+            {
+                return ((BattleMenu)menus.First(m => m.GetType().Equals(typeof(BattleMenu)) && m.Enabled)).Inputs();
+            }
+            foreach (Menu m in menus.Where(m => m.GetType().Equals(typeof(BattleMenu)) && (BattleMenu.Mode)m.GetMode() == BattleMenu.Mode.YourTurn))
+            {
+                ret = m.Inputs() || ret;
+                if (ret) return ret;
+            }
+            if (Input2.DelayedButton(FF8TextTagKey.Cancel))
+            {
+                switch ((BattleMenu.Mode)menus[_player].GetMode())
                 {
-                    ret = m.Inputs() || ret;
-                    if (ret) return ret;
+                    case BattleMenu.Mode.YourTurn:
+                        menus[_player].SetMode(BattleMenu.Mode.ATB_Charged);
+                        break;
                 }
-                if (Input2.DelayedButton(FF8TextTagKey.Cancel))
-                {
-                    switch ((BattleMenu.Mode)menus[_player].GetMode())
-                    {
-                        case BattleMenu.Mode.YourTurn:
-                            menus[_player].SetMode(BattleMenu.Mode.ATB_Charged);
-                            break;
-                    }
                 do
                 {
                     if (++_player > 2) _player = 0;
                 }
-                while (menus.Count <= _player || menus[_player] == null|| menus[_player].GetType() != typeof(BattleMenu));
+                while (menus.Count <= _player || menus[_player] == null || menus[_player].GetType() != typeof(BattleMenu));
                 menus[_player].SetMode(BattleMenu.Mode.YourTurn);
-                    if (((BattleMenu)menus[_player]).CrisisLevel)
-                        init_debugger_Audio.PlaySound(94);
-                    else
-                        init_debugger_Audio.PlaySound(14);
-                    switch ((BattleMenu.Mode)menus[_player].GetMode())
-                    {
-                        case BattleMenu.Mode.ATB_Charged:
-                            menus[_player].SetMode(BattleMenu.Mode.YourTurn);
-                            break;
-                    }
+                if (((BattleMenu)menus[_player]).CrisisLevel)
+                    init_debugger_Audio.PlaySound(94);
+                else
+                    init_debugger_Audio.PlaySound(14);
+                switch ((BattleMenu.Mode)menus[_player].GetMode())
+                {
+                    case BattleMenu.Mode.ATB_Charged:
+                        menus[_player].SetMode(BattleMenu.Mode.YourTurn);
+                        break;
                 }
-            
+            }
+
             return ret;
         }
 
@@ -330,6 +341,6 @@ namespace OpenVIII
             return Victory_Menu.Update();
         }
 
-#endregion Methods
+        #endregion Methods
     }
 }

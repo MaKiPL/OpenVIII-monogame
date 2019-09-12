@@ -61,8 +61,15 @@ namespace OpenVIII
         #endregion Enums
 
         #region Methods
-        
-        public override bool Inputs() => Data[SectionName.Commands].Inputs();
+
+        public override bool Inputs()
+        {
+            if(Data[SectionName.Renzokeken].Enabled)
+               return Data[SectionName.Renzokeken].Inputs();            
+            return Data[SectionName.Commands].Inputs();
+        }
+
+        public IGMData_Renzokeken Renzokeken => (IGMData_Renzokeken)Data[SectionName.Renzokeken];
 
         protected override void Init()
         {
