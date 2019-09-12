@@ -91,7 +91,7 @@ namespace OpenVIII
             if (!Done)
             {
                 _currentMS += Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
-                return _currentPercent = _currentMS > _delayMS? 0f: (float)(Done ? 1f : (_currentMS- _delayMS) / _totalMS);
+                return _currentPercent = _currentMS < _delayMS? 0f: (float)(Done ? 1f : (_currentMS- _delayMS) / _totalMS);
             }
             else
                 return _currentPercent;
