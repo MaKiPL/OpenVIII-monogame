@@ -11,6 +11,7 @@ namespace OpenVIII
         private Color newattack;
 
         private Color rc;
+        private Color rcdim;
 
         #endregion Fields
 
@@ -21,6 +22,7 @@ namespace OpenVIII
             Texture2D pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
             pixel.SetData(new Color[] { Color.White });
 
+            Memory.Icons[Icons.ID.Text_Cursor][0].Offset = Vector2.Zero;
             Memory.Icons.Trim(Icons.ID.Text_Cursor, 6);
             EntryGroup split = Memory.Icons[Icons.ID.Text_Cursor];
             EntryGroup e = Memory.Icons[Icons.ID.Text_Cursor];
@@ -32,26 +34,84 @@ namespace OpenVIII
             r.Width += r.Width % 4;
             r.Height += r.Height % 4;
             rc = Memory.Icons.MostSaturated(Icons.ID.Text_Cursor, 6);
-            ITEM[0, 0] = new IGMDataItem_Texture(pixel, r, rc);
+            rcdim = Memory.Icons.MostSaturated(Icons.ID.Text_Cursor, 2);
+            ITEM[0, 0] = new IGMDataItem_Texture(pixel, r, rcdim);
             r.Inflate(-4, -4);
             ITEM[1, 0] = new IGMDataItem_Texture(pixel, r, Color.Black);
-            int w = (int)(e.Width * ((float)r.Height / e.Height));
-            ITEM[Count - 2, 0] = new IGMDataItem_Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 80, r.Y, w, r.Height), 6, scale: new Vector2(((float)r.Height / e.Height)));
-            ITEM[Count - 1, 0] = new IGMDataItem_Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 208, r.Y, w, r.Height), 6, scale: new Vector2(((float)r.Height / e.Height)));
+            float scale = (float)r.Height / e.Height;
+            int w = (int)(e.Width * scale);
+            ITEM[Count - 3, 0] = new IGMDataItem_Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 80, r.Y, w, r.Height), 2, scale: new Vector2(scale));
+            ITEM[Count - 2, 0] = new IGMDataItem_Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 208, r.Y, w, r.Height), 2, scale: new Vector2(scale));
+            Rectangle hotspot = new Rectangle(r.X + 80 + (w / 2), r.Y, 208 - 80, r.Height);
+            Rectangle hotspotbox = hotspot;
+            hotspot.Width += (int)(hotspot.Width * .50f);
+            var tr = new Rectangle(r.X + 208+(w/2),r.Y+4,0,r.Height-8);
+
+            Memory.Icons[Icons.ID.Trigger_][0].Offset = Vector2.Zero;
+            Memory.Icons.Trim(Icons.ID.Trigger_, 2);
+            e = Memory.Icons[Icons.ID.Trigger_];
+            scale = ((float)r.Height - 8) / e.Height;
+            w = (int)(e.Width * scale);
+            tr.X += ((r.Right-tr.Left)/2-w/2);
+
+            ITEM[Count - 1, 0] = new IGMDataItem_Icon(Icons.ID.Trigger_, tr, 6, scale: new Vector2(scale));// { Color = rc};
+
             newattack = new Color(104, 80, 255);
-            ITEM[2, 0] = new IGMDataItem_Renzokeken_Gradient(new Rectangle(r.X, r.Y + 4, 0, r.Height - 8), newattack, rc, 1f, new Rectangle(r.X + 80 + (w / 2), r.Y, 208 - 80, r.Height), r, time: 5000);
+            int x = 0;
+            int delay = 500;
+            const int Time = 2000;
+            Rectangle pos = new Rectangle(r.X, r.Y + 4, 0, r.Height - 8);
             r.Inflate(-4, -4);
-            ((IGMDataItem_Renzokeken_Gradient)ITEM[2, 0]).Restriction = r;
+            ITEM[2 + x, 0] = new IGMDataItem_Renzokeken_Gradient(pos, newattack, rc, 1f, hotspot, r, time: Time, delay * (x++));
+            ITEM[2 + x, 0] = new IGMDataItem_Renzokeken_Gradient(pos, newattack, rc, 1f, hotspot, r, time: Time, delay * (x++));
+            ITEM[2 + x, 0] = new IGMDataItem_Renzokeken_Gradient(pos, newattack, rc, 1f, hotspot, r, time: Time, delay * (x++));
+            ITEM[2 + x, 0] = new IGMDataItem_Renzokeken_Gradient(pos, newattack, rc, 1f, hotspot, r, time: Time, delay * (x++));
+            ITEM[2 + x, 0] = new IGMDataItem_Renzokeken_Gradient(pos, newattack, rc, 1f, hotspot, r, time: Time, delay * (x++));
             Reset();
             base.Init();
             Show();
         }
-
+        public override bool Update()
+        {
+            bool done = false;
+            bool hot = false;
+            foreach(var i in ITEM)
+            {
+                if(i?.GetType() == typeof(IGMDataItem_Renzokeken_Gradient))
+                {
+                    done = !((IGMDataItem_Renzokeken_Gradient)i).Done || done;
+                    hot = ((IGMDataItem_Renzokeken_Gradient)i).Trigger || hot;
+                }
+            }
+            if(!done)
+                foreach (var i in ITEM)
+                {
+                    if (i?.GetType() == typeof(IGMDataItem_Renzokeken_Gradient))
+                    {
+                       ((IGMDataItem_Renzokeken_Gradient)i).Restart();
+                    }
+                }
+            if (hot)
+            {
+                ((IGMDataItem_Icon)ITEM[Count - 3, 0]).Palette = 6;
+                ((IGMDataItem_Icon)ITEM[Count - 2, 0]).Palette = 6;
+                ((IGMDataItem_Texture)ITEM[0, 0]).Color = rc;
+                ITEM[Count - 1, 0].Show();
+            }
+            else
+            {
+                ((IGMDataItem_Icon)ITEM[Count - 3, 0]).Palette = 2;
+                ((IGMDataItem_Icon)ITEM[Count - 2, 0]).Palette = 2;
+                ((IGMDataItem_Texture)ITEM[0, 0]).Color = rcdim;
+                ITEM[Count - 1, 0].Hide();
+            }
+            return base.Update();
+        }
         #endregion Methods
 
         #region Constructors
 
-        public IGMData_Renzokeken() : base(5, 1, new IGMDataItem_Box(pos: new Rectangle(24, 501, 912, 123), title: Icons.ID.SPECIAL), 0, 0, Characters.Squall_Leonhart)
+        public IGMData_Renzokeken(Rectangle? pos = null) : base(12, 1, new IGMDataItem_Box(pos: pos ?? new Rectangle(24, 501, 912, 123), title: Icons.ID.SPECIAL), 0, 0, Characters.Squall_Leonhart)
         {
         }
 
@@ -112,6 +172,12 @@ namespace OpenVIII
         #endregion Properties
 
         #region Methods
+        public void Restart()
+        {
+            Show();
+            Color = Color_default;
+            HitSlide.Restart();
+        }
 
         public override bool Update()
         {
@@ -125,9 +191,8 @@ namespace OpenVIII
             else
             {
                 Trigger = false;
-                Color = Color_default;
             }
-            if (HitSlide.Done) HitSlide.Restart();
+            //if (HitSlide.Done) HitSlide.Restart();
 
             return base.Update();
         }

@@ -67,10 +67,10 @@ namespace OpenVIII
         protected override void Init()
         {
             NoInputOnUpdate = true;
-            Size = new Vector2 { X = 881, Y = 636 };
+            Size = new Vector2 { X = 880, Y = 636 };
             Data.Add(SectionName.HP, new IGMData_HP(new Rectangle((int)(Size.X - 389), 507, 389, 126), Character, VisableCharacter));
             Data.Add(SectionName.Commands, new IGMData_Commands(new Rectangle(50, (int)(Size.Y - 204), 210, 192), Character, VisableCharacter, true));
-            Data.Add(SectionName.Renzokeken, new IGMData_Renzokeken());
+            Data.Add(SectionName.Renzokeken, new IGMData_Renzokeken(new Rectangle(0, 500, (int)Size.X, 124)));
             Data.ForEach(x => x.Value.SetModeChangeEvent(ref ModeChangeHandler));
             SetMode(Mode.ATB_Charging);
             base.Init();
