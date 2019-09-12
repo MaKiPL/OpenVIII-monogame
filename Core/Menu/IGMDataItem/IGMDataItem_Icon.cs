@@ -27,7 +27,7 @@ namespace OpenVIII
 
         public override bool Blink
         {
-            get => base.Blink && (Faded_Palette != Palette); set => base.Blink = value;
+            get => base.Blink; set => base.Blink = value;
         }
 
         public Icons.ID Data { get; set; }
@@ -49,6 +49,7 @@ namespace OpenVIII
             }
         }
 
+
         #endregion Properties
 
         #region Methods
@@ -57,9 +58,20 @@ namespace OpenVIII
         {
             if (Enabled)
             {
-                Memory.Icons.Draw(Data, Palette, Pos, Scale, Fade);
-                if (Blink)
-                    Memory.Icons.Draw(Data, Faded_Palette, Pos, Scale, Fade * Blink_Amount * Blink_Adjustment);
+                if (!Blink)
+                    Memory.Icons.Draw(Data, Palette, Pos, Scale, Fade, Color);
+                else
+                {
+                    if (Faded_Palette != Palette)
+                    {
+                        Memory.Icons.Draw(Data, Palette, Pos, Scale, Fade, Color);
+                        Memory.Icons.Draw(Data, Faded_Palette, Pos, Scale, Fade * Blink_Amount * Blink_Adjustment, Color);
+                    }
+                    else
+                    {
+                        Memory.Icons.Draw(Data, Faded_Palette, Pos, Scale, Fade * Blink_Adjustment, Color.Lerp(Color,Faded_Color,Blink_Amount));
+                    }
+                }
             }
         }
 

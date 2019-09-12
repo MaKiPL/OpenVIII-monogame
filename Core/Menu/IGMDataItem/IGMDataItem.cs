@@ -58,6 +58,7 @@ namespace OpenVIII
         public virtual bool Blink { get => _blink; set => _blink = value; }
         public float Blink_Adjustment { get; set; }
         public Color Color { get; set; } = Color.White;
+        public Color Faded_Color { get; set; } = Color.White;
         public int Height { get => _pos.Height; set => _pos.Height = value; }
         /// <summary>
         /// Where to draw this item.
