@@ -142,7 +142,7 @@ namespace OpenVIII
         public Color MostSaturated(Enum ic, byte pal)
         {
             EntryGroup eg = this[(ID)ic];
-            return eg.MostSaturated(Textures[pal]);
+            return eg.MostSaturated(Textures[pal],pal);
         }
 
         protected override void InitEntries(ArchiveWorker aw = null)
