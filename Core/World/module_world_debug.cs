@@ -567,6 +567,7 @@ namespace OpenVIII
         {
             segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1); //needs to be updated on pre-new values of movement
             int realSegmentId = GetRealSegmentId();
+            realSegmentId = SetInterchangeableZone(realSegmentId, true);
             var seg = segments[realSegmentId];
             RaycastedTris = new List<Tuple<ParsedTriangleData, Vector3, bool>>();
             Ray characterRay = new Ray(playerPosition + new Vector3(0, 10f, 0), Vector3.Down); //sets ray origin
@@ -581,7 +582,9 @@ namespace OpenVIII
 
             //don't allow walking over non-walkable faces - just because we tested both rays we can make this linq appear only once
             if (!bDebugDisableCollision)
-                RaycastedTris = RaycastedTris.Where(x => (x.Item1.parentPolygon.vertFlags & TRIFLAGS_COLLIDE) != 0).ToList();
+                RaycastedTris = RaycastedTris.Where(x => (x.Item1.parentPolygon.vertFlags & TRIFLAGS_COLLIDE) != 0 && x.Item2 != Vector3.Zero).ToList();
+
+            
 
 #if DEBUG
             countofDebugFaces = new Vector2(
@@ -1262,9 +1265,10 @@ namespace OpenVIII
         /// <summary>
         /// This method changes zone i index to show segment that has to be drawn based on actual worldmap save state
         /// </summary>
-        /// <param name="_i"></param>
+        /// <param name="_i">index of current wmx segment</param>
+        /// <param name="bfixCollision">use only with collision- due to inverted Balamb there's collision issue</param>
         /// <returns></returns>
-        private static int SetInterchangeableZone(int _i)
+        private static int SetInterchangeableZone(int _i, bool bfixCollision = false)
         {
             //if(true) means unreversed world flags
             switch((interZone)_i)
@@ -1279,10 +1283,10 @@ namespace OpenVIII
 
                 case interZone.balambGardenE_mobile:
                     if (true)
-                        return (int)interZone.balambGardenE_static;
+                        return (int)interZone.balambGardenE_static + (bfixCollision ? -1 : 0);
                 case interZone.balambGardenW_mobile:
                     if (true)
-                        return (int)interZone.balambGardenW_static;
+                        return (int)interZone.balambGardenW_static + (bfixCollision ? 1 : 0);
 
                 case interZone.galbadiaGarden_mobile:
                     if (true)
