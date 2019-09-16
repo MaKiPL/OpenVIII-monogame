@@ -353,44 +353,49 @@ namespace OpenVIII
             if (i < 768)
                 return i;
 
-            if (i >= 768 && i <= 775)
-                return 373 + (i - 768);
-            if (i >= 776 && i <= 783)
-                return 347 + (i - 776);
-            if (i >= 784 && i <= 791)
-                return 347 + (i - 784);
-            if (i >= 792 && i <= 799)
-                return 469 + (i - 792);
+            if (i == (int)interZone.prisonNormal) //correct
+                return (int)interZone.prisonGround;
 
-            if (i >= 800 && i <= 807)
-                return 501 + (i - 800);
+            if (i == (int)interZone.missileBaseNormal)
+                return (int)interZone.missileBaseDestroyed;
 
-            if (i >= 808 && i <= 815)
-                return 533 + (i - 808);
+            if (i == (int)interZone.balambGardenE_static) //correct;
+                return (int)interZone.balambGardenE_mobile+1;
+            if (i == (int)interZone.balambGardenW_static)
+                return (int)interZone.balambGardenW_mobile-1;
 
-            if (i >= 816 && i <= 823)
-                return 565 + (i - 816);
+            if (i == (int)interZone.galbadiaGarden_static)
+                return (int)interZone.galbadiaGarden_mobile;
 
-            if (i >= 824 && i <= 825)
-                return 149 + (i - 824);
+            if (i == (int)interZone.trabiaGardenE_state0)
+                return (int)interZone.trabiaGardenE_state1;
+            if (i == (int)interZone.trabiaGardenW_state0)
+                return (int)interZone.trabiaGardenW_state1;
 
-            if (i == 826)
-                return 267;
+            if (i == (int)interZone.lunarCryCraterE_state0)
+                return (int)interZone.lunarCryCraterE_state1;
+            if (i == (int)interZone.lunarCryCraterW_state0)
+                return (int)interZone.lunarCryCraterW_state1;
 
-            if (i == 827) return 274;
-            if (i == 828) return 275;
+            if (i == (int)interZone.lunarCryCreaterN_state0)
+                return (int)interZone.lunarCryCraterN_state1;
+            if (i == (int)interZone.lunarCryCraterS_state0)
+                return (int)interZone.lunarCryCraterS_state1;
 
-            if (i >= 829)
-                return 327;
-
-            if (i >= 830 && i <= 831)
-                return 214 + (i - 830);
-
-            if (i >= 832 && i <= 834)
-                return 246 + (i - 832);
-
-            if (i >= 834 && i <= 835)
-                return 361 + (i - 834);
+            if (Extended.In(i, 768, 775))
+                return i - 395;
+            if (Extended.In(i, 776, 783))
+                return i - 371;
+            if (Extended.In(i, 784, 791))
+                return i - 347;
+            if (Extended.In(i, 792, 799))
+                return i - 323;
+            if (Extended.In(i, 800, 807))
+                return i - 299;
+            if (Extended.In(i, 808, 815))
+                return i - 275;
+            if (Extended.In(i, 816, 823))
+                return i - 251;
 
             return 0;
         }
@@ -705,7 +710,7 @@ namespace OpenVIII
                 $"World map MapState: {MapState}\n" +
                 $"World Map Camera: ={camPosition}\n" +
                 $"Player position: ={playerPosition}\n" +
-                $"Segment Position: ={segmentPosition}\n" +
+                $"Segment Position: ={segmentPosition} ({segmentPosition.Y*32+segmentPosition.X})\n" +
                 $"Press 8 to enable/disable collision: {bDebugDisableCollision}\n" +
                 $"selWalk: =0b{Convert.ToString(bSelectedWalkable,2).PadLeft(8, '0')} of charaRay={countofDebugFaces.X}, skyRay={countofDebugFaces.Y}\n" +
                 $"selWalk2: {(activeCollidePolygon.HasValue ? activeCollidePolygon.Value.ToString() : "N/A")}\n" +
@@ -1176,53 +1181,7 @@ namespace OpenVIII
                 }
             }
 
-            #region Interchangable zones
-
-            //TODO flags to switch them true or not
-            //esthar
-            if (Extended.In(_i, 373, 380))
-                _i += 395;
-            if (Extended.In(_i, 405, 412))
-                _i += 371;
-            if (Extended.In(_i, 437, 444))
-                _i += 347;
-            if (Extended.In(_i, 469, 476))
-                _i += 323;
-            if (Extended.In(_i, 501, 508))
-                _i += 299;
-            if (Extended.In(_i, 533, 540))
-                _i += 275;
-            if (Extended.In(_i, 565, 572))
-                _i += 251;
-
-            //trabia
-            if (Extended.In(_i, 149, 150))
-                _i += 675;
-
-            //galbadia
-            if (Extended.In(_i, 267, 267))
-                _i = 826;
-
-            ////balamb
-            if (Extended.In(_i, 274, 275))
-                _i += 553;
-
-            ////base
-            if (Extended.In(_i, 327, 327))
-                _i += 502;
-
-            ////trabia
-            if (Extended.In(_i, 214, 215))
-                _i += 616;
-            if (Extended.In(_i, 246, 247))
-                _i += 586;
-
-            ////prison
-            if (Extended.In(_i, 361, 361))
-
-                _i += 473;
-
-            #endregion Interchangable zones
+            _i = SetInterchangeableZone(_i);
 
             Segment seg = segments[_i];
             for (int k = 0; k < seg.parsedTriangle.Length; k++)
@@ -1248,7 +1207,7 @@ namespace OpenVIII
                 else if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_WATER))
                     DrawWaterAndAnimatedFaces(seg, k, vpc, poly);
                 else
-                    ate.Texture = (Texture2D)texl.GetTexture(poly.TPage, poly.Clut); //there are two texs, worth looking at other parameters; to reverse!
+                    ate.Texture = (Texture2D)texl.GetTexture(poly.TPage, poly.Clut);
                 foreach (EffectPass pass in ate.CurrentTechnique.Passes)
                 {
                     pass.Apply();
@@ -1266,6 +1225,115 @@ namespace OpenVIII
                 //    Memory.graphics.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
                 //}
             }
+        }
+
+        enum interZone : int
+        {
+            prisonNormal = 834,
+            prisonGround = 361,
+
+            missileBaseNormal = 829,
+            missileBaseDestroyed = 327,
+
+            balambGardenW_static = 827,
+            balambGardenE_static = 828,
+            balambGardenE_mobile = 274,
+            balambGardenW_mobile = 275,
+
+            galbadiaGarden_static = 826,
+            galbadiaGarden_mobile = 267,
+
+            trabiaGardenE_state0 = 824,
+            trabiaGardenW_state0 = 825,
+            trabiaGardenE_state1 = 149,
+            trabiaGardenW_state1 = 150,
+
+            lunarCryCraterE_state0 = 830,
+            lunarCryCraterW_state0 = 831,
+            lunarCryCraterE_state1 = 214,
+            lunarCryCraterW_state1 = 215,
+
+            lunarCryCraterN_state1 = 246,
+            lunarCryCraterS_state1 = 247,
+            lunarCryCreaterN_state0 = 832,
+            lunarCryCraterS_state0 = 833
+        };
+
+        /// <summary>
+        /// This method changes zone i index to show segment that has to be drawn based on actual worldmap save state
+        /// </summary>
+        /// <param name="_i"></param>
+        /// <returns></returns>
+        private static int SetInterchangeableZone(int _i)
+        {
+            //if(true) means unreversed world flags
+            switch((interZone)_i)
+            {
+                case interZone.prisonGround:
+                    if (true)
+                        return (int)interZone.prisonNormal;
+
+                case interZone.missileBaseDestroyed:
+                    if (true)
+                        return (int)interZone.missileBaseNormal;
+
+                case interZone.balambGardenE_mobile:
+                    if (true)
+                        return (int)interZone.balambGardenE_static;
+                case interZone.balambGardenW_mobile:
+                    if (true)
+                        return (int)interZone.balambGardenW_static;
+
+                case interZone.galbadiaGarden_mobile:
+                    if (true)
+                        return (int)interZone.galbadiaGarden_static;
+
+                case interZone.trabiaGardenE_state1:
+                    if (true)
+                        return (int)interZone.trabiaGardenE_state0;
+                case interZone.trabiaGardenW_state1:
+                    if (true)
+                        return (int)interZone.trabiaGardenW_state0;
+
+                case interZone.lunarCryCraterE_state1:
+                    if (true)
+                        return (int)interZone.lunarCryCraterE_state0;
+                case interZone.lunarCryCraterW_state1:
+                    if (true)
+                        return (int)interZone.lunarCryCraterW_state0;
+
+                case interZone.lunarCryCraterN_state1:
+                    if (true)
+                        return (int)interZone.lunarCryCreaterN_state0;
+                case interZone.lunarCryCraterS_state1:
+                    if (true)
+                        return (int)interZone.lunarCryCraterS_state0;
+
+                default:
+                    return setEstharZones(_i);
+            }
+        }
+
+        private static int setEstharZones(int i)
+        {
+            if (true) // esthar replace flag
+            {
+                if (Extended.In(i, 373, 380))
+                    return i + 395;
+                if (Extended.In(i, 405, 412))
+                    return i + 371;
+                if (Extended.In(i, 437, 444))
+                    return i + 347;
+                if (Extended.In(i, 469, 476))
+                    return i + 323;
+                if (Extended.In(i, 501, 508))
+                    return i + 299;
+                if (Extended.In(i, 533, 540))
+                    return i + 275;
+                if (Extended.In(i, 565, 572))
+                    return i + 251;
+            }
+            return i; //compiler sake
         }
 
         private static void DrawWaterAndAnimatedFaces(Segment seg, int k, VertexPositionTexture[] vpc, Polygon poly)
