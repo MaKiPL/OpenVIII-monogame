@@ -17,9 +17,9 @@ namespace OpenVIII
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
         private static float degrees;
         private static float camDistance = 10.0f;
-        private static readonly float renderCamDistance = 1200.0f;
+        private static readonly float renderCamDistance = 800.0f;
         private static Vector3 camPosition, camTarget;
-        private static Vector3 playerPosition = new Vector3(-9105f, 30f, -4466);
+        private static Vector3 playerPosition = new Vector3(-16260f, 0f, -100); // new Vector3(-9105f, 30f, -4466);
         private static Vector3 lastPlayerPosition = playerPosition;
         public static BasicEffect effect;
         public static AlphaTestEffect ate;
@@ -42,7 +42,6 @@ namespace OpenVIII
         //DEBUG
         private const float WORLD_SCALE_MODEL = 16f;
 
-        private static readonly int renderDistance = 4;
         private static readonly float FOV = 60;
 
         public static Vector2 segmentPosition;
@@ -558,6 +557,7 @@ namespace OpenVIII
         private static Polygon? activeCollidePolygon = null;
 
         public static int GetRealSegmentId() => (int)(segmentPosition.Y * 32 + segmentPosition.X); //explicit public for wmset and warping sections
+        public static int GetRealSegmentId(float x, float y) => (int)((y<0 ? 24+y:y) * 32 + (x<0 ? 32+x : x)); //explicit public for wmset and warping sections
 
         /// <summary>
         /// This method checks for collision- uses raycasting and 3Dintersection to either allow movement, update it and/or warp player. If all checks fails it returns to last known correct player position
@@ -567,7 +567,7 @@ namespace OpenVIII
         {
             segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1); //needs to be updated on pre-new values of movement
             int realSegmentId = GetRealSegmentId();
-            realSegmentId = SetInterchangeableZone(realSegmentId, true);
+            realSegmentId = SetInterchangeableZone(realSegmentId);
             var seg = segments[realSegmentId];
             RaycastedTris = new List<Tuple<ParsedTriangleData, Vector3, bool>>();
             Ray characterRay = new Ray(playerPosition + new Vector3(0, 10f, 0), Vector3.Down); //sets ray origin
@@ -653,7 +653,10 @@ namespace OpenVIII
                 degrees--;
             if (Input2.Button(FF8TextTagKey.Right))
                 degrees++;
-            degrees = degrees % 360;
+            if (degrees < 0)
+                degrees = 359;
+            if (degrees > 359)
+                degrees = 0;
             camTarget = playerPosition;
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          Vector3.Up);
@@ -678,10 +681,47 @@ namespace OpenVIII
             ate.World = worldMatrix;
 
             segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1);
-            for (int i = 0; i < 768; i++)
-                DrawSegment(i);
 
-            WrapWaterSegments();
+            //let's get segments ids for cube 
+            /*
+             * SEG0 SEG1 SEG2
+             * SEG3 CURR SEG5
+             * SEG6 SEG7 SEG8 */
+
+            DrawSegment(-1, -1); //SEG0 
+            DrawSegment(0, -1); //SEG1
+            DrawSegment(1, -1); //SEG2
+            DrawSegment(-1, 0); //SEG3
+            DrawSegment(0,0); //draws current walkable segment
+            DrawSegment(+1, 0); //SEG5
+            DrawSegment(-1, +1); //SEG6
+            DrawSegment(0, +1); //SEG7
+            DrawSegment(+1, +1); //SEG8
+
+            if (degrees < 90 || degrees > 270)
+            {
+                DrawSegment(-2, 0);
+                DrawSegment(-2, 1);
+                DrawSegment(-2, -1);
+            }
+            if (degrees < 360 && degrees > 180)
+            {
+                DrawSegment(0, 2);
+                DrawSegment(-1, 2);
+                DrawSegment(1, 2);
+            }
+            if (degrees < 180 && degrees > 0)
+            {
+                DrawSegment(0, -2);
+                DrawSegment(-1, -2);
+                DrawSegment(+1, -2);
+            }
+            if (degrees < 270 || degrees > 90)
+            {
+                DrawSegment(2, 0);
+                DrawSegment(2, 1);
+                DrawSegment(2, -1);
+            }
 
             TeleportPlayerWarp();
 
@@ -713,9 +753,9 @@ namespace OpenVIII
                 $"World map MapState: {MapState}\n" +
                 $"World Map Camera: ={camPosition}\n" +
                 $"Player position: ={playerPosition}\n" +
-                $"Segment Position: ={segmentPosition} ({segmentPosition.Y*32+segmentPosition.X})\n" +
+                $"Segment Position: ={segmentPosition} ({GetSegmentVectorPlayerPosition()})\n" +
                 $"Press 8 to enable/disable collision: {bDebugDisableCollision}\n" +
-                $"selWalk: =0b{Convert.ToString(bSelectedWalkable,2).PadLeft(8, '0')} of charaRay={countofDebugFaces.X}, skyRay={countofDebugFaces.Y}\n" +
+                $"selWalk: =0b{Convert.ToString(bSelectedWalkable, 2).PadLeft(8, '0')} of charaRay={countofDebugFaces.X}, skyRay={countofDebugFaces.Y}\n" +
                 $"selWalk2: {(activeCollidePolygon.HasValue ? activeCollidePolygon.Value.ToString() : "N/A")}\n" +
                 $"debugshit= {DEBUGshit}\n" +
                 $"Press 9 to enable debug FPS camera: ={(worldState == _worldState._1active ? "orbit camera" : "FPS debug camera")}\n" +
@@ -723,6 +763,8 @@ namespace OpenVIII
                 $"FOV: ={FOV}", 30, 20, 1f, 2f, lineSpacing: 5);
             Memory.SpriteBatchEnd();
         }
+
+        private static float GetSegmentVectorPlayerPosition() => segmentPosition.Y * 32 + segmentPosition.X;
 
         /// <summary>
         /// Takes care of drawing shadows and additional FX when needed (like in forest).
@@ -962,96 +1004,6 @@ namespace OpenVIII
         }
 
         /// <summary>
-        /// Creates the effect of infinity by creating additional water blocks out-of playable zone
-        /// </summary>
-        private static void WrapWaterSegments()
-        {
-            //top water wrap
-            if (segmentPosition.Y < 2)
-            {
-                float baseXseg = 512f * (segmentPosition.X % 32);
-
-                DrawSegment(0, -baseXseg, 512f, true);
-                DrawSegment(0, -baseXseg, 1024f, true);
-
-                DrawSegment(0, -baseXseg - 512f, 512f, true);
-                DrawSegment(0, -baseXseg - 512f, 1024f, true);
-
-                DrawSegment(0, -baseXseg - 1024f, 512f, true);
-                DrawSegment(0, -baseXseg - 1024f, 1024f, true);
-
-                DrawSegment(0, -baseXseg + 512f, 512f, true);
-                DrawSegment(0, -baseXseg + 512f, 1024f, true);
-
-                DrawSegment(0, -baseXseg + 1024f, 512f, true);
-                DrawSegment(0, -baseXseg + 1024f, 1024f, true);
-            }
-
-            //left water wrap
-            if (segmentPosition.X < 2)
-            {
-                float baseYseg = -512f * (segmentPosition.Y % 24);
-
-                DrawSegment(0, 512f, baseYseg, true);
-                DrawSegment(0, 1024f, baseYseg, true);
-
-                DrawSegment(0, 512f, baseYseg - 512f, true);
-                DrawSegment(0, 1024f, baseYseg - 512f, true);
-
-                DrawSegment(0, 512f, baseYseg - 1024f, true);
-                DrawSegment(0, 1024f, baseYseg - 1024, true);
-
-                DrawSegment(0, 512f, baseYseg + 512f, true);
-                DrawSegment(0, 1024f, baseYseg + 512f, true);
-
-                DrawSegment(0, 512f, baseYseg + 1024f, true);
-                DrawSegment(0, 1024f, baseYseg + 1024, true);
-            }
-
-            //bottom water wrap
-            if (segmentPosition.Y > 21)
-            {
-                float baseXseg = 512f * (segmentPosition.X % 32);
-
-                DrawSegment(0, -baseXseg, -12288f, true);
-                DrawSegment(0, -baseXseg, -12800f, true);
-
-                DrawSegment(0, -baseXseg - 512f, -12288f, true);
-                DrawSegment(0, -baseXseg - 512f, -12800f, true);
-
-                DrawSegment(0, -baseXseg - 1024f, -12288f, true);
-                DrawSegment(0, -baseXseg - 1024f, -12800f, true);
-
-                DrawSegment(0, -baseXseg + 512f, -12288f, true);
-                DrawSegment(0, -baseXseg + 512f, -12800f, true);
-
-                DrawSegment(0, -baseXseg + 1024f, -12288f, true);
-                DrawSegment(0, -baseXseg + 1024f, -12800f, true);
-            }
-
-            //right water wrap
-            if (segmentPosition.X > 29)
-            {
-                float baseYseg = -512f * (segmentPosition.Y % 24);
-
-                DrawSegment(0, -16384f, baseYseg, true);
-                DrawSegment(0, -16896f, baseYseg, true);
-
-                DrawSegment(0, -16384f, baseYseg - 512f, true);
-                DrawSegment(0, -16896f, baseYseg - 512f, true);
-
-                DrawSegment(0, -16384f, baseYseg - 1024f, true);
-                DrawSegment(0, -16896f, baseYseg - 1024, true);
-
-                DrawSegment(0, -16384f, baseYseg + 512f, true);
-                DrawSegment(0, -16896f, baseYseg + 512f, true);
-
-                DrawSegment(0, -16384f, baseYseg + 1024f, true);
-                DrawSegment(0, -16896f, baseYseg + 1024, true);
-            }
-        }
-
-        /// <summary>
         /// [WIP] Draws clouds in the background
         /// </summary>
         private static void DrawBackgroundClouds()
@@ -1119,90 +1071,57 @@ namespace OpenVIII
             //Memory.SpriteBatchEnd();
         }
 
-        /// <summary>
-        /// Determines either to draw the segment or ignore. Example of ignore case is when the
-        /// distance is bigger than X
-        /// </summary>
-        /// <param name="baseX"></param>
-        /// <param name="baseY"></param>
-        /// <param name="seg"></param>
-        /// <returns></returns>
-        private static bool ShouldDrawSegment(float baseX, float baseY, int seg)
+        private static void DrawSegment(int xTranslation, int yTranslation)
         {
-            int ySegment = seg / 32; //2
-            int xSegment = seg - ySegment * 32;
-            Vector2 currentSegment = new Vector2(xSegment, ySegment);
-
-            for (int i = -1 - renderDistance; i < renderDistance; i++)
-                for (int k = 0 - renderDistance; k < renderDistance; k++)
-                    if (segmentPosition + new Vector2(i, k) == currentSegment)
-                        return true;
-
-            return false;
-        }
-
-        private static void DrawSegment(int _i, float? baseXf = null, float? baseYf = null, bool bIsWrapSegment = false)
-        {
-            float baseX = 0f, baseY = 0f;
-            if (baseXf == null || baseYf == null)
-            {
-                baseX = 512f * (_i % 32);
-                baseY = -512f * (_i / 32); //explicit int cast
-            }
-            else
-            {
-                baseX = (float)baseXf; //31
-                baseY = (float)baseYf; //23
-            }
-            if (!bIsWrapSegment)
-                if (!ShouldDrawSegment(baseX, baseY, _i))
-                    return;
-
             effect.TextureEnabled = true;
-
-            if (bIsWrapSegment)
-            {
-                Segment waterSeg = segments[0]; //get water segment
-                for (int k = 0; k < waterSeg.parsedTriangle.Length; k += 3)
-                {
-                    VertexPositionTexture[] vpc = new VertexPositionTexture[3];
-                    vpc[0] = new VertexPositionTexture(
-                        waterSeg.parsedTriangle[k].A + new Vector3(baseX, 0, baseY),
-                        waterSeg.parsedTriangle[k].uvA);
-                    vpc[1] = new VertexPositionTexture(
-                        waterSeg.parsedTriangle[k].B + new Vector3(baseX, 0, baseY),
-                        waterSeg.parsedTriangle[k].uvB);
-                    vpc[2] = new VertexPositionTexture(
-                        waterSeg.parsedTriangle[k].C + new Vector3(baseX, 0, baseY),
-                        waterSeg.parsedTriangle[k].uvC);
-                    ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0);
-                    foreach (EffectPass pass in ate.CurrentTechnique.Passes)
-                    {
-                        pass.Apply();
-                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpc, 0, 1);
-                    }
-                }
-            }
+            int _i = GetRealSegmentId((segmentPosition.X + xTranslation) % 32, (segmentPosition.Y + yTranslation) % 24);
 
             _i = SetInterchangeableZone(_i);
 
             Segment seg = segments[_i];
+            Vector3 translationVector = Vector3.Zero;
+            Vector2 playerSegmentVector = segmentPosition;
+
+            if(playerSegmentVector.X+xTranslation < 0)
+                translationVector = new Vector3(32 * 512, 0, 0); //LEFT
+            if (playerSegmentVector.Y + yTranslation < 0)
+                translationVector = new Vector3(0,0,24 * 512); //UP
+
+            if (playerSegmentVector.X + xTranslation > 31)
+                translationVector = new Vector3(32 * -512, 0, 0); //RIGHT
+            if (playerSegmentVector.Y + yTranslation > 23)
+                translationVector = new Vector3(0, 0, 24 * -512); //BOTTOM
+
+            if(playerSegmentVector.X +xTranslation<0 && playerSegmentVector.Y+yTranslation < 0 && xTranslation<0 && yTranslation <0) //UL diagonal wrap
+                translationVector = new Vector3(32 * 512, 0, 24 * 512);
+            if (playerSegmentVector.X + xTranslation > 31 && playerSegmentVector.Y + yTranslation < 0 && xTranslation > 0 && yTranslation < 0) //UR diagonal wrap
+                translationVector = new Vector3(32 * -512, 0, 24 * 512);
+            if (playerSegmentVector.X + xTranslation > 31 && playerSegmentVector.Y + yTranslation > 23 && xTranslation > 0 && yTranslation > 0) //BR diagonal wrap
+                translationVector = new Vector3(32 * -512, 0, 24 * -512);
+            if (playerSegmentVector.X + xTranslation < 0 && playerSegmentVector.Y + yTranslation > 23 && xTranslation < 0 && yTranslation > 0) //BL diagonal wrap
+                translationVector = new Vector3(32 * 512, 0, 24 * -512);
+
             for (int k = 0; k < seg.parsedTriangle.Length; k++)
             {
-                if (Extended.Distance3D(camPosition, seg.parsedTriangle[k].A) > renderCamDistance)
+                Vector3 firstEdge = seg.parsedTriangle[k].A + translationVector;
+
+                if (Extended.Distance3D(camPosition, firstEdge) > renderCamDistance)
                     continue;
-                if (CheckFrustrumView(seg.parsedTriangle[k].A.X, seg.parsedTriangle[k].A.Z))
+                if (CheckFrustrumView(firstEdge.X, firstEdge.Z))
                     continue;
+
+                Vector3 parsedTriangleB = seg.parsedTriangle[k].B + translationVector;
+                Vector3 parsedTriangleC = seg.parsedTriangle[k].C + translationVector;
 
                 VertexPositionTexture[] vpc = new VertexPositionTexture[3];
                 vpc[0] = new VertexPositionTexture(
-                    seg.parsedTriangle[k].A,
+                    firstEdge,
                     seg.parsedTriangle[k].uvA);
                 vpc[1] = new VertexPositionTexture(
-                    seg.parsedTriangle[k].B,
+                    parsedTriangleB,
                     seg.parsedTriangle[k].uvB);
                 vpc[2] = new VertexPositionTexture(
-                    seg.parsedTriangle[k].C,
+                    parsedTriangleC,
                     seg.parsedTriangle[k].uvC);
                 Polygon poly = seg.parsedTriangle[k].parentPolygon;
                 if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_ROAD))
@@ -1268,7 +1187,7 @@ namespace OpenVIII
         /// <param name="_i">index of current wmx segment</param>
         /// <param name="bfixCollision">use only with collision- due to inverted Balamb there's collision issue</param>
         /// <returns></returns>
-        private static int SetInterchangeableZone(int _i, bool bfixCollision = false)
+        private static int SetInterchangeableZone(int _i)
         {
             //if(true) means unreversed world flags
             switch((interZone)_i)
@@ -1283,10 +1202,10 @@ namespace OpenVIII
 
                 case interZone.balambGardenE_mobile:
                     if (true)
-                        return (int)interZone.balambGardenE_static + (bfixCollision ? -1 : 0);
+                        return (int)interZone.balambGardenE_static -1;
                 case interZone.balambGardenW_mobile:
                     if (true)
-                        return (int)interZone.balambGardenW_static + (bfixCollision ? 1 : 0);
+                        return (int)interZone.balambGardenW_static + 1;
 
                 case interZone.galbadiaGarden_mobile:
                     if (true)
