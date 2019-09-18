@@ -17,9 +17,14 @@ namespace OpenVIII
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
         private static float degrees;
         private static float camDistance = 10.0f;
-        private static readonly float renderCamDistance = 800.0f;
+        private static float renderCamDistance = 960f;
+        /// <summary>
+        /// this is the distance to face when it should be at Y=originalY rising up from 0 from renderCamDistance
+        /// </summary>
+        private static float renderCamDistance_faceRising = 800f;
+        private static readonly float renderCamDistance_faceRisingDistance = renderCamDistance - renderCamDistance_faceRising ;
         private static Vector3 camPosition, camTarget;
-        private static Vector3 playerPosition = new Vector3(-16260f, 0f, -100); // new Vector3(-9105f, 30f, -4466);
+        private static Vector3 playerPosition = new Vector3(-9105f, 30f, -4466);
         private static Vector3 lastPlayerPosition = playerPosition;
         public static BasicEffect effect;
         public static AlphaTestEffect ate;
@@ -1101,17 +1106,39 @@ namespace OpenVIII
             if (playerSegmentVector.X + xTranslation < 0 && playerSegmentVector.Y + yTranslation > 23 && xTranslation < 0 && yTranslation > 0) //BL diagonal wrap
                 translationVector = new Vector3(32 * 512, 0, 24 * -512);
 
+            Dictionary<Texture2D, List<VertexPositionTexture>> groupedPolygons = new Dictionary<Texture2D, List<VertexPositionTexture>>();
+
+
             for (int k = 0; k < seg.parsedTriangle.Length; k++)
             {
                 Vector3 firstEdge = seg.parsedTriangle[k].A + translationVector;
-
-                if (Extended.Distance3D(camPosition, firstEdge) > renderCamDistance)
+                double faceDistance = Extended.Distance3D(playerPosition, firstEdge);
+                if (faceDistance > renderCamDistance) //this face is beyond the rendering zone; ignore whole segment!
                     continue;
                 if (CheckFrustrumView(firstEdge.X, firstEdge.Z))
                     continue;
 
                 Vector3 parsedTriangleB = seg.parsedTriangle[k].B + translationVector;
                 Vector3 parsedTriangleC = seg.parsedTriangle[k].C + translationVector;
+
+
+                //====SPHERE SIMULATION OF OBJECTS 'RISING UP' EFFECT- DISABLED SO FAR BECAUSE THERE ARE GLITCHES===\\
+                if (faceDistance > renderCamDistance - 50f)
+                {
+                    firstEdge.Y = firstEdge.Y - 50f;
+                    parsedTriangleB.Y = parsedTriangleB.Y - 50f;
+                    parsedTriangleC.Y = parsedTriangleC.Y - 50f;
+                }
+                else if (faceDistance > renderCamDistance_faceRising && faceDistance < renderCamDistance - 50f)
+                {
+                    float riseAmount = (float)(renderCamDistance - faceDistance) / (renderCamDistance_faceRisingDistance);
+                    firstEdge.Y = MathHelper.Lerp(firstEdge.Y - 50f, firstEdge.Y, riseAmount);
+                    parsedTriangleB.Y = MathHelper.Lerp(parsedTriangleB.Y - 50f, parsedTriangleB.Y, riseAmount);
+                    parsedTriangleC.Y = MathHelper.Lerp(parsedTriangleC.Y - 50f, parsedTriangleC.Y, riseAmount);
+                }
+                //====SPHERE SIMULATION-SPHERE SIMULATION END=======================================================\\
+
+
 
                 VertexPositionTexture[] vpc = new VertexPositionTexture[3];
                 vpc[0] = new VertexPositionTexture(
@@ -1127,14 +1154,14 @@ namespace OpenVIII
                 if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_ROAD))
                     ate.Texture = wmset.GetRoadsMiscTextures();
                 else if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_WATER))
-                    DrawWaterAndAnimatedFaces(seg, k, vpc, poly);
+                    SetWaterAnimationTexture(seg, k, vpc, poly);
                 else
                     ate.Texture = (Texture2D)texl.GetTexture(poly.TPage, poly.Clut);
-                foreach (EffectPass pass in ate.CurrentTechnique.Passes)
-                {
-                    pass.Apply();
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpc, 0, 1);
-                }
+                if (groupedPolygons.ContainsKey(ate.Texture))
+                    groupedPolygons[ate.Texture].AddRange(vpc);
+                else
+                    groupedPolygons.Add(ate.Texture, new List<VertexPositionTexture>() {vpc[0], vpc[1],vpc[2]});
+                
                 //if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_WATER) && Extended.In(poly.groundtype, 32, 34))
                 //{
                 //    Memory.graphics.GraphicsDevice.BlendState = BlendState.Additive;
@@ -1147,6 +1174,17 @@ namespace OpenVIII
                 //    Memory.graphics.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
                 //}
             }
+            
+            foreach(KeyValuePair<Texture2D, List<VertexPositionTexture>> kvp in groupedPolygons)
+            {
+                ate.Texture = kvp.Key;
+                var vptFinal = kvp.Value.ToArray();
+                foreach (EffectPass pass in ate.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vptFinal, 0, vptFinal.Length/3);
+                }
+            }            
         }
 
         enum interZone : int
@@ -1259,7 +1297,7 @@ namespace OpenVIII
             return i; //compiler sake
         }
 
-        private static void DrawWaterAndAnimatedFaces(Segment seg, int k, VertexPositionTexture[] vpc, Polygon poly)
+        private static void SetWaterAnimationTexture(Segment seg, int k, VertexPositionTexture[] vpc, Polygon poly)
         {
             if (poly.groundtype == 10 || poly.groundtype == 32) //BEACH + flat water
             {
