@@ -13,6 +13,8 @@ namespace OpenVIII
 {
     public class Module_world_debug
     {
+        private static bool bUseCustomShaderTest = false; //enable for testing the shader- mostly learning stuff
+
         private static FPS_Camera fps_camera;
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
         private static float degrees;
@@ -28,6 +30,7 @@ namespace OpenVIII
         private static Vector3 lastPlayerPosition = playerPosition;
         public static BasicEffect effect;
         public static AlphaTestEffect ate;
+        public static Effect worldShaderModel;
 
         private enum _worldState
         {
@@ -216,7 +219,6 @@ namespace OpenVIII
             fps_camera = new FPS_Camera();
             //init renderer
             effect = new BasicEffect(Memory.graphics.GraphicsDevice);
-            effect.EnableDefaultLighting();
             camTarget = new Vector3(0, 0f, 0f);
             camPosition = new Vector3(-9100.781f, 108.0096f, -4438.435f);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
@@ -225,9 +227,17 @@ namespace OpenVIII
                 1f, 1000f);
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          new Vector3(0f, 1f, 0f));// Y up
-            worldMatrix = Matrix.CreateWorld(camTarget, Vector3.
-                          Forward, Vector3.Up);
+            //worldMatrix = Matrix.CreateWorld(camTarget, Vector3.
+            //              Forward, Vector3.Up);
+            worldMatrix = Matrix.CreateTranslation(0, 0, 0);
 
+            if (bUseCustomShaderTest)
+            {
+                worldShaderModel = Memory.content.Load<Effect>("testShader");
+                worldShaderModel.Parameters["World"].SetValue(worldMatrix);
+                worldShaderModel.Parameters["View"].SetValue(viewMatrix);
+                worldShaderModel.Parameters["Projection"].SetValue(projectionMatrix);
+            }
             //temporarily disabling this, because I'm getting more and more tired of this music playing over and over when debugging
             //Memory.musicIndex = 30;
             //init_debugger_Audio.PlayMusic();
@@ -685,6 +695,13 @@ namespace OpenVIII
             ate.View = viewMatrix;
             ate.World = worldMatrix;
 
+            if (bUseCustomShaderTest)
+            {
+                worldShaderModel.Parameters["Projection"].SetValue(ate.Projection);
+                worldShaderModel.Parameters["View"].SetValue(ate.View);
+                worldShaderModel.Parameters["World"].SetValue(ate.World);
+            }
+
             segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1);
 
             //let's get segments ids for cube 
@@ -933,7 +950,7 @@ namespace OpenVIII
         private static float localMchRotation = -90f;
 
         private static Vector2 Scale;
-        private static float beachAnimCounter;
+        
 
         private static void DrawCharacter(worldCharacters charaIndex)
         {
@@ -1178,8 +1195,10 @@ namespace OpenVIII
             foreach(KeyValuePair<Texture2D, List<VertexPositionTexture>> kvp in groupedPolygons)
             {
                 ate.Texture = kvp.Key;
+                if(bUseCustomShaderTest)
+                    worldShaderModel.Parameters["ModelTexture"].SetValue(ate.Texture);
                 var vptFinal = kvp.Value.ToArray();
-                foreach (EffectPass pass in ate.CurrentTechnique.Passes)
+                foreach (EffectPass pass in bUseCustomShaderTest ? worldShaderModel.CurrentTechnique.Passes : ate.CurrentTechnique.Passes)
                 {
                     pass.Apply();
                     Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vptFinal, 0, vptFinal.Length/3);
