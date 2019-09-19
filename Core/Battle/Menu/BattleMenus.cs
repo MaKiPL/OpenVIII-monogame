@@ -97,7 +97,7 @@ namespace OpenVIII
             bool ret = false;
             InputMouse.Mode = MouseLockMode.Screen;
             Memory.IsMouseVisible = true;
-            if (InputFunctions.ContainsKey((Mode)GetMode()))
+            if (InputFunctions?.ContainsKey((Mode)GetMode()) ?? false)
                 ret = InputFunctions[(Mode)GetMode()]() && ret;
             // press 6 to force victory
             if (Input2.DelayedButton(Keys.D6))

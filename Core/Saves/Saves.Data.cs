@@ -266,10 +266,10 @@ namespace OpenVIII
                     int cnt = 0;
                     for (int p = 0; p < 3; p++)
                     {
-                        Characters c = PartyData[p];
+                        Characters c = PartyData?[p] ?? OpenVIII.Characters.Squall_Leonhart;
                         if (c != OpenVIII.Characters.Blank)
                         {
-                            level += Characters[c].Level;
+                            level += Characters?[c].Level ?? 0;
                             cnt++;
                         }
                     }
