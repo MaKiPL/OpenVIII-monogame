@@ -597,7 +597,7 @@ namespace OpenVIII
                 if (buffer[v + textures.pTims[i]] == 0x10)
                 {
                     TIM2 tm = new TIM2(buffer, v + textures.pTims[i]); //broken
-                    textures.textures[i] = TextureHandler.Create($"{fileName}_{i.ToString("D2")}",tm,0);// tm.GetTexture(0);
+                    textures.textures[i] = TextureHandler.Create($"{fileName}_{i/*.ToString("D2")*/}",tm,0);// tm.GetTexture(0);
                 }
                 else
                     Debug.WriteLine($"DEBUG: {this}.{this.id}.{v + textures.pTims[i]} :: Not a tim file!");
