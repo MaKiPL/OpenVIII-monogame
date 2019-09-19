@@ -569,6 +569,15 @@ namespace OpenVIII
             Merge();
             //if (!Modded)
             //    Memory.MainThreadOnlyActions.Enqueue(this.Save);
+            //if(ScaleFactor.X > ScaleFactor.Y && ScaleFactor.X/ScaleFactor.Y == 2f)
+            //{
+            //    var t = new Texture2D(Memory.graphics.GraphicsDevice, (int)(ClassicWidth * ScaleFactor.Y), Height);
+            //    var c = new Color[t.Width * t.Height];
+            //    Textures[0, 0].GetData(0, new Rectangle(0, 0, t.Width, t.Height), c, 0, c.Length);
+            //    t.SetData(c);
+            //    Textures[0, 0] = t;
+            //    Memory.MainThreadOnlyActions.Enqueue(this.Save);
+            //}
         }
 
         #endregion Methods
