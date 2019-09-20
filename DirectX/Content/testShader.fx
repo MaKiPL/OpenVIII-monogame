@@ -3,7 +3,7 @@
   float4x4 Projection;
   texture ModelTexture;
 
-float Transparency = 0.5;
+float Transparency = 1;
   
   sampler2D textureSampler = sampler_state {
     Texture = (ModelTexture);
@@ -16,16 +16,13 @@ float Transparency = 0.5;
 
   struct VertexShaderInput
   {
+        float4 Position : SV_POSITION;
         float4 TexCoord : TEXCOORD0;
-        float4 Position : POSITION0;
-        float4 Normal : NORMAL;
-        float4 Color :COLOR0;
   };
 
   struct VertexShaderOutput
   {
-        float4 Position : POSITION0;
-        float4 Color : COLOR0;
+        float4 Position : SV_POSITION;
         float2 TextureCoordinate : TEXCOORD0;
   };
 
@@ -36,7 +33,6 @@ float Transparency = 0.5;
         float4 viewPosition = mul(worldPosition, View);
 
         output.Position = mul(viewPosition, Projection);
-        output.Color = input.Color;
         output.TextureCoordinate = input.TexCoord;
         return output;
   }
@@ -54,7 +50,7 @@ float Transparency = 0.5;
          pass Pass1
         {
         AlphaBlendEnable = TRUE;
-              VertexShader = compile vs_2_0 VertexShaderFunction();
-              PixelShader = compile ps_2_0 PixelShaderFunction();
+              VertexShader = compile vs_4_0 VertexShaderFunction();
+              PixelShader = compile ps_4_0 PixelShaderFunction();
         }
   }

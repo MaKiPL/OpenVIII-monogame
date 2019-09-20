@@ -26,8 +26,16 @@ namespace OpenVIII
         ICON_TEST = -21,
         CARD_TEST = -22,
     }
+
+
     public static class Memory
     {
+    public enum graphicModes
+    {
+        OpenGL,
+        DirectX
+    };
+        public static graphicModes currentGraphicMode;
         //monogame
         public static GraphicsDeviceManager graphics;
 
