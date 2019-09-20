@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using OpenVIII.Encoding.Tags;
 using System;
+using System.Reflection;
 
 namespace OpenVIII
 {
@@ -13,6 +14,12 @@ namespace OpenVIII
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
+            if (Assembly.GetCallingAssembly().GetName().Name.Contains("DirectX"))
+            {
+                graphics.GraphicsProfile = GraphicsProfile.HiDef;
+                Memory.currentGraphicMode = Memory.graphicModes.DirectX;
+            }
+                else Memory.currentGraphicMode = Memory.graphicModes.OpenGL;
             Content.RootDirectory = "Content";
             graphics.PreferredBackBufferWidth = Memory.PreferredViewportWidth;
             graphics.PreferredBackBufferHeight = Memory.PreferredViewportHeight;

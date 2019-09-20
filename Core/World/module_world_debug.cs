@@ -233,6 +233,7 @@ namespace OpenVIII
 
             if (bUseCustomShaderTest)
             {
+
                 worldShaderModel = Memory.content.Load<Effect>("testShader");
                 worldShaderModel.Parameters["World"].SetValue(worldMatrix);
                 worldShaderModel.Parameters["View"].SetValue(viewMatrix);
@@ -852,9 +853,13 @@ namespace OpenVIII
 
         private static void DrawDebug()
         {
-            DrawDebug_Rays(); //uncomment to enable drawing rays for collision
+            if(Memory.currentGraphicMode != Memory.graphicModes.DirectX) //looks like strict DX shaders can't simply accept SV_POSITION, COLOR0 or something?
+                DrawDebug_Rays(); //uncomment to enable drawing rays for collision
+
             //DrawDebug_VehiclePreview(); //uncomment to enable drawing all vehicles in row
-            //Debug_DrawRailPaths(); //uncomment to enable draw lines showing rail keypoints
+
+            //if(Memory.currentGraphicMode != Memory.graphicModes.DirectX)
+                //Debug_DrawRailPaths(); //uncomment to enable draw lines showing rail keypoints
         }
 
         private static void Debug_DrawRailPaths()
@@ -1331,7 +1336,7 @@ namespace OpenVIII
                     vpc[1].TextureCoordinate = new Vector2((@as.U2 - Ucoorder) / texx.Width, @as.V2 / (float)texx.Height);
                     vpc[2].TextureCoordinate = new Vector2((@as.U3 - Ucoorder) / texx.Width, @as.V3 / (float)texx.Height);
                 }
-
+               
                 if (poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2))
                     ate.Texture = wmset.GetBeachAnimationTextureFrame(animationIdPointer, wmset.BeachAnimations[animationIdPointer].currentAnimationIndex);
                 else if (poly.groundtype == 32)

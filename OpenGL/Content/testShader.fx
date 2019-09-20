@@ -2,6 +2,8 @@
   float4x4 View;
   float4x4 Projection;
   texture ModelTexture;
+
+float Transparency = 0.5;
   
   sampler2D textureSampler = sampler_state {
     Texture = (ModelTexture);
@@ -42,7 +44,7 @@
   float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
   {      
 	float4 textureColor = tex2D(textureSampler, input.TextureCoordinate);
-	textureColor.a = 1;
+	textureColor.a = Transparency;
     return textureColor;
   }
 
@@ -51,7 +53,7 @@
 
          pass Pass1
         {
-
+        AlphaBlendEnable = TRUE;
               VertexShader = compile vs_2_0 VertexShaderFunction();
               PixelShader = compile ps_2_0 PixelShaderFunction();
         }
