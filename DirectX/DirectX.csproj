@@ -135,6 +135,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\testShader.fx" />
     <Content Include="Icon.ico" />
   </ItemGroup>
   <ItemGroup>
