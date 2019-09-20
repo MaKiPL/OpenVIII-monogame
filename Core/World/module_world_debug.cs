@@ -1323,31 +1323,45 @@ namespace OpenVIII
 
         private static void SetWaterAnimationTexture(Segment seg, int k, VertexPositionTexture[] vpc, Polygon poly)
         {
-            if (poly.groundtype == 10 || poly.groundtype == 32) //BEACH + flat water
+            /*
+             *  GP=10 - Beach [ANIMATED]
+                GP=31/CLUT0 - river endflow
+                GP=31/CLUT6 - waterfall [ANIMATED]
+                GP=31/CLUT3 - river [ANIMATED]
+                GP=32 - Thin water- walkable with chocobo
+                GP=33 - transition between thin water to ocean
+                GP=34 - ocean
+                */
+            if (poly.groundtype == 10 || poly.groundtype == 32 || (poly.groundtype == 31 && poly.Clut == 3)) //BEACH + flat water + river flowing down
             {
                 var @as = seg.parsedTriangle[k].parentPolygon;
-                int animationIdPointer = @as.Clut == 2 ? 0 : 1;
+                int animationIdPointer = 1; //beach corner
+                if (@as.Clut == 2)
+                    animationIdPointer = 0; //beach atlas
+                if (@as.Clut == 3 && poly.groundtype == 31)
+                    animationIdPointer = 2; //river anim
 
                 var texx = wmset.GetBeachAnimationTextureFrame(animationIdPointer, wmset.BeachAnimations[animationIdPointer].currentAnimationIndex);
                 float Ucoorder = @as.Clut == 2 ? 128f : 192;
-                if (poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2))
+                float Vcoorder = @as.Clut == 3 && poly.groundtype == 31 ? 32f : 0f;
+                if (poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2) || (poly.groundtype == 31 && poly.Clut == 3))
                 {
-                    vpc[0].TextureCoordinate = new Vector2((@as.U1 - Ucoorder) / texx.Width, @as.V1 / (float)texx.Height);
-                    vpc[1].TextureCoordinate = new Vector2((@as.U2 - Ucoorder) / texx.Width, @as.V2 / (float)texx.Height);
-                    vpc[2].TextureCoordinate = new Vector2((@as.U3 - Ucoorder) / texx.Width, @as.V3 / (float)texx.Height);
+                    vpc[0].TextureCoordinate = new Vector2((@as.U1 - Ucoorder) / texx.Width, (@as.V1 - Vcoorder) / (float)texx.Height);
+                    vpc[1].TextureCoordinate = new Vector2((@as.U2 - Ucoorder) / texx.Width, (@as.V2 - Vcoorder) / (float)texx.Height);
+                    vpc[2].TextureCoordinate = new Vector2((@as.U3 - Ucoorder) / texx.Width, (@as.V3 - Vcoorder) / (float)texx.Height);
                 }
                
-                if (poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2))
+                if (poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2) || (poly.groundtype == 31 && poly.Clut == 3))
                     ate.Texture = wmset.GetBeachAnimationTextureFrame(animationIdPointer, wmset.BeachAnimations[animationIdPointer].currentAnimationIndex);
                 else if (poly.groundtype == 32)
                     ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex, poly.Clut);
             }
-            else if (Extended.In(poly.groundtype, 33, 34))
+            else if (Extended.In(poly.groundtype, 33, 34) || poly.groundtype == 31)
             {
                 ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex, poly.Clut);
             }
             else
-                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0);
+                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0); //FAIL- should not be used (I think)
         }
 
         /// <summary>

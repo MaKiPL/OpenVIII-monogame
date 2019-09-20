@@ -750,6 +750,9 @@ namespace OpenVIII.Core.World
                 BeachAnimations = new textureAnimation[innerPointers.Length];
                 for (int i = 0; i < innerPointers.Length; i++)
                     BeachAnimations[i] = textureAnimation_ParseBlock(sectionPointers[17 - 1] + innerPointers[i], i ,ms, br);
+                //for (int i = 0; i < beachAnimations.Length; i++)
+                //    for (int n = 0; n < beachAnimations[i].framesCount; n++)
+                //        Extended.DumpTexture(beachAnimations[i].framesTextures[n], $"D:\\b_{i}_{n}.png");
             }
         }
 
@@ -765,9 +768,9 @@ namespace OpenVIII.Core.World
                 for (int i = 0; i < innerPointers.Length; i++)
                     waterAnimations[i] = textureAnimation_ParseBlock(sectionPointers[41 - 1] + innerPointers[i], -1, ms, br);
             }
-            for (int i = 0; i < waterAnimations.Length; i++)
-                for (int n = 0; n < waterAnimations[i].framesCount; n++)
-                        Extended.DumpTexture(waterAnimations[i].framesTextures[n], $"D:\\d_{i}_{n}.png");
+            //for (int i = 0; i < waterAnimations.Length; i++)
+            //    for (int n = 0; n < waterAnimations[i].framesCount; n++)
+            //            Extended.DumpTexture(waterAnimations[i].framesTextures[n], $"D:\\d_{i}_{n}.png");
         }
 
         private const int sec17_imageHeaderSize = 12; //dword;dword; sizeDword
