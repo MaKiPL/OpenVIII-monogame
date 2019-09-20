@@ -1350,15 +1350,31 @@ namespace OpenVIII
                     vpc[1].TextureCoordinate = new Vector2((@as.U2 - Ucoorder) / texx.Width, (@as.V2 - Vcoorder) / (float)texx.Height);
                     vpc[2].TextureCoordinate = new Vector2((@as.U3 - Ucoorder) / texx.Width, (@as.V3 - Vcoorder) / (float)texx.Height);
                 }
-               
+
                 if (poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2) || (poly.groundtype == 31 && poly.Clut == 3))
                     ate.Texture = wmset.GetBeachAnimationTextureFrame(animationIdPointer, wmset.BeachAnimations[animationIdPointer].currentAnimationIndex);
                 else if (poly.groundtype == 32)
                     ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex, poly.Clut);
             }
-            else if (Extended.In(poly.groundtype, 33, 34) || poly.groundtype == 31)
+            else if (Extended.In(poly.groundtype, 33, 34))
             {
                 ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex, poly.Clut);
+            }
+            else if (poly.groundtype == 31 && poly.Clut == 0) //river flow to ocean texture
+            {
+                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex6, poly.Clut);
+                var @as = seg.parsedTriangle[k].parentPolygon;
+                vpc[0].TextureCoordinate = new Vector2(@as.U1 / (float)ate.Texture.Width, @as.V1 / (float)ate.Texture.Height);
+                vpc[1].TextureCoordinate = new Vector2(@as.U2 / (float)ate.Texture.Width, @as.V2 / (float)ate.Texture.Height);
+                vpc[2].TextureCoordinate = new Vector2(@as.U3 / (float)ate.Texture.Width, @as.V3 / (float)ate.Texture.Height);
+            }
+            else if (poly.groundtype == 31 && poly.Clut == 6) //lake to river waterfall
+            {
+                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterfall, 0);
+                var @as = seg.parsedTriangle[k].parentPolygon;
+                vpc[0].TextureCoordinate = new Vector2((@as.U1-128) / (float)ate.Texture.Width, (@as.V1-64) / (float)ate.Texture.Height);
+                vpc[1].TextureCoordinate = new Vector2((@as.U2-128) / (float)ate.Texture.Width, (@as.V2-64) / (float)ate.Texture.Height);
+                vpc[2].TextureCoordinate = new Vector2((@as.U3-128) / (float)ate.Texture.Width, (@as.V3-64) / (float)ate.Texture.Height);
             }
             else
                 ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0); //FAIL- should not be used (I think)
