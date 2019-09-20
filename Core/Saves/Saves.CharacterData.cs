@@ -276,7 +276,7 @@ namespace OpenVIII
                     [Kernel_bin.Stat.SPD] = br.ReadByte(),//0x0E
                     [Kernel_bin.Stat.LUCK] = br.ReadByte()//0x0F
                 };
-                Magics = new OrderedDictionary<byte, byte>(33);
+                Magics = new OrderedDictionary<byte, byte>(32);
                 for (int i = 0; i < 32; i++)
                 {
                     byte key = br.ReadByte();
