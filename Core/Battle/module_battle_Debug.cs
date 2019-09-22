@@ -1479,7 +1479,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
         /// <returns>Either primary or alternative camera from encounter</returns>
         private static int GetRandomCameraN(Init_debugger_battle.Encounter encounter)
         {
-            int camToss = Memory.Random.Next(0, 3) < 2 ? 0 : 1; //primary camera has 2/3 chance of beign selected
+            int camToss = Memory.Random.Next(3+1) < 2 ? 0 : 1; //primary camera has 2/3 chance of beign selected
             switch (camToss)
             {
                 case 0:

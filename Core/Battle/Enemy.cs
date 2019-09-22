@@ -279,10 +279,10 @@ namespace OpenVIII
 
         private T chance<T>(byte percent, T[] list)
         {
-            int i = Memory.Random.Next(0, 100);
+            int i = Memory.Random.Next(100+1);
             if (i < percent && list.Length > 0)
             {
-                i = Memory.Random.Next(0, list.Length-1);
+                i = Memory.Random.Next(list.Length);
                 return list[i];
             }
             return default;

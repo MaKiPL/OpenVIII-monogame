@@ -90,7 +90,7 @@ namespace OpenVIII
                 int HPMod = CharacterStats.Crisis * 10 * current / max;
                 int DeathBonus = Memory.State.DeadPartyMembers() * 200 + 1600;
                 int StatusBonus = (int)(Statuses0.Count() * 10); // I think this is status of all party members
-                int RandomMod = Memory.Random.Next(0, 255) + 160;
+                int RandomMod = Memory.Random.Next(byte.MaxValue+1) + 160;
                 int crisislevel = (StatusBonus + DeathBonus - HPMod) / RandomMod; // better random number?
                 if (crisislevel == 5)
                 {

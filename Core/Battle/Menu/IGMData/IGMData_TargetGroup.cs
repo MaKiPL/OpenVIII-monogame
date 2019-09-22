@@ -247,8 +247,8 @@ namespace OpenVIII
                 byte w = Memory.State[fromvc].WeaponID;
                 int hits = Memory.State[fromvc].CurrentCrisisLevel < Renzokuken_hits.Length ? Renzokuken_hits[Memory.State[fromvc].CurrentCrisisLevel] : Renzokuken_hits.Last();
                 int finisherchance = (Memory.State[fromvc].CurrentCrisisLevel + 1) * 60;
-                bool willfinish = Memory.Random.Next(0, byte.MaxValue) <= finisherchance;
-                int choosefinish = Memory.Random.Next(0, 3);
+                bool willfinish = Memory.Random.Next(byte.MaxValue+1) <= finisherchance;
+                int choosefinish = Memory.Random.Next(3+1);
                 Kernel_bin.Weapons_Data wd = Kernel_bin.WeaponsData[w];
                 Kernel_bin.Renzokeken_Finisher r = wd.Renzokuken;
                 List<Kernel_bin.Renzokeken_Finisher> flags = Enum.GetValues(typeof(Kernel_bin.Renzokeken_Finisher))
