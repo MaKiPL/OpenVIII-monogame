@@ -135,7 +135,7 @@ namespace OpenVIII
             List<FF8TextTagKey> ret = new List<FF8TextTagKey>(1);
             foreach (Button_Flags x in Enum.GetValues(typeof(Button_Flags)))
             {
-                if (k.HasFlag(x) && Convert_Button.ContainsKey(k))
+                if (k.HasFlag(x) && (Convert_Button?.ContainsKey(k) ?? false))
                 {
                     Debug.WriteLine("{0} set", x);
                     ret.Add(Convert_Button[k]);
