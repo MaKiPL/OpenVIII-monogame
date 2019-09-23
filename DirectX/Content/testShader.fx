@@ -70,22 +70,45 @@ float4 fogColor = {
     return output;
 }
 
+float4 ApplyFog(float4 textureColor, float3 vertPosition, float3 camPosition)
+{
+    float4 fogDist = distance(vertPosition, camPosition);
+    fogDist /= 800.0; //you can change that 800f to find best value
+    fogDist = clamp(fogDist, 0, 1); //this prevents inversion of colours when at high distance;
+    textureColor.xyz = lerp(textureColor.xyz, fogColor.xyz, fogDist.xyz); //we lerp the texture color to fogColor (changeable) with fogDistancw
+    return textureColor;
+}
+
+void ApplyAlphaMasking(float4 textureColor)
+{
+    clip(textureColor.a - 0.01); //0.01 - I'm not really sure how does it work, why 0.01 magically makes it work perfectly ;-;
+}
+
   float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
   {      
     float4 textureColor = tex2D(textureSampler, input.TextureCoordinate);
     float3 vertPosition = input.vertPos;
     float3 camPosition = camWorld;
-    float4 fogDist = distance(vertPosition, camPosition);
-    fogDist /= 800.0; //you can change that 800f to find best value
-    fogDist = clamp(fogDist, 0, 1); //this prevents inversion of colours when at high distance;
-    textureColor.xyz = lerp(textureColor.xyz, fogColor.xyz, fogDist.xyz); //we lerp the texture color to fogColor (changeable) with fogDistancw
-    clip(textureColor.a - 0.01); //0.01 - I'm not really sure how does it work, why 0.01 magically makes it work perfectly ;-;
+    textureColor = ApplyFog(textureColor, vertPosition, camPosition);
+    ApplyAlphaMasking(textureColor);
     return textureColor;
 }
 
-  technique Ambient
-  {
+float4 PixelShaderFunction_Water(VertexShaderOutput input) : COLOR0
+{
+    float4 textureColor = tex2D(textureSampler, input.TextureCoordinate);
+    float3 vertPosition = input.vertPos;
+    float3 camPosition = camWorld;
+    textureColor = ApplyFog(textureColor, vertPosition, camPosition);
+    ApplyAlphaMasking(textureColor);
+    //TODO water anims- maybe param with UV or something?
+    return textureColor;
+}
 
+
+
+  technique Texture_fog_bend
+  {
     pass Pass1
     {
         AlphaBlendEnable = TRUE;
@@ -93,5 +116,17 @@ float4 fogColor = {
         DestBlend = INVSRCALPHA;
         VertexShader = compile vs_4_0 VertexShaderFunction();
         PixelShader = compile ps_4_0 PixelShaderFunction();
+    }
+  }
+
+technique Texture_fog_bend_waterAnim
+{
+    pass Pass1
+    {
+        AlphaBlendEnable = TRUE;
+        SrcBlend = SRCALPHA;
+        DestBlend = INVSRCALPHA;
+        VertexShader = compile vs_4_0 VertexShaderFunction();
+        PixelShader = compile ps_4_0 PixelShaderFunction_Water();
     }
 }

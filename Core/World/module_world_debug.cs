@@ -1038,7 +1038,10 @@ namespace OpenVIII
                 {
                     ate.Texture = chara.GetCharaTexture(textureIndexBase + collectionDebug.Item2[i]);
                     if (bUseCustomShaderTest)
+                    {
                         worldShaderModel.Parameters["ModelTexture"].SetValue(ate.Texture);
+                        worldShaderModel.CurrentTechnique = worldShaderModel.Techniques["Texture_fog_bend"];
+                    }
                     foreach (EffectPass pass in bUseCustomShaderTest ? worldShaderModel.CurrentTechnique.Passes : ate.CurrentTechnique.Passes)
                     {
                         pass.Apply();
@@ -1162,7 +1165,7 @@ namespace OpenVIII
             if (playerSegmentVector.X + xTranslation < 0 && playerSegmentVector.Y + yTranslation > 23 && xTranslation < 0 && yTranslation > 0) //BL diagonal wrap
                 translationVector = new Vector3(32 * 512, 0, 24 * -512);
 
-            Dictionary<Texture2D, List<VertexPositionTexture>> groupedPolygons = new Dictionary<Texture2D, List<VertexPositionTexture>>();
+            Dictionary<Texture2D, Tuple<List<VertexPositionTexture>, bool>> groupedPolygons = new Dictionary<Texture2D, Tuple<List<VertexPositionTexture>, bool>>();
 
 
             for (int k = 0; k < seg.parsedTriangle.Length; k++)
@@ -1176,7 +1179,7 @@ namespace OpenVIII
 
                 Vector3 parsedTriangleB = seg.parsedTriangle[k].B + translationVector;
                 Vector3 parsedTriangleC = seg.parsedTriangle[k].C + translationVector;
-
+                bool bIsWaterBlock = false;
 
                 VertexPositionTexture[] vpc = new VertexPositionTexture[3];
                 vpc[0] = new VertexPositionTexture(
@@ -1192,13 +1195,16 @@ namespace OpenVIII
                 if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_ROAD))
                     ate.Texture = wmset.GetRoadsMiscTextures();
                 else if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_WATER))
+                {
                     SetWaterAnimationTexture(seg, k, vpc, poly);
+                    bIsWaterBlock = true;
+                }
                 else
                     ate.Texture = (Texture2D)texl.GetTexture(poly.TPage, poly.Clut);
                 if (groupedPolygons.ContainsKey(ate.Texture))
-                    groupedPolygons[ate.Texture].AddRange(vpc);
+                    groupedPolygons[ate.Texture].Item1.AddRange(vpc);
                 else
-                    groupedPolygons.Add(ate.Texture, new List<VertexPositionTexture>() {vpc[0], vpc[1],vpc[2]});
+                    groupedPolygons.Add(ate.Texture, new Tuple<List<VertexPositionTexture>, bool>(new List<VertexPositionTexture>() {vpc[0], vpc[1],vpc[2]}, bIsWaterBlock));
                 
                 //if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_WATER) && Extended.In(poly.groundtype, 32, 34))
                 //{
@@ -1213,12 +1219,17 @@ namespace OpenVIII
                 //}
             }
 
-            foreach(KeyValuePair<Texture2D, List<VertexPositionTexture>> kvp in groupedPolygons)
+            foreach(KeyValuePair<Texture2D, Tuple<List<VertexPositionTexture>, bool>> kvp in groupedPolygons)
             {
                 ate.Texture = kvp.Key;
-                var vptFinal = kvp.Value.ToArray();
+                var vptFinal = kvp.Value.Item1.ToArray();
                 if(bUseCustomShaderTest)
                     worldShaderModel.Parameters["ModelTexture"].SetValue(ate.Texture);
+
+                if (kvp.Value.Item2 && bUseCustomShaderTest)
+                    worldShaderModel.CurrentTechnique = worldShaderModel.Techniques["Texture_fog_bend_waterAnim"];
+                else if (bUseCustomShaderTest)
+                    worldShaderModel.CurrentTechnique = worldShaderModel.Techniques["Texture_fog_bend"];
                     
                 foreach (EffectPass pass in bUseCustomShaderTest ? worldShaderModel.CurrentTechnique.Passes : ate.CurrentTechnique.Passes)
                 {
