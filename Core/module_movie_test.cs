@@ -36,10 +36,27 @@ namespace OpenVIII
             {
                 if (Directory.Exists(s))
                 {
+                    //grab all videos. use extension to know which are videos
                     _movies.AddRange(Directory.GetFiles(s, "*", SearchOption.AllDirectories).Where(x =>
                       x.EndsWith(".avi", StringComparison.OrdinalIgnoreCase) ||
                       x.EndsWith(".mkv", StringComparison.OrdinalIgnoreCase) ||
+                      x.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase) ||
                       x.EndsWith(".bik", StringComparison.OrdinalIgnoreCase)));
+                    //dedupe
+                    for (int i = _movies.Count - 1; i >= 0; i--)
+                    {
+                        int j = -1;
+                        do
+                        {
+                            if ((j = _movies.FindIndex(x => Path.GetFileNameWithoutExtension(x).Equals(Path.GetFileNameWithoutExtension(_movies[i])))) > -1 && j < i)
+                            {
+                                _movies.RemoveAt(j);
+                                i--;
+                            }
+                            else break;
+                        }
+                        while (true);
+                    }
                 }
             }
             ReturnState = MODULE.MAINMENU_DEBUG;
