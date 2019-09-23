@@ -13,7 +13,7 @@ namespace OpenVIII
 {
     public class Module_world_debug
     {
-        private static bool bUseCustomShaderTest = false; //enable for testing the shader- mostly learning stuff
+        private static bool bUseCustomShaderTest = true; //enable for testing the shader- mostly learning stuff
 
         private static FPS_Camera fps_camera;
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
@@ -31,6 +31,10 @@ namespace OpenVIII
         public static BasicEffect effect;
         public static AlphaTestEffect ate;
         public static Effect worldShaderModel;
+        private const float BEND_VALUE = 1.4f;
+        private const float BEND_DISTANCE = 350.0f;
+        private readonly static Vector3 BEND_VECTOR = new Vector3(0, -0.01f, 0);
+        private readonly static Vector4 FOG_COLOR = new Vector4(0.39215f, 0.58431f, 0.92941f, 0f);
 
         private enum _worldState
         {
@@ -60,7 +64,10 @@ namespace OpenVIII
         private static rail rail;
 
         private static byte[] wmx;
-        private static float DEBUGshit = 0f;
+        private static float DEBUGshit = 1f;
+        private static float DEBUGshit2 = 10f;
+        private static float DEBUGshit3 = 0f;
+        private static float DEBUGshit4 = -0.01f;
         private const int WM_SEG_SIZE = 0x9000; //World map segment size in file
         private const int WM_SEGMENTS_COUNT = 835;
 
@@ -238,6 +245,11 @@ namespace OpenVIII
                 worldShaderModel.Parameters["World"].SetValue(worldMatrix);
                 worldShaderModel.Parameters["View"].SetValue(viewMatrix);
                 worldShaderModel.Parameters["Projection"].SetValue(projectionMatrix);
+                worldShaderModel.Parameters["bendValue"].SetValue(BEND_VALUE);
+                worldShaderModel.Parameters["bendDistance"].SetValue(BEND_DISTANCE);
+                worldShaderModel.Parameters["bendVector"].SetValue(BEND_VECTOR);
+                worldShaderModel.Parameters["Projection"].SetValue(projectionMatrix);
+                worldShaderModel.Parameters["fogColor"].SetValue(FOG_COLOR);
             }
             //temporarily disabling this, because I'm getting more and more tired of this music playing over and over when debugging
             //Memory.musicIndex = 30;
@@ -534,10 +546,29 @@ namespace OpenVIII
                 playerPosition.X += 1f;
             if (Input2.Button(Keys.D2))
                 playerPosition.X -= 1f;
+
+#if DEBUG
             if (Input2.Button(Keys.OemPlus))
-                DEBUGshit += 1f;
+                DEBUGshit += 0.01f;
             if (Input2.Button(Keys.OemMinus))
-                DEBUGshit -= 1f;
+                DEBUGshit -= 0.01f;
+
+            if (Input2.Button(Keys.NumPad9))
+                DEBUGshit2 += 4f;
+            if (Input2.Button(Keys.NumPad6))
+                DEBUGshit2 -= 4f;
+
+            if (Input2.Button(Keys.NumPad8))
+                DEBUGshit3 += 0.01f;
+            if (Input2.Button(Keys.NumPad5))
+                DEBUGshit3 -= 0.01f;
+
+            if (Input2.Button(Keys.NumPad7))
+                DEBUGshit4 += 0.01f;
+            if (Input2.Button(Keys.NumPad4))
+                DEBUGshit4 -= 0.01f;
+#endif
+
             if (worldState != _worldState._9debugFly)
             {
                 if (Input2.Button(FF8TextTagKey.Up))
@@ -701,6 +732,7 @@ namespace OpenVIII
                 worldShaderModel.Parameters["Projection"].SetValue(ate.Projection);
                 worldShaderModel.Parameters["View"].SetValue(ate.View);
                 worldShaderModel.Parameters["World"].SetValue(ate.World);
+                worldShaderModel.Parameters["camWorld"].SetValue(camPosition);
             }
 
             segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1);
@@ -780,7 +812,7 @@ namespace OpenVIII
                 $"Press 8 to enable/disable collision: {bDebugDisableCollision}\n" +
                 $"selWalk: =0b{Convert.ToString(bSelectedWalkable, 2).PadLeft(8, '0')} of charaRay={countofDebugFaces.X}, skyRay={countofDebugFaces.Y}\n" +
                 $"selWalk2: {(activeCollidePolygon.HasValue ? activeCollidePolygon.Value.ToString() : "N/A")}\n" +
-                $"debugshit= {DEBUGshit}\n" +
+                $"debugshit= {DEBUGshit} = {DEBUGshit2} = {DEBUGshit3} = {DEBUGshit4}\n" +
                 $"Press 9 to enable debug FPS camera: ={(worldState == _worldState._1active ? "orbit camera" : "FPS debug camera")}\n" +
                 $"FPS camera degrees: ={degrees}°\n" +
                 $"FOV: ={FOV}", 30, 20, 1f, 2f, lineSpacing: 5);
@@ -1005,7 +1037,9 @@ namespace OpenVIII
                 for (int i = 0; i < collectionDebug.Item1.Length; i += 3)
                 {
                     ate.Texture = chara.GetCharaTexture(textureIndexBase + collectionDebug.Item2[i]);
-                    foreach (EffectPass pass in ate.CurrentTechnique.Passes)
+                    if (bUseCustomShaderTest)
+                        worldShaderModel.Parameters["ModelTexture"].SetValue(ate.Texture);
+                    foreach (EffectPass pass in bUseCustomShaderTest ? worldShaderModel.CurrentTechnique.Passes : ate.CurrentTechnique.Passes)
                     {
                         pass.Apply();
                         Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, collectionDebug.Item1, i, 1);
@@ -1144,24 +1178,6 @@ namespace OpenVIII
                 Vector3 parsedTriangleC = seg.parsedTriangle[k].C + translationVector;
 
 
-                //====SPHERE SIMULATION OF OBJECTS 'RISING UP' EFFECT- DISABLED SO FAR BECAUSE THERE ARE GLITCHES===\\
-                if (faceDistance > renderCamDistance - 50f)
-                {
-                    firstEdge.Y = firstEdge.Y - 50f;
-                    parsedTriangleB.Y = parsedTriangleB.Y - 50f;
-                    parsedTriangleC.Y = parsedTriangleC.Y - 50f;
-                }
-                else if (faceDistance > renderCamDistance_faceRising && faceDistance < renderCamDistance - 50f)
-                {
-                    float riseAmount = (float)(renderCamDistance - faceDistance) / (renderCamDistance_faceRisingDistance);
-                    firstEdge.Y = MathHelper.Lerp(firstEdge.Y - 50f, firstEdge.Y, riseAmount);
-                    parsedTriangleB.Y = MathHelper.Lerp(parsedTriangleB.Y - 50f, parsedTriangleB.Y, riseAmount);
-                    parsedTriangleC.Y = MathHelper.Lerp(parsedTriangleC.Y - 50f, parsedTriangleC.Y, riseAmount);
-                }
-                //====SPHERE SIMULATION-SPHERE SIMULATION END=======================================================\\
-
-
-
                 VertexPositionTexture[] vpc = new VertexPositionTexture[3];
                 vpc[0] = new VertexPositionTexture(
                     firstEdge,
@@ -1196,13 +1212,14 @@ namespace OpenVIII
                 //    Memory.graphics.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
                 //}
             }
-            
+
             foreach(KeyValuePair<Texture2D, List<VertexPositionTexture>> kvp in groupedPolygons)
             {
                 ate.Texture = kvp.Key;
+                var vptFinal = kvp.Value.ToArray();
                 if(bUseCustomShaderTest)
                     worldShaderModel.Parameters["ModelTexture"].SetValue(ate.Texture);
-                var vptFinal = kvp.Value.ToArray();
+                    
                 foreach (EffectPass pass in bUseCustomShaderTest ? worldShaderModel.CurrentTechnique.Passes : ate.CurrentTechnique.Passes)
                 {
                     pass.Apply();
