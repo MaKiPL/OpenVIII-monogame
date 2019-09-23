@@ -167,6 +167,8 @@ namespace OpenVIII
                     Height = 0;
                     Trimmed = true;
                     Vector2 offset = new Vector2(float.MaxValue);
+                    if (Count == 1)
+                        this[0].Offset = Vector2.Zero;
                     for (int i = 0; i < Count; i++)
                     {
                         Rectangle ret = tex.Trim(this[i].GetRectangle);
