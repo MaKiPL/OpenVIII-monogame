@@ -27,6 +27,164 @@ namespace OpenVIII
 
         #endregion Fields
 
+        #region Methods
+
+        private bool BoolBattleMenu() => menus?.Any(m => m.GetType().Equals(typeof(BattleMenu)) && m.Enabled) ?? false;
+
+        private bool BoolRenzokeken() => GetBattleMenus()?.Any(m => m.Enabled && m.Renzokeken.Enabled) ?? false;
+
+        private void DrawBattleAction()
+        {
+            StartDraw();
+            //Had to split up the HP and Commands drawing. So that Commands would draw over HP.
+            if (BoolRenzokeken())
+                GetOneRenzokeken().DrawData(BattleMenu.SectionName.Renzokeken);
+            else if (BoolBattleMenu())
+            {
+                GetBattleMenus().ForEach(m => m.DrawData(BattleMenu.SectionName.HP));
+                GetBattleMenus().ForEach(m => m.DrawData(BattleMenu.SectionName.Commands));
+            }
+            DrawData();
+            EndDraw();
+        }
+
+        private void DrawGameOverAction()
+        {
+        }
+
+        private void DrawStartingAction()
+        {
+        }
+
+        private void DrawVictoryAction() => Victory_Menu.Draw();
+
+        private IEnumerable<BattleMenu> GetBattleMenus() => menus?.Where(m => m.GetType().Equals(typeof(BattleMenu))).Select(x=>(BattleMenu)x);
+
+        private BattleMenu GetOneRenzokeken() => GetBattleMenus()?.First(m => m.Enabled && m.Renzokeken.Enabled);
+
+        private bool InputBattleFunction()
+        {
+            bool ret = false;
+            if (BoolRenzokeken())
+            {
+                return GetOneRenzokeken().Inputs();
+            }
+            foreach (Menu m in menus.Where(m => m.GetType().Equals(typeof(BattleMenu)) && (BattleMenu.Mode)m.GetMode() == BattleMenu.Mode.YourTurn))
+            {
+                ret = m.Inputs() || ret;
+                if (ret) return ret;
+            }
+            if (Input2.DelayedButton(FF8TextTagKey.Cancel))
+            {
+                switch ((BattleMenu.Mode)menus[_player].GetMode())
+                {
+                    case BattleMenu.Mode.YourTurn:
+                        menus[_player].SetMode(BattleMenu.Mode.ATB_Charged);
+                        break;
+                }
+                do
+                {
+                    if (++_player > 2) _player = 0;
+                }
+                while (menus.Count <= _player || menus[_player] == null || menus[_player].GetType() != typeof(BattleMenu));
+                menus[_player].SetMode(BattleMenu.Mode.YourTurn);
+                if (((BattleMenu)menus[_player]).CrisisLevel)
+                    init_debugger_Audio.PlaySound(94);
+                else
+                    init_debugger_Audio.PlaySound(14);
+                switch ((BattleMenu.Mode)menus[_player].GetMode())
+                {
+                    case BattleMenu.Mode.ATB_Charged:
+                        menus[_player].SetMode(BattleMenu.Mode.YourTurn);
+                        break;
+                }
+            }
+
+            return ret;
+        }
+
+        private bool InputGameOverFunction() => false;
+
+        private bool InputStartingFunction() => false;
+
+        private bool InputVictoryFunction() => throw new NotImplementedException();
+
+        private void ReturnBattleFunction()
+        {
+        }
+
+        private void ReturnGameOverFunction()
+        {
+        }
+
+        private void ReturnStartingFunction()
+        {
+        }
+
+        private void ReturnVictoryFunction()
+        {
+        }
+
+        private void TriggerVictory(ConcurrentDictionary<Characters, int> expextra = null)
+        {
+            int exp = 0;
+            uint ap = 0;
+            List<Saves.Item> items = new List<Saves.Item>();
+            foreach (Enemy e in Enemy.Party)
+            {
+                exp += e.EXP;
+                ap += e.AP;
+                Saves.Item drop = e.Drop();
+                if (drop.QTY > 0 && drop.ID > 0)
+                    items.Add(drop);
+            }
+            TriggerVictory(exp, ap, expextra, items.ToArray());
+        }
+
+        private void TriggerVictory(int exp, uint ap, ConcurrentDictionary<Characters, int> expextra, params Saves.Item[] items)
+        {
+            SetMode(Mode.Victory);
+            Victory_Menu?.Refresh(exp, ap, expextra, items);
+        }
+
+        private bool UpdateBattleFunction()
+        {
+            menus?[_player].SetMode(BattleMenu.Mode.YourTurn);
+            bool ret = false;
+            foreach (Menu m in menus?.Where(m => m.GetType().Equals(typeof(BattleMenu))))
+            {
+                ret = m.Update() || ret;
+            }
+            return ret;
+        }
+
+        private bool UpdateGameOverFunction()
+        {
+            Memory.module = MODULE.FIELD_DEBUG;
+            Memory.FieldHolder.FieldID = 75; //gover
+            init_debugger_Audio.PlayMusic(0);
+            Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.MainLobby;
+            return true;
+        }
+
+        private bool UpdateStartingFunction() => throw new NotImplementedException();
+
+        private bool UpdateVictoryFunction()
+        {
+            init_debugger_Audio.PlayMusic(1);
+            return Victory_Menu.Update();
+        }
+
+        protected override void Init()
+        {
+            NoInputOnUpdate = true;
+            Size = new Vector2 { X = 881, Y = 636 };
+            Data.ForEach(x => x.Value.Hide());
+            base.Init();
+        }
+
+        #endregion Methods
+
         #region Enums
 
         public enum Mode : byte
@@ -64,13 +222,10 @@ namespace OpenVIII
 
         #region Properties
 
+        public int Player { get => _player; protected set => _player = value; }
         public VictoryMenu Victory_Menu => (VictoryMenu)(menus?.Where(m => m.GetType().Equals(typeof(VictoryMenu))).First());
 
-        public int Player { get => _player; protected set => _player = value; }
-
         #endregion Properties
-
-        #region Methods
 
         /// <summary>
         /// Save pre battle state.
@@ -113,28 +268,6 @@ namespace OpenVIII
             else if (Input2.DelayedButton(Keys.D9))
                 ReturnTo();
             return ret;
-        }
-
-        private void TriggerVictory(ConcurrentDictionary<Characters, int> expextra = null)
-        {
-            int exp = 0;
-            uint ap = 0;
-            List<Saves.Item> items = new List<Saves.Item>();
-            foreach (Enemy e in Enemy.Party)
-            {
-                exp += e.EXP;
-                ap += e.AP;
-                Saves.Item drop = e.Drop();
-                if (drop.QTY > 0 && drop.ID > 0)
-                    items.Add(drop);
-            }
-            TriggerVictory(exp, ap, expextra, items.ToArray());
-        }
-
-        private void TriggerVictory(int exp, uint ap, ConcurrentDictionary<Characters, int> expextra, params Saves.Item[] items)
-        {
-            SetMode(Mode.Victory);
-            Victory_Menu?.Refresh(exp, ap, expextra, items);
         }
 
         public override void Refresh()
@@ -215,132 +348,5 @@ namespace OpenVIII
             }
             return ret;
         }
-
-        protected override void Init()
-        {
-            NoInputOnUpdate = true;
-            Size = new Vector2 { X = 881, Y = 636 };
-            Data.ForEach(x => x.Value.Hide());
-            base.Init();
-        }
-
-        private void DrawBattleAction()
-        {
-            StartDraw();
-            //Had to split up the HP and Commands drawing. So that Commands would draw over HP.
-
-            if (!(menus?.Any(m => m.GetType().Equals(typeof(BattleMenu)) && m.Enabled) ?? false))
-            {
-                menus?.Where(m => m.GetType().Equals(typeof(BattleMenu))).ForEach(m => ((BattleMenu)m).DrawData(BattleMenu.SectionName.HP));
-                menus?.Where(m => m.GetType().Equals(typeof(BattleMenu))).ForEach(m => ((BattleMenu)m).DrawData(BattleMenu.SectionName.Commands));
-            }
-            else
-                ((BattleMenu)(menus?.Where(m => m.GetType().Equals(typeof(BattleMenu)) && m.Enabled).First())).DrawData(BattleMenu.SectionName.Renzokeken);
-            DrawData();
-            EndDraw();
-        }
-
-        private void DrawGameOverAction()
-        {
-        }
-
-        private void DrawStartingAction()
-        {
-        }
-
-        private void DrawVictoryAction() => Victory_Menu.Draw();
-
-        private bool InputBattleFunction()
-        {
-            bool ret = false;
-            if ((menus?.Any(m => m.GetType().Equals(typeof(BattleMenu)) && m.Enabled) ?? false))
-            {
-                return ((BattleMenu)menus.First(m => m.GetType().Equals(typeof(BattleMenu)) && m.Enabled)).Inputs();
-            }
-            foreach (Menu m in menus.Where(m => m.GetType().Equals(typeof(BattleMenu)) && (BattleMenu.Mode)m.GetMode() == BattleMenu.Mode.YourTurn))
-            {
-                ret = m.Inputs() || ret;
-                if (ret) return ret;
-            }
-            if (Input2.DelayedButton(FF8TextTagKey.Cancel))
-            {
-                switch ((BattleMenu.Mode)menus[_player].GetMode())
-                {
-                    case BattleMenu.Mode.YourTurn:
-                        menus[_player].SetMode(BattleMenu.Mode.ATB_Charged);
-                        break;
-                }
-                do
-                {
-                    if (++_player > 2) _player = 0;
-                }
-                while (menus.Count <= _player || menus[_player] == null || menus[_player].GetType() != typeof(BattleMenu));
-                menus[_player].SetMode(BattleMenu.Mode.YourTurn);
-                if (((BattleMenu)menus[_player]).CrisisLevel)
-                    init_debugger_Audio.PlaySound(94);
-                else
-                    init_debugger_Audio.PlaySound(14);
-                switch ((BattleMenu.Mode)menus[_player].GetMode())
-                {
-                    case BattleMenu.Mode.ATB_Charged:
-                        menus[_player].SetMode(BattleMenu.Mode.YourTurn);
-                        break;
-                }
-            }
-
-            return ret;
-        }
-
-        private bool InputGameOverFunction() => false;
-
-        private bool InputStartingFunction() => false;
-
-        private bool InputVictoryFunction() => throw new NotImplementedException();
-
-        private void ReturnBattleFunction()
-        {
-        }
-
-        private void ReturnGameOverFunction()
-        {
-        }
-
-        private void ReturnStartingFunction()
-        {
-        }
-
-        private void ReturnVictoryFunction()
-        {
-        }
-
-        private bool UpdateBattleFunction()
-        {
-            menus?[_player].SetMode(BattleMenu.Mode.YourTurn);
-            bool ret = false;
-            foreach (Menu m in menus?.Where(m => m.GetType().Equals(typeof(BattleMenu))))
-            {
-                ret = m.Update() || ret;
-            }
-            return ret;
-        }
-
-        private bool UpdateGameOverFunction()
-        {
-            Memory.module = MODULE.FIELD_DEBUG;
-            Memory.FieldHolder.FieldID = 75; //gover
-            init_debugger_Audio.PlayMusic(0);
-            Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.MainLobby;
-            return true;
-        }
-
-        private bool UpdateStartingFunction() => throw new NotImplementedException();
-
-        private bool UpdateVictoryFunction()
-        {
-            init_debugger_Audio.PlayMusic(1);
-            return Victory_Menu.Update();
-        }
-
-        #endregion Methods
     }
 }

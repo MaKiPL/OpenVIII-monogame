@@ -178,7 +178,8 @@ namespace OpenVIII
                 {
                     if (i?.GetType() == typeof(IGMDataItem_Renzokeken_Gradient))
                     {
-                        ((IGMDataItem_Renzokeken_Gradient)i).Restart();
+                        Reset();
+                        //((IGMDataItem_Renzokeken_Gradient)i).Reset();
                     }
                 }
             }
