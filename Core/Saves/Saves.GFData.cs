@@ -93,7 +93,7 @@ namespace OpenVIII
             /// <summary>
             /// Current Level for this GF
             /// </summary>
-            public byte Level
+            public override byte Level
             {
                 get
                 {
@@ -101,6 +101,7 @@ namespace OpenVIII
                     return ret > 100 ? (byte)100 : (byte)ret;
                 }
             }
+
 
             /// <summary>
             /// True if at max.
@@ -147,6 +148,24 @@ namespace OpenVIII
                     return abilities;
                 }
             }
+
+            public override byte SPD => 0;
+
+            public override byte SPR => 0;
+
+            public override byte STR => 0;
+
+            public override byte VIT => 0;
+
+            public override byte MAG => 0;
+
+            public override byte EVA => 0;
+
+            public override int EXP => 0;
+
+            public override byte HIT => 0;
+
+            public override byte LUCK => 0;
 
             /// <summary>
             /// Gf ability data
@@ -207,6 +226,8 @@ namespace OpenVIII
                 }
                 return ret;
             }
+
+            public override short ElementalResistance(Kernel_bin.Element @in) => throw new System.NotImplementedException();
 
             /// <summary>
             /// Learn this ability
@@ -292,6 +313,9 @@ namespace OpenVIII
                     Learning = Kernel_bin.Abilities.None;
             }
 
+            public override sbyte StatusResistance(Kernel_bin.Battle_Only_Statuses s) => sbyte.MaxValue;
+            public override sbyte StatusResistance(Kernel_bin.Persistant_Statuses s) => sbyte.MaxValue;
+
             /// <summary>
             /// False if gf knows ability, True if can learn it.
             /// </summary>
@@ -305,6 +329,7 @@ namespace OpenVIII
             /// If converting to string display GF's Name.
             /// </summary>
             public override string ToString() => Name.ToString();
+            public override ushort TotalStat(Kernel_bin.Stat s) => 0;
 
             public bool UnlockerTest(Kernel_bin.Abilities a)
             {

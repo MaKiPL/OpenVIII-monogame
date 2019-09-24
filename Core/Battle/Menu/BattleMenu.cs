@@ -82,6 +82,10 @@ namespace OpenVIII
             SetMode(Mode.ATB_Charging);
             base.Init();
         }
+        public override void Reset()
+        {
+            base.Reset();
+        }
         public void DrawData(SectionName v)
         {
             if (!skipdata && Enabled)

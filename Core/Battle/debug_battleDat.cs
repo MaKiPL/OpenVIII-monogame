@@ -549,7 +549,6 @@ namespace OpenVIII
 
         #endregion section 3 Animation
 
-
         #region section 11 Textures
 
         public struct Textures
@@ -558,14 +557,17 @@ namespace OpenVIII
             /// TIM count
             /// </summary>
             public uint cTims;
+
             /// <summary>
             /// File pointers
             /// </summary>
             public uint[] pTims;
+
             /// <summary>
             /// EOF
             /// </summary>
             public uint Eof;
+
             /// <summary>
             /// Texture 2D wrapped in TextureHandler for mod support
             /// </summary>
@@ -577,8 +579,8 @@ namespace OpenVIII
 #if DEBUG
             //Dump for debug
             br.BaseStream.Seek(v, SeekOrigin.Begin);
-            using (BinaryWriter fs = new BinaryWriter( File.Create(Path.Combine(Path.GetTempPath(), $"{v}.dump"), (int)(br.BaseStream.Length - br.BaseStream.Position), FileOptions.None)))
-                fs.Write(br.ReadBytes((int)(br.BaseStream.Length-br.BaseStream.Position)));
+            using (BinaryWriter fs = new BinaryWriter(File.Create(Path.Combine(Path.GetTempPath(), $"{v}.dump"), (int)(br.BaseStream.Length - br.BaseStream.Position), FileOptions.None)))
+                fs.Write(br.ReadBytes((int)(br.BaseStream.Length - br.BaseStream.Position)));
 #endif
             br.BaseStream.Seek(v, SeekOrigin.Begin);
             //Begin create Textures struct
@@ -593,11 +595,11 @@ namespace OpenVIII
             //Read EOF
             textures.Eof = br.ReadUInt32();
             //Read TIM -> TextureHandler into array
-            for (int i = 0; i < textures.cTims; i++)            
+            for (int i = 0; i < textures.cTims; i++)
                 if (buffer[v + textures.pTims[i]] == 0x10)
                 {
                     TIM2 tm = new TIM2(buffer, v + textures.pTims[i]); //broken
-                    textures.textures[i] = TextureHandler.Create($"{fileName}_{i/*.ToString("D2")*/}",tm,0);// tm.GetTexture(0);
+                    textures.textures[i] = TextureHandler.Create($"{fileName}_{i/*.ToString("D2")*/}", tm, 0);// tm.GetTexture(0);
                 }
                 else
                     Debug.WriteLine($"DEBUG: {this}.{this.id}.{v + textures.pTims[i]} :: Not a tim file!");
@@ -605,7 +607,7 @@ namespace OpenVIII
 
         public Textures textures;
 
-#endregion section 11 Textures
+        #endregion section 11 Textures
 
         public enum EntityType
         {

@@ -28,7 +28,29 @@ namespace OpenVIII
         private bool Inputs_OKAY_Draw()
         {
             Debug.WriteLine($"{Memory.Strings.GetName(VisableCharacter)} Drawing {Magic.Name}({Magic.ID}) from enemy.");
+            Menu.BattleMenus.EndTurn();
             return true;
+        }
+        public override void HideChildren()
+        {
+            if (Enabled)
+            {
+                //base.Hide();
+                //maybe overkill to run hide on items. if group is hidden it won't draw.
+                if (!skipdata)
+                {
+                    int pos = 0;
+                    foreach (Menu_Base i in ITEM)
+                    {
+                        if (pos != _Draw && pos != Cast && i != null)
+                        {
+                            i.HideChildren();
+                            i.Hide();
+                        }
+                        else i?.HideChildren();
+                    }
+                }
+            }
         }
 
         protected override void Init()

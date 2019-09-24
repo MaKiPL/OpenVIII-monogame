@@ -8,17 +8,33 @@ namespace OpenVIII
 
         public class IGMData_TargetEnemies : IGMData
         {
+            #region Methods
+
+            protected override void InitShift(int i, int col, int row)
+            {
+                base.InitShift(i, col, row);
+                SIZE[i].Inflate(-18, -20);
+                SIZE[i].Y -= 7 * row + 2;
+                //SIZE[i].Inflate(-22, -8);
+                //SIZE[i].Offset(0, 12 + (-8 * row));
+                SIZE[i].Height = (int)(12 * TextScale.Y);
+            }
+
+            #endregion Methods
+
             #region Constructors
 
             public IGMData_TargetEnemies(Rectangle pos) : base(6, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.TARGET), 2, 3)
             {
             }
 
-            public IGMData_TargetParty Target_Party { get; set; }
-
             #endregion Constructors
 
-            #region Methods
+            #region Properties
+
+            public IGMData_TargetParty Target_Party { get; set; }
+
+            #endregion Properties
 
             public override void Inputs_Left()
             {
@@ -92,18 +108,6 @@ namespace OpenVIII
                     }
                 }
             }
-
-            protected override void InitShift(int i, int col, int row)
-            {
-                base.InitShift(i, col, row);
-                SIZE[i].Inflate(-18, -20);
-                SIZE[i].Y -= 7 * row + 2;
-                //SIZE[i].Inflate(-22, -8);
-                //SIZE[i].Offset(0, 12 + (-8 * row));
-                SIZE[i].Height = (int)(12 * TextScale.Y);
-            }
-
-            #endregion Methods
         }
 
         #endregion Classes

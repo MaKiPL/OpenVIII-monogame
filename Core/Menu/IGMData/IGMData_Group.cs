@@ -28,23 +28,6 @@ namespace OpenVIII
 
         public int deep(int pos) => pos % Depth;
 
-        public override void Hide()
-        {
-            if (Enabled)
-            {
-                base.Hide();
-                //maybe overkill to run hide on items. if group is hidden it won't draw.
-                //if (!skipdata)
-                //{
-                //    int pos = 0;
-                //    foreach (IGMDataItem i in ITEM)
-                //    {
-                //        if (i != null)
-                //            ITEMHide((IGMData)i, pos++);
-                //    }
-                //}
-            }
-        }
 
         public override bool Inputs()
         {
@@ -65,13 +48,13 @@ namespace OpenVIII
             return ret;
         }
 
-        public virtual void ITEMHide(IGMData i, int pos = 0) => i.Hide();
+        public virtual void ITEMHide(Menu_Base i, int pos = 0) => i.Hide();
 
-        public virtual bool ITEMInputs(IGMData i, int pos = 0) => i.Inputs();
+        public virtual bool ITEMInputs(Menu_Base i, int pos = 0) => i.Inputs();
 
-        public virtual void ITEMShow(IGMData i, int pos = 0) => i.Show();
+        public virtual void ITEMShow(Menu_Base i, int pos = 0) => i.Show();
 
-        public virtual bool ITEMUpdate(IGMData i, int pos = 0) => i.Update();
+        public virtual bool ITEMUpdate(Menu_Base i, int pos = 0) => i.Update();
 
         protected override void RefreshChild()
         {

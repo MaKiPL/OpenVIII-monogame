@@ -10,6 +10,146 @@ namespace OpenVIII
     {
         #region Fields
 
+        private int _cursor_select;
+        protected bool DepthFirst = false;
+        protected bool skipdata = false;
+        protected bool skipsnd = false;
+
+        #endregion Fields
+
+        #region Methods
+
+        protected virtual void DrawITEM(int i, int d) => ITEM[i, d]?.Draw();
+
+        protected int GetCursor_select() => _cursor_select;
+
+        protected void Init(Characters? character, Characters? visablecharacter, sbyte? partypos)
+        {
+            if (partypos != null)
+            {
+                Character = Memory.State?.PartyData?[partypos.Value] ?? Characters.Blank;
+                VisableCharacter = Memory.State?.Party?[partypos.Value] ?? Character;
+                PartyPos = partypos.Value;
+            }
+            else
+            {
+                Character = character ?? Characters.Blank;
+                VisableCharacter = visablecharacter ?? Character;
+                PartyPos = (sbyte)(Memory.State?.PartyData?.FindIndex(x => x.Equals(Character)) ?? -1);
+            }
+        }
+
+        protected void Init(int count, int depth, IGMDataItem container = null, int? cols = null, int? rows = null)
+        {
+            CONTAINER = container ?? new IGMDataItem_Empty();
+            if (count <= 0 || depth <= 0)
+            {
+                if (CONTAINER.Pos == Rectangle.Empty)
+                {
+                    Debug.WriteLine($"{this}:: count {count} or depth {depth}, is invalid must be >= 1, or a CONTAINER {CONTAINER} and CONTAINER.Pos { CONTAINER.Pos.ToString() } must be set instead, Skipping Init()");
+                    return;
+                }
+            }
+            else
+            {
+                SIZE = new Rectangle[count];
+                ITEM = new Menu_Base[count, depth];
+                CURSOR = new Point[count];
+
+                Count = (byte)count;
+                Depth = (byte)depth;
+                BLANKS = new bool[count];
+                Descriptions = new Dictionary<int, FF8String>(count);
+                this.Cols = cols ?? 1;
+                this.Rows = rows ?? 1;
+            }
+            Init();
+            Refresh();
+            Update();
+        }
+
+        /// <summary>
+        /// Things that are fixed values at startup.
+        /// </summary>
+        protected override void Init()
+        {
+            if (SIZE != null && SIZE.Length > 0 && Rows * Cols > 0)
+            {
+                for (int i = 0; i < SIZE.Length; i++)
+                {
+                    int col = (Table_Options & Table_Options.FillRows) != 0 ? i % Cols : i / Rows;
+                    int row = (Table_Options & Table_Options.FillRows) != 0 ? i / Cols : i % Rows;
+                    if (col < Cols && row < Rows)
+                    {
+                        if (SIZE[i].IsEmpty) //allows for override a size value before the loop.
+                        {
+                            SIZE[i] = new Rectangle
+                            {
+                                X = X + (Width * col) / Cols,
+                                Y = Y + (Height * row) / Rows,
+                                Width = Width / Cols,
+                                Height = Height / Rows,
+                            };
+                        }
+                        CURSOR[i] = Point.Zero;
+                        InitShift(i, col, row);
+                        CURSOR[i].Y += (int)(SIZE[i].Y + 6 * TextScale.Y);
+                        CURSOR[i].X += SIZE[i].X;
+                    }
+                }
+            }
+            if (SIZE == null || SIZE.Length == 0 || SIZE[0].IsEmpty)
+            {
+                if (CURSOR == null || CURSOR.Length == 0 || SIZE.Length == 0)
+                {
+                    CURSOR = new Point[1];
+                    SIZE = new Rectangle[1];
+                }
+                CURSOR[0].Y = (int)(Y + Height / 2 - 6 * TextScale.Y);
+                CURSOR[0].X = X;
+                SIZE[0] = new Rectangle(X, Y, Width, Height);
+            }
+        }
+
+        protected virtual void InitShift(int i, int col, int row)
+        {
+        }
+
+        protected bool InputITEM(int i, int d, ref bool ret)
+        {
+            if (ITEM[i, d] != null && ITEM[i, d].Enabled)
+            {
+                Cursor_Status |= (Cursor_Status.Enabled | Cursor_Status.Blinking);
+                ret = ITEM[i, d].Inputs();
+                return true;
+            }
+            return false;
+        }
+
+        protected virtual void ModeChangeEvent(object sender, Enum e)
+        {
+        }
+
+        protected override void RefreshChild()
+        {
+            base.RefreshChild();
+            if (!skipdata)
+            {
+                if (CONTAINER != null)
+                    CONTAINER.Refresh(Character, VisableCharacter);
+                if (ITEM != null)
+                    for (int i = 0; i < Count; i++)
+                        for (int d = 0; d < Depth; d++)
+                        {
+                            ITEM[i, d]?.Refresh(Character, VisableCharacter);
+                        }
+            }
+        }
+
+        protected virtual void SetCursor_select(int value) => _cursor_select = value;
+
+        #endregion Methods
+
         public bool[] BLANKS;
 
         /// <summary>
@@ -26,23 +166,11 @@ namespace OpenVIII
         /// </summary>
         public Rectangle[] SIZE;
 
-        protected bool skipdata = false;
-        protected bool skipsnd = false;
-        private int _cursor_select;
-
-        #endregion Fields
-
-        #region Constructors
-
         public IGMData(int count = 0, int depth = 0, IGMDataItem container = null, int? cols = null, int? rows = null, Characters? character = null, Characters? visablecharacter = null, sbyte? partypos = null)
         {
             Init(character, visablecharacter, partypos);
             Init(count, depth, container, cols, rows);
         }
-
-        #endregion Constructors
-
-        #region Properties
 
         public int Cols { get; private set; }
 
@@ -99,15 +227,7 @@ namespace OpenVIII
         /// </summary>
         public int Y => CONTAINER != null ? CONTAINER.Pos.Y : 0;
 
-        #endregion Properties
-
-        #region Indexers
-
         public Menu_Base this[int pos, int i] { get => ITEM[pos, i]; set => ITEM[pos, i] = value; }
-
-        #endregion Indexers
-
-        #region Methods
 
         /// <summary>
         /// Convert to rectangle based on container.
@@ -157,8 +277,6 @@ namespace OpenVIII
             return GetCursor_select();
         }
 
-        protected bool DepthFirst = false;
-
         /// <summary>
         /// Draw all items
         /// </summary>
@@ -205,6 +323,26 @@ namespace OpenVIII
         }
 
         public void DrawPointer(Point cursor, Vector2? offset = null, bool blink = false) => Menu.DrawPointer(cursor, offset, blink);
+
+        public override void HideChildren()
+        {
+            if (Enabled)
+            {
+                //base.Hide();
+                //maybe overkill to run hide on items. if group is hidden it won't draw.
+                if (!skipdata)
+                {
+                    foreach (Menu_Base i in ITEM)
+                    {
+                        if (i != null)
+                        {
+                            i.HideChildren();
+                            i.Hide();
+                        }
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Check inputs
@@ -297,15 +435,6 @@ namespace OpenVIII
             return ret;
         }
 
-        public override void Reset()
-        {
-            foreach (Menu_Base i in ITEM)
-            {
-                i?.Reset();
-            }
-            base.Reset();
-        }
-
         public virtual bool Inputs_CANCEL()
         {
             if (!skipsnd)
@@ -344,6 +473,15 @@ namespace OpenVIII
                 init_debugger_Audio.PlaySound(0);
         }
 
+        public override void Reset()
+        {
+            foreach (Menu_Base i in ITEM)
+            {
+                i?.Reset();
+            }
+            base.Reset();
+        }
+
         public virtual void SetModeChangeEvent(ref EventHandler<Enum> eventHandler) => eventHandler += ModeChangeEvent;
 
         /// <summary>
@@ -361,136 +499,5 @@ namespace OpenVIII
                 }
             return ret;
         }
-
-        protected virtual void DrawITEM(int i, int d) => ITEM[i, d]?.Draw();
-
-        protected int GetCursor_select() => _cursor_select;
-
-        protected void Init(Characters? character, Characters? visablecharacter, sbyte? partypos)
-        {
-            if (partypos != null)
-            {
-                Character = Memory.State?.PartyData?[partypos.Value] ?? Characters.Blank;
-                VisableCharacter = Memory.State?.Party?[partypos.Value] ?? Character;
-                PartyPos = partypos.Value;
-            }
-            else
-            {
-                Character = character ?? Characters.Blank;
-                VisableCharacter = visablecharacter ?? Character;
-                PartyPos = (sbyte)(Memory.State?.PartyData?.FindIndex(x => x.Equals(Character)) ?? -1);
-            }
-        }
-
-        protected void Init(int count, int depth, IGMDataItem container = null, int? cols = null, int? rows = null)
-        {
-            CONTAINER = container ?? new IGMDataItem_Empty();
-            if (count <= 0 || depth <= 0)
-            {
-                if (CONTAINER.Pos == Rectangle.Empty)
-                {
-                    Debug.WriteLine($"{this}:: count {count} or depth {depth}, is invalid must be >= 1, or a CONTAINER {CONTAINER} and CONTAINER.Pos { CONTAINER.Pos.ToString() } must be set instead, Skipping Init()");
-                    return;
-                }
-            }
-            else
-            {
-                SIZE = new Rectangle[count];
-                ITEM = new Menu_Base[count, depth];
-                CURSOR = new Point[count];
-
-                Count = (byte)count;
-                Depth = (byte)depth;
-                BLANKS = new bool[count];
-                Descriptions = new Dictionary<int, FF8String>(count);
-                this.Cols = cols ?? 1;
-                this.Rows = rows ?? 1;
-            }
-            Init();
-            Refresh();
-            Update();
-        }
-
-        /// <summary>
-        /// Things that are fixed values at startup.
-        /// </summary>
-        protected override void Init()
-        {
-            if (SIZE != null && SIZE.Length > 0 && Rows*Cols > 0)
-            {
-                for (int i = 0; i < SIZE.Length; i++)
-                {
-                    int col = (Table_Options & Table_Options.FillRows) != 0 ? i % Cols : i / Rows;
-                    int row = (Table_Options & Table_Options.FillRows) != 0 ? i / Cols : i % Rows;
-                    if (col < Cols && row < Rows)
-                    {
-                        if (SIZE[i].IsEmpty) //allows for override a size value before the loop.
-                        {
-                            SIZE[i] = new Rectangle
-                            {
-                                X = X + (Width * col) / Cols,
-                                Y = Y + (Height * row) / Rows,
-                                Width = Width / Cols,
-                                Height = Height / Rows,
-                            };
-                        }
-                        CURSOR[i] = Point.Zero;
-                        InitShift(i, col, row);
-                        CURSOR[i].Y += (int)(SIZE[i].Y + 6 * TextScale.Y);
-                        CURSOR[i].X += SIZE[i].X;
-                    }
-                }
-            }
-            if (SIZE == null || SIZE.Length == 0 || SIZE[0].IsEmpty)
-            {
-                if (CURSOR == null || CURSOR.Length == 0 || SIZE.Length == 0)
-                {
-                    CURSOR = new Point[1];
-                    SIZE = new Rectangle[1];
-                }
-                CURSOR[0].Y = (int)(Y + Height / 2 - 6 * TextScale.Y);
-                CURSOR[0].X = X;
-                SIZE[0] = new Rectangle(X, Y, Width, Height);
-            }
-        }
-
-        protected virtual void InitShift(int i, int col, int row)
-        {
-        }
-
-        protected bool InputITEM(int i, int d, ref bool ret)
-        {
-            if (ITEM[i, d] != null && ITEM[i, d].Enabled)
-            {
-                Cursor_Status |= (Cursor_Status.Enabled | Cursor_Status.Blinking);
-                ret = ITEM[i, d].Inputs();
-                return true;
-            }
-            return false;
-        }
-
-        protected virtual void ModeChangeEvent(object sender, Enum e)
-        {
-        }
-
-        protected override void RefreshChild()
-        {
-            base.RefreshChild();
-            if (!skipdata)
-            {
-                if (CONTAINER != null)
-                    CONTAINER.Refresh(Character, VisableCharacter);
-                if (ITEM != null)
-                    for (int i = 0; i < Count; i++)
-                        for (int d = 0; d < Depth; d++)
-                        {
-                            ITEM[i, d]?.Refresh(Character, VisableCharacter);
-                        }
-            }
-        }
-
-        protected virtual void SetCursor_select(int value) => _cursor_select = value;
-
-        #endregion Methods
     }
 }

@@ -6,6 +6,44 @@
 
         private class IGMData_Mag_Group : IGMData_Group
         {
+            #region Methods
+
+            private bool InputsModeTest(int pos)
+            {
+                pos = cnv(pos);
+                switch (IGM_Junction.GetMode())
+                {
+                    case Mode.Mag_Pool_Stat:
+                    case Mode.Mag_Pool_EL_A:
+                    case Mode.Mag_Pool_EL_D:
+                    case Mode.Mag_Pool_ST_A:
+                    case Mode.Mag_Pool_ST_D:
+                        if (pos == 2)
+                            return true;
+                        break;
+
+                    case Mode.Mag_Stat:
+                        if (pos == 0)
+                            return true;
+                        break;
+
+                    case Mode.Mag_EL_A:
+                    case Mode.Mag_EL_D:
+                        if (pos == 3)
+                            return true;
+                        break;
+
+                    case Mode.Mag_ST_A:
+                    case Mode.Mag_ST_D:
+                        if (pos == 6)
+                            return true;
+                        break;
+                }
+                return false;
+            }
+
+            #endregion Methods
+
             #region Constructors
 
             public IGMData_Mag_Group(params IGMData[] d) : base(d)
@@ -14,13 +52,11 @@
 
             #endregion Constructors
 
-            #region Methods
-
             public override void Hide() =>
                 //depending on the mode it'll hide what's needed and show rest.
                 Show();
 
-            public override bool ITEMInputs(IGMData i, int pos = 0)
+            public override bool ITEMInputs(Menu_Base i, int pos = 0)
             {
                 bool ret = false;
                 if (InputsModeTest(pos))
@@ -36,7 +72,7 @@
                 return ret;
             }
 
-            public override void ITEMShow(IGMData i, int pos = 0)
+            public override void ITEMShow(Menu_Base i, int pos = 0)
             {
                 if (IGM_Junction != null)
                 {
@@ -92,42 +128,6 @@
                 base.Refresh();
                 Show();
             }
-
-            private bool InputsModeTest(int pos)
-            {
-                pos = cnv(pos);
-                switch (IGM_Junction.GetMode())
-                {
-                    case Mode.Mag_Pool_Stat:
-                    case Mode.Mag_Pool_EL_A:
-                    case Mode.Mag_Pool_EL_D:
-                    case Mode.Mag_Pool_ST_A:
-                    case Mode.Mag_Pool_ST_D:
-                        if (pos == 2)
-                            return true;
-                        break;
-
-                    case Mode.Mag_Stat:
-                        if (pos == 0)
-                            return true;
-                        break;
-
-                    case Mode.Mag_EL_A:
-                    case Mode.Mag_EL_D:
-                        if (pos == 3)
-                            return true;
-                        break;
-
-                    case Mode.Mag_ST_A:
-                    case Mode.Mag_ST_D:
-                        if (pos == 6)
-                            return true;
-                        break;
-                }
-                return false;
-            }
-
-            #endregion Methods
         }
 
         #endregion Classes

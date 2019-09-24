@@ -12,6 +12,7 @@ namespace OpenVIII
 
         private byte _count = 0;
         private int _hits = 7;
+        private double delayMS;
         private Slide<Color> HitSlider = new Slide<Color>(Color.White, Color.TransparentBlack, 300, Color.Lerp);
         private Color newattack;
 
@@ -94,10 +95,26 @@ namespace OpenVIII
             w = (int)(e.Width * scale);
             tr.X = xbak + trigwidtharea / 2 - w / 2;
             ITEM[Count - 6, 0] = new IGMDataItem_Icon(Icons.ID.Perfect__, tr, 8, scale: new Vector2(scale));
-            Reset();
             base.Init();
-            Show();
+            Reset();
             Cursor_Status = Cursor_Status.Enabled | Cursor_Status.Static | Cursor_Status.Hidden;
+        }
+
+        protected override void RefreshChild()
+        {
+            int pos = 0;
+            foreach (Menu_Base i in ITEM)
+            {
+                if (i.GetType() == typeof(IGMDataItem_Renzokeken_Gradient))
+                {
+                    IGMDataItem_Renzokeken_Gradient rg = (IGMDataItem_Renzokeken_Gradient)i;
+                    if (pos++ < _hits)
+                        rg.Show();
+                    else
+                        rg.Hide();
+                }
+            }
+            base.RefreshChild();
         }
 
         #endregion Methods
@@ -150,11 +167,20 @@ namespace OpenVIII
             ITEM[Count - 5, 0].Hide();
             ITEM[Count - 6, 0].Hide();
             _count = 0;
+            delayMS = 0d;
             base.Reset();
+        }
+
+        public void Reset(int hits)
+        {
+            _hits = hits;
+            Refresh();
+            Reset();
         }
 
         public override bool Update()
         {
+            if (!Enabled) return false;
             bool done = false;
             bool hot = false;
 
@@ -162,25 +188,23 @@ namespace OpenVIII
             ((IGMDataItem_Texture)ITEM[Count - 4, 0]).Color = HitSlider.Update();
 
             int hotcnt = 0;
+            int pos = 0;
             foreach (Menu_Base i in ITEM)
             {
-                if (i?.GetType() == typeof(IGMDataItem_Renzokeken_Gradient))
+                if (i?.GetType() == typeof(IGMDataItem_Renzokeken_Gradient) && pos++ < _hits)
                 {
-                    done = !((IGMDataItem_Renzokeken_Gradient)i).Done || done;
-                    hot = ((IGMDataItem_Renzokeken_Gradient)i).Trigger || hot;
-                    if (((IGMDataItem_Renzokeken_Gradient)i).Done)
+                    IGMDataItem_Renzokeken_Gradient gr = (IGMDataItem_Renzokeken_Gradient)i;
+                    done = !gr.Done || done;
+                    hot = gr.Trigger || hot;
+                    if (gr.Done)
                         hotcnt++;
                 }
             }
             if (!done)
             {
-                foreach (Menu_Base i in ITEM)
+                if ((delayMS += Memory.gameTime.ElapsedGameTime.TotalMilliseconds) > 1000)
                 {
-                    if (i?.GetType() == typeof(IGMDataItem_Renzokeken_Gradient))
-                    {
-                        Reset();
-                        //((IGMDataItem_Renzokeken_Gradient)i).Reset();
-                    }
+                    Menu.BattleMenus.EndTurn();
                 }
             }
             if (hot)
@@ -197,16 +221,19 @@ namespace OpenVIII
                 ((IGMDataItem_Icon)ITEM[Count - 3, 0]).Palette = 2;
                 ((IGMDataItem_Icon)ITEM[Count - 2, 0]).Palette = 2;
                 ((IGMDataItem_Texture)ITEM[0, 0]).Color = rcdim;
-                if ((hotcnt >= _hits-2) && ITEM[Count - 1, 0].Enabled)
+                if ((hotcnt >= _hits)||!done)// && ITEM[Count - 1, 0].Enabled)
                 {
                     if (_count >= _hits)
                         ITEM[Count - 6, 0].Show();
-                    else if(_count>0)
+                    else if (_count > 0)
                         ITEM[Count - 5, 0].Show();
                 }
+                //else if (hotcnt > 0) Debug.WriteLine(hotcnt);
+
                 ITEM[Count - 1, 0].Hide();
             }
-            return base.Update();
+            base.Update();
+            return true;
         }
     }
 }

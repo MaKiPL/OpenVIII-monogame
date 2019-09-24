@@ -29,6 +29,13 @@ namespace OpenVIII
 
         #region Methods
 
+        public void EndTurn()
+        {
+            GetCurrentBattleMenu().SetMode(BattleMenu.Mode.ATB_Charging);
+            GetCurrentBattleMenu().Reset();
+            GetCurrentBattleMenu().Refresh();
+        }
+
         private bool BoolBattleMenu() => menus?.Any(m => m.GetType().Equals(typeof(BattleMenu)) && m.Enabled) ?? false;
 
         private bool BoolRenzokeken() => GetBattleMenus()?.Any(m => m.Enabled && m.Renzokeken.Enabled) ?? false;
@@ -58,7 +65,7 @@ namespace OpenVIII
 
         private void DrawVictoryAction() => Victory_Menu.Draw();
 
-        private IEnumerable<BattleMenu> GetBattleMenus() => menus?.Where(m => m.GetType().Equals(typeof(BattleMenu))).Select(x=>(BattleMenu)x);
+        public IEnumerable<BattleMenu> GetBattleMenus() => menus?.Where(m => m.GetType().Equals(typeof(BattleMenu))).Select(x => (BattleMenu)x);
 
         private BattleMenu GetOneRenzokeken() => GetBattleMenus()?.First(m => m.Enabled && m.Renzokeken.Enabled);
 
@@ -76,22 +83,21 @@ namespace OpenVIII
             }
             if (Input2.DelayedButton(FF8TextTagKey.Cancel))
             {
-                switch ((BattleMenu.Mode)menus[_player].GetMode())
+                switch (GetCurrentBattleMenu().GetMode())
                 {
                     case BattleMenu.Mode.YourTurn:
                         menus[_player].SetMode(BattleMenu.Mode.ATB_Charged);
                         break;
                 }
+                int cnt =0;
                 do
                 {
                     if (++_player > 2) _player = 0;
+                    if (++cnt > 6) return false;
                 }
-                while (menus.Count <= _player || menus[_player] == null || menus[_player].GetType() != typeof(BattleMenu));
-                menus[_player].SetMode(BattleMenu.Mode.YourTurn);
-                if (((BattleMenu)menus[_player]).CrisisLevel)
-                    init_debugger_Audio.PlaySound(94);
-                else
-                    init_debugger_Audio.PlaySound(14);
+                while (menus.Count <= _player || menus[_player] == null || menus[_player].GetType() != typeof(BattleMenu) || !((BattleMenu)menus[_player]).GetMode().Equals(BattleMenu.Mode.ATB_Charged));
+                //menus[_player].SetMode(BattleMenu.Mode.YourTurn);
+                NewTurnSND();
                 switch ((BattleMenu.Mode)menus[_player].GetMode())
                 {
                     case BattleMenu.Mode.ATB_Charged:
@@ -102,6 +108,16 @@ namespace OpenVIII
 
             return ret;
         }
+
+        private void NewTurnSND()
+        {
+            if (((BattleMenu)menus[_player]).CrisisLevel)
+                init_debugger_Audio.PlaySound(94);
+            else
+                init_debugger_Audio.PlaySound(14);
+        }
+
+        public BattleMenu GetCurrentBattleMenu() => (BattleMenu)menus?[_player];
 
         private bool InputGameOverFunction() => false;
 
@@ -149,11 +165,26 @@ namespace OpenVIII
 
         private bool UpdateBattleFunction()
         {
-            menus?[_player].SetMode(BattleMenu.Mode.YourTurn);
             bool ret = false;
             foreach (Menu m in menus?.Where(m => m.GetType().Equals(typeof(BattleMenu))))
             {
                 ret = m.Update() || ret;
+            }
+            var bml = GetBattleMenus().ToList();
+            if (!(menus?[_player].GetMode().Equals(BattleMenu.Mode.YourTurn) ?? false))
+            {
+                if (_player + 1 == bml.Count)
+                    _player = 0;
+                for (int i = _player; i < bml.Count; i++)
+                {
+                    if (bml[i].GetMode().Equals(BattleMenu.Mode.ATB_Charged))
+                    {
+                        bml[i].SetMode(BattleMenu.Mode.YourTurn);
+                        _player = i;
+                        NewTurnSND();
+                        break;
+                    }
+                }
             }
             return ret;
         }
@@ -341,7 +372,7 @@ namespace OpenVIII
             {
                 if (UpdateFunctions.TryGetValue((Mode)GetMode(), out Func<bool> u))
                 {
-                    ret = u();
+                    ret = u(); 
                 }
 
                 ret = base.Update() || ret;

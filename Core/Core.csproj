@@ -136,10 +136,13 @@
     <Compile Include="Battle\debug_battleDat.cs" />
     <Compile Include="Battle\Enemy.cs" />
     <Compile Include="Battle\FPS_Camera.cs" />
+    <Compile Include="Battle\IEnemy.cs" />
     <Compile Include="Battle\Information.cs" />
     <Compile Include="Battle\init_debugger_battle.cs" />
     <Compile Include="Battle\Menu\BattleMenu.cs" />
     <Compile Include="Battle\Menu\BattleMenus.cs" />
+    <Compile Include="Battle\Menu\IGMData\IGMDataItem_ATB_Gradient.cs" />
+    <Compile Include="Battle\Menu\IGMData\IGMDataItem_ATB_Gradient_old.cs" />
     <Compile Include="Battle\Menu\IGMData\IGMDataItem_Renzokeken_Gradient.cs" />
     <Compile Include="Battle\Menu\IGMData\IGMData_HP.cs" />
     <Compile Include="Battle\Menu\IGMData\IGMData_PlayerEXP.cs" />
@@ -197,6 +200,8 @@
     <Compile Include="Menu\Lobby\IGM_Lobby.cs" />
     <Compile Include="Menu\Menu_Base.cs" />
     <Compile Include="Saves\Damageable.cs" />
+    <Compile Include="Saves\ICharacterData.cs" />
+    <Compile Include="Saves\IDamageable.cs" />
     <Compile Include="Slide.cs" />
     <Compile Include="Strings\FF8String.cs" />
     <Compile Include="Strings\FF8StringReference.cs" />

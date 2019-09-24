@@ -40,6 +40,7 @@ namespace OpenVIII
         /// Hide object prevents drawing, update, inputs.
         /// </summary>
         public virtual void Hide() => Enabled = false;
+        public virtual void HideChildren() { }
 
         public abstract bool Inputs();
 

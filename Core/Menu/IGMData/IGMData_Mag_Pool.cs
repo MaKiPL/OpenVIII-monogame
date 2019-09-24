@@ -5,15 +5,10 @@ using System.Linq;
 
 namespace OpenVIII
 {
-
     public class IGMData_Mag_Pool : IGMData_Pool<Saves.CharacterData, byte>
     {
         #region Fields
 
-        public static EventHandler<IGM_Junction.Mode> SlotConfirmListener;
-        public static EventHandler<IGM_Junction.Mode> SlotReinitListener;
-        public static EventHandler<IGM_Junction.Mode> SlotUndoListener;
-        public static EventHandler<Kernel_bin.Stat> StatEventListener;
         private const Font.ColorID @default = Font.ColorID.White;
         private const Font.ColorID junctioned = Font.ColorID.Grey;
         private const Font.ColorID nostat = Font.ColorID.Dark_Gray;
@@ -23,7 +18,212 @@ namespace OpenVIII
 
         #endregion Fields
 
-        #region Constructors
+        #region Properties
+
+        private int Targets_Window => Rows;
+
+        #endregion Properties
+
+        #region Methods
+
+        private void addMagic(ref int pos, Kernel_bin.Magic_Data spell, Font.ColorID color = @default)
+        {
+            bool j = false;
+            if (color == @default && Source.Stat_J.ContainsValue(spell.ID))
+            {
+                //spell is junctioned
+                if (!Battle)
+                    color = junctioned;
+                j = true;
+            }
+            ITEM[pos, 0] = new IGMDataItem_String(spell.Name, SIZE[pos], color);
+            ITEM[pos, 1] = j ? new IGMDataItem_Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 75, SIZE[pos].Y, 0, 0)) : null;
+            ITEM[pos, 2] = new IGMDataItem_Int(Source.Magics[spell.ID], new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), spaces: 3);
+            //makes it so you cannot junction a magic to a stat that does nothing.
+            BLANKS[pos] = color == nostat ? true : false;
+            Contents[pos] = spell.ID;
+            pos++;
+        }
+
+        private void Get_Sort_Stat()
+        {
+            if (Battle)
+            {
+                //SortMode = IGM_Junction.Mode.Mag_Pool_Stat;
+            }
+            else
+            {
+                SortMode = (IGM_Junction.Mode)Menu.IGM_Junction.GetMode();
+                switch (SortMode)
+                {
+                    default:
+                    case IGM_Junction.Mode.Mag_Stat:
+                    case IGM_Junction.Mode.Mag_Pool_Stat:
+                        SortMode = IGM_Junction.Mode.Mag_Pool_Stat;
+                        break;
+
+                    case IGM_Junction.Mode.Mag_ST_D:
+                    case IGM_Junction.Mode.Mag_Pool_ST_D:
+                        SortMode = IGM_Junction.Mode.Mag_Pool_ST_D;
+                        break;
+
+                    case IGM_Junction.Mode.Mag_ST_A:
+                    case IGM_Junction.Mode.Mag_Pool_ST_A:
+                        SortMode = IGM_Junction.Mode.Mag_Pool_ST_A;
+                        Stat = Kernel_bin.Stat.ST_Atk;
+                        break;
+
+                    case IGM_Junction.Mode.Mag_EL_D:
+                    case IGM_Junction.Mode.Mag_Pool_EL_D:
+                        SortMode = IGM_Junction.Mode.Mag_Pool_EL_D;
+                        break;
+
+                    case IGM_Junction.Mode.Mag_EL_A:
+                    case IGM_Junction.Mode.Mag_Pool_EL_A:
+                        SortMode = IGM_Junction.Mode.Mag_Pool_EL_A;
+                        Stat = Kernel_bin.Stat.EL_Atk;
+                        break;
+                }
+            }
+        }
+
+        private void StatChangeEvent(object sender, Kernel_bin.Stat e) => UpdateOnEvent(sender, null, e);
+
+        private bool Undo()
+        {
+            SlotUndoListener?.Invoke(this, (IGM_Junction.Mode)(Menu.IGM_Junction.GetMode()));
+            if (Memory.State.Characters != null)
+                Source = Memory.State.Characters[Character];
+            return true;
+        }
+
+        private void UpdateOnEvent(object sender, IGM_Junction.Mode? mode = null, Kernel_bin.Stat? stat = null)
+        {
+            mode = mode ?? (IGM_Junction.Mode)Menu.IGM_Junction.GetMode();
+            if ((
+                mode == IGM_Junction.Mode.Mag_Pool_ST_A ||
+                mode == IGM_Junction.Mode.Mag_Pool_ST_D ||
+                mode == IGM_Junction.Mode.Mag_Pool_EL_A ||
+                mode == IGM_Junction.Mode.Mag_Pool_EL_D ||
+                mode == IGM_Junction.Mode.Mag_Pool_Stat) || Battle && Enabled)
+
+            {
+                Cursor_Status |= Cursor_Status.Enabled;
+            }
+            else
+            {
+                Cursor_Status &= ~Cursor_Status.Enabled;
+            }
+            if (Memory.State.Characters != null && Character != Characters.Blank)
+            {
+                Get_Sort_Stat();
+                Stat = stat ?? Stat;
+                Get_Slots_Values();
+                if (SortMode != LastMode || this.Stat != LastStat || Character != LastCharacter)
+                    Get_Sort();
+                bool skipundo = false;
+                if (Battle || !(SortMode == LastMode && Character == LastCharacter && this.Stat == LastStat && Page == LastPage))
+                {
+                    // goal of these checks were to avoid updating the whole list if we don't need to.
+                    LastCharacter = Character;
+                    LastStat = this.Stat;
+                    LastPage = Page;
+                    LastMode = SortMode;
+                    skipundo = Undo();
+                    FillMagic();
+                    UpdateTitle();
+                }
+                if (!Battle && (
+                    mode == IGM_Junction.Mode.Mag_Pool_ST_A ||
+                    mode == IGM_Junction.Mode.Mag_Pool_ST_D ||
+                    mode == IGM_Junction.Mode.Mag_Pool_EL_A ||
+                    mode == IGM_Junction.Mode.Mag_Pool_EL_D ||
+                    mode == IGM_Junction.Mode.Mag_Pool_Stat))
+                {
+                    Generate_Preview(skipundo);
+                }
+            }
+        }
+
+        protected override void DrawITEM(int i, int d)
+        {
+            if (Targets_Window >= i || !Target_Group.Enabled)
+                base.DrawITEM(i, d);
+        }
+
+        protected override void Init()
+        {
+            base.Init();
+            SIZE[Rows] = SIZE[0];
+            SIZE[Rows].Y = Y;
+            ITEM[Rows, 2] = new IGMDataItem_Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 45, SIZE[Rows].Y, 0, 0), scale: new Vector2(2.5f));
+
+            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Character, VisableCharacter);
+            BLANKS[Rows] = true;
+            Cursor_Status &= ~Cursor_Status.Horizontal;
+            Cursor_Status |= Cursor_Status.Vertical;
+            Cursor_Status &= ~Cursor_Status.Blinking;
+            PointerZIndex = Rows - 1;
+        }
+
+        protected override void InitShift(int i, int col, int row)
+        {
+            base.InitShift(i, col, row);
+            SIZE[i].Inflate(-22, -8);
+            SIZE[i].Offset(0, 12 + (-8 * row));
+            SIZE[i].Height = (int)(12 * TextScale.Y);
+        }
+
+        protected override void ModeChangeEvent(object sender, Enum e)
+        {
+            if (e.GetType() == typeof(IGM_Junction.Mode))
+                UpdateOnEvent(sender, (IGM_Junction.Mode)e);
+            else if (e.GetType() == typeof(BattleMenu.Mode))
+                UpdateOnEvent(sender, null);
+        }
+
+        protected override void PAGE_NEXT()
+        {
+            base.PAGE_NEXT();
+            UpdateOnEvent(this);
+            while (Contents[0] == 0 && Page > 0)
+            {
+                skipsnd = true;
+                base.PAGE_NEXT();
+                UpdateOnEvent(this);
+            }
+        }
+
+        protected override void PAGE_PREV()
+        {
+            base.PAGE_PREV();
+            UpdateOnEvent(this);
+            while (Contents[0] == 0 && Page > 0)
+            {
+                skipsnd = true;
+                base.PAGE_PREV();
+                UpdateOnEvent(this);
+            }
+        }
+
+        protected override void SetCursor_select(int value)
+        {
+            if (value != GetCursor_select())
+            {
+                base.SetCursor_select(value);
+                UpdateOnEvent(this);
+            }
+        }
+
+        #endregion Methods
+
+        public static EventHandler<IGM_Junction.Mode> SlotConfirmListener;
+
+        public static EventHandler<IGM_Junction.Mode> SlotReinitListener;
+
+        public static EventHandler<IGM_Junction.Mode> SlotUndoListener;
+
+        public static EventHandler<Kernel_bin.Stat> StatEventListener;
 
         public IGMData_Mag_Pool(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null, bool battle = false) : base(5, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.MAGIC), 4, 13, character, visablecharacter)
         {
@@ -35,10 +235,6 @@ namespace OpenVIII
         public IGMData_Mag_Pool() : base(6, 3, new IGMDataItem_Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.MAGIC), 4, 13)
         {
         }
-
-        #endregion Constructors
-
-        #region Properties
 
         public Characters LastCharacter { get; private set; }
 
@@ -52,11 +248,9 @@ namespace OpenVIII
 
         public IGM_Junction.Mode SortMode { get; private set; }
 
+        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData)ITEM[Targets_Window, 0]));
+
         public Kernel_bin.Stat Stat { get; private set; }
-
-        #endregion Properties
-
-        #region Methods
 
         public void FillMagic()
         {
@@ -299,6 +493,14 @@ namespace OpenVIII
             else skipReinit = false;
         }
 
+        public override void Reset()
+        {
+            HideChildren();
+            Hide();
+            base.Reset();
+        }
+
+
         public override void UpdateTitle()
         {
             base.UpdateTitle();
@@ -311,199 +513,5 @@ namespace OpenVIII
                 if (Page < Pages)
                 ((IGMDataItem_Box)CONTAINER).Title = (Icons.ID)((int)Icons.ID.MAGIC_PG1 + Page);
         }
-
-        protected override void Init()
-        {
-            base.Init();
-            SIZE[Rows] = SIZE[0];
-            SIZE[Rows].Y = Y;
-            ITEM[Rows, 2] = new IGMDataItem_Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 45, SIZE[Rows].Y, 0, 0), scale: new Vector2(2.5f));
-
-            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Character, VisableCharacter);
-            BLANKS[Rows] = true;
-            Cursor_Status &= ~Cursor_Status.Horizontal;
-            Cursor_Status |= Cursor_Status.Vertical;
-            Cursor_Status &= ~Cursor_Status.Blinking;
-            PointerZIndex = Rows - 1;
-        }
-
-        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData)ITEM[Targets_Window, 0]));
-        private int Targets_Window => Rows;
-
-        protected override void InitShift(int i, int col, int row)
-        {
-            base.InitShift(i, col, row);
-            SIZE[i].Inflate(-22, -8);
-            SIZE[i].Offset(0, 12 + (-8 * row));
-            SIZE[i].Height = (int)(12 * TextScale.Y);
-        }
-
-        protected override void ModeChangeEvent(object sender, Enum e)
-        {
-            if (e.GetType() == typeof(IGM_Junction.Mode))
-                UpdateOnEvent(sender, (IGM_Junction.Mode)e);
-            else if (e.GetType() == typeof(BattleMenu.Mode))
-                UpdateOnEvent(sender, null);
-        }
-
-        protected override void PAGE_NEXT()
-        {
-            base.PAGE_NEXT();
-            UpdateOnEvent(this);
-            while (Contents[0] == 0 && Page > 0)
-            {
-                skipsnd = true;
-                base.PAGE_NEXT();
-                UpdateOnEvent(this);
-            }
-        }
-
-        protected override void PAGE_PREV()
-        {
-            base.PAGE_PREV();
-            UpdateOnEvent(this);
-            while (Contents[0] == 0 && Page > 0)
-            {
-                skipsnd = true;
-                base.PAGE_PREV();
-                UpdateOnEvent(this);
-            }
-        }
-
-        protected override void SetCursor_select(int value)
-        {
-            if (value != GetCursor_select())
-            {
-                base.SetCursor_select(value);
-                UpdateOnEvent(this);
-            }
-        }
-
-        private void addMagic(ref int pos, Kernel_bin.Magic_Data spell, Font.ColorID color = @default)
-        {
-            bool j = false;
-            if (color == @default && Source.Stat_J.ContainsValue(spell.ID))
-            {
-                //spell is junctioned
-                if (!Battle)
-                    color = junctioned;
-                j = true;
-            }
-            ITEM[pos, 0] = new IGMDataItem_String(spell.Name, SIZE[pos], color);
-            ITEM[pos, 1] = j ? new IGMDataItem_Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 75, SIZE[pos].Y, 0, 0)) : null;
-            ITEM[pos, 2] = new IGMDataItem_Int(Source.Magics[spell.ID], new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), spaces: 3);
-            //makes it so you cannot junction a magic to a stat that does nothing.
-            BLANKS[pos] = color == nostat ? true : false;
-            Contents[pos] = spell.ID;
-            pos++;
-        }
-
-        private void Get_Sort_Stat()
-        {
-            if (Battle)
-            {
-                //SortMode = IGM_Junction.Mode.Mag_Pool_Stat;
-            }
-            else
-            {
-                SortMode = (IGM_Junction.Mode)Menu.IGM_Junction.GetMode();
-                switch (SortMode)
-                {
-                    default:
-                    case IGM_Junction.Mode.Mag_Stat:
-                    case IGM_Junction.Mode.Mag_Pool_Stat:
-                        SortMode = IGM_Junction.Mode.Mag_Pool_Stat;
-                        break;
-
-                    case IGM_Junction.Mode.Mag_ST_D:
-                    case IGM_Junction.Mode.Mag_Pool_ST_D:
-                        SortMode = IGM_Junction.Mode.Mag_Pool_ST_D;
-                        break;
-
-                    case IGM_Junction.Mode.Mag_ST_A:
-                    case IGM_Junction.Mode.Mag_Pool_ST_A:
-                        SortMode = IGM_Junction.Mode.Mag_Pool_ST_A;
-                        Stat = Kernel_bin.Stat.ST_Atk;
-                        break;
-
-                    case IGM_Junction.Mode.Mag_EL_D:
-                    case IGM_Junction.Mode.Mag_Pool_EL_D:
-                        SortMode = IGM_Junction.Mode.Mag_Pool_EL_D;
-                        break;
-
-                    case IGM_Junction.Mode.Mag_EL_A:
-                    case IGM_Junction.Mode.Mag_Pool_EL_A:
-                        SortMode = IGM_Junction.Mode.Mag_Pool_EL_A;
-                        Stat = Kernel_bin.Stat.EL_Atk;
-                        break;
-                }
-            }
-        }
-
-        protected override void DrawITEM(int i, int d)
-        {
-            if (Targets_Window >= i || !Target_Group.Enabled)
-                base.DrawITEM(i, d);
-        }
-
-        private void StatChangeEvent(object sender, Kernel_bin.Stat e) => UpdateOnEvent(sender, null, e);
-
-        private bool Undo()
-        {
-            SlotUndoListener?.Invoke(this, (IGM_Junction.Mode)(Menu.IGM_Junction.GetMode()));
-            if (Memory.State.Characters != null)
-                Source = Memory.State.Characters[Character];
-            return true;
-        }
-
-        private void UpdateOnEvent(object sender, IGM_Junction.Mode? mode = null, Kernel_bin.Stat? stat = null)
-        {
-            mode = mode ?? (IGM_Junction.Mode)Menu.IGM_Junction.GetMode();
-            if ((
-                mode == IGM_Junction.Mode.Mag_Pool_ST_A ||
-                mode == IGM_Junction.Mode.Mag_Pool_ST_D ||
-                mode == IGM_Junction.Mode.Mag_Pool_EL_A ||
-                mode == IGM_Junction.Mode.Mag_Pool_EL_D ||
-                mode == IGM_Junction.Mode.Mag_Pool_Stat) || Battle && Enabled)
-
-            {
-                Cursor_Status |= Cursor_Status.Enabled;
-            }
-            else
-            {
-                Cursor_Status &= ~Cursor_Status.Enabled;
-            }
-            if (Memory.State.Characters != null && Character != Characters.Blank)
-            {
-                Get_Sort_Stat();
-                Stat = stat ?? Stat;
-                Get_Slots_Values();
-                if (SortMode != LastMode || this.Stat != LastStat || Character != LastCharacter)
-                    Get_Sort();
-                bool skipundo = false;
-                if (Battle || !(SortMode == LastMode && Character == LastCharacter && this.Stat == LastStat && Page == LastPage))
-                {
-                    // goal of these checks were to avoid updating the whole list if we don't need to.
-                    LastCharacter = Character;
-                    LastStat = this.Stat;
-                    LastPage = Page;
-                    LastMode = SortMode;
-                    skipundo = Undo();
-                    FillMagic();
-                    UpdateTitle();
-                }
-                if (!Battle && (
-                    mode == IGM_Junction.Mode.Mag_Pool_ST_A ||
-                    mode == IGM_Junction.Mode.Mag_Pool_ST_D ||
-                    mode == IGM_Junction.Mode.Mag_Pool_EL_A ||
-                    mode == IGM_Junction.Mode.Mag_Pool_EL_D ||
-                    mode == IGM_Junction.Mode.Mag_Pool_Stat))
-                {
-                    Generate_Preview(skipundo);
-                }
-            }
-        }
-
-        #endregion Methods
     }
 }

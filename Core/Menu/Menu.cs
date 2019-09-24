@@ -286,7 +286,6 @@ namespace OpenVIII
             if (!skipdata)
                 foreach (KeyValuePair<Enum, IGMData> i in Data)
                 {
-
                     i.Value?.Reset();
                 }
             base.Reset();

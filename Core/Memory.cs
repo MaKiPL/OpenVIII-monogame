@@ -27,15 +27,44 @@ namespace OpenVIII
         CARD_TEST = -22,
     }
 
+    /// <summary>
+    /// Battle Speed Settings
+    /// </summary>
+    /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
+    public enum BattleSpeed : byte
+    {
+        Fastest = 1,
+        Fast,
+        Normal,
+        Slow,
+        Slowest,
+    }
+
+    /// <summary>
+    /// Speed Mod
+    /// </summary>
+    /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
+    public enum SpeedMod : byte
+    {
+        Stop = 0,
+        Slow = 1,
+        Normal = 2,
+        Haste = 3,
+        AlwaysFull = 200
+    }
 
     public static class Memory
     {
-    public enum graphicModes
-    {
-        OpenGL,
-        DirectX
-    };
+        public static BattleSpeed CurrentBattleSpeed = BattleSpeed.Normal;
+
+        public enum graphicModes
+        {
+            OpenGL,
+            DirectX
+        };
+
         public static graphicModes currentGraphicMode;
+
         //monogame
         public static GraphicsDeviceManager graphics;
 
@@ -172,24 +201,18 @@ namespace OpenVIII
         }
 
         public static readonly Dictionary<ushort, List<string>> dicMusic = new Dictionary<ushort, List<string>>(); //ogg and sgt files have same 3 digit prefix.
+
         //public static object spritebatchlock = new object();
-        public static void SpriteBatchStartStencil(SamplerState ss = null)
-        {
+        public static void SpriteBatchStartStencil(SamplerState ss = null) =>
             //lock (spritebatchlock)
             spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, ss, graphics.GraphicsDevice.DepthStencilState);
-        }
 
-        public static void SpriteBatchStartAlpha(SpriteSortMode sortMode= SpriteSortMode.Deferred, SamplerState ss = null, Matrix? tm = null)
-        {
+        public static void SpriteBatchStartAlpha(SpriteSortMode sortMode = SpriteSortMode.Deferred, SamplerState ss = null, Matrix? tm = null) =>
 
             //lock (spritebatchlock)
             spriteBatch.Begin(sortMode: sortMode, blendState: BlendState.AlphaBlend, samplerState: ss ?? SamplerState.PointClamp, transformMatrix: tm);
-        }
 
-        public static void SpriteBatchEnd()
-        {
-            spriteBatch.End();
-        }
+        public static void SpriteBatchEnd() => spriteBatch.End();
 
         public static readonly BlendState blendState_BasicAdd = new BlendState()
         {
@@ -234,7 +257,6 @@ namespace OpenVIII
             if (!token.IsCancellationRequested)
                 Memory.MItems = Items_In_Menu.Read(); // this has a soft requirement on kernel_bin. It checks for null so should work without it.
 
-
             if (!token.IsCancellationRequested)
                 Saves.Init(); //loads all savegames from steam or cd2000 directories. first come first serve.
 
@@ -258,13 +280,13 @@ namespace OpenVIII
                 if (!token.IsCancellationRequested)
                     Memory.Icons = new Icons();
 
-                // requires font, faces, and icons.
-                // currently cards only used in debug menu. will have support for cards when added to menu.
+                // requires font, faces, and icons. currently cards only used in debug menu. will
+                // have support for cards when added to menu.
                 if (!token.IsCancellationRequested)
                     Module_main_menu_debug.Init();
 
-                // requires font, faces, and icons.
-                // currently cards only used in debug menu. will have support for cards when added to menu.
+                // requires font, faces, and icons. currently cards only used in debug menu. will
+                // have support for cards when added to menu.
                 if (!token.IsCancellationRequested)
                     Menu.InitStaticMembers();
             }
@@ -273,12 +295,11 @@ namespace OpenVIII
             Inited = true;
             return 0;
         }
+
         public static bool Inited { get; private set; } = false;
-        public static bool IsMainThread
-        {
-            get { return Thread.CurrentThread.ManagedThreadId == mainThreadID; }
-        }
+        public static bool IsMainThread => Thread.CurrentThread.ManagedThreadId == mainThreadID;
         public static Queue<Action> MainThreadOnlyActions;
+
         public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
         {
             mainThreadID = Thread.CurrentThread.ManagedThreadId;
@@ -321,7 +342,6 @@ namespace OpenVIII
         public static CancellationTokenSource TokenSource { get; private set; }
         public static CancellationToken Token { get; private set; }
         public static Items_In_Menu MItems { get; private set; }
-
 
         #region battleProvider
 
@@ -812,14 +832,15 @@ namespace OpenVIII
         /// Random number generator seeded with time.
         /// </summary>
         public static Random Random;
+
         #endregion DrawPointMagic
 
         public static void Update()
-        {            
-            while(IsMainThread && MainThreadOnlyActions.Count>0)
-                { MainThreadOnlyActions.Dequeue()(); }
-
+        {
+            while (IsMainThread && MainThreadOnlyActions.Count > 0)
+            { MainThreadOnlyActions.Dequeue()(); }
         }
+
         /// <summary>
         /// Archive class handles the filename formatting and extensions for archive files.
         /// </summary>
@@ -828,13 +849,14 @@ namespace OpenVIII
             public Archive Parent;
             public string _Root { get; set; }
             public string _Filename { get; private set; }
+
             public Archive(Archive parent, string path)
             {
                 Parent = parent;
                 _Root = "";
                 if (Path.HasExtension(path))
                 {
-                    var ext = Path.GetExtension(path);
+                    string ext = Path.GetExtension(path);
                     if (ext == B_FileArchive || ext == B_FileIndex || ext == B_FileList)
                     {
                         int index = path.LastIndexOf('.');
@@ -843,13 +865,16 @@ namespace OpenVIII
                 }
                 _Filename = path;
             }
+
             public Archive(string path) : this(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path))
             { }
+
             public Archive(string root, string filename)
             {
                 _Root = root;
                 _Filename = filename;
             }
+
             /// <summary>
             /// File Archive Extension
             /// </summary>
@@ -864,18 +889,22 @@ namespace OpenVIII
             /// File Archive Extension
             /// </summary>
             public const string B_FileArchive = ".fs";
+
             /// <summary>
             /// File Index
             /// </summary>
             public string FI => Test(Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}{B_FileIndex}"));
+
             /// <summary>
             /// File List
             /// </summary>
             public string FL => Test(Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}{B_FileList}"));
+
             /// <summary>
             /// File Archive
             /// </summary>
             public string FS => Test(Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}{B_FileArchive}"));
+
             /// <summary>
             /// Test if input file path exists
             /// </summary>
@@ -887,12 +916,9 @@ namespace OpenVIII
                 return input;
             }
 
-            public override string ToString()
-            {
-                return Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}");
-            }
-
+            public override string ToString() => Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}");
         }
+
         public static class Archives
         {
             public static Archive A_BATTLE = new Archive(FF8DIRdata_lang, "battle");

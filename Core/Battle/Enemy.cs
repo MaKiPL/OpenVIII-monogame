@@ -5,15 +5,75 @@ using System.Linq;
 
 namespace OpenVIII
 {
-    public class Enemy : Damageable
+    public class Enemy : Damageable, IEnemy
     {
-
         #region Fields
 
         private const int statusdefault = 100;
         private byte _fixedLevel;
 
         #endregion Fields
+
+        #region Methods
+
+        private T chance<T>(byte percent, T[] list)
+        {
+            int i = Memory.Random.Next(100 + 1);
+            if (i < percent && list.Length > 0)
+            {
+                i = Memory.Random.Next(list.Length);
+                return list[i];
+            }
+            return default;
+        }
+
+        private byte convert1(byte[] @in)
+        {
+            //from Ifrit's help file
+            byte level = Level;
+            int i = level * @in[0] / 10 + level / @in[1] - level * level / 2 / (@in[3] + @in[2]) / 4;
+            //PLEASE NOTE: I'm not 100% sure on the STR/MAG formula, but it should be accurate enough to get the general idea.
+            // wiki states something like ([3(Lv)] + [(Lv) / 5] - [(Lv)² / 260] + 12) / 4
+
+            return (byte)MathHelper.Clamp(i, 0, byte.MaxValue);
+        }
+
+        private byte convert2(byte[] @in)
+        {
+            //from Ifrit's help file
+            byte level = Level;
+            int i = level / @in[1] - level / @in[3] + level * @in[0] + @in[2];
+            return (byte)MathHelper.Clamp(i, 0, byte.MaxValue);
+        }
+
+        private int convert3(ushort @in, byte inLevel)
+        {
+            //from Ifrit's help file
+            byte level = Level;
+            return @in * (5 * (level - inLevel) / inLevel + 4);
+        }
+
+        private T hml<T>(T h, T m, T l)
+        {
+            byte level = Level;
+            if (level > info.highLevelStart)
+                return h;
+            else if (level > info.medLevelStart)
+                return m;
+            else return l;
+        }
+
+        private int levelgroup()
+        {
+            byte l = Level;
+            if (l > info.highLevelStart)
+                return 2;
+            if (l > info.medLevelStart)
+                return 1;
+            else return 0;
+        }
+
+        #endregion Methods
 
         #region Constructors
 
@@ -64,20 +124,30 @@ namespace OpenVIII
 
         public Module_battle_debug.EnemyInstanceInformation EII { get; set; }
 
-        public byte EVA => convert2(info.eva);
+        public override byte EVA => convert2(info.eva);
 
         /// <summary>
         /// The EXP everyone gets.
         /// </summary>
-        public int EXP => convert3(info.exp, Memory.State.AveragePartyLevel);
+        public override int EXP => convert3(info.exp, Memory.State.AveragePartyLevel);
 
         public byte FixedLevel { get => _fixedLevel; set => _fixedLevel = value; }
+
+        /// <summary>
+        /// Enemy attacks determine hit%
+        /// </summary>
+        /// <remarks>
+        /// LeythalknightToday at 1:53 PM Enemy attack accuracy is set per ability based on the value
+        /// that's called "Attack param" in Doomtrain, and only when they use attack types that have
+        /// a miss chance
+        /// </remarks>
+        public override byte HIT => 0;
 
         /// <summary>
         /// Level of enemy based on average of party or fixed value.
         /// </summary>
         /// <see cref="https://finalfantasy.fandom.com/wiki/Level#Enemy_levels"/>
-        public byte Level
+        public override byte Level
         {
             get
             {
@@ -89,7 +159,12 @@ namespace OpenVIII
             }
         }
 
-        public byte MAG => convert1(info.mag);
+        /// <summary>
+        /// unknown luck stat. putting 0 in here so there is something.
+        /// </summary>
+        public override byte LUCK => 0;
+
+        public override byte MAG => convert1(info.mag);
 
         /// <summary>
         /// Randomly gain 1 or 0 from this list.
@@ -100,13 +175,13 @@ namespace OpenVIII
 
         public override FF8String Name => info.name;
 
-        public byte SPD => convert2(info.spd);
+        public override byte SPD => convert2(info.spd);
 
-        public byte SPR => convert2(info.spr);
+        public override byte SPR => convert2(info.spr);
 
-        public byte STR => convert1(info.str);
+        public override byte STR => convert1(info.str);
 
-        public byte VIT => convert2(info.vit);
+        public override byte VIT => convert2(info.vit);
 
         public Kernel_bin.Devour Devour => info.devour[levelgroup()] >= Kernel_bin.Devour_.Count ?
             Kernel_bin.Devour_[Kernel_bin.Devour_.Count - 1] :
@@ -116,13 +191,11 @@ namespace OpenVIII
 
         #endregion Properties
 
-        #region Methods
-
         public static implicit operator Enemy(Module_battle_debug.EnemyInstanceInformation @in) => new Enemy(@in);
 
         public Saves.Item Drop() => chance(DropRate, DropList);
 
-        public short ElementalResistance(Kernel_bin.Element @in)
+        public override short ElementalResistance(Kernel_bin.Element @in)
         {
             List<Kernel_bin.Element> l = (Enum.GetValues(typeof(Kernel_bin.Element))).Cast<Kernel_bin.Element>().ToList();
             if (@in == Kernel_bin.Element.Non_Elemental)
@@ -155,7 +228,7 @@ namespace OpenVIII
         /// <param name="s">status effect</param>
         /// <returns>percent of resistance</returns>
         /// <see cref="https://finalfantasy.fandom.com/wiki/G-Soldier#Stats"/>
-        public sbyte StatusResistance(Kernel_bin.Persistant_Statuses s)
+        public override sbyte StatusResistance(Kernel_bin.Persistant_Statuses s)
         {
             byte r = 100;
             switch (s)
@@ -198,7 +271,7 @@ namespace OpenVIII
         /// <param name="s">status effect</param>
         /// <returns>percent of resistance</returns>
         /// <see cref="https://finalfantasy.fandom.com/wiki/G-Soldier#Stats"/>
-        public sbyte StatusResistance(Kernel_bin.Battle_Only_Statuses s)
+        public override sbyte StatusResistance(Kernel_bin.Battle_Only_Statuses s)
         {
             byte r = statusdefault;
             switch (s)
@@ -275,65 +348,41 @@ namespace OpenVIII
         /// <see cref="https://finalfantasy.fandom.com/wiki/Level#Enemy_levels"/>
         public override string ToString() => Name.Value_str;
 
-        public static implicit operator Module_battle_debug.EnemyInstanceInformation(Enemy @in) => @in.EII;
-
-        private T chance<T>(byte percent, T[] list)
+        public override ushort TotalStat(Kernel_bin.Stat s)
         {
-            int i = Memory.Random.Next(100+1);
-            if (i < percent && list.Length > 0)
+            switch (s)
             {
-                i = Memory.Random.Next(list.Length);
-                return list[i];
+                case Kernel_bin.Stat.HP:
+                    return CurrentHP();
+
+                case Kernel_bin.Stat.EVA:
+                    //TODO confirm if there is no flat stat buff for eva. If there isn't then remove from function.
+                    return EVA;
+
+                case Kernel_bin.Stat.SPD:
+                    return SPD;
+
+                case Kernel_bin.Stat.HIT:
+                    return HIT;
+
+                case Kernel_bin.Stat.LUCK:
+                    return LUCK;
+
+                case Kernel_bin.Stat.MAG:
+                    return MAG;
+
+                case Kernel_bin.Stat.SPR:
+                    return SPR;
+
+                case Kernel_bin.Stat.STR:
+                    return STR;
+
+                case Kernel_bin.Stat.VIT:
+                    return VIT;
             }
-            return default;
+            return 0;
         }
 
-        private byte convert1(byte[] @in)
-        {
-            //from Ifrit's help file
-            byte level = Level;
-            int i = level * @in[0] / 10 + level / @in[1] - level * level / 2 / (@in[3] + @in[2]) / 4;
-            //PLEASE NOTE: I'm not 100% sure on the STR/MAG formula, but it should be accurate enough to get the general idea.
-            // wiki states something like ([3(Lv)] + [(Lv) / 5] - [(Lv)² / 260] + 12) / 4
-
-            return (byte)MathHelper.Clamp(i, 0, byte.MaxValue);
-        }
-
-        private byte convert2(byte[] @in)
-        {
-            //from Ifrit's help file
-            byte level = Level;
-            int i = level / @in[1] - level / @in[3] + level * @in[0] + @in[2];
-            return (byte)MathHelper.Clamp(i, 0, byte.MaxValue);
-        }
-
-        private int convert3(ushort @in, byte inLevel)
-        {
-            //from Ifrit's help file
-            byte level = Level;
-            return @in * (5 * (level - inLevel) / inLevel + 4);
-        }
-
-        private T hml<T>(T h, T m, T l)
-        {
-            byte level = Level;
-            if (level > info.highLevelStart)
-                return h;
-            else if (level > info.medLevelStart)
-                return m;
-            else return l;
-        }
-        private int levelgroup()
-        {
-            byte l = Level;
-            if (l > info.highLevelStart)
-                return 2;
-            if (l > info.medLevelStart)
-                return 1;
-            else return 0;
-        }
-
-        #endregion Methods
-
+        public static implicit operator Module_battle_debug.EnemyInstanceInformation(Enemy @in) => @in.EII;
     }
 }

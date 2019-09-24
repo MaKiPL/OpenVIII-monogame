@@ -47,7 +47,7 @@ namespace OpenVIII
         /// Data for each Character
         /// </summary>
         /// <see cref="http://wiki.ffrtt.ru/index.php/FF8/GameSaveFormat#Characters"/>
-        public class CharacterData : Damageable
+        public class CharacterData : Damageable, ICharacterData
         {
 
             /// <summary>
@@ -416,7 +416,6 @@ namespace OpenVIII
                 }
             }
 
-            public byte Level => CharacterStats.LEVEL(Experience);
             public ushort ExperienceToNextLevel => (ushort)(Level == 100 ? 0 : MathHelper.Clamp(CharacterStats.EXP((byte)(Level + 1)) - Experience, 0, CharacterStats.EXP(2)));
 
             public uint Experience
@@ -431,6 +430,26 @@ namespace OpenVIII
             }
 
             public Module_battle_debug.CharacterInstanceInformation CII { get; private set; }
+
+            public override byte SPD => checked((byte)TotalStat(Kernel_bin.Stat.SPD));
+
+            public override byte SPR => checked((byte)TotalStat(Kernel_bin.Stat.SPR));
+
+            public override byte STR => checked((byte)TotalStat(Kernel_bin.Stat.STR));
+
+            public override byte VIT => checked((byte)TotalStat(Kernel_bin.Stat.VIT));
+
+            public override byte MAG => checked((byte)TotalStat(Kernel_bin.Stat.MAG));
+
+            public override byte Level => CharacterStats.LEVEL(Experience);
+
+            public override byte EVA => checked((byte)TotalStat(Kernel_bin.Stat.EVA));
+
+            public override int EXP => checked((int)Experience);
+
+            public override byte HIT => checked((byte)TotalStat(Kernel_bin.Stat.HIT));
+
+            public override byte LUCK => checked((byte)TotalStat(Kernel_bin.Stat.LUCK));
 
             /// <summary>
             /// Max HP
@@ -565,6 +584,11 @@ namespace OpenVIII
                 c.Abilities = Abilities.ConvertAll(Item => Item);
                 return c;
             }
+
+            public override sbyte StatusResistance(Kernel_bin.Battle_Only_Statuses s) => throw new NotImplementedException();
+            public override sbyte StatusResistance(Kernel_bin.Persistant_Statuses s) => throw new NotImplementedException();
+            public override ushort TotalStat(Kernel_bin.Stat s) => throw new NotImplementedException();
+            public override short ElementalResistance(Kernel_bin.Element @in) => throw new NotImplementedException();
         }
     }
 }

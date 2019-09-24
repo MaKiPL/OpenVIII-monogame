@@ -224,6 +224,18 @@ namespace OpenVIII
             commands = new Kernel_bin.Battle_Commands[Rows];
             PointerZIndex = Limit_Arrow;
         }
+
+
+        //public override void Reset()
+        //{
+        //    ITEM[Targets_Window, 0].HideChildren();
+        //    ITEM[Mag_Pool, 0].HideChildren();
+        //    ITEM[Item_Pool, 0].HideChildren();
+        //    ITEM[Targets_Window, 0].Hide();
+        //    ITEM[Mag_Pool, 0].Hide();
+        //    ITEM[Item_Pool, 0].Hide();
+        //    base.Reset();
+        //}
         protected override void InitShift(int i, int col, int row)
         {
             base.InitShift(i, col, row);
