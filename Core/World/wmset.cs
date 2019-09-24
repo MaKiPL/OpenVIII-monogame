@@ -975,32 +975,63 @@ namespace OpenVIII.Core.World
                 for (int i = 0; i < innerSec.Length; i++)
                 {
                     TIM2 tim = new TIM2(buffer, (uint)(sectionPointers[38 - 1] + innerSec[i]));
-                    if(i==(int)Section38_textures.waterTex)
-                        waterTim = tim;
                     if(tim.GetBpp==4)
                         if(tim.GetClutSize != (tim.GetClutCount*tim.GetColorsCountPerPalette)) //broken header, force our own values
                         {
                             tim.ForceSetClutColors(16);
                             tim.ForceSetClutCount((ushort)(tim.GetClutSize / 16));
                         }
+                    if (i == (int)Section38_textures.waterTex)
+                    {
+                        waterTim = tim; //the waterTim would be treated independently (we create 24BPP atlas from clut blocks)
+                        sec38_textures.Add(new TextureHandler[1]);
+                        sec38_pals.Add(new Color[1][]); //null entry
+                        sec38_textures[i][0] = CreateWaterTextureAtlas(waterTim);// TextureHandler.Create($"wmset_tim38_{(i + 1).ToString("D2")}.tim", waterTim);
+
+                        continue;
+                    }
                     sec38_textures.Add(new TextureHandler[tim.GetClutCount]);
                     sec38_pals.Add(new Color[tim.GetClutCount][]);
                     for (ushort k = 0; k < sec38_textures[i].Length; k++)
                     {
                         Color[] table;
-                        //if (tim.GetBPP == 4)
-                        //{
-                        //    table = tim.GetPalette(k, 16);
-                        //    if (tim.GetColoursCount == 256)
-                        //        Array.Resize<Color>(ref table, 256);
-                        //}
-                        //else
                         table = tim.GetPalette(k);
                         sec38_pals[i][k] = table;
                         sec38_textures[i][k] = TextureHandler.Create($"wmset_tim38_{(i + 1).ToString("D2")}.tim", tim, k, table);
                     }
                 }
             }
+        }
+
+        private const int WATERBLOCKTEXW = 64;
+        private const int WATERBLOCKTEXH = 64;
+
+        private TextureHandler CreateWaterTextureAtlas(TIM2 waterTim)
+        {
+            /*
+             * Water texture (index waterTex(8)) has 16 palettes and... 16 textures in atlas. Eight of them are null with null palette-
+             * therefore block 0 at X=0 Y=0 w=64 H=64 has clut 0/pal0; block 1 at X=64 Y=0 W=64 H=64 has clut1/pal1 and so on
+             * for block 6 (waterfall) you have to multiply 6 (because 0 index) by blockW= 384; 384>256.0 so 384-256 = 128
+             * now the Y is simple-> 384/256.0 = (int)1 -> 1*64; So block 6 (waterfall) would be:
+             * X=128 Y=64 W=64 H=64 Clut=6/pal=6
+             */
+
+            //we need to comform the size even with the unused 8 blocks due to UVs - we would need to tweak them if we made smaller atlas
+            Texture2D waterAtlas = new Texture2D(Memory.graphics.GraphicsDevice, waterTim.GetWidth, waterTim.GetHeight, false, SurfaceFormat.Color);
+            
+            for (int i = 0; i < waterTim.GetClutCount/2; i++) //clut/2 because we don't want that 8 null blocks- waste of time;
+            {
+                Texture2D atlasChunk = waterTim.GetTexture((ushort)i); //let's get texture with clut of i
+
+                int x = (i * WATERBLOCKTEXW) % (WATERBLOCKTEXW << 2);
+                int y = (i * WATERBLOCKTEXH) / (WATERBLOCKTEXH << 2) * WATERBLOCKTEXH;
+
+                byte[] chunkBuffer = new byte[WATERBLOCKTEXW * WATERBLOCKTEXH * 4];
+                atlasChunk.GetData(level: 0, rect: new Rectangle(x, y, WATERBLOCKTEXW, WATERBLOCKTEXH), chunkBuffer, 0, chunkBuffer.Length);
+                waterAtlas.SetData(0, new Rectangle(x, y, WATERBLOCKTEXW, WATERBLOCKTEXH), chunkBuffer, 0, chunkBuffer.Length);
+            }
+            return TextureHandler.Create($"wmset_tim38_09.tim", new Texture2DWrapper(waterAtlas), 0, null);
+
         }
 
         /// <summary>
@@ -1011,6 +1042,8 @@ namespace OpenVIII.Core.World
         /// <returns></returns>
         public TextureHandler GetWorldMapTexture(Section38_textures index, int clut)
             => sec38_textures[(int)index][clut];
+
+        public TextureHandler GetWorldMapWaterTexture() => sec38_textures[(int)Section38_textures.waterTex][0];
 
         public Color[] GetWorldMapTexturePalette(Section38_textures index, int clut)
         => sec38_pals[(int)index][clut];

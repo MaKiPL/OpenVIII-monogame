@@ -1374,11 +1374,11 @@ namespace OpenVIII
                 if (poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2) || (poly.groundtype == 31 && poly.Clut == 3))
                     ate.Texture = wmset.GetBeachAnimationTextureFrame(animationIdPointer, wmset.BeachAnimations[animationIdPointer].currentAnimationIndex);
                 else if (poly.groundtype == 32)
-                    ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex, poly.Clut);
+                    ate.Texture = (Texture2D)wmset.GetWorldMapWaterTexture();
             }
             else if (Extended.In(poly.groundtype, 33, 34))
             {
-                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex, poly.Clut);
+                ate.Texture = (Texture2D)wmset.GetWorldMapWaterTexture();
             }
             else if (poly.groundtype == 31 && poly.Clut == 0) //river flow to ocean texture
             {
