@@ -73,7 +73,8 @@ float4 fogColor = {
 float4 ApplyFog(float4 textureColor, float3 vertPosition, float3 camPosition)
 {
     float4 fogDist = distance(vertPosition, camPosition);
-    fogDist /= 800.0; //you can change that 800f to find best value
+    fogDist -= 250;
+    fogDist /= 1800.0; //you can change that 800f to find best value
     fogDist = clamp(fogDist, 0, 1); //this prevents inversion of colours when at high distance;
     textureColor.xyz = lerp(textureColor.xyz, fogColor.xyz, fogDist.xyz); //we lerp the texture color to fogColor (changeable) with fogDistancw
     return textureColor;
@@ -89,7 +90,7 @@ void ApplyAlphaMasking(float4 textureColor)
     float4 textureColor = tex2D(textureSampler, input.TextureCoordinate);
     float3 vertPosition = input.vertPos;
     float3 camPosition = camWorld;
-    textureColor = ApplyFog(textureColor, vertPosition, camPosition);
+    //textureColor = ApplyFog(textureColor, vertPosition, camPosition);
     ApplyAlphaMasking(textureColor);
     return textureColor;
 }

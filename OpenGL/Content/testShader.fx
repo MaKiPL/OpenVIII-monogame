@@ -75,8 +75,9 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 float4 ApplyFog(float4 textureColor, float3 vertPosition, float3 camPosition)
 {
     float4 fogDist = distance(vertPosition, camPosition);
-    fogDist /= 800.0; //you can change that 800f to find best value
-    fogDist = clamp(fogDist, 0, 1); //this prevents inversion of colours when at high distance;
+    fogDist -= 250;
+    fogDist /= 1800.0; //you can change that 800f to find best value
+    fogDist = clamp(fogDist, 0, 0.4); //this prevents inversion of colours when at high distance;
     textureColor.xyz = lerp(textureColor.xyz, fogColor.xyz, fogDist.xyz); //we lerp the texture color to fogColor (changeable) with fogDistancw
     return textureColor;
 }
@@ -91,7 +92,7 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
     float4 textureColor = tex2D(textureSampler, input.TextureCoordinate);
     float3 vertPosition = input.vertPos;
     float3 camPosition = camWorld;
-    textureColor = ApplyFog(textureColor, vertPosition, camPosition);
+    //textureColor = ApplyFog(textureColor, vertPosition, camPosition);
     ApplyAlphaMasking(textureColor);
     return textureColor;
 }
@@ -103,7 +104,7 @@ float4 PixelShaderFunction_Water(VertexShaderOutput input) : COLOR0
     float3 camPosition = camWorld;
     textureColor = ApplyFog(textureColor, vertPosition, camPosition);
     ApplyAlphaMasking(textureColor);
-    //TODO water anims- maybe param with UV or something?
+
     return textureColor;
 }
 
