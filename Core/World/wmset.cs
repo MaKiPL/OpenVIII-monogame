@@ -750,6 +750,9 @@ namespace OpenVIII.Core.World
                 BeachAnimations = new textureAnimation[innerPointers.Length];
                 for (int i = 0; i < innerPointers.Length; i++)
                     BeachAnimations[i] = textureAnimation_ParseBlock(sectionPointers[17 - 1] + innerPointers[i], i ,ms, br);
+                //for (int i = 0; i < beachAnimations.Length; i++)
+                //    for (int n = 0; n < beachAnimations[i].framesCount; n++)
+                //        Extended.DumpTexture(beachAnimations[i].framesTextures[n], $"D:\\b_{i}_{n}.png");
             }
         }
 
@@ -765,9 +768,6 @@ namespace OpenVIII.Core.World
                 for (int i = 0; i < innerPointers.Length; i++)
                     waterAnimations[i] = textureAnimation_ParseBlock(sectionPointers[41 - 1] + innerPointers[i], -1, ms, br);
             }
-            for (int i = 0; i < waterAnimations.Length; i++)
-                for (int n = 0; n < waterAnimations[i].framesCount; n++)
-                        Extended.DumpTexture(waterAnimations[i].framesTextures[n], $"D:\\d_{i}_{n}.png");
         }
 
         private const int sec17_imageHeaderSize = 12; //dword;dword; sizeDword
@@ -853,14 +853,13 @@ namespace OpenVIII.Core.World
                 }
                 else
                     {
+                    width /= 2;
                     customPalette[i] = new Color[width]; //in sec41 width is the number of colours
                     for(int m=0; m<width; m++)
                     {
                         ushort color = br.ReadUInt16();
                         customPalette[i][m] = Texture_Base.ABGR1555toRGBA32bit(color);
                     }
-                    animationFrames[i] = new Texture2D(Memory.graphics.GraphicsDevice, 16, 32, false, SurfaceFormat.Color); //16 colours and 32 palettes
-                    animationFrames[i].SetData<Color>(customPalette[i]);
                     }
             }
             animation.framesTextures = animationFrames;
@@ -879,7 +878,7 @@ namespace OpenVIII.Core.World
         public Texture2D GetBeachAnimationTextureFrame(int animationId, int frameId)
             => BeachAnimations[animationId].framesTextures[frameId];
 
-        public Color[] GetWaterAnimationPalettes(int animId, int palId, int frameId) => waterAnimations[animId].framesPalette[frameId].Skip(palId*16).Take(16).ToArray();
+        public Color[] GetWaterAnimationPalettes(int animId, int frameId) => waterAnimations[animId].framesPalette[frameId].ToArray();
 
         public Texture2D GetWaterAnimationTextureFrame(int animationId, int frameId) => WaterAnimations[animationId].framesTextures[frameId];
 
@@ -919,6 +918,9 @@ namespace OpenVIII.Core.World
         private List<Color[][]> sec38_pals; //because other sections rely on palettes of wmset.38
 
         TIM2 waterTim;
+        TIM2 waterTim2;
+        TIM2 waterTim3;
+        TIM2 waterTim4;
 
         public enum Section38_textures
         {
@@ -972,9 +974,15 @@ namespace OpenVIII.Core.World
                 for (int i = 0; i < innerSec.Length; i++)
                 {
                     TIM2 tim = new TIM2(buffer, (uint)(sectionPointers[38 - 1] + innerSec[i]));
-                    if(i==(int)Section38_textures.waterTex)
+                    if (i == (int)Section38_textures.waterTex2)
                         waterTim = tim;
-                    if(tim.GetBpp==4)
+                    if (i == (int)Section38_textures.waterTex3)
+                        waterTim2 = tim;
+                    if (i == (int)Section38_textures.waterTex4)
+                        waterTim3 = tim;
+                    if (i == (int)Section38_textures.waterfall)
+                        waterTim4 = tim;
+                    if (tim.GetBpp==4)
                         if(tim.GetClutSize != (tim.GetClutCount*tim.GetColorsCountPerPalette)) //broken header, force our own values
                         {
                             tim.ForceSetClutColors(16);
@@ -985,19 +993,61 @@ namespace OpenVIII.Core.World
                     for (ushort k = 0; k < sec38_textures[i].Length; k++)
                     {
                         Color[] table;
-                        //if (tim.GetBPP == 4)
-                        //{
-                        //    table = tim.GetPalette(k, 16);
-                        //    if (tim.GetColoursCount == 256)
-                        //        Array.Resize<Color>(ref table, 256);
-                        //}
-                        //else
                         table = tim.GetPalette(k);
                         sec38_pals[i][k] = table;
                         sec38_textures[i][k] = TextureHandler.Create($"wmset_tim38_{(i + 1).ToString("D2")}.tim", tim, k, table);
                     }
                 }
             }
+            CreateWaterTextureAtlas();
+        }
+
+        private const int WATERBLOCKTEXW = 64; //should be probably dynamic to conform mods
+        private const int WATERBLOCKTEXH = 64;
+
+        Texture2D waterAtlas;
+
+        /// <summary>
+        /// Creates atlas with WaterBlockWidth*4 px based on 8BPP TIMs (for animated WM). Therefore user can replace 
+        /// individual texture without breaking the atlas as it's created basing on TextureHandler
+        /// but their size must conform 4x2 layout where each block has the SAME resolution
+        /// </summary>
+        private void CreateWaterTextureAtlas()
+        {
+            /*
+             * for animated water materials there's ANOTHER water texture that is NOT watertex, but is rather built from various 
+             * blocks in independent TIMs- they are NOT 4BPP but 8BPP- although they are not correctly ordered- once again
+             * their VRAM x and y kick-in, but we got it covered- the blocks are 4x4 (64px per block). The blocks order is:
+             *       0        64     128       192
+             *  0   [24]     [17]    [22]      [23]
+             *  64  [18]     [19]    [20]      [21]
+             */
+            waterAtlas = new Texture2D(Memory.graphics.GraphicsDevice, WATERBLOCKTEXW << 2, WATERBLOCKTEXH<<1, false, SurfaceFormat.Color); //64<<2 is 256
+
+            WaterTextureAtlasPutChunk(Section38_textures.waterTex6,0,0); // 0 0 
+            WaterTextureAtlasPutChunk(Section38_textures.waterTex2,WATERBLOCKTEXW,0); // 64 0 
+            WaterTextureAtlasPutChunk(Section38_textures.beach,WATERBLOCKTEXW*2,0); // 128 0 
+            WaterTextureAtlasPutChunk(Section38_textures.beachE,WATERBLOCKTEXW*3,0); // 192 0 
+            WaterTextureAtlasPutChunk(Section38_textures.waterTex3,0,WATERBLOCKTEXH); // 0 64 
+            WaterTextureAtlasPutChunk(Section38_textures.waterTex4,WATERBLOCKTEXW,WATERBLOCKTEXH); // 64 64 
+            WaterTextureAtlasPutChunk(Section38_textures.waterfall,WATERBLOCKTEXW*2,WATERBLOCKTEXH); // 128 64
+            WaterTextureAtlasPutChunk(Section38_textures.waterTex5,WATERBLOCKTEXW*3,WATERBLOCKTEXH); // 192 64
+            Extended.DumpTexture(waterAtlas, "D:/test.png");
+        }
+
+        private void WaterTextureAtlasPutChunk(Section38_textures textureIndex, int x, int y)
+        {
+            Texture2D atlasChunk = (Texture2D)GetWorldMapTexture(textureIndex, 0); //there's only one clut
+            byte[] chunkBuffer = new byte[WATERBLOCKTEXW * WATERBLOCKTEXH * 4];
+            atlasChunk.GetData(level: 0, rect: new Rectangle(0, 0, WATERBLOCKTEXW, WATERBLOCKTEXH), chunkBuffer, 0, chunkBuffer.Length);
+            waterAtlas.SetData(0, new Rectangle(x, y, WATERBLOCKTEXW, WATERBLOCKTEXH), chunkBuffer, 0, chunkBuffer.Length);
+        }
+
+        private void UpdateWaterTextureAtlasChunk(Texture2D animatedChunk, int x, int y)
+        {
+            byte[] chunkBuffer = new byte[WATERBLOCKTEXW * WATERBLOCKTEXH * 4];
+            animatedChunk.GetData(level: 0, rect: new Rectangle(0, 0, WATERBLOCKTEXW, WATERBLOCKTEXH), chunkBuffer, 0, chunkBuffer.Length);
+            waterAtlas.SetData(0, new Rectangle(x, y, WATERBLOCKTEXW, WATERBLOCKTEXH), chunkBuffer, 0, chunkBuffer.Length);
         }
 
         /// <summary>
@@ -1009,16 +1059,46 @@ namespace OpenVIII.Core.World
         public TextureHandler GetWorldMapTexture(Section38_textures index, int clut)
             => sec38_textures[(int)index][clut];
 
+        /// <summary>
+        /// Gets the pre-made atlas from TIMs- do not change to TextureHandler! This atlas
+        /// is final product from moddable TextureHandlers- it shouldn't be directly changed
+        /// </summary>
+        /// <returns></returns>
+        public Texture2D GetWorldMapWaterTexture() => waterAtlas;
+
         public Color[] GetWorldMapTexturePalette(Section38_textures index, int clut)
         => sec38_pals[(int)index][clut];
 
         public void UpdateWorldMapWaterTexturePaletteForAnimation(int index, Color[] palette)
         {
-            if (waterTim != null)
-                sec38_textures[(int)Section38_textures.waterTex][index] = TextureHandler.Create(
-                    $"wmset_tim38_{((int)Section38_textures.waterTex + 1).ToString("D2")}.tim",
-                    waterTim,
-                    (ushort)index, palette);
+            if (waterTim == null)
+                return;
+            Texture2D animatedChunk = null;
+            int x = 0, y = 0;
+            switch(index)
+            {
+                case 0:
+                    animatedChunk = waterTim2.GetTexture(palette);
+                    x = 0;
+                    y = WATERBLOCKTEXH;
+                    break;
+                case 3:
+                    animatedChunk = waterTim.GetTexture(palette);
+                    x = WATERBLOCKTEXW;
+                    y = 0;
+                    break;
+                case 2:
+                    animatedChunk = waterTim4.GetTexture(palette);
+                    x = WATERBLOCKTEXW*2;
+                    y = WATERBLOCKTEXH;
+                    break;
+                case 1:
+                    animatedChunk = waterTim3.GetTexture(palette);
+                    x = WATERBLOCKTEXW;
+                    y = WATERBLOCKTEXH;
+                    break;
+            }
+            UpdateWaterTextureAtlasChunk(animatedChunk, x, y);
         }
 
         #endregion

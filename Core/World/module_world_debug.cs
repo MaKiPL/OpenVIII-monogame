@@ -13,24 +13,23 @@ namespace OpenVIII
 {
     public class Module_world_debug
     {
-        private static bool bUseCustomShaderTest = false; //enable for testing the shader- mostly learning stuff
+        private static bool bUseCustomShaderTest = true; //enable for testing the shader- mostly learning stuff
 
         private static FPS_Camera fps_camera;
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
         private static float degrees;
         private static float camDistance = 10.0f;
-        private static float renderCamDistance = 960f;
-        /// <summary>
-        /// this is the distance to face when it should be at Y=originalY rising up from 0 from renderCamDistance
-        /// </summary>
-        private static float renderCamDistance_faceRising = 800f;
-        private static readonly float renderCamDistance_faceRisingDistance = renderCamDistance - renderCamDistance_faceRising ;
+        private static float renderCamDistance = 1200f;
         private static Vector3 camPosition, camTarget;
         private static Vector3 playerPosition = new Vector3(-9105f, 30f, -4466);
         private static Vector3 lastPlayerPosition = playerPosition;
         public static BasicEffect effect;
         public static AlphaTestEffect ate;
         public static Effect worldShaderModel;
+        private const float BEND_VALUE = 1.4f;
+        private const float BEND_DISTANCE = 350.0f;
+        private readonly static Vector3 BEND_VECTOR = new Vector3(0, -0.01f, 0);
+        private readonly static Vector4 FOG_COLOR = new Vector4(2f, 2f, 2f, 0f);
 
         private enum _worldState
         {
@@ -60,7 +59,7 @@ namespace OpenVIII
         private static rail rail;
 
         private static byte[] wmx;
-        private static float DEBUGshit = 0f;
+        private static float DEBUGshit = 1f;
         private const int WM_SEG_SIZE = 0x9000; //World map segment size in file
         private const int WM_SEGMENTS_COUNT = 835;
 
@@ -238,6 +237,11 @@ namespace OpenVIII
                 worldShaderModel.Parameters["World"].SetValue(worldMatrix);
                 worldShaderModel.Parameters["View"].SetValue(viewMatrix);
                 worldShaderModel.Parameters["Projection"].SetValue(projectionMatrix);
+                worldShaderModel.Parameters["bendValue"].SetValue(BEND_VALUE);
+                worldShaderModel.Parameters["bendDistance"].SetValue(BEND_DISTANCE);
+                worldShaderModel.Parameters["bendVector"].SetValue(BEND_VECTOR);
+                worldShaderModel.Parameters["Projection"].SetValue(projectionMatrix);
+                worldShaderModel.Parameters["fogColor"].SetValue(FOG_COLOR);
             }
             //temporarily disabling this, because I'm getting more and more tired of this music playing over and over when debugging
             //Memory.musicIndex = 30;
@@ -494,10 +498,8 @@ namespace OpenVIII
                     beachAnims[i].currentAnimationIndex = 1;
                     beachAnims[i].bIncrementing = !beachAnims[i].bIncrementing;
                 }
-                    if (bWater && i == 0)
-                        ; //HEY, TEST THE ORIGINAL waterTex palettes to find the references- how does things work and etc.
-                        //for(int m=  1; m<5; m++) //32 palettes
-                        //    wmset.UpdateWorldMapWaterTexturePaletteForAnimation(m, wmset.GetWaterAnimationPalettes(0, (int)DEBUGshit, beachAnims[1].currentAnimationIndex));
+                    if (bWater)
+                        wmset.UpdateWorldMapWaterTexturePaletteForAnimation(i, wmset.GetWaterAnimationPalettes(i, beachAnims[i].currentAnimationIndex));
                 }
             }
         }
@@ -534,10 +536,29 @@ namespace OpenVIII
                 playerPosition.X += 1f;
             if (Input2.Button(Keys.D2))
                 playerPosition.X -= 1f;
+
+#if DEBUG
             if (Input2.Button(Keys.OemPlus))
-                DEBUGshit += 1f;
+                DEBUGshit += 4f;
             if (Input2.Button(Keys.OemMinus))
+                DEBUGshit -= 4f;
+
+            if (Input2.Button(Keys.NumPad9))
+                DEBUGshit += 0.1f;
+            if (Input2.Button(Keys.NumPad6))
+                DEBUGshit -= 0.1f;
+
+            if (Input2.Button(Keys.NumPad8))
+                DEBUGshit += 1f;
+            if (Input2.Button(Keys.NumPad5))
                 DEBUGshit -= 1f;
+
+            if (Input2.Button(Keys.NumPad7))
+                DEBUGshit += 10f;
+            if (Input2.Button(Keys.NumPad4))
+                DEBUGshit -= 10f;
+#endif
+
             if (worldState != _worldState._9debugFly)
             {
                 if (Input2.Button(FF8TextTagKey.Up))
@@ -701,6 +722,7 @@ namespace OpenVIII
                 worldShaderModel.Parameters["Projection"].SetValue(ate.Projection);
                 worldShaderModel.Parameters["View"].SetValue(ate.View);
                 worldShaderModel.Parameters["World"].SetValue(ate.World);
+                worldShaderModel.Parameters["camWorld"].SetValue(camPosition);
             }
 
             segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1);
@@ -1005,7 +1027,12 @@ namespace OpenVIII
                 for (int i = 0; i < collectionDebug.Item1.Length; i += 3)
                 {
                     ate.Texture = chara.GetCharaTexture(textureIndexBase + collectionDebug.Item2[i]);
-                    foreach (EffectPass pass in ate.CurrentTechnique.Passes)
+                    if (bUseCustomShaderTest)
+                    {
+                        worldShaderModel.Parameters["ModelTexture"].SetValue(ate.Texture);
+                        worldShaderModel.CurrentTechnique = worldShaderModel.Techniques["Texture_fog_bend"];
+                    }
+                    foreach (EffectPass pass in bUseCustomShaderTest ? worldShaderModel.CurrentTechnique.Passes : ate.CurrentTechnique.Passes)
                     {
                         pass.Apply();
                         Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, collectionDebug.Item1, i, 1);
@@ -1128,7 +1155,7 @@ namespace OpenVIII
             if (playerSegmentVector.X + xTranslation < 0 && playerSegmentVector.Y + yTranslation > 23 && xTranslation < 0 && yTranslation > 0) //BL diagonal wrap
                 translationVector = new Vector3(32 * 512, 0, 24 * -512);
 
-            Dictionary<Texture2D, List<VertexPositionTexture>> groupedPolygons = new Dictionary<Texture2D, List<VertexPositionTexture>>();
+            Dictionary<Texture2D, Tuple<List<VertexPositionTexture>, bool>> groupedPolygons = new Dictionary<Texture2D, Tuple<List<VertexPositionTexture>, bool>>();
 
 
             for (int k = 0; k < seg.parsedTriangle.Length; k++)
@@ -1142,25 +1169,7 @@ namespace OpenVIII
 
                 Vector3 parsedTriangleB = seg.parsedTriangle[k].B + translationVector;
                 Vector3 parsedTriangleC = seg.parsedTriangle[k].C + translationVector;
-
-
-                //====SPHERE SIMULATION OF OBJECTS 'RISING UP' EFFECT- DISABLED SO FAR BECAUSE THERE ARE GLITCHES===\\
-                if (faceDistance > renderCamDistance - 50f)
-                {
-                    firstEdge.Y = firstEdge.Y - 50f;
-                    parsedTriangleB.Y = parsedTriangleB.Y - 50f;
-                    parsedTriangleC.Y = parsedTriangleC.Y - 50f;
-                }
-                else if (faceDistance > renderCamDistance_faceRising && faceDistance < renderCamDistance - 50f)
-                {
-                    float riseAmount = (float)(renderCamDistance - faceDistance) / (renderCamDistance_faceRisingDistance);
-                    firstEdge.Y = MathHelper.Lerp(firstEdge.Y - 50f, firstEdge.Y, riseAmount);
-                    parsedTriangleB.Y = MathHelper.Lerp(parsedTriangleB.Y - 50f, parsedTriangleB.Y, riseAmount);
-                    parsedTriangleC.Y = MathHelper.Lerp(parsedTriangleC.Y - 50f, parsedTriangleC.Y, riseAmount);
-                }
-                //====SPHERE SIMULATION-SPHERE SIMULATION END=======================================================\\
-
-
+                bool bIsWaterBlock = false;
 
                 VertexPositionTexture[] vpc = new VertexPositionTexture[3];
                 vpc[0] = new VertexPositionTexture(
@@ -1176,13 +1185,16 @@ namespace OpenVIII
                 if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_ROAD))
                     ate.Texture = wmset.GetRoadsMiscTextures();
                 else if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_WATER))
+                {
                     SetWaterAnimationTexture(seg, k, vpc, poly);
+                    bIsWaterBlock = true;
+                }
                 else
                     ate.Texture = (Texture2D)texl.GetTexture(poly.TPage, poly.Clut);
                 if (groupedPolygons.ContainsKey(ate.Texture))
-                    groupedPolygons[ate.Texture].AddRange(vpc);
+                    groupedPolygons[ate.Texture].Item1.AddRange(vpc);
                 else
-                    groupedPolygons.Add(ate.Texture, new List<VertexPositionTexture>() {vpc[0], vpc[1],vpc[2]});
+                    groupedPolygons.Add(ate.Texture, new Tuple<List<VertexPositionTexture>, bool>(new List<VertexPositionTexture>() {vpc[0], vpc[1],vpc[2]}, bIsWaterBlock));
                 
                 //if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_WATER) && Extended.In(poly.groundtype, 32, 34))
                 //{
@@ -1196,13 +1208,19 @@ namespace OpenVIII
                 //    Memory.graphics.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
                 //}
             }
-            
-            foreach(KeyValuePair<Texture2D, List<VertexPositionTexture>> kvp in groupedPolygons)
+
+            foreach(KeyValuePair<Texture2D, Tuple<List<VertexPositionTexture>, bool>> kvp in groupedPolygons)
             {
                 ate.Texture = kvp.Key;
+                var vptFinal = kvp.Value.Item1.ToArray();
                 if(bUseCustomShaderTest)
                     worldShaderModel.Parameters["ModelTexture"].SetValue(ate.Texture);
-                var vptFinal = kvp.Value.ToArray();
+
+                if (kvp.Value.Item2 && bUseCustomShaderTest)
+                    worldShaderModel.CurrentTechnique = worldShaderModel.Techniques["Texture_fog_bend_waterAnim"];
+                else if (bUseCustomShaderTest)
+                    worldShaderModel.CurrentTechnique = worldShaderModel.Techniques["Texture_fog_bend"];
+                    
                 foreach (EffectPass pass in bUseCustomShaderTest ? worldShaderModel.CurrentTechnique.Passes : ate.CurrentTechnique.Passes)
                 {
                     pass.Apply();
@@ -1323,31 +1341,55 @@ namespace OpenVIII
 
         private static void SetWaterAnimationTexture(Segment seg, int k, VertexPositionTexture[] vpc, Polygon poly)
         {
-            if (poly.groundtype == 10 || poly.groundtype == 32) //BEACH + flat water
+            /*
+             *  GP=10 - Beach [ANIMATED]
+                GP=31/CLUT0 - river endflow
+                GP=31/CLUT6 - waterfall [ANIMATED]
+                GP=31/CLUT3 - river [ANIMATED]
+                GP=32 - Thin water- walkable with chocobo
+                GP=33 - transition between thin water to ocean
+                GP=34 - ocean
+                */
+            var waterAtlas = wmset.GetWorldMapWaterTexture();
+            if (poly.groundtype == 10 || poly.groundtype == 32 || (poly.groundtype == 31 && poly.Clut == 3)) //BEACH + flat water + river flowing down
             {
                 var @as = seg.parsedTriangle[k].parentPolygon;
-                int animationIdPointer = @as.Clut == 2 ? 0 : 1;
+                int animationIdPointer = 1; //beach corner
+                if (@as.Clut == 2)
+                    animationIdPointer = 0; //beach atlas
+                if (@as.Clut == 3 && poly.groundtype == 31)
+                    animationIdPointer = 2; //river anim
 
                 var texx = wmset.GetBeachAnimationTextureFrame(animationIdPointer, wmset.BeachAnimations[animationIdPointer].currentAnimationIndex);
                 float Ucoorder = @as.Clut == 2 ? 128f : 192;
-                if (poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2))
+                float Vcoorder = @as.Clut == 3 && poly.groundtype == 31 ? 32f : 0f;
+                if (poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2) || (poly.groundtype == 31 && poly.Clut == 3))
                 {
-                    vpc[0].TextureCoordinate = new Vector2((@as.U1 - Ucoorder) / texx.Width, @as.V1 / (float)texx.Height);
-                    vpc[1].TextureCoordinate = new Vector2((@as.U2 - Ucoorder) / texx.Width, @as.V2 / (float)texx.Height);
-                    vpc[2].TextureCoordinate = new Vector2((@as.U3 - Ucoorder) / texx.Width, @as.V3 / (float)texx.Height);
+                    vpc[0].TextureCoordinate = new Vector2((@as.U1 - Ucoorder) / texx.Width, (@as.V1 - Vcoorder) / (float)texx.Height);
+                    vpc[1].TextureCoordinate = new Vector2((@as.U2 - Ucoorder) / texx.Width, (@as.V2 - Vcoorder) / (float)texx.Height);
+                    vpc[2].TextureCoordinate = new Vector2((@as.U3 - Ucoorder) / texx.Width, (@as.V3 - Vcoorder) / (float)texx.Height);
                 }
-               
-                if (poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2))
+
+                if (poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2) || (poly.groundtype == 31 && poly.Clut == 3))
                     ate.Texture = wmset.GetBeachAnimationTextureFrame(animationIdPointer, wmset.BeachAnimations[animationIdPointer].currentAnimationIndex);
                 else if (poly.groundtype == 32)
-                    ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex, poly.Clut);
+                {
+                    vpc[0].TextureCoordinate = new Vector2(@as.U1 / (float)waterAtlas.Width, @as.V1 / (float)waterAtlas.Height);
+                    vpc[1].TextureCoordinate = new Vector2(@as.U2 / (float)waterAtlas.Width, @as.V2 / (float)waterAtlas.Height);
+                    vpc[2].TextureCoordinate = new Vector2(@as.U3 / (float)waterAtlas.Width, @as.V3 / (float)waterAtlas.Height);
+                    ate.Texture = waterAtlas;
+                }
             }
-            else if (Extended.In(poly.groundtype, 33, 34))
+            else if (Extended.In(poly.groundtype, 31, 34))
             {
-                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex, poly.Clut);
+                var @as = seg.parsedTriangle[k].parentPolygon;
+                vpc[0].TextureCoordinate = new Vector2(@as.U1 / (float)waterAtlas.Width, @as.V1 / (float)waterAtlas.Height);
+                vpc[1].TextureCoordinate = new Vector2(@as.U2 / (float)waterAtlas.Width, @as.V2 / (float)waterAtlas.Height);
+                vpc[2].TextureCoordinate = new Vector2(@as.U3 / (float)waterAtlas.Width, @as.V3 / (float)waterAtlas.Height);
+                ate.Texture = waterAtlas;
             }
             else
-                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0);
+                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0); //FAIL- should not be used (I think)
         }
 
         /// <summary>
