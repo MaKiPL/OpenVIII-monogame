@@ -498,10 +498,8 @@ namespace OpenVIII
                     beachAnims[i].currentAnimationIndex = 1;
                     beachAnims[i].bIncrementing = !beachAnims[i].bIncrementing;
                 }
-                    if (bWater && i == 0)
-                        ; //HEY, TEST THE ORIGINAL waterTex palettes to find the references- how does things work and etc.
-                        //for(int m=  1; m<5; m++) //32 palettes
-                        //    wmset.UpdateWorldMapWaterTexturePaletteForAnimation(m, wmset.GetWaterAnimationPalettes(0, (int)DEBUGshit, beachAnims[1].currentAnimationIndex));
+                    if (bWater)
+                        wmset.UpdateWorldMapWaterTexturePaletteForAnimation(i, wmset.GetWaterAnimationPalettes(i, beachAnims[i].currentAnimationIndex));
                 }
             }
         }
@@ -541,9 +539,9 @@ namespace OpenVIII
 
 #if DEBUG
             if (Input2.Button(Keys.OemPlus))
-                DEBUGshit += 0.01f;
+                DEBUGshit += 4f;
             if (Input2.Button(Keys.OemMinus))
-                DEBUGshit -= 0.01f;
+                DEBUGshit -= 4f;
 
             if (Input2.Button(Keys.NumPad9))
                 DEBUGshit += 0.1f;
@@ -1352,6 +1350,7 @@ namespace OpenVIII
                 GP=33 - transition between thin water to ocean
                 GP=34 - ocean
                 */
+            var waterAtlas = wmset.GetWorldMapWaterTexture();
             if (poly.groundtype == 10 || poly.groundtype == 32 || (poly.groundtype == 31 && poly.Clut == 3)) //BEACH + flat water + river flowing down
             {
                 var @as = seg.parsedTriangle[k].parentPolygon;
@@ -1374,27 +1373,20 @@ namespace OpenVIII
                 if (poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2) || (poly.groundtype == 31 && poly.Clut == 3))
                     ate.Texture = wmset.GetBeachAnimationTextureFrame(animationIdPointer, wmset.BeachAnimations[animationIdPointer].currentAnimationIndex);
                 else if (poly.groundtype == 32)
-                    ate.Texture = (Texture2D)wmset.GetWorldMapWaterTexture();
+                {
+                    vpc[0].TextureCoordinate = new Vector2(@as.U1 / (float)waterAtlas.Width, @as.V1 / (float)waterAtlas.Height);
+                    vpc[1].TextureCoordinate = new Vector2(@as.U2 / (float)waterAtlas.Width, @as.V2 / (float)waterAtlas.Height);
+                    vpc[2].TextureCoordinate = new Vector2(@as.U3 / (float)waterAtlas.Width, @as.V3 / (float)waterAtlas.Height);
+                    ate.Texture = waterAtlas;
+                }
             }
-            else if (Extended.In(poly.groundtype, 33, 34))
+            else if (Extended.In(poly.groundtype, 31, 34))
             {
-                ate.Texture = (Texture2D)wmset.GetWorldMapWaterTexture();
-            }
-            else if (poly.groundtype == 31 && poly.Clut == 0) //river flow to ocean texture
-            {
-                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex6, poly.Clut);
                 var @as = seg.parsedTriangle[k].parentPolygon;
-                vpc[0].TextureCoordinate = new Vector2(@as.U1 / (float)ate.Texture.Width, @as.V1 / (float)ate.Texture.Height);
-                vpc[1].TextureCoordinate = new Vector2(@as.U2 / (float)ate.Texture.Width, @as.V2 / (float)ate.Texture.Height);
-                vpc[2].TextureCoordinate = new Vector2(@as.U3 / (float)ate.Texture.Width, @as.V3 / (float)ate.Texture.Height);
-            }
-            else if (poly.groundtype == 31 && poly.Clut == 6) //lake to river waterfall
-            {
-                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterfall, 0);
-                var @as = seg.parsedTriangle[k].parentPolygon;
-                vpc[0].TextureCoordinate = new Vector2((@as.U1-128) / (float)ate.Texture.Width, (@as.V1-64) / (float)ate.Texture.Height);
-                vpc[1].TextureCoordinate = new Vector2((@as.U2-128) / (float)ate.Texture.Width, (@as.V2-64) / (float)ate.Texture.Height);
-                vpc[2].TextureCoordinate = new Vector2((@as.U3-128) / (float)ate.Texture.Width, (@as.V3-64) / (float)ate.Texture.Height);
+                vpc[0].TextureCoordinate = new Vector2(@as.U1 / (float)waterAtlas.Width, @as.V1 / (float)waterAtlas.Height);
+                vpc[1].TextureCoordinate = new Vector2(@as.U2 / (float)waterAtlas.Width, @as.V2 / (float)waterAtlas.Height);
+                vpc[2].TextureCoordinate = new Vector2(@as.U3 / (float)waterAtlas.Width, @as.V3 / (float)waterAtlas.Height);
+                ate.Texture = waterAtlas;
             }
             else
                 ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0); //FAIL- should not be used (I think)
