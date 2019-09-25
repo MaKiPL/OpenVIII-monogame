@@ -155,10 +155,8 @@ namespace OpenVIII
                     return false;
 
                 case 2: //magic
-                    ITEM[Blue_Pool, 0].Show();
-                    ITEM[Blue_Pool, 0].Refresh();
-                    //ITEM[Mag_Pool, 0].Show();
-                    //ITEM[Mag_Pool, 0].Refresh();
+                    ITEM[Mag_Pool, 0].Show();
+                    ITEM[Mag_Pool, 0].Refresh();
                     return true;
 
                 case 4: //items

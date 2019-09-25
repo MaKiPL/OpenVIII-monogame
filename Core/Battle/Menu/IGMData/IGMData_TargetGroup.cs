@@ -25,6 +25,7 @@ namespace OpenVIII
 
             //private IGMData_BlueMagic_Pool BlueMagic_Pool => (IGMData_BlueMagic_Pool)(((IGMData)ITEM[3, 0]));
             private IGMData_Draw_Pool Draw_Pool => (IGMData_Draw_Pool)(((IGMData)ITEM[2, 0]));
+
             private IGMData_TargetEnemies TargetEnemies => (IGMData_TargetEnemies)(((IGMData)ITEM[0, 0]));
 
             private IGMData_TargetParty TargetParty => (IGMData_TargetParty)(((IGMData)ITEM[1, 0]));
@@ -41,19 +42,28 @@ namespace OpenVIII
                 Hide();
             }
 
+            private string CharacterNames(Characters[] vc)
+            {
+                string r = $"[{Memory.Strings.GetName(vc[0])}";
+                for (int j = 1; j < vc.Length; j++)
+                    r += $", {Memory.Strings.GetName(vc[j])}";
+                r += "]";
+                return r;
+            }
+
             private bool Command00() => throw new NotImplementedException();
 
             private bool Command01_ATTACK()
             {
-                Neededvaribles(out Enemy e, out Characters vc, out Characters fromvc, out bool enemytarget);
+                Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
                 BattleMenus.EndTurn();
                 return true;
             }
 
             private bool Command02_MAGIC()
             {
-                Neededvaribles(out Enemy e, out Characters vc, out Characters fromvc, out bool enemytarget);
-                Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} casts {Magic.Name}({Magic.ID}) spell on { (enemytarget ? $"{e.Name.Value_str}({TargetEnemies.CURSOR_SELECT})" : Memory.Strings.GetName(vc).Value_str) }");
+                Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} casts {Magic.Name}({Magic.ID}) spell on { DebugMessageSuffix(e, vc, enemytarget) }");
                 BattleMenus.EndTurn();
                 return true;
             }
@@ -62,15 +72,15 @@ namespace OpenVIII
 
             private bool Command04_ITEM()
             {
-                Neededvaribles(out Enemy e, out Characters vc, out Characters fromvc, out bool enemytarget);
-                Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} uses {Item.Name}({Item.ID}) item on { (enemytarget ? $"{e.Name.Value_str}({TargetEnemies.CURSOR_SELECT})" : Memory.Strings.GetName(vc).Value_str) }");
+                Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} uses {Item.Name}({Item.ID}) item on { DebugMessageSuffix(e, vc, enemytarget) }");
                 BattleMenus.EndTurn();
                 return true;
             }
 
             private bool Command05_RENZOKUKEN()
             {
-                Neededvaribles(out Enemy e, out Characters vc, out Characters fromvc, out bool enemytarget);
+                Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
                 //Renzokuken
                 byte w = Memory.State[fromvc].WeaponID;
                 int hits = 0;
@@ -107,11 +117,11 @@ namespace OpenVIII
 
             private bool Command06_DRAW()
             {
-                Neededvaribles(out Enemy e, out Characters vc, out Characters fromvc, out bool enemytarget);
+                Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
                 //draw
                 //spawn a 1 page 4 row pool of the magic/gfs that the selected enemy has.
-                DrawMagic(e.DrawList);
-                Draw_Pool.Refresh(e.DrawList);
+                DrawMagic(e.First().DrawList);
+                Draw_Pool.Refresh(e.First().DrawList);
                 Draw_Pool.Show();
                 return true;
             }
@@ -134,13 +144,9 @@ namespace OpenVIII
 
             private bool Command15_BlueMagic()
             {
-                //Neededvaribles(out Enemy e, out Characters vc, out Characters fromvc, out bool enemytarget);
-                ////draw
-                ////spawn a 1 page 4 row pool of the magic/gfs that the selected enemy has.
-                //DrawMagic(e.DrawList);
-                //BlueMagic_Pool.Refresh();
-                //BlueMagic_Pool.Show();
-                //return true;
+                Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} casts {BlueMagic.Name}({BlueMagic.ID}) spell on { DebugMessageSuffix(e,vc,enemytarget) }");
+                BattleMenus.EndTurn();
                 return false;
             }
 
@@ -194,7 +200,8 @@ namespace OpenVIII
 
             private bool CommandDefault() => throw new NotImplementedException();
 
-            private void DebugMessageCommand(IGMData_TargetEnemies i, Enemy e, Characters vc, Characters fromvc, bool enemytarget) => Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} uses {Command.Name}({Command.ID}) command on { (enemytarget ? $"{e.Name.Value_str}({i.CURSOR_SELECT})" : Memory.Strings.GetName(vc).Value_str) }");
+            private void DebugMessageCommand(IGMData_TargetEnemies i, Enemy[] e, Characters[] vc, Characters fromvc, bool enemytarget) => Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} uses {Command.Name}({Command.ID}) command on { DebugMessageSuffix(e, vc, enemytarget) }");
+            private string DebugMessageSuffix(Enemy[] e, Characters[] vc, bool enemytarget) => (enemytarget ? $"{EnemyNames(e)}({(e.Length == 1 ? TargetEnemies.CURSOR_SELECT.ToString() : "MultiSelect")})" : CharacterNames(vc));
 
             /// <summary>
             /// Display pool with list
@@ -202,11 +209,28 @@ namespace OpenVIII
             /// <param name="drawList"></param>
             private void DrawMagic(Debug_battleDat.Magic[] drawList) => Debug.WriteLine($"Display draw pool: {string.Join(", ", drawList)}");
 
-            private void Neededvaribles(out Enemy e, out Characters vc, out Characters fromvc, out bool enemytarget)
+            private string EnemyNames(Enemy[] e)
             {
-                e = Enemy.Party[TargetParty.CURSOR_SELECT < Enemy.Party.Count ? TargetParty.CURSOR_SELECT : Enemy.Party.Count - 1];
+                string r = $"[{e[0].Name}";
+                for (int j = 1; j < e.Length; j++)
+                    r += $", {e[j]}";
+                r += "]";
+                return r;
+            }
+
+            private void Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget)
+            {
+                if ((Target & Kernel_bin.Target.Single_Target) != 0)
+                {
+                    e = new Enemy[] { Enemy.Party[TargetParty.CURSOR_SELECT < Enemy.Party.Count ? TargetParty.CURSOR_SELECT : Enemy.Party.Count - 1] };
+                    vc = new Characters[] { Memory.State.Party.Where(x => x != Characters.Blank).ToList()[TargetParty.CURSOR_SELECT] };
+                }
+                else
+                {
+                    vc = Memory.State.Party.Where(x => x != Characters.Blank).ToArray();
+                    e = Enemy.Party.ToArray();
+                }
                 Characters c = Memory.State.PartyData.Where(x => x != Characters.Blank).ToList()[TargetParty.CURSOR_SELECT];
-                vc = Memory.State.Party.Where(x => x != Characters.Blank).ToList()[TargetParty.CURSOR_SELECT];
                 int p = BattleMenus.Player;
                 Characters fromc = Memory.State.PartyData.Where(x => x != Characters.Blank).ToList()[p];
                 fromvc = Memory.State.Party.Where(x => x != Characters.Blank).ToList()[p];
@@ -218,14 +242,28 @@ namespace OpenVIII
 
             private void SelectTargetWindows(Kernel_bin.Target t)
             {
-                if ((t & Kernel_bin.Target.Ally) != 0)
+                Target = t;
+                if ((t & Kernel_bin.Target.Ally) != 0 || t == Kernel_bin.Target.None)
+                {
                     TargetParty.Show();
+                    TargetAll(TargetParty);
+                }
                 else
                     TargetParty.Hide();
                 if ((t & Kernel_bin.Target.Enemy) != 0)
+                {
                     TargetEnemies.Show();
+                    TargetAll(TargetEnemies);
+                }
                 else
                     TargetEnemies.Hide();
+                void TargetAll(IGMData i)
+                {
+                    if ((Target & Kernel_bin.Target.Single_Target) == 0)
+                        i.Cursor_Status |= Cursor_Status.All;
+                    else
+                        i.Cursor_Status &= ~Cursor_Status.All;
+                }
             }
 
             protected override void Init()
@@ -308,6 +346,9 @@ namespace OpenVIII
             public Item_In_Menu Item { get; private set; }
 
             public Kernel_bin.Magic_Data Magic { get; private set; }
+            public Kernel_bin.Target Target { get; private set; }
+
+            public override void Draw() => base.Draw();
 
             public override bool Inputs()
             {

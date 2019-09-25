@@ -169,6 +169,17 @@ namespace OpenVIII
             Menu.IGM_Items.SetMode(IGM_Items.Mode.UseItemOnTarget);
             return true;
         }
+        public override void HideChildren()
+        {
+            if (Enabled)
+            {
+                if (!skipdata)
+                {
+                    Target_Group.HideChildren();
+                    Target_Group.Hide();
+                }
+            }
+        }
 
         public override void Refresh()
         {

@@ -48,5 +48,10 @@ namespace OpenVIII
         /// Don't move cursor
         /// </summary>
         Static = 0x40,
+
+        /// <summary>
+        /// All targets
+        /// </summary>
+        All = 0x80
     }
 }

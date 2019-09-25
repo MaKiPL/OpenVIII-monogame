@@ -21,6 +21,24 @@ namespace OpenVIII
 
         protected virtual void DrawITEM(int i, int d) => ITEM[i, d]?.Draw();
 
+        protected virtual bool DrawPointer()
+        {
+            if ((Cursor_Status & (Cursor_Status.Enabled | Cursor_Status.Draw)) != 0 &&
+                (Cursor_Status & Cursor_Status.Hidden) == 0)
+            {
+                if ((Cursor_Status & Cursor_Status.All) != 0)
+                {
+                    for (int i = 0; i < CURSOR.Length; i++)
+                        if (!BLANKS[i])
+                            DrawPointer(CURSOR[i], blink: true);
+                }
+                else
+                    DrawPointer(CURSOR[CURSOR_SELECT], blink: ((Cursor_Status & Cursor_Status.Blinking) != 0));
+                return true;
+            }
+            return false;
+        }
+
         protected int GetCursor_select() => _cursor_select;
 
         protected void Init(Characters? character, Characters? visablecharacter, sbyte? partypos)
@@ -309,16 +327,6 @@ namespace OpenVIII
                 {
                     pointer = DrawPointer();
                 }
-            }
-            bool DrawPointer()
-            {
-                if ((Cursor_Status & (Cursor_Status.Enabled | Cursor_Status.Draw)) != 0 &&
-                    (Cursor_Status & Cursor_Status.Hidden) == 0)
-                {
-                    this.DrawPointer(CURSOR[CURSOR_SELECT], blink: ((Cursor_Status & Cursor_Status.Blinking) != 0));
-                    return true;
-                }
-                return false;
             }
         }
 

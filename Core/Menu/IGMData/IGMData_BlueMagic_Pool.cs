@@ -97,12 +97,15 @@ namespace OpenVIII
         public override bool Inputs_CANCEL()
         {
             Hide();
-            return base.Inputs_CANCEL();
+            base.Inputs_CANCEL();
+            return true;
         }
 
         public override bool Inputs_OKAY()
         {
-            Target_Group.SelectTargetWindows(Contents[CURSOR_SELECT]);
+            Kernel_bin.Blue_magic_Quistis_limit_break c = Contents[CURSOR_SELECT];
+            //c.Target;
+            Target_Group.SelectTargetWindows(c);
             Target_Group.ShowTargetWindows();
             return base.Inputs_OKAY();
         }
@@ -111,6 +114,7 @@ namespace OpenVIII
         {
             if (Memory.State == null || Memory.State.LimitBreakQuistis == null) return;
             Kernel_bin.Blue_Magic bm = 0;
+            unlocked = new List<Kernel_bin.Blue_Magic>();
             foreach (bool b in Memory.State.LimitBreakQuistis)
             {
                 if (b)
