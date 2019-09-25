@@ -59,7 +59,7 @@ namespace OpenVIII
             public byte texPage;
         }
 
-        public struct EnemyInstanceInformation
+        public class EnemyInstanceInformation
         {
             public Debug_battleDat Data;
 
@@ -92,10 +92,11 @@ namespace OpenVIII
 
             public void SetAnimationID(int id)
             {
-                //var asys = animationSystem;
-                //asys.animationId = id;
-                //animationSystem = asys;
-                animationSystem.animationId = id;
+                if (animationSystem.animationId != id)
+                {
+                    animationSystem.animationId = id;
+                    animationSystem.animationFrame = 0;
+                }
             }
         }
 
@@ -476,10 +477,6 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             public int animationFrame;
             public bool bStopAnimation; //pertification placeholder?
             public List<int> AnimationQueue;
-            public int SetAnimationID(int id)
-            {
-                return animationId = id;
-            }
         }
 
         public static int DEBUGframe = 0;
@@ -566,19 +563,30 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             frameperFPS += tick;
             if (frameperFPS > FPS)
             {
-                for (int x = 0; x < Enemy.Party.Count; x++)
-                {
-                    EnemyInstanceInformation InstanceInformationProvider = Enemy.Party[x].EII;
-                    InstanceInformationProvider.animationSystem.animationFrame++;
-                    Enemy.Party[x].EII = InstanceInformationProvider;
-                }
-                if (CharacterInstances != null)
-                    for (int x = 0; x < CharacterInstances.Count; x++)
+                if(Enemy.Party != null)
+                    foreach (var e in Enemy.Party)
                     {
-                        CharacterInstanceInformation InstanceInformationProvider = CharacterInstances[x];
-                        InstanceInformationProvider.animationSystem.animationFrame++;
-                        CharacterInstances[x] = InstanceInformationProvider;
+                        if (!e.EII.animationSystem.bStopAnimation && !e.IsPetrify)
+                            e.EII.animationSystem.animationFrame++;
                     }
+                //for (int x = 0; x < Enemy.Party.Count; x++)
+                //{
+                //    EnemyInstanceInformation InstanceInformationProvider = Enemy.Party[x].EII;
+                //    InstanceInformationProvider.animationSystem.animationFrame++;
+                //    Enemy.Party[x].EII = InstanceInformationProvider;
+                //}
+                if (CharacterInstances != null)
+                    foreach(var cii in CharacterInstances)
+                    {
+                        if (!cii.animationSystem.bStopAnimation  && !Memory.State[cii.VisableCharacter].IsPetrify)
+                        cii.animationSystem.animationFrame++;
+                    }
+                    //for (int x = 0; x < CharacterInstances.Count; x++)
+                    //{
+                    //    CharacterInstanceInformation InstanceInformationProvider = CharacterInstances[x];
+                    //    InstanceInformationProvider.animationSystem.animationFrame++;
+                    //    CharacterInstances[x] = InstanceInformationProvider;
+                    //}
                 frameperFPS = 0.0f;
             }
         }
@@ -977,6 +985,11 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 Weapons = _weapons.ToList();
             }
         }
+
+        /// <summary>
+        /// Main Animations IDs
+        /// </summary>
+        /// <remarks>more beyond this maybe part of attacking and such.</remarks>
         enum AnimID:int
         {
             Idle=0,
