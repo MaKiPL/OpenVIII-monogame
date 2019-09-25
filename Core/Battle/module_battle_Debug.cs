@@ -92,9 +92,10 @@ namespace OpenVIII
 
             public void SetAnimationID(int id)
             {
-                var asys = animationSystem;
-                asys.animationId = id;
-                animationSystem = asys;
+                //var asys = animationSystem;
+                //asys.animationId = id;
+                //animationSystem = asys;
+                animationSystem.animationId = id;
             }
         }
 
