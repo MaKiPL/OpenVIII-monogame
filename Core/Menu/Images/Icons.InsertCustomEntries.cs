@@ -162,10 +162,13 @@ namespace OpenVIII
             //18 pages for 198 Items
             //50 pages if squashed to 4 items per page.
             GeneratePages(ID.ITEM, ID.ITEM_PG1, 50, -4);
+            //16 spells 4 pages for blue magic
+            GeneratePages(ID.SPECIAL, ID.SPECIAL_PG1, 4, 8);
 
             //revese order of rewind so arrows draw correctly
             Entry _RR_0 = Entries[ID.Rewind_Fast][0].Clone();
             Entry _RR_1 = Entries[ID.Rewind_Fast][1].Clone();
+            
             Entries[ID.Rewind_Fast] = new EntryGroup(_RR_1, _RR_0);
 
             //override this entry to make it tile instead of have set number of elements.

@@ -436,6 +436,10 @@ namespace OpenVIII
             ITEM_PG48,
             ITEM_PG49,
             ITEM_PG50,
+            SPECIAL_PG1,
+            SPECIAL_PG2,
+            SPECIAL_PG3,
+            SPECIAL_PG4,
         }        
 
         #endregion Enums

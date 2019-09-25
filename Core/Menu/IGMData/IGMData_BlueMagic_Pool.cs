@@ -1,0 +1,144 @@
+﻿using Microsoft.Xna.Framework;
+using System.Collections.Generic;
+
+namespace OpenVIII
+{
+    /// <summary>
+    /// </summary>
+    /// <see cref="https://www.youtube.com/watch?v=BhgixAEvuu0"/>
+    public class IGMData_BlueMagic_Pool : IGMData_Pool<Saves.Data, Kernel_bin.Blue_magic_Quistis_limit_break>
+    {
+        #region Fields
+
+        private List<Kernel_bin.Blue_Magic> unlocked = new List<Kernel_bin.Blue_Magic>();
+
+        #endregion Fields
+
+        #region Methods
+
+        protected override void DrawITEM(int i, int d)
+        {
+            if (Rows >= i || !Target_Group.Enabled)
+                base.DrawITEM(i, d);
+        }
+
+        protected override void Init()
+        {
+            base.Init();
+            for (int i = 0; i < Rows; i++)
+            {
+                ITEM[i, 0] = new IGMDataItem_String(null, SIZE[i]);
+            }
+            ITEM[Rows, 0] = new BattleMenus.IGMData_TargetGroup(Character, VisableCharacter, false);
+            PointerZIndex = 0;
+        }
+
+        protected override void InitShift(int i, int col, int row)
+        {
+            base.InitShift(i, col, row);
+            SIZE[i].Inflate(-22, -8);
+            SIZE[i].Offset(0, 12 + (-8 * row));
+            SIZE[i].Height = (int)(12 * TextScale.Y);
+        }
+
+        protected override void PAGE_NEXT()
+        {
+            base.PAGE_NEXT();
+            while (BLANKS[0] && Page > 0)
+            {
+                skipsnd = true;
+                base.PAGE_NEXT();
+            }
+            Refresh();
+        }
+
+        protected override void PAGE_PREV()
+        {
+            base.PAGE_PREV();
+            while (BLANKS[0] && Page > 0)
+            {
+                skipsnd = true;
+                base.PAGE_PREV();
+            }
+            Refresh();
+        }
+
+        #endregion Methods
+
+        #region Constructors
+
+        public IGMData_BlueMagic_Pool(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null, bool battle = false) : base(5, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.SPECIAL), 4, 4, character, visablecharacter)
+        {
+        }
+
+        #endregion Constructors
+
+        #region Properties
+
+        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData)ITEM[Rows, 0]));
+
+        #endregion Properties
+
+        public override bool Inputs()
+        {
+            if (Target_Group.Enabled)
+            {
+                Cursor_Status |= Cursor_Status.Enabled | Cursor_Status.Blinking;
+                return Target_Group.Inputs();
+            }
+            else
+            {
+                Cursor_Status |= Cursor_Status.Enabled;
+                Cursor_Status &= ~Cursor_Status.Blinking;
+                return base.Inputs();
+            }
+        }
+
+        public override bool Inputs_CANCEL()
+        {
+            Hide();
+            return base.Inputs_CANCEL();
+        }
+
+        public override bool Inputs_OKAY()
+        {
+            Target_Group.SelectTargetWindows(Contents[CURSOR_SELECT]);
+            Target_Group.ShowTargetWindows();
+            return base.Inputs_OKAY();
+        }
+
+        public override void Refresh()
+        {
+            if (Memory.State == null || Memory.State.LimitBreakQuistis == null) return;
+            Kernel_bin.Blue_Magic bm = 0;
+            foreach (bool b in Memory.State.LimitBreakQuistis)
+            {
+                if (b)
+                    unlocked.Add(bm);
+                bm++;
+            }
+
+            int skip = Rows * Page;
+            int i;
+            for (i = skip; i < unlocked.Count && i < Rows + skip; i++)
+            {
+                int j = i % Rows;
+                ITEM[j, 0].Show();
+                BLANKS[j] = false;
+                Contents[j] = Kernel_bin.BluemagicQuistislimitbreak[unlocked[i]];
+                ((IGMDataItem_String)ITEM[j, 0]).Data = Contents[j].Name;
+            }
+            for (; i < Rows + skip; i++)
+            {
+                int j = i % Rows;
+                ITEM[j, 0].Hide();
+                BLANKS[j] = true;
+            }
+            Pages = 4;
+            if (unlocked.Count / Rows <= 1)
+                ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.SPECIAL;
+            else
+                ((IGMDataItem_Box)CONTAINER).Title = (Icons.ID)((int)(Icons.ID.SPECIAL_PG1) + Page);
+        }
+    }
+}

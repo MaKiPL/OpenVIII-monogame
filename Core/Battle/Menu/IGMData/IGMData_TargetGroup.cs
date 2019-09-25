@@ -23,8 +23,8 @@ namespace OpenVIII
 
             #region Properties
 
+            //private IGMData_BlueMagic_Pool BlueMagic_Pool => (IGMData_BlueMagic_Pool)(((IGMData)ITEM[3, 0]));
             private IGMData_Draw_Pool Draw_Pool => (IGMData_Draw_Pool)(((IGMData)ITEM[2, 0]));
-
             private IGMData_TargetEnemies TargetEnemies => (IGMData_TargetEnemies)(((IGMData)ITEM[0, 0]));
 
             private IGMData_TargetParty TargetParty => (IGMData_TargetParty)(((IGMData)ITEM[1, 0]));
@@ -132,7 +132,17 @@ namespace OpenVIII
 
             private bool Command14() => throw new NotImplementedException();
 
-            private bool Command15() => throw new NotImplementedException();
+            private bool Command15_BlueMagic()
+            {
+                //Neededvaribles(out Enemy e, out Characters vc, out Characters fromvc, out bool enemytarget);
+                ////draw
+                ////spawn a 1 page 4 row pool of the magic/gfs that the selected enemy has.
+                //DrawMagic(e.DrawList);
+                //BlueMagic_Pool.Refresh();
+                //BlueMagic_Pool.Show();
+                //return true;
+                return false;
+            }
 
             private bool Command16() => throw new NotImplementedException();
 
@@ -238,7 +248,7 @@ namespace OpenVIII
                         {12,Command12 },
                         {13,Command13 },
                         {14,Command14 },
-                        {15,Command15 },
+                        {15,Command15_BlueMagic },
                         {16,Command16 },
                         {17,Command17 },
                         {18,Command18 },
@@ -280,9 +290,12 @@ namespace OpenVIII
                 const int h = 140;
                 const int Y1 = 630 - h;
                 CONTAINER.Pos = new Rectangle(X, Y1, w + w2, h);
-                Init(new IGMData[]{ new IGMData_TargetEnemies(new Rectangle(CONTAINER.Pos.X, CONTAINER.Pos.Y, w, h)),
+                Init(new IGMData[]{
+                    new IGMData_TargetEnemies(new Rectangle(CONTAINER.Pos.X, CONTAINER.Pos.Y, w, h)),
                     new IGMData_TargetParty(new Rectangle(CONTAINER.Pos.X + w, CONTAINER.Pos.Y, w2, h)),
-                    makesubs ? new IGMData_Draw_Pool(new Rectangle(X +50, Y - 50, 300, 192), Character, VisableCharacter, true): null}, true);
+                    makesubs ? new IGMData_Draw_Pool(new Rectangle(X +50, Y - 50, 300, 192), Character, VisableCharacter, true): null,
+                    //makesubs ? new IGMData_BlueMagic_Pool(new Rectangle(X +50, Y - 50, 300, 192), Character, VisableCharacter, true): null
+                }, true);
                 after();
             }
 

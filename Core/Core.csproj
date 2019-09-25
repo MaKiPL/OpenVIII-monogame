@@ -179,6 +179,7 @@
     <Compile Include="Menu\IGMDataItem\I_Data.cs" />
     <Compile Include="Menu\IGMDataItem\I_FontColor.cs" />
     <Compile Include="Menu\IGMDataItem\I_Palette.cs" />
+    <Compile Include="Menu\IGMData\IGMData_BlueMagic_Pool.cs" />
     <Compile Include="Menu\Images\HSL.cs" />
     <Compile Include="Menu\IGMData\IGMData_Draw_Pool.cs" />
     <Compile Include="Menu\IGMData\IGMData_SmallMsgBox.cs" />
