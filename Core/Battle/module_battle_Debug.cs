@@ -82,12 +82,20 @@ namespace OpenVIII
         /// field contains information about the current status of battle rendering like animation
         /// frames/ rendering flags/ effects attached
         /// </summary>
-        public struct CharacterInstanceInformation
+        public class CharacterInstanceInformation
         {
             public CharacterData Data;
             public int characterId; //0 is Whatever guy
+            public Characters VisableCharacter => (Characters)Data.character.GetId;
             public bool bIsHidden; //GF sequences, magic...
             public AnimationSystem animationSystem;
+
+            public void SetAnimationID(int id)
+            {
+                var asys = animationSystem;
+                asys.animationId = id;
+                animationSystem = asys;
+            }
         }
 
         private struct Triangle
@@ -196,6 +204,21 @@ namespace OpenVIII
 
         public static void Update()
         {
+            if(CharacterInstances != null)
+                foreach (var cii in CharacterInstances)
+            {
+                var c = Memory.State?[cii.VisableCharacter];
+
+                if (cii.animationSystem.animationId >= 0 && cii.animationSystem.animationId <=2)
+                {
+                    // this would probably interfeer with other animations. I am hoping the limits above will keep it good.
+                    if (c.IsDead)
+                        cii.SetAnimationID((int)AnimID.Dead);
+                    else if (c.IsCritical)
+                        cii.SetAnimationID((int)AnimID.Critical);
+                }
+            }
+            //CharacterInstances[2].SetAnimationID((int)AnimID.Dead);
             bool ret = false;
             switch (battleModule)
             {
@@ -452,6 +475,10 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             public int animationFrame;
             public bool bStopAnimation; //pertification placeholder?
             public List<int> AnimationQueue;
+            public int SetAnimationID(int id)
+            {
+                return animationId = id;
+            }
         }
 
         public static int DEBUGframe = 0;
@@ -949,13 +976,19 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 Weapons = _weapons.ToList();
             }
         }
-
+        enum AnimID:int
+        {
+            Idle=0,
+            Critical=1,
+            Dead=2,
+        }
         /// <summary>
         /// [WIP] Basic class responsible for creating character model into game. It should be
         /// changed to be parsed from current party
         /// </summary>
         private static void ReadCharacters()
         {
+            
             if (Memory.State?.Characters != null)
             {
                 FillCostumes();
@@ -974,6 +1007,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                             animationSystem = new AnimationSystem() { AnimationQueue = new List<int>() },
                             characterId = cid++,
                         };
+                        //cii.animationSystem.animationId = 4;
                         Memory.State[c].BattleStart(cii);
                         CharacterInstances.Add(cii);
                     }

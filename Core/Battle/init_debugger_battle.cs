@@ -97,9 +97,9 @@ namespace OpenVIII
             public short z;
 
             public Vector3 GetVector() => new Vector3(
-                x /100,
-                y /100 ,
-                -z /100 );
+                x,
+                y,
+                -z )/100f;
         }
 
 

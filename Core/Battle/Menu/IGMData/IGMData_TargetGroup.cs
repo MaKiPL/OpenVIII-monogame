@@ -51,156 +51,10 @@ namespace OpenVIII
                 return r;
             }
 
-            private bool Command00() => throw new NotImplementedException();
-
-            private bool Command01_ATTACK()
-            {
-                Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
-                BattleMenus.EndTurn();
-                return true;
-            }
-
-            private bool Command02_MAGIC()
-            {
-                Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
-                Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} casts {Magic.Name}({Magic.ID}) spell on { DebugMessageSuffix(e, vc, enemytarget) }");
-                BattleMenus.EndTurn();
-                return true;
-            }
-
-            private bool Command03() => throw new NotImplementedException();
-
-            private bool Command04_ITEM()
-            {
-                Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
-                Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} uses {Item.Name}({Item.ID}) item on { DebugMessageSuffix(e, vc, enemytarget) }");
-                BattleMenus.EndTurn();
-                return true;
-            }
-
-            private bool Command05_RENZOKUKEN()
-            {
-                Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
-                //Renzokuken
-                byte w = Memory.State[fromvc].WeaponID;
-                int hits = 0;
-                if (Memory.State[fromvc].CurrentCrisisLevel > 0)
-                    hits = Memory.State[fromvc].CurrentCrisisLevel < Renzokuken_hits.Length ? Renzokuken_hits[Memory.State[fromvc].CurrentCrisisLevel] : Renzokuken_hits.Last();
-                //else return false;
-                else hits = Renzokuken_hits.First();
-                int finisherchance = (Memory.State[fromvc].CurrentCrisisLevel + 1) * 60;
-                bool willfinish = Memory.Random.Next(byte.MaxValue + 1) <= finisherchance;
-                int choosefinish = Memory.Random.Next(3 + 1);
-                Kernel_bin.Weapons_Data wd = Kernel_bin.WeaponsData[w];
-                Kernel_bin.Renzokeken_Finisher r = wd.Renzokuken;
-                List<Kernel_bin.Renzokeken_Finisher> flags = Enum.GetValues(typeof(Kernel_bin.Renzokeken_Finisher))
-                    .Cast<Kernel_bin.Renzokeken_Finisher>()
-                    .Where(f => (f & r) != 0)
-                    .ToList();
-                Kernel_bin.Renzokeken_Finisher finisher = choosefinish >= flags.Count ? flags.Last() : flags[choosefinish];
-                //per wiki the chance of which finisher is 25% each and the highest value finisher get the remaining of 100 percent.
-                //so rough divide is 100% when you only only have that
-                //when you unlock 2 one is 75% chance
-                //when you onlock 3 last one is 50%
-                //when you unlock all 4 it's 25% each.
-
-                //finishers each have their own target
-                BattleMenus.GetCurrentBattleMenu().Renzokeken.Reset(hits);
-                BattleMenus.GetCurrentBattleMenu().Renzokeken.Show();
-                if (willfinish)
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} hits {hits} times with {Command.Name}({Command.ID}) then uses {Kernel_bin.RenzokukenFinishersData[finisher].Name}.");
-
-                if (!willfinish)
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} hits {hits} times with {Command.Name}({Command.ID}) then fails to use a finisher.");
-                return true;
-            }
-
-            private bool Command06_DRAW()
-            {
-                Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
-                //draw
-                //spawn a 1 page 4 row pool of the magic/gfs that the selected enemy has.
-                DrawMagic(e.First().DrawList);
-                Draw_Pool.Refresh(e.First().DrawList);
-                Draw_Pool.Show();
-                return true;
-            }
-
-            private bool Command07() => throw new NotImplementedException();
-
-            private bool Command08() => throw new NotImplementedException();
-
-            private bool Command09() => throw new NotImplementedException();
-
-            private bool Command10() => throw new NotImplementedException();
-
-            private bool Command11() => throw new NotImplementedException();
-
-            private bool Command12() => throw new NotImplementedException();
-
-            private bool Command13() => throw new NotImplementedException();
-
-            private bool Command14() => throw new NotImplementedException();
-
-            private bool Command15_BlueMagic()
-            {
-                Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
-                Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} casts {BlueMagic.Name}({BlueMagic.ID}) spell on { DebugMessageSuffix(e,vc,enemytarget) }");
-                BattleMenus.EndTurn();
-                return false;
-            }
-
-            private bool Command16() => throw new NotImplementedException();
-
-            private bool Command17() => throw new NotImplementedException();
-
-            private bool Command18() => throw new NotImplementedException();
-
-            private bool Command19() => throw new NotImplementedException();
-
-            private bool Command20() => throw new NotImplementedException();
-
-            private bool Command21() => throw new NotImplementedException();
-
-            private bool Command22() => throw new NotImplementedException();
-
-            private bool Command23() => throw new NotImplementedException();
-
-            private bool Command24() => throw new NotImplementedException();
-
-            private bool Command25() => throw new NotImplementedException();
-
-            private bool Command26() => throw new NotImplementedException();
-
-            private bool Command27() => throw new NotImplementedException();
-
-            private bool Command28() => throw new NotImplementedException();
-
-            private bool Command29() => throw new NotImplementedException();
-
-            private bool Command30() => throw new NotImplementedException();
-
-            private bool Command31() => throw new NotImplementedException();
-
-            private bool Command32() => throw new NotImplementedException();
-
-            private bool Command33() => throw new NotImplementedException();
-
-            private bool Command34() => throw new NotImplementedException();
-
-            private bool Command35() => throw new NotImplementedException();
-
-            private bool Command36() => throw new NotImplementedException();
-
-            private bool Command37() => throw new NotImplementedException();
-
-            private bool Command38() => throw new NotImplementedException();
-
-            private bool Command39() => throw new NotImplementedException();
-
             private bool CommandDefault() => throw new NotImplementedException();
 
             private void DebugMessageCommand(IGMData_TargetEnemies i, Enemy[] e, Characters[] vc, Characters fromvc, bool enemytarget) => Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} uses {Command.Name}({Command.ID}) command on { DebugMessageSuffix(e, vc, enemytarget) }");
+
             private string DebugMessageSuffix(Enemy[] e, Characters[] vc, bool enemytarget) => (enemytarget ? $"{EnemyNames(e)}({(e.Length == 1 ? TargetEnemies.CURSOR_SELECT.ToString() : "MultiSelect")})" : CharacterNames(vc));
 
             /// <summary>
@@ -283,10 +137,10 @@ namespace OpenVIII
                         {9,Command09 },
                         {10,Command10 },
                         {11,Command11 },
-                        {12,Command12 },
+                        {12,Command12_MUG },
                         {13,Command13 },
                         {14,Command14 },
-                        {15,Command15_BlueMagic },
+                        {15,Command15_BLUE_MAGIC },
                         {16,Command16 },
                         {17,Command17 },
                         {18,Command18 },
@@ -313,6 +167,169 @@ namespace OpenVIII
                         {39,Command39 },
                     };
                 base.Init();
+
+                bool Command00() => throw new NotImplementedException();
+
+                bool Command01_ATTACK()
+                {
+                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    BattleMenus.EndTurn();
+                    return true;
+                }
+
+                bool Command02_MAGIC()
+                {
+                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} casts {Magic.Name}({Magic.ID}) spell on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    BattleMenus.EndTurn();
+                    return true;
+                }
+
+                bool Command03() => throw new NotImplementedException();
+
+                bool Command04_ITEM()
+                {
+                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} uses {Item.Name}({Item.ID}) item on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    BattleMenus.EndTurn();
+                    return true;
+                }
+
+                bool Command05_RENZOKUKEN()
+                {
+                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    if (enemytarget)
+                    {
+                        //Renzokuken
+                        byte w = Memory.State[fromvc].WeaponID;
+                        int hits = 0;
+                        if (Memory.State[fromvc].CurrentCrisisLevel > 0)
+                            hits = Memory.State[fromvc].CurrentCrisisLevel < Renzokuken_hits.Length ? Renzokuken_hits[Memory.State[fromvc].CurrentCrisisLevel] : Renzokuken_hits.Last();
+                        //else return false;
+                        else hits = Renzokuken_hits.First();
+                        int finisherchance = (Memory.State[fromvc].CurrentCrisisLevel + 1) * 60;
+                        bool willfinish = Memory.Random.Next(byte.MaxValue + 1) <= finisherchance;
+                        int choosefinish = Memory.Random.Next(3 + 1);
+                        Kernel_bin.Weapons_Data wd = Kernel_bin.WeaponsData[w];
+                        Kernel_bin.Renzokeken_Finisher r = wd.Renzokuken;
+                        List<Kernel_bin.Renzokeken_Finisher> flags = Enum.GetValues(typeof(Kernel_bin.Renzokeken_Finisher))
+                            .Cast<Kernel_bin.Renzokeken_Finisher>()
+                            .Where(f => (f & r) != 0)
+                            .ToList();
+                        Kernel_bin.Renzokeken_Finisher finisher = choosefinish >= flags.Count ? flags.Last() : flags[choosefinish];
+                        //per wiki the chance of which finisher is 25% each and the highest value finisher get the remaining of 100 percent.
+                        //so rough divide is 100% when you only only have that
+                        //when you unlock 2 one is 75% chance
+                        //when you onlock 3 last one is 50%
+                        //when you unlock all 4 it's 25% each.
+
+                        //finishers each have their own target
+                        BattleMenus.GetCurrentBattleMenu().Renzokeken.Reset(hits);
+                        BattleMenus.GetCurrentBattleMenu().Renzokeken.Show();
+                        if (willfinish)
+                            Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} hits {hits} times with {Command.Name}({Command.ID}) then uses {Kernel_bin.RenzokukenFinishersData[finisher].Name}.");
+
+                        if (!willfinish)
+                            Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} hits {hits} times with {Command.Name}({Command.ID}) then fails to use a finisher.");
+                    }
+                    return true;
+                }
+
+                bool Command06_DRAW()
+                {
+                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    //draw
+                    //spawn a 1 page 4 row pool of the magic/gfs that the selected enemy has.
+                    if (enemytarget)
+                    {
+                        DrawMagic(e.First().DrawList);
+                        Draw_Pool.Refresh(e.First().DrawList);
+                        Draw_Pool.Show();
+                    }
+                    return true;
+                }
+
+                bool Command07() => throw new NotImplementedException();
+
+                bool Command08() => throw new NotImplementedException();
+
+                bool Command09() => throw new NotImplementedException();
+
+                bool Command10() => throw new NotImplementedException();
+
+                bool Command11() => throw new NotImplementedException();
+
+                bool Command12_MUG()
+                {
+                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    if (enemytarget)
+                    {
+                        var i = e.First().Mug();
+                        Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} stole {i.DATA?.Name}({i.ID}) x {i.QTY} from { DebugMessageSuffix(e, vc, enemytarget) }");
+                    }
+                    BattleMenus.EndTurn();                    
+                    return true;
+                }
+
+                bool Command13() => throw new NotImplementedException();
+
+                bool Command14() => throw new NotImplementedException();
+
+                bool Command15_BLUE_MAGIC()
+                {
+                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} casts {BlueMagic.Name}({BlueMagic.ID}) spell on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    BattleMenus.EndTurn();
+                    return false;
+                }
+
+                bool Command16() => throw new NotImplementedException();
+
+                bool Command17() => throw new NotImplementedException();
+
+                bool Command18() => throw new NotImplementedException();
+
+                bool Command19() => throw new NotImplementedException();
+
+                bool Command20() => throw new NotImplementedException();
+
+                bool Command21() => throw new NotImplementedException();
+
+                bool Command22() => throw new NotImplementedException();
+
+                bool Command23() => throw new NotImplementedException();
+
+                bool Command24() => throw new NotImplementedException();
+
+                bool Command25() => throw new NotImplementedException();
+
+                bool Command26() => throw new NotImplementedException();
+
+                bool Command27() => throw new NotImplementedException();
+
+                bool Command28() => throw new NotImplementedException();
+
+                bool Command29() => throw new NotImplementedException();
+
+                bool Command30() => throw new NotImplementedException();
+
+                bool Command31() => throw new NotImplementedException();
+
+                bool Command32() => throw new NotImplementedException();
+
+                bool Command33() => throw new NotImplementedException();
+
+                bool Command34() => throw new NotImplementedException();
+
+                bool Command35() => throw new NotImplementedException();
+
+                bool Command36() => throw new NotImplementedException();
+
+                bool Command37() => throw new NotImplementedException();
+
+                bool Command38() => throw new NotImplementedException();
+
+                bool Command39() => throw new NotImplementedException();
             }
 
             #endregion Methods

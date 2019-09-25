@@ -451,6 +451,8 @@ namespace OpenVIII
 
             public override byte LUCK => checked((byte)TotalStat(Kernel_bin.Stat.LUCK));
 
+            public bool IsCritical => CurrentHP() <= CriticalHP();
+
             /// <summary>
             /// Max HP
             /// </summary>
