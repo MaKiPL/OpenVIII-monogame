@@ -86,7 +86,7 @@ namespace OpenVIII
         {
             public CharacterData Data;
             public int characterId; //0 is Whatever guy
-            public Characters VisableCharacter => (Characters)Data.character.GetId;
+            public Characters VisibleCharacter => (Characters)Data.character.GetId;
             public bool bIsHidden; //GF sequences, magic...
             public AnimationSystem animationSystem;
 
@@ -209,7 +209,7 @@ namespace OpenVIII
             if(CharacterInstances != null)
                 foreach (var cii in CharacterInstances)
             {
-                var c = Memory.State?[cii.VisableCharacter];
+                var c = Memory.State?[cii.VisibleCharacter];
 
                 if (cii.animationSystem.animationId >= 0 && cii.animationSystem.animationId <=2)
                 {
@@ -578,7 +578,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 if (CharacterInstances != null)
                     foreach(var cii in CharacterInstances)
                     {
-                        if (!cii.animationSystem.bStopAnimation  && !Memory.State[cii.VisableCharacter].IsPetrify)
+                        if (!cii.animationSystem.bStopAnimation  && !Memory.State[cii.VisibleCharacter].IsPetrify)
                         cii.animationSystem.animationFrame++;
                     }
                     //for (int x = 0; x < CharacterInstances.Count; x++)

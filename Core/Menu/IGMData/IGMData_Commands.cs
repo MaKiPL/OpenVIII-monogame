@@ -39,13 +39,13 @@ namespace OpenVIII
         {
             BLANKS[Limit_Arrow] = true;
             base.Init();
-            ITEM[Blue_Pool, 0] = new IGMData_BlueMagic_Pool(new Rectangle(X + 50, Y - 20, 300, 192), Character, VisableCharacter, true);
+            ITEM[Blue_Pool, 0] = new IGMData_BlueMagic_Pool(new Rectangle(X + 50, Y - 20, 300, 192), Character, VisibleCharacter, true);
             ITEM[Blue_Pool, 0].Hide();
-            ITEM[Mag_Pool, 0] = new IGMData_Mag_Pool(new Rectangle(X + 50, Y - 20, 300, 192), Character, VisableCharacter, true);
+            ITEM[Mag_Pool, 0] = new IGMData_Mag_Pool(new Rectangle(X + 50, Y - 20, 300, 192), Character, VisibleCharacter, true);
             ITEM[Mag_Pool, 0].Hide();
             ITEM[Item_Pool, 0] = new IGMData_ItemPool(new Rectangle(X + 50, Y - 22, 400, 194), true);
             ITEM[Item_Pool, 0].Hide();
-            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Character, VisableCharacter);
+            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Character, VisibleCharacter);
             commands = new Kernel_bin.Battle_Commands[Rows];
             PointerZIndex = Limit_Arrow;
         }
@@ -87,7 +87,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_Commands(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null, bool battle = false) : base(9, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.COMMAND), 1, 4, character, visablecharacter)
+        public IGMData_Commands(Rectangle pos, Characters character = Characters.Blank, Characters? Visiblecharacter = null, bool battle = false) : base(9, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.COMMAND), 1, 4, character, Visiblecharacter)
         {
             Battle = battle;
             skipReinit = true;
@@ -170,7 +170,7 @@ namespace OpenVIII
                     ITEM[Blue_Pool, 0].Refresh();
                     return true;
                 case 23: //Defend
-                    Debug.WriteLine($"{Memory.Strings.GetName(VisableCharacter)} is using {c.Name}({c.ID})");
+                    Debug.WriteLine($"{Memory.Strings.GetName(VisibleCharacter)} is using {c.Name}({c.ID})");
                     Menu.BattleMenus.EndTurn();
                     return true;
             }
@@ -241,20 +241,20 @@ namespace OpenVIII
                 }
                 if (Character != Characters.Blank)
                 {
-                    Target_Group.Refresh(Character, VisableCharacter);
-                    MagPool.Refresh(Character, VisableCharacter);
-                    ItemPool.Refresh(Character, VisableCharacter);
+                    Target_Group.Refresh(Character, VisibleCharacter);
+                    MagPool.Refresh(Character, VisibleCharacter);
+                    ItemPool.Refresh(Character, VisibleCharacter);
                 }
             }
             skipReinit = false;
         }
 
-        public override void Refresh(Characters character, Characters? visablecharacter = null)
+        public override void Refresh(Characters character, Characters? Visiblecharacter = null)
         {
-            base.Refresh(character, visablecharacter);
-            Target_Group.Refresh(Character, VisableCharacter);
-            MagPool.Refresh(Character, VisableCharacter);
-            ItemPool.Refresh(Character, VisableCharacter);
+            base.Refresh(character, Visiblecharacter);
+            Target_Group.Refresh(Character, VisibleCharacter);
+            MagPool.Refresh(Character, VisibleCharacter);
+            ItemPool.Refresh(Character, VisibleCharacter);
         }
 
         public override void SetModeChangeEvent(ref EventHandler<Enum> eventHandler)

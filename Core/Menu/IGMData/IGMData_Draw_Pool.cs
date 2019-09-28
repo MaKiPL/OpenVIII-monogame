@@ -20,14 +20,14 @@ namespace OpenVIII
 
         private bool Inputs_OKAY_Cast()
         {
-            Debug.WriteLine($"{Memory.Strings.GetName(VisableCharacter)} Casting {Magic.Name}({Magic.ID}) from enemy.");
+            Debug.WriteLine($"{Memory.Strings.GetName(VisibleCharacter)} Casting {Magic.Name}({Magic.ID}) from enemy.");
             Target_Group.ShowTargetWindows();
             return true;
         }
 
         private bool Inputs_OKAY_Draw()
         {
-            Debug.WriteLine($"{Memory.Strings.GetName(VisableCharacter)} Drawing {Magic.Name}({Magic.ID}) from enemy.");
+            Debug.WriteLine($"{Memory.Strings.GetName(VisibleCharacter)} Drawing {Magic.Name}({Magic.ID}) from enemy.");
             Menu.BattleMenus.EndTurn();
             return true;
         }
@@ -58,7 +58,7 @@ namespace OpenVIII
             base.Init();
             ITEM[_Draw, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.KERNEL, 0, 12), SIZE[_Draw]);
             ITEM[Cast, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.KERNEL, 0, 18), SIZE[Cast]);
-            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Character, VisableCharacter, false);
+            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Character, VisibleCharacter, false);
             Cursor_Status = Cursor_Status.Enabled;
             OKAY_Actions = new Dictionary<int, Func<bool>>
             {
@@ -82,7 +82,7 @@ namespace OpenVIII
 
         public Dictionary<int, Func<bool>> OKAY_Actions;
 
-        public IGMData_Draw_Commands(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null, bool battle = false) : base(3, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.CHOICE), 1, 2, character, visablecharacter)
+        public IGMData_Draw_Commands(Rectangle pos, Characters character = Characters.Blank, Characters? Visiblecharacter = null, bool battle = false) : base(3, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.CHOICE), 1, 2, character, Visiblecharacter)
         {
         }
 
@@ -182,7 +182,7 @@ namespace OpenVIII
             {
                 ITEM[pos, 0] = new IGMDataItem_String(null, SIZE[pos]);
                 ITEM[pos, 1] = new IGMDataItem_Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0));
-                ITEM[pos, 2] = new IGMData_Draw_Commands(r, Character, VisableCharacter, Battle);
+                ITEM[pos, 2] = new IGMData_Draw_Commands(r, Character, VisibleCharacter, Battle);
                 ITEM[pos, 2].Hide();
             }
 
@@ -216,7 +216,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_Draw_Pool(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null, bool battle = false) : base(5, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.CHOICE), 4, 1, character, visablecharacter)
+        public IGMData_Draw_Pool(Rectangle pos, Characters character = Characters.Blank, Characters? Visiblecharacter = null, bool battle = false) : base(5, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.CHOICE), 4, 1, character, Visiblecharacter)
         {
             Battle = battle;
             Refresh();

@@ -53,9 +53,9 @@ namespace OpenVIII
 
         #endregion Properties
 
-        public override void Refresh(Characters character, Characters? visablecharacter = null)
+        public override void Refresh(Characters character, Characters? Visiblecharacter = null)
         {
-            base.Refresh(character, visablecharacter);
+            base.Refresh(character, Visiblecharacter);
             if (First)
             {
                 ATBBarPos = Memory.State[Character].ATBBarStart();

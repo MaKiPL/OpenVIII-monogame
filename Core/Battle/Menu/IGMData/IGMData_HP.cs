@@ -21,7 +21,7 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_HP(Rectangle pos, Characters character, Characters visablecharacter) : base(3, 4, new IGMDataItem_Empty(pos), 1, 3, character, visablecharacter)
+            public IGMData_HP(Rectangle pos, Characters character, Characters Visiblecharacter) : base(3, 4, new IGMDataItem_Empty(pos), 1, 3, character, Visiblecharacter)
             {
             }
 
@@ -35,7 +35,7 @@ namespace OpenVIII
                 {
                     List<KeyValuePair<int, Characters>> party = GetParty();
                     byte pos = GetCharPos(party);
-                    foreach (KeyValuePair<int, Characters> pm in party.Where(x => x.Value == VisableCharacter))
+                    foreach (KeyValuePair<int, Characters> pm in party.Where(x => x.Value == VisibleCharacter))
                     {
                         Saves.CharacterData c = Memory.State.Characters[Memory.State.PartyData[pm.Key]];
                         FF8String name = Memory.Strings.GetName(pm.Value);
@@ -72,7 +72,7 @@ namespace OpenVIII
                             ITEM[pos, 2] = new IGMDataItem_ATB_Gradient(atbbarpos);
                             ((IGMDataItem_ATB_Gradient)ITEM[pos, 2]).Color = Color.Orange * .8f;
                             ((IGMDataItem_ATB_Gradient)ITEM[pos, 2]).Faded_Color = Color.Orange * .8f;
-                            ((IGMDataItem_ATB_Gradient)ITEM[pos, 2]).Refresh(Character, VisableCharacter);
+                            ((IGMDataItem_ATB_Gradient)ITEM[pos, 2]).Refresh(Character, VisibleCharacter);
                         }
 
                         // TODO: make a font render that can draw right to left from a point. For Right aligning the names.
@@ -94,14 +94,14 @@ namespace OpenVIII
                     var hg = (IGMDataItem_ATB_Gradient)ITEM[pos, 2];
                     if (hg.Done)
                     {
-                        var cm = BattleMenus.GetBattleMenus().First(x => x.VisableCharacter == VisableCharacter);
+                        var cm = BattleMenus.GetBattleMenus().First(x => x.VisibleCharacter == VisibleCharacter);
                         cm.SetMode(Mode.ATB_Charged);
                     }
                 }
                 return base.Update();
             }
 
-            private byte GetCharPos(List<KeyValuePair<int, Characters>> party) => (byte)party.FindIndex(x => x.Value == VisableCharacter);
+            private byte GetCharPos(List<KeyValuePair<int, Characters>> party) => (byte)party.FindIndex(x => x.Value == VisibleCharacter);
             private static List<KeyValuePair<int, Characters>> GetParty() => Memory.State.Party.Select((element, index) => new { element, index }).ToDictionary(m => m.index, m => m.element).Where(m => !m.Value.Equals(Characters.Blank)).ToList();
 
             protected override void Init()

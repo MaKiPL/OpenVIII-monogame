@@ -174,7 +174,7 @@ namespace OpenVIII
                         {
                             if (EXPExtra.TryGetValue(i.Character, out int bonus))
                                 tmpexp += bonus;
-                            else if (EXPExtra.TryGetValue(i.VisableCharacter, out int bonus2))
+                            else if (EXPExtra.TryGetValue(i.VisibleCharacter, out int bonus2))
                                 tmpexp += bonus2;
                         }
                         ((IGMData_PlayerEXP)i).EXP = tmpexp;

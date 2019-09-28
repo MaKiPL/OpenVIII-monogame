@@ -24,8 +24,8 @@ namespace OpenVIII
             public override void Refresh()
             {
                 base.Refresh();
-                ITEM[0, 0] = new IGMDataItem_Face((Faces.ID)VisableCharacter, new Rectangle(X + 12, Y, 96, 144));
-                ITEM[0, 2] = new IGMDataItem_String(Memory.Strings.GetName(VisableCharacter), new Rectangle(X + 117, Y + 0, 0, 0));
+                ITEM[0, 0] = new IGMDataItem_Face((Faces.ID)VisibleCharacter, new Rectangle(X + 12, Y, 96, 144));
+                ITEM[0, 2] = new IGMDataItem_String(Memory.Strings.GetName(VisibleCharacter), new Rectangle(X + 117, Y + 0, 0, 0));
 
                 if (Memory.State.Characters != null)
                 {
@@ -33,8 +33,8 @@ namespace OpenVIII
                     ITEM[0, 5] = Memory.State.Party != null && Memory.State.Party.Contains(Character)
                         ? new IGMDataItem_Icon(Icons.ID.InParty, new Rectangle(X + 278, Y + 48, 0, 0), 6)
                         : null;
-                    ITEM[0, 7] = new IGMDataItem_Int(Memory.State.Characters[Character].CurrentHP(VisableCharacter), new Rectangle(X + 152, Y + 108, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 6);
-                    ITEM[0, 9] = new IGMDataItem_Int(Memory.State.Characters[Character].MaxHP(VisableCharacter), new Rectangle(X + 292, Y + 108, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 5);
+                    ITEM[0, 7] = new IGMDataItem_Int(Memory.State.Characters[Character].CurrentHP(VisibleCharacter), new Rectangle(X + 152, Y + 108, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 6);
+                    ITEM[0, 9] = new IGMDataItem_Int(Memory.State.Characters[Character].MaxHP(VisibleCharacter), new Rectangle(X + 292, Y + 108, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 5);
                     ITEM[0, 11] = new IGMDataItem_Int((int)Memory.State.Characters[Character].Experience, new Rectangle(X + 192, Y + 198, 0, 0), 13, numtype: Icons.NumType.Num_8x8_2, padding: 1, spaces: 9);
                     ITEM[0, 13] = new IGMDataItem_Int(Memory.State.Characters[Character].ExperienceToNextLevel, new Rectangle(X + 192, Y + 231, 0, 0), 13, numtype: Icons.NumType.Num_8x8_2, padding: 1, spaces: 9);
                 }
