@@ -148,14 +148,14 @@ namespace OpenVIII
                         {20,Command20 },
                         {21,Command21 },
                         {22,Command22 },
-                        {23,Command23 },
+                        {23,Command23_DEFEND },
                         {24,Command24 },
                         {25,Command25 },
                         {26,Command26 },
                         {27,Command27 },
-                        {28,Command28 },
-                        {29,Command29 },
-                        {30,Command30 },
+                        {28,Command28_DARKSIDE },
+                        {29,Command29_CARD },
+                        {30,Command30_DOOM },
                         {31,Command31 },
                         {32,Command32 },
                         {33,Command33 },
@@ -264,7 +264,8 @@ namespace OpenVIII
                     Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
                     if (enemytarget)
                     {
-                        var i = e.First().Mug();
+                        //unsure if party member being ejected or if they need to be in the party for rare item to work
+                        var i = e.First().Mug(Memory.State[fromvc].SPD,Memory.State.PartyHasAbility(Kernel_bin.Abilities.RareItem));
                         Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} stole {i.DATA?.Name}({i.ID}) x {i.QTY} from { DebugMessageSuffix(e, vc, enemytarget) }");
                     }
                     BattleMenus.EndTurn();                    
@@ -297,7 +298,7 @@ namespace OpenVIII
 
                 bool Command22() => throw new NotImplementedException();
 
-                bool Command23() => throw new NotImplementedException();
+                bool Command23_DEFEND() => throw new NotImplementedException();
 
                 bool Command24() => throw new NotImplementedException();
 
@@ -307,11 +308,37 @@ namespace OpenVIII
 
                 bool Command27() => throw new NotImplementedException();
 
-                bool Command28() => throw new NotImplementedException();
+                bool Command28_DARKSIDE()
+                {
+                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    BattleMenus.EndTurn();
+                    return true;
+                }
 
-                bool Command29() => throw new NotImplementedException();
+                bool Command29_CARD()
+                {
+                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    if (enemytarget)
+                    {
+                        var c = e.First().Card(); 
+                        if(c == Cards.ID.Fail)
 
-                bool Command30() => throw new NotImplementedException();
+                            Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} Failed to use {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) }");
+                        else if (c == Cards.ID.Immune)
+                            Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} Failed to use {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) } because they are immune!");
+                        else
+                            Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) } and got a {c} card");
+                        BattleMenus.EndTurn();
+                    }
+                    return true;
+                }
+
+                bool Command30_DOOM()
+                {
+                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    BattleMenus.EndTurn();
+                    return true;
+                }
 
                 bool Command31() => throw new NotImplementedException();
 

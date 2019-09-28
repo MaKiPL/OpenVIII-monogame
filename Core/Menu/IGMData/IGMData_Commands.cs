@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
+using System.Diagnostics;
 
 namespace OpenVIII
 {
@@ -167,6 +168,10 @@ namespace OpenVIII
                 case 15: //Blue magic
                     ITEM[Blue_Pool, 0].Show();
                     ITEM[Blue_Pool, 0].Refresh();
+                    return true;
+                case 23: //Defend
+                    Debug.WriteLine($"{Memory.Strings.GetName(VisableCharacter)} is using {c.Name}({c.ID})");
+                    Menu.BattleMenus.EndTurn();
                     return true;
             }
         }
