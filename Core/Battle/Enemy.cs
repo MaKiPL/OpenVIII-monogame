@@ -16,14 +16,77 @@ namespace OpenVIII
 
         #region Methods
 
-        private T chance<T>(byte percent, T[] list)
+        public Saves.Item Drop(bool RareITEM = false)
         {
+            if (mugged) return default;
+            int percent = DropRate;
+            Saves.Item[] list = DropList;
             int i = Memory.Random.Next(100 + 1);
             if (i < percent && list.Length > 0)
             {
-                i = Memory.Random.Next(list.Length);
-                return list[i];
+                //Slot              |  0        | 1         | 2        | 3
+                //------------------|  ---------| --------- | ---------| --------
+                //Without Rare Item | 178 / 256 | 51 / 256  | 15 / 256 | 12 / 256
+                //------------------|  ---------| --------- | ---------| --------
+                //With Rare Item    | 128 / 256 | 114 / 256 | 14 / 256 | 0 / 256 <- kinda makes no sence to me
+                int r = Memory.Random.Next(256);
+                if(RareITEM)
+                {
+                    if (r < 128)
+                        return list[0];
+                    else if ((r-=128) < 114)
+                        return list[1];
+                    else if ((r -= 114) < 14)
+                        return list[2];
+                    else
+                        return list[3];
+                }
+                if (r < 178)
+                    return list[0];
+                else if ((r -= 178) < 51)
+                    return list[1];
+                else if ((r -= 51) < 15)
+                    return list[2];
+                else
+                    return list[3];
             }
+            return default;
+        }
+        bool mugged = false;
+        public Saves.Item Mug(byte spd, bool RareITEM = false)
+        {
+            if (mugged) return default;
+            int percent = (MugRate + spd);
+            Saves.Item[] list = DropList;
+            int i = Memory.Random.Next(100 + 1);
+            try
+            {
+                if (i < percent && list.Length > 0)
+                {
+                    byte r = (byte)Memory.Random.Next(256);
+                    if (RareITEM)
+                    {
+                        if (r < 128)
+                            return list[0];
+                        else if ((r -= 128) < 114)
+                            return list[1];
+                        else if ((r -= 114) < 14)
+                            return list[2];
+                        else
+                            return list[3];
+                    }
+                    if (r < 178)
+                        return list[0];
+                    else if ((r -= 178) < 51)
+                        return list[1];
+                    else if ((r -= 51) < 15)
+                        return list[2];
+                    else
+                        return list[3];
+                }
+            }
+            finally { mugged = true; }
+            mugged = false;
             return default;
         }
 
@@ -111,8 +174,6 @@ namespace OpenVIII
         public static List<Enemy> Party { get; set; }
 
         public byte AP => info.ap;
-        public Cards.ID Card => info.card[levelgroup()];
-
         public Debug_battleDat.Magic[] DrawList => hml(info.drawhigh, info.drawmed, info.drawlow);
 
         /// <summary>
@@ -193,7 +254,29 @@ namespace OpenVIII
 
         public static implicit operator Enemy(Module_battle_debug.EnemyInstanceInformation @in) => new Enemy(@in);
 
-        public Saves.Item Drop() => chance(DropRate, DropList);
+        /// <summary>
+        /// Return card if succeed at roll
+        /// </summary>
+        /// <returns></returns>
+        /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
+        public Cards.ID Card()
+        {
+            if (info.card.Skip(1).All(x => x == Cards.ID.Immune)) return Cards.ID.Immune;
+            int p = (256 * MaxHP() - 255 * CurrentHP()) / MaxHP();
+            int r = Memory.Random.Next(256);
+            // 2 is rare card, 1 is normal card 0
+            // per ifrit.
+            return r < (p + 1) ? (r < 17 ? info.card[2] : info.card[1]) : Cards.ID.Fail;
+        }
+
+        public Cards.ID CardDrop()
+        {
+            //9 / 256
+            if (info.card[0] == Cards.ID.Immune) return info.card[1];
+
+            int r = Memory.Random.Next(256);
+            return r < 9 ? info.card[1] : Cards.ID.Fail;
+        }
 
         public override short ElementalResistance(Kernel_bin.Element @in)
         {
@@ -220,7 +303,6 @@ namespace OpenVIII
             return (ushort)MathHelper.Clamp(i, 0, ushort.MaxValue);
         }
 
-        public Saves.Item Mug() => chance(MugRate, MugList);
 
         /// <summary>
         /// I notice that the resistance reported on the wiki is 100 less than the number in the data.

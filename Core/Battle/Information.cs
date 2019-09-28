@@ -170,6 +170,9 @@ namespace OpenVIII
 
             public Flag1 bitSwitch;
 
+            /// <summary>
+            /// Cards per ifrit this is more of a drop, mod and rare mod
+            /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
             public Cards.ID[] card;
 
