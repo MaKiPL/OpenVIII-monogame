@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using OpenVIII.Encoding.Tags;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,9 +23,28 @@ namespace OpenVIII
                 private readonly FF8String str_NotFound;
                 private readonly FF8String str_Over100;
                 private readonly FF8String str_Recieved;
-                private Queue<Saves.Item> _items;
+                private Queue<KeyValuePair<Cards.ID, byte>> _cards;
+                private KeyValuePair<Cards.ID, byte> card;
 
                 #endregion Fields
+
+                #region Methods
+
+                protected override void Init()
+                {
+                    base.Init();
+                    Hide();
+                    ITEM[0, 0] = new IGMDataItem_Box(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 21), new Rectangle(SIZE[0].X, SIZE[0].Y, SIZE[0].Width, 78), Icons.ID.INFO, options: Box_Options.Middle);
+                    ITEM[0, 1] = new IGMDataItem_Box(null, new Rectangle(SIZE[0].X + 140, SIZE[0].Y + 189, 475, 78), Icons.ID.ITEM, options: Box_Options.Middle); // item name
+                    ITEM[0, 2] = new IGMDataItem_Box(null, new Rectangle(SIZE[0].X + 615, SIZE[0].Y + 189, 125, 78), Icons.ID.NUM_, options: Box_Options.Middle | Box_Options.Center); // item count
+                    ITEM[0, 3] = new IGMDataItem_Box(null, new Rectangle(SIZE[0].X, SIZE[0].Y + 444, SIZE[0].Width, 78), Icons.ID.HELP, options: Box_Options.Middle); // item description
+                    ITEM[0, 4] = new IGMData_SmallMsgBox(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // Couldn't find any items
+                    ITEM[0, 5] = new IGMData_SmallMsgBox(null, SIZE[0].X + 230, SIZE[0].Y + 291, Icons.ID.NOTICE, Box_Options.Center, SIZE[0]); // over 100 discarded
+                    ITEM[0, 6] = new IGMData_SmallMsgBox(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center, SIZE[0]); // Recieved item
+                    Cursor_Status |= (Cursor_Status.Hidden | (Cursor_Status.Enabled | Cursor_Status.Static));
+                }
+
+                #endregion Methods
 
                 #region Constructors
 
@@ -42,36 +62,11 @@ namespace OpenVIII
 
                 #region Properties
 
-                public Queue<Saves.Item> Items
-                {
-                    get => _items; set
-                    {
-                        //i noticed that sometimes enemies drop the same items. This totals them all together.
-                        ConcurrentDictionary<byte, byte> items = new ConcurrentDictionary<byte, byte>();
-                        while(value.Count>0)
-                        {
-                            Saves.Item item = value.Dequeue();
-                            if(!items.TryAdd(item.ID,item.QTY))
-                            {
-                                items[item.ID] += item.QTY;
-                            }
-                        }
-                        if (items.Count > 0)
-                        {
-                            _items = new Queue<Saves.Item>(items.Count);
-                            foreach (var e in items)
-                                _items.Enqueue(new Saves.Item(e));
-                        }
-                        else _items = null;
-                        Refresh();
-                    }
-                }
+                public Queue<Saves.Item> Items { get; private set; }
 
                 public Saves.Item Item { get; private set; }
 
                 #endregion Properties
-
-                #region Methods
 
                 public void Earn()
                 {
@@ -85,7 +80,7 @@ namespace OpenVIII
                 {
                     if (ITEM[0, 5].Enabled || ITEM[0, 6].Enabled)
                     {
-                        if (Items != null && Items.Count > 0)
+                        if (Items != null && Items.Count > 0 || _cards != null && _cards.Count > 0)
                         {
                             Refresh();
                             base.Inputs_OKAY();
@@ -95,6 +90,22 @@ namespace OpenVIII
                     else if (Items != null && Items.Count > 0)
                     {
                         if (Memory.State.EarnItem(Items.Dequeue()))
+                        {
+                            ITEM?[0, 6]?.Show();
+                            Earn();
+                        }
+                        else
+                        {
+                            ITEM?[0, 5]?.Show();
+                            Earn();
+                        }
+
+                        base.Inputs_OKAY();
+                        return true;
+                    }
+                    else if (_cards != null && _cards.Count > 0)
+                    {
+                        if (Memory.State.EarnItem(_cards.Dequeue()))
                         {
                             ITEM?[0, 6]?.Show();
                             Earn();
@@ -130,6 +141,28 @@ namespace OpenVIII
                         ITEM[0, 6].Hide();
                     }
                     else
+                    if (_cards != null && _cards.Count > 0)
+                    {
+                        card = _cards.Peek();
+                        var name = Memory.Strings.Read(Strings.FileID.MNGRP, 110, (int)card.Key);
+
+                        int pos = 0;
+                        for (; pos < name.Length; pos++)
+                            if (name.Value[pos] == 2) break;
+                        ((IGMDataItem_Box)ITEM[0, 1]).Data = new FF8String(name.Value.Take(pos-1).ToArray());
+                        //TODO grab card name from start of string
+                        ((IGMDataItem_Box)ITEM[0, 2]).Data = $"{card.Value}";
+                        ((IGMDataItem_Box)ITEM[0, 3]).Data = "";
+                        ((IGMData_SmallMsgBox)ITEM[0, 5]).Data = str_Over100.Clone().Replace(DialogSelectedItem, Item.DATA?.Name);
+                        ((IGMData_SmallMsgBox)ITEM[0, 5]).Data = str_Over100.Clone().Replace(DialogSelectedItem, Item.DATA?.Name);
+                        ITEM[0, 1].Show();
+                        ITEM[0, 2].Show();
+                        ITEM[0, 3].Hide();
+                        ITEM[0, 4].Hide();
+                        ITEM[0, 5].Hide();
+                        ITEM[0, 6].Hide();
+                    }
+                    else
                     {
                         ITEM?[0, 1]?.Hide();
                         ITEM?[0, 2]?.Hide();
@@ -140,21 +173,27 @@ namespace OpenVIII
                     }
                 }
 
-                protected override void Init()
+                public void SetItems(ConcurrentDictionary<Cards.ID, byte> cards)
                 {
-                    base.Init();
-                    Hide();
-                    ITEM[0, 0] = new IGMDataItem_Box(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 21), new Rectangle(SIZE[0].X, SIZE[0].Y, SIZE[0].Width, 78), Icons.ID.INFO, options: Box_Options.Middle);
-                    ITEM[0, 1] = new IGMDataItem_Box(null, new Rectangle(SIZE[0].X + 140, SIZE[0].Y + 189, 475, 78), Icons.ID.ITEM, options: Box_Options.Middle); // item name
-                    ITEM[0, 2] = new IGMDataItem_Box(null, new Rectangle(SIZE[0].X + 615, SIZE[0].Y + 189, 125, 78), Icons.ID.NUM_, options: Box_Options.Middle | Box_Options.Center); // item count
-                    ITEM[0, 3] = new IGMDataItem_Box(null, new Rectangle(SIZE[0].X, SIZE[0].Y + 444, SIZE[0].Width, 78), Icons.ID.HELP, options: Box_Options.Middle); // item description
-                    ITEM[0, 4] = new IGMData_SmallMsgBox(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // Couldn't find any items
-                    ITEM[0, 5] = new IGMData_SmallMsgBox(null, SIZE[0].X + 230, SIZE[0].Y + 291, Icons.ID.NOTICE, Box_Options.Center, SIZE[0]); // over 100 discarded
-                    ITEM[0, 6] = new IGMData_SmallMsgBox(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center, SIZE[0]); // Recieved item
-                    Cursor_Status |= (Cursor_Status.Hidden | (Cursor_Status.Enabled | Cursor_Status.Static));
+                    if (cards.Count > 0)
+                    {
+                        _cards = new Queue<KeyValuePair<Cards.ID, byte>>(cards.Count);
+                        foreach (KeyValuePair<Cards.ID, byte> e in cards)
+                            _cards.Enqueue(e);
+                    }
+                    else _cards = null;
                 }
 
-                #endregion Methods
+                public void SetItems(ConcurrentDictionary<byte, byte> items)
+                {
+                    if (items.Count > 0)
+                    {
+                        Items = new Queue<Saves.Item>(items.Count);
+                        foreach (KeyValuePair<byte, byte> e in items)
+                            Items.Enqueue(new Saves.Item(e));
+                    }
+                    else Items = null;
+                }
             }
 
             #endregion Classes
