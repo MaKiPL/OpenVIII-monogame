@@ -49,6 +49,7 @@ namespace OpenVIII
         /// <see cref="http://wiki.ffrtt.ru/index.php/FF8/GameSaveFormat#Characters"/>
         public class CharacterData : Damageable, ICharacterData
         {
+            private const int MagicCapacity = 32;
 
             /// <summary>
             /// Raw HP buff from items.
@@ -198,7 +199,7 @@ namespace OpenVIII
             public Exists Exists;
 
             /// <summary>
-            /// Visable
+            /// Visible
             /// </summary>
             public bool Available => (Exists & Exists.Available) != 0;
 
@@ -276,8 +277,8 @@ namespace OpenVIII
                     [Kernel_bin.Stat.SPD] = br.ReadByte(),//0x0E
                     [Kernel_bin.Stat.LUCK] = br.ReadByte()//0x0F
                 };
-                Magics = new OrderedDictionary<byte, byte>(32);
-                for (int i = 0; i < 32; i++)
+                Magics = new OrderedDictionary<byte, byte>(MagicCapacity);
+                for (int i = 0; i < MagicCapacity; i++)
                 {
                     byte key = br.ReadByte();
                     byte val = br.ReadByte();
@@ -287,7 +288,7 @@ namespace OpenVIII
                 Commands = Array.ConvertAll(br.ReadBytes(3), Item => (Kernel_bin.Abilities)Item).ToList();//0x50
                 Paddingorunusedcommand = br.ReadByte();//0x53
                 Abilities = Array.ConvertAll(br.ReadBytes(4), Item => (Kernel_bin.Abilities)Item).ToList();//0x54
-                JunctionnedGFs = (GFflags)br.ReadUInt16();//0x58
+                JunctionnedGFs = (GFflags)br.ReadUInt16();//0x58 each bit is one gf.
                 Unknown1 = br.ReadByte();//0x5A
                 Alternativemodel = br.ReadByte();//0x5B (Normal, SeeD, Soldier...)
                 Stat_J = new Dictionary<Kernel_bin.Stat, byte>(9);
@@ -298,19 +299,7 @@ namespace OpenVIII
                     if (!Stat_J.ContainsKey(key))
                         Stat_J.Add(key, val);
                 }
-                //JunctionHP = br.ReadByte();//0x5C
-                //JunctionSTR = br.ReadByte();//0x5D
-                //JunctionVIT = br.ReadByte();//0x5E
-                //JunctionMAG = br.ReadByte();//0x5F
-                //JunctionSPR = br.ReadByte();//0x60
-                //JunctionSPD = br.ReadByte();//0x61
-                //JunctionEVA = br.ReadByte();//0x62
-                //JunctionHIT = br.ReadByte();//0x63
-                //JunctionLCK = br.ReadByte();//0x64
-                //Elem_Atk_J = br.ReadByte();//0x65
-                //ST_Atk_J = br.ReadByte();//0x66
-                //Elem_Def_J = br.ReadBytes(4).ToList() ;//0x67
-                //ST_Def_J = br.ReadBytes(4).ToList();//0x6B
+                
                 Unknown2 = br.ReadByte();//0x6F (padding?)
                 CompatibilitywithGFs = new Dictionary<GFs, ushort>(16);
                 for (int i = 0; i < 16; i++)
@@ -318,23 +307,6 @@ namespace OpenVIII
                 Numberofkills = br.ReadUInt16();//0x90
                 NumberofKOs = br.ReadUInt16();//0x92
                 Exists = (Exists)br.ReadByte();//0x94
-                                               //switch((int)Exists)
-                                               //{
-                                               //    case 0:
-                                               //        break;
-                                               //    case 1:
-                                               //        break;
-                                               //    case 9:
-                                               //        break;
-                                               //    case 6:
-                                               //        break;
-                                               //    case 7:
-                                               //        break;
-                                               //    case 15:
-                                               //        break;
-                                               //    default:
-                                               //    break;
-                                               //}
                 Unknown3 = br.ReadByte();//0x95
                 Statuses0 = (Kernel_bin.Persistant_Statuses)br.ReadByte();//0x96
                 Unknown4 = br.ReadByte();//0x97
@@ -482,6 +454,8 @@ namespace OpenVIII
             {
                 if (c == Characters.Blank)
                     c = ID;
+                if (c != ID && c < Characters.Laguna_Loire)
+                    throw new ArgumentException($"{this}::Wrong visible character value({c}). Must match ({ID}) unless Laguna Kiros or Ward!");
                 int total = 0;
                 foreach (Kernel_bin.Abilities i in Abilities)
                 {
