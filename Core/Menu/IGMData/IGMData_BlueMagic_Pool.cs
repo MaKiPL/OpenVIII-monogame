@@ -112,10 +112,10 @@ namespace OpenVIII
 
         public override void Refresh()
         {
-            if (Memory.State == null || Memory.State.LimitBreakQuistis == null) return;
+            if (Memory.State == null || Memory.State.LimitBreakQuistis_Unlocked_BlueMagic == null) return;
             Kernel_bin.Blue_Magic bm = 0;
             unlocked = new List<Kernel_bin.Blue_Magic>();
-            foreach (bool b in Memory.State.LimitBreakQuistis)
+            foreach (bool b in Memory.State.LimitBreakQuistis_Unlocked_BlueMagic)
             {
                 if (b)
                     unlocked.Add(bm);

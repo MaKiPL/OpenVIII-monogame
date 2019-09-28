@@ -114,7 +114,7 @@ namespace OpenVIII
                     Y = (int)(OffScreenBuffer.Height * 0.0251572327044026f),
                 } + offset;
                 FF8String name = Memory.Strings.GetName(d.Party[mainchar], d);
-                FF8String lv_ = new FF8String($"LV.   {d.firstcharacterslevel}");
+                FF8String lv_ = new FF8String($"LV.   {d.FirstCharactersLevel}");
                 //TextScale1 = new Vector2(OffScreenBuffer.Width * 0.0030303030297619f, OffScreenBuffer.Height * 0.00636792452830189f);
                 Memory.font.RenderBasicText(name, detailsLoc, TextScale, Fade: Fade);
 
