@@ -644,7 +644,7 @@ namespace OpenVIII
                 FirstCharactersMaxHP = br.ReadUInt16();//0x0008
                 SaveCount = br.ReadUInt16();//0x000A
                 AmountofGil = br.ReadUInt32();//0x000C
-                Timeplayed = new TimeSpan(0, 0, (int)br.ReadUInt32());//0x0020
+                Timeplayed = new TimeSpan(0, 0, checked((int)br.ReadUInt32()));//0x0020
                 FirstCharactersLevel = br.ReadByte();//0x0024
                 Party = Array.ConvertAll(br.ReadBytes(3), Item => (Characters)Item).ToList();//0x0025//0x0026//0x0027 0xFF = blank.
                 Squallsname = br.ReadBytes(12);//0x0028
@@ -653,11 +653,11 @@ namespace OpenVIII
                 Bokosname = br.ReadBytes(12);//0x004C
                 CurrentDisk = br.ReadUInt32();//0x0058
                 Currentsave = br.ReadUInt32();//0x005C
-                for (int i = 0; i <= (int)OpenVIII.GFs.Eden; i++)
+                for (byte i = 0; i <= (int)OpenVIII.GFs.Eden; i++)
                 {
                     GFs[(GFs)i] = new GFData(br, (GFs)i);
                 }
-                for (int i = 0; i <= (int)OpenVIII.Characters.Edea_Kramer; i++)
+                for (byte i = 0; i <= (int)OpenVIII.Characters.Edea_Kramer; i++)
                 {
                     Characters[(Characters)i] = new CharacterData(br, (Characters)i)
                     {
@@ -665,10 +665,9 @@ namespace OpenVIII
                     }; // 0x04A0 -> 0x08C8 //152 bytes per 8 total
                 }
                 Shops = new List<Shop>(20); //0x0960 //400 bytes
-                for (int i = 0; i < Shops.Count; i++)
+                for (int i = 0; i < Shops.Capacity; i++)
                     Shops.Add(new Shop(br));
-                Configuration = br.ReadBytes(20); //0x0AF0 //20 bytes
-
+                Configuration = br.ReadBytes(20); //0x0AF0 //20 bytes TODO break this up into a structure or class.
                 PartyData = Array.ConvertAll(br.ReadBytes(4), Item => (Characters)Item).ToList(); //0x0B04 // 4 bytes 0xFF terminated.
                 KnownWeapons = new BitArray(br.ReadBytes(4)); //0x0B08 // 4 bytes
                 Grieversname = br.ReadBytes(12); //0x0B0C // 12 bytes
