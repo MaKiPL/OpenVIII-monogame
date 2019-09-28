@@ -249,7 +249,7 @@ namespace OpenVIII
 
             public void RemoveMagic() => Stat_J = Stat_J.ToDictionary(e => e.Key, e => (byte)0);
 
-            public int CriticalHP(Characters value) => MaxHP(value) / 4;
+            public int CriticalHP(Characters value) => MaxHP(value) / 4-1;
 
             public void RemoveAll()
             {
@@ -469,6 +469,14 @@ namespace OpenVIII
                 }
                 return MaxHP(ID);
             }
+            /// <summary>
+             /// 25.4% chance to cast automaticly on gameover, if used once in battle
+             /// </summary>
+             /// <remarks>
+             /// Memory.State.Fieldvars. has a value that tracks if PhoenixPinion is used just need to
+             /// find it
+             /// </remarks>
+            public bool CanPhoenixPinion => IsDead && !(IsPetrify || (Statuses1 & (Kernel_bin.Battle_Only_Statuses.Eject)) != 0) && Memory.State.Items.Where(m => m.ID == 31 && m.QTY >= 1).Count() > 0;
 
             public ushort TotalStat(Kernel_bin.Stat s, Characters c = Characters.Blank)
             {
