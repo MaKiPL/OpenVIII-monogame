@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace OpenVIII
 {
@@ -9,7 +13,7 @@ namespace OpenVIII
     {
         #region Fields
 
-        private static Dictionary<FileID, StringsBase> Files;
+        private static ConcurrentDictionary<FileID, StringsBase> Files;
 
         private static object Filesloc = new object();
 
@@ -114,13 +118,21 @@ namespace OpenVIII
         {
             lock (Filesloc)
                 if (Files == null)
-                    Files = new Dictionary<FileID, StringsBase>{
-                { FileID.MNGRP, new Mngrp()},
-                { FileID.NAMEDIC, new Namedic() },
-                { FileID.AREAMES, new Areames() },
-                { FileID.KERNEL, new Kernel() },
-                };
+                {
+                    var tasks = new List<Task<bool>>();
+                    Files = new ConcurrentDictionary<FileID, StringsBase>();
+                    tasks.Add(Task.Run(() => Files.TryAdd(FileID.NAMEDIC, new Namedic()))); // areames and kernel require namedic
+                    //though there shouldn't be anything reading the strings till this is done processing
+                    //Task.WaitAll(tasks.ToArray());
+                    tasks.Add(Task.Run(() => Files.TryAdd(FileID.MNGRP, new Mngrp())));
+                    tasks.Add(Task.Run(() => Files.TryAdd(FileID.AREAMES, new Areames())));
+                    tasks.Add(Task.Run(() => Files.TryAdd(FileID.KERNEL, new Kernel())));
+                    Task.WaitAll(tasks.ToArray());
+                    if (tasks.Any(x => !x.Result))
+                        throw new ArgumentException($"{this}::Failed to add to dictionary...");
+                }
         }
+
 
         #endregion Methods
     }

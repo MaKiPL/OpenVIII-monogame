@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OpenVIII
 {
@@ -28,6 +31,10 @@ namespace OpenVIII
 
             protected StringsBase(Memory.Archive archive, params string[] filenames)
             {
+                Debug.WriteLine("Task={0}, Thread={2}, [Files={1}]",
+                Task.CurrentId, string.Join(", ", filenames),
+                Thread.CurrentThread.ManagedThreadId);
+
                 Archive = archive;
                 Filenames = filenames;
                 Init();

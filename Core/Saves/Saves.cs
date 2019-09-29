@@ -87,7 +87,7 @@ namespace OpenVIII
 
         private static void ProcessFiles(IEnumerable<string> files,string regex)
         {
-            List<Task<Data>> tasks = new List<Task<Data>>();
+            List<Task> tasks = new List<Task>();
             foreach (string file in files)
             {
                 Match n = Regex.Match(file, regex, RegexOptions.IgnoreCase);
@@ -98,9 +98,9 @@ namespace OpenVIII
             Task.WaitAll(tasks.ToArray());
         }
 
-        private static Data read(string file, out Data d)
+        private static void read(string file, out Data d)
         {
-            Debug.WriteLine("Task={0}, file={1}, Thread={2}",
+            Debug.WriteLine("Task={0}, Thread={2}, File={1}",
             Task.CurrentId, file,
             Thread.CurrentThread.ManagedThreadId);
             byte[] decmp;
@@ -119,7 +119,6 @@ namespace OpenVIII
                 ms.Seek(SteamOffset, SeekOrigin.Begin);
                 d = new Data();
                 d.Read(br);
-                return d;
             }
         }
     }
