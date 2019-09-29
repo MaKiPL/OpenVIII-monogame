@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OpenVIII
 {
@@ -58,19 +62,7 @@ namespace OpenVIII
             }
             else if (Directory.Exists(CD2000Folder))
             {
-                string[] files = Directory.GetFiles(CD2000Folder, "*", SearchOption.AllDirectories);
-                if (files.Length > 0)
-                {
-                    foreach (string file in files)
-                    {
-                        Match n = Regex.Match(file, @"Slot(\d+)[\\/]save(\d+)", RegexOptions.IgnoreCase);
-
-                        if (n.Success && n.Groups.Count > 0)
-                        {
-                            FileList[int.Parse(n.Groups[1].Value) - 1, int.Parse(n.Groups[2].Value) - 1] = read(file);
-                        }
-                    }
-                }
+                ProcessFiles(Directory.GetFiles(CD2000Folder, "*", SearchOption.AllDirectories), @"Slot(\d+)[\\/]save(\d+)");
             }
             else if (Directory.Exists(Steam2019Folder))
             {
@@ -90,19 +82,27 @@ namespace OpenVIII
 
         private static void GetFiles(string dir,string regex)
         {
-            foreach (string file in Directory.EnumerateFiles(dir))
+            ProcessFiles(Directory.EnumerateFiles(dir), regex);
+        }
+
+        private static void ProcessFiles(IEnumerable<string> files,string regex)
+        {
+            List<Task<Data>> tasks = new List<Task<Data>>();
+            foreach (string file in files)
             {
                 Match n = Regex.Match(file, regex, RegexOptions.IgnoreCase);
 
                 if (n.Success && n.Groups.Count > 0)
-                {
-                    FileList[int.Parse(n.Groups[1].Value) - 1, int.Parse(n.Groups[2].Value) - 1] = read(file);
-                }
+                    tasks.Add(Task.Run(() => read(file, out FileList[int.Parse(n.Groups[1].Value) - 1, int.Parse(n.Groups[2].Value) - 1])));
             }
+            Task.WaitAll(tasks.ToArray());
         }
 
-        private static Data read(string file)
+        private static Data read(string file, out Data d)
         {
+            Debug.WriteLine("Task={0}, file={1}, Thread={2}",
+            Task.CurrentId, file,
+            Thread.CurrentThread.ManagedThreadId);
             byte[] decmp;
 
             using (FileStream fs = File.OpenRead(file))
@@ -117,7 +117,7 @@ namespace OpenVIII
             using (BinaryReader br = new BinaryReader(ms))
             {
                 ms.Seek(SteamOffset, SeekOrigin.Begin);
-                Data d = new Data();
+                d = new Data();
                 d.Read(br);
                 return d;
             }
