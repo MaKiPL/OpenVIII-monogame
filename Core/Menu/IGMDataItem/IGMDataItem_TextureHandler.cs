@@ -6,7 +6,11 @@ namespace OpenVIII
     {
         #region Constructors
 
-        public IGMDataItem_TextureHandler(TextureHandler data, Rectangle? pos = null) : base(pos) => Data = data;
+        public IGMDataItem_TextureHandler(TextureHandler data, Rectangle? pos = null) : base(pos)
+        {
+            Faded_Color = Color.DarkGray;
+            Data = data;
+        }
 
         #endregion Constructors
 
@@ -17,7 +21,6 @@ namespace OpenVIII
         #endregion Properties
 
         #region Methods
-        Color Faded_Color => Color.DarkGray;
         public override void Draw()
         {
             if (Enabled)
