@@ -93,6 +93,11 @@ namespace OpenVIII
                 return base.Inputs();
             }
         }
+        public override void Reset()
+        {
+            Hide();
+            base.Reset();
+        }
 
         public override bool Inputs_CANCEL()
         {

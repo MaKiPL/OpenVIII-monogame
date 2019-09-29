@@ -166,7 +166,8 @@ namespace OpenVIII
             {
                 if (_player + 1 == bml.Count)
                     _player = 0;
-                for (int i = _player; i < bml.Count; i++)
+                int cnt = 3;
+                for (int i = _player; cnt >0; cnt--)
                 {
                     if (bml[i].GetMode().Equals(BattleMenu.Mode.ATB_Charged))
                     {
@@ -175,6 +176,9 @@ namespace OpenVIII
                         NewTurnSND();
                         break;
                     }
+                    i++;
+                    if (i >= bml.Count)
+                        i = 0;
                 }
             }
             return ret;
