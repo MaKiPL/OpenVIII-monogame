@@ -17,9 +17,9 @@ namespace OpenVIII
             if (Assembly.GetCallingAssembly().GetName().Name.Contains("DirectX"))
             {
                 graphics.GraphicsProfile = GraphicsProfile.HiDef;
-                Memory.currentGraphicMode = Memory.graphicModes.DirectX;
+                Memory.currentGraphicMode = Memory.GraphicModes.DirectX;
             }
-                else Memory.currentGraphicMode = Memory.graphicModes.OpenGL;
+                else Memory.currentGraphicMode = Memory.GraphicModes.OpenGL;
             Content.RootDirectory = "Content";
             graphics.PreferredBackBufferWidth = Memory.PreferredViewportWidth;
             graphics.PreferredBackBufferHeight = Memory.PreferredViewportHeight;

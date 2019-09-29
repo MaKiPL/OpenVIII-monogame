@@ -50,20 +50,20 @@ namespace OpenVIII
         Slow = 1,
         Normal = 2,
         Haste = 3,
-        AlwaysFull = 200
+        AlwaysFull = 0xFF //not sure what i should set this too.
     }
 
     public static class Memory
     {
         public static BattleSpeed CurrentBattleSpeed = BattleSpeed.Normal;
 
-        public enum graphicModes
+        public enum GraphicModes
         {
             OpenGL,
             DirectX
         };
 
-        public static graphicModes currentGraphicMode;
+        public static GraphicModes currentGraphicMode;
 
         //monogame
         public static GraphicsDeviceManager graphics;
@@ -248,49 +248,45 @@ namespace OpenVIII
 
             if (!token.IsCancellationRequested)
                 Memory.Strings = new Strings();
-
-            if (!token.IsCancellationRequested) // requires strings because it uses an array generated in strings.
-                Kernel_Bin = new Kernel_bin();
-
-            //FF8String test = Strings.Read(Strings.FileID.MNGRP, 38, 58);
-
+            var tasks = new List<Task>();
+     
             if (!token.IsCancellationRequested)
-                Memory.MItems = Items_In_Menu.Read(); // this has a soft requirement on kernel_bin. It checks for null so should work without it.
-
-            if (!token.IsCancellationRequested)
-                Saves.Init(); //loads all savegames from steam or cd2000 directories. first come first serve.
-
-            if (!token.IsCancellationRequested)
-                InitStrings();
-
-            if (graphics?.GraphicsDevice != null) // all below require graphics to work. to load textures graphics device needed.
             {
-                if (!token.IsCancellationRequested)
-                    Memory.font = new Font(); //this initializes the fonts and drawing system- holds fonts in-memory
+                // requires strings because it uses an array generated in strings.       
+                tasks.Add(Task.Run(() => { Kernel_Bin = new Kernel_bin(); }, token));
+                // this has a soft requirement on kernel_bin. It checks for null so should work without it.                
+                tasks.Add(Task.Run(() => { MItems = Items_In_Menu.Read(); }, token));
+                //loads all savegames from steam2013 or cd2000 or steam2019 directories. first come first serve.
+                //TODO allow chosing of which save folder to use.
+                tasks.Add(Task.Run(Saves.Init, token));
+                tasks.Add(Task.Run(InitStrings, token));
+                if (graphics?.GraphicsDevice != null) // all below require graphics to work. to load textures graphics device needed.
+                {
+                    //this initializes the fonts and drawing system- holds fonts in-memory
+                    tasks.Add(Task.Run(() => { font = new Font(); }, token));
+                    // card images in menu.                              
+                    tasks.Add(Task.Run(() => { Cards = new Cards(); }, token));
 
-                if (!token.IsCancellationRequested)
-                    Memory.Cards = new Cards(); // card images in menu.
+                    tasks.Add(Task.Run(() => { Card_Game = new Card_Game(); }, token));                        
 
-                if (!token.IsCancellationRequested)
-                    Memory.Card_Game = new Card_Game();
+                    tasks.Add(Task.Run(() => { Faces = new Faces(); }, token));                        
 
-                if (!token.IsCancellationRequested)
-                    Memory.Faces = new Faces();
+                    tasks.Add(Task.Run(() => { Icons = new Icons(); }, token));                        
+                }
+                Task.WaitAll(tasks.ToArray());
+                if (graphics?.GraphicsDevice != null) // all below require graphics to work. to load textures graphics device needed.
+                {
+                    // requires font, faces, and icons. currently cards only used in debug menu. will
+                    // have support for cards when added to menu.
+                    if (!token.IsCancellationRequested)
+                        Module_main_menu_debug.Init();
 
-                if (!token.IsCancellationRequested)
-                    Memory.Icons = new Icons();
-
-                // requires font, faces, and icons. currently cards only used in debug menu. will
-                // have support for cards when added to menu.
-                if (!token.IsCancellationRequested)
-                    Module_main_menu_debug.Init();
-
-                // requires font, faces, and icons. currently cards only used in debug menu. will
-                // have support for cards when added to menu.
-                if (!token.IsCancellationRequested)
-                    Menu.InitStaticMembers();
+                    // requires font, faces, and icons. currently cards only used in debug menu. will
+                    // have support for cards when added to menu.
+                    if (!token.IsCancellationRequested)
+                        Menu.InitStaticMembers();
+                }
             }
-
             //EXE_Offsets test = new EXE_Offsets();
             Inited = true;
             return 0;
