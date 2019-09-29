@@ -42,20 +42,13 @@ namespace OpenVIII
                 Hide();
             }
 
-            private string CharacterNames(Characters[] vc)
-            {
-                string r = $"[{Memory.Strings.GetName(vc[0])}";
-                for (int j = 1; j < vc.Length; j++)
-                    r += $", {Memory.Strings.GetName(vc[j])}";
-                r += "]";
-                return r;
-            }
+
 
             private bool CommandDefault() => throw new NotImplementedException();
 
-            private void DebugMessageCommand(IGMData_TargetEnemies i, Enemy[] e, Characters[] vc, Characters fromvc, bool enemytarget) => Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} uses {Command.Name}({Command.ID}) command on { DebugMessageSuffix(e, vc, enemytarget) }");
+            private void DebugMessageCommand(IGMData_TargetEnemies i, Damageable[] d, Characters fromvc) => Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} uses {Command.Name}({Command.ID}) command on { DebugMessageSuffix(d) }");
 
-            private string DebugMessageSuffix(Enemy[] e, Characters[] vc, bool enemytarget) => (enemytarget ? $"{EnemyNames(e)}({(e.Length == 1 ? TargetEnemies.CURSOR_SELECT.ToString() : "MultiSelect")})" : CharacterNames(vc));
+            private string DebugMessageSuffix(Damageable[] d) => $"{DamageableNames(d)}({(d.Length == 1 ? TargetEnemies.CURSOR_SELECT.ToString() : "MultiSelect")})";
 
             /// <summary>
             /// Display pool with list
@@ -63,7 +56,7 @@ namespace OpenVIII
             /// <param name="drawList"></param>
             private void DrawMagic(Debug_battleDat.Magic[] drawList) => Debug.WriteLine($"Display draw pool: {string.Join(", ", drawList)}");
 
-            private string EnemyNames(Enemy[] e)
+            private string DamageableNames(Damageable[] e)
             {
                 string r = $"[{e[0].Name}";
                 for (int j = 1; j < e.Length; j++)
@@ -72,26 +65,29 @@ namespace OpenVIII
                 return r;
             }
 
-            private void Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget)
+            private void Neededvaribles(out Damageable[] d, out Characters fromvc)
             {
+                Damageable[] e;
+                Damageable[] vc;
                 if ((Target & Kernel_bin.Target.Single_Target) != 0)
                 {
                     e = new Enemy[] { Enemy.Party[TargetParty.CURSOR_SELECT < Enemy.Party.Count ? TargetParty.CURSOR_SELECT : Enemy.Party.Count - 1] };
-                    vc = new Characters[] { Memory.State.Party.Where(x => x != Characters.Blank).ToList()[TargetParty.CURSOR_SELECT] };
+                    var charvar = Memory.State.Party.Where(x => x != Characters.Blank).ToList()[TargetParty.CURSOR_SELECT];
+                    vc = new Saves.CharacterData[] { Memory.State[charvar] };
                 }
                 else
                 {
-                    vc = Memory.State.Party.Where(x => x != Characters.Blank).ToArray();
+                    vc = Memory.State.Party.Where(x => x != Characters.Blank).Select(y=>Memory.State[y]).ToArray();
                     e = Enemy.Party.ToArray();
                 }
                 Characters c = Memory.State.PartyData.Where(x => x != Characters.Blank).ToList()[TargetParty.CURSOR_SELECT];
                 int p = BattleMenus.Player;
                 Characters fromc = Memory.State.PartyData.Where(x => x != Characters.Blank).ToList()[p];
                 fromvc = Memory.State.Party.Where(x => x != Characters.Blank).ToList()[p];
-                enemytarget = false;
+                d = vc;
                 if ((TargetEnemies.Cursor_Status & Cursor_Status.Enabled) != 0 && TargetEnemies.Enabled)
-                    enemytarget = true;
-                DebugMessageCommand(TargetEnemies, e, vc, fromvc, enemytarget);
+                    d = e;
+                DebugMessageCommand(TargetEnemies, d, fromvc);
             }
 
             private void SelectTargetWindows(Kernel_bin.Target t)
@@ -171,15 +167,15 @@ namespace OpenVIII
 
                 bool Command01_ATTACK()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
                     BattleMenus.EndTurn();
                     return true;
                 }
 
                 bool Command02_MAGIC()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} casts {Magic.Name}({Magic.ID}) spell on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} casts {Magic.Name}({Magic.ID}) spell on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
                     return true;
                 }
@@ -188,16 +184,16 @@ namespace OpenVIII
 
                 bool Command04_ITEM()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} uses {Item.Name}({Item.ID}) item on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} uses {Item.Name}({Item.ID}) item on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
                     return true;
                 }
 
                 bool Command05_RENZOKUKEN()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
-                    if (enemytarget)
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+                    if (d.First().GetType() == typeof(Enemy))
                     {
                         //Renzokuken
                         byte w = Memory.State[fromvc].WeaponID;
@@ -240,13 +236,14 @@ namespace OpenVIII
 
                 bool Command06_DRAW()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
                     //draw
                     //spawn a 1 page 4 row pool of the magic/gfs that the selected enemy has.
-                    if (enemytarget)
+                    if (d.First().GetType() == typeof(Enemy))
                     {
-                        DrawMagic(e.First().DrawList);
-                        Draw_Pool.Refresh(e.First().DrawList);
+                        var e = (Enemy)d.First();
+                        DrawMagic(e.DrawList);
+                        Draw_Pool.Refresh(e.DrawList);
                         Draw_Pool.Show();
                     }
                     return true;
@@ -254,9 +251,9 @@ namespace OpenVIII
 
                 bool Command07_DEVOUR()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
                     //TODO add devour commands
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
 
                     return true;
@@ -270,9 +267,9 @@ namespace OpenVIII
 
                 bool Command11_DUEL()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
 
                     return true;
@@ -280,12 +277,13 @@ namespace OpenVIII
 
                 bool Command12_MUG()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
-                    if (enemytarget)
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+                    if (d.First().GetType() == typeof(Enemy))
                     {
+                        var e = (Enemy)d.First();
                         //unsure if party member being ejected or if they need to be in the party for rare item to work
-                        Saves.Item i = e.First().Mug(Memory.State[fromvc].SPD, Memory.State.PartyHasAbility(Kernel_bin.Abilities.RareItem));
-                        Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} stole {i.DATA?.Name}({i.ID}) x {i.QTY} from { DebugMessageSuffix(e, vc, enemytarget) }");
+                        Saves.Item i = e.Mug(Memory.State[fromvc].SPD, Memory.State.PartyHasAbility(Kernel_bin.Abilities.RareItem));
+                        Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} stole {i.DATA?.Name}({i.ID}) x {i.QTY} from { DebugMessageSuffix(d) }");
                     }
                     BattleMenus.EndTurn();
                     return true;
@@ -295,9 +293,9 @@ namespace OpenVIII
 
                 bool Command14_SHOT() 
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
 
                     return true;
@@ -305,8 +303,8 @@ namespace OpenVIII
 
                 bool Command15_BLUE_MAGIC()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} casts {BlueMagic.Name}({BlueMagic.ID}) spell on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} casts {BlueMagic.Name}({BlueMagic.ID}) spell on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
                     return false;
                 }
@@ -315,9 +313,9 @@ namespace OpenVIII
 
                 bool Command17_FIRE_CROSS_NO_MERCY()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
 
                     return true;
@@ -325,9 +323,9 @@ namespace OpenVIII
 
                 bool Command18_SORCERY_ICE_STRIKE()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
 
                     return true;
@@ -336,9 +334,9 @@ namespace OpenVIII
                 bool Command19_COMBINE()
                 {
                     //perform angelo attack unless angel wing is unlocked and chosen in menu.
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
 
                     return true;
@@ -346,9 +344,9 @@ namespace OpenVIII
 
                 bool Command20_DESPERADO()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
 
                     return true;
@@ -356,9 +354,9 @@ namespace OpenVIII
 
                 bool Command21_BLOOD_PAIN()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
 
                     return true;
@@ -366,9 +364,9 @@ namespace OpenVIII
 
                 bool Command22_MASSIVE_ANCHOR()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
 
                     return true;
@@ -378,9 +376,9 @@ namespace OpenVIII
 
                 bool Command24_MADRUSH()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
 
                     return true;
@@ -388,9 +386,9 @@ namespace OpenVIII
 
                 bool Command25_TREATMENT()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
 
                     return true;
@@ -398,9 +396,9 @@ namespace OpenVIII
 
                 bool Command26_RECOVERY()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
 
                     return true;
@@ -408,33 +406,34 @@ namespace OpenVIII
 
                 bool Command27_REVIVE()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
 
                     return true;
                 }
                 bool Command28_DARKSIDE()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
                     BattleMenus.EndTurn();
                     return true;
                 }
 
                 bool Command29_CARD()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
-                    if (enemytarget)
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+                    if (d.First().GetType() == typeof(Enemy))
                     {
-                        Cards.ID c = e.First().Card();
+                        var e = (Enemy)d.First();
+                        Cards.ID c = e.Card();
                         if (c == Cards.ID.Fail)
 
-                            Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} Failed to use {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) }");
+                            Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} Failed to use {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
                         else if (c == Cards.ID.Immune)
-                            Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} Failed to use {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) } because they are immune!");
+                            Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} Failed to use {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) } because they are immune!");
                         else
-                            Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) } and got a {c} card");
+                            Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) } and got a {c} card");
                         BattleMenus.EndTurn();
                     }
                     return true;
@@ -442,16 +441,16 @@ namespace OpenVIII
 
                 bool Command30_DOOM()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
                     BattleMenus.EndTurn();
                     return true;
                 }
 
                 bool Command31_KAMIKAZI()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
 
                     return true;
@@ -459,9 +458,9 @@ namespace OpenVIII
 
                 bool Command32_ABSORB()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
 
                     return true;
@@ -469,9 +468,9 @@ namespace OpenVIII
 
                 bool Command33_LVL_DOWN()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
 
                     return true;
@@ -479,9 +478,9 @@ namespace OpenVIII
 
                 bool Command34_LVL_UP()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
 
                     return true;
@@ -489,15 +488,21 @@ namespace OpenVIII
 
                 bool Command35_SINGLE() => Command02_MAGIC();
 
-                bool Command36_DOUBLE() => throw new NotImplementedException();
+                bool Command36_DOUBLE() {
+                    // CHOOSE 2X TARGETS
+                    throw new NotImplementedException();
+                }
 
-                bool Command37_TRIPLE() => throw new NotImplementedException();
-
+                bool Command37_TRIPLE()
+                {
+                    // CHOOSE 3X TARGETS
+                    throw new NotImplementedException();
+                }
                 bool Command38_MINIMOG()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
 
                     return true;

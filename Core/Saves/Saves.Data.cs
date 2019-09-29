@@ -26,7 +26,17 @@ namespace OpenVIII
 
             #region Methods
 
-            private CharacterData GetDamagable(Characters id) => Characters.ContainsKey(id) ? Characters[id] : null;
+            private CharacterData GetDamagable(Characters id)
+            {
+                if (!Characters.TryGetValue(id, out CharacterData c))
+                {
+                    var ind = Party.FindIndex(x=>x.Equals(id));
+
+                    if (ind == -1 || !Characters.TryGetValue(PartyData[ind], out c))
+                        throw new ArgumentException($"{this}::Cannot find {id} in CharacterData or Party");
+                }
+                return c;
+            }
 
             private GFData GetDamagable(GFs id) => GFs.ContainsKey(id) ? GFs[id] : null;
 
@@ -659,6 +669,7 @@ namespace OpenVIII
                 }
                 for (byte i = 0; i <= (int)OpenVIII.Characters.Edea_Kramer; i++)
                 {
+
                     Characters[(Characters)i] = new CharacterData(br, (Characters)i)
                     {
                         Name = Memory.Strings.GetName((Characters)i, this)
