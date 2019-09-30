@@ -287,11 +287,7 @@ namespace OpenVIII
                             commands[pos].Name,
                             SIZE[pos]);
                         ITEM[pos, 0].Show();
-                        Rectangle dataSize = ((IGMDataItem_String)ITEM[pos, 0]).DataSize;
-                        if (dataSize.Right > CONTAINER.Pos.Right && dataSize.Right > DataSize.Right)
-                        {
-                            DataSize = dataSize;
-                        }
+                        CheckBounds(ref DataSize, pos);
                         BLANKS[pos] = false;
 
                     }
@@ -314,10 +310,7 @@ namespace OpenVIII
                     CONTAINER.Width = nonbattleWidth;
                     ITEM[Limit_Arrow, 0] = null;
                 }
-                if(DataSize.Right > CONTAINER.Pos.Right)
-                {
-                    CONTAINER.Width += DataSize.Right - CONTAINER.Pos.Right + Math.Abs(DataSize.Left - CONTAINER.Pos.Left);
-                }
+                AutoAdjustContainerWidth(DataSize);
                 if (Character != Characters.Blank)
                 {
                     Target_Group.Refresh(Character, VisibleCharacter);
@@ -327,6 +320,8 @@ namespace OpenVIII
             }
             skipReinit = false;
         }
+
+        
 
         public override void Refresh(Characters character, Characters? Visiblecharacter = null)
         {

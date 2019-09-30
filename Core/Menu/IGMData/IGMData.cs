@@ -11,13 +11,34 @@ namespace OpenVIII
         #region Fields
 
         private int _cursor_select;
+
         protected bool DepthFirst = false;
+
         protected bool skipdata = false;
+
         protected bool skipsnd = false;
 
         #endregion Fields
 
         #region Methods
+
+        protected void AutoAdjustContainerWidth(Rectangle DataSize)
+        {
+            if (DataSize.Right > CONTAINER.Pos.Right)
+            {
+                CONTAINER.Width += DataSize.Right - CONTAINER.Pos.Right + Math.Abs(DataSize.Left - CONTAINER.Pos.Left);
+            }
+        }
+
+        protected void CheckBounds(ref Rectangle DataSize, Rectangle input)
+        {
+            if (input.Right > CONTAINER.Pos.Right && input.Right > DataSize.Right)
+            {
+                DataSize = input;
+            }
+        }
+
+        protected void CheckBounds(ref Rectangle DataSize, int pos) => CheckBounds(ref DataSize, ((IGMDataItem_String)ITEM[pos, 0]).DataSize);
 
         protected virtual void DrawITEM(int i, int d) => ITEM[i, d]?.Draw();
 
