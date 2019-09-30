@@ -258,6 +258,7 @@ namespace OpenVIII
                 return;
             if (Memory.State.Characters != null && !skipReinit)
             {
+                Rectangle DataSize = Rectangle.Empty;
                 base.Refresh();
                 page = 0;
                 Cursor_Status &= ~Cursor_Status.Horizontal;
@@ -270,7 +271,6 @@ namespace OpenVIII
                 {
 
                     Kernel_bin.Abilities cmd = Memory.State.Characters[Character].Commands[pos - 1];
-
 
                     if (cmd != Kernel_bin.Abilities.None)
                     {
@@ -287,7 +287,13 @@ namespace OpenVIII
                             commands[pos].Name,
                             SIZE[pos]);
                         ITEM[pos, 0].Show();
+                        Rectangle dataSize = ((IGMDataItem_String)ITEM[pos, 0]).DataSize;
+                        if (dataSize.Right > CONTAINER.Pos.Right && dataSize.Right > DataSize.Right)
+                        {
+                            DataSize = dataSize;
+                        }
                         BLANKS[pos] = false;
+
                     }
                     else
                     {
@@ -307,6 +313,10 @@ namespace OpenVIII
                 {
                     CONTAINER.Width = nonbattleWidth;
                     ITEM[Limit_Arrow, 0] = null;
+                }
+                if(DataSize.Right > CONTAINER.Pos.Right)
+                {
+                    CONTAINER.Width += DataSize.Right - CONTAINER.Pos.Right + Math.Abs(DataSize.Left - CONTAINER.Pos.Left);
                 }
                 if (Character != Characters.Blank)
                 {
