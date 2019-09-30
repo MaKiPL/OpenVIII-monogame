@@ -1079,6 +1079,7 @@ namespace OpenVIII
         {
             Stop();
             fluidState = ThreadFluidState.kill;
+            if(handles != null)
             foreach (GCHandle hwnd in handles)
                 hwnd.Free();
         }

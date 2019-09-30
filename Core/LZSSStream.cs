@@ -7,6 +7,7 @@ namespace OpenVIII
 {
     /// <summary>
     /// Attempt to make the LZSS into a stream that we can read from on the fly...
+    /// putting on back burner as I feel like it's taking too much time. This class does not work. So discard or ignore.
     /// </summary>
     public class LZSSStream : Stream
     {

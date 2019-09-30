@@ -175,8 +175,6 @@
     <Compile Include="Input\Inputs_FF8Steam.cs" />
     <Compile Include="Input\Inputs_OpenVIII.cs" />
     <Compile Include="Input\MouseLockMode.cs" />
-    <Compile Include="LZSSold.cs" />
-    <Compile Include="LZSSStream.cs" />
     <Compile Include="Menu\IGMDataItem\I_Color.cs" />
     <Compile Include="Menu\IGMDataItem\I_Data.cs" />
     <Compile Include="Menu\IGMDataItem\I_FontColor.cs" />
