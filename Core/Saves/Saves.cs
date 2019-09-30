@@ -103,13 +103,16 @@ namespace OpenVIII
             Debug.WriteLine("Task={0}, Thread={1}, File={2}",
                 Task.CurrentId, Thread.CurrentThread.ManagedThreadId, file);
             byte[] decmp;
-
+            byte[] decmp2;
             using (FileStream fs = File.OpenRead(file))
             using (BinaryReader br = new BinaryReader(fs))
             {
-                uint size = br.ReadUInt32();
+                int size = br.ReadInt32();
                 byte[] tmp = br.ReadBytes((int)fs.Length - sizeof(uint));
                 decmp = LZSS.DecompressAllNew(tmp);
+                var test = new LZSSStream(fs,4, 0);
+                decmp2 = new byte[size];
+                test.Read(decmp2, 0, size);
             }
 
             using (MemoryStream ms = new MemoryStream(decmp))
