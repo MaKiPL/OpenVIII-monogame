@@ -11,13 +11,34 @@ namespace OpenVIII
         #region Fields
 
         private int _cursor_select;
+
         protected bool DepthFirst = false;
+
         protected bool skipdata = false;
+
         protected bool skipsnd = false;
 
         #endregion Fields
 
         #region Methods
+
+        protected void AutoAdjustContainerWidth(Rectangle DataSize)
+        {
+            if (DataSize.Right > CONTAINER.Pos.Right)
+            {
+                CONTAINER.Width += DataSize.Right - CONTAINER.Pos.Right + Math.Abs(DataSize.Left - CONTAINER.Pos.Left);
+            }
+        }
+
+        protected void CheckBounds(ref Rectangle DataSize, Rectangle input)
+        {
+            if (input.Right > CONTAINER.Pos.Right && input.Right > DataSize.Right)
+            {
+                DataSize = input;
+            }
+        }
+
+        protected void CheckBounds(ref Rectangle DataSize, int pos) => CheckBounds(ref DataSize, ((IGMDataItem_String)ITEM[pos, 0]).DataSize);
 
         protected virtual void DrawITEM(int i, int d) => ITEM[i, d]?.Draw();
 
@@ -41,18 +62,18 @@ namespace OpenVIII
 
         protected int GetCursor_select() => _cursor_select;
 
-        protected void Init(Characters? character, Characters? visablecharacter, sbyte? partypos)
+        protected void Init(Characters? character, Characters? Visiblecharacter, sbyte? partypos)
         {
             if (partypos != null)
             {
                 Character = Memory.State?.PartyData?[partypos.Value] ?? Characters.Blank;
-                VisableCharacter = Memory.State?.Party?[partypos.Value] ?? Character;
+                VisibleCharacter = Memory.State?.Party?[partypos.Value] ?? Character;
                 PartyPos = partypos.Value;
             }
             else
             {
                 Character = character ?? Characters.Blank;
-                VisableCharacter = visablecharacter ?? Character;
+                VisibleCharacter = Visiblecharacter ?? Character;
                 PartyPos = (sbyte)(Memory.State?.PartyData?.FindIndex(x => x.Equals(Character)) ?? -1);
             }
         }
@@ -154,12 +175,12 @@ namespace OpenVIII
             if (!skipdata)
             {
                 if (CONTAINER != null)
-                    CONTAINER.Refresh(Character, VisableCharacter);
+                    CONTAINER.Refresh(Character, VisibleCharacter);
                 if (ITEM != null)
                     for (int i = 0; i < Count; i++)
                         for (int d = 0; d < Depth; d++)
                         {
-                            ITEM[i, d]?.Refresh(Character, VisableCharacter);
+                            ITEM[i, d]?.Refresh(Character, VisibleCharacter);
                         }
             }
         }
@@ -184,9 +205,9 @@ namespace OpenVIII
         /// </summary>
         public Rectangle[] SIZE;
 
-        public IGMData(int count = 0, int depth = 0, IGMDataItem container = null, int? cols = null, int? rows = null, Characters? character = null, Characters? visablecharacter = null, sbyte? partypos = null)
+        public IGMData(int count = 0, int depth = 0, IGMDataItem container = null, int? cols = null, int? rows = null, Characters? character = null, Characters? Visiblecharacter = null, sbyte? partypos = null)
         {
-            Init(character, visablecharacter, partypos);
+            Init(character, Visiblecharacter, partypos);
             Init(count, depth, container, cols, rows);
         }
 

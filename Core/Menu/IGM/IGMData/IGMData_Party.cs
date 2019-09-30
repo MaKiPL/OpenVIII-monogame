@@ -87,16 +87,16 @@ namespace OpenVIII
                 SIZE[i].Height -= vSpace;
             }
 
-            private void ReInitCharacter(sbyte pos, Characters character, Characters visableCharacter)
+            private void ReInitCharacter(sbyte pos, Characters character, Characters VisibleCharacter)
             {
                 if (SIZE != null)
                 {
                     if (character != Characters.Blank)
                     {
-                        Contents[pos] = new Tuple<Characters, Characters>(character, visableCharacter);
+                        Contents[pos] = new Tuple<Characters, Characters>(character, VisibleCharacter);
                         float yoff = 6;
 
-                        ITEM[pos, 0] = new IGMDataItem_Box(Memory.Strings.GetName(visableCharacter), title: Icons.ID.STATUS);
+                        ITEM[pos, 0] = new IGMDataItem_Box(Memory.Strings.GetName(VisibleCharacter), title: Icons.ID.STATUS);
                         Tuple<Rectangle, Point, Rectangle> dims = DrawBox(SIZE[pos], ((IGMDataItem_Box)ITEM[pos, 0]).Data, options: Box_Options.SkipDraw);
                         Rectangle r = dims.Item3;
                         ((IGMDataItem_Box)ITEM[pos, 0]).Pos = dims.Item1;
@@ -116,7 +116,7 @@ namespace OpenVIII
 
                         r = dims.Item3;
                         r.Offset((354), yoff);
-                        ITEM[pos, 4] = new IGMDataItem_Int(Memory.State.Characters[character].CurrentHP(visableCharacter), r, 2, 0, 1, 4);
+                        ITEM[pos, 4] = new IGMDataItem_Int(Memory.State.Characters[character].CurrentHP(VisibleCharacter), r, 2, 0, 1, 4);
 
                         r = dims.Item3;
                         r.Offset(437, yoff);
@@ -125,7 +125,7 @@ namespace OpenVIII
                         r = dims.Item3;
 
                         r.Offset((459), yoff);
-                        ITEM[pos, 6] = new IGMDataItem_Int(Memory.State.Characters[character].MaxHP(visableCharacter), r, 2, 0, 1, 4);
+                        ITEM[pos, 6] = new IGMDataItem_Int(Memory.State.Characters[character].MaxHP(VisibleCharacter), r, 2, 0, 1, 4);
 
                         if (Memory.State.TeamLaguna || Memory.State.SmallTeam)
                         {

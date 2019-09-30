@@ -19,7 +19,6 @@ namespace OpenVIII
     }
     public interface IDamageable : IStatusEffects, IStats,IElemental
     {
-        bool CanPhoenixPinion { get; }
         IReadOnlyDictionary<Kernel_bin.Attack_Type, Func<int, Kernel_bin.Attack_Flags, int>> DamageActions { get; }
         bool IsDead { get; }
         bool IsGameOver { get; }
@@ -30,11 +29,8 @@ namespace OpenVIII
 
         bool ChangeHP(int dmg);
         bool Critical();
-        ushort CriticalHP();
         ushort CurrentHP();
         bool DealDamage(int dmg, Kernel_bin.Attack_Type type, Kernel_bin.Attack_Flags? flags);
-        ushort MaxHP();
-        float PercentFullHP();
         ushort ReviveHP();
     }
     public interface IStats
@@ -51,5 +47,8 @@ namespace OpenVIII
         byte LUCK { get; }
         byte EVA { get; }
         int EXP { get; }
+        ushort MaxHP();
+        float PercentFullHP();
+        ushort CriticalHP();
     }
 }

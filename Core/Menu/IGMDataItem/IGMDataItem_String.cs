@@ -15,6 +15,7 @@ namespace OpenVIII
         public IGMDataItem_String(FF8String data, Rectangle? pos = null, Font.ColorID? fontcolor = null, float blink_adjustment = 1f) : base(pos)
         {
             Data = data;
+            DataSize = Memory.font.RenderBasicText(Data, Pos.Location, Scale, skipdraw: true);
             FontColor = fontcolor ?? Font.ColorID.White;
             Blink_Adjustment = blink_adjustment;
         }
@@ -22,6 +23,7 @@ namespace OpenVIII
         public IGMDataItem_String(Icons.ID? icon, byte? palette, FF8String data, Rectangle? pos = null, Font.ColorID? color = null, Font.ColorID? faded_color = null, float blink_adjustment = 1f) : this(data, pos, color, blink_adjustment)
         {
             Icon = icon;
+            DataSize.Offset(Memory.Icons.GetEntryGroup(Icon).Width * Scale.X, 0);
             Palette = palette ?? 2;
         }
 
@@ -31,6 +33,8 @@ namespace OpenVIII
 
         public override bool Blink { get => base.Blink; set => base.Blink = value; }
         public FF8String Data { get; set; }
+        public Rectangle DataSize { get; private set; }
+
         //public Font.ColorID Faded_FontColor { get; set; }
         public byte Faded_Palette { get; set; }
         public Font.ColorID FontColor { get; set; }
@@ -59,7 +63,7 @@ namespace OpenVIII
                         Memory.Icons.Draw(Icon, Faded_Palette, r2, new Vector2(Scale.X), Fade * Blink_Amount * Blink_Adjustment);
                     r.Offset(Memory.Icons.GetEntryGroup(Icon).Width * Scale.X, 0);
                 }
-                Memory.font.RenderBasicText(Data, r.Location, Scale, Fade: Fade, color: FontColor, blink: Blink);
+                DataSize = Memory.font.RenderBasicText(Data, r.Location, Scale, Fade: Fade, color: FontColor, blink: Blink);
                 //if (Blink)
                 //    Memory.font.RenderBasicText(Data, r.Location, Scale, Fade: Fade * Blink_Amount * Blink_Adjustment, color: Faded_FontColor);
             }

@@ -728,7 +728,7 @@ namespace OpenVIII
             }
             catch(Exception e)
             {
-                Console.WriteLine($"Fluid_Midi disabled: {e.Message}");
+                Console.WriteLine($"Fluid_Midi disabled: {e.Message} (Check DebugWindows/DebugLinux might be on wrong one)");
                 bValid = false;
                 return;
             }
@@ -1079,6 +1079,7 @@ namespace OpenVIII
         {
             Stop();
             fluidState = ThreadFluidState.kill;
+            if(handles != null)
             foreach (GCHandle hwnd in handles)
                 hwnd.Free();
         }

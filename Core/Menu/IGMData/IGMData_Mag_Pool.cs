@@ -158,7 +158,7 @@ namespace OpenVIII
             SIZE[Rows].Y = Y;
             ITEM[Rows, 2] = new IGMDataItem_Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 45, SIZE[Rows].Y, 0, 0), scale: new Vector2(2.5f));
 
-            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Character, VisableCharacter);
+            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Character, VisibleCharacter);
             BLANKS[Rows] = true;
             Cursor_Status &= ~Cursor_Status.Horizontal;
             Cursor_Status |= Cursor_Status.Vertical;
@@ -225,7 +225,7 @@ namespace OpenVIII
 
         public static EventHandler<Kernel_bin.Stat> StatEventListener;
 
-        public IGMData_Mag_Pool(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null, bool battle = false) : base(5, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.MAGIC), 4, 13, character, visablecharacter)
+        public IGMData_Mag_Pool(Rectangle pos, Characters character = Characters.Blank, Characters? Visiblecharacter = null, bool battle = false) : base(5, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.MAGIC), 4, 13, character, Visiblecharacter)
         {
             Battle = battle;
             skipReinit = true;

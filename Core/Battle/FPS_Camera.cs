@@ -52,14 +52,14 @@ namespace OpenVIII
             // check mouse to move camera
             shift = InputMouse.Distance(MouseButtons.MouseToStick, maxLookSpeed);
             // check right stick to adjust camera
-            shift += InputGamePad.Distance(GamePadButtons.RightStick, maxMoveSpeed);
+            shift += InputGamePad.Distance(GamePadButtons.ThumbSticks_Right, maxMoveSpeed);
             //convert stick readings to degrees
             degrees = (degrees + (int)shift.X) % 360;
             Yshift -= shift.Y;
             Yshift = MathHelper.Clamp(Yshift, -80, 80);
             // grab left stick reading for moving camera position
             // storing signed value to detect direction of movement for left stick.
-            left = InputGamePad.Distance(GamePadButtons.LeftStick, maxMoveSpeed);
+            left = InputGamePad.Distance(GamePadButtons.ThumbSticks_Left, maxMoveSpeed);
             // convert to positive value to get distance traveled
             leftdist = left.Abs();
 
@@ -84,12 +84,12 @@ namespace OpenVIII
                 camPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees)) * leftdist.Y / 10;
                 camPosition.Y += Yshift / 50;
             }
-            if (Input2.Button(FF8TextTagKey.Left) || left.X > 0)
+            if (Input2.Button(FF8TextTagKey.Left) || left.X < 0)
             {
                 camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees - 90)) * leftdist.X / 10;
                 camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees - 90)) * leftdist.X / 10;
             }
-            if (Input2.Button(FF8TextTagKey.Right) || left.X < 0)
+            if (Input2.Button(FF8TextTagKey.Right) || left.X > 0)
             {
                 camPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees + 90)) * leftdist.X / 10;
                 camPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees + 90)) * leftdist.X / 10;
@@ -97,17 +97,20 @@ namespace OpenVIII
         }
         public Matrix Update(ref Vector3 camPosition,ref Vector3 camTarget, ref float degrees)
         {
-            InputMouse.Mode = MouseLockMode.Center;
-            Inputs_Speed();
-            Inputs_Sticks(ref degrees);
-            Inputs_D_Pad(ref camPosition, ref degrees);
+            if (Memory.IsActive)
+            {
+                InputMouse.Mode = MouseLockMode.Center;
+                Inputs_Speed();
+                Inputs_Sticks(ref degrees);
+                Inputs_D_Pad(ref camPosition, ref degrees);
 
-            // adjust the camera target
-            camTarget.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(degrees)) * camDistance;
-            camTarget.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(degrees)) * camDistance;
-            camTarget.Y = camPosition.Y - Yshift / 5;
+                // adjust the camera target
+                camTarget.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(degrees)) * camDistance;
+                camTarget.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(degrees)) * camDistance;
+                camTarget.Y = camPosition.Y - Yshift / 5;
 
-            // return the matrix of camera posistion and camera target to adjust the camera.
+                // return the matrix of camera posistion and camera target to adjust the camera.
+            }
             return Matrix.CreateLookAt(camPosition, camTarget,
                          Vector3.Up);
         }

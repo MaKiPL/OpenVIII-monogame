@@ -29,13 +29,6 @@ namespace OpenVIII
 
         #region Methods
 
-        public void EndTurn()
-        {
-            GetCurrentBattleMenu().SetMode(BattleMenu.Mode.ATB_Charging);
-            GetCurrentBattleMenu().Reset();
-            GetCurrentBattleMenu().Refresh();
-        }
-
         private bool BoolBattleMenu() => menus?.Any(m => m.GetType().Equals(typeof(BattleMenu)) && m.Enabled) ?? false;
 
         private bool BoolRenzokeken() => GetBattleMenus()?.Any(m => m.Enabled && m.Renzokeken.Enabled) ?? false;
@@ -65,8 +58,6 @@ namespace OpenVIII
 
         private void DrawVictoryAction() => Victory_Menu.Draw();
 
-        public IEnumerable<BattleMenu> GetBattleMenus() => menus?.Where(m => m.GetType().Equals(typeof(BattleMenu))).Select(x => (BattleMenu)x);
-
         private BattleMenu GetOneRenzokeken() => GetBattleMenus()?.First(m => m.Enabled && m.Renzokeken.Enabled);
 
         private bool InputBattleFunction()
@@ -89,7 +80,7 @@ namespace OpenVIII
                         menus[_player].SetMode(BattleMenu.Mode.ATB_Charged);
                         break;
                 }
-                int cnt =0;
+                int cnt = 0;
                 do
                 {
                     if (++_player > 2) _player = 0;
@@ -109,6 +100,12 @@ namespace OpenVIII
             return ret;
         }
 
+        private bool InputGameOverFunction() => false;
+
+        private bool InputStartingFunction() => false;
+
+        private bool InputVictoryFunction() => throw new NotImplementedException();
+
         private void NewTurnSND()
         {
             if (((BattleMenu)menus[_player]).CrisisLevel)
@@ -116,14 +113,6 @@ namespace OpenVIII
             else
                 init_debugger_Audio.PlaySound(14);
         }
-
-        public BattleMenu GetCurrentBattleMenu() => (BattleMenu)menus?[_player];
-
-        private bool InputGameOverFunction() => false;
-
-        private bool InputStartingFunction() => false;
-
-        private bool InputVictoryFunction() => throw new NotImplementedException();
 
         private void ReturnBattleFunction()
         {
@@ -145,23 +134,25 @@ namespace OpenVIII
         {
             int exp = 0;
             uint ap = 0;
-            List<Saves.Item> items = new List<Saves.Item>();
+            ConcurrentDictionary<byte, byte> items = new ConcurrentDictionary<byte, byte>();
+            ConcurrentDictionary<Cards.ID, byte> cards = new ConcurrentDictionary<Cards.ID, byte>();
             foreach (Enemy e in Enemy.Party)
             {
                 exp += e.EXP;
                 ap += e.AP;
-                Saves.Item drop = e.Drop();
+                Saves.Item drop = e.Drop(Memory.State.PartyHasAbility(Kernel_bin.Abilities.RareItem));
+                Cards.ID carddrop = e.CardDrop();
                 if (drop.QTY > 0 && drop.ID > 0)
-                    items.Add(drop);
+                    if (!items.TryAdd(drop.ID, drop.QTY))
+                        items[drop.ID]+= drop.QTY;
+                if (carddrop != Cards.ID.Fail && carddrop != Cards.ID.Immune)
+                    if (!cards.TryAdd(carddrop, 1))
+                        cards[carddrop]++;
             }
-            TriggerVictory(exp, ap, expextra, items.ToArray());
+            SetMode(Mode.Victory);
+            Victory_Menu?.Refresh(exp, ap, expextra, items,cards);
         }
 
-        private void TriggerVictory(int exp, uint ap, ConcurrentDictionary<Characters, int> expextra, params Saves.Item[] items)
-        {
-            SetMode(Mode.Victory);
-            Victory_Menu?.Refresh(exp, ap, expextra, items);
-        }
 
         private bool UpdateBattleFunction()
         {
@@ -170,12 +161,13 @@ namespace OpenVIII
             {
                 ret = m.Update() || ret;
             }
-            var bml = GetBattleMenus().ToList();
+            List<BattleMenu> bml = GetBattleMenus().ToList();
             if (!(menus?[_player].GetMode().Equals(BattleMenu.Mode.YourTurn) ?? false))
             {
                 if (_player + 1 == bml.Count)
                     _player = 0;
-                for (int i = _player; i < bml.Count; i++)
+                int cnt = 3;
+                for (int i = _player; cnt >0; cnt--)
                 {
                     if (bml[i].GetMode().Equals(BattleMenu.Mode.ATB_Charged))
                     {
@@ -184,6 +176,9 @@ namespace OpenVIII
                         NewTurnSND();
                         break;
                     }
+                    i++;
+                    if (i >= bml.Count)
+                        i = 0;
                 }
             }
             return ret;
@@ -254,6 +249,7 @@ namespace OpenVIII
         #region Properties
 
         public int Player { get => _player; protected set => _player = value; }
+
         public VictoryMenu Victory_Menu => (VictoryMenu)(menus?.Where(m => m.GetType().Equals(typeof(VictoryMenu))).First());
 
         #endregion Properties
@@ -277,6 +273,17 @@ namespace OpenVIII
                     DrawActions[(Mode)GetMode()]();
             }
         }
+
+        public void EndTurn()
+        {
+            GetCurrentBattleMenu().SetMode(BattleMenu.Mode.ATB_Charging);
+            GetCurrentBattleMenu().Reset();
+            GetCurrentBattleMenu().Refresh();
+        }
+
+        public IEnumerable<BattleMenu> GetBattleMenus() => menus?.Where(m => m.GetType().Equals(typeof(BattleMenu))).Select(x => (BattleMenu)x);
+
+        public BattleMenu GetCurrentBattleMenu() => (BattleMenu)menus?[_player];
 
         public override bool Inputs()
         {
@@ -372,7 +379,7 @@ namespace OpenVIII
             {
                 if (UpdateFunctions.TryGetValue((Mode)GetMode(), out Func<bool> u))
                 {
-                    ret = u(); 
+                    ret = u();
                 }
 
                 ret = base.Update() || ret;

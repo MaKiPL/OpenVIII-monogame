@@ -1,15 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OpenVIII
 {
-    // ref http://wiki.ffrtt.ru/index.php/FF8/Variables copied the table into excel and tried to
-    // changed the list into c# code. I was thinking atleast some of it would be useful.
-
-
-
-
     /// <summary>
     /// parse data from save game files
     /// </summary>
@@ -20,14 +18,24 @@ namespace OpenVIII
     /// <remarks>
     /// antiquechrono was helping. he even wrote a whole class using kaitai. Though I donno if we
     /// wanna use kaitai.
+    /// LordUrQuan helped get info on CD2000 version.
     /// </remarks>
     public static partial class Saves
     {
+        private const int SteamOffset = 0x184;
 
-        //C:\Users\[user]\OneDrive\Documents\Square Enix\FINAL FANTASY VIII Steam\user_#######
-        // might crash linux. just trying to get something working.
-        public static string SteamFolder { get; private set; }
+        /// <summary>
+        /// Documents\Square Enix\FINAL FANTASY VIII Steam\user_#######
+        /// </summary>
+        public static string Steam2013Folder { get; private set; }
+        /// <summary>
+        /// FF8DIR\Saves
+        /// </summary>
         public static string CD2000Folder { get; private set; }
+        /// <summary>
+        /// Documents\My Games\FINAL FANTASY VIII Remastered\Steam\#################\game_data\user\saves
+        /// </summary>
+        public static string Steam2019Folder { get; private set; }
 
         public static Data[,] FileList { get; private set; }
 
@@ -35,74 +43,80 @@ namespace OpenVIII
         {
             FileList = new Data[2, 30];
             CD2000Folder = Path.Combine(Memory.FF8DIR, "Save");
-            SteamFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Square Enix", "FINAL FANTASY VIII Steam");
-            if (Directory.Exists(SteamFolder))
+            Steam2013Folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Square Enix", "FINAL FANTASY VIII Steam");
+            //C:\Users\pcvii\OneDrive\Documents\My Games\FINAL FANTASY VIII Remastered\Steam\76561198027029474\game_data\user\saves
+            Steam2019Folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games", "FINAL FANTASY VIII Remastered","Steam");
+
+            if (Directory.Exists(Steam2013Folder))
             {
-                string[] dirs = Directory.GetDirectories(SteamFolder);
+                string[] dirs = Directory.GetDirectories(Steam2013Folder);
                 if (dirs.Length > 0)
                 {
-                    string[] SteamFolders = Directory.GetDirectories(SteamFolder);
+                    string[] SteamFolders = Directory.GetDirectories(Steam2013Folder);
                     if (SteamFolders.Length > 0)
                     {
-                        SteamFolder = SteamFolders[0];
-                        foreach (string file in Directory.EnumerateFiles(SteamFolder))
-                        {
-                            Match n = Regex.Match(file, @"slot(\d+)_save(\d+).ff8",RegexOptions.IgnoreCase);
-
-                            if (n.Success && n.Groups.Count > 0)
-                            {
-                                FileList[int.Parse(n.Groups[1].Value) - 1, int.Parse(n.Groups[2].Value) - 1] = read(file);
-                            }
-                        }
+                        Steam2013Folder = SteamFolders[0];
+                        GetFiles(Steam2013Folder, @"slot(\d+)_save(\d+).ff8");
                     }
                 }
             }
             else if (Directory.Exists(CD2000Folder))
             {
-                string[] files = Directory.GetFiles(CD2000Folder, "*", SearchOption.AllDirectories);
-                if (files.Length > 0)
-                {
-                    foreach (string file in files)
-                    {
-                        Match n = Regex.Match(file, @"Slot(\d+)[\\/]save(\d+)", RegexOptions.IgnoreCase);
+                ProcessFiles(Directory.GetFiles(CD2000Folder, "*", SearchOption.AllDirectories), @"Slot(\d+)[\\/]save(\d+)");
+            }
+            else if (Directory.Exists(Steam2019Folder))
+            {
+                string[] dirs = Directory.GetDirectories(Steam2019Folder);
 
-                        if (n.Success && n.Groups.Count > 0)
-                        {
-                            FileList[int.Parse(n.Groups[1].Value) - 1, int.Parse(n.Groups[2].Value) - 1] = read(file);
-                        }
+                if (dirs.Length > 0)
+                {
+                    string[] SteamFolders = Directory.GetDirectories(Steam2019Folder);
+                    if (SteamFolders.Length > 0)
+                    {
+                        Steam2019Folder = Path.Combine(SteamFolders[0], "game_data", "user", "saves");
+                        GetFiles(Steam2019Folder, @"slot(\d+)_save(\d+).ff8");
                     }
                 }
             }
         }
 
-        private static Data read(string file)
+        private static void GetFiles(string dir,string regex)
         {
-            byte[] decmp;
+            ProcessFiles(Directory.EnumerateFiles(dir), regex);
+        }
 
+        private static void ProcessFiles(IEnumerable<string> files,string regex)
+        {
+            List<Task> tasks = new List<Task>();
+            foreach (string file in files)
+            {
+                Match match = Regex.Match(file, regex, RegexOptions.IgnoreCase);
+
+                if (match.Success && match.Groups.Count > 0)
+                    tasks.Add(Task.Run(() => Read(file, out FileList[int.Parse(match.Groups[1].Value) - 1, int.Parse(match.Groups[2].Value) - 1])));
+            }
+            Task.WaitAll(tasks.ToArray());
+        }
+
+        private static void Read(string file, out Data d)
+        {
+            Debug.WriteLine("Task={0}, Thread={1}, File={2}",
+                Task.CurrentId, Thread.CurrentThread.ManagedThreadId, file);
+            byte[] decmp;
             using (FileStream fs = File.OpenRead(file))
             using (BinaryReader br = new BinaryReader(fs))
             {
-                uint size = br.ReadUInt32();
-                //uint fsLen = BitConverter.ToUInt32(FI, loc * 12);
-                //uint fSpos = BitConverter.ToUInt32(FI, (loc * 12) + 4);
-                //bool compe = BitConverter.ToUInt32(FI, (loc * 12) + 8) != 0;
-                //fs.Seek(0, SeekOrigin.Begin);
-                byte[] tmp = br.ReadBytes((int)fs.Length - 4);
+                int size = br.ReadInt32();
+                byte[] tmp = br.ReadBytes((int)fs.Length - sizeof(uint));
                 decmp = LZSS.DecompressAllNew(tmp);
             }
-            //using (FileStream fs = File.Create(Path.Combine(@"d:\", Path.GetFileName(file))))
-            //using (BinaryWriter bw = new BinaryWriter(fs))
-            //{
-            //    bw.Write(decmp);
-            //}
+
             using (MemoryStream ms = new MemoryStream(decmp))
             using (BinaryReader br = new BinaryReader(ms))
             {
-                ms.Seek(0x184, SeekOrigin.Begin);
-                Data d = new Data();
+                ms.Seek(SteamOffset, SeekOrigin.Begin);
+                d = new Data();
                 d.Read(br);
-
-                return d;
             }
         }
     }

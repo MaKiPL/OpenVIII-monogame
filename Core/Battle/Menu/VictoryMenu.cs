@@ -101,7 +101,6 @@ namespace OpenVIII
             private uint _ap = 0;
             private ConcurrentDictionary<Characters, int> _expextra;
             private int _exp = 0;
-            private Saves.Item[] _items = null;
 
             /// <summary>
             /// if you use this you will get no exp, ap, or items
@@ -113,7 +112,7 @@ namespace OpenVIII
             /// </summary>
             public override void Refresh(Characters c, Characters vc, bool backup = false) { }
 
-            public void Refresh(int exp, uint ap, ConcurrentDictionary<Characters,int> expextra, params Saves.Item[] items)
+            public void Refresh(int exp, uint ap, ConcurrentDictionary<Characters,int> expextra, ConcurrentDictionary<byte, byte> items, ConcurrentDictionary<Cards.ID, byte> cards)
             {
                 _expextra = expextra;
                 _exp = exp;
@@ -122,7 +121,9 @@ namespace OpenVIII
                 _ap = ap;
                 ((IGMData_PartyAP)Data[Mode.AP]).AP = _ap;
                 _items = items;
-                ((IGMData_PartyItems)Data[Mode.Items]).Items = new Queue<Saves.Item>(_items);
+                _cards = cards;
+                ((IGMData_PartyItems)Data[Mode.Items]).SetItems(_items);
+                ((IGMData_PartyItems)Data[Mode.Items]).SetItems(_cards);
                 base.Refresh();
             }
 
@@ -134,6 +135,8 @@ namespace OpenVIII
             private static FF8String ECN;
 
             private Dictionary<Mode, Func<bool>> InputFunctions;
+            private ConcurrentDictionary<byte, byte> _items;
+            private ConcurrentDictionary<Cards.ID, byte> _cards;
         }
     }
 }

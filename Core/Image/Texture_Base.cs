@@ -179,7 +179,7 @@ namespace OpenVIII
         ///// unless you know the color value.
         ///// </summary>
         ///// <param name="color">16 bit color</param>
-        ///// <param name="useAlpha">area is visable or not</param>
+        ///// <param name="useAlpha">area is Visible or not</param>
         ///// <returns>byte[4] red green blue alpha, i think</returns>
         ///// <see cref="https://github.com/myst6re/vincent-tim/blob/master/PsColor.cpp"/>
         //public static Color FromPsColor(ushort color, bool useAlpha = false) => new Color((byte)Math.Round((color & 31) * COEFF_COLOR), (byte)Math.Round(((color >> 5) & 31) * COEFF_COLOR), (byte)Math.Round(((color >> 10) & 31) * COEFF_COLOR), (byte)(color == 0 && useAlpha ? 0 : 255));

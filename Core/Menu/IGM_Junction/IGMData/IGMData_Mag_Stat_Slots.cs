@@ -158,15 +158,15 @@ namespace OpenVIII
                                 }
                                 else BLANKS[pos] = false;
 
-                                ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[Character].TotalStat(stat, VisableCharacter), new Rectangle(SIZE[pos].X + 152, SIZE[pos].Y, 0, 0), 2, Icons.NumType.sysFntBig, spaces: 10);
+                                ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[Character].TotalStat(stat, VisibleCharacter), new Rectangle(SIZE[pos].X + 152, SIZE[pos].Y, 0, 0), 2, Icons.NumType.sysFntBig, spaces: 10);
                                 ITEM[pos, 3] = stat == Kernel_bin.Stat.HIT || stat == Kernel_bin.Stat.EVA
                                     ? new IGMDataItem_String(Misc[Items.Percent], new Rectangle(SIZE[pos].X + 350, SIZE[pos].Y, 0, 0))
                                     : null;
-                                if (GetPrevSetting() == null || GetPrevSetting().Stat_J[stat] == Memory.State.Characters[Character].Stat_J[stat] || GetPrevSetting().TotalStat(stat, VisableCharacter) == Memory.State.Characters[Character].TotalStat(stat, VisableCharacter))
+                                if (GetPrevSetting() == null || GetPrevSetting().Stat_J[stat] == Memory.State.Characters[Character].Stat_J[stat] || GetPrevSetting().TotalStat(stat, VisibleCharacter) == Memory.State.Characters[Character].TotalStat(stat, VisibleCharacter))
                                 {
                                     ITEM[pos, 4] = null;
                                 }
-                                else if (GetPrevSetting().TotalStat(stat, VisableCharacter) > Memory.State.Characters[Character].TotalStat(stat, VisableCharacter))
+                                else if (GetPrevSetting().TotalStat(stat, VisibleCharacter) > Memory.State.Characters[Character].TotalStat(stat, VisibleCharacter))
                                 {
                                     ((IGMDataItem_Icon)ITEM[pos, 0]).Palette = 5;
                                     ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Palette = 5;

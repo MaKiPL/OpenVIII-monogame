@@ -15,6 +15,7 @@ namespace OpenVIII
 
             public const int id = 0;
             public const int count = 39;
+            private const int altlimitid = 18;
 
             public int ID { get; private set; }
             public FF8String Name { get; private set; }
@@ -44,8 +45,38 @@ namespace OpenVIII
             public void Read(BinaryReader br, int i)
             {
                 ID = i;
-                Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
-                Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2+1);
+                if (ID == 17) //No Mercy
+                {
+                    Name = Memory.Strings.Read(Strings.FileID.KERNEL, altlimitid, 0); //Fire Cross
+                    Description = Memory.Strings.Read(Strings.FileID.KERNEL, altlimitid, 1);
+                }
+                else if (ID == 18) //Sorcery
+                {
+                    Name = Memory.Strings.Read(Strings.FileID.KERNEL, altlimitid, 2); //Ice Strike
+                    Description = Memory.Strings.Read(Strings.FileID.KERNEL, altlimitid, 3);
+                }
+                else if (ID == 20) //Limit #1
+                {
+                    Name = Memory.Strings.Read(Strings.FileID.KERNEL, altlimitid, 4); //Desperado
+                    Description = Memory.Strings.Read(Strings.FileID.KERNEL, altlimitid, 5);
+                }
+                else if (ID == 21) //Limit #2
+                {
+                    Name = Memory.Strings.Read(Strings.FileID.KERNEL, altlimitid, 6); //Blood Pain
+                    Description = Memory.Strings.Read(Strings.FileID.KERNEL, altlimitid, 7);
+                }
+                else if (ID == 22) //Limit #3
+                {
+                    Name = Memory.Strings.Read(Strings.FileID.KERNEL, altlimitid, 8); //Massive Anchor
+                    Description = Memory.Strings.Read(Strings.FileID.KERNEL, altlimitid, 9);
+                }
+                else
+                {
+                    Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
+                    Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
+                }
+
+                
                 br.BaseStream.Seek(4, SeekOrigin.Current);
                 Ability = br.ReadByte();
                 Flags = (Debug_battleDat.Information.UnkFlag)br.ReadByte();

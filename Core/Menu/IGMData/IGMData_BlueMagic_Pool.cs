@@ -29,7 +29,7 @@ namespace OpenVIII
             {
                 ITEM[i, 0] = new IGMDataItem_String(null, SIZE[i]);
             }
-            ITEM[Rows, 0] = new BattleMenus.IGMData_TargetGroup(Character, VisableCharacter, false);
+            ITEM[Rows, 0] = new BattleMenus.IGMData_TargetGroup(Character, VisibleCharacter, false);
             PointerZIndex = 0;
         }
 
@@ -67,7 +67,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_BlueMagic_Pool(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null, bool battle = false) : base(5, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.SPECIAL), 4, 4, character, visablecharacter)
+        public IGMData_BlueMagic_Pool(Rectangle pos, Characters character = Characters.Blank, Characters? Visiblecharacter = null, bool battle = false) : base(5, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.SPECIAL), 4, 4, character, Visiblecharacter)
         {
         }
 
@@ -93,6 +93,11 @@ namespace OpenVIII
                 return base.Inputs();
             }
         }
+        public override void Reset()
+        {
+            Hide();
+            base.Reset();
+        }
 
         public override bool Inputs_CANCEL()
         {
@@ -112,10 +117,10 @@ namespace OpenVIII
 
         public override void Refresh()
         {
-            if (Memory.State == null || Memory.State.LimitBreakQuistis == null) return;
+            if (Memory.State == null || Memory.State.LimitBreakQuistis_Unlocked_BlueMagic == null) return;
             Kernel_bin.Blue_Magic bm = 0;
             unlocked = new List<Kernel_bin.Blue_Magic>();
-            foreach (bool b in Memory.State.LimitBreakQuistis)
+            foreach (bool b in Memory.State.LimitBreakQuistis_Unlocked_BlueMagic)
             {
                 if (b)
                     unlocked.Add(bm);

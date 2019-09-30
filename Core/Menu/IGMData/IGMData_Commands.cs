@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
+using System.Diagnostics;
 
 namespace OpenVIII
 {
@@ -12,6 +13,8 @@ namespace OpenVIII
         private int nonbattleWidth;
         private sbyte page = 0;
         private bool skipReinit;
+        private static int s_cidoff = 0;
+        private BattleMenu.Mode mode;
 
         #endregion Fields
 
@@ -38,13 +41,13 @@ namespace OpenVIII
         {
             BLANKS[Limit_Arrow] = true;
             base.Init();
-            ITEM[Blue_Pool, 0] = new IGMData_BlueMagic_Pool(new Rectangle(X + 50, Y - 20, 300, 192), Character, VisableCharacter, true);
+            ITEM[Blue_Pool, 0] = new IGMData_BlueMagic_Pool(new Rectangle(X + 50, Y - 20, 300, 192), Character, VisibleCharacter, true);
             ITEM[Blue_Pool, 0].Hide();
-            ITEM[Mag_Pool, 0] = new IGMData_Mag_Pool(new Rectangle(X + 50, Y - 20, 300, 192), Character, VisableCharacter, true);
+            ITEM[Mag_Pool, 0] = new IGMData_Mag_Pool(new Rectangle(X + 50, Y - 20, 300, 192), Character, VisibleCharacter, true);
             ITEM[Mag_Pool, 0].Hide();
             ITEM[Item_Pool, 0] = new IGMData_ItemPool(new Rectangle(X + 50, Y - 22, 400, 194), true);
             ITEM[Item_Pool, 0].Hide();
-            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Character, VisableCharacter);
+            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Character, VisibleCharacter);
             commands = new Kernel_bin.Battle_Commands[Rows];
             PointerZIndex = Limit_Arrow;
         }
@@ -71,7 +74,7 @@ namespace OpenVIII
             base.ModeChangeEvent(sender, e);
             if (e.GetType() == typeof(BattleMenu.Mode))
             {
-                BattleMenu.Mode mode = (BattleMenu.Mode)e;
+                mode = (BattleMenu.Mode)e;
                 if (mode.Equals(BattleMenu.Mode.YourTurn))
                 {
                     CrisisLevel = Memory.State.Characters[Character].GenerateCrisisLevel() >= 0;
@@ -86,7 +89,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_Commands(Rectangle pos, Characters character = Characters.Blank, Characters? visablecharacter = null, bool battle = false) : base(9, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.COMMAND), 1, 4, character, visablecharacter)
+        public IGMData_Commands(Rectangle pos, Characters character = Characters.Blank, Characters? Visiblecharacter = null, bool battle = false) : base(9, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.COMMAND), 1, 4, character, Visiblecharacter)
         {
             Battle = battle;
             skipReinit = true;
@@ -147,18 +150,63 @@ namespace OpenVIII
             {
                 default:
                     // ITEM[Targets_Window, 0].Show();
+                    throw new ArgumentOutOfRangeException($"{this}::Command ({c.Name}, {c.ID}) doesn't have explict operation defined!");
+                case 1: //ATTACK
+                case 14: //SHOT
+                case 5: //Renzokuken
+                case 12: //MUG
+                case 6: //DRAW
+                case 29: //CARD
+                case 32: //ABSORB
+                case 28: //DARKSIDE
+                case 30: //DOOM
+                case 26: //RECOVER
+                case 27: //REVIVE
+                case 33: //LVL DOWN
+                case 34: //LVL UP
+                case 31: //Kamikaze
+                case 38: //MiniMog
+                case 24: //MADRUSH
+                case 25: //Treatment
+                case 20: //Desperado
+                case 21: //Blood Pain
+                case 22: //Massive Anchor
+                case 7: //DEVOUR
+                case 11: //DUEL
+                case 17: //FIRE CROSS / NO MERCY
+                case 18: //SORCERY /  ICE STRIKE
                     Target_Group.ShowTargetWindows();
                     return true;
-
+                case 16: // SLOT
+                    //TODO add slot menu to randomly choose spell to cast.
+                    return true;
+                case 19: //COMBINE (ANGELO or ANGEL WING)
+                    //TODO see if ANGEL WING unlock if so show menu to choose angelo or angel wing.
+                    Target_Group.ShowTargetWindows();
+                    return true;
                 case 0: //null
-                case 7: //nomsg
+                case 9: //CAST is part of DRAW menu.
+                case 10: // Stock is part of DRAW menu.
+                case 8: // NOMSG
+                case 13: // NOMSG
                     return false;
-
-                case 2: //magic
+                case 36: //DOUBLE
+                case 37: //TRIPLE
+                    //TODO 2 casts 2 targets
+                    //TODO 3 casts 3 targets
                     ITEM[Mag_Pool, 0].Show();
                     ITEM[Mag_Pool, 0].Refresh();
                     return true;
-
+                case 2: //magic
+                    //TODO ADD a menu for DOUBLE and TRIPLE to choose SINGLE DOUBLE OR TRIPLE
+                case 35: //SINGLE
+                    ITEM[Mag_Pool, 0].Show();
+                    ITEM[Mag_Pool, 0].Refresh();
+                    return true;
+                case 3: //GF
+                    //ITEM[GF_Pool, 0].Show();
+                    //ITEM[GF_Pool, 0].Refresh();
+                    return true;
                 case 4: //items
                     ITEM[Item_Pool, 0].Show();
                     ITEM[Item_Pool, 0].Refresh();
@@ -167,6 +215,10 @@ namespace OpenVIII
                 case 15: //Blue magic
                     ITEM[Blue_Pool, 0].Show();
                     ITEM[Blue_Pool, 0].Refresh();
+                    return true;
+                case 23: //Defend
+                    Debug.WriteLine($"{Memory.Strings.GetName(VisibleCharacter)} is using {c.Name}({c.ID})");
+                    Menu.BattleMenus.EndTurn();
                     return true;
             }
         }
@@ -186,14 +238,27 @@ namespace OpenVIII
                 }
             }
         }
-
+        static int Cidoff
+        {
+            get => s_cidoff; set
+            {
+                if (value >= Kernel_bin.BattleCommands.Count)
+                    value = 0;
+                else if (value < 0)
+                    value = Kernel_bin.BattleCommands.Count - 1;
+                s_cidoff = value;
+            }
+        }
         /// <summary>
         /// Things that may of changed before screen loads or junction is changed.
         /// </summary>
         public override void Refresh()
         {
+            if (Battle && !mode.Equals(BattleMenu.Mode.YourTurn))
+                return;
             if (Memory.State.Characters != null && !skipReinit)
             {
+                Rectangle DataSize = Rectangle.Empty;
                 base.Refresh();
                 page = 0;
                 Cursor_Status &= ~Cursor_Status.Horizontal;
@@ -204,16 +269,27 @@ namespace OpenVIII
 
                 for (int pos = 1; pos < Rows; pos++)
                 {
+
                     Kernel_bin.Abilities cmd = Memory.State.Characters[Character].Commands[pos - 1];
 
                     if (cmd != Kernel_bin.Abilities.None)
                     {
-                        commands[pos] = Kernel_bin.Commandabilities[Memory.State.Characters[Character].Commands[pos - 1]].BattleCommand;
+                        if (!Kernel_bin.Commandabilities.TryGetValue(cmd, out Kernel_bin.Command_abilities cmdval))
+                        {
+                            continue;
+                        }
+#if DEBUG
+                        commands[pos] = Kernel_bin.BattleCommands[Cidoff++];
+#else
+                        commands[pos] = cmdval.BattleCommand;
+#endif
                         ITEM[pos, 0] = new IGMDataItem_String(
                             commands[pos].Name,
                             SIZE[pos]);
                         ITEM[pos, 0].Show();
+                        CheckBounds(ref DataSize, pos);
                         BLANKS[pos] = false;
+
                     }
                     else
                     {
@@ -234,22 +310,25 @@ namespace OpenVIII
                     CONTAINER.Width = nonbattleWidth;
                     ITEM[Limit_Arrow, 0] = null;
                 }
+                AutoAdjustContainerWidth(DataSize);
                 if (Character != Characters.Blank)
                 {
-                    Target_Group.Refresh(Character, VisableCharacter);
-                    MagPool.Refresh(Character, VisableCharacter);
-                    ItemPool.Refresh(Character, VisableCharacter);
+                    Target_Group.Refresh(Character, VisibleCharacter);
+                    MagPool.Refresh(Character, VisibleCharacter);
+                    ItemPool.Refresh(Character, VisibleCharacter);
                 }
             }
             skipReinit = false;
         }
 
-        public override void Refresh(Characters character, Characters? visablecharacter = null)
+        
+
+        public override void Refresh(Characters character, Characters? Visiblecharacter = null)
         {
-            base.Refresh(character, visablecharacter);
-            Target_Group.Refresh(Character, VisableCharacter);
-            MagPool.Refresh(Character, VisableCharacter);
-            ItemPool.Refresh(Character, VisableCharacter);
+            base.Refresh(character, Visiblecharacter);
+            Target_Group.Refresh(Character, VisibleCharacter);
+            MagPool.Refresh(Character, VisibleCharacter);
+            ItemPool.Refresh(Character, VisibleCharacter);
         }
 
         public override void SetModeChangeEvent(ref EventHandler<Enum> eventHandler)

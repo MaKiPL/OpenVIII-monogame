@@ -42,20 +42,13 @@ namespace OpenVIII
                 Hide();
             }
 
-            private string CharacterNames(Characters[] vc)
-            {
-                string r = $"[{Memory.Strings.GetName(vc[0])}";
-                for (int j = 1; j < vc.Length; j++)
-                    r += $", {Memory.Strings.GetName(vc[j])}";
-                r += "]";
-                return r;
-            }
+
 
             private bool CommandDefault() => throw new NotImplementedException();
 
-            private void DebugMessageCommand(IGMData_TargetEnemies i, Enemy[] e, Characters[] vc, Characters fromvc, bool enemytarget) => Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} uses {Command.Name}({Command.ID}) command on { DebugMessageSuffix(e, vc, enemytarget) }");
+            private void DebugMessageCommand(IGMData_TargetEnemies i, Damageable[] d, Characters fromvc) => Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} uses {Command.Name}({Command.ID}) command on { DebugMessageSuffix(d) }");
 
-            private string DebugMessageSuffix(Enemy[] e, Characters[] vc, bool enemytarget) => (enemytarget ? $"{EnemyNames(e)}({(e.Length == 1 ? TargetEnemies.CURSOR_SELECT.ToString() : "MultiSelect")})" : CharacterNames(vc));
+            private string DebugMessageSuffix(Damageable[] d) => $"{DamageableNames(d)}({(d.Length == 1 ? TargetEnemies.CURSOR_SELECT.ToString() : "MultiSelect")})";
 
             /// <summary>
             /// Display pool with list
@@ -63,7 +56,7 @@ namespace OpenVIII
             /// <param name="drawList"></param>
             private void DrawMagic(Debug_battleDat.Magic[] drawList) => Debug.WriteLine($"Display draw pool: {string.Join(", ", drawList)}");
 
-            private string EnemyNames(Enemy[] e)
+            private string DamageableNames(Damageable[] e)
             {
                 string r = $"[{e[0].Name}";
                 for (int j = 1; j < e.Length; j++)
@@ -72,32 +65,35 @@ namespace OpenVIII
                 return r;
             }
 
-            private void Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget)
+            private void Neededvaribles(out Damageable[] d, out Characters fromvc)
             {
+                Damageable[] e;
+                Damageable[] vc;
                 if ((Target & Kernel_bin.Target.Single_Target) != 0)
                 {
                     e = new Enemy[] { Enemy.Party[TargetParty.CURSOR_SELECT < Enemy.Party.Count ? TargetParty.CURSOR_SELECT : Enemy.Party.Count - 1] };
-                    vc = new Characters[] { Memory.State.Party.Where(x => x != Characters.Blank).ToList()[TargetParty.CURSOR_SELECT] };
+                    var charvar = Memory.State.Party.Where(x => x != Characters.Blank).ToList()[TargetParty.CURSOR_SELECT];
+                    vc = new Saves.CharacterData[] { Memory.State[charvar] };
                 }
                 else
                 {
-                    vc = Memory.State.Party.Where(x => x != Characters.Blank).ToArray();
+                    vc = Memory.State.Party.Where(x => x != Characters.Blank).Select(y=>Memory.State[y]).ToArray();
                     e = Enemy.Party.ToArray();
                 }
                 Characters c = Memory.State.PartyData.Where(x => x != Characters.Blank).ToList()[TargetParty.CURSOR_SELECT];
                 int p = BattleMenus.Player;
                 Characters fromc = Memory.State.PartyData.Where(x => x != Characters.Blank).ToList()[p];
                 fromvc = Memory.State.Party.Where(x => x != Characters.Blank).ToList()[p];
-                enemytarget = false;
+                d = vc;
                 if ((TargetEnemies.Cursor_Status & Cursor_Status.Enabled) != 0 && TargetEnemies.Enabled)
-                    enemytarget = true;
-                DebugMessageCommand(TargetEnemies, e, vc, fromvc, enemytarget);
+                    d = e;
+                DebugMessageCommand(TargetEnemies, d, fromvc);
             }
 
             private void SelectTargetWindows(Kernel_bin.Target t)
             {
                 Target = t;
-                if ((t & Kernel_bin.Target.Ally) != 0 || t == Kernel_bin.Target.None)
+                if ((t & Kernel_bin.Target.Ally) != 0 || t == Kernel_bin.Target.None || ((t & Kernel_bin.Target.Enemy) == 0 && (t & Kernel_bin.Target.Single_Side) != 0))
                 {
                     TargetParty.Show();
                     TargetAll(TargetParty);
@@ -125,80 +121,79 @@ namespace OpenVIII
                 if (CommandFunc == null)
                     CommandFunc = new Dictionary<int, Func<bool>>
                     {
-                        {0,Command00 },
+                        //{0,Command00 },
                         {1,Command01_ATTACK },
                         {2,Command02_MAGIC },
-                        {3,Command03 },
+                        //{3,Command03_GF },
                         {4,Command04_ITEM },
                         {5,Command05_RENZOKUKEN },
                         {6,Command06_DRAW },
-                        {7,Command07 },
-                        {8,Command08 },
-                        {9,Command09 },
-                        {10,Command10 },
-                        {11,Command11 },
+                        {7,Command07_DEVOUR },
+                        //{8,Command08_UNNAMED },
+                        //{9,Command09_CAST },
+                        //{10,Command10_STOCK },
+                        {11,Command11_DUEL },
                         {12,Command12_MUG },
-                        {13,Command13 },
-                        {14,Command14 },
+                        //{13,Command13_NOMSG },
+                        {14,Command14_SHOT },
                         {15,Command15_BLUE_MAGIC },
-                        {16,Command16 },
-                        {17,Command17 },
-                        {18,Command18 },
-                        {19,Command19 },
-                        {20,Command20 },
-                        {21,Command21 },
-                        {22,Command22 },
-                        {23,Command23 },
-                        {24,Command24 },
-                        {25,Command25 },
-                        {26,Command26 },
-                        {27,Command27 },
-                        {28,Command28 },
-                        {29,Command29 },
-                        {30,Command30 },
-                        {31,Command31 },
-                        {32,Command32 },
-                        {33,Command33 },
-                        {34,Command34 },
-                        {35,Command35 },
-                        {36,Command36 },
-                        {37,Command37 },
-                        {38,Command38 },
-                        {39,Command39 },
+                        //{16,Command16_SLOT },
+                        {17,Command17_FIRE_CROSS_NO_MERCY },
+                        {18,Command18_SORCERY_ICE_STRIKE },
+                        {19,Command19_COMBINE },
+                        {20,Command20_DESPERADO },
+                        {21,Command21_BLOOD_PAIN },
+                        {22,Command22_MASSIVE_ANCHOR },
+                        //{23,Command23_DEFEND },
+                        {24,Command24_MADRUSH },
+                        {25,Command25_TREATMENT },
+                        {26,Command26_RECOVERY },
+                        {27,Command27_REVIVE },
+                        {28,Command28_DARKSIDE },
+                        {29,Command29_CARD },
+                        {30,Command30_DOOM },
+                        {31,Command31_KAMIKAZI },
+                        {32,Command32_ABSORB },
+                        {33,Command33_LVL_DOWN },
+                        {34,Command34_LVL_UP },
+                        {35,Command35_SINGLE },
+                        {36,Command36_DOUBLE },
+                        {37,Command37_TRIPLE },
+                        {38,Command38_MINIMOG },
                     };
                 base.Init();
 
-                bool Command00() => throw new NotImplementedException();
+                //bool Command00() => throw new NotImplementedException();
 
                 bool Command01_ATTACK()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
                     BattleMenus.EndTurn();
                     return true;
                 }
 
                 bool Command02_MAGIC()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} casts {Magic.Name}({Magic.ID}) spell on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} casts {Magic.Name}({Magic.ID}) spell on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
                     return true;
                 }
 
-                bool Command03() => throw new NotImplementedException();
+                //bool Command03_GF() => throw new NotImplementedException();
 
                 bool Command04_ITEM()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} uses {Item.Name}({Item.ID}) item on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} uses {Item.Name}({Item.ID}) item on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
                     return true;
                 }
 
                 bool Command05_RENZOKUKEN()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
-                    if (enemytarget)
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+                    if (d.First().GetType() == typeof(Enemy))
                     {
                         //Renzokuken
                         byte w = Memory.State[fromvc].WeaponID;
@@ -212,11 +207,9 @@ namespace OpenVIII
                         int choosefinish = Memory.Random.Next(3 + 1);
                         Kernel_bin.Weapons_Data wd = Kernel_bin.WeaponsData[w];
                         Kernel_bin.Renzokeken_Finisher r = wd.Renzokuken;
-                        List<Kernel_bin.Renzokeken_Finisher> flags = Enum.GetValues(typeof(Kernel_bin.Renzokeken_Finisher))
-                            .Cast<Kernel_bin.Renzokeken_Finisher>()
-                            .Where(f => (f & r) != 0)
-                            .ToList();
-                        Kernel_bin.Renzokeken_Finisher finisher = choosefinish >= flags.Count ? flags.Last() : flags[choosefinish];
+                        if(r == 0)
+                            willfinish = false;
+                        
                         //per wiki the chance of which finisher is 25% each and the highest value finisher get the remaining of 100 percent.
                         //so rough divide is 100% when you only only have that
                         //when you unlock 2 one is 75% chance
@@ -227,9 +220,15 @@ namespace OpenVIII
                         BattleMenus.GetCurrentBattleMenu().Renzokeken.Reset(hits);
                         BattleMenus.GetCurrentBattleMenu().Renzokeken.Show();
                         if (willfinish)
+                        {
+                            List<Kernel_bin.Renzokeken_Finisher> flags = Enum.GetValues(typeof(Kernel_bin.Renzokeken_Finisher))
+                                .Cast<Kernel_bin.Renzokeken_Finisher>()
+                                .Where(f => (f & r) != 0)
+                                .ToList();
+                            Kernel_bin.Renzokeken_Finisher finisher = choosefinish >= flags.Count ? flags.Last() : flags[choosefinish];
                             Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} hits {hits} times with {Command.Name}({Command.ID}) then uses {Kernel_bin.RenzokukenFinishersData[finisher].Name}.");
-
-                        if (!willfinish)
+                        }
+                        else
                             Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} hits {hits} times with {Command.Name}({Command.ID}) then fails to use a finisher.");
                     }
                     return true;
@@ -237,108 +236,286 @@ namespace OpenVIII
 
                 bool Command06_DRAW()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
                     //draw
                     //spawn a 1 page 4 row pool of the magic/gfs that the selected enemy has.
-                    if (enemytarget)
+                    if (d.First().GetType() == typeof(Enemy))
                     {
-                        DrawMagic(e.First().DrawList);
-                        Draw_Pool.Refresh(e.First().DrawList);
+                        var e = (Enemy)d.First();
+                        DrawMagic(e.DrawList);
+                        Draw_Pool.Refresh(e.DrawList);
                         Draw_Pool.Show();
                     }
                     return true;
                 }
 
-                bool Command07() => throw new NotImplementedException();
-
-                bool Command08() => throw new NotImplementedException();
-
-                bool Command09() => throw new NotImplementedException();
-
-                bool Command10() => throw new NotImplementedException();
-
-                bool Command11() => throw new NotImplementedException();
-
-                bool Command12_MUG()
+                bool Command07_DEVOUR()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
-                    if (enemytarget)
-                    {
-                        var i = e.First().Mug();
-                        Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} stole {i.DATA?.Name}({i.ID}) x {i.QTY} from { DebugMessageSuffix(e, vc, enemytarget) }");
-                    }
-                    BattleMenus.EndTurn();                    
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+                    //TODO add devour commands
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
+                    BattleMenus.EndTurn();
+
                     return true;
                 }
 
-                bool Command13() => throw new NotImplementedException();
+                //bool Command08_UNNAMED() => throw new NotImplementedException();
 
-                bool Command14() => throw new NotImplementedException();
+                //bool Command09_CAST() => throw new NotImplementedException();
+
+                //bool Command10_STOCK() => throw new NotImplementedException();
+
+                bool Command11_DUEL()
+                {
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
+                    BattleMenus.EndTurn();
+
+                    return true;
+                }
+
+                bool Command12_MUG()
+                {
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+                    if (d.First().GetType() == typeof(Enemy))
+                    {
+                        var e = (Enemy)d.First();
+                        //unsure if party member being ejected or if they need to be in the party for rare item to work
+                        Saves.Item i = e.Mug(Memory.State[fromvc].SPD, Memory.State.PartyHasAbility(Kernel_bin.Abilities.RareItem));
+                        Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} stole {i.DATA?.Name}({i.ID}) x {i.QTY} from { DebugMessageSuffix(d) }");
+                    }
+                    BattleMenus.EndTurn();
+                    return true;
+                }
+
+                //bool Command13_NOMSG() => throw new NotImplementedException();
+
+                bool Command14_SHOT() 
+                {
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
+                    BattleMenus.EndTurn();
+
+                    return true;
+                }
 
                 bool Command15_BLUE_MAGIC()
                 {
-                    Neededvaribles(out Enemy[] e, out Characters[] vc, out Characters fromvc, out bool enemytarget);
-                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} casts {BlueMagic.Name}({BlueMagic.ID}) spell on { DebugMessageSuffix(e, vc, enemytarget) }");
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} casts {BlueMagic.Name}({BlueMagic.ID}) spell on { DebugMessageSuffix(d) }");
                     BattleMenus.EndTurn();
                     return false;
                 }
 
-                bool Command16() => throw new NotImplementedException();
+                //bool Command16_SLOT() => throw new NotImplementedException();
 
-                bool Command17() => throw new NotImplementedException();
+                bool Command17_FIRE_CROSS_NO_MERCY()
+                {
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                bool Command18() => throw new NotImplementedException();
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
+                    BattleMenus.EndTurn();
 
-                bool Command19() => throw new NotImplementedException();
+                    return true;
+                }
 
-                bool Command20() => throw new NotImplementedException();
+                bool Command18_SORCERY_ICE_STRIKE()
+                {
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                bool Command21() => throw new NotImplementedException();
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
+                    BattleMenus.EndTurn();
 
-                bool Command22() => throw new NotImplementedException();
+                    return true;
+                }
 
-                bool Command23() => throw new NotImplementedException();
+                bool Command19_COMBINE()
+                {
+                    //perform angelo attack unless angel wing is unlocked and chosen in menu.
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                bool Command24() => throw new NotImplementedException();
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
+                    BattleMenus.EndTurn();
 
-                bool Command25() => throw new NotImplementedException();
+                    return true;
+                }
 
-                bool Command26() => throw new NotImplementedException();
+                bool Command20_DESPERADO()
+                {
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                bool Command27() => throw new NotImplementedException();
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
+                    BattleMenus.EndTurn();
 
-                bool Command28() => throw new NotImplementedException();
+                    return true;
+                }
 
-                bool Command29() => throw new NotImplementedException();
+                bool Command21_BLOOD_PAIN()
+                {
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                bool Command30() => throw new NotImplementedException();
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
+                    BattleMenus.EndTurn();
 
-                bool Command31() => throw new NotImplementedException();
+                    return true;
+                }
 
-                bool Command32() => throw new NotImplementedException();
+                bool Command22_MASSIVE_ANCHOR()
+                {
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                bool Command33() => throw new NotImplementedException();
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
+                    BattleMenus.EndTurn();
 
-                bool Command34() => throw new NotImplementedException();
+                    return true;
+                }
 
-                bool Command35() => throw new NotImplementedException();
+                //bool Command23_DEFEND() => throw new NotImplementedException();
 
-                bool Command36() => throw new NotImplementedException();
+                bool Command24_MADRUSH()
+                {
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
 
-                bool Command37() => throw new NotImplementedException();
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
+                    BattleMenus.EndTurn();
 
-                bool Command38() => throw new NotImplementedException();
+                    return true;
+                }
 
-                bool Command39() => throw new NotImplementedException();
+                bool Command25_TREATMENT()
+                {
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
+                    BattleMenus.EndTurn();
+
+                    return true;
+                }
+
+                bool Command26_RECOVERY()
+                {
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
+                    BattleMenus.EndTurn();
+
+                    return true;
+                }
+
+                bool Command27_REVIVE()
+                {
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
+                    BattleMenus.EndTurn();
+
+                    return true;
+                }
+                bool Command28_DARKSIDE()
+                {
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+                    BattleMenus.EndTurn();
+                    return true;
+                }
+
+                bool Command29_CARD()
+                {
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+                    if (d.First().GetType() == typeof(Enemy))
+                    {
+                        var e = (Enemy)d.First();
+                        Cards.ID c = e.Card();
+                        if (c == Cards.ID.Fail)
+
+                            Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} Failed to use {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
+                        else if (c == Cards.ID.Immune)
+                            Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} Failed to use {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) } because they are immune!");
+                        else
+                            Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) } and got a {c} card");
+                        BattleMenus.EndTurn();
+                    }
+                    return true;
+                }
+
+                bool Command30_DOOM()
+                {
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+                    BattleMenus.EndTurn();
+                    return true;
+                }
+
+                bool Command31_KAMIKAZI()
+                {
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
+                    BattleMenus.EndTurn();
+
+                    return true;
+                }
+
+                bool Command32_ABSORB()
+                {
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
+                    BattleMenus.EndTurn();
+
+                    return true;
+                }
+
+                bool Command33_LVL_DOWN()
+                {
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
+                    BattleMenus.EndTurn();
+
+                    return true;
+                }
+
+                bool Command34_LVL_UP()
+                {
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
+                    BattleMenus.EndTurn();
+
+                    return true;
+                }
+
+                bool Command35_SINGLE() => Command02_MAGIC();
+
+                bool Command36_DOUBLE() {
+                    // CHOOSE 2X TARGETS
+                    throw new NotImplementedException();
+                }
+
+                bool Command37_TRIPLE()
+                {
+                    // CHOOSE 3X TARGETS
+                    throw new NotImplementedException();
+                }
+                bool Command38_MINIMOG()
+                {
+                    Neededvaribles(out Damageable[] d, out Characters fromvc);
+
+                    Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
+                    BattleMenus.EndTurn();
+
+                    return true;
+                }
             }
 
             #endregion Methods
 
             #region Constructors
 
-            public IGMData_TargetGroup(Characters character, Characters? visablecharacter = null, bool makesubs = true)
+            public IGMData_TargetGroup(Characters character, Characters? Visiblecharacter = null, bool makesubs = true)
             {
-                VisableCharacter = visablecharacter ?? character;
+                VisibleCharacter = Visiblecharacter ?? character;
                 const int X = 25;
                 const int w = 380;
                 const int w2 = 210;
@@ -348,8 +525,8 @@ namespace OpenVIII
                 Init(new IGMData[]{
                     new IGMData_TargetEnemies(new Rectangle(CONTAINER.Pos.X, CONTAINER.Pos.Y, w, h)),
                     new IGMData_TargetParty(new Rectangle(CONTAINER.Pos.X + w, CONTAINER.Pos.Y, w2, h)),
-                    makesubs ? new IGMData_Draw_Pool(new Rectangle(X +50, Y - 50, 300, 192), Character, VisableCharacter, true): null,
-                    //makesubs ? new IGMData_BlueMagic_Pool(new Rectangle(X +50, Y - 50, 300, 192), Character, VisableCharacter, true): null
+                    makesubs ? new IGMData_Draw_Pool(new Rectangle(X +50, Y - 50, 300, 192), Character, VisibleCharacter, true): null,
+                    //makesubs ? new IGMData_BlueMagic_Pool(new Rectangle(X +50, Y - 50, 300, 192), Character, VisibleCharacter, true): null
                 }, true);
                 after();
             }
@@ -421,10 +598,10 @@ namespace OpenVIII
                     return CommandDefault();
             }
 
-            public override void Refresh(Characters character, Characters? visablecharacter = null)
+            public override void Refresh(Characters character, Characters? Visiblecharacter = null)
             {
-                base.Refresh(character, visablecharacter);
-                Draw_Pool?.Refresh(character, visablecharacter);
+                base.Refresh(character, Visiblecharacter);
+                Draw_Pool?.Refresh(character, Visiblecharacter);
             }
 
             public override void Reset()

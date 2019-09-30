@@ -318,7 +318,7 @@ namespace OpenVIII
         public bool TestBlueMagic()
         {
             if (Learned_Blue_Magic != Kernel_bin.Blue_Magic.None)
-                return !Memory.State.LimitBreakQuistis[(int)Learned_Blue_Magic];
+                return !Memory.State.LimitBreakQuistis_Unlocked_BlueMagic[(int)Learned_Blue_Magic];
             return false;
         }
 

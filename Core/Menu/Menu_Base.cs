@@ -10,20 +10,20 @@ namespace OpenVIII
         #region Properties
 
         /// <summary>
-        /// If enabled the menu is visable and all functionality works. Else everything is hidden and
+        /// If enabled the menu is Visible and all functionality works. Else everything is hidden and
         /// nothing functions.
         /// </summary>
         public bool Enabled { get; private set; } = true;
 
         /// <summary>
-        /// Character who has the junctions and inventory. Same as VisableCharacter unless TeamLaguna.
+        /// Character who has the junctions and inventory. Same as VisibleCharacter unless TeamLaguna.
         /// </summary>
         public Characters Character { get; protected set; } = Characters.Blank;
 
         /// <summary>
         /// Required to support Laguna's Party. They have unique stats but share junctions and inventory.
         /// </summary>
-        public Characters VisableCharacter { get; protected set; } = Characters.Blank;
+        public Characters VisibleCharacter { get; protected set; } = Characters.Blank;
 
         /// <summary>
         /// Position of party member 0,1,2. If -1 at the time of setting the character wasn't in the party.
@@ -60,13 +60,13 @@ namespace OpenVIII
         /// Update set characters and then refresh.
         /// </summary>
         /// <param name="character"></param>
-        /// <param name="visablecharacter"></param>
-        public virtual void Refresh(Characters character, Characters? visablecharacter = null)
+        /// <param name="Visiblecharacter"></param>
+        public virtual void Refresh(Characters character, Characters? Visiblecharacter = null)
         {
-            if ((character != Character || (visablecharacter ?? character) != VisableCharacter) && character != Characters.Blank && visablecharacter != Characters.Blank)
+            if ((character != Character || (Visiblecharacter ?? character) != VisibleCharacter) && character != Characters.Blank && Visiblecharacter != Characters.Blank)
             {
                 Character = character;
-                VisableCharacter = visablecharacter ?? character;
+                VisibleCharacter = Visiblecharacter ?? character;
                 PartyPos = (sbyte)(Memory.State?.PartyData?.Where(x => !x.Equals(Characters.Blank)).ToList().FindIndex(x => x.Equals(Character)) ?? -1);
             }
             Refresh();

@@ -154,7 +154,8 @@
             /// <summary>
             /// for using in battle if a enemy is immune the value will be 0xff
             /// </summary>
-            Immune = 0xff
+            Immune = 0xff,
+            Fail = 0xfe
         }
 
         #endregion Enums

@@ -23,7 +23,6 @@ namespace OpenVIII
         public Rectangle Restriction { get; set; }
         public override bool Blink { get => base.Blink && (Color != Faded_Color); set => base.Blink = value; }
         public Texture2D Data { get; set; }
-        public Color Faded_Color { get; set; }
 
         #endregion Properties
 
