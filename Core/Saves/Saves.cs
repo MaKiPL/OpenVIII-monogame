@@ -90,19 +90,18 @@ namespace OpenVIII
             List<Task> tasks = new List<Task>();
             foreach (string file in files)
             {
-                Match n = Regex.Match(file, regex, RegexOptions.IgnoreCase);
+                Match match = Regex.Match(file, regex, RegexOptions.IgnoreCase);
 
-                if (n.Success && n.Groups.Count > 0)
-                    tasks.Add(Task.Run(() => read(file, out FileList[int.Parse(n.Groups[1].Value) - 1, int.Parse(n.Groups[2].Value) - 1])));
+                if (match.Success && match.Groups.Count > 0)
+                    tasks.Add(Task.Run(() => Read(file, out FileList[int.Parse(match.Groups[1].Value) - 1, int.Parse(match.Groups[2].Value) - 1])));
             }
             Task.WaitAll(tasks.ToArray());
         }
 
-        private static void read(string file, out Data d)
+        private static void Read(string file, out Data d)
         {
-            Debug.WriteLine("Task={0}, Thread={2}, File={1}",
-            Task.CurrentId, file,
-            Thread.CurrentThread.ManagedThreadId);
+            Debug.WriteLine("Task={0}, Thread={1}, File={2}",
+                Task.CurrentId, Thread.CurrentThread.ManagedThreadId, file);
             byte[] decmp;
 
             using (FileStream fs = File.OpenRead(file))
