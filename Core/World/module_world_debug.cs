@@ -173,7 +173,19 @@ namespace OpenVIII
             SelphieCasual
         }
 
-        private static worldCharacters activeCharacter = worldCharacters.SquallCasual;
+        private static worldCharacterInstance[] worldCharacterInstances = new worldCharacterInstance[8];
+
+        private struct worldCharacterInstance
+        {
+            public worldCharacters activeCharacter;
+            public Vector3 worldPosition;
+            public float localRotation;
+            public int currentAnimationId;
+            public int currentAnimFrame;
+            public float animationDeltaTime;
+            public bool bDraw;
+        }
+
 
         private static _worldState worldState;
         private static MiniMapState MapState = MiniMapState.rectangle;
@@ -258,6 +270,7 @@ namespace OpenVIII
             };
 
             ReadWorldMapFiles();
+            worldCharacterInstances[0] = new worldCharacterInstance() { activeCharacter = worldCharacters.SquallCasual, worldPosition = playerPosition, localRotation = -90f, currentAnimationId = 0, currentAnimFrame = 0 };
             worldState++;
             return;
         }
@@ -420,11 +433,11 @@ namespace OpenVIII
         }
 
         public static bool bHasMoved = false;
+        private static int currentControllableEntity = 0;
 
         public static void Update(GameTime deltaTime)
         {
             UpdateTextureAnimation();
-            animationId = 0;
             switch (worldState)
             {
                 case _worldState._0init:
@@ -452,10 +465,52 @@ namespace OpenVIII
             if (Input2.Button(Keys.D8))
                 bDebugDisableCollision = !bDebugDisableCollision;
 
-            InputUpdate();
+            InputUpdate(out var localRotator);
             CollisionUpdate();
-            if(bHasMoved)
+            AnimationUpdate();
+            if (bHasMoved)
+            {
+                worldCharacterInstances[currentControllableEntity].worldPosition = playerPosition;
+                worldCharacterInstances[currentControllableEntity].localRotation = localRotator;
                 EncounterUpdate();
+            }
+        }
+
+        private static void AnimationUpdate()
+        {
+            if (bHasMoved)
+            {
+                if (worldCharacterInstances[currentControllableEntity].activeCharacter == worldCharacters.Ragnarok)
+                {
+                    //some other anim system
+                }
+                else
+                {
+                    worldCharacterInstances[currentControllableEntity].currentAnimationId = 1;
+                }
+            }
+            else
+                worldCharacterInstances[currentControllableEntity].currentAnimationId = 0;
+
+            for(int i = 0; i<worldCharacterInstances.Length; i++)
+            {
+                worldCharacterInstance instance = worldCharacterInstances[i];
+                if (!(instance as worldCharacterInstance?).HasValue)
+                    continue;
+
+                if (instance.animationDeltaTime >= (1000 / 60.0))
+                {
+                    instance.currentAnimFrame++;
+                    instance.animationDeltaTime = 0;
+                }
+                else instance.animationDeltaTime += Memory.gameTime.ElapsedGameTime.Milliseconds;
+
+                uint framesCount = chara.GetMCH((int)instance.activeCharacter).GetAnimationFramesCount(instance.currentAnimationId);
+                if (instance.currentAnimFrame > framesCount-1)
+                    instance.currentAnimFrame = 0;
+                worldCharacterInstances[i] = instance;
+            }
+
         }
 
         private static void UpdateTextureAnimation()
@@ -523,8 +578,14 @@ namespace OpenVIII
             //TODO random + enc.half/none junction + warping to battle
         }
 
-        private static void InputUpdate()
+        /// <summary>
+        /// Provides 4-axis support for input of currently controlled entity
+        /// TODO: extend to 360/ fix diagonal double speed/ calculate local degrees based on sticks
+        /// </summary>
+        /// <param name="localRotation"></param>
+        private static void InputUpdate(out float localRotation)
         {
+            localRotation = 0f;
             bHasMoved = false;
             lastPlayerPosition = playerPosition;
 
@@ -554,18 +615,30 @@ namespace OpenVIII
             {
                 if (Input2.Button(FF8TextTagKey.Up))
                 {
-                    animationId = 1;
-                    playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees)) * 2f;
-                    playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees)) * 2f;
-                    localMchRotation = (float)(Extended.Radians(-degrees - 90f));
+                    playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees));
+                    playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees));
+                    localRotation = (float)Extended.Radians(-degrees - 90f);
                     bHasMoved = true;
                 }
                 if (Input2.Button(FF8TextTagKey.Down))
                 {
-                    animationId = 1;
-                    playerPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees)) * 2f;
-                    playerPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees)) * 2f;
-                    localMchRotation = (float)(Extended.Radians(-degrees + 90f));
+                    playerPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees));
+                    playerPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees));
+                    localRotation = (float)Extended.Radians(-degrees + 90f);
+                    bHasMoved = true;
+                }
+                if (Input2.Button(FF8TextTagKey.Left))
+                {
+                    playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees-90f));
+                    playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees-90f));
+                    localRotation = (float)Extended.Radians(-degrees);
+                    bHasMoved = true;
+                }
+                if (Input2.Button(FF8TextTagKey.Right))
+                {
+                    playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees + 90f));
+                    playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees + 90f));
+                    localRotation = (float)Extended.Radians(180f - degrees);
                     bHasMoved = true;
                 }
             }
@@ -679,9 +752,9 @@ namespace OpenVIII
                 playerPosition.Y + 50f,
                 (float)(playerPosition.Z + camDistance * Extended.Sin(degrees - 180f))
                 );
-            if (Input2.Button(FF8TextTagKey.Left))
+            if (Input2.Button(FF8TextTagKey.RotateLeft))
                 degrees--;
-            if (Input2.Button(FF8TextTagKey.Right))
+            if (Input2.Button(FF8TextTagKey.RotateRight))
                 degrees++;
             if (degrees < 0)
                 degrees = 359;
@@ -761,8 +834,8 @@ namespace OpenVIII
 
             TeleportPlayerWarp();
 
-            DrawCharacter(activeCharacter);
-
+            foreach(worldCharacterInstance charaInstance in worldCharacterInstances)
+                DrawCharacter(charaInstance);
 #if DEBUG
             DrawDebug();
             DrawCharacterShadow();
@@ -959,30 +1032,20 @@ namespace OpenVIII
         /// </summary>
         private static Vector3 localMchTranslation = new Vector3(0, 6f, 0);
 
-        /// <summary>
-        /// Rotates the model to work with current coordinate system and for correct movement vectors
-        /// model translation
-        /// </summary>
-        private static float localMchRotation = -90f;
-
         private static Vector2 Scale;
 
-        private static int animationId = 0;
-        public static int currentCharaAnimationFrameIndex = 0;
-
-        private static void DrawCharacter(worldCharacters charaIndex)
+        private static void DrawCharacter(worldCharacterInstance? charaInstance_)
         {
-            int MchIndex = (int)charaIndex;
-            if (animationId >= chara.GetMCH(MchIndex).GetAnimationCount())
-                animationId = 0;
-            uint animFrameCount = chara.GetMCH(MchIndex).GetAnimationFramesCount(animationId);
-            currentCharaAnimationFrameIndex++;
-            if (currentCharaAnimationFrameIndex >= animFrameCount)
-                currentCharaAnimationFrameIndex = 0;
-            Tuple<VertexPositionColorTexture[], byte[]> charaCollection = chara.GetMCH(MchIndex).GetVertexPositions(playerPosition + localMchTranslation, Quaternion.CreateFromYawPitchRoll(localMchRotation, 0f, 0f), animationId, currentCharaAnimationFrameIndex);
+            if (charaInstance_ == null)
+                return;
+            worldCharacterInstance charaInstance = charaInstance_.Value;
+            int MchIndex = (int)charaInstance.activeCharacter;
+            if (charaInstance.currentAnimationId >= chara.GetMCH(MchIndex).GetAnimationCount())
+                charaInstance.currentAnimationId = 0;
+            Tuple<VertexPositionColorTexture[], byte[]> charaCollection = chara.GetMCH(MchIndex).GetVertexPositions(charaInstance.worldPosition + localMchTranslation, Quaternion.CreateFromYawPitchRoll(charaInstance.localRotation, 0f, 0f), charaInstance.currentAnimationId, charaInstance.currentAnimFrame);
 
             int textureIndexBase; //chara.one contains textures one-by-one but mch indexes are based from zero for each character. That's why we have to sum texIndexes from previous meshes
-            switch (charaIndex)
+            switch (charaInstance.activeCharacter)
             {
                 case worldCharacters.Ragnarok:
                     textureIndexBase = 2;
@@ -1037,29 +1100,6 @@ namespace OpenVIII
                     Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, kvp.Value.ToArray(), 0, kvp.Value.Count/3);
                 }
             }
-
-            //var groupedVertices = c
-            //if (charaCollection.Item1.Length != 0)
-            //    for (int i = 0; i < charaCollection.Item1.Length; i += 3)
-            //    {
-            //        var charaTexture = chara.GetCharaTexture(textureIndexBase + charaCollection.Item2[i]);
-            //        if(vptCollection.ContainsKey(charaTexture))
-            //        {
-            //            vptCollection[charaTexture].Add(charaCollection.Item1);
-            //        }
-
-            //    }
-
-            //if (bUseCustomShaderTest)
-            //{
-            //    worldShaderModel.Parameters["ModelTexture"].SetValue(ate.Texture);
-            //    worldShaderModel.CurrentTechnique = worldShaderModel.Techniques["Texture_fog_bend"];
-            //}
-            //foreach (EffectPass pass in bUseCustomShaderTest ? worldShaderModel.CurrentTechnique.Passes : ate.CurrentTechnique.Passes)
-            //{
-            //    pass.Apply();
-            //    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, charaCollection.Item1, i, 1);
-            //}
         }
 
         /// <summary>
