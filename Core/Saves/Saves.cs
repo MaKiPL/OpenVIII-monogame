@@ -110,9 +110,13 @@ namespace OpenVIII
                 int size = br.ReadInt32();
                 byte[] tmp = br.ReadBytes((int)fs.Length - sizeof(uint));
                 decmp = LZSS.DecompressAllNew(tmp);
-                var test = new LZSSStream(fs,4, 0);
-                decmp2 = new byte[size];
-                test.Read(decmp2, 0, size);
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    var test = new LZSSStream(fs, 4, 0);
+                    decmp2 = new byte[4096];
+                    int cnt = test.Read(decmp2, 0, 4096);
+                    ms.Write(decmp2, 0, cnt);
+                }
             }
 
             using (MemoryStream ms = new MemoryStream(decmp))
