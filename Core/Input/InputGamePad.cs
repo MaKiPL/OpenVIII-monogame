@@ -73,7 +73,10 @@ namespace OpenVIII
 
         #region Methods
 
-        public static Vector2 Distance(GamePadButtons stick, float speed) => Translate_Stick(stick, state) * (float)Distance(speed);
+        public static Vector2 Distance(GamePadButtons stick, float speed)
+        {
+            return Translate_Stick(stick, state) * (float)Distance(speed);
+        }
 
         public override bool ButtonTriggered(InputButton test, ButtonTrigger trigger = ButtonTrigger.None)
         {
@@ -161,9 +164,11 @@ namespace OpenVIII
             switch (k)
             {
                 case GamePadButtons.ThumbSticks_Left:
+                case GamePadButtons.LeftStick:
                     return _state.ThumbSticks.Left;
 
                 case GamePadButtons.ThumbSticks_Right:
+                case GamePadButtons.RightStick:
                     return _state.ThumbSticks.Right;
             }
             return Vector2.Zero;
