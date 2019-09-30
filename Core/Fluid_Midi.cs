@@ -728,7 +728,7 @@ namespace OpenVIII
             }
             catch(Exception e)
             {
-                Console.WriteLine($"Fluid_Midi disabled: {e.Message}");
+                Console.WriteLine($"Fluid_Midi disabled: {e.Message} (Check DebugWindows/DebugLinux might be on wrong one)");
                 bValid = false;
                 return;
             }
