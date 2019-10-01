@@ -12,7 +12,7 @@ namespace OpenVIII
         public static readonly float camDistance = 10.0f;
         public static readonly float defaultmaxMoveSpeed = 1f;
         public static readonly float maxLookSpeedMouse = 0.25f;
-        public static readonly float maxLookSpeedGamePad = 0.05f;
+        public static readonly float maxLookSpeedGamePad = 0.15f;
         public static readonly float MoveSpeedChange = 1f;
         //private static Vector3 camPosition, camTarget;
         //private float degrees = 90;

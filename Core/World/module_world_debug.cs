@@ -665,13 +665,15 @@ namespace OpenVIII
                 {
                     Vector3 vector3 = playerPosition - oldpos; // gets the vector between the old and new calculated pos.
                     vector3.Normalize(); //prevents speed up from going in more than one direction.
-                    if (shift != Vector2.Zero)
-                    {
-                        const float distmax = 10f;
-                        float dist = MathHelper.Clamp(Vector2.Distance(Vector2.Zero, shift), 0f, distmax);
-                        //Debug.WriteLine($"Dist: {dist}, DistMax: {distmax}");
-                        vector3 *= dist / distmax;
-                    }
+                    // this will slow your movement based on stick.
+                    //not best for squall but maybe for vehicles
+                    //if (shift != Vector2.Zero)
+                    //{
+                    //    const float distmax = 10f;
+                    //    float dist = MathHelper.Clamp(Vector2.Distance(Vector2.Zero, shift), 0f, distmax);
+                    //    //Debug.WriteLine($"Dist: {dist}, DistMax: {distmax}");
+                    //    vector3 *= dist / distmax;
+                    //}
                     playerPosition = oldpos + vector3;
                     DetectedSpeed = Vector3.Distance(playerPosition, oldpos);
 
