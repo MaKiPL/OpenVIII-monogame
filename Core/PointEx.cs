@@ -9,6 +9,25 @@ namespace OpenVIII
     public static class PointEx
     {
         #region Methods
+        /// <summary>
+        /// Rotate a Vector2 by degrees
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="degrees"></param>
+        /// <returns></returns>
+        /// <see cref="https://answers.unity.com/questions/661383/whats-the-most-efficient-way-to-rotate-a-vector2-o.html"/>
+        public static Vector2 Rotate(this Vector2 v, float degrees)
+        {
+            float rad = MathHelper.ToRadians(degrees);
+            float sin = (float)Math.Sin(rad);
+            float cos = (float)Math.Cos(rad);
+
+            float tx = v.X;
+            float ty = v.Y;
+            v.X = (cos * tx) - (sin * ty);
+            v.Y = (sin * tx) + (cos * ty);
+            return v;
+        }
 
         public static Point Offset(this ref Point source, Point offset)
         {
