@@ -5,7 +5,6 @@ using OpenVIII.Core.World;
 using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -29,8 +28,8 @@ namespace OpenVIII
         public static Effect worldShaderModel;
         private const float BEND_VALUE = 1.4f;
         private const float BEND_DISTANCE = 350.0f;
-        private readonly static Vector3 BEND_VECTOR = new Vector3(0, -0.01f, 0);
-        private readonly static Vector4 FOG_COLOR = new Vector4(2f, 2f, 2f, 0f);
+        private static readonly Vector3 BEND_VECTOR = new Vector3(0, -0.01f, 0);
+        private static readonly Vector4 FOG_COLOR = new Vector4(2f, 2f, 2f, 0f);
 
         private enum _worldState
         {
@@ -129,10 +128,7 @@ namespace OpenVIII
             private Texflags TexFlags { get => Texflags.TEXFLAGS_ISENTERABLE | Texflags.TEXFLAGS_MISC | Texflags.TEXFLAGS_ROAD | Texflags.TEXFLAGS_SHADOW | Texflags.TEXFLAGS_UNK | Texflags.TEXFLAGS_UNK2 | Texflags.TEXFLAGS_WATER; set => texFlags = value; }
             //public byte TPage_clut1 { set => TPage_clut = value; }
 
-            public override string ToString()
-            {
-                return $"GP={groundtype.ToString()} TP={TPage.ToString()} Clut={Clut.ToString()} TexFlags={Convert.ToString((byte)texFlags, 2).PadLeft(8, '0')} vertFlags={Convert.ToString(vertFlags, 2).PadLeft(8, '0')} UV={U1.ToString()} {V1.ToString()} {U2.ToString()} {V2.ToString()} {U3.ToString()} {V3.ToString()}";
-            }
+            public override string ToString() => $"GP={groundtype.ToString()} TP={TPage.ToString()} Clut={Clut.ToString()} TexFlags={Convert.ToString((byte)texFlags, 2).PadLeft(8, '0')} vertFlags={Convert.ToString(vertFlags, 2).PadLeft(8, '0')} UV={U1.ToString()} {V1.ToString()} {U2.ToString()} {V2.ToString()} {U3.ToString()} {V3.ToString()}";
         }
 
         private struct Vertex
@@ -187,7 +183,6 @@ namespace OpenVIII
             public bool bDraw;
         }
 
-
         private static _worldState worldState;
         private static MiniMapState MapState = MiniMapState.rectangle;
 
@@ -210,15 +205,16 @@ namespace OpenVIII
             /// Player can walk on selected face (and only player)
             /// </summary>
             bWalkable = 0b10000000,
+
             /// <summary>
             /// Available exclusive to forests and tunnels
             /// </summary>
             bTreeZone = 0b01000000,
+
             /// <summary>
             /// Marked on faces that are NOT walkable by Player, but are by Chocobo- a thin water for example
             /// </summary>
             bWalkableByChocobo = 0b00010000
-              
         }
 
         private const byte TRIFLAGS_COLLIDE = 0b10000000;
@@ -245,7 +241,6 @@ namespace OpenVIII
 
             if (bUseCustomShaderTest)
             {
-
                 worldShaderModel = Memory.content.Load<Effect>("testShader");
                 worldShaderModel.Parameters["World"].SetValue(worldMatrix);
                 worldShaderModel.Parameters["View"].SetValue(viewMatrix);
@@ -342,7 +337,7 @@ namespace OpenVIII
                                 new Vector2(segments[i].block[n].polygons[k].U2 / 256.0f, segments[i].block[n].polygons[k].V2 / 256.0f),
                                 new Vector2(segments[i].block[n].polygons[k].U3 / 256.0f, segments[i].block[n].polygons[k].V3 / 256.0f)
                                             };
-                            if(segments[i].block[n].polygons[k].texFlags.HasFlag(Texflags.TEXFLAGS_ROAD)) //this is roads UV fix
+                            if (segments[i].block[n].polygons[k].texFlags.HasFlag(Texflags.TEXFLAGS_ROAD)) //this is roads UV fix
                             {
                                 uvs[0] += new Vector2(0f, 0.002f);
                                 uvs[1] += new Vector2(0f, 0.002f);
@@ -393,9 +388,9 @@ namespace OpenVIII
                 return (int)interZone.missileBaseDestroyed;
 
             if (i == (int)interZone.balambGardenE_static) //correct;
-                return (int)interZone.balambGardenE_mobile+1;
+                return (int)interZone.balambGardenE_mobile + 1;
             if (i == (int)interZone.balambGardenW_static)
-                return (int)interZone.balambGardenW_mobile-1;
+                return (int)interZone.balambGardenW_mobile - 1;
 
             if (i == (int)interZone.galbadiaGarden_static)
                 return (int)interZone.galbadiaGarden_mobile;
@@ -466,7 +461,7 @@ namespace OpenVIII
             if (Input2.Button(Keys.D8))
                 bDebugDisableCollision = !bDebugDisableCollision;
 
-            InputUpdate(out var localRotator);
+            InputUpdate(out float localRotator);
             CollisionUpdate();
             AnimationUpdate();
             if (bHasMoved)
@@ -493,7 +488,7 @@ namespace OpenVIII
             else
                 worldCharacterInstances[currentControllableEntity].currentAnimationId = 0;
 
-            for(int i = 0; i<worldCharacterInstances.Length; i++)
+            for (int i = 0; i < worldCharacterInstances.Length; i++)
             {
                 worldCharacterInstance instance = worldCharacterInstances[i];
                 if (!(instance as worldCharacterInstance?).HasValue)
@@ -507,11 +502,10 @@ namespace OpenVIII
                 else instance.animationDeltaTime += Memory.gameTime.ElapsedGameTime.Milliseconds;
 
                 uint framesCount = chara.GetMCH((int)instance.activeCharacter).GetAnimationFramesCount(instance.currentAnimationId);
-                if (instance.currentAnimFrame > framesCount-1)
+                if (instance.currentAnimFrame > framesCount - 1)
                     instance.currentAnimFrame = 0;
                 worldCharacterInstances[i] = instance;
             }
-
         }
 
         private static void UpdateTextureAnimation()
@@ -531,7 +525,7 @@ namespace OpenVIII
         {
             for (int i = 0; i < beachAnims.Length; i++)
             {
-                float totalMaxValue = (15.625f * beachAnims[i].animTimeout)/1000.0f; //1 is 15.625 milliseconds, because 0x20 is 500 milliseconds
+                float totalMaxValue = (15.625f * beachAnims[i].animTimeout) / 1000.0f; //1 is 15.625 milliseconds, because 0x20 is 500 milliseconds
                 beachAnims[i].deltaTime += elapsedTime;
                 if (beachAnims[i].deltaTime > totalMaxValue)
                 {
@@ -540,19 +534,19 @@ namespace OpenVIII
                     else
                         beachAnims[i].currentAnimationIndex--;
                     beachAnims[i].deltaTime = 0f;
-                if (beachAnims[i].currentAnimationIndex >= beachAnims[i].framesCount)
-                    if (beachAnims[i].bLooping > 0)
+                    if (beachAnims[i].currentAnimationIndex >= beachAnims[i].framesCount)
+                        if (beachAnims[i].bLooping > 0)
+                        {
+                            beachAnims[i].bIncrementing = !beachAnims[i].bIncrementing;
+                            beachAnims[i].currentAnimationIndex = beachAnims[i].framesCount - 2;
+                        }
+                        else
+                            beachAnims[i].currentAnimationIndex = 0;
+                    if (beachAnims[i].currentAnimationIndex < 0)
                     {
+                        beachAnims[i].currentAnimationIndex = 1;
                         beachAnims[i].bIncrementing = !beachAnims[i].bIncrementing;
-                        beachAnims[i].currentAnimationIndex = beachAnims[i].framesCount - 2;
                     }
-                    else
-                        beachAnims[i].currentAnimationIndex = 0;
-                if (beachAnims[i].currentAnimationIndex < 0)
-                {
-                    beachAnims[i].currentAnimationIndex = 1;
-                    beachAnims[i].bIncrementing = !beachAnims[i].bIncrementing;
-                }
                     if (bWater)
                         wmset.UpdateWorldMapWaterTexturePaletteForAnimation(i, wmset.GetWaterAnimationPalettes(i, beachAnims[i].currentAnimationIndex));
                 }
@@ -578,16 +572,17 @@ namespace OpenVIII
 
             //TODO random + enc.half/none junction + warping to battle
         }
+
         /// <summary>
         /// Convert vector to angle
         /// </summary>
         /// <param name="vector"></param>
         /// <returns></returns>
         /// <see cref="https://stackoverflow.com/questions/2276855/xna-2d-vector-angles-whats-the-correct-way-to-calculate"/>
-        public static float VectorToAngle(Vector2 vector)
-        {
-            return (float)Math.Atan2(-vector.Y, -vector.X);
-        }
+        public static float VectorToAngle(Vector2 vector) => (float)Math.Atan2(-vector.Y, -vector.X);
+
+        public static float DetectedSpeed;
+
         /// <summary>
         /// Provides 4-axis support for input of currently controlled entity
         /// TODO: extend to 360/ fix diagonal double speed/ calculate local degrees based on sticks
@@ -595,6 +590,7 @@ namespace OpenVIII
         /// <param name="localRotation"></param>
         private static void InputUpdate(out float localRotation)
         {
+            Vector3 oldpos = playerPosition;
             localRotation = 0f;
             bHasMoved = false;
             lastPlayerPosition = playerPosition;
@@ -623,64 +619,58 @@ namespace OpenVIII
 
             if (worldState != _worldState._9debugFly)
             {
-                Vector2 shift = InputGamePad.Distance(GamePadButtons.ThumbSticks_Left, 100f);
+                Vector2 shift = InputGamePad.Distance(GamePadButtons.ThumbSticks_Left, 10f);
+                // the shift vector in the ifs seemed to give undesired results.
+                if (Input2.Button(FF8TextTagKey.Up)/* || shift.Y > 0*/)
+                {
+                    playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees));
+                    playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees));
+                    //localRotation = (float)Extended.Radians(-degrees - 90f);
+                    bHasMoved = true;
+                }
+                else if (Input2.Button(FF8TextTagKey.Down)/* || shift.Y < 0*/)
+                {
+                    playerPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees));
+                    playerPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees));
+                    //localRotation = (float)Extended.Radians(-degrees + 90f);
+                    bHasMoved = true;
+                }
+                if (Input2.Button(FF8TextTagKey.Left)/* || shift.X < 0*/)
+                {
+                    playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees - 90f));
+                    playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees - 90f));
+                    //localRotation = (float)Extended.Radians(-degrees);
+                    bHasMoved = true;
+                }
+                else if (Input2.Button(FF8TextTagKey.Right)/* || shift.X > 0*/)
+                {
+                    playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees + 90f));
+                    playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees + 90f));
+                    //localRotation = (float)Extended.Radians(180f - degrees);
+                    bHasMoved = true;
+                }
+                if (bHasMoved)
+                {
+                    Vector3 vector3 = playerPosition - oldpos; // gets the vector between the old and new calculated pos.
+                    vector3.Normalize(); //prevents speed up from going in more than one direction.
+                    playerPosition = oldpos + vector3;
+                    DetectedSpeed = Vector3.Distance(playerPosition, oldpos);
 
+                    localRotation = (float)Math.Atan2(-vector3.X, -vector3.Z); //this seems to make squall face the correct direction each time.
+                }
+                else
+                    DetectedSpeed = 0f;
+                //TODO get a better LeftStick to direction of movement
+                //TODO make speed adjust based on how hard stick is pressed.
                 //if (shift != Vector2.Zero)
                 //{
-                //    shift.Normalize();
-                //    localRotation = (VectorToAngle(shift) + degrees) % 360f;
-                    //shift = Vector2.Transform(shift,viewMatrix);
-                    //angle = VectorToAngle(shift);
-                    //Vector3 Direction = new Vector3((float)Math.Cos(MathHelper.ToRadians(angle)),0f,(float)Math.Sin(MathHelper.ToRadians(angle)));
-                    //Direction.Normalize();
-
-                    //playerPosition += Direction*10f;
-                    //localRotation = (VectorToAngle(shift) + degrees) % 360f;
-                    //shift = Vector2.Transform(shift, Matrix.CreateRotationY(MathHelper.ToRadians(degrees)));
-                    //playerPosition.X -= shift.Y;
-                    //playerPosition.Z += shift.X;
-                    //bHasMoved = true;
+                //    //this works but didn't match the direction of movement calcuated above.
+                //    shift = shift.Rotate(-degrees);
+                //    float angle = VectorToAngle(shift);
+                //    //Debug.WriteLine($"Shift: {shift} Angle: {MathHelper.ToDegrees(angle)} Camera: {degrees}");
+                //    localRotation = angle;
                 //}
-                //else
-                //{
-                    if (Input2.Button(FF8TextTagKey.Up))
-                    {
-                        playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees));
-                        playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees));
-                        localRotation = (float)Extended.Radians(-degrees - 90f);
-                        bHasMoved = true;
-                    }
-                    if (Input2.Button(FF8TextTagKey.Down))
-                    {
-                        playerPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees));
-                        playerPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees));
-                        localRotation = (float)Extended.Radians(-degrees + 90f);
-                        bHasMoved = true;
-                    }
-                    if (Input2.Button(FF8TextTagKey.Left))
-                    {
-                        playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees - 90f));
-                        playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees - 90f));
-                        localRotation = (float)Extended.Radians(-degrees);
-                        bHasMoved = true;
-                    }
-                    if (Input2.Button(FF8TextTagKey.Right))
-                    {
-                        playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees + 90f));
-                        playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees + 90f));
-                        localRotation = (float)Extended.Radians(180f - degrees);
-                        bHasMoved = true;
-                    }
-                if (shift != Vector2.Zero)
-                {
-                    //shift = shift.Rotate(degrees);
-                    //shift.Normalize();
-                    float angle = VectorToAngle(shift);
-                    Debug.WriteLine($"Shift: {shift} Angle: {MathHelper.ToDegrees(angle)} Camera: {degrees}");
-                    localRotation = (float)Extended.Radians(MathHelper.ToDegrees(angle)-degrees);
-
-                    }
-                }
+            }
         }
 
         /// <summary>
@@ -693,16 +683,17 @@ namespace OpenVIII
 
         /// This method checks for collision- uses raycasting and 3Dintersection to either allow
         /// movement, update it and/or warp player. If all checks fails it returns to last known
-        /// correct player position
-        /// This points to polygon structure that is actively used/ character stomps on it
-        /// </summary>
+        /// correct player position This points to polygon structure that is actively used/ character
+        /// stomps on it </summary>
         private static Polygon? activeCollidePolygon = null;
 
         public static int GetRealSegmentId() => (int)(segmentPosition.Y * 32 + segmentPosition.X); //explicit public for wmset and warping sections
-        public static int GetRealSegmentId(float x, float y) => (int)((y<0 ? 24+y:y) * 32 + (x<0 ? 32+x : x)); //explicit public for wmset and warping sections
 
-        /// <summary>
-        /// This method checks for collision- uses raycasting and 3Dintersection to either allow movement, update it and/or warp player. If all checks fails it returns to last known correct player position
+        public static int GetRealSegmentId(float x, float y) => (int)((y < 0 ? 24 + y : y) * 32 + (x < 0 ? 32 + x : x)); //explicit public for wmset and warping sections
+
+        /// <summary> This method checks for collision- uses raycasting and 3Dintersection to either
+        /// allow movement, update it and/or warp player. If all checks fails it returns to last
+        /// known correct player position
 
         /// </summary>
         private static void CollisionUpdate()
@@ -710,7 +701,7 @@ namespace OpenVIII
             segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1); //needs to be updated on pre-new values of movement
             int realSegmentId = GetRealSegmentId();
             realSegmentId = SetInterchangeableZone(realSegmentId);
-            var seg = segments[realSegmentId];
+            Segment seg = segments[realSegmentId];
             RaycastedTris = new List<Tuple<ParsedTriangleData, Vector3, bool>>();
             Ray characterRay = new Ray(playerPosition + new Vector3(0, 10f, 0), Vector3.Down); //sets ray origin
             Ray skyRay = new Ray(GetForwardSkyRaycastVector(SKYRAYCAST_FIXEDDISTANCE), Vector3.Down);
@@ -726,14 +717,13 @@ namespace OpenVIII
             if (!bDebugDisableCollision)
                 RaycastedTris = RaycastedTris.Where(x => (x.Item1.parentPolygon.vertFlags & TRIFLAGS_COLLIDE) != 0 && x.Item2 != Vector3.Zero).ToList();
 
-            
-
 #if DEBUG
             countofDebugFaces = new Vector2(
                 RaycastedTris.Where(x => !x.Item3).Count(),
                 RaycastedTris.Where(x => x.Item3).Count()
                 );
 #endif
+
             foreach (Tuple<ParsedTriangleData, Vector3, bool> prt in RaycastedTris)
             {
                 if (prt.Item3) //we do not want skyRaycasts here, iterate only characterRay
@@ -772,12 +762,12 @@ namespace OpenVIII
             playerPosition = lastPlayerPosition;
         }
 
-
         /// <summary>
         /// This is the relative distance that is added to forward vector of character and then
         /// casted from sky to bottom of the level
         /// </summary>
         private const float SKYRAYCAST_FIXEDDISTANCE = 5f;
+
         private const float RotationInterval = 1.5f;
 
         public static void OrbitCamera()
@@ -795,9 +785,9 @@ namespace OpenVIII
 
             shift += InputGamePad.Distance(GamePadButtons.ThumbSticks_Right, FPS_Camera.maxLookSpeedGamePad);
             if (Input2.Button(FF8TextTagKey.RotateLeft, ButtonTrigger.Press | ButtonTrigger.IgnoreDelay))
-                degrees-= RotationInterval;
+                degrees -= RotationInterval;
             if (Input2.Button(FF8TextTagKey.RotateRight, ButtonTrigger.Press | ButtonTrigger.IgnoreDelay))
-                degrees+= RotationInterval;
+                degrees += RotationInterval;
             degrees += shift.X;
             degrees %= 360f;
             if (degrees < 0)
@@ -835,17 +825,17 @@ namespace OpenVIII
 
             segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1);
 
-            //let's get segments ids for cube 
+            //let's get segments ids for cube
             /*
              * SEG0 SEG1 SEG2
              * SEG3 CURR SEG5
              * SEG6 SEG7 SEG8 */
 
-            DrawSegment(-1, -1); //SEG0 
+            DrawSegment(-1, -1); //SEG0
             DrawSegment(0, -1); //SEG1
             DrawSegment(1, -1); //SEG2
             DrawSegment(-1, 0); //SEG3
-            DrawSegment(0,0); //draws current walkable segment
+            DrawSegment(0, 0); //draws current walkable segment
             DrawSegment(+1, 0); //SEG5
             DrawSegment(-1, +1); //SEG6
             DrawSegment(0, +1); //SEG7
@@ -878,7 +868,7 @@ namespace OpenVIII
 
             TeleportPlayerWarp();
 
-            foreach(worldCharacterInstance charaInstance in worldCharacterInstances)
+            foreach (worldCharacterInstance charaInstance in worldCharacterInstances)
                 DrawCharacter(charaInstance);
 #if DEBUG
             DrawDebug();
@@ -902,15 +892,19 @@ namespace OpenVIII
             }
 
             Memory.SpriteBatchStartAlpha();
+            float playerangle = MathHelper.ToDegrees(worldCharacterInstances[currentControllableEntity].localRotation);
+            if (playerangle < 0) playerangle += 360f;
             Memory.font.RenderBasicText(
-                $"World map MapState: {MapState}\n" +
+                $"World map MapState: ={MapState}\n" +
                 $"World Map Camera: ={camPosition}\n" +
                 $"Player position: ={playerPosition}\n" +
+                $"Player rotation: ={playerangle}°\n" +
+                $"Player speed: ={DetectedSpeed} units per update\n" +
                 $"Segment Position: ={segmentPosition} ({GetSegmentVectorPlayerPosition()})\n" +
-                $"Press 8 to enable/disable collision: {bDebugDisableCollision}\n" +
+                $"Press 8 to enable/disable collision: ={bDebugDisableCollision}\n" +
                 $"selWalk: =0b{Convert.ToString(bSelectedWalkable, 2).PadLeft(8, '0')} of charaRay={countofDebugFaces.X}, skyRay={countofDebugFaces.Y}\n" +
-                $"selWalk2: {(activeCollidePolygon.HasValue ? activeCollidePolygon.Value.ToString() : "N/A")}\n" +
-                $"debugshit= {DEBUGshit}\n" +
+                $"selWalk2: ={(activeCollidePolygon.HasValue ? activeCollidePolygon.Value.ToString() : "N/A")}\n" +
+                $"debugshit: ={DEBUGshit}\n" +
                 $"Press 9 to enable debug FPS camera: ={(worldState == _worldState._1active ? "orbit camera" : "FPS debug camera")}\n" +
                 $"FPS camera degrees: ={degrees}°\n" +
                 $"FOV: ={FOV}", 30, 20, 1f, 2f, lineSpacing: 5);
@@ -920,19 +914,18 @@ namespace OpenVIII
         private static float GetSegmentVectorPlayerPosition() => segmentPosition.Y * 32 + segmentPosition.X;
 
         /// <summary>
-        /// Takes care of drawing shadows and additional FX when needed (like in forest).
-        /// [WIP]
+        /// Takes care of drawing shadows and additional FX when needed (like in forest). [WIP]
         /// </summary>
         private static void DrawCharacterShadow()
         {
             if (activeCollidePolygon == null)
                 return;
-            if((activeCollidePolygon.Value.vertFlags & TRIFLAGS_FORESTTEST) > 0)
+            if ((activeCollidePolygon.Value.vertFlags & TRIFLAGS_FORESTTEST) > 0)
             {
-                var shadowGeom = Extended.GetShadowPlane(playerPosition + new Vector3(-2.2f, .1f, -2.2f), 4f);
+                VertexPositionTexture[] shadowGeom = Extended.GetShadowPlane(playerPosition + new Vector3(-2.2f, .1f, -2.2f), 4f);
                 ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.shadowBig, 0);
                 ate.Alpha = .25f;
-                foreach(var pass in ate.CurrentTechnique.Passes)
+                foreach (EffectPass pass in ate.CurrentTechnique.Passes)
                 {
                     pass.Apply();
                     ate.GraphicsDevice.DepthStencilState = DepthStencilState.None;
@@ -943,11 +936,11 @@ namespace OpenVIII
             }
             else if ((activeCollidePolygon.Value.vertFlags & TRIFLAGS_FORESTTEST) == 0)
             {
-                if(bHasMoved)
+                if (bHasMoved)
                 {
-                    var shadowGeom = Extended.GetShadowPlane(playerPosition + new Vector3(-2.2f, .1f, -2.2f), 4f);
+                    VertexPositionTexture[] shadowGeom = Extended.GetShadowPlane(playerPosition + new Vector3(-2.2f, .1f, -2.2f), 4f);
                     ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.wmfx_bush, 0);
-                    foreach (var pass in ate.CurrentTechnique.Passes)
+                    foreach (EffectPass pass in ate.CurrentTechnique.Passes)
                     {
                         pass.Apply();
                         ate.GraphicsDevice.DepthStencilState = DepthStencilState.None;
@@ -983,13 +976,13 @@ namespace OpenVIII
 
         private static void DrawDebug()
         {
-            if(Memory.currentGraphicMode != Memory.GraphicModes.DirectX) //looks like strict DX shaders can't simply accept SV_POSITION, COLOR0 or something?
+            if (Memory.currentGraphicMode != Memory.GraphicModes.DirectX) //looks like strict DX shaders can't simply accept SV_POSITION, COLOR0 or something?
                 DrawDebug_Rays(); //uncomment to enable drawing rays for collision
 
             //DrawDebug_VehiclePreview(); //uncomment to enable drawing all vehicles in row
 
             //if(Memory.currentGraphicMode != Memory.graphicModes.DirectX)
-                //Debug_DrawRailPaths(); //uncomment to enable draw lines showing rail keypoints
+            //Debug_DrawRailPaths(); //uncomment to enable draw lines showing rail keypoints
         }
 
         private static void Debug_DrawRailPaths()
@@ -1122,15 +1115,15 @@ namespace OpenVIII
             }
 
             Dictionary<Texture2D, List<VertexPositionColorTexture>> vptCollection = new Dictionary<Texture2D, List<VertexPositionColorTexture>>();
-            for(int i = 0; i<charaCollection.Item2.Length; i+=3)
+            for (int i = 0; i < charaCollection.Item2.Length; i += 3)
             {
-                var charaTexture = chara.GetCharaTexture(textureIndexBase + charaCollection.Item2[i]);
+                Texture2D charaTexture = chara.GetCharaTexture(textureIndexBase + charaCollection.Item2[i]);
                 if (!vptCollection.ContainsKey(charaTexture))
                     vptCollection.Add(charaTexture, new List<VertexPositionColorTexture>());
                 vptCollection[charaTexture].AddRange(charaCollection.Item1.Skip(i).Take(3).ToArray());
             }
 
-            foreach(KeyValuePair<Texture2D, List<VertexPositionColorTexture>> kvp in vptCollection)
+            foreach (KeyValuePair<Texture2D, List<VertexPositionColorTexture>> kvp in vptCollection)
             {
                 ate.Texture = kvp.Key;
                 if (bUseCustomShaderTest)
@@ -1141,7 +1134,7 @@ namespace OpenVIII
                 foreach (EffectPass pass in bUseCustomShaderTest ? worldShaderModel.CurrentTechnique.Passes : ate.CurrentTechnique.Passes)
                 {
                     pass.Apply();
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, kvp.Value.ToArray(), 0, kvp.Value.Count/3);
+                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, kvp.Value.ToArray(), 0, kvp.Value.Count / 3);
                 }
             }
         }
@@ -1242,17 +1235,17 @@ namespace OpenVIII
             Vector3 translationVector = Vector3.Zero;
             Vector2 playerSegmentVector = segmentPosition;
 
-            if(playerSegmentVector.X+xTranslation < 0)
+            if (playerSegmentVector.X + xTranslation < 0)
                 translationVector = new Vector3(32 * 512, 0, 0); //LEFT
             if (playerSegmentVector.Y + yTranslation < 0)
-                translationVector = new Vector3(0,0,24 * 512); //UP
+                translationVector = new Vector3(0, 0, 24 * 512); //UP
 
             if (playerSegmentVector.X + xTranslation > 31)
                 translationVector = new Vector3(32 * -512, 0, 0); //RIGHT
             if (playerSegmentVector.Y + yTranslation > 23)
                 translationVector = new Vector3(0, 0, 24 * -512); //BOTTOM
 
-            if(playerSegmentVector.X +xTranslation<0 && playerSegmentVector.Y+yTranslation < 0 && xTranslation<0 && yTranslation <0) //UL diagonal wrap
+            if (playerSegmentVector.X + xTranslation < 0 && playerSegmentVector.Y + yTranslation < 0 && xTranslation < 0 && yTranslation < 0) //UL diagonal wrap
                 translationVector = new Vector3(32 * 512, 0, 24 * 512);
             if (playerSegmentVector.X + xTranslation > 31 && playerSegmentVector.Y + yTranslation < 0 && xTranslation > 0 && yTranslation < 0) //UR diagonal wrap
                 translationVector = new Vector3(32 * -512, 0, 24 * 512);
@@ -1262,7 +1255,6 @@ namespace OpenVIII
                 translationVector = new Vector3(32 * 512, 0, 24 * -512);
 
             Dictionary<Texture2D, Tuple<List<VertexPositionTexture>, bool>> groupedPolygons = new Dictionary<Texture2D, Tuple<List<VertexPositionTexture>, bool>>();
-
 
             for (int k = 0; k < seg.parsedTriangle.Length; k++)
             {
@@ -1300,8 +1292,8 @@ namespace OpenVIII
                 if (groupedPolygons.ContainsKey(ate.Texture))
                     groupedPolygons[ate.Texture].Item1.AddRange(vpc);
                 else
-                    groupedPolygons.Add(ate.Texture, new Tuple<List<VertexPositionTexture>, bool>(new List<VertexPositionTexture>() {vpc[0], vpc[1],vpc[2]}, bIsWaterBlock));
-                
+                    groupedPolygons.Add(ate.Texture, new Tuple<List<VertexPositionTexture>, bool>(new List<VertexPositionTexture>() { vpc[0], vpc[1], vpc[2] }, bIsWaterBlock));
+
                 //if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_WATER) && Extended.In(poly.groundtype, 32, 34))
                 //{
                 //    Memory.graphics.GraphicsDevice.BlendState = BlendState.Additive;
@@ -1315,27 +1307,27 @@ namespace OpenVIII
                 //}
             }
 
-            foreach(KeyValuePair<Texture2D, Tuple<List<VertexPositionTexture>, bool>> kvp in groupedPolygons)
+            foreach (KeyValuePair<Texture2D, Tuple<List<VertexPositionTexture>, bool>> kvp in groupedPolygons)
             {
                 ate.Texture = kvp.Key;
-                var vptFinal = kvp.Value.Item1.ToArray();
-                if(bUseCustomShaderTest)
+                VertexPositionTexture[] vptFinal = kvp.Value.Item1.ToArray();
+                if (bUseCustomShaderTest)
                     worldShaderModel.Parameters["ModelTexture"].SetValue(ate.Texture);
 
                 if (kvp.Value.Item2 && bUseCustomShaderTest)
                     worldShaderModel.CurrentTechnique = worldShaderModel.Techniques["Texture_fog_bend_waterAnim"];
                 else if (bUseCustomShaderTest)
                     worldShaderModel.CurrentTechnique = worldShaderModel.Techniques["Texture_fog_bend"];
-                    
+
                 foreach (EffectPass pass in bUseCustomShaderTest ? worldShaderModel.CurrentTechnique.Passes : ate.CurrentTechnique.Passes)
                 {
                     pass.Apply();
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vptFinal, 0, vptFinal.Length/3);
+                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vptFinal, 0, vptFinal.Length / 3);
                 }
-            }            
+            }
         }
 
-        enum interZone : int
+        private enum interZone : int
         {
             prisonNormal = 834,
             prisonGround = 361,
@@ -1368,15 +1360,18 @@ namespace OpenVIII
         };
 
         /// <summary>
-        /// This method changes zone i index to show segment that has to be drawn based on actual worldmap save state
+        /// This method changes zone i index to show segment that has to be drawn based on actual
+        /// worldmap save state
         /// </summary>
         /// <param name="_i">index of current wmx segment</param>
-        /// <param name="bfixCollision">use only with collision- due to inverted Balamb there's collision issue</param>
+        /// <param name="bfixCollision">
+        /// use only with collision- due to inverted Balamb there's collision issue
+        /// </param>
         /// <returns></returns>
         private static int SetInterchangeableZone(int _i)
         {
             //if(true) means unreversed world flags
-            switch((interZone)_i)
+            switch ((interZone)_i)
             {
                 case interZone.prisonGround:
                     if (true)
@@ -1388,7 +1383,8 @@ namespace OpenVIII
 
                 case interZone.balambGardenE_mobile:
                     if (true)
-                        return (int)interZone.balambGardenE_static -1;
+                        return (int)interZone.balambGardenE_static - 1;
+
                 case interZone.balambGardenW_mobile:
                     if (true)
                         return (int)interZone.balambGardenW_static + 1;
@@ -1400,6 +1396,7 @@ namespace OpenVIII
                 case interZone.trabiaGardenE_state1:
                     if (true)
                         return (int)interZone.trabiaGardenE_state0;
+
                 case interZone.trabiaGardenW_state1:
                     if (true)
                         return (int)interZone.trabiaGardenW_state0;
@@ -1407,6 +1404,7 @@ namespace OpenVIII
                 case interZone.lunarCryCraterE_state1:
                     if (true)
                         return (int)interZone.lunarCryCraterE_state0;
+
                 case interZone.lunarCryCraterW_state1:
                     if (true)
                         return (int)interZone.lunarCryCraterW_state0;
@@ -1414,6 +1412,7 @@ namespace OpenVIII
                 case interZone.lunarCryCraterN_state1:
                     if (true)
                         return (int)interZone.lunarCryCreaterN_state0;
+
                 case interZone.lunarCryCraterS_state1:
                     if (true)
                         return (int)interZone.lunarCryCraterS_state0;
@@ -1456,24 +1455,24 @@ namespace OpenVIII
                 GP=33 - transition between thin water to ocean
                 GP=34 - ocean
                 */
-            var waterAtlas = wmset.GetWorldMapWaterTexture();
+            Texture2D waterAtlas = wmset.GetWorldMapWaterTexture();
             if (poly.groundtype == 10 || poly.groundtype == 32 || (poly.groundtype == 31 && poly.Clut == 3)) //BEACH + flat water + river flowing down
             {
-                var @as = seg.parsedTriangle[k].parentPolygon;
+                Polygon @as = seg.parsedTriangle[k].parentPolygon;
                 int animationIdPointer = 1; //beach corner
                 if (@as.Clut == 2)
                     animationIdPointer = 0; //beach atlas
                 if (@as.Clut == 3 && poly.groundtype == 31)
                     animationIdPointer = 2; //river anim
 
-                var texx = wmset.GetBeachAnimationTextureFrame(animationIdPointer, wmset.BeachAnimations[animationIdPointer].currentAnimationIndex);
+                Texture2D texx = wmset.GetBeachAnimationTextureFrame(animationIdPointer, wmset.BeachAnimations[animationIdPointer].currentAnimationIndex);
                 float Ucoorder = @as.Clut == 2 ? 128f : 192;
                 float Vcoorder = @as.Clut == 3 && poly.groundtype == 31 ? 32f : 0f;
                 if (poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2) || (poly.groundtype == 31 && poly.Clut == 3))
                 {
-                    vpc[0].TextureCoordinate = new Vector2((@as.U1 - Ucoorder) / texx.Width, (@as.V1 - Vcoorder) / (float)texx.Height);
-                    vpc[1].TextureCoordinate = new Vector2((@as.U2 - Ucoorder) / texx.Width, (@as.V2 - Vcoorder) / (float)texx.Height);
-                    vpc[2].TextureCoordinate = new Vector2((@as.U3 - Ucoorder) / texx.Width, (@as.V3 - Vcoorder) / (float)texx.Height);
+                    vpc[0].TextureCoordinate = new Vector2((@as.U1 - Ucoorder) / texx.Width, (@as.V1 - Vcoorder) / texx.Height);
+                    vpc[1].TextureCoordinate = new Vector2((@as.U2 - Ucoorder) / texx.Width, (@as.V2 - Vcoorder) / texx.Height);
+                    vpc[2].TextureCoordinate = new Vector2((@as.U3 - Ucoorder) / texx.Width, (@as.V3 - Vcoorder) / texx.Height);
                 }
 
                 if (poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2) || (poly.groundtype == 31 && poly.Clut == 3))
@@ -1488,7 +1487,7 @@ namespace OpenVIII
             }
             else if (Extended.In(poly.groundtype, 31, 34))
             {
-                var @as = seg.parsedTriangle[k].parentPolygon;
+                Polygon @as = seg.parsedTriangle[k].parentPolygon;
                 vpc[0].TextureCoordinate = new Vector2(@as.U1 / (float)waterAtlas.Width, @as.V1 / (float)waterAtlas.Height);
                 vpc[1].TextureCoordinate = new Vector2(@as.U2 / (float)waterAtlas.Width, @as.V2 / (float)waterAtlas.Height);
                 vpc[2].TextureCoordinate = new Vector2(@as.U3 / (float)waterAtlas.Width, @as.V3 / (float)waterAtlas.Height);
