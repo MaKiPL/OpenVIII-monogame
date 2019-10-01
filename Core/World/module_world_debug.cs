@@ -5,6 +5,7 @@ using OpenVIII.Core.World;
 using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -579,7 +580,7 @@ namespace OpenVIII
         /// <param name="vector"></param>
         /// <returns></returns>
         /// <see cref="https://stackoverflow.com/questions/2276855/xna-2d-vector-angles-whats-the-correct-way-to-calculate"/>
-        public static float VectorToAngle(Vector2 vector) => (float)Math.Atan2(-vector.Y, -vector.X);
+        public static float VectorToAngle(Vector2 vector) => (float)Math.Atan2(vector.Y, -vector.X);
 
         public static float DetectedSpeed;
 
@@ -619,40 +620,58 @@ namespace OpenVIII
 
             if (worldState != _worldState._9debugFly)
             {
-                Vector2 shift = InputGamePad.Distance(GamePadButtons.ThumbSticks_Left, 10f);
-                // the shift vector in the ifs seemed to give undesired results.
-                if (Input2.Button(FF8TextTagKey.Up)/* || shift.Y > 0*/)
+                Vector2 shift = InputGamePad.Distance(GamePadButtons.ThumbSticks_Left, 1f);
+                if (shift != Vector2.Zero)
                 {
-                    playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees));
-                    playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees));
-                    //localRotation = (float)Extended.Radians(-degrees - 90f);
+                    float angle = VectorToAngle(shift);
+                    Debug.WriteLine($"Shift: {shift} Angle: {MathHelper.ToDegrees(angle)} Camera: {degrees}");
+                    playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(MathHelper.ToDegrees(angle) + degrees - 90));
+                    playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(MathHelper.ToDegrees(angle) + degrees - 90));
                     bHasMoved = true;
                 }
-                else if (Input2.Button(FF8TextTagKey.Down)/* || shift.Y < 0*/)
+                else
                 {
-                    playerPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees));
-                    playerPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees));
-                    //localRotation = (float)Extended.Radians(-degrees + 90f);
-                    bHasMoved = true;
-                }
-                if (Input2.Button(FF8TextTagKey.Left)/* || shift.X < 0*/)
-                {
-                    playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees - 90f));
-                    playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees - 90f));
-                    //localRotation = (float)Extended.Radians(-degrees);
-                    bHasMoved = true;
-                }
-                else if (Input2.Button(FF8TextTagKey.Right)/* || shift.X > 0*/)
-                {
-                    playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees + 90f));
-                    playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees + 90f));
-                    //localRotation = (float)Extended.Radians(180f - degrees);
-                    bHasMoved = true;
+                    // the shift vector in the ifs seemed to give undesired results.
+                    if (Input2.Button(FF8TextTagKey.Up)/* || shift.Y > 0*/)
+                    {
+                        playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees));
+                        playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees));
+                        //localRotation = (float)Extended.Radians(-degrees - 90f);
+                        bHasMoved = true;
+                    }
+                    else if (Input2.Button(FF8TextTagKey.Down)/* || shift.Y < 0*/)
+                    {
+                        playerPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees));
+                        playerPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees));
+                        //localRotation = (float)Extended.Radians(-degrees + 90f);
+                        bHasMoved = true;
+                    }
+                    if (Input2.Button(FF8TextTagKey.Left) /*|| shift.X < 0*/)
+                    {
+                        playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees - 90f));
+                        playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees - 90f));
+                        //localRotation = (float)Extended.Radians(-degrees);
+                        bHasMoved = true;
+                    }
+                    else if (Input2.Button(FF8TextTagKey.Right)/* || shift.X > 0*/)
+                    {
+                        playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees + 90f));
+                        playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees + 90f));
+                        //localRotation = (float)Extended.Radians(180f - degrees);
+                        bHasMoved = true;
+                    }
                 }
                 if (bHasMoved)
                 {
                     Vector3 vector3 = playerPosition - oldpos; // gets the vector between the old and new calculated pos.
                     vector3.Normalize(); //prevents speed up from going in more than one direction.
+                    if (shift != Vector2.Zero)
+                    {
+                        const float distmax = 10f;
+                        float dist = MathHelper.Clamp(Vector2.Distance(Vector2.Zero, shift), 0f, distmax);
+                        //Debug.WriteLine($"Dist: {dist}, DistMax: {distmax}");
+                        vector3 *= dist / distmax;
+                    }
                     playerPosition = oldpos + vector3;
                     DetectedSpeed = Vector3.Distance(playerPosition, oldpos);
 
@@ -660,16 +679,7 @@ namespace OpenVIII
                 }
                 else
                     DetectedSpeed = 0f;
-                //TODO get a better LeftStick to direction of movement
-                //TODO make speed adjust based on how hard stick is pressed.
-                //if (shift != Vector2.Zero)
-                //{
-                //    //this works but didn't match the direction of movement calcuated above.
-                //    shift = shift.Rotate(-degrees);
-                //    float angle = VectorToAngle(shift);
-                //    //Debug.WriteLine($"Shift: {shift} Angle: {MathHelper.ToDegrees(angle)} Camera: {degrees}");
-                //    localRotation = angle;
-                //}
+
             }
         }
 
