@@ -5,6 +5,7 @@ using OpenVIII.Core.World;
 using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -577,7 +578,16 @@ namespace OpenVIII
 
             //TODO random + enc.half/none junction + warping to battle
         }
-
+        /// <summary>
+        /// Convert vector to angle
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        /// <see cref="https://stackoverflow.com/questions/2276855/xna-2d-vector-angles-whats-the-correct-way-to-calculate"/>
+        public static float VectorToAngle(Vector2 vector)
+        {
+            return (float)Math.Atan2(-vector.Y, -vector.X);
+        }
         /// <summary>
         /// Provides 4-axis support for input of currently controlled entity
         /// TODO: extend to 360/ fix diagonal double speed/ calculate local degrees based on sticks
@@ -613,35 +623,64 @@ namespace OpenVIII
 
             if (worldState != _worldState._9debugFly)
             {
-                if (Input2.Button(FF8TextTagKey.Up))
+                Vector2 shift = InputGamePad.Distance(GamePadButtons.ThumbSticks_Left, 100f);
+
+                //if (shift != Vector2.Zero)
+                //{
+                //    shift.Normalize();
+                //    localRotation = (VectorToAngle(shift) + degrees) % 360f;
+                    //shift = Vector2.Transform(shift,viewMatrix);
+                    //angle = VectorToAngle(shift);
+                    //Vector3 Direction = new Vector3((float)Math.Cos(MathHelper.ToRadians(angle)),0f,(float)Math.Sin(MathHelper.ToRadians(angle)));
+                    //Direction.Normalize();
+
+                    //playerPosition += Direction*10f;
+                    //localRotation = (VectorToAngle(shift) + degrees) % 360f;
+                    //shift = Vector2.Transform(shift, Matrix.CreateRotationY(MathHelper.ToRadians(degrees)));
+                    //playerPosition.X -= shift.Y;
+                    //playerPosition.Z += shift.X;
+                    //bHasMoved = true;
+                //}
+                //else
+                //{
+                    if (Input2.Button(FF8TextTagKey.Up))
+                    {
+                        playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees));
+                        playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees));
+                        localRotation = (float)Extended.Radians(-degrees - 90f);
+                        bHasMoved = true;
+                    }
+                    if (Input2.Button(FF8TextTagKey.Down))
+                    {
+                        playerPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees));
+                        playerPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees));
+                        localRotation = (float)Extended.Radians(-degrees + 90f);
+                        bHasMoved = true;
+                    }
+                    if (Input2.Button(FF8TextTagKey.Left))
+                    {
+                        playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees - 90f));
+                        playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees - 90f));
+                        localRotation = (float)Extended.Radians(-degrees);
+                        bHasMoved = true;
+                    }
+                    if (Input2.Button(FF8TextTagKey.Right))
+                    {
+                        playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees + 90f));
+                        playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees + 90f));
+                        localRotation = (float)Extended.Radians(180f - degrees);
+                        bHasMoved = true;
+                    }
+                if (shift != Vector2.Zero)
                 {
-                    playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees));
-                    playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees));
-                    localRotation = (float)Extended.Radians(-degrees - 90f);
-                    bHasMoved = true;
+                    //shift = shift.Rotate(degrees);
+                    //shift.Normalize();
+                    float angle = VectorToAngle(shift);
+                    Debug.WriteLine($"Shift: {shift} Angle: {MathHelper.ToDegrees(angle)} Camera: {degrees}");
+                    localRotation = (float)Extended.Radians(MathHelper.ToDegrees(angle)-degrees);
+
+                    }
                 }
-                if (Input2.Button(FF8TextTagKey.Down))
-                {
-                    playerPosition.X -= (float)Math.Cos(MathHelper.ToRadians(degrees));
-                    playerPosition.Z -= (float)Math.Sin(MathHelper.ToRadians(degrees));
-                    localRotation = (float)Extended.Radians(-degrees + 90f);
-                    bHasMoved = true;
-                }
-                if (Input2.Button(FF8TextTagKey.Left))
-                {
-                    playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees-90f));
-                    playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees-90f));
-                    localRotation = (float)Extended.Radians(-degrees);
-                    bHasMoved = true;
-                }
-                if (Input2.Button(FF8TextTagKey.Right))
-                {
-                    playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(degrees + 90f));
-                    playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(degrees + 90f));
-                    localRotation = (float)Extended.Radians(180f - degrees);
-                    bHasMoved = true;
-                }
-            }
         }
 
         /// <summary>
@@ -733,33 +772,38 @@ namespace OpenVIII
             playerPosition = lastPlayerPosition;
         }
 
-        private const float defaultmaxMoveSpeed = 1f;
-        private const float MoveSpeedChange = 1f;
-        private static float maxMoveSpeed = defaultmaxMoveSpeed;
-        private const float maxLookSpeed = 0.25f;
 
         /// <summary>
         /// This is the relative distance that is added to forward vector of character and then
         /// casted from sky to bottom of the level
         /// </summary>
         private const float SKYRAYCAST_FIXEDDISTANCE = 5f;
+        private const float RotationInterval = 1.5f;
 
         public static void OrbitCamera()
         {
+            InputMouse.Mode = MouseLockMode.Center;
             camDistance = 100f;
             camPosition = new Vector3(
                 (float)(playerPosition.X + camDistance * Extended.Cos(degrees - 180f)),
                 playerPosition.Y + 50f,
                 (float)(playerPosition.Z + camDistance * Extended.Sin(degrees - 180f))
                 );
-            if (Input2.Button(FF8TextTagKey.RotateLeft))
-                degrees--;
-            if (Input2.Button(FF8TextTagKey.RotateRight))
-                degrees++;
+            // check mouse to adjust camera
+            Vector2 shift = InputMouse.Distance(MouseButtons.MouseToStick, FPS_Camera.maxLookSpeedMouse);
+            // check right stick to adjust camera
+
+            shift += InputGamePad.Distance(GamePadButtons.ThumbSticks_Right, FPS_Camera.maxLookSpeedGamePad);
+            if (Input2.Button(FF8TextTagKey.RotateLeft, ButtonTrigger.Press | ButtonTrigger.IgnoreDelay))
+                degrees-= RotationInterval;
+            if (Input2.Button(FF8TextTagKey.RotateRight, ButtonTrigger.Press | ButtonTrigger.IgnoreDelay))
+                degrees+= RotationInterval;
+            degrees += shift.X;
+            degrees %= 360f;
             if (degrees < 0)
-                degrees = 359;
-            if (degrees > 359)
-                degrees = 0;
+            {
+                degrees += 360f;
+            }
             camTarget = playerPosition;
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          Vector3.Up);
