@@ -26,13 +26,13 @@ namespace OpenVIII
 
             public override bool Inputs_OKAY()
             {
-                if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && !BLANKS[CURSOR_SELECT])
+                if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && !BLANKS[CURSOR_SELECT] && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     skipsnd = true;
                     init_debugger_Audio.PlaySound(31);
                     base.Inputs_OKAY();
                     int target = IGM_Junction.Data[SectionName.TopMenu_Abilities].CURSOR_SELECT - 1;
-                    Memory.State.Characters[Character].Commands[target] = Contents[CURSOR_SELECT];
+                    c.Commands[target] = Contents[CURSOR_SELECT];
                     IGM_Junction.SetMode(Mode.Abilities);
                     IGM_Junction.Data[SectionName.TopMenu_Abilities].Refresh();
                     IGM_Junction.Data[SectionName.Commands].Refresh();
@@ -51,17 +51,18 @@ namespace OpenVIII
                 }
                 int pos = 0;
                 int skip = Page * Rows;
+                if(Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 for (int i = 0;
                     Memory.State.Characters != null &&
-                    i < Memory.State.Characters[Character].UnlockedGFAbilities.Count &&
+                    i < c.UnlockedGFAbilities.Count &&
                     pos < Rows; i++)
                 {
-                    if (Memory.State.Characters[Character].UnlockedGFAbilities[i] != Kernel_bin.Abilities.None)
+                    if (c.UnlockedGFAbilities[i] != Kernel_bin.Abilities.None)
                     {
-                        Kernel_bin.Abilities j = (Memory.State.Characters[Character].UnlockedGFAbilities[i]);
+                        Kernel_bin.Abilities j = (c.UnlockedGFAbilities[i]);
                         if (Source.ContainsKey(j) && skip-- <= 0)
                         {
-                            Font.ColorID cid = Memory.State.Characters[Character].Commands.Contains(j) ? Font.ColorID.Grey : Font.ColorID.White;
+                            Font.ColorID cid = c.Commands.Contains(j) ? Font.ColorID.Grey : Font.ColorID.White;
                             BLANKS[pos] = cid == Font.ColorID.Grey ? true : false;
                             ITEM[pos, 0] = new IGMDataItem_String(
                                 Icons.ID.Ability_Command, 9,

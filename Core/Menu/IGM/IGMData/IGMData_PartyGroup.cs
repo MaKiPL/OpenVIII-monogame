@@ -13,7 +13,7 @@ namespace OpenVIII
             #region Fields
 
             private Items Choice;
-            private Tuple<Characters, Characters>[] Contents;
+            private Damageable[] Contents;
             private bool eventSet = false;
 
             #endregion Fields
@@ -53,7 +53,7 @@ namespace OpenVIII
                 {
                     case Items.Junction:
                         Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.IGM_Junction;
-                        IGM_Junction.Refresh(Contents[CURSOR_SELECT].Item1, Contents[CURSOR_SELECT].Item2,true);
+                        IGM_Junction.Refresh(Contents[CURSOR_SELECT],true);
                         return true;
                 }
                 return ret;
@@ -79,13 +79,13 @@ namespace OpenVIII
                     SIZE = new Rectangle[total_Count];
                     CURSOR = new Point[total_Count];
                     BLANKS = new bool[total_Count];
-                    Contents = new Tuple<Characters, Characters>[total_Count];
+                    Contents = new Damageable[total_Count];
                     int i = 0;
                     test(Party, ref i, Party.Contents);
                     test(Non_Party, ref i, Non_Party.Contents);
                 }
 
-                void test(IGMData t, ref int i, Tuple<Characters, Characters>[] contents)
+                void test(IGMData t, ref int i, Damageable[] contents)
                 {
                     int pos = 0;
                     for (; pos < t.Count && i < total_Count; i++)

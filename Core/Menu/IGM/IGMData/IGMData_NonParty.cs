@@ -26,7 +26,7 @@ namespace OpenVIII
 
             #region Properties
 
-            public Tuple<Characters, Characters>[] Contents { get; private set; }
+            public Damageable[] Contents { get; private set; }
 
             #endregion Properties
 
@@ -51,7 +51,7 @@ namespace OpenVIII
                             if (!Memory.State.Party.Contains((Characters)i) && Memory.State.Characters[(Characters)i].Available)
                             {
                                 BLANKS[pos] = false;
-                                Refresh(pos++, (Characters)i);
+                                Refresh(pos++, Memory.State[(Characters)i]);
                             }
                         }
                     }
@@ -72,7 +72,7 @@ namespace OpenVIII
                 _red_pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
                 Color[] color = new Color[] { new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, 100) };
                 _red_pixel.SetData(color, 0, _red_pixel.Width * _red_pixel.Height);
-                Contents = new Tuple<Characters, Characters>[Count];
+                Contents = new Damageable[Count];
                 base.Init();
             }
 
@@ -84,44 +84,45 @@ namespace OpenVIII
                 if (row >= 2) SIZE[i].Y -= 4;
             }
 
-            private void Refresh(sbyte pos, Characters character)
+            private void Refresh(sbyte pos, Damageable damageable)
             {
-                Contents[pos] = new Tuple<Characters, Characters>(character, character);
-                float yoff = 39;
-                Rectangle rbak = SIZE[pos];
-                Rectangle r = rbak;
-                Color color = new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, .9f);
-                ITEM[pos, 0] = new IGMDataItem_String(Memory.Strings.GetName(character), rbak);
-                CURSOR[pos] = new Point(rbak.X, (int)(rbak.Y + (6 * TextScale.Y)));
+                    Contents[pos] = damageable;
+                    float yoff = 39;
+                    Rectangle rbak = SIZE[pos];
+                    Rectangle r = rbak;
+                    Color color = new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, .9f);
+                    ITEM[pos, 0] = new IGMDataItem_String(damageable.Name, rbak);
+                    CURSOR[pos] = new Point(rbak.X, (int)(rbak.Y + (6 * TextScale.Y)));
 
-                r.Offset(7, yoff);
-                ITEM[pos, 1] = new IGMDataItem_Icon(Icons.ID.Lv, r, 13);
+                    r.Offset(7, yoff);
+                    ITEM[pos, 1] = new IGMDataItem_Icon(Icons.ID.Lv, r, 13);
 
-                r = rbak;
-                r.Offset((49), yoff);
-                ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[character].Level, r, 2, 0, 1, 3);
+                    r = rbak;
+                    r.Offset((49), yoff);
+                    ITEM[pos, 2] = new IGMDataItem_Int(damageable.Level, r, 2, 0, 1, 3);
 
-                r = rbak;
-                r.Offset(126, yoff);
-                ITEM[pos, 3] = new IGMDataItem_Icon(Icons.ID.HP2, r, 13);
+                    r = rbak;
+                    r.Offset(126, yoff);
+                    ITEM[pos, 3] = new IGMDataItem_Icon(Icons.ID.HP2, r, 13);
 
-                r.Offset(0, 28);
-                r.Width = 118;
-                r.Height = 1;
-                ITEM[pos, 4] = new IGMDataItem_Texture(_red_pixel, r) { Color = Color.Black };
-                r.Width = (int)(r.Width * Memory.State.Characters[character].PercentFullHP());
-                ITEM[pos, 5] = new IGMDataItem_Texture(_red_pixel, r) { Color = color };
+                    r.Offset(0, 28);
+                    r.Width = 118;
+                    r.Height = 1;
+                    ITEM[pos, 4] = new IGMDataItem_Texture(_red_pixel, r) { Color = Color.Black };
+                    r.Width = (int)(r.Width * damageable.PercentFullHP());
+                    ITEM[pos, 5] = new IGMDataItem_Texture(_red_pixel, r) { Color = color };
 
-                r.Width = 118;
-                r.Offset(0, 2);
-                ITEM[pos, 6] = new IGMDataItem_Texture(_red_pixel, r) { Color = Color.Black };
-                r.Width = (int)(r.Width * Memory.State.Characters[character].PercentFullHP());
-                ITEM[pos, 7] = new IGMDataItem_Texture(_red_pixel, r) { Color = color };
-                //TODO red bar resizes based on current/max hp
+                    r.Width = 118;
+                    r.Offset(0, 2);
+                    ITEM[pos, 6] = new IGMDataItem_Texture(_red_pixel, r) { Color = Color.Black };
+                    r.Width = (int)(r.Width * damageable.PercentFullHP());
+                    ITEM[pos, 7] = new IGMDataItem_Texture(_red_pixel, r) { Color = color };
+                    //TODO red bar resizes based on current/max hp
 
-                r = rbak;
-                r.Offset((166), yoff);
-                ITEM[pos, 8] = new IGMDataItem_Int(Memory.State.Characters[character].CurrentHP(), r, 2, 0, 1, 4);
+                    r = rbak;
+                    r.Offset((166), yoff);
+                    ITEM[pos, 8] = new IGMDataItem_Int(damageable.CurrentHP(), r, 2, 0, 1, 4);
+                
             }
 
             #endregion Methods

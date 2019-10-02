@@ -5,6 +5,9 @@ using System.Linq;
 
 namespace OpenVIII
 {
+    /// <summary>
+    /// Character/Enemy/GF that can be damaged or die.
+    /// </summary>
     public abstract class Damageable : IDamageable
     {
         #region Fields
@@ -13,6 +16,8 @@ namespace OpenVIII
         private Kernel_bin.Persistant_Statuses _statuses0;
         private Kernel_bin.Battle_Only_Statuses _statuses1;
         private Dictionary<Kernel_bin.Attack_Type, Func<Kernel_bin.Persistant_Statuses, Kernel_bin.Battle_Only_Statuses, Kernel_bin.Attack_Flags, int>> _statusesActions;
+
+        public abstract Damageable Clone();
 
         protected ushort _CurrentHP;
 
@@ -414,7 +419,16 @@ namespace OpenVIII
         #endregion Properties
 
         #region Methods
-
+        public bool GetCharacterData(out Saves.CharacterData characterData)
+        {
+            if (GetType() == typeof(Saves.CharacterData))
+            {
+                characterData = (Saves.CharacterData)this;
+                return true;
+            }
+            characterData = null;
+            return false;
+        }
         /// <summary>
         /// Starting value
         /// </summary>

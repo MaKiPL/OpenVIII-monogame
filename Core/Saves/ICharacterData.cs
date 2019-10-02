@@ -26,7 +26,6 @@ namespace OpenVIII
         List<Kernel_bin.Abilities> UnlockedGFAbilities { get; }
 
         void BattleStart(Module_battle_debug.CharacterInstanceInformation cii);
-        Saves.CharacterData Clone();
         int CriticalHP(Characters value);
         ushort CurrentHP(Characters c);
         sbyte GenerateCrisisLevel();

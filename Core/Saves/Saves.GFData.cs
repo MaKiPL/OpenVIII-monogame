@@ -184,7 +184,7 @@ namespace OpenVIII
             /// <summary>
             /// Create a copy of this gfdata object
             /// </summary>
-            public GFData Clone()
+            public override Damageable Clone()
             {
                 //Shadowcopy
                 GFData c = (GFData)MemberwiseClone();

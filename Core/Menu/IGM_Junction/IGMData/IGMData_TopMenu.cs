@@ -27,7 +27,7 @@ namespace OpenVIII
 
             public override bool Inputs_CANCEL()
             {
-                if (Memory.PrevState != null && Memory.PrevState.Characters[VisibleCharacter].CurrentHP() > Memory.State.Characters[VisibleCharacter].CurrentHP())
+                if (Memory.PrevState != null && Damageable.CurrentHP() > Damageable.CurrentHP())
                 {
                     IGM_Junction.Data[SectionName.ConfirmChanges].Show();
                     IGM_Junction.SetMode(Mode.ConfirmChanges);
@@ -82,15 +82,15 @@ namespace OpenVIII
 
             public override void Refresh()
             {
-                if (Memory.State.Characters != null)
+                if (Memory.State.Characters != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
-                    Font.ColorID color = (Memory.State.Characters[Character].JunctionnedGFs == Saves.GFflags.None) ? Font.ColorID.Grey : Font.ColorID.White;
+                    Font.ColorID color = (c.JunctionnedGFs == Saves.GFflags.None) ? Font.ColorID.Grey : Font.ColorID.White;
 
                     ITEM[1, 0] = new IGMDataItem_String(Titles[Items.Off], SIZE[1], color);
                     ITEM[2, 0] = new IGMDataItem_String(Titles[Items.Auto], SIZE[2], color);
                     ITEM[3, 0] = new IGMDataItem_String(Titles[Items.Ability], SIZE[3], color);
                     for (int i = 1; i <= 3; i++)
-                        BLANKS[i] = Memory.State.Characters[Character].JunctionnedGFs == Saves.GFflags.None;
+                        BLANKS[i] = c.JunctionnedGFs == Saves.GFflags.None;
                 }
                 base.Refresh();
             }

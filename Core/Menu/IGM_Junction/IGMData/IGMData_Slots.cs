@@ -94,9 +94,9 @@ namespace OpenVIII
 
             public override void Refresh()
             {
-                if (Character != Characters.Blank)
+                if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
-                    unlocked = Memory.State.Characters[Character].UnlockedGFAbilities;
+                    unlocked = c.UnlockedGFAbilities;
                     AddEventListener();
                     CheckMode();
                     base.Refresh();
@@ -120,10 +120,11 @@ namespace OpenVIII
 
             protected void FillData(Icons.ID starticon, Kernel_bin.Stat statatk, Kernel_bin.Stat statdef)
             {
+                if (!Damageable.GetCharacterData(out Saves.CharacterData c)) return;
                 byte pos = 0;
                 Contents[0] = statatk;
                 getColor(pos, out byte palette, out Font.ColorID _colorid, out bool unlocked);
-                FF8String name = Kernel_bin.MagicData[Memory.State.Characters[Character].Stat_J[statatk]].Name;
+                FF8String name = Kernel_bin.MagicData[c.Stat_J[statatk]].Name;
                 if (name == null || name.Length == 0)
                     name = Misc[Items._];
                 ITEM[pos, 0] = new IGMDataItem_Icon(starticon, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), palette);
@@ -133,7 +134,7 @@ namespace OpenVIII
                 {
                     Contents[pos] = statdef + pos - 1;
                     getColor(pos, out palette, out _colorid, out unlocked);
-                    name = Kernel_bin.MagicData[Memory.State.Characters[Character].Stat_J[statdef + pos - 1]].Name;
+                    name = Kernel_bin.MagicData[c.Stat_J[statdef + pos - 1]].Name;
                     if (name == null || name.Length == 0)
                         name = Misc[Items._];
                     ITEM[pos, 0] = new IGMDataItem_Icon(starticon + 1, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), palette);

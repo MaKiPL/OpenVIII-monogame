@@ -32,8 +32,8 @@ namespace OpenVIII
                         skipsnd = true;
                         init_debugger_Audio.PlaySound(31);
                         base.Inputs_OKAY();
-                        Memory.State.Characters[Character].RemoveAll();
-
+                        if(Damageable.GetCharacterData(out Saves.CharacterData c))
+                            c.RemoveAll();
                         IGM_Junction.Data[SectionName.RemAll].Hide();
                         IGM_Junction.Data[SectionName.TopMenu_Off].Hide();
                         IGM_Junction.SetMode(Mode.TopMenu);

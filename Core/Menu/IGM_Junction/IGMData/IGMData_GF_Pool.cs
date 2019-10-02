@@ -42,10 +42,10 @@ namespace OpenVIII
                 init_debugger_Audio.PlaySound(31);
                 base.Inputs_OKAY();
                 GFs select = Contents[CURSOR_SELECT];
-                Characters c = JunctionedGFs.ContainsKey(select) ? JunctionedGFs[select] : Character;
+                Characters c = Damageable.GetCharacterData(out Saves.CharacterData c1) && JunctionedGFs.ContainsKey(select) ? JunctionedGFs[select] : c1?.ID ?? Characters.Blank;
                 if (c != Characters.Blank)
                 {
-                    if (c != Character)
+                    if (c != c1.ID)
                     {
                         //show error msg
                     }
@@ -137,43 +137,45 @@ namespace OpenVIII
                 Source = Memory.State;
                 JunctionedGFs = Source.JunctionedGFs();
                 UnlockedGFs = Source.UnlockedGFs();
-
-                int pos = 0;
-                int skip = Page * Rows;
-                foreach (GFs g in UnlockedGFs.Where(g => !JunctionedGFs.ContainsKey(g)))
+                if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
-                    if (pos >= Rows) break;
-                    if (skip-- <= 0)
+                    int pos = 0;
+                    int skip = Page * Rows;
+                    foreach (GFs g in UnlockedGFs.Where(g => !JunctionedGFs.ContainsKey(g)))
                     {
-                        addGF(ref pos, g);
+                        if (pos >= Rows) break;
+                        if (skip-- <= 0)
+                        {
+                            addGF(ref pos, g);
+                        }
                     }
-                }
-                foreach (GFs g in UnlockedGFs.Where(g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] == Character))
-                {
-                    if (pos >= Rows) break;
-                    if (skip-- <= 0)
+                    foreach (GFs g in UnlockedGFs.Where(g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] == c.ID))
                     {
-                        addGF(ref pos, g, Font.ColorID.Grey);
+                        if (pos >= Rows) break;
+                        if (skip-- <= 0)
+                        {
+                            addGF(ref pos, g, Font.ColorID.Grey);
+                        }
                     }
-                }
-                foreach (GFs g in UnlockedGFs.Where(g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] != Character))
-                {
-                    if (pos >= Rows) break;
-                    if (skip-- <= 0)
+                    foreach (GFs g in UnlockedGFs.Where(g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] != c.ID))
                     {
-                        addGF(ref pos, g, Font.ColorID.Dark_Gray);
+                        if (pos >= Rows) break;
+                        if (skip-- <= 0)
+                        {
+                            addGF(ref pos, g, Font.ColorID.Dark_Gray);
+                        }
                     }
+                    for (; pos < Rows; pos++)
+                    {
+                        ITEM[pos, 0] = null;
+                        ITEM[pos, 1] = null;
+                        ITEM[pos, 2] = null;
+                        BLANKS[pos] = true;
+                    }
+                    base.Refresh();
+                    UpdateTitle();
+                    UpdateCharacter();
                 }
-                for (; pos < Rows; pos++)
-                {
-                    ITEM[pos, 0] = null;
-                    ITEM[pos, 1] = null;
-                    ITEM[pos, 2] = null;
-                    BLANKS[pos] = true;
-                }
-                base.Refresh();
-                UpdateTitle();
-                UpdateCharacter();
             }
 
             public override void UpdateTitle()

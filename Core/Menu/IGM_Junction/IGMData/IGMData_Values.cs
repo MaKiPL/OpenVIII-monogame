@@ -134,10 +134,10 @@ namespace OpenVIII
                             flags = Kernel_bin.MagicData[spell[i]].ST_Def;
                             break;
                     }
-                    if (flags != null)
+                    if (flags != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                         foreach (Enum flag in availableFlags.Where(flags.HasFlag))
                         {
-                            int t = total[(T)flag] + ((Kernel_bin.MagicData[spell[i]].J_Val[stat] * Memory.State.Characters[Character].Magics[spell[i]]) / 100);
+                            int t = total[(T)flag] + ((Kernel_bin.MagicData[spell[i]].J_Val[stat] * c.Magics[spell[i]]) / 100);
                             total[(T)flag] = (byte)MathHelper.Clamp(t,0,max);
                         }
                     else

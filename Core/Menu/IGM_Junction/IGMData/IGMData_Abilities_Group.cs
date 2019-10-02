@@ -70,17 +70,17 @@ namespace OpenVIII
                 base.Inputs_Menu();
                 skipdata = false;
 
-                if (Commands!=null)
+                if (Commands!=null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     if (CURSOR_SELECT < Commands.Count)
                     {
-                        Memory.State.Characters[Character].Commands[CURSOR_SELECT - 1] = Kernel_bin.Abilities.None;
+                        c.Commands[CURSOR_SELECT - 1] = Kernel_bin.Abilities.None;
                         IGM_Junction.Data[SectionName.TopMenu_Abilities].Refresh();
                         IGM_Junction.Data[SectionName.Commands].Refresh();
                     }
                     else
                     {
-                        Memory.State.Characters[Character].Abilities[CURSOR_SELECT - Commands.Count] = Kernel_bin.Abilities.None;
+                        c.Abilities[CURSOR_SELECT - Commands.Count] = Kernel_bin.Abilities.None;
                         IGM_Junction.Refresh();
                     }
                 }

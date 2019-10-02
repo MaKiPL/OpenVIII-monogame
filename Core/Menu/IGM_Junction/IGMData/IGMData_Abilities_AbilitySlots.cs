@@ -22,26 +22,26 @@ namespace OpenVIII
             {
                 base.Refresh();
 
-                if (Memory.State.Characters != null && Character != Characters.Blank)
+                if (Memory.State.Characters != null && Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     for (int i = 0; i < Count; i++)
                     {
                         int slots = 2;
-                        if (Memory.State.Characters[Character].UnlockedGFAbilities.Contains(Kernel_bin.Abilities.Abilityx3))
+                        if (c.UnlockedGFAbilities.Contains(Kernel_bin.Abilities.Abilityx3))
                             slots = 3;
-                        if (Memory.State.Characters[Character].UnlockedGFAbilities.Contains(Kernel_bin.Abilities.Abilityx4))
+                        if (c.UnlockedGFAbilities.Contains(Kernel_bin.Abilities.Abilityx4))
                             slots = 4;
                         if (i < slots)
                         {
                             ITEM[i, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right2, SIZE[i], 9);
-                            if (Memory.State.Characters[Character].Abilities[i] != Kernel_bin.Abilities.None)
+                            if (c.Abilities[i] != Kernel_bin.Abilities.None)
                             {
                                 ITEM[i, 1] = new IGMDataItem_String(
 
-                                Kernel_bin.EquipableAbilities[Memory.State.Characters[Character].Abilities[i]].Icon, 9,
-                                Kernel_bin.EquipableAbilities[Memory.State.Characters[Character].Abilities[i]].Name,
+                                Kernel_bin.EquipableAbilities[c.Abilities[i]].Icon, 9,
+                                Kernel_bin.EquipableAbilities[c.Abilities[i]].Name,
                                 new Rectangle(SIZE[i].X + 40, SIZE[i].Y, 0, 0));
-                                Descriptions[i] = Kernel_bin.EquipableAbilities[Memory.State.Characters[Character].Abilities[i]].Description;
+                                Descriptions[i] = Kernel_bin.EquipableAbilities[c.Abilities[i]].Description;
                             }
                             else
                             {

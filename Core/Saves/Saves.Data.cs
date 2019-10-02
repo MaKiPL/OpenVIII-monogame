@@ -26,7 +26,7 @@ namespace OpenVIII
 
             #region Methods
 
-            private CharacterData GetDamagable(Characters id)
+            private CharacterData GetDamageable(Characters id)
             {
                 if (!Characters.TryGetValue(id, out CharacterData c))
                 {
@@ -38,16 +38,16 @@ namespace OpenVIII
                 return c;
             }
 
-            private GFData GetDamagable(GFs id) => GFs.ContainsKey(id) ? GFs[id] : null;
+            private GFData GetDamageable(GFs id) => GFs.ContainsKey(id) ? GFs[id] : null;
 
-            private Damageable GetDamagable(Faces.ID id)
+            private Damageable GetDamageable(Faces.ID id)
             {
                 GFs gf = id.ToGFs();
                 Characters c = id.ToCharacters();
                 if (c == OpenVIII.Characters.Blank)
-                    return GetDamagable(gf);
+                    return GetDamageable(gf);
                 else
-                    return GetDamagable(c);
+                    return GetDamageable(c);
             }
 
             #endregion Methods
@@ -489,11 +489,13 @@ namespace OpenVIII
 
             #region Indexers
 
-            public GFData this[GFs id] => GetDamagable(id);
+            public GFData this[GFs id] => GetDamageable(id);
 
-            public CharacterData this[Characters id] => GetDamagable(id);
+            public CharacterData this[Characters id] => GetDamageable(id);
 
-            public Damageable this[Faces.ID id] => GetDamagable(id);
+            public Damageable this[Faces.ID id] => GetDamageable(id);
+
+            //public Damageable this[Damageable damageable]
 
             #endregion Indexers
 
@@ -508,9 +510,9 @@ namespace OpenVIII
                 //deepcopy anything that needs it here.
 
                 d.Characters = Characters.ToDictionary(entry => entry.Key,
-                    entry => entry.Value.Clone());
+                    entry => (CharacterData)entry.Value.Clone());
                 d.GFs = GFs.ToDictionary(entry => entry.Key,
-                    entry => entry.Value.Clone());
+                    entry => (GFData)entry.Value.Clone());
                 d.ChocoboWorld = ChocoboWorld.Clone();
                 d.Fieldvars = Fieldvars.Clone();
                 d.Worldmap = Worldmap.Clone();

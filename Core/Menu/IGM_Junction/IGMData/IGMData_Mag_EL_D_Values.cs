@@ -29,10 +29,10 @@ namespace OpenVIII
 
             public override bool Update()
             {
-                if (Memory.State.Characters != null)
+                if (Memory.State.Characters != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     Dictionary<Kernel_bin.Element, byte> oldtotal = (prevSetting != null) ? getTotal(prevSetting, out Enum[] availableFlagsarray) : null;
-                    Dictionary<Kernel_bin.Element, byte> total = getTotal(Memory.State.Characters[Character], out availableFlagsarray);
+                    Dictionary<Kernel_bin.Element, byte> total = getTotal(c, out availableFlagsarray);
                     FillData(oldtotal, total, availableFlagsarray, Icons.ID.Element_Fire, palette: 9);
                 }
                 return base.Update();

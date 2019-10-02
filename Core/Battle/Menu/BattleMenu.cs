@@ -16,7 +16,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public BattleMenu(Characters character, Characters? Visiblecharacter = null) : base(character, Visiblecharacter)
+        public BattleMenu(Damageable damageable) : base(damageable)
         {
         }
 
@@ -75,8 +75,8 @@ namespace OpenVIII
         {
             NoInputOnUpdate = true;
             Size = new Vector2 { X = 880, Y = 636 };
-            Data.Add(SectionName.HP, new IGMData_HP(new Rectangle((int)(Size.X - 389), 507, 389, 126), Character, VisibleCharacter));
-            Data.Add(SectionName.Commands, new IGMData_Commands(new Rectangle(50, (int)(Size.Y - 204), 210, 192), Character, VisibleCharacter, true));
+            Data.Add(SectionName.HP, new IGMData_HP(new Rectangle((int)(Size.X - 389), 507, 389, 126), Damageable));
+            Data.Add(SectionName.Commands, new IGMData_Commands(new Rectangle(50, (int)(Size.Y - 204), 210, 192), Damageable, true));
             Data.Add(SectionName.Renzokeken, new IGMData_Renzokeken(new Rectangle(0, 500, (int)Size.X, 124)));
             Data.ForEach(x => x.Value.SetModeChangeEvent(ref ModeChangeHandler));
             SetMode(Mode.ATB_Charging);

@@ -24,11 +24,11 @@ namespace OpenVIII
             public override void Refresh()
             {
                 base.Refresh();
-                if (Memory.State.Characters != null && Character != Characters.Blank)
+                if (Memory.State.Characters != null && Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     IEnumerable<Enum> availableFlags = Enum.GetValues(typeof(Saves.GFflags)).Cast<Enum>();
                     int pos = 0;
-                    foreach (Enum flag in availableFlags.Where(Memory.State.Characters[Character].JunctionnedGFs.HasFlag))
+                    foreach (Enum flag in availableFlags.Where(c.JunctionnedGFs.HasFlag))
                     {
                         if ((Saves.GFflags)flag == Saves.GFflags.None) continue;
                         ITEM[pos, 0] = new IGMDataItem_String(

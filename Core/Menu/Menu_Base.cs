@@ -16,14 +16,11 @@ namespace OpenVIII
         public bool Enabled { get; private set; } = true;
 
         /// <summary>
-        /// Character who has the junctions and inventory. Same as VisibleCharacter unless TeamLaguna.
+        /// Characters/Enemies/GF
         /// </summary>
-        public Characters Character { get; protected set; } = Characters.Blank;
+        public Damageable Damageable { get; protected set; }
 
-        /// <summary>
-        /// Required to support Laguna's Party. They have unique stats but share junctions and inventory.
-        /// </summary>
-        public Characters VisibleCharacter { get; protected set; } = Characters.Blank;
+
 
         /// <summary>
         /// Position of party member 0,1,2. If -1 at the time of setting the character wasn't in the party.
@@ -61,13 +58,16 @@ namespace OpenVIII
         /// </summary>
         /// <param name="character"></param>
         /// <param name="Visiblecharacter"></param>
-        public virtual void Refresh(Characters character, Characters? Visiblecharacter = null)
+        public virtual void Refresh(Damageable damageable)
         {
-            if ((character != Character || (Visiblecharacter ?? character) != VisibleCharacter) && character != Characters.Blank && Visiblecharacter != Characters.Blank)
+            if(damageable != null )
             {
-                Character = character;
-                VisibleCharacter = Visiblecharacter ?? character;
-                PartyPos = (sbyte)(Memory.State?.PartyData?.Where(x => !x.Equals(Characters.Blank)).ToList().FindIndex(x => x.Equals(Character)) ?? -1);
+                Damageable = damageable;
+
+                if (Damageable.GetCharacterData(out Saves.CharacterData c))
+                {
+                    PartyPos = (sbyte)(Memory.State?.PartyData?.Where(x => !x.Equals(Characters.Blank)).ToList().FindIndex(x => x.Equals(c.ID)) ?? -1);
+                }
             }
             Refresh();
         }

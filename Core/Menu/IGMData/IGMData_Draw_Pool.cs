@@ -20,14 +20,14 @@ namespace OpenVIII
 
         private bool Inputs_OKAY_Cast()
         {
-            Debug.WriteLine($"{Memory.Strings.GetName(VisibleCharacter)} Casting {Magic.Name}({Magic.ID}) from enemy.");
+            Debug.WriteLine($"{Damageable.Name} Casting {Magic.Name}({Magic.ID}) from enemy.");
             Target_Group.ShowTargetWindows();
             return true;
         }
 
         private bool Inputs_OKAY_Draw()
         {
-            Debug.WriteLine($"{Memory.Strings.GetName(VisibleCharacter)} Drawing {Magic.Name}({Magic.ID}) from enemy.");
+            Debug.WriteLine($"{Damageable.Name} Drawing {Magic.Name}({Magic.ID}) from enemy.");
             Menu.BattleMenus.EndTurn();
             return true;
         }
@@ -58,7 +58,7 @@ namespace OpenVIII
             base.Init();
             ITEM[_Draw, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.KERNEL, 0, 12), SIZE[_Draw]);
             ITEM[Cast, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.KERNEL, 0, 18), SIZE[Cast]);
-            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Character, VisibleCharacter, false);
+            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Damageable, false);
             Cursor_Status = Cursor_Status.Enabled;
             OKAY_Actions = new Dictionary<int, Func<bool>>
             {
@@ -82,7 +82,7 @@ namespace OpenVIII
 
         public Dictionary<int, Func<bool>> OKAY_Actions;
 
-        public IGMData_Draw_Commands(Rectangle pos, Characters character = Characters.Blank, Characters? Visiblecharacter = null, bool battle = false) : base(3, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.CHOICE), 1, 2, character, Visiblecharacter)
+        public IGMData_Draw_Commands(Rectangle pos, Damageable damageable, bool battle = false) : base(3, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.CHOICE), 1, 2, damageable)
         {
         }
 
@@ -126,7 +126,9 @@ namespace OpenVIII
             if (Magic.ID > 0)
             {
                 bool gf = Magic.GF != GFs.Blank;
-                bool full = (Memory.State[Character].Magics.TryGetByKey(Magic.ID, out byte qty) && qty < 100);
+                bool full = (Damageable.GetCharacterData(out Saves.CharacterData c) && c.Magics.TryGetByKey(Magic.ID, out byte qty) && qty < 100);
+                //TODO check for empty magic slots. as can only have 30 something spells in inventory.
+
                 bool candraw = gf || !full;
                 if (!candraw)
                 {
@@ -182,7 +184,7 @@ namespace OpenVIII
             {
                 ITEM[pos, 0] = new IGMDataItem_String(null, SIZE[pos]);
                 ITEM[pos, 1] = new IGMDataItem_Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0));
-                ITEM[pos, 2] = new IGMData_Draw_Commands(r, Character, VisibleCharacter, Battle);
+                ITEM[pos, 2] = new IGMData_Draw_Commands(r, Damageable, Battle);
                 ITEM[pos, 2].Hide();
             }
 
@@ -216,7 +218,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_Draw_Pool(Rectangle pos, Characters character = Characters.Blank, Characters? Visiblecharacter = null, bool battle = false) : base(5, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.CHOICE), 4, 1, character, Visiblecharacter)
+        public IGMData_Draw_Pool(Rectangle pos, Damageable damageable, bool battle = false) : base(5, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.CHOICE), 4, 1, damageable)
         {
             Battle = battle;
             Refresh();
@@ -246,14 +248,14 @@ namespace OpenVIII
         {
             base.Refresh();
             Source = Memory.State;
-            if (Source != null && Character != Characters.Blank)
+            if (Source != null && Damageable != null)
             {
                 byte pos = 0;
                 int skip = Page * Rows;
                 for (byte i = 0; pos < Rows && i < Contents.Length; i++)
                 {
                     bool unlocked = Source.UnlockedGFs().Contains(Contents[i].GF);
-                    bool junctioned = Source[Character].Stat_J.ContainsValue(Contents[i].ID);
+                    bool junctioned = (Damageable.GetCharacterData(out Saves.CharacterData c) && c.Stat_J.ContainsValue(Contents[i].ID));
                     ((IGMDataItem_String)(ITEM[pos, 0])).Data = Contents[i].Name;
                     ((IGMDataItem_String)(ITEM[pos, 0])).Show();
                     if (junctioned)

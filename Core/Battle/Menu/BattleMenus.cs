@@ -317,7 +317,7 @@ namespace OpenVIII
                 menus = new List<Menu>(count);
                 foreach (KeyValuePair<int, Characters> m in party)
                 {
-                    BattleMenu tmp = new BattleMenu(Memory.State.PartyData[m.Key], m.Value);
+                    BattleMenu tmp = new BattleMenu(Memory.State[Memory.State.PartyData[m.Key]]);
                     tmp.Hide();
                     menus.Add(tmp);
                 }

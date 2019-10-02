@@ -35,18 +35,19 @@ namespace OpenVIII
 
             public override bool Inputs_OKAY()
             {
+                if (Damageable.GetCharacterData(out Saves.CharacterData c))
                 switch (CURSOR_SELECT)
                 {
                     case 0:
-                        Memory.State.Characters[Character].AutoATK();
+                        c.AutoATK();
                         break;
 
                     case 1:
-                        Memory.State.Characters[Character].AutoDEF();
+                        c.AutoDEF();
                         break;
 
                     case 2:
-                        Memory.State.Characters[Character].AutoMAG();
+                        c.AutoMAG();
                         break;
                     default: return false;
                 }

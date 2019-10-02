@@ -37,16 +37,16 @@ namespace OpenVIII
                 {
                     get => _exp; set
                     {
-                        if (Character != Characters.Blank)
+                        if (Damageable != null)
                         {
-                            if (_exp == 0 || !Memory.State[Character].IsGameOver)
+                            if (_exp == 0 || !Damageable.IsGameOver)
                             {
                                 if (value < 0) value = 0;
-                                if (_exp != 0)
-                                    Memory.State[Character].Experience += (uint)Math.Abs((MathHelper.Distance(_exp, value)));
+                                if (_exp != 0 && Damageable.GetCharacterData(out Saves.CharacterData c))
+                                    c.Experience += (uint)Math.Abs((MathHelper.Distance(_exp, value)));
                                 _exp = value;
                             }
-                            else if (Memory.State[Character].IsGameOver)
+                            else if (Damageable.IsGameOver)
                                 ITEM[0, 11].Show();
                         }
                     }
@@ -60,12 +60,12 @@ namespace OpenVIII
 
                 public override bool Update()
                 {
-                    if (Character != Characters.Blank)
+                    if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                     {
                         ((IGMDataItem_Int)ITEM[0, 4]).Data = _exp;
-                        ((IGMDataItem_Int)ITEM[0, 6]).Data = (int)Memory.State[Character].Experience;
-                        ((IGMDataItem_Int)ITEM[0, 8]).Data = Memory.State[Character].ExperienceToNextLevel;
-                        byte lvl = Memory.State[Character].Level;
+                        ((IGMDataItem_Int)ITEM[0, 6]).Data = checked((int)c.Experience);
+                        ((IGMDataItem_Int)ITEM[0, 8]).Data = c.ExperienceToNextLevel;
+                        byte lvl = Damageable.Level;
                         if (lvl != _lvl)
                         {
                             _lvl = lvl;
@@ -82,7 +82,7 @@ namespace OpenVIII
 
                 protected override void Init()
                 {
-                    if (Character != Characters.Blank)
+                    if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                     {
 
                         Hide();
@@ -91,10 +91,10 @@ namespace OpenVIII
                                 Memory.Strings.Read(Strings.FileID.KERNEL, 30, 30) + "\n" +
                                 Memory.Strings.Read(Strings.FileID.KERNEL, 30, 31);
                         base.Init();
-                        uint exp = Memory.State[Character].Experience;
-                        ushort expTNL = Memory.State[Character].ExperienceToNextLevel;
-                        _lvl = Memory.State[Character].Level;
-                        FF8String name = Memory.Strings.GetName(VisibleCharacter);
+                        uint exp = c.Experience;
+                        ushort expTNL = c.ExperienceToNextLevel;
+                        _lvl = Damageable.Level;
+                        FF8String name = Damageable.Name;
 
                         ITEM[0, 0] = new IGMDataItem_String(name, new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0));
                         ITEM[0, 1] = new IGMDataItem_Icon(Icons.ID.Size_16x16_Lv_, new Rectangle(SIZE[0].X, SIZE[0].Y + 34, 0, 0), 13);

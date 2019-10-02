@@ -22,7 +22,7 @@ namespace OpenVIII
             {
                 base.Refresh();
 
-                if (Memory.State.Characters != null && Character != Characters.Blank)
+                if (Memory.State.Characters != null && Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     for (int i = 0; i < Count; i++)
                     {
@@ -30,7 +30,7 @@ namespace OpenVIII
                         {
                             ITEM[i, 1] = new IGMDataItem_String(
                                     Kernel_bin.BattleCommands[
-                                        Memory.State.Characters[Character].Abilities.Contains(Kernel_bin.Abilities.Mug) ?
+                                        c.Abilities.Contains(Kernel_bin.Abilities.Mug) ?
                                         13 :
                                         1].Name,
                                     new Rectangle(SIZE[i].X + 80, SIZE[i].Y, 0, 0));
@@ -38,11 +38,11 @@ namespace OpenVIII
                         else
                         {
                             ITEM[i, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right2, SIZE[i], 9);
-                            ITEM[i, 1] = Memory.State.Characters[Character].Commands[i - 1] != Kernel_bin.Abilities.None ? new IGMDataItem_String(
+                            ITEM[i, 1] = c.Commands[i - 1] != Kernel_bin.Abilities.None ? new IGMDataItem_String(
                                 Icons.ID.Ability_Command, 9,
-                            Kernel_bin.Commandabilities[Memory.State.Characters[Character].Commands[i - 1]].Name,
+                            Kernel_bin.Commandabilities[c.Commands[i - 1]].Name,
                             new Rectangle(SIZE[i].X + 40, SIZE[i].Y, 0, 0)) : null;
-                            Kernel_bin.Abilities k = Memory.State.Characters[Character].Commands[i - 1];
+                            Kernel_bin.Abilities k = c.Commands[i - 1];
                             Descriptions[i] = k == Kernel_bin.Abilities.None ? null : Kernel_bin.Commandabilities[k].BattleCommand.Description;
                         }
                     }

@@ -41,13 +41,13 @@ namespace OpenVIII
         {
             BLANKS[Limit_Arrow] = true;
             base.Init();
-            ITEM[Blue_Pool, 0] = new IGMData_BlueMagic_Pool(new Rectangle(X + 50, Y - 20, 300, 192), Character, VisibleCharacter, true);
+            ITEM[Blue_Pool, 0] = new IGMData_BlueMagic_Pool(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
             ITEM[Blue_Pool, 0].Hide();
-            ITEM[Mag_Pool, 0] = new IGMData_Mag_Pool(new Rectangle(X + 50, Y - 20, 300, 192), Character, VisibleCharacter, true);
+            ITEM[Mag_Pool, 0] = new IGMData_Mag_Pool(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
             ITEM[Mag_Pool, 0].Hide();
             ITEM[Item_Pool, 0] = new IGMData_ItemPool(new Rectangle(X + 50, Y - 22, 400, 194), true);
             ITEM[Item_Pool, 0].Hide();
-            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Character, VisibleCharacter);
+            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Damageable);
             commands = new Kernel_bin.Battle_Commands[Rows];
             PointerZIndex = Limit_Arrow;
         }
@@ -75,9 +75,9 @@ namespace OpenVIII
             if (e.GetType() == typeof(BattleMenu.Mode))
             {
                 mode = (BattleMenu.Mode)e;
-                if (mode.Equals(BattleMenu.Mode.YourTurn))
+                if (mode.Equals(BattleMenu.Mode.YourTurn) && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
-                    CrisisLevel = Memory.State.Characters[Character].GenerateCrisisLevel() >= 0;
+                    CrisisLevel = c.GenerateCrisisLevel() >= 0;
                     Show();
                     Refresh();
                 }
@@ -89,7 +89,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_Commands(Rectangle pos, Characters character = Characters.Blank, Characters? Visiblecharacter = null, bool battle = false) : base(9, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.COMMAND), 1, 4, character, Visiblecharacter)
+        public IGMData_Commands(Rectangle pos, Damageable damageable = null, bool battle = false) : base(9, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.COMMAND), 1, 4, damageable)
         {
             Battle = battle;
             skipReinit = true;
@@ -177,19 +177,23 @@ namespace OpenVIII
                 case 18: //SORCERY /  ICE STRIKE
                     Target_Group.ShowTargetWindows();
                     return true;
+
                 case 16: // SLOT
                     //TODO add slot menu to randomly choose spell to cast.
                     return true;
+
                 case 19: //COMBINE (ANGELO or ANGEL WING)
                     //TODO see if ANGEL WING unlock if so show menu to choose angelo or angel wing.
                     Target_Group.ShowTargetWindows();
                     return true;
+
                 case 0: //null
                 case 9: //CAST is part of DRAW menu.
                 case 10: // Stock is part of DRAW menu.
                 case 8: // NOMSG
                 case 13: // NOMSG
                     return false;
+
                 case 36: //DOUBLE
                 case 37: //TRIPLE
                     //TODO 2 casts 2 targets
@@ -197,16 +201,19 @@ namespace OpenVIII
                     ITEM[Mag_Pool, 0].Show();
                     ITEM[Mag_Pool, 0].Refresh();
                     return true;
+
                 case 2: //magic
-                    //TODO ADD a menu for DOUBLE and TRIPLE to choose SINGLE DOUBLE OR TRIPLE
+                        //TODO ADD a menu for DOUBLE and TRIPLE to choose SINGLE DOUBLE OR TRIPLE
                 case 35: //SINGLE
                     ITEM[Mag_Pool, 0].Show();
                     ITEM[Mag_Pool, 0].Refresh();
                     return true;
+
                 case 3: //GF
                     //ITEM[GF_Pool, 0].Show();
                     //ITEM[GF_Pool, 0].Refresh();
                     return true;
+
                 case 4: //items
                     ITEM[Item_Pool, 0].Show();
                     ITEM[Item_Pool, 0].Refresh();
@@ -216,8 +223,9 @@ namespace OpenVIII
                     ITEM[Blue_Pool, 0].Show();
                     ITEM[Blue_Pool, 0].Refresh();
                     return true;
+
                 case 23: //Defend
-                    Debug.WriteLine($"{Memory.Strings.GetName(VisibleCharacter)} is using {c.Name}({c.ID})");
+                    Debug.WriteLine($"{Damageable.Name} is using {c.Name}({c.ID})");
                     Menu.BattleMenus.EndTurn();
                     return true;
             }
@@ -227,9 +235,9 @@ namespace OpenVIII
         {
             if (Battle && CURSOR_SELECT == 0 && CrisisLevel)
             {
-                if (page == 0)
+                if (page == 0 && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
-                    commands[CURSOR_SELECT] = Memory.State.Characters[Character].CharacterStats.Limit;
+                    commands[CURSOR_SELECT] = c.CharacterStats.Limit;
                     ((IGMDataItem_String)ITEM[0, 0]).Data = commands[CURSOR_SELECT].Name;
                     skipsnd = true;
                     base.Inputs_Right();
@@ -238,7 +246,8 @@ namespace OpenVIII
                 }
             }
         }
-        static int Cidoff
+
+        private static int Cidoff
         {
             get => s_cidoff; set
             {
@@ -249,6 +258,7 @@ namespace OpenVIII
                 s_cidoff = value;
             }
         }
+
         /// <summary>
         /// Things that may of changed before screen loads or junction is changed.
         /// </summary>
@@ -256,21 +266,20 @@ namespace OpenVIII
         {
             if (Battle && !mode.Equals(BattleMenu.Mode.YourTurn))
                 return;
-            if (Memory.State.Characters != null && !skipReinit)
+            if (Memory.State.Characters != null && !skipReinit && Damageable.GetCharacterData(out Saves.CharacterData c))
             {
                 Rectangle DataSize = Rectangle.Empty;
                 base.Refresh();
                 page = 0;
                 Cursor_Status &= ~Cursor_Status.Horizontal;
-                commands[0] = Kernel_bin.BattleCommands[(Memory.State.Characters[Character].Abilities.Contains(Kernel_bin.Abilities.Mug) ? 12 : 1)];
+                commands[0] = Kernel_bin.BattleCommands[(c.Abilities.Contains(Kernel_bin.Abilities.Mug) ? 12 : 1)];
                 ITEM[0, 0] = new IGMDataItem_String(
                         commands[0].Name,
                         SIZE[0]);
 
                 for (int pos = 1; pos < Rows; pos++)
                 {
-
-                    Kernel_bin.Abilities cmd = Memory.State.Characters[Character].Commands[pos - 1];
+                    Kernel_bin.Abilities cmd = c.Commands[pos - 1];
 
                     if (cmd != Kernel_bin.Abilities.None)
                     {
@@ -289,7 +298,6 @@ namespace OpenVIII
                         ITEM[pos, 0].Show();
                         CheckBounds(ref DataSize, pos);
                         BLANKS[pos] = false;
-
                     }
                     else
                     {
@@ -311,24 +319,22 @@ namespace OpenVIII
                     ITEM[Limit_Arrow, 0] = null;
                 }
                 AutoAdjustContainerWidth(DataSize);
-                if (Character != Characters.Blank)
+                if (Damageable != null)
                 {
-                    Target_Group.Refresh(Character, VisibleCharacter);
-                    MagPool.Refresh(Character, VisibleCharacter);
-                    ItemPool.Refresh(Character, VisibleCharacter);
+                    Target_Group.Refresh(Damageable);
+                    MagPool.Refresh(Damageable);
+                    ItemPool.Refresh(Damageable);
                 }
             }
             skipReinit = false;
         }
 
-        
-
-        public override void Refresh(Characters character, Characters? Visiblecharacter = null)
+        public override void Refresh(Damageable damageable)
         {
-            base.Refresh(character, Visiblecharacter);
-            Target_Group.Refresh(Character, VisibleCharacter);
-            MagPool.Refresh(Character, VisibleCharacter);
-            ItemPool.Refresh(Character, VisibleCharacter);
+            base.Refresh(damageable);
+            Target_Group.Refresh(Damageable);
+            MagPool.Refresh(Damageable);
+            ItemPool.Refresh(Damageable);
         }
 
         public override void SetModeChangeEvent(ref EventHandler<Enum> eventHandler)

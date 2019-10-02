@@ -513,9 +513,9 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_TargetGroup(Characters character, Characters? Visiblecharacter = null, bool makesubs = true)
+            public IGMData_TargetGroup(Damageable damageable, bool makesubs = true)
             {
-                VisibleCharacter = Visiblecharacter ?? character;
+                
                 const int X = 25;
                 const int w = 380;
                 const int w2 = 210;
@@ -525,7 +525,7 @@ namespace OpenVIII
                 Init(new IGMData[]{
                     new IGMData_TargetEnemies(new Rectangle(CONTAINER.Pos.X, CONTAINER.Pos.Y, w, h)),
                     new IGMData_TargetParty(new Rectangle(CONTAINER.Pos.X + w, CONTAINER.Pos.Y, w2, h)),
-                    makesubs ? new IGMData_Draw_Pool(new Rectangle(X +50, Y - 50, 300, 192), Character, VisibleCharacter, true): null,
+                    makesubs ? new IGMData_Draw_Pool(new Rectangle(X +50, Y - 50, 300, 192), Damageable, true): null,
                     //makesubs ? new IGMData_BlueMagic_Pool(new Rectangle(X +50, Y - 50, 300, 192), Character, VisibleCharacter, true): null
                 }, true);
                 after();
@@ -598,10 +598,10 @@ namespace OpenVIII
                     return CommandDefault();
             }
 
-            public override void Refresh(Characters character, Characters? Visiblecharacter = null)
+            public override void Refresh(Damageable damageable)
             {
-                base.Refresh(character, Visiblecharacter);
-                Draw_Pool?.Refresh(character, Visiblecharacter);
+                base.Refresh(damageable);
+                Draw_Pool?.Refresh(damageable);
             }
 
             public override void Reset()

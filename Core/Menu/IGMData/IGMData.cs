@@ -62,19 +62,17 @@ namespace OpenVIII
 
         protected int GetCursor_select() => _cursor_select;
 
-        protected void Init(Characters? character, Characters? Visiblecharacter, sbyte? partypos)
+        protected void Init(Damageable damageable, sbyte? partypos)
         {
             if (partypos != null)
             {
-                Character = Memory.State?.PartyData?[partypos.Value] ?? Characters.Blank;
-                VisibleCharacter = Memory.State?.Party?[partypos.Value] ?? Character;
+                Damageable = damageable;
                 PartyPos = partypos.Value;
             }
-            else
+            else if (damageable != null && damageable.GetCharacterData(out Saves.CharacterData c))
             {
-                Character = character ?? Characters.Blank;
-                VisibleCharacter = Visiblecharacter ?? Character;
-                PartyPos = (sbyte)(Memory.State?.PartyData?.FindIndex(x => x.Equals(Character)) ?? -1);
+                Damageable = damageable;
+                PartyPos = (sbyte)(Memory.State?.PartyData?.FindIndex(x => x.Equals(c.ID)) ?? -1);
             }
         }
 
@@ -175,12 +173,12 @@ namespace OpenVIII
             if (!skipdata)
             {
                 if (CONTAINER != null)
-                    CONTAINER.Refresh(Character, VisibleCharacter);
+                    CONTAINER.Refresh(Damageable);
                 if (ITEM != null)
                     for (int i = 0; i < Count; i++)
                         for (int d = 0; d < Depth; d++)
                         {
-                            ITEM[i, d]?.Refresh(Character, VisibleCharacter);
+                            ITEM[i, d]?.Refresh(Damageable);
                         }
             }
         }
@@ -205,9 +203,9 @@ namespace OpenVIII
         /// </summary>
         public Rectangle[] SIZE;
 
-        public IGMData(int count = 0, int depth = 0, IGMDataItem container = null, int? cols = null, int? rows = null, Characters? character = null, Characters? Visiblecharacter = null, sbyte? partypos = null)
+        public IGMData(int count = 0, int depth = 0, IGMDataItem container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null)
         {
-            Init(character, Visiblecharacter, partypos);
+            Init(damageable, partypos);
             Init(count, depth, container, cols, rows);
         }
 
