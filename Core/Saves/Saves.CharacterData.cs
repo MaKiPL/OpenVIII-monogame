@@ -113,6 +113,9 @@ namespace OpenVIII
                 }
             }
 
+            public OrderedDictionary<byte, byte> CloneMagic() => Magics.Clone();
+            public Dictionary<Kernel_bin.Stat, byte> CloneMagicJunction() => new Dictionary<Kernel_bin.Stat, byte>(Stat_J);
+
             #endregion Methods
 
             /// <summary>
