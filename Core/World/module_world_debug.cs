@@ -623,7 +623,7 @@ namespace OpenVIII
                 if (shift != Vector2.Zero)
                 {
                     float angle = VectorToAngle(shift);
-                    Debug.WriteLine($"Shift: {shift} Angle: {MathHelper.ToDegrees(angle)} Camera: {degrees}");
+                    //Debug.WriteLine($"Shift: {shift} Angle: {MathHelper.ToDegrees(angle)} Camera: {degrees}");
                     playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(MathHelper.ToDegrees(angle) + degrees - 90));
                     playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(MathHelper.ToDegrees(angle) + degrees - 90));
                     bHasMoved = true;
