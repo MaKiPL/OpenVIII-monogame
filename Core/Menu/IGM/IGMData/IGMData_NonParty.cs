@@ -86,7 +86,9 @@ namespace OpenVIII
 
             private void Refresh(sbyte pos, Damageable damageable)
             {
-                    Contents[pos] = damageable;
+                Contents[pos] = damageable;
+                if (damageable != null)
+                {             
                     float yoff = 39;
                     Rectangle rbak = SIZE[pos];
                     Rectangle r = rbak;
@@ -122,7 +124,8 @@ namespace OpenVIII
                     r = rbak;
                     r.Offset((166), yoff);
                     ITEM[pos, 8] = new IGMDataItem_Int(damageable.CurrentHP(), r, 2, 0, 1, 4);
-                
+
+                }
             }
 
             #endregion Methods
