@@ -211,7 +211,7 @@ namespace OpenVIII
             {
                 var c = Memory.State?[cii.VisibleCharacter];
 
-                if (cii.animationSystem.animationId >= 0 && cii.animationSystem.animationId <=2)
+                if (c != null && cii.animationSystem.animationId >= 0 && cii.animationSystem.animationId <=2)
                 {
                     // this would probably interfeer with other animations. I am hoping the limits above will keep it good.
                     if (c.IsDead)
@@ -578,7 +578,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 if (CharacterInstances != null)
                     foreach(var cii in CharacterInstances)
                     {
-                        if (!cii.animationSystem.bStopAnimation  && !Memory.State[cii.VisibleCharacter].IsPetrify)
+                        if (!cii.animationSystem.bStopAnimation  && (!Memory.State[cii.VisibleCharacter]?.IsPetrify ?? true))
                         cii.animationSystem.animationFrame++;
                     }
                     //for (int x = 0; x < CharacterInstances.Count; x++)
