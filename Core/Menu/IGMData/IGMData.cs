@@ -66,12 +66,12 @@ namespace OpenVIII
         {
             if (partypos != null)
             {
-                Damageable = damageable;
+                _damageable = damageable;
                 PartyPos = partypos.Value;
             }
             else if (damageable != null && damageable.GetCharacterData(out Saves.CharacterData c))
             {
-                Damageable = damageable;
+                _damageable = damageable;
                 PartyPos = (sbyte)(Memory.State?.PartyData?.FindIndex(x => x.Equals(c.ID)) ?? -1);
             }
         }
