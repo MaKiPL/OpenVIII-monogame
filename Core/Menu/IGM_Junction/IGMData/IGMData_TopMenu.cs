@@ -28,8 +28,9 @@ namespace OpenVIII
             public override bool Inputs_CANCEL()
             {
                 if (Memory.PrevState != null && 
-                    Damageable.GetCharacterData(out Saves.CharacterData c) && 
-                    Memory.PrevState.Characters[c.ID].CurrentHP() > Memory.State.Characters[c.ID].CurrentHP())
+                    Damageable.GetCharacterData(out Saves.CharacterData c) && (
+                    Memory.PrevState.Characters[c.ID].CurrentHP() > Memory.State.Characters[c.ID].CurrentHP() ||
+                    Memory.PrevState.Characters[c.ID].MaxHP() > Memory.State.Characters[c.ID].MaxHP()))
                 {
                     IGM_Junction.Data[SectionName.ConfirmChanges].Show();
                     IGM_Junction.SetMode(Mode.ConfirmChanges);
