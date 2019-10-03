@@ -68,6 +68,7 @@ namespace OpenVIII
             {
                 _damageable = damageable;
                 PartyPos = partypos.Value;
+                _damageable = Memory.State[Memory.State.PartyData[PartyPos]];
             }
             else if (damageable != null && damageable.GetCharacterData(out Saves.CharacterData c))
             {
