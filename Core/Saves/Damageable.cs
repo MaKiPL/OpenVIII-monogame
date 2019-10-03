@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace OpenVIII
 {
@@ -17,8 +16,6 @@ namespace OpenVIII
         private Kernel_bin.Battle_Only_Statuses _statuses1;
         private Dictionary<Kernel_bin.Attack_Type, Func<Kernel_bin.Persistant_Statuses, Kernel_bin.Battle_Only_Statuses, Kernel_bin.Attack_Flags, int>> _statusesActions;
 
-        public abstract Damageable Clone();
-
         protected ushort _CurrentHP;
 
         /// <summary>
@@ -30,8 +27,6 @@ namespace OpenVIII
         #endregion Fields
 
         #region Properties
-
-        
 
         public IReadOnlyDictionary<Kernel_bin.Attack_Type, Func<int, Kernel_bin.Attack_Flags, int>> DamageActions
         {
@@ -193,10 +188,15 @@ namespace OpenVIII
         }
 
         public abstract byte EVA { get; }
+
         public abstract int EXP { get; }
+
         public abstract byte HIT { get; }
+
         public ushort HP => CurrentHP();
+
         public bool IsDead => CurrentHP() == 0 || (Statuses0 & Kernel_bin.Persistant_Statuses.Death) != 0;
+
         /// <summary>
         /// If all partymemembers are in gameover trigger Phoenix Pinion if CanPhoenixPinion or
         /// trigger Game over
@@ -216,9 +216,13 @@ namespace OpenVIII
             (Statuses0 & Kernel_bin.Persistant_Statuses.Berserk) != 0;
 
         public bool IsPetrify => (Statuses0 & (Kernel_bin.Persistant_Statuses.Petrify)) != 0;
+
         public abstract byte Level { get; }
+
         public abstract byte LUCK { get; }
+
         public abstract byte MAG { get; }
+
         /// <summary>
         /// Name
         /// </summary>
@@ -226,7 +230,9 @@ namespace OpenVIII
         public virtual FF8String Name { get; set; }
 
         public abstract byte SPD { get; }
+
         public abstract byte SPR { get; }
+
         /// <summary>
         /// Persistant_Statuses are saved and last between battles.
         /// </summary>
@@ -419,16 +425,7 @@ namespace OpenVIII
         #endregion Properties
 
         #region Methods
-        public bool GetCharacterData(out Saves.CharacterData characterData)
-        {
-            if (GetType() == typeof(Saves.CharacterData))
-            {
-                characterData = (Saves.CharacterData)this;
-                return true;
-            }
-            characterData = null;
-            return false;
-        }
+
         /// <summary>
         /// Starting value
         /// </summary>
@@ -503,6 +500,8 @@ namespace OpenVIII
             return true;
         }
 
+        public abstract Damageable Clone();
+
         public virtual bool Critical() => CurrentHP() <= CriticalHP();
 
         public virtual ushort CriticalHP() => (ushort)((MaxHP() / 4) - 1);
@@ -553,6 +552,25 @@ namespace OpenVIII
 
         public abstract short ElementalResistance(Kernel_bin.Element @in);
 
+        public bool GetCharacterData(out Saves.CharacterData character)
+        => GetCast(out character);
+
+        public bool GetEnemy(out Enemy enemy)
+        => GetCast(out enemy);
+
+        public bool GetGFData(out Saves.GFData gf)
+        => GetCast(out gf);
+
+        public bool GetCast<T>(out T cast) where T: Damageable
+        {
+            if (GetType() == typeof(T))
+            {
+                cast = (T)this;
+                return true;
+            }
+            cast = null;
+            return false;
+        }
         public SpeedMod GetSpeedMod()
         {
             if ((Statuses1 & Kernel_bin.Battle_Only_Statuses.Haste) != 0)
@@ -585,7 +603,6 @@ namespace OpenVIII
         public int TimeToFillBarGF() => TimeToFillBarGF(SPD);
 
         public abstract ushort TotalStat(Kernel_bin.Stat s);
-
 
         #endregion Methods
     }
