@@ -72,7 +72,7 @@ namespace OpenVIII
 
         public Menu(Damageable damageable)
         {
-            Damageable = damageable;
+            _damageable = damageable;
             InitConstructor(); // because base() would always run first :(
         }
 

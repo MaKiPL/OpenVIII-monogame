@@ -7,6 +7,7 @@ namespace OpenVIII
     /// </summary>
     public abstract class Menu_Base
     {
+        protected Damageable _damageable;
         #region Properties
 
         /// <summary>
@@ -18,7 +19,7 @@ namespace OpenVIII
         /// <summary>
         /// Characters/Enemies/GF
         /// </summary>
-        public Damageable Damageable { get; protected set; }
+        public Damageable Damageable { get => _damageable; }
 
 
 
@@ -60,9 +61,9 @@ namespace OpenVIII
         /// <param name="Visiblecharacter"></param>
         public virtual void Refresh(Damageable damageable)
         {
-            if(damageable != null )
+            if (damageable != null)
             {
-                Damageable = damageable;
+                _damageable = damageable;
 
                 if (Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
