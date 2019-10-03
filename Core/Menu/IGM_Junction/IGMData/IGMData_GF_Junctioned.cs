@@ -50,7 +50,7 @@ namespace OpenVIII
             {
                 base.InitShift(i, col, row);
                 SIZE[i].Inflate(-45, -8);
-                SIZE[i].Offset((-10 * col), 0);
+                SIZE[i].Offset((-10 * col), -2*row);
             }
 
             #endregion Methods
