@@ -92,8 +92,8 @@ namespace OpenVIII
         private bool Undo()
         {
             SlotUndoListener?.Invoke(this, (IGM_Junction.Mode)(Menu.IGM_Junction.GetMode()));
-            if (Memory.State.Characters != null)
-                Source = Memory.State.Characters[Character];
+            if (Memory.State.Characters != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                Source = c;
             return true;
         }
 
@@ -114,18 +114,18 @@ namespace OpenVIII
             {
                 Cursor_Status &= ~Cursor_Status.Enabled;
             }
-            if (Memory.State.Characters != null && Character != Characters.Blank)
+            if (Memory.State.Characters != null && Damageable != null)
             {
                 Get_Sort_Stat();
                 Stat = stat ?? Stat;
                 Get_Slots_Values();
-                if (SortMode != LastMode || this.Stat != LastStat || Character != LastCharacter)
+                if (SortMode != LastMode || this.Stat != LastStat || Damageable != LastCharacter)
                     Get_Sort();
                 bool skipundo = false;
-                if (Battle || !(SortMode == LastMode && Character == LastCharacter && this.Stat == LastStat && Page == LastPage))
+                if (Battle || !(SortMode == LastMode && Damageable == LastCharacter && this.Stat == LastStat && Page == LastPage))
                 {
                     // goal of these checks were to avoid updating the whole list if we don't need to.
-                    LastCharacter = Character;
+                    LastCharacter = Damageable;
                     LastStat = this.Stat;
                     LastPage = Page;
                     LastMode = SortMode;
@@ -158,7 +158,7 @@ namespace OpenVIII
             SIZE[Rows].Y = Y;
             ITEM[Rows, 2] = new IGMDataItem_Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 45, SIZE[Rows].Y, 0, 0), scale: new Vector2(2.5f));
 
-            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Character, VisibleCharacter);
+            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Damageable);
             BLANKS[Rows] = true;
             Cursor_Status &= ~Cursor_Status.Horizontal;
             Cursor_Status |= Cursor_Status.Vertical;
@@ -219,13 +219,13 @@ namespace OpenVIII
 
         public static EventHandler<IGM_Junction.Mode> SlotConfirmListener;
 
-        public static EventHandler<IGM_Junction.Mode> SlotReinitListener;
+        public static EventHandler<Damageable> SlotRefreshListener;
 
         public static EventHandler<IGM_Junction.Mode> SlotUndoListener;
 
         public static EventHandler<Kernel_bin.Stat> StatEventListener;
 
-        public IGMData_Mag_Pool(Rectangle pos, Characters character = Characters.Blank, Characters? Visiblecharacter = null, bool battle = false) : base(5, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.MAGIC), 4, 13, character, Visiblecharacter)
+        public IGMData_Mag_Pool(Rectangle pos, Damageable damageable, bool battle = false) : base(5, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.MAGIC), 4, 13, damageable)
         {
             Battle = battle;
             skipReinit = true;
@@ -236,7 +236,7 @@ namespace OpenVIII
         {
         }
 
-        public Characters LastCharacter { get; private set; }
+        public Damageable LastCharacter { get; private set; }
 
         public IGM_Junction.Mode LastMode { get; private set; }
 
@@ -339,13 +339,16 @@ namespace OpenVIII
                         skipundo = false;
                     }
                     Source.JunctionSpell(Stat, Contents[CURSOR_SELECT]);
-                    SlotReinitListener?.Invoke(this, (IGM_Junction.Mode)Menu.IGM_Junction.GetMode());
+                    SlotRefreshListener?.Invoke(this,Damageable);
                 }
             }
         }
 
-        public void Get_Slots_Values() =>
-            Source = Memory.State.Characters[Character];
+        public void Get_Slots_Values()
+        {
+            if(Damageable.GetCharacterData(out Saves.CharacterData c))
+            Source = c;
+        }
 
         public void Get_Sort()
         {
@@ -406,7 +409,7 @@ namespace OpenVIII
                 {
                     SlotUndoListener?.Invoke(this, (IGM_Junction.Mode)Menu.IGM_Junction.GetMode());
                     SlotConfirmListener?.Invoke(this, (IGM_Junction.Mode)Menu.IGM_Junction.GetMode());
-                    SlotReinitListener?.Invoke(this, (IGM_Junction.Mode)Menu.IGM_Junction.GetMode());
+                    SlotRefreshListener?.Invoke(this, Damageable);
                     switch (SortMode)
                     {
                         case IGM_Junction.Mode.Mag_Pool_Stat:
@@ -431,7 +434,8 @@ namespace OpenVIII
                     }
 
                     Cursor_Status &= ~Cursor_Status.Enabled;
-                    Source = Memory.State.Characters[Character];
+                    if(Damageable.GetCharacterData(out Saves.CharacterData c))
+                        Source = c;
 
                     return true;
                 }

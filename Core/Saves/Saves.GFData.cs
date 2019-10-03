@@ -184,7 +184,7 @@ namespace OpenVIII
             /// <summary>
             /// Create a copy of this gfdata object
             /// </summary>
-            public GFData Clone()
+            public override Damageable Clone()
             {
                 //Shadowcopy
                 GFData c = (GFData)MemberwiseClone();
@@ -270,6 +270,7 @@ namespace OpenVIII
                 StatusImmune = true;
                 ID = g;
                 Name = br.ReadBytes(12);//0x00 (0x00 terminated)
+                if (string.IsNullOrWhiteSpace(Name)) Name = Memory.Strings.GetName(g);
                 Experience = br.ReadUInt32();//0x0C
                 Unknown = br.ReadByte();//0x10
                 Exists = br.ReadByte() == 1 ? true : false;//0x11 //1 unlocked //0 locked

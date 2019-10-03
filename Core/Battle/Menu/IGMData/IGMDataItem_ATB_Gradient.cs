@@ -53,12 +53,12 @@ namespace OpenVIII
 
         #endregion Properties
 
-        public override void Refresh(Characters character, Characters? Visiblecharacter = null)
+        public override void Refresh(Damageable damageable)
         {
-            base.Refresh(character, Visiblecharacter);
+            base.Refresh(damageable);
             if (First)
             {
-                ATBBarPos = Memory.State[Character].ATBBarStart();
+                ATBBarPos = Damageable.ATBBarStart();
                 First = false;
             }
             else
@@ -71,32 +71,32 @@ namespace OpenVIII
         {
             if (Enabled)
             {
-                if (!Done && Character != Characters.Blank)
+                if (!Done && Damageable != null)
                 {
                     double tms = Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
-                    ATBBarIncrement = Memory.State[Character].BarIncrement(); // per 60fps
+                    ATBBarIncrement = Damageable.BarIncrement(); // per 60fps
                     ATBBarPos += (int)(ATBBarIncrement * tms / 60);
                     Percent = (float)ATBBarPos / Enemy.ATBBarSize;
                     X = Lerp(Restriction.X - Width, Restriction.X, Percent);
 
-                    if (Memory.State[Character].IsDead)
+                    if (Damageable.IsDead)
                     {
                         //Color = Faded_Color = Color.Red * .5f;
                         ATBBarPos = 0;
                     }
-                    else if (Memory.State[Character].IsPetrify)
+                    else if (Damageable.IsPetrify)
                     {
                         Color = Faded_Color = Color.Gray * .8f;
                     }
-                    else if ((Memory.State[Character].Statuses1 & Kernel_bin.Battle_Only_Statuses.Stop) != 0)
+                    else if ((Damageable.Statuses1 & Kernel_bin.Battle_Only_Statuses.Stop) != 0)
                     {
                         Color = Faded_Color = Color.DarkBlue * .8f;
                     }
-                    else if ((Memory.State[Character].Statuses1 & Kernel_bin.Battle_Only_Statuses.Slow) != 0)
+                    else if ((Damageable.Statuses1 & Kernel_bin.Battle_Only_Statuses.Slow) != 0)
                     {
                         Color = Faded_Color = Color.DarkCyan * .8f;
                     }
-                    else if ((Memory.State[Character].Statuses1 & Kernel_bin.Battle_Only_Statuses.Haste) != 0)
+                    else if ((Damageable.Statuses1 & Kernel_bin.Battle_Only_Statuses.Haste) != 0)
                     {
                         Color = Faded_Color = Color.Violet * .8f;
                     }

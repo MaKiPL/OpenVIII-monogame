@@ -32,7 +32,8 @@ namespace OpenVIII
                         skipsnd = true;
                         init_debugger_Audio.PlaySound(31);
                         base.Inputs_OKAY();
-                        Memory.State.Characters[Character].RemoveMagic();
+                        if(Damageable.GetCharacterData(out Saves.CharacterData c))
+                            c.RemoveMagic();
                         Inputs_CANCEL();
                         IGM_Junction.Refresh();
                         break;

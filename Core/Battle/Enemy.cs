@@ -465,6 +465,8 @@ namespace OpenVIII
             return 0;
         }
 
+        public override Damageable Clone() => throw new NotImplementedException();
+
         public static implicit operator Module_battle_debug.EnemyInstanceInformation(Enemy @in) => @in.EII;
     }
 }

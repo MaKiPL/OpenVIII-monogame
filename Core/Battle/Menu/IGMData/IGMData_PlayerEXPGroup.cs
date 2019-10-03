@@ -136,10 +136,10 @@ namespace OpenVIII
                                 else
                                 {
                                     int total = 0;
-                                    foreach(var e in EXPExtra)
+                                    foreach (System.Collections.Generic.KeyValuePair<Characters, int> e in EXPExtra)
                                     {
                                         if (e.Value > 0)
-                                        total += (EXPExtra[e.Key] -= (int)remaining);
+                                            total += (EXPExtra[e.Key] -= (int)remaining);
                                         RefreshEXP();
                                     }
                                     if (total <= 0)
@@ -162,7 +162,7 @@ namespace OpenVIII
                 {
                     base.Init();
                     Cursor_Status |= (Cursor_Status.Hidden | (Cursor_Status.Enabled | Cursor_Status.Static));
-                    header = new IGMData_Container(new IGMDataItem_Box(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 23), new Rectangle(0,0, CONTAINER.Width, 78), Icons.ID.INFO, Box_Options.Middle));
+                    header = new IGMData_Container(new IGMDataItem_Box(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 23), new Rectangle(0, 0, CONTAINER.Width, 78), Icons.ID.INFO, Box_Options.Middle));
                 }
 
                 private void RefreshEXP()
@@ -170,13 +170,8 @@ namespace OpenVIII
                     foreach (Menu_Base i in ITEM)
                     {
                         int tmpexp = EXP;
-                        if (EXPExtra != null)
-                        {
-                            if (EXPExtra.TryGetValue(i.Character, out int bonus))
-                                tmpexp += bonus;
-                            else if (EXPExtra.TryGetValue(i.VisibleCharacter, out int bonus2))
-                                tmpexp += bonus2;
-                        }
+                        if (EXPExtra != null && i.Damageable.GetCharacterData(out Saves.CharacterData c) && EXPExtra.TryGetValue(c.ID, out int bonus))
+                            tmpexp += bonus;
                         ((IGMData_PlayerEXP)i).EXP = tmpexp;
                     }
                     header.CONTAINER.Width = CONTAINER.Width;

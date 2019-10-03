@@ -70,10 +70,9 @@ namespace OpenVIII
 
         public Menu() => InitConstructor();
 
-        public Menu(Characters character, Characters? Visiblecharacter = null)
+        public Menu(Damageable damageable)
         {
-            Character = character;
-            VisibleCharacter = Visiblecharacter ?? character;
+            _damageable = damageable;
             InitConstructor(); // because base() would always run first :(
         }
 
@@ -355,14 +354,14 @@ namespace OpenVIII
             base.Refresh();
         }
 
-        public void Refresh(bool backup) => Refresh(Character, VisibleCharacter, backup);
+        public void Refresh(bool backup) => Refresh(Damageable, backup);
 
-        public override void Refresh(Characters character, Characters? Visiblecharacter = null) => Refresh(character, Visiblecharacter ?? character, false);
+        public override void Refresh(Damageable damageable) => Refresh(damageable, false);
 
-        public virtual void Refresh(Characters c, Characters vc, bool backup)
+        public virtual void Refresh(Damageable damageable, bool backup)
         {
             _backup = backup;
-            base.Refresh(c, vc);
+            base.Refresh(damageable);
         }
 
         public virtual bool SetMode(Enum mode)
@@ -434,7 +433,7 @@ namespace OpenVIII
         {
             if (!skipdata)
                 foreach (KeyValuePair<Enum, IGMData> i in Data)
-                    i.Value.Refresh(Character, VisibleCharacter);
+                    i.Value.Refresh(Damageable);
         }
 
         private void Backup()

@@ -23,6 +23,14 @@ namespace OpenVIII
 
         public OrderedDictionary(int capacity = 0) => _list = new List<KeyValuePair<TKey, TValue>>(capacity);
 
+        public OrderedDictionary(IDictionary<TKey, TValue> copy) : this(copy.Count)
+        {
+            foreach (KeyValuePair<TKey, TValue> pair in copy)
+            {
+                Add(new KeyValuePair<TKey, TValue>(pair.Key, pair.Value));
+            }
+        }
+
         #endregion Constructors
 
         #region Properties
@@ -63,7 +71,7 @@ namespace OpenVIII
             set
             {
                 int index = _list.FindIndex(kvp => kvp.Key.Equals(key));
-                if(index>=0)
+                if (index >= 0)
                     _list[index] = new KeyValuePair<TKey, TValue>(key, value);
                 else
                     throw new KeyNotFoundException($"{this}::Key:{key} - Not Found!");
@@ -72,14 +80,8 @@ namespace OpenVIII
 
         TValue IDictionary<TKey, TValue>.this[TKey key]
         {
-            get
-            {
-                return this[key];
-            }
-            set
-            {
-                this[key] = value;
-            }
+            get => this[key];
+            set => this[key] = value;
         }
 
         #endregion Indexers
@@ -158,6 +160,7 @@ namespace OpenVIII
             value = default;
             return false;
         }
+
         public Boolean TryGetIndexByKey(TKey key, out int value)
         {
             if (ContainsKey(key))
@@ -194,6 +197,8 @@ namespace OpenVIII
         }
 
         public bool TryGetValue(TKey key, out TValue value) => TryGetByKey(key, out value);
+
+        public OrderedDictionary<TKey, TValue> Clone() => new OrderedDictionary<TKey, TValue>(this);
 
         IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator() => _list.GetEnumerator();
 

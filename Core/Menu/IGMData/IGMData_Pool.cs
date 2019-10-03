@@ -4,7 +4,7 @@
     {
         #region Constructors
 
-        public IGMData_Pool(int count, int depth, IGMDataItem container = null, int? rows = null, int? pages = null, Characters character = Characters.Blank, Characters? Visiblecharacter = null) : base(count + 2, depth, container, 1, rows, character, Visiblecharacter) => DefaultPages = pages ?? 1;
+        public IGMData_Pool(int count, int depth, IGMDataItem container = null, int? rows = null, int? pages = null, Damageable damageable = null) : base(count + 2, depth, container, 1, rows, damageable) => DefaultPages = pages ?? 1;
 
         #endregion Constructors
 

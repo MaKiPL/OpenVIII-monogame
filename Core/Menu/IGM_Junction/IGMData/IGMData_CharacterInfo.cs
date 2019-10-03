@@ -23,20 +23,22 @@ namespace OpenVIII
             /// </summary>
             public override void Refresh()
             {
-                base.Refresh();
-                ITEM[0, 0] = new IGMDataItem_Face((Faces.ID)VisibleCharacter, new Rectangle(X + 12, Y, 96, 144));
-                ITEM[0, 2] = new IGMDataItem_String(Memory.Strings.GetName(VisibleCharacter), new Rectangle(X + 117, Y + 0, 0, 0));
-
-                if (Memory.State.Characters != null)
+                if (Memory.State.Characters != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
-                    ITEM[0, 4] = new IGMDataItem_Int(Memory.State.Characters[Character].Level, new Rectangle(X + 117 + 35, Y + 54, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 6);
-                    ITEM[0, 5] = Memory.State.Party != null && Memory.State.Party.Contains(Character)
+                    
+                base.Refresh();
+                ITEM[0, 0] = new IGMDataItem_Face((Faces.ID)c.ID, new Rectangle(X + 12, Y, 96, 144));
+                ITEM[0, 2] = new IGMDataItem_String(Damageable.Name, new Rectangle(X + 117, Y + 0, 0, 0));
+
+                
+                    ITEM[0, 4] = new IGMDataItem_Int(Damageable.Level, new Rectangle(X + 117 + 35, Y + 54, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 6);
+                    ITEM[0, 5] = Memory.State.Party != null && Memory.State.Party.Contains(c.ID)
                         ? new IGMDataItem_Icon(Icons.ID.InParty, new Rectangle(X + 278, Y + 48, 0, 0), 6)
                         : null;
-                    ITEM[0, 7] = new IGMDataItem_Int(Memory.State.Characters[Character].CurrentHP(VisibleCharacter), new Rectangle(X + 152, Y + 108, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 6);
-                    ITEM[0, 9] = new IGMDataItem_Int(Memory.State.Characters[Character].MaxHP(VisibleCharacter), new Rectangle(X + 292, Y + 108, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 5);
-                    ITEM[0, 11] = new IGMDataItem_Int((int)Memory.State.Characters[Character].Experience, new Rectangle(X + 192, Y + 198, 0, 0), 13, numtype: Icons.NumType.Num_8x8_2, padding: 1, spaces: 9);
-                    ITEM[0, 13] = new IGMDataItem_Int(Memory.State.Characters[Character].ExperienceToNextLevel, new Rectangle(X + 192, Y + 231, 0, 0), 13, numtype: Icons.NumType.Num_8x8_2, padding: 1, spaces: 9);
+                    ITEM[0, 7] = new IGMDataItem_Int(Damageable.CurrentHP(), new Rectangle(X + 152, Y + 108, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 6);
+                    ITEM[0, 9] = new IGMDataItem_Int(Damageable.MaxHP(), new Rectangle(X + 292, Y + 108, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 5);
+                    ITEM[0, 11] = new IGMDataItem_Int((int)c.Experience, new Rectangle(X + 192, Y + 198, 0, 0), 13, numtype: Icons.NumType.Num_8x8_2, padding: 1, spaces: 9);
+                    ITEM[0, 13] = new IGMDataItem_Int(c.ExperienceToNextLevel, new Rectangle(X + 192, Y + 231, 0, 0), 13, numtype: Icons.NumType.Num_8x8_2, padding: 1, spaces: 9);
                 }
             }
 

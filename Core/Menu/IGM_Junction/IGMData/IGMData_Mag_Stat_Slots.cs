@@ -40,7 +40,11 @@ namespace OpenVIII
 
             #region Methods
 
-            public override void BackupSetting() => SetPrevSetting(Memory.State.Characters[Character].Clone());
+            public override void BackupSetting()
+            {
+                if(Damageable.GetCharacterData(out Saves.CharacterData c))
+                SetPrevSetting((Saves.CharacterData)c.Clone());
+            }
 
             public override void CheckMode(bool cursor = true) =>
                CheckMode(-1, Mode.None, Mode.Mag_Stat,
@@ -106,9 +110,9 @@ namespace OpenVIII
                 skipdata = true;
                 base.Inputs_Menu();
                 skipdata = false;
-                if (Contents[CURSOR_SELECT] == Kernel_bin.Stat.None)
+                if (Contents[CURSOR_SELECT] == Kernel_bin.Stat.None && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
-                    Memory.State.Characters[Character].Stat_J[Contents[CURSOR_SELECT]] = 0;
+                    c.Stat_J[Contents[CURSOR_SELECT]] = 0;
                     IGM_Junction.Refresh();
                 }
             }
@@ -140,12 +144,12 @@ namespace OpenVIII
                         BLANKS[5] = true;
                         foreach (Kernel_bin.Stat stat in (Kernel_bin.Stat[])Enum.GetValues(typeof(Kernel_bin.Stat)))
                         {
-                            if (Stat2Icon.ContainsKey(stat))
+                            if (Stat2Icon.ContainsKey(stat) && Damageable.GetCharacterData(out Saves.CharacterData c))
                             {
                                 int pos = (int)stat;
                                 if (pos >= 5) pos++;
                                 Contents[pos] = stat;
-                                FF8String name = Kernel_bin.MagicData[Memory.State.Characters[Character].Stat_J[stat]].Name;
+                                FF8String name = Kernel_bin.MagicData[c.Stat_J[stat]].Name;
                                 if (name == null || name.Length == 0) name = Misc[Items._];
 
                                 ITEM[pos, 0] = new IGMDataItem_Icon(Stat2Icon[stat], new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), 2);
@@ -158,15 +162,15 @@ namespace OpenVIII
                                 }
                                 else BLANKS[pos] = false;
 
-                                ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[Character].TotalStat(stat, VisibleCharacter), new Rectangle(SIZE[pos].X + 152, SIZE[pos].Y, 0, 0), 2, Icons.NumType.sysFntBig, spaces: 10);
+                                ITEM[pos, 2] = new IGMDataItem_Int(Damageable.TotalStat(stat), new Rectangle(SIZE[pos].X + 152, SIZE[pos].Y, 0, 0), 2, Icons.NumType.sysFntBig, spaces: 10);
                                 ITEM[pos, 3] = stat == Kernel_bin.Stat.HIT || stat == Kernel_bin.Stat.EVA
                                     ? new IGMDataItem_String(Misc[Items.Percent], new Rectangle(SIZE[pos].X + 350, SIZE[pos].Y, 0, 0))
                                     : null;
-                                if (GetPrevSetting() == null || GetPrevSetting().Stat_J[stat] == Memory.State.Characters[Character].Stat_J[stat] || GetPrevSetting().TotalStat(stat, VisibleCharacter) == Memory.State.Characters[Character].TotalStat(stat, VisibleCharacter))
+                                if (GetPrevSetting() == null || (Damageable.GetCharacterData(out Saves.CharacterData _c) && GetPrevSetting().Stat_J[stat] == _c.Stat_J[stat]) || GetPrevSetting().TotalStat(stat) == Damageable.TotalStat(stat))
                                 {
                                     ITEM[pos, 4] = null;
                                 }
-                                else if (GetPrevSetting().TotalStat(stat, VisibleCharacter) > Memory.State.Characters[Character].TotalStat(stat, VisibleCharacter))
+                                else if (GetPrevSetting().TotalStat(stat) > Damageable.TotalStat(stat))
                                 {
                                     ((IGMDataItem_Icon)ITEM[pos, 0]).Palette = 5;
                                     ((IGMDataItem_Icon)ITEM[pos, 0]).Faded_Palette = 5;
@@ -195,9 +199,10 @@ namespace OpenVIII
             public override void UndoChange()
             {
                 //override this use it to take value of prevSetting and restore the setting unless default method works
-                if (GetPrevSetting() != null)
+                if (GetPrevSetting() != null && Damageable.GetCharacterData(out Saves.CharacterData c) && GetPrevSetting().GetCharacterData(out Saves.CharacterData prevc))
                 {
-                    Memory.State.Characters[Character] = GetPrevSetting().Clone();
+                    c.Magics = prevc.CloneMagic();
+                    c.Stat_J = prevc.CloneMagicJunction();
                 }
             }
 
@@ -206,7 +211,7 @@ namespace OpenVIII
                 if (!eventAdded)
                 {
                     IGMData_Mag_Pool.SlotConfirmListener += ConfirmChangeEvent;
-                    IGMData_Mag_Pool.SlotReinitListener += ReInitEvent;
+                    IGMData_Mag_Pool.SlotRefreshListener += ReInitEvent;
                     IGMData_Mag_Pool.SlotUndoListener += UndoChangeEvent;
                 }
                 base.AddEventListener();
@@ -249,7 +254,7 @@ namespace OpenVIII
 
             private void ConfirmChangeEvent(object sender, Mode e) => ConfirmChange();
 
-            private void ReInitEvent(object sender, Mode e) => Refresh();
+            private void ReInitEvent(object sender, Damageable e) => Refresh(e);
 
             private void UndoChangeEvent(object sender, Mode e) => UndoChange();
 

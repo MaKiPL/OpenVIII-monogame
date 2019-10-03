@@ -110,7 +110,7 @@ namespace OpenVIII
             /// <summary>
             /// if you use this you will get no exp, ap, or items, No character specifics for this menu.
             /// </summary>
-            public override void Refresh(Characters c, Characters vc, bool backup = false) { }
+            public override void Refresh(Damageable damageable, bool backup = false) { }
 
             public void Refresh(int exp, uint ap, ConcurrentDictionary<Characters,int> expextra, ConcurrentDictionary<byte, byte> items, ConcurrentDictionary<Cards.ID, byte> cards)
             {

@@ -28,7 +28,7 @@ namespace OpenVIII
 
             #region Properties
 
-            public Tuple<Characters, Characters>[] Contents { get; private set; }
+            public Damageable[] Contents { get; private set; }
             protected IReadOnlyDictionary<Enum, FF8String> Strings
             {
                 get
@@ -69,7 +69,7 @@ namespace OpenVIII
                     {
                         bool ret = base.Update();
                         for (sbyte i = 0; Memory.State.PartyData != null && i < SIZE.Length; i++)
-                            ReInitCharacter(i, Memory.State.PartyData[i], Memory.State.Party[i]);
+                            ReInitCharacter(i, Memory.State[Memory.State.PartyData[i]]);
                     }
                     skipReInit = false;
                 }
@@ -77,7 +77,7 @@ namespace OpenVIII
 
             protected override void Init()
             {
-                Contents = new Tuple<Characters, Characters>[Count];
+                Contents = new Damageable[Count];
                 base.Init();
             }
 
@@ -87,16 +87,16 @@ namespace OpenVIII
                 SIZE[i].Height -= vSpace;
             }
 
-            private void ReInitCharacter(sbyte pos, Characters character, Characters VisibleCharacter)
+            private void ReInitCharacter(sbyte pos, Damageable damageable)
             {
                 if (SIZE != null)
                 {
-                    if (character != Characters.Blank)
+                    if (damageable != null)
                     {
-                        Contents[pos] = new Tuple<Characters, Characters>(character, VisibleCharacter);
+                        Contents[pos] = damageable;
                         float yoff = 6;
 
-                        ITEM[pos, 0] = new IGMDataItem_Box(Memory.Strings.GetName(VisibleCharacter), title: Icons.ID.STATUS);
+                        ITEM[pos, 0] = new IGMDataItem_Box(damageable.Name, title: Icons.ID.STATUS);
                         Tuple<Rectangle, Point, Rectangle> dims = DrawBox(SIZE[pos], ((IGMDataItem_Box)ITEM[pos, 0]).Data, options: Box_Options.SkipDraw);
                         Rectangle r = dims.Item3;
                         ((IGMDataItem_Box)ITEM[pos, 0]).Pos = dims.Item1;
@@ -108,7 +108,7 @@ namespace OpenVIII
 
                         r = dims.Item3;
                         r.Offset((229), yoff);
-                        ITEM[pos, 2] = new IGMDataItem_Int(Memory.State.Characters[character].Level, r, 2, 0, 1, 3);
+                        ITEM[pos, 2] = new IGMDataItem_Int(damageable.Level, r, 2, 0, 1, 3);
 
                         r = dims.Item3;
                         r.Offset(304, yoff);
@@ -116,7 +116,7 @@ namespace OpenVIII
 
                         r = dims.Item3;
                         r.Offset((354), yoff);
-                        ITEM[pos, 4] = new IGMDataItem_Int(Memory.State.Characters[character].CurrentHP(VisibleCharacter), r, 2, 0, 1, 4);
+                        ITEM[pos, 4] = new IGMDataItem_Int(damageable.CurrentHP(), r, 2, 0, 1, 4);
 
                         r = dims.Item3;
                         r.Offset(437, yoff);
@@ -125,9 +125,9 @@ namespace OpenVIII
                         r = dims.Item3;
 
                         r.Offset((459), yoff);
-                        ITEM[pos, 6] = new IGMDataItem_Int(Memory.State.Characters[character].MaxHP(VisibleCharacter), r, 2, 0, 1, 4);
+                        ITEM[pos, 6] = new IGMDataItem_Int(damageable.MaxHP(), r, 2, 0, 1, 4);
 
-                        if (Memory.State.TeamLaguna || Memory.State.SmallTeam)
+                        if ((Memory.State.TeamLaguna || Memory.State.SmallTeam) && Damageable.GetCharacterData(out Saves.CharacterData c))
                         {
                             BLANKS[pos] = false;
                             r = dims.Item3;
@@ -137,7 +137,7 @@ namespace OpenVIII
 
                             r = dims.Item3;
                             r.Offset((340), 42);
-                            ITEM[pos, 8] = new IGMDataItem_Int((int)Memory.State.Characters[character].Experience, r, 2, 0, 1, 9);
+                            ITEM[pos, 8] = new IGMDataItem_Int(checked((int)c.Experience), r, 2, 0, 1, 9);
 
                             r = dims.Item3;
                             r.Offset(520, 42);
@@ -145,7 +145,7 @@ namespace OpenVIII
 
                             r = dims.Item3;
                             r.Offset((340), 75);
-                            ITEM[pos, 10] = new IGMDataItem_Int(Memory.State.Characters[character].ExperienceToNextLevel, r, 2, 0, 1, 9);
+                            ITEM[pos, 10] = new IGMDataItem_Int(c.ExperienceToNextLevel, r, 2, 0, 1, 9);
 
                             r = dims.Item3;
                             r.Offset(520, 75);

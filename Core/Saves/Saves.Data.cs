@@ -21,33 +21,39 @@ namespace OpenVIII
 
             private TimeSpan _gametime;
             private TimeSpan _timeplayed;
+            private Dictionary<Characters, CharacterData> _characters;
+            private Dictionary<GFs, GFData> _gfs;
+            private List<Shop> _shops;
+            private List<Item> _items;
 
             #endregion Fields
 
             #region Methods
 
-            private CharacterData GetDamagable(Characters id)
+            private CharacterData GetDamageable(Characters id)
             {
-                if (!Characters.TryGetValue(id, out CharacterData c))
+                CharacterData c = null;
+                if (Characters != null && !Characters.TryGetValue(id, out c))
                 {
-                    var ind = Party.FindIndex(x=>x.Equals(id));
+                    var ind = Party.FindIndex(x => x.Equals(id));
 
                     if (ind == -1 || !Characters.TryGetValue(PartyData[ind], out c))
                         throw new ArgumentException($"{this}::Cannot find {id} in CharacterData or Party");
+                    return c;
                 }
                 return c;
             }
 
-            private GFData GetDamagable(GFs id) => GFs.ContainsKey(id) ? GFs[id] : null;
+            private GFData GetDamageable(GFs id) => GFs.ContainsKey(id) ? GFs[id] : null;
 
-            private Damageable GetDamagable(Faces.ID id)
+            private Damageable GetDamageable(Faces.ID id)
             {
                 GFs gf = id.ToGFs();
                 Characters c = id.ToCharacters();
                 if (c == OpenVIII.Characters.Blank)
-                    return GetDamagable(gf);
+                    return GetDamageable(gf);
                 else
-                    return GetDamagable(c);
+                    return GetDamageable(c);
             }
 
             #endregion Methods
@@ -166,7 +172,7 @@ namespace OpenVIII
             /// <summary>
             /// 0x04A0-0x08C7 152 bytes each 8 of them. Characters: Squall-Edea
             /// </summary>
-            public Dictionary<Characters, CharacterData> Characters { get; set; }
+            public IReadOnlyDictionary<Characters, CharacterData> Characters { get => (IReadOnlyDictionary<Characters, CharacterData>)_characters; }
 
             /// <summary>
             /// 0x1370 64 bytes Chocobo World (TODO)
@@ -248,7 +254,7 @@ namespace OpenVIII
             /// <summary>
             /// 0x0060 - 0x049F 68 bytes each 16 of them. Guardian Forces: Quetzalcoatl-Eden
             /// </summary>
-            public Dictionary<GFs, GFData> GFs { get; set; }
+            public IReadOnlyDictionary<GFs, GFData> GFs { get => _gfs; }
 
             /// <summary>
             /// 0x0B0C 12 bytes Griever name (FF8 text format)
@@ -261,7 +267,7 @@ namespace OpenVIII
             /// The order of items out of battle and Each item uses 2 bytes 1 for ID and 1 for Quantity
             /// </para>
             /// </summary>
-            public List<Item> Items { get; set; }
+            public IReadOnlyList<Item> Items { get => _items; }
 
             /// <summary>
             /// <para>0x0B34 32 bytes Items battle order</para>
@@ -392,7 +398,7 @@ namespace OpenVIII
             /// <summary>
             /// 0x0960-0x0AEF 400 total bytes 20 bytes each 20 of them. Shops
             /// </summary>
-            public List<Shop> Shops { get; set; }
+            public IReadOnlyList<Shop> Shops { get => _shops; }
 
             public bool SmallTeam
             {
@@ -489,11 +495,13 @@ namespace OpenVIII
 
             #region Indexers
 
-            public GFData this[GFs id] => GetDamagable(id);
+            public GFData this[GFs id] => GetDamageable(id);
 
-            public CharacterData this[Characters id] => GetDamagable(id);
+            public CharacterData this[Characters id] => GetDamageable(id);
 
-            public Damageable this[Faces.ID id] => GetDamagable(id);
+            public Damageable this[Faces.ID id] => GetDamageable(id);
+
+            //public Damageable this[Damageable damageable]
 
             #endregion Indexers
 
@@ -507,21 +515,14 @@ namespace OpenVIII
                 Data d = (Data)MemberwiseClone();
                 //deepcopy anything that needs it here.
 
-                d.Characters = Characters.ToDictionary(entry => entry.Key,
-                    entry => entry.Value.Clone());
-                d.GFs = GFs.ToDictionary(entry => entry.Key,
-                    entry => entry.Value.Clone());
+                d._characters = _characters.ToDictionary(x => x.Key, x => (CharacterData)x.Value.Clone());
+                d._gfs = _gfs.ToDictionary(x => x.Key, x => (GFData)x.Value.Clone());
                 d.ChocoboWorld = ChocoboWorld.Clone();
                 d.Fieldvars = Fieldvars.Clone();
                 d.Worldmap = Worldmap.Clone();
                 d.TripleTriad = TripleTriad.Clone();
-                d.Shops = new List<Shop>(Shops.Count);
-                foreach (Shop s in Shops)
-                    d.Shops.Add(s.Clone());
-
-                d.Items = new List<Item>(Items.Count);
-                foreach (Item i in Items)
-                    d.Items.Add(i.Clone());
+                d._shops = _shops.Select(x => x.Clone()).ToList();
+                d._items = _items.Select(x => x.Clone()).ToList();
                 return d;
             }
 
@@ -586,7 +587,7 @@ namespace OpenVIII
             }
             public bool EarnItem(KeyValuePair<Cards.ID, byte> keyValuePair, byte location = 0)
             {
-                return EarnItem(keyValuePair.Key, keyValuePair.Value, location);                
+                return EarnItem(keyValuePair.Key, keyValuePair.Value, location);
             }
 
             public bool EarnItem(Item item)
@@ -645,8 +646,13 @@ namespace OpenVIII
             {
                 //Define Containers
                 Timeplayed = new TimeSpan();
-                GFs = new Dictionary<GFs, GFData>(16);
-                Characters = new Dictionary<Characters, CharacterData>(8);
+                _gfs = new Dictionary<GFs, GFData>(16);
+                _characters = new Dictionary<Characters, CharacterData>(8);
+                _shops = new List<Shop>(20); 
+                _items = new List<Item>(198);
+                CoordX = new short[3];
+                CoordY = new short[3];
+                Triangle_ID = new ushort[3];
 
                 //Read Data
                 LocationID = br.ReadUInt16();//0x0004
@@ -658,31 +664,33 @@ namespace OpenVIII
                 FirstCharactersLevel = br.ReadByte();//0x0024
                 Party = Array.ConvertAll(br.ReadBytes(3), Item => (Characters)Item).ToList();//0x0025//0x0026//0x0027 0xFF = blank.
                 Squallsname = br.ReadBytes(12);//0x0028
+                if (string.IsNullOrWhiteSpace(Squallsname)) Squallsname = Memory.Strings.GetName(Faces.ID.Squall_Leonhart);
                 Rinoasname = br.ReadBytes(12);//0x0034
+                if (string.IsNullOrWhiteSpace(Rinoasname)) Rinoasname = Memory.Strings.GetName(Faces.ID.Rinoa_Heartilly);
                 Angelosname = br.ReadBytes(12);//0x0040
+                if (string.IsNullOrWhiteSpace(Angelosname)) Angelosname = Memory.Strings.GetName(Faces.ID.Angelo);
                 Bokosname = br.ReadBytes(12);//0x004C
+                if (string.IsNullOrWhiteSpace(Bokosname)) Bokosname = Memory.Strings.GetName(Faces.ID.Boko);
                 CurrentDisk = br.ReadUInt32();//0x0058
                 Currentsave = br.ReadUInt32();//0x005C
                 for (byte i = 0; i <= (int)OpenVIII.GFs.Eden; i++)
                 {
-                    GFs[(GFs)i] = new GFData(br, (GFs)i);
+                    _gfs.Add((GFs)i,new GFData(br, (GFs)i));
                 }
                 for (byte i = 0; i <= (int)OpenVIII.Characters.Edea_Kramer; i++)
                 {
-
-                    Characters[(Characters)i] = new CharacterData(br, (Characters)i)
+                    _characters.Add((Characters)i,new CharacterData(br, (Characters)i)
                     {
                         Name = Memory.Strings.GetName((Characters)i, this)
-                    }; // 0x04A0 -> 0x08C8 //152 bytes per 8 total
+                    }); // 0x04A0 -> 0x08C8 //152 bytes per 8 total
                 }
-                Shops = new List<Shop>(20); //0x0960 //400 bytes
-                for (int i = 0; i < Shops.Capacity; i++)
-                    Shops.Add(new Shop(br));
+                for (int i = 0; i < _shops.Capacity; i++)
+                    _shops.Add(new Shop(br));//0x0960 //400 bytes
                 Configuration = br.ReadBytes(20); //0x0AF0 //20 bytes TODO break this up into a structure or class.
                 PartyData = Array.ConvertAll(br.ReadBytes(4), Item => (Characters)Item).ToList(); //0x0B04 // 4 bytes 0xFF terminated.
                 KnownWeapons = new BitArray(br.ReadBytes(4)); //0x0B08 // 4 bytes
                 Grieversname = br.ReadBytes(12); //0x0B0C // 12 bytes
-
+                if (string.IsNullOrWhiteSpace(Grieversname)) Grieversname = Memory.Strings.GetName(Faces.ID.Griever);
                 Unknown1 = br.ReadUInt16();//0x0B18  (always 7966?)
                 Unknown2 = br.ReadUInt16();//0x0B1A
                 AmountofGil2 = br.ReadUInt32();//0x0B1C //dupilicate
@@ -695,9 +703,8 @@ namespace OpenVIII
                 LimitBreakAngeloknown = new BitArray(br.ReadBytes(1));//0x0B2B
                 LimitBreakAngelopoints = br.ReadBytes(8);//0x0B2C
                 Itemsbattleorder = br.ReadBytes(32);//0x0B34
-                Items = new List<Item>(198);
-                for (int i = 0; i < 198; i++)
-                    Items.Add(new Item(br.ReadByte(), br.ReadByte())); //0x0B54 198 items (Item ID and Quantity)
+                for (int i = 0; i < _items.Capacity; i++)
+                    _items.Add(new Item(br.ReadByte(), br.ReadByte())); //0x0B54 198 items (Item ID and Quantity)
                 Gametime = new TimeSpan(0, 0, (int)br.ReadUInt32());//0x0CE0
                 Countdown = br.ReadUInt32();//0x0CE4
                 Unknown3 = br.ReadUInt32();//0x0CE8
@@ -725,13 +732,10 @@ namespace OpenVIII
                 Module = br.ReadUInt16();//0x0D50 (1= field, 2= worldmap, 3= battle)
                 CurrentField = br.ReadUInt16();//0x0D52
                 PreviousField = br.ReadUInt16();//0x0D54
-                CoordX = new short[3];
                 for (int i = 0; i < 3; i++)
                     CoordX[i] = br.ReadInt16();//0x0D56 signed  (party1, party2, party3)
-                CoordY = new short[3];
                 for (int i = 0; i < 3; i++)
                     CoordY[i] = br.ReadInt16();//0x0D5C signed  (party1, party2, party3)
-                Triangle_ID = new ushort[3];
                 for (int i = 0; i < 3; i++)
                     Triangle_ID[i] = br.ReadUInt16();//0x0D62  (party1, party2, party3)
                 Direction = br.ReadBytes(3 * 1);//0x0D68  (party1, party2, party3)

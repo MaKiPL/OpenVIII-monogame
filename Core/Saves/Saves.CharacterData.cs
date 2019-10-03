@@ -71,6 +71,7 @@ namespace OpenVIII
         public class CharacterData : Damageable, ICharacterData
         {
             #region Fields
+
             /// <summary>
             /// Total amount of spells the will be loaded/saved.
             /// </summary>
@@ -111,6 +112,9 @@ namespace OpenVIII
                         }
                 }
             }
+
+            public OrderedDictionary<byte, byte> CloneMagic() => Magics.Clone();
+            public Dictionary<Kernel_bin.Stat, byte> CloneMagicJunction() => new Dictionary<Kernel_bin.Stat, byte>(Stat_J);
 
             #endregion Methods
 
@@ -238,21 +242,35 @@ namespace OpenVIII
             }
 
             public ushort ExperienceToNextLevel => (ushort)(Level == 100 ? 0 : MathHelper.Clamp(CharacterStats.EXP((byte)(Level + 1)) - Experience, 0, CharacterStats.EXP(2)));
-
-            public Characters ID { get; private set; }
+            private Characters id;
+            /// <summary>
+            /// If TeamLaguna the id will change to a Luguna Party member
+            /// </summary>
+            public Characters ID
+            {
+                get
+                {
+                    int ind = 0;
+                    if (Memory.State != null && Memory.State.TeamLaguna && (ind = Memory.State.PartyData.FindIndex(x => x.Equals(id))) >= 0 && !Memory.State.Party.Contains(id))
+                        return Memory.State.Party[ind];
+                    return id;
+                }
+            }
 
             public bool IsCritical => CurrentHP() <= CriticalHP();
 
             public override byte Level => CharacterStats.LEVEL(Experience);
 
+            /// <summary>
+            /// If TeamLaguna the name will change to a Luguna Party member
+            /// </summary>
             public override FF8String Name
             {
                 get
                 {
-                    int ind = 0;
-                    if (Memory.State != null && Memory.State.TeamLaguna && (ind = Memory.State.PartyData.FindIndex(x => x.Equals(ID))) >= 0 && !Memory.State.Party.Contains(ID))
+                    if (Memory.State != null && Memory.State.TeamLaguna)
                     {
-                        return Memory.Strings.GetName(Memory.State.Party[ind]);
+                        return Memory.Strings.GetName(ID);
                     }
                     return base.Name;
                 }
@@ -290,7 +308,7 @@ namespace OpenVIII
             /// <summary>
             /// Kernel Stats
             /// </summary>
-            public Kernel_bin.Character_Stats CharacterStats => Kernel_bin.CharacterStats[ID];
+            public Kernel_bin.Character_Stats CharacterStats => Kernel_bin.CharacterStats[id];
 
             public override byte EVA => checked((byte)TotalStat(Kernel_bin.Stat.EVA));
 
@@ -333,7 +351,7 @@ namespace OpenVIII
                     Statuses1 |= Kernel_bin.Battle_Only_Statuses.Shell;
             }
 
-            public CharacterData Clone()
+            public override Damageable Clone()
             {
                 //Shadowcopy
                 CharacterData c = (CharacterData)MemberwiseClone();
@@ -352,15 +370,7 @@ namespace OpenVIII
 
             public int CriticalHP(Characters value) => MaxHP(value) / 4 - 1;
 
-            public override ushort CurrentHP()
-            {
-                int ind = -1;
-                if (Memory.State?.Characters != null && Memory.State.TeamLaguna && (ind = Memory.State.PartyData.FindIndex(u => u == ID)) >= 0)
-                {
-                    return CurrentHP(Memory.State.Party[ind]);
-                }
-                return CurrentHP(ID);
-            }
+            public override ushort CurrentHP() => CurrentHP(ID);
 
             public ushort CurrentHP(Characters c)
             {
@@ -385,7 +395,7 @@ namespace OpenVIII
             {
                 ushort current = CurrentHP();
                 ushort max = MaxHP();
-                //if ((ID == Characters.Seifer_Almasy && CurrentHP() < (max * 84 / 100)))
+                //if ((id == Characters.Seifer_Almasy && CurrentHP() < (max * 84 / 100)))
                 //{
                 int HPMod = CharacterStats.Crisis * 10 * current / max;
                 int DeathBonus = Memory.State.DeadPartyMembers() * 200 + 1600;
@@ -435,32 +445,16 @@ namespace OpenVIII
             /// <returns></returns>
             public ushort MaxHP(Characters c) => TotalStat(Kernel_bin.Stat.HP, c);
 
-            public override ushort MaxHP()
-            {
-                int ind = -1;
-                if (Memory.State?.Characters != null && Memory.State.TeamLaguna && (ind = Memory.State.PartyData.FindIndex(u => u == ID)) >= 0)
-                {
-                    return MaxHP(Memory.State.Party[ind]);
-                }
-                return MaxHP(ID);
-            }
+            public override ushort MaxHP() => MaxHP(ID);
 
-            public override float PercentFullHP()
-            {
-                int ind = -1;
-                if (Memory.State?.Characters != null && Memory.State.TeamLaguna && (ind = Memory.State.PartyData.FindIndex(u => u == ID)) >= 0)
-                {
-                    return PercentFullHP(Memory.State.Party[ind]);
-                }
-                return PercentFullHP(ID);
-            }
+            public override float PercentFullHP() => PercentFullHP(ID);
 
             public float PercentFullHP(Characters c) => (float)CurrentHP(c) / MaxHP(c);
 
             public void Read(BinaryReader br, Characters c)
             {
                 //Name = Memory.Strings.GetName(c, data);
-                ID = c;
+                id = c;
                 _CurrentHP = br.ReadUInt16();//0x00
                 _HP = br.ReadUInt16();//0x02
                 Experience = br.ReadUInt32();//0x04
@@ -537,9 +531,9 @@ namespace OpenVIII
             public ushort TotalStat(Kernel_bin.Stat s, Characters c = Characters.Blank)
             {
                 if (c == Characters.Blank)
-                    c = ID;
-                if (c != ID && c < Characters.Laguna_Loire)
-                    throw new ArgumentException($"{this}::Wrong visible character value({c}). Must match ({ID}) unless Laguna Kiros or Ward!");
+                    c = id;
+                if (c != id && c < Characters.Laguna_Loire)
+                    throw new ArgumentException($"{this}::Wrong visible character value({c}). Must match ({id}) unless Laguna Kiros or Ward!");
                 int total = 0;
                 foreach (Kernel_bin.Abilities i in Abilities)
                 {
@@ -580,7 +574,7 @@ namespace OpenVIII
                 return 0;
             }
 
-            public override ushort TotalStat(Kernel_bin.Stat s) => throw new NotImplementedException();
+            public override ushort TotalStat(Kernel_bin.Stat s) => TotalStat(s,ID);
 
             public bool Unlocked(Kernel_bin.Stat stat) => Unlocked(UnlockedGFAbilities, stat);
 
@@ -624,6 +618,7 @@ namespace OpenVIII
                         return unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4);
                 }
             }
+
         }
 
         #endregion Classes

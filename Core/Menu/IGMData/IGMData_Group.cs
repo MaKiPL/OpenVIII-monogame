@@ -60,7 +60,7 @@ namespace OpenVIII
         {
             if (!skipdata)
                 foreach (Menu_Base i in ITEM)
-                    i?.Refresh(Character, VisibleCharacter);
+                    i?.Refresh(Damageable);
         }
 
         public override void Show()
