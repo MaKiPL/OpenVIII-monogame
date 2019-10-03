@@ -50,6 +50,7 @@ namespace OpenVIII
             ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Damageable);
             commands = new Kernel_bin.Battle_Commands[Rows];
             PointerZIndex = Limit_Arrow;
+            nonbattleWidth = Width;
         }
 
         //public override void Reset()
@@ -307,8 +308,6 @@ namespace OpenVIII
                     }
                 }
                 const int crisiswidth = 294;
-                if (Width != crisiswidth)
-                    nonbattleWidth = Width;
                 if (Battle && CrisisLevel)
                 {
                     CONTAINER.Width = crisiswidth;
