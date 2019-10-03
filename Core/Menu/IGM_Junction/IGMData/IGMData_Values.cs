@@ -100,45 +100,50 @@ namespace OpenVIII
                 }
             }
 
-            protected Dictionary<T, byte> getTotal<T>(out Enum[] availableFlagsarray, byte max, Kernel_bin.Stat stat, params byte[] spell) where T : Enum
+            protected Dictionary<T, byte> getTotal<T>(out Enum[] availableFlagsarray, byte max, Kernel_bin.Stat stat, params byte[] spells) where T : Enum
             {
+                const int maxspellcount = 100;
                 Dictionary<T, byte> total = new Dictionary<T, byte>(8);
-
                 IEnumerable<Enum> availableFlags = Enum.GetValues(typeof(T)).Cast<Enum>();
                 foreach (Enum flag in availableFlags.Where(d => !total.ContainsKey((T)d)))
                     total.Add((T)flag, 0);
-                for (int i = 0; i < spell.Length; i++)
+                for (int i = 0; i < spells.Length; i++)
                 {
                     Enum flags = null;
+                    byte spell = spells[i];
+                    Kernel_bin.Magic_Data magic_Data = Kernel_bin.MagicData[spell];
                     switch (stat)
                     {
                         case Kernel_bin.Stat.EL_Atk:
-                            flags = Kernel_bin.MagicData[spell[i]].EL_Atk;
+                            flags = magic_Data.EL_Atk;
                             break;
 
                         case Kernel_bin.Stat.EL_Def_1:
                         case Kernel_bin.Stat.EL_Def_2:
                         case Kernel_bin.Stat.EL_Def_3:
                         case Kernel_bin.Stat.EL_Def_4:
-                            flags = Kernel_bin.MagicData[spell[i]].EL_Def;
+                            flags = magic_Data.EL_Def;
                             break;
 
                         case Kernel_bin.Stat.ST_Atk:
-                            flags = Kernel_bin.MagicData[spell[i]].ST_Atk;
+                            flags = magic_Data.ST_Atk;
                             break;
 
                         case Kernel_bin.Stat.ST_Def_1:
                         case Kernel_bin.Stat.ST_Def_2:
                         case Kernel_bin.Stat.ST_Def_3:
                         case Kernel_bin.Stat.ST_Def_4:
-                            flags = Kernel_bin.MagicData[spell[i]].ST_Def;
+                            flags = magic_Data.ST_Def;
                             break;
                     }
                     if (flags != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                         foreach (Enum flag in availableFlags.Where(flags.HasFlag))
                         {
-                            int t = total[(T)flag] + ((Kernel_bin.MagicData[spell[i]].J_Val[stat] * c.Magics[spell[i]]) / 100);
-                            total[(T)flag] = (byte)MathHelper.Clamp(t,0,max);
+                            if (c.Magics.TryGetByKey(spell, out byte count) && magic_Data.J_Val.TryGetValue(stat, out byte value))
+                            {
+                                int t = total[(T)flag] + (value * count / maxspellcount);
+                                total[(T)flag] = (byte)MathHelper.Clamp(t, 0, max);
+                            }
                         }
                     else
                         throw new Exception($"Unknown stat, {stat}");
