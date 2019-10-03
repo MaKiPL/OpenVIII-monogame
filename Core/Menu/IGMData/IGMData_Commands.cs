@@ -288,7 +288,8 @@ namespace OpenVIII
                             continue;
                         }
 #if DEBUG
-                        commands[pos] = Kernel_bin.BattleCommands[Cidoff++];
+                        if(!Battle) commands[pos] = cmdval.BattleCommand;
+                        else commands[pos] = Kernel_bin.BattleCommands[Cidoff++];
 #else
                         commands[pos] = cmdval.BattleCommand;
 #endif
