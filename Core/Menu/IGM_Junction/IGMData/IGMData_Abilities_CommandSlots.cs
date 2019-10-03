@@ -31,7 +31,7 @@ namespace OpenVIII
                             ITEM[i, 1] = new IGMDataItem_String(
                                     Kernel_bin.BattleCommands[
                                         c.Abilities.Contains(Kernel_bin.Abilities.Mug) ?
-                                        13 :
+                                        12 :
                                         1].Name,
                                     new Rectangle(SIZE[i].X + 80, SIZE[i].Y, 0, 0));
                         }
