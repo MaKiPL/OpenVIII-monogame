@@ -81,9 +81,10 @@ namespace OpenVIII
             public override void UndoChange()
             {
                 //override this use it to take value of prevSetting and restore the setting unless default method works
-                if (GetPrevSetting() != null)
+                if (GetPrevSetting() != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
-                    Damageable = GetPrevSetting().Clone();
+                    c.Magics = GetPrevSetting().CloneMagic();
+                    c.Stat_J = GetPrevSetting().CloneMagicJunction();
                 }
             }
 
@@ -92,7 +93,7 @@ namespace OpenVIII
                 if (!eventAdded)
                 {
                     IGMData_Mag_Pool.SlotConfirmListener += ConfirmChangeEvent;
-                    IGMData_Mag_Pool.SlotReinitListener += ReInitEvent;
+                    IGMData_Mag_Pool.SlotRefreshListener += ReInitEvent;
                     IGMData_Mag_Pool.SlotUndoListener += UndoChangeEvent;
                 }
                 base.AddEventListener();
@@ -147,7 +148,7 @@ namespace OpenVIII
 
             private void ConfirmChangeEvent(object sender, Mode e) => ConfirmChange();
 
-            private void ReInitEvent(object sender, Mode e) => Refresh();
+            private void ReInitEvent(object sender, Damageable e) => Refresh(e);
 
             private void UndoChangeEvent(object sender, Mode e) => UndoChange();
 
