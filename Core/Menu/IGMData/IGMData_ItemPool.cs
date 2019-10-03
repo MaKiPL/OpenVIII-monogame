@@ -17,7 +17,7 @@ namespace OpenVIII
 
         #region Properties
 
-        private int Targets_Window => Rows;
+        private int Targets_Window => Count-3;
 
         #endregion Properties
 
@@ -40,8 +40,7 @@ namespace OpenVIII
                 ITEM[pos, 0] = new IGMDataItem_String(null, SIZE[pos]);
                 ITEM[pos, 1] = new IGMDataItem_Int(0, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0), numtype: Icons.NumType.sysFntBig, spaces: 3);
             }
-            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Damageable);
-            ITEM[Rows - 1, 2] = new IGMDataItem_Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows - 1].X + SIZE[Rows - 1].Width - 60, Y, 0, 0), scale: new Vector2(2.5f));
+            ITEM[Count - 1, 2] = new IGMDataItem_Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows - 1].X + SIZE[Rows - 1].Width - 60, Y, 0, 0), scale: new Vector2(2.5f));
             PointerZIndex = Rows - 1;
         }
 
@@ -51,8 +50,11 @@ namespace OpenVIII
             //SIZE[i].Inflate(-18, -20);
             //SIZE[i].Y -= 5 * row;
             SIZE[i].Inflate(-22, -8);
-            SIZE[i].Offset(0, 12 + (-8 * row));
-            SIZE[i].Height = (int)(12 * TextScale.Y);
+            //SIZE[i].Offset(0, 12 + (-8 * row));
+            int v = (int)(12 * TextScale.Y);
+            SIZE[i].Height = v;
+            SIZE[i].Y = Y + 18 + row*((Height-16)/Rows);
+
         }
 
         protected override void ModeChangeEvent(object sender, Enum e)
@@ -111,12 +113,15 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_ItemPool(Rectangle pos, bool battle, int count = 4) : base(count + 1, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.ITEM), count, 198 / count + 1) => Battle = battle;
-
-        public IGMData_ItemPool() : base(11, 3, new IGMDataItem_Box(pos: new Rectangle(5, 150, 415, 480), title: Icons.ID.ITEM), 11, 18)
+        public IGMData_ItemPool(Rectangle pos, bool battle, int count = 4) : base(count + 1, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.ITEM), count, 198 / count + 1)
         {
-            if (!Battle)
-                ITEM[Targets_Window, 0] = null;
+            Battle = battle;
+            if(battle)
+                ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Damageable);
+        }
+
+        public IGMData_ItemPool() : this(new Rectangle(5, 150, 415, 480), false, 13)
+        {
         }
 
         #endregion Constructors
@@ -128,6 +133,7 @@ namespace OpenVIII
 
         public override bool Inputs()
         {
+            
             bool ret = false;
             if (InputITEM(Targets_Window, 0, ref ret))
             {
