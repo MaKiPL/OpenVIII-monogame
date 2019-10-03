@@ -219,7 +219,7 @@ namespace OpenVIII
 
         public static EventHandler<IGM_Junction.Mode> SlotConfirmListener;
 
-        public static EventHandler<IGM_Junction.Mode> SlotReinitListener;
+        public static EventHandler<Damageable> SlotRefreshListener;
 
         public static EventHandler<IGM_Junction.Mode> SlotUndoListener;
 
@@ -339,7 +339,7 @@ namespace OpenVIII
                         skipundo = false;
                     }
                     Source.JunctionSpell(Stat, Contents[CURSOR_SELECT]);
-                    SlotReinitListener?.Invoke(this, (IGM_Junction.Mode)Menu.IGM_Junction.GetMode());
+                    SlotRefreshListener?.Invoke(this,Damageable);
                 }
             }
         }
@@ -409,7 +409,7 @@ namespace OpenVIII
                 {
                     SlotUndoListener?.Invoke(this, (IGM_Junction.Mode)Menu.IGM_Junction.GetMode());
                     SlotConfirmListener?.Invoke(this, (IGM_Junction.Mode)Menu.IGM_Junction.GetMode());
-                    SlotReinitListener?.Invoke(this, (IGM_Junction.Mode)Menu.IGM_Junction.GetMode());
+                    SlotRefreshListener?.Invoke(this, Damageable);
                     switch (SortMode)
                     {
                         case IGM_Junction.Mode.Mag_Pool_Stat:
