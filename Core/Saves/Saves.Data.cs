@@ -28,7 +28,8 @@ namespace OpenVIII
 
             private CharacterData GetDamageable(Characters id)
             {
-                if (Characters != null && !Characters.TryGetValue(id, out CharacterData c))
+                CharacterData c = null;
+                if (Characters != null && !Characters.TryGetValue(id, out c))
                 {
                     var ind = Party.FindIndex(x=>x.Equals(id));
 
@@ -36,7 +37,7 @@ namespace OpenVIII
                         throw new ArgumentException($"{this}::Cannot find {id} in CharacterData or Party");
                     return c;
                 }
-                return null;
+                return c;
             }
 
             private GFData GetDamageable(GFs id) => GFs.ContainsKey(id) ? GFs[id] : null;
