@@ -591,7 +591,6 @@ namespace OpenVIII
         /// <param name="localRotation"></param>
         private static void InputUpdate(out float localRotation)
         {
-            Vector3 oldpos = playerPosition;
             localRotation = 0f;
             bHasMoved = false;
             lastPlayerPosition = playerPosition;
@@ -663,8 +662,8 @@ namespace OpenVIII
                 }
                 if (bHasMoved)
                 {
-                    Vector3 vector3 = playerPosition - oldpos; // gets the vector between the old and new calculated pos.
-                    vector3.Normalize(); //prevents speed up from going in more than one direction.
+                    Vector3 diffvect = (playerPosition - lastPlayerPosition); // gets the vector between the old and new calculated pos.
+                    diffvect.Normalize(); //prevents speed up from going in more than one direction.
                     // this will slow your movement based on stick.
                     //not best for squall but maybe for vehicles
                     //if (shift != Vector2.Zero)
@@ -674,10 +673,10 @@ namespace OpenVIII
                     //    //Debug.WriteLine($"Dist: {dist}, DistMax: {distmax}");
                     //    vector3 *= dist / distmax;
                     //}
-                    playerPosition = oldpos + vector3;
-                    DetectedSpeed = Vector3.Distance(playerPosition, oldpos);
+                    playerPosition = lastPlayerPosition + diffvect;
+                    DetectedSpeed = Vector3.Distance(playerPosition, lastPlayerPosition);
 
-                    localRotation = (float)Math.Atan2(-vector3.X, -vector3.Z); //this seems to make squall face the correct direction each time.
+                    localRotation = (float)Math.Atan2(-diffvect.X, -diffvect.Z); //this seems to make squall face the correct direction each time.
                 }
                 else
                     DetectedSpeed = 0f;
@@ -906,6 +905,8 @@ namespace OpenVIII
             Memory.SpriteBatchStartAlpha();
             float playerangle = MathHelper.ToDegrees(worldCharacterInstances[currentControllableEntity].localRotation);
             if (playerangle < 0) playerangle += 360f;
+            double totalMilliseconds = Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
+            RecentFrameTimes.Add(totalMilliseconds);
             Memory.font.RenderBasicText(
                 $"World map MapState: ={MapState}\n" +
                 $"World Map Camera: ={camPosition}\n" +
@@ -919,8 +920,16 @@ namespace OpenVIII
                 $"debugshit: ={DEBUGshit}\n" +
                 $"Press 9 to enable debug FPS camera: ={(worldState == _worldState._1active ? "orbit camera" : "FPS debug camera")}\n" +
                 $"FPS camera degrees: ={degrees}°\n" +
+                $"1000/deltaTime milliseconds: {$"{1000 / totalMilliseconds:000.000}"}\n" +
+                $"Avg FPS: { $"{1000/RecentFrameTimes.Average():000.000}" } \n" +
+                $"Avg frametime: { $"{RecentFrameTimes.Average():00.000}" } ms\n" +
+                $"Max frametime: { $"{RecentFrameTimes.Max():00.000}" } ms\n" +
+                $"Min frametime: { $"{RecentFrameTimes.Min():00.000}" } ms\n" +
                 $"FOV: ={FOV}", 30, 20, 1f, 2f, lineSpacing: 5);
             Memory.SpriteBatchEnd();
+
+            while (RecentFrameTimes.Count >= 100)
+                RecentFrameTimes.RemoveAt(0);
         }
 
         private static float GetSegmentVectorPlayerPosition() => segmentPosition.Y * 32 + segmentPosition.X;
@@ -1082,6 +1091,7 @@ namespace OpenVIII
         private static Vector3 localMchTranslation = new Vector3(0, 6f, 0);
 
         private static Vector2 Scale;
+        private static List<double> RecentFrameTimes = new List<double>(100);
 
         private static void DrawCharacter(worldCharacterInstance? charaInstance_)
         {
