@@ -182,6 +182,8 @@ namespace OpenVIII
             public int currentAnimFrame;
             public float animationDeltaTime;
             public bool bDraw;
+            public float localvRotation;
+            internal Quaternion localquaternion;
         }
 
         private static _worldState worldState;
@@ -267,7 +269,7 @@ namespace OpenVIII
             };
 
             ReadWorldMapFiles();
-            worldCharacterInstances[0] = new worldCharacterInstance() { activeCharacter = worldCharacters.SquallCasual, worldPosition = playerPosition, localRotation = -90f, currentAnimationId = 0, currentAnimFrame = 0 };
+            worldCharacterInstances[0] = new worldCharacterInstance() { activeCharacter = worldCharacters.Ragnarok, worldPosition = playerPosition, localRotation = -90f, currentAnimationId = 0, currentAnimFrame = 0 };
             worldState++;
             return;
         }
@@ -462,13 +464,13 @@ namespace OpenVIII
             if (Input2.Button(Keys.D8))
                 bDebugDisableCollision = !bDebugDisableCollision;
 
-            InputUpdate(out float localRotator);
+            InputUpdate(out Quaternion quaternion);
             CollisionUpdate();
             AnimationUpdate();
             if (bHasMoved)
             {
                 worldCharacterInstances[currentControllableEntity].worldPosition = playerPosition;
-                worldCharacterInstances[currentControllableEntity].localRotation = localRotator;
+                worldCharacterInstances[currentControllableEntity].localquaternion = quaternion;
                 EncounterUpdate();
             }
         }
@@ -588,10 +590,10 @@ namespace OpenVIII
         /// Provides 4-axis support for input of currently controlled entity
         /// TODO: extend to 360/ fix diagonal double speed/ calculate local degrees based on sticks
         /// </summary>
-        /// <param name="localRotation"></param>
-        private static void InputUpdate(out float localRotation)
+        /// <param name="localquaternion"></param>
+        private static void InputUpdate(out Quaternion localquaternion)
         {
-            localRotation = 0f;
+            localquaternion = default;
             bHasMoved = false;
             lastPlayerPosition = playerPosition;
 
@@ -620,6 +622,13 @@ namespace OpenVIII
             if (worldState != _worldState._9debugFly)
             {
                 Vector2 shift = InputGamePad.Distance(GamePadButtons.ThumbSticks_Left, 1f);
+                Vector2 right = InputGamePad.Distance(GamePadButtons.ThumbSticks_Right, 1f);
+
+                if (right.Y != 0 && worldCharacterInstances[0].activeCharacter == worldCharacters.Ragnarok)
+                {
+                    playerPosition.Y += MathHelper.Clamp(right.Y, -10f, 10f) / 10f;
+                    bHasMoved = true;
+                }
                 if (shift != Vector2.Zero)
                 {
                     float angle = VectorToAngle(shift);
@@ -666,21 +675,32 @@ namespace OpenVIII
                     diffvect.Normalize(); //prevents speed up from going in more than one direction.
                     // this will slow your movement based on stick.
                     //not best for squall but maybe for vehicles
-                    //if (shift != Vector2.Zero)
-                    //{
-                    //    const float distmax = 10f;
-                    //    float dist = MathHelper.Clamp(Vector2.Distance(Vector2.Zero, shift), 0f, distmax);
-                    //    //Debug.WriteLine($"Dist: {dist}, DistMax: {distmax}");
-                    //    vector3 *= dist / distmax;
-                    //}
+                    if (shift != Vector2.Zero && InVehicle)
+                    {
+                        const float distmax = 10f;
+                        float dist = MathHelper.Clamp(Vector2.Distance(Vector2.Zero, shift), 0f, distmax);
+                        //Debug.WriteLine($"Dist: {dist}, DistMax: {distmax}");
+                        diffvect *= dist / distmax;
+                    }
                     playerPosition = lastPlayerPosition + diffvect;
                     DetectedSpeed = Vector3.Distance(playerPosition, lastPlayerPosition);
 
-                    localRotation = (float)Math.Atan2(-diffvect.X, -diffvect.Z); //this seems to make squall face the correct direction each time.
+
+                    //https://www.codeproject.com/Questions/324240/Determining-yaw-pitch-and-roll
+                    Matrix matrix = Matrix.CreateLookAt(lastPlayerPosition, playerPosition, Vector3.Up);
+                    float yaw = (float)Math.Atan2(matrix.M13, matrix.M33);
+                    float pitch = (float)Math.Asin(-matrix.M23);
+                    float roll = (float)Math.Atan2(matrix.M21, matrix.M22);
+                    if (yaw ==0f) yaw = worldCharacterInstances[currentControllableEntity].localRotation;
+                    else
+                        worldCharacterInstances[currentControllableEntity].localRotation = yaw;
+                    //localRotation = (float)Math.Atan2(-diffvect.X, -diffvect.Z); //this seems to make squall face the correct direction each time.
+
+                    localquaternion = Quaternion.CreateFromYawPitchRoll(yaw, pitch, 0f);
+                    worldCharacterInstances[currentControllableEntity].localvRotation = pitch;
                 }
                 else
                     DetectedSpeed = 0f;
-
             }
         }
 
@@ -725,7 +745,7 @@ namespace OpenVIII
                     RaycastedTris.Add(new Tuple<ParsedTriangleData, Vector3, bool>(seg.parsedTriangle[i], skyBarycentric, true));
 
             //don't allow walking over non-walkable faces - just because we tested both rays we can make this linq appear only once
-            if (!bDebugDisableCollision)
+            if (!BDebugDisableCollision)
                 RaycastedTris = RaycastedTris.Where(x => (x.Item1.parentPolygon.vertFlags & TRIFLAGS_COLLIDE) != 0 && x.Item2 != Vector3.Zero).ToList();
 
 #if DEBUG
@@ -745,7 +765,7 @@ namespace OpenVIII
                     if (distY > 10f)
                         continue;
                 Vector3 squaPos = prt.Item2;
-                playerPosition.Y = squaPos.Y;
+                MinYPos(squaPos);
                 activeCollidePolygon = prt.Item1.parentPolygon;
 #if DEBUG
                 bSelectedWalkable = prt.Item1.parentPolygon.vertFlags;
@@ -762,7 +782,7 @@ namespace OpenVIII
                 if ((prt.Item1.parentPolygon.vertFlags & TRIFLAGS_FORESTTEST) != 0) //this opts out non-forest faces
                     continue;
                 Vector3 squaPos = prt.Item2;
-                playerPosition.Y = squaPos.Y;
+                MinYPos(squaPos);
                 activeCollidePolygon = prt.Item1.parentPolygon;
 #if DEBUG
                 bSelectedWalkable = prt.Item1.parentPolygon.vertFlags;
@@ -771,6 +791,14 @@ namespace OpenVIII
             }
 
             playerPosition = lastPlayerPosition;
+        }
+
+        private static void MinYPos(Vector3 squaPos)
+        {
+            if (worldCharacterInstances[0].activeCharacter != worldCharacters.Ragnarok || playerPosition.Y < squaPos.Y)
+            {
+                playerPosition.Y = squaPos.Y;
+            }
         }
 
         /// <summary>
@@ -794,7 +822,9 @@ namespace OpenVIII
             Vector2 shift = InputMouse.Distance(MouseButtons.MouseToStick, FPS_Camera.maxLookSpeedMouse);
             // check right stick to adjust camera
 
-            shift += InputGamePad.Distance(GamePadButtons.ThumbSticks_Right, FPS_Camera.maxLookSpeedGamePad);
+            Vector2 rightstick = InputGamePad.Distance(GamePadButtons.ThumbSticks_Right, FPS_Camera.maxLookSpeedGamePad);
+            //Debug.WriteLine($"{rightstick.X}");
+            shift += rightstick;
             if (Input2.Button(FF8TextTagKey.RotateLeft, ButtonTrigger.Press | ButtonTrigger.IgnoreDelay))
                 degrees -= RotationInterval;
             if (Input2.Button(FF8TextTagKey.RotateRight, ButtonTrigger.Press | ButtonTrigger.IgnoreDelay))
@@ -921,7 +951,7 @@ namespace OpenVIII
                 $"Press 9 to enable debug FPS camera: ={(worldState == _worldState._1active ? "orbit camera" : "FPS debug camera")}\n" +
                 $"FPS camera degrees: ={degrees}°\n" +
                 $"1000/deltaTime milliseconds: {$"{1000 / totalMilliseconds:000.000}"}\n" +
-                $"Avg FPS: { $"{1000/RecentFrameTimes.Average():000.000}" } \n" +
+                $"Avg FPS: { $"{1000 / RecentFrameTimes.Average():000.000}" } \n" +
                 $"Avg frametime: { $"{RecentFrameTimes.Average():00.000}" } ms\n" +
                 $"Max frametime: { $"{RecentFrameTimes.Max():00.000}" } ms\n" +
                 $"Min frametime: { $"{RecentFrameTimes.Min():00.000}" } ms\n" +
@@ -1093,6 +1123,10 @@ namespace OpenVIII
         private static Vector2 Scale;
         private static List<double> RecentFrameTimes = new List<double>(100);
 
+        public static bool InVehicle => worldCharacterInstances[0].activeCharacter == worldCharacters.Ragnarok;
+
+        public static bool BDebugDisableCollision { get => bDebugDisableCollision || worldCharacterInstances[0].activeCharacter == worldCharacters.Ragnarok; set => bDebugDisableCollision = value; }
+
         private static void DrawCharacter(worldCharacterInstance? charaInstance_)
         {
             if (charaInstance_ == null)
@@ -1101,7 +1135,7 @@ namespace OpenVIII
             int MchIndex = (int)charaInstance.activeCharacter;
             if (charaInstance.currentAnimationId >= chara.GetMCH(MchIndex).GetAnimationCount())
                 charaInstance.currentAnimationId = 0;
-            Tuple<VertexPositionColorTexture[], byte[]> charaCollection = chara.GetMCH(MchIndex).GetVertexPositions(charaInstance.worldPosition + localMchTranslation, Quaternion.CreateFromYawPitchRoll(charaInstance.localRotation, 0f, 0f), charaInstance.currentAnimationId, charaInstance.currentAnimFrame);
+            Tuple<VertexPositionColorTexture[], byte[]> charaCollection = chara.GetMCH(MchIndex).GetVertexPositions(charaInstance.worldPosition + localMchTranslation, charaInstance.localquaternion /*Quaternion.CreateFromYawPitchRoll(charaInstance.localRotation, charaInstance.localvRotation, 0f)*/, charaInstance.currentAnimationId, charaInstance.currentAnimFrame);
 
             int textureIndexBase; //chara.one contains textures one-by-one but mch indexes are based from zero for each character. That's why we have to sum texIndexes from previous meshes
             switch (charaInstance.activeCharacter)
