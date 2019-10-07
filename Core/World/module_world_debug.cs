@@ -685,18 +685,20 @@ namespace OpenVIII
                     playerPosition = lastPlayerPosition + diffvect;
                     DetectedSpeed = Vector3.Distance(playerPosition, lastPlayerPosition);
 
-
+                    float yaw, pitch, roll =0f;
                     //https://www.codeproject.com/Questions/324240/Determining-yaw-pitch-and-roll
-                    Matrix matrix = Matrix.CreateLookAt(lastPlayerPosition, playerPosition, Vector3.Up);
-                    float yaw = (float)Math.Atan2(matrix.M13, matrix.M33);
-                    float pitch = (float)Math.Asin(-matrix.M23);
-                    float roll = (float)Math.Atan2(matrix.M21, matrix.M22);
-                    if (yaw ==0f) yaw = worldCharacterInstances[currentControllableEntity].localRotation;
+                    //Matrix matrix = Matrix.CreateLookAt(lastPlayerPosition, playerPosition, Vector3.Up);
+                    //float yaw = (float)Math.Atan2(matrix.M13, matrix.M33);
+                    //float pitch = (float)Math.Asin(-matrix.M23);
+                    //float roll = (float)Math.Atan2(matrix.M21, matrix.M22);
+                    yaw = (float)Math.Atan2(-diffvect.X, -diffvect.Z); //this seems to make squall face the correct direction each time.
+                    pitch = (float)Math.Atan2(diffvect.Y, Math.Abs(diffvect.X));
+
+                    if (yaw == 0f) yaw = worldCharacterInstances[currentControllableEntity].localRotation;
                     else
                         worldCharacterInstances[currentControllableEntity].localRotation = yaw;
-                    //localRotation = (float)Math.Atan2(-diffvect.X, -diffvect.Z); //this seems to make squall face the correct direction each time.
 
-                    localquaternion = Quaternion.CreateFromYawPitchRoll(yaw, pitch, 0f);
+                    localquaternion = Quaternion.CreateFromYawPitchRoll(yaw, pitch, roll);
                     worldCharacterInstances[currentControllableEntity].localvRotation = pitch;
                 }
                 else
@@ -708,7 +710,7 @@ namespace OpenVIII
         /// ParsedTriangleData- struct contains all available data paired with found triangle Vector3
         /// - contains barycentric based on playerPosition bool - bIsSkyRaycasted - used for sky raycast
         /// </summary>
-        private static List<Tuple<ParsedTriangleData, Vector3, bool>> RaycastedTris;
+        private static List<RayCastedTris> RaycastedTris;
 
         /// <summary>
 
@@ -721,7 +723,19 @@ namespace OpenVIII
         public static int GetRealSegmentId() => (int)(segmentPosition.Y * 32 + segmentPosition.X); //explicit public for wmset and warping sections
 
         public static int GetRealSegmentId(float x, float y) => (int)((y < 0 ? 24 + y : y) * 32 + (x < 0 ? 32 + x : x)); //explicit public for wmset and warping sections
+        private struct RayCastedTris
+        {
+            public ParsedTriangleData data;
+            public Vector3 pos;
+            public bool sky;
 
+            public RayCastedTris(ParsedTriangleData data, Vector3 pos, bool sky)
+            {
+                this.data = data;
+                this.pos = pos;
+                this.sky = sky;
+            }
+        }
         /// <summary> This method checks for collision- uses raycasting and 3Dintersection to either
         /// allow movement, update it and/or warp player. If all checks fails it returns to last
         /// known correct player position
@@ -733,59 +747,59 @@ namespace OpenVIII
             int realSegmentId = GetRealSegmentId();
             realSegmentId = SetInterchangeableZone(realSegmentId);
             Segment seg = segments[realSegmentId];
-            RaycastedTris = new List<Tuple<ParsedTriangleData, Vector3, bool>>();
+            RaycastedTris = new List<RayCastedTris>();
             Ray characterRay = new Ray(playerPosition + new Vector3(0, 10f, 0), Vector3.Down); //sets ray origin
             Ray skyRay = new Ray(GetForwardSkyRaycastVector(SKYRAYCAST_FIXEDDISTANCE), Vector3.Down);
 
             //loop through current block triangles - two rays at the same time. There are only two rays and multi triangles, so iterate triangles and check rays instead of double checking
             for (int i = 0; i < seg.parsedTriangle.Length; i++)
                 if (Extended.RayIntersection3D(characterRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out Vector3 characterBarycentric) != 0)
-                    RaycastedTris.Add(new Tuple<ParsedTriangleData, Vector3, bool>(seg.parsedTriangle[i], characterBarycentric, false));
+                    RaycastedTris.Add(new RayCastedTris(seg.parsedTriangle[i], characterBarycentric, false));
                 else if (Extended.RayIntersection3D(skyRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out Vector3 skyBarycentric) != 0)
-                    RaycastedTris.Add(new Tuple<ParsedTriangleData, Vector3, bool>(seg.parsedTriangle[i], skyBarycentric, true));
+                    RaycastedTris.Add(new RayCastedTris(seg.parsedTriangle[i], skyBarycentric, true));
 
             //don't allow walking over non-walkable faces - just because we tested both rays we can make this linq appear only once
             if (!BDebugDisableCollision)
-                RaycastedTris = RaycastedTris.Where(x => (x.Item1.parentPolygon.vertFlags & TRIFLAGS_COLLIDE) != 0 && x.Item2 != Vector3.Zero).ToList();
+                RaycastedTris = RaycastedTris.Where(x => (x.data.parentPolygon.vertFlags & TRIFLAGS_COLLIDE) != 0 && x.pos != Vector3.Zero).ToList();
 
 #if DEBUG
-            countofDebugFaces = new Vector2(
-                RaycastedTris.Where(x => !x.Item3).Count(),
-                RaycastedTris.Where(x => x.Item3).Count()
+            countofDebugFaces = new Point(
+                RaycastedTris.Where(x => !x.sky).Count(),
+                RaycastedTris.Where(x => x.sky).Count()
                 );
 #endif
 
-            foreach (Tuple<ParsedTriangleData, Vector3, bool> prt in RaycastedTris)
+            foreach (var prt in RaycastedTris)
             {
-                if (prt.Item3) //we do not want skyRaycasts here, iterate only characterRay
+                if (prt.sky) //we do not want skyRaycasts here, iterate only characterRay
                     continue;
-                Vector3 distance = playerPosition - prt.Item2;
+                Vector3 distance = playerPosition - prt.pos;
                 float distY = Math.Abs(distance.Y);
-                if ((prt.Item1.parentPolygon.vertFlags & TRIFLAGS_FORESTTEST) == 0)
+                if ((prt.data.parentPolygon.vertFlags & TRIFLAGS_FORESTTEST) == 0)
                     if (distY > 10f)
                         continue;
-                Vector3 squaPos = prt.Item2;
+                Vector3 squaPos = prt.pos;
                 MinYPos(squaPos);
-                activeCollidePolygon = prt.Item1.parentPolygon;
+                activeCollidePolygon = prt.data.parentPolygon;
 #if DEBUG
-                bSelectedWalkable = prt.Item1.parentPolygon.vertFlags;
+                bSelectedWalkable = prt.data.parentPolygon.vertFlags;
 #endif
                 return;
             }
             //out of loop- failed to obtain collision or abandon move - we need to check now if player wanted to get to forest
 
-            foreach (Tuple<ParsedTriangleData, Vector3, bool> prt in RaycastedTris)
+            foreach (var prt in RaycastedTris)
             {
-                if (!prt.Item3) //we do not want skyRaycasts here, iterate only characterRay
+                if (!prt.sky) //we do not want skyRaycasts here, iterate only characterRay
                     continue;
                 //we do not want to check for Y here
-                if ((prt.Item1.parentPolygon.vertFlags & TRIFLAGS_FORESTTEST) != 0) //this opts out non-forest faces
+                if ((prt.data.parentPolygon.vertFlags & TRIFLAGS_FORESTTEST) != 0) //this opts out non-forest faces
                     continue;
-                Vector3 squaPos = prt.Item2;
+                Vector3 squaPos = prt.pos;
                 MinYPos(squaPos);
-                activeCollidePolygon = prt.Item1.parentPolygon;
+                activeCollidePolygon = prt.data.parentPolygon;
 #if DEBUG
-                bSelectedWalkable = prt.Item1.parentPolygon.vertFlags;
+                bSelectedWalkable = prt.data.parentPolygon.vertFlags;
 #endif
                 return;
             }
@@ -1022,7 +1036,7 @@ namespace OpenVIII
 #if DEBUG
 
         private static byte bSelectedWalkable = 0;
-        private static Vector2 countofDebugFaces = Vector2.Zero;
+        private static Point countofDebugFaces = Point.Zero;
         private static bool bDebugDisableCollision = false;
 
         private static void DrawDebug()
@@ -1085,9 +1099,9 @@ namespace OpenVIII
             };
 
             if (RaycastedTris.Count != 0)
-                foreach (Tuple<ParsedTriangleData, Vector3, bool> tt in RaycastedTris)
+                foreach (var tt in RaycastedTris)
                 {
-                    ParsedTriangleData triangle = tt.Item1;
+                    ParsedTriangleData triangle = tt.data;
                     VertexPositionColor[] verts2 = new[] {new VertexPositionColor(triangle.A, Color.White),
                 new VertexPositionColor(triangle.B, Color.White),
 
