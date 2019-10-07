@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Input;
 using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace OpenVIII
 {
@@ -82,7 +83,10 @@ namespace OpenVIII
 
                     case GamePadButtons.ThumbSticks_Right:
                     case GamePadButtons.RightStick:
-                        return _state.ThumbSticks.Right;
+                        Vector2 right = _state.ThumbSticks.Right;
+                        if (Math.Abs(right.X) < 0.09f) //deadzone
+                            right.X = 0;
+                        return right;
                 }
             return Vector2.Zero;
         }
