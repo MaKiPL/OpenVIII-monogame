@@ -5,7 +5,6 @@ using OpenVIII.Core.World;
 using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -183,7 +182,7 @@ namespace OpenVIII
             public float animationDeltaTime;
             public bool bDraw;
             public float localvRotation;
-            internal Quaternion localquaternion;
+            public Quaternion localquaternion;
         }
 
         private static _worldState worldState;
@@ -464,13 +463,13 @@ namespace OpenVIII
             if (Input2.Button(Keys.D8))
                 bDebugDisableCollision = !bDebugDisableCollision;
 
-            InputUpdate(out Quaternion quaternion);
+            InputUpdate();
             CollisionUpdate();
             AnimationUpdate();
             if (bHasMoved)
             {
                 worldCharacterInstances[currentControllableEntity].worldPosition = playerPosition;
-                worldCharacterInstances[currentControllableEntity].localquaternion = quaternion;
+                UpdatePlayerQuaternion(ref worldCharacterInstances[currentControllableEntity].localquaternion);
                 EncounterUpdate();
             }
         }
@@ -491,22 +490,47 @@ namespace OpenVIII
             else
                 worldCharacterInstances[currentControllableEntity].currentAnimationId = 0;
 
+            bool reverse = false;
             for (int i = 0; i < worldCharacterInstances.Length; i++)
             {
                 worldCharacterInstance instance = worldCharacterInstances[i];
+                bool flying = currentControllableEntity != i;
+                uint framesCount = chara.GetMCH((int)instance.activeCharacter).GetAnimationFramesCount(instance.currentAnimationId);
+
                 if (!(instance as worldCharacterInstance?).HasValue)
                     continue;
+                if (instance.activeCharacter == worldCharacters.Ragnarok && !flying)
+                    reverse = true;
 
                 if (instance.animationDeltaTime >= (1000 / 60.0))
                 {
-                    instance.currentAnimFrame++;
+                    if (reverse)
+                        instance.currentAnimFrame--;
+                    else
+                        instance.currentAnimFrame++;
                     instance.animationDeltaTime = 0;
                 }
                 else instance.animationDeltaTime += Memory.gameTime.ElapsedGameTime.Milliseconds;
 
-                uint framesCount = chara.GetMCH((int)instance.activeCharacter).GetAnimationFramesCount(instance.currentAnimationId);
+                if (instance.activeCharacter == worldCharacters.Ragnarok)
+                {
+                    if (flying)
+                    {
+                        if (instance.currentAnimFrame > framesCount - 1)
+                            continue;
+                    }
+                    else
+                    {
+                        if (instance.currentAnimFrame < 0)
+                            continue;
+                    }
+                }
+
                 if (instance.currentAnimFrame > framesCount - 1)
                     instance.currentAnimFrame = 0;
+                else if (instance.currentAnimFrame < 0)
+                    instance.currentAnimFrame = checked((int)framesCount - 1);
+
                 worldCharacterInstances[i] = instance;
             }
         }
@@ -591,9 +615,8 @@ namespace OpenVIII
         /// TODO: extend to 360/ fix diagonal double speed/ calculate local degrees based on sticks
         /// </summary>
         /// <param name="localquaternion"></param>
-        private static void InputUpdate(out Quaternion localquaternion)
+        private static void InputUpdate()
         {
-            localquaternion = default;
             bHasMoved = false;
             lastPlayerPosition = playerPosition;
 
@@ -683,27 +706,34 @@ namespace OpenVIII
                         diffvect *= dist / distmax;
                     }
                     playerPosition = lastPlayerPosition + diffvect;
-                    DetectedSpeed = Vector3.Distance(playerPosition, lastPlayerPosition);
-
-                    float yaw, pitch, roll =0f;
-                    //https://www.codeproject.com/Questions/324240/Determining-yaw-pitch-and-roll
-                    //Matrix matrix = Matrix.CreateLookAt(lastPlayerPosition, playerPosition, Vector3.Up);
-                    //float yaw = (float)Math.Atan2(matrix.M13, matrix.M33);
-                    //float pitch = (float)Math.Asin(-matrix.M23);
-                    //float roll = (float)Math.Atan2(matrix.M21, matrix.M22);
-                    yaw = (float)Math.Atan2(-diffvect.X, -diffvect.Z); //this seems to make squall face the correct direction each time.
-                    pitch = (float)Math.Atan2(diffvect.Y, Math.Abs(diffvect.X));
-
-                    if (yaw == 0f) yaw = worldCharacterInstances[currentControllableEntity].localRotation;
-                    else
-                        worldCharacterInstances[currentControllableEntity].localRotation = yaw;
-
-                    localquaternion = Quaternion.CreateFromYawPitchRoll(yaw, pitch, roll);
-                    worldCharacterInstances[currentControllableEntity].localvRotation = pitch;
                 }
-                else
-                    DetectedSpeed = 0f;
             }
+        }
+
+        private static void UpdatePlayerQuaternion(ref Quaternion localquaternion)
+        {
+            if (bHasMoved)
+            {
+                DetectedSpeed = Vector3.Distance(playerPosition, lastPlayerPosition);
+
+                float yaw, pitch, roll = 0f;
+                //https://www.codeproject.com/Questions/324240/Determining-yaw-pitch-and-roll
+                Matrix matrix = Matrix.CreateLookAt(lastPlayerPosition, playerPosition, Vector3.Up);
+                yaw = (float)Math.Atan2(matrix.M13, matrix.M33);
+                pitch = (float)Math.Asin(-matrix.M23);
+                //roll = (float)Math.Atan2(matrix.M21, matrix.M22);
+                //yaw = (float)Math.Atan2(-diffvect.X, -diffvect.Z); //this seems to make squall face the correct direction each time.
+                //pitch = (float)Math.Atan2(diffvect.Y, Math.Abs(diffvect.X)); // unsure if this is prefect or not.
+
+                if (yaw == 0f) yaw = worldCharacterInstances[currentControllableEntity].localRotation;
+                else
+                    worldCharacterInstances[currentControllableEntity].localRotation = yaw;
+
+                localquaternion = Quaternion.CreateFromYawPitchRoll(yaw, pitch, roll);
+                worldCharacterInstances[currentControllableEntity].localvRotation = pitch;
+            }
+            else
+                DetectedSpeed = 0f;
         }
 
         /// <summary>
@@ -723,6 +753,7 @@ namespace OpenVIII
         public static int GetRealSegmentId() => (int)(segmentPosition.Y * 32 + segmentPosition.X); //explicit public for wmset and warping sections
 
         public static int GetRealSegmentId(float x, float y) => (int)((y < 0 ? 24 + y : y) * 32 + (x < 0 ? 32 + x : x)); //explicit public for wmset and warping sections
+
         private struct RayCastedTris
         {
             public ParsedTriangleData data;
@@ -736,10 +767,11 @@ namespace OpenVIII
                 this.sky = sky;
             }
         }
+
+        static float minY => 10f;
         /// <summary> This method checks for collision- uses raycasting and 3Dintersection to either
         /// allow movement, update it and/or warp player. If all checks fails it returns to last
         /// known correct player position
-
         /// </summary>
         private static void CollisionUpdate()
         {
@@ -748,13 +780,18 @@ namespace OpenVIII
             realSegmentId = SetInterchangeableZone(realSegmentId);
             Segment seg = segments[realSegmentId];
             RaycastedTris = new List<RayCastedTris>();
-            Ray characterRay = new Ray(playerPosition + new Vector3(0, 10f, 0), Vector3.Down); //sets ray origin
+            Vector3 position = playerPosition + new Vector3(0, minY, 0);
+            Ray characterRay = new Ray(position, Vector3.Up); //sets ray origin
+            Ray characterRay2 = new Ray(position, Vector3.Down); //sets ray origin
+
             Ray skyRay = new Ray(GetForwardSkyRaycastVector(SKYRAYCAST_FIXEDDISTANCE), Vector3.Down);
 
             //loop through current block triangles - two rays at the same time. There are only two rays and multi triangles, so iterate triangles and check rays instead of double checking
             for (int i = 0; i < seg.parsedTriangle.Length; i++)
                 if (Extended.RayIntersection3D(characterRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out Vector3 characterBarycentric) != 0)
                     RaycastedTris.Add(new RayCastedTris(seg.parsedTriangle[i], characterBarycentric, false));
+                else if (Extended.RayIntersection3D(characterRay2, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out Vector3 characterBarycentric2) != 0)
+                    RaycastedTris.Add(new RayCastedTris(seg.parsedTriangle[i], characterBarycentric2, false));
                 else if (Extended.RayIntersection3D(skyRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out Vector3 skyBarycentric) != 0)
                     RaycastedTris.Add(new RayCastedTris(seg.parsedTriangle[i], skyBarycentric, true));
 
@@ -769,15 +806,15 @@ namespace OpenVIII
                 );
 #endif
 
-            foreach (var prt in RaycastedTris)
+            foreach (RayCastedTris prt in RaycastedTris)
             {
                 if (prt.sky) //we do not want skyRaycasts here, iterate only characterRay
                     continue;
                 Vector3 distance = playerPosition - prt.pos;
-                float distY = Math.Abs(distance.Y);
-                if ((prt.data.parentPolygon.vertFlags & TRIFLAGS_FORESTTEST) == 0)
-                    if (distY > 10f)
-                        continue;
+                float distY = distance.Y;
+                //if ((prt.data.parentPolygon.vertFlags & TRIFLAGS_FORESTTEST) == 0)
+                //    if (distY < minY)
+                //        continue;
                 Vector3 squaPos = prt.pos;
                 MinYPos(squaPos);
                 activeCollidePolygon = prt.data.parentPolygon;
@@ -788,7 +825,7 @@ namespace OpenVIII
             }
             //out of loop- failed to obtain collision or abandon move - we need to check now if player wanted to get to forest
 
-            foreach (var prt in RaycastedTris)
+            foreach (RayCastedTris prt in RaycastedTris)
             {
                 if (!prt.sky) //we do not want skyRaycasts here, iterate only characterRay
                     continue;
@@ -803,15 +840,15 @@ namespace OpenVIII
 #endif
                 return;
             }
-
-            playerPosition = lastPlayerPosition;
+            if (!BDebugDisableCollision)
+                playerPosition = lastPlayerPosition;
         }
 
         private static void MinYPos(Vector3 squaPos)
         {
-            if (worldCharacterInstances[0].activeCharacter != worldCharacters.Ragnarok || playerPosition.Y < squaPos.Y)
+            if (worldCharacterInstances[0].activeCharacter != worldCharacters.Ragnarok || playerPosition.Y < squaPos.Y+ minY)
             {
-                playerPosition.Y = squaPos.Y;
+                playerPosition.Y = squaPos.Y+minY;
             }
         }
 
@@ -1099,7 +1136,7 @@ namespace OpenVIII
             };
 
             if (RaycastedTris.Count != 0)
-                foreach (var tt in RaycastedTris)
+                foreach (RayCastedTris tt in RaycastedTris)
                 {
                     ParsedTriangleData triangle = tt.data;
                     VertexPositionColor[] verts2 = new[] {new VertexPositionColor(triangle.A, Color.White),
