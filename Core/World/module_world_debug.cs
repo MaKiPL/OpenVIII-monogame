@@ -824,17 +824,20 @@ namespace OpenVIII
                 );
 #endif
 
+            const float forestAdj = -12f;
             foreach (RayCastedTris prt in RaycastedTris)
             {
                 if (prt.sky) //we do not want skyRaycasts here, iterate only characterRay
                     continue;
                 //Vector3 distance = playerPosition - prt.pos;
                 //float distY = distance.Y;
-                //if ((prt.data.parentPolygon.vertFlags & TRIFLAGS_FORESTTEST) == 0)
-                //    if (distY < minY)
-                //        continue;
-                Vector3 squaPos = prt.pos;
-                MinYPos(squaPos);
+                if ((prt.data.parentPolygon.vertFlags & TRIFLAGS_FORESTTEST) != 0)
+                    MinYPos(prt.pos);
+                else
+                {
+                    MinYPos(prt.pos, forestAdj);
+                }
+
                 activeCollidePolygon = prt.data.parentPolygon;
 #if DEBUG
                 bSelectedWalkable = prt.data.parentPolygon.vertFlags;
@@ -850,8 +853,7 @@ namespace OpenVIII
                 //we do not want to check for Y here
                 if ((prt.data.parentPolygon.vertFlags & TRIFLAGS_FORESTTEST) != 0) //this opts out non-forest faces
                     continue;
-                Vector3 squaPos = prt.pos;
-                MinYPos(squaPos);
+                MinYPos(prt.pos, forestAdj);
                 activeCollidePolygon = prt.data.parentPolygon;
 #if DEBUG
                 bSelectedWalkable = prt.data.parentPolygon.vertFlags;
@@ -886,24 +888,24 @@ namespace OpenVIII
             return ordered;
         }
 
-        private static void MinYPos(Vector3 squaPos)
+        private static void MinYPos(Vector3 squaPos, float adj = 0f)
         {
             if (worldCharacterInstances[currentControllableEntity].activeCharacter != worldCharacters.Ragnarok || playerPosition.Y < squaPos.Y + MinY)
             {
                 //Force character to min Y elivation.
-                playerPosition.Y = squaPos.Y + MinY;
+                playerPosition.Y = squaPos.Y + MinY + adj;
 
-                // This smooths out the drop down. Though this would only trigger while moving.
-                // So would need to move this or check collision while not moving. so commented out.
+                //This smooths out the drop down.Though this would only trigger while moving.
+                // So would need to move this or check collision while not moving.so commented out.
 
-                //Vector3 min = (squaPos + new Vector3(0, MinY, 0));
+                //Vector3 min = (squaPos + new Vector3(0, MinY + adj, 0));
                 //if (min.Y > playerPosition.Y)
                 //    playerPosition.Y = min.Y;
                 //else if (Vector3.Distance(squaPos, playerPosition) > 1)
                 //{
-                //    Vector3 adj = (playerPosition - min) * (-1f);
-                //    adj.Normalize();
-                //    playerPosition.Y += adj.Y;
+                //    Vector3 adjv = (playerPosition - min) * (-1f);
+                //    adjv.Normalize();
+                //    playerPosition.Y += adjv.Y;
                 //}
             }
         }
