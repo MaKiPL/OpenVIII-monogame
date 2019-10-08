@@ -717,7 +717,7 @@ namespace OpenVIII
             {
                 DetectedSpeed = Vector3.Distance(playerPosition, lastPlayerPosition);
 
-                float yaw, pitch, roll = 0f;
+                float yaw=0f, pitch=0f, roll=0f;
                 //https://www.codeproject.com/Questions/324240/Determining-yaw-pitch-and-roll
                 Matrix matrix = Matrix.CreateLookAt(lastPlayerPosition, playerPosition, Vector3.Up);
                 yaw = (float)Math.Atan2(matrix.M13, matrix.M33);
@@ -830,8 +830,10 @@ namespace OpenVIII
             {
                 if (prt.sky) //we do not want skyRaycasts here, iterate only characterRay
                     continue;
-                //Vector3 distance = playerPosition - prt.pos;
-                //float distY = distance.Y;
+                Vector3 distance = playerPosition - prt.pos;
+                float distY = Math.Abs(distance.Y);
+                if (distY >= 16f && !InVehicle) // prevents walking off a clifft most of the time.
+                    continue;
                 if ((prt.data.parentPolygon.vertFlags & TRIFLAGS_FORESTTEST) != 0)
                     MinYPos(prt.pos);
                 else
