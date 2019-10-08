@@ -268,7 +268,7 @@ namespace OpenVIII
             };
 
             ReadWorldMapFiles();
-            worldCharacterInstances[0] = new worldCharacterInstance() { activeCharacter = worldCharacters.Ragnarok, worldPosition = playerPosition, localRotation = -90f, currentAnimationId = 0, currentAnimFrame = 0 };
+            worldCharacterInstances[currentControllableEntity] = new worldCharacterInstance() { activeCharacter = worldCharacters.SquallSeed, worldPosition = playerPosition, localRotation = -90f, currentAnimationId = 0, currentAnimFrame = 0 };
             worldState++;
             return;
         }
@@ -647,7 +647,7 @@ namespace OpenVIII
                 Vector2 shift = InputGamePad.Distance(GamePadButtons.ThumbSticks_Left, 1f);
                 Vector2 right = InputGamePad.Distance(GamePadButtons.ThumbSticks_Right, 1f);
 
-                if (right.Y != 0 && worldCharacterInstances[0].activeCharacter == worldCharacters.Ragnarok)
+                if (right.Y != 0 && worldCharacterInstances[currentControllableEntity].activeCharacter == worldCharacters.Ragnarok)
                 {
                     playerPosition.Y += MathHelper.Clamp(right.Y, -10f, 10f) / 10f;
                     bHasMoved = true;
@@ -712,7 +712,7 @@ namespace OpenVIII
 
         private static void UpdatePlayerQuaternion(ref Quaternion localquaternion)
         {
-            if (bHasMoved)
+            if (playerPosition != lastPlayerPosition)
             {
                 DetectedSpeed = Vector3.Distance(playerPosition, lastPlayerPosition);
 
@@ -768,10 +768,26 @@ namespace OpenVIII
             }
         }
 
-        static float minY => 10f;
-        /// <summary> This method checks for collision- uses raycasting and 3Dintersection to either
-        /// allow movement, update it and/or warp player. If all checks fails it returns to last
-        /// known correct player position
+        private static float MinY
+        {
+            get
+            {
+                worldCharacterInstance worldCharacterInstance = worldCharacterInstances[currentControllableEntity];
+                switch (worldCharacterInstance.activeCharacter)
+                {
+                    case worldCharacters.Ragnarok:
+                        return (20 - worldCharacterInstance.currentAnimFrame) * .5f;
+
+                    default:
+                        return 0f;
+                }
+            }
+        }
+
+        /// <summary>
+        /// This method checks for collision- uses raycasting and 3Dintersection to either allow
+        /// movement, update it and/or warp player. If all checks fails it returns to last known
+        /// correct player position
         /// </summary>
         private static void CollisionUpdate()
         {
@@ -780,9 +796,9 @@ namespace OpenVIII
             realSegmentId = SetInterchangeableZone(realSegmentId);
             Segment seg = segments[realSegmentId];
             RaycastedTris = new List<RayCastedTris>();
-            Vector3 position = playerPosition + new Vector3(0, minY, 0);
-            Ray characterRay = new Ray(position, Vector3.Up); //sets ray origin
-            Ray characterRay2 = new Ray(position, Vector3.Down); //sets ray origin
+            Vector3 position = playerPosition + new Vector3(0, 15f, 0);
+            Ray characterRay = new Ray(position, Vector3.Down); //sets ray origin
+            Ray characterRay2 = new Ray(position, Vector3.Up); //sets ray origin
 
             Ray skyRay = new Ray(GetForwardSkyRaycastVector(SKYRAYCAST_FIXEDDISTANCE), Vector3.Down);
 
@@ -790,14 +806,16 @@ namespace OpenVIII
             for (int i = 0; i < seg.parsedTriangle.Length; i++)
                 if (Extended.RayIntersection3D(characterRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out Vector3 characterBarycentric) != 0)
                     RaycastedTris.Add(new RayCastedTris(seg.parsedTriangle[i], characterBarycentric, false));
-                else if (Extended.RayIntersection3D(characterRay2, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out Vector3 characterBarycentric2) != 0)
+            // There are spots where you can fly under the map by like flying into the ground or a corner.
+            // This would put the ship back above around.
+                else if (InVehicle && Extended.RayIntersection3D(characterRay2, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out Vector3 characterBarycentric2) != 0)
                     RaycastedTris.Add(new RayCastedTris(seg.parsedTriangle[i], characterBarycentric2, false));
                 else if (Extended.RayIntersection3D(skyRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out Vector3 skyBarycentric) != 0)
                     RaycastedTris.Add(new RayCastedTris(seg.parsedTriangle[i], skyBarycentric, true));
 
             //don't allow walking over non-walkable faces - just because we tested both rays we can make this linq appear only once
             if (!BDebugDisableCollision)
-                RaycastedTris = RaycastedTris.Where(x => (x.data.parentPolygon.vertFlags & TRIFLAGS_COLLIDE) != 0 && x.pos != Vector3.Zero).ToList();
+                RaycastedTris = OrderAndCheckTrisForcollisionsBetween().Where(x => (x.data.parentPolygon.vertFlags & TRIFLAGS_COLLIDE) != 0 && x.pos != Vector3.Zero).ToList();
 
 #if DEBUG
             countofDebugFaces = new Point(
@@ -810,8 +828,8 @@ namespace OpenVIII
             {
                 if (prt.sky) //we do not want skyRaycasts here, iterate only characterRay
                     continue;
-                Vector3 distance = playerPosition - prt.pos;
-                float distY = distance.Y;
+                //Vector3 distance = playerPosition - prt.pos;
+                //float distY = distance.Y;
                 //if ((prt.data.parentPolygon.vertFlags & TRIFLAGS_FORESTTEST) == 0)
                 //    if (distY < minY)
                 //        continue;
@@ -844,11 +862,49 @@ namespace OpenVIII
                 playerPosition = lastPlayerPosition;
         }
 
+        private static List<RayCastedTris> OrderAndCheckTrisForcollisionsBetween()
+        {
+            // Order Tris by distance to player
+            List<RayCastedTris> ordered = RaycastedTris.OrderBy(x => Vector3.Distance(playerPosition, x.pos)).ToList();
+            bool between = false;
+            // Check to see if there is a collision between the player and the next walkable space.
+            // prevent jumping over collision.
+            for (int i = 0; ordered.Count > i; i++)
+            {
+                if (ordered[i].sky) continue;
+                bool collide = (ordered[i].data.parentPolygon.vertFlags & TRIFLAGS_COLLIDE) != 0;
+                if (collide)
+                    between = true;
+                else if (between)
+                { //bassically if there is collision between mark rest to collide.
+                    RayCastedTris x = ordered[i];
+                    x.data.parentPolygon.vertFlags |= TRIFLAGS_COLLIDE;
+                    ordered[i] = x;
+                }
+            }
+
+            return ordered;
+        }
+
         private static void MinYPos(Vector3 squaPos)
         {
-            if (worldCharacterInstances[0].activeCharacter != worldCharacters.Ragnarok || playerPosition.Y < squaPos.Y+ minY)
+            if (worldCharacterInstances[currentControllableEntity].activeCharacter != worldCharacters.Ragnarok || playerPosition.Y < squaPos.Y + MinY)
             {
-                playerPosition.Y = squaPos.Y+minY;
+                //Force character to min Y elivation.
+                playerPosition.Y = squaPos.Y + MinY;
+
+                // This smooths out the drop down. Though this would only trigger while moving.
+                // So would need to move this or check collision while not moving. so commented out.
+
+                //Vector3 min = (squaPos + new Vector3(0, MinY, 0));
+                //if (min.Y > playerPosition.Y)
+                //    playerPosition.Y = min.Y;
+                //else if (Vector3.Distance(squaPos, playerPosition) > 1)
+                //{
+                //    Vector3 adj = (playerPosition - min) * (-1f);
+                //    adj.Normalize();
+                //    playerPosition.Y += adj.Y;
+                //}
             }
         }
 
@@ -1174,9 +1230,9 @@ namespace OpenVIII
         private static Vector2 Scale;
         private static List<double> RecentFrameTimes = new List<double>(100);
 
-        public static bool InVehicle => worldCharacterInstances[0].activeCharacter == worldCharacters.Ragnarok;
+        public static bool InVehicle => worldCharacterInstances[currentControllableEntity].activeCharacter == worldCharacters.Ragnarok;
 
-        public static bool BDebugDisableCollision { get => bDebugDisableCollision || worldCharacterInstances[0].activeCharacter == worldCharacters.Ragnarok; set => bDebugDisableCollision = value; }
+        public static bool BDebugDisableCollision { get => bDebugDisableCollision || worldCharacterInstances[currentControllableEntity].activeCharacter == worldCharacters.Ragnarok; set => bDebugDisableCollision = value; }
 
         private static void DrawCharacter(worldCharacterInstance? charaInstance_)
         {
