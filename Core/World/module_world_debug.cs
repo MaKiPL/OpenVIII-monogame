@@ -5,6 +5,7 @@ using OpenVIII.Core.World;
 using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -808,7 +809,7 @@ namespace OpenVIII
                     RaycastedTris.Add(new RayCastedTris(seg.parsedTriangle[i], characterBarycentric, false));
             // There are spots where you can fly under the map by like flying into the ground or a corner.
             // This would put the ship back above around.
-                else if (InVehicle && Extended.RayIntersection3D(characterRay2, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out Vector3 characterBarycentric2) != 0)
+                else if (BDebugDisableCollision && Extended.RayIntersection3D(characterRay2, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out Vector3 characterBarycentric2) != 0)
                     RaycastedTris.Add(new RayCastedTris(seg.parsedTriangle[i], characterBarycentric2, false));
                 else if (Extended.RayIntersection3D(skyRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out Vector3 skyBarycentric) != 0)
                     RaycastedTris.Add(new RayCastedTris(seg.parsedTriangle[i], skyBarycentric, true));
@@ -824,7 +825,7 @@ namespace OpenVIII
                 );
 #endif
 
-            const float forestAdj = -12f;
+            const float forestAdj = 0f;//-12f;
             foreach (RayCastedTris prt in RaycastedTris)
             {
                 if (prt.sky) //we do not want skyRaycasts here, iterate only characterRay
@@ -874,11 +875,15 @@ namespace OpenVIII
             for (int i = 0; ordered.Count > i; i++)
             {
                 if (ordered[i].sky) continue;
+                //var d = Vector3.Distance(playerPosition, ordered[i].pos);
                 bool collide = (ordered[i].data.parentPolygon.vertFlags & TRIFLAGS_COLLIDE) != 0;
                 if (collide)
                     between = true;
                 else if (between)
                 { //bassically if there is collision between mark rest to collide.
+
+                    //if (bHasMoved)
+                        //Debug.WriteLine(d + "\t");
                     RayCastedTris x = ordered[i];
                     x.data.parentPolygon.vertFlags |= TRIFLAGS_COLLIDE;
                     ordered[i] = x;
