@@ -239,7 +239,7 @@ namespace OpenVIII
                 if (page == 0 && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     commands[CURSOR_SELECT] = c.CharacterStats.Limit;
-                    ((IGMDataItem_String)ITEM[0, 0]).Data = commands[CURSOR_SELECT].Name;
+                    ((IGMDataItem.Text)ITEM[0, 0]).Data = commands[CURSOR_SELECT].Name;
                     skipsnd = true;
                     base.Inputs_Right();
                     page++;
@@ -274,7 +274,7 @@ namespace OpenVIII
                 page = 0;
                 Cursor_Status &= ~Cursor_Status.Horizontal;
                 commands[0] = Kernel_bin.BattleCommands[(c.Abilities.Contains(Kernel_bin.Abilities.Mug) ? 12 : 1)];
-                ITEM[0, 0] = new IGMDataItem_String(
+                ITEM[0, 0] = new IGMDataItem.Text(
                         commands[0].Name,
                         SIZE[0]);
 
@@ -294,7 +294,7 @@ namespace OpenVIII
 #else
                         commands[pos] = cmdval.BattleCommand;
 #endif
-                        ITEM[pos, 0] = new IGMDataItem_String(
+                        ITEM[pos, 0] = new IGMDataItem.Text(
                             commands[pos].Name,
                             SIZE[pos]);
                         ITEM[pos, 0].Show();

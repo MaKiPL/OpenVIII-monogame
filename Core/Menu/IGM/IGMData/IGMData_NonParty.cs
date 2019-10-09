@@ -93,7 +93,7 @@ namespace OpenVIII
                     Rectangle rbak = SIZE[pos];
                     Rectangle r = rbak;
                     Color color = new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, .9f);
-                    ITEM[pos, 0] = new IGMDataItem_String(damageable.Name, rbak);
+                    ITEM[pos, 0] = new IGMDataItem.Text(damageable.Name, rbak);
                     CURSOR[pos] = new Point(rbak.X, (int)(rbak.Y + (6 * TextScale.Y)));
 
                     r.Offset(7, yoff);

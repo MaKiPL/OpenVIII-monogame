@@ -1,9 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
-using OpenVIII.IGMDataItem;
-
-namespace OpenVIII
+namespace OpenVIII.IGMDataItem
 {
-    public class IGMDataItem_String : Base, I_Data<FF8String>, I_Palette, I_FontColor
+    public class Text : Base, I_Data<FF8String>, I_Palette, I_FontColor
     {
         #region Fields
 
@@ -13,7 +11,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMDataItem_String(FF8String data, Rectangle? pos = null, Font.ColorID? fontcolor = null, float blink_adjustment = 1f) : base(pos)
+        public Text(FF8String data, Rectangle? pos = null, Font.ColorID? fontcolor = null, float blink_adjustment = 1f) : base(pos)
         {
             Data = data;
             DataSize = Memory.font.RenderBasicText(Data, Pos.Location, Scale, skipdraw: true);
@@ -21,7 +19,7 @@ namespace OpenVIII
             Blink_Adjustment = blink_adjustment;
         }
 
-        public IGMDataItem_String(Icons.ID? icon, byte? palette, FF8String data, Rectangle? pos = null, Font.ColorID? color = null, Font.ColorID? faded_color = null, float blink_adjustment = 1f) : this(data, pos, color, blink_adjustment)
+        public Text(Icons.ID? icon, byte? palette, FF8String data, Rectangle? pos = null, Font.ColorID? color = null, Font.ColorID? faded_color = null, float blink_adjustment = 1f) : this(data, pos, color, blink_adjustment)
         {
             Icon = icon;
             DataSize.Offset(Memory.Icons.GetEntryGroup(Icon).Width * Scale.X, 0);

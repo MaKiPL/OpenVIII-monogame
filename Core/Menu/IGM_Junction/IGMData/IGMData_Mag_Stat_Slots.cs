@@ -153,18 +153,18 @@ namespace OpenVIII
                                 if (name == null || name.Length == 0) name = Misc[Items._];
 
                                 ITEM[pos, 0] = new IGMDataItem.Icon(Stat2Icon[stat], new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), 2);
-                                ITEM[pos, 1] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X + 80, SIZE[pos].Y, 0, 0));
+                                ITEM[pos, 1] = new IGMDataItem.Text(name, new Rectangle(SIZE[pos].X + 80, SIZE[pos].Y, 0, 0));
                                 if (!unlocked.Contains(Kernel_bin.Stat2Ability[stat]))
                                 {
                                     ((IGMDataItem.Icon)ITEM[pos, 0]).Palette = ((IGMDataItem.Icon)ITEM[pos, 0]).Faded_Palette = 7;
-                                    ((IGMDataItem_String)ITEM[pos, 1]).FontColor = Font.ColorID.Grey;
+                                    ((IGMDataItem.Text)ITEM[pos, 1]).FontColor = Font.ColorID.Grey;
                                     BLANKS[pos] = true;
                                 }
                                 else BLANKS[pos] = false;
 
                                 ITEM[pos, 2] = new IGMDataItem.Integer(Damageable.TotalStat(stat), new Rectangle(SIZE[pos].X + 152, SIZE[pos].Y, 0, 0), 2, Icons.NumType.sysFntBig, spaces: 10);
                                 ITEM[pos, 3] = stat == Kernel_bin.Stat.HIT || stat == Kernel_bin.Stat.EVA
-                                    ? new IGMDataItem_String(Misc[Items.Percent], new Rectangle(SIZE[pos].X + 350, SIZE[pos].Y, 0, 0))
+                                    ? new IGMDataItem.Text(Misc[Items.Percent], new Rectangle(SIZE[pos].X + 350, SIZE[pos].Y, 0, 0))
                                     : null;
                                 if (GetPrevSetting() == null || (Damageable.GetCharacterData(out Saves.CharacterData _c) && GetPrevSetting().Stat_J[stat] == _c.Stat_J[stat]) || GetPrevSetting().TotalStat(stat) == Damageable.TotalStat(stat))
                                 {
@@ -174,20 +174,20 @@ namespace OpenVIII
                                 {
                                     ((IGMDataItem.Icon)ITEM[pos, 0]).Palette = 5;
                                     ((IGMDataItem.Icon)ITEM[pos, 0]).Faded_Palette = 5;
-                                    ((IGMDataItem_String)ITEM[pos, 1]).FontColor = Font.ColorID.Red;
+                                    ((IGMDataItem.Text)ITEM[pos, 1]).FontColor = Font.ColorID.Red;
                                     ((IGMDataItem.Integer)ITEM[pos, 2]).FontColor = Font.ColorID.Red;
                                     if (ITEM[pos, 3] != null)
-                                        ((IGMDataItem_String)ITEM[pos, 3]).FontColor = Font.ColorID.Red;
+                                        ((IGMDataItem.Text)ITEM[pos, 3]).FontColor = Font.ColorID.Red;
                                     ITEM[pos, 4] = new IGMDataItem.Icon(Icons.ID.Arrow_Down, new Rectangle(SIZE[pos].X + 250, SIZE[pos].Y, 0, 0), 16);
                                 }
                                 else
                                 {
                                     ((IGMDataItem.Icon)ITEM[pos, 0]).Palette = 6;
                                     ((IGMDataItem.Icon)ITEM[pos, 0]).Faded_Palette = 6;
-                                    ((IGMDataItem_String)ITEM[pos, 1]).FontColor = Font.ColorID.Yellow;
+                                    ((IGMDataItem.Text)ITEM[pos, 1]).FontColor = Font.ColorID.Yellow;
                                     ((IGMDataItem.Integer)ITEM[pos, 2]).FontColor = Font.ColorID.Yellow;
                                     if (ITEM[pos, 3] != null)
-                                        ((IGMDataItem_String)ITEM[pos, 3]).FontColor = Font.ColorID.Yellow;
+                                        ((IGMDataItem.Text)ITEM[pos, 3]).FontColor = Font.ColorID.Yellow;
                                     ITEM[pos, 4] = new IGMDataItem.Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos].X + 250, SIZE[pos].Y, 0, 0), 17);
                                 }
                             }

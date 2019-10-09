@@ -128,7 +128,7 @@ namespace OpenVIII
                 if (name == null || name.Length == 0)
                     name = Misc[Items._];
                 ITEM[pos, 0] = new IGMDataItem.Icon(starticon, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), palette);
-                ITEM[pos, 1] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X + 60, SIZE[pos].Y, 0, 0), fontcolor: _colorid);
+                ITEM[pos, 1] = new IGMDataItem.Text(name, new Rectangle(SIZE[pos].X + 60, SIZE[pos].Y, 0, 0), fontcolor: _colorid);
                 BLANKS[pos] = !unlocked;
                 for (pos = 1; pos < Count; pos++)
                 {
@@ -138,7 +138,7 @@ namespace OpenVIII
                     if (name == null || name.Length == 0)
                         name = Misc[Items._];
                     ITEM[pos, 0] = new IGMDataItem.Icon(starticon + 1, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), palette);
-                    ITEM[pos, 1] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X + 60, SIZE[pos].Y, 0, 0), fontcolor: _colorid);
+                    ITEM[pos, 1] = new IGMDataItem.Text(name, new Rectangle(SIZE[pos].X + 60, SIZE[pos].Y, 0, 0), fontcolor: _colorid);
                     BLANKS[pos] = !unlocked;
                 }
             }

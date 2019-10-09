@@ -31,7 +31,7 @@ namespace OpenVIII
                     foreach (Enum flag in availableFlags.Where(c.JunctionnedGFs.HasFlag))
                     {
                         if ((Saves.GFflags)flag == Saves.GFflags.None) continue;
-                        ITEM[pos, 0] = new IGMDataItem_String(
+                        ITEM[pos, 0] = new IGMDataItem.Text(
                         Memory.State.GFs[Saves.ConvertGFEnum[(Saves.GFflags)flag]].Name, SIZE[pos]);
                         pos++;
                     }

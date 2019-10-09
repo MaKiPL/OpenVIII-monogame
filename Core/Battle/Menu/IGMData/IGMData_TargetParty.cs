@@ -71,7 +71,7 @@ namespace OpenVIII
                     {
                         Saves.CharacterData data = Memory.State[Memory.State.PartyData[pm.Key]];
                         bool ded = data.IsDead;
-                        ITEM[pos, 0] = new IGMDataItem_String(Memory.Strings.GetName(pm.Value), SIZE[pos], ded ? Font.ColorID.Dark_Gray : Font.ColorID.White);
+                        ITEM[pos, 0] = new IGMDataItem.Text(Memory.Strings.GetName(pm.Value), SIZE[pos], ded ? Font.ColorID.Dark_Gray : Font.ColorID.White);
 
                         pos++;
                     }

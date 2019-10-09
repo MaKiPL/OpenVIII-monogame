@@ -28,7 +28,7 @@ namespace OpenVIII
                     {
                         if (i == 0)
                         {
-                            ITEM[i, 1] = new IGMDataItem_String(
+                            ITEM[i, 1] = new IGMDataItem.Text(
                                     Kernel_bin.BattleCommands[
                                         c.Abilities.Contains(Kernel_bin.Abilities.Mug) ?
                                         12 :
@@ -38,7 +38,7 @@ namespace OpenVIII
                         else
                         {
                             ITEM[i, 0] = new IGMDataItem.Icon(Icons.ID.Arrow_Right2, SIZE[i], 9);
-                            ITEM[i, 1] = c.Commands[i - 1] != Kernel_bin.Abilities.None ? new IGMDataItem_String(
+                            ITEM[i, 1] = c.Commands[i - 1] != Kernel_bin.Abilities.None ? new IGMDataItem.Text(
                                 Icons.ID.Ability_Command, 9,
                             Kernel_bin.Commandabilities[c.Commands[i - 1]].Name,
                             new Rectangle(SIZE[i].X + 40, SIZE[i].Y, 0, 0)) : null;

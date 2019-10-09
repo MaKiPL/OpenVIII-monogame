@@ -27,7 +27,7 @@ namespace OpenVIII
             base.Init();
             for (int i = 0; i < Rows; i++)
             {
-                ITEM[i, 0] = new IGMDataItem_String(null, SIZE[i]);
+                ITEM[i, 0] = new IGMDataItem.Text(null, SIZE[i]);
             }
             ITEM[Rows, 0] = new BattleMenus.IGMData_TargetGroup(Damageable, false);
             PointerZIndex = 0;
@@ -135,7 +135,7 @@ namespace OpenVIII
                 ITEM[j, 0].Show();
                 BLANKS[j] = false;
                 Contents[j] = Kernel_bin.BluemagicQuistislimitbreak[unlocked[i]];
-                ((IGMDataItem_String)ITEM[j, 0]).Data = Contents[j].Name;
+                ((IGMDataItem.Text)ITEM[j, 0]).Data = Contents[j].Name;
             }
             for (; i < Rows + skip; i++)
             {

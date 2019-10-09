@@ -64,7 +64,7 @@ namespace OpenVIII
                         {
                             Font.ColorID cid = c.Commands.Contains(j) ? Font.ColorID.Grey : Font.ColorID.White;
                             BLANKS[pos] = cid == Font.ColorID.Grey ? true : false;
-                            ITEM[pos, 0] = new IGMDataItem_String(
+                            ITEM[pos, 0] = new IGMDataItem.Text(
                                 Icons.ID.Ability_Command, 9,
                             Source[j].Name,
                             new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), cid);

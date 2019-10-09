@@ -36,7 +36,7 @@ namespace OpenVIII
                     color = junctioned;
                 j = true;
             }
-            ITEM[pos, 0] = new IGMDataItem_String(spell.Name, SIZE[pos], color);
+            ITEM[pos, 0] = new IGMDataItem.Text(spell.Name, SIZE[pos], color);
             ITEM[pos, 1] = j ? new IGMDataItem.Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 75, SIZE[pos].Y, 0, 0)) : null;
             ITEM[pos, 2] = new IGMDataItem.Integer(Source.Magics[spell.ID], new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), spaces: 3);
             //makes it so you cannot junction a magic to a stat that does nothing.

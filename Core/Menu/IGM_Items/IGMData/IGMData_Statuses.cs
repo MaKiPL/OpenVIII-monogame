@@ -110,9 +110,9 @@ namespace OpenVIII
                     GFs gf = e.ToGFs();
                     if (character != Characters.Blank || (gf != GFs.Blank && gf != GFs.All))
                     {
-                        ITEM[0, 0] = new IGMDataItem_String(Misc[Items.LV], new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0));
-                        ITEM[1, 0] = new IGMDataItem_String(Misc[Items.HP], new Rectangle(SIZE[1].X, SIZE[1].Y, 0, 0));
-                        ITEM[1, 2] = new IGMDataItem_String(Misc[Items.ForwardSlash], new Rectangle(SIZE[1].X + 155, SIZE[1].Y, 0, 0));
+                        ITEM[0, 0] = new IGMDataItem.Text(Misc[Items.LV], new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0));
+                        ITEM[1, 0] = new IGMDataItem.Text(Misc[Items.HP], new Rectangle(SIZE[1].X, SIZE[1].Y, 0, 0));
+                        ITEM[1, 2] = new IGMDataItem.Text(Misc[Items.ForwardSlash], new Rectangle(SIZE[1].X + 155, SIZE[1].Y, 0, 0));
                     }
                     if (Memory.State.Characters != null && character != Characters.Blank)
                     {

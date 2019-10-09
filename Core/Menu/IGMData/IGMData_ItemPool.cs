@@ -37,7 +37,7 @@ namespace OpenVIII
             _helpStr = new FF8String[Count];
             for (byte pos = 0; pos < Rows; pos++)
             {
-                ITEM[pos, 0] = new IGMDataItem_String(null, SIZE[pos]);
+                ITEM[pos, 0] = new IGMDataItem.Text(null, SIZE[pos]);
                 ITEM[pos, 1] = new IGMDataItem.Integer(0, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0), numtype: Icons.NumType.sysFntBig, spaces: 3);
             }
             ITEM[Count - 1, 2] = new IGMDataItem.Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows - 1].X + SIZE[Rows - 1].Width - 60, Y, 0, 0), scale: new Vector2(2.5f));
@@ -220,10 +220,10 @@ namespace OpenVIII
                     }
                     else
                         BLANKS[pos] = false;
-                    ((IGMDataItem_String)(ITEM[pos, 0])).Data = itemdata.Name;
-                    ((IGMDataItem_String)(ITEM[pos, 0])).Icon = itemdata.Icon;
-                    ((IGMDataItem_String)(ITEM[pos, 0])).Palette = palette;
-                    ((IGMDataItem_String)(ITEM[pos, 0])).FontColor = color;
+                    ((IGMDataItem.Text)(ITEM[pos, 0])).Data = itemdata.Name;
+                    ((IGMDataItem.Text)(ITEM[pos, 0])).Icon = itemdata.Icon;
+                    ((IGMDataItem.Text)(ITEM[pos, 0])).Palette = palette;
+                    ((IGMDataItem.Text)(ITEM[pos, 0])).FontColor = color;
                     ((IGMDataItem.Integer)(ITEM[pos, 1])).Data = item.QTY;
                     ((IGMDataItem.Integer)(ITEM[pos, 1])).Show();
                     ((IGMDataItem.Integer)(ITEM[pos, 1])).FontColor = color;
@@ -235,9 +235,9 @@ namespace OpenVIII
                 {
                     ((IGMDataItem.Integer)(ITEM[pos, 1])).Hide();
                     if (pos == 0) return; // if page turning. this till be enough to trigger a try next page.
-                    ((IGMDataItem_String)(ITEM[pos, 0])).Data = null;
+                    ((IGMDataItem.Text)(ITEM[pos, 0])).Data = null;
                     ((IGMDataItem.Integer)(ITEM[pos, 1])).Data = 0;
-                    ((IGMDataItem_String)(ITEM[pos, 0])).Icon = Icons.ID.None;
+                    ((IGMDataItem.Text)(ITEM[pos, 0])).Icon = Icons.ID.None;
                     BLANKS[pos] = true;
                 }
             }

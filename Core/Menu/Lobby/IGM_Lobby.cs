@@ -54,9 +54,9 @@ namespace OpenVIII
             protected override void Init()
             {
                 base.Init();
-                ITEM[0, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 1, 105), SIZE[0]);
-                ITEM[1, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 1, 106), SIZE[1]);
-                ITEM[2, 0] = new IGMDataItem_String("OpenVIII debug tools", SIZE[2]);
+                ITEM[0, 0] = new IGMDataItem.Text(Memory.Strings.Read(Strings.FileID.MNGRP, 1, 105), SIZE[0]);
+                ITEM[1, 0] = new IGMDataItem.Text(Memory.Strings.Read(Strings.FileID.MNGRP, 1, 106), SIZE[1]);
+                ITEM[2, 0] = new IGMDataItem.Text("OpenVIII debug tools", SIZE[2]);
                 Cursor_Status |= Cursor_Status.Enabled;
                 OkayActions = new Dictionary<int, Action>()
                 {

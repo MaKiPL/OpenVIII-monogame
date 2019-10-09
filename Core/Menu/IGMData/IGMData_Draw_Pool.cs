@@ -56,8 +56,8 @@ namespace OpenVIII
         protected override void Init()
         {
             base.Init();
-            ITEM[_Draw, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.KERNEL, 0, 12), SIZE[_Draw]);
-            ITEM[Cast, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.KERNEL, 0, 18), SIZE[Cast]);
+            ITEM[_Draw, 0] = new IGMDataItem.Text(Memory.Strings.Read(Strings.FileID.KERNEL, 0, 12), SIZE[_Draw]);
+            ITEM[Cast, 0] = new IGMDataItem.Text(Memory.Strings.Read(Strings.FileID.KERNEL, 0, 18), SIZE[Cast]);
             ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Damageable, false);
             Cursor_Status = Cursor_Status.Enabled;
             OKAY_Actions = new Dictionary<int, Func<bool>>
@@ -132,23 +132,23 @@ namespace OpenVIII
                 bool candraw = gf || !full;
                 if (!candraw)
                 {
-                    ((IGMDataItem_String)ITEM[_Draw, 0]).FontColor = Font.ColorID.Dark_Gray;
+                    ((IGMDataItem.Text)ITEM[_Draw, 0]).FontColor = Font.ColorID.Dark_Gray;
                     BLANKS[_Draw] = true;
                 }
                 else
                 {
-                    ((IGMDataItem_String)ITEM[_Draw, 0]).FontColor = Font.ColorID.White;
+                    ((IGMDataItem.Text)ITEM[_Draw, 0]).FontColor = Font.ColorID.White;
                     BLANKS[_Draw] = false;
                 }
                 if (gf)
                 {
-                    ((IGMDataItem_String)ITEM[Cast, 0]).FontColor = Font.ColorID.Dark_Gray;
+                    ((IGMDataItem.Text)ITEM[Cast, 0]).FontColor = Font.ColorID.Dark_Gray;
                     BLANKS[_Draw] = true;
                 }
                 else
                 {
                     Target_Group.SelectTargetWindows(Magic.DATA);
-                    ((IGMDataItem_String)ITEM[Cast, 0]).FontColor = Font.ColorID.White;
+                    ((IGMDataItem.Text)ITEM[Cast, 0]).FontColor = Font.ColorID.White;
                     BLANKS[_Draw] = false;
                 }
             }
@@ -182,7 +182,7 @@ namespace OpenVIII
             r.Inflate(-Width * .25f,-Height *.25f);
             for (byte pos = 0; pos < Rows; pos++)
             {
-                ITEM[pos, 0] = new IGMDataItem_String(null, SIZE[pos]);
+                ITEM[pos, 0] = new IGMDataItem.Text(null, SIZE[pos]);
                 ITEM[pos, 1] = new IGMDataItem.Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0));
                 ITEM[pos, 2] = new IGMData_Draw_Commands(r, Damageable, Battle);
                 ITEM[pos, 2].Hide();
@@ -256,8 +256,8 @@ namespace OpenVIII
                 {
                     bool unlocked = Source.UnlockedGFs().Contains(Contents[i].GF);
                     bool junctioned = (Damageable.GetCharacterData(out Saves.CharacterData c) && c.Stat_J.ContainsValue(Contents[i].ID));
-                    ((IGMDataItem_String)(ITEM[pos, 0])).Data = Contents[i].Name;
-                    ((IGMDataItem_String)(ITEM[pos, 0])).Show();
+                    ((IGMDataItem.Text)(ITEM[pos, 0])).Data = Contents[i].Name;
+                    ((IGMDataItem.Text)(ITEM[pos, 0])).Show();
                     if (junctioned)
                         ((IGMDataItem.Icon)(ITEM[pos, 1])).Show();
                     else
@@ -268,7 +268,7 @@ namespace OpenVIII
                 }
                 for (; pos < Rows; pos++)
                 {
-                    ((IGMDataItem_String)(ITEM[pos, 0])).Hide();
+                    ((IGMDataItem.Text)(ITEM[pos, 0])).Hide();
                     ((IGMDataItem.Icon)(ITEM[pos, 1])).Hide();
                     BLANKS[pos] = true;
                 }

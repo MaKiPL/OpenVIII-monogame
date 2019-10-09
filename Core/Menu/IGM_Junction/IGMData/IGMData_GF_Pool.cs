@@ -247,7 +247,7 @@ namespace OpenVIII
 
             private void addGF(ref int pos, GFs g, Font.ColorID color = Font.ColorID.White)
             {
-                ITEM[pos, 0] = new IGMDataItem_String(Memory.Strings.GetName(g), SIZE[pos], color);
+                ITEM[pos, 0] = new IGMDataItem.Text(Memory.Strings.GetName(g), SIZE[pos], color);
                 ITEM[pos, 1] = JunctionedGFs.ContainsKey(g) ? new IGMDataItem.Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 100, SIZE[pos].Y, 0, 0)) : null;
                 ITEM[pos, 2] = new IGMDataItem.Integer(Source.GFs[g].Level, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), spaces: 3);
                 BLANKS[pos] = false;

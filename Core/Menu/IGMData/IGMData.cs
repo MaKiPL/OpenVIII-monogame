@@ -38,7 +38,7 @@ namespace OpenVIII
             }
         }
 
-        protected void CheckBounds(ref Rectangle DataSize, int pos) => CheckBounds(ref DataSize, ((IGMDataItem_String)ITEM[pos, 0]).DataSize);
+        protected void CheckBounds(ref Rectangle DataSize, int pos) => CheckBounds(ref DataSize, ((IGMDataItem.Text)ITEM[pos, 0]).DataSize);
 
         protected virtual void DrawITEM(int i, int d) => ITEM[i, d]?.Draw();
 

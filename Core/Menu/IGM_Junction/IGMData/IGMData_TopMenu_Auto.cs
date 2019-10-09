@@ -68,9 +68,9 @@ namespace OpenVIII
             protected override void Init()
             {
                 base.Init();
-                ITEM[0, 0] = new IGMDataItem_String(Titles[Items.AutoAtk], SIZE[0]);
-                ITEM[1, 0] = new IGMDataItem_String(Titles[Items.AutoDef], SIZE[1]);
-                ITEM[2, 0] = new IGMDataItem_String(Titles[Items.AutoMag], SIZE[2]);
+                ITEM[0, 0] = new IGMDataItem.Text(Titles[Items.AutoAtk], SIZE[0]);
+                ITEM[1, 0] = new IGMDataItem.Text(Titles[Items.AutoDef], SIZE[1]);
+                ITEM[2, 0] = new IGMDataItem.Text(Titles[Items.AutoMag], SIZE[2]);
                 Cursor_Status |= Cursor_Status.Enabled;
                 Cursor_Status |= Cursor_Status.Horizontal;
                 Cursor_Status |= Cursor_Status.Vertical;

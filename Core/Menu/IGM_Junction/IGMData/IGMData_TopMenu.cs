@@ -89,9 +89,9 @@ namespace OpenVIII
                 {
                     Font.ColorID color = (c.JunctionnedGFs == Saves.GFflags.None) ? Font.ColorID.Grey : Font.ColorID.White;
 
-                    ITEM[1, 0] = new IGMDataItem_String(Titles[Items.Off], SIZE[1], color);
-                    ITEM[2, 0] = new IGMDataItem_String(Titles[Items.Auto], SIZE[2], color);
-                    ITEM[3, 0] = new IGMDataItem_String(Titles[Items.Ability], SIZE[3], color);
+                    ITEM[1, 0] = new IGMDataItem.Text(Titles[Items.Off], SIZE[1], color);
+                    ITEM[2, 0] = new IGMDataItem.Text(Titles[Items.Auto], SIZE[2], color);
+                    ITEM[3, 0] = new IGMDataItem.Text(Titles[Items.Ability], SIZE[3], color);
                     for (int i = 1; i <= 3; i++)
                         BLANKS[i] = c.JunctionnedGFs == Saves.GFflags.None;
                 }
@@ -131,7 +131,7 @@ namespace OpenVIII
             protected override void Init()
             {
                 base.Init();
-                ITEM[0, 0] = new IGMDataItem_String(Titles[Items.Junction], SIZE[0]);
+                ITEM[0, 0] = new IGMDataItem.Text(Titles[Items.Junction], SIZE[0]);
                 Cursor_Status |= Cursor_Status.Enabled;
                 Cursor_Status |= Cursor_Status.Horizontal;
                 Cursor_Status |= Cursor_Status.Vertical;
