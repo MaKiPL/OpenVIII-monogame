@@ -41,15 +41,15 @@ namespace OpenVIII
             r.Height += r.Height % 4;
             rc = Memory.Icons.MostSaturated(Icons.ID.Text_Cursor, 6);
             rcdim = Memory.Icons.MostSaturated(Icons.ID.Text_Cursor, 2);
-            ITEM[0, 0] = new IGMDataItem_Texture(pixel, r, rcdim);
+            ITEM[0, 0] = new IGMDataItem.Texture(pixel, r, rcdim);
             r.Inflate(-4, -4);
-            ITEM[1, 0] = new IGMDataItem_Texture(pixel, r, Color.Black);
+            ITEM[1, 0] = new IGMDataItem.Texture(pixel, r, Color.Black);
             float scale = (float)r.Height / e.Height;
             int w = (int)(e.Width * scale);
             ITEM[Count - 3, 0] = new IGMDataItem.Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 80, r.Y, w, r.Height), 2, scale: new Vector2(scale));
             ITEM[Count - 2, 0] = new IGMDataItem.Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 208, r.Y, w, r.Height), 2, scale: new Vector2(scale));
             Rectangle hotspot = new Rectangle(r.X + 80 + (w / 2), r.Y + 4, 208 - 80, r.Height - 8);
-            ITEM[Count - 4, 0] = new IGMDataItem_Texture(pixel, hotspot, Color.TransparentBlack);
+            ITEM[Count - 4, 0] = new IGMDataItem.Texture(pixel, hotspot, Color.TransparentBlack);
             //Rectangle hotspotbox = hotspot;
             hotspot.Width += (int)(hotspot.Width * .50f);
             Rectangle tr = new Rectangle(r.X + 208 + (w / 2), r.Y + 4, 0, r.Height - 4);
@@ -185,7 +185,7 @@ namespace OpenVIII
             bool hot = false;
 
             ((IGMDataItem.Icon)ITEM[Count - 5, 0]).Data = Icons.ID._0_Hit_ + _count;
-            ((IGMDataItem_Texture)ITEM[Count - 4, 0]).Color = HitSlider.Update();
+            ((IGMDataItem.Texture)ITEM[Count - 4, 0]).Color = HitSlider.Update();
 
             int hotcnt = 0;
             int pos = 0;
@@ -211,7 +211,7 @@ namespace OpenVIII
             {
                 ((IGMDataItem.Icon)ITEM[Count - 3, 0]).Palette = 6;
                 ((IGMDataItem.Icon)ITEM[Count - 2, 0]).Palette = 6;
-                ((IGMDataItem_Texture)ITEM[0, 0]).Color = rc;
+                ((IGMDataItem.Texture)ITEM[0, 0]).Color = rc;
                 ITEM[Count - 1, 0].Show();
                 ITEM[Count - 5, 0].Hide();
                 ITEM[Count - 6, 0].Hide();
@@ -220,7 +220,7 @@ namespace OpenVIII
             {
                 ((IGMDataItem.Icon)ITEM[Count - 3, 0]).Palette = 2;
                 ((IGMDataItem.Icon)ITEM[Count - 2, 0]).Palette = 2;
-                ((IGMDataItem_Texture)ITEM[0, 0]).Color = rcdim;
+                ((IGMDataItem.Texture)ITEM[0, 0]).Color = rcdim;
                 if ((hotcnt >= _hits)||!done)// && ITEM[Count - 1, 0].Enabled)
                 {
                     if (_count >= _hits)

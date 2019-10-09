@@ -1,16 +1,17 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using OpenVIII.IGMDataItem;
 using System;
 
-namespace OpenVIII
+namespace OpenVIII.IGMDataItem
 {
-    public class IGMDataItem_Texture : Base, I_Data<Texture2D>, I_Color
+    public class Texture : Base, I_Data<Texture2D>, I_Color
     {
         #region Constructors
-        protected IGMDataItem_Texture(Rectangle? pos = null) : base(pos)
+
+        protected Texture(Rectangle? pos = null) : base(pos)
         { }
-        public IGMDataItem_Texture(Texture2D data, Rectangle? pos = null, Color? color = null, Color? faded_color = null, float blink_adjustment = 1f) : base(pos)
+
+        public Texture(Texture2D data, Rectangle? pos = null, Color? color = null, Color? faded_color = null, float blink_adjustment = 1f) : base(pos)
         {
             Data = data;
             Color = color ?? Color.White;
@@ -21,6 +22,7 @@ namespace OpenVIII
         #endregion Constructors
 
         #region Properties
+
         public Rectangle Restriction { get; set; }
         public override bool Blink { get => base.Blink && (Color != Faded_Color); set => base.Blink = value; }
         public Texture2D Data { get; set; }
@@ -33,20 +35,20 @@ namespace OpenVIII
         {
             if (Enabled)
             {
-                var p = Pos;
+                Rectangle p = Pos;
                 Rectangle src = new Rectangle(0, 0, Data.Width, Data.Height);
                 if (!Restriction.IsEmpty)
                 {
                     p = Rectangle.Intersect(p, Restriction);
                     if (p != Pos)
                     {
-                        var missing = new Rectangle(
+                        Rectangle missing = new Rectangle(
                             Math.Abs(p.X - Pos.X),
                             Math.Abs(p.Y - Pos.Y),
                             Pos.Width - p.Width,
                             Pos.Height - p.Height
                             );
-                        
+
                         Vector2 scale = new Vector2(
                             (float)Width / Data.Width,
                             (float)Height / Data.Height);
@@ -56,14 +58,13 @@ namespace OpenVIII
                         src.Location = ploc.ToPoint();
                         src.Size = pSize.ToPoint();
                     }
-                    
                 }
                 if (!Blink)
                     Memory.spriteBatch.Draw(Data, p, src, Color * Fade);
                 else
                     Memory.spriteBatch.Draw(Data, p, src, Color.Lerp(Color, Faded_Color, Menu.Blink_Amount) * Blink_Adjustment * Fade);
-                //    if (Blink)
-                //        Memory.spriteBatch.Draw(Data, Pos, null, Faded_Color * Fade * Blink_Amount * Blink_Adjustment);
+                // if (Blink) Memory.spriteBatch.Draw(Data, Pos, null, Faded_Color * Fade *
+                // Blink_Amount * Blink_Adjustment);
             }
         }
 

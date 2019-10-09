@@ -60,10 +60,10 @@ namespace OpenVIII
                         if (mode == Mode.YourTurn)
                         {
                             blink = true;
-                            ITEM[pos, 2] = new IGMDataItem_Texture(dot, atbbarpos, Color.LightYellow * .8f, new Color(125, 125, 0, 255) * .8f) { Blink = blink };
+                            ITEM[pos, 2] = new IGMDataItem.Texture(dot, atbbarpos, Color.LightYellow * .8f, new Color(125, 125, 0, 255) * .8f) { Blink = blink };
                         }
                         else if (mode == Mode.ATB_Charged)
-                            ITEM[pos, 2] = new IGMDataItem_Texture(dot, atbbarpos, Color.Yellow * .8f);
+                            ITEM[pos, 2] = new IGMDataItem.Texture(dot, atbbarpos, Color.Yellow * .8f);
                         // insert gradient atb bar here. Though this probably belongs in the update
                         // method as it'll be in constant flux.
 

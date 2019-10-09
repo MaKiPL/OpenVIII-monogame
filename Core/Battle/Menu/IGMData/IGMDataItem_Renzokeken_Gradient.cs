@@ -4,7 +4,7 @@ using System;
 
 namespace OpenVIII
 {
-    public class IGMDataItem_Renzokeken_Gradient : IGMDataItem_Texture
+    public class IGMDataItem_Renzokeken_Gradient : IGMDataItem.Texture
     {
         #region Fields
 

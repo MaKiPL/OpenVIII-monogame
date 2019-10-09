@@ -187,6 +187,8 @@
     <Compile Include="Menu\IGMDataItem\I_FontColor.cs" />
     <Compile Include="Menu\IGMDataItem\I_Palette.cs" />
     <Compile Include="Menu\IGMDataItem\Text.cs" />
+    <Compile Include="Menu\IGMDataItem\Texture.cs" />
+    <Compile Include="Menu\IGMDataItem\Texture_Handler.cs" />
     <Compile Include="Menu\IGMData\IGMData_BlueMagic_Pool.cs" />
     <Compile Include="Menu\Images\HSL.cs" />
     <Compile Include="Menu\IGMData\IGMData_Draw_Pool.cs" />
@@ -204,7 +206,6 @@
     <Compile Include="ExtapathyExtended.cs" />
     <Compile Include="Extended.cs" />
     <Compile Include="Fluid_Midi.cs" />
-    <Compile Include="Menu\IGMDataItem\IGMDataItem_TextureHandler.cs" />
     <Compile Include="Menu\Images\Box_Options.cs" />
     <Compile Include="Menu\Lobby\IGM_Lobby.cs" />
     <Compile Include="Menu\Menu_Base.cs" />
@@ -777,7 +778,6 @@
     <Compile Include="Menu\Images\Icons.cs" />
     <Compile Include="Menu\Images\Icons.ID.cs" />
     <Compile Include="Menu\Images\Icons.InsertCustomEntries.cs" />
-    <Compile Include="Menu\IGMDataItem\IGMDataItem_Texture.cs" />
     <Compile Include="Menu\IGMData\IGMData.cs" />
     <Compile Include="Menu\IGMData\IGMData_ConfirmDialog.cs" />
     <Compile Include="Menu\IGMData\IGMData_Container.cs" />
