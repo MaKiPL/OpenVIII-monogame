@@ -33,7 +33,7 @@ namespace OpenVIII
                             slots = 4;
                         if (i < slots)
                         {
-                            ITEM[i, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right2, SIZE[i], 9);
+                            ITEM[i, 0] = new IGMDataItem.Icon(Icons.ID.Arrow_Right2, SIZE[i], 9);
                             if (c.Abilities[i] != Kernel_bin.Abilities.None)
                             {
                                 ITEM[i, 1] = new IGMDataItem_String(

@@ -1,9 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
-using OpenVIII.IGMDataItem;
 
-namespace OpenVIII
+namespace OpenVIII.IGMDataItem
 {
-    public class IGMDataItem_Int : Base, I_Data<int>, I_Palette, I_FontColor
+    public class Integer : Base, I_Data<int>, I_Palette, I_FontColor
     {
         #region Fields
 
@@ -18,7 +17,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMDataItem_Int(int data, Rectangle? pos = null, byte? palette = null, Icons.NumType? numtype = null, byte? padding = null, int? spaces = null, int? spacewidth = null, Font.ColorID? fontcolor = null, byte? faded_palette = null, Font.ColorID? faded_fontcolor = null, float blink_adjustment = 1f) : base(pos)
+        public Integer(int data, Rectangle? pos = null, byte? palette = null, Icons.NumType? numtype = null, byte? padding = null, int? spaces = null, int? spacewidth = null, Font.ColorID? fontcolor = null, byte? faded_palette = null, Font.ColorID? faded_fontcolor = null, float blink_adjustment = 1f) : base(pos)
         {
             original_pos = _pos; //= pos ?? Rectangle.Empty;
             _padding = padding ?? 1;
@@ -69,7 +68,7 @@ namespace OpenVIII
         {
             if (Enabled)
             {
-                Memory.Icons.Draw(Data, NumType, Palette, $"D{_padding}", Pos.Location.ToVector2(), Scale, Fade, FontColor,Blink);
+                Memory.Icons.Draw(Data, NumType, Palette, $"D{_padding}", Pos.Location.ToVector2(), Scale, Fade, FontColor, Blink);
                 //if (Blink)
                 //    Memory.Icons.Draw(Data, NumType, Faded_Palette, $"D{_padding}", Pos.Location.ToVector2(), Scale, Fade * Blink_Amount * Blink_Adjustment, Faded_FontColor);
             }

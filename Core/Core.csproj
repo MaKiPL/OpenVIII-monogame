@@ -180,6 +180,8 @@
     <Compile Include="Menu\IGMDataItem\Box.cs" />
     <Compile Include="Menu\IGMDataItem\Empty.cs" />
     <Compile Include="Menu\IGMDataItem\Face.cs" />
+    <Compile Include="Menu\IGMDataItem\Icon.cs" />
+    <Compile Include="Menu\IGMDataItem\Integer.cs" />
     <Compile Include="Menu\IGMDataItem\I_Color.cs" />
     <Compile Include="Menu\IGMDataItem\I_Data.cs" />
     <Compile Include="Menu\IGMDataItem\I_FontColor.cs" />
@@ -774,8 +776,6 @@
     <Compile Include="Menu\Images\Icons.cs" />
     <Compile Include="Menu\Images\Icons.ID.cs" />
     <Compile Include="Menu\Images\Icons.InsertCustomEntries.cs" />
-    <Compile Include="Menu\IGMDataItem\IGMDataItem_Icon.cs" />
-    <Compile Include="Menu\IGMDataItem\IGMDataItem_Int.cs" />
     <Compile Include="Menu\IGMDataItem\IGMDataItem_String.cs" />
     <Compile Include="Menu\IGMDataItem\IGMDataItem_Texture.cs" />
     <Compile Include="Menu\IGMData\IGMData.cs" />

@@ -183,7 +183,7 @@ namespace OpenVIII
             for (byte pos = 0; pos < Rows; pos++)
             {
                 ITEM[pos, 0] = new IGMDataItem_String(null, SIZE[pos]);
-                ITEM[pos, 1] = new IGMDataItem_Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0));
+                ITEM[pos, 1] = new IGMDataItem.Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0));
                 ITEM[pos, 2] = new IGMData_Draw_Commands(r, Damageable, Battle);
                 ITEM[pos, 2].Hide();
             }
@@ -259,9 +259,9 @@ namespace OpenVIII
                     ((IGMDataItem_String)(ITEM[pos, 0])).Data = Contents[i].Name;
                     ((IGMDataItem_String)(ITEM[pos, 0])).Show();
                     if (junctioned)
-                        ((IGMDataItem_Icon)(ITEM[pos, 1])).Show();
+                        ((IGMDataItem.Icon)(ITEM[pos, 1])).Show();
                     else
-                        ((IGMDataItem_Icon)(ITEM[pos, 1])).Hide();
+                        ((IGMDataItem.Icon)(ITEM[pos, 1])).Hide();
                     ((IGMData_Draw_Commands)ITEM[pos, 2]).Refresh(Contents[i]);
                     BLANKS[pos] = false;
                     pos++;
@@ -269,7 +269,7 @@ namespace OpenVIII
                 for (; pos < Rows; pos++)
                 {
                     ((IGMDataItem_String)(ITEM[pos, 0])).Hide();
-                    ((IGMDataItem_Icon)(ITEM[pos, 1])).Hide();
+                    ((IGMDataItem.Icon)(ITEM[pos, 1])).Hide();
                     BLANKS[pos] = true;
                 }
             }

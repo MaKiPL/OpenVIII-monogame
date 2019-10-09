@@ -37,7 +37,7 @@ namespace OpenVIII
                         }
                         else
                         {
-                            ITEM[i, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right2, SIZE[i], 9);
+                            ITEM[i, 0] = new IGMDataItem.Icon(Icons.ID.Arrow_Right2, SIZE[i], 9);
                             ITEM[i, 1] = c.Commands[i - 1] != Kernel_bin.Abilities.None ? new IGMDataItem_String(
                                 Icons.ID.Ability_Command, 9,
                             Kernel_bin.Commandabilities[c.Commands[i - 1]].Name,

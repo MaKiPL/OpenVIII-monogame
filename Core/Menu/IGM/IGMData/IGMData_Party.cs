@@ -104,28 +104,28 @@ namespace OpenVIII
 
                         r = dims.Item3;
                         r.Offset(184, yoff);
-                        ITEM[pos, 1] = new IGMDataItem_Icon(Icons.ID.Lv, r, 13);
+                        ITEM[pos, 1] = new IGMDataItem.Icon(Icons.ID.Lv, r, 13);
 
                         r = dims.Item3;
                         r.Offset((229), yoff);
-                        ITEM[pos, 2] = new IGMDataItem_Int(damageable.Level, r, 2, 0, 1, 3);
+                        ITEM[pos, 2] = new IGMDataItem.Integer(damageable.Level, r, 2, 0, 1, 3);
 
                         r = dims.Item3;
                         r.Offset(304, yoff);
-                        ITEM[pos, 3] = new IGMDataItem_Icon(Icons.ID.HP2, r, 13);
+                        ITEM[pos, 3] = new IGMDataItem.Icon(Icons.ID.HP2, r, 13);
 
                         r = dims.Item3;
                         r.Offset((354), yoff);
-                        ITEM[pos, 4] = new IGMDataItem_Int(damageable.CurrentHP(), r, 2, 0, 1, 4);
+                        ITEM[pos, 4] = new IGMDataItem.Integer(damageable.CurrentHP(), r, 2, 0, 1, 4);
 
                         r = dims.Item3;
                         r.Offset(437, yoff);
-                        ITEM[pos, 5] = new IGMDataItem_Icon(Icons.ID.Slash_Forward, r, 13);
+                        ITEM[pos, 5] = new IGMDataItem.Icon(Icons.ID.Slash_Forward, r, 13);
 
                         r = dims.Item3;
 
                         r.Offset((459), yoff);
-                        ITEM[pos, 6] = new IGMDataItem_Int(damageable.MaxHP(), r, 2, 0, 1, 4);
+                        ITEM[pos, 6] = new IGMDataItem.Integer(damageable.MaxHP(), r, 2, 0, 1, 4);
 
                         if ((Memory.State.TeamLaguna || Memory.State.SmallTeam) && Damageable.GetCharacterData(out Saves.CharacterData c))
                         {
@@ -137,19 +137,19 @@ namespace OpenVIII
 
                             r = dims.Item3;
                             r.Offset((340), 42);
-                            ITEM[pos, 8] = new IGMDataItem_Int(checked((int)c.Experience), r, 2, 0, 1, 9);
+                            ITEM[pos, 8] = new IGMDataItem.Integer(checked((int)c.Experience), r, 2, 0, 1, 9);
 
                             r = dims.Item3;
                             r.Offset(520, 42);
-                            ITEM[pos, 9] = new IGMDataItem_Icon(Icons.ID.P, r, 2);
+                            ITEM[pos, 9] = new IGMDataItem.Icon(Icons.ID.P, r, 2);
 
                             r = dims.Item3;
                             r.Offset((340), 75);
-                            ITEM[pos, 10] = new IGMDataItem_Int(c.ExperienceToNextLevel, r, 2, 0, 1, 9);
+                            ITEM[pos, 10] = new IGMDataItem.Integer(c.ExperienceToNextLevel, r, 2, 0, 1, 9);
 
                             r = dims.Item3;
                             r.Offset(520, 75);
-                            ITEM[pos, 11] = new IGMDataItem_Icon(Icons.ID.P, r, 2);
+                            ITEM[pos, 11] = new IGMDataItem.Icon(Icons.ID.P, r, 2);
                         }
                         else
                             for (int i = 7; i < Depth; i++)

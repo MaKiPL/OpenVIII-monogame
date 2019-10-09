@@ -37,8 +37,8 @@ namespace OpenVIII
                 j = true;
             }
             ITEM[pos, 0] = new IGMDataItem_String(spell.Name, SIZE[pos], color);
-            ITEM[pos, 1] = j ? new IGMDataItem_Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 75, SIZE[pos].Y, 0, 0)) : null;
-            ITEM[pos, 2] = new IGMDataItem_Int(Source.Magics[spell.ID], new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), spaces: 3);
+            ITEM[pos, 1] = j ? new IGMDataItem.Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 75, SIZE[pos].Y, 0, 0)) : null;
+            ITEM[pos, 2] = new IGMDataItem.Integer(Source.Magics[spell.ID], new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), spaces: 3);
             //makes it so you cannot junction a magic to a stat that does nothing.
             BLANKS[pos] = color == nostat ? true : false;
             Contents[pos] = spell.ID;
@@ -156,7 +156,7 @@ namespace OpenVIII
             base.Init();
             SIZE[Rows] = SIZE[0];
             SIZE[Rows].Y = Y;
-            ITEM[Rows, 2] = new IGMDataItem_Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 45, SIZE[Rows].Y, 0, 0), scale: new Vector2(2.5f));
+            ITEM[Rows, 2] = new IGMDataItem.Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 45, SIZE[Rows].Y, 0, 0), scale: new Vector2(2.5f));
 
             ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Damageable);
             BLANKS[Rows] = true;

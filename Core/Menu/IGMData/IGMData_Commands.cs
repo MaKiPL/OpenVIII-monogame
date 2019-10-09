@@ -311,7 +311,7 @@ namespace OpenVIII
                 if (Battle && CrisisLevel)
                 {
                     CONTAINER.Width = crisiswidth;
-                    ITEM[Limit_Arrow, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right, new Rectangle(SIZE[0].X + Width - 55, SIZE[0].Y, 0, 0), 2, 7) { Blink = true };
+                    ITEM[Limit_Arrow, 0] = new IGMDataItem.Icon(Icons.ID.Arrow_Right, new Rectangle(SIZE[0].X + Width - 55, SIZE[0].Y, 0, 0), 2, 7) { Blink = true };
                 }
                 else
                 {

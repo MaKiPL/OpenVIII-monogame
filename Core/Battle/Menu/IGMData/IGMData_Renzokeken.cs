@@ -46,8 +46,8 @@ namespace OpenVIII
             ITEM[1, 0] = new IGMDataItem_Texture(pixel, r, Color.Black);
             float scale = (float)r.Height / e.Height;
             int w = (int)(e.Width * scale);
-            ITEM[Count - 3, 0] = new IGMDataItem_Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 80, r.Y, w, r.Height), 2, scale: new Vector2(scale));
-            ITEM[Count - 2, 0] = new IGMDataItem_Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 208, r.Y, w, r.Height), 2, scale: new Vector2(scale));
+            ITEM[Count - 3, 0] = new IGMDataItem.Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 80, r.Y, w, r.Height), 2, scale: new Vector2(scale));
+            ITEM[Count - 2, 0] = new IGMDataItem.Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 208, r.Y, w, r.Height), 2, scale: new Vector2(scale));
             Rectangle hotspot = new Rectangle(r.X + 80 + (w / 2), r.Y + 4, 208 - 80, r.Height - 8);
             ITEM[Count - 4, 0] = new IGMDataItem_Texture(pixel, hotspot, Color.TransparentBlack);
             //Rectangle hotspotbox = hotspot;
@@ -63,7 +63,7 @@ namespace OpenVIII
             int xbak = tr.X;
             tr.X += trigwidtharea / 2 - w / 2;
 
-            ITEM[Count - 1, 0] = new IGMDataItem_Icon(Icons.ID.Trigger_, tr, 6, scale: new Vector2(scale));// { Color = rc};
+            ITEM[Count - 1, 0] = new IGMDataItem.Icon(Icons.ID.Trigger_, tr, 6, scale: new Vector2(scale));// { Color = rc};
 
             newattack = new Color(104, 80, 255);
             int delay = 500;
@@ -88,13 +88,13 @@ namespace OpenVIII
             scale = ((float)r.Height) / e.Height;
             w = (int)(e.Width * scale);
             tr.X = xbak + trigwidtharea / 2 - w / 2;
-            ITEM[Count - 5, 0] = new IGMDataItem_Icon(Icons.ID._0_Hit_, tr, 2, scale: new Vector2(scale));
+            ITEM[Count - 5, 0] = new IGMDataItem.Icon(Icons.ID._0_Hit_, tr, 2, scale: new Vector2(scale));
             Memory.Icons.Trim(Icons.ID.Perfect__, 2);
             e = Memory.Icons[Icons.ID.Perfect__];
             scale = ((float)r.Height) / e.Height;
             w = (int)(e.Width * scale);
             tr.X = xbak + trigwidtharea / 2 - w / 2;
-            ITEM[Count - 6, 0] = new IGMDataItem_Icon(Icons.ID.Perfect__, tr, 8, scale: new Vector2(scale));
+            ITEM[Count - 6, 0] = new IGMDataItem.Icon(Icons.ID.Perfect__, tr, 8, scale: new Vector2(scale));
             base.Init();
             Reset();
             Cursor_Status = Cursor_Status.Enabled | Cursor_Status.Static | Cursor_Status.Hidden;
@@ -184,7 +184,7 @@ namespace OpenVIII
             bool done = false;
             bool hot = false;
 
-            ((IGMDataItem_Icon)ITEM[Count - 5, 0]).Data = Icons.ID._0_Hit_ + _count;
+            ((IGMDataItem.Icon)ITEM[Count - 5, 0]).Data = Icons.ID._0_Hit_ + _count;
             ((IGMDataItem_Texture)ITEM[Count - 4, 0]).Color = HitSlider.Update();
 
             int hotcnt = 0;
@@ -209,8 +209,8 @@ namespace OpenVIII
             }
             if (hot)
             {
-                ((IGMDataItem_Icon)ITEM[Count - 3, 0]).Palette = 6;
-                ((IGMDataItem_Icon)ITEM[Count - 2, 0]).Palette = 6;
+                ((IGMDataItem.Icon)ITEM[Count - 3, 0]).Palette = 6;
+                ((IGMDataItem.Icon)ITEM[Count - 2, 0]).Palette = 6;
                 ((IGMDataItem_Texture)ITEM[0, 0]).Color = rc;
                 ITEM[Count - 1, 0].Show();
                 ITEM[Count - 5, 0].Hide();
@@ -218,8 +218,8 @@ namespace OpenVIII
             }
             else
             {
-                ((IGMDataItem_Icon)ITEM[Count - 3, 0]).Palette = 2;
-                ((IGMDataItem_Icon)ITEM[Count - 2, 0]).Palette = 2;
+                ((IGMDataItem.Icon)ITEM[Count - 3, 0]).Palette = 2;
+                ((IGMDataItem.Icon)ITEM[Count - 2, 0]).Palette = 2;
                 ((IGMDataItem_Texture)ITEM[0, 0]).Color = rcdim;
                 if ((hotcnt >= _hits)||!done)// && ITEM[Count - 1, 0].Enabled)
                 {

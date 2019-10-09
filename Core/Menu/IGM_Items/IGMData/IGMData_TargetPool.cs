@@ -194,8 +194,8 @@ namespace OpenVIII
                     Contents[i] = id;
                     if (hp > -1)
                     {
-                        ITEM[i, 1] = new IGMDataItem_Icon(Icons.ID.HP2, new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 7), SIZE[i].Y, 0, 0), 13);
-                        ITEM[i, 2] = new IGMDataItem_Int(hp, pos: new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 4), SIZE[i].Y, 0, 0), spaces: 4);
+                        ITEM[i, 1] = new IGMDataItem.Icon(Icons.ID.HP2, new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 7), SIZE[i].Y, 0, 0), 13);
+                        ITEM[i, 2] = new IGMDataItem.Integer(hp, pos: new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 4), SIZE[i].Y, 0, 0), spaces: 4);
                     }
                     else
                     {

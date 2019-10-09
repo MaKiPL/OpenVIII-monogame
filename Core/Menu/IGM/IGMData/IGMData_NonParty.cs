@@ -97,15 +97,15 @@ namespace OpenVIII
                     CURSOR[pos] = new Point(rbak.X, (int)(rbak.Y + (6 * TextScale.Y)));
 
                     r.Offset(7, yoff);
-                    ITEM[pos, 1] = new IGMDataItem_Icon(Icons.ID.Lv, r, 13);
+                    ITEM[pos, 1] = new IGMDataItem.Icon(Icons.ID.Lv, r, 13);
 
                     r = rbak;
                     r.Offset((49), yoff);
-                    ITEM[pos, 2] = new IGMDataItem_Int(damageable.Level, r, 2, 0, 1, 3);
+                    ITEM[pos, 2] = new IGMDataItem.Integer(damageable.Level, r, 2, 0, 1, 3);
 
                     r = rbak;
                     r.Offset(126, yoff);
-                    ITEM[pos, 3] = new IGMDataItem_Icon(Icons.ID.HP2, r, 13);
+                    ITEM[pos, 3] = new IGMDataItem.Icon(Icons.ID.HP2, r, 13);
 
                     r.Offset(0, 28);
                     r.Width = 118;
@@ -123,7 +123,7 @@ namespace OpenVIII
 
                     r = rbak;
                     r.Offset((166), yoff);
-                    ITEM[pos, 8] = new IGMDataItem_Int(damageable.CurrentHP(), r, 2, 0, 1, 4);
+                    ITEM[pos, 8] = new IGMDataItem.Integer(damageable.CurrentHP(), r, 2, 0, 1, 4);
 
                 }
             }

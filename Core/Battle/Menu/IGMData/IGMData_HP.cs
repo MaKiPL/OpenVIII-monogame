@@ -77,9 +77,9 @@ namespace OpenVIII
 
                         // TODO: make a font render that can draw right to left from a point. For Right aligning the names.
                         ITEM[pos, 0] = new IGMDataItem_String(name, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), colorid) { Blink = blink };
-                        ITEM[pos, 1] = new IGMDataItem_Int(HP, new Rectangle(SIZE[pos].X + 128, SIZE[pos].Y, 0, 0), palette: palette, spaces: 4, numtype: Icons.NumType.Num_8x16_1,fontcolor: colorid) { Blink = blink };
+                        ITEM[pos, 1] = new IGMDataItem.Integer(HP, new Rectangle(SIZE[pos].X + 128, SIZE[pos].Y, 0, 0), palette: palette, spaces: 4, numtype: Icons.NumType.Num_8x16_1,fontcolor: colorid) { Blink = blink };
 
-                        ITEM[pos, 3] = new IGMDataItem_Icon(Icons.ID.Size_08x64_Bar, atbbarpos, 0);
+                        ITEM[pos, 3] = new IGMDataItem.Icon(Icons.ID.Size_08x64_Bar, atbbarpos, 0);
                         pos++;
                     }
                     base.Refresh();
