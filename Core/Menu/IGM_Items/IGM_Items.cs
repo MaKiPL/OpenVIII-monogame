@@ -70,7 +70,7 @@ namespace OpenVIII
             //TextScale = new Vector2(2.545455f, 3.0375f);
 
             Data.Add(SectionName.Help, new IGMData_Help(
-                new IGMDataItem_Box(null, pos: new Rectangle(15, 69, 810, 78), Icons.ID.HELP, options: Box_Options.Middle)));
+                new IGMDataItem.Box(null, pos: new Rectangle(15, 69, 810, 78), Icons.ID.HELP, options: Box_Options.Middle)));
             Data.Add(SectionName.TopMenu, new IGMData_TopMenu(new Dictionary<FF8String, FF8String>() {
                             { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 179),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 180)},
                             { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 183),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 184)},
@@ -78,7 +78,7 @@ namespace OpenVIII
                             { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 181),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 182)},
                             }));
             Data.Add(SectionName.Title, new IGMData_Container(
-                new IGMDataItem_Box(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), pos: new Rectangle(615, 0, 225, 66))));
+                new IGMDataItem.Box(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), pos: new Rectangle(615, 0, 225, 66))));
             Data.Add(SectionName.UseItemGroup, new IGMData_Group(
                 new IGMData_Statuses(),
                 new IGMData_ItemPool(),

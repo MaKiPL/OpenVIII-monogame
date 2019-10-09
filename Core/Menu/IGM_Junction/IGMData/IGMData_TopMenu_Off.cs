@@ -11,7 +11,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_TopMenu_Off() : base(2, 1, new IGMDataItem_Box(pos: new Rectangle(165, 12, 445, 54)), 2, 1)
+            public IGMData_TopMenu_Off() : base(2, 1, new IGMDataItem.Box(pos: new Rectangle(165, 12, 445, 54)), 2, 1)
             {
             }
 

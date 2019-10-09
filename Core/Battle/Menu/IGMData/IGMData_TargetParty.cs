@@ -26,7 +26,7 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_TargetParty(Rectangle pos) : base(3, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.NAME), 1, 3)
+            public IGMData_TargetParty(Rectangle pos) : base(3, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.NAME), 1, 3)
             {
             }
 

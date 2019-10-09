@@ -24,7 +24,7 @@ namespace OpenVIII
                 Data = new Dictionary<Enum, IGMData>
                 {
                     { Mode.All, new IGMData_Group(
-                    new IGMData_Container(new IGMDataItem_Box(new FF8String(new byte[] {
+                    new IGMData_Container(new IGMDataItem.Box(new FF8String(new byte[] {
                             (byte)FF8TextTagCode.Key,
                             (byte)FF8TextTagKey.Confirm})+
                             " "+

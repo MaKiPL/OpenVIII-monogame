@@ -225,14 +225,14 @@ namespace OpenVIII
 
         public static EventHandler<Kernel_bin.Stat> StatEventListener;
 
-        public IGMData_Mag_Pool(Rectangle pos, Damageable damageable, bool battle = false) : base(5, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.MAGIC), 4, 13, damageable)
+        public IGMData_Mag_Pool(Rectangle pos, Damageable damageable, bool battle = false) : base(5, 3, new IGMDataItem.Box(pos: pos, title: Icons.ID.MAGIC), 4, 13, damageable)
         {
             Battle = battle;
             skipReinit = true;
             Refresh();
         }
 
-        public IGMData_Mag_Pool() : base(6, 3, new IGMDataItem_Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.MAGIC), 4, 13)
+        public IGMData_Mag_Pool() : base(6, 3, new IGMDataItem.Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.MAGIC), 4, 13)
         {
         }
 
@@ -510,12 +510,12 @@ namespace OpenVIII
             base.UpdateTitle();
             if (Pages == 1)
             {
-                ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.MAGIC;
+                ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.MAGIC;
                 //ITEM[Count - 1, 0] = ITEM[Count - 2, 0] = null;
             }
             else
                 if (Page < Pages)
-                ((IGMDataItem_Box)CONTAINER).Title = (Icons.ID)((int)Icons.ID.MAGIC_PG1 + Page);
+                ((IGMDataItem.Box)CONTAINER).Title = (Icons.ID)((int)Icons.ID.MAGIC_PG1 + Page);
         }
     }
 }

@@ -13,7 +13,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_GF_Junctioned() : base(16, 1, new IGMDataItem_Box(pos: new Rectangle(0, 141, 440, 282)), 2, 8)
+            public IGMData_GF_Junctioned() : base(16, 1, new IGMDataItem.Box(pos: new Rectangle(0, 141, 440, 282)), 2, 8)
             {
             }
 

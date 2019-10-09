@@ -151,7 +151,7 @@ namespace OpenVIII
                 {
                     base.Init();
                     Hide();
-                    ITEM[0, 0] = new IGMDataItem_Box(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 111), new Rectangle(SIZE[0].X, SIZE[0].Y, SIZE[0].Width, 78), Icons.ID.INFO, options: Box_Options.Middle);
+                    ITEM[0, 0] = new IGMDataItem.Box(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 111), new Rectangle(SIZE[0].X, SIZE[0].Y, SIZE[0].Width, 78), Icons.ID.INFO, options: Box_Options.Middle);
                     ITEM[0, 1] = new IGMData_SmallMsgBox(str_GF_AP, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // GF recieved ### AP!
                     ITEM[0, 2] = new IGMData_SmallMsgBox(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // GF Leveled up!
                     ITEM[0, 3] = new IGMData_SmallMsgBox(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // GF Leveled up!

@@ -12,7 +12,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_GF_Pool() : base(5, 3, new IGMDataItem_Box(pos: new Rectangle(440, 149, 385, 193), title: Icons.ID.GF), 4, 4)
+            public IGMData_GF_Pool() : base(5, 3, new IGMDataItem.Box(pos: new Rectangle(440, 149, 385, 193), title: Icons.ID.GF), 4, 4)
             {
             }
 
@@ -183,26 +183,26 @@ namespace OpenVIII
                 base.UpdateTitle();
                 if (Pages == 1)
                 {
-                    ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.GF;
+                    ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.GF;
                     ITEM[Count - 1, 0] = ITEM[Count - 2, 0] = null;
                 }
                 else
                     switch (Page)
                     {
                         case 0:
-                            ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.GF_PG1;
+                            ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.GF_PG1;
                             break;
 
                         case 1:
-                            ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.GF_PG2;
+                            ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.GF_PG2;
                             break;
 
                         case 2:
-                            ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.GF_PG3;
+                            ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.GF_PG3;
                             break;
 
                         case 3:
-                            ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.GF_PG4;
+                            ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.GF_PG4;
                             break;
                     }
             }
@@ -261,7 +261,7 @@ namespace OpenVIII
                 {
                     GFs g = Contents[CURSOR_SELECT];
                     IGMData_Container i = (IGMData_Container)((IGMData_GF_Group)IGM_Junction.Data[SectionName.TopMenu_GF_Group]).ITEM[2, 0];
-                    ((IGMDataItem_Box)i.CONTAINER).Data = JunctionedGFs.Count > 0 && JunctionedGFs.ContainsKey(g) ? Memory.Strings.GetName(JunctionedGFs[g]) : null;
+                    ((IGMDataItem.Box)i.CONTAINER).Data = JunctionedGFs.Count > 0 && JunctionedGFs.ContainsKey(g) ? Memory.Strings.GetName(JunctionedGFs[g]) : null;
                 }
             }
 

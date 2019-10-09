@@ -82,7 +82,7 @@ namespace OpenVIII
 
         public Dictionary<int, Func<bool>> OKAY_Actions;
 
-        public IGMData_Draw_Commands(Rectangle pos, Damageable damageable, bool battle = false) : base(3, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.CHOICE), 1, 2, damageable)
+        public IGMData_Draw_Commands(Rectangle pos, Damageable damageable, bool battle = false) : base(3, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.CHOICE), 1, 2, damageable)
         {
         }
 
@@ -218,7 +218,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_Draw_Pool(Rectangle pos, Damageable damageable, bool battle = false) : base(5, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.CHOICE), 4, 1, damageable)
+        public IGMData_Draw_Pool(Rectangle pos, Damageable damageable, bool battle = false) : base(5, 3, new IGMDataItem.Box(pos: pos, title: Icons.ID.CHOICE), 4, 1, damageable)
         {
             Battle = battle;
             Refresh();

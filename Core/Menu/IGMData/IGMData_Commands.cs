@@ -90,7 +90,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_Commands(Rectangle pos, Damageable damageable = null, bool battle = false) : base(9, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.COMMAND), 1, 4, damageable)
+        public IGMData_Commands(Rectangle pos, Damageable damageable = null, bool battle = false) : base(9, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.COMMAND), 1, 4, damageable)
         {
             Battle = battle;
             skipReinit = true;

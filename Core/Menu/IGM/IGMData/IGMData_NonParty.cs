@@ -18,7 +18,7 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_NonParty() : base(6, 9, new IGMDataItem_Box(pos: new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 }), 2, 3)
+            public IGMData_NonParty() : base(6, 9, new IGMDataItem.Box(pos: new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 }), 2, 3)
             {
             }
 

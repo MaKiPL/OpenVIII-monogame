@@ -67,7 +67,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_BlueMagic_Pool(Rectangle pos, Damageable damageable, bool battle = false) : base(5, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.SPECIAL), 4, 4, damageable)
+        public IGMData_BlueMagic_Pool(Rectangle pos, Damageable damageable, bool battle = false) : base(5, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.SPECIAL), 4, 4, damageable)
         {
         }
 
@@ -145,9 +145,9 @@ namespace OpenVIII
             }
             Pages = 4;
             if (unlocked.Count / Rows <= 1)
-                ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.SPECIAL;
+                ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL;
             else
-                ((IGMDataItem_Box)CONTAINER).Title = (Icons.ID)((int)(Icons.ID.SPECIAL_PG1) + Page);
+                ((IGMDataItem.Box)CONTAINER).Title = (Icons.ID)((int)(Icons.ID.SPECIAL_PG1) + Page);
         }
     }
 }

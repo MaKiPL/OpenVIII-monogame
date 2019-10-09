@@ -11,7 +11,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_Mag_PageTitle() : base(1, 4, new IGMDataItem_Box(pos: new Rectangle(0, 345, 435, 66)))
+            public IGMData_Mag_PageTitle() : base(1, 4, new IGMDataItem.Box(pos: new Rectangle(0, 345, 435, 66)))
             {
             }
 

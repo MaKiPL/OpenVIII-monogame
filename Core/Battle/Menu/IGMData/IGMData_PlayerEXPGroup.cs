@@ -162,7 +162,7 @@ namespace OpenVIII
                 {
                     base.Init();
                     Cursor_Status |= (Cursor_Status.Hidden | (Cursor_Status.Enabled | Cursor_Status.Static));
-                    header = new IGMData_Container(new IGMDataItem_Box(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 23), new Rectangle(0, 0, CONTAINER.Width, 78), Icons.ID.INFO, Box_Options.Middle));
+                    header = new IGMData_Container(new IGMDataItem.Box(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 23), new Rectangle(0, 0, CONTAINER.Width, 78), Icons.ID.INFO, Box_Options.Middle));
                 }
 
                 private void RefreshEXP()

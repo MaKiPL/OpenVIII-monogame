@@ -113,7 +113,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_ItemPool(Rectangle pos, bool battle, int count = 4) : base(count + 1, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.ITEM), count, 198 / count + 1)
+        public IGMData_ItemPool(Rectangle pos, bool battle, int count = 4) : base(count + 1, 3, new IGMDataItem.Box(pos: pos, title: Icons.ID.ITEM), count, 198 / count + 1)
         {
             Battle = battle;
             if(battle)
@@ -199,7 +199,7 @@ namespace OpenVIII
             Source = Memory.State;
             if (Source != null && Source.Items != null)
             {
-                ((IGMDataItem_Box)CONTAINER).Title = Pages <= 1 ? (Icons.ID?)Icons.ID.ITEM : (Icons.ID?)(Icons.ID.ITEM_PG1 + (byte)Page);
+                ((IGMDataItem.Box)CONTAINER).Title = Pages <= 1 ? (Icons.ID?)Icons.ID.ITEM : (Icons.ID?)(Icons.ID.ITEM_PG1 + (byte)Page);
                 byte pos = 0;
                 int skip = Page * Rows;
                 for (byte i = 0; pos < Rows && i < Source.Items.Count; i++)

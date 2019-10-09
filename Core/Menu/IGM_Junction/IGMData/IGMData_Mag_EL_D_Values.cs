@@ -12,7 +12,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_Mag_EL_D_Values() : base(8, 5, new IGMDataItem_Box(title: Icons.ID.Elemental_Defense, pos: new Rectangle(280, 423, 545, 201)), 2, 4)
+            public IGMData_Mag_EL_D_Values() : base(8, 5, new IGMDataItem.Box(title: Icons.ID.Elemental_Defense, pos: new Rectangle(280, 423, 545, 201)), 2, 4)
             {
             }
 

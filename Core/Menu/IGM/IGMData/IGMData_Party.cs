@@ -96,10 +96,10 @@ namespace OpenVIII
                         Contents[pos] = damageable;
                         float yoff = 6;
 
-                        ITEM[pos, 0] = new IGMDataItem_Box(damageable.Name, title: Icons.ID.STATUS);
-                        Tuple<Rectangle, Point, Rectangle> dims = DrawBox(SIZE[pos], ((IGMDataItem_Box)ITEM[pos, 0]).Data, options: Box_Options.SkipDraw);
+                        ITEM[pos, 0] = new IGMDataItem.Box(damageable.Name, title: Icons.ID.STATUS);
+                        Tuple<Rectangle, Point, Rectangle> dims = DrawBox(SIZE[pos], ((IGMDataItem.Box)ITEM[pos, 0]).Data, options: Box_Options.SkipDraw);
                         Rectangle r = dims.Item3;
-                        ((IGMDataItem_Box)ITEM[pos, 0]).Pos = dims.Item1;
+                        ((IGMDataItem.Box)ITEM[pos, 0]).Pos = dims.Item1;
                         CURSOR[pos] = dims.Item2;
 
                         r = dims.Item3;
@@ -157,7 +157,7 @@ namespace OpenVIII
                     }
                     else
                     {
-                        ITEM[pos, 0] = new IGMDataItem_Box(pos: SIZE[pos]);
+                        ITEM[pos, 0] = new IGMDataItem.Box(pos: SIZE[pos]);
                         BLANKS[pos] = true;
                         for (int i = 1; i < Depth; i++)
                         {

@@ -24,7 +24,7 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_TargetEnemies(Rectangle pos) : base(6, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.TARGET), 2, 3)
+            public IGMData_TargetEnemies(Rectangle pos) : base(6, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.TARGET), 2, 3)
             {
             }
 

@@ -10,7 +10,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_Abilities_AbilitySlots() : base(4, 2, new IGMDataItem_Box(pos: new Rectangle(0, 414, 435, 216), title: Icons.ID.ABILITY), 1, 4)
+            public IGMData_Abilities_AbilitySlots() : base(4, 2, new IGMDataItem.Box(pos: new Rectangle(0, 414, 435, 216), title: Icons.ID.ABILITY), 1, 4)
             {
             }
 
