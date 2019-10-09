@@ -79,7 +79,7 @@ namespace OpenVIII
 
         protected void Init(int count, int depth, Menu_Base container = null, int? cols = null, int? rows = null)
         {
-            CONTAINER = container ?? new IGMDataItem_Empty();
+            CONTAINER = container ?? new IGMDataItem.Empty();
             if (count <= 0 || depth <= 0)
             {
                 if (CONTAINER.Pos == Rectangle.Empty)

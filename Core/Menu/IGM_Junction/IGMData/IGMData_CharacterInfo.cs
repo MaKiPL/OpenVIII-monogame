@@ -10,7 +10,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_CharacterInfo() : base(1, 15, new IGMDataItem_Empty(new Rectangle(20, 153, 395, 255)))
+            public IGMData_CharacterInfo() : base(1, 15, new IGMDataItem.Empty(new Rectangle(20, 153, 395, 255)))
             {
             }
 

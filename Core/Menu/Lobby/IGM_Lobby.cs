@@ -47,7 +47,7 @@ namespace OpenVIII
             private Dictionary<int, Action> FadeOutActions;
             private bool eventset = false;
 
-            public IGMData_Selections() : base(count: 3, depth: 1, container: new IGMDataItem_Empty(new Rectangle(320, 445, 250, 170)), cols: 1, rows: 3)
+            public IGMData_Selections() : base(count: 3, depth: 1, container: new IGMDataItem.Empty(new Rectangle(320, 445, 250, 170)), cols: 1, rows: 3)
             {
             }
 

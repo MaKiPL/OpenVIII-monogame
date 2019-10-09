@@ -35,11 +35,11 @@ namespace OpenVIII
                     new IGMData_PlayerEXPGroup (
                         new IGMData_PlayerEXP(0),new IGMData_PlayerEXP(1),new IGMData_PlayerEXP(2)
                         )
-                    { CONTAINER = new IGMDataItem_Empty(new Rectangle(Point.Zero,Size.ToPoint()))} },
+                    { CONTAINER = new IGMDataItem.Empty(new Rectangle(Point.Zero,Size.ToPoint()))} },
                     { Mode.Items,
-                    new IGMData_PartyItems(new IGMDataItem_Empty(new Rectangle(Point.Zero,Size.ToPoint()))) },
+                    new IGMData_PartyItems(new IGMDataItem.Empty(new Rectangle(Point.Zero,Size.ToPoint()))) },
                     { Mode.AP,
-                    new IGMData_PartyAP(new IGMDataItem_Empty(new Rectangle(Point.Zero,Size.ToPoint()))) },
+                    new IGMData_PartyAP(new IGMDataItem.Empty(new Rectangle(Point.Zero,Size.ToPoint()))) },
 
                 };
                 SetMode(Mode.Exp);

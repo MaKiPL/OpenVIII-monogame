@@ -178,6 +178,7 @@
     <Compile Include="Input\MouseLockMode.cs" />
     <Compile Include="Menu\IGMDataItem\Base.cs" />
     <Compile Include="Menu\IGMDataItem\Box.cs" />
+    <Compile Include="Menu\IGMDataItem\Empty.cs" />
     <Compile Include="Menu\IGMDataItem\I_Color.cs" />
     <Compile Include="Menu\IGMDataItem\I_Data.cs" />
     <Compile Include="Menu\IGMDataItem\I_FontColor.cs" />
@@ -772,7 +773,6 @@
     <Compile Include="Menu\Images\Icons.cs" />
     <Compile Include="Menu\Images\Icons.ID.cs" />
     <Compile Include="Menu\Images\Icons.InsertCustomEntries.cs" />
-    <Compile Include="Menu\IGMDataItem\IGMDataItem_Empty.cs" />
     <Compile Include="Menu\IGMDataItem\IGMDataItem_Face.cs" />
     <Compile Include="Menu\IGMDataItem\IGMDataItem_Icon.cs" />
     <Compile Include="Menu\IGMDataItem\IGMDataItem_Int.cs" />

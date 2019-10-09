@@ -21,7 +21,7 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_HP(Rectangle pos, Damageable damageable) : base(3, 4, new IGMDataItem_Empty(pos), 1, 3, damageable)
+            public IGMData_HP(Rectangle pos, Damageable damageable) : base(3, 4, new IGMDataItem.Empty(pos), 1, 3, damageable)
             {
             }
 
