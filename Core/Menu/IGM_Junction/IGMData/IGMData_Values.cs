@@ -72,11 +72,7 @@ namespace OpenVIII
                             ((IGMDataItem.Integer)ITEM[pos + offset, 3]).FontColor = Font.ColorID.Red;
                             ((IGMDataItem.Text)ITEM[pos + offset, 4]).FontColor = Font.ColorID.Red;
 
-                            //{
-                            //    ((IGMDataItem.IGMDataItem_Icon)Slots.ITEM[Slots.CURSOR_SELECT, 0]).Palette = 5;
-                            //    ((IGMDataItem.IGMDataItem_Icon)Slots.ITEM[Slots.CURSOR_SELECT, 0]).Faded_Palette = 5;
-                            //    ((IGMDataItem.IGMDataItem_String)Slots.ITEM[Slots.CURSOR_SELECT, 1]).Colorid = Font.ColorID.Red;
-                            //}
+
                             if (++_nag > _pos)
                                 ColorChangeEventListener?.Invoke(this, Font.ColorID.Red);
                         }
@@ -88,11 +84,7 @@ namespace OpenVIII
                             ((IGMDataItem.Integer)ITEM[pos + offset, 3]).FontColor = Font.ColorID.Yellow;
                             ((IGMDataItem.Text)ITEM[pos + offset, 4]).FontColor = Font.ColorID.Yellow;
 
-                            //{
-                            //    ((IGMDataItem.IGMDataItem_Icon)Slots.ITEM[Slots.CURSOR_SELECT, 0]).Palette = 6;
-                            //    ((IGMDataItem.IGMDataItem_Icon)Slots.ITEM[Slots.CURSOR_SELECT, 0]).Faded_Palette = 6;
-                            //    ((IGMDataItem.IGMDataItem_String)Slots.ITEM[Slots.CURSOR_SELECT, 1]).Colorid = Font.ColorID.Yellow;
-                            //}
+
                             if (_nag <= ++_pos)
                                 ColorChangeEventListener?.Invoke(this, Font.ColorID.Yellow);
                         }

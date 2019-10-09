@@ -42,7 +42,7 @@ namespace OpenVIII
         /// </summary>
         public bool Enabled { get; private set; } = true;
 
-        public int Height { get => _pos.Height; set => _pos.Height = value; }
+        public virtual int Height { get => _pos.Height; set => _pos.Height = value; }
         /// <summary>
         /// Position of party member 0,1,2. If -1 at the time of setting the character wasn't in the party.
         /// </summary>
@@ -53,11 +53,11 @@ namespace OpenVIII
         /// </summary>
         public virtual Rectangle Pos { get => _pos; set => _pos = value; }
 
-        public int Width { get => _pos.Width; set => _pos.Width = value; }
+        public virtual int Width { get => _pos.Width; set => _pos.Width = value; }
 
-        public int X { get => _pos.X; set => _pos.X = value; }
+        public virtual int X { get => _pos.X; set => _pos.X = value; }
 
-        public int Y { get => _pos.Y; set => _pos.Y = value; }
+        public virtual int Y { get => _pos.Y; set => _pos.Y = value; }
 
         #endregion Properties
 

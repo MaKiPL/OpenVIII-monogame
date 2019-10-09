@@ -2,9 +2,9 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
-namespace OpenVIII
+namespace OpenVIII.IGMDataItem
 {
-    public class IGMDataItem_Renzokeken_Gradient : IGMDataItem.Texture
+    public class Renzokeken_Gradient : Texture
     {
         #region Fields
 
@@ -22,7 +22,7 @@ namespace OpenVIII
             base.Reset();
         }
 
-        public IGMDataItem_Renzokeken_Gradient(Rectangle? pos = null, Color? color = null, Color? faded_color = null, float blink_adjustment = 1f, Rectangle? hotspot = null, Rectangle? restriction = null, double time = 0d, double delay = 0d, Color? darkcolor = null, bool rev = false, bool vanish = true) : base(pos)
+        public Renzokeken_Gradient(Rectangle? pos = null, Color? color = null, Color? faded_color = null, float blink_adjustment = 1f, Rectangle? hotspot = null, Rectangle? restriction = null, double time = 0d, double delay = 0d, Color? darkcolor = null, bool rev = false, bool vanish = true) : base(pos)
         {
             HotSpot = hotspot ?? Rectangle.Empty;
             Restriction = restriction ?? Rectangle.Empty;

@@ -67,12 +67,12 @@ namespace OpenVIII
                         // insert gradient atb bar here. Though this probably belongs in the update
                         // method as it'll be in constant flux.
 
-                        else if (ITEM[pos, 2]?.GetType() != typeof(IGMDataItem_ATB_Gradient_old))
+                        else if (ITEM[pos, 2]?.GetType() != typeof(IGMDataItem.ATB_Gradient))
                         {
-                            ITEM[pos, 2] = new IGMDataItem_ATB_Gradient(atbbarpos);
-                            ((IGMDataItem_ATB_Gradient)ITEM[pos, 2]).Color = Color.Orange * .8f;
-                            ((IGMDataItem_ATB_Gradient)ITEM[pos, 2]).Faded_Color = Color.Orange * .8f;
-                            ((IGMDataItem_ATB_Gradient)ITEM[pos, 2]).Refresh(Damageable);
+                            ITEM[pos, 2] = new IGMDataItem.ATB_Gradient(atbbarpos);
+                            ((IGMDataItem.ATB_Gradient)ITEM[pos, 2]).Color = Color.Orange * .8f;
+                            ((IGMDataItem.ATB_Gradient)ITEM[pos, 2]).Faded_Color = Color.Orange * .8f;
+                            ((IGMDataItem.ATB_Gradient)ITEM[pos, 2]).Refresh(Damageable);
                         }
 
                         // TODO: make a font render that can draw right to left from a point. For Right aligning the names.
@@ -89,9 +89,9 @@ namespace OpenVIII
             {
                 List<KeyValuePair<int, Characters>> party = GetParty();
                 byte pos = GetCharPos(party);
-                if (ITEM[pos, 2].GetType() == typeof(IGMDataItem_ATB_Gradient))
+                if (ITEM[pos, 2].GetType() == typeof(IGMDataItem.ATB_Gradient))
                 {
-                    var hg = (IGMDataItem_ATB_Gradient)ITEM[pos, 2];
+                    var hg = (IGMDataItem.ATB_Gradient)ITEM[pos, 2];
                     if (hg.Done)
                     {
                         var cm = BattleMenus.GetBattleMenus().First(x => x.Damageable == Damageable);

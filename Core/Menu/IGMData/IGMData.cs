@@ -24,15 +24,15 @@ namespace OpenVIII
 
         protected void AutoAdjustContainerWidth(Rectangle DataSize)
         {
-            if (DataSize.Right > CONTAINER.Pos.Right)
+            if (DataSize.Right > Pos.Right)
             {
-                CONTAINER.Width += DataSize.Right - CONTAINER.Pos.Right + Math.Abs(DataSize.Left - CONTAINER.Pos.Left);
+                CONTAINER.Width += DataSize.Right - Pos.Right + Math.Abs(DataSize.Left - Pos.Left);
             }
         }
 
         protected void CheckBounds(ref Rectangle DataSize, Rectangle input)
         {
-            if (input.Right > CONTAINER.Pos.Right && input.Right > DataSize.Right)
+            if (input.Right > Pos.Right && input.Right > DataSize.Right)
             {
                 DataSize = input;
             }
@@ -84,7 +84,7 @@ namespace OpenVIII
             {
                 if (CONTAINER.Pos == Rectangle.Empty)
                 {
-                    Debug.WriteLine($"{this}:: count {count} or depth {depth}, is invalid must be >= 1, or a CONTAINER {CONTAINER} and CONTAINER.Pos { CONTAINER.Pos.ToString() } must be set instead, Skipping Init()");
+                    Debug.WriteLine($"{this}:: count {count} or depth {depth}, is invalid must be >= 1, or a CONTAINER {CONTAINER} and CONTAINER.Pos { Pos.ToString() } must be set instead, Skipping Init()");
                     return;
                 }
             }
@@ -237,6 +237,12 @@ namespace OpenVIII
 
         public Dictionary<int, FF8String> Descriptions { get; protected set; }
 
+        /// <summary>
+        /// Container's Height
+        /// </summary>
+        public override int Height => CONTAINER != null ? Pos.Height : 0;
+
+        public override Rectangle Pos { get => CONTAINER?.Pos ?? Rectangle.Empty; set => CONTAINER.Pos = value; }
         public int Rows { get; private set; }
 
         public Table_Options Table_Options { get; set; } = Table_Options.Default;
@@ -244,26 +250,20 @@ namespace OpenVIII
         public static Point MouseLocation => Menu.MouseLocation;
 
         public static Vector2 TextScale => Menu.TextScale;
-
-        /// <summary>
-        /// Container's Height
-        /// </summary>
-        public int Height => CONTAINER != null ? CONTAINER.Pos.Height : 0;
-
         /// <summary>
         /// Container's Width
         /// </summary>
-        public int Width => CONTAINER != null ? CONTAINER.Pos.Width : 0;
+        public override int Width => CONTAINER != null ? Pos.Width : 0;
 
         /// <summary>
         /// Container's X Position
         /// </summary>
-        public int X => CONTAINER != null ? CONTAINER.Pos.X : 0;
+        public override int X => CONTAINER != null ? Pos.X : 0;
 
         /// <summary>
         /// Container's Y Position
         /// </summary>
-        public int Y => CONTAINER != null ? CONTAINER.Pos.Y : 0;
+        public override int Y => CONTAINER != null ? Pos.Y : 0;
 
         public Menu_Base this[int pos, int i] { get => ITEM[pos, i]; set => ITEM[pos, i] = value; }
 
