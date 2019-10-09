@@ -2,9 +2,9 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
-namespace OpenVIII.IGMDataItem
+namespace OpenVIII.IGMDataItem.Gradient
 {
-    public class ATB_Gradient : Texture
+    public class ATB : Texture
     {
         #region Fields
 
@@ -40,7 +40,7 @@ namespace OpenVIII.IGMDataItem
 
         #region Constructors
 
-        public ATB_Gradient(Rectangle? pos = null) : base(null, pos, Color.White, Color.White, 1f) => Init();
+        public ATB(Rectangle? pos = null) : base(null, pos, Color.White, Color.White, 1f) => Init();
 
         #endregion Constructors
 

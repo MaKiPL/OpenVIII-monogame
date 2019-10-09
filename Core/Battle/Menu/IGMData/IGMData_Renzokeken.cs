@@ -71,7 +71,7 @@ namespace OpenVIII
             Rectangle pos = new Rectangle(r.X, r.Y + 4, 0, r.Height - 8);
             r.Inflate(-4, -4);
             for (int x = 0; x <= _hits && x <= 7; x++)
-                ITEM[2 + x, 0] = new IGMDataItem.Renzokeken_Gradient(pos, newattack, rc, 1f, hotspot, r, time: Time, delay * (x));
+                ITEM[2 + x, 0] = new IGMDataItem.Gradient.Renzokeken(pos, newattack, rc, 1f, hotspot, r, time: Time, delay * (x));
             float totalx = 0;
             for (byte i = 0; i <= 7; i++)
             {
@@ -105,9 +105,9 @@ namespace OpenVIII
             int pos = 0;
             foreach (Menu_Base i in ITEM)
             {
-                if (i.GetType() == typeof(IGMDataItem.Renzokeken_Gradient))
+                if (i.GetType() == typeof(IGMDataItem.Gradient.Renzokeken))
                 {
-                    IGMDataItem.Renzokeken_Gradient rg = (IGMDataItem.Renzokeken_Gradient)i;
+                    IGMDataItem.Gradient.Renzokeken rg = (IGMDataItem.Gradient.Renzokeken)i;
                     if (pos++ < _hits)
                         rg.Show();
                     else
@@ -144,9 +144,9 @@ namespace OpenVIII
         {
             foreach (Menu_Base i in ITEM)
             {
-                if (i?.GetType() == typeof(IGMDataItem.Renzokeken_Gradient))
+                if (i?.GetType() == typeof(IGMDataItem.Gradient.Renzokeken))
                 {
-                    if (((IGMDataItem.Renzokeken_Gradient)i).Trigger)
+                    if (((IGMDataItem.Gradient.Renzokeken)i).Trigger)
                     {
                         skipsnd = true;
                         base.Inputs_OKAY();
@@ -191,9 +191,9 @@ namespace OpenVIII
             int pos = 0;
             foreach (Menu_Base i in ITEM)
             {
-                if (i?.GetType() == typeof(IGMDataItem.Renzokeken_Gradient) && pos++ < _hits)
+                if (i?.GetType() == typeof(IGMDataItem.Gradient.Renzokeken) && pos++ < _hits)
                 {
-                    IGMDataItem.Renzokeken_Gradient gr = (IGMDataItem.Renzokeken_Gradient)i;
+                    IGMDataItem.Gradient.Renzokeken gr = (IGMDataItem.Gradient.Renzokeken)i;
                     done = !gr.Done || done;
                     hot = gr.Trigger || hot;
                     if (gr.Done)
