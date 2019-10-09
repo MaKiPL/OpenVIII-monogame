@@ -1,4 +1,4 @@
-﻿namespace OpenVIII
+﻿namespace OpenVIII.IGMDataItem
 {
     public interface I_Palette
     {
