@@ -27,7 +27,7 @@ namespace OpenVIII
                 {
                     
                 base.Refresh();
-                ITEM[0, 0] = new IGMDataItem_Face((Faces.ID)c.ID, new Rectangle(X + 12, Y, 96, 144));
+                ITEM[0, 0] = new IGMDataItem.Face(c.ID.ToFacesID(), new Rectangle(X + 12, Y, 96, 144));
                 ITEM[0, 2] = new IGMDataItem_String(Damageable.Name, new Rectangle(X + 117, Y + 0, 0, 0));
 
                 
