@@ -9,6 +9,7 @@ namespace OpenVIII.IGMDataItem.Gradient
         #region Fields
 
         private float _percent;
+        private bool First = true;
 
         #endregion Fields
 
@@ -33,9 +34,8 @@ namespace OpenVIII.IGMDataItem.Gradient
             Width = Data.Width;
             Data.SetData(cfade);
             base.Init();
-            
         }
-        bool First = true;
+
         #endregion Methods
 
         #region Constructors
@@ -65,7 +65,6 @@ namespace OpenVIII.IGMDataItem.Gradient
 
                 ATBBarPos = 0;
         }
-
 
         public override bool Update()
         {
