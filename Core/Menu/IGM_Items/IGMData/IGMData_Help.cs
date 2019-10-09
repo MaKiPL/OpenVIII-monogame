@@ -16,7 +16,7 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_Help(IGMDataItem container) : base(container)
+            public IGMData_Help(Menu_Base container) : base(container)
             {
             }
 

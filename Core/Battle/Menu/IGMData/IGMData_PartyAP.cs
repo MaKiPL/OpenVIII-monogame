@@ -30,7 +30,7 @@ namespace OpenVIII
 
                 #region Constructors
 
-                public IGMData_PartyAP(IGMDataItem container) : base()
+                public IGMData_PartyAP(Menu_Base container) : base()
                 {
                     DialogSelectedGF = new byte[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.SelectedGF };
                     DialogSelectedNum = new byte[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.Number };

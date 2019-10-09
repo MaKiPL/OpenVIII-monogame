@@ -1,10 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using OpenVIII.IGMDataItem;
 using System;
 
 namespace OpenVIII
 {
-    public class IGMDataItem_Texture : IGMDataItem, I_Data<Texture2D>, I_Color
+    public class IGMDataItem_Texture : Base, I_Data<Texture2D>, I_Color
     {
         #region Constructors
         protected IGMDataItem_Texture(Rectangle? pos = null) : base(pos)

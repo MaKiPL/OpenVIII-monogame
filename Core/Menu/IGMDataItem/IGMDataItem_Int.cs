@@ -1,8 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
+using OpenVIII.IGMDataItem;
 
 namespace OpenVIII
 {
-    public class IGMDataItem_Int : IGMDataItem, I_Data<int>, I_Palette, I_FontColor
+    public class IGMDataItem_Int : Base, I_Data<int>, I_Palette, I_FontColor
     {
         #region Fields
 

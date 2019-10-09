@@ -1,8 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
+using OpenVIII.IGMDataItem;
 
 namespace OpenVIII
 {
-    public class IGMDataItem_Icon : IGMDataItem, I_Data<Icons.ID>, I_Palette
+    public class IGMDataItem_Icon : Base, I_Data<Icons.ID>, I_Palette
     {
         #region Fields
 

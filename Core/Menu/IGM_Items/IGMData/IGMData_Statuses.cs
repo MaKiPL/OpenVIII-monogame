@@ -97,13 +97,13 @@ namespace OpenVIII
                 if ((e == Faces.ID.Blank && Target != Faces.ID.Blank) || All)
                 {
                     Target = e;
-                    foreach (IGMDataItem i in ITEM)
+                    foreach (Menu_Base i in ITEM)
                         i?.Hide();
                 }
                 else
                 {
                     if (Target == Faces.ID.Blank)
-                        foreach (IGMDataItem i in ITEM)
+                        foreach (Menu_Base i in ITEM)
                             i?.Show();
                     Target = e;
                     Characters character = e.ToCharacters();

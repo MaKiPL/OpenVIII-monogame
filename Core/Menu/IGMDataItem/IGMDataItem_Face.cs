@@ -1,8 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
+using OpenVIII.IGMDataItem;
 
 namespace OpenVIII
 {
-    public class IGMDataItem_Face : IGMDataItem, I_Data<Faces.ID>
+    public class IGMDataItem_Face : Base, I_Data<Faces.ID>
     {
         #region Fields
 

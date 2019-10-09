@@ -1,8 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
+using OpenVIII.IGMDataItem;
 
 namespace OpenVIII
 {
-    public class IGMDataItem_TextureHandler : IGMDataItem, I_Data<TextureHandler>
+    public class IGMDataItem_TextureHandler : Base, I_Data<TextureHandler>
     {
         #region Constructors
 

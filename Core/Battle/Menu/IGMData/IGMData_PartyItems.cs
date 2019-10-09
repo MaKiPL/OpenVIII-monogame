@@ -48,7 +48,7 @@ namespace OpenVIII
 
                 #region Constructors
 
-                public IGMData_PartyItems(IGMDataItem container) : base()
+                public IGMData_PartyItems(Menu_Base container) : base()
                 {
                     str_NotFound = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 28);
                     str_Over100 = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 24);

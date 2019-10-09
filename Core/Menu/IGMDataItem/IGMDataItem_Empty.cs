@@ -1,8 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
+using OpenVIII.IGMDataItem;
 
 namespace OpenVIII
 {
-    public class IGMDataItem_Empty : IGMDataItem
+    public class IGMDataItem_Empty : Base
     {
         #region Constructors
 

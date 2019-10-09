@@ -1,11 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 
-namespace OpenVIII
+namespace OpenVIII.IGMDataItem
 {
-    public abstract partial class IGMDataItem
-    {
-        public class Box : IGMDataItem, I_Data<FF8String>
+        public class Box : Base, I_Data<FF8String>
         {
             #region Constructors
 
@@ -44,4 +42,3 @@ namespace OpenVIII
             #endregion Methods
         }
     }
-}

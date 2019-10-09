@@ -77,7 +77,7 @@ namespace OpenVIII
             }
         }
 
-        protected void Init(int count, int depth, IGMDataItem container = null, int? cols = null, int? rows = null)
+        protected void Init(int count, int depth, Menu_Base container = null, int? cols = null, int? rows = null)
         {
             CONTAINER = container ?? new IGMDataItem_Empty();
             if (count <= 0 || depth <= 0)
@@ -204,7 +204,7 @@ namespace OpenVIII
         /// </summary>
         public Rectangle[] SIZE;
 
-        public IGMData(int count = 0, int depth = 0, IGMDataItem container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null)
+        public IGMData(int count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null)
         {
             Init(damageable, partypos);
             Init(count, depth, container, cols, rows);
@@ -212,7 +212,7 @@ namespace OpenVIII
 
         public int Cols { get; private set; }
 
-        public IGMDataItem CONTAINER { get; set; }
+        public Menu_Base CONTAINER { get; set; }
 
         /// <summary>
         /// Total number of items
