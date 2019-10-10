@@ -76,6 +76,7 @@ namespace OpenVIII
 
                 case Damageable.BattleMode.YourTurn:
                     Data[SectionName.Commands].Show();
+                    Data[SectionName.Commands].Refresh();
                     break;
             }
         }
