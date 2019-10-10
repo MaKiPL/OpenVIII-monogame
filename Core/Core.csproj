@@ -191,9 +191,10 @@
     <Compile Include="Menu\IGMData\Base.cs" />
     <Compile Include="Menu\IGMData\Commands.cs" />
     <Compile Include="Menu\IGMData\Dialog\Confirm.cs" />
+    <Compile Include="Menu\IGMData\Pool\Draw.cs" />
+    <Compile Include="Menu\IGMData\Pool\Draw\Commands.cs" />
     <Compile Include="Menu\IGMData\Pool\BlueMagic.cs" />
     <Compile Include="Menu\Images\HSL.cs" />
-    <Compile Include="Menu\IGMData\IGMData_Draw_Pool.cs" />
     <Compile Include="Menu\IGMData\IGMData_SmallMsgBox.cs" />
     <Compile Include="Menu\IGMData\IGMData_TimedMsgBox.cs" />
     <Compile Include="Menu\Menus.cs" />
