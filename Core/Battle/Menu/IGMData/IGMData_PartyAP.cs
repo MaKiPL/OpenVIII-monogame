@@ -61,7 +61,7 @@ namespace OpenVIII
                     get => _ap; set
                     {
                         _ap = value;
-                        ((IGMData_SmallMsgBox)ITEM[0, 1]).Data = str_GF_AP.Clone().Replace(DialogSelectedNum, _ap.ToString());
+                        ((IGMData.Dialog.Small)ITEM[0, 1]).Data = str_GF_AP.Clone().Replace(DialogSelectedNum, _ap.ToString());
                         Leveled = Memory.State.EarnAP(_ap, out _abilities);
                     }
                 }
@@ -113,7 +113,7 @@ namespace OpenVIII
                 public void Level()
                 {
                     GF = Leveled.Dequeue();
-                    ((IGMData_SmallMsgBox)ITEM[0, 2]).Data = str_Levelup.Clone().Replace(DialogSelectedGF, Memory.Strings.GetName(GF));
+                    ((IGMData.Dialog.Small)ITEM[0, 2]).Data = str_Levelup.Clone().Replace(DialogSelectedGF, Memory.Strings.GetName(GF));
                     skipsnd = true;
                     init_debugger_Audio.PlaySound(0x28);
                 }
@@ -121,7 +121,7 @@ namespace OpenVIII
                 {
                     KeyValuePair<GFs, Kernel_bin.Abilities> Ability = Abilities.Dequeue();
                     GF = Ability.Key;
-                    ((IGMData_SmallMsgBox)ITEM[0, 3]).Data =
+                    ((IGMData.Dialog.Small)ITEM[0, 3]).Data =
                         str_Learn.Clone()
                         .Replace(DialogSelectedGF, Memory.Strings.GetName(GF))
                         .Replace(DialogSelectedIcon, DialogSelectedIcon.Clone() + new byte[] {
@@ -152,9 +152,9 @@ namespace OpenVIII
                     base.Init();
                     Hide();
                     ITEM[0, 0] = new IGMDataItem.Box(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 111), new Rectangle(SIZE[0].X, SIZE[0].Y, SIZE[0].Width, 78), Icons.ID.INFO, options: Box_Options.Middle);
-                    ITEM[0, 1] = new IGMData_SmallMsgBox(str_GF_AP, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // GF recieved ### AP!
-                    ITEM[0, 2] = new IGMData_SmallMsgBox(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // GF Leveled up!
-                    ITEM[0, 3] = new IGMData_SmallMsgBox(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // GF Leveled up!
+                    ITEM[0, 1] = new IGMData.Dialog.Small(str_GF_AP, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // GF recieved ### AP!
+                    ITEM[0, 2] = new IGMData.Dialog.Small(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // GF Leveled up!
+                    ITEM[0, 3] = new IGMData.Dialog.Small(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // GF Leveled up!
                     ITEM[0, 1].Show();
                     ITEM[0, 2].Hide();
                     ITEM[0, 3].Hide();

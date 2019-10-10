@@ -191,6 +191,8 @@
     <Compile Include="Menu\IGMData\Base.cs" />
     <Compile Include="Menu\IGMData\Commands.cs" />
     <Compile Include="Menu\IGMData\Dialog\Confirm.cs" />
+    <Compile Include="Menu\IGMData\Dialog\Small.cs" />
+    <Compile Include="Menu\IGMData\Dialog\Timed\Small.cs" />
     <Compile Include="Menu\IGMData\Group\Base.cs" />
     <Compile Include="Menu\IGMData\Pool\Base.cs" />
     <Compile Include="Menu\IGMData\Pool\Magic\Commands.cs" />
@@ -200,8 +202,6 @@
     <Compile Include="Menu\IGMData\Pool\Draw\Commands.cs" />
     <Compile Include="Menu\IGMData\Pool\BlueMagic.cs" />
     <Compile Include="Menu\Images\HSL.cs" />
-    <Compile Include="Menu\IGMData\IGMData_SmallMsgBox.cs" />
-    <Compile Include="Menu\IGMData\IGMData_TimedMsgBox.cs" />
     <Compile Include="Menu\Menus.cs" />
     <Compile Include="Battle\Menu\VictoryMenu.cs" />
     <Compile Include="Battle\module_battle.cs" />

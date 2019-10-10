@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 
-namespace OpenVIII
+namespace OpenVIII.IGMData.Dialog
 {
-    public class IGMData_SmallMsgBox : IGMData.Base, I_Data<FF8String>
+    public class Small : IGMData.Base, I_Data<FF8String>
     {
         private Box_Options _options;
         #region Fields
@@ -14,7 +14,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_SmallMsgBox(FF8String data, int x, int y, Icons.ID? title = null, Box_Options options = Box_Options.Default, Rectangle? bounding = null) : base(container: new IGMDataItem.Box(data, new Rectangle(x, y, 0, 0), title, options: Box_Options.Center | Box_Options.Middle))
+        public Small(FF8String data, int x, int y, Icons.ID? title = null, Box_Options options = Box_Options.Default, Rectangle? bounding = null) : base(container: new IGMDataItem.Box(data, new Rectangle(x, y, 0, 0), title, options: Box_Options.Center | Box_Options.Middle))
         {
             this._options = options;
             // probably won't work as static size is set in update. And this may run before it's set.

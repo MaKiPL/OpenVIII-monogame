@@ -1,6 +1,6 @@
-﻿namespace OpenVIII
+﻿namespace OpenVIII.IGMData.Dialog.Timed
 {
-    public class IGMData_TimedMsgBox : IGMData_SmallMsgBox
+    public class Small : IGMData.Dialog.Small
     {
         #region Fields
 
@@ -11,7 +11,7 @@
 
         #region Constructors
 
-        public IGMData_TimedMsgBox(FF8String data, int x, int y, Icons.ID? title = null, Box_Options options = Box_Options.Default) : base(data, x, y, title, options)
+        public Small(FF8String data, int x, int y, Icons.ID? title = null, Box_Options options = Box_Options.Default) : base(data, x, y, title, options)
         {
         }
 
