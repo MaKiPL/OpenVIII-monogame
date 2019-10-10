@@ -80,8 +80,8 @@ namespace OpenVIII
                             { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 202),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 203)},
                             { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 181),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 182)},
                             }));
-            Data.Add(SectionName.Title, new IGMData_Container(
-                new IGMDataItem.Box(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), pos: new Rectangle(615, 0, 225, 66))));
+            Data.Add(SectionName.Title, 
+                new IGMDataItem.Box(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), pos: new Rectangle(615, 0, 225, 66)));
             Data.Add(SectionName.UseItemGroup, new IGMData.Group.Base(
                 new IGMData_Statuses(),
                 new IGMData.Pool.Item(),

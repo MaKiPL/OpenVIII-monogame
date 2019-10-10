@@ -788,7 +788,6 @@
     <Compile Include="Menu\Images\Icons.cs" />
     <Compile Include="Menu\Images\Icons.ID.cs" />
     <Compile Include="Menu\Images\Icons.InsertCustomEntries.cs" />
-    <Compile Include="Menu\IGMData\Obsolete\IGMData_Container.cs" />
     <Compile Include="Menu\IGM\IGM.cs" />
     <Compile Include="Menu\IGM\IGMData\IGMData_Clock.cs" />
     <Compile Include="Menu\IGM\IGMData\IGMData_Footer.cs" />

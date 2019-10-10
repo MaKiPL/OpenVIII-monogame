@@ -11,7 +11,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_TopMenu_Auto_Group(params IGMData.Base[] d) : base(d)
+            public IGMData_TopMenu_Auto_Group(params Menu_Base[] d) : base(d)
             {
             }
 
@@ -25,7 +25,7 @@ namespace OpenVIII
                 {
                     Cursor_Status |= (Cursor_Status.Draw | Cursor_Status.Blinking);
                     base.Draw();
-                    Tuple<Rectangle, Point, Rectangle> i = ((IGMDataItem.Box)(((IGMData_Container)ITEM[0, 0]).CONTAINER)).Dims;
+                    Tuple<Rectangle, Point, Rectangle> i = ((IGMDataItem.Box)ITEM[0, 0]).Dims;
                     if (i != null)
                         CURSOR[0] = i.Item2;
                 }

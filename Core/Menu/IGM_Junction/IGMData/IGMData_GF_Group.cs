@@ -8,7 +8,7 @@
         {
             #region Constructors
 
-            public IGMData_GF_Group(params IGMData.Base[] d) : base(d) => Hide();
+            public IGMData_GF_Group(params Menu_Base[] d) : base(d) => Hide();
 
             #endregion Constructors
         }
