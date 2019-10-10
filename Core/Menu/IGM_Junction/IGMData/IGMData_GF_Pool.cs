@@ -8,7 +8,7 @@ namespace OpenVIII
     {
         #region Classes
 
-        private class IGMData_GF_Pool : IGMData_Pool<Saves.Data, GFs>
+        private class IGMData_GF_Pool : IGMData.Pool.Base<Saves.Data, GFs>
         {
             #region Constructors
 
@@ -260,8 +260,8 @@ namespace OpenVIII
                 if (IGM_Junction != null)
                 {
                     GFs g = Contents[CURSOR_SELECT];
-                    IGMData_Container i = (IGMData_Container)((IGMData_GF_Group)IGM_Junction.Data[SectionName.TopMenu_GF_Group]).ITEM[2, 0];
-                    ((IGMDataItem.Box)i.CONTAINER).Data = JunctionedGFs.Count > 0 && JunctionedGFs.ContainsKey(g) ? Memory.Strings.GetName(JunctionedGFs[g]) : null;
+                    var i = (IGMDataItem.Box)((IGMData_GF_Group)IGM_Junction.Data[SectionName.TopMenu_GF_Group]).ITEM[2, 0];
+                    i.Data = JunctionedGFs.Count > 0 && JunctionedGFs.ContainsKey(g) ? Memory.Strings.GetName(JunctionedGFs[g]) : null;
                 }
             }
 

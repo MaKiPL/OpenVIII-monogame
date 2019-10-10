@@ -6,7 +6,7 @@ namespace OpenVIII
     {
         #region Classes
 
-        private sealed class IGMData_ConfirmRemAll : IGMData_ConfirmDialog
+        private sealed class IGMData_ConfirmRemAll : IGMData.Dialog.Confirm
         {
             #region Constructors
 

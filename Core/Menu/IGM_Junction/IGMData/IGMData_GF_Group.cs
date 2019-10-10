@@ -4,11 +4,11 @@
     {
         #region Classes
 
-        private class IGMData_GF_Group : IGMData_Group
+        private class IGMData_GF_Group : IGMData.Group.Base
         {
             #region Constructors
 
-            public IGMData_GF_Group(params IGMData.Base[] d) : base(d) => Hide();
+            public IGMData_GF_Group(params Menu_Base[] d) : base(d) => Hide();
 
             #endregion Constructors
         }

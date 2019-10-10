@@ -1,10 +1,10 @@
-﻿namespace OpenVIII
+﻿namespace OpenVIII.IGMData.Pool
 {
-    public abstract class IGMData_Pool<T, T2> : IGMData.Base
+    public abstract class Base<T, T2> : IGMData.Base
     {
         #region Constructors
 
-        public IGMData_Pool(int count, int depth, Menu_Base container = null, int? rows = null, int? pages = null, Damageable damageable = null) : base(count + 2, depth, container, 1, rows, damageable) => DefaultPages = pages ?? 1;
+        public Base(int count, int depth, Menu_Base container = null, int? rows = null, int? pages = null, Damageable damageable = null) : base(count + 2, depth, container, 1, rows, damageable) => DefaultPages = pages ?? 1;
 
         #endregion Constructors
 

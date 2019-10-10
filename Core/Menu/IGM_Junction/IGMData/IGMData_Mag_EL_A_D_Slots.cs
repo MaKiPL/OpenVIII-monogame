@@ -18,7 +18,7 @@ namespace OpenVIII
 
             #region Properties
 
-            public IGMData_Mag_Pool Pool { get; private set; }
+            public IGMData.Pool.Magic Pool { get; private set; }
 
             #endregion Properties
 
@@ -98,9 +98,9 @@ namespace OpenVIII
             {
                 if (!eventAdded)
                 {
-                    IGMData_Mag_Pool.SlotConfirmListener += ConfirmChangeEvent;
-                    IGMData_Mag_Pool.SlotRefreshListener += ReInitEvent;
-                    IGMData_Mag_Pool.SlotUndoListener += UndoChangeEvent;
+                    IGMData.Pool.Magic.SlotConfirmListener += ConfirmChangeEvent;
+                    IGMData.Pool.Magic.SlotRefreshListener += ReInitEvent;
+                    IGMData.Pool.Magic.SlotUndoListener += UndoChangeEvent;
                 }
                 base.AddEventListener();
             }
@@ -122,7 +122,7 @@ namespace OpenVIII
                 {
                     base.SetCursor_select(value);
                     CheckMode();
-                    IGMData_Mag_Pool.StatEventListener?.Invoke(this, Contents[CURSOR_SELECT]);
+                    IGMData.Pool.Magic.StatEventListener?.Invoke(this, Contents[CURSOR_SELECT]);
                 }
             }
 

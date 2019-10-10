@@ -1,12 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 
-namespace OpenVIII
+namespace OpenVIII.IGMData.Pool
 {
     /// <summary>
     /// </summary>
     /// <see cref="https://www.youtube.com/watch?v=BhgixAEvuu0"/>
-    public class IGMData_BlueMagic_Pool : IGMData_Pool<Saves.Data, Kernel_bin.Blue_magic_Quistis_limit_break>
+    public class BlueMagic : IGMData.Pool.Base<Saves.Data, Kernel_bin.Blue_magic_Quistis_limit_break>
     {
         #region Fields
 
@@ -67,7 +67,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_BlueMagic_Pool(Rectangle pos, Damageable damageable, bool battle = false) : base(5, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.SPECIAL), 4, 4, damageable)
+        public BlueMagic(Rectangle pos, Damageable damageable, bool battle = false) : base(5, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.SPECIAL), 4, 4, damageable)
         {
         }
 
@@ -148,6 +148,7 @@ namespace OpenVIII
                 ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL;
             else
                 ((IGMDataItem.Box)CONTAINER).Title = (Icons.ID)((int)(Icons.ID.SPECIAL_PG1) + Page);
+            base.Refresh();
         }
     }
 }

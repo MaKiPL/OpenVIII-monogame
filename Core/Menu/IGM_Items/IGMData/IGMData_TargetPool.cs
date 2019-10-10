@@ -14,7 +14,7 @@ namespace OpenVIII
         /// Using Faces.ID because it contains characters and gfs. Can cast to Characters or subtract
         /// 16 and cast to GFs
         /// </remarks>
-        private class IGMData_TargetPool : IGMData_Pool<Saves.Data, Faces.ID>
+        private class IGMData_TargetPool : IGMData.Pool.Base<Saves.Data, Faces.ID>
         {
             #region Fields
 
@@ -189,7 +189,7 @@ namespace OpenVIII
                             return;
                         }
                     ITEM[i, 0] = new IGMDataItem.Text(Memory.Strings.GetName(id), pos: SIZE[i]);
-                    int hp = (ctest || gftest) ? Memory.State[id].CurrentHP() : -1;
+                    int hp = (ctest || gftest) ? Memory.State[id]?.CurrentHP() ?? -1 : -1;
                     BLANKS[i] = false;
                     Contents[i] = id;
                     if (hp > -1)

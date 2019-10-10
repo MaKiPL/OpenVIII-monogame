@@ -210,9 +210,9 @@ namespace OpenVIII
             {
                 if (!eventAdded)
                 {
-                    IGMData_Mag_Pool.SlotConfirmListener += ConfirmChangeEvent;
-                    IGMData_Mag_Pool.SlotRefreshListener += ReInitEvent;
-                    IGMData_Mag_Pool.SlotUndoListener += UndoChangeEvent;
+                    IGMData.Pool.Magic.SlotConfirmListener += ConfirmChangeEvent;
+                    IGMData.Pool.Magic.SlotRefreshListener += ReInitEvent;
+                    IGMData.Pool.Magic.SlotUndoListener += UndoChangeEvent;
                 }
                 base.AddEventListener();
             }
@@ -248,7 +248,7 @@ namespace OpenVIII
                 if (value != GetCursor_select())
                 {
                     base.SetCursor_select(value);
-                    IGMData_Mag_Pool.StatEventListener?.Invoke(this, Contents[CURSOR_SELECT]);
+                    IGMData.Pool.Magic.StatEventListener?.Invoke(this, Contents[CURSOR_SELECT]);
                 }
             }
 

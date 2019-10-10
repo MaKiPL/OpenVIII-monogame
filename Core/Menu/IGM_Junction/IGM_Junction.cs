@@ -162,7 +162,7 @@ namespace OpenVIII
 
         #region Methods
 
-        public void ChangeHelp(FF8String str) => ((IGMDataItem.Box)Data[SectionName.Help].CONTAINER).Data = str;
+        public void ChangeHelp(FF8String str) => ((IGMDataItem.HelpBox)Data[SectionName.Help]).Data = str;
 
         public override bool Inputs()
         {
@@ -201,15 +201,15 @@ namespace OpenVIII
                         break;
 
                     case Mode.RemMag:
-                        ret = ((IGMData_ConfirmDialog)Data[SectionName.RemMag]).Inputs();
+                        ret = ((IGMData.Dialog.Confirm)Data[SectionName.RemMag]).Inputs();
                         break;
 
                     case Mode.RemAll:
-                        ret = ((IGMData_ConfirmDialog)Data[SectionName.RemAll]).Inputs();
+                        ret = ((IGMData.Dialog.Confirm)Data[SectionName.RemAll]).Inputs();
                         break;
 
                     case Mode.ConfirmChanges:
-                        ret = ((IGMData_ConfirmDialog)Data[SectionName.ConfirmChanges]).Inputs();
+                        ret = ((IGMData.Dialog.Confirm)Data[SectionName.ConfirmChanges]).Inputs();
                         break;
 
                     case Mode.TopMenu_GF_Group:
@@ -286,15 +286,15 @@ namespace OpenVIII
                     {Items.Junction, Memory.Strings.Read(Strings.FileID.MNGRP,2,218) }
                 };
             Data.Add(SectionName.CharacterInfo, new IGMData_CharacterInfo());
-            Data.Add(SectionName.Commands, new IGMData_Commands(new Rectangle(615, 150, 210, 192)));
-            Data.Add(SectionName.Help, new IGMData_Help());
+            Data.Add(SectionName.Commands, new IGMData.Commands(new Rectangle(615, 150, 210, 192)));
+            Data.Add(SectionName.Help, new IGMDataItem.HelpBox(Descriptions[Items.Junction], pos: new Rectangle(15, 69, 810, 78), title: Icons.ID.HELP));
             Data.Add(SectionName.TopMenu, new IGMData_TopMenu());
-            Data.Add(SectionName.Title, new IGMData_Container(
-                new IGMDataItem.Box(Titles[Items.Junction], pos: new Rectangle(615, 0, 225, 66))));
+            Data.Add(SectionName.Title, 
+                new IGMDataItem.Box(Titles[Items.Junction], pos: new Rectangle(615, 0, 225, 66)));
             Data.Add(SectionName.Mag_Group, new IGMData_Mag_Group(
                 new IGMData_Mag_Stat_Slots(),
                 new IGMData_Mag_PageTitle(),
-                new IGMData_Mag_Pool(),
+                new IGMData.Pool.Magic(),
                 new IGMData_Mag_EL_A_D_Slots(),
                 new IGMData_Mag_EL_A_Values(),
                 new IGMData_Mag_EL_D_Values(),
@@ -304,13 +304,11 @@ namespace OpenVIII
                 ));
             Data.Add(SectionName.TopMenu_Junction, new IGMData_TopMenu_Junction());
             Data.Add(SectionName.TopMenu_Off, new IGMData_TopMenu_Off_Group(
-                new IGMData_Container(
-                    new IGMDataItem.Box(Titles[Items.Off], pos: new Rectangle(0, 12, 169, 54), options: Box_Options.Center | Box_Options.Middle)),
+                    new IGMDataItem.Box(Titles[Items.Off], pos: new Rectangle(0, 12, 169, 54), options: Box_Options.Center | Box_Options.Middle),
                 new IGMData_TopMenu_Off()
                 ));
             Data.Add(SectionName.TopMenu_Auto, new IGMData_TopMenu_Auto_Group(
-                new IGMData_Container(
-                    new IGMDataItem.Box(Titles[Items.Auto], pos: new Rectangle(0, 12, 169, 54), options: Box_Options.Center | Box_Options.Middle)),
+                    new IGMDataItem.Box(Titles[Items.Auto], pos: new Rectangle(0, 12, 169, 54), options: Box_Options.Center | Box_Options.Middle),
                 new IGMData_TopMenu_Auto()));
             Data.Add(SectionName.TopMenu_Abilities, new IGMData_Abilities_Group(
                 new IGMData_Abilities_CommandSlots(),
@@ -323,7 +321,7 @@ namespace OpenVIII
             Data.Add(SectionName.TopMenu_GF_Group, new IGMData_GF_Group(
                 new IGMData_GF_Junctioned(),
                 new IGMData_GF_Pool(),
-                new IGMData_Container(new IGMDataItem.Box(pos: new Rectangle(440, 345, 385, 66)))
+                new IGMDataItem.Box(pos: new Rectangle(440, 345, 385, 66))
                 ));
 
             Data.Add(SectionName.RemMag, new IGMData_ConfirmRemMag(data: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 280), title: Icons.ID.NOTICE, opt1: Yes, opt2: No, pos: new Rectangle(180, 174, 477, 216)));

@@ -10,7 +10,7 @@ namespace OpenVIII
     {
         #region Classes
 
-        public class IGMData_TargetGroup : IGMData_Group
+        public class IGMData_TargetGroup : IGMData.Group.Base
         {
             #region Fields
 
@@ -23,8 +23,8 @@ namespace OpenVIII
 
             #region Properties
 
-            //private IGMData_BlueMagic_Pool BlueMagic_Pool => (IGMData_BlueMagic_Pool)(((IGMData)ITEM[3, 0]));
-            private IGMData_Draw_Pool Draw_Pool => (IGMData_Draw_Pool)(((IGMData.Base)ITEM[2, 0]));
+            //private IGMData.Pool.BlueMagic BlueMagic_Pool => (IGMData.Pool.BlueMagic)(((IGMData)ITEM[3, 0]));
+            private IGMData.Pool.Draw Draw_Pool => (IGMData.Pool.Draw)(((IGMData.Base)ITEM[2, 0]));
 
             private IGMData_TargetEnemies TargetEnemies => (IGMData_TargetEnemies)(((IGMData.Base)ITEM[0, 0]));
 
@@ -525,8 +525,8 @@ namespace OpenVIII
                 Init(new IGMData.Base[]{
                     new IGMData_TargetEnemies(new Rectangle(CONTAINER.Pos.X, CONTAINER.Pos.Y, w, h)),
                     new IGMData_TargetParty(new Rectangle(CONTAINER.Pos.X + w, CONTAINER.Pos.Y, w2, h)),
-                    makesubs ? new IGMData_Draw_Pool(new Rectangle(X +50, Y - 50, 300, 192), Damageable, true): null,
-                    //makesubs ? new IGMData_BlueMagic_Pool(new Rectangle(X +50, Y - 50, 300, 192), Character, VisibleCharacter, true): null
+                    makesubs ? new IGMData.Pool.Draw(new Rectangle(X +50, Y - 50, 300, 192), Damageable, true): null,
+                    //makesubs ? new IGMData.Pool.BlueMagic(new Rectangle(X +50, Y - 50, 300, 192), Character, VisibleCharacter, true): null
                 }, true);
                 after();
             }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using OpenVIII.IGMDataItem;
 using System.Collections.Concurrent;
 
 namespace OpenVIII
@@ -11,7 +12,7 @@ namespace OpenVIII
         {
             #region Classes
 
-            private class IGMData_PlayerEXPGroup : IGMData_Group
+            private class IGMData_PlayerEXPGroup : IGMData.Group.Base
             {
                 #region Fields
 
@@ -55,12 +56,12 @@ namespace OpenVIII
                 /// </summary>
                 private Ffcc EXPsnd = null;
 
-                private IGMData_Container header;
 
                 /// <summary>
                 /// Keeps remainder between cycles
                 /// </summary>
                 private double remaining = 0;
+                private Box header;
 
                 #endregion Fields
 
@@ -162,7 +163,7 @@ namespace OpenVIII
                 {
                     base.Init();
                     Cursor_Status |= (Cursor_Status.Hidden | (Cursor_Status.Enabled | Cursor_Status.Static));
-                    header = new IGMData_Container(new IGMDataItem.Box(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 23), new Rectangle(0, 0, CONTAINER.Width, 78), Icons.ID.INFO, Box_Options.Middle));
+                    header = new IGMDataItem.Box(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 23), new Rectangle(0, 0, CONTAINER.Width, 78), Icons.ID.INFO, Box_Options.Middle);
                 }
 
                 private void RefreshEXP()
@@ -174,7 +175,7 @@ namespace OpenVIII
                             tmpexp += bonus;
                         ((IGMData_PlayerEXP)i).EXP = tmpexp;
                     }
-                    header.CONTAINER.Width = CONTAINER.Width;
+                    header.Width = Width;
                 }
 
                 #endregion Methods

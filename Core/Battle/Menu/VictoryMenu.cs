@@ -21,16 +21,16 @@ namespace OpenVIII
             protected override void Init()
             {
                 Size = new Vector2(881, 606);
-                Data = new Dictionary<Enum, IGMData.Base>
+                Data = new Dictionary<Enum, Menu_Base>
                 {
-                    { Mode.All, new IGMData_Group(
-                    new IGMData_Container(new IGMDataItem.Box(new FF8String(new byte[] {
+                    { Mode.All, new IGMData.Group.Base(
+                    new IGMDataItem.Box(new FF8String(new byte[] {
                             (byte)FF8TextTagCode.Key,
                             (byte)FF8TextTagKey.Confirm})+
                             " "+
                             (Memory.Strings.Read(Strings.FileID.KERNEL,30,22)),
                             new Rectangle(0,(int)Size.Y-78,(int)Size.X,78),options: Box_Options.Center| Box_Options.Middle))
-                    )},
+                    },
                     { Mode.Exp,
                     new IGMData_PlayerEXPGroup (
                         new IGMData_PlayerEXP(0),new IGMData_PlayerEXP(1),new IGMData_PlayerEXP(2)
