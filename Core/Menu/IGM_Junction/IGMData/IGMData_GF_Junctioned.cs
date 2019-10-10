@@ -13,7 +13,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_GF_Junctioned() : base(16, 1, new IGMDataItem_Box(pos: new Rectangle(0, 141, 440, 282)), 2, 8)
+            public IGMData_GF_Junctioned() : base(16, 1, new IGMDataItem.Box(pos: new Rectangle(0, 141, 440, 282)), 2, 8)
             {
             }
 
@@ -31,7 +31,7 @@ namespace OpenVIII
                     foreach (Enum flag in availableFlags.Where(c.JunctionnedGFs.HasFlag))
                     {
                         if ((Saves.GFflags)flag == Saves.GFflags.None) continue;
-                        ITEM[pos, 0] = new IGMDataItem_String(
+                        ITEM[pos, 0] = new IGMDataItem.Text(
                         Memory.State.GFs[Saves.ConvertGFEnum[(Saves.GFflags)flag]].Name, SIZE[pos]);
                         pos++;
                     }

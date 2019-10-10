@@ -6,9 +6,9 @@ namespace OpenVIII
     {
         #region Constructors
 
-        public IGMData_Group(params IGMData[] d) : base(d.Length, 1, container: new IGMDataItem_Empty()) => Init(d);
+        public IGMData_Group(params IGMData[] d) : base(d.Length, 1, container: new IGMDataItem.Empty()) => Init(d);
 
-        public IGMData_Group() : base(container: new IGMDataItem_Empty()) => Debug.WriteLine($"{this} :: Not init may need to call it later");
+        public IGMData_Group() : base(container: new IGMDataItem.Empty()) => Debug.WriteLine($"{this} :: Not init may need to call it later");
 
         protected virtual void Init(IGMData[] d, bool baseinit = false)
         {

@@ -17,7 +17,7 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_Header() : base(0, 0, new IGMDataItem_Box(pos: new Rectangle { Width = 610, Height = 75 }, title: Icons.ID.HELP))
+            public IGMData_Header() : base(0, 0, new IGMDataItem.Box(pos: new Rectangle { Width = 610, Height = 75 }, title: Icons.ID.HELP))
             { }
 
             #endregion Constructors
@@ -34,7 +34,7 @@ namespace OpenVIII
                 base.Refresh();
             }
 
-            private void ChoiceChangeEvent(object sender, KeyValuePair<Items, FF8String> e) => ((IGMDataItem_Box)CONTAINER).Data = e.Value;
+            private void ChoiceChangeEvent(object sender, KeyValuePair<Items, FF8String> e) => ((IGMDataItem.Box)CONTAINER).Data = e.Value;
 
             #endregion Methods
         }

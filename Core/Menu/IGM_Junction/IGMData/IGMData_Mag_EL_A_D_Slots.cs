@@ -10,7 +10,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_Mag_EL_A_D_Slots() : base(5, 2, new IGMDataItem_Box(pos: new Rectangle(0, 414, 840, 216)), 1, 5)
+            public IGMData_Mag_EL_A_D_Slots() : base(5, 2, new IGMDataItem.Box(pos: new Rectangle(0, 414, 840, 216)), 1, 5)
             {
             }
 

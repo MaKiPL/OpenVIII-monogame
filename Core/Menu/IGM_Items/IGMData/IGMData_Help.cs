@@ -16,7 +16,7 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_Help(IGMDataItem container) : base(container)
+            public IGMData_Help(Menu_Base container) : base(container)
             {
             }
 
@@ -35,9 +35,9 @@ namespace OpenVIII
                 }
             }
 
-            private void ChoiceChangeEvent(object sender, KeyValuePair<byte, FF8String> e) => ((IGMDataItem_Box)CONTAINER).Data = e.Value;
+            private void ChoiceChangeEvent(object sender, KeyValuePair<byte, FF8String> e) => ((IGMDataItem.Box)CONTAINER).Data = e.Value;
 
-            private void ItemChangeEvent(object sender, KeyValuePair<Item_In_Menu, FF8String> e) => ((IGMDataItem_Box)CONTAINER).Data = e.Value;
+            private void ItemChangeEvent(object sender, KeyValuePair<Item_In_Menu, FF8String> e) => ((IGMDataItem.Box)CONTAINER).Data = e.Value;
 
             #endregion Methods
         }

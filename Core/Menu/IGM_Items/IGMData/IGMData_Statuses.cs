@@ -30,7 +30,7 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_Statuses() : base(2, 4, new IGMDataItem_Box(title: Icons.ID.STATUS, pos: new Rectangle(420, 510, 420, 120)), 1, 2)
+            public IGMData_Statuses() : base(2, 4, new IGMDataItem.Box(title: Icons.ID.STATUS, pos: new Rectangle(420, 510, 420, 120)), 1, 2)
             {
             }
 
@@ -97,38 +97,38 @@ namespace OpenVIII
                 if ((e == Faces.ID.Blank && Target != Faces.ID.Blank) || All)
                 {
                     Target = e;
-                    foreach (IGMDataItem i in ITEM)
+                    foreach (Menu_Base i in ITEM)
                         i?.Hide();
                 }
                 else
                 {
                     if (Target == Faces.ID.Blank)
-                        foreach (IGMDataItem i in ITEM)
+                        foreach (Menu_Base i in ITEM)
                             i?.Show();
                     Target = e;
                     Characters character = e.ToCharacters();
                     GFs gf = e.ToGFs();
                     if (character != Characters.Blank || (gf != GFs.Blank && gf != GFs.All))
                     {
-                        ITEM[0, 0] = new IGMDataItem_String(Misc[Items.LV], new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0));
-                        ITEM[1, 0] = new IGMDataItem_String(Misc[Items.HP], new Rectangle(SIZE[1].X, SIZE[1].Y, 0, 0));
-                        ITEM[1, 2] = new IGMDataItem_String(Misc[Items.ForwardSlash], new Rectangle(SIZE[1].X + 155, SIZE[1].Y, 0, 0));
+                        ITEM[0, 0] = new IGMDataItem.Text(Misc[Items.LV], new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0));
+                        ITEM[1, 0] = new IGMDataItem.Text(Misc[Items.HP], new Rectangle(SIZE[1].X, SIZE[1].Y, 0, 0));
+                        ITEM[1, 2] = new IGMDataItem.Text(Misc[Items.ForwardSlash], new Rectangle(SIZE[1].X + 155, SIZE[1].Y, 0, 0));
                     }
                     if (Memory.State.Characters != null && character != Characters.Blank)
                     {
-                        ITEM[0, 1] = new IGMDataItem_Int(Memory.State.Characters[character].Level, new Rectangle(SIZE[0].X + 35, SIZE[0].Y, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 6);
+                        ITEM[0, 1] = new IGMDataItem.Integer(Memory.State.Characters[character].Level, new Rectangle(SIZE[0].X + 35, SIZE[0].Y, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 6);
                         ITEM[0, 2] = Memory.State.Party != null && Memory.State.Party.Contains(character)
-                            ? new IGMDataItem_Icon(Icons.ID.InParty, new Rectangle(SIZE[0].X + 155, SIZE[0].Y, 0, 0), 6)
+                            ? new IGMDataItem.Icon(Icons.ID.InParty, new Rectangle(SIZE[0].X + 155, SIZE[0].Y, 0, 0), 6)
                             : null;
-                        ITEM[1, 1] = new IGMDataItem_Int(Memory.State.Characters[character].CurrentHP(character), new Rectangle(SIZE[1].X + 35, SIZE[1].Y, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 6);
-                        ITEM[1, 3] = new IGMDataItem_Int(Memory.State.Characters[character].MaxHP(character), new Rectangle(SIZE[1].X + 155, SIZE[1].Y, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 5);
+                        ITEM[1, 1] = new IGMDataItem.Integer(Memory.State.Characters[character].CurrentHP(character), new Rectangle(SIZE[1].X + 35, SIZE[1].Y, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 6);
+                        ITEM[1, 3] = new IGMDataItem.Integer(Memory.State.Characters[character].MaxHP(character), new Rectangle(SIZE[1].X + 155, SIZE[1].Y, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 5);
                     }
                     if (Memory.State.GFs != null && (gf != GFs.Blank && gf != GFs.All))
                     {
-                        ITEM[0, 1] = new IGMDataItem_Int(Memory.State.GFs[gf].Level, new Rectangle(SIZE[0].X + 35, SIZE[0].Y, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 6);
+                        ITEM[0, 1] = new IGMDataItem.Integer(Memory.State.GFs[gf].Level, new Rectangle(SIZE[0].X + 35, SIZE[0].Y, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 6);
                         ITEM[0, 2] = null;
-                        ITEM[1, 1] = new IGMDataItem_Int(Memory.State.GFs[gf].CurrentHP(), new Rectangle(SIZE[1].X + 35, SIZE[1].Y, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 6);
-                        ITEM[1, 3] = new IGMDataItem_Int(Memory.State.GFs[gf].MaxHP(), new Rectangle(SIZE[1].X + 155, SIZE[1].Y, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 5);
+                        ITEM[1, 1] = new IGMDataItem.Integer(Memory.State.GFs[gf].CurrentHP(), new Rectangle(SIZE[1].X + 35, SIZE[1].Y, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 6);
+                        ITEM[1, 3] = new IGMDataItem.Integer(Memory.State.GFs[gf].MaxHP(), new Rectangle(SIZE[1].X + 155, SIZE[1].Y, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 5);
                     }
                 }
             }

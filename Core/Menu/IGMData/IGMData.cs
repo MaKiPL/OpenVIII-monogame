@@ -24,21 +24,21 @@ namespace OpenVIII
 
         protected void AutoAdjustContainerWidth(Rectangle DataSize)
         {
-            if (DataSize.Right > CONTAINER.Pos.Right)
+            if (DataSize.Right > Pos.Right)
             {
-                CONTAINER.Width += DataSize.Right - CONTAINER.Pos.Right + Math.Abs(DataSize.Left - CONTAINER.Pos.Left);
+                CONTAINER.Width += DataSize.Right - Pos.Right + Math.Abs(DataSize.Left - Pos.Left);
             }
         }
 
         protected void CheckBounds(ref Rectangle DataSize, Rectangle input)
         {
-            if (input.Right > CONTAINER.Pos.Right && input.Right > DataSize.Right)
+            if (input.Right > Pos.Right && input.Right > DataSize.Right)
             {
                 DataSize = input;
             }
         }
 
-        protected void CheckBounds(ref Rectangle DataSize, int pos) => CheckBounds(ref DataSize, ((IGMDataItem_String)ITEM[pos, 0]).DataSize);
+        protected void CheckBounds(ref Rectangle DataSize, int pos) => CheckBounds(ref DataSize, ((IGMDataItem.Text)ITEM[pos, 0]).DataSize);
 
         protected virtual void DrawITEM(int i, int d) => ITEM[i, d]?.Draw();
 
@@ -77,14 +77,14 @@ namespace OpenVIII
             }
         }
 
-        protected void Init(int count, int depth, IGMDataItem container = null, int? cols = null, int? rows = null)
+        protected void Init(int count, int depth, Menu_Base container = null, int? cols = null, int? rows = null)
         {
-            CONTAINER = container ?? new IGMDataItem_Empty();
+            CONTAINER = container ?? new IGMDataItem.Empty();
             if (count <= 0 || depth <= 0)
             {
                 if (CONTAINER.Pos == Rectangle.Empty)
                 {
-                    Debug.WriteLine($"{this}:: count {count} or depth {depth}, is invalid must be >= 1, or a CONTAINER {CONTAINER} and CONTAINER.Pos { CONTAINER.Pos.ToString() } must be set instead, Skipping Init()");
+                    Debug.WriteLine($"{this}:: count {count} or depth {depth}, is invalid must be >= 1, or a CONTAINER {CONTAINER} and CONTAINER.Pos { Pos.ToString() } must be set instead, Skipping Init()");
                     return;
                 }
             }
@@ -204,7 +204,7 @@ namespace OpenVIII
         /// </summary>
         public Rectangle[] SIZE;
 
-        public IGMData(int count = 0, int depth = 0, IGMDataItem container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null)
+        public IGMData(int count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null)
         {
             Init(damageable, partypos);
             Init(count, depth, container, cols, rows);
@@ -212,7 +212,7 @@ namespace OpenVIII
 
         public int Cols { get; private set; }
 
-        public IGMDataItem CONTAINER { get; set; }
+        public Menu_Base CONTAINER { get; set; }
 
         /// <summary>
         /// Total number of items
@@ -237,6 +237,12 @@ namespace OpenVIII
 
         public Dictionary<int, FF8String> Descriptions { get; protected set; }
 
+        /// <summary>
+        /// Container's Height
+        /// </summary>
+        public override int Height => CONTAINER != null ? Pos.Height : 0;
+
+        public override Rectangle Pos { get => CONTAINER?.Pos ?? Rectangle.Empty; set => CONTAINER.Pos = value; }
         public int Rows { get; private set; }
 
         public Table_Options Table_Options { get; set; } = Table_Options.Default;
@@ -244,26 +250,20 @@ namespace OpenVIII
         public static Point MouseLocation => Menu.MouseLocation;
 
         public static Vector2 TextScale => Menu.TextScale;
-
-        /// <summary>
-        /// Container's Height
-        /// </summary>
-        public int Height => CONTAINER != null ? CONTAINER.Pos.Height : 0;
-
         /// <summary>
         /// Container's Width
         /// </summary>
-        public int Width => CONTAINER != null ? CONTAINER.Pos.Width : 0;
+        public override int Width => CONTAINER != null ? Pos.Width : 0;
 
         /// <summary>
         /// Container's X Position
         /// </summary>
-        public int X => CONTAINER != null ? CONTAINER.Pos.X : 0;
+        public override int X => CONTAINER != null ? Pos.X : 0;
 
         /// <summary>
         /// Container's Y Position
         /// </summary>
-        public int Y => CONTAINER != null ? CONTAINER.Pos.Y : 0;
+        public override int Y => CONTAINER != null ? Pos.Y : 0;
 
         public Menu_Base this[int pos, int i] { get => ITEM[pos, i]; set => ITEM[pos, i] = value; }
 
@@ -510,7 +510,8 @@ namespace OpenVIII
             base.Reset();
         }
 
-        public virtual void SetModeChangeEvent(ref EventHandler<Enum> eventHandler) => eventHandler += ModeChangeEvent;
+        public virtual void AddModeChangeEvent(ref EventHandler<Enum> eventHandler) => eventHandler += ModeChangeEvent;
+        public virtual void RemoveModeChangeEvent(ref EventHandler<Enum> eventHandler) => eventHandler -= ModeChangeEvent;
 
         /// <summary>
         /// Things that change on every update.

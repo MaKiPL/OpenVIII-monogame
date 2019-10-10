@@ -14,7 +14,6 @@ namespace OpenVIII
         private sbyte page = 0;
         private bool skipReinit;
         private static int s_cidoff = 0;
-        private BattleMenu.Mode mode;
 
         #endregion Fields
 
@@ -73,10 +72,9 @@ namespace OpenVIII
         protected override void ModeChangeEvent(object sender, Enum e)
         {
             base.ModeChangeEvent(sender, e);
-            if (e.GetType() == typeof(BattleMenu.Mode))
+            if (e.GetType() == typeof(Damageable.BattleMode))
             {
-                mode = (BattleMenu.Mode)e;
-                if (mode.Equals(BattleMenu.Mode.YourTurn) && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn) && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     CrisisLevel = c.GenerateCrisisLevel() >= 0;
                     Show();
@@ -90,7 +88,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_Commands(Rectangle pos, Damageable damageable = null, bool battle = false) : base(9, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.COMMAND), 1, 4, damageable)
+        public IGMData_Commands(Rectangle pos, Damageable damageable = null, bool battle = false) : base(9, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.COMMAND), 1, 4, damageable)
         {
             Battle = battle;
             skipReinit = true;
@@ -227,7 +225,7 @@ namespace OpenVIII
 
                 case 23: //Defend
                     Debug.WriteLine($"{Damageable.Name} is using {c.Name}({c.ID})");
-                    Menu.BattleMenus.EndTurn();
+                    Damageable.EndTurn();
                     return true;
             }
         }
@@ -239,7 +237,7 @@ namespace OpenVIII
                 if (page == 0 && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     commands[CURSOR_SELECT] = c.CharacterStats.Limit;
-                    ((IGMDataItem_String)ITEM[0, 0]).Data = commands[CURSOR_SELECT].Name;
+                    ((IGMDataItem.Text)ITEM[0, 0]).Data = commands[CURSOR_SELECT].Name;
                     skipsnd = true;
                     base.Inputs_Right();
                     page++;
@@ -265,16 +263,20 @@ namespace OpenVIII
         /// </summary>
         public override void Refresh()
         {
-            if (Battle && !mode.Equals(BattleMenu.Mode.YourTurn))
+            if (Battle && !Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn))
+            {
+                Hide();
                 return;
+            }
             if (Memory.State.Characters != null && !skipReinit && Damageable.GetCharacterData(out Saves.CharacterData c))
             {
+                Show();
                 Rectangle DataSize = Rectangle.Empty;
                 base.Refresh();
                 page = 0;
                 Cursor_Status &= ~Cursor_Status.Horizontal;
                 commands[0] = Kernel_bin.BattleCommands[(c.Abilities.Contains(Kernel_bin.Abilities.Mug) ? 12 : 1)];
-                ITEM[0, 0] = new IGMDataItem_String(
+                ITEM[0, 0] = new IGMDataItem.Text(
                         commands[0].Name,
                         SIZE[0]);
 
@@ -294,7 +296,7 @@ namespace OpenVIII
 #else
                         commands[pos] = cmdval.BattleCommand;
 #endif
-                        ITEM[pos, 0] = new IGMDataItem_String(
+                        ITEM[pos, 0] = new IGMDataItem.Text(
                             commands[pos].Name,
                             SIZE[pos]);
                         ITEM[pos, 0].Show();
@@ -311,7 +313,7 @@ namespace OpenVIII
                 if (Battle && CrisisLevel)
                 {
                     CONTAINER.Width = crisiswidth;
-                    ITEM[Limit_Arrow, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right, new Rectangle(SIZE[0].X + Width - 55, SIZE[0].Y, 0, 0), 2, 7) { Blink = true };
+                    ITEM[Limit_Arrow, 0] = new IGMDataItem.Icon(Icons.ID.Arrow_Right, new Rectangle(SIZE[0].X + Width - 55, SIZE[0].Y, 0, 0), 2, 7) { Blink = true };
                 }
                 else
                 {
@@ -337,11 +339,11 @@ namespace OpenVIII
             ItemPool.Refresh(Damageable);
         }
 
-        public override void SetModeChangeEvent(ref EventHandler<Enum> eventHandler)
+        public override void AddModeChangeEvent(ref EventHandler<Enum> eventHandler)
         {
-            base.SetModeChangeEvent(ref eventHandler);
-            (((IGMData)ITEM[Item_Pool, 0])).SetModeChangeEvent(ref eventHandler);
-            (((IGMData)ITEM[Mag_Pool, 0])).SetModeChangeEvent(ref eventHandler);
+            base.AddModeChangeEvent(ref eventHandler);
+            (((IGMData)ITEM[Item_Pool, 0])).AddModeChangeEvent(ref eventHandler);
+            (((IGMData)ITEM[Mag_Pool, 0])).AddModeChangeEvent(ref eventHandler);
         }
     }
 }

@@ -25,7 +25,7 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_TargetPool() : base(9, 3, new IGMDataItem_Box(pos: new Rectangle(420, 150, 420, 360), title: Icons.ID.TARGET), 9, 1) => Cursor_Status &= ~Cursor_Status.Enabled;
+            public IGMData_TargetPool() : base(9, 3, new IGMDataItem.Box(pos: new Rectangle(420, 150, 420, 360), title: Icons.ID.TARGET), 9, 1) => Cursor_Status &= ~Cursor_Status.Enabled;
 
             #endregion Constructors
 
@@ -188,14 +188,14 @@ namespace OpenVIII
                             Pages = Page + 1;
                             return;
                         }
-                    ITEM[i, 0] = new IGMDataItem_String(Memory.Strings.GetName(id), pos: SIZE[i]);
+                    ITEM[i, 0] = new IGMDataItem.Text(Memory.Strings.GetName(id), pos: SIZE[i]);
                     int hp = (ctest || gftest) ? Memory.State[id].CurrentHP() : -1;
                     BLANKS[i] = false;
                     Contents[i] = id;
                     if (hp > -1)
                     {
-                        ITEM[i, 1] = new IGMDataItem_Icon(Icons.ID.HP2, new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 7), SIZE[i].Y, 0, 0), 13);
-                        ITEM[i, 2] = new IGMDataItem_Int(hp, pos: new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 4), SIZE[i].Y, 0, 0), spaces: 4);
+                        ITEM[i, 1] = new IGMDataItem.Icon(Icons.ID.HP2, new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 7), SIZE[i].Y, 0, 0), 13);
+                        ITEM[i, 2] = new IGMDataItem.Integer(hp, pos: new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 4), SIZE[i].Y, 0, 0), spaces: 4);
                     }
                     else
                     {

@@ -12,7 +12,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_GF_Pool() : base(5, 3, new IGMDataItem_Box(pos: new Rectangle(440, 149, 385, 193), title: Icons.ID.GF), 4, 4)
+            public IGMData_GF_Pool() : base(5, 3, new IGMDataItem.Box(pos: new Rectangle(440, 149, 385, 193), title: Icons.ID.GF), 4, 4)
             {
             }
 
@@ -183,26 +183,26 @@ namespace OpenVIII
                 base.UpdateTitle();
                 if (Pages == 1)
                 {
-                    ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.GF;
+                    ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.GF;
                     ITEM[Count - 1, 0] = ITEM[Count - 2, 0] = null;
                 }
                 else
                     switch (Page)
                     {
                         case 0:
-                            ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.GF_PG1;
+                            ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.GF_PG1;
                             break;
 
                         case 1:
-                            ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.GF_PG2;
+                            ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.GF_PG2;
                             break;
 
                         case 2:
-                            ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.GF_PG3;
+                            ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.GF_PG3;
                             break;
 
                         case 3:
-                            ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.GF_PG4;
+                            ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.GF_PG4;
                             break;
                     }
             }
@@ -212,7 +212,7 @@ namespace OpenVIII
                 base.Init();
                 SIZE[Rows] = SIZE[0];
                 SIZE[Rows].Y = Y;
-                ITEM[Rows, 2] = new IGMDataItem_Icon(Icons.ID.Size_16x08_Lv_, new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 30, SIZE[Rows].Y, 0, 0), scale: new Vector2(2.5f));
+                ITEM[Rows, 2] = new IGMDataItem.Icon(Icons.ID.Size_16x08_Lv_, new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 30, SIZE[Rows].Y, 0, 0), scale: new Vector2(2.5f));
             }
 
             protected override void InitShift(int i, int col, int row)
@@ -247,9 +247,9 @@ namespace OpenVIII
 
             private void addGF(ref int pos, GFs g, Font.ColorID color = Font.ColorID.White)
             {
-                ITEM[pos, 0] = new IGMDataItem_String(Memory.Strings.GetName(g), SIZE[pos], color);
-                ITEM[pos, 1] = JunctionedGFs.ContainsKey(g) ? new IGMDataItem_Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 100, SIZE[pos].Y, 0, 0)) : null;
-                ITEM[pos, 2] = new IGMDataItem_Int(Source.GFs[g].Level, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), spaces: 3);
+                ITEM[pos, 0] = new IGMDataItem.Text(Memory.Strings.GetName(g), SIZE[pos], color);
+                ITEM[pos, 1] = JunctionedGFs.ContainsKey(g) ? new IGMDataItem.Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 100, SIZE[pos].Y, 0, 0)) : null;
+                ITEM[pos, 2] = new IGMDataItem.Integer(Source.GFs[g].Level, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), spaces: 3);
                 BLANKS[pos] = false;
                 Contents[pos] = g;
                 pos++;
@@ -261,7 +261,7 @@ namespace OpenVIII
                 {
                     GFs g = Contents[CURSOR_SELECT];
                     IGMData_Container i = (IGMData_Container)((IGMData_GF_Group)IGM_Junction.Data[SectionName.TopMenu_GF_Group]).ITEM[2, 0];
-                    ((IGMDataItem_Box)i.CONTAINER).Data = JunctionedGFs.Count > 0 && JunctionedGFs.ContainsKey(g) ? Memory.Strings.GetName(JunctionedGFs[g]) : null;
+                    ((IGMDataItem.Box)i.CONTAINER).Data = JunctionedGFs.Count > 0 && JunctionedGFs.ContainsKey(g) ? Memory.Strings.GetName(JunctionedGFs[g]) : null;
                 }
             }
 

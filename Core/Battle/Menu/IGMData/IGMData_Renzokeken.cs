@@ -41,15 +41,15 @@ namespace OpenVIII
             r.Height += r.Height % 4;
             rc = Memory.Icons.MostSaturated(Icons.ID.Text_Cursor, 6);
             rcdim = Memory.Icons.MostSaturated(Icons.ID.Text_Cursor, 2);
-            ITEM[0, 0] = new IGMDataItem_Texture(pixel, r, rcdim);
+            ITEM[0, 0] = new IGMDataItem.Texture(pixel, r, rcdim);
             r.Inflate(-4, -4);
-            ITEM[1, 0] = new IGMDataItem_Texture(pixel, r, Color.Black);
+            ITEM[1, 0] = new IGMDataItem.Texture(pixel, r, Color.Black);
             float scale = (float)r.Height / e.Height;
             int w = (int)(e.Width * scale);
-            ITEM[Count - 3, 0] = new IGMDataItem_Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 80, r.Y, w, r.Height), 2, scale: new Vector2(scale));
-            ITEM[Count - 2, 0] = new IGMDataItem_Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 208, r.Y, w, r.Height), 2, scale: new Vector2(scale));
+            ITEM[Count - 3, 0] = new IGMDataItem.Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 80, r.Y, w, r.Height), 2, scale: new Vector2(scale));
+            ITEM[Count - 2, 0] = new IGMDataItem.Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 208, r.Y, w, r.Height), 2, scale: new Vector2(scale));
             Rectangle hotspot = new Rectangle(r.X + 80 + (w / 2), r.Y + 4, 208 - 80, r.Height - 8);
-            ITEM[Count - 4, 0] = new IGMDataItem_Texture(pixel, hotspot, Color.TransparentBlack);
+            ITEM[Count - 4, 0] = new IGMDataItem.Texture(pixel, hotspot, Color.TransparentBlack);
             //Rectangle hotspotbox = hotspot;
             hotspot.Width += (int)(hotspot.Width * .50f);
             Rectangle tr = new Rectangle(r.X + 208 + (w / 2), r.Y + 4, 0, r.Height - 4);
@@ -63,7 +63,7 @@ namespace OpenVIII
             int xbak = tr.X;
             tr.X += trigwidtharea / 2 - w / 2;
 
-            ITEM[Count - 1, 0] = new IGMDataItem_Icon(Icons.ID.Trigger_, tr, 6, scale: new Vector2(scale));// { Color = rc};
+            ITEM[Count - 1, 0] = new IGMDataItem.Icon(Icons.ID.Trigger_, tr, 6, scale: new Vector2(scale));// { Color = rc};
 
             newattack = new Color(104, 80, 255);
             int delay = 500;
@@ -71,7 +71,7 @@ namespace OpenVIII
             Rectangle pos = new Rectangle(r.X, r.Y + 4, 0, r.Height - 8);
             r.Inflate(-4, -4);
             for (int x = 0; x <= _hits && x <= 7; x++)
-                ITEM[2 + x, 0] = new IGMDataItem_Renzokeken_Gradient(pos, newattack, rc, 1f, hotspot, r, time: Time, delay * (x));
+                ITEM[2 + x, 0] = new IGMDataItem.Gradient.Renzokeken(pos, newattack, rc, 1f, hotspot, r, time: Time, delay * (x));
             float totalx = 0;
             for (byte i = 0; i <= 7; i++)
             {
@@ -88,13 +88,13 @@ namespace OpenVIII
             scale = ((float)r.Height) / e.Height;
             w = (int)(e.Width * scale);
             tr.X = xbak + trigwidtharea / 2 - w / 2;
-            ITEM[Count - 5, 0] = new IGMDataItem_Icon(Icons.ID._0_Hit_, tr, 2, scale: new Vector2(scale));
+            ITEM[Count - 5, 0] = new IGMDataItem.Icon(Icons.ID._0_Hit_, tr, 2, scale: new Vector2(scale));
             Memory.Icons.Trim(Icons.ID.Perfect__, 2);
             e = Memory.Icons[Icons.ID.Perfect__];
             scale = ((float)r.Height) / e.Height;
             w = (int)(e.Width * scale);
             tr.X = xbak + trigwidtharea / 2 - w / 2;
-            ITEM[Count - 6, 0] = new IGMDataItem_Icon(Icons.ID.Perfect__, tr, 8, scale: new Vector2(scale));
+            ITEM[Count - 6, 0] = new IGMDataItem.Icon(Icons.ID.Perfect__, tr, 8, scale: new Vector2(scale));
             base.Init();
             Reset();
             Cursor_Status = Cursor_Status.Enabled | Cursor_Status.Static | Cursor_Status.Hidden;
@@ -105,9 +105,9 @@ namespace OpenVIII
             int pos = 0;
             foreach (Menu_Base i in ITEM)
             {
-                if (i.GetType() == typeof(IGMDataItem_Renzokeken_Gradient))
+                if (i.GetType() == typeof(IGMDataItem.Gradient.Renzokeken))
                 {
-                    IGMDataItem_Renzokeken_Gradient rg = (IGMDataItem_Renzokeken_Gradient)i;
+                    IGMDataItem.Gradient.Renzokeken rg = (IGMDataItem.Gradient.Renzokeken)i;
                     if (pos++ < _hits)
                         rg.Show();
                     else
@@ -121,7 +121,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_Renzokeken(Rectangle? pos = null) : base(15, 1, new IGMDataItem_Box(pos: pos ?? new Rectangle(24, 501, 912, 123), title: Icons.ID.SPECIAL), 0, 0, Memory.State?[Characters.Squall_Leonhart])
+        public IGMData_Renzokeken(Rectangle? pos = null) : base(15, 1, new IGMDataItem.Box(pos: pos ?? new Rectangle(24, 501, 912, 123), title: Icons.ID.SPECIAL), 0, 0, Memory.State?[Characters.Squall_Leonhart])
         {
         }
 
@@ -144,9 +144,9 @@ namespace OpenVIII
         {
             foreach (Menu_Base i in ITEM)
             {
-                if (i?.GetType() == typeof(IGMDataItem_Renzokeken_Gradient))
+                if (i?.GetType() == typeof(IGMDataItem.Gradient.Renzokeken))
                 {
-                    if (((IGMDataItem_Renzokeken_Gradient)i).Trigger)
+                    if (((IGMDataItem.Gradient.Renzokeken)i).Trigger)
                     {
                         skipsnd = true;
                         base.Inputs_OKAY();
@@ -184,16 +184,16 @@ namespace OpenVIII
             bool done = false;
             bool hot = false;
 
-            ((IGMDataItem_Icon)ITEM[Count - 5, 0]).Data = Icons.ID._0_Hit_ + _count;
-            ((IGMDataItem_Texture)ITEM[Count - 4, 0]).Color = HitSlider.Update();
+            ((IGMDataItem.Icon)ITEM[Count - 5, 0]).Data = Icons.ID._0_Hit_ + _count;
+            ((IGMDataItem.Texture)ITEM[Count - 4, 0]).Color = HitSlider.Update();
 
             int hotcnt = 0;
             int pos = 0;
             foreach (Menu_Base i in ITEM)
             {
-                if (i?.GetType() == typeof(IGMDataItem_Renzokeken_Gradient) && pos++ < _hits)
+                if (i?.GetType() == typeof(IGMDataItem.Gradient.Renzokeken) && pos++ < _hits)
                 {
-                    IGMDataItem_Renzokeken_Gradient gr = (IGMDataItem_Renzokeken_Gradient)i;
+                    IGMDataItem.Gradient.Renzokeken gr = (IGMDataItem.Gradient.Renzokeken)i;
                     done = !gr.Done || done;
                     hot = gr.Trigger || hot;
                     if (gr.Done)
@@ -204,23 +204,23 @@ namespace OpenVIII
             {
                 if ((delayMS += Memory.gameTime.ElapsedGameTime.TotalMilliseconds) > 1000)
                 {
-                    Menu.BattleMenus.EndTurn();
+                    Damageable.EndTurn();
                 }
             }
             if (hot)
             {
-                ((IGMDataItem_Icon)ITEM[Count - 3, 0]).Palette = 6;
-                ((IGMDataItem_Icon)ITEM[Count - 2, 0]).Palette = 6;
-                ((IGMDataItem_Texture)ITEM[0, 0]).Color = rc;
+                ((IGMDataItem.Icon)ITEM[Count - 3, 0]).Palette = 6;
+                ((IGMDataItem.Icon)ITEM[Count - 2, 0]).Palette = 6;
+                ((IGMDataItem.Texture)ITEM[0, 0]).Color = rc;
                 ITEM[Count - 1, 0].Show();
                 ITEM[Count - 5, 0].Hide();
                 ITEM[Count - 6, 0].Hide();
             }
             else
             {
-                ((IGMDataItem_Icon)ITEM[Count - 3, 0]).Palette = 2;
-                ((IGMDataItem_Icon)ITEM[Count - 2, 0]).Palette = 2;
-                ((IGMDataItem_Texture)ITEM[0, 0]).Color = rcdim;
+                ((IGMDataItem.Icon)ITEM[Count - 3, 0]).Palette = 2;
+                ((IGMDataItem.Icon)ITEM[Count - 2, 0]).Palette = 2;
+                ((IGMDataItem.Texture)ITEM[0, 0]).Color = rcdim;
                 if ((hotcnt >= _hits)||!done)// && ITEM[Count - 1, 0].Enabled)
                 {
                     if (_count >= _hits)

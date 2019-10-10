@@ -67,33 +67,23 @@ namespace OpenVIII
             {
                 return GetOneRenzokeken().Inputs();
             }
-            foreach (Menu m in menus.Where(m => m.GetType().Equals(typeof(BattleMenu)) && (BattleMenu.Mode)m.GetMode() == BattleMenu.Mode.YourTurn))
+            foreach (Menu m in menus.Where(m => m.GetType().Equals(typeof(BattleMenu)) && m.Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn)))
             {
                 ret = m.Inputs() || ret;
                 if (ret) return ret;
             }
             if (Input2.DelayedButton(FF8TextTagKey.Cancel))
             {
-                switch (GetCurrentBattleMenu().GetMode())
+                if (GetCurrentBattleMenu().Damageable.Switch())
                 {
-                    case BattleMenu.Mode.YourTurn:
-                        menus[_player].SetMode(BattleMenu.Mode.ATB_Charged);
-                        break;
-                }
-                int cnt = 0;
-                do
-                {
-                    if (++_player > 2) _player = 0;
-                    if (++cnt > 6) return false;
-                }
-                while (menus.Count <= _player || menus[_player] == null || menus[_player].GetType() != typeof(BattleMenu) || !((BattleMenu)menus[_player]).GetMode().Equals(BattleMenu.Mode.ATB_Charged));
-                //menus[_player].SetMode(BattleMenu.Mode.YourTurn);
-                NewTurnSND();
-                switch ((BattleMenu.Mode)menus[_player].GetMode())
-                {
-                    case BattleMenu.Mode.ATB_Charged:
-                        menus[_player].SetMode(BattleMenu.Mode.YourTurn);
-                        break;
+                    int cnt = 0;
+                    do
+                    {
+                        if (++_player > 2) _player = 0;
+                        if (++cnt > 6) return false;
+                    }
+                    while (menus.Count <= _player || menus[_player] == null || menus[_player].GetType() != typeof(BattleMenu) || !GetCurrentBattleMenu().Damageable.StartTurn());
+                    NewTurnSND();        
                 }
             }
 
@@ -162,16 +152,15 @@ namespace OpenVIII
                 ret = m.Update() || ret;
             }
             List<BattleMenu> bml = GetBattleMenus().ToList();
-            if (!(menus?[_player].GetMode().Equals(BattleMenu.Mode.YourTurn) ?? false))
+            if (!GetCurrentBattleMenu().Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn))
             {
                 if (_player + 1 == bml.Count)
                     _player = 0;
                 int cnt = 3;
                 for (int i = _player; cnt >0; cnt--)
                 {
-                    if (bml[i].GetMode().Equals(BattleMenu.Mode.ATB_Charged))
+                    if (bml[i].Damageable.StartTurn())
                     {
-                        bml[i].SetMode(BattleMenu.Mode.YourTurn);
                         _player = i;
                         NewTurnSND();
                         break;
@@ -274,12 +263,6 @@ namespace OpenVIII
             }
         }
 
-        public void EndTurn()
-        {
-            GetCurrentBattleMenu().SetMode(BattleMenu.Mode.ATB_Charging);
-            GetCurrentBattleMenu().Reset();
-            GetCurrentBattleMenu().Refresh();
-        }
 
         public IEnumerable<BattleMenu> GetBattleMenus() => menus?.Where(m => m.GetType().Equals(typeof(BattleMenu))).Select(x => (BattleMenu)x);
 

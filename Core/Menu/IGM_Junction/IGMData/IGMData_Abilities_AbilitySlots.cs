@@ -10,7 +10,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_Abilities_AbilitySlots() : base(4, 2, new IGMDataItem_Box(pos: new Rectangle(0, 414, 435, 216), title: Icons.ID.ABILITY), 1, 4)
+            public IGMData_Abilities_AbilitySlots() : base(4, 2, new IGMDataItem.Box(pos: new Rectangle(0, 414, 435, 216), title: Icons.ID.ABILITY), 1, 4)
             {
             }
 
@@ -33,10 +33,10 @@ namespace OpenVIII
                             slots = 4;
                         if (i < slots)
                         {
-                            ITEM[i, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right2, SIZE[i], 9);
+                            ITEM[i, 0] = new IGMDataItem.Icon(Icons.ID.Arrow_Right2, SIZE[i], 9);
                             if (c.Abilities[i] != Kernel_bin.Abilities.None)
                             {
-                                ITEM[i, 1] = new IGMDataItem_String(
+                                ITEM[i, 1] = new IGMDataItem.Text(
 
                                 Kernel_bin.EquipableAbilities[c.Abilities[i]].Icon, 9,
                                 Kernel_bin.EquipableAbilities[c.Abilities[i]].Name,

@@ -7,7 +7,7 @@
     {
         #region Constructors
 
-        public IGMData_Container(IGMDataItem container) : base(0, 0, container)
+        public IGMData_Container(Menu_Base container) : base(0, 0, container)
         {
         }
 

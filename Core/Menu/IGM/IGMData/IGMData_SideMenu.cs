@@ -48,11 +48,11 @@ namespace OpenVIII
                     avgwidth = totalwidth / ++pos;
                     avgheight = totalheight / pos;
                 }
-                Init(pairs.Count, 1, new IGMDataItem_Box(pos: new Rectangle { Width = 226, Height = 492, X = 843 - 226 }), 1, pairs.Count);
+                Init(pairs.Count, 1, new IGMDataItem.Box(pos: new Rectangle { Width = 226, Height = 492, X = 843 - 226 }), 1, pairs.Count);
                 pos = 0;
                 foreach (KeyValuePair<FF8String, FF8String> pair in pairs)
                 {
-                    ITEM[pos, 0] = new IGMDataItem_String(pair.Key, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0));
+                    ITEM[pos, 0] = new IGMDataItem.Text(pair.Key, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0));
                     pos++;
                 }
 
@@ -143,7 +143,7 @@ namespace OpenVIII
                 }
             }
 
-            private void ChoiceChangeEvent(object sender, FF8String e) => ((IGMDataItem_Box)CONTAINER).Data = e;
+            private void ChoiceChangeEvent(object sender, FF8String e) => ((IGMDataItem.Box)CONTAINER).Data = e;
 
             #endregion Methods
         }

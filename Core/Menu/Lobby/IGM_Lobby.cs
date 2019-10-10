@@ -20,7 +20,7 @@ namespace OpenVIII
             Size = new Vector2 { X = 840, Y = 630 };
             //Data0 is scaled from 1280x720
             Data0 = new Dictionary<Enum, IGMData> {
-                { SectionName.BG, new IGMData_Container(new IGMDataItem_TextureHandler(TextureHandler.Create("start{0:00}", 2), new Rectangle(0,-25, 1280, 0))) } //new Rectangle(-45,-25, 1280+100, 0)
+                { SectionName.BG, new IGMData_Container(new IGMDataItem.Texture_Handler(TextureHandler.Create("start{0:00}", 2), new Rectangle(0,-25, 1280, 0))) } //new Rectangle(-45,-25, 1280+100, 0)
             };
             //Data is scaled from Size
             Data.Add(SectionName.Selections, new IGMData_Selections());
@@ -47,16 +47,16 @@ namespace OpenVIII
             private Dictionary<int, Action> FadeOutActions;
             private bool eventset = false;
 
-            public IGMData_Selections() : base(count: 3, depth: 1, container: new IGMDataItem_Empty(new Rectangle(320, 445, 250, 170)), cols: 1, rows: 3)
+            public IGMData_Selections() : base(count: 3, depth: 1, container: new IGMDataItem.Empty(new Rectangle(320, 445, 250, 170)), cols: 1, rows: 3)
             {
             }
 
             protected override void Init()
             {
                 base.Init();
-                ITEM[0, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 1, 105), SIZE[0]);
-                ITEM[1, 0] = new IGMDataItem_String(Memory.Strings.Read(Strings.FileID.MNGRP, 1, 106), SIZE[1]);
-                ITEM[2, 0] = new IGMDataItem_String("OpenVIII debug tools", SIZE[2]);
+                ITEM[0, 0] = new IGMDataItem.Text(Memory.Strings.Read(Strings.FileID.MNGRP, 1, 105), SIZE[0]);
+                ITEM[1, 0] = new IGMDataItem.Text(Memory.Strings.Read(Strings.FileID.MNGRP, 1, 106), SIZE[1]);
+                ITEM[2, 0] = new IGMDataItem.Text("OpenVIII debug tools", SIZE[2]);
                 Cursor_Status |= Cursor_Status.Enabled;
                 OkayActions = new Dictionary<int, Action>()
                 {

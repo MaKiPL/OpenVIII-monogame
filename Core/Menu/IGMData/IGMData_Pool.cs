@@ -4,7 +4,7 @@
     {
         #region Constructors
 
-        public IGMData_Pool(int count, int depth, IGMDataItem container = null, int? rows = null, int? pages = null, Damageable damageable = null) : base(count + 2, depth, container, 1, rows, damageable) => DefaultPages = pages ?? 1;
+        public IGMData_Pool(int count, int depth, Menu_Base container = null, int? rows = null, int? pages = null, Damageable damageable = null) : base(count + 2, depth, container, 1, rows, damageable) => DefaultPages = pages ?? 1;
 
         #endregion Constructors
 
@@ -93,8 +93,8 @@
             SIZE[Count - 2].Y = Y + Height - 28;
             SIZE[Count - 1].X = X + Width - 24;
             SIZE[Count - 1].Y = Y + Height - 28;
-            ITEM[Count - 2, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Left, SIZE[Count - 2], 2, 7) { Blink = true };
-            ITEM[Count - 1, 0] = new IGMDataItem_Icon(Icons.ID.Arrow_Right2, SIZE[Count - 1], 2, 7) { Blink = true };
+            ITEM[Count - 2, 0] = new IGMDataItem.Icon(Icons.ID.Arrow_Left, SIZE[Count - 2], 2, 7) { Blink = true };
+            ITEM[Count - 1, 0] = new IGMDataItem.Icon(Icons.ID.Arrow_Right2, SIZE[Count - 1], 2, 7) { Blink = true };
         }
 
         protected virtual void PAGE_NEXT()

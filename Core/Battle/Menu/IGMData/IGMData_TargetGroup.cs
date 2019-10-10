@@ -168,7 +168,7 @@ namespace OpenVIII
                 bool Command01_ATTACK()
                 {
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
                     return true;
                 }
 
@@ -176,7 +176,7 @@ namespace OpenVIII
                 {
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
                     Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} casts {Magic.Name}({Magic.ID}) spell on { DebugMessageSuffix(d) }");
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
                     return true;
                 }
 
@@ -186,7 +186,7 @@ namespace OpenVIII
                 {
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
                     Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} uses {Item.Name}({Item.ID}) item on { DebugMessageSuffix(d) }");
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
                     return true;
                 }
 
@@ -254,7 +254,7 @@ namespace OpenVIII
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
                     //TODO add devour commands
                     Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
 
                     return true;
                 }
@@ -270,7 +270,7 @@ namespace OpenVIII
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
 
                     Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
 
                     return true;
                 }
@@ -285,7 +285,7 @@ namespace OpenVIII
                         Saves.Item i = e.Mug(Memory.State[fromvc].SPD, Memory.State.PartyHasAbility(Kernel_bin.Abilities.RareItem));
                         Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} stole {i.DATA?.Name}({i.ID}) x {i.QTY} from { DebugMessageSuffix(d) }");
                     }
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
                     return true;
                 }
 
@@ -296,7 +296,7 @@ namespace OpenVIII
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
 
                     Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
 
                     return true;
                 }
@@ -305,7 +305,7 @@ namespace OpenVIII
                 {
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
                     Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} casts {BlueMagic.Name}({BlueMagic.ID}) spell on { DebugMessageSuffix(d) }");
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
                     return false;
                 }
 
@@ -316,7 +316,7 @@ namespace OpenVIII
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
 
                     Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
 
                     return true;
                 }
@@ -326,7 +326,7 @@ namespace OpenVIII
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
 
                     Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
 
                     return true;
                 }
@@ -337,7 +337,7 @@ namespace OpenVIII
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
 
                     Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
 
                     return true;
                 }
@@ -347,7 +347,7 @@ namespace OpenVIII
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
 
                     Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
 
                     return true;
                 }
@@ -357,7 +357,7 @@ namespace OpenVIII
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
 
                     Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
 
                     return true;
                 }
@@ -367,7 +367,7 @@ namespace OpenVIII
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
 
                     Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
 
                     return true;
                 }
@@ -379,7 +379,7 @@ namespace OpenVIII
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
 
                     Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
 
                     return true;
                 }
@@ -389,7 +389,7 @@ namespace OpenVIII
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
 
                     Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
 
                     return true;
                 }
@@ -399,7 +399,7 @@ namespace OpenVIII
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
 
                     Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
 
                     return true;
                 }
@@ -409,14 +409,14 @@ namespace OpenVIII
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
 
                     Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
 
                     return true;
                 }
                 bool Command28_DARKSIDE()
                 {
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
                     return true;
                 }
 
@@ -434,7 +434,7 @@ namespace OpenVIII
                             Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} Failed to use {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) } because they are immune!");
                         else
                             Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) } and got a {c} card");
-                        BattleMenus.EndTurn();
+                        Damageable.EndTurn();
                     }
                     return true;
                 }
@@ -442,7 +442,7 @@ namespace OpenVIII
                 bool Command30_DOOM()
                 {
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
                     return true;
                 }
 
@@ -451,7 +451,7 @@ namespace OpenVIII
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
 
                     Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
 
                     return true;
                 }
@@ -461,7 +461,7 @@ namespace OpenVIII
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
 
                     Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
 
                     return true;
                 }
@@ -471,7 +471,7 @@ namespace OpenVIII
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
 
                     Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
 
                     return true;
                 }
@@ -481,7 +481,7 @@ namespace OpenVIII
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
 
                     Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
 
                     return true;
                 }
@@ -503,7 +503,7 @@ namespace OpenVIII
                     Neededvaribles(out Damageable[] d, out Characters fromvc);
 
                     Debug.WriteLine($"{Memory.Strings.GetName(fromvc)} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
-                    BattleMenus.EndTurn();
+                    Damageable.EndTurn();
 
                     return true;
                 }

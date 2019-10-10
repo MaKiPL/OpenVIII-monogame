@@ -37,10 +37,10 @@ namespace OpenVIII
             _helpStr = new FF8String[Count];
             for (byte pos = 0; pos < Rows; pos++)
             {
-                ITEM[pos, 0] = new IGMDataItem_String(null, SIZE[pos]);
-                ITEM[pos, 1] = new IGMDataItem_Int(0, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0), numtype: Icons.NumType.sysFntBig, spaces: 3);
+                ITEM[pos, 0] = new IGMDataItem.Text(null, SIZE[pos]);
+                ITEM[pos, 1] = new IGMDataItem.Integer(0, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0), numtype: Icons.NumType.sysFntBig, spaces: 3);
             }
-            ITEM[Count - 1, 2] = new IGMDataItem_Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows - 1].X + SIZE[Rows - 1].Width - 60, Y, 0, 0), scale: new Vector2(2.5f));
+            ITEM[Count - 1, 2] = new IGMDataItem.Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows - 1].X + SIZE[Rows - 1].Width - 60, Y, 0, 0), scale: new Vector2(2.5f));
             PointerZIndex = Rows - 1;
         }
 
@@ -82,7 +82,7 @@ namespace OpenVIII
                 Refresh();
                 skipsnd = true;
             }
-            while (cnt-- > 0 && !((IGMDataItem_Int)(ITEM[0, 1])).Enabled);
+            while (cnt-- > 0 && !((IGMDataItem.Integer)(ITEM[0, 1])).Enabled);
             Menu.IGM_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
         }
 
@@ -96,7 +96,7 @@ namespace OpenVIII
 
                 skipsnd = true;
             }
-            while (cnt-- > 0 && !((IGMDataItem_Int)(ITEM[0, 1])).Enabled);
+            while (cnt-- > 0 && !((IGMDataItem.Integer)(ITEM[0, 1])).Enabled);
             Menu.IGM_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
         }
 
@@ -113,7 +113,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_ItemPool(Rectangle pos, bool battle, int count = 4) : base(count + 1, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.ITEM), count, 198 / count + 1)
+        public IGMData_ItemPool(Rectangle pos, bool battle, int count = 4) : base(count + 1, 3, new IGMDataItem.Box(pos: pos, title: Icons.ID.ITEM), count, 198 / count + 1)
         {
             Battle = battle;
             if(battle)
@@ -199,7 +199,7 @@ namespace OpenVIII
             Source = Memory.State;
             if (Source != null && Source.Items != null)
             {
-                ((IGMDataItem_Box)CONTAINER).Title = Pages <= 1 ? (Icons.ID?)Icons.ID.ITEM : (Icons.ID?)(Icons.ID.ITEM_PG1 + (byte)Page);
+                ((IGMDataItem.Box)CONTAINER).Title = Pages <= 1 ? (Icons.ID?)Icons.ID.ITEM : (Icons.ID?)(Icons.ID.ITEM_PG1 + (byte)Page);
                 byte pos = 0;
                 int skip = Page * Rows;
                 for (byte i = 0; pos < Rows && i < Source.Items.Count; i++)
@@ -220,24 +220,24 @@ namespace OpenVIII
                     }
                     else
                         BLANKS[pos] = false;
-                    ((IGMDataItem_String)(ITEM[pos, 0])).Data = itemdata.Name;
-                    ((IGMDataItem_String)(ITEM[pos, 0])).Icon = itemdata.Icon;
-                    ((IGMDataItem_String)(ITEM[pos, 0])).Palette = palette;
-                    ((IGMDataItem_String)(ITEM[pos, 0])).FontColor = color;
-                    ((IGMDataItem_Int)(ITEM[pos, 1])).Data = item.QTY;
-                    ((IGMDataItem_Int)(ITEM[pos, 1])).Show();
-                    ((IGMDataItem_Int)(ITEM[pos, 1])).FontColor = color;
+                    ((IGMDataItem.Text)(ITEM[pos, 0])).Data = itemdata.Name;
+                    ((IGMDataItem.Text)(ITEM[pos, 0])).Icon = itemdata.Icon;
+                    ((IGMDataItem.Text)(ITEM[pos, 0])).Palette = palette;
+                    ((IGMDataItem.Text)(ITEM[pos, 0])).FontColor = color;
+                    ((IGMDataItem.Integer)(ITEM[pos, 1])).Data = item.QTY;
+                    ((IGMDataItem.Integer)(ITEM[pos, 1])).Show();
+                    ((IGMDataItem.Integer)(ITEM[pos, 1])).FontColor = color;
                     _helpStr[pos] = itemdata.Description;
                     Contents[pos] = itemdata;
                     pos++;
                 }
                 for (; pos < Rows; pos++)
                 {
-                    ((IGMDataItem_Int)(ITEM[pos, 1])).Hide();
+                    ((IGMDataItem.Integer)(ITEM[pos, 1])).Hide();
                     if (pos == 0) return; // if page turning. this till be enough to trigger a try next page.
-                    ((IGMDataItem_String)(ITEM[pos, 0])).Data = null;
-                    ((IGMDataItem_Int)(ITEM[pos, 1])).Data = 0;
-                    ((IGMDataItem_String)(ITEM[pos, 0])).Icon = Icons.ID.None;
+                    ((IGMDataItem.Text)(ITEM[pos, 0])).Data = null;
+                    ((IGMDataItem.Integer)(ITEM[pos, 1])).Data = 0;
+                    ((IGMDataItem.Text)(ITEM[pos, 0])).Icon = Icons.ID.None;
                     BLANKS[pos] = true;
                 }
             }

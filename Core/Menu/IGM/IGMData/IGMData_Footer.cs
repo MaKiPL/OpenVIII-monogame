@@ -10,7 +10,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_Footer() : base(0, 0, new IGMDataItem_Box(pos: new Rectangle { Width = 610, Height = 75, Y = 630 - 75 }))
+            public IGMData_Footer() : base(0, 0, new IGMDataItem.Box(pos: new Rectangle { Width = 610, Height = 75, Y = 630 - 75 }))
             {
             }
 
@@ -21,7 +21,7 @@ namespace OpenVIII
             public override void Refresh()
             {
                 base.Refresh();
-                ((IGMDataItem_Box)CONTAINER).Data = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Memory.State.LocationID);
+                ((IGMDataItem.Box)CONTAINER).Data = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Memory.State.LocationID);
             }
 
             #endregion Methods

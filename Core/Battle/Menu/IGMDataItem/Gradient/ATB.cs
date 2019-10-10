@@ -2,13 +2,11 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
-namespace OpenVIII
+namespace OpenVIII.IGMDataItem.Gradient
 {
-    public class IGMDataItem_ATB_Gradient : IGMDataItem_Texture
+    public class ATB : Texture
     {
         #region Fields
-
-        private float _percent;
 
         #endregion Fields
 
@@ -33,56 +31,40 @@ namespace OpenVIII
             Width = Data.Width;
             Data.SetData(cfade);
             base.Init();
-            
         }
-        bool First = true;
+
         #endregion Methods
 
         #region Constructors
 
-        public IGMDataItem_ATB_Gradient(Rectangle? pos = null) : base(null, pos, Color.White, Color.White, 1f) => Init();
+        public ATB(Rectangle? pos = null) : base(null, pos, Color.White, Color.White, 1f) => Init();
 
         #endregion Constructors
 
         #region Properties
 
-        public int ATBBarIncrement { get; private set; } = 0;
-        public int ATBBarPos { get; private set; } = 0;
-        public bool Done => Percent >= 1f;
-        public float Percent { get => _percent > 1f ? 1f : _percent; private set => _percent = value; }
 
         #endregion Properties
 
         public override void Refresh(Damageable damageable)
         {
             base.Refresh(damageable);
-            if (First)
-            {
-                ATBBarPos = Damageable.ATBBarStart();
-                First = false;
-            }
-            else
-
-                ATBBarPos = 0;
+            damageable.Refresh();
         }
-
 
         public override bool Update()
         {
             if (Enabled)
             {
-                if (!Done && Damageable != null)
+                if (Damageable != null)
                 {
-                    double tms = Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
-                    ATBBarIncrement = Damageable.BarIncrement(); // per 60fps
-                    ATBBarPos += (int)(ATBBarIncrement * tms / 60);
-                    Percent = (float)ATBBarPos / Enemy.ATBBarSize;
-                    X = Lerp(Restriction.X - Width, Restriction.X, Percent);
+                    Damageable.Update();
+                    X = Lerp(Restriction.X - Width, Restriction.X, Damageable.ATBPercent);
 
                     if (Damageable.IsDead)
                     {
                         //Color = Faded_Color = Color.Red * .5f;
-                        ATBBarPos = 0;
+                        X = 0;
                     }
                     else if (Damageable.IsPetrify)
                     {

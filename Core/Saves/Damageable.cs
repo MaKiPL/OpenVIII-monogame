@@ -4,11 +4,141 @@ using System.Diagnostics;
 
 namespace OpenVIII
 {
+
     /// <summary>
     /// Character/Enemy/GF that can be damaged or die.
     /// </summary>
     public abstract class Damageable : IDamageable
     {
+        public float ATBPercent => ATBTimer.Percent;
+
+        private ATBTimer ATBTimer;
+
+        protected Damageable()
+        {
+            SetBattleMode(BattleMode.ATB_Charging);
+            ATBTimer = new ATBTimer(this);
+        }
+
+        public virtual bool Update()
+        {
+            if (GetBattleMode().Equals(BattleMode.ATB_Charging))
+            {
+                ATBTimer.Update();
+                if (ATBTimer.Done && ATBCharged())
+                {
+                    //Your turn is ready.
+                }
+                return true;
+            }
+            return false;
+        }
+
+        public virtual void Reset()
+        {
+            ATBTimer.Reset();
+            Statuses1 = 0;
+        }
+
+        public virtual void Refresh() => ATBTimer.Refresh(this);
+
+        public virtual bool ATBCharged()
+        {
+            if (GetBattleMode().Equals(BattleMode.ATB_Charging))
+            {
+                SetBattleMode(BattleMode.ATB_Charged);
+                return true;
+            }
+            return false;
+        }
+
+        public virtual bool EndTurn()
+        {
+            if (
+                GetBattleMode().Equals(BattleMode.YourTurn) ||
+                GetBattleMode().Equals(BattleMode.GF_Charging)
+               )
+            {
+                SetBattleMode(BattleMode.EndTurn); // trigger any end of turn clean up.
+                SetBattleMode(BattleMode.ATB_Charging); //start charging next turn.
+                Refresh();
+                return true;
+            }
+            return false;
+        }
+
+        public virtual bool StartTurn()
+        {
+            if (
+                GetBattleMode().Equals(BattleMode.ATB_Charged)
+               )
+            {
+                SetBattleMode(BattleMode.YourTurn); //it's your turn.
+                Refresh();
+                return true;
+            }
+            return false;
+        }
+
+        public virtual bool Switch()
+        {
+            if (GetBattleMode().Equals(BattleMode.YourTurn))
+            {
+                SetBattleMode(BattleMode.ATB_Charged);
+                return true;
+            }
+            return false;
+        }
+
+        public virtual bool ChargeGF()
+        {
+            if (GetBattleMode().Equals(BattleMode.YourTurn) && (this.GetType().Equals(typeof(Saves.CharacterData))))
+            {
+                SetBattleMode(BattleMode.ATB_Charged);
+                return true;
+            }
+            return false;
+        }
+
+        public virtual bool GFDiedWhileCharging()
+        {
+            if (GetBattleMode().Equals(BattleMode.GF_Charging))
+            {
+                SetBattleMode(BattleMode.YourTurn);
+                return true;
+            }
+            return false;
+        }
+
+        public enum BattleMode : byte
+        {
+            /// <summary>
+            /// ATB bar filling
+            /// </summary>
+            /// <remarks>Orange Bar precent filled. ATB/Full ATB</remarks>
+            ATB_Charging,
+
+            /// <summary>
+            /// ATB bar charged, waiting for your turn
+            /// </summary>
+            /// <remarks>Yellow Bar</remarks>
+            ATB_Charged,
+
+            /// <summary>
+            /// Your turn
+            /// </summary>
+            /// <remarks>Yellow Bar/Name/HP Blinking</remarks>
+            YourTurn,
+
+            /// <summary>
+            /// GF Cast
+            /// </summary>
+            /// <remarks>Show GF name/hp and blueish bar.</remarks>
+            GF_Charging,
+
+            EndTurn,
+        }
+
         #region Fields
 
         private Dictionary<Kernel_bin.Attack_Type, Func<int, Kernel_bin.Attack_Flags, int>> _damageActions;
@@ -185,6 +315,23 @@ namespace OpenVIII
 
                 int Damage_White_WindQuistis_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
             }
+        }
+
+        private Enum _battlemode;
+
+        public virtual Enum GetBattleMode() => _battlemode ?? BattleMode.ATB_Charging;
+
+        public EventHandler<Enum> BattleModeChangeEventHandler;
+
+        public virtual bool SetBattleMode(Enum mode)
+        {
+            if (!(_battlemode?.Equals(mode) ?? false))
+            {
+                _battlemode = mode;
+                BattleModeChangeEventHandler?.Invoke(this, mode);
+                return true;
+            }
+            return false;
         }
 
         public abstract byte EVA { get; }
@@ -561,7 +708,7 @@ namespace OpenVIII
         public bool GetGFData(out Saves.GFData gf)
         => GetCast(out gf);
 
-        public bool GetCast<T>(out T cast) where T: Damageable
+        public bool GetCast<T>(out T cast) where T : Damageable
         {
             if (GetType() == typeof(T))
             {
@@ -571,6 +718,7 @@ namespace OpenVIII
             cast = null;
             return false;
         }
+
         public SpeedMod GetSpeedMod()
         {
             if ((Statuses1 & Kernel_bin.Battle_Only_Statuses.Haste) != 0)

@@ -11,7 +11,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_TopMenu_Off() : base(2, 1, new IGMDataItem_Box(pos: new Rectangle(165, 12, 445, 54)), 2, 1)
+            public IGMData_TopMenu_Off() : base(2, 1, new IGMDataItem.Box(pos: new Rectangle(165, 12, 445, 54)), 2, 1)
             {
             }
 
@@ -71,8 +71,8 @@ namespace OpenVIII
             protected override void Init()
             {
                 base.Init();
-                ITEM[0, 0] = new IGMDataItem_String(Titles[Items.RemMag], SIZE[0]);
-                ITEM[1, 0] = new IGMDataItem_String(Titles[Items.RemAll], SIZE[1]);
+                ITEM[0, 0] = new IGMDataItem.Text(Titles[Items.RemMag], SIZE[0]);
+                ITEM[1, 0] = new IGMDataItem.Text(Titles[Items.RemAll], SIZE[1]);
                 Cursor_Status |= Cursor_Status.Enabled;
                 Cursor_Status |= Cursor_Status.Horizontal;
                 Cursor_Status |= Cursor_Status.Vertical;

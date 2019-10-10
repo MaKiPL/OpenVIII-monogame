@@ -13,14 +13,14 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_ConfirmDialog(FF8String data, Icons.ID title, FF8String opt1, FF8String opt2, Rectangle? pos, int startcursor = 0) : base(2, 1, new IGMDataItem_Box(data, pos, title), 1, 2)
+        public IGMData_ConfirmDialog(FF8String data, Icons.ID title, FF8String opt1, FF8String opt2, Rectangle? pos, int startcursor = 0) : base(2, 1, new IGMDataItem.Box(data, pos, title), 1, 2)
         {
             this.startcursor = startcursor;
             opt = new FF8String[Count];
             opt[0] = opt1;
             opt[1] = opt2;
-            ITEM[0, 0] = new IGMDataItem_String(opt[0], SIZE[0]);
-            ITEM[1, 0] = new IGMDataItem_String(opt[1], SIZE[1]);
+            ITEM[0, 0] = new IGMDataItem.Text(opt[0], SIZE[0]);
+            ITEM[1, 0] = new IGMDataItem.Text(opt[1], SIZE[1]);
         }
 
         #endregion Constructors

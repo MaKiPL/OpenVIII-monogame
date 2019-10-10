@@ -11,7 +11,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_Abilities_CommandPool() : base(11, 1, new IGMDataItem_Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.COMMAND), 11, Kernel_bin.Commandabilities.Count / 11 + (Kernel_bin.Commandabilities.Count % 11 > 0 ? 1 : 0)) => Source = Kernel_bin.Commandabilities;
+            public IGMData_Abilities_CommandPool() : base(11, 1, new IGMDataItem.Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.COMMAND), 11, Kernel_bin.Commandabilities.Count / 11 + (Kernel_bin.Commandabilities.Count % 11 > 0 ? 1 : 0)) => Source = Kernel_bin.Commandabilities;
 
             #endregion Constructors
 
@@ -64,7 +64,7 @@ namespace OpenVIII
                         {
                             Font.ColorID cid = c.Commands.Contains(j) ? Font.ColorID.Grey : Font.ColorID.White;
                             BLANKS[pos] = cid == Font.ColorID.Grey ? true : false;
-                            ITEM[pos, 0] = new IGMDataItem_String(
+                            ITEM[pos, 0] = new IGMDataItem.Text(
                                 Icons.ID.Ability_Command, 9,
                             Source[j].Name,
                             new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), cid);
@@ -104,18 +104,18 @@ namespace OpenVIII
                 base.UpdateTitle();
                 if (Pages == 1)
                 {
-                    ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.COMMAND;
+                    ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.COMMAND;
                     ITEM[11, 0] = ITEM[12, 0] = null;
                 }
                 else
                     switch (Page)
                     {
                         case 0:
-                            ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.COMMAND_PG1;
+                            ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.COMMAND_PG1;
                             break;
 
                         case 1:
-                            ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.COMMAND_PG2;
+                            ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.COMMAND_PG2;
                             break;
                     }
             }

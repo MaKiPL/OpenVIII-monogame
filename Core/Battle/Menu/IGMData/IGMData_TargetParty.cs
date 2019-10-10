@@ -26,7 +26,7 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_TargetParty(Rectangle pos) : base(3, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.NAME), 1, 3)
+            public IGMData_TargetParty(Rectangle pos) : base(3, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.NAME), 1, 3)
             {
             }
 
@@ -71,7 +71,7 @@ namespace OpenVIII
                     {
                         Saves.CharacterData data = Memory.State[Memory.State.PartyData[pm.Key]];
                         bool ded = data.IsDead;
-                        ITEM[pos, 0] = new IGMDataItem_String(Memory.Strings.GetName(pm.Value), SIZE[pos], ded ? Font.ColorID.Dark_Gray : Font.ColorID.White);
+                        ITEM[pos, 0] = new IGMDataItem.Text(Memory.Strings.GetName(pm.Value), SIZE[pos], ded ? Font.ColorID.Dark_Gray : Font.ColorID.White);
 
                         pos++;
                     }

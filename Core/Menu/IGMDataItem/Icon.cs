@@ -1,8 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
-
-namespace OpenVIII
+namespace OpenVIII.IGMDataItem
 {
-    public class IGMDataItem_Icon : IGMDataItem, I_Data<Icons.ID>, I_Palette
+    public class Icon : Base, I_Data<Icons.ID>, I_Palette
     {
         #region Fields
 
@@ -13,7 +12,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMDataItem_Icon(Icons.ID data, Rectangle? pos = null, byte? palette = null, byte? faded_palette = null, float blink_adjustment = 1f, Vector2? scale = null) : base(pos, scale)
+        public Icon(Icons.ID data, Rectangle? pos = null, byte? palette = null, byte? faded_palette = null, float blink_adjustment = 1f, Vector2? scale = null) : base(pos, scale)
         {
             Data = data;
             Palette = palette ?? 2;

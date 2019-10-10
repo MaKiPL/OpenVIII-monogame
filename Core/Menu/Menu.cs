@@ -344,7 +344,7 @@ namespace OpenVIII
                 Memory.SpriteBatchEnd();
         }
 
-        public Enum GetMode() => _mode;
+        public virtual Enum GetMode() => _mode;
 
         public override bool Inputs() => false;
 

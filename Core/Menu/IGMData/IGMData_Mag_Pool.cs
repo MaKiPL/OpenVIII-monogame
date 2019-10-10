@@ -36,9 +36,9 @@ namespace OpenVIII
                     color = junctioned;
                 j = true;
             }
-            ITEM[pos, 0] = new IGMDataItem_String(spell.Name, SIZE[pos], color);
-            ITEM[pos, 1] = j ? new IGMDataItem_Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 75, SIZE[pos].Y, 0, 0)) : null;
-            ITEM[pos, 2] = new IGMDataItem_Int(Source.Magics[spell.ID], new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), spaces: 3);
+            ITEM[pos, 0] = new IGMDataItem.Text(spell.Name, SIZE[pos], color);
+            ITEM[pos, 1] = j ? new IGMDataItem.Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 75, SIZE[pos].Y, 0, 0)) : null;
+            ITEM[pos, 2] = new IGMDataItem.Integer(Source.Magics[spell.ID], new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), spaces: 3);
             //makes it so you cannot junction a magic to a stat that does nothing.
             BLANKS[pos] = color == nostat ? true : false;
             Contents[pos] = spell.ID;
@@ -156,7 +156,7 @@ namespace OpenVIII
             base.Init();
             SIZE[Rows] = SIZE[0];
             SIZE[Rows].Y = Y;
-            ITEM[Rows, 2] = new IGMDataItem_Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 45, SIZE[Rows].Y, 0, 0), scale: new Vector2(2.5f));
+            ITEM[Rows, 2] = new IGMDataItem.Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 45, SIZE[Rows].Y, 0, 0), scale: new Vector2(2.5f));
 
             ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Damageable);
             BLANKS[Rows] = true;
@@ -178,7 +178,7 @@ namespace OpenVIII
         {
             if (e.GetType() == typeof(IGM_Junction.Mode))
                 UpdateOnEvent(sender, (IGM_Junction.Mode)e);
-            else if (e.GetType() == typeof(BattleMenu.Mode))
+            else if (e.GetType() == typeof(Damageable.BattleMode))
                 UpdateOnEvent(sender, null);
         }
 
@@ -225,14 +225,14 @@ namespace OpenVIII
 
         public static EventHandler<Kernel_bin.Stat> StatEventListener;
 
-        public IGMData_Mag_Pool(Rectangle pos, Damageable damageable, bool battle = false) : base(5, 3, new IGMDataItem_Box(pos: pos, title: Icons.ID.MAGIC), 4, 13, damageable)
+        public IGMData_Mag_Pool(Rectangle pos, Damageable damageable, bool battle = false) : base(5, 3, new IGMDataItem.Box(pos: pos, title: Icons.ID.MAGIC), 4, 13, damageable)
         {
             Battle = battle;
             skipReinit = true;
             Refresh();
         }
 
-        public IGMData_Mag_Pool() : base(6, 3, new IGMDataItem_Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.MAGIC), 4, 13)
+        public IGMData_Mag_Pool() : base(6, 3, new IGMDataItem.Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.MAGIC), 4, 13)
         {
         }
 
@@ -510,12 +510,12 @@ namespace OpenVIII
             base.UpdateTitle();
             if (Pages == 1)
             {
-                ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.MAGIC;
+                ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.MAGIC;
                 //ITEM[Count - 1, 0] = ITEM[Count - 2, 0] = null;
             }
             else
                 if (Page < Pages)
-                ((IGMDataItem_Box)CONTAINER).Title = (Icons.ID)((int)Icons.ID.MAGIC_PG1 + Page);
+                ((IGMDataItem.Box)CONTAINER).Title = (Icons.ID)((int)Icons.ID.MAGIC_PG1 + Page);
         }
     }
 }

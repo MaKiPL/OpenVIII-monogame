@@ -1,8 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace OpenVIII
+namespace OpenVIII.IGMDataItem
 {
-    public class IGMDataItem_Face : IGMDataItem, I_Data<Faces.ID>
+    public class Face : Base, I_Data<Faces.ID>
     {
         #region Fields
 
@@ -12,7 +12,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMDataItem_Face(Faces.ID data, Rectangle? pos = null, bool blink = false, float blink_adjustment = 1f) : base(pos)
+        public Face(Faces.ID data, Rectangle? pos = null, bool blink = false, float blink_adjustment = 1f) : base(pos)
         {
             Data = data;
             Blink = blink;

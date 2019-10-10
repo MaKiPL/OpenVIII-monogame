@@ -1,12 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace OpenVIII
+namespace OpenVIII.IGMDataItem
 {
-    public class IGMDataItem_TextureHandler : IGMDataItem, I_Data<TextureHandler>
+    public class Texture_Handler : Base, I_Data<TextureHandler>
     {
         #region Constructors
 
-        public IGMDataItem_TextureHandler(TextureHandler data, Rectangle? pos = null) : base(pos)
+        public Texture_Handler(TextureHandler data, Rectangle? pos = null) : base(pos)
         {
             Faded_Color = Color.DarkGray;
             Data = data;
@@ -21,6 +21,7 @@ namespace OpenVIII
         #endregion Properties
 
         #region Methods
+
         public override void Draw()
         {
             if (Enabled)

@@ -27,7 +27,7 @@ namespace OpenVIII
             base.Init();
             for (int i = 0; i < Rows; i++)
             {
-                ITEM[i, 0] = new IGMDataItem_String(null, SIZE[i]);
+                ITEM[i, 0] = new IGMDataItem.Text(null, SIZE[i]);
             }
             ITEM[Rows, 0] = new BattleMenus.IGMData_TargetGroup(Damageable, false);
             PointerZIndex = 0;
@@ -67,7 +67,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_BlueMagic_Pool(Rectangle pos, Damageable damageable, bool battle = false) : base(5, 1, new IGMDataItem_Box(pos: pos, title: Icons.ID.SPECIAL), 4, 4, damageable)
+        public IGMData_BlueMagic_Pool(Rectangle pos, Damageable damageable, bool battle = false) : base(5, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.SPECIAL), 4, 4, damageable)
         {
         }
 
@@ -135,7 +135,7 @@ namespace OpenVIII
                 ITEM[j, 0].Show();
                 BLANKS[j] = false;
                 Contents[j] = Kernel_bin.BluemagicQuistislimitbreak[unlocked[i]];
-                ((IGMDataItem_String)ITEM[j, 0]).Data = Contents[j].Name;
+                ((IGMDataItem.Text)ITEM[j, 0]).Data = Contents[j].Name;
             }
             for (; i < Rows + skip; i++)
             {
@@ -145,9 +145,9 @@ namespace OpenVIII
             }
             Pages = 4;
             if (unlocked.Count / Rows <= 1)
-                ((IGMDataItem_Box)CONTAINER).Title = Icons.ID.SPECIAL;
+                ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL;
             else
-                ((IGMDataItem_Box)CONTAINER).Title = (Icons.ID)((int)(Icons.ID.SPECIAL_PG1) + Page);
+                ((IGMDataItem.Box)CONTAINER).Title = (Icons.ID)((int)(Icons.ID.SPECIAL_PG1) + Page);
         }
     }
 }
