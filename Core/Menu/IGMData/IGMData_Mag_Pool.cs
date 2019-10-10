@@ -479,16 +479,31 @@ namespace OpenVIII
             }
             return false;
         }
-
+        ~IGMData_Mag_Pool()
+        {
+            if (eventAdded)
+            {
+                if (!Battle)
+                {
+                    Menu.IGM_Junction.ModeChangeHandler -= ModeChangeEvent;
+                    StatEventListener -= StatChangeEvent;
+                }
+                Damageable.BattleModeChangeEventHandler -= ModeChangeEvent;
+            }
+        }
         //public IGMData Values { get; private set; } = null;
         public override void Refresh()
         {
             if (!skipReinit)
             {
-                if (!Battle && !eventAdded && Menu.IGM_Junction != null)
+                if (!eventAdded && Menu.IGM_Junction != null)
                 {
-                    Menu.IGM_Junction.ModeChangeHandler += ModeChangeEvent;
-                    StatEventListener += StatChangeEvent;
+                    if (!Battle)
+                    { 
+                        Menu.IGM_Junction.ModeChangeHandler += ModeChangeEvent;
+                        StatEventListener += StatChangeEvent;
+                    }
+                    Damageable.BattleModeChangeEventHandler += ModeChangeEvent;
                     eventAdded = true;
                 }
                 base.Refresh();
