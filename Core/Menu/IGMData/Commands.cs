@@ -2,9 +2,9 @@
 using System;
 using System.Diagnostics;
 
-namespace OpenVIII
+namespace OpenVIII.IGMData
 {
-    public class IGMData_Commands : IGMData.Base
+    public class Commands : Base
     {
         #region Fields
 
@@ -40,7 +40,7 @@ namespace OpenVIII
         {
             BLANKS[Limit_Arrow] = true;
             base.Init();
-            ITEM[Blue_Pool, 0] = new IGMData.Pool.BlueMagic(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
+            ITEM[Blue_Pool, 0] = new Pool.BlueMagic(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
             ITEM[Blue_Pool, 0].Hide();
             ITEM[Mag_Pool, 0] = new IGMData_Mag_Pool(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
             ITEM[Mag_Pool, 0].Hide();
@@ -88,7 +88,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_Commands(Rectangle pos, Damageable damageable = null, bool battle = false) : base(9, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.COMMAND), 1, 4, damageable)
+        public Commands(Rectangle pos, Damageable damageable = null, bool battle = false) : base(9, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.COMMAND), 1, 4, damageable)
         {
             Battle = battle;
             skipReinit = true;
@@ -101,9 +101,9 @@ namespace OpenVIII
 
         public bool CrisisLevel { get => _crisisLevel; set => _crisisLevel = value; }
 
-        public IGMData_ItemPool ItemPool => (IGMData_ItemPool)(((IGMData.Base)ITEM[Item_Pool, 0]));
-        public IGMData_Mag_Pool MagPool => (IGMData_Mag_Pool)(((IGMData.Base)ITEM[Mag_Pool, 0]));
-        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData.Base)ITEM[Targets_Window, 0]));
+        public IGMData_ItemPool ItemPool => (IGMData_ItemPool)(((Base)ITEM[Item_Pool, 0]));
+        public IGMData_Mag_Pool MagPool => (IGMData_Mag_Pool)(((Base)ITEM[Mag_Pool, 0]));
+        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((Base)ITEM[Targets_Window, 0]));
 
         public override bool Inputs()
         {
@@ -342,8 +342,8 @@ namespace OpenVIII
         public override void AddModeChangeEvent(ref EventHandler<Enum> eventHandler)
         {
             base.AddModeChangeEvent(ref eventHandler);
-            (((IGMData.Base)ITEM[Item_Pool, 0])).AddModeChangeEvent(ref eventHandler);
-            (((IGMData.Base)ITEM[Mag_Pool, 0])).AddModeChangeEvent(ref eventHandler);
+            (((Base)ITEM[Item_Pool, 0])).AddModeChangeEvent(ref eventHandler);
+            (((Base)ITEM[Mag_Pool, 0])).AddModeChangeEvent(ref eventHandler);
         }
     }
 }

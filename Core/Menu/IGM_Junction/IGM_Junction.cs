@@ -286,7 +286,7 @@ namespace OpenVIII
                     {Items.Junction, Memory.Strings.Read(Strings.FileID.MNGRP,2,218) }
                 };
             Data.Add(SectionName.CharacterInfo, new IGMData_CharacterInfo());
-            Data.Add(SectionName.Commands, new IGMData_Commands(new Rectangle(615, 150, 210, 192)));
+            Data.Add(SectionName.Commands, new IGMData.Commands(new Rectangle(615, 150, 210, 192)));
             Data.Add(SectionName.Help, new IGMData_Help());
             Data.Add(SectionName.TopMenu, new IGMData_TopMenu());
             Data.Add(SectionName.Title, new IGMData_Container(
