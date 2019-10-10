@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace OpenVIII.IGMData.Pool
 {
-    public class Item : IGMData_Pool<Saves.Data, Item_In_Menu>
+    public class Item : IGMData.Pool.Base<Saves.Data, Item_In_Menu>
     {
         #region Fields
 

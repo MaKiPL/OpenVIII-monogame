@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace OpenVIII.IGMData.Pool
 {
-    public partial class Magic : IGMData_Pool<Saves.CharacterData, byte>
+    public partial class Magic : IGMData.Pool.Base<Saves.CharacterData, byte>
     {
         #region Fields
 

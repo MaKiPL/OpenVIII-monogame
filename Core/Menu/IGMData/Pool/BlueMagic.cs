@@ -6,7 +6,7 @@ namespace OpenVIII.IGMData.Pool
     /// <summary>
     /// </summary>
     /// <see cref="https://www.youtube.com/watch?v=BhgixAEvuu0"/>
-    public class BlueMagic : IGMData_Pool<Saves.Data, Kernel_bin.Blue_magic_Quistis_limit_break>
+    public class BlueMagic : IGMData.Pool.Base<Saves.Data, Kernel_bin.Blue_magic_Quistis_limit_break>
     {
         #region Fields
 

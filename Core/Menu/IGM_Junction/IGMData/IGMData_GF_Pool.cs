@@ -8,7 +8,7 @@ namespace OpenVIII
     {
         #region Classes
 
-        private class IGMData_GF_Pool : IGMData_Pool<Saves.Data, GFs>
+        private class IGMData_GF_Pool : IGMData.Pool.Base<Saves.Data, GFs>
         {
             #region Constructors
 

@@ -3,7 +3,7 @@
 namespace OpenVIII.IGMData.Pool
 {
 
-    public partial class Draw : IGMData_Pool<Saves.Data, Debug_battleDat.Magic>
+    public partial class Draw : IGMData.Pool.Base<Saves.Data, Debug_battleDat.Magic>
     {
         #region Fields
 
