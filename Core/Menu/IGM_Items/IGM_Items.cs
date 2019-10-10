@@ -79,15 +79,15 @@ namespace OpenVIII
                             }));
             Data.Add(SectionName.Title, new IGMData_Container(
                 new IGMDataItem.Box(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), pos: new Rectangle(615, 0, 225, 66))));
-            Data.Add(SectionName.UseItemGroup, new IGMData_Group(
+            Data.Add(SectionName.UseItemGroup, new IGMData.Group.Base(
                 new IGMData_Statuses(),
                 new IGMData_ItemPool(),
                 new IGMData_TargetPool()
                 ));
             InputsDict = new Dictionary<Mode, Func<bool>>() {
                 {Mode.TopMenu, Data[SectionName.TopMenu].Inputs},
-                {Mode.SelectItem, ((IGMData.Base)((IGMData_Group)Data[SectionName.UseItemGroup]).ITEM[1,0]).Inputs},
-                {Mode.UseItemOnTarget, ((IGMData.Base)((IGMData_Group)Data[SectionName.UseItemGroup]).ITEM[2,0]).Inputs}
+                {Mode.SelectItem, ((IGMData.Base)((IGMData.Group.Base)Data[SectionName.UseItemGroup]).ITEM[1,0]).Inputs},
+                {Mode.UseItemOnTarget, ((IGMData.Base)((IGMData.Group.Base)Data[SectionName.UseItemGroup]).ITEM[2,0]).Inputs}
                 };
             SetMode(Mode.SelectItem);
             base.Init();

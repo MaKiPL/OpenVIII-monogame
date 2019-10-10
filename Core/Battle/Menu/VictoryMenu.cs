@@ -23,7 +23,7 @@ namespace OpenVIII
                 Size = new Vector2(881, 606);
                 Data = new Dictionary<Enum, IGMData.Base>
                 {
-                    { Mode.All, new IGMData_Group(
+                    { Mode.All, new IGMData.Group.Base(
                     new IGMData_Container(new IGMDataItem.Box(new FF8String(new byte[] {
                             (byte)FF8TextTagCode.Key,
                             (byte)FF8TextTagKey.Confirm})+

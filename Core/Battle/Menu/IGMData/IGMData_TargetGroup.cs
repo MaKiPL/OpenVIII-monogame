@@ -10,7 +10,7 @@ namespace OpenVIII
     {
         #region Classes
 
-        public class IGMData_TargetGroup : IGMData_Group
+        public class IGMData_TargetGroup : IGMData.Group.Base
         {
             #region Fields
 

@@ -7,7 +7,7 @@ namespace OpenVIII
     {
         #region Classes
 
-        private class IGMData_Abilities_Group : IGMData_Group
+        private class IGMData_Abilities_Group : IGMData.Group.Base
         {
             #region Constructors
 

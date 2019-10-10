@@ -11,7 +11,7 @@ namespace OpenVIII
         {
             #region Classes
 
-            private class IGMData_PlayerEXPGroup : IGMData_Group
+            private class IGMData_PlayerEXPGroup : IGMData.Group.Base
             {
                 #region Fields
 
