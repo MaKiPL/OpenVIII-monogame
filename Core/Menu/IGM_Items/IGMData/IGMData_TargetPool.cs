@@ -189,7 +189,7 @@ namespace OpenVIII
                             return;
                         }
                     ITEM[i, 0] = new IGMDataItem.Text(Memory.Strings.GetName(id), pos: SIZE[i]);
-                    int hp = (ctest || gftest) ? Memory.State[id].CurrentHP() : -1;
+                    int hp = (ctest || gftest) ? Memory.State[id]?.CurrentHP() ?? -1 : -1;
                     BLANKS[i] = false;
                     Contents[i] = id;
                     if (hp > -1)
