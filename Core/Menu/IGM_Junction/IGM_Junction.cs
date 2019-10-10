@@ -294,7 +294,7 @@ namespace OpenVIII
             Data.Add(SectionName.Mag_Group, new IGMData_Mag_Group(
                 new IGMData_Mag_Stat_Slots(),
                 new IGMData_Mag_PageTitle(),
-                new IGMData_Mag_Pool(),
+                new IGMData.Pool.Magic(),
                 new IGMData_Mag_EL_A_D_Slots(),
                 new IGMData_Mag_EL_A_Values(),
                 new IGMData_Mag_EL_D_Values(),

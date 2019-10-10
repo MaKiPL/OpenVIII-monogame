@@ -42,7 +42,7 @@ namespace OpenVIII.IGMData
             base.Init();
             ITEM[Blue_Pool, 0] = new Pool.BlueMagic(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
             ITEM[Blue_Pool, 0].Hide();
-            ITEM[Mag_Pool, 0] = new IGMData_Mag_Pool(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
+            ITEM[Mag_Pool, 0] = new IGMData.Pool.Magic(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
             ITEM[Mag_Pool, 0].Hide();
             ITEM[Item_Pool, 0] = new IGMData.Pool.Item(new Rectangle(X + 50, Y - 22, 400, 194), true);
             ITEM[Item_Pool, 0].Hide();
@@ -102,7 +102,7 @@ namespace OpenVIII.IGMData
         public bool CrisisLevel { get => _crisisLevel; set => _crisisLevel = value; }
 
         public IGMData.Pool.Item ItemPool => (IGMData.Pool.Item)(((Base)ITEM[Item_Pool, 0]));
-        public IGMData_Mag_Pool MagPool => (IGMData_Mag_Pool)(((Base)ITEM[Mag_Pool, 0]));
+        public IGMData.Pool.Magic MagPool => (IGMData.Pool.Magic)(((Base)ITEM[Mag_Pool, 0]));
         public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((Base)ITEM[Targets_Window, 0]));
 
         public override bool Inputs()

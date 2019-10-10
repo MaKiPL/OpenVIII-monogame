@@ -192,6 +192,8 @@
     <Compile Include="Menu\IGMData\Commands.cs" />
     <Compile Include="Menu\IGMData\Dialog\Confirm.cs" />
     <Compile Include="Menu\IGMData\Group\Base.cs" />
+    <Compile Include="Menu\IGMData\Pool\Magic\Commands.cs" />
+    <Compile Include="Menu\IGMData\Pool\Magic.cs" />
     <Compile Include="Menu\IGMData\Pool\Item.cs" />
     <Compile Include="Menu\IGMData\Pool\Draw.cs" />
     <Compile Include="Menu\IGMData\Pool\Draw\Commands.cs" />
@@ -817,7 +819,6 @@
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_EL_D_Values.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_Group.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_PageTitle.cs" />
-    <Compile Include="Menu\IGMData\IGMData_Mag_Pool.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_Stat_Slots.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_ST_A_D_Slots.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_ST_A_Values.cs" />

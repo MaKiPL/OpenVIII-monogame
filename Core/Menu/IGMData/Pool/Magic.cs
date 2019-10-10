@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace OpenVIII
+namespace OpenVIII.IGMData.Pool
 {
-    public class IGMData_Mag_Pool : IGMData_Pool<Saves.CharacterData, byte>
+    public partial class Magic : IGMData_Pool<Saves.CharacterData, byte>
     {
         #region Fields
 
@@ -225,14 +225,14 @@ namespace OpenVIII
 
         public static EventHandler<Kernel_bin.Stat> StatEventListener;
 
-        public IGMData_Mag_Pool(Rectangle pos, Damageable damageable, bool battle = false) : base(5, 3, new IGMDataItem.Box(pos: pos, title: Icons.ID.MAGIC), 4, 13, damageable)
+        public Magic(Rectangle pos, Damageable damageable, bool battle = false) : base(5, 3, new IGMDataItem.Box(pos: pos, title: Icons.ID.MAGIC), 4, 13, damageable)
         {
             Battle = battle;
             skipReinit = true;
             Refresh();
         }
 
-        public IGMData_Mag_Pool() : base(6, 3, new IGMDataItem.Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.MAGIC), 4, 13)
+        public Magic() : base(6, 3, new IGMDataItem.Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.MAGIC), 4, 13)
         {
         }
 
@@ -479,7 +479,7 @@ namespace OpenVIII
             }
             return false;
         }
-        ~IGMData_Mag_Pool()
+        ~Magic()
         {
             if (eventAdded)
             {
