@@ -148,6 +148,7 @@ namespace OpenVIII.IGMData.Pool
                 ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL;
             else
                 ((IGMDataItem.Box)CONTAINER).Title = (Icons.ID)((int)(Icons.ID.SPECIAL_PG1) + Page);
+            base.Refresh();
         }
     }
 }
