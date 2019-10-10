@@ -10,7 +10,7 @@ namespace OpenVIII
     /// </summary>
     public partial class BattleMenu : Menu
     {
-        public bool CrisisLevel { get => ((IGMData_Commands)Data[SectionName.Commands]).CrisisLevel; }
+        public bool CrisisLevel => ((IGMData_Commands)Data[SectionName.Commands]).CrisisLevel;
 
         //private Mode _mode = Mode.Waiting;
 
@@ -23,33 +23,6 @@ namespace OpenVIII
         #endregion Constructors
 
         #region Enums
-
-        public enum Mode : byte
-        {
-            /// <summary>
-            /// ATB bar filling
-            /// </summary>
-            /// <remarks>Orange Bar precent filled. ATB/Full ATB</remarks>
-            ATB_Charging,
-
-            /// <summary>
-            /// ATB bar charged, waiting for your turn
-            /// </summary>
-            /// <remarks>Yellow Bar</remarks>
-            ATB_Charged,
-
-            /// <summary>
-            /// Your turn
-            /// </summary>
-            /// <remarks>Yellow Bar/Name/HP Blinking</remarks>
-            YourTurn,
-
-            /// <summary>
-            /// GF Cast
-            /// </summary>
-            /// <remarks>Show GF name/hp and blueish bar.</remarks>
-            GF_Charging,
-        }
 
         public enum SectionName : byte
         {
@@ -64,8 +37,8 @@ namespace OpenVIII
 
         public override bool Inputs()
         {
-            if(Data[SectionName.Renzokeken].Enabled)
-               return Data[SectionName.Renzokeken].Inputs();            
+            if (Data[SectionName.Renzokeken].Enabled)
+                return Data[SectionName.Renzokeken].Inputs();
             return Data[SectionName.Commands].Inputs();
         }
 
@@ -73,26 +46,53 @@ namespace OpenVIII
 
         protected override void Init()
         {
+            Damageable.BattleModeChangeEventHandler += ModeChangeEvent;
             NoInputOnUpdate = true;
             Size = new Vector2 { X = 880, Y = 636 };
             Data.Add(SectionName.HP, new IGMData_HP(new Rectangle((int)(Size.X - 389), 507, 389, 126), Damageable));
             Data.Add(SectionName.Commands, new IGMData_Commands(new Rectangle(50, (int)(Size.Y - 204), 210, 192), Damageable, true));
             Data.Add(SectionName.Renzokeken, new IGMData_Renzokeken(new Rectangle(0, 500, (int)Size.X, 124)));
-            Data.ForEach(x => x.Value.SetModeChangeEvent(ref ModeChangeHandler));
-            SetMode(Mode.ATB_Charging);
+            Data.ForEach(x => x.Value.AddModeChangeEvent(ref ModeChangeHandler));
+            SetMode(Damageable.BattleMode.ATB_Charging);
             base.Init();
         }
-        public override void Reset()
+
+        ~BattleMenu()
         {
-            base.Reset();
+            Damageable.BattleModeChangeEventHandler -= ModeChangeEvent;
         }
+
+        private void ModeChangeEvent(object sender, Enum e)
+        {
+            switch (e)
+            {
+                case Damageable.BattleMode.EndTurn:
+                    Reset();
+                    Refresh();
+                    break;
+                case Damageable.BattleMode.ATB_Charged:
+                    Data[SectionName.Commands].Hide();
+                    break;
+
+                case Damageable.BattleMode.YourTurn:
+                    Data[SectionName.Commands].Show();
+                    break;
+            }
+        }
+
+        public override bool SetMode(Enum mode) => Damageable.SetBattleMode(mode);
+
+        public override Enum GetMode() => Damageable.GetBattleMode();
+
+        public override void Reset() => base.Reset();
+
         public void DrawData(SectionName v)
         {
             if (!skipdata && Enabled)
-                foreach (KeyValuePair<Enum, IGMData> i in Data.Where(a=>a.Key.Equals(v)))
+                foreach (KeyValuePair<Enum, IGMData> i in Data.Where(a => a.Key.Equals(v)))
                     i.Value.Draw();
         }
-        #endregion Methods
 
+        #endregion Methods
     }
 }

@@ -14,7 +14,6 @@ namespace OpenVIII
         private sbyte page = 0;
         private bool skipReinit;
         private static int s_cidoff = 0;
-        private BattleMenu.Mode mode;
 
         #endregion Fields
 
@@ -73,10 +72,9 @@ namespace OpenVIII
         protected override void ModeChangeEvent(object sender, Enum e)
         {
             base.ModeChangeEvent(sender, e);
-            if (e.GetType() == typeof(BattleMenu.Mode))
+            if (e.GetType() == typeof(Damageable.BattleMode))
             {
-                mode = (BattleMenu.Mode)e;
-                if (mode.Equals(BattleMenu.Mode.YourTurn) && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn) && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     CrisisLevel = c.GenerateCrisisLevel() >= 0;
                     Show();
@@ -227,7 +225,7 @@ namespace OpenVIII
 
                 case 23: //Defend
                     Debug.WriteLine($"{Damageable.Name} is using {c.Name}({c.ID})");
-                    Menu.BattleMenus.EndTurn();
+                    Damageable.EndTurn();
                     return true;
             }
         }
@@ -265,10 +263,14 @@ namespace OpenVIII
         /// </summary>
         public override void Refresh()
         {
-            if (Battle && !mode.Equals(BattleMenu.Mode.YourTurn))
+            if (Battle && !Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn))
+            {
+                Hide();
                 return;
+            }
             if (Memory.State.Characters != null && !skipReinit && Damageable.GetCharacterData(out Saves.CharacterData c))
             {
+                Show();
                 Rectangle DataSize = Rectangle.Empty;
                 base.Refresh();
                 page = 0;
@@ -337,11 +339,11 @@ namespace OpenVIII
             ItemPool.Refresh(Damageable);
         }
 
-        public override void SetModeChangeEvent(ref EventHandler<Enum> eventHandler)
+        public override void AddModeChangeEvent(ref EventHandler<Enum> eventHandler)
         {
-            base.SetModeChangeEvent(ref eventHandler);
-            (((IGMData)ITEM[Item_Pool, 0])).SetModeChangeEvent(ref eventHandler);
-            (((IGMData)ITEM[Mag_Pool, 0])).SetModeChangeEvent(ref eventHandler);
+            base.AddModeChangeEvent(ref eventHandler);
+            (((IGMData)ITEM[Item_Pool, 0])).AddModeChangeEvent(ref eventHandler);
+            (((IGMData)ITEM[Mag_Pool, 0])).AddModeChangeEvent(ref eventHandler);
         }
     }
 }

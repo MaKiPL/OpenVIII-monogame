@@ -28,7 +28,7 @@ namespace OpenVIII
         private bool Inputs_OKAY_Draw()
         {
             Debug.WriteLine($"{Damageable.Name} Drawing {Magic.Name}({Magic.ID}) from enemy.");
-            Menu.BattleMenus.EndTurn();
+            Damageable.EndTurn();
             return true;
         }
         public override void HideChildren()

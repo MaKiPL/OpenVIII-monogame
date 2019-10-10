@@ -204,7 +204,7 @@ namespace OpenVIII
             {
                 if ((delayMS += Memory.gameTime.ElapsedGameTime.TotalMilliseconds) > 1000)
                 {
-                    Menu.BattleMenus.EndTurn();
+                    Damageable.EndTurn();
                 }
             }
             if (hot)

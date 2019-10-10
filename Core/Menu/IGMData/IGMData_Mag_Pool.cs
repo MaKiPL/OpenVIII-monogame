@@ -178,7 +178,7 @@ namespace OpenVIII
         {
             if (e.GetType() == typeof(IGM_Junction.Mode))
                 UpdateOnEvent(sender, (IGM_Junction.Mode)e);
-            else if (e.GetType() == typeof(BattleMenu.Mode))
+            else if (e.GetType() == typeof(Damageable.BattleMode))
                 UpdateOnEvent(sender, null);
         }
 
