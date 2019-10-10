@@ -44,7 +44,7 @@ namespace OpenVIII.IGMData
             ITEM[Blue_Pool, 0].Hide();
             ITEM[Mag_Pool, 0] = new IGMData_Mag_Pool(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
             ITEM[Mag_Pool, 0].Hide();
-            ITEM[Item_Pool, 0] = new IGMData_ItemPool(new Rectangle(X + 50, Y - 22, 400, 194), true);
+            ITEM[Item_Pool, 0] = new IGMData.Pool.Item(new Rectangle(X + 50, Y - 22, 400, 194), true);
             ITEM[Item_Pool, 0].Hide();
             ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Damageable);
             commands = new Kernel_bin.Battle_Commands[Rows];
@@ -101,7 +101,7 @@ namespace OpenVIII.IGMData
 
         public bool CrisisLevel { get => _crisisLevel; set => _crisisLevel = value; }
 
-        public IGMData_ItemPool ItemPool => (IGMData_ItemPool)(((Base)ITEM[Item_Pool, 0]));
+        public IGMData.Pool.Item ItemPool => (IGMData.Pool.Item)(((Base)ITEM[Item_Pool, 0]));
         public IGMData_Mag_Pool MagPool => (IGMData_Mag_Pool)(((Base)ITEM[Mag_Pool, 0]));
         public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((Base)ITEM[Targets_Window, 0]));
 

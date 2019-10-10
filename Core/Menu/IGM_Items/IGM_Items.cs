@@ -81,7 +81,7 @@ namespace OpenVIII
                 new IGMDataItem.Box(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), pos: new Rectangle(615, 0, 225, 66))));
             Data.Add(SectionName.UseItemGroup, new IGMData.Group.Base(
                 new IGMData_Statuses(),
-                new IGMData_ItemPool(),
+                new IGMData.Pool.Item(),
                 new IGMData_TargetPool()
                 ));
             InputsDict = new Dictionary<Mode, Func<bool>>() {

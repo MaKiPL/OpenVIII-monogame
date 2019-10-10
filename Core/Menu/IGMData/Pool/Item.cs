@@ -2,9 +2,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace OpenVIII
+namespace OpenVIII.IGMData.Pool
 {
-    public class IGMData_ItemPool : IGMData_Pool<Saves.Data, Item_In_Menu>
+    public class Item : IGMData_Pool<Saves.Data, Item_In_Menu>
     {
         #region Fields
 
@@ -113,14 +113,14 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_ItemPool(Rectangle pos, bool battle, int count = 4) : base(count + 1, 3, new IGMDataItem.Box(pos: pos, title: Icons.ID.ITEM), count, 198 / count + 1)
+        public Item(Rectangle pos, bool battle, int count = 4) : base(count + 1, 3, new IGMDataItem.Box(pos: pos, title: Icons.ID.ITEM), count, 198 / count + 1)
         {
             Battle = battle;
             if(battle)
                 ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Damageable);
         }
 
-        public IGMData_ItemPool() : this(new Rectangle(5, 150, 415, 480), false, 13)
+        public Item() : this(new Rectangle(5, 150, 415, 480), false, 13)
         {
         }
 
