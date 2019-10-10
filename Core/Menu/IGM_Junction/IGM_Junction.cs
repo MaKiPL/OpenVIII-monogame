@@ -201,15 +201,15 @@ namespace OpenVIII
                         break;
 
                     case Mode.RemMag:
-                        ret = ((IGMData_ConfirmDialog)Data[SectionName.RemMag]).Inputs();
+                        ret = ((IGMData.Dialog.Confirm)Data[SectionName.RemMag]).Inputs();
                         break;
 
                     case Mode.RemAll:
-                        ret = ((IGMData_ConfirmDialog)Data[SectionName.RemAll]).Inputs();
+                        ret = ((IGMData.Dialog.Confirm)Data[SectionName.RemAll]).Inputs();
                         break;
 
                     case Mode.ConfirmChanges:
-                        ret = ((IGMData_ConfirmDialog)Data[SectionName.ConfirmChanges]).Inputs();
+                        ret = ((IGMData.Dialog.Confirm)Data[SectionName.ConfirmChanges]).Inputs();
                         break;
 
                     case Mode.TopMenu_GF_Group:
