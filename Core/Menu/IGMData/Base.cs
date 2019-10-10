@@ -10,8 +10,6 @@ namespace OpenVIII.IGMData
     {
         #region Fields
 
-        private int _cursor_select;
-
         protected bool DepthFirst = false;
 
         protected bool skipdata = false;
@@ -60,7 +58,6 @@ namespace OpenVIII.IGMData
             return false;
         }
 
-        protected int GetCursor_select() => _cursor_select;
 
         protected void Init(Damageable damageable, sbyte? partypos)
         {
@@ -164,10 +161,6 @@ namespace OpenVIII.IGMData
             return false;
         }
 
-        protected virtual void ModeChangeEvent(object sender, Enum e)
-        {
-        }
-
         protected override void RefreshChild()
         {
             base.RefreshChild();
@@ -184,16 +177,11 @@ namespace OpenVIII.IGMData
             }
         }
 
-        protected virtual void SetCursor_select(int value) => _cursor_select = value;
 
         #endregion Methods
 
         public bool[] BLANKS;
 
-        /// <summary>
-        /// location of where pointer finger will point.
-        /// </summary>
-        public Point[] CURSOR;
 
         public Menu_Base[,] ITEM;
 
@@ -212,23 +200,13 @@ namespace OpenVIII.IGMData
 
         public int Cols { get; private set; }
 
-        public Menu_Base CONTAINER { get; set; }
 
         /// <summary>
         /// Total number of items
         /// </summary>
         public byte Count { get; private set; }
 
-        public int CURSOR_SELECT
-        {
-            get => GetCursor_select(); set
-            {
-                if ((Cursor_Status & Cursor_Status.Enabled) != 0 && value >= 0 && value < CURSOR.Length && CURSOR[value] != Point.Zero)
-                    SetCursor_select(value);
-            }
-        }
 
-        public Cursor_Status Cursor_Status { get; set; } = Cursor_Status.Disabled;
 
         /// <summary>
         /// How many Peices per Item. Example 1 box could have 9 things to draw in it.
@@ -510,8 +488,6 @@ namespace OpenVIII.IGMData
             base.Reset();
         }
 
-        public virtual void AddModeChangeEvent(ref EventHandler<Enum> eventHandler) => eventHandler += ModeChangeEvent;
-        public virtual void RemoveModeChangeEvent(ref EventHandler<Enum> eventHandler) => eventHandler -= ModeChangeEvent;
 
         /// <summary>
         /// Things that change on every update.

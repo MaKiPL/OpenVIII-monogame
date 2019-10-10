@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
 using System.Linq;
 
 namespace OpenVIII
@@ -10,6 +11,7 @@ namespace OpenVIII
     {
         #region Fields
 
+        private int _cursor_select;
         protected Damageable _damageable;
 
         protected Rectangle _pos;
@@ -18,7 +20,13 @@ namespace OpenVIII
 
         #region Methods
 
+        protected int GetCursor_select() => _cursor_select;
+
         protected abstract void Init();
+
+        protected virtual void ModeChangeEvent(object sender, Enum e)
+        {
+        }
 
         /// <summary>
         /// For child items.
@@ -27,9 +35,27 @@ namespace OpenVIII
         {
         }
 
+        protected virtual void SetCursor_select(int value)
+        {
+            if ((Cursor_Status & Cursor_Status.Enabled) != 0 && value >= 0 && CURSOR != null && value < CURSOR.Length && CURSOR[value] != Point.Zero)
+                _cursor_select = value;
+        }
+
         #endregion Methods
 
-        #region Properties
+        /// <summary>
+        /// location of where pointer finger will point.
+        /// </summary>
+        public Point[] CURSOR;
+
+        public Menu_Base CONTAINER { get; set; }
+
+        public int CURSOR_SELECT
+        {
+            get => GetCursor_select(); set => SetCursor_select(value);
+        }
+
+        public Cursor_Status Cursor_Status { get; set; } = Cursor_Status.Disabled;
 
         /// <summary>
         /// Characters/Enemies/GF
@@ -43,6 +69,7 @@ namespace OpenVIII
         public bool Enabled { get; private set; } = true;
 
         public virtual int Height { get => _pos.Height; set => _pos.Height = value; }
+
         /// <summary>
         /// Position of party member 0,1,2. If -1 at the time of setting the character wasn't in the party.
         /// </summary>
@@ -59,9 +86,9 @@ namespace OpenVIII
 
         public virtual int Y { get => _pos.Y; set => _pos.Y = value; }
 
-        #endregion Properties
-
         public static implicit operator Rectangle(Menu_Base v) => v.Pos;
+
+        public virtual void AddModeChangeEvent(ref EventHandler<Enum> eventHandler) => eventHandler += ModeChangeEvent;
 
         public abstract void Draw();
 
@@ -99,6 +126,8 @@ namespace OpenVIII
             }
             Refresh();
         }
+
+        public virtual void RemoveModeChangeEvent(ref EventHandler<Enum> eventHandler) => eventHandler -= ModeChangeEvent;
 
         /// <summary>
         /// Plan is to use this to reset values to a default state if done.

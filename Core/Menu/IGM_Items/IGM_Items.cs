@@ -69,8 +69,7 @@ namespace OpenVIII
             Size = new Vector2 { X = 840, Y = 630 };
             //TextScale = new Vector2(2.545455f, 3.0375f);
 
-            Data.Add(SectionName.Help, new IGMData_Help(
-                new IGMDataItem.Box(null, pos: new Rectangle(15, 69, 810, 78), Icons.ID.HELP, options: Box_Options.Middle)));
+            Data.Add(SectionName.Help, new IGMData_Help(null, pos: new Rectangle(15, 69, 810, 78), Icons.ID.HELP, options: Box_Options.Middle));
             Data.Add(SectionName.TopMenu, new IGMData_TopMenu(new Dictionary<FF8String, FF8String>() {
                             { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 179),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 180)},
                             { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 183),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 184)},

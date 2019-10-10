@@ -21,7 +21,7 @@ namespace OpenVIII
             protected override void Init()
             {
                 Size = new Vector2(881, 606);
-                Data = new Dictionary<Enum, IGMData.Base>
+                Data = new Dictionary<Enum, Menu_Base>
                 {
                     { Mode.All, new IGMData.Group.Base(
                     new IGMData_Container(new IGMDataItem.Box(new FF8String(new byte[] {
