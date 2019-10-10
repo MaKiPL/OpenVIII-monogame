@@ -162,7 +162,7 @@ namespace OpenVIII
 
         #region Methods
 
-        public void ChangeHelp(FF8String str) => ((IGMDataItem.Box)Data[SectionName.Help].CONTAINER).Data = str;
+        public void ChangeHelp(FF8String str) => ((IGMDataItem.HelpBox)Data[SectionName.Help]).Data = str;
 
         public override bool Inputs()
         {
@@ -287,7 +287,7 @@ namespace OpenVIII
                 };
             Data.Add(SectionName.CharacterInfo, new IGMData_CharacterInfo());
             Data.Add(SectionName.Commands, new IGMData.Commands(new Rectangle(615, 150, 210, 192)));
-            Data.Add(SectionName.Help, new IGMData_Help());
+            Data.Add(SectionName.Help, new IGMDataItem.HelpBox(Descriptions[Items.Junction], pos: new Rectangle(15, 69, 810, 78), title: Icons.ID.HELP));
             Data.Add(SectionName.TopMenu, new IGMData_TopMenu());
             Data.Add(SectionName.Title, new IGMData_Container(
                 new IGMDataItem.Box(Titles[Items.Junction], pos: new Rectangle(615, 0, 225, 66))));

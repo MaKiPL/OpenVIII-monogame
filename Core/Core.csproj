@@ -179,6 +179,7 @@
     <Compile Include="Menu\IGMDataItem\Box.cs" />
     <Compile Include="Menu\IGMDataItem\Empty.cs" />
     <Compile Include="Menu\IGMDataItem\Face.cs" />
+    <Compile Include="Menu\IGMDataItem\HelpBox.cs" />
     <Compile Include="Menu\IGMDataItem\Icon.cs" />
     <Compile Include="Menu\IGMDataItem\Integer.cs" />
     <Compile Include="Menu\IGMDataItem\I_Color.cs" />
@@ -796,7 +797,6 @@
     <Compile Include="Menu\IGM\IGMData\IGMData_Party.cs" />
     <Compile Include="Menu\IGM\IGMData\IGMData_PartyGroup.cs" />
     <Compile Include="Menu\IGM\IGMData\IGMData_SideMenu.cs" />
-    <Compile Include="Menu\IGM_Items\IGMData\IGMData_Help.cs" />
     <Compile Include="Menu\IGM_Items\IGMData\IGMData_Statuses.cs" />
     <Compile Include="Menu\IGM_Items\IGMData\IGMData_TargetPool.cs" />
     <Compile Include="Menu\IGM_Items\IGMData\IGMData_TopMenu.cs" />
@@ -813,7 +813,6 @@
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_GF_Group.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_GF_Junctioned.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_GF_Pool.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Help.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_EL_A_D_Slots.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_EL_A_Values.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_EL_D_Values.cs" />
