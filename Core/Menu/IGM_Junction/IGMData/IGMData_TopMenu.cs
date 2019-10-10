@@ -7,7 +7,7 @@ namespace OpenVIII
     {
         #region Classes
 
-        private class IGMData_TopMenu : IGMData
+        private class IGMData_TopMenu : IGMData.Base
         {
             #region Constructors
 

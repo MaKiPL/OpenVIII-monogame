@@ -3,7 +3,7 @@
     /// <summary>
     /// Contains only one IGMDataItem.
     /// </summary>
-    public class IGMData_Container : IGMData
+    public class IGMData_Container : IGMData.Base
     {
         #region Constructors
 

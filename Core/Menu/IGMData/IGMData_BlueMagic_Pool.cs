@@ -75,7 +75,7 @@ namespace OpenVIII
 
         #region Properties
 
-        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData)ITEM[Rows, 0]));
+        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData.Base)ITEM[Rows, 0]));
 
         #endregion Properties
 

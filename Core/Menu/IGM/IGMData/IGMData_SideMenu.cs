@@ -8,7 +8,7 @@ namespace OpenVIII
     {
         #region Classes
 
-        private class IGMData_SideMenu : IGMData
+        private class IGMData_SideMenu : IGMData.Base
         {
             #region Fields
 

@@ -2,15 +2,15 @@
 
 namespace OpenVIII
 {
-    public class IGMData_Group : IGMData
+    public class IGMData_Group : IGMData.Base
     {
         #region Constructors
 
-        public IGMData_Group(params IGMData[] d) : base(d.Length, 1, container: new IGMDataItem.Empty()) => Init(d);
+        public IGMData_Group(params IGMData.Base[] d) : base(d.Length, 1, container: new IGMDataItem.Empty()) => Init(d);
 
         public IGMData_Group() : base(container: new IGMDataItem.Empty()) => Debug.WriteLine($"{this} :: Not init may need to call it later");
 
-        protected virtual void Init(IGMData[] d, bool baseinit = false)
+        protected virtual void Init(IGMData.Base[] d, bool baseinit = false)
         {
             if (baseinit)
                 Init(d.Length, 1);
@@ -39,7 +39,7 @@ namespace OpenVIII
                     int pos = 0;
                     foreach (Menu_Base i in ITEM)
                     {
-                        ret = ITEMInputs((IGMData)i, pos++);
+                        ret = ITEMInputs((IGMData.Base)i, pos++);
                         if (ret) return ret;
                     }
                 }
@@ -72,7 +72,7 @@ namespace OpenVIII
                 foreach (Menu_Base i in ITEM)
                 {
                     if (i != null)
-                        ITEMShow((IGMData)i, pos++);
+                        ITEMShow((IGMData.Base)i, pos++);
                 }
             }
         }
@@ -88,7 +88,7 @@ namespace OpenVIII
                     foreach (Menu_Base i in ITEM)
                     {
                         if (i != null)
-                            ret = ITEMUpdate((IGMData)i, pos++) || ret;
+                            ret = ITEMUpdate((IGMData.Base)i, pos++) || ret;
                     }
                 }
                 return ret;

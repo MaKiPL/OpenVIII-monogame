@@ -2,7 +2,7 @@
 
 namespace OpenVIII
 {
-    public abstract class IGMData_ConfirmDialog : IGMData
+    public abstract class IGMData_ConfirmDialog : IGMData.Base
     {
         #region Fields
 

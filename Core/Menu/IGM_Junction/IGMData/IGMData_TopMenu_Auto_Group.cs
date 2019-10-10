@@ -11,7 +11,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_TopMenu_Auto_Group(params IGMData[] d) : base(d)
+            public IGMData_TopMenu_Auto_Group(params IGMData.Base[] d) : base(d)
             {
             }
 

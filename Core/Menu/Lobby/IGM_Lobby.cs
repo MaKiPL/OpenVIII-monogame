@@ -7,7 +7,7 @@ namespace OpenVIII
 {
     public class IGM_Lobby : Menu
     {
-        private Dictionary<Enum, IGMData> Data0;
+        private Dictionary<Enum, IGMData.Base> Data0;
 
         public enum SectionName
         {
@@ -19,7 +19,7 @@ namespace OpenVIII
         {
             Size = new Vector2 { X = 840, Y = 630 };
             //Data0 is scaled from 1280x720
-            Data0 = new Dictionary<Enum, IGMData> {
+            Data0 = new Dictionary<Enum, IGMData.Base> {
                 { SectionName.BG, new IGMData_Container(new IGMDataItem.Texture_Handler(TextureHandler.Create("start{0:00}", 2), new Rectangle(0,-25, 1280, 0))) } //new Rectangle(-45,-25, 1280+100, 0)
             };
             //Data is scaled from Size
@@ -41,7 +41,7 @@ namespace OpenVIII
         public override bool Inputs() => Data[SectionName.Selections].Inputs();
 
 
-        private class IGMData_Selections : IGMData
+        private class IGMData_Selections : IGMData.Base
         {
             private Dictionary<int, Action> OkayActions;
             private Dictionary<int, Action> FadeOutActions;

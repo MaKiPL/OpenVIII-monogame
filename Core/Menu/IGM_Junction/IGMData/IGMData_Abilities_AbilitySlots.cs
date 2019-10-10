@@ -6,7 +6,7 @@ namespace OpenVIII
     {
         #region Classes
 
-        private class IGMData_Abilities_AbilitySlots : IGMData
+        private class IGMData_Abilities_AbilitySlots : IGMData.Base
         {
             #region Constructors
 

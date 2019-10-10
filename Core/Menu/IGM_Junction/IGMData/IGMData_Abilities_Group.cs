@@ -11,7 +11,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_Abilities_Group(params IGMData[] d) : base(d)
+            public IGMData_Abilities_Group(params IGMData.Base[] d) : base(d)
             {
             }
 
@@ -108,7 +108,7 @@ namespace OpenVIII
                     test(Ability, ref i);
                 }
 
-                void test(IGMData t, ref int i)
+                void test(IGMData.Base t, ref int i)
                 {
                     int pos = 0;
                     for (; pos < t.Count && i < total_Count; i++)

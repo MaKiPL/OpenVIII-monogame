@@ -8,7 +8,7 @@ namespace OpenVIII
     {
         #region Classes
 
-        public class IGMData_TargetParty : IGMData
+        public class IGMData_TargetParty : IGMData.Base
         {
             #region Methods
 

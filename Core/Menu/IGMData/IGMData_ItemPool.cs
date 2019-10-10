@@ -127,7 +127,7 @@ namespace OpenVIII
         #endregion Constructors
 
         public IReadOnlyList<FF8String> HelpStr => _helpStr;
-        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData)ITEM[Targets_Window, 0]));
+        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData.Base)ITEM[Targets_Window, 0]));
 
         public override void Draw() => base.Draw();
 

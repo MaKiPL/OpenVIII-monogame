@@ -11,7 +11,7 @@ namespace OpenVIII
 
         public static EventHandler FadedInHandler;
         public static EventHandler FadedOutHandler;
-        public Dictionary<Enum, IGMData> Data;
+        public Dictionary<Enum, IGMData.Base> Data;
 
         public EventHandler<Enum> ModeChangeHandler;
         protected Enum _mode;
@@ -283,7 +283,7 @@ namespace OpenVIII
         public override void Reset()
         {
             if (!skipdata)
-                foreach (KeyValuePair<Enum, IGMData> i in Data)
+                foreach (KeyValuePair<Enum, IGMData.Base> i in Data)
                 {
                     i.Value?.Reset();
                 }
@@ -334,7 +334,7 @@ namespace OpenVIII
         public virtual void DrawData()
         {
             if (!skipdata && Enabled)
-                foreach (KeyValuePair<Enum, IGMData> i in Data)
+                foreach (KeyValuePair<Enum, IGMData.Base> i in Data)
                     i.Value.Draw();
         }
 
@@ -394,7 +394,7 @@ namespace OpenVIII
                 //todo detect when there is no saves detected.
                 //check for null
                 if (!skipdata)
-                    foreach (KeyValuePair<Enum, IGMData> i in Data)
+                    foreach (KeyValuePair<Enum, IGMData.Base> i in Data)
                     {
                         ret = i.Value.Update() || ret;
                     }
@@ -432,7 +432,7 @@ namespace OpenVIII
         protected override void RefreshChild()
         {
             if (!skipdata)
-                foreach (KeyValuePair<Enum, IGMData> i in Data)
+                foreach (KeyValuePair<Enum, IGMData.Base> i in Data)
                     i.Value.Refresh(Damageable);
         }
 
@@ -449,7 +449,7 @@ namespace OpenVIII
             //WaitForInit();
             if (!cancel)
             {
-                Data = new Dictionary<Enum, IGMData>();
+                Data = new Dictionary<Enum, IGMData.Base>();
                 Init();
                 skipdata = true;
                 Refresh();

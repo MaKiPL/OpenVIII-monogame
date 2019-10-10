@@ -6,7 +6,7 @@ namespace OpenVIII
     {
         #region Classes
 
-        private class IGMData_Clock : IGMData
+        private class IGMData_Clock : IGMData.Base
         {
             #region Constructors
 

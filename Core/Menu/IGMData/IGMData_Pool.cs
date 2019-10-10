@@ -1,6 +1,6 @@
 ﻿namespace OpenVIII
 {
-    public abstract class IGMData_Pool<T, T2> : IGMData
+    public abstract class IGMData_Pool<T, T2> : IGMData.Base
     {
         #region Constructors
 

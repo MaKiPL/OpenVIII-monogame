@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace OpenVIII
 {
-    public class IGMData_Renzokeken : IGMData
+    public class IGMData_Renzokeken : IGMData.Base
     {
         #region Fields
 

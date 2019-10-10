@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace OpenVIII
 {
-    public class IGMData_Commands : IGMData
+    public class IGMData_Commands : IGMData.Base
     {
         #region Fields
 
@@ -101,9 +101,9 @@ namespace OpenVIII
 
         public bool CrisisLevel { get => _crisisLevel; set => _crisisLevel = value; }
 
-        public IGMData_ItemPool ItemPool => (IGMData_ItemPool)(((IGMData)ITEM[Item_Pool, 0]));
-        public IGMData_Mag_Pool MagPool => (IGMData_Mag_Pool)(((IGMData)ITEM[Mag_Pool, 0]));
-        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData)ITEM[Targets_Window, 0]));
+        public IGMData_ItemPool ItemPool => (IGMData_ItemPool)(((IGMData.Base)ITEM[Item_Pool, 0]));
+        public IGMData_Mag_Pool MagPool => (IGMData_Mag_Pool)(((IGMData.Base)ITEM[Mag_Pool, 0]));
+        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData.Base)ITEM[Targets_Window, 0]));
 
         public override bool Inputs()
         {
@@ -342,8 +342,8 @@ namespace OpenVIII
         public override void AddModeChangeEvent(ref EventHandler<Enum> eventHandler)
         {
             base.AddModeChangeEvent(ref eventHandler);
-            (((IGMData)ITEM[Item_Pool, 0])).AddModeChangeEvent(ref eventHandler);
-            (((IGMData)ITEM[Mag_Pool, 0])).AddModeChangeEvent(ref eventHandler);
+            (((IGMData.Base)ITEM[Item_Pool, 0])).AddModeChangeEvent(ref eventHandler);
+            (((IGMData.Base)ITEM[Mag_Pool, 0])).AddModeChangeEvent(ref eventHandler);
         }
     }
 }

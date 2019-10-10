@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 
 namespace OpenVIII
 {
-    public class IGMData_SmallMsgBox : IGMData, I_Data<FF8String>
+    public class IGMData_SmallMsgBox : IGMData.Base, I_Data<FF8String>
     {
         private Box_Options _options;
         #region Fields

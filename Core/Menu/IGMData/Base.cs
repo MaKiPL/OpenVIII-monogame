@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace OpenVIII
+namespace OpenVIII.IGMData
 {
-    public class IGMData : Menu_Base
+    public class Base : Menu_Base
     {
         #region Fields
 
@@ -204,7 +204,7 @@ namespace OpenVIII
         /// </summary>
         public Rectangle[] SIZE;
 
-        public IGMData(int count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null)
+        public Base(int count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null)
         {
             Init(damageable, partypos);
             Init(count, depth, container, cols, rows);
@@ -271,7 +271,7 @@ namespace OpenVIII
         /// Convert to rectangle based on container.
         /// </summary>
         /// <param name="v">Input data</param>
-        public static implicit operator Rectangle(IGMData v) => v.CONTAINER ?? Rectangle.Empty;
+        public static implicit operator Rectangle(Base v) => v.CONTAINER ?? Rectangle.Empty;
 
         //public object PrevSetting { get; protected set; } = null;
         //public object Setting { get; protected set; } = null;

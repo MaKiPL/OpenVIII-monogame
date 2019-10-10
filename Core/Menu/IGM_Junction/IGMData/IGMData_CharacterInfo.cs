@@ -6,7 +6,7 @@ namespace OpenVIII
     {
         #region Classes
 
-        private class IGMData_CharacterInfo : IGMData
+        private class IGMData_CharacterInfo : IGMData.Base
         {
             #region Constructors
 

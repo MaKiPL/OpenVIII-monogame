@@ -188,6 +188,7 @@
     <Compile Include="Menu\IGMDataItem\Text.cs" />
     <Compile Include="Menu\IGMDataItem\Texture.cs" />
     <Compile Include="Menu\IGMDataItem\Texture_Handler.cs" />
+    <Compile Include="Menu\IGMData\Base.cs" />
     <Compile Include="Menu\IGMData\IGMData_BlueMagic_Pool.cs" />
     <Compile Include="Menu\Images\HSL.cs" />
     <Compile Include="Menu\IGMData\IGMData_Draw_Pool.cs" />
@@ -778,7 +779,6 @@
     <Compile Include="Menu\Images\Icons.cs" />
     <Compile Include="Menu\Images\Icons.ID.cs" />
     <Compile Include="Menu\Images\Icons.InsertCustomEntries.cs" />
-    <Compile Include="Menu\IGMData\IGMData.cs" />
     <Compile Include="Menu\IGMData\IGMData_ConfirmDialog.cs" />
     <Compile Include="Menu\IGMData\IGMData_Container.cs" />
     <Compile Include="Menu\IGMData\IGMData_Group.cs" />

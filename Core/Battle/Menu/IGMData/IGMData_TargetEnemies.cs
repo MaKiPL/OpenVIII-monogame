@@ -6,7 +6,7 @@ namespace OpenVIII
     {
         #region Classes
 
-        public class IGMData_TargetEnemies : IGMData
+        public class IGMData_TargetEnemies : IGMData.Base
         {
             #region Methods
 

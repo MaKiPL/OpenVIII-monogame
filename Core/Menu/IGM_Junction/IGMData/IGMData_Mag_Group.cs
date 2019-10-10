@@ -46,7 +46,7 @@
 
             #region Constructors
 
-            public IGMData_Mag_Group(params IGMData[] d) : base(d)
+            public IGMData_Mag_Group(params IGMData.Base[] d) : base(d)
             {
             }
 

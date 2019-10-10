@@ -8,7 +8,7 @@ namespace OpenVIII
     /// <summary>
     /// (Draw) or (Cast and display target window)
     /// </summary>
-    public class IGMData_Draw_Commands : IGMData
+    public class IGMData_Draw_Commands : IGMData.Base
     {
         #region Fields
 
@@ -88,7 +88,7 @@ namespace OpenVIII
 
         public int _Draw => 0;
         public int Cast => 1;
-        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData)ITEM[Targets_Window, 0]));
+        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData.Base)ITEM[Targets_Window, 0]));
         public int Targets_Window => Count - 1;
 
         public override bool Inputs()

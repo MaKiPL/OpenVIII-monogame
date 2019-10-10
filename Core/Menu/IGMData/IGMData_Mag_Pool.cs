@@ -248,7 +248,7 @@ namespace OpenVIII
 
         public IGM_Junction.Mode SortMode { get; private set; }
 
-        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData)ITEM[Targets_Window, 0]));
+        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData.Base)ITEM[Targets_Window, 0]));
 
         public Kernel_bin.Stat Stat { get; private set; }
 

@@ -8,7 +8,7 @@ namespace OpenVIII
     {
         #region Classes
 
-        private class IGMData_NonParty : IGMData
+        private class IGMData_NonParty : IGMData.Base
         {
             #region Fields
 

@@ -7,7 +7,7 @@ namespace OpenVIII
     {
         #region Classes
 
-        private class IGMData_Mag_PageTitle : IGMData
+        private class IGMData_Mag_PageTitle : IGMData.Base
         {
             #region Constructors
 

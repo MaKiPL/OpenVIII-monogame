@@ -9,7 +9,7 @@ namespace OpenVIII
     {
         #region Classes
 
-        private class IGMData_GF_Junctioned : IGMData
+        private class IGMData_GF_Junctioned : IGMData.Base
         {
             #region Constructors
 

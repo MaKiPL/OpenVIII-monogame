@@ -19,7 +19,7 @@ namespace OpenVIII
 
         #region Classes
 
-        private class IGMData_Statuses : IGMData
+        private class IGMData_Statuses : IGMData.Base
         {
             #region Fields
 

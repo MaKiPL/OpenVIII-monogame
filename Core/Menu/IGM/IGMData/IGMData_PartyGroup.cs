@@ -20,7 +20,7 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_PartyGroup(params IGMData[] d) : base(d)
+            public IGMData_PartyGroup(params IGMData.Base[] d) : base(d)
             {
                 Cursor_Status &= ~Cursor_Status.Enabled;
                 Cursor_Status |= Cursor_Status.Vertical;
@@ -59,9 +59,9 @@ namespace OpenVIII
                 return ret;
             }
 
-            private IGMData_Party Party => ((IGMData_Party)(((IGMData)ITEM[0, 0])));
+            private IGMData_Party Party => ((IGMData_Party)(((IGMData.Base)ITEM[0, 0])));
 
-            private IGMData_NonParty Non_Party => ((IGMData_NonParty)(((IGMData)ITEM[1, 0])));
+            private IGMData_NonParty Non_Party => ((IGMData_NonParty)(((IGMData.Base)ITEM[1, 0])));
 
             public override void Refresh()
             {
@@ -85,7 +85,7 @@ namespace OpenVIII
                     test(Non_Party, ref i, Non_Party.Contents);
                 }
 
-                void test(IGMData t, ref int i, Damageable[] contents)
+                void test(IGMData.Base t, ref int i, Damageable[] contents)
                 {
                     int pos = 0;
                     for (; pos < t.Count && i < total_Count; i++)

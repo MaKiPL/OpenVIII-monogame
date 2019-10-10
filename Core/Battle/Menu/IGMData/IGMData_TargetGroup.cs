@@ -24,11 +24,11 @@ namespace OpenVIII
             #region Properties
 
             //private IGMData_BlueMagic_Pool BlueMagic_Pool => (IGMData_BlueMagic_Pool)(((IGMData)ITEM[3, 0]));
-            private IGMData_Draw_Pool Draw_Pool => (IGMData_Draw_Pool)(((IGMData)ITEM[2, 0]));
+            private IGMData_Draw_Pool Draw_Pool => (IGMData_Draw_Pool)(((IGMData.Base)ITEM[2, 0]));
 
-            private IGMData_TargetEnemies TargetEnemies => (IGMData_TargetEnemies)(((IGMData)ITEM[0, 0]));
+            private IGMData_TargetEnemies TargetEnemies => (IGMData_TargetEnemies)(((IGMData.Base)ITEM[0, 0]));
 
-            private IGMData_TargetParty TargetParty => (IGMData_TargetParty)(((IGMData)ITEM[1, 0]));
+            private IGMData_TargetParty TargetParty => (IGMData_TargetParty)(((IGMData.Base)ITEM[1, 0]));
 
             #endregion Properties
 
@@ -107,7 +107,7 @@ namespace OpenVIII
                 }
                 else
                     TargetEnemies.Hide();
-                void TargetAll(IGMData i)
+                void TargetAll(IGMData.Base i)
                 {
                     if ((Target & Kernel_bin.Target.Single_Target) == 0)
                         i.Cursor_Status |= Cursor_Status.All;
@@ -522,7 +522,7 @@ namespace OpenVIII
                 const int h = 140;
                 const int Y1 = 630 - h;
                 CONTAINER.Pos = new Rectangle(X, Y1, w + w2, h);
-                Init(new IGMData[]{
+                Init(new IGMData.Base[]{
                     new IGMData_TargetEnemies(new Rectangle(CONTAINER.Pos.X, CONTAINER.Pos.Y, w, h)),
                     new IGMData_TargetParty(new Rectangle(CONTAINER.Pos.X + w, CONTAINER.Pos.Y, w2, h)),
                     makesubs ? new IGMData_Draw_Pool(new Rectangle(X +50, Y - 50, 300, 192), Damageable, true): null,

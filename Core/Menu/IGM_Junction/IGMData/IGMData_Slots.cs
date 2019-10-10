@@ -8,7 +8,7 @@ namespace OpenVIII
     {
         #region Classes
 
-        public abstract class IGMData_Slots<C> : IGMData
+        public abstract class IGMData_Slots<C> : IGMData.Base
                 where C : class
         {
             #region Fields

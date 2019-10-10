@@ -7,7 +7,7 @@ namespace OpenVIII
     {
         #region Classes
 
-        protected class IGMData_Header : IGMData
+        protected class IGMData_Header : IGMData.Base
         {
             #region Fields
 

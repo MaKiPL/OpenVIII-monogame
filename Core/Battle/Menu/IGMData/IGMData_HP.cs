@@ -10,7 +10,7 @@ namespace OpenVIII
     {
         #region Classes
 
-        private class IGMData_HP : IGMData
+        private class IGMData_HP : IGMData.Base
         {
             #region Fields
 

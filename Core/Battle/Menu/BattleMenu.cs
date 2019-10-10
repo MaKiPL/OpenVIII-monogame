@@ -90,7 +90,7 @@ namespace OpenVIII
         public void DrawData(SectionName v)
         {
             if (!skipdata && Enabled)
-                foreach (KeyValuePair<Enum, IGMData> i in Data.Where(a => a.Key.Equals(v)))
+                foreach (KeyValuePair<Enum, IGMData.Base> i in Data.Where(a => a.Key.Equals(v)))
                     i.Value.Draw();
         }
 
