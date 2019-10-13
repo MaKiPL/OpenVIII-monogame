@@ -51,7 +51,7 @@ Requirements: MonoGame + Visual Studio
 
 1. Download and install **Visual Studio 2017** (2015 is not supported) and **NET Framework 4.6**
 
-2. Clone the whole repository:
+2. Clone the repository:
 
 `git clone https://github.com/MaKiPL/OpenVIII.git`
 
@@ -69,7 +69,7 @@ Requirements: MonoGame + Visual Studio
 
 ## Getting started (Linux/Mono) [Tested on Ubuntu]
 
-1. Make sure your Linux is up to date. Due to the FFmpeg dependency we require Ubuntu Cosmos.
+1. Make sure your Linux is up to date. Due to the FFmpeg dependency, we require Ubuntu Cosmos.
 
 `sudo apt-get update`
 

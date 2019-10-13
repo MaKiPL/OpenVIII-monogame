@@ -23,7 +23,7 @@ Yes. The Steam release is the best option to be used with OpenVIII. Other than t
 
 ## Which game languages are available?
 
-Any that your game works on. OpenVIII is a game engine: we do not have any kind of text in our assets. Everything is read directly from your game catalogue. If you installed French version of the game, then OpenVIII will display the game in French.
+Any that your game works on. OpenVIII is a game engine; we do not have any kind of text in our assets. Everything is read directly from your game catalogue. If you installed French version of the game, then OpenVIII will display the game in French.
 
 ## What are the main NEW features of OpenVIII?
 
