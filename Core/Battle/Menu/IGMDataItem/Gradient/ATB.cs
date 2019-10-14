@@ -6,16 +6,16 @@ namespace OpenVIII.IGMDataItem.Gradient
 {
     public class ATB : Texture
     {
-        #region Fields
+        #region Constructors
 
-        #endregion Fields
+        private ATB()
+        {
+        }
+
+        #endregion Constructors
 
         #region Methods
 
-
-        #endregion Methods
-
-        #region Constructors
         public static ATB Create(Rectangle? pos = null)
         {
             ATB r = new ATB()
@@ -40,13 +40,6 @@ namespace OpenVIII.IGMDataItem.Gradient
             r.Data.SetData(cfade);
             return r;
         }
-
-        #endregion Constructors
-
-        #region Properties
-
-
-        #endregion Properties
 
         public override void Refresh(Damageable damageable)
         {
@@ -91,5 +84,7 @@ namespace OpenVIII.IGMDataItem.Gradient
             return false;
             int Lerp(int x, int y, float p) => (int)Math.Round(MathHelper.Lerp(x, y, p));
         }
+
+        #endregion Methods
     }
 }

@@ -4,9 +4,9 @@ using OpenVIII.Encoding.Tags;
 using System;
 using System.Diagnostics;
 
-namespace OpenVIII
+namespace OpenVIII.IGMData
 {
-    public class IGMData_Renzokeken : IGMData.Base
+    public class Renzokeken : IGMData.Base
     {
         #region Fields
 
@@ -71,7 +71,7 @@ namespace OpenVIII
             Rectangle pos = new Rectangle(r.X, r.Y + 4, 0, r.Height - 8);
             r.Inflate(-4, -4);
             for (int x = 0; x <= _hits && x <= 7; x++)
-                ITEM[2 + x, 0] = new IGMDataItem.Gradient.Renzokeken(pos, newattack, rc, 1f, hotspot, r, time: Time, delay * (x));
+                ITEM[2 + x, 0] = IGMDataItem.Gradient.Renzokeken.Create(pos, newattack, rc, 1f, hotspot, r, time: Time, delay * (x));
             float totalx = 0;
             for (byte i = 0; i <= 7; i++)
             {
@@ -121,7 +121,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public IGMData_Renzokeken(Rectangle? pos = null) : base(15, 1, new IGMDataItem.Box(pos: pos ?? new Rectangle(24, 501, 912, 123), title: Icons.ID.SPECIAL), 0, 0, Memory.State?[Characters.Squall_Leonhart])
+        public Renzokeken(Rectangle? pos = null) : base(15, 1, new IGMDataItem.Box(pos: pos ?? new Rectangle(24, 501, 912, 123), title: Icons.ID.SPECIAL), 0, 0, Memory.State?[Characters.Squall_Leonhart])
         {
         }
 

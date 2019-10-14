@@ -42,7 +42,7 @@ namespace OpenVIII
             return Data[SectionName.Commands].Inputs();
         }
 
-        public IGMData_Renzokeken Renzokeken => (IGMData_Renzokeken)Data[SectionName.Renzokeken];
+        public IGMData.Renzokeken Renzokeken => (IGMData.Renzokeken)Data[SectionName.Renzokeken];
 
         protected override void Init()
         {
@@ -51,7 +51,7 @@ namespace OpenVIII
             Size = new Vector2 { X = 880, Y = 636 };
             Data.Add(SectionName.HP, new IGMData_HP(new Rectangle((int)(Size.X - 389), 507, 389, 126), Damageable));
             Data.Add(SectionName.Commands, new IGMData.Commands(new Rectangle(50, (int)(Size.Y - 204), 210, 192), Damageable, true));
-            Data.Add(SectionName.Renzokeken, new IGMData_Renzokeken(new Rectangle(0, 500, (int)Size.X, 124)));
+            Data.Add(SectionName.Renzokeken, new IGMData.Renzokeken(new Rectangle(0, 500, (int)Size.X, 124)));
             Data.ForEach(x => x.Value.AddModeChangeEvent(ref ModeChangeHandler));
             SetMode(Damageable.BattleMode.ATB_Charging);
             base.Init();
