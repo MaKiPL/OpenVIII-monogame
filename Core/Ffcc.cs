@@ -93,6 +93,7 @@
         private bool stopped = false;
 
         private Task task;
+        private FfccVaribleGroup _decoder = new FfccVaribleGroup();
 
         #endregion Fields
 
@@ -142,7 +143,7 @@
 
         ~Ffcc()
         {
-            Dispose();
+            Dispose(false);
         }
 
         #endregion Destructors
@@ -413,7 +414,7 @@
         /// <summary>
         /// Holder of varibles for Decoder
         /// </summary>
-        private FfccVaribleGroup Decoder { get; set; } = new FfccVaribleGroup();
+        private FfccVaribleGroup Decoder { get => _decoder; set => _decoder = value; }
 
         /// <summary>
         /// Based on timer and FPS determines what the current frame is.
@@ -537,7 +538,7 @@
         /// </param>
         public void Play(float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f) // there are some videos without sound meh.
         {
-            if (Decoder.StreamIndex > -1)
+            if (Decoder != null && Decoder.StreamIndex > -1)
             {
                 if (!timer.IsRunning && Mode == FfccMode.STATE_MACH && MediaType == AVMediaType.AVMEDIA_TYPE_VIDEO)
                 {
@@ -711,13 +712,17 @@
                 }
                 if (!isDisposed)
                 {
+                    if (task != null)
+                    {
+                        if (task.IsCompleted)
+
+                            task.Dispose();
+                        else
+                            Memory.LeftOverTask.Add(task);
+                        task = null;
+                    }
                     State = FfccState.DONE;
                     Mode = FfccMode.NOTINIT;
-                    if (disposing)
-                    {
-                        //Stop();
-                        // TODO: dispose managed state (managed objects).
-                    }
                     // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                     // TODO: set large fields to null.
                     if (DecodedMemoryStream != null)
@@ -753,6 +758,25 @@
                     // set to true to prevent multiple disposings
                     isDisposed = true;
                     //GC.Collect(); // donno if this really does much. was trying to make sure the memory i'm watching is what is really there.
+                }
+                else {
+
+                    if (nAudioOut != null && useNaudio)
+                    {
+                        nAudioOut.Dispose();
+                        nAudioOut = null;
+                        bufferedWaveProvider.ClearBuffer();
+                    }
+                    if (sourceToken != null)
+                    {
+                        sourceToken.Dispose();
+                        sourceToken = null;
+                    }
+                    if (_decoder != null)
+                    {
+                        _decoder.Dispose();
+                        _decoder = null;
+                    }
                 }
             }
         }
@@ -896,8 +920,8 @@
             frame = *Decoder.Frame;
             return true;
 
-//end of file, check for loop and end.
-EOF:
+        //end of file, check for loop and end.
+        EOF:
             Loop();
             frame = *Decoder.Frame;
             return false;
@@ -1153,21 +1177,21 @@ EOF:
 #if _WINDOWS
             if (useNaudio)
             {
-                while (nAudioOut.PlaybackState != PlaybackState.Stopped && !cancellationToken.IsCancellationRequested)
+                while (!cancellationToken.IsCancellationRequested && nAudioOut != null && nAudioOut.PlaybackState != PlaybackState.Stopped)
                     Thread.Sleep(NextAsyncSleep);
-                try
-                {
-                    if (nAudioOut != null)
-                        nAudioOut.Dispose();
-                    bufferedWaveProvider.ClearBuffer();
-                }
-                catch (InvalidOperationException)
-                {
-                    if (nAudioOut != null)
-                        Memory.MainThreadOnlyActions.Enqueue(nAudioOut.Dispose);
-                    Memory.MainThreadOnlyActions.Enqueue(bufferedWaveProvider.ClearBuffer);
-                    //doesn't like threads...
-                }
+                //try
+                //{
+                //    if (nAudioOut != null)
+                //        nAudioOut.Dispose();
+                //    bufferedWaveProvider.ClearBuffer();
+                //}
+                //catch (InvalidOperationException)
+                ////{
+                //    if (nAudioOut != null)
+                //        Memory.MainThreadOnlyActions.Enqueue(nAudioOut.Dispose);
+                //    Memory.MainThreadOnlyActions.Enqueue(bufferedWaveProvider.ClearBuffer);
+                //    //doesn't like threads...
+                //}
             }
 #endif
             return 0;
@@ -1318,6 +1342,8 @@ EOF:
 
             //ConvertedData = (byte*)Marshal.AllocHGlobal(convertedFrameBufferSize);
             ConvertedData = new byte[convertedFrameBufferSize];
+
+            if (useNaudio) initNaudio();
         }
 
         /// <summary>
@@ -1580,7 +1606,7 @@ EOF:
 
             public UInt32 DataSeekLoc;
             public UInt32 DataSize;
-            public IntPtr Header;
+            private IntPtr Header;
             public UInt32 HeaderSize;
 
             #endregion Fields

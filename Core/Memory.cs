@@ -56,6 +56,7 @@ namespace OpenVIII
     public static class Memory
     {
         public static BattleSpeed CurrentBattleSpeed = BattleSpeed.Normal;
+        public static List<Task> LeftOverTask = new List<Task>();
 
         public enum GraphicModes
         {
@@ -835,6 +836,14 @@ namespace OpenVIII
         {
             while (IsMainThread && MainThreadOnlyActions.Count > 0)
             { MainThreadOnlyActions.Dequeue()(); }
+            for (int i = 0; IsMainThread && i< LeftOverTask.Count; i++)
+            {
+                if (LeftOverTask[i].IsCompleted)
+                {
+                    LeftOverTask[i].Dispose();
+                    LeftOverTask.RemoveAt(i--);
+                }
+            }
         }
 
         /// <summary>

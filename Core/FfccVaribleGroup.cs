@@ -36,7 +36,7 @@ namespace OpenVIII
 
         ~FfccVaribleGroup()
         {
-            Dispose();
+            Dispose(false);
         }
 
         #endregion Destructors
@@ -90,7 +90,7 @@ namespace OpenVIII
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
             // TODO: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
+             GC.SuppressFinalize(this);
         }
 
         protected virtual unsafe void Dispose(bool disposing)
@@ -101,6 +101,9 @@ namespace OpenVIII
                 {
                     // TODO: dispose managed state (managed objects).
                 }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
                 if (_format != null)
                 {
                     fixed (AVFormatContext** tmp = &_format)
@@ -127,9 +130,6 @@ namespace OpenVIII
                 ffmpeg.av_frame_unref(Frame);
                 ffmpeg.av_free(Frame);
                 ffmpeg.av_free(Stream);
-
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
 
                 disposedValue = true;
             }

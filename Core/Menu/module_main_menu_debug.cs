@@ -85,7 +85,7 @@ namespace OpenVIII
                 //case MainMenuStates.Init:
                 case MainMenuStates.MainLobby:
                     //DrawMainLobby();
-                    Menu.IGM_Lobby.Draw();
+                    Menu.IGM_Lobby?.Draw();
                     break;
 
                 case MainMenuStates.DebugScreen:

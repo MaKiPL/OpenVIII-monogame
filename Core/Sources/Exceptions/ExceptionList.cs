@@ -1,49 +1,52 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.ExceptionServices;
-using System.Text;
+﻿//using System;
+//using System.Collections.Generic;
+//using System.Diagnostics;
+//using System.Runtime.ExceptionServices;
+//using System.Text;
 
-namespace OpenVIII
-{
-    public sealed class ExceptionList : IDisposable
-    {
-        private readonly List<Exception> _exceptions = new List<Exception>();
+//namespace OpenVIII
+//{
+//    public sealed class ExceptionList : IDisposable
+//    {
+//        private readonly List<Exception> _exceptions = new List<Exception>();
 
-        public void Add(Exception ex)
-        {
-            Debug.WriteLine(ex); // doesn't seem like this list is used correctly. so adding this writeline to atleast spit out the error.
-            _exceptions.Add(ex);
-        }
+//        public void Add(Exception ex)
+//        {
+//            Debug.WriteLine(ex); // doesn't seem like this list is used correctly. so adding this writeline to atleast spit out the error.
+//            _exceptions.Add(ex);
+//        }
 
-        public void Clear()
-        {
-            _exceptions.Clear();
-        }
+//        public void Clear()
+//        {
+//            _exceptions.Clear();
+//        }
 
-        public void Dispose()
-        {
-            switch (_exceptions.Count)
-            {
-                case 0:
-                {
-                    return;
-                }
-                case 1:
-                {
-                    ExceptionDispatchInfo.Capture(_exceptions[0]).Throw();
-                    return;
-                }
-                default:
-                {
-                    StringBuilder sb = new StringBuilder();
+//        public void Dispose()
+//        {
+//            switch (_exceptions.Count)
+//            {
+//                case 0:
+//                {
+//                    return;
+//                }
+//                case 1:
+//                {
+//                    ExceptionDispatchInfo.Capture(_exceptions[0]).Throw();
+//                    return;
+//                }
+//                default:
+//                {
+//                    StringBuilder sb = new StringBuilder();
 
-                    foreach (var ex in _exceptions)
-                        sb.AppendLine(ex.Message);
+//                    foreach (var ex in _exceptions)
+//                        sb.AppendLine(ex.Message);
+//                        //https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1065-do-not-raise-exceptions-in-unexpected-locations?view=vs-2015&redirectedfrom=MSDN
+//                        // cannot raise exceptions in dispose.
+//                        //throw new AggregateException(sb.ToString(), _exceptions);
 
-                    throw new AggregateException(sb.ToString(), _exceptions);
-                }
-            }
-        }
-    }
-}
+//                        return;
+//                }
+//            }
+//        }
+//    }
+//}

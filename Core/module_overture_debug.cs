@@ -318,16 +318,12 @@ namespace OpenVIII
 
         #region Destructors
 
-        ~Splash()
-        {
-            Dispose();
-        }
+
 
         #endregion Destructors
 
         #region Properties
 
-        public bool IsDisposed { get; private set; } = false;
         public Texture2D tex { get; private set; }
         public int Height => tex?.Height ?? 0;
         public int Width => tex?.Width ?? 0;
@@ -337,15 +333,7 @@ namespace OpenVIII
         #region Methods
 
         public static implicit operator Texture2D(Splash s) => s.tex;
-
-        public void Dispose()
-        {
-            if (!IsDisposed)
-            {
-                IsDisposed = true;
-                tex.Dispose();
-            }
-        }
+        
 
         public override string ToString() => filename;
 
@@ -380,6 +368,42 @@ namespace OpenVIII
             GC.Collect();
             GC.WaitForPendingFinalizers();
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects).
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+                tex.Dispose();
+                disposedValue = true;
+            }
+        }
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        ~Splash()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(false);
+        }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            GC.SuppressFinalize(this);
+        }
+        #endregion
 
         #endregion Methods
     }
