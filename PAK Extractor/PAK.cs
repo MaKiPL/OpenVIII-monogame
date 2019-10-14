@@ -143,7 +143,9 @@ namespace OpenVIII.PAK_Extractor
                     Extract(br, item.CAM);
                     Extract(br, item.BINK_HIGH);
                     if (enableExtractLowRes)
+#pragma warning disable CS0162 // Unreachable code detected
                         Extract(br, item.BINK_LOW);
+#pragma warning restore CS0162 // Unreachable code detected
                 }
             }
             void Extract(BinaryReader br, PAK.FileSection fs)
