@@ -12,7 +12,6 @@ namespace OpenVIII
     /// </summary>
     public abstract class SP2
     {
-
         #region Constructors
 
         protected SP2()
@@ -169,6 +168,7 @@ namespace OpenVIII
             Entry eg = this[ic];
             eg.SetTrimNonGroup(Textures[pal]);
         }
+
         protected virtual void Init()
         {
             if (Entries == null)
@@ -180,46 +180,45 @@ namespace OpenVIII
             }
         }
 
-
-
         protected virtual void InitEntries(ArchiveWorker aw = null)
         {
             if (Entries == null)
             {
                 if (aw == null)
                     aw = new ArchiveWorker(ArchiveString);
-                using (MemoryStream ms = new MemoryStream(ArchiveWorker.GetBinaryFile(ArchiveString,
-                    aw.GetListOfFiles().First(x => x.IndexOf(IndexFilename, StringComparison.OrdinalIgnoreCase) >= 0))))
+                MemoryStream ms = null;
+
+                ushort[] locs;
+                using (BinaryReader br = new BinaryReader(
+                    ms = new MemoryStream(ArchiveWorker.GetBinaryFile(ArchiveString,
+                aw.GetListOfFiles().First(x => x.IndexOf(IndexFilename, StringComparison.OrdinalIgnoreCase) >= 0)))))
                 {
-                    ushort[] locs;
-                    using (BinaryReader br = new BinaryReader(ms))
+                    Count = br.ReadUInt32();
+                    locs = new ushort[Count];//br.ReadUInt32(); 32 valid values in face.sp2 rest is invalid
+                    Entries = new Dictionary<uint, Entry>((int)Count);
+                    for (uint i = 0; i < Count; i++)
                     {
-                        Count = br.ReadUInt32();
-                        locs = new ushort[Count];//br.ReadUInt32(); 32 valid values in face.sp2 rest is invalid
-                        Entries = new Dictionary<uint, Entry>((int)Count);
-                        for (uint i = 0; i < Count; i++)
-                        {
-                            locs[i] = br.ReadUInt16();
-                            ms.Seek(2, SeekOrigin.Current);
-                        }
-                        byte fid = 0;
-                        Entry Last = null;
-                        for (uint i = 0; i < Count; i++)
-                        {
-                            ms.Seek(locs[i] + 6, SeekOrigin.Begin);
-                            byte t = br.ReadByte();
-                            if (t == 0 || t == 96) // known invalid entries in sp2 files have this value. there might be more to it.
-                            {
-                                Count = i;
-                                break;
-                            }
-
-                            Entries[i] = new Entry();
-                            Entries[i].LoadfromStreamSP2(br, locs[i], Last, ref fid);
-
-                            Last = Entries[i];
-                        }
+                        locs[i] = br.ReadUInt16();
+                        ms.Seek(2, SeekOrigin.Current);
                     }
+                    byte fid = 0;
+                    Entry Last = null;
+                    for (uint i = 0; i < Count; i++)
+                    {
+                        ms.Seek(locs[i] + 6, SeekOrigin.Begin);
+                        byte t = br.ReadByte();
+                        if (t == 0 || t == 96) // known invalid entries in sp2 files have this value. there might be more to it.
+                        {
+                            Count = i;
+                            break;
+                        }
+
+                        Entries[i] = new Entry();
+                        Entries[i].LoadfromStreamSP2(br, locs[i], Last, ref fid);
+
+                        Last = Entries[i];
+                    }
+                    ms = null;
                 }
             }
         }
@@ -271,7 +270,6 @@ namespace OpenVIII
         /// </summary>
         public class BigTexProps
         {
-
             #region Fields
 
             /// <summary>
@@ -303,12 +301,10 @@ namespace OpenVIII
             }
 
             #endregion Constructors
-
         }
 
         public class TexProps
         {  /// <summary>
-
             #region Fields
 
             /// <summary>
@@ -355,10 +351,8 @@ namespace OpenVIII
             }
 
             #endregion Constructors
-
         }
 
         #endregion Classes
-
     }
 }

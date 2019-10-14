@@ -118,7 +118,7 @@ namespace OpenVIII
         public void Draw(Enum id, int palette, Rectangle dst, Vector2 scale, float fade = 1f, Color? color = null)
         {
             if ((ID)id != ID.None)
-                Entries[(ID)id].Draw(Textures, palette, dst, scale, fade,color);
+                Entries[(ID)id].Draw(Textures, palette, dst, scale, fade, color);
         }
 
         public override void Draw(Enum id, Rectangle dst, float fade = 1) => Draw((ID)id, 2, dst, Vector2.One, fade);
@@ -139,10 +139,11 @@ namespace OpenVIII
             EntryGroup eg = this[(ID)ic];
             eg.Trim(Textures[pal]);
         }
+
         public Color MostSaturated(Enum ic, byte pal)
         {
             EntryGroup eg = this[(ID)ic];
-            return eg.MostSaturated(Textures[pal],pal);
+            return eg.MostSaturated(Textures[pal], pal);
         }
 
         protected override void InitEntries(ArchiveWorker aw = null)
@@ -150,33 +151,34 @@ namespace OpenVIII
             if (Entries == null)
             {
                 //read from icon.sp1
-                using (MemoryStream ms = new MemoryStream(ArchiveWorker.GetBinaryFile(ArchiveString,
-                    aw.GetListOfFiles().First(x => x.IndexOf(IndexFilename, StringComparison.OrdinalIgnoreCase) >= 0))))
+                MemoryStream ms = null;
+
+                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(
+                    ArchiveWorker.GetBinaryFile(ArchiveString,
+                    aw.GetListOfFiles().First(x => x.IndexOf(IndexFilename, StringComparison.OrdinalIgnoreCase) >= 0)))))
                 {
-                    using (BinaryReader br = new BinaryReader(ms))
+                    Loc[] locs = new Loc[br.ReadUInt32()];
+                    for (int i = 0; i < locs.Length; i++)
                     {
-                        Loc[] locs = new Loc[br.ReadUInt32()];
-                        for (int i = 0; i < locs.Length; i++)
+                        locs[i].seek = br.ReadUInt16();
+                        locs[i].length = br.ReadUInt16();
+                    }
+                    Entries = new Dictionary<ID, EntryGroup>(locs.Length + 10);
+                    for (int i = 0; i < locs.Length; i++)
+                    {
+                        ms.Seek(locs[i].seek, SeekOrigin.Begin);
+                        byte c = (byte)locs[i].length;
+                        Entries[(ID)i] = new EntryGroup(c);
+                        for (int e = 0; e < c; e++)
                         {
-                            locs[i].seek = br.ReadUInt16();
-                            locs[i].length = br.ReadUInt16();
-                        }
-                        Entries = new Dictionary<ID, EntryGroup>(locs.Length + 10);
-                        for (int i = 0; i < locs.Length; i++)
-                        {
-                            ms.Seek(locs[i].seek, SeekOrigin.Begin);
-                            byte c = (byte)locs[i].length;
-                            Entries[(ID)i] = new EntryGroup(c);
-                            for (int e = 0; e < c; e++)
-                            {
-                                Entry tmp = new Entry();
-                                tmp.LoadfromStreamSP1(br);
-                                tmp.Part = (byte)e;
-                                tmp.SetLoc(locs[i]);
-                                Entries[(ID)i].Add(tmp);
-                            }
+                            Entry tmp = new Entry();
+                            tmp.LoadfromStreamSP1(br);
+                            tmp.Part = (byte)e;
+                            tmp.SetLoc(locs[i]);
+                            Entries[(ID)i].Add(tmp);
                         }
                     }
+                    ms = null;
                 }
             }
         }

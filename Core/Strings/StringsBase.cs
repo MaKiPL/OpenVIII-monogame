@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -12,12 +11,10 @@ namespace OpenVIII
     /// </summary>
     public partial class Strings
     {
-
         #region Classes
 
         public abstract class StringsBase
         {
-
             #region Fields
 
             protected Memory.Archive Archive;
@@ -53,9 +50,14 @@ namespace OpenVIII
             public Memory.Archive GetArchive() => Archive;
 
             public IReadOnlyList<string> GetFilenames() => Filenames;
+
             public StringFile GetFiles() => Files;
+
             /// <summary>
-            /// <para>So you read the pointers at location, you get so many pointers then skip so many bytes before getting more pointers. Do this till start of next section.</para>
+            /// <para>
+            /// So you read the pointers at location, you get so many pointers then skip so many
+            /// bytes before getting more pointers. Do this till start of next section.
+            /// </para>
             /// </summary>
             /// <param name="br">BinaryReader where data is.</param>
             /// <param name="filename">file you are reading from</param>
@@ -102,7 +104,6 @@ namespace OpenVIII
                     }
                 }
             }
-
 
             protected void Get_Strings_ComplexStr(BinaryReader br, string filename, uint key, List<uint> list)
             {
@@ -157,7 +158,7 @@ namespace OpenVIII
                             if (c < br.BaseStream.Length && c != 0)
                             {
                                 c += fpad;
-                                Files.sPositions[key].Add(new FF8StringReference(Archive, filename, (uint)c, settings: Settings));
+                                Files.sPositions[key].Add(new FF8StringReference(Archive, filename, c, settings: Settings));
                             }
                         }
                     }
@@ -188,24 +189,23 @@ namespace OpenVIII
                 }
                 return fPaddings;
             }
+
             protected void simple_init()
             {
                 ArchiveWorker aw = new ArchiveWorker(Archive, true);
-                using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(Filenames[0], true)))
-                using (BinaryReader br = new BinaryReader(ms))
+                MemoryStream ms;
+                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(aw.GetBinaryFile(Filenames[0], true))))
                 {
-
                     Files = new StringFile(1);
                     Files.subPositions.Add(new Loc { seek = 0, length = uint.MaxValue });
                     Get_Strings_Offsets(br, Filenames[0], 0);
+                    ms = null;
                 }
             }
-
-            #endregion Methods
-
         }
 
-        #endregion Classes
-
+        #endregion Methods
     }
+
+    #endregion Classes
 }

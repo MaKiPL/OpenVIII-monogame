@@ -144,9 +144,9 @@ namespace OpenVIII
                 ITEM[pos, (byte)DepthID.HP] = new IGMDataItem.Integer(0, new Rectangle(SIZE[pos].X + 128, SIZE[pos].Y, 0, 0), spaces: 4, numtype: Icons.NumType.Num_8x16_1);
 
                 ITEM[pos, (byte)DepthID.ATBBorder] = new IGMDataItem.Icon(Icons.ID.Size_08x64_Bar, atbbarpos, 0);
-                ITEM[pos, (byte)DepthID.ATBCharged] = new IGMDataItem.Texture(dot, atbbarpos, Color.LightYellow * .8f, new Color(125, 125, 0, 255) * .8f);
+                ITEM[pos, (byte)DepthID.ATBCharged] = new IGMDataItem.Texture{Data = dot, Pos = atbbarpos, Color = Color.LightYellow * .8f, Faded_Color = new Color(125, 125, 0, 255) * .8f};
                 ITEM[pos, (byte)DepthID.ATBCharged].Hide();
-                ITEM[pos, (int)DepthID.ATBCharging] = new IGMDataItem.Gradient.ATB(atbbarpos);
+                ITEM[pos, (int)DepthID.ATBCharging] = IGMDataItem.Gradient.ATB.Create(atbbarpos);
                 ((IGMDataItem.Gradient.ATB)ITEM[pos, (byte)DepthID.ATBCharging]).Color = Color.Orange * .8f;
                 ((IGMDataItem.Gradient.ATB)ITEM[pos, (byte)DepthID.ATBCharging]).Faded_Color = Color.Orange * .8f;
                 ((IGMDataItem.Gradient.ATB)ITEM[pos, (byte)DepthID.ATBCharging]).Refresh(Damageable);

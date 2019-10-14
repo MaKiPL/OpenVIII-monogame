@@ -103,7 +103,7 @@ namespace OpenVIII
             }
         }
 
-        public static bool MusicPlaying { get => musicplaying; }
+        public static bool MusicPlaying => musicplaying;
 
         public static void Init()
         {
@@ -176,14 +176,17 @@ namespace OpenVIII
         {
             string path = Path.Combine(Memory.FF8DIRdata, "Sound", "audio.fmt");
             if (File.Exists(path))
-                using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
-                using (BinaryReader br = new BinaryReader(fs))
+            {
+                FileStream fs = null;
+
+                // fs is disposed by binary reader
+                using (BinaryReader br = new BinaryReader(fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
                 {
                     soundEntries = new SoundEntry[br.ReadUInt32()];
                     fs.Seek(36, SeekOrigin.Current);
                     for (int i = 0; i < soundEntries.Length - 1; i++)
                     {
-                        UInt32 sz = br.ReadUInt32();
+                        uint sz = br.ReadUInt32();
                         if (sz == 0)
                         {
                             fs.Seek(34, SeekOrigin.Current); continue;
@@ -197,7 +200,9 @@ namespace OpenVIII
                         fs.Seek(12, SeekOrigin.Current);
                         soundEntries[i].fillHeader(br);
                     }
+                    fs = null;
                 }
+            }
 
             soundEntriesCount = soundEntries == null ? 0 : soundEntries.Length;
             ////export sounds
@@ -216,20 +221,19 @@ namespace OpenVIII
             //            continue;
             //        }
 
-            //        using (FileStream fc = File.Create(Path.Combine(Path.GetTempPath(), "FF8Sounds", $"{item++}.wav")))
-            //        using (BinaryWriter bw = new BinaryWriter(fc))
-            //        {
-            //            bw.Write(s.HeaderData);
-            //            br.BaseStream.Seek(s.Offset, SeekOrigin.Begin);
-            //            bw.Write(br.ReadBytes((int)s.Size));
-            //        }
-            //    }
+            // using (FileStream fc = File.Create(Path.Combine(Path.GetTempPath(), "FF8Sounds",
+            // $"{item++}.wav"))) using (BinaryWriter bw = new BinaryWriter(fc)) {
+            // bw.Write(s.HeaderData); br.BaseStream.Seek(s.Offset, SeekOrigin.Begin);
+            // bw.Write(br.ReadBytes((int)s.Size)); } }
         }
 
         /// <summary>
         /// Play sound effect
         /// </summary>
-        /// <param name="soundID">ID number of sound<para>The real game uses soundID + 1, so you may need to -1 from any scripts.</para></param>
+        /// <param name="soundID">
+        /// ID number of sound
+        /// <para>The real game uses soundID + 1, so you may need to -1 from any scripts.</para>
+        /// </param>
         /// <param name="persist">
         /// <para>If set sound will not be saved to SoundChannels</para>
         /// <para>
@@ -335,7 +339,6 @@ namespace OpenVIII
         public static void PlayMusic(ushort? index = null, float volume = 0.5f, float pitch = 0.0f, float pan = 0.0f, bool loop = true)
         {
             Memory.MusicIndex = index ?? Memory.MusicIndex;
-            
 
             if (musicplaying && lastplayed == Memory.MusicIndex) return;
             string ext = "";
@@ -359,8 +362,8 @@ namespace OpenVIII
                     //ffccMusic = new Ffcc(@"c:\eyes_on_me.wav", AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
                     if (ffccMusic != null)
                         ffccMusic.Dispose();
-                    ffccMusic = new Ffcc(pt, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH, loop?0:-1);
-                    if(!loop)
+                    ffccMusic = new Ffcc(pt, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH, loop ? 0 : -1);
+                    if (!loop)
                         ffccMusic.LOOPSTART = -1;
                     ffccMusic.PlayInTask(volume, pitch, pan);
                     break;

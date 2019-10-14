@@ -88,7 +88,7 @@ namespace OpenVIII
             {
                 Contents[pos] = damageable;
                 if (damageable != null)
-                {             
+                {
                     float yoff = 39;
                     Rectangle rbak = SIZE[pos];
                     Rectangle r = rbak;
@@ -110,25 +110,25 @@ namespace OpenVIII
                     r.Offset(0, 28);
                     r.Width = 118;
                     r.Height = 1;
-                    ITEM[pos, 4] = new IGMDataItem.Texture(_red_pixel, r) { Color = Color.Black };
+                    ITEM[pos, 4] = new IGMDataItem.Texture { Data = _red_pixel, Pos = r, Color = Color.Black };
                     r.Width = (int)(r.Width * damageable.PercentFullHP());
-                    ITEM[pos, 5] = new IGMDataItem.Texture(_red_pixel, r) { Color = color };
+                    ITEM[pos, 5] = new IGMDataItem.Texture { Data = _red_pixel, Pos = r, Color = color };
 
                     r.Width = 118;
                     r.Offset(0, 2);
-                    ITEM[pos, 6] = new IGMDataItem.Texture(_red_pixel, r) { Color = Color.Black };
+                    ITEM[pos, 6] = new IGMDataItem.Texture { Data = _red_pixel, Pos = r, Color = Color.Black };
                     r.Width = (int)(r.Width * damageable.PercentFullHP());
-                    ITEM[pos, 7] = new IGMDataItem.Texture(_red_pixel, r) { Color = color };
+                    ITEM[pos, 7] = new IGMDataItem.Texture { Data = _red_pixel, Pos = r, Color = color };
                     //TODO red bar resizes based on current/max hp
 
                     r = rbak;
                     r.Offset((166), yoff);
                     ITEM[pos, 8] = new IGMDataItem.Integer(damageable.CurrentHP(), r, 2, 0, 1, 4);
-
                 }
             }
 
             #region IDisposable Support
+
             private bool disposedValue = false; // To detect redundant calls
 
             protected virtual void Dispose(bool disposing)
@@ -163,7 +163,8 @@ namespace OpenVIII
                 // TODO: uncomment the following line if the finalizer is overridden above.
                 GC.SuppressFinalize(this);
             }
-            #endregion
+
+            #endregion IDisposable Support
 
             #endregion Methods
         }

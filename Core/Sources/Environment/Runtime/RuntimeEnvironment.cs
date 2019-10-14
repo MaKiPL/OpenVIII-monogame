@@ -32,7 +32,7 @@ namespace OpenVIII
             try
             {
                 buffer = Marshal.AllocHGlobal(8192);
-                if (UnmanagedApi.uname(buffer) == 0)
+                if (NativeMethods.uname(buffer) == 0)
                 {
                     if (Marshal.PtrToStringAnsi(buffer) == "Darwin")
                         return RuntimePlatform.MacOSX;
@@ -51,7 +51,7 @@ namespace OpenVIII
             return RuntimePlatform.Linux;
         }
         // Violates rule: MovePInvokesToNativeMethodsClass.
-        internal class UnmanagedApi
+        internal static class NativeMethods
         {
             [DllImport("libc")]
             internal static extern Int32 uname(IntPtr buf);

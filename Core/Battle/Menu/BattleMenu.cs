@@ -70,6 +70,7 @@ namespace OpenVIII
                     Reset();
                     Refresh();
                     break;
+
                 case Damageable.BattleMode.ATB_Charged:
                     Data[SectionName.Commands].Hide();
                     break;

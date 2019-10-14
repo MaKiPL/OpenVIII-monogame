@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace OpenVIII
 {
     public partial class Kernel_bin
     {
-
         public const ushort MAX_HP_VALUE = 9999;
         public const byte MAX_STAT_VALUE = 255;
 
@@ -30,7 +28,7 @@ namespace OpenVIII
         private static Dictionary<Abilities, GF_abilities> s_gFabilities;
         private static Dictionary<Abilities, Menu_abilities> s_menuabilities;
         private static List<Temporary_character_limit_breaks> s_temporarycharacterlimitbreaks;
-        private static Dictionary<Blue_Magic,Blue_magic_Quistis_limit_break> s_bluemagicQuistislimitbreak;
+        private static Dictionary<Blue_Magic, Blue_magic_Quistis_limit_break> s_bluemagicQuistislimitbreak;
         private static List<Shot_Irvine_limit_break> s_shotIrvinelimitbreak;
         private static List<Duel_Zell_limit_break> s_duelZelllimitbreak;
         private static List<Zell_limit_break_parameters> s_zelllimitbreakparameters;
@@ -46,40 +44,41 @@ namespace OpenVIII
 
         private ArchiveWorker aw { get; set; }
         private Memory.Archive ArchiveString { get; } = Memory.Archives.A_MAIN;
-        public static IReadOnlyList<Magic_Data> MagicData { get => s_magicData; }//0
-        public static IReadOnlyDictionary<GFs, Junctionable_GFs_Data> JunctionableGFsData { get => s_junctionableGFsData; }//1
-        public static IReadOnlyList<Enemy_Attacks_Data> EnemyAttacksData { get => s_enemyAttacksData; }//2
-        public static IReadOnlyList<Battle_Commands> BattleCommands { get => s_battleCommands; }//3
-        public static IReadOnlyList<Weapons_Data> WeaponsData { get => s_weaponsData; }//4
-        public static IReadOnlyDictionary<Renzokeken_Finisher, Renzokuken_Finishers_Data> RenzokukenFinishersData { get => s_renzokukenFinishersData; } //5
-        public static IReadOnlyDictionary<Characters, Character_Stats> CharacterStats { get => s_characterStats; }//6
-        public static IReadOnlyList<Battle_Items_Data> BattleItemsData { get => s_battleItemsData; }//7
-        public static IReadOnlyList<Non_battle_Items_Data> NonbattleItemsData { get => s_nonbattleItemsData; } //8 //only strings
-        public static IReadOnlyList<Non_Junctionable_GFs_Attacks_Data> NonJunctionableGFsAttacksData { get => s_nonJunctionableGFsAttacksData; } //9
-        public static IReadOnlyDictionary<Abilities, Command_ability_data> Commandabilitydata { get => s_commandabilitydata; }//10
-        public static IReadOnlyDictionary<Abilities, Junction_abilities> Junctionabilities { get => s_junctionabilities; }//11
-        public static IReadOnlyDictionary<Abilities, Command_abilities> Commandabilities { get => s_commandabilities; }//12
-        public static IReadOnlyDictionary<Abilities, Stat_percent_abilities> Statpercentabilities { get => s_statpercentabilities;  }//13
-        public static IReadOnlyDictionary<Abilities, Character_abilities> Characterabilities { get => s_characterabilities;  }//14
-        public static IReadOnlyDictionary<Abilities, Party_abilities> Partyabilities { get => s_partyabilities;  }//15
-        public static IReadOnlyDictionary<Abilities, GF_abilities> GFabilities { get => s_gFabilities;  }//16
-        public static IReadOnlyDictionary<Abilities, Menu_abilities> Menuabilities { get => s_menuabilities;  }//17
-        public static IReadOnlyList<Temporary_character_limit_breaks> Temporarycharacterlimitbreaks { get => s_temporarycharacterlimitbreaks;  }//18
-        public static IReadOnlyDictionary<Blue_Magic,Blue_magic_Quistis_limit_break> BluemagicQuistislimitbreak { get => s_bluemagicQuistislimitbreak;  }//19
+        public static IReadOnlyList<Magic_Data> MagicData => s_magicData; //0
+        public static IReadOnlyDictionary<GFs, Junctionable_GFs_Data> JunctionableGFsData => s_junctionableGFsData; //1
+        public static IReadOnlyList<Enemy_Attacks_Data> EnemyAttacksData => s_enemyAttacksData; //2
+        public static IReadOnlyList<Battle_Commands> BattleCommands => s_battleCommands; //3
+        public static IReadOnlyList<Weapons_Data> WeaponsData => s_weaponsData; //4
+        public static IReadOnlyDictionary<Renzokeken_Finisher, Renzokuken_Finishers_Data> RenzokukenFinishersData => s_renzokukenFinishersData;  //5
+        public static IReadOnlyDictionary<Characters, Character_Stats> CharacterStats => s_characterStats; //6
+        public static IReadOnlyList<Battle_Items_Data> BattleItemsData => s_battleItemsData; //7
+        public static IReadOnlyList<Non_battle_Items_Data> NonbattleItemsData => s_nonbattleItemsData;  //8 //only strings
+        public static IReadOnlyList<Non_Junctionable_GFs_Attacks_Data> NonJunctionableGFsAttacksData => s_nonJunctionableGFsAttacksData;  //9
+        public static IReadOnlyDictionary<Abilities, Command_ability_data> Commandabilitydata => s_commandabilitydata; //10
+        public static IReadOnlyDictionary<Abilities, Junction_abilities> Junctionabilities => s_junctionabilities; //11
+        public static IReadOnlyDictionary<Abilities, Command_abilities> Commandabilities => s_commandabilities; //12
+        public static IReadOnlyDictionary<Abilities, Stat_percent_abilities> Statpercentabilities => s_statpercentabilities;  //13
+        public static IReadOnlyDictionary<Abilities, Character_abilities> Characterabilities => s_characterabilities;  //14
+        public static IReadOnlyDictionary<Abilities, Party_abilities> Partyabilities => s_partyabilities;  //15
+        public static IReadOnlyDictionary<Abilities, GF_abilities> GFabilities => s_gFabilities;  //16
+        public static IReadOnlyDictionary<Abilities, Menu_abilities> Menuabilities => s_menuabilities;  //17
+        public static IReadOnlyList<Temporary_character_limit_breaks> Temporarycharacterlimitbreaks => s_temporarycharacterlimitbreaks;  //18
+        public static IReadOnlyDictionary<Blue_Magic, Blue_magic_Quistis_limit_break> BluemagicQuistislimitbreak => s_bluemagicQuistislimitbreak;  //19
         //public static List<Quistis_limit_break_parameters> Quistislimitbreakparameters { get; private set; }//20
-        public static IReadOnlyList<Shot_Irvine_limit_break> ShotIrvinelimitbreak { get => s_shotIrvinelimitbreak;  }//21
-        public static IReadOnlyList<Duel_Zell_limit_break> DuelZelllimitbreak { get => s_duelZelllimitbreak;  }//22
-        public static IReadOnlyList<Zell_limit_break_parameters> Zelllimitbreakparameters { get => s_zelllimitbreakparameters;  }//23
-        public static IReadOnlyList<Rinoa_limit_breaks_part_1> Rinoalimitbreakspart1 { get => s_rinoalimitbreakspart1;  }//24
-        public static IReadOnlyList<Rinoa_limit_breaks_part_2> Rinoalimitbreakspart2 { get => s_rinoalimitbreakspart2;  }//25
-        public static IReadOnlyList<Slot_array> Slotarray { get => s_slotarray;  }//26
-        public static IReadOnlyList<Selphie_limit_break_sets> Selphielimitbreaksets { get => s_selphielimitbreaksets;  }//27
-        public static IReadOnlyList<Devour> Devour_ { get => s_devour_;  }//28
-        public static IReadOnlyList<Misc_section> Miscsection { get => s_miscsection;  }//29 //only_strings
-        public static IReadOnlyList<Misc_text_pointers> Misctextpointers { get => s_misctextpointers;  }//30
+        public static IReadOnlyList<Shot_Irvine_limit_break> ShotIrvinelimitbreak => s_shotIrvinelimitbreak;  //21
 
-        public static IReadOnlyDictionary<Abilities,Ability> AllAbilities { get => s_allAbilities;  } // should contain all abilities
-        public static IReadOnlyDictionary<Abilities, Equipable_Ability> EquipableAbilities { get => s_equipableAbilities;  } // contains 4 types;
+        public static IReadOnlyList<Duel_Zell_limit_break> DuelZelllimitbreak => s_duelZelllimitbreak;  //22
+        public static IReadOnlyList<Zell_limit_break_parameters> Zelllimitbreakparameters => s_zelllimitbreakparameters;  //23
+        public static IReadOnlyList<Rinoa_limit_breaks_part_1> Rinoalimitbreakspart1 => s_rinoalimitbreakspart1;  //24
+        public static IReadOnlyList<Rinoa_limit_breaks_part_2> Rinoalimitbreakspart2 => s_rinoalimitbreakspart2;  //25
+        public static IReadOnlyList<Slot_array> Slotarray => s_slotarray;  //26
+        public static IReadOnlyList<Selphie_limit_break_sets> Selphielimitbreaksets => s_selphielimitbreaksets;  //27
+        public static IReadOnlyList<Devour> Devour_ => s_devour_;  //28
+        public static IReadOnlyList<Misc_section> Miscsection => s_miscsection;  //29 //only_strings
+        public static IReadOnlyList<Misc_text_pointers> Misctextpointers => s_misctextpointers;  //30
+
+        public static IReadOnlyDictionary<Abilities, Ability> AllAbilities => s_allAbilities;   // should contain all abilities
+        public static IReadOnlyDictionary<Abilities, Equipable_Ability> EquipableAbilities => s_equipableAbilities;   // contains 4 types;
 
         /// <summary>
         /// Read binary data from into structures and arrays
@@ -93,8 +92,9 @@ namespace OpenVIII
             byte[] buffer = aw.GetBinaryFile(Memory.Strings[Strings.FileID.KERNEL].GetFilenames()[0]);
             List<Loc> subPositions = Memory.Strings[Strings.FileID.KERNEL].GetFiles().subPositions;
 
-            using (MemoryStream ms = new MemoryStream(buffer))
-            using (BinaryReader br = new BinaryReader(ms))
+            MemoryStream ms = null;
+
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(subPositions[Battle_Commands.id], SeekOrigin.Begin);
                 s_battleCommands = Battle_Commands.Read(br);
@@ -158,10 +158,9 @@ namespace OpenVIII
                 s_miscsection = Misc_section.Read(br);
                 s_misctextpointers = Misc_text_pointers.Read();
 
-
                 s_allAbilities = new Dictionary<Abilities, Ability>(
                     Menu_abilities.count +
-                    Junction_abilities.count + 
+                    Junction_abilities.count +
                     Command_abilities.count +
                     Stat_percent_abilities.count +
                     Character_abilities.count +
@@ -201,6 +200,7 @@ namespace OpenVIII
                     else if (Characterabilities.ContainsKey(ability))
                         s_equipableAbilities[ability] = Characterabilities[ability];
                 }
+                ms = null;
             }
         }
     }

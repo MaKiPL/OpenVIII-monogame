@@ -12,12 +12,20 @@ namespace OpenVIII.IGMDataItem.Gradient
 
         #region Methods
 
-        protected override void Init()
+
+        #endregion Methods
+
+        #region Constructors
+        public static ATB Create(Rectangle? pos = null)
         {
+            ATB r = new ATB()
+            {
+                Pos = pos ?? Rectangle.Empty,
+                Restriction = pos ?? Rectangle.Empty,
+            };
             float dark = 0.067f;
             float fade = 0.933f;
-            Restriction = Pos;
-            int total = Pos.Width;
+            int total = r.Pos.Width;
             Color lightline = new Color(118, 118, 118, 255);
             Color darkline = new Color(58, 58, 58, 255);
             Color[] cfade = new Color[total];
@@ -27,17 +35,11 @@ namespace OpenVIII.IGMDataItem.Gradient
 
             for (; i < cfade.Length; i++)
                 cfade[i] = darkline;
-            Data = new Texture2D(Memory.graphics.GraphicsDevice, cfade.Length, 1);
-            Width = Data.Width;
-            Data.SetData(cfade);
-            base.Init();
+            r.Data = new Texture2D(Memory.graphics.GraphicsDevice, cfade.Length, 1);
+            r.Width = r.Data.Width;
+            r.Data.SetData(cfade);
+            return r;
         }
-
-        #endregion Methods
-
-        #region Constructors
-
-        public ATB(Rectangle? pos = null) : base(null, pos, Color.White, Color.White, 1f) => Init();
 
         #endregion Constructors
 

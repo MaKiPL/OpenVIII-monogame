@@ -759,8 +759,8 @@
                     isDisposed = true;
                     //GC.Collect(); // donno if this really does much. was trying to make sure the memory i'm watching is what is really there.
                 }
-                else {
-
+                else
+                {
                     if (nAudioOut != null && useNaudio)
                     {
                         nAudioOut.Dispose();
@@ -1634,20 +1634,21 @@
                 {
                     return ffmpeg.AVERROR_EOF;
                 }
-                using (FileStream fs = File.OpenRead(DataFileName))
+                FileStream fs = null;
+
+                // binaryReader disposes of fs
+                using (BinaryReader br = new BinaryReader(fs = File.Open(DataFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
                 {
                     fs.Seek(DataSeekLoc, SeekOrigin.Begin);
-                    using (BinaryReader br = new BinaryReader(fs))
+                    using (UnmanagedMemoryStream ums = new UnmanagedMemoryStream(buf, buf_size, buf_size, FileAccess.Write))
                     {
-                        using (UnmanagedMemoryStream ums = new UnmanagedMemoryStream(buf, buf_size, buf_size, FileAccess.Write))
-                        {
-                            // copy public buffer data to buf
-                            ums.Write(br.ReadBytes(buf_size), 0, buf_size);
-                            DataSeekLoc += (uint)buf_size;
-                            DataSize -= (uint)buf_size;
+                        // copy public buffer data to buf
+                        ums.Write(br.ReadBytes(buf_size), 0, buf_size);
+                        DataSeekLoc += (uint)buf_size;
+                        DataSize -= (uint)buf_size;
 
-                            return buf_size;
-                        }
+                        fs = null;
+                        return buf_size;
                     }
                 }
             }

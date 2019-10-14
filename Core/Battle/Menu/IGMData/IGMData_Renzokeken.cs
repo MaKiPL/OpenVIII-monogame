@@ -41,15 +41,15 @@ namespace OpenVIII
             r.Height += r.Height % 4;
             rc = Memory.Icons.MostSaturated(Icons.ID.Text_Cursor, 6);
             rcdim = Memory.Icons.MostSaturated(Icons.ID.Text_Cursor, 2);
-            ITEM[0, 0] = new IGMDataItem.Texture(pixel, r, rcdim);
+            ITEM[0, 0] = new IGMDataItem.Texture { Data = pixel, Pos= r, Color= rcdim };
             r.Inflate(-4, -4);
-            ITEM[1, 0] = new IGMDataItem.Texture(pixel, r, Color.Black);
+            ITEM[1, 0] = new IGMDataItem.Texture { Data = pixel, Pos = r, Color = Color.Black };
             float scale = (float)r.Height / e.Height;
             int w = (int)(e.Width * scale);
             ITEM[Count - 3, 0] = new IGMDataItem.Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 80, r.Y, w, r.Height), 2, scale: new Vector2(scale));
             ITEM[Count - 2, 0] = new IGMDataItem.Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 208, r.Y, w, r.Height), 2, scale: new Vector2(scale));
             Rectangle hotspot = new Rectangle(r.X + 80 + (w / 2), r.Y + 4, 208 - 80, r.Height - 8);
-            ITEM[Count - 4, 0] = new IGMDataItem.Texture(pixel, hotspot, Color.TransparentBlack);
+            ITEM[Count - 4, 0] = new IGMDataItem.Texture { Data = pixel, Pos = hotspot, Color = Color.TransparentBlack };
             //Rectangle hotspotbox = hotspot;
             hotspot.Width += (int)(hotspot.Width * .50f);
             Rectangle tr = new Rectangle(r.X + 208 + (w / 2), r.Y + 4, 0, r.Height - 4);
@@ -204,7 +204,8 @@ namespace OpenVIII
             {
                 if ((delayMS += Memory.gameTime.ElapsedGameTime.TotalMilliseconds) > 1000)
                 {
-                    Damageable.EndTurn();
+                    //Damageable.EndTurn(); //gets stuck if the current player isn't squall
+                    Menus.BattleMenus.GetCurrentBattleMenu().Damageable.EndTurn();
                 }
             }
             if (hot)
