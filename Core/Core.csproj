@@ -203,6 +203,7 @@
     <Compile Include="Menu\IGMData\Pool\Draw\Commands.cs" />
     <Compile Include="Menu\IGMData\Pool\BlueMagic.cs" />
     <Compile Include="Menu\Images\HSL.cs" />
+    <Compile Include="Menu\LGSG\IGM_LGSG.cs" />
     <Compile Include="Menu\Menus.cs" />
     <Compile Include="Battle\Menu\VictoryMenu.cs" />
     <Compile Include="Battle\module_battle.cs" />
