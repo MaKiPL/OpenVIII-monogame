@@ -61,7 +61,7 @@ namespace OpenVIII
                             total[(T)availableFlagsarray[pos + 1]] > 100 ?
                             total[(T)availableFlagsarray[pos + 1]] - 100 :
                             total[(T)availableFlagsarray[pos + 1]], new Rectangle(SIZE[pos + offset].X + SIZE[pos + offset].Width - 80, SIZE[pos + offset].Y, 0, 0), 17, numtype: Icons.NumType.sysFntBig, spaces: 3);
-                    ITEM[pos + offset, 4] = new IGMDataItem.Text("%", new Rectangle(SIZE[pos + offset].X + SIZE[pos + offset].Width - 20, SIZE[pos + offset].Y, 0, 0));
+                    ITEM[pos + offset, 4] = new IGMDataItem.Text() { Data= "%", Pos= new Rectangle(SIZE[pos + offset].X + SIZE[pos + offset].Width - 20, SIZE[pos + offset].Y, 0, 0) };
                     if (oldtotal != null)
                     {
                         if (oldtotal[(T)availableFlagsarray[pos + 1]] > total[(T)availableFlagsarray[pos + 1]])

@@ -11,7 +11,7 @@ namespace OpenVIII.IGMData.Pool
 
         private const Font.ColorID @default = Font.ColorID.White;
         private const Font.ColorID junctioned = Font.ColorID.Grey;
-        private const Font.ColorID nostat = Font.ColorID.Dark_Gray;
+        private const Font.ColorID nostat = Font.ColorID.Dark_Grey;
         private bool Battle = false;
         private bool eventAdded = false;
         private bool skipReinit = false;
@@ -36,9 +36,15 @@ namespace OpenVIII.IGMData.Pool
                     color = junctioned;
                 j = true;
             }
-            ITEM[pos, 0] = new IGMDataItem.Text(spell.Name, SIZE[pos], color);
-            ITEM[pos, 1] = j ? new IGMDataItem.Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 75, SIZE[pos].Y, 0, 0)) : null;
-            ITEM[pos, 2] = new IGMDataItem.Integer(Source.Magics[spell.ID], new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), spaces: 3);
+            ((IGMDataItem.Text)ITEM[pos, 0]).Data = spell.Name;
+            ((IGMDataItem.Text)ITEM[pos, 0]).FontColor = color;
+            ITEM[pos, 0].Show();
+            if (j)
+                ITEM[pos, 1].Show();
+            else
+                ITEM[pos, 1].Hide();
+            ((IGMDataItem.Integer)ITEM[pos, 2]).Data = Source.Magics[spell.ID];
+            ITEM[pos, 2].Show();
             //makes it so you cannot junction a magic to a stat that does nothing.
             BLANKS[pos] = color == nostat ? true : false;
             Contents[pos] = spell.ID;
@@ -157,6 +163,16 @@ namespace OpenVIII.IGMData.Pool
             SIZE[Rows] = SIZE[0];
             SIZE[Rows].Y = Y;
             ITEM[Rows, 2] = new IGMDataItem.Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 45, SIZE[Rows].Y, 0, 0), scale: new Vector2(2.5f));
+
+            for (int pos = 0; pos < Rows; pos++)
+            {
+                ITEM[pos, 0] = new IGMDataItem.Text() { Pos = SIZE[pos] };
+                ITEM[pos, 0].Hide();
+                ITEM[pos, 1] = new IGMDataItem.Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 75, SIZE[pos].Y, 0, 0));
+                ITEM[pos, 1].Hide();
+                ITEM[pos, 2] = new IGMDataItem.Integer(0, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), spaces: 3);
+                ITEM[pos, 2].Hide();
+            }
 
             ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Damageable);
             BLANKS[Rows] = true;
@@ -318,9 +334,9 @@ namespace OpenVIII.IGMData.Pool
                 }
             for (; pos < Rows; pos++)
             {
-                ITEM[pos, 0] = null;
-                ITEM[pos, 1] = null;
-                ITEM[pos, 2] = null;
+                ITEM[pos, 0].Hide();
+                ITEM[pos, 1].Hide();
+                ITEM[pos, 2].Hide();
                 BLANKS[pos] = true;
                 Contents[pos] = 0;
             }
@@ -339,15 +355,15 @@ namespace OpenVIII.IGMData.Pool
                         skipundo = false;
                     }
                     Source.JunctionSpell(Stat, Contents[CURSOR_SELECT]);
-                    SlotRefreshListener?.Invoke(this,Damageable);
+                    SlotRefreshListener?.Invoke(this, Damageable);
                 }
             }
         }
 
         public void Get_Slots_Values()
         {
-            if(Damageable.GetCharacterData(out Saves.CharacterData c))
-            Source = c;
+            if (Damageable.GetCharacterData(out Saves.CharacterData c))
+                Source = c;
         }
 
         public void Get_Sort()
@@ -434,7 +450,7 @@ namespace OpenVIII.IGMData.Pool
                     }
 
                     Cursor_Status &= ~Cursor_Status.Enabled;
-                    if(Damageable.GetCharacterData(out Saves.CharacterData c))
+                    if (Damageable.GetCharacterData(out Saves.CharacterData c))
                         Source = c;
 
                     return true;
@@ -479,6 +495,7 @@ namespace OpenVIII.IGMData.Pool
             }
             return false;
         }
+
         ~Magic()
         {
             if (eventAdded)
@@ -491,6 +508,7 @@ namespace OpenVIII.IGMData.Pool
                 Damageable.BattleModeChangeEventHandler -= ModeChangeEvent;
             }
         }
+
         //public IGMData Values { get; private set; } = null;
         public override void Refresh()
         {
@@ -499,7 +517,7 @@ namespace OpenVIII.IGMData.Pool
                 if (!eventAdded && Menu.IGM_Junction != null)
                 {
                     if (!Battle)
-                    { 
+                    {
                         Menu.IGM_Junction.ModeChangeHandler += ModeChangeEvent;
                         StatEventListener += StatChangeEvent;
                     }
@@ -518,7 +536,6 @@ namespace OpenVIII.IGMData.Pool
             Hide();
             base.Reset();
         }
-
 
         public override void UpdateTitle()
         {

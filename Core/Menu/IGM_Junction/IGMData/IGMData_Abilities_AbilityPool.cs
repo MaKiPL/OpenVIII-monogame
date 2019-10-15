@@ -48,37 +48,47 @@ namespace OpenVIII
                     Cursor_Status |= Cursor_Status.Enabled;
                 int pos = 0;
                 int skip = Page * Rows;
-                if(Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
-                for (int i = 0;
-                    Memory.State.Characters != null &&
-                    i < c.UnlockedGFAbilities.Count &&
-                    pos < Rows; i++)
-                {
-                    if (c.UnlockedGFAbilities[i] != Kernel_bin.Abilities.None)
+                if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                    for (int i = 0;
+                        Memory.State.Characters != null &&
+                        i < c.UnlockedGFAbilities.Count &&
+                        pos < Rows; i++)
                     {
-                        Kernel_bin.Abilities j = c.UnlockedGFAbilities[i];
-                        if (Source.ContainsKey(j))
+                        if (c.UnlockedGFAbilities[i] != Kernel_bin.Abilities.None)
                         {
-                            if (skip > 0)
+                            Kernel_bin.Abilities j = c.UnlockedGFAbilities[i];
+                            if (Source.ContainsKey(j))
                             {
-                                skip--;
-                                continue;
-                            }
-                            Font.ColorID cid = c.Abilities.Contains(j) ? Font.ColorID.Grey : Font.ColorID.White;
-                            BLANKS[pos] = cid == Font.ColorID.Grey ? true : false;
+                                if (skip > 0)
+                                {
+                                    skip--;
+                                    continue;
+                                }
 
-                            ITEM[pos, 0] = new IGMDataItem.Text(
-                                Source[j].Icon, 9,
-                            Source[j].Name,
-                            new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), cid);
-                            Contents[pos] = j;
-                            pos++;
+                                Font.ColorID cid;
+                                if (c.Abilities.Contains(j))
+                                {
+                                    cid = Font.ColorID.Grey;
+                                    BLANKS[pos] = true;
+                                }
+                                else
+                                {
+                                    cid = Font.ColorID.White;
+                                    BLANKS[pos] = false;
+                                }
+
+                                ((IGMDataItem.Text)ITEM[pos, 0]).Icon = Source[j].Icon;
+                                ((IGMDataItem.Text)ITEM[pos, 0]).Data = Source[j].Name;
+                                ((IGMDataItem.Text)ITEM[pos, 0]).FontColor= cid;
+                                ITEM[pos, 0].Show();
+                                Contents[pos] = j;
+                                pos++;
+                            }
                         }
                     }
-                }
                 for (; pos < Rows; pos++)
                 {
-                    ITEM[pos, 0] = null;
+                    ITEM[pos, 0].Hide();
                     BLANKS[pos] = true;
                     Contents[pos] = Kernel_bin.Abilities.None;
                 }
@@ -134,6 +144,13 @@ namespace OpenVIII
             {
                 base.Init();
                 Hide();
+                for (int pos = 0; pos < Rows; pos++)
+                    ITEM[pos, 0] = new IGMDataItem.Text
+                    {
+                        Palette = 9,
+                        Pos =
+                        new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0)
+                    };
             }
 
             protected override void InitShift(int i, int col, int row)

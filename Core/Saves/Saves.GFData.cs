@@ -97,7 +97,7 @@ namespace OpenVIII
             {
                 get
                 {
-                    uint ret = (Experience / JunctionableGFsData.EXPperLevel);
+                    uint ret = (Experience / JunctionableGFsData.EXPperLevel)+1;
                     return ret > 100 ? (byte)100 : (byte)ret;
                 }
             }

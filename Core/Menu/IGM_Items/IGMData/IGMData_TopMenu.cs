@@ -42,7 +42,7 @@ namespace OpenVIII
                 pos = 0;
                 foreach (KeyValuePair<FF8String, FF8String> pair in Pairs)
                 {
-                    ITEM[pos, 0] = new IGMDataItem.Text(pair.Key, SIZE[pos]);
+                    ITEM[pos, 0] = new IGMDataItem.Text { Data = pair.Key, Pos = SIZE[pos] };
                     pos++;
                 }
                 Cursor_Status |= Cursor_Status.Enabled;

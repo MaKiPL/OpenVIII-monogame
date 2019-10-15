@@ -31,26 +31,41 @@ namespace OpenVIII
                     foreach (Enum flag in availableFlags.Where(c.JunctionnedGFs.HasFlag))
                     {
                         if ((Saves.GFflags)flag == Saves.GFflags.None) continue;
-                        ITEM[pos, 0] = new IGMDataItem.Text(
-                        Memory.State.GFs[Saves.ConvertGFEnum[(Saves.GFflags)flag]].Name, SIZE[pos]);
-                        pos++;
+                        ((IGMDataItem.Text)ITEM[pos, 0]).Data = Memory.State.GFs[Saves.ConvertGFEnum[(Saves.GFflags)flag]].Name;
+                        
+                        ITEM[pos, 0].Show();
+                        BLANKS[pos++] = false;
                     }
                     for (; pos < Count; pos++)
-                        ITEM[pos, 0] = null;
+                    {
+                        ITEM[pos, 0].Hide();
+                        BLANKS[pos] = true;
+                    }
                 }
             }
 
             protected override void Init()
             {
+
                 Table_Options |= Table_Options.FillRows;
                 base.Init();
+
+                for (int pos = 0; pos < Count; pos++)
+                {
+                    ITEM[pos, 0] = new IGMDataItem.Text
+                    {
+                        Pos = SIZE[pos]
+                    };
+                    ITEM[pos, 0].Hide();
+                    BLANKS[pos] = true;
+                }
             }
 
             protected override void InitShift(int i, int col, int row)
             {
                 base.InitShift(i, col, row);
                 SIZE[i].Inflate(-45, -8);
-                SIZE[i].Offset((-10 * col), -2*row);
+                SIZE[i].Offset((-10 * col), -2 * row);
             }
 
             #endregion Methods

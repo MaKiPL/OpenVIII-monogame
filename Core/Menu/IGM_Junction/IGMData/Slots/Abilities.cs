@@ -1,22 +1,36 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace OpenVIII
+namespace OpenVIII.IGMData.Slots
 {
-    public partial class IGM_Junction
-    {
-        #region Classes
 
-        private class IGMData_Abilities_AbilitySlots : IGMData.Base
+
+        public class Abilities : IGMData.Base
         {
             #region Constructors
 
-            public IGMData_Abilities_AbilitySlots() : base(4, 2, new IGMDataItem.Box(pos: new Rectangle(0, 414, 435, 216), title: Icons.ID.ABILITY), 1, 4)
+            public Abilities() : base(4, 2, new IGMDataItem.Box(pos: new Rectangle(0, 414, 435, 216), title: Icons.ID.ABILITY), 1, 4)
             {
             }
 
             #endregion Constructors
 
             #region Methods
+
+            protected override void Init()
+            {
+                base.Init();
+                for (int i = 0; i < Count; i++)
+                {
+                    ITEM[i, 0] = new IGMDataItem.Icon(Icons.ID.Arrow_Right2, SIZE[i], 9);
+                    ITEM[i, 0].Hide();
+                    ITEM[i, 1] = new IGMDataItem.Text()
+                    {
+                        Palette = 9,
+                        Pos = new Rectangle(SIZE[i].X + 40, SIZE[i].Y, 0, 0)
+                    };
+                    ITEM[i, 1].Hide();
+                }
+            }
 
             public override void Refresh()
             {
@@ -33,29 +47,25 @@ namespace OpenVIII
                             slots = 4;
                         if (i < slots)
                         {
-                            ITEM[i, 0] = new IGMDataItem.Icon(Icons.ID.Arrow_Right2, SIZE[i], 9);
+                            ITEM[i, 0].Show();
                             if (c.Abilities[i] != Kernel_bin.Abilities.None)
                             {
-                                ITEM[i, 1] = new IGMDataItem.Text(
-
-                                Kernel_bin.EquipableAbilities[c.Abilities[i]].Icon, 9,
-                                Kernel_bin.EquipableAbilities[c.Abilities[i]].Name,
-                                new Rectangle(SIZE[i].X + 40, SIZE[i].Y, 0, 0));
+                                ((IGMDataItem.Text)ITEM[i, 1]).Icon = Kernel_bin.EquipableAbilities[c.Abilities[i]].Icon;
+                                ((IGMDataItem.Text)ITEM[i, 1]).Data = Kernel_bin.EquipableAbilities[c.Abilities[i]].Name;
+                                ((IGMDataItem.Text)ITEM[i, 1]).Show();
                                 Descriptions[i] = Kernel_bin.EquipableAbilities[c.Abilities[i]].Description;
                             }
                             else
                             {
-                                ITEM[i, 1] = null;
-                                //Descriptions[i] = "";
+                                ITEM[i, 1].Hide();
                             }
                             BLANKS[i] = false;
                         }
                         else
                         {
-                            ITEM[i, 0] = null;
-                            ITEM[i, 1] = null;
+                            ITEM[i, 0].Hide();
+                            ITEM[i, 1].Hide();
                             BLANKS[i] = true;
-                            //Descriptions[i] = "";
                         }
                     }
                 }
@@ -72,6 +82,5 @@ namespace OpenVIII
             #endregion Methods
         }
 
-        #endregion Classes
-    }
+    
 }

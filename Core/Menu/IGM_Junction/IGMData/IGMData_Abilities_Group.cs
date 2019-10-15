@@ -85,9 +85,9 @@ namespace OpenVIII
                     }
                 }
             }
-            private IGMData_Abilities_CommandSlots Commands => ((IGMData_Abilities_CommandSlots)ITEM[0, 0]);
+            private IGMData.Slots.Command Commands => ((IGMData.Slots.Command)ITEM[0, 0]);
 
-            private IGMData_Abilities_AbilitySlots Ability => ((IGMData_Abilities_AbilitySlots)ITEM[1, 0]);
+            private IGMData.Slots.Abilities Ability => ((IGMData.Slots.Abilities)ITEM[1, 0]);
 
             private IGMData_Abilities_CommandPool CommandsPool => ((IGMData_Abilities_CommandPool)ITEM[2, 0]);
 

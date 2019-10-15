@@ -56,8 +56,6 @@ namespace OpenVIII
 
                 #region Methods
 
-                public override void Refresh() => base.Refresh();
-
                 public override bool Update()
                 {
                     if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
@@ -84,7 +82,6 @@ namespace OpenVIII
                 {
                     if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                     {
-
                         Hide();
                         if (ECN == null)
                             ECN = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 29) + "\n" +
@@ -96,10 +93,10 @@ namespace OpenVIII
                         _lvl = Damageable.Level;
                         FF8String name = Damageable.Name;
 
-                        ITEM[0, 0] = new IGMDataItem.Text(name, new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0));
+                        ITEM[0, 0] = new IGMDataItem.Text { Data = name, Pos = new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0) };
                         ITEM[0, 1] = new IGMDataItem.Icon(Icons.ID.Size_16x16_Lv_, new Rectangle(SIZE[0].X, SIZE[0].Y + 34, 0, 0), 13);
                         ITEM[0, 2] = new IGMDataItem.Integer(_lvl, new Rectangle(SIZE[0].X + 50, SIZE[0].Y + 38, 0, 0), spaces: 4, numtype: Icons.NumType.sysFntBig);
-                        ITEM[0, 3] = new IGMDataItem.Text(ECN, new Rectangle(SIZE[0].X + 390, SIZE[0].Y, 0, 0));
+                        ITEM[0, 3] = new IGMDataItem.Text { Data = ECN, Pos = new Rectangle(SIZE[0].X + 390, SIZE[0].Y, 0, 0) };
                         ITEM[0, 4] = new IGMDataItem.Integer(0, new Rectangle(SIZE[0].X + SIZE[0].Width - 160, SIZE[0].Y, 0, 0), spaces: 7);
                         ITEM[0, 5] = new IGMDataItem.Icon(Icons.ID.P, new Rectangle(SIZE[0].X + SIZE[0].Width - 20, SIZE[0].Y, 0, 0));
                         ITEM[0, 6] = new IGMDataItem.Integer((int)exp, new Rectangle(SIZE[0].X + SIZE[0].Width - 160, (int)(SIZE[0].Y + TextScale.Y * 12), 0, 0), spaces: 7);

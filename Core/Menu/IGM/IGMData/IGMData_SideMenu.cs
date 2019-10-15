@@ -52,7 +52,7 @@ namespace OpenVIII
                 pos = 0;
                 foreach (KeyValuePair<FF8String, FF8String> pair in pairs)
                 {
-                    ITEM[pos, 0] = new IGMDataItem.Text(pair.Key, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0));
+                    ITEM[pos, 0] = new IGMDataItem.Text { Data = pair.Key, Pos = new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0) };
                     pos++;
                 }
 

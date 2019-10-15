@@ -94,7 +94,7 @@ namespace OpenVIII
                         foreach (Enemy e in Enemy.Party)
                         {
                             //if(e.EII)
-                            ITEM[pos, 0] = new IGMDataItem.Text(e.Name, SIZE[pos], Font.ColorID.White);
+                            ITEM[pos, 0] = new IGMDataItem.Text { Data = e.Name, Pos= SIZE[pos], FontColor = Font.ColorID.White };
                             ITEM[pos, 0].Show();
                             BLANKS[pos] = false;
 

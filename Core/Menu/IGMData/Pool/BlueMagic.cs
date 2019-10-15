@@ -27,7 +27,7 @@ namespace OpenVIII.IGMData.Pool
             base.Init();
             for (int i = 0; i < Rows; i++)
             {
-                ITEM[i, 0] = new IGMDataItem.Text(null, SIZE[i]);
+                ITEM[i, 0] = new IGMDataItem.Text { Pos = SIZE[i] };
             }
             ITEM[Rows, 0] = new BattleMenus.IGMData_TargetGroup(Damageable, false);
             PointerZIndex = 0;

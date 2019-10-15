@@ -37,7 +37,7 @@ namespace OpenVIII.IGMData.Pool
             _helpStr = new FF8String[Count];
             for (byte pos = 0; pos < Rows; pos++)
             {
-                ITEM[pos, 0] = new IGMDataItem.Text(null, SIZE[pos]);
+                ITEM[pos, 0] = new IGMDataItem.Text() { Pos = SIZE[pos]};
                 ITEM[pos, 1] = new IGMDataItem.Integer(0, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0), numtype: Icons.NumType.sysFntBig, spaces: 3);
             }
             ITEM[Count - 1, 2] = new IGMDataItem.Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows - 1].X + SIZE[Rows - 1].Width - 60, Y, 0, 0), scale: new Vector2(2.5f));

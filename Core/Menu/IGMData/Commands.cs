@@ -276,9 +276,11 @@ namespace OpenVIII.IGMData
                 page = 0;
                 Cursor_Status &= ~Cursor_Status.Horizontal;
                 commands[0] = Kernel_bin.BattleCommands[(c.Abilities.Contains(Kernel_bin.Abilities.Mug) ? 12 : 1)];
-                ITEM[0, 0] = new IGMDataItem.Text(
-                        commands[0].Name,
-                        SIZE[0]);
+                ITEM[0, 0] = new IGMDataItem.Text
+                {
+                    Data = commands[0].Name,
+                    Pos = SIZE[0]
+                };
 
                 for (int pos = 1; pos < Rows; pos++)
                 {
@@ -291,14 +293,15 @@ namespace OpenVIII.IGMData
                             continue;
                         }
 #if DEBUG
-                        if(!Battle) commands[pos] = cmdval.BattleCommand;
+                        if (!Battle) commands[pos] = cmdval.BattleCommand;
                         else commands[pos] = Kernel_bin.BattleCommands[Cidoff++];
 #else
                         commands[pos] = cmdval.BattleCommand;
 #endif
-                        ITEM[pos, 0] = new IGMDataItem.Text(
-                            commands[pos].Name,
-                            SIZE[pos]);
+                        ITEM[pos, 0] = new IGMDataItem.Text {
+                            Data = commands[pos].Name,
+                            Pos = SIZE[pos]
+                        };
                         ITEM[pos, 0].Show();
                         CheckBounds(ref DataSize, pos);
                         BLANKS[pos] = false;

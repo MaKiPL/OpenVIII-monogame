@@ -59,8 +59,8 @@ namespace OpenVIII.IGMData.Pool
             protected override void Init()
             {
                 base.Init();
-                ITEM[_Draw, 0] = new IGMDataItem.Text(Memory.Strings.Read(Strings.FileID.KERNEL, 0, 12), SIZE[_Draw]);
-                ITEM[Cast, 0] = new IGMDataItem.Text(Memory.Strings.Read(Strings.FileID.KERNEL, 0, 18), SIZE[Cast]);
+                ITEM[_Draw, 0] = new IGMDataItem.Text { Data = Memory.Strings.Read(Strings.FileID.KERNEL, 0, 12), Pos = SIZE[_Draw] };
+                ITEM[Cast, 0] = new IGMDataItem.Text { Data = Memory.Strings.Read(Strings.FileID.KERNEL, 0, 18), Pos = SIZE[Cast] };
                 ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Damageable, false);
                 Cursor_Status = Cursor_Status.Enabled;
                 OKAY_Actions = new Dictionary<int, Func<bool>>
@@ -135,7 +135,7 @@ namespace OpenVIII.IGMData.Pool
                     bool candraw = gf || !full;
                     if (!candraw)
                     {
-                        ((IGMDataItem.Text)ITEM[_Draw, 0]).FontColor = Font.ColorID.Dark_Gray;
+                        ((IGMDataItem.Text)ITEM[_Draw, 0]).FontColor = Font.ColorID.Dark_Grey;
                         BLANKS[_Draw] = true;
                     }
                     else
@@ -145,7 +145,7 @@ namespace OpenVIII.IGMData.Pool
                     }
                     if (gf)
                     {
-                        ((IGMDataItem.Text)ITEM[Cast, 0]).FontColor = Font.ColorID.Dark_Gray;
+                        ((IGMDataItem.Text)ITEM[Cast, 0]).FontColor = Font.ColorID.Dark_Grey;
                         BLANKS[_Draw] = true;
                     }
                     else

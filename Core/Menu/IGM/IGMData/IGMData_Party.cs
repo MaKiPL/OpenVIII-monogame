@@ -133,7 +133,7 @@ namespace OpenVIII
                             r = dims.Item3;
                             r.Offset(145, 36);
                             FF8String s = Strings[Items.CurrentEXP] + "\n" + Strings[Items.NextLEVEL];
-                            ITEM[pos, 7] = new IGMDataItem.Text(s, r);
+                            ITEM[pos, 7] = new IGMDataItem.Text { Data = s, Pos = r };
 
                             r = dims.Item3;
                             r.Offset((340), 42);

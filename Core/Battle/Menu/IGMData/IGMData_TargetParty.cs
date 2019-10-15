@@ -10,7 +10,27 @@ namespace OpenVIII
 
         public class IGMData_TargetParty : IGMData.Base
         {
+            #region Properties
+
+            public IGMData_TargetEnemies Target_Enemies { get; set; }
+            #endregion Properties
+
+            #region Constructors
+
+            public IGMData_TargetParty(Rectangle pos) : base(3, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.NAME), 1, 3)
+            {
+            }
+
+            #endregion Constructors
+
             #region Methods
+
+            protected override void Init()
+            {
+                for (int pos = 0; pos < Count; pos++)
+                    ITEM[pos, 0] = new IGMDataItem.Text { Pos = SIZE[pos] };
+                base.Init();
+            }
 
             protected override void InitShift(int i, int col, int row)
             {
@@ -21,23 +41,6 @@ namespace OpenVIII
                 //SIZE[i].Offset(0, 12 + (-8 * row));
                 SIZE[i].Height = (int)(12 * TextScale.Y);
             }
-
-            #endregion Methods
-
-            #region Constructors
-
-            public IGMData_TargetParty(Rectangle pos) : base(3, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.NAME), 1, 3)
-            {
-            }
-
-            #endregion Constructors
-
-            #region Properties
-
-            public IGMData_TargetEnemies Target_Enemies { get; set; }
-
-            #endregion Properties
-
             public override void Inputs_Left()
             {
                 Cursor_Status &= ~Cursor_Status.Enabled;
@@ -60,7 +63,6 @@ namespace OpenVIII
                     Target_Enemies.CURSOR_SELECT--;
                 base.Inputs_Right();
             }
-
             public override void Refresh()
             {
                 if (Memory.State?.Characters != null)
@@ -70,15 +72,24 @@ namespace OpenVIII
                     foreach (KeyValuePair<int, Characters> pm in party)
                     {
                         Saves.CharacterData data = Memory.State[Memory.State.PartyData[pm.Key]];
-                        bool ded = data.IsDead;
-                        ITEM[pos, 0] = new IGMDataItem.Text(Memory.Strings.GetName(pm.Value), SIZE[pos], ded ? Font.ColorID.Dark_Gray : Font.ColorID.White);
 
+                        ((IGMDataItem.Text)ITEM[pos, 0]).Data = data.Name;
+                        ((IGMDataItem.Text)ITEM[pos, 0]).FontColor = data.IsDead ? Font.ColorID.Dark_Grey : Font.ColorID.White;
+
+                        BLANKS[pos] = false;
+
+                        ITEM[pos, 0].Show();
                         pos++;
+                    }
+                    for (; pos < Count; pos++)
+                    {
+                        BLANKS[pos] = true;
+                        ITEM[pos, 0].Hide();
                     }
                 }
             }
+            #endregion Methods
         }
-
         #endregion Classes
     }
 }

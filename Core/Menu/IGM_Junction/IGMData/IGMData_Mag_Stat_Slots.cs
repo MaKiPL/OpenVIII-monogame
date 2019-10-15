@@ -150,10 +150,10 @@ namespace OpenVIII
                                 if (pos >= 5) pos++;
                                 Contents[pos] = stat;
                                 FF8String name = Kernel_bin.MagicData[c.Stat_J[stat]].Name;
-                                if (name == null || name.Length == 0) name = Misc[Items._];
+                                if (name == null || name.Length == 0) name = Strings.Name._;
 
                                 ITEM[pos, 0] = new IGMDataItem.Icon(Stat2Icon[stat], new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), 2);
-                                ITEM[pos, 1] = new IGMDataItem.Text(name, new Rectangle(SIZE[pos].X + 80, SIZE[pos].Y, 0, 0));
+                                ITEM[pos, 1] = new IGMDataItem.Text { Data = name, Pos = new Rectangle(SIZE[pos].X + 80, SIZE[pos].Y, 0, 0) };
                                 if (!unlocked.Contains(Kernel_bin.Stat2Ability[stat]))
                                 {
                                     ((IGMDataItem.Icon)ITEM[pos, 0]).Palette = ((IGMDataItem.Icon)ITEM[pos, 0]).Faded_Palette = 7;
@@ -164,7 +164,7 @@ namespace OpenVIII
 
                                 ITEM[pos, 2] = new IGMDataItem.Integer(Damageable.TotalStat(stat), new Rectangle(SIZE[pos].X + 152, SIZE[pos].Y, 0, 0), 2, Icons.NumType.sysFntBig, spaces: 10);
                                 ITEM[pos, 3] = stat == Kernel_bin.Stat.HIT || stat == Kernel_bin.Stat.EVA
-                                    ? new IGMDataItem.Text(Misc[Items.Percent], new Rectangle(SIZE[pos].X + 350, SIZE[pos].Y, 0, 0))
+                                    ? new IGMDataItem.Text { Data = Strings.Name.Percent, Pos = new Rectangle(SIZE[pos].X + 350, SIZE[pos].Y, 0, 0) }
                                     : null;
                                 if (GetPrevSetting() == null || (Damageable.GetCharacterData(out Saves.CharacterData _c) && GetPrevSetting().Stat_J[stat] == _c.Stat_J[stat]) || GetPrevSetting().TotalStat(stat) == Damageable.TotalStat(stat))
                                 {

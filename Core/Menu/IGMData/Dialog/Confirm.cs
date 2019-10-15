@@ -19,8 +19,8 @@ namespace OpenVIII.IGMData.Dialog
             opt = new FF8String[Count];
             opt[0] = opt1;
             opt[1] = opt2;
-            ITEM[0, 0] = new IGMDataItem.Text(opt[0], SIZE[0]);
-            ITEM[1, 0] = new IGMDataItem.Text(opt[1], SIZE[1]);
+            ITEM[0, 0] = new IGMDataItem.Text { Data = opt[0], Pos = SIZE[0] };
+            ITEM[1, 0] = new IGMDataItem.Text { Data = opt[1], Pos = SIZE[1] };
         }
 
         #endregion Constructors

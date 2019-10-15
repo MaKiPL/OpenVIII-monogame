@@ -51,31 +51,39 @@ namespace OpenVIII
                 }
                 int pos = 0;
                 int skip = Page * Rows;
-                if(Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
-                for (int i = 0;
-                    Memory.State.Characters != null &&
-                    i < c.UnlockedGFAbilities.Count &&
-                    pos < Rows; i++)
-                {
-                    if (c.UnlockedGFAbilities[i] != Kernel_bin.Abilities.None)
+                if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                    for (int i = 0;
+                        Memory.State.Characters != null &&
+                        i < c.UnlockedGFAbilities.Count &&
+                        pos < Rows; i++)
                     {
-                        Kernel_bin.Abilities j = (c.UnlockedGFAbilities[i]);
-                        if (Source.ContainsKey(j) && skip-- <= 0)
+                        if (c.UnlockedGFAbilities[i] != Kernel_bin.Abilities.None)
                         {
-                            Font.ColorID cid = c.Commands.Contains(j) ? Font.ColorID.Grey : Font.ColorID.White;
-                            BLANKS[pos] = cid == Font.ColorID.Grey ? true : false;
-                            ITEM[pos, 0] = new IGMDataItem.Text(
-                                Icons.ID.Ability_Command, 9,
-                            Source[j].Name,
-                            new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), cid);
-                            Contents[pos] = j;
-                            pos++;
+                            Kernel_bin.Abilities j = (c.UnlockedGFAbilities[i]);
+                            if (Source.ContainsKey(j) && skip-- <= 0)
+                            {
+                                Font.ColorID cid;
+                                if (c.Commands.Contains(j))
+                                {
+                                    cid = Font.ColorID.Grey;
+                                    BLANKS[pos] = true;
+                                }
+                                else
+                                {
+                                    cid = Font.ColorID.White;
+                                    BLANKS[pos] = false;
+                                }
+                                ((IGMDataItem.Text)ITEM[pos, 0]).Data = Source[j].Name;
+                                ((IGMDataItem.Text)ITEM[pos, 0]).FontColor = cid;
+                                ITEM[pos, 0].Show();
+                                Contents[pos] = j;
+                                pos++;
+                            }
                         }
                     }
-                }
                 for (; pos < Rows; pos++)
                 {
-                    ITEM[pos, 0] = null;
+                    ITEM[pos, 0].Hide();
                     BLANKS[pos] = true;
                     Contents[pos] = Kernel_bin.Abilities.None;
                 }
@@ -105,19 +113,26 @@ namespace OpenVIII
                 if (Pages == 1)
                 {
                     ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.COMMAND;
-                    ITEM[11, 0] = ITEM[12, 0] = null;
+                    ITEM[11, 0].Hide();
+                    ITEM[12, 0].Hide();
                 }
                 else
-                    switch (Page)
-                    {
-                        case 0:
-                            ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.COMMAND_PG1;
-                            break;
-
-                        case 1:
-                            ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.COMMAND_PG2;
-                            break;
-                    }
+                {
+                    ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.COMMAND_PG1 + checked((byte)Page);
+                    ITEM[11, 0].Show();
+                    ITEM[12, 0].Show();
+                }
+            }
+            protected override void Init()
+            {
+                base.Init();
+                for(int pos=0; pos< Rows; pos++)
+                ITEM[pos, 0] = new IGMDataItem.Text
+                {
+                    Icon = Icons.ID.Ability_Command,
+                    Palette = 9,
+                    Pos = new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0)
+                };
             }
 
             protected override void InitShift(int i, int col, int row)

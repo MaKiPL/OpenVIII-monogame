@@ -20,7 +20,7 @@ namespace OpenVIII.IGMDataItem.Gradient
         {
             ATB r = new ATB()
             {
-                Pos = pos ?? Rectangle.Empty,
+                _pos = pos ?? Rectangle.Empty,
                 Restriction = pos ?? Rectangle.Empty,
             };
             float dark = 0.067f;

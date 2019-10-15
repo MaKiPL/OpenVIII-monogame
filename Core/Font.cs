@@ -19,7 +19,7 @@ namespace OpenVIII
 
         public static Dictionary<ColorID, Color> ColorID2Blink = new Dictionary<ColorID, Color>
         {
-            { ColorID.Dark_Gray, new Color(12,15,12,255) },
+            { ColorID.Dark_Grey, new Color(12,15,12,255) },
             { ColorID.Grey, new Color(41,49,41,255) },
             { ColorID.Yellow, new Color(222,222,8,255) },
             { ColorID.Red, new Color(128,24,24,255) },
@@ -31,7 +31,7 @@ namespace OpenVIII
 
         public static Dictionary<ColorID, Color> ColorID2Color = new Dictionary<ColorID, Color>
         {
-            { ColorID.Dark_Gray, new Color(41,49,41,255) },
+            { ColorID.Dark_Grey, new Color(41,49,41,255) },
             { ColorID.Grey, new Color(148,148,164,255) },
             { ColorID.Yellow, new Color(222,222,8,255) },
             { ColorID.Red, new Color(255,24,24,255) },
@@ -58,7 +58,7 @@ namespace OpenVIII
 
         public enum ColorID
         {
-            Dark_Gray, Grey, Yellow, Red, Green, Blue, Purple, White,
+            Dark_Grey, Grey, Yellow, Red, Green, Blue, Purple, White,
             //these are darker versions that are faded to when blinking
         }
 
@@ -280,7 +280,7 @@ namespace OpenVIII
 
                 case FF8TextTagColor.Dark_Gray:
                 case FF8TextTagColor.Dark_GrayBlink:
-                    cid = ColorID.Dark_Gray;
+                    cid = ColorID.Dark_Grey;
                     break;
             }
             if (cid.HasValue)

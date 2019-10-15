@@ -33,7 +33,7 @@ namespace OpenVIII.IGMDataItem.Gradient
             Renzokeken r = new Renzokeken
             {
                 Data = new Texture2D(Memory.graphics.GraphicsDevice, cfade.Length, 1),
-                Pos = pos ?? Rectangle.Empty,
+                _pos = pos ?? Rectangle.Empty,
                 HotSpot = hotspot ?? Rectangle.Empty,
                 Restriction = restriction ?? Rectangle.Empty,
                 Color = color ?? Color.White,

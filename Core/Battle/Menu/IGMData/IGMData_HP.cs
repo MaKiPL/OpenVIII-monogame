@@ -140,7 +140,7 @@ namespace OpenVIII
 
                 Rectangle atbbarpos = new Rectangle(SIZE[pos].X + 230, SIZE[pos].Y + 12, 150, 15);
                 // TODO: make a font render that can draw right to left from a point. For Right aligning the names.
-                ITEM[pos, (byte)DepthID.Name] = new IGMDataItem.Text(name, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0));
+                ITEM[pos, (byte)DepthID.Name] = new IGMDataItem.Text { Data=name,Pos= new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0) };
                 ITEM[pos, (byte)DepthID.HP] = new IGMDataItem.Integer(0, new Rectangle(SIZE[pos].X + 128, SIZE[pos].Y, 0, 0), spaces: 4, numtype: Icons.NumType.Num_8x16_1);
 
                 ITEM[pos, (byte)DepthID.ATBBorder] = new IGMDataItem.Icon(Icons.ID.Size_08x64_Bar, atbbarpos, 0);

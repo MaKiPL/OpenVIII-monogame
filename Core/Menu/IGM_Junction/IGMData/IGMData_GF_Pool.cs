@@ -141,40 +141,29 @@ namespace OpenVIII
                 {
                     int pos = 0;
                     int skip = Page * Rows;
-                    foreach (GFs g in UnlockedGFs.Where(g => !JunctionedGFs.ContainsKey(g)))
-                    {
-                        if (pos >= Rows) break;
-                        if (skip-- <= 0)
-                        {
-                            addGF(ref pos, g);
-                        }
-                    }
-                    foreach (GFs g in UnlockedGFs.Where(g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] == c.ID))
-                    {
-                        if (pos >= Rows) break;
-                        if (skip-- <= 0)
-                        {
-                            addGF(ref pos, g, Font.ColorID.Grey);
-                        }
-                    }
-                    foreach (GFs g in UnlockedGFs.Where(g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] != c.ID))
-                    {
-                        if (pos >= Rows) break;
-                        if (skip-- <= 0)
-                        {
-                            addGF(ref pos, g, Font.ColorID.Dark_Gray);
-                        }
-                    }
+                    AddGFs(ref pos, ref skip,g => !JunctionedGFs.ContainsKey(g),Font.ColorID.White);
+                    AddGFs(ref pos, ref skip, g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] == c.ID, Font.ColorID.Grey);
+                    AddGFs(ref pos, ref skip, g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] != c.ID, Font.ColorID.Dark_Grey);
                     for (; pos < Rows; pos++)
                     {
-                        ITEM[pos, 0] = null;
-                        ITEM[pos, 1] = null;
-                        ITEM[pos, 2] = null;
-                        BLANKS[pos] = true;
+                        HideChild(pos);
                     }
                     base.Refresh();
                     UpdateTitle();
                     UpdateCharacter();
+                }
+            }
+
+            private void AddGFs(ref int pos, ref int skip, System.Func<GFs, bool> predicate, Font.ColorID colorid = Font.ColorID.White)
+            {
+                 
+                foreach (GFs g in UnlockedGFs.Where(predicate))
+                {
+                    if (pos >= Rows) break;
+                    if (skip-- <= 0)
+                    {
+                        AddGF(ref pos, g, colorid);
+                    }
                 }
             }
 
@@ -184,27 +173,15 @@ namespace OpenVIII
                 if (Pages == 1)
                 {
                     ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.GF;
-                    ITEM[Count - 1, 0] = ITEM[Count - 2, 0] = null;
+                    ITEM[Count - 1, 0].Hide();
+                    ITEM[Count - 2, 0].Hide();
                 }
                 else
-                    switch (Page)
-                    {
-                        case 0:
-                            ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.GF_PG1;
-                            break;
-
-                        case 1:
-                            ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.GF_PG2;
-                            break;
-
-                        case 2:
-                            ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.GF_PG3;
-                            break;
-
-                        case 3:
-                            ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.GF_PG4;
-                            break;
-                    }
+                {
+                    ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.GF_PG1 + checked((byte)Page);
+                    ITEM[Count - 1, 0].Show();
+                    ITEM[Count - 2, 0].Show();
+                }
             }
 
             protected override void Init()
@@ -213,6 +190,8 @@ namespace OpenVIII
                 SIZE[Rows] = SIZE[0];
                 SIZE[Rows].Y = Y;
                 ITEM[Rows, 2] = new IGMDataItem.Icon(Icons.ID.Size_16x08_Lv_, new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 30, SIZE[Rows].Y, 0, 0), scale: new Vector2(2.5f));
+                for (int i = 0; i < Rows; )
+                    AddGF(ref i, GFs.Blank);
             }
 
             protected override void InitShift(int i, int col, int row)
@@ -245,14 +224,46 @@ namespace OpenVIII
                 }
             }
 
-            private void addGF(ref int pos, GFs g, Font.ColorID color = Font.ColorID.White)
+            private void AddGF(ref int pos, GFs g, Font.ColorID color = Font.ColorID.White)
             {
-                ITEM[pos, 0] = new IGMDataItem.Text(Memory.Strings.GetName(g), SIZE[pos], color);
-                ITEM[pos, 1] = JunctionedGFs.ContainsKey(g) ? new IGMDataItem.Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 100, SIZE[pos].Y, 0, 0)) : null;
-                ITEM[pos, 2] = new IGMDataItem.Integer(Source.GFs[g].Level, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), spaces: 3);
-                BLANKS[pos] = false;
                 Contents[pos] = g;
+                if (g != GFs.Blank)
+                {
+                    ((IGMDataItem.Text)ITEM[pos, 0]).Data = Memory.Strings.GetName(g);
+                    ((IGMDataItem.Text)ITEM[pos, 0]).FontColor = color;
+                    ((IGMDataItem.Integer)ITEM[pos, 2]).Data = Source.GFs[g].Level;
+                    ShowChild(pos, g);
+                }
+                else
+                {
+                    if (ITEM[pos, 0] == null)
+                        ITEM[pos, 0] = new IGMDataItem.Text { Pos = SIZE[pos], FontColor = color };
+                    if (ITEM[pos, 1] == null)
+                        ITEM[pos, 1] = new IGMDataItem.Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 100, SIZE[pos].Y, 0, 0));
+                    if (ITEM[pos, 2] == null)
+                        ITEM[pos, 2] = new IGMDataItem.Integer(0, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), spaces: 3);
+                    HideChild(pos);
+                }
                 pos++;
+            }
+
+            private void ShowChild(int pos, GFs g = GFs.Blank)
+            {
+                BLANKS[pos] = false;
+                ITEM[pos, 0].Show();
+                if (JunctionedGFs?.ContainsKey(g) ?? false)
+                    ITEM[pos, 1].Show();
+                else
+                    ITEM[pos, 1].Hide();
+                ITEM[pos, 2].Show();
+            }
+
+            private void HideChild(int pos)
+            {
+                BLANKS[pos] = true;
+                ITEM[pos, 0].Hide();
+                ITEM[pos, 1].Hide();
+                ITEM[pos, 2].Hide();
             }
 
             private void UpdateCharacter()
@@ -260,7 +271,7 @@ namespace OpenVIII
                 if (IGM_Junction != null)
                 {
                     GFs g = Contents[CURSOR_SELECT];
-                    var i = (IGMDataItem.Box)((IGMData_GF_Group)IGM_Junction.Data[SectionName.TopMenu_GF_Group]).ITEM[2, 0];
+                    IGMDataItem.Box i = (IGMDataItem.Box)((IGMData_GF_Group)IGM_Junction.Data[SectionName.TopMenu_GF_Group]).ITEM[2, 0];
                     i.Data = JunctionedGFs.Count > 0 && JunctionedGFs.ContainsKey(g) ? Memory.Strings.GetName(JunctionedGFs[g]) : null;
                 }
             }

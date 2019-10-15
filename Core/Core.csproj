@@ -202,6 +202,8 @@
     <Compile Include="Menu\IGMData\Pool\Draw.cs" />
     <Compile Include="Menu\IGMData\Pool\Draw\Commands.cs" />
     <Compile Include="Menu\IGMData\Pool\BlueMagic.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\Slots\Abilities.cs" />
+    <Compile Include="Menu\IGM_Junction\IGMData\Slots\Command.cs" />
     <Compile Include="Menu\Images\HSL.cs" />
     <Compile Include="Menu\LGSG\IGM_LGSG.cs" />
     <Compile Include="Menu\Menus.cs" />
@@ -802,9 +804,7 @@
     <Compile Include="Menu\IGM_Items\IGMData\IGMData_TopMenu.cs" />
     <Compile Include="Menu\IGM_Items\IGM_Items.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_AbilityPool.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_AbilitySlots.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_CommandPool.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_CommandSlots.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_Group.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_CharacterInfo.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_ConfirmChanges.cs" />
@@ -888,6 +888,7 @@
     <Compile Include="Image\TEX.cs" />
     <Compile Include="Image\TextureHandler.cs" />
     <Compile Include="Image\TIM2.cs" />
+    <Compile Include="Strings\StringShort.cs" />
     <Compile Include="World\CharaOne.cs" />
     <Compile Include="World\debug_MCH.cs" />
     <Compile Include="World\module_world_debug.cs" />
