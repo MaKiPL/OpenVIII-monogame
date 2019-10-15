@@ -227,6 +227,7 @@
     <Compile Include="Saves\IDamageable.cs" />
     <Compile Include="Saves\TTCardInfo.cs" />
     <Compile Include="Slide.cs" />
+    <Compile Include="Strings\Description.cs" />
     <Compile Include="Strings\FF8String.cs" />
     <Compile Include="Strings\FF8StringReference.cs" />
     <Compile Include="Ffcc.cs" />
@@ -850,6 +851,7 @@
     <Compile Include="Menu\Table_Options.cs" />
     <Compile Include="Menu\Debug\Module_main_menu_DebugLobby.cs" />
     <Compile Include="PointEx.cs" />
+    <Compile Include="Strings\Name.cs" />
     <Compile Include="Strings\Stringfile.cs" />
     <Compile Include="Strings\Strings.Areames.cs" />
     <Compile Include="Strings\Strings.cs" />
@@ -882,13 +884,12 @@
     <Compile Include="Sources\MonoGame\Hooks\MonoGameHooks.cs" />
     <Compile Include="Sources\MonoGame\Hooks\OpenALWindowsHook.cs" />
     <Compile Include="Sources\NetFramework\TypeExtensionMethods.cs" />
-    <Compile Include="Image\SP2.cs" />
+    <Compile Include="Menu\Images\SP2.cs" />
     <Compile Include="Strings\Strings.Kernel.cs" />
     <Compile Include="Strings\StringsBase.cs" />
     <Compile Include="Image\TEX.cs" />
     <Compile Include="Image\TextureHandler.cs" />
     <Compile Include="Image\TIM2.cs" />
-    <Compile Include="Strings\StringShort.cs" />
     <Compile Include="World\CharaOne.cs" />
     <Compile Include="World\debug_MCH.cs" />
     <Compile Include="World\module_world_debug.cs" />
