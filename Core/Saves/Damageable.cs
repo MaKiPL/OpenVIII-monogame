@@ -4,7 +4,6 @@ using System.Diagnostics;
 
 namespace OpenVIII
 {
-
     /// <summary>
     /// Character/Enemy/GF that can be damaged or die.
     /// </summary>
@@ -15,6 +14,10 @@ namespace OpenVIII
         private ATBTimer ATBTimer;
 
         protected Damageable()
+        {
+        }
+
+        protected virtual void Init()
         {
             SetBattleMode(BattleMode.ATB_Charging);
             ATBTimer = new ATBTimer(this);

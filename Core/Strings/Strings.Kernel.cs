@@ -25,8 +25,12 @@ namespace OpenVIII
 
             #region Constructors
 
-            public Kernel() : base(Memory.Archives.A_MAIN, "kernel.bin")
+            public Kernel()
+            { }
+            static public Kernel Load() => Load<Kernel>();
+            protected override void DefaultValues()
             {
+                SetValues(Memory.Archives.A_MAIN, "kernel.bin");
             }
 
             #endregion Constructors
@@ -73,7 +77,7 @@ namespace OpenVIII
             /// Fetch strings from kernel.bin
             /// </summary>
             /// <see cref="http://www.balamb.pl/qh/kernel-pointers.htm"/>
-            protected override void Init()
+            protected override void LoadArchiveFiles()
             {
                 Settings = (FF8StringReference.Settings.MultiCharByte | FF8StringReference.Settings.Namedic);
                 ArchiveWorker aw = new ArchiveWorker(Archive);

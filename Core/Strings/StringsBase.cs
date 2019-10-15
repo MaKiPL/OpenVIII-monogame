@@ -25,8 +25,11 @@ namespace OpenVIII
             #endregion Fields
 
             #region Constructors
+            protected StringsBase()
+            {
 
-            protected StringsBase(Memory.Archive archive, params string[] filenames)
+            }
+            protected void SetValues(Memory.Archive archive, params string[] filenames)
             {
                 Debug.WriteLine("Task={0}, Thread={2}, [Files={1}]",
                 Task.CurrentId, string.Join(", ", filenames),
@@ -34,7 +37,6 @@ namespace OpenVIII
 
                 Archive = archive;
                 Filenames = filenames;
-                Init();
             }
 
             #endregion Constructors
@@ -167,7 +169,7 @@ namespace OpenVIII
 
             protected abstract void GetFileLocations(BinaryReader br);
 
-            protected abstract void Init();
+            protected abstract void LoadArchiveFiles();
 
             protected uint[] mngrp_read_padding(BinaryReader br, Loc fpos, int type = 0)
             {
@@ -189,8 +191,15 @@ namespace OpenVIII
                 }
                 return fPaddings;
             }
-
-            protected void simple_init()
+            protected abstract void DefaultValues();
+            static public T Load<T>() where T : StringsBase,new()
+            {
+                T r = new T();
+                r.DefaultValues();
+                r.LoadArchiveFiles();
+                return r;
+            }
+            protected void LoadArchiveFiles_Simple()
             {
                 ArchiveWorker aw = new ArchiveWorker(Archive, true);
                 MemoryStream ms;

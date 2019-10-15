@@ -1,6 +1,6 @@
 ﻿namespace OpenVIII
 {
-    public partial class Faces
+    public sealed partial class Faces
     {
         #region Enums
 
@@ -40,7 +40,7 @@
             Cactuar,
             Tonberry,
             Eden,
-            Blank = 0xFF            
+            Blank = 0xFF
         }
 
         #endregion Enums

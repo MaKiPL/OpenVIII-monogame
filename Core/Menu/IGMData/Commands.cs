@@ -40,6 +40,11 @@ namespace OpenVIII.IGMData
         {
             BLANKS[Limit_Arrow] = true;
             base.Init();
+            for (int pos = 0; pos < Rows; pos++)
+                ITEM[pos, 0] = new IGMDataItem.Text
+                {
+                    Pos = SIZE[pos]
+                };
             ITEM[Blue_Pool, 0] = new Pool.BlueMagic(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
             ITEM[Blue_Pool, 0].Hide();
             ITEM[Mag_Pool, 0] = new IGMData.Pool.Magic(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
@@ -298,10 +303,8 @@ namespace OpenVIII.IGMData
 #else
                         commands[pos] = cmdval.BattleCommand;
 #endif
-                        ITEM[pos, 0] = new IGMDataItem.Text {
-                            Data = commands[pos].Name,
-                            Pos = SIZE[pos]
-                        };
+                        ((IGMDataItem.Text)ITEM[pos, 0]).Data = commands[pos].Name;
+                        ((IGMDataItem.Text)ITEM[pos, 0]).Pos = SIZE[pos];
                         ITEM[pos, 0].Show();
                         CheckBounds(ref DataSize, pos);
                         BLANKS[pos] = false;

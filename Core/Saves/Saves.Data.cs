@@ -675,7 +675,7 @@ namespace OpenVIII
                 Currentsave = br.ReadUInt32();//0x005C
                 for (byte i = 0; i <= (int)OpenVIII.GFs.Eden; i++)
                 {
-                    _gfs.Add((GFs)i,new GFData(br, (GFs)i));
+                    _gfs.Add((GFs)i,GFData.Read(br, (GFs)i));
                 }
                 for (byte i = 0; i <= (int)OpenVIII.Characters.Edea_Kramer; i++)
                 {

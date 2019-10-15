@@ -1,6 +1,6 @@
 ﻿namespace OpenVIII
 {
-    public partial class Cards
+    public sealed partial class Cards
     {
         #region Enums
 
@@ -151,10 +151,12 @@
 
             //Custom Entry
             Card_Back,
+
             /// <summary>
             /// for using in battle if a enemy is immune the value will be 0xff
             /// </summary>
             Immune = 0xff,
+
             Fail = 0xfe
         }
 

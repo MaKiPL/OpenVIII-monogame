@@ -28,15 +28,17 @@ namespace OpenVIII.IGMData
             }
         }
 
-        protected void CheckBounds(ref Rectangle DataSize, Rectangle input)
+        protected bool CheckBounds(ref Rectangle DataSize, Rectangle input)
         {
             if (input.Right > Pos.Right && input.Right > DataSize.Right)
             {
                 DataSize = input;
+                return true;
             }
+            return false;
         }
 
-        protected void CheckBounds(ref Rectangle DataSize, int pos) => CheckBounds(ref DataSize, ((IGMDataItem.Text)ITEM[pos, 0]).DataSize);
+        protected bool CheckBounds(ref Rectangle DataSize, int pos) => CheckBounds(ref DataSize, ((IGMDataItem.Text)ITEM[pos, 0]).DataSize);
 
         protected virtual void DrawITEM(int i, int d) => ITEM[i, d]?.Draw();
 
@@ -57,7 +59,6 @@ namespace OpenVIII.IGMData
             }
             return false;
         }
-
 
         protected void Init(Damageable damageable, sbyte? partypos)
         {
@@ -177,11 +178,9 @@ namespace OpenVIII.IGMData
             }
         }
 
-
         #endregion Methods
 
         public bool[] BLANKS;
-
 
         public Menu_Base[,] ITEM;
 
@@ -200,13 +199,10 @@ namespace OpenVIII.IGMData
 
         public int Cols { get; private set; }
 
-
         /// <summary>
         /// Total number of items
         /// </summary>
         public byte Count { get; private set; }
-
-
 
         /// <summary>
         /// How many Peices per Item. Example 1 box could have 9 things to draw in it.
@@ -487,7 +483,6 @@ namespace OpenVIII.IGMData
             }
             base.Reset();
         }
-
 
         /// <summary>
         /// Things that change on every update.

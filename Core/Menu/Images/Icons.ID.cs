@@ -1,9 +1,6 @@
-﻿using Microsoft.Xna.Framework;
-using System;
-
-namespace OpenVIII
+﻿namespace OpenVIII
 {
-    public partial class Icons
+    public sealed partial class Icons
     {
         #region Enums
 
@@ -440,7 +437,7 @@ namespace OpenVIII
             SPECIAL_PG2,
             SPECIAL_PG3,
             SPECIAL_PG4,
-        }        
+        }
 
         #endregion Enums
     }

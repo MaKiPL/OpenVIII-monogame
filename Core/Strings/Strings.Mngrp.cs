@@ -23,12 +23,13 @@ namespace OpenVIII
             #endregion Fields
 
             #region Constructors
-
-            public Mngrp() : base(Memory.Archives.A_MENU, "mngrp.bin", "mngrphd.bin")
+            public Mngrp() { }
+            static public Mngrp Load() => Load<Mngrp>();
+            protected override void DefaultValues()
             {
+                SetValues(Memory.Archives.A_MENU, "mngrp.bin", "mngrphd.bin");
             }
-
-            #endregion Constructors
+            #endregion Constructors-
 
             #region Enums
 
@@ -67,7 +68,7 @@ namespace OpenVIII
                 }
             }
 
-            protected override void Init()
+            protected override void LoadArchiveFiles()
             {
                 Files = new StringFile(118);
                 GetFileLocations();

@@ -69,7 +69,7 @@ namespace OpenVIII
             {
             }
 
-            public GFData(BinaryReader br, GFs g) => Read(br, g);
+            //public GFData(BinaryReader br, GFs g) => Read(br, g);
 
             #endregion Constructors
 
@@ -265,22 +265,25 @@ namespace OpenVIII
             /// </summary>
             /// <param name="br">Binary Reader to raw save data</param>
             /// <param name="g">Which GF we are reading in</param>
-            public void Read(BinaryReader br, GFs g)
+            static public GFData Read(BinaryReader br, GFs g)
             {
-                StatusImmune = true;
-                ID = g;
-                Name = br.ReadBytes(12);//0x00 (0x00 terminated)
-                if (string.IsNullOrWhiteSpace(Name)) Name = Memory.Strings.GetName(g);
-                Experience = br.ReadUInt32();//0x0C
-                Unknown = br.ReadByte();//0x10
-                Exists = br.ReadByte() == 1 ? true : false;//0x11 //1 unlocked //0 locked
-                _CurrentHP = br.ReadUInt16();//0x12
-                Complete = new BitArray(br.ReadBytes(16));//0x14 abilities (1 bit = 1 ability completed, 9 bits unused)
-                APs = br.ReadBytes(24);//0x24 (1 byte = 1 ability of the GF, 2 bytes unused)
-                NumberKills = br.ReadUInt16();//0x3C of kills
-                NumberKOs = br.ReadUInt16();//0x3E of KOs
-                Learning = (Kernel_bin.Abilities)br.ReadByte();//0x41 ability
-                Forgotten = new BitArray(br.ReadBytes(3));//0x42 abilities (1 bit = 1 ability of the GF forgotten, 2 bits unused)
+                GFData r = new GFData();
+                r.Init();
+                r.StatusImmune = true;
+                r.ID = g;
+                r.Name = br.ReadBytes(12);//0x00 (0x00 terminated)
+                if (string.IsNullOrWhiteSpace(r.Name)) r.Name = Memory.Strings.GetName(g);
+                r.Experience = br.ReadUInt32();//0x0C
+                r.Unknown = br.ReadByte();//0x10
+                r.Exists = br.ReadByte() == 1 ? true : false;//0x11 //1 unlocked //0 locked
+                r._CurrentHP = br.ReadUInt16();//0x12
+                r.Complete = new BitArray(br.ReadBytes(16));//0x14 abilities (1 bit = 1 ability completed, 9 bits unused)
+                r.APs = br.ReadBytes(24);//0x24 (1 byte = 1 ability of the GF, 2 bytes unused)
+                r.NumberKills = br.ReadUInt16();//0x3C of kills
+                r.NumberKOs = br.ReadUInt16();//0x3E of KOs
+                r.Learning = (Kernel_bin.Abilities)br.ReadByte();//0x41 ability
+                r.Forgotten = new BitArray(br.ReadBytes(3));//0x42 abilities (1 bit = 1 ability of the GF forgotten, 2 bits unused)
+                return r;
             }
 
             /// <summary>

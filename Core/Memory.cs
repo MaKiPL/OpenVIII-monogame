@@ -266,13 +266,15 @@ namespace OpenVIII
                     //this initializes the fonts and drawing system- holds fonts in-memory
                     tasks.Add(Task.Run(() => { font = new Font(); }, token));
                     // card images in menu.                              
-                    tasks.Add(Task.Run(() => { Cards = new Cards(); }, token));
+                    tasks.Add(Task.Run(() => { Cards = Cards.Load(); }, token));
 
                     tasks.Add(Task.Run(() => { Card_Game = new Card_Game(); }, token));                        
 
-                    tasks.Add(Task.Run(() => { Faces = new Faces(); }, token));                        
+                    tasks.Add(Task.Run(() => { Faces = Faces.Load(); }, token));                        
 
-                    tasks.Add(Task.Run(() => { Icons = new Icons(); }, token));                        
+                    tasks.Add(Task.Run(() => { Icons = Icons.Load(); }, token));
+
+                    tasks.Add(Task.Run(() => { Magazines = Magazine.Load(); }, token));
                 }
                 Task.WaitAll(tasks.ToArray());
                 if (graphics?.GraphicsDevice != null) // all below require graphics to work. to load textures graphics device needed.
@@ -339,6 +341,7 @@ namespace OpenVIII
         public static CancellationTokenSource TokenSource { get; private set; }
         public static CancellationToken Token { get; private set; }
         public static Items_In_Menu MItems { get; private set; }
+        public static Magazine Magazines { get; private set; }
 
         #region battleProvider
 

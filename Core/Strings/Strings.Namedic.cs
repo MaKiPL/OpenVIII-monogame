@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 
 namespace OpenVIII
 {
@@ -9,15 +7,21 @@ namespace OpenVIII
     /// </summary>
     public partial class Strings
     {
-
         public class Namedic : StringsBase
         {
-            public Namedic() : base(Memory.Archives.A_MAIN, "namedic.bin")
+            public Namedic()
+            { }
+
+            public static Namedic Load() => Load<Namedic>();
+
+            protected override void DefaultValues() =>
+                SetValues(Memory.Archives.A_MAIN, "namedic.bin");
+
+            protected override void GetFileLocations(BinaryReader br)
             {
             }
 
-            protected override void GetFileLocations(BinaryReader br) { }
-            protected override void Init() => simple_init();
+            protected override void LoadArchiveFiles() => LoadArchiveFiles_Simple();
         }
     }
 }
