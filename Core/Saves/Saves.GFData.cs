@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -259,31 +260,29 @@ namespace OpenVIII
                 int max = ((Level * Level / 25) + 250 + JunctionableGFsData.HP_MOD * Level) * (Percent + 100) / 100;
                 return (ushort)(max > Kernel_bin.MAX_HP_VALUE ? Kernel_bin.MAX_HP_VALUE : max);
             }
-
+            public static GFData Load(BinaryReader br, GFs @enum) => Load<GFData>(br,@enum);
             /// <summary>
             /// Read in values from safe data.
             /// </summary>
             /// <param name="br">Binary Reader to raw save data</param>
             /// <param name="g">Which GF we are reading in</param>
-            static public GFData Read(BinaryReader br, GFs g)
+            protected override void ReadData(BinaryReader br, Enum @enum)
             {
-                GFData r = new GFData();
-                r.Init();
-                r.StatusImmune = true;
-                r.ID = g;
-                r.Name = br.ReadBytes(12);//0x00 (0x00 terminated)
-                if (string.IsNullOrWhiteSpace(r.Name)) r.Name = Memory.Strings.GetName(g);
-                r.Experience = br.ReadUInt32();//0x0C
-                r.Unknown = br.ReadByte();//0x10
-                r.Exists = br.ReadByte() == 1 ? true : false;//0x11 //1 unlocked //0 locked
-                r._CurrentHP = br.ReadUInt16();//0x12
-                r.Complete = new BitArray(br.ReadBytes(16));//0x14 abilities (1 bit = 1 ability completed, 9 bits unused)
-                r.APs = br.ReadBytes(24);//0x24 (1 byte = 1 ability of the GF, 2 bytes unused)
-                r.NumberKills = br.ReadUInt16();//0x3C of kills
-                r.NumberKOs = br.ReadUInt16();//0x3E of KOs
-                r.Learning = (Kernel_bin.Abilities)br.ReadByte();//0x41 ability
-                r.Forgotten = new BitArray(br.ReadBytes(3));//0x42 abilities (1 bit = 1 ability of the GF forgotten, 2 bits unused)
-                return r;
+                if (!@enum.GetType().Equals(typeof(GFs))) throw new ArgumentException($"Enum {@enum} is not GFs");
+                StatusImmune = true;
+                ID = (GFs)@enum;
+                Name = br.ReadBytes(12);//0x00 (0x00 terminated)
+                if (string.IsNullOrWhiteSpace(Name)) Name = Memory.Strings.GetName((GFs)@enum);
+                Experience = br.ReadUInt32();//0x0C
+                Unknown = br.ReadByte();//0x10
+                Exists = br.ReadByte() == 1 ? true : false;//0x11 //1 unlocked //0 locked
+                _CurrentHP = br.ReadUInt16();//0x12
+                Complete = new BitArray(br.ReadBytes(16));//0x14 abilities (1 bit = 1 ability completed, 9 bits unused)
+                APs = br.ReadBytes(24);//0x24 (1 byte = 1 ability of the GF, 2 bytes unused)
+                NumberKills = br.ReadUInt16();//0x3C of kills
+                NumberKOs = br.ReadUInt16();//0x3E of KOs
+                Learning = (Kernel_bin.Abilities)br.ReadByte();//0x41 ability
+                Forgotten = new BitArray(br.ReadBytes(3));//0x42 abilities (1 bit = 1 ability of the GF forgotten, 2 bits unused)
             }
 
             /// <summary>

@@ -675,14 +675,14 @@ namespace OpenVIII
                 Currentsave = br.ReadUInt32();//0x005C
                 for (byte i = 0; i <= (int)OpenVIII.GFs.Eden; i++)
                 {
-                    _gfs.Add((GFs)i,GFData.Read(br, (GFs)i));
+                    _gfs.Add((GFs)i,GFData.Load(br, (GFs)i));
                 }
                 for (byte i = 0; i <= (int)OpenVIII.Characters.Edea_Kramer; i++)
                 {
-                    _characters.Add((Characters)i,new CharacterData(br, (Characters)i)
-                    {
-                        Name = Memory.Strings.GetName((Characters)i, this)
-                    }); // 0x04A0 -> 0x08C8 //152 bytes per 8 total
+                    var tmp = CharacterData.Load(br, (Characters)i);
+
+                    tmp.Name = Memory.Strings.GetName((Characters)i, this);
+                    _characters.Add((Characters)i, tmp);// 0x04A0 -> 0x08C8 //152 bytes per 8 total
                 }
                 for (int i = 0; i < _shops.Capacity; i++)
                     _shops.Add(new Shop(br));//0x0960 //400 bytes

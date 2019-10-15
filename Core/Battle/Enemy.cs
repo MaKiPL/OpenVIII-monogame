@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace OpenVIII
@@ -66,11 +67,14 @@ namespace OpenVIII
         #endregion Methods
 
         #region Constructors
+
         private Enemy()
         {
-
         }
-        public static Enemy Create(Module_battle_debug.EnemyInstanceInformation eII, byte fixedLevel = 0, ushort? startinghp = null)
+
+        protected override void ReadData(BinaryReader br, Enum @enum) => throw new NotImplementedException("This method is not used by Enemy");
+
+        public static Enemy Load(Module_battle_debug.EnemyInstanceInformation eII, byte fixedLevel = 0, ushort? startinghp = null)
         {
             Enemy r = new Enemy
             {
@@ -187,7 +191,7 @@ namespace OpenVIII
 
         #endregion Properties
 
-        public static implicit operator Enemy(Module_battle_debug.EnemyInstanceInformation @in) => Create(@in);
+        public static implicit operator Enemy(Module_battle_debug.EnemyInstanceInformation @in) => Load(@in);
 
         /// <summary>
         /// Return card if succeed at roll

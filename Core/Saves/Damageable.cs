@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 
 namespace OpenVIII
 {
@@ -721,7 +722,14 @@ namespace OpenVIII
             cast = null;
             return false;
         }
-
+        public static T Load<T>(BinaryReader br, Enum @enum) where T : Damageable, new()
+        {
+            T r = new T();
+            r.Init();
+            r.ReadData(br,@enum);
+            return r;
+        }
+        protected abstract void ReadData(BinaryReader br, Enum @enum);
         public SpeedMod GetSpeedMod()
         {
             if ((Statuses1 & Kernel_bin.Battle_Only_Statuses.Haste) != 0)
