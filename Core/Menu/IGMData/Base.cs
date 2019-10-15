@@ -24,19 +24,21 @@ namespace OpenVIII.IGMData
         {
             if (DataSize.Right > Pos.Right)
             {
-                CONTAINER.Width += DataSize.Right - Pos.Right + Math.Abs(DataSize.Left - Pos.Left);
+                CONTAINER.Width += DataSize.Right - Pos.Right + Math.Abs(DataSize.Left - Pos.Left);                
             }
         }
 
-        protected void CheckBounds(ref Rectangle DataSize, Rectangle input)
+        protected bool CheckBounds(ref Rectangle DataSize, Rectangle input)
         {
             if (input.Right > Pos.Right && input.Right > DataSize.Right)
             {
                 DataSize = input;
+                return true;
             }
+            return false;
         }
 
-        protected void CheckBounds(ref Rectangle DataSize, int pos) => CheckBounds(ref DataSize, ((IGMDataItem.Text)ITEM[pos, 0]).DataSize);
+        protected bool CheckBounds(ref Rectangle DataSize, int pos) => CheckBounds(ref DataSize, ((IGMDataItem.Text)ITEM[pos, 0]).DataSize);
 
         protected virtual void DrawITEM(int i, int d) => ITEM[i, d]?.Draw();
 

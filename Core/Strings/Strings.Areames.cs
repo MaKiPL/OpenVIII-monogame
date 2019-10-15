@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 
 namespace OpenVIII
 {
@@ -9,22 +7,27 @@ namespace OpenVIII
     /// </summary>
     public partial class Strings
     {
-
         /// <summary>
         /// <para>Area Names</para>
         /// <para>Requires Namedic</para>
         /// </summary>
         public class Areames : StringsBase
         {
-            public Areames() : base(Memory.Archives.A_MENU, "areames.dc1")
+            public Areames()
+            { }
+
+            public static Areames Load() => Load<Areames>();
+
+            protected override void DefaultValues() => SetValues(Memory.Archives.A_MENU, "areames.dc1");
+
+            protected override void GetFileLocations(BinaryReader br)
             {
             }
 
-            protected override void GetFileLocations(BinaryReader br) { }
-            protected override void Init()
+            protected override void LoadArchiveFiles()
             {
                 Settings = FF8StringReference.Settings.Namedic;
-                simple_init();
+                LoadArchiveFiles_Simple();
             }
         }
     }

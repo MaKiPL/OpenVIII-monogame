@@ -2,7 +2,7 @@
 
 namespace OpenVIII
 {
-    public partial class Icons
+    public sealed partial class Icons
     {
         /// <summary>
         /// Add Manual hardcoded entries / settings here.
@@ -168,7 +168,7 @@ namespace OpenVIII
             //revese order of rewind so arrows draw correctly
             Entry _RR_0 = Entries[ID.Rewind_Fast][0].Clone();
             Entry _RR_1 = Entries[ID.Rewind_Fast][1].Clone();
-            
+
             Entries[ID.Rewind_Fast] = new EntryGroup(_RR_1, _RR_0);
 
             //override this entry to make it tile instead of have set number of elements.
@@ -226,7 +226,7 @@ namespace OpenVIII
             {
                 if (i < 10)
                     Entries[label_pg1 + i - 1] = new EntryGroup(Entries[label][0], P_, _[i]);
-                else if (i >= 10 && __ !=null)
+                else if (i >= 10 && __ != null)
                     Entries[label_pg1 + i - 1] = new EntryGroup(Entries[label][0], P_, _[i / 10], __[i % 10]);
             }
         }

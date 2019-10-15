@@ -9,7 +9,7 @@ namespace OpenVIII
     /// <summary>
     /// Images of parts of most of the menus and ui.
     /// </summary>
-    public partial class Icons : SP2
+    public sealed partial class Icons : SP2
     {
         #region Fields
 
@@ -21,6 +21,13 @@ namespace OpenVIII
 
         public Icons()
         {
+        }
+
+        public static Icons Load() => Load<Icons>();
+
+        protected override void DefaultValues()
+        {
+            base.DefaultValues();
             Color[] red = new Color[256];
             red[15] = new Color(255, 30, 30, 255); //red
             red[14] = new Color(140, 30, 30, 255); //dark red
@@ -38,7 +45,6 @@ namespace OpenVIII
                 new TexProps("icon.tex",1,yellow, new BigTexProps("iconfl{0:00}.TEX",4,yellow))//17 palette
             };
             IndexFilename = "icon.sp1";
-            Init();
         }
 
         #endregion Constructors
