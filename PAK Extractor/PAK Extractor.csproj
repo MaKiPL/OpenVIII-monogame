@@ -77,9 +77,6 @@
     <ManifestCertificateThumbprint>F7EA7021D7AB581931F1CE0ECDB5D3DB6D9991B7</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>PAK Extractor_TemporaryKey.pfx</ManifestKeyFile>
-  </PropertyGroup>
-  <PropertyGroup>
     <GenerateManifests>false</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
