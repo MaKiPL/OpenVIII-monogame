@@ -20,9 +20,7 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_Party() : base()
-            {
-            }
+            public static IGMData_Party Create() => Create<IGMData_Party>();
 
             #endregion Constructors
 

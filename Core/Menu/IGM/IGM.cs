@@ -62,11 +62,11 @@ namespace OpenVIII
         {
             Size = new Vector2 { X = 843, Y = 630 };
             //TextScale = new Vector2(2.545455f, 3.0375f);
-            Data.Add(SectionName.Header, new IGMData_Header());
-            Data.Add(SectionName.Footer, new IGMData_Footer());
-            Data.Add(SectionName.Clock, new IGMData_Clock());
-            Data.Add(SectionName.PartyGroup, IGMData_PartyGroup.Create(new IGMData_Party(), new IGMData_NonParty()));
-            Data.Add(SectionName.SideMenu, new IGMData_SideMenu(new Dictionary<FF8String, FF8String>() {
+            Data.Add(SectionName.Header, IGMData_Header.Create());
+            Data.Add(SectionName.Footer, IGMData_Footer.Create());
+            Data.Add(SectionName.Clock, IGMData_Clock.Create());
+            Data.Add(SectionName.PartyGroup, IGMData_PartyGroup.Create(IGMData_Party.Create(), IGMData_NonParty.Create()));
+            Data.Add(SectionName.SideMenu, IGMData_SideMenu.Create(new Dictionary<FF8String, FF8String>() {
                     { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 0), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 1)},
                     { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 3)},
                     { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 4), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 5)},

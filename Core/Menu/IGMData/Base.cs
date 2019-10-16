@@ -197,7 +197,7 @@ namespace OpenVIII.IGMData
         //    Init(damageable, partypos);
         //    Init(count, depth, container, cols, rows);
         //}
-        public static T Create<T>(Damageable damageable = null, sbyte? partypos = null) where T : Base, new()
+        private static T Create<T>(Damageable damageable = null, sbyte? partypos = null) where T : Base, new()
         {
             T r = new T();
             r.Init(damageable, partypos);
