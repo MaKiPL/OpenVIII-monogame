@@ -24,7 +24,7 @@ namespace OpenVIII.IGMData
         {
             if (DataSize.Right > Pos.Right)
             {
-                CONTAINER.Width += DataSize.Right - Pos.Right + Math.Abs(DataSize.Left - Pos.Left);
+                CONTAINER.Width += DataSize.Right - Pos.Right + Math.Abs(DataSize.Left - Pos.Left);                
             }
         }
 
