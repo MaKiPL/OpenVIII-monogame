@@ -82,7 +82,7 @@ namespace OpenVIII
                             }));
             Data.Add(SectionName.Title, 
                 new IGMDataItem.Box(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), pos: new Rectangle(615, 0, 225, 66)));
-            Data.Add(SectionName.UseItemGroup, new IGMData.Group.Base(
+            Data.Add(SectionName.UseItemGroup, IGMData.Group.Base.Create(
                 new IGMData_Statuses(),
                 new IGMData.Pool.Item(),
                 new IGMData_TargetPool()

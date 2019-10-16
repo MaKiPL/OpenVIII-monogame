@@ -61,7 +61,7 @@ namespace OpenVIII.IGMData.Pool
                 base.Init();
                 ITEM[_Draw, 0] = new IGMDataItem.Text { Data = Memory.Strings.Read(Strings.FileID.KERNEL, 0, 12), Pos = SIZE[_Draw] };
                 ITEM[Cast, 0] = new IGMDataItem.Text { Data = Memory.Strings.Read(Strings.FileID.KERNEL, 0, 18), Pos = SIZE[Cast] };
-                ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Damageable, false);
+                ITEM[Targets_Window, 0] = BattleMenus.IGMData_TargetGroup.Create(Damageable, false);
                 Cursor_Status = Cursor_Status.Enabled;
                 OKAY_Actions = new Dictionary<int, Func<bool>>
             {
@@ -85,8 +85,9 @@ namespace OpenVIII.IGMData.Pool
 
             public Dictionary<int, Func<bool>> OKAY_Actions;
 
-            public Commands(Rectangle pos, Damageable damageable, bool battle = false) : base(3, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.CHOICE), 1, 2, damageable)
+            static public Commands Create (Rectangle pos, Damageable damageable, bool battle = false)
             {
+                return Create<Commands>(3, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.CHOICE), 1, 2, damageable);
             }
 
             public int _Draw => 0;

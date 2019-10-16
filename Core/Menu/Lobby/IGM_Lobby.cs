@@ -30,7 +30,7 @@ namespace OpenVIII
         public override void StartDraw()
         {
             Matrix backupfocus = Focus;
-            GenerateFocus(new Vector2(1280, 720),Box_Options.Top);
+            GenerateFocus(new Vector2(1280, 720), Box_Options.Top);
             base.StartDraw();
             Data0.Where(m => m.Value != null).ForEach(m => m.Value.Draw());
             base.EndDraw();
@@ -40,23 +40,21 @@ namespace OpenVIII
 
         public override bool Inputs() => Data[SectionName.Selections].Inputs();
 
-
         private class IGMData_Selections : IGMData.Base
         {
             private Dictionary<int, Action> OkayActions;
             private Dictionary<int, Action> FadeOutActions;
             private bool eventset = false;
 
-            public IGMData_Selections() : base(count: 3, depth: 1, container: new IGMDataItem.Empty(new Rectangle(320, 445, 250, 170)), cols: 1, rows: 3)
-            {
-            }
+            public IGMData_Selections Create() =>
+                Create<IGMData_Selections>(count: 3, depth: 1, container: new IGMDataItem.Empty(new Rectangle(320, 445, 250, 170)), cols: 1, rows: 3);
 
             protected override void Init()
             {
                 base.Init();
                 ITEM[0, 0] = new IGMDataItem.Text() { Data = Memory.Strings.Read(Strings.FileID.MNGRP, 1, 105), Pos = SIZE[0] };
                 ITEM[1, 0] = new IGMDataItem.Text() { Data = Memory.Strings.Read(Strings.FileID.MNGRP, 1, 106), Pos = SIZE[1] };
-                ITEM[2, 0] = new IGMDataItem.Text() { Data = "OpenVIII debug tools", Pos = SIZE[2]};
+                ITEM[2, 0] = new IGMDataItem.Text() { Data = "OpenVIII debug tools", Pos = SIZE[2] };
                 Cursor_Status |= Cursor_Status.Enabled;
                 OkayActions = new Dictionary<int, Action>()
                 {
@@ -71,9 +69,9 @@ namespace OpenVIII
                     //{2, DebugModeOkayAction },
                 };
             }
+
             public override void Refresh()
             {
-
                 if (!eventset)
                 {
                     Menu.FadedOutHandler += FadedOutEvent;
@@ -84,10 +82,11 @@ namespace OpenVIII
 
             private void FadedOutEvent(object sender, EventArgs e)
             {
-                if (Module_main_menu_debug.State == Module_main_menu_debug.MainMenuStates.MainLobby && 
+                if (Module_main_menu_debug.State == Module_main_menu_debug.MainMenuStates.MainLobby &&
                     FadeOutActions.ContainsKey(CURSOR_SELECT))
                     FadeOutActions[CURSOR_SELECT]();
             }
+
             public void NewGameFadeOutAction()
             {
                 /*reverse engineering notes:
@@ -96,7 +95,7 @@ namespace OpenVIII
                 * also the basic party of Squall is now set: SG_PARTY_FIELD1 = 0, and other members are 0xFF
                 */
                 Module_main_menu_debug.FieldPointer = 74; //RE: startup stage ID is hardcoded. Probably we would want to change it for modding
-                                   //the module changes to 1 now
+                                                          //the module changes to 1 now
                 Module_field_debug.ResetField();
 
                 Module_movie_test.Index = 30;
@@ -105,6 +104,7 @@ namespace OpenVIII
                 Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.MainLobby;
                 Memory.IsMouseVisible = false;
             }
+
             public override bool Inputs_OKAY()
             {
                 if (OkayActions.TryGetValue(CURSOR_SELECT, out Action a))
@@ -114,30 +114,39 @@ namespace OpenVIII
                 }
                 return false;
             }
-            public override void Inputs_Cards() { }
-            public override void Inputs_Menu() { }
-            public override bool Inputs_CANCEL()
+
+            public override void Inputs_Cards()
             {
-                return false;
             }
 
-            private void NewGameOkayAction() {
+            public override void Inputs_Menu()
+            {
+            }
+
+            public override bool Inputs_CANCEL() => false;
+
+            private void NewGameOkayAction()
+            {
                 init_debugger_Audio.PlaySound(28);
                 skipsnd = true;
                 base.Inputs_OKAY();
                 FadeOut();
             }
-            private void LoadGameOkayAction() {
+
+            private void LoadGameOkayAction()
+            {
                 base.Inputs_OKAY();
                 FadeIn();
                 Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.LoadGameChooseSlot;
             }
+
             private void DebugModeOkayAction()
             {
                 base.Inputs_OKAY();
                 FadeIn();
                 Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.DebugScreen;
             }
+
             public override bool Inputs()
             {
                 if (!FadingOut)
@@ -145,10 +154,7 @@ namespace OpenVIII
                 return false;
             }
 
-            public override void Draw()
-            {
-                base.Draw();
-            }
+            public override void Draw() => base.Draw();
         }
     }
 }

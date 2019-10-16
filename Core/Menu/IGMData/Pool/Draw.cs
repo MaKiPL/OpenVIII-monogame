@@ -22,7 +22,7 @@ namespace OpenVIII.IGMData.Pool
             {
                 ITEM[pos, 0] = new IGMDataItem.Text {Pos = SIZE[pos] };
                 ITEM[pos, 1] = new IGMDataItem.Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0));
-                ITEM[pos, 2] = new Commands(r, Damageable, Battle);
+                ITEM[pos, 2] = Commands.Create(r, Damageable, Battle);
                 ITEM[pos, 2].Hide();
             }
 
@@ -55,12 +55,14 @@ namespace OpenVIII.IGMData.Pool
         #endregion Methods
 
         #region Constructors
-
-        public Draw(Rectangle pos, Damageable damageable, bool battle = false) : base(5, 3, new IGMDataItem.Box(pos: pos, title: Icons.ID.CHOICE), 4, 1, damageable)
+        static public Draw Create(Rectangle pos, Damageable damageable, bool battle = false)
         {
-            Battle = battle;
-            Refresh();
+            Draw r = Create<Draw>(5, 3, new IGMDataItem.Box(pos: pos, title: Icons.ID.CHOICE), 4, 1, damageable);
+            r.Battle = battle;
+            r.Refresh();
+            return r;
         }
+
 
         #endregion Constructors
 

@@ -17,7 +17,7 @@ namespace OpenVIII.IGMData.Pool
 
         #region Properties
 
-        private int Targets_Window => Count-3;
+        private int Targets_Window => Count - 3;
 
         #endregion Properties
 
@@ -37,7 +37,7 @@ namespace OpenVIII.IGMData.Pool
             _helpStr = new FF8String[Count];
             for (byte pos = 0; pos < Rows; pos++)
             {
-                ITEM[pos, 0] = new IGMDataItem.Text() { Pos = SIZE[pos]};
+                ITEM[pos, 0] = new IGMDataItem.Text() { Pos = SIZE[pos] };
                 ITEM[pos, 1] = new IGMDataItem.Integer(0, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0), numtype: Icons.NumType.sysFntBig, spaces: 3);
             }
             ITEM[Count - 1, 2] = new IGMDataItem.Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows - 1].X + SIZE[Rows - 1].Width - 60, Y, 0, 0), scale: new Vector2(2.5f));
@@ -53,8 +53,7 @@ namespace OpenVIII.IGMData.Pool
             //SIZE[i].Offset(0, 12 + (-8 * row));
             int v = (int)(12 * TextScale.Y);
             SIZE[i].Height = v;
-            SIZE[i].Y = Y + 18 + row*((Height-16)/Rows);
-
+            SIZE[i].Y = Y + 18 + row * ((Height - 16) / Rows);
         }
 
         protected override void ModeChangeEvent(object sender, Enum e)
@@ -113,16 +112,16 @@ namespace OpenVIII.IGMData.Pool
 
         #region Constructors
 
-        public Item(Rectangle pos, bool battle, int count = 4) : base(count + 1, 3, new IGMDataItem.Box(pos: pos, title: Icons.ID.ITEM), count, 198 / count + 1)
+        public static Item Create(Rectangle pos, Damageable damageable = null, bool battle = false, int count = 4)
         {
-            Battle = battle;
-            if(battle)
-                ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Damageable);
+            Item r = Create<Item>(count + 1, 3, new IGMDataItem.Box(pos: pos, title: Icons.ID.ITEM), count, 198 / count + 1, damageable);
+            r.Battle = battle;
+            if (battle)
+                r.ITEM[r.Targets_Window, 0] = BattleMenus.IGMData_TargetGroup.Create(r.Damageable);
+            return r;
         }
 
-        public Item() : this(new Rectangle(5, 150, 415, 480), false, 13)
-        {
-        }
+        public static Item Create(Damageable damageable = null) => Create(new Rectangle(5, 150, 415, 480), damageable: damageable, battle: false, count: 13);
 
         #endregion Constructors
 
@@ -133,7 +132,6 @@ namespace OpenVIII.IGMData.Pool
 
         public override bool Inputs()
         {
-            
             bool ret = false;
             if (InputITEM(Targets_Window, 0, ref ret))
             {
@@ -175,6 +173,7 @@ namespace OpenVIII.IGMData.Pool
             Menu.IGM_Items.SetMode(IGM_Items.Mode.UseItemOnTarget);
             return true;
         }
+
         public override void HideChildren()
         {
             if (Enabled)

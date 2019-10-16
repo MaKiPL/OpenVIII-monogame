@@ -38,9 +38,9 @@ namespace OpenVIII
                     ITEM[0, 1] = new IGMDataItem.Box(null, new Rectangle(SIZE[0].X + 140, SIZE[0].Y + 189, 475, 78), Icons.ID.ITEM, options: Box_Options.Middle); // item name
                     ITEM[0, 2] = new IGMDataItem.Box(null, new Rectangle(SIZE[0].X + 615, SIZE[0].Y + 189, 125, 78), Icons.ID.NUM_, options: Box_Options.Middle | Box_Options.Center); // item count
                     ITEM[0, 3] = new IGMDataItem.Box(null, new Rectangle(SIZE[0].X, SIZE[0].Y + 444, SIZE[0].Width, 78), Icons.ID.HELP, options: Box_Options.Middle); // item description
-                    ITEM[0, 4] = new IGMData.Dialog.Small(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // Couldn't find any items
-                    ITEM[0, 5] = new IGMData.Dialog.Small(null, SIZE[0].X + 230, SIZE[0].Y + 291, Icons.ID.NOTICE, Box_Options.Center, SIZE[0]); // over 100 discarded
-                    ITEM[0, 6] = new IGMData.Dialog.Small(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center, SIZE[0]); // Recieved item
+                    ITEM[0, 4] = IGMData.Dialog.Small.Create(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // Couldn't find any items
+                    ITEM[0, 5] = IGMData.Dialog.Small.Create(null, SIZE[0].X + 230, SIZE[0].Y + 291, Icons.ID.NOTICE, Box_Options.Center, SIZE[0]); // over 100 discarded
+                    ITEM[0, 6] = IGMData.Dialog.Small.Create(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center, SIZE[0]); // Recieved item
                     Cursor_Status |= (Cursor_Status.Hidden | (Cursor_Status.Enabled | Cursor_Status.Static));
                 }
 

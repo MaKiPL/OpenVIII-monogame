@@ -29,9 +29,7 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_Mag_PageTitle() : base(1, 4, new IGMDataItem.Box(pos: new Rectangle(0, 345, 435, 66)))
-            {
-            }
+            public static IGMData_Mag_PageTitle Create() => Create<IGMData_Mag_PageTitle>(1, 4, new IGMDataItem.Box(pos: new Rectangle(0, 345, 435, 66)));
 
             #endregion Constructors
 
@@ -58,7 +56,9 @@ namespace OpenVIII
                     return false;
                 }
             }
-            Mode last = 0;
+
+            private Mode last = 0;
+
             public override bool Update()
             {
                 if (IGM_Junction != null && !IGM_Junction.GetMode().Equals(last) && Enabled)

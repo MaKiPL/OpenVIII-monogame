@@ -10,9 +10,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_CharacterInfo() : base(1, 15, new IGMDataItem.Empty(new Rectangle(20, 153, 395, 255)))
-            {
-            }
+            static public IGMData_CharacterInfo Create() => Create<IGMData_CharacterInfo>(1, 15, new IGMDataItem.Empty(new Rectangle(20, 153, 395, 255)));
 
             #endregion Constructors
 
@@ -30,7 +28,7 @@ namespace OpenVIII
                     ((IGMDataItem.Text)ITEM[0, 2]).Data = Damageable.Name;
 
                     ((IGMDataItem.Integer)ITEM[0, 4]).Data = Damageable.Level;
-                    if(Memory.State.Party != null && Memory.State.Party.Contains(c.ID))
+                    if (Memory.State.Party != null && Memory.State.Party.Contains(c.ID))
                         ITEM[0, 5].Show();
                     else
                         ITEM[0, 5].Hide();
@@ -57,9 +55,9 @@ namespace OpenVIII
                 ITEM[0, 14] = new IGMDataItem.Icon(Icons.ID.P, new Rectangle(X + 372, Y + 231, 0, 0), 2);
 
                 //Dynamic items
-                ITEM[0, 0] = new IGMDataItem.Face(Faces.ID.Blank, new Rectangle(X + 12, Y, 96, 144));
-                ITEM[0, 2] = new IGMDataItem.Text{ Pos = new Rectangle(X + 117, Y + 0, 0, 0)};
-                ITEM[0, 4] = new IGMDataItem.Integer(0, new Rectangle(X + 117 + 35, Y + 54, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 6);                
+                ITEM[0, 0] = new IGMDataItem.Face { Pos = new Rectangle(X + 12, Y, 96, 144) };
+                ITEM[0, 2] = new IGMDataItem.Text { Pos = new Rectangle(X + 117, Y + 0, 0, 0) };
+                ITEM[0, 4] = new IGMDataItem.Integer(0, new Rectangle(X + 117 + 35, Y + 54, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 6);
                 ITEM[0, 7] = new IGMDataItem.Integer(0, new Rectangle(X + 152, Y + 108, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 6);
                 ITEM[0, 9] = new IGMDataItem.Integer(0, new Rectangle(X + 292, Y + 108, 0, 0), 13, numtype: Icons.NumType.sysFntBig, padding: 1, spaces: 5);
                 ITEM[0, 11] = new IGMDataItem.Integer(0, new Rectangle(X + 192, Y + 198, 0, 0), 13, numtype: Icons.NumType.Num_8x8_2, padding: 1, spaces: 9);

@@ -14,9 +14,7 @@ namespace OpenVIII
 
             // public new Saves.CharacterData PrevSetting { get; private set; } public new
             // Saves.CharacterData Setting { get; private set; }
-            public IGMData_Mag_ST_D_Values() : base(14, 5, new IGMDataItem.Box(title: Icons.ID.Status_Defense, pos: new Rectangle(280, 342, 545, 288)), 2, 7)
-            {
-            }
+            static public IGMData_Mag_ST_D_Values Create() => Create<IGMData_Mag_ST_D_Values>(14, 5, new IGMDataItem.Box(title: Icons.ID.Status_Defense, pos: new Rectangle(280, 342, 545, 288)), 2, 7);
 
             #endregion Constructors
 

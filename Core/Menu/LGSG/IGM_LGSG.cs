@@ -57,11 +57,13 @@ namespace OpenVIII
     {
         public class ThreePieceHeader : IGMData.Base
         {
-            public ThreePieceHeader(FF8String topleft, FF8String topright, FF8String help, Rectangle pos) : base(3, 1, new IGMDataItem.Empty(pos))
+            static public ThreePieceHeader Create(FF8String topleft, FF8String topright, FF8String help, Rectangle pos)
             {
-                TOPLeft.Data = topleft;
-                TOPRight.Data = topright;
-                HELP.Data = help;
+                var r = Create<ThreePieceHeader>(3, 1, new IGMDataItem.Empty(pos));
+                r.TOPLeft.Data = topleft;
+                r.TOPRight.Data = topright;
+                r.HELP.Data = help;
+                return r;
             }
             protected override void Init()
             {
@@ -86,9 +88,7 @@ namespace OpenVIII
         }
         public class LoadBarBox : IGMData.Base
         {
-            public LoadBarBox(Rectangle pos) : base(2,1,container: new IGMDataItem.Box(null,pos,Icons.ID.INFO))
-            {
-            }
+            public LoadBarBox Create(Rectangle pos) => Create<LoadBarBox>(2, 1, container: new IGMDataItem.Box(null, pos, Icons.ID.INFO));
             protected override void Init()
             {
                 base.Init();

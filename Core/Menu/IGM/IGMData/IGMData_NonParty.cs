@@ -18,9 +18,7 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_NonParty() : base(6, 9, new IGMDataItem.Box(pos: new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 }), 2, 3)
-            {
-            }
+            static public IGMData_NonParty Create() => Create<IGMData_NonParty>(6, 9, new IGMDataItem.Box(pos: new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 }), 2, 3);
 
             #endregion Constructors
 
@@ -142,8 +140,11 @@ namespace OpenVIII
 
                     // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                     // TODO: set large fields to null.
-
-                    _red_pixel.Dispose();
+                    if (_red_pixel != null)
+                    {
+                        _red_pixel.Dispose();
+                        _red_pixel = null;
+                    }
                     disposedValue = true;
                 }
             }

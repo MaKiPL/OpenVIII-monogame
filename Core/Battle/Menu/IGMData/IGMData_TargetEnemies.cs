@@ -24,9 +24,8 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_TargetEnemies(Rectangle pos) : base(6, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.TARGET), 2, 3)
-            {
-            }
+            public static IGMData_TargetEnemies Create(Rectangle pos) => 
+                Create<IGMData_TargetEnemies>(6, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.TARGET), 2, 3);
 
             #endregion Constructors
 
@@ -94,7 +93,7 @@ namespace OpenVIII
                         foreach (Enemy e in Enemy.Party)
                         {
                             //if(e.EII)
-                            ITEM[pos, 0] = new IGMDataItem.Text { Data = e.Name, Pos= SIZE[pos], FontColor = Font.ColorID.White };
+                            ITEM[pos, 0] = new IGMDataItem.Text { Data = e.Name, Pos = SIZE[pos], FontColor = Font.ColorID.White };
                             ITEM[pos, 0].Show();
                             BLANKS[pos] = false;
 

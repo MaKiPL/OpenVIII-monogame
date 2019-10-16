@@ -12,9 +12,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_Mag_ST_A_Values() : base(12, 5, new IGMDataItem.Box(title: Icons.ID.Status_Attack, pos: new Rectangle(280, 363, 545, 267)), 2, 6)
-            {
-            }
+            static public IGMData_Mag_ST_A_Values Create() => Create<IGMData_Mag_ST_A_Values>(12, 5, new IGMDataItem.Box(title: Icons.ID.Status_Attack, pos: new Rectangle(280, 363, 545, 267)), 2, 6);
 
             #endregion Constructors
 

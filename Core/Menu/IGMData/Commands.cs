@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace OpenVIII.IGMData
 {
-    public class Commands : Base
+    public class Commands : Base, IDisposable
     {
         #region Fields
 
@@ -12,7 +12,7 @@ namespace OpenVIII.IGMData
         private Kernel_bin.Battle_Commands[] commands;
         private int nonbattleWidth;
         private sbyte page = 0;
-        private bool skipReinit;
+        private bool skipRefresh;
         private static int s_cidoff = 0;
 
         #endregion Fields
@@ -45,13 +45,13 @@ namespace OpenVIII.IGMData
                 {
                     Pos = SIZE[pos]
                 };
-            ITEM[Blue_Pool, 0] = new Pool.BlueMagic(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
+            ITEM[Blue_Pool, 0] = Pool.BlueMagic.Create(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
             ITEM[Blue_Pool, 0].Hide();
-            ITEM[Mag_Pool, 0] = new IGMData.Pool.Magic(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
+            ITEM[Mag_Pool, 0] = Pool.Magic.Create(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
             ITEM[Mag_Pool, 0].Hide();
-            ITEM[Item_Pool, 0] = new IGMData.Pool.Item(new Rectangle(X + 50, Y - 22, 400, 194), true);
+            ITEM[Item_Pool, 0] = Pool.Item.Create(new Rectangle(X + 50, Y - 22, 400, 194), Damageable, true);
             ITEM[Item_Pool, 0].Hide();
-            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Damageable);
+            ITEM[Targets_Window, 0] = BattleMenus.IGMData_TargetGroup.Create(Damageable);
             commands = new Kernel_bin.Battle_Commands[Rows];
             PointerZIndex = Limit_Arrow;
             nonbattleWidth = Width;
@@ -92,17 +92,24 @@ namespace OpenVIII.IGMData
         #endregion Methods
 
         #region Constructors
-
-        public Commands(Rectangle pos, Damageable damageable = null, bool battle = false) : base(9, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.COMMAND), 1, 4, damageable)
+        private Commands()
+        { }
+        static public Commands Create(Rectangle pos, Damageable damageable = null, bool battle = false)
         {
-            Battle = battle;
-            skipReinit = true;
-            Refresh();
+            Commands r = new Commands
+            {
+                skipRefresh = damageable == null,
+                Battle = battle
+            };
+
+            r.Init(damageable, null);
+            r.Init(9, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.COMMAND }, 1, 4);
+            return r;
         }
 
         #endregion Constructors
 
-        public bool Battle { get; }
+        public bool Battle { get; set; } = false;
 
         public bool CrisisLevel { get => _crisisLevel; set => _crisisLevel = value; }
 
@@ -273,7 +280,7 @@ namespace OpenVIII.IGMData
                 Hide();
                 return;
             }
-            if (Memory.State.Characters != null && !skipReinit && Damageable.GetCharacterData(out Saves.CharacterData c))
+            if (Memory.State.Characters != null && !skipRefresh && Damageable.GetCharacterData(out Saves.CharacterData c))
             {
                 Show();
                 Rectangle DataSize = Rectangle.Empty;
@@ -334,7 +341,7 @@ namespace OpenVIII.IGMData
                     ItemPool.Refresh(Damageable);
                 }
             }
-            skipReinit = false;
+            skipRefresh = false;
         }
 
         public override void Refresh(Damageable damageable)
@@ -351,5 +358,40 @@ namespace OpenVIII.IGMData
             (((Base)ITEM[Item_Pool, 0])).AddModeChangeEvent(ref eventHandler);
             (((Base)ITEM[Mag_Pool, 0])).AddModeChangeEvent(ref eventHandler);
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects).
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        // ~Commands() {
+        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+        //   Dispose(false);
+        // }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }

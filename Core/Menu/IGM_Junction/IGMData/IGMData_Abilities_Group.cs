@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
 
 namespace OpenVIII
 {
@@ -11,9 +10,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_Abilities_Group(params IGMData.Base[] d) : base(d)
-            {
-            }
+            public static new IGMData_Abilities_Group Create(params Menu_Base[] d) => Create<IGMData_Abilities_Group>(d);
 
             #endregion Constructors
 
@@ -70,7 +67,7 @@ namespace OpenVIII
                 base.Inputs_Menu();
                 skipdata = false;
 
-                if (Commands!=null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Commands != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     if (CURSOR_SELECT < Commands.Count)
                     {
@@ -85,6 +82,7 @@ namespace OpenVIII
                     }
                 }
             }
+
             private IGMData.Slots.Command Commands => ((IGMData.Slots.Command)ITEM[0, 0]);
 
             private IGMData.Slots.Abilities Ability => ((IGMData.Slots.Abilities)ITEM[1, 0]);
@@ -122,7 +120,6 @@ namespace OpenVIII
                 if (CURSOR_SELECT == 0)
                     CURSOR_SELECT = 1;
             }
-            
 
             public override bool Update()
             {
@@ -132,7 +129,7 @@ namespace OpenVIII
                 {
                     Cursor_Status &= ~Cursor_Status.Blinking;
 
-                    if (Commands!= null && Ability != null)
+                    if (Commands != null && Ability != null)
                     {
                         if (CURSOR_SELECT >= Commands.Count)
                         {

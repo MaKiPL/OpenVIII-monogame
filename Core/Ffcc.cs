@@ -695,7 +695,7 @@
             }
         }
 
-        protected virtual unsafe void Dispose(bool disposing)
+        protected unsafe void Dispose(bool disposing)
         {
             if (Decoder != null)
             {

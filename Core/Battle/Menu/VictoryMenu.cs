@@ -23,7 +23,7 @@ namespace OpenVIII
                 Size = new Vector2(881, 606);
                 Data = new Dictionary<Enum, Menu_Base>
                 {
-                    { Mode.All, new IGMData.Group.Base(
+                    { Mode.All, IGMData.Group.Base.Create(
                     new IGMDataItem.Box(new FF8String(new byte[] {
                             (byte)FF8TextTagCode.Key,
                             (byte)FF8TextTagKey.Confirm})+
@@ -32,17 +32,19 @@ namespace OpenVIII
                             new Rectangle(0,(int)Size.Y-78,(int)Size.X,78),options: Box_Options.Center| Box_Options.Middle))
                     },
                     { Mode.Exp,
-                    new IGMData_PlayerEXPGroup (
-                        new IGMData_PlayerEXP(0),new IGMData_PlayerEXP(1),new IGMData_PlayerEXP(2)
+                    IGMData_PlayerEXPGroup.Create (
+                        IGMData_PlayerEXP.Create(0),IGMData_PlayerEXP.Create(1),IGMData_PlayerEXP.Create(2)
                         )
-                    { CONTAINER = new IGMDataItem.Empty(new Rectangle(Point.Zero,Size.ToPoint()))} },
+                    },
                     { Mode.Items,
                     new IGMData_PartyItems(new IGMDataItem.Empty(new Rectangle(Point.Zero,Size.ToPoint()))) },
                     { Mode.AP,
                     new IGMData_PartyAP(new IGMDataItem.Empty(new Rectangle(Point.Zero,Size.ToPoint()))) },
 
                 };
-                SetMode(Mode.Exp);
+                Data[Mode.Exp].CONTAINER.Pos = new Rectangle(Point.Zero, Size.ToPoint());
+            
+            SetMode(Mode.Exp);
                 InputFunctions = new Dictionary<Mode, Func<bool>>
                 {
                     { Mode.Exp, Data[Mode.Exp].Inputs},

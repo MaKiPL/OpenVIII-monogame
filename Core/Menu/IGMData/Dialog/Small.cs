@@ -13,14 +13,18 @@ namespace OpenVIII.IGMData.Dialog
         #endregion Fields
 
         #region Constructors
-
-        public Small(FF8String data, int x, int y, Icons.ID? title = null, Box_Options options = Box_Options.Default, Rectangle? bounding = null) : base(container: new IGMDataItem.Box(data, new Rectangle(x, y, 0, 0), title, options: Box_Options.Center | Box_Options.Middle))
+        static public T Create<T>(FF8String data, int x, int y, Icons.ID? title = null, Box_Options options = Box_Options.Default, Rectangle? bounding = null) where T : Small, new()
         {
-            this._options = options;
+            var r = Create<T>(container: new IGMDataItem.Box(data, new Rectangle(x, y, 0, 0), title, options: Box_Options.Center | Box_Options.Middle));
+            r._options = options;
             // probably won't work as static size is set in update. And this may run before it's set.
-            _bounding = bounding ?? new Rectangle(Point.Zero, Menu.StaticSize.ToPoint());
-            Reposition();
+            r._bounding = bounding ?? new Rectangle(Point.Zero, Menu.StaticSize.ToPoint());
+            r.Reposition();
+            return r;
         }
+        static public Small Create(FF8String data, int x, int y, Icons.ID? title = null, Box_Options options = Box_Options.Default, Rectangle? bounding = null)
+            => Create<Small>(data, x, y, title, options, bounding);
+        
 
         private void Reposition()
         {

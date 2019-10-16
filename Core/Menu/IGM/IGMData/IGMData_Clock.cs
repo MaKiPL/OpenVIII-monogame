@@ -10,9 +10,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_Clock() : base(1, 8, new IGMDataItem.Box(pos: new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 }))
-            {
-            }
+            static public IGMData_Clock Create() => Create<IGMData_Clock>(1, 8, new IGMDataItem.Box(pos: new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 }));
 
             #endregion Constructors
 

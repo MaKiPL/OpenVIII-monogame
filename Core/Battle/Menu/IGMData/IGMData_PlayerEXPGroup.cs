@@ -57,20 +57,18 @@ namespace OpenVIII
                 /// </summary>
                 private Ffcc EXPsnd = null;
 
-
                 /// <summary>
                 /// Keeps remainder between cycles
                 /// </summary>
                 private double remaining = 0;
+
                 private Box header;
 
                 #endregion Fields
 
                 #region Constructors
 
-                public IGMData_PlayerEXPGroup(params IGMData_PlayerEXP[] d) : base(d)
-                {
-                }
+                public static new IGMData_PlayerEXPGroup Create(params Menu_Base[] d) => Create<IGMData_PlayerEXPGroup>(d);
 
                 #endregion Constructors
 
@@ -180,6 +178,7 @@ namespace OpenVIII
                 }
 
                 #region IDisposable Support
+
                 private bool disposedValue = false; // To detect redundant calls
 
                 protected virtual void Dispose(bool disposing)
@@ -199,10 +198,11 @@ namespace OpenVIII
                 }
 
                 // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-                 ~IGMData_PlayerEXPGroup() {
-                   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-                   Dispose(false);
-                 }
+                ~IGMData_PlayerEXPGroup()
+                {
+                    // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+                    Dispose(false);
+                }
 
                 // This code added to correctly implement the disposable pattern.
                 public void Dispose()
@@ -212,7 +212,8 @@ namespace OpenVIII
                     // TODO: uncomment the following line if the finalizer is overridden above.
                     GC.SuppressFinalize(this);
                 }
-                #endregion
+
+                #endregion IDisposable Support
 
                 #endregion Methods
             }

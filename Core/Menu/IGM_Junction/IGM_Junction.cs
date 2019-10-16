@@ -58,12 +58,12 @@ namespace OpenVIII
             //        {Items.Junction, Memory.Strings.Read(Strings.FileID.MNGRP,2,218) }
             //    };
             Data.Add(SectionName.CharacterInfo, new IGMData_CharacterInfo());
-            Data.Add(SectionName.Commands, new IGMData.Commands(new Rectangle(615, 150, 210, 192)));
+            Data.Add(SectionName.Commands, IGMData.Commands.Create(new Rectangle(615, 150, 210, 192)));
             Data.Add(SectionName.Help, new IGMDataItem.HelpBox(Strings.Description.Junction, pos: new Rectangle(15, 69, 810, 78), title: Icons.ID.HELP));
             Data.Add(SectionName.TopMenu, new IGMData_TopMenu());
             Data.Add(SectionName.Title,
                 new IGMDataItem.Box(Strings.Name.Junction, pos: new Rectangle(615, 0, 225, 66)));
-            Data.Add(SectionName.Mag_Group, new IGMData_Mag_Group(
+            Data.Add(SectionName.Mag_Group, IGMData_Mag_Group.Create(
                 new IGMData_Mag_Stat_Slots(),
                 new IGMData_Mag_PageTitle(),
                 new IGMData.Pool.Magic(),
@@ -75,14 +75,14 @@ namespace OpenVIII
                 new IGMData_Mag_ST_D_Values()
                 ));
             Data.Add(SectionName.TopMenu_Junction, new IGMData_TopMenu_Junction());
-            Data.Add(SectionName.TopMenu_Off, new IGMData_TopMenu_Off_Group(
+            Data.Add(SectionName.TopMenu_Off, IGMData_TopMenu_Off_Group.Create(
                     new IGMDataItem.Box(Strings.Name.Off, pos: new Rectangle(0, 12, 169, 54), options: Box_Options.Center | Box_Options.Middle),
                 new IGMData_TopMenu_Off()
                 ));
-            Data.Add(SectionName.TopMenu_Auto, new IGMData_TopMenu_Auto_Group(
+            Data.Add(SectionName.TopMenu_Auto, IGMData_TopMenu_Auto_Group.Create(
                     new IGMDataItem.Box(Strings.Name.Auto, pos: new Rectangle(0, 12, 169, 54), options: Box_Options.Center | Box_Options.Middle),
                 new IGMData_TopMenu_Auto()));
-            Data.Add(SectionName.TopMenu_Abilities, new IGMData_Abilities_Group(
+            Data.Add(SectionName.TopMenu_Abilities, IGMData_Abilities_Group.Create(
                 new IGMData.Slots.Command(),
                 new IGMData.Slots.Abilities(),
                 new IGMData_Abilities_CommandPool(),
@@ -90,15 +90,15 @@ namespace OpenVIII
                 ));
             FF8String Yes = Memory.Strings.Read(Strings.FileID.MNGRP, 0, 57);
             FF8String No = Memory.Strings.Read(Strings.FileID.MNGRP, 0, 58);
-            Data.Add(SectionName.TopMenu_GF_Group, new IGMData_GF_Group(
+            Data.Add(SectionName.TopMenu_GF_Group, IGMData_GF_Group.Create(
                 new IGMData_GF_Junctioned(),
                 new IGMData_GF_Pool(),
                 new IGMDataItem.Box(pos: new Rectangle(440, 345, 385, 66))
                 ));
 
-            Data.Add(SectionName.RemMag, new IGMData_ConfirmRemMag(data: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 280), title: Icons.ID.NOTICE, opt1: Yes, opt2: No, pos: new Rectangle(180, 174, 477, 216)));
-            Data.Add(SectionName.RemAll, new IGMData_ConfirmRemAll(data: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 279), title: Icons.ID.NOTICE, opt1: Yes, opt2: No, pos: new Rectangle(170, 174, 583, 216)));
-            Data.Add(SectionName.ConfirmChanges, new IGMData_ConfirmChanges(data: Memory.Strings.Read(Strings.FileID.MNGRP, 0, 73), title: Icons.ID.NOTICE, opt1: Yes, opt2: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 268), pos: new Rectangle(280, 174, 367, 216)));
+            Data.Add(SectionName.RemMag, IGMData_ConfirmRemMag.Create(data: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 280), title: Icons.ID.NOTICE, opt1: Yes, opt2: No, pos: new Rectangle(180, 174, 477, 216)));
+            Data.Add(SectionName.RemAll, IGMData_ConfirmRemAll.Create(data: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 279), title: Icons.ID.NOTICE, opt1: Yes, opt2: No, pos: new Rectangle(170, 174, 583, 216)));
+            Data.Add(SectionName.ConfirmChanges,  IGMData_ConfirmChanges.Create(data: Memory.Strings.Read(Strings.FileID.MNGRP, 0, 73), title: Icons.ID.NOTICE, opt1: Yes, opt2: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 268), pos: new Rectangle(280, 174, 367, 216)));
 
             base.Init();
         }

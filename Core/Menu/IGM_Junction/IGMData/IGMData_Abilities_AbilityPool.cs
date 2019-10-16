@@ -11,7 +11,12 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_Abilities_AbilityPool() : base(11, 1, new IGMDataItem.Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.ABILITY), 11, Kernel_bin.EquipableAbilities.Count / 11 + (Kernel_bin.EquipableAbilities.Count % 11 > 0 ? 1 : 0)) => Source = Kernel_bin.EquipableAbilities;
+            public static IGMData_Abilities_AbilityPool Create()
+            {
+                IGMData_Abilities_AbilityPool r = Create<IGMData_Abilities_AbilityPool>(11, 1, new IGMDataItem.Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.ABILITY), 11, Kernel_bin.EquipableAbilities.Count / 11 + (Kernel_bin.EquipableAbilities.Count % 11 > 0 ? 1 : 0));
+                r.Source = Kernel_bin.EquipableAbilities;
+                return r;
+            }
 
             #endregion Constructors
 
@@ -79,7 +84,7 @@ namespace OpenVIII
 
                                 ((IGMDataItem.Text)ITEM[pos, 0]).Icon = Source[j].Icon;
                                 ((IGMDataItem.Text)ITEM[pos, 0]).Data = Source[j].Name;
-                                ((IGMDataItem.Text)ITEM[pos, 0]).FontColor= cid;
+                                ((IGMDataItem.Text)ITEM[pos, 0]).FontColor = cid;
                                 ITEM[pos, 0].Show();
                                 Contents[pos] = j;
                                 pos++;

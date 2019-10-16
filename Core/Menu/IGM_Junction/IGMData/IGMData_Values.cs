@@ -21,9 +21,8 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_Values(int count, int depth, Menu_Base container = null, int? cols = null, int? rows = null) : base(count, depth, container, cols, rows)
-            {
-            }
+            static public T Create<T>(int count, int depth, Menu_Base container = null, int? cols = null, int? rows = null) where T : IGMData_Values, new() => 
+                IGMData.Base.Create<T>(count, depth, container, cols, rows);
 
             #endregion Constructors
 

@@ -25,7 +25,12 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_TargetPool() : base(9, 3, new IGMDataItem.Box(pos: new Rectangle(420, 150, 420, 360), title: Icons.ID.TARGET), 9, 1) => Cursor_Status &= ~Cursor_Status.Enabled;
+            static public IGMData_TargetPool Create()
+            {
+                var r = Create<IGMData_TargetPool>(9, 3, new IGMDataItem.Box(pos: new Rectangle(420, 150, 420, 360), title: Icons.ID.TARGET), 9, 1);
+                r.Cursor_Status &= ~Cursor_Status.Enabled;
+                return r;
+            }
 
             #endregion Constructors
 

@@ -11,9 +11,7 @@
 
         #region Constructors
 
-        public Small(FF8String data, int x, int y, Icons.ID? title = null, Box_Options options = Box_Options.Default) : base(data, x, y, title, options)
-        {
-        }
+        static public Small Create(FF8String data, int x, int y, Icons.ID? title = null, Box_Options options = Box_Options.Default) => Create<Small>(data, x, y, title, options);
 
         #endregion Constructors
 

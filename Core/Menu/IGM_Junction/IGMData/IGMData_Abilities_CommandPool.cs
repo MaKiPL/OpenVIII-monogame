@@ -11,7 +11,12 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_Abilities_CommandPool() : base(11, 1, new IGMDataItem.Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.COMMAND), 11, Kernel_bin.Commandabilities.Count / 11 + (Kernel_bin.Commandabilities.Count % 11 > 0 ? 1 : 0)) => Source = Kernel_bin.Commandabilities;
+            public static IGMData_Abilities_CommandPool Create()
+            {
+                IGMData_Abilities_CommandPool r = Create<IGMData_Abilities_CommandPool>(11, 1, new IGMDataItem.Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.COMMAND), 11, Kernel_bin.Commandabilities.Count / 11 + (Kernel_bin.Commandabilities.Count % 11 > 0 ? 1 : 0));
+                r.Source = Kernel_bin.Commandabilities;
+                return r;
+            }
 
             #endregion Constructors
 
@@ -123,16 +128,17 @@ namespace OpenVIII
                     ITEM[12, 0].Show();
                 }
             }
+
             protected override void Init()
             {
                 base.Init();
-                for(int pos=0; pos< Rows; pos++)
-                ITEM[pos, 0] = new IGMDataItem.Text
-                {
-                    Icon = Icons.ID.Ability_Command,
-                    Palette = 9,
-                    Pos = new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0)
-                };
+                for (int pos = 0; pos < Rows; pos++)
+                    ITEM[pos, 0] = new IGMDataItem.Text
+                    {
+                        Icon = Icons.ID.Ability_Command,
+                        Palette = 9,
+                        Pos = new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0)
+                    };
             }
 
             protected override void InitShift(int i, int col, int row)

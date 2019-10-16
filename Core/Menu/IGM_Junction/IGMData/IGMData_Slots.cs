@@ -23,7 +23,12 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_Slots(int count, int depth, Menu_Base container = null, int? cols = null, int? rows = null) : base(count, depth, container, cols, rows) => Contents = new Kernel_bin.Stat[Count];
+            static public T Create<T>(int count, int depth, Menu_Base container = null, int? cols = null, int? rows = null) where T : IGMData_Slots<C>, new()
+            {
+                var r = IGMData.Base.Create<T>(count, depth, container, cols, rows);
+                r.Contents = new Kernel_bin.Stat[r.Count];
+                return r;
+            }
 
             #endregion Constructors
 

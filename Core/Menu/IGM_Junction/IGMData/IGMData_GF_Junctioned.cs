@@ -13,9 +13,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_GF_Junctioned() : base(16, 1, new IGMDataItem.Box(pos: new Rectangle(0, 141, 440, 282)), 2, 8)
-            {
-            }
+            public static IGMData_GF_Junctioned Create() => Create<IGMData_GF_Junctioned>(16, 1, new IGMDataItem.Box(pos: new Rectangle(0, 141, 440, 282)), 2, 8);
 
             #endregion Constructors
 
@@ -32,7 +30,7 @@ namespace OpenVIII
                     {
                         if ((Saves.GFflags)flag == Saves.GFflags.None) continue;
                         ((IGMDataItem.Text)ITEM[pos, 0]).Data = Memory.State.GFs[Saves.ConvertGFEnum[(Saves.GFflags)flag]].Name;
-                        
+
                         ITEM[pos, 0].Show();
                         BLANKS[pos++] = false;
                     }
@@ -46,7 +44,6 @@ namespace OpenVIII
 
             protected override void Init()
             {
-
                 Table_Options |= Table_Options.FillRows;
                 base.Init();
 

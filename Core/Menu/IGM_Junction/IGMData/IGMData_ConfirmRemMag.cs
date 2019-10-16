@@ -10,7 +10,8 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_ConfirmRemMag(FF8String data, Icons.ID title, FF8String opt1, FF8String opt2, Rectangle pos) : base(data, title, opt1, opt2, pos) => startcursor = 1;
+            public static IGMData_ConfirmRemMag Create(FF8String data, Icons.ID title, FF8String opt1, FF8String opt2, Rectangle pos) => 
+                Create<IGMData_ConfirmRemMag>(data, title, opt1, opt2, pos, 1);
 
             #endregion Constructors
 
@@ -32,7 +33,7 @@ namespace OpenVIII
                         skipsnd = true;
                         init_debugger_Audio.PlaySound(31);
                         base.Inputs_OKAY();
-                        if(Damageable.GetCharacterData(out Saves.CharacterData c))
+                        if (Damageable.GetCharacterData(out Saves.CharacterData c))
                             c.RemoveMagic();
                         Inputs_CANCEL();
                         IGM_Junction.Refresh();
@@ -41,11 +42,11 @@ namespace OpenVIII
                     case 1:
                         Inputs_CANCEL();
                         break;
+
                     default: return false;
                 }
                 return true;
             }
-
 
             #endregion Methods
         }

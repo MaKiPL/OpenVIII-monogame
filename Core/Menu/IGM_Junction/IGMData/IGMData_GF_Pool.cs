@@ -12,9 +12,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_GF_Pool() : base(5, 3, new IGMDataItem.Box(pos: new Rectangle(440, 149, 385, 193), title: Icons.ID.GF), 4, 4)
-            {
-            }
+            public static IGMData_GF_Pool Create() => Create<IGMData_GF_Pool>(5, 3, new IGMDataItem.Box(pos: new Rectangle(440, 149, 385, 193), title: Icons.ID.GF), 4, 4);
 
             #endregion Constructors
 
@@ -141,7 +139,7 @@ namespace OpenVIII
                 {
                     int pos = 0;
                     int skip = Page * Rows;
-                    AddGFs(ref pos, ref skip,g => !JunctionedGFs.ContainsKey(g),Font.ColorID.White);
+                    AddGFs(ref pos, ref skip, g => !JunctionedGFs.ContainsKey(g), Font.ColorID.White);
                     AddGFs(ref pos, ref skip, g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] == c.ID, Font.ColorID.Grey);
                     AddGFs(ref pos, ref skip, g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] != c.ID, Font.ColorID.Dark_Grey);
                     for (; pos < Rows; pos++)
@@ -156,7 +154,6 @@ namespace OpenVIII
 
             private void AddGFs(ref int pos, ref int skip, System.Func<GFs, bool> predicate, Font.ColorID colorid = Font.ColorID.White)
             {
-                 
                 foreach (GFs g in UnlockedGFs.Where(predicate))
                 {
                     if (pos >= Rows) break;
@@ -190,7 +187,7 @@ namespace OpenVIII
                 SIZE[Rows] = SIZE[0];
                 SIZE[Rows].Y = Y;
                 ITEM[Rows, 2] = new IGMDataItem.Icon(Icons.ID.Size_16x08_Lv_, new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 30, SIZE[Rows].Y, 0, 0), scale: new Vector2(2.5f));
-                for (int i = 0; i < Rows; )
+                for (int i = 0; i < Rows;)
                     AddGF(ref i, GFs.Blank);
             }
 

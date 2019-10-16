@@ -29,7 +29,7 @@ namespace OpenVIII.IGMData.Pool
             {
                 ITEM[i, 0] = new IGMDataItem.Text { Pos = SIZE[i] };
             }
-            ITEM[Rows, 0] = new BattleMenus.IGMData_TargetGroup(Damageable, false);
+            ITEM[Rows, 0] = BattleMenus.IGMData_TargetGroup.Create(Damageable, false);
             PointerZIndex = 0;
         }
 
@@ -67,8 +67,9 @@ namespace OpenVIII.IGMData.Pool
 
         #region Constructors
 
-        public BlueMagic(Rectangle pos, Damageable damageable, bool battle = false) : base(5, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.SPECIAL), 4, 4, damageable)
+        static public BlueMagic Create(Rectangle pos, Damageable damageable, bool battle = false)
         {
+            return Create<BlueMagic>(5, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.SPECIAL), 4, 4, damageable);
         }
 
         #endregion Constructors

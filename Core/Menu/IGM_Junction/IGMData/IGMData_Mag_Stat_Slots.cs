@@ -12,9 +12,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_Mag_Stat_Slots() : base(10, 5, new IGMDataItem.Box(pos: new Rectangle(0, 414, 840, 216)), 2, 5)
-            {
-            }
+            public static IGMData_Mag_Stat_Slots Create() => Create<IGMData_Mag_Stat_Slots>(10, 5, new IGMDataItem.Box(pos: new Rectangle(0, 414, 840, 216)), 2, 5);
 
             #endregion Constructors
 
@@ -42,8 +40,8 @@ namespace OpenVIII
 
             public override void BackupSetting()
             {
-                if(Damageable.GetCharacterData(out Saves.CharacterData c))
-                SetPrevSetting((Saves.CharacterData)c.Clone());
+                if (Damageable.GetCharacterData(out Saves.CharacterData c))
+                    SetPrevSetting((Saves.CharacterData)c.Clone());
             }
 
             public override void CheckMode(bool cursor = true) =>

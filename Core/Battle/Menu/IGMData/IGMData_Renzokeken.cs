@@ -121,8 +121,9 @@ namespace OpenVIII.IGMData
 
         #region Constructors
 
-        public Renzokeken(Rectangle? pos = null) : base(15, 1, new IGMDataItem.Box(pos: pos ?? new Rectangle(24, 501, 912, 123), title: Icons.ID.SPECIAL), 0, 0, Memory.State?[Characters.Squall_Leonhart])
+        static public Renzokeken Create(Rectangle? pos = null)
         {
+            return Create<Renzokeken>(15, 1, new IGMDataItem.Box(pos: pos ?? new Rectangle(24, 501, 912, 123), title: Icons.ID.SPECIAL), 0, 0, Memory.State?[Characters.Squall_Leonhart]);
         }
 
         #endregion Constructors

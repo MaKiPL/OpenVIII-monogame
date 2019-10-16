@@ -513,22 +513,24 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_TargetGroup(Damageable damageable, bool makesubs = true)
+            static public IGMData_TargetGroup Create(Damageable damageable, bool makesubs = true)
             {
-                
-                const int X = 25;
-                const int w = 380;
-                const int w2 = 210;
-                const int h = 140;
-                const int Y1 = 630 - h;
-                CONTAINER.Pos = new Rectangle(X, Y1, w + w2, h);
-                Init(new IGMData.Base[]{
-                    new IGMData_TargetEnemies(new Rectangle(CONTAINER.Pos.X, CONTAINER.Pos.Y, w, h)),
-                    new IGMData_TargetParty(new Rectangle(CONTAINER.Pos.X + w, CONTAINER.Pos.Y, w2, h)),
-                    makesubs ? new IGMData.Pool.Draw(new Rectangle(X +50, Y - 50, 300, 192), Damageable, true): null,
-                    //makesubs ? new IGMData.Pool.BlueMagic(new Rectangle(X +50, Y - 50, 300, 192), Character, VisibleCharacter, true): null
-                }, true);
-                after();
+
+                const int X1 = 25;
+                const int Width1 = 380;
+                const int Height = 140;
+                const int X2 = X1 + Width1;
+                const int Width2 = 210;
+                const int Y = 630 - Height;
+
+                IGMData_TargetGroup r = Create<IGMData_TargetGroup>(
+                    IGMData_TargetEnemies.Create(new Rectangle(X1, Y, Width1, Height)),
+                    IGMData_TargetParty.Create(new Rectangle(X2, Y, Width2, Height)),
+                    makesubs ? IGMData.Pool.Draw.Create(new Rectangle(X1 + 50, Y - 50, 300, 192), damageable, true) : null);
+                r.Init(damageable, null);
+                r.CONTAINER.Pos = new Rectangle(X1, Y, Width1 + Width2, Height);
+                r.after();
+                return r;
             }
 
             #endregion Constructors

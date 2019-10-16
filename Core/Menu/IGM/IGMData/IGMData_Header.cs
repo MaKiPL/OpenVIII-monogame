@@ -17,8 +17,7 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_Header() : base(0, 0, new IGMDataItem.Box(pos: new Rectangle { Width = 610, Height = 75 }, title: Icons.ID.HELP))
-            { }
+            public static IGMData_Header Create() => Create<IGMData_Header>(0, 0, new IGMDataItem.Box(pos: new Rectangle { Width = 610, Height = 75 }, title: Icons.ID.HELP));
 
             #endregion Constructors
 

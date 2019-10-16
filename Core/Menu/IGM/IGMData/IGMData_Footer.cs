@@ -10,9 +10,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_Footer() : base(0, 0, new IGMDataItem.Box(pos: new Rectangle { Width = 610, Height = 75, Y = 630 - 75 }))
-            {
-            }
+            public static IGMData_Footer Create() => Create<IGMData_Footer>(0, 0, new IGMDataItem.Box(pos: new Rectangle { Width = 610, Height = 75, Y = 630 - 75 }));
 
             #endregion Constructors
 

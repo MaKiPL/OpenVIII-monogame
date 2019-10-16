@@ -65,7 +65,7 @@ namespace OpenVIII
             Data.Add(SectionName.Header, new IGMData_Header());
             Data.Add(SectionName.Footer, new IGMData_Footer());
             Data.Add(SectionName.Clock, new IGMData_Clock());
-            Data.Add(SectionName.PartyGroup, new IGMData_PartyGroup(new IGMData_Party(), new IGMData_NonParty()));
+            Data.Add(SectionName.PartyGroup, IGMData_PartyGroup.Create(new IGMData_Party(), new IGMData_NonParty()));
             Data.Add(SectionName.SideMenu, new IGMData_SideMenu(new Dictionary<FF8String, FF8String>() {
                     { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 0), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 1)},
                     { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 3)},

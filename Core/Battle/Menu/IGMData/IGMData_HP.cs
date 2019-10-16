@@ -21,9 +21,7 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_HP(Rectangle pos, Damageable damageable) : base(3, 5, new IGMDataItem.Empty(pos), 1, 3, damageable)
-            {
-            }
+            public static IGMData_HP Create(Rectangle pos, Damageable damageable) => Create<IGMData_HP>(3, 5, new IGMDataItem.Empty(pos), 1, 3, damageable);
 
             #endregion Constructors
 
@@ -140,11 +138,11 @@ namespace OpenVIII
 
                 Rectangle atbbarpos = new Rectangle(SIZE[pos].X + 230, SIZE[pos].Y + 12, 150, 15);
                 // TODO: make a font render that can draw right to left from a point. For Right aligning the names.
-                ITEM[pos, (byte)DepthID.Name] = new IGMDataItem.Text { Data=name,Pos= new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0) };
+                ITEM[pos, (byte)DepthID.Name] = new IGMDataItem.Text { Data = name, Pos = new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0) };
                 ITEM[pos, (byte)DepthID.HP] = new IGMDataItem.Integer(0, new Rectangle(SIZE[pos].X + 128, SIZE[pos].Y, 0, 0), spaces: 4, numtype: Icons.NumType.Num_8x16_1);
 
                 ITEM[pos, (byte)DepthID.ATBBorder] = new IGMDataItem.Icon(Icons.ID.Size_08x64_Bar, atbbarpos, 0);
-                ITEM[pos, (byte)DepthID.ATBCharged] = new IGMDataItem.Texture{Data = dot, Pos = atbbarpos, Color = Color.LightYellow * .8f, Faded_Color = new Color(125, 125, 0, 255) * .8f};
+                ITEM[pos, (byte)DepthID.ATBCharged] = new IGMDataItem.Texture { Data = dot, Pos = atbbarpos, Color = Color.LightYellow * .8f, Faded_Color = new Color(125, 125, 0, 255) * .8f };
                 ITEM[pos, (byte)DepthID.ATBCharged].Hide();
                 ITEM[pos, (int)DepthID.ATBCharging] = IGMDataItem.Gradient.ATB.Create(atbbarpos);
                 ((IGMDataItem.Gradient.ATB)ITEM[pos, (byte)DepthID.ATBCharging]).Color = Color.Orange * .8f;
@@ -155,8 +153,8 @@ namespace OpenVIII
             protected override void ModeChangeEvent(object sender, Enum e)
             {
                 base.ModeChangeEvent(sender, e);
-                if(!e.Equals(Damageable.BattleMode.EndTurn)) //because endturn triggers BattleMenu refresh.
-                    Refresh(); 
+                if (!e.Equals(Damageable.BattleMode.EndTurn)) //because endturn triggers BattleMenu refresh.
+                    Refresh();
             }
 
             #endregion Methods

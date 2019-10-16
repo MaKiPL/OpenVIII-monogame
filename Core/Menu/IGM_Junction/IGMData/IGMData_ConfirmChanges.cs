@@ -10,7 +10,12 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public IGMData_ConfirmChanges(FF8String data, Icons.ID title, FF8String opt1, FF8String opt2, Rectangle pos) : base(data, title, opt1, opt2, pos) => startcursor = 1;
+            static public IGMData_ConfirmChanges Create(FF8String data, Icons.ID title, FF8String opt1, FF8String opt2, Rectangle pos)
+            {
+                var r =Create<IGMData_ConfirmChanges>(data, title, opt1, opt2, pos);
+                r.startcursor = 1;
+                return r;
+            }
 
             #endregion Constructors
 

@@ -20,12 +20,12 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_PartyGroup(params IGMData.Base[] d) : base(d)
+            public static new IGMData_PartyGroup Create(params Menu_Base[] d)
             {
-                Cursor_Status &= ~Cursor_Status.Enabled;
-                Cursor_Status |= Cursor_Status.Vertical;
-                Cursor_Status &= ~Cursor_Status.Horizontal;
-                Cursor_Status &= ~Cursor_Status.Blinking;
+                IGMData_PartyGroup r = Create<IGMData_PartyGroup>(d);
+                r.Cursor_Status &= ~(Cursor_Status.Enabled | Cursor_Status.Horizontal | Cursor_Status.Blinking);
+                r.Cursor_Status |= Cursor_Status.Vertical;
+                return r;
             }
 
             #endregion Constructors
@@ -53,7 +53,7 @@ namespace OpenVIII
                 {
                     case Items.Junction:
                         Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.IGM_Junction;
-                        IGM_Junction.Refresh(Contents[CURSOR_SELECT],true);
+                        IGM_Junction.Refresh(Contents[CURSOR_SELECT], true);
                         return true;
                 }
                 return ret;

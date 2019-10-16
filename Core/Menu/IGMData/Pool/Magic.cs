@@ -14,7 +14,7 @@ namespace OpenVIII.IGMData.Pool
         private const Font.ColorID nostat = Font.ColorID.Dark_Grey;
         private bool Battle = false;
         private bool eventAdded = false;
-        private bool skipReinit = false;
+        private bool skipRefresh = false;
 
         #endregion Fields
 
@@ -174,7 +174,7 @@ namespace OpenVIII.IGMData.Pool
                 ITEM[pos, 2].Hide();
             }
 
-            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Damageable);
+            ITEM[Targets_Window, 0] = BattleMenus.IGMData_TargetGroup.Create(Damageable);
             BLANKS[Rows] = true;
             Cursor_Status &= ~Cursor_Status.Horizontal;
             Cursor_Status |= Cursor_Status.Vertical;
@@ -241,15 +241,16 @@ namespace OpenVIII.IGMData.Pool
 
         public static EventHandler<Kernel_bin.Stat> StatEventListener;
 
-        public Magic(Rectangle pos, Damageable damageable, bool battle = false) : base(5, 3, new IGMDataItem.Box(pos: pos, title: Icons.ID.MAGIC), 4, 13, damageable)
+        static public Magic Create(Rectangle pos, Damageable damageable, bool battle = false)
         {
-            Battle = battle;
-            skipReinit = true;
-            Refresh();
+            var r = Create<Magic>(5, 3, new IGMDataItem.Box(pos: pos, title: Icons.ID.MAGIC), 4, 13, damageable);
+            r.Battle = battle;
+            r.Refresh();
+            return r;
         }
-
-        public Magic() : base(6, 3, new IGMDataItem.Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.MAGIC), 4, 13)
+        static public Magic Create()
         {
+            return Create<Magic>(6, 3, new IGMDataItem.Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.MAGIC), 4, 13);
         }
 
         public Damageable LastCharacter { get; private set; }
@@ -512,7 +513,7 @@ namespace OpenVIII.IGMData.Pool
         //public IGMData Values { get; private set; } = null;
         public override void Refresh()
         {
-            if (!skipReinit)
+            if (!skipRefresh)
             {
                 if (!eventAdded && Menu.IGM_Junction != null)
                 {
@@ -527,7 +528,7 @@ namespace OpenVIII.IGMData.Pool
                 base.Refresh();
                 UpdateTitle();
             }
-            else skipReinit = false;
+            else skipRefresh = false;
         }
 
         public override void Reset()

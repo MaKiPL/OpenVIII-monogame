@@ -7,9 +7,7 @@ namespace OpenVIII.IGMData.Slots
 
         #region Constructors
 
-        public Command() : base(4, 2, new IGMDataItem.Box(pos: new Rectangle(0, 198, 435, 216), title: Icons.ID.COMMAND), 1, 4)
-        {
-        }
+        static public Command Create() => Create<Command>(4, 2, new IGMDataItem.Box(pos: new Rectangle(0, 198, 435, 216), title: Icons.ID.COMMAND), 1, 4);
 
         #endregion Constructors
 

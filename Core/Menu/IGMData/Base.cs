@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace OpenVIII.IGMData
 {
-    public class Base : Menu_Base
+    abstract public class Base : Menu_Base
     {
         #region Fields
 
@@ -190,24 +190,38 @@ namespace OpenVIII.IGMData
         /// Size of the entire area
         /// </summary>
         public Rectangle[] SIZE;
-
-        public Base(int count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null)
+        public Base()
+        { }
+        //protected Base(int count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null)
+        //{
+        //    Init(damageable, partypos);
+        //    Init(count, depth, container, cols, rows);
+        //}
+        public static T Create<T>(Damageable damageable = null, sbyte? partypos = null) where T : Base, new()
         {
-            Init(damageable, partypos);
-            Init(count, depth, container, cols, rows);
+            T r = new T();
+            r.Init(damageable, partypos);
+            return r;
+        }
+        public static T Create<T>(int count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null) where T : Base, new()
+        {
+            T r = Create<T>(damageable, partypos);
+            r.Init(count, depth, container, cols, rows);
+            return r;
         }
 
-        public int Cols { get; private set; }
+
+        public int Cols { get; protected set; }
 
         /// <summary>
         /// Total number of items
         /// </summary>
-        public byte Count { get; private set; }
+        public byte Count { get; protected set; }
 
         /// <summary>
         /// How many Peices per Item. Example 1 box could have 9 things to draw in it.
         /// </summary>
-        public byte Depth { get; private set; }
+        public byte Depth { get; protected set; }
 
         public Dictionary<int, FF8String> Descriptions { get; protected set; }
 
@@ -217,7 +231,7 @@ namespace OpenVIII.IGMData
         public override int Height => CONTAINER != null ? Pos.Height : 0;
 
         public override Rectangle Pos { get => CONTAINER?.Pos ?? Rectangle.Empty; set => CONTAINER.Pos = value; }
-        public int Rows { get; private set; }
+        public int Rows { get; protected set; }
 
         public Table_Options Table_Options { get; set; } = Table_Options.Default;
 

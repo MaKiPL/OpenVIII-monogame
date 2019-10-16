@@ -4,7 +4,15 @@
     {
         #region Constructors
 
-        public Base(int count, int depth, Menu_Base container = null, int? rows = null, int? pages = null, Damageable damageable = null) : base(count + 2, depth, container, 1, rows, damageable) => DefaultPages = pages ?? 1;
+        static public J Create<J>(int count, int depth, Menu_Base container = null, int? rows = null, int? pages = null, Damageable damageable = null) 
+            where J : Base<T,T2>, new()
+        {
+            var r = IGMData.Base.Create<J>(count + 2, depth, container, 1, rows, damageable);
+            r.DefaultPages = pages ?? 1;
+            return r;
+        }
+            
+
 
         #endregion Constructors
 

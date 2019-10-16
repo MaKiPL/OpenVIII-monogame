@@ -23,10 +23,12 @@ namespace OpenVIII
 
                 #region Constructors
 
-                public IGMData_PlayerEXP(sbyte partypos) : base(1, 12, new IGMDataItem.Box(pos: new Rectangle(35, 78 + partypos * 150, 808, 150)), 1, 1, partypos: partypos)
+                public static IGMData_PlayerEXP Create(sbyte partypos, Rectangle? pos = null)
                 {
-                    _exp = 0;
                     Debug.Assert(partypos >= 0 && partypos <= 2);
+                    IGMData_PlayerEXP r = Create<IGMData_PlayerEXP>(1, 12, new IGMDataItem.Box(pos: pos ?? new Rectangle(35, 78 + partypos * 150, 808, 150), title: Icons.ID.NAME), 1, 1, partypos: partypos);
+                    r._exp = 0;
+                    return r;
                 }
 
                 #endregion Constructors
@@ -103,9 +105,9 @@ namespace OpenVIII
                         ITEM[0, 7] = new IGMDataItem.Icon(Icons.ID.P, new Rectangle(SIZE[0].X + SIZE[0].Width - 20, (int)(SIZE[0].Y + TextScale.Y * 12), 0, 0));
                         ITEM[0, 8] = new IGMDataItem.Integer(expTNL, new Rectangle(SIZE[0].X + SIZE[0].Width - 160, (int)(SIZE[0].Y + TextScale.Y * 12 * 2), 0, 0), spaces: 7);
                         ITEM[0, 9] = new IGMDataItem.Icon(Icons.ID.P, new Rectangle(SIZE[0].X + SIZE[0].Width - 20, (int)(SIZE[0].Y + TextScale.Y * 12 * 2), 0, 0));
-                        ITEM[0, 10] = new IGMData.Dialog.Timed.Small(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 32), SIZE[0].X + 190, SIZE[0].Y);
+                        ITEM[0, 10] = IGMData.Dialog.Timed.Small.Create(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 32), SIZE[0].X + 190, SIZE[0].Y);
                         ITEM[0, 10].Hide();
-                        ITEM[0, 11] = new IGMData.Dialog.Small(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 49), SIZE[0].X + 190, SIZE[0].Y);
+                        ITEM[0, 11] = IGMData.Dialog.Small.Create(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 49), SIZE[0].X + 190, SIZE[0].Y);
                         ITEM[0, 11].Hide();
                     }
                 }

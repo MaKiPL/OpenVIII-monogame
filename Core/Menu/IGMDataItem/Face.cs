@@ -12,18 +12,18 @@ namespace OpenVIII.IGMDataItem
 
         #region Constructors
 
-        public Face(Faces.ID data, Rectangle? pos = null, bool blink = false, float blink_adjustment = 1f) : base(pos)
-        {
-            Data = data;
-            Blink = blink;
-            Blink_Adjustment = blink_adjustment;
-        }
+        //public Face(Faces.ID data, Rectangle? pos = null, bool blink = false, float blink_adjustment = 1f) : base(pos)
+        //{
+        //    Data = data;
+        //    Blink = blink;
+        //    Blink_Adjustment = blink_adjustment;
+        //}
 
         #endregion Constructors
 
         #region Properties
 
-        public Faces.ID Data { get; set; }
+        public Faces.ID Data { get; set; } = Faces.ID.Blank;
         public byte Palette
         {
             get => _palette; set

@@ -53,9 +53,7 @@ namespace OpenVIII
 
             #region Constructors
 
-            public IGMData_TopMenu_Junction() : base(2, 1, new IGMDataItem.Box(pos: new Rectangle(210, 12, 400, 54)), 2, 1)
-            {
-            }
+            public static IGMData_TopMenu_Junction Create() => Create<IGMData_TopMenu_Junction>(2, 1, new IGMDataItem.Box(pos: new Rectangle(210, 12, 400, 54)), 2, 1);
 
             #endregion Constructors
 
