@@ -186,7 +186,7 @@ namespace OpenVIII
                 base.Init();
                 SIZE[Rows] = SIZE[0];
                 SIZE[Rows].Y = Y;
-                ITEM[Rows, 2] = new IGMDataItem.Icon(Icons.ID.Size_16x08_Lv_, new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 30, SIZE[Rows].Y, 0, 0), scale: new Vector2(2.5f));
+                ITEM[Rows, 2] = new IGMDataItem.Icon { Data = Icons.ID.Size_16x08_Lv_, Pos = new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 30, SIZE[Rows].Y, 0, 0), Scale = new Vector2(2.5f) };
                 for (int i = 0; i < Rows;)
                     AddGF(ref i, GFs.Blank);
             }
@@ -236,9 +236,9 @@ namespace OpenVIII
                     if (ITEM[pos, 0] == null)
                         ITEM[pos, 0] = new IGMDataItem.Text { Pos = SIZE[pos], FontColor = color };
                     if (ITEM[pos, 1] == null)
-                        ITEM[pos, 1] = new IGMDataItem.Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 100, SIZE[pos].Y, 0, 0));
+                        ITEM[pos, 1] = new IGMDataItem.Icon { Data = Icons.ID.JunctionSYM, Pos = new Rectangle(SIZE[pos].X + SIZE[pos].Width - 100, SIZE[pos].Y, 0, 0) };
                     if (ITEM[pos, 2] == null)
-                        ITEM[pos, 2] = new IGMDataItem.Integer(0, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), spaces: 3);
+                        ITEM[pos, 2] = new IGMDataItem.Integer{ Pos = new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), Spaces = 3};
                     HideChild(pos);
                 }
                 pos++;

@@ -5,22 +5,10 @@ namespace OpenVIII.IGMDataItem
     {
         #region Fields
 
-        private byte _faded_palette;
-        private byte _palette;
+        private byte _faded_palette = 2;
+        private byte _palette = 2;
 
         #endregion Fields
-
-        #region Constructors
-
-        public Icon(Icons.ID data, Rectangle? pos = null, byte? palette = null, byte? faded_palette = null, float blink_adjustment = 1f, Vector2? scale = null) : base(pos, scale)
-        {
-            Data = data;
-            Palette = palette ?? 2;
-            Faded_Palette = faded_palette ?? Palette;
-            Blink_Adjustment = blink_adjustment;
-        }
-
-        #endregion Constructors
 
         #region Properties
 
@@ -29,7 +17,7 @@ namespace OpenVIII.IGMDataItem
             get => base.Blink; set => base.Blink = value;
         }
 
-        public Icons.ID Data { get; set; }
+        public Icons.ID Data { get; set; } = Icons.ID.None;
         public byte Faded_Palette
         {
             get => _faded_palette; set

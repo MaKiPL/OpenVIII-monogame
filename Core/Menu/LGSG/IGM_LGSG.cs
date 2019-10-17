@@ -69,9 +69,9 @@ namespace OpenVIII
             {
                 base.Init();
                 int space = 4;
-                ITEM[0, 0] = new IGMDataItem.Box(null, new Rectangle(0, 0, (int)(Width * 0.82f), (Height - space) / 2));
-                ITEM[1, 0] = new IGMDataItem.Box(null, new Rectangle(ITEM[0, 0].Width + space, 0, (int)(Width * 0.18f - space), ITEM[0, 0].Height));
-                ITEM[2, 0] = new IGMDataItem.Box(null, new Rectangle((int)(Width * 4f), ITEM[0, 0].Height + space, (int)(Width * 0.94f), ITEM[0, 0].Height), Icons.ID.HELP);
+                ITEM[0, 0] = new IGMDataItem.Box{Pos=new Rectangle(0, 0, (int)(Width * 0.82f), (Height - space) / 2)};
+                ITEM[1, 0] = new IGMDataItem.Box{Pos=new Rectangle(ITEM[0, 0].Width + space, 0, (int)(Width * 0.18f - space), ITEM[0, 0].Height)};
+                ITEM[2, 0] = new IGMDataItem.Box{Pos=new Rectangle((int)(Width * 4f), ITEM[0, 0].Height + space, (int)(Width * 0.94f), ITEM[0, 0].Height),Title=Icons.ID.HELP};
             }
             protected IGMDataItem.Box TOPLeft => (IGMDataItem.Box)ITEM[0, 0];
             protected IGMDataItem.Box TOPRight => (IGMDataItem.Box)ITEM[1, 0];
@@ -88,7 +88,7 @@ namespace OpenVIII
         }
         public class LoadBarBox : IGMData.Base
         {
-            public LoadBarBox Create(Rectangle pos) => Create<LoadBarBox>(2, 1, container: new IGMDataItem.Box(null, pos, Icons.ID.INFO));
+            public LoadBarBox Create(Rectangle pos) => Create<LoadBarBox>(2, 1, container: new IGMDataItem.Box{Pos= pos,Title= Icons.ID.INFO});
             protected override void Init()
             {
                 base.Init();

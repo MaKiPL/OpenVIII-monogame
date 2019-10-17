@@ -96,6 +96,21 @@ namespace OpenVIII
                 }
                 return false;
             }
+            protected override void Init()
+            {
+
+                base.Init();
+
+                for (int i = 0; i < Rows; i++)
+                {
+                    ITEM[i, 0] = new IGMDataItem.Text { Pos = SIZE[i] };
+                    ITEM[i, 0].Hide();
+                    ITEM[i, 1] = new IGMDataItem.Icon { Data = Icons.ID.HP2, Pos = new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 7), SIZE[i].Y, 0, 0), Palette = 13 };
+                    ITEM[i, 1].Hide();
+                    ITEM[i, 2] = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 4), SIZE[i].Y, 0, 0), Spaces = 4 };
+                    ITEM[i, 2].Hide();
+                }
+            }
 
             public override void Refresh()
             {
@@ -193,19 +208,21 @@ namespace OpenVIII
                             Pages = Page + 1;
                             return;
                         }
-                    ITEM[i, 0] = new IGMDataItem.Text { Data = Memory.Strings.GetName(id), Pos = SIZE[i] };
+                    ((IGMDataItem.Text)ITEM[i, 0]).Data = Memory.Strings.GetName(id);
+                    ITEM[i, 0].Show();
                     int hp = (ctest || gftest) ? Memory.State[id]?.CurrentHP() ?? -1 : -1;
                     BLANKS[i] = false;
                     Contents[i] = id;
                     if (hp > -1)
                     {
-                        ITEM[i, 1] = new IGMDataItem.Icon(Icons.ID.HP2, new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 7), SIZE[i].Y, 0, 0), 13);
-                        ITEM[i, 2] = new IGMDataItem.Integer(hp, pos: new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 4), SIZE[i].Y, 0, 0), spaces: 4);
+                        ((IGMDataItem.Integer)ITEM[i, 0]).Data = hp;
+                        ITEM[i, 1].Show();
+                        ITEM[i, 2].Show();
                     }
                     else
                     {
-                        ITEM[i, 1] = null;
-                        ITEM[i, 2] = null;
+                        ITEM[i, 1].Hide();
+                        ITEM[i, 2].Hide();
                     }
 
                     id++;

@@ -28,7 +28,7 @@ namespace OpenVIII.IGMDataItem
         #region Properties
 
         public virtual bool Blink { get => _blink; set => _blink = value; }
-        public float Blink_Adjustment { get; set; }
+        public float Blink_Adjustment { get; set; } = 1f;
         public Color Color { get; set; } = Color.White;
         public Color Faded_Color { get; set; } = Color.White;
         public Vector2 Scale { get; set; }

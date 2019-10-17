@@ -51,6 +51,8 @@ namespace OpenVIII.IGMData
             ITEM[Mag_Pool, 0].Hide();
             ITEM[Item_Pool, 0] = Pool.Item.Create(new Rectangle(X + 50, Y - 22, 400, 194), Damageable, true);
             ITEM[Item_Pool, 0].Hide();
+            ITEM[Limit_Arrow, 0] = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Right, Pos = new Rectangle(SIZE[0].X + Width - 55, SIZE[0].Y, 0, 0), Palette= 2, Faded_Palette = 7, Blink = true };
+            ITEM[Limit_Arrow, 0].Hide();
             ITEM[Targets_Window, 0] = BattleMenus.IGMData_TargetGroup.Create(Damageable);
             commands = new Kernel_bin.Battle_Commands[Rows];
             PointerZIndex = Limit_Arrow;
@@ -326,12 +328,12 @@ namespace OpenVIII.IGMData
                 if (Battle && CrisisLevel)
                 {
                     CONTAINER.Width = crisiswidth;
-                    ITEM[Limit_Arrow, 0] = new IGMDataItem.Icon(Icons.ID.Arrow_Right, new Rectangle(SIZE[0].X + Width - 55, SIZE[0].Y, 0, 0), 2, 7) { Blink = true };
+                    ITEM[Limit_Arrow, 0].Show();
                 }
                 else
                 {
                     CONTAINER.Width = nonbattleWidth;
-                    ITEM[Limit_Arrow, 0] = null;
+                    ITEM[Limit_Arrow, 0].Hide();
                 }
                 AutoAdjustContainerWidth(DataSize);
                 if (Damageable != null)

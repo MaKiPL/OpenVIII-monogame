@@ -128,7 +128,7 @@ namespace OpenVIII
                 base.Init();
                 for (byte pos = 0; pos < Count; pos++)
                 {
-                    ITEM[pos, 0] = new IGMDataItem.Icon(Icons.ID.None, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0));
+                    ITEM[pos, 0] = new IGMDataItem.Icon { Pos = new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0) };
                     ITEM[pos, 1] = new IGMDataItem.Text { Pos = new Rectangle(SIZE[pos].X + 60, SIZE[pos].Y, 0, 0) };
                     BLANKS[pos] = true;
                 }

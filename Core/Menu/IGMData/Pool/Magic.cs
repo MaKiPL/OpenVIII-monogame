@@ -162,15 +162,15 @@ namespace OpenVIII.IGMData.Pool
             base.Init();
             SIZE[Rows] = SIZE[0];
             SIZE[Rows].Y = Y;
-            ITEM[Rows, 2] = new IGMDataItem.Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 45, SIZE[Rows].Y, 0, 0), scale: new Vector2(2.5f));
+            ITEM[Rows, 2] = new IGMDataItem.Icon { Data = Icons.ID.NUM_, Pos = new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 45, SIZE[Rows].Y, 0, 0), Scale = new Vector2(2.5f) };
 
             for (int pos = 0; pos < Rows; pos++)
             {
-                ITEM[pos, 0] = new IGMDataItem.Text() { Pos = SIZE[pos] };
+                ITEM[pos, 0] = new IGMDataItem.Text { Pos = SIZE[pos] };
                 ITEM[pos, 0].Hide();
-                ITEM[pos, 1] = new IGMDataItem.Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 75, SIZE[pos].Y, 0, 0));
+                ITEM[pos, 1] = new IGMDataItem.Icon { Data = Icons.ID.JunctionSYM, Pos = new Rectangle(SIZE[pos].X + SIZE[pos].Width - 75, SIZE[pos].Y, 0, 0) };
                 ITEM[pos, 1].Hide();
-                ITEM[pos, 2] = new IGMDataItem.Integer(0, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), spaces: 3);
+                ITEM[pos, 2] = new IGMDataItem.Integer{Pos = new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), Spaces = 3};
                 ITEM[pos, 2].Hide();
             }
 
@@ -243,14 +243,14 @@ namespace OpenVIII.IGMData.Pool
 
         static public Magic Create(Rectangle pos, Damageable damageable, bool battle = false)
         {
-            var r = Create<Magic>(5, 3, new IGMDataItem.Box(pos: pos, title: Icons.ID.MAGIC), 4, 13, damageable);
+            var r = Create<Magic>(5, 3, new IGMDataItem.Box {Pos= pos, Title= Icons.ID.MAGIC}, 4, 13, damageable);
             r.Battle = battle;
             r.Refresh();
             return r;
         }
         static public Magic Create()
         {
-            return Create<Magic>(6, 3, new IGMDataItem.Box(pos: new Rectangle(135, 150, 300, 192), title: Icons.ID.MAGIC), 4, 13);
+            return Create<Magic>(6, 3, new IGMDataItem.Box { Pos = new Rectangle(135, 150, 300, 192), Title = Icons.ID.MAGIC}, 4, 13);
         }
 
         public Damageable LastCharacter { get; private set; }

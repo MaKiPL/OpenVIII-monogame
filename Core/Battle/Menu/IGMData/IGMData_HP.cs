@@ -19,11 +19,17 @@ namespace OpenVIII
 
             #endregion Fields
 
-            #region Constructors
+            #region Destructors
 
-            public static IGMData_HP Create(Rectangle pos, Damageable damageable) => Create<IGMData_HP>(3, 5, new IGMDataItem.Empty(pos), 1, 3, damageable);
+            ~IGMData_HP()
+            {
+                if (EventAdded)
+                    RemoveModeChangeEvent(ref Damageable.BattleModeChangeEventHandler);
+            }
 
-            #endregion Constructors
+            #endregion Destructors
+
+            #region Enums
 
             private enum DepthID : byte
             {
@@ -34,7 +40,54 @@ namespace OpenVIII
                 ATBBorder
             }
 
+            #endregion Enums
+
             #region Methods
+
+            private static List<KeyValuePair<int, Characters>> GetParty() => Memory.State.Party.Select((element, index) => new { element, index }).ToDictionary(m => m.index, m => m.element).Where(m => !m.Value.Equals(Characters.Blank)).ToList();
+
+            private byte GetCharPos() => GetCharPos(GetParty());
+
+            private byte GetCharPos(List<KeyValuePair<int, Characters>> party) => (byte)party.FindIndex(x => Damageable.GetCharacterData(out Saves.CharacterData c) && x.Value == c.ID);
+
+            protected override void Init()
+            {
+                EventAdded = true;
+                AddModeChangeEvent(ref Damageable.BattleModeChangeEventHandler);
+                if (dot == null)
+                {
+                    dot = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
+                    lock (dot)
+                        dot.SetData(new Color[] { Color.White });
+                }
+                base.Init();
+                byte pos = GetCharPos();
+                FF8String name = null;
+                if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                    name = c.Name;
+
+                Rectangle atbbarpos = new Rectangle(SIZE[pos].X + 230, SIZE[pos].Y + 12, 150, 15);
+                // TODO: make a font render that can draw right to left from a point. For Right aligning the names.
+                ITEM[pos, (byte)DepthID.Name] = new IGMDataItem.Text { Data = name, Pos = new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0) };
+                ITEM[pos, (byte)DepthID.HP] = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[pos].X + 128, SIZE[pos].Y, 0, 0), Spaces = 4, NumType = Icons.NumType.Num_8x16_1 };
+
+                ITEM[pos, (byte)DepthID.ATBBorder] = new IGMDataItem.Icon { Data = Icons.ID.Size_08x64_Bar, Pos = atbbarpos, Palette = 0 };
+                ITEM[pos, (byte)DepthID.ATBCharged] = new IGMDataItem.Texture { Data = dot, Pos = atbbarpos, Color = Color.LightYellow * .8f, Faded_Color = new Color(125, 125, 0, 255) * .8f };
+                ITEM[pos, (byte)DepthID.ATBCharged].Hide();
+                ITEM[pos, (int)DepthID.ATBCharging] = IGMDataItem.Gradient.ATB.Create(atbbarpos);
+                ((IGMDataItem.Gradient.ATB)ITEM[pos, (byte)DepthID.ATBCharging]).Color = Color.Orange * .8f;
+                ((IGMDataItem.Gradient.ATB)ITEM[pos, (byte)DepthID.ATBCharging]).Faded_Color = Color.Orange * .8f;
+                ((IGMDataItem.Gradient.ATB)ITEM[pos, (byte)DepthID.ATBCharging]).Refresh(Damageable);
+            }
+
+            protected override void ModeChangeEvent(object sender, Enum e)
+            {
+                base.ModeChangeEvent(sender, e);
+                if (!e.Equals(Damageable.BattleMode.EndTurn)) //because endturn triggers BattleMenu refresh.
+                    Refresh();
+            }
+
+            public static IGMData_HP Create(Rectangle pos, Damageable damageable) => Create<IGMData_HP>(3, 5, new IGMDataItem.Empty(pos), 1, 3, damageable);
 
             public override void Refresh()
             {
@@ -106,55 +159,6 @@ namespace OpenVIII
                     ((IGMDataItem.Integer)ITEM[pos, (byte)DepthID.HP]).FontColor = colorid;
                 }
                 return base.Update();
-            }
-
-            private byte GetCharPos() => GetCharPos(GetParty());
-
-            private byte GetCharPos(List<KeyValuePair<int, Characters>> party) => (byte)party.FindIndex(x => Damageable.GetCharacterData(out Saves.CharacterData c) && x.Value == c.ID);
-
-            private static List<KeyValuePair<int, Characters>> GetParty() => Memory.State.Party.Select((element, index) => new { element, index }).ToDictionary(m => m.index, m => m.element).Where(m => !m.Value.Equals(Characters.Blank)).ToList();
-
-            ~IGMData_HP()
-            {
-                if (EventAdded)
-                    RemoveModeChangeEvent(ref Damageable.BattleModeChangeEventHandler);
-            }
-
-            protected override void Init()
-            {
-                EventAdded = true;
-                AddModeChangeEvent(ref Damageable.BattleModeChangeEventHandler);
-                if (dot == null)
-                {
-                    dot = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
-                    lock (dot)
-                        dot.SetData(new Color[] { Color.White });
-                }
-                base.Init();
-                byte pos = GetCharPos();
-                FF8String name = null;
-                if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
-                    name = c.Name;
-
-                Rectangle atbbarpos = new Rectangle(SIZE[pos].X + 230, SIZE[pos].Y + 12, 150, 15);
-                // TODO: make a font render that can draw right to left from a point. For Right aligning the names.
-                ITEM[pos, (byte)DepthID.Name] = new IGMDataItem.Text { Data = name, Pos = new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0) };
-                ITEM[pos, (byte)DepthID.HP] = new IGMDataItem.Integer(0, new Rectangle(SIZE[pos].X + 128, SIZE[pos].Y, 0, 0), spaces: 4, numtype: Icons.NumType.Num_8x16_1);
-
-                ITEM[pos, (byte)DepthID.ATBBorder] = new IGMDataItem.Icon(Icons.ID.Size_08x64_Bar, atbbarpos, 0);
-                ITEM[pos, (byte)DepthID.ATBCharged] = new IGMDataItem.Texture { Data = dot, Pos = atbbarpos, Color = Color.LightYellow * .8f, Faded_Color = new Color(125, 125, 0, 255) * .8f };
-                ITEM[pos, (byte)DepthID.ATBCharged].Hide();
-                ITEM[pos, (int)DepthID.ATBCharging] = IGMDataItem.Gradient.ATB.Create(atbbarpos);
-                ((IGMDataItem.Gradient.ATB)ITEM[pos, (byte)DepthID.ATBCharging]).Color = Color.Orange * .8f;
-                ((IGMDataItem.Gradient.ATB)ITEM[pos, (byte)DepthID.ATBCharging]).Faded_Color = Color.Orange * .8f;
-                ((IGMDataItem.Gradient.ATB)ITEM[pos, (byte)DepthID.ATBCharging]).Refresh(Damageable);
-            }
-
-            protected override void ModeChangeEvent(object sender, Enum e)
-            {
-                base.ModeChangeEvent(sender, e);
-                if (!e.Equals(Damageable.BattleMode.EndTurn)) //because endturn triggers BattleMenu refresh.
-                    Refresh();
             }
 
             #endregion Methods

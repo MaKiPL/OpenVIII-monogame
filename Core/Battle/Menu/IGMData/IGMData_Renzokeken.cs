@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using OpenVIII.Encoding.Tags;
 using System;
-using System.Diagnostics;
 
 namespace OpenVIII.IGMData
 {
@@ -41,13 +40,13 @@ namespace OpenVIII.IGMData
             r.Height += r.Height % 4;
             rc = Memory.Icons.MostSaturated(Icons.ID.Text_Cursor, 6);
             rcdim = Memory.Icons.MostSaturated(Icons.ID.Text_Cursor, 2);
-            ITEM[0, 0] = new IGMDataItem.Texture { Data = pixel, Pos= r, Color= rcdim };
+            ITEM[0, 0] = new IGMDataItem.Texture { Data = pixel, Pos = r, Color = rcdim };
             r.Inflate(-4, -4);
             ITEM[1, 0] = new IGMDataItem.Texture { Data = pixel, Pos = r, Color = Color.Black };
             float scale = (float)r.Height / e.Height;
             int w = (int)(e.Width * scale);
-            ITEM[Count - 3, 0] = new IGMDataItem.Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 80, r.Y, w, r.Height), 2, scale: new Vector2(scale));
-            ITEM[Count - 2, 0] = new IGMDataItem.Icon(Icons.ID.Text_Cursor, new Rectangle(r.X + 208, r.Y, w, r.Height), 2, scale: new Vector2(scale));
+            ITEM[Count - 3, 0] = new IGMDataItem.Icon { Data = Icons.ID.Text_Cursor, Pos = new Rectangle(r.X + 80, r.Y, w, r.Height), Scale = new Vector2(scale) };
+            ITEM[Count - 2, 0] = new IGMDataItem.Icon { Data = Icons.ID.Text_Cursor, Pos = new Rectangle(r.X + 208, r.Y, w, r.Height), Scale = new Vector2(scale) };
             Rectangle hotspot = new Rectangle(r.X + 80 + (w / 2), r.Y + 4, 208 - 80, r.Height - 8);
             ITEM[Count - 4, 0] = new IGMDataItem.Texture { Data = pixel, Pos = hotspot, Color = Color.TransparentBlack };
             //Rectangle hotspotbox = hotspot;
@@ -63,7 +62,7 @@ namespace OpenVIII.IGMData
             int xbak = tr.X;
             tr.X += trigwidtharea / 2 - w / 2;
 
-            ITEM[Count - 1, 0] = new IGMDataItem.Icon(Icons.ID.Trigger_, tr, 6, scale: new Vector2(scale));// { Color = rc};
+            ITEM[Count - 1, 0] = new IGMDataItem.Icon { Data = Icons.ID.Trigger_, Pos = tr, Palette = 6, Scale = new Vector2(scale) };// { Color = rc};
 
             newattack = new Color(104, 80, 255);
             int delay = 500;
@@ -88,13 +87,13 @@ namespace OpenVIII.IGMData
             scale = ((float)r.Height) / e.Height;
             w = (int)(e.Width * scale);
             tr.X = xbak + trigwidtharea / 2 - w / 2;
-            ITEM[Count - 5, 0] = new IGMDataItem.Icon(Icons.ID._0_Hit_, tr, 2, scale: new Vector2(scale));
+            ITEM[Count - 5, 0] = new IGMDataItem.Icon { Data = Icons.ID._0_Hit_, Pos = tr, Scale = new Vector2(scale) };
             Memory.Icons.Trim(Icons.ID.Perfect__, 2);
             e = Memory.Icons[Icons.ID.Perfect__];
             scale = ((float)r.Height) / e.Height;
             w = (int)(e.Width * scale);
             tr.X = xbak + trigwidtharea / 2 - w / 2;
-            ITEM[Count - 6, 0] = new IGMDataItem.Icon(Icons.ID.Perfect__, tr, 8, scale: new Vector2(scale));
+            ITEM[Count - 6, 0] = new IGMDataItem.Icon { Data = Icons.ID.Perfect__, Pos = tr, Palette = 8, Scale = new Vector2(scale) };
             base.Init();
             Reset();
             Cursor_Status = Cursor_Status.Enabled | Cursor_Status.Static | Cursor_Status.Hidden;
@@ -117,16 +116,7 @@ namespace OpenVIII.IGMData
             base.RefreshChild();
         }
 
-        #endregion Methods
-
-        #region Constructors
-
-        static public Renzokeken Create(Rectangle? pos = null)
-        {
-            return Create<Renzokeken>(15, 1, new IGMDataItem.Box(pos: pos ?? new Rectangle(24, 501, 912, 123), title: Icons.ID.SPECIAL), 0, 0, Memory.State?[Characters.Squall_Leonhart]);
-        }
-
-        #endregion Constructors
+        public static Renzokeken Create(Rectangle? pos = null) => Create<Renzokeken>(15, 1, new IGMDataItem.Box(pos: pos ?? new Rectangle(24, 501, 912, 123), title: Icons.ID.SPECIAL), 0, 0, Memory.State?[Characters.Squall_Leonhart]);
 
         public override bool Inputs()
         {
@@ -223,7 +213,7 @@ namespace OpenVIII.IGMData
                 ((IGMDataItem.Icon)ITEM[Count - 3, 0]).Palette = 2;
                 ((IGMDataItem.Icon)ITEM[Count - 2, 0]).Palette = 2;
                 ((IGMDataItem.Texture)ITEM[0, 0]).Color = rcdim;
-                if ((hotcnt >= _hits)||!done)// && ITEM[Count - 1, 0].Enabled)
+                if ((hotcnt >= _hits) || !done)// && ITEM[Count - 1, 0].Enabled)
                 {
                     if (_count >= _hits)
                         ITEM[Count - 6, 0].Show();
@@ -237,5 +227,7 @@ namespace OpenVIII.IGMData
             base.Update();
             return true;
         }
+
+        #endregion Methods
     }
 }

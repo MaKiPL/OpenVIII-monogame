@@ -101,8 +101,8 @@
             SIZE[Count - 2].Y = Y + Height - 28;
             SIZE[Count - 1].X = X + Width - 24;
             SIZE[Count - 1].Y = Y + Height - 28;
-            ITEM[Count - 2, 0] = new IGMDataItem.Icon(Icons.ID.Arrow_Left, SIZE[Count - 2], 2, 7) { Blink = true };
-            ITEM[Count - 1, 0] = new IGMDataItem.Icon(Icons.ID.Arrow_Right2, SIZE[Count - 1], 2, 7) { Blink = true };
+            ITEM[Count - 2, 0] = new IGMDataItem.Icon{ Data = Icons.ID.Arrow_Left, Pos = SIZE[Count - 2], Palette = 2, Faded_Palette = 7, Blink = true };
+            ITEM[Count - 1, 0] = new IGMDataItem.Icon{ Data = Icons.ID.Arrow_Right2, Pos = SIZE[Count - 1], Palette = 2, Faded_Palette = 7, Blink = true };
         }
 
         protected virtual void PAGE_NEXT()

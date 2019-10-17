@@ -20,8 +20,8 @@ namespace OpenVIII.IGMData.Pool
             r.Inflate(-Width * .25f,-Height *.25f);
             for (byte pos = 0; pos < Rows; pos++)
             {
-                ITEM[pos, 0] = new IGMDataItem.Text {Pos = SIZE[pos] };
-                ITEM[pos, 1] = new IGMDataItem.Icon(Icons.ID.JunctionSYM, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0));
+                ITEM[pos, 0] = new IGMDataItem.Text { Pos = SIZE[pos] };
+                ITEM[pos, 1] = new IGMDataItem.Icon { Data = Icons.ID.JunctionSYM, Pos = new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0) };
                 ITEM[pos, 2] = Commands.Create(r, Damageable, Battle);
                 ITEM[pos, 2].Hide();
             }

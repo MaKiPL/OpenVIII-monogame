@@ -127,18 +127,18 @@ namespace OpenVIII
 
                     if (Memory.State.Characters != null && unlocked != null)
                     {
-                        ITEM[5, 0] = new IGMDataItem.Icon(Icons.ID.Icon_Status_Attack, new Rectangle(SIZE[5].X + 200, SIZE[5].Y, 0, 0),
-                            (byte)(unlocked.Contains(Kernel_bin.Abilities.ST_Atk_J) ? 2 : 7));
-                        ITEM[5, 1] = new IGMDataItem.Icon(Icons.ID.Icon_Status_Defense, new Rectangle(SIZE[5].X + 240, SIZE[5].Y, 0, 0),
+                        ((IGMDataItem.Icon)ITEM[5, 0] ).Palette = 
+                            (byte)(unlocked.Contains(Kernel_bin.Abilities.ST_Atk_J) ? 2 : 7);
+                        ((IGMDataItem.Icon)ITEM[5, 1]).Palette =
                             (byte)(unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx1) ||
                             unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx2) ||
-                            unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4) ? 2 : 7));
-                        ITEM[5, 2] = new IGMDataItem.Icon(Icons.ID.Icon_Elemental_Attack, new Rectangle(SIZE[5].X + 280, SIZE[5].Y, 0, 0),
-                            (byte)(unlocked.Contains(Kernel_bin.Abilities.EL_Atk_J) ? 2 : 7));
-                        ITEM[5, 3] = new IGMDataItem.Icon(Icons.ID.Icon_Elemental_Defense, new Rectangle(SIZE[5].X + 320, SIZE[5].Y, 0, 0),
+                            unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4) ? 2 : 7);
+                        ((IGMDataItem.Icon)ITEM[5, 2]).Palette =
+                            (byte)(unlocked.Contains(Kernel_bin.Abilities.EL_Atk_J) ? 2 : 7);
+                        ((IGMDataItem.Icon)ITEM[5, 3]).Palette =
                             (byte)(unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx1) ||
                             unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx2) ||
-                            unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx4) ? 2 : 7));
+                            unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx4) ? 2 : 7);
                         BLANKS[5] = true;
                         foreach (Kernel_bin.Stat stat in (Kernel_bin.Stat[])Enum.GetValues(typeof(Kernel_bin.Stat)))
                         {
@@ -149,24 +149,24 @@ namespace OpenVIII
                                 Contents[pos] = stat;
                                 FF8String name = Kernel_bin.MagicData[c.Stat_J[stat]].Name;
                                 if (name == null || name.Length == 0) name = Strings.Name._;
+                                ((IGMDataItem.Text)ITEM[pos, 1]).Data = name;
+                                ((IGMDataItem.Integer)ITEM[pos, 2]).Data = Damageable.TotalStat(stat);
 
-                                ITEM[pos, 0] = new IGMDataItem.Icon(Stat2Icon[stat], new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), 2);
-                                ITEM[pos, 1] = new IGMDataItem.Text { Data = name, Pos = new Rectangle(SIZE[pos].X + 80, SIZE[pos].Y, 0, 0) };
                                 if (!unlocked.Contains(Kernel_bin.Stat2Ability[stat]))
                                 {
                                     ((IGMDataItem.Icon)ITEM[pos, 0]).Palette = ((IGMDataItem.Icon)ITEM[pos, 0]).Faded_Palette = 7;
                                     ((IGMDataItem.Text)ITEM[pos, 1]).FontColor = Font.ColorID.Grey;
                                     BLANKS[pos] = true;
                                 }
-                                else BLANKS[pos] = false;
-
-                                ITEM[pos, 2] = new IGMDataItem.Integer(Damageable.TotalStat(stat), new Rectangle(SIZE[pos].X + 152, SIZE[pos].Y, 0, 0), 2, Icons.NumType.sysFntBig, spaces: 10);
-                                ITEM[pos, 3] = stat == Kernel_bin.Stat.HIT || stat == Kernel_bin.Stat.EVA
-                                    ? new IGMDataItem.Text { Data = Strings.Name.Percent, Pos = new Rectangle(SIZE[pos].X + 350, SIZE[pos].Y, 0, 0) }
-                                    : null;
+                                else
+                                {
+                                    ((IGMDataItem.Icon)ITEM[pos, 0]).Palette = ((IGMDataItem.Icon)ITEM[pos, 0]).Faded_Palette = 2;
+                                    ((IGMDataItem.Text)ITEM[pos, 1]).FontColor = Font.ColorID.White;
+                                    BLANKS[pos] = false;
+                                }
                                 if (GetPrevSetting() == null || (Damageable.GetCharacterData(out Saves.CharacterData _c) && GetPrevSetting().Stat_J[stat] == _c.Stat_J[stat]) || GetPrevSetting().TotalStat(stat) == Damageable.TotalStat(stat))
                                 {
-                                    ITEM[pos, 4] = null;
+                                    ITEM[pos, 4].Hide();
                                 }
                                 else if (GetPrevSetting().TotalStat(stat) > Damageable.TotalStat(stat))
                                 {
@@ -176,7 +176,8 @@ namespace OpenVIII
                                     ((IGMDataItem.Integer)ITEM[pos, 2]).FontColor = Font.ColorID.Red;
                                     if (ITEM[pos, 3] != null)
                                         ((IGMDataItem.Text)ITEM[pos, 3]).FontColor = Font.ColorID.Red;
-                                    ITEM[pos, 4] = new IGMDataItem.Icon(Icons.ID.Arrow_Down, new Rectangle(SIZE[pos].X + 250, SIZE[pos].Y, 0, 0), 16);
+                                    ((IGMDataItem.Icon)ITEM[pos, 4]).Data = Icons.ID.Arrow_Down;
+                                    ((IGMDataItem.Icon)ITEM[pos, 4]).Palette = 16;
                                 }
                                 else
                                 {
@@ -186,7 +187,8 @@ namespace OpenVIII
                                     ((IGMDataItem.Integer)ITEM[pos, 2]).FontColor = Font.ColorID.Yellow;
                                     if (ITEM[pos, 3] != null)
                                         ((IGMDataItem.Text)ITEM[pos, 3]).FontColor = Font.ColorID.Yellow;
-                                    ITEM[pos, 4] = new IGMDataItem.Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos].X + 250, SIZE[pos].Y, 0, 0), 17);
+                                    ((IGMDataItem.Icon)ITEM[pos, 4]).Data = Icons.ID.Arrow_Up;
+                                    ((IGMDataItem.Icon)ITEM[pos, 4]).Palette = 17;
                                 }
                             }
                         }
@@ -222,6 +224,25 @@ namespace OpenVIII
             {
                 Contents = new Kernel_bin.Stat[Count];
                 base.Init();
+
+
+                ITEM[5, 0] = new IGMDataItem.Icon { Data = Icons.ID.Icon_Status_Attack, Pos = new Rectangle(SIZE[5].X + 200, SIZE[5].Y, 0, 0) };
+                ITEM[5, 1] = new IGMDataItem.Icon { Data = Icons.ID.Icon_Status_Defense, Pos = new Rectangle(SIZE[5].X + 240, SIZE[5].Y, 0, 0) };
+                ITEM[5, 2] = new IGMDataItem.Icon { Data = Icons.ID.Icon_Elemental_Attack, Pos = new Rectangle(SIZE[5].X + 280, SIZE[5].Y, 0, 0) };
+                ITEM[5, 3] = new IGMDataItem.Icon { Data = Icons.ID.Icon_Elemental_Defense, Pos = new Rectangle(SIZE[5].X + 320, SIZE[5].Y, 0, 0) };
+
+                foreach (Kernel_bin.Stat stat in (Kernel_bin.Stat[])Enum.GetValues(typeof(Kernel_bin.Stat)))
+                {
+                    int pos = (int)stat;
+                    if (pos >= 5) pos++;
+                    ITEM[pos, 0] = new IGMDataItem.Icon { Data = Stat2Icon[stat], Pos = new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0) };
+                    ITEM[pos, 1] = new IGMDataItem.Text { Pos = new Rectangle(SIZE[pos].X + 80, SIZE[pos].Y, 0, 0) };
+                    ITEM[pos, 2] = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[pos].X + 152, SIZE[pos].Y, 0, 0), NumType = Icons.NumType.sysFntBig, Spaces = 10 };
+                    ITEM[pos, 3] = stat == Kernel_bin.Stat.HIT || stat == Kernel_bin.Stat.EVA
+                                    ? new IGMDataItem.Text { Data = Strings.Name.Percent, Pos = new Rectangle(SIZE[pos].X + 350, SIZE[pos].Y, 0, 0) }
+                                    : null;
+                    ITEM[pos, 4] = new IGMDataItem.Icon { Pos = new Rectangle(SIZE[pos].X + 250, SIZE[pos].Y, 0, 0), Palette = 16 };
+                }
             }
 
             protected override void InitShift(int i, int col, int row)

@@ -237,8 +237,20 @@ namespace OpenVIII
         /// Size of the menu. If kept in a 4:3 region it won't scale down till after losing enough width.
         /// </summary>
         public Vector2 Size { get => _size; protected set => _size = value; }
+        public struct BoxReturn
+        {
+            public Rectangle HotSpot;
+            public Point Cursor;
+            public Rectangle Font;
 
-        public static Tuple<Rectangle, Point, Rectangle> DrawBox(Rectangle dst, FF8String buffer = null, Icons.ID? title = null, Vector2? textScale = null, Vector2? boxScale = null, Box_Options options = Box_Options.Default)
+            public BoxReturn(Rectangle hotSpot, Point cursor, Rectangle font)
+            {
+                HotSpot = hotSpot;
+                Cursor = cursor;
+                Font = font;
+            }
+        }
+        public static BoxReturn DrawBox(Rectangle dst, FF8String buffer = null, Icons.ID? title = null, Vector2? textScale = null, Vector2? boxScale = null, Box_Options options = Box_Options.Default)
         {
             if (textScale == null) textScale = Vector2.One;
             if (boxScale == null) boxScale = Vector2.One;
@@ -301,7 +313,7 @@ namespace OpenVIII
                 cursor.Y += (int)(TextScale.Y * 6); // 12 * (3.0375/2)
             }
 
-            return new Tuple<Rectangle, Point, Rectangle>(hotspot, cursor, font);
+            return new BoxReturn(hotspot, cursor, font);
         }
 
         public static void DrawPointer(Point cursor, Vector2? offset = null, bool blink = false)

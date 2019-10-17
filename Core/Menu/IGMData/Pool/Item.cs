@@ -37,10 +37,10 @@ namespace OpenVIII.IGMData.Pool
             _helpStr = new FF8String[Count];
             for (byte pos = 0; pos < Rows; pos++)
             {
-                ITEM[pos, 0] = new IGMDataItem.Text() { Pos = SIZE[pos] };
-                ITEM[pos, 1] = new IGMDataItem.Integer(0, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0), numtype: Icons.NumType.sysFntBig, spaces: 3);
+                ITEM[pos, 0] = new IGMDataItem.Text { Pos = SIZE[pos] };
+                ITEM[pos, 1] = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0), NumType = Icons.NumType.sysFntBig, Spaces = 3 };
             }
-            ITEM[Count - 1, 2] = new IGMDataItem.Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows - 1].X + SIZE[Rows - 1].Width - 60, Y, 0, 0), scale: new Vector2(2.5f));
+            ITEM[Count - 1, 2] = new IGMDataItem.Icon { Data = Icons.ID.NUM_, Pos = new Rectangle(SIZE[Rows - 1].X + SIZE[Rows - 1].Width - 60, Y, 0, 0), Scale = new Vector2(2.5f) };
             PointerZIndex = Rows - 1;
         }
 
@@ -114,7 +114,7 @@ namespace OpenVIII.IGMData.Pool
 
         public static Item Create(Rectangle pos, Damageable damageable = null, bool battle = false, int count = 4)
         {
-            Item r = Create<Item>(count + 1, 3, new IGMDataItem.Box(pos: pos, title: Icons.ID.ITEM), count, 198 / count + 1, damageable);
+            Item r = Create<Item>(count + 1, 3, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.ITEM }, count, 198 / count + 1, damageable);
             r.Battle = battle;
             if (battle)
                 r.ITEM[r.Targets_Window, 0] = BattleMenus.IGMData_TargetGroup.Create(r.Damageable);

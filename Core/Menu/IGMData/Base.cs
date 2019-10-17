@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace OpenVIII.IGMData
 {
-    abstract public class Base : Menu_Base
+    public abstract class Base : Menu_Base
     {
         #region Fields
 
@@ -24,7 +24,7 @@ namespace OpenVIII.IGMData
         {
             if (DataSize.Right > Pos.Right)
             {
-                CONTAINER.Width += DataSize.Right - Pos.Right + Math.Abs(DataSize.Left - Pos.Left);                
+                CONTAINER.Width += DataSize.Right - Pos.Right + Math.Abs(DataSize.Left - Pos.Left);
             }
         }
 
@@ -107,44 +107,64 @@ namespace OpenVIII.IGMData
         /// <summary>
         /// Things that are fixed values at startup.
         /// </summary>
-        protected override void Init()
+        protected override void Init() => InitSize();
+
+        private void InitSize(bool force = false)
         {
-            if (SIZE != null && SIZE.Length > 0 && Rows * Cols > 0)
+
+            int cellcount = Rows * Cols;
+            cellcount = cellcount > 1 ? cellcount : 1;
+            if (CURSOR == null || CURSOR.Length == 0 || SIZE == null || SIZE.Length == 0)
             {
-                for (int i = 0; i < SIZE.Length; i++)
+                CURSOR = new Point[cellcount];
+                SIZE = new Rectangle[cellcount];
+            }
+            if (((SIZE != null && SIZE.Length > 0) || force))
+            {
+                if (cellcount>1)
                 {
-                    int col = (Table_Options & Table_Options.FillRows) != 0 ? i % Cols : i / Rows;
-                    int row = (Table_Options & Table_Options.FillRows) != 0 ? i / Cols : i % Rows;
-                    if (col < Cols && row < Rows)
+                    InitRowsSize(force);
+                }
+                else
+                {
+                    SIZE[0] = new Rectangle(X, Y, Width, Height);
+                    CURSOR[0] = Point.Zero;
+                    InitShift(0, 0, 0);
+                    InitCursor(0);
+                }
+            }
+        }
+
+        private void InitRowsSize(bool force)
+        {
+            for (int i = 0; i < SIZE.Length; i++)
+            {
+                int col = (Table_Options & Table_Options.FillRows) != 0 ? i % Cols : i / Rows;
+                int row = (Table_Options & Table_Options.FillRows) != 0 ? i / Cols : i % Rows;
+                if (col < Cols && row < Rows)
+                {
+                    if (SIZE[i].IsEmpty || force) //allows for override a size value before the loop.
                     {
-                        if (SIZE[i].IsEmpty) //allows for override a size value before the loop.
+                        SIZE[i] = new Rectangle
                         {
-                            SIZE[i] = new Rectangle
-                            {
-                                X = X + (Width * col) / Cols,
-                                Y = Y + (Height * row) / Rows,
-                                Width = Width / Cols,
-                                Height = Height / Rows,
-                            };
-                        }
-                        CURSOR[i] = Point.Zero;
-                        InitShift(i, col, row);
-                        CURSOR[i].Y += (int)(SIZE[i].Y + 6 * TextScale.Y);
-                        CURSOR[i].X += SIZE[i].X;
+                            X = X + (Width * col) / Cols,
+                            Y = Y + (Height * row) / Rows,
+                            Width = Width / Cols,
+                            Height = Height / Rows,
+                        };
                     }
+                    CURSOR[i] = Point.Zero;
+                    InitShift(i, col, row);
+                    InitCursor(i);
                 }
             }
-            if (SIZE == null || SIZE.Length == 0 || SIZE[0].IsEmpty)
-            {
-                if (CURSOR == null || CURSOR.Length == 0 || SIZE.Length == 0)
-                {
-                    CURSOR = new Point[1];
-                    SIZE = new Rectangle[1];
-                }
-                CURSOR[0].Y = (int)(Y + Height / 2 - 6 * TextScale.Y);
-                CURSOR[0].X = X;
-                SIZE[0] = new Rectangle(X, Y, Width, Height);
-            }
+        }
+
+        private void InitCursor(int i, bool zero = false)
+        {
+            if (zero) CURSOR[i] = Point.Zero;
+            CURSOR[i].Y += (int)(SIZE[i].Y + 6 * TextScale.Y);
+            CURSOR[i].X += SIZE[i].X;
         }
 
         protected virtual void InitShift(int i, int col, int row)
@@ -190,8 +210,10 @@ namespace OpenVIII.IGMData
         /// Size of the entire area
         /// </summary>
         public Rectangle[] SIZE;
+
         public Base()
         { }
+
         //protected Base(int count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null)
         //{
         //    Init(damageable, partypos);
@@ -203,13 +225,13 @@ namespace OpenVIII.IGMData
             r.Init(damageable, partypos);
             return r;
         }
+
         public static T Create<T>(int count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null) where T : Base, new()
         {
             T r = Create<T>(damageable, partypos);
             r.Init(count, depth, container, cols, rows);
             return r;
         }
-
 
         public int Cols { get; protected set; }
 

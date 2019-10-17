@@ -13,9 +13,9 @@ namespace OpenVIII
             protected override void Init()
             {
                 base.Init();
-                ITEM[0, 0] = new IGMDataItem.Icon(Icons.ID.Rewind_Fast, new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0), 2, 7);
+                ITEM[0, 0] = new IGMDataItem.Icon { Data = Icons.ID.Rewind_Fast, Pos = new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0), Palette = 2, Faded_Palette = 7 };
                 ITEM[0, 1] = new IGMDataItem.Text { Pos = new Rectangle(SIZE[0].X + 20, SIZE[0].Y, 0, 0) };
-                ITEM[0, 2] = new IGMDataItem.Icon(Icons.ID.Rewind, new Rectangle(SIZE[0].X + 143, SIZE[0].Y, 0, 0), 2, 7);
+                ITEM[0, 2] = new IGMDataItem.Icon { Data = Icons.ID.Rewind, Pos = new Rectangle(SIZE[0].X + 143, SIZE[0].Y, 0, 0), Palette = 2, Faded_Palette = 7 };
                 ITEM[0, 3] = new IGMDataItem.Text { Pos = new Rectangle(SIZE[0].X + 169, SIZE[0].Y, 0, 0) };
             }
 
