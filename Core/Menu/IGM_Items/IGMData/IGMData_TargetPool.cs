@@ -199,9 +199,9 @@ namespace OpenVIII
                         {
                             for (; i < Rows; i++)
                             {
-                                ITEM[i, 0] = null;
-                                ITEM[i, 1] = null;
-                                ITEM[i, 2] = null;
+                                ITEM[i, 0].Hide();
+                                ITEM[i, 1].Hide();
+                                ITEM[i, 2].Hide();
                                 BLANKS[i] = true;
                                 Contents[i] = Faces.ID.Blank;
                             }
@@ -215,7 +215,7 @@ namespace OpenVIII
                     Contents[i] = id;
                     if (hp > -1)
                     {
-                        ((IGMDataItem.Integer)ITEM[i, 0]).Data = hp;
+                        ((IGMDataItem.Integer)ITEM[i, 2]).Data = hp;
                         ITEM[i, 1].Show();
                         ITEM[i, 2].Show();
                     }

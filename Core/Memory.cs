@@ -838,7 +838,7 @@ namespace OpenVIII
         public static void Update()
         {
             while (IsMainThread && MainThreadOnlyActions.Count > 0)
-            { MainThreadOnlyActions.Dequeue()(); }
+            { MainThreadOnlyActions.Dequeue()?.Invoke(); }
             for (int i = 0; IsMainThread && i< LeftOverTask.Count; i++)
             {
                 if (LeftOverTask[i].IsCompleted)

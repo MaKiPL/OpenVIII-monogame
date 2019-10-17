@@ -57,7 +57,7 @@ namespace OpenVIII
             help.AddTextChangeEvent(ref ChoiceChangeHandler);
             help.AddTextChangeEvent(ref ItemChangeHandler);
             help.AddModeChangeEvent(ref ModeChangeHandler);
-            Data.Add(SectionName.TopMenu, new IGMData_TopMenu(new Dictionary<FF8String, FF8String>() {
+            Data.Add(SectionName.TopMenu, IGMData_TopMenu.Create(new Dictionary<FF8String, FF8String>() {
                             { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 179),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 180)},
                             { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 183),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 184)},
                             { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 202),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 203)},
@@ -66,9 +66,9 @@ namespace OpenVIII
             Data.Add(SectionName.Title,
                 new IGMDataItem.Box { Data = Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), Pos = new Rectangle(615, 0, 225, 66) });
             Data.Add(SectionName.UseItemGroup, IGMData.Group.Base.Create(
-                new IGMData_Statuses(),
-                new IGMData.Pool.Item(),
-                new IGMData_TargetPool()
+                IGMData_Statuses.Create(),
+                IGMData.Pool.Item.Create(),
+                IGMData_TargetPool.Create()
                 ));
             InputsDict = new Dictionary<Mode, Func<bool>>() {
                 {Mode.TopMenu, Data[SectionName.TopMenu].Inputs},

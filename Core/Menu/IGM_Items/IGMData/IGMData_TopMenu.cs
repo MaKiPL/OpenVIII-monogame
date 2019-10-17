@@ -13,17 +13,33 @@ namespace OpenVIII
             #region Fields
 
             private FF8String[] _helpStr;
+            private IReadOnlyDictionary<FF8String, FF8String> _pairs;
             private bool eventSet = false;
             private List<Action> Inputs_Okay_Actions;
             private int[] widths;
 
             #endregion Fields
 
-            #region Constructors
+            #region Properties
 
-            public IGMData_TopMenu(IReadOnlyDictionary<FF8String, FF8String> pairs) : base()
+            private IReadOnlyDictionary<FF8String, FF8String> Pairs => _pairs;
+
+            protected int avgwidth { get; private set; }
+
+            protected int largestheight { get; private set; }
+
+            protected int largestwidth { get; private set; }
+
+            protected int totalwidth { get; private set; }
+
+            public IReadOnlyList<FF8String> HelpStr => _helpStr;
+
+            #endregion Properties
+
+            #region Methods
+
+            private void CreateData()
             {
-                Pairs = pairs;
                 _helpStr = new FF8String[Pairs.Count];
                 widths = new int[Pairs.Count];
                 byte pos = 0;
@@ -58,20 +74,52 @@ namespace OpenVIII
                     };
             }
 
-            #endregion Constructors
+            private void Inputs_Okay_BattleRearrange()
+            {
+            }
 
-            #region Properties
+            private void Inputs_Okay_Rearrange()
+            {
+            }
 
-            public IReadOnlyList<FF8String> HelpStr => _helpStr;
-            protected int avgwidth { get; private set; }
-            protected int largestheight { get; private set; }
-            protected int largestwidth { get; private set; }
-            protected int totalwidth { get; private set; }
-            private IReadOnlyDictionary<FF8String, FF8String> Pairs { get; }
+            private void Inputs_Okay_Sort()
+            {
+            }
 
-            #endregion Properties
+            private void Inputs_Okay_UseItem() => IGM_Items.SetMode(Mode.SelectItem);
 
-            #region Methods
+            protected override void InitShift(int i, int col, int row)
+            {
+                SIZE[i].Inflate(0, (SIZE[i].Height - largestheight) / -2);
+                SIZE[i].X += SIZE[i].Width / 2 - widths[i] / 2;
+                SIZE[i].Width = widths[i];
+                SIZE[i].Height = largestheight;
+            }
+
+            protected override void ModeChangeEvent(object sender, Enum e)
+            {
+                if (!e.Equals(Mode.TopMenu))
+                    Cursor_Status |= Cursor_Status.Blinking;
+                else
+                    IGM_Items.ChoiceChangeHandler?.Invoke(this, new KeyValuePair<byte, FF8String>((byte)CURSOR_SELECT, HelpStr[CURSOR_SELECT]));
+            }
+
+            protected override void SetCursor_select(int value)
+            {
+                if (value != GetCursor_select())
+                {
+                    base.SetCursor_select(value);
+                    IGM_Items.ChoiceChangeHandler?.Invoke(this, new KeyValuePair<byte, FF8String>((byte)value, HelpStr[value]));
+                }
+            }
+
+            public static IGMData_TopMenu Create(IReadOnlyDictionary<FF8String, FF8String> pairs)
+            {
+                IGMData_TopMenu r = Create<IGMData_TopMenu>();
+                r._pairs = pairs;
+                r.CreateData();
+                return r;
+            }
 
             public override bool Inputs_CANCEL()
             {
@@ -102,45 +150,6 @@ namespace OpenVIII
                 }
                 base.Refresh();
             }
-
-            protected override void InitShift(int i, int col, int row)
-            {
-                SIZE[i].Inflate(0, (SIZE[i].Height - largestheight) / -2);
-                SIZE[i].X += SIZE[i].Width / 2 - widths[i] / 2;
-                SIZE[i].Width = widths[i];
-                SIZE[i].Height = largestheight;
-            }
-
-            protected override void ModeChangeEvent(object sender, Enum e)
-            {
-                if (!e.Equals(Mode.TopMenu))
-                    Cursor_Status |= Cursor_Status.Blinking;
-                else
-                    IGM_Items.ChoiceChangeHandler?.Invoke(this, new KeyValuePair<byte, FF8String>((byte)CURSOR_SELECT, HelpStr[CURSOR_SELECT]));
-            }
-
-            protected override void SetCursor_select(int value)
-            {
-                if (value != GetCursor_select())
-                {
-                    base.SetCursor_select(value);
-                    IGM_Items.ChoiceChangeHandler?.Invoke(this, new KeyValuePair<byte, FF8String>((byte)value, HelpStr[value]));
-                }
-            }
-
-            private void Inputs_Okay_BattleRearrange()
-            {
-            }
-
-            private void Inputs_Okay_Rearrange()
-            {
-            }
-
-            private void Inputs_Okay_Sort()
-            {
-            }
-
-            private void Inputs_Okay_UseItem() => IGM_Items.SetMode(Mode.SelectItem);
 
             #endregion Methods
         }

@@ -67,7 +67,14 @@ namespace OpenVIII
                     {
                         bool ret = base.Update();
                         for (sbyte i = 0; Memory.State.PartyData != null && i < SIZE.Length; i++)
-                            RefreshCharacter(i, Memory.State[Memory.State.PartyData[i]]);
+                        {
+                            Characters cid = Memory.State.PartyData[i];
+                            if (cid != Characters.Blank)
+                                RefreshCharacter(i, Memory.State[cid]);
+                            else
+                                BlankArea(i);
+                                
+                        }
                     }
                     skipReInit = false;
                 }
@@ -120,7 +127,7 @@ namespace OpenVIII
 
                         r = dims.Font;
                         r.Offset(184, yoff);
-                        ((IGMDataItem.Icon)ITEM[pos, 1]).Pos= r;
+                        ((IGMDataItem.Icon)ITEM[pos, 1]).Pos = r;
 
                         r = dims.Font;
                         r.Offset((229), yoff);
@@ -129,12 +136,12 @@ namespace OpenVIII
 
                         r = dims.Font;
                         r.Offset(304, yoff);
-                        ((IGMDataItem.Icon)ITEM[pos, 3]).Pos= r;
+                        ((IGMDataItem.Icon)ITEM[pos, 3]).Pos = r;
 
                         r = dims.Font;
                         r.Offset((354), yoff);
                         ((IGMDataItem.Integer)ITEM[pos, 4]).Data = damageable.CurrentHP();
-                        ((IGMDataItem.Integer)ITEM[pos, 4]).Pos= r;
+                        ((IGMDataItem.Integer)ITEM[pos, 4]).Pos = r;
 
                         r = dims.Font;
                         r.Offset(437, yoff);
@@ -183,14 +190,21 @@ namespace OpenVIII
                     }
                     else
                     {
-                        ((IGMDataItem.Box)ITEM[pos, 0]).Data = "";
-                        ((IGMDataItem.Box)ITEM[pos, 0]).Title = Icons.ID.None;
-                        BLANKS[pos] = true;
-                        for (int i = 1; i < Depth; i++)
-                        {
-                            ITEM[pos, i].Hide();
-                        }
+                        BlankArea(pos);
                     }
+                }
+            }
+
+            private void BlankArea(sbyte pos)
+            {
+                ((IGMDataItem.Box)ITEM[pos, 0]).Data = "";
+                ((IGMDataItem.Box)ITEM[pos, 0]).Title = Icons.ID.None;
+                ((IGMDataItem.Box)ITEM[pos, 0]).Pos = SIZE[pos];
+                ((IGMDataItem.Box)ITEM[pos, 0]).Show();
+                BLANKS[pos] = true;
+                for (int i = 1; i < Depth; i++)
+                {
+                    ITEM[pos, i].Hide();
                 }
             }
 

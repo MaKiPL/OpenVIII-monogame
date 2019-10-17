@@ -13,7 +13,7 @@ namespace OpenVIII
             #region Fields
 
             private const int DefaultHPBarWidth = 118;
-
+            private const int BarHeight = 4;
             private Texture2D _red_pixel;
 
             private bool disposedValue = false;
@@ -47,18 +47,25 @@ namespace OpenVIII
                     ITEM[pos, 0] = new IGMDataItem.Text { Data = damageable.Name, Pos = SIZE[pos] };
                     CURSOR[pos] = new Point(SIZE[pos].X, (int)(SIZE[pos].Y + (6 * TextScale.Y)));
 
-                    Rectangle r = SIZE[pos];
-                    r.Offset(0, 28);
-                    r.Height = 1;
+                    Rectangle r = ITEM[pos, 5].Pos;
+                    r.Height = BarHeight;
                     r.Width = (int)(DefaultHPBarWidth * damageable.PercentFullHP());
                     ((IGMDataItem.Texture)ITEM[pos, 5]).Pos = r;
-
-                    r.Offset(0, 2);
-                    ((IGMDataItem.Texture)ITEM[pos, 7]).Pos = r;
+                    //r.Offset(0, 2);
+                    //((IGMDataItem.Texture)ITEM[pos, 7]).Pos = r;
 
                     ((IGMDataItem.Integer)ITEM[pos, 2]).Data = damageable.Level;
                     ((IGMDataItem.Integer)ITEM[pos, 8]).Data = damageable.CurrentHP();
+                    for (int i = 0; i < Depth; i++)
+                    {
+                        ITEM[pos, i]?.Show();
+                    }
                 }
+                else
+                    for (int i = 0; i < Depth; i++)
+                    {
+                        ITEM[pos, i]?.Hide();
+                    }
             }
 
             protected virtual void Dispose(bool disposing)
@@ -111,14 +118,14 @@ namespace OpenVIII
 
                     r.Offset(0, 28);
                     r.Width = DefaultHPBarWidth;
-                    r.Height = 1;
+                    r.Height = BarHeight;
                     ITEM[pos, 4] = new IGMDataItem.Texture { Data = _red_pixel, Pos = r, Color = Color.Black };
                     ITEM[pos, 5] = new IGMDataItem.Texture { Data = _red_pixel, Pos = r, Color = color[0] };
 
-                    r.Width = DefaultHPBarWidth;
-                    r.Offset(0, 2);
-                    ITEM[pos, 6] = new IGMDataItem.Texture { Data = _red_pixel, Pos = r, Color = Color.Black };
-                    ITEM[pos, 7] = new IGMDataItem.Texture { Data = _red_pixel, Pos = r, Color = color[0] };
+                    //r.Width = DefaultHPBarWidth;
+                    //r.Offset(0, 2);
+                    //ITEM[pos, 6] = new IGMDataItem.Texture { Data = _red_pixel, Pos = r, Color = Color.Black };
+                    //ITEM[pos, 7] = new IGMDataItem.Texture { Data = _red_pixel, Pos = r, Color = color[0] };
                     //TODO red bar resizes based on current/max hp
 
                     r = rbak;
@@ -127,7 +134,7 @@ namespace OpenVIII
 
                     for (int i = 0; i < Depth; i++)
                     {
-                        ITEM[pos, i].Hide();
+                        ITEM[pos, i]?.Hide();
                     }
                 }
             }
@@ -179,7 +186,7 @@ namespace OpenVIII
                         for (int i = 0; i < Depth; i++)
                         {
                             BLANKS[pos] = true;
-                            ITEM[pos, i] = null;
+                            ITEM[pos, i]?.Hide();
                         }
                     }
                 }

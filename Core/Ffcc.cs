@@ -695,7 +695,7 @@
             }
         }
 
-        protected unsafe void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (Decoder != null)
             {
@@ -737,21 +737,23 @@
                     //{
                     //    Marshal.FreeHGlobal(_intPtr);
                     //}
-                    ffmpeg.sws_freeContext(ScalerContext);
-                    if (ResampleContext != null)
+                    unsafe
                     {
-                        ffmpeg.swr_close(ResampleContext);
-                        SwrContext* pResampleContext = ResampleContext;
-                        ffmpeg.swr_free(&pResampleContext);
+                        ffmpeg.sws_freeContext(ScalerContext);
+                        if (ResampleContext != null)
+                        {
+                            ffmpeg.swr_close(ResampleContext);
+                            SwrContext* pResampleContext = ResampleContext;
+                            ffmpeg.swr_free(&pResampleContext);
+                        }
+                        ffmpeg.av_frame_unref(ResampleFrame);
+                        ffmpeg.av_free(ResampleFrame);
+                        if (_avio_ctx != null)
+                        {
+                            //ffmpeg.avio_close(avio_ctx); //CTD
+                            ffmpeg.av_free(_avio_ctx);
+                        }
                     }
-                    ffmpeg.av_frame_unref(ResampleFrame);
-                    ffmpeg.av_free(ResampleFrame);
-                    if (_avio_ctx != null)
-                    {
-                        //ffmpeg.avio_close(avio_ctx); //CTD
-                        ffmpeg.av_free(_avio_ctx);
-                    }
-
                     //if (avio_ctx_buffer != null)
                     //    ffmpeg.av_freep(avio_ctx_buffer); //throws exception
 

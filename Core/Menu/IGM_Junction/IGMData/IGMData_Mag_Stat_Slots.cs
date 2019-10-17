@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace OpenVIII
@@ -140,60 +141,65 @@ namespace OpenVIII
                             unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx2) ||
                             unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx4) ? 2 : 7);
                         BLANKS[5] = true;
-                        foreach (Kernel_bin.Stat stat in (Kernel_bin.Stat[])Enum.GetValues(typeof(Kernel_bin.Stat)))
+                        foreach (Kernel_bin.Stat stat in Stat2Icon.Keys.OrderBy(o => (byte)o))
                         {
-                            if (Stat2Icon.ContainsKey(stat) && Damageable.GetCharacterData(out Saves.CharacterData c))
+                            if (Damageable.GetCharacterData(out Saves.CharacterData c))
                             {
+                                bool isUnlocked = unlocked.Contains(Kernel_bin.Stat2Ability[stat]);
                                 int pos = (int)stat;
                                 if (pos >= 5) pos++;
                                 Contents[pos] = stat;
                                 FF8String name = Kernel_bin.MagicData[c.Stat_J[stat]].Name;
                                 if (name == null || name.Length == 0) name = Strings.Name._;
+                                ushort currentValue = Damageable.TotalStat(stat);
+                                ushort previousValue = GetPrevSetting()?.TotalStat(stat)??currentValue;
                                 ((IGMDataItem.Text)ITEM[pos, 1]).Data = name;
-                                ((IGMDataItem.Integer)ITEM[pos, 2]).Data = Damageable.TotalStat(stat);
+                                ((IGMDataItem.Integer)ITEM[pos, 2]).Data = currentValue;
 
-                                if (!unlocked.Contains(Kernel_bin.Stat2Ability[stat]))
-                                {
-                                    ((IGMDataItem.Icon)ITEM[pos, 0]).Palette = ((IGMDataItem.Icon)ITEM[pos, 0]).Faded_Palette = 7;
-                                    ((IGMDataItem.Text)ITEM[pos, 1]).FontColor = Font.ColorID.Grey;
-                                    BLANKS[pos] = true;
-                                }
-                                else
-                                {
-                                    ((IGMDataItem.Icon)ITEM[pos, 0]).Palette = ((IGMDataItem.Icon)ITEM[pos, 0]).Faded_Palette = 2;
-                                    ((IGMDataItem.Text)ITEM[pos, 1]).FontColor = Font.ColorID.White;
-                                    BLANKS[pos] = false;
-                                }
-                                if (GetPrevSetting() == null || (Damageable.GetCharacterData(out Saves.CharacterData _c) && GetPrevSetting().Stat_J[stat] == _c.Stat_J[stat]) || GetPrevSetting().TotalStat(stat) == Damageable.TotalStat(stat))
+                                if (previousValue == currentValue)
                                 {
                                     ITEM[pos, 4].Hide();
+                                    if (isUnlocked)
+                                    {
+                                        SetPalettes(pos, 2);
+                                        SetFontColor(pos, Font.ColorID.White);
+                                    }
+                                    else
+                                    {
+                                        SetPalettes(pos, 7);
+                                        SetFontColor(pos, Font.ColorID.Grey);
+                                    }
                                 }
-                                else if (GetPrevSetting().TotalStat(stat) > Damageable.TotalStat(stat))
+                                else if (previousValue > currentValue)
                                 {
-                                    ((IGMDataItem.Icon)ITEM[pos, 0]).Palette = 5;
-                                    ((IGMDataItem.Icon)ITEM[pos, 0]).Faded_Palette = 5;
-                                    ((IGMDataItem.Text)ITEM[pos, 1]).FontColor = Font.ColorID.Red;
-                                    ((IGMDataItem.Integer)ITEM[pos, 2]).FontColor = Font.ColorID.Red;
-                                    if (ITEM[pos, 3] != null)
-                                        ((IGMDataItem.Text)ITEM[pos, 3]).FontColor = Font.ColorID.Red;
-                                    ((IGMDataItem.Icon)ITEM[pos, 4]).Data = Icons.ID.Arrow_Down;
-                                    ((IGMDataItem.Icon)ITEM[pos, 4]).Palette = 16;
+                                    SetPalettes(pos,5,16,Icons.ID.Arrow_Down);
+                                    SetFontColor(pos, Font.ColorID.Red);
                                 }
                                 else
                                 {
-                                    ((IGMDataItem.Icon)ITEM[pos, 0]).Palette = 6;
-                                    ((IGMDataItem.Icon)ITEM[pos, 0]).Faded_Palette = 6;
-                                    ((IGMDataItem.Text)ITEM[pos, 1]).FontColor = Font.ColorID.Yellow;
-                                    ((IGMDataItem.Integer)ITEM[pos, 2]).FontColor = Font.ColorID.Yellow;
-                                    if (ITEM[pos, 3] != null)
-                                        ((IGMDataItem.Text)ITEM[pos, 3]).FontColor = Font.ColorID.Yellow;
-                                    ((IGMDataItem.Icon)ITEM[pos, 4]).Data = Icons.ID.Arrow_Up;
-                                    ((IGMDataItem.Icon)ITEM[pos, 4]).Palette = 17;
+                                    SetPalettes(pos, 6, 17, Icons.ID.Arrow_Up);
+                                    SetFontColor(pos, Font.ColorID.Yellow);
                                 }
+                                BLANKS[pos] = !isUnlocked;
                             }
                         }
                     }
                 }
+            }
+
+            private void SetPalettes(int pos, byte StatIconPalette, byte ArrowPalette=2, Icons.ID ArrowIconID = Icons.ID.None)
+            {
+                ((IGMDataItem.Icon)ITEM[pos, 0]).Palette = ((IGMDataItem.Icon)ITEM[pos, 0]).Faded_Palette = StatIconPalette;
+                ((IGMDataItem.Icon)ITEM[pos, 4]).Data = ArrowIconID;
+                ((IGMDataItem.Icon)ITEM[pos, 4]).Palette = ArrowPalette;
+            }
+
+            private void SetFontColor(int pos, Font.ColorID color)
+            {
+                ((IGMDataItem.Text)ITEM[pos, 1]).FontColor = color;
+                ((IGMDataItem.Integer)ITEM[pos, 2]).FontColor = color;
+                if (ITEM[pos, 3] != null)
+                    ((IGMDataItem.Text)ITEM[pos, 3]).FontColor = color;
             }
 
             public override void UndoChange()
@@ -231,7 +237,7 @@ namespace OpenVIII
                 ITEM[5, 2] = new IGMDataItem.Icon { Data = Icons.ID.Icon_Elemental_Attack, Pos = new Rectangle(SIZE[5].X + 280, SIZE[5].Y, 0, 0) };
                 ITEM[5, 3] = new IGMDataItem.Icon { Data = Icons.ID.Icon_Elemental_Defense, Pos = new Rectangle(SIZE[5].X + 320, SIZE[5].Y, 0, 0) };
 
-                foreach (Kernel_bin.Stat stat in (Kernel_bin.Stat[])Enum.GetValues(typeof(Kernel_bin.Stat)))
+                foreach (Kernel_bin.Stat stat in Stat2Icon.Keys.OrderBy(o => (byte)o))
                 {
                     int pos = (int)stat;
                     if (pos >= 5) pos++;
