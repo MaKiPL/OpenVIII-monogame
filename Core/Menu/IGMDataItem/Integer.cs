@@ -91,6 +91,7 @@ namespace OpenVIII.IGMDataItem
             if (changed)
             {
                 UpdateOffset();
+                changed = false;
                 return true;
             }
             return r;
@@ -100,7 +101,7 @@ namespace OpenVIII.IGMDataItem
         {
             _pos = original_pos;
             int digits = Digits;
-            _pos.Offset(space_width * (_spaces - digits < _padding ? _padding : digits), 0);
+            _pos.Offset(space_width * (_spaces - (digits < _padding ? _padding : digits)), 0);
         }
 
         #endregion Methods
