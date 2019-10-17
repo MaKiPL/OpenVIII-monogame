@@ -11,7 +11,7 @@ namespace OpenVIII
 
         private static sbyte _blockLoc;
 
-        private static Tuple<Rectangle, Point, Rectangle>[] BlockLocs = new Tuple<Rectangle, Point, Rectangle>[3];
+        private static Menu.BoxReturn[] BlockLocs = new Menu.BoxReturn[3];
 
         private static sbyte blockpage;
 
@@ -200,7 +200,7 @@ namespace OpenVIII
                     r.Offset(dst.Location);
                     Point p = b.Item2;
                     p.Offset(dst.Location);
-                    BlockLocs[bloc] = new Tuple<Rectangle, Point, Rectangle>(r, p, new Rectangle());
+                    BlockLocs[bloc] = new Menu.BoxReturn(r, p, Rectangle.Empty);
                 }
                 Memory.SpriteBatchEnd();
                 Memory.graphics.GraphicsDevice.SetRenderTarget(null);
@@ -271,7 +271,7 @@ namespace OpenVIII
             }
             else //if(BlockLocs[BlockLoc] != null)
             {
-                Point ptr = BlockLocs[BlockLoc].Item2;
+                Point ptr = BlockLocs[BlockLoc].Cursor;
                 Menu.DrawPointer(ptr);
             }
         }
@@ -282,11 +282,11 @@ namespace OpenVIII
         {
             bool ret = false;
 
-            if (BlockLocs != null && BlockLocs.Length > 0 && BlockLocs[0] != null)
+            if (BlockLocs != null && BlockLocs.Length > 0 && BlockLocs[0].HotSpot != Rectangle.Empty)
             {
-                for (int i = 0; i < BlockLocs.Length && BlockLocs[i] != null; i++)
+                for (int i = 0; i < BlockLocs.Length && BlockLocs[i].HotSpot != Rectangle.Empty; i++)
                 {
-                    if (BlockLocs[i].Item1.Contains(ml))
+                    if (BlockLocs[i].HotSpot.Contains(ml))
                     {
                         BlockLoc = (sbyte)i;
                         ret = true;

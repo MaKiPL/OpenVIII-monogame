@@ -8,15 +8,11 @@ namespace OpenVIII
     {
         #region Fields
 
+        protected Dictionary<Mode, Func<bool>> InputsDict;
         public EventHandler<KeyValuePair<byte, FF8String>> ChoiceChangeHandler;
-
         public EventHandler<KeyValuePair<Item_In_Menu, FF8String>> ItemChangeHandler;
-
-        //public EventHandler<Mode> ModeChangeHandler;
-
         public EventHandler ReInitCompletedHandler;
         public EventHandler<Faces.ID> TargetChangeHandler;
-        protected Dictionary<Mode, Func<bool>> InputsDict;
 
         #endregion Fields
 
@@ -52,24 +48,11 @@ namespace OpenVIII
 
         #region Methods
 
-        public override bool Inputs() => InputsDict[(Mode)GetMode()]();
-
-        public override void Refresh() => Refresh(false);
-
-        public new void Refresh(bool skipmode)
-        {
-            if (!skipmode)
-                SetMode(Mode.SelectItem);
-            base.Refresh();
-            ReInitCompletedHandler?.Invoke(this, null);
-        }
-
         protected override void Init()
         {
             Size = new Vector2 { X = 840, Y = 630 };
-            //TextScale = new Vector2(2.545455f, 3.0375f);
 
-            Data.Add(SectionName.Help, new IGMDataItem.HelpBox(null, pos: new Rectangle(15, 69, 810, 78), Icons.ID.HELP, options: Box_Options.Middle));
+            Data.Add(SectionName.Help, new IGMDataItem.HelpBox { Pos = new Rectangle(15, 69, 810, 78), Title = Icons.ID.HELP, Options = Box_Options.Middle });
             IGMDataItem.HelpBox help = (IGMDataItem.HelpBox)Data[SectionName.Help];
             help.AddTextChangeEvent(ref ChoiceChangeHandler);
             help.AddTextChangeEvent(ref ItemChangeHandler);
@@ -80,8 +63,8 @@ namespace OpenVIII
                             { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 202),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 203)},
                             { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 181),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 182)},
                             }));
-            Data.Add(SectionName.Title, 
-                new IGMDataItem.Box(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), pos: new Rectangle(615, 0, 225, 66)));
+            Data.Add(SectionName.Title,
+                new IGMDataItem.Box { Data = Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), Pos = new Rectangle(615, 0, 225, 66) });
             Data.Add(SectionName.UseItemGroup, IGMData.Group.Base.Create(
                 new IGMData_Statuses(),
                 new IGMData.Pool.Item(),
@@ -94,6 +77,18 @@ namespace OpenVIII
                 };
             SetMode(Mode.SelectItem);
             base.Init();
+        }
+
+        public override bool Inputs() => InputsDict[(Mode)GetMode()]();
+
+        public override void Refresh() => Refresh(false);
+
+        public new void Refresh(bool skipmode)
+        {
+            if (!skipmode)
+                SetMode(Mode.SelectItem);
+            base.Refresh();
+            ReInitCompletedHandler?.Invoke(this, null);
         }
 
         #endregion Methods

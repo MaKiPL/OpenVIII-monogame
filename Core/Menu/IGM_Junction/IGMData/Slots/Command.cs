@@ -4,13 +4,6 @@ namespace OpenVIII.IGMData.Slots
 {
     public class Command : IGMData.Base
     {
-
-        #region Constructors
-
-        static public Command Create() => Create<Command>(4, 2, new IGMDataItem.Box(pos: new Rectangle(0, 198, 435, 216), title: Icons.ID.COMMAND), 1, 4);
-
-        #endregion Constructors
-
         #region Methods
 
         protected override void Init()
@@ -22,7 +15,7 @@ namespace OpenVIII.IGMData.Slots
             {
                 if (i > 0)
                 {
-                    ITEM[i, 0] = new IGMDataItem.Icon(Icons.ID.Arrow_Right2, SIZE[i], 9);
+                    ITEM[i, 0] = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Right2, Pos = SIZE[i], Palette = 9 };
                     ITEM[i, 1] = new IGMDataItem.Text
                     {
                         Icon = Icons.ID.Ability_Command,
@@ -45,6 +38,9 @@ namespace OpenVIII.IGMData.Slots
             SIZE[i].Offset(0, 12 + (-8 * row));
             CURSOR[i].X += 40;
         }
+
+        public static Command Create() => Create<Command>(4, 2, new IGMDataItem.Box { Pos = new Rectangle(0, 198, 435, 216), Title = Icons.ID.COMMAND }, 1, 4);
+
         public override void Refresh()
         {
             base.Refresh();

@@ -22,27 +22,32 @@ namespace OpenVIII
 
             public override void Refresh()
             {
-                base.Refresh();
+                if (Memory.State?.Fieldvars != null)
+                {
+                    base.Refresh();
 
-                ((IGMDataItem.Integer)ITEM[0, 1]).Data = Memory.State.Timeplayed.TotalHours < MaxHourOrMins ? checked((int)(Memory.State.Timeplayed.TotalHours)) : MaxHourOrMins;
-                ((IGMDataItem.Integer)ITEM[0, 3]).Data = Memory.State.Timeplayed.TotalHours < MaxHourOrMins ? Memory.State.Timeplayed.Minutes : MaxHourOrMins;
-                if (!Memory.State.TeamLaguna)
-                {
-                    //TODO Hide seed rank if not in seed yet.
-                    ((IGMDataItem.Integer)ITEM[0, 5]).Data = Memory.State.Fieldvars.SeedRankPts / 100 < MaxSeedRank ? Memory.State.Fieldvars.SeedRankPts / 100 : MaxSeedRank;
-                    ITEM[0, 4].Show();
-                    ITEM[0, 5].Show();
-                }
-                else
-                {
-                    ITEM[0, 4].Hide();
-                    ITEM[0, 5].Hide();
-                }
+                    ((IGMDataItem.Integer)ITEM[0, 1]).Data = Memory.State.Timeplayed.TotalHours < MaxHourOrMins ? checked((int)(Memory.State.Timeplayed.TotalHours)) : MaxHourOrMins;
+                    ((IGMDataItem.Integer)ITEM[0, 3]).Data = Memory.State.Timeplayed.TotalHours < MaxHourOrMins ? Memory.State.Timeplayed.Minutes : MaxHourOrMins;
+                    if (!Memory.State.TeamLaguna)
+                    {
+                        //TODO Hide seed rank if not in seed yet.
+                        int SeedRank = Memory.State.Fieldvars.SeedRankPts / 100;
+                        ((IGMDataItem.Integer)ITEM[0, 5]).Data = SeedRank < MaxSeedRank ? SeedRank : MaxSeedRank;
+                        ITEM[0, 4].Show();
+                        ITEM[0, 5].Show();
+                    }
+                    else
+                    {
+                        ITEM[0, 4].Hide();
+                        ITEM[0, 5].Hide();
+                    }
                 ((IGMDataItem.Integer)ITEM[0, 6]).Data = Memory.State.AmountofGil < MaxGil ? (int)(Memory.State.AmountofGil) : MaxGil;
+                }
             }
 
             protected override void Init()
             {
+                base.Init();
                 Rectangle r;
                 r = CONTAINER;
                 r.Offset(25, 14);

@@ -38,7 +38,7 @@ namespace OpenVIII
 
                     avgwidth = totalwidth / ++pos;
                 }
-                Init(Pairs.Count, 1, new IGMDataItem.Box(pos: new Rectangle(0, 12, 610, 54)), Pairs.Count, 1);
+                Init(Pairs.Count, 1, new IGMDataItem.Box { Pos = new Rectangle(0, 12, 610, 54) }, Pairs.Count, 1);
                 pos = 0;
                 foreach (KeyValuePair<FF8String, FF8String> pair in Pairs)
                 {

@@ -57,7 +57,7 @@ namespace OpenVIII.IGMData.Pool
         #region Constructors
         static public Draw Create(Rectangle pos, Damageable damageable, bool battle = false)
         {
-            Draw r = Create<Draw>(5, 3, new IGMDataItem.Box(pos: pos, title: Icons.ID.CHOICE), 4, 1, damageable);
+            Draw r = Create<Draw>(5, 3, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.CHOICE }, 4, 1, damageable);
             r.Battle = battle;
             r.Refresh();
             return r;

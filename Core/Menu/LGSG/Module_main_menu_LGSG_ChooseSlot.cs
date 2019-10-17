@@ -25,7 +25,7 @@ namespace OpenVIII
             DrawLGSGHeader(strLoadScreen[Litems.GameFolder].Text, topright, help);
             SlotLocs[0] = DrawLGSGSlot(Vector2.Zero, strLoadScreen[Litems.Slot1].Text, strLoadScreen[Litems.FF8].Text);
             SlotLocs[1] = DrawLGSGSlot(new Vector2(0, vp_per.Y * 0.216666667f), strLoadScreen[Litems.Slot2].Text, strLoadScreen[Litems.FF8].Text);
-            Menu.DrawPointer(SlotLocs[SlotLoc].Item2);
+            Menu.DrawPointer(SlotLocs[SlotLoc].Cursor);
         }
         /// <summary>
         /// Draw Save Choose Slot Screen
@@ -39,7 +39,7 @@ namespace OpenVIII
             bool ret = false;
             for (int i = 0; i < SlotLocs.Length; i++)
             {
-                if (SlotLocs[i] != null && SlotLocs[i].Item1.Contains(ml))
+                if (SlotLocs[i].HotSpot != Rectangle.Empty && SlotLocs[i].HotSpot.Contains(ml))
                 {
                     SlotLoc = (sbyte)i;
                     ret = true;
@@ -84,7 +84,7 @@ namespace OpenVIII
         /// <summary>
         /// Rectangle is hotspot for mouse, Point is where the finger points
         /// </summary>
-        private static Tuple<Rectangle, Point, Rectangle>[] SlotLocs = new Tuple<Rectangle, Point, Rectangle>[2];
+        private static Menu.BoxReturn[] SlotLocs = new Menu.BoxReturn[2];
         private static sbyte _slotLoc;
         private static sbyte SlotLoc
         {

@@ -9,18 +9,33 @@ namespace OpenVIII
 
         private class IGMData_Abilities_CommandPool : IGMData.Pool.Base<IReadOnlyDictionary<Kernel_bin.Abilities, Kernel_bin.Command_abilities>, Kernel_bin.Abilities>
         {
-            #region Constructors
+            #region Methods
+
+            protected override void Init()
+            {
+                base.Init();
+                for (int pos = 0; pos < Rows; pos++)
+                    ITEM[pos, 0] = new IGMDataItem.Text
+                    {
+                        Icon = Icons.ID.Ability_Command,
+                        Palette = 9,
+                        Pos = new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0)
+                    };
+            }
+
+            protected override void InitShift(int i, int col, int row)
+            {
+                base.InitShift(i, col, row);
+                SIZE[i].Inflate(-22, -8);
+                SIZE[i].Offset(60, 12 + (-4 * row));
+            }
 
             public static IGMData_Abilities_CommandPool Create()
             {
-                IGMData_Abilities_CommandPool r = Create<IGMData_Abilities_CommandPool>(11, 1, new IGMDataItem.Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.COMMAND), 11, Kernel_bin.Commandabilities.Count / 11 + (Kernel_bin.Commandabilities.Count % 11 > 0 ? 1 : 0));
+                IGMData_Abilities_CommandPool r = Create<IGMData_Abilities_CommandPool>(11, 1, new IGMDataItem.Box { Pos = new Rectangle(435, 150, 405, 480), Title = Icons.ID.COMMAND }, 11, Kernel_bin.Commandabilities.Count / 11 + (Kernel_bin.Commandabilities.Count % 11 > 0 ? 1 : 0));
                 r.Source = Kernel_bin.Commandabilities;
                 return r;
             }
-
-            #endregion Constructors
-
-            #region Methods
 
             public override bool Inputs_CANCEL()
             {
@@ -127,25 +142,6 @@ namespace OpenVIII
                     ITEM[11, 0].Show();
                     ITEM[12, 0].Show();
                 }
-            }
-
-            protected override void Init()
-            {
-                base.Init();
-                for (int pos = 0; pos < Rows; pos++)
-                    ITEM[pos, 0] = new IGMDataItem.Text
-                    {
-                        Icon = Icons.ID.Ability_Command,
-                        Palette = 9,
-                        Pos = new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0)
-                    };
-            }
-
-            protected override void InitShift(int i, int col, int row)
-            {
-                base.InitShift(i, col, row);
-                SIZE[i].Inflate(-22, -8);
-                SIZE[i].Offset(60, 12 + (-4 * row));
             }
 
             #endregion Methods

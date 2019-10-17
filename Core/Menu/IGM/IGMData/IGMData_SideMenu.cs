@@ -52,7 +52,7 @@ namespace OpenVIII
                     r.avgheight = r.totalheight / (pos+1);
                     pos++;
                 }
-                r.Init(pairs.Count, 1, new IGMDataItem.Box(pos: new Rectangle { Width = 226, Height = 492, X = 843 - 226 }), 1, pairs.Count);
+                r.Init(pairs.Count, 1, new IGMDataItem.Box { Pos = new Rectangle { Width = 226, Height = 492, X = 843 - 226 } }, 1, pairs.Count);
                 pos = 0;
                 foreach (KeyValuePair<FF8String, FF8String> pair in pairs)
                 {

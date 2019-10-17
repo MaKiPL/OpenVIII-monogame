@@ -12,7 +12,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public static IGMData_Mag_Stat_Slots Create() => Create<IGMData_Mag_Stat_Slots>(10, 5, new IGMDataItem.Box(pos: new Rectangle(0, 414, 840, 216)), 2, 5);
+            public static IGMData_Mag_Stat_Slots Create() => Create<IGMData_Mag_Stat_Slots>(10, 5, new IGMDataItem.Box { Pos = new Rectangle(0, 414, 840, 216) }, 2, 5);
 
             #endregion Constructors
 

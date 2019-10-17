@@ -59,10 +59,10 @@ namespace OpenVIII
             //    };
             Data.Add(SectionName.CharacterInfo, new IGMData_CharacterInfo());
             Data.Add(SectionName.Commands, IGMData.Commands.Create(new Rectangle(615, 150, 210, 192)));
-            Data.Add(SectionName.Help, new IGMDataItem.HelpBox(Strings.Description.Junction, pos: new Rectangle(15, 69, 810, 78), title: Icons.ID.HELP));
+            Data.Add(SectionName.Help, new IGMDataItem.HelpBox { Data = Strings.Description.Junction, Pos = new Rectangle(15, 69, 810, 78), Title = Icons.ID.HELP });
             Data.Add(SectionName.TopMenu, new IGMData_TopMenu());
             Data.Add(SectionName.Title,
-                new IGMDataItem.Box(Strings.Name.Junction, pos: new Rectangle(615, 0, 225, 66)));
+                new IGMDataItem.Box { Data = Strings.Name.Junction, Pos = new Rectangle(615, 0, 225, 66) });
             Data.Add(SectionName.Mag_Group, IGMData_Mag_Group.Create(
                 new IGMData_Mag_Stat_Slots(),
                 new IGMData_Mag_PageTitle(),
@@ -76,11 +76,11 @@ namespace OpenVIII
                 ));
             Data.Add(SectionName.TopMenu_Junction, new IGMData_TopMenu_Junction());
             Data.Add(SectionName.TopMenu_Off, IGMData_TopMenu_Off_Group.Create(
-                    new IGMDataItem.Box(Strings.Name.Off, pos: new Rectangle(0, 12, 169, 54), options: Box_Options.Center | Box_Options.Middle),
+                    new IGMDataItem.Box { Data = Strings.Name.Off, Pos = new Rectangle(0, 12, 169, 54), Options = Box_Options.Center | Box_Options.Middle },
                 new IGMData_TopMenu_Off()
                 ));
             Data.Add(SectionName.TopMenu_Auto, IGMData_TopMenu_Auto_Group.Create(
-                    new IGMDataItem.Box(Strings.Name.Auto, pos: new Rectangle(0, 12, 169, 54), options: Box_Options.Center | Box_Options.Middle),
+                    new IGMDataItem.Box { Data = Strings.Name.Auto, Pos= new Rectangle(0, 12, 169, 54), Options= Box_Options.Center | Box_Options.Middle },
                 new IGMData_TopMenu_Auto()));
             Data.Add(SectionName.TopMenu_Abilities, IGMData_Abilities_Group.Create(
                 new IGMData.Slots.Command(),
@@ -93,7 +93,7 @@ namespace OpenVIII
             Data.Add(SectionName.TopMenu_GF_Group, IGMData_GF_Group.Create(
                 new IGMData_GF_Junctioned(),
                 new IGMData_GF_Pool(),
-                new IGMDataItem.Box(pos: new Rectangle(440, 345, 385, 66))
+                new IGMDataItem.Box { Pos= new Rectangle(440, 345, 385, 66) }
                 ));
 
             Data.Add(SectionName.RemMag, IGMData_ConfirmRemMag.Create(data: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 280), title: Icons.ID.NOTICE, opt1: Yes, opt2: No, pos: new Rectangle(180, 174, 477, 216)));

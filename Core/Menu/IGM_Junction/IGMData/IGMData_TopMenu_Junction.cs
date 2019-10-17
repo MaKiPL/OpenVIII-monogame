@@ -49,13 +49,7 @@ namespace OpenVIII
                 SIZE[i].Offset(20 + (-20 * (col > 1 ? col : 0)), 0);
             }
 
-            #endregion Methods
-
-            #region Constructors
-
-            public static IGMData_TopMenu_Junction Create() => Create<IGMData_TopMenu_Junction>(2, 1, new IGMDataItem.Box(pos: new Rectangle(210, 12, 400, 54)), 2, 1);
-
-            #endregion Constructors
+            public static IGMData_TopMenu_Junction Create() => Create<IGMData_TopMenu_Junction>(2, 1, new IGMDataItem.Box { Pos = new Rectangle(210, 12, 400, 54) }, 2, 1);
 
             public override bool Inputs_CANCEL()
             {
@@ -93,6 +87,8 @@ namespace OpenVIII
                 }
                 return base.Update();
             }
+
+            #endregion Methods
         }
 
         #endregion Classes

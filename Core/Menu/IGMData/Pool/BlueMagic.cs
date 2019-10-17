@@ -14,6 +14,12 @@ namespace OpenVIII.IGMData.Pool
 
         #endregion Fields
 
+        #region Properties
+
+        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData.Base)ITEM[Rows, 0]));
+
+        #endregion Properties
+
         #region Methods
 
         protected override void DrawITEM(int i, int d)
@@ -63,22 +69,7 @@ namespace OpenVIII.IGMData.Pool
             Refresh();
         }
 
-        #endregion Methods
-
-        #region Constructors
-
-        static public BlueMagic Create(Rectangle pos, Damageable damageable, bool battle = false)
-        {
-            return Create<BlueMagic>(5, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.SPECIAL), 4, 4, damageable);
-        }
-
-        #endregion Constructors
-
-        #region Properties
-
-        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData.Base)ITEM[Rows, 0]));
-
-        #endregion Properties
+        public static BlueMagic Create(Rectangle pos, Damageable damageable, bool battle = false) => Create<BlueMagic>(5, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.SPECIAL }, 4, 4, damageable);
 
         public override bool Inputs()
         {
@@ -93,11 +84,6 @@ namespace OpenVIII.IGMData.Pool
                 Cursor_Status &= ~Cursor_Status.Blinking;
                 return base.Inputs();
             }
-        }
-        public override void Reset()
-        {
-            Hide();
-            base.Reset();
         }
 
         public override bool Inputs_CANCEL()
@@ -151,5 +137,13 @@ namespace OpenVIII.IGMData.Pool
                 ((IGMDataItem.Box)CONTAINER).Title = (Icons.ID)((int)(Icons.ID.SPECIAL_PG1) + Page);
             base.Refresh();
         }
+
+        public override void Reset()
+        {
+            Hide();
+            base.Reset();
+        }
+
+        #endregion Methods
     }
 }

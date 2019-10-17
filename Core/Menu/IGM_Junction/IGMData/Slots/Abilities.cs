@@ -6,7 +6,7 @@ namespace OpenVIII.IGMData.Slots
     {
         #region Constructors
 
-        public static Abilities Create() => Create<Abilities>(4, 2, new IGMDataItem.Box(pos: new Rectangle(0, 414, 435, 216), title: Icons.ID.ABILITY), 1, 4);
+        public static Abilities Create() => Create<Abilities>(4, 2, new IGMDataItem.Box { Pos = new Rectangle(0, 414, 435, 216), Title = Icons.ID.ABILITY }, 1, 4);
 
         #endregion Constructors
 
@@ -17,9 +17,9 @@ namespace OpenVIII.IGMData.Slots
             base.Init();
             for (int i = 0; i < Count; i++)
             {
-                ITEM[i, 0] = new IGMDataItem.Icon(Icons.ID.Arrow_Right2, SIZE[i], 9);
+                ITEM[i, 0] = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Right2, Pos = SIZE[i], Palette= 9 };
                 ITEM[i, 0].Hide();
-                ITEM[i, 1] = new IGMDataItem.Text()
+                ITEM[i, 1] = new IGMDataItem.Text
                 {
                     Palette = 9,
                     Pos = new Rectangle(SIZE[i].X + 40, SIZE[i].Y, 0, 0)

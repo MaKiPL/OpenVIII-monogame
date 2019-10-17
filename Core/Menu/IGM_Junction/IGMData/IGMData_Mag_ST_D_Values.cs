@@ -10,15 +10,16 @@ namespace OpenVIII
 
         private class IGMData_Mag_ST_D_Values : IGMData_Values
         {
-            #region Constructors
-
-            // public new Saves.CharacterData PrevSetting { get; private set; } public new
-            // Saves.CharacterData Setting { get; private set; }
-            static public IGMData_Mag_ST_D_Values Create() => Create<IGMData_Mag_ST_D_Values>(14, 5, new IGMDataItem.Box(title: Icons.ID.Status_Defense, pos: new Rectangle(280, 342, 545, 288)), 2, 7);
-
-            #endregion Constructors
-
             #region Methods
+
+            protected override void InitShift(int i, int col, int row)
+            {
+                base.InitShift(i, col, row);
+                SIZE[i].Inflate(-25, -10);
+                SIZE[i].Y -= 3 * row;
+            }
+
+            public static IGMData_Mag_ST_D_Values Create() => Create<IGMData_Mag_ST_D_Values>(14, 5, new IGMDataItem.Box { Title = Icons.ID.Status_Defense, Pos = new Rectangle(280, 342, 545, 288) }, 2, 7);
 
             public Dictionary<Kernel_bin.J_Statuses, byte> getTotal(Saves.CharacterData source, out Enum[] availableFlagsarray)
                     => getTotal<Kernel_bin.J_Statuses>(out availableFlagsarray, 100, Kernel_bin.Stat.ST_Def_1,
@@ -36,13 +37,6 @@ namespace OpenVIII
                     FillData(oldtotal, total, availableFlagsarray, Icons.ID.Status_Death, 1, palette: 10);
                 }
                 return base.Update();
-            }
-
-            protected override void InitShift(int i, int col, int row)
-            {
-                base.InitShift(i, col, row);
-                SIZE[i].Inflate(-25, -10);
-                SIZE[i].Y -= 3 * row;
             }
 
             #endregion Methods

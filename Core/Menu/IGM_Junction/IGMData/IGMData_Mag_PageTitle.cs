@@ -29,7 +29,7 @@ namespace OpenVIII
 
             #region Constructors
 
-            public static IGMData_Mag_PageTitle Create() => Create<IGMData_Mag_PageTitle>(1, 4, new IGMDataItem.Box(pos: new Rectangle(0, 345, 435, 66)));
+            public static IGMData_Mag_PageTitle Create() => Create<IGMData_Mag_PageTitle>(1, 4, new IGMDataItem.Box { Pos = new Rectangle(0, 345, 435, 66)});
 
             #endregion Constructors
 

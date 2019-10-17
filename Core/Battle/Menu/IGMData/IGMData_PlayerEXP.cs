@@ -26,7 +26,7 @@ namespace OpenVIII
                 public static IGMData_PlayerEXP Create(sbyte partypos, Rectangle? pos = null)
                 {
                     Debug.Assert(partypos >= 0 && partypos <= 2);
-                    IGMData_PlayerEXP r = Create<IGMData_PlayerEXP>(1, 12, new IGMDataItem.Box(pos: pos ?? new Rectangle(35, 78 + partypos * 150, 808, 150), title: Icons.ID.NAME), 1, 1, partypos: partypos);
+                    IGMData_PlayerEXP r = Create<IGMData_PlayerEXP>(1, 12, new IGMDataItem.Box { Pos = pos ?? new Rectangle(35, 78 + partypos * 150, 808, 150), Title = Icons.ID.NAME }, 1, 1, partypos: partypos);
                     r._exp = 0;
                     return r;
                 }

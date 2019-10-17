@@ -11,7 +11,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            static public IGMData_TopMenu_Auto Create() => Create<IGMData_TopMenu_Auto>(3, 1, new IGMDataItem.Box(pos: new Rectangle(165, 12, 445, 54)), 3, 1);
+            static public IGMData_TopMenu_Auto Create() => Create<IGMData_TopMenu_Auto>(3, 1, new IGMDataItem.Box { Pos = new Rectangle(165, 12, 445, 54) }, 3, 1);
 
             #endregion Constructors
 

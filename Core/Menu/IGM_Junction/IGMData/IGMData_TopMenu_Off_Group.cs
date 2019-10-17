@@ -23,9 +23,9 @@ namespace OpenVIII
                 {
                     Cursor_Status |= (Cursor_Status.Draw | Cursor_Status.Blinking);
                     base.Draw();
-                    Tuple<Rectangle, Point, Rectangle> i = ((IGMDataItem.Box)ITEM[0, 0]).Dims;
-                    if (i != null)
-                        CURSOR[0] = i.Item2;
+                    Menu.BoxReturn dims = ((IGMDataItem.Box)ITEM[0, 0]).Dims;
+                    if (dims.Cursor != Point.Zero)
+                        CURSOR[0] = dims.Cursor;
                 }
             }
 

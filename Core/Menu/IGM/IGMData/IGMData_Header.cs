@@ -15,13 +15,11 @@ namespace OpenVIII
 
             #endregion Fields
 
-            #region Constructors
-
-            public static IGMData_Header Create() => Create<IGMData_Header>(0, 0, new IGMDataItem.Box(pos: new Rectangle { Width = 610, Height = 75 }, title: Icons.ID.HELP));
-
-            #endregion Constructors
-
             #region Methods
+
+            private void ChoiceChangeEvent(object sender, KeyValuePair<Items, FF8String> e) => ((IGMDataItem.Box)CONTAINER).Data = e.Value;
+
+            public static IGMData_Header Create() => Create<IGMData_Header>(0, 0, new IGMDataItem.Box { Pos = new Rectangle { Width = 610, Height = 75 }, Title = Icons.ID.HELP });
 
             public override void Refresh()
             {
@@ -32,8 +30,6 @@ namespace OpenVIII
                 }
                 base.Refresh();
             }
-
-            private void ChoiceChangeEvent(object sender, KeyValuePair<Items, FF8String> e) => ((IGMDataItem.Box)CONTAINER).Data = e.Value;
 
             #endregion Methods
         }

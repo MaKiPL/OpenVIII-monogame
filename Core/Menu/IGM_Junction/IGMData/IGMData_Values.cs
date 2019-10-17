@@ -53,13 +53,20 @@ namespace OpenVIII
                         pos += 1;
                         endoffset -= 1;
                     }
-                    ITEM[pos + offset, 0] = new IGMDataItem.Icon(starticon + pos, new Rectangle(SIZE[pos + offset].X, SIZE[pos + offset].Y, 0, 0), palette);
-                    ITEM[pos + offset, 1] = total[(T)availableFlagsarray[pos + 1]] > 100 ? new IGMDataItem.Icon(Icons.ID.Star, new Rectangle(SIZE[pos + offset].X + 45, SIZE[pos + offset].Y, 0, 0), 4) : null;
+                    ITEM[pos + offset, 0] = new IGMDataItem.Icon { Data = starticon + pos, Pos = new Rectangle(SIZE[pos + offset].X, SIZE[pos + offset].Y, 0, 0), Palette = palette };
+                    ITEM[pos + offset, 1] = total[(T)availableFlagsarray[pos + 1]] > 100 ? new IGMDataItem.Icon { Data = Icons.ID.Star, Pos = new Rectangle(SIZE[pos + offset].X + 45, SIZE[pos + offset].Y, 0, 0), Palette = 4 } : null;
                     ITEM[pos + offset, 2] = null;
-                    ITEM[pos + offset, 3] = new IGMDataItem.Integer(
+                    ITEM[pos + offset, 3] = new IGMDataItem.Integer
+                    {
+                        Data =
                             total[(T)availableFlagsarray[pos + 1]] > 100 ?
                             total[(T)availableFlagsarray[pos + 1]] - 100 :
-                            total[(T)availableFlagsarray[pos + 1]], new Rectangle(SIZE[pos + offset].X + SIZE[pos + offset].Width - 80, SIZE[pos + offset].Y, 0, 0), 17, numtype: Icons.NumType.sysFntBig, spaces: 3);
+                            total[(T)availableFlagsarray[pos + 1]],
+                        Pos = new Rectangle(SIZE[pos + offset].X + SIZE[pos + offset].Width - 80, SIZE[pos + offset].Y, 0, 0),
+                        Palette = 17,
+                        NumType = Icons.NumType.sysFntBig,
+                        Spaces = 3
+                    };
                     ITEM[pos + offset, 4] = new IGMDataItem.Text() { Data= "%", Pos= new Rectangle(SIZE[pos + offset].X + SIZE[pos + offset].Width - 20, SIZE[pos + offset].Y, 0, 0) };
                     if (oldtotal != null)
                     {
@@ -67,7 +74,7 @@ namespace OpenVIII
                         {
                             ((IGMDataItem.Icon)ITEM[pos + offset, 0]).Palette = 5;
                             ((IGMDataItem.Icon)ITEM[pos + offset, 0]).Faded_Palette = 5;
-                            ITEM[pos + offset, 2] = new IGMDataItem.Icon(Icons.ID.Arrow_Down, new Rectangle(SIZE[pos + offset].X + SIZE[pos + offset].Width - 105, SIZE[pos + offset].Y, 0, 0), 16);
+                            ITEM[pos + offset, 2] = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Down, Pos = new Rectangle(SIZE[pos + offset].X + SIZE[pos + offset].Width - 105, SIZE[pos + offset].Y, 0, 0), Palette = 16 };
                             ((IGMDataItem.Integer)ITEM[pos + offset, 3]).FontColor = Font.ColorID.Red;
                             ((IGMDataItem.Text)ITEM[pos + offset, 4]).FontColor = Font.ColorID.Red;
 
@@ -79,7 +86,7 @@ namespace OpenVIII
                         {
                             ((IGMDataItem.Icon)ITEM[pos + offset, 0]).Palette = 6;
                             ((IGMDataItem.Icon)ITEM[pos + offset, 0]).Faded_Palette = 6;
-                            ITEM[pos + offset, 2] = new IGMDataItem.Icon(Icons.ID.Arrow_Up, new Rectangle(SIZE[pos + offset].X + SIZE[pos + offset].Width - 105, SIZE[pos + offset].Y, 0, 0), 17);
+                            ITEM[pos + offset, 2] = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Up, Pos = new Rectangle(SIZE[pos + offset].X + SIZE[pos + offset].Width - 105, SIZE[pos + offset].Y, 0, 0), Palette = 17 };
                             ((IGMDataItem.Integer)ITEM[pos + offset, 3]).FontColor = Font.ColorID.Yellow;
                             ((IGMDataItem.Text)ITEM[pos + offset, 4]).FontColor = Font.ColorID.Yellow;
 

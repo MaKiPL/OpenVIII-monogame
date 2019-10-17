@@ -6,8 +6,8 @@ namespace OpenVIII
 {
     public static partial class Module_main_menu_debug
     {
-
         #region Fields
+
         private static Vector2 PageSize;
         private static Vector2 CurrentPageLoc;
         private static Vector2 CurrentLastPageLoc;
@@ -45,14 +45,13 @@ namespace OpenVIII
 
         #region Properties
 
-        public static float Blink_Amount { get => Menu.Blink_Amount; }
+        public static float Blink_Amount => Menu.Blink_Amount;
         private static double PercentLoaded { get; set; } = 0f;
         public static Vector2 TextScale { get; } = new Vector2(2.545455f, 3.0375f);
 
         #endregion Properties
+
         #region Methods
-
-
 
         private static void DrawLGSG()
         {
@@ -188,7 +187,7 @@ namespace OpenVIII
                 Width = (int)(vp_per.X * 0.34375f),
                 Height = (int)(vp_per.Y * 0.1f),
             };
-            dst = Menu.DrawBox(dst, null, Icons.ID.INFO).Item1;
+            dst = Menu.DrawBox(dst, null, Icons.ID.INFO).HotSpot;
 
             dst.Offset(new Vector2
             {
@@ -205,19 +204,17 @@ namespace OpenVIII
             Memory.Icons.Draw(Icons.ID.Bar_Fill, -1, dst, Vector2.UnitY, Fade);
         }
 
-        private static Tuple<Rectangle, Point, Rectangle> DrawLGSGSlot(Vector2 offset, FF8String title, FF8String main)
+        private static Menu.BoxReturn DrawLGSGSlot(Vector2 offset, FF8String title, FF8String main)
         {
             Rectangle dst = new Rectangle((int)(vp_per.X * 0.3703125f), (int)(vp_per.Y * 0.386111111f), (int)(vp_per.X * 0.259375f), (int)(vp_per.Y * 0.141666667f));
             Rectangle slot = new Rectangle(dst.Location, new Point((int)(vp_per.X * 0.1f), (int)(vp_per.Y * 0.0875f)));
             slot.Offset(vp_per.X * -0.00859375f, vp_per.Y * -0.033333333f);
             slot.Offset(offset);
             dst.Offset(offset);
-            Tuple<Rectangle, Point, Rectangle> location = Menu.DrawBox(dst, main, options: Box_Options.Buttom);
+            Menu.BoxReturn location = Menu.DrawBox(dst, main, options: Box_Options.Buttom);
             Menu.DrawBox(slot, title);
             return location;
         }
-
-
 
         private static void InitLoad()
         {
@@ -242,8 +239,8 @@ namespace OpenVIII
             SlotLoc = 0;
             BlockLoc = 0;
 
-            SlotLocs = new Tuple<Rectangle, Point, Rectangle>[2];
-            BlockLocs = new Tuple<Rectangle, Point, Rectangle>[3];
+            SlotLocs = new Menu.BoxReturn[2];
+            BlockLocs = new Menu.BoxReturn[3];
         }
 
         #endregion Methods

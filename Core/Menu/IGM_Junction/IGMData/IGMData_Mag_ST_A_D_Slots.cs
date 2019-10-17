@@ -8,83 +8,13 @@ namespace OpenVIII
 
         private class IGMData_Mag_ST_A_D_Slots : IGMData_Slots<Saves.CharacterData>
         {
-            #region Constructors
-
-            static public IGMData_Mag_ST_A_D_Slots Create() => Create<IGMData_Mag_ST_A_D_Slots>(5, 2, new IGMDataItem.Box(pos: new Rectangle(0, 414, 840, 216)), 1, 5);
-
-            #endregion Constructors
-
             #region Methods
 
-            public override void BackupSetting() => SetPrevSetting((Saves.CharacterData)Damageable.Clone());
+            private void ConfirmChangeEvent(object sender, Mode e) => ConfirmChange();
 
-            public override void CheckMode(bool cursor = true) =>
-                CheckMode(0, Mode.Mag_ST_A, Mode.Mag_ST_D,
-                    IGM_Junction != null && (IGM_Junction.GetMode().Equals(Mode.Mag_ST_A) || IGM_Junction.GetMode().Equals(Mode.Mag_ST_D)),
-                    IGM_Junction != null && (IGM_Junction.GetMode().Equals(Mode.Mag_Pool_ST_A) || IGM_Junction.GetMode().Equals(Mode.Mag_Pool_ST_D)),
-                    cursor);
+            private void ReInitEvent(object sender, Damageable e) => Refresh(e);
 
-            public override bool Inputs_CANCEL()
-            {
-                base.Inputs_CANCEL();
-                IGM_Junction.SetMode(Mode.TopMenu_Junction);
-                return true;
-            }
-
-            public override void Inputs_Left()
-            {
-                base.Inputs_Left();
-                PageLeft();
-            }
-
-            public override bool Inputs_OKAY()
-            {
-                if (!BLANKS[CURSOR_SELECT])
-                {
-                    base.Inputs_OKAY();
-                    BackupSetting();
-                    IGM_Junction.SetMode(CURSOR_SELECT == 0 ? Mode.Mag_Pool_ST_A : Mode.Mag_Pool_ST_D);
-                    return true;
-                }
-                return false;
-            }
-
-            public override void Inputs_Right()
-            {
-                base.Inputs_Right();
-                PageRight();
-            }
-
-            public override void Inputs_Menu()
-            {
-                skipdata = true;
-                base.Inputs_Menu();
-                skipdata = false;
-                if (Contents[CURSOR_SELECT] == Kernel_bin.Stat.None && Damageable.GetCharacterData(out Saves.CharacterData c))
-                {
-                    c.Stat_J[Contents[CURSOR_SELECT]] = 0;
-                    IGM_Junction.Refresh();
-                }
-            }
-
-            public override void Refresh()
-            {
-                if (Memory.State.Characters != null && Damageable != null)
-                {
-                    base.Refresh();
-                    FillData(Icons.ID.Icon_Status_Attack, Kernel_bin.Stat.ST_Atk, Kernel_bin.Stat.ST_Def_1);
-                }
-            }
-
-            public override void UndoChange()
-            {
-                //override this use it to take value of prevSetting and restore the setting unless default method works
-                if (GetPrevSetting() != null && Damageable.GetCharacterData(out Saves.CharacterData c))
-                {
-                    c.Magics = GetPrevSetting().CloneMagic();
-                    c.Stat_J = GetPrevSetting().CloneMagicJunction();
-                }
-            }
+            private void UndoChangeEvent(object sender, Mode e) => UndoChange();
 
             protected override void AddEventListener()
             {
@@ -144,11 +74,77 @@ namespace OpenVIII
                 return false;
             }
 
-            private void ConfirmChangeEvent(object sender, Mode e) => ConfirmChange();
+            public static IGMData_Mag_ST_A_D_Slots Create() => Create<IGMData_Mag_ST_A_D_Slots>(5, 2, new IGMDataItem.Box { Pos = new Rectangle(0, 414, 840, 216) }, 1, 5);
 
-            private void ReInitEvent(object sender, Damageable e) => Refresh(e);
+            public override void BackupSetting() => SetPrevSetting((Saves.CharacterData)Damageable.Clone());
 
-            private void UndoChangeEvent(object sender, Mode e) => UndoChange();
+            public override void CheckMode(bool cursor = true) =>
+                CheckMode(0, Mode.Mag_ST_A, Mode.Mag_ST_D,
+                    IGM_Junction != null && (IGM_Junction.GetMode().Equals(Mode.Mag_ST_A) || IGM_Junction.GetMode().Equals(Mode.Mag_ST_D)),
+                    IGM_Junction != null && (IGM_Junction.GetMode().Equals(Mode.Mag_Pool_ST_A) || IGM_Junction.GetMode().Equals(Mode.Mag_Pool_ST_D)),
+                    cursor);
+
+            public override bool Inputs_CANCEL()
+            {
+                base.Inputs_CANCEL();
+                IGM_Junction.SetMode(Mode.TopMenu_Junction);
+                return true;
+            }
+
+            public override void Inputs_Left()
+            {
+                base.Inputs_Left();
+                PageLeft();
+            }
+
+            public override void Inputs_Menu()
+            {
+                skipdata = true;
+                base.Inputs_Menu();
+                skipdata = false;
+                if (Contents[CURSOR_SELECT] == Kernel_bin.Stat.None && Damageable.GetCharacterData(out Saves.CharacterData c))
+                {
+                    c.Stat_J[Contents[CURSOR_SELECT]] = 0;
+                    IGM_Junction.Refresh();
+                }
+            }
+
+            public override bool Inputs_OKAY()
+            {
+                if (!BLANKS[CURSOR_SELECT])
+                {
+                    base.Inputs_OKAY();
+                    BackupSetting();
+                    IGM_Junction.SetMode(CURSOR_SELECT == 0 ? Mode.Mag_Pool_ST_A : Mode.Mag_Pool_ST_D);
+                    return true;
+                }
+                return false;
+            }
+
+            public override void Inputs_Right()
+            {
+                base.Inputs_Right();
+                PageRight();
+            }
+
+            public override void Refresh()
+            {
+                if (Memory.State.Characters != null && Damageable != null)
+                {
+                    base.Refresh();
+                    FillData(Icons.ID.Icon_Status_Attack, Kernel_bin.Stat.ST_Atk, Kernel_bin.Stat.ST_Def_1);
+                }
+            }
+
+            public override void UndoChange()
+            {
+                //override this use it to take value of prevSetting and restore the setting unless default method works
+                if (GetPrevSetting() != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                {
+                    c.Magics = GetPrevSetting().CloneMagic();
+                    c.Stat_J = GetPrevSetting().CloneMagicJunction();
+                }
+            }
 
             #endregion Methods
         }

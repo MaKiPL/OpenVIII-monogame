@@ -8,7 +8,7 @@ namespace OpenVIII.IGMDataItem
         #region Properties
 
         public FF8String Data { get; set; }
-        public Tuple<Rectangle, Point, Rectangle> Dims { get; private set; }
+        public Menu.BoxReturn Dims { get; private set; }
         public Box_Options Options { get; set; } = Box_Options.Default;
         public Icons.ID? Title { get; set; } = Icons.ID.None;
 

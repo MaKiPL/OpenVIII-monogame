@@ -1,6 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using OpenVIII.Encoding.Tags;
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,10 +33,10 @@ namespace OpenVIII
                 {
                     base.Init();
                     Hide();
-                    ITEM[0, 0] = new IGMDataItem.Box{Data=Memory.Strings.Read(Strings.FileID.KERNEL, 30, 21)Pos=new Rectangle(SIZE[0].X, SIZE[0].Y, SIZE[0].Width, 78),Title=Icons.ID.INFO,Options=Box_Options.Middle};
-                    ITEM[0, 1] = new IGMDataItem.Box{Pos=new Rectangle(SIZE[0].X + 140, SIZE[0].Y + 189, 475, 78),Title=Icons.ID.ITEM,Options=Box_Options.Middle}; // item name
-                    ITEM[0, 2] = new IGMDataItem.Box{Pos=new Rectangle(SIZE[0].X + 615, SIZE[0].Y + 189, 125, 78),Title=Icons.ID.NUM_,Options=Box_Options.Middle | Box_Options.Center}; // item count
-                    ITEM[0, 3] = new IGMDataItem.Box{Pos=new Rectangle(SIZE[0].X, SIZE[0].Y + 444, SIZE[0].Width, 78),Title=Icons.ID.HELP,Options=Box_Options.Middle}; // item description
+                    ITEM[0, 0] = new IGMDataItem.Box { Data = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 21), Pos = new Rectangle(SIZE[0].X, SIZE[0].Y, SIZE[0].Width, 78), Title = Icons.ID.INFO, Options = Box_Options.Middle };
+                    ITEM[0, 1] = new IGMDataItem.Box { Pos = new Rectangle(SIZE[0].X + 140, SIZE[0].Y + 189, 475, 78), Title = Icons.ID.ITEM, Options = Box_Options.Middle }; // item name
+                    ITEM[0, 2] = new IGMDataItem.Box { Pos = new Rectangle(SIZE[0].X + 615, SIZE[0].Y + 189, 125, 78), Title = Icons.ID.NUM_, Options = Box_Options.Middle | Box_Options.Center }; // item count
+                    ITEM[0, 3] = new IGMDataItem.Box { Pos = new Rectangle(SIZE[0].X, SIZE[0].Y + 444, SIZE[0].Width, 78), Title = Icons.ID.HELP, Options = Box_Options.Middle }; // item description
                     ITEM[0, 4] = IGMData.Dialog.Small.Create(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // Couldn't find any items
                     ITEM[0, 5] = IGMData.Dialog.Small.Create(null, SIZE[0].X + 230, SIZE[0].Y + 291, Icons.ID.NOTICE, Box_Options.Center, SIZE[0]); // over 100 discarded
                     ITEM[0, 6] = IGMData.Dialog.Small.Create(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center, SIZE[0]); // Recieved item
@@ -144,12 +143,12 @@ namespace OpenVIII
                     if (_cards != null && _cards.Count > 0)
                     {
                         card = _cards.Peek();
-                        var name = Memory.Strings.Read(Strings.FileID.MNGRP, 110, (int)card.Key);
+                        FF8StringReference name = Memory.Strings.Read(Strings.FileID.MNGRP, 110, (int)card.Key);
 
                         int pos = 0;
                         for (; pos < name.Length; pos++)
                             if (name.Value[pos] == 2) break;
-                        ((IGMDataItem.Box)ITEM[0, 1]).Data = new FF8String(name.Value.Take(pos-1).ToArray());
+                        ((IGMDataItem.Box)ITEM[0, 1]).Data = new FF8String(name.Value.Take(pos - 1).ToArray());
                         //TODO grab card name from start of string
                         ((IGMDataItem.Box)ITEM[0, 2]).Data = $"{card.Value}";
                         ((IGMDataItem.Box)ITEM[0, 3]).Data = "";

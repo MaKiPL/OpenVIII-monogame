@@ -16,12 +16,6 @@ namespace OpenVIII
 
             #endregion Properties
 
-            #region Constructors
-
-            public static IGMData_TargetParty Create(Rectangle pos) => Create<IGMData_TargetParty>(3, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.NAME), 1, 3);
-
-            #endregion Constructors
-
             #region Methods
 
             protected override void Init()
@@ -40,6 +34,8 @@ namespace OpenVIII
                 //SIZE[i].Offset(0, 12 + (-8 * row));
                 SIZE[i].Height = (int)(12 * TextScale.Y);
             }
+
+            public static IGMData_TargetParty Create(Rectangle pos) => Create<IGMData_TargetParty>(3, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.NAME }, 1, 3);
 
             public override void Inputs_Left()
             {

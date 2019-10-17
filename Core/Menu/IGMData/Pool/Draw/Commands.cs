@@ -5,9 +5,10 @@ using System.Diagnostics;
 
 namespace OpenVIII.IGMData.Pool
 {
-
     public partial class Draw
     {
+        #region Classes
+
         /// <summary>
         /// (Draw) or (Cast and display target window)
         /// </summary>
@@ -17,7 +18,21 @@ namespace OpenVIII.IGMData.Pool
 
             private Debug_battleDat.Magic Magic;
 
+            public Dictionary<int, Func<bool>> OKAY_Actions;
+
             #endregion Fields
+
+            #region Properties
+
+            public int _Draw => 0;
+
+            public int Cast => 1;
+
+            public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData.Base)ITEM[Targets_Window, 0]));
+
+            public int Targets_Window => Count - 1;
+
+            #endregion Properties
 
             #region Methods
 
@@ -33,27 +48,6 @@ namespace OpenVIII.IGMData.Pool
                 Debug.WriteLine($"{Damageable.Name} Drawing {Magic.Name}({Magic.ID}) from enemy.");
                 Damageable.EndTurn();
                 return true;
-            }
-            public override void HideChildren()
-            {
-                if (Enabled)
-                {
-                    //base.Hide();
-                    //maybe overkill to run hide on items. if group is hidden it won't draw.
-                    if (!skipdata)
-                    {
-                        int pos = 0;
-                        foreach (Menu_Base i in ITEM)
-                        {
-                            if (pos != _Draw && pos != Cast && i != null)
-                            {
-                                i.HideChildren();
-                                i.Hide();
-                            }
-                            else i?.HideChildren();
-                        }
-                    }
-                }
             }
 
             protected override void Init()
@@ -81,19 +75,29 @@ namespace OpenVIII.IGMData.Pool
                 SIZE[i].Height = (int)(12 * TextScale.Y);
             }
 
-            #endregion Methods
+            public static Commands Create(Rectangle pos, Damageable damageable, bool battle = false) => Create<Commands>(3, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.CHOICE }, 1, 2, damageable);
 
-            public Dictionary<int, Func<bool>> OKAY_Actions;
-
-            static public Commands Create (Rectangle pos, Damageable damageable, bool battle = false)
+            public override void HideChildren()
             {
-                return Create<Commands>(3, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.CHOICE), 1, 2, damageable);
+                if (Enabled)
+                {
+                    //base.Hide();
+                    //maybe overkill to run hide on items. if group is hidden it won't draw.
+                    if (!skipdata)
+                    {
+                        int pos = 0;
+                        foreach (Menu_Base i in ITEM)
+                        {
+                            if (pos != _Draw && pos != Cast && i != null)
+                            {
+                                i.HideChildren();
+                                i.Hide();
+                            }
+                            else i?.HideChildren();
+                        }
+                    }
+                }
             }
-
-            public int _Draw => 0;
-            public int Cast => 1;
-            public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData.Base)ITEM[Targets_Window, 0]));
-            public int Targets_Window => Count - 1;
 
             public override bool Inputs()
             {
@@ -167,6 +171,10 @@ namespace OpenVIII.IGMData.Pool
                     Refresh();
                 }
             }
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

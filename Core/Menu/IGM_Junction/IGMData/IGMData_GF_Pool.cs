@@ -12,7 +12,7 @@ namespace OpenVIII
         {
             #region Constructors
 
-            public static IGMData_GF_Pool Create() => Create<IGMData_GF_Pool>(5, 3, new IGMDataItem.Box(pos: new Rectangle(440, 149, 385, 193), title: Icons.ID.GF), 4, 4);
+            public static IGMData_GF_Pool Create() => Create<IGMData_GF_Pool>(5, 3, new IGMDataItem.Box { Pos = new Rectangle(440, 149, 385, 193), Title= Icons.ID.GF }, 4, 4);
 
             #endregion Constructors
 

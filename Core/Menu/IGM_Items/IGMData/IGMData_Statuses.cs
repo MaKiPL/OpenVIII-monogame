@@ -114,7 +114,7 @@ namespace OpenVIII
                     TargetChangeEvent(this, Faces.ID.Blank);
             }
 
-            public static IGMData_Statuses Create() => Create<IGMData_Statuses>(2, 4, new IGMDataItem.Box(title: Icons.ID.STATUS, pos: new Rectangle(420, 510, 420, 120)), 1, 2);
+            public static IGMData_Statuses Create() => Create<IGMData_Statuses>(2, 4, new IGMDataItem.Box { Title = Icons.ID.STATUS, Pos = new Rectangle(420, 510, 420, 120) }, 1, 2);
 
             public override void Refresh()
             {
