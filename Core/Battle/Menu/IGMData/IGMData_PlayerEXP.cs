@@ -21,18 +21,6 @@ namespace OpenVIII
 
                 #endregion Fields
 
-                #region Constructors
-
-                public static IGMData_PlayerEXP Create(sbyte partypos, Rectangle? pos = null)
-                {
-                    Debug.Assert(partypos >= 0 && partypos <= 2);
-                    IGMData_PlayerEXP r = Create<IGMData_PlayerEXP>(1, 12, new IGMDataItem.Box { Pos = pos ?? new Rectangle(35, 78 + partypos * 150, 808, 150), Title = Icons.ID.NAME }, 1, 1, partypos: partypos);
-                    r._exp = 0;
-                    return r;
-                }
-
-                #endregion Constructors
-
                 #region Properties
 
                 public int EXP
@@ -58,9 +46,17 @@ namespace OpenVIII
 
                 #region Methods
 
+                public static IGMData_PlayerEXP Create(sbyte partypos, Rectangle? pos = null)
+                {
+                    Debug.Assert(partypos >= 0 && partypos <= 2);
+                    IGMData_PlayerEXP r = Create<IGMData_PlayerEXP>(1, 12, new IGMDataItem.Box { Pos = pos ?? new Rectangle(35, 78 + partypos * 150, 808, 150), Title = Icons.ID.NAME }, 1, 1, partypos: partypos);
+                    r._exp = 0;
+                    return r;
+                }
+
                 public override bool Update()
                 {
-                    if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                    if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c) && ((IGMDataItem.Integer)ITEM[0, 4]).Data != _exp)
                     {
                         ((IGMDataItem.Integer)ITEM[0, 4]).Data = _exp;
                         ((IGMDataItem.Integer)ITEM[0, 6]).Data = checked((int)c.Experience);
@@ -68,13 +64,11 @@ namespace OpenVIII
                         byte lvl = Damageable.Level;
                         if (lvl != _lvl)
                         {
-                            _lvl = lvl;
+                            ((IGMDataItem.Integer)ITEM[0, 2]).Data = _lvl = lvl;
                             //trigger level up message and sound effect
                             init_debugger_Audio.PlaySound(0x28);
                             ITEM[0, 10].Show();
                         }
-                        ((IGMDataItem.Integer)ITEM[0, 2]).Data = _lvl;
-
                         return base.Update();
                     }
                     return false;
@@ -83,6 +77,9 @@ namespace OpenVIII
                 protected override void Init()
                 {
                     base.Init();
+                    Saves.CharacterData c = null;
+                    if (Damageable != null && Damageable.GetCharacterData(out c))
+                        _lvl = Damageable.Level;
                     if (ECN == null)
                         ECN = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 29) + "\n" +
                             Memory.Strings.Read(Strings.FileID.KERNEL, 30, 30) + "\n" +
@@ -90,13 +87,13 @@ namespace OpenVIII
 
                     ITEM[0, 0] = new IGMDataItem.Text { Pos = new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0) };
                     ITEM[0, 1] = new IGMDataItem.Icon { Data = Icons.ID.Size_16x16_Lv_, Pos = new Rectangle(SIZE[0].X, SIZE[0].Y + 34, 0, 0), Palette = 13 };
-                    ITEM[0, 2] = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[0].X + 50, SIZE[0].Y + 38, 0, 0), Spaces = 4, NumType = Icons.NumType.sysFntBig };
+                    ITEM[0, 2] = new IGMDataItem.Integer { Data = _lvl, Pos = new Rectangle(SIZE[0].X + 50, SIZE[0].Y + 38, 0, 0), Spaces = 4, NumType = Icons.NumType.sysFntBig };
                     ITEM[0, 3] = new IGMDataItem.Text { Data = ECN, Pos = new Rectangle(SIZE[0].X + 390, SIZE[0].Y, 0, 0) };
-                    ITEM[0, 4] = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[0].X + SIZE[0].Width - 160, SIZE[0].Y, 0, 0), Spaces = 7 };
+                    ITEM[0, 4] = new IGMDataItem.Integer { Data = _exp, Pos = new Rectangle(SIZE[0].X + SIZE[0].Width - 160, SIZE[0].Y, 0, 0), Spaces = 7 };
                     ITEM[0, 5] = new IGMDataItem.Icon { Data = Icons.ID.P, Pos = new Rectangle(SIZE[0].X + SIZE[0].Width - 20, SIZE[0].Y, 0, 0) };
-                    ITEM[0, 6] = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[0].X + SIZE[0].Width - 160, (int)(SIZE[0].Y + TextScale.Y * 12), 0, 0), Spaces = 7 };
+                    ITEM[0, 6] = new IGMDataItem.Integer { Data = checked((int)(c?.Experience ?? 0)), Pos = new Rectangle(SIZE[0].X + SIZE[0].Width - 160, (int)(SIZE[0].Y + TextScale.Y * 12), 0, 0), Spaces = 7 };
                     ITEM[0, 7] = new IGMDataItem.Icon { Data = Icons.ID.P, Pos = new Rectangle(SIZE[0].X + SIZE[0].Width - 20, (int)(SIZE[0].Y + TextScale.Y * 12), 0, 0) };
-                    ITEM[0, 8] = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[0].X + SIZE[0].Width - 160, (int)(SIZE[0].Y + TextScale.Y * 12 * 2), 0, 0), Spaces = 7 };
+                    ITEM[0, 8] = new IGMDataItem.Integer { Data = c?.ExperienceToNextLevel ?? 0, Pos = new Rectangle(SIZE[0].X + SIZE[0].Width - 160, (int)(SIZE[0].Y + TextScale.Y * 12 * 2), 0, 0), Spaces = 7 };
                     ITEM[0, 9] = new IGMDataItem.Icon { Data = Icons.ID.P, Pos = new Rectangle(SIZE[0].X + SIZE[0].Width - 20, (int)(SIZE[0].Y + TextScale.Y * 12 * 2), 0, 0) };
                     ITEM[0, 10] = IGMData.Dialog.Timed.Small.Create(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 32), SIZE[0].X + 190, SIZE[0].Y);
                     ITEM[0, 11] = IGMData.Dialog.Small.Create(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 49), SIZE[0].X + 190, SIZE[0].Y);
