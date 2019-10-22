@@ -16,7 +16,7 @@ namespace OpenVIII.IGMData.Pool
 
         #region Properties
 
-        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData.Base)ITEM[Rows, 0]));
+        public IGMData.Target.Group Target_Group => (IGMData.Target.Group)(((IGMData.Base)ITEM[Rows, 0]));
 
         #endregion Properties
 
@@ -35,7 +35,7 @@ namespace OpenVIII.IGMData.Pool
             {
                 ITEM[i, 0] = new IGMDataItem.Text { Pos = SIZE[i] };
             }
-            ITEM[Rows, 0] = BattleMenus.IGMData_TargetGroup.Create(Damageable, false);
+            ITEM[Rows, 0] = IGMData.Target.Group.Create(Damageable, false);
             PointerZIndex = 0;
         }
 

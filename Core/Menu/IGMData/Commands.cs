@@ -56,7 +56,7 @@ namespace OpenVIII.IGMData
             ITEM[Item_Pool, 0].Hide();
             ITEM[Limit_Arrow, 0] = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Right, Pos = new Rectangle(SIZE[0].X + Width - 55, SIZE[0].Y, 0, 0), Palette = 2, Faded_Palette = 7, Blink = true };
             ITEM[Limit_Arrow, 0].Hide();
-            ITEM[Targets_Window, 0] = BattleMenus.IGMData_TargetGroup.Create(Damageable);
+            ITEM[Targets_Window, 0] = IGMData.Target.Group.Create(Damageable);
             commands = new Kernel_bin.Battle_Commands[Rows];
             PointerZIndex = Limit_Arrow;
             nonbattleWidth = Width;
@@ -116,7 +116,7 @@ namespace OpenVIII.IGMData
         public IGMData.Pool.Item GFPool => (IGMData.Pool.Item)(((Base)ITEM[GF_Pool, 0]));
         public IGMData.Pool.Item ItemPool => (IGMData.Pool.Item)(((Base)ITEM[Item_Pool, 0]));
         public IGMData.Pool.Magic MagPool => (IGMData.Pool.Magic)(((Base)ITEM[Mag_Pool, 0]));
-        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((Base)ITEM[Targets_Window, 0]));
+        public IGMData.Target.Group Target_Group => (IGMData.Target.Group)(((Base)ITEM[Targets_Window, 0]));
 
         public override bool Inputs()
         {

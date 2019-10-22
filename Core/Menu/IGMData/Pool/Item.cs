@@ -117,7 +117,7 @@ namespace OpenVIII.IGMData.Pool
             Item r = Create<Item>(count + 1, 3, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.ITEM }, count, 198 / count + 1, damageable);
             r.Battle = battle;
             if (battle)
-                r.ITEM[r.Targets_Window, 0] = BattleMenus.IGMData_TargetGroup.Create(r.Damageable);
+                r.ITEM[r.Targets_Window, 0] = IGMData.Target.Group.Create(r.Damageable);
             return r;
         }
 
@@ -126,7 +126,7 @@ namespace OpenVIII.IGMData.Pool
         #endregion Constructors
 
         public IReadOnlyList<FF8String> HelpStr => _helpStr;
-        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData.Base)ITEM[Targets_Window, 0]));
+        public IGMData.Target.Group Target_Group => (IGMData.Target.Group)(((IGMData.Base)ITEM[Targets_Window, 0]));
 
         public override void Draw() => base.Draw();
 

@@ -28,7 +28,7 @@ namespace OpenVIII.IGMData.Pool
 
             public int Cast => 1;
 
-            public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData.Base)ITEM[Targets_Window, 0]));
+            public IGMData.Target.Group Target_Group => (IGMData.Target.Group)(((IGMData.Base)ITEM[Targets_Window, 0]));
 
             public int Targets_Window => Count - 1;
 
@@ -55,7 +55,7 @@ namespace OpenVIII.IGMData.Pool
                 base.Init();
                 ITEM[_Draw, 0] = new IGMDataItem.Text { Data = Memory.Strings.Read(Strings.FileID.KERNEL, 0, 12), Pos = SIZE[_Draw] };
                 ITEM[Cast, 0] = new IGMDataItem.Text { Data = Memory.Strings.Read(Strings.FileID.KERNEL, 0, 18), Pos = SIZE[Cast] };
-                ITEM[Targets_Window, 0] = BattleMenus.IGMData_TargetGroup.Create(Damageable, false);
+                ITEM[Targets_Window, 0] = IGMData.Target.Group.Create(Damageable, false);
                 Cursor_Status = Cursor_Status.Enabled;
                 OKAY_Actions = new Dictionary<int, Func<bool>>
             {

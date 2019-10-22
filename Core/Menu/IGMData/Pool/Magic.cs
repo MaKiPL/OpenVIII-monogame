@@ -174,7 +174,7 @@ namespace OpenVIII.IGMData.Pool
                 ITEM[pos, 2].Hide();
             }
 
-            ITEM[Targets_Window, 0] = BattleMenus.IGMData_TargetGroup.Create(Damageable);
+            ITEM[Targets_Window, 0] = IGMData.Target.Group.Create(Damageable);
             BLANKS[Rows] = true;
             Cursor_Status &= ~Cursor_Status.Horizontal;
             Cursor_Status |= Cursor_Status.Vertical;
@@ -265,7 +265,7 @@ namespace OpenVIII.IGMData.Pool
 
         public IGM_Junction.Mode SortMode { get; private set; }
 
-        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData.Base)ITEM[Targets_Window, 0]));
+        public IGMData.Target.Group Target_Group => (IGMData.Target.Group)(((IGMData.Base)ITEM[Targets_Window, 0]));
 
         public Kernel_bin.Stat Stat { get; private set; }
 
