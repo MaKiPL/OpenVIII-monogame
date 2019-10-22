@@ -27,19 +27,6 @@ namespace OpenVIII
             #region Properties
 
             public Damageable[] Contents { get; private set; }
-            protected IReadOnlyDictionary<Enum, FF8String> Strings
-            {
-                get
-                {
-                    if (strings == null)
-                        strings = new Dictionary<Enum, FF8String>()
-                            {
-                                { Items.CurrentEXP, Memory.Strings.Read(OpenVIII.Strings.FileID.MNGRP, 0 ,23)  },
-                                { Items.NextLEVEL, Memory.Strings.Read(OpenVIII.Strings.FileID.MNGRP, 0 ,24)  },
-                            };
-                    return strings;
-                }
-            }
 
             #endregion Properties
 
@@ -73,7 +60,6 @@ namespace OpenVIII
                                 RefreshCharacter(i, Memory.State[cid]);
                             else
                                 BlankArea(i);
-                                
                         }
                     }
                     skipReInit = false;
@@ -159,7 +145,7 @@ namespace OpenVIII
                             BLANKS[pos] = false;
                             r = dims.Font;
                             r.Offset(145, 36);
-                            FF8String s = Strings[Items.CurrentEXP] + "\n" + Strings[Items.NextLEVEL];
+                            FF8String s = Strings.Name.CurrentEXP + "\n" + Strings.Name.NextLEVEL;
                             ((IGMDataItem.Text)ITEM[pos, 7]).Data = s;
                             ((IGMDataItem.Text)ITEM[pos, 7]).Pos = r;
 

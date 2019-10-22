@@ -38,7 +38,7 @@ namespace OpenVIII
                         IGM_Junction.Data[SectionName.RemAll].Hide();
                         IGM_Junction.Data[SectionName.TopMenu_Off].Hide();
                         IGM_Junction.SetMode(Mode.TopMenu);
-                        IGM_Junction.Data[SectionName.TopMenu].CURSOR_SELECT = 0;
+                        ((IGMData.Base)IGM_Junction.Data[SectionName.TopMenu]).CURSOR_SELECT = 0;
                         IGM_Junction.Refresh();
                         break;
 

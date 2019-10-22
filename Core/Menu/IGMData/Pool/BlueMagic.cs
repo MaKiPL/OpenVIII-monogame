@@ -69,7 +69,8 @@ namespace OpenVIII.IGMData.Pool
             Refresh();
         }
 
-        public static BlueMagic Create(Rectangle pos, Damageable damageable, bool battle = false) => Create<BlueMagic>(5, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.SPECIAL }, 4, 4, damageable);
+        public static BlueMagic Create(Rectangle pos, Damageable damageable, bool battle = false) => 
+            Create<BlueMagic>(5, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.SPECIAL }, 4, 4, damageable);
 
         public override bool Inputs()
         {
@@ -130,7 +131,6 @@ namespace OpenVIII.IGMData.Pool
                 ITEM[j, 0].Hide();
                 BLANKS[j] = true;
             }
-            Pages = 4;
             if (unlocked.Count / Rows <= 1)
                 ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL;
             else

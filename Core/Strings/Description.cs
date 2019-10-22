@@ -36,6 +36,31 @@
             public static FF8StringReference Str => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 228);
 
             #endregion Properties
+            public static class SideMenu
+            {
+                public static FF8StringReference Junction => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 1);
+                public static FF8StringReference Item => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 3);
+                public static FF8StringReference Magic => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 5);
+                public static FF8StringReference GF => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 7);
+                public static FF8StringReference Status => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 9);
+                public static FF8StringReference Card => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 11);
+                public static FF8StringReference Rearrange => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 13);
+                public static FF8StringReference Save => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 15);
+                public static FF8StringReference Config => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 17);
+                public static FF8StringReference PastParty => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 19);
+                public static FF8StringReference Ability => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 63);
+                public static FF8StringReference Switch => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 65);
+                public static FF8StringReference SLV => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 70);
+                public static FF8StringReference Information => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 76);
+                public static FF8StringReference Tutorial => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 68);
+                public static FF8StringReference TEST => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 78);
+                public static FF8StringReference Review => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 80);
+                /// <summary>
+                /// Ace
+                /// </summary>
+                public static FF8StringReference A => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 72);
+                public static FF8String Battle { get; } = "Test Battle Menu";
+            }
         }
 
         #endregion Classes

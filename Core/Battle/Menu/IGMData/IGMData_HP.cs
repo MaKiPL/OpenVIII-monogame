@@ -52,6 +52,7 @@ namespace OpenVIII
 
             protected override void Init()
             {
+                base.Init();
                 EventAdded = true;
                 AddModeChangeEvent(ref Damageable.BattleModeChangeEventHandler);
                 if (dot == null)
@@ -60,7 +61,6 @@ namespace OpenVIII
                     lock (dot)
                         dot.SetData(new Color[] { Color.White });
                 }
-                base.Init();
                 byte pos = GetCharPos();
                 FF8String name = null;
                 if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))

@@ -42,8 +42,10 @@ namespace OpenVIII.IGMData.Dialog
 
         protected override void Init()
         {
-            SetSize();
+            SkipSIZE = true;
             base.Init();
+            SetSize();
+            InitSize();
             Hide();
         }
 

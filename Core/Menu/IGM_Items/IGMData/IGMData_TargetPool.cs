@@ -100,7 +100,6 @@ namespace OpenVIII
             {
 
                 base.Init();
-
                 for (int i = 0; i < Rows; i++)
                 {
                     ITEM[i, 0] = new IGMDataItem.Text { Pos = SIZE[i] };
@@ -205,7 +204,7 @@ namespace OpenVIII
                                 BLANKS[i] = true;
                                 Contents[i] = Faces.ID.Blank;
                             }
-                            Pages = Page + 1;
+                            //Pages = Page + 1;
                             return;
                         }
                     ((IGMDataItem.Text)ITEM[i, 0]).Data = Memory.Strings.GetName(id);
@@ -227,7 +226,7 @@ namespace OpenVIII
 
                     id++;
                 }
-                Pages = Page + 2;
+                //Pages = Page + 2;
             }
 
             private void ItemTypeChangeEvent(object sender, KeyValuePair<Item_In_Menu, FF8String> e)

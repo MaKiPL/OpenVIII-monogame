@@ -44,6 +44,7 @@ namespace OpenVIII
             /// </summary>
             protected override void Init()
             {
+                base.Init();
                 //Static items
                 ITEM[0, 1] = new IGMDataItem.Icon { Data = Icons.ID.MenuBorder, Pos = new Rectangle(X + 10, Y - 2, 100, 148), Scale = new Vector2(1f) };
                 ITEM[0, 3] = new IGMDataItem.Text { Data = Strings.Name.LV, Pos = new Rectangle(X + 117, Y + 54, 0, 0) };
@@ -62,7 +63,7 @@ namespace OpenVIII
                 ITEM[0, 9] = new IGMDataItem.Integer { Pos = new Rectangle(X + 292, Y + 108, 0, 0), Palette = 13, NumType= Icons.NumType.sysFntBig, Padding= 1, Spaces= 5 };
                 ITEM[0, 11] = new IGMDataItem.Integer { Pos = new Rectangle(X + 192, Y + 198, 0, 0), Palette = 13, NumType= Icons.NumType.Num_8x8_2, Padding= 1, Spaces= 9 };
                 ITEM[0, 13] = new IGMDataItem.Integer { Pos = new Rectangle(X + 192, Y + 231, 0, 0), Palette= 13, NumType= Icons.NumType.Num_8x8_2, Padding= 1, Spaces= 9 };
-                base.Init();
+                
             }
 
             #endregion Methods

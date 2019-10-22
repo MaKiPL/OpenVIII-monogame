@@ -194,8 +194,8 @@ namespace OpenVIII
         {
             NoInputOnUpdate = true;
             Size = new Vector2 { X = 881, Y = 636 };
-            Data.ForEach(x => x.Value.Hide());
             base.Init();
+            Data.ForEach(x => x.Value.Hide());
         }
 
         #endregion Methods

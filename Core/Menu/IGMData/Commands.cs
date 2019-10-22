@@ -21,6 +21,7 @@ namespace OpenVIII.IGMData
 
         private int Item_Pool => Count - 2;
 
+        private int GF_Pool => Count - 6;
         private int Limit_Arrow => Count - 5;
 
         private int Blue_Pool => Count - 4;
@@ -38,20 +39,22 @@ namespace OpenVIII.IGMData
         /// </summary>
         protected override void Init()
         {
-            BLANKS[Limit_Arrow] = true;
             base.Init();
+            BLANKS[Limit_Arrow] = true;
             for (int pos = 0; pos < Rows; pos++)
                 ITEM[pos, 0] = new IGMDataItem.Text
                 {
                     Pos = SIZE[pos]
                 };
+            ITEM[GF_Pool, 0] = Pool.GF.Create(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
+            ITEM[GF_Pool, 0].Hide();
             ITEM[Blue_Pool, 0] = Pool.BlueMagic.Create(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
             ITEM[Blue_Pool, 0].Hide();
             ITEM[Mag_Pool, 0] = Pool.Magic.Create(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
             ITEM[Mag_Pool, 0].Hide();
             ITEM[Item_Pool, 0] = Pool.Item.Create(new Rectangle(X + 50, Y - 22, 400, 194), Damageable, true);
             ITEM[Item_Pool, 0].Hide();
-            ITEM[Limit_Arrow, 0] = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Right, Pos = new Rectangle(SIZE[0].X + Width - 55, SIZE[0].Y, 0, 0), Palette= 2, Faded_Palette = 7, Blink = true };
+            ITEM[Limit_Arrow, 0] = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Right, Pos = new Rectangle(SIZE[0].X + Width - 55, SIZE[0].Y, 0, 0), Palette = 2, Faded_Palette = 7, Blink = true };
             ITEM[Limit_Arrow, 0].Hide();
             ITEM[Targets_Window, 0] = BattleMenus.IGMData_TargetGroup.Create(Damageable);
             commands = new Kernel_bin.Battle_Commands[Rows];
@@ -93,10 +96,7 @@ namespace OpenVIII.IGMData
 
         #endregion Methods
 
-        #region Constructors
-        private Commands()
-        { }
-        static public Commands Create(Rectangle pos, Damageable damageable = null, bool battle = false)
+        public static Commands Create(Rectangle pos, Damageable damageable = null, bool battle = false)
         {
             Commands r = new Commands
             {
@@ -105,16 +105,15 @@ namespace OpenVIII.IGMData
             };
 
             r.Init(damageable, null);
-            r.Init(9, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.COMMAND }, 1, 4);
+            r.Init(10, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.COMMAND }, 1, 4);
             return r;
         }
-
-        #endregion Constructors
 
         public bool Battle { get; set; } = false;
 
         public bool CrisisLevel { get => _crisisLevel; set => _crisisLevel = value; }
 
+        public IGMData.Pool.Item GFPool => (IGMData.Pool.Item)(((Base)ITEM[GF_Pool, 0]));
         public IGMData.Pool.Item ItemPool => (IGMData.Pool.Item)(((Base)ITEM[Item_Pool, 0]));
         public IGMData.Pool.Magic MagPool => (IGMData.Pool.Magic)(((Base)ITEM[Mag_Pool, 0]));
         public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((Base)ITEM[Targets_Window, 0]));
@@ -125,6 +124,8 @@ namespace OpenVIII.IGMData
             if (InputITEM(Mag_Pool, 0, ref ret))
             { }
             else if (InputITEM(Item_Pool, 0, ref ret))
+            { }
+            else if (InputITEM(GF_Pool, 0, ref ret))
             { }
             else if (InputITEM(Targets_Window, 0, ref ret))
             { }
@@ -223,8 +224,8 @@ namespace OpenVIII.IGMData
                     return true;
 
                 case 3: //GF
-                    //ITEM[GF_Pool, 0].Show();
-                    //ITEM[GF_Pool, 0].Refresh();
+                    ITEM[GF_Pool, 0].Show();
+                    ITEM[GF_Pool, 0].Refresh();
                     return true;
 
                 case 4: //items
@@ -362,6 +363,7 @@ namespace OpenVIII.IGMData
         }
 
         #region IDisposable Support
+
         private bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
@@ -381,19 +383,14 @@ namespace OpenVIII.IGMData
         }
 
         // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        // ~Commands() {
-        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-        //   Dispose(false);
-        // }
+        // ~Commands() { // Do not change this code. Put cleanup code in Dispose(bool disposing)
+        // above. Dispose(false); }
 
         // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
+        public void Dispose() =>
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
-        }
-        #endregion
+            Dispose(true);// TODO: uncomment the following line if the finalizer is overridden above.// GC.SuppressFinalize(this);
+
+        #endregion IDisposable Support
     }
 }

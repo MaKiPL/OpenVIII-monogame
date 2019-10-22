@@ -149,10 +149,10 @@
     <Compile Include="Battle\Menu\IGMData\IGMData_PartyItems.cs" />
     <Compile Include="Battle\Menu\IGMData\IGMData_PlayerEXPGroup.cs" />
     <Compile Include="Battle\Menu\IGMData\IGMData_PartyAP.cs" />
-    <Compile Include="Battle\Menu\IGMData\IGMData_Renzokeken.cs" />
     <Compile Include="Battle\Menu\IGMData\IGMData_TargetEnemies.cs" />
     <Compile Include="Battle\Menu\IGMData\IGMData_TargetGroup.cs" />
     <Compile Include="Battle\Menu\IGMData\IGMData_TargetParty.cs" />
+    <Compile Include="Battle\Menu\IGMData\Renzokeken.cs" />
     <Compile Include="Card_Game\Card_Game.cs" />
     <Compile Include="Card_Game\EXE_Offsets.cs" />
     <Compile Include="Image\TDW.cs" />
@@ -195,7 +195,9 @@
     <Compile Include="Menu\IGMData\Dialog\Small.cs" />
     <Compile Include="Menu\IGMData\Dialog\Timed\Small.cs" />
     <Compile Include="Menu\IGMData\Group\Base.cs" />
+    <Compile Include="Menu\IGMData\Group\TopMenu.cs" />
     <Compile Include="Menu\IGMData\Pool\Base.cs" />
+    <Compile Include="Menu\IGMData\Pool\GF.cs" />
     <Compile Include="Menu\IGMData\Pool\Magic\Commands.cs" />
     <Compile Include="Menu\IGMData\Pool\Magic.cs" />
     <Compile Include="Menu\IGMData\Pool\Item.cs" />
@@ -814,7 +816,6 @@
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_ConfirmRemMag.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_GF_Group.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_GF_Junctioned.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_GF_Pool.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_EL_A_D_Slots.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_EL_A_Values.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_EL_D_Values.cs" />
@@ -827,10 +828,8 @@
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Slots.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_TopMenu.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_TopMenu_Auto.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_TopMenu_Auto_Group.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_TopMenu_Junction.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_TopMenu_Off.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_TopMenu_Off_Group.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Values.cs" />
     <Compile Include="Menu\IGM_Junction\IGM_Junction.cs" />
     <Compile Include="Menu\IGM_Items\Items_In_Menu.cs" />

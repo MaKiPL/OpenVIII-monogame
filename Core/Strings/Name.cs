@@ -21,6 +21,7 @@
             public static FF8StringReference ForwardSlash => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 25);
             public static FF8StringReference GF => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 262);
             public static FF8StringReference Hit => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 239);
+
             /// <summary>
             /// HP
             /// </summary>
@@ -49,6 +50,41 @@
             public static FF8StringReference Stats => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 255);
             public static FF8StringReference Str => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 227);
             public static FF8StringReference Vit => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 229);
+            public static FF8StringReference To_confirm => Memory.Strings.Read(Strings.FileID.KERNEL, 30, 22);
+            public static FF8StringReference Havent_been_to_a_shop => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 66);
+            public static FF8StringReference TIME => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 82);
+            public static FF8StringReference TIMER => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 83);
+            public static FF8StringReference Nothing_happened => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 81);
+            public static FF8StringReference Changes_current_HP_OK => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 73);
+            public static FF8StringReference Yes => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 57);
+            public static FF8StringReference No => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 58);
+
+            public static class SideMenu
+            {
+                public static FF8StringReference Junction => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 0);
+                public static FF8StringReference Item => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2);
+                public static FF8StringReference Magic => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 4);
+                public static FF8StringReference GF => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 6);
+                public static FF8StringReference Status => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 8);
+                public static FF8StringReference Card => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 10);
+                public static FF8StringReference Rearrange => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 12);
+                public static FF8StringReference Save => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 14);
+                public static FF8StringReference Config => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 16);
+                /// <summary>
+                /// ????
+                /// </summary>
+                public static FF8StringReference PastParty => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 18);
+                public static FF8StringReference Ability => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 62);
+                public static FF8StringReference Switch => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 64);
+                public static FF8StringReference Tutorial => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 67);
+                public static FF8StringReference SLV => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 69);
+                public static FF8StringReference A => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 71);
+                public static FF8StringReference QMarks2 => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 74);
+                public static FF8StringReference Information => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 75);
+                public static FF8StringReference TEST => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 77);
+                public static FF8StringReference Review => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 79);
+                public static FF8String Battle { get; } = "Battle";
+            }
 
             #endregion Properties
         }

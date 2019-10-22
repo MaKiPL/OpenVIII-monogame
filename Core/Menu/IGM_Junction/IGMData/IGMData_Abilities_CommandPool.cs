@@ -51,7 +51,7 @@ namespace OpenVIII
                     skipsnd = true;
                     init_debugger_Audio.PlaySound(31);
                     base.Inputs_OKAY();
-                    int target = IGM_Junction.Data[SectionName.TopMenu_Abilities].CURSOR_SELECT - 1;
+                    int target = ((IGMData.Base)IGM_Junction.Data[SectionName.TopMenu_Abilities]).CURSOR_SELECT - 1;
                     c.Commands[target] = Contents[CURSOR_SELECT];
                     IGM_Junction.SetMode(Mode.Abilities);
                     IGM_Junction.Data[SectionName.TopMenu_Abilities].Refresh();
@@ -117,12 +117,12 @@ namespace OpenVIII
                 {
                     if (Contents[0] == Kernel_bin.Abilities.None)
                     {
-                        Pages = Page;
+                        //Pages = Page;
                         PAGE_NEXT();
                         return Update();
                     }
-                    else if (Contents[Rows - 1] == Kernel_bin.Abilities.None)
-                        Pages = Page + 1;
+                    //else if (Contents[Rows - 1] == Kernel_bin.Abilities.None)
+                    //    Pages = Page + 1;
                 }
                 return base.Update();
             }

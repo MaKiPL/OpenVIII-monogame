@@ -3,6 +3,7 @@ using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace OpenVIII
 {
@@ -48,41 +49,6 @@ namespace OpenVIII
             #endregion Enums
 
             #region Methods
-
-            protected override void Init()
-            {
-                Size = new Vector2(881, 606);
-                Data = new Dictionary<Enum, Menu_Base>
-                {
-                    { Mode.All, IGMData.Group.Base.Create(
-                    new IGMDataItem.Box{ Data = new FF8String(new byte[] {
-                            (byte)FF8TextTagCode.Key,
-                            (byte)FF8TextTagKey.Confirm})+
-                            " "+
-                            (Memory.Strings.Read(Strings.FileID.KERNEL,30,22)),
-                            Pos = new Rectangle(0,(int)Size.Y-78,(int)Size.X,78),Options= Box_Options.Center | Box_Options.Middle })
-                    },
-                    { Mode.Exp,
-                    IGMData_PlayerEXPGroup.Create (
-                        IGMData_PlayerEXP.Create(0),IGMData_PlayerEXP.Create(1),IGMData_PlayerEXP.Create(2)
-                        )
-                    },
-                    { Mode.Items,
-                    new IGMData_PartyItems(new IGMDataItem.Empty(new Rectangle(Point.Zero,Size.ToPoint()))) },
-                    { Mode.AP,
-                    new IGMData_PartyAP(new IGMDataItem.Empty(new Rectangle(Point.Zero,Size.ToPoint()))) },
-                };
-                Data[Mode.Exp].CONTAINER.Pos = new Rectangle(Point.Zero, Size.ToPoint());
-
-                SetMode(Mode.Exp);
-                InputFunctions = new Dictionary<Mode, Func<bool>>
-                {
-                    { Mode.Exp, Data[Mode.Exp].Inputs},
-                    { Mode.Items, Data[Mode.Items].Inputs},
-                    { Mode.AP, Data[Mode.AP].Inputs}
-                };
-                base.Init();
-            }
 
             public override bool Inputs()
             {
@@ -157,6 +123,35 @@ namespace OpenVIII
                     return base.SetMode((Mode)mode);
                 }
                 return false;
+            }
+
+            protected override void Init()
+            {
+                Size = new Vector2(881, 606);
+                base.Init();
+                List<Task> tasks = new List<Task>
+                {
+                    Task.Run(() => Data.TryAdd(Mode.All, IGMData.Group.Base.Create(
+                        new IGMDataItem.Box{ Data = new FF8String(new byte[] {
+                            (byte)FF8TextTagCode.Key,
+                            (byte)FF8TextTagKey.Confirm})+
+                            " "+
+                            (Strings.Name.To_confirm),
+                            Pos = new Rectangle(0,(int)Size.Y-78,(int)Size.X,78),Options= Box_Options.Center | Box_Options.Middle }))),
+
+                    Task.Run(() => Data.TryAdd(Mode.Exp,IGMData_PlayerEXPGroup.Create (IGMData_PlayerEXP.Create(0),IGMData_PlayerEXP.Create(1),IGMData_PlayerEXP.Create(2)))),
+                    Task.Run(() => Data.TryAdd(Mode.Items,new IGMData_PartyItems(new IGMDataItem.Empty(new Rectangle(Point.Zero,Size.ToPoint()))))),
+                    Task.Run(() => Data.TryAdd(Mode.AP,new IGMData_PartyAP(new IGMDataItem.Empty(new Rectangle(Point.Zero,Size.ToPoint()))))),
+                };
+                Task.WaitAll(tasks.ToArray());
+                Data[Mode.Exp].CONTAINER.Pos = new Rectangle(Point.Zero, Size.ToPoint());
+                SetMode(Mode.Exp);
+                InputFunctions = new Dictionary<Mode, Func<bool>>
+                {
+                    { Mode.Exp, Data[Mode.Exp].Inputs},
+                    { Mode.Items, Data[Mode.Items].Inputs},
+                    { Mode.AP, Data[Mode.AP].Inputs}
+                };
             }
 
             #endregion Methods

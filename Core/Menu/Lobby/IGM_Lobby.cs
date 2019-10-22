@@ -23,7 +23,7 @@ namespace OpenVIII
                 { SectionName.BG, new IGMDataItem.Texture_Handler(TextureHandler.Create("start{0:00}", 2), new Rectangle(0,-25, 1280, 0)) } //new Rectangle(-45,-25, 1280+100, 0)
             };
             //Data is scaled from Size
-            Data.Add(SectionName.Selections, IGMData_Selections.Create());
+            Data.TryAdd(SectionName.Selections, IGMData_Selections.Create());
             base.Init();
         }
 

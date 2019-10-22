@@ -24,13 +24,14 @@ namespace OpenVIII.IGMData
 
         protected override void Init()
         {
+            base.Init();
             Texture2D pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
             pixel.SetData(new Color[] { Color.White });
 
-            Memory.Icons[Icons.ID.Text_Cursor][0].Offset = Vector2.Zero;
-            Memory.Icons.Trim(Icons.ID.Text_Cursor, 6);
-            EntryGroup split = Memory.Icons[Icons.ID.Text_Cursor];
-            EntryGroup e = Memory.Icons[Icons.ID.Text_Cursor];
+            Memory.Icons[Icons.ID.Renzokeken_Seperator][0].Offset = Vector2.Zero;
+            Memory.Icons.Trim(Icons.ID.Renzokeken_Seperator, 6);
+            EntryGroup split = Memory.Icons[Icons.ID.Renzokeken_Seperator];
+            EntryGroup e = Memory.Icons[Icons.ID.Renzokeken_Seperator];
 
             Rectangle r = CONTAINER.Pos; //new Rectangle(40, 524, 880, 84);
             r.Inflate(-16, -20);
@@ -38,15 +39,15 @@ namespace OpenVIII.IGMData
             r.Y += r.Y % 4;
             r.Width += r.Width % 4;
             r.Height += r.Height % 4;
-            rc = Memory.Icons.MostSaturated(Icons.ID.Text_Cursor, 6);
-            rcdim = Memory.Icons.MostSaturated(Icons.ID.Text_Cursor, 2);
+            rc = Memory.Icons.MostSaturated(Icons.ID.Renzokeken_Seperator, 6);
+            rcdim = Memory.Icons.MostSaturated(Icons.ID.Renzokeken_Seperator, 2);
             ITEM[0, 0] = new IGMDataItem.Texture { Data = pixel, Pos = r, Color = rcdim };
             r.Inflate(-4, -4);
             ITEM[1, 0] = new IGMDataItem.Texture { Data = pixel, Pos = r, Color = Color.Black };
             float scale = (float)r.Height / e.Height;
             int w = (int)(e.Width * scale);
-            ITEM[Count - 3, 0] = new IGMDataItem.Icon { Data = Icons.ID.Text_Cursor, Pos = new Rectangle(r.X + 80, r.Y, w, r.Height), Scale = new Vector2(scale) };
-            ITEM[Count - 2, 0] = new IGMDataItem.Icon { Data = Icons.ID.Text_Cursor, Pos = new Rectangle(r.X + 208, r.Y, w, r.Height), Scale = new Vector2(scale) };
+            ITEM[Count - 3, 0] = new IGMDataItem.Icon { Data = Icons.ID.Renzokeken_Seperator, Pos = new Rectangle(r.X + 80, r.Y, w, r.Height), Scale = new Vector2(scale) };
+            ITEM[Count - 2, 0] = new IGMDataItem.Icon { Data = Icons.ID.Renzokeken_Seperator, Pos = new Rectangle(r.X + 208, r.Y, w, r.Height), Scale = new Vector2(scale) };
             Rectangle hotspot = new Rectangle(r.X + 80 + (w / 2), r.Y + 4, 208 - 80, r.Height - 8);
             ITEM[Count - 4, 0] = new IGMDataItem.Texture { Data = pixel, Pos = hotspot, Color = Color.TransparentBlack };
             //Rectangle hotspotbox = hotspot;
@@ -94,7 +95,7 @@ namespace OpenVIII.IGMData
             w = (int)(e.Width * scale);
             tr.X = xbak + trigwidtharea / 2 - w / 2;
             ITEM[Count - 6, 0] = new IGMDataItem.Icon { Data = Icons.ID.Perfect__, Pos = tr, Palette = 8, Scale = new Vector2(scale) };
-            base.Init();
+            
             Reset();
             Cursor_Status = Cursor_Status.Enabled | Cursor_Status.Static | Cursor_Status.Hidden;
         }

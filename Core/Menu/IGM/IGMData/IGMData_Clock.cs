@@ -8,15 +8,11 @@ namespace OpenVIII
 
         private class IGMData_Clock : IGMData.Base
         {
-            private const int MaxSeedRank = 99999;
             private const int MaxGil = 99999999;
             private const int MaxHourOrMins = 99;
-
-            #region Constructors
+            private const int MaxSeedRank = 99999;
 
             public static IGMData_Clock Create() => Create<IGMData_Clock>(1, 8, new IGMDataItem.Box { Pos = new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 } });
-
-            #endregion Constructors
 
             #region Methods
 
@@ -41,6 +37,11 @@ namespace OpenVIII
                         ITEM[0, 4].Hide();
                         ITEM[0, 5].Hide();
                     }
+                    for(int i=0;i<Depth;i++)
+                    {
+                        if(i != 4 && i != 5)
+                        ITEM[0, i]?.Show();
+                    }
                 ((IGMDataItem.Integer)ITEM[0, 6]).Data = Memory.State.AmountofGil < MaxGil ? (int)(Memory.State.AmountofGil) : MaxGil;
                 }
             }
@@ -60,7 +61,7 @@ namespace OpenVIII
                 r = CONTAINER;
                 r.Offset(185, 81);
                 ITEM[0, 7] = new IGMDataItem.Icon { Data = Icons.ID.G, Pos = r, Palette = 2 };
-                base.Init();
+
                 r = CONTAINER;
                 r.Offset(105, 14);
                 ITEM[0, 1] = new IGMDataItem.Integer { Pos = r, Palette = 2, Faded_Palette = 0, Padding = 1, Spaces = 2 };
@@ -81,7 +82,10 @@ namespace OpenVIII
                 r.Offset(25, 81);
                 ITEM[0, 6] = new IGMDataItem.Integer { Pos = r, Palette = 2, Faded_Palette = 0, Padding = 1, Spaces = 8 };
             }
-
+            public override void Draw()
+            {
+                base.Draw();
+            }
             #endregion Methods
         }
 

@@ -4,7 +4,7 @@
     {
         #region Classes
 
-        private class IGMData_GF_Group : IGMData.Group.Base
+        public class IGMData_GF_Group : IGMData.Group.Base
         {
             #region Constructors
 

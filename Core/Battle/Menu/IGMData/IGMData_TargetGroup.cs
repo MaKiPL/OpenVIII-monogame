@@ -118,6 +118,7 @@ namespace OpenVIII
 
             protected override void Init()
             {
+                base.Init();
                 if (CommandFunc == null)
                     CommandFunc = new Dictionary<int, Func<bool>>
                     {
@@ -161,7 +162,6 @@ namespace OpenVIII
                         {37,Command37_TRIPLE },
                         {38,Command38_MINIMOG },
                     };
-                base.Init();
 
                 //bool Command00() => throw new NotImplementedException();
 

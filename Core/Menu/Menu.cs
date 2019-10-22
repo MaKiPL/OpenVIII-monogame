@@ -1,7 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OpenVIII
 {
@@ -114,7 +116,7 @@ namespace OpenVIII
             //WaitForInit();
             if (!cancel)
             {
-                Data = new Dictionary<Enum, Menu_Base>();
+                Data = new ConcurrentDictionary<Enum, Menu_Base>();
                 Init();
                 skipdata = true;
                 Refresh();
@@ -126,6 +128,7 @@ namespace OpenVIII
 
         protected Enum _mode;
         protected bool skipdata;
+
         /// <summary>
         /// Viewport dimensions
         /// </summary>
@@ -167,7 +170,7 @@ namespace OpenVIII
         public static EventHandler FadedInHandler;
         public static EventHandler FadedOutHandler;
         public static Slide<float> FadeSlider = new Slide<float>(_fadedout, _fadedin, _fadeinspeed, MathHelper.Lerp) { ReverseMS = _fadeoutspeed };
-        public Dictionary<Enum, Menu_Base> Data;
+        public ConcurrentDictionary<Enum, Menu_Base> Data;
 
         public EventHandler<Enum> ModeChangeHandler;
 
@@ -192,6 +195,7 @@ namespace OpenVIII
         public static float Fade { get; private set; } = _fadedin;
 
         public static bool FadingOut => FadeSlider.Reversed; //_fadeout;
+
         /// <summary>
         /// Focus scales and centers the menu.
         /// </summary>
@@ -223,6 +227,7 @@ namespace OpenVIII
         public static Point MouseLocation => InputMouse.Location.Transform(Menu.Focus);
 
         public static Vector2 StaticSize { get; protected set; }
+
         /// <summary>
         /// Size of text the real game doesn't use a 1:1 ratio.
         /// </summary>
@@ -237,6 +242,7 @@ namespace OpenVIII
         /// Size of the menu. If kept in a 4:3 region it won't scale down till after losing enough width.
         /// </summary>
         public Vector2 Size { get => _size; protected set => _size = value; }
+
         public struct BoxReturn
         {
             public Rectangle HotSpot;
@@ -250,6 +256,7 @@ namespace OpenVIII
                 Font = font;
             }
         }
+
         public static BoxReturn DrawBox(Rectangle dst, FF8String buffer = null, Icons.ID? title = null, Vector2? textScale = null, Vector2? boxScale = null, Box_Options options = Box_Options.Default)
         {
             if (textScale == null) textScale = Vector2.One;
@@ -386,8 +393,8 @@ namespace OpenVIII
         public virtual void DrawData()
         {
             if (!skipdata && Enabled)
-                foreach (KeyValuePair<Enum, Menu_Base> i in Data)
-                    i.Value.Draw();
+                foreach (Menu_Base i in Data.OrderBy(x => x.Key).Select(x => x.Value))
+                    i?.Draw();
         }
 
         public virtual void EndDraw()
