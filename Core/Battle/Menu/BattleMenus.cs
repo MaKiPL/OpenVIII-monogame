@@ -173,6 +173,7 @@ namespace OpenVIII
             return ret;
         }
 
+        public static BattleMenus Create() => Create<BattleMenus>();
         private bool UpdateGameOverFunction()
         {
             Memory.module = MODULE.FIELD_DEBUG;
@@ -300,7 +301,7 @@ namespace OpenVIII
                 menus = new List<Menu>(count);
                 foreach (KeyValuePair<int, Characters> m in party)
                 {
-                    BattleMenu tmp = new BattleMenu(Memory.State[Memory.State.PartyData[m.Key]]);
+                    BattleMenu tmp = BattleMenu.Create(Memory.State[Memory.State.PartyData[m.Key]]);
                     tmp.Hide();
                     menus.Add(tmp);
                 }

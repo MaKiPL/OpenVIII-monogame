@@ -11,17 +11,14 @@ namespace OpenVIII
     /// </summary>
     public partial class BattleMenu : Menu
     {
-        public bool CrisisLevel => ((IGMData.Commands)Data[SectionName.Commands]).CrisisLevel;
+        #region Destructors
 
-        //private Mode _mode = Mode.Waiting;
-
-        #region Constructors
-
-        public BattleMenu(Damageable damageable) : base(damageable)
+        ~BattleMenu()
         {
+            Damageable.BattleModeChangeEventHandler -= ModeChangeEvent;
         }
 
-        #endregion Constructors
+        #endregion Destructors
 
         #region Enums
 
@@ -34,14 +31,9 @@ namespace OpenVIII
 
         #endregion Enums
 
-        #region Methods
+        #region Properties
 
-        public override bool Inputs()
-        {
-            if (Data[SectionName.Renzokeken].Enabled)
-                return Data[SectionName.Renzokeken].Inputs();
-            return Data[SectionName.Commands].Inputs();
-        }
+        public bool CrisisLevel => ((IGMData.Commands)Data[SectionName.Commands]).CrisisLevel;
 
         public IGMData.Renzokeken Renzokeken
         {
@@ -53,6 +45,37 @@ namespace OpenVIII
             }
         }
 
+        #endregion Properties
+
+        #region Methods
+
+        //private Mode _mode = Mode.Waiting;
+
+        //public BattleMenu(Damageable damageable) : base(damageable)
+        //{
+        //}
+        public static BattleMenu Create(Damageable damageable) => Create<BattleMenu>(damageable);
+
+        public void DrawData(SectionName v)
+        {
+            if (!skipdata && Enabled)
+                foreach (KeyValuePair<Enum, Menu_Base> i in Data.Where(a => a.Key.Equals(v)))
+                    i.Value.Draw();
+        }
+
+        public override Enum GetMode() => Damageable.GetBattleMode();
+
+        public override bool Inputs()
+        {
+            if (Data[SectionName.Renzokeken].Enabled)
+                return Data[SectionName.Renzokeken].Inputs();
+            return Data[SectionName.Commands].Inputs();
+        }
+
+        public override void Reset() => base.Reset();
+
+        public override bool SetMode(Enum mode) => Damageable.SetBattleMode(mode);
+
         protected override void Init()
         {
             NoInputOnUpdate = true;
@@ -63,6 +86,26 @@ namespace OpenVIII
 
             Data.ForEach(x => x.Value.AddModeChangeEvent(ref ModeChangeHandler));
             SetMode(Damageable.BattleMode.ATB_Charging);
+        }
+
+        protected override void ModeChangeEvent(object sender, Enum e)
+        {
+            switch (e)
+            {
+                case Damageable.BattleMode.EndTurn:
+                    Reset();
+                    Refresh();
+                    break;
+
+                case Damageable.BattleMode.ATB_Charged:
+                    Data[SectionName.Commands].Hide();
+                    break;
+
+                case Damageable.BattleMode.YourTurn:
+                    Data[SectionName.Commands].Show();
+                    Data[SectionName.Commands].Refresh();
+                    break;
+            }
         }
 
         private void InitAsync()
@@ -91,44 +134,6 @@ namespace OpenVIII
             //    Console.WriteLine("All attempts succeeded.");
             //else if (t.Status == TaskStatus.Faulted)
             //    Console.WriteLine(t.Exception);
-        }
-
-        ~BattleMenu()
-        {
-            Damageable.BattleModeChangeEventHandler -= ModeChangeEvent;
-        }
-
-        protected override void ModeChangeEvent(object sender, Enum e)
-        {
-            switch (e)
-            {
-                case Damageable.BattleMode.EndTurn:
-                    Reset();
-                    Refresh();
-                    break;
-
-                case Damageable.BattleMode.ATB_Charged:
-                    Data[SectionName.Commands].Hide();
-                    break;
-
-                case Damageable.BattleMode.YourTurn:
-                    Data[SectionName.Commands].Show();
-                    Data[SectionName.Commands].Refresh();
-                    break;
-            }
-        }
-
-        public override bool SetMode(Enum mode) => Damageable.SetBattleMode(mode);
-
-        public override Enum GetMode() => Damageable.GetBattleMode();
-
-        public override void Reset() => base.Reset();
-
-        public void DrawData(SectionName v)
-        {
-            if (!skipdata && Enabled)
-                foreach (KeyValuePair<Enum, Menu_Base> i in Data.Where(a => a.Key.Equals(v)))
-                    i.Value.Draw();
         }
 
         #endregion Methods

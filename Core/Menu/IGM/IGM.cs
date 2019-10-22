@@ -16,8 +16,6 @@ namespace OpenVIII
 
         #endregion Fields
 
-        //private Mode _mode = 0;
-
         #region Enums
 
         public enum Items
@@ -38,6 +36,7 @@ namespace OpenVIII
             NextLEVEL,
         }
 
+        //private Mode _mode = 0;
         public enum Mode
         {
             ChooseItem,
@@ -56,6 +55,8 @@ namespace OpenVIII
         #endregion Enums
 
         #region Methods
+
+        public static IGM Create() => Create<IGM>();
 
         public override bool Inputs() => InputDict[(Mode)GetMode()]();
 

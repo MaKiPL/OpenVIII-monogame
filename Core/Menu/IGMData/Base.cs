@@ -442,13 +442,13 @@ namespace OpenVIII.IGMData
         {
             if (partypos != null)
             {
-                _damageable = damageable;
+                Damageable = damageable;
                 PartyPos = partypos.Value;
-                _damageable = Memory.State[Memory.State.PartyData[PartyPos]];
+                Damageable = Memory.State[Memory.State.PartyData[PartyPos]];
             }
             else if (damageable != null && damageable.GetCharacterData(out Saves.CharacterData c))
             {
-                _damageable = damageable;
+                Damageable = damageable;
                 PartyPos = (sbyte)(Memory.State?.PartyData?.FindIndex(x => x.Equals(c.ID)) ?? -1);
             }
         }

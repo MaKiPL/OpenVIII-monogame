@@ -247,7 +247,7 @@ namespace OpenVIII
             {
                 return null;
             }
-            Ffcc ffcc = new Ffcc(
+            Ffcc ffcc = FfAudio.Play(
                 new Ffcc.Buffer_Data { DataSeekLoc = soundEntries[soundID].Offset, DataSize = soundEntries[soundID].Size, HeaderSize = (uint)soundEntries[soundID].HeaderData.Length },
                 soundEntries[soundID].HeaderData,
                 Path.Combine(Memory.FF8DIRdata, "Sound", "audio.dat"), loop ? 0 : -1);
@@ -362,7 +362,7 @@ namespace OpenVIII
                     //ffccMusic = new Ffcc(@"c:\eyes_on_me.wav", AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
                     if (ffccMusic != null)
                         ffccMusic.Dispose();
-                    ffccMusic = new Ffcc(pt, AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH, loop ? 0 : -1);
+                    ffccMusic = FfAudio.Create(pt, loop ? 0 : -1);
                     if (!loop)
                         ffccMusic.LOOPSTART = -1;
                     ffccMusic.PlayInTask(volume, pitch, pan);

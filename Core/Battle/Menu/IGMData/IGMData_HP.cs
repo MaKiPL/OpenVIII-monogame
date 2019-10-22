@@ -32,6 +32,7 @@ namespace OpenVIII
 
             #endregion Destructors
 
+
             #region Enums
 
             private enum DepthID : byte

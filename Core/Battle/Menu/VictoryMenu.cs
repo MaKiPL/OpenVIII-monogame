@@ -34,6 +34,8 @@ namespace OpenVIII
 
             private IReadOnlyDictionary<Mode, Func<bool>> InputFunctions;
 
+            public static VictoryMenu Create() => Create<VictoryMenu>();
+
             #endregion Fields
 
             #region Enums
@@ -130,7 +132,6 @@ namespace OpenVIII
                 Size = new Vector2(881, 606);
                 base.Init();
                 Menu_Base[] tmp = new Menu_Base[3];
-
 
                 List<Task> tasks = new List<Task>
                 {

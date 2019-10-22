@@ -11,6 +11,22 @@ namespace OpenVIII
     {
         #region Fields
 
+        public static Slide<float> BlinkSlider = new Slide<float>(_fadedout, _fadedin, _blinkinspeed, MathHelper.Lerp) { ReverseMS = _blinkoutspeed };
+
+        public static EventHandler FadedInHandler;
+
+        public static EventHandler FadedOutHandler;
+
+        public static Slide<float> FadeSlider = new Slide<float>(_fadedout, _fadedin, _fadeinspeed, MathHelper.Lerp) { ReverseMS = _fadeoutspeed };
+
+        public ConcurrentDictionary<Enum, Menu_Base> Data;
+
+        public EventHandler<Enum> ModeChangeHandler;
+
+        protected Enum _mode;
+
+        protected bool skipdata;
+
         /// <summary>
         /// <para>Time to fade out in milliseconds</para>
         /// <para>Larger is slower</para>
@@ -60,130 +76,13 @@ namespace OpenVIII
 
         #region Properties
 
-        /// <summary>
-        /// if canceled don't init menu.
-        /// </summary>
-        private bool cancel => Memory.Token.IsCancellationRequested;
-
-        #endregion Properties
-
-        #region Methods
-
-        private static void UpdateFade(object sender = null)
-        {
-            if (!BlinkSlider.Done)
-            {
-                Blink_Amount = BlinkSlider.Update();
-
-                if (BlinkSlider.Done)
-                {
-                    BlinkSlider.Reverse();
-                    BlinkSlider.Restart();
-                }
-            }
-            if (!FadeSlider.Done)
-            {
-                Fade = FadeSlider.Update();
-                if (FadeSlider.Reversed)
-                {
-                    if (FadeSlider.Done)
-                    {
-                        FadedOutHandler?.Invoke(sender, null);
-                        FadeSlider.ReverseRestart();
-                    }
-                }
-                else
-                {
-                    Fade = FadeSlider.Update();
-                    if (FadeSlider.Done)
-                    {
-                        FadedInHandler?.Invoke(sender, null);
-                    }
-                }
-            }
-        }
-
-        private void Backup()
-        {
-            //backup memory
-            if (_backup)
-                Memory.PrevState = Memory.State.Clone();
-            _backup = false;
-        }
-
-        private void InitConstructor()
-        {
-            //WaitForInit();
-            if (!cancel)
-            {
-                Data = new ConcurrentDictionary<Enum, Menu_Base>();
-                Init();
-                skipdata = true;
-                Refresh();
-                skipdata = false;
-            }
-        }
-
-        #endregion Methods
-
-        protected Enum _mode;
-        protected bool skipdata;
-
-        /// <summary>
-        /// Viewport dimensions
-        /// </summary>
-        protected Vector2 vp => new Vector2(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height);
-
-        protected void GenerateFocus(Vector2? inputsize = null, Box_Options options = Box_Options.Default)
-        {
-            Vector2 size = inputsize ?? Size;
-            Vector2 Zoom = Memory.Scale(size.X, size.Y, Memory.ScaleMode.FitBoth);
-            size /= 2;
-            Vector2 t = new Vector2(vp.X / 2, vp.Y / 2);
-            if ((options & Box_Options.Top) != 0)
-            {
-                t.Y = 0;
-                size.Y = 0;
-            }
-            else if ((options & Box_Options.Buttom) != 0)
-            {
-                t.Y = vp.Y - (size.Y * 2 * Zoom.Y);
-                size.Y = 0;
-            }
-            Focus = Matrix.CreateTranslation(-size.X, -size.Y, 0) *
-                Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) *
-                Matrix.CreateTranslation(t.X, t.Y, 0);
-        }
-
-        protected override void Init()
-        {
-        }
-
-        protected override void RefreshChild()
-        {
-            if (!skipdata)
-                foreach (KeyValuePair<Enum, Menu_Base> i in Data)
-                    i.Value.Refresh(Damageable);
-        }
-
-        public static Slide<float> BlinkSlider = new Slide<float>(_fadedout, _fadedin, _blinkinspeed, MathHelper.Lerp) { ReverseMS = _blinkoutspeed };
-        public static EventHandler FadedInHandler;
-        public static EventHandler FadedOutHandler;
-        public static Slide<float> FadeSlider = new Slide<float>(_fadedout, _fadedin, _fadeinspeed, MathHelper.Lerp) { ReverseMS = _fadeoutspeed };
-        public ConcurrentDictionary<Enum, Menu_Base> Data;
-
-        public EventHandler<Enum> ModeChangeHandler;
-
-        public Menu() => InitConstructor();
-
-        public Menu(Damageable damageable)
-        {
-            _damageable = damageable;
-            InitConstructor(); // because base() would always run first :(
-        }
-
         public static BattleMenus BattleMenus => _battlemenus;
 
+        //public Menu(Damageable damageable)
+        //{
+        //    _damageable = damageable;
+        //    InitConstructor(); // because base() would always run first :(
+        //}
         /// <summary>
         /// Blink works like Fade except it goes up to 1f then to 0f and back.
         /// </summary>
@@ -194,13 +93,14 @@ namespace OpenVIII
         /// </summary>
         public static float Fade { get; private set; } = _fadedin;
 
-        public static bool FadingOut => FadeSlider.Reversed; //_fadeout;
+        public static bool FadingOut => FadeSlider.Reversed;
 
         /// <summary>
         /// Focus scales and centers the menu.
         /// </summary>
         public static Matrix Focus { get; protected set; }
 
+        //_fadeout;
         /// <summary>
         /// In Game Menu
         /// </summary>
@@ -243,19 +143,19 @@ namespace OpenVIII
         /// </summary>
         public Vector2 Size { get => _size; protected set => _size = value; }
 
-        public struct BoxReturn
-        {
-            public Rectangle HotSpot;
-            public Point Cursor;
-            public Rectangle Font;
+        /// <summary>
+        /// Viewport dimensions
+        /// </summary>
+        protected Vector2 vp => new Vector2(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height);
 
-            public BoxReturn(Rectangle hotSpot, Point cursor, Rectangle font)
-            {
-                HotSpot = hotSpot;
-                Cursor = cursor;
-                Font = font;
-            }
-        }
+        /// <summary>
+        /// if canceled don't init menu.
+        /// </summary>
+        private bool cancel => Memory.Token.IsCancellationRequested;
+
+        #endregion Properties
+
+        #region Methods
 
         public static BoxReturn DrawBox(Rectangle dst, FF8String buffer = null, Icons.ID? title = null, Vector2? textScale = null, Vector2? boxScale = null, Box_Options options = Box_Options.Default)
         {
@@ -368,20 +268,31 @@ namespace OpenVIII
             lock (_igm_lock)
             {
                 if (_igm_lobby == null)
-                    _igm_lobby = new IGM_Lobby();
+                    _igm_lobby = IGM_Lobby.Create();
                 if (_igm == null)
-                    _igm = new IGM();
+                    _igm = IGM.Create();
                 if (_igm_junction == null)
-                    _igm_junction = new IGM_Junction();
+                    _igm_junction = IGM_Junction.Create();
                 if (_igm_items == null)
-                    _igm_items = new IGM_Items();
+                    _igm_items = IGM_Items.Create();
                 if (_battlemenus == null)
-                    _battlemenus = new BattleMenus();
+                    _battlemenus = BattleMenus.Create();
                 Fade = 0;
             }
         }
 
         public static void UpdateOnce() => UpdateFade(null);
+
+        //public Menu() => InitConstructor();
+        static public T Create<T>(Damageable damageable = null) where T : Menu, new()
+        {
+            T r = new T
+            {
+                Damageable = damageable,
+            };
+            r.InitConstructor();
+            return r;
+        }
 
         public override void Draw()
         {
@@ -469,5 +380,120 @@ namespace OpenVIII
                 return Inputs() || ret;
             else return ret;
         }
+
+        protected void GenerateFocus(Vector2? inputsize = null, Box_Options options = Box_Options.Default)
+        {
+            Vector2 size = inputsize ?? Size;
+            Vector2 Zoom = Memory.Scale(size.X, size.Y, Memory.ScaleMode.FitBoth);
+            size /= 2;
+            Vector2 t = new Vector2(vp.X / 2, vp.Y / 2);
+            if ((options & Box_Options.Top) != 0)
+            {
+                t.Y = 0;
+                size.Y = 0;
+            }
+            else if ((options & Box_Options.Buttom) != 0)
+            {
+                t.Y = vp.Y - (size.Y * 2 * Zoom.Y);
+                size.Y = 0;
+            }
+            Focus = Matrix.CreateTranslation(-size.X, -size.Y, 0) *
+                Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) *
+                Matrix.CreateTranslation(t.X, t.Y, 0);
+        }
+
+        protected override void Init()
+        {
+        }
+
+        protected override void RefreshChild()
+        {
+            if (!skipdata)
+                foreach (KeyValuePair<Enum, Menu_Base> i in Data)
+                    i.Value.Refresh(Damageable);
+        }
+
+        private static void UpdateFade(object sender = null)
+        {
+            if (!BlinkSlider.Done)
+            {
+                Blink_Amount = BlinkSlider.Update();
+
+                if (BlinkSlider.Done)
+                {
+                    BlinkSlider.Reverse();
+                    BlinkSlider.Restart();
+                }
+            }
+            if (!FadeSlider.Done)
+            {
+                Fade = FadeSlider.Update();
+                if (FadeSlider.Reversed)
+                {
+                    if (FadeSlider.Done)
+                    {
+                        FadedOutHandler?.Invoke(sender, null);
+                        FadeSlider.ReverseRestart();
+                    }
+                }
+                else
+                {
+                    Fade = FadeSlider.Update();
+                    if (FadeSlider.Done)
+                    {
+                        FadedInHandler?.Invoke(sender, null);
+                    }
+                }
+            }
+        }
+
+        private void Backup()
+        {
+            //backup memory
+            if (_backup)
+                Memory.PrevState = Memory.State.Clone();
+            _backup = false;
+        }
+
+        private void InitConstructor()
+        {
+            //WaitForInit();
+            if (!cancel)
+            {
+                Data = new ConcurrentDictionary<Enum, Menu_Base>();
+                Init();
+                skipdata = true;
+                Refresh();
+                skipdata = false;
+            }
+        }
+
+        #endregion Methods
+
+        #region Structs
+
+        public struct BoxReturn
+        {
+            #region Fields
+
+            public Point Cursor;
+            public Rectangle Font;
+            public Rectangle HotSpot;
+
+            #endregion Fields
+
+            #region Constructors
+
+            public BoxReturn(Rectangle hotSpot, Point cursor, Rectangle font)
+            {
+                HotSpot = hotSpot;
+                Cursor = cursor;
+                Font = font;
+            }
+
+            #endregion Constructors
+        }
+
+        #endregion Structs
     }
 }

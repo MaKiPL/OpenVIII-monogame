@@ -221,8 +221,8 @@ namespace OpenVIII
         {
             if (Movies != null && Index < Movies.Count)
             {
-                FfccAudio = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
-                FfccVideo = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_VIDEO, Ffcc.FfccMode.STATE_MACH);
+                FfccAudio = FfAudio.Create(Movies[Index]);
+                FfccVideo = FfVideo.Create(Movies[Index]);
 
                 FPS = FfccVideo.FPS;
                 if (Math.Abs(FPS) < double.Epsilon)

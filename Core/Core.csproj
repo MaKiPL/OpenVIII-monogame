@@ -155,6 +155,8 @@
     <Compile Include="Battle\Menu\IGMData\Renzokeken.cs" />
     <Compile Include="Card_Game\Card_Game.cs" />
     <Compile Include="Card_Game\EXE_Offsets.cs" />
+    <Compile Include="FfAudio.cs" />
+    <Compile Include="FfVideo.cs" />
     <Compile Include="Image\TDW.cs" />
     <Compile Include="Image\Texture2DWrapper.cs" />
     <Compile Include="Image\Texture_Base.cs" />

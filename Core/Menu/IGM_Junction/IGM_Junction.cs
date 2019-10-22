@@ -6,7 +6,7 @@ namespace OpenVIII
 {
     public partial class IGM_Junction : Menu
     {
-        //private Mode _mode;
+        public static IGM_Junction Create() => Create<IGM_Junction>();
 
         #region Methods
 

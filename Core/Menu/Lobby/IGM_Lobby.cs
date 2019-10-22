@@ -7,6 +7,7 @@ namespace OpenVIII
 {
     public partial class IGM_Lobby : Menu
     {
+        public static IGM_Lobby Create() => Create<IGM_Lobby>();
         private Dictionary<Enum, Menu_Base> Data0;
 
         public enum SectionName

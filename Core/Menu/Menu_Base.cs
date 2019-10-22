@@ -10,9 +10,7 @@ namespace OpenVIII
     public abstract class Menu_Base
     {
         #region Fields
-
-        protected Damageable _damageable;
-
+        
         protected Rectangle _pos;
 
         #endregion Fields
@@ -44,7 +42,7 @@ namespace OpenVIII
         /// <summary>
         /// Characters/Enemies/GF
         /// </summary>
-        public Damageable Damageable => _damageable;
+        public Damageable Damageable { get; protected set; }
 
         /// <summary>
         /// If enabled the menu is Visible and all functionality works. Else everything is hidden and
@@ -101,7 +99,7 @@ namespace OpenVIII
         {
             if (damageable != null)
             {
-                _damageable = damageable;
+                Damageable = damageable;
 
                 if (Damageable.GetCharacterData(out Saves.CharacterData c))
                 {

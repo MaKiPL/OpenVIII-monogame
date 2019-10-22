@@ -9,11 +9,15 @@ namespace OpenVIII
     {
         #region Fields
 
-        protected Dictionary<Mode, Func<bool>> InputsDict;
         public EventHandler<KeyValuePair<byte, FF8String>> ChoiceChangeHandler;
+
         public EventHandler<KeyValuePair<Item_In_Menu, FF8String>> ItemChangeHandler;
+
         public EventHandler ReInitCompletedHandler;
+
         public EventHandler<Faces.ID> TargetChangeHandler;
+
+        protected Dictionary<Mode, Func<bool>> InputsDict;
 
         #endregion Fields
 
@@ -49,6 +53,20 @@ namespace OpenVIII
 
         #region Methods
 
+        public static IGM_Items Create() => Create<IGM_Items>();
+
+        public override bool Inputs() => InputsDict[(Mode)GetMode()]();
+
+        public override void Refresh() => Refresh(false);
+
+        public new void Refresh(bool skipmode)
+        {
+            if (!skipmode)
+                SetMode(Mode.SelectItem);
+            base.Refresh();
+            ReInitCompletedHandler?.Invoke(this, null);
+        }
+
         protected override void Init()
         {
             Size = new Vector2 { X = 840, Y = 630 };
@@ -75,18 +93,6 @@ namespace OpenVIII
                 {Mode.UseItemOnTarget, ((IGMData.Base)((IGMData.Group.Base)Data[SectionName.UseItemGroup]).ITEM[2,0]).Inputs}
                 };
             SetMode(Mode.SelectItem);
-        }
-
-        public override bool Inputs() => InputsDict[(Mode)GetMode()]();
-
-        public override void Refresh() => Refresh(false);
-
-        public new void Refresh(bool skipmode)
-        {
-            if (!skipmode)
-                SetMode(Mode.SelectItem);
-            base.Refresh();
-            ReInitCompletedHandler?.Invoke(this, null);
         }
 
         #endregion Methods

@@ -21,8 +21,20 @@
     /// Code bits mostly converted to c# from c++ It uses bits of code from FFmpeg examples, Aforge,
     /// FFmpeg.autogen, stackoverflow
     /// </remarks>
-    public class Ffcc : IDisposable
+    public abstract class Ffcc : IDisposable
     {
+        /// <summary>
+        /// Opens filename and init class.
+        /// </summary>
+        protected static T Create<T>(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH, int loopstart = -1) where T : Ffcc, new()
+        {
+            T r = new T();
+            r.Init(filename, mediatype, mode, loopstart);
+            if (mode == FfccMode.PROCESS_ALL)
+                r.Dispose(false);
+            return r;
+        }
+
         #region Fields
 
         /// <summary>
@@ -96,48 +108,6 @@
         private FfccVaribleGroup _decoder = new FfccVaribleGroup();
 
         #endregion Fields
-
-        #region Constructors
-
-        /// <summary>
-        /// Opens filename and init class.
-        /// </summary>
-        public Ffcc(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH, int loopstart = -1)
-        {
-            Init(filename, mediatype, mode, loopstart);
-            if (mode == FfccMode.PROCESS_ALL)
-                Dispose(false);
-        }
-
-        /// <summary>
-        /// Opens filename and init class.
-        /// </summary>
-        /// <remarks>
-        /// based on
-        /// https://stackoverflow.com/questions/9604633/reading-a-file-located-in-memory-with-libavformat
-        /// and http://www.ffmpeg.org/doxygen/trunk/doc_2examples_2avio_reading_8c-example.html and
-        /// https://stackoverflow.com/questions/24758386/intptr-to-callback-function probably could
-        /// be wrote better theres alot of hoops to jump threw
-        /// </remarks>
-        public unsafe Ffcc(Buffer_Data buffer_Data, byte[] headerData, string datafilename, int loopstart = -1)
-        {
-            fixed (byte* tmp = &headerData[0])
-            {
-                lock (Decoder)
-                {
-                    buffer_Data.SetHeader(tmp);
-                    DataFileName = datafilename;
-                    LoadFromRAM(&buffer_Data);
-                    Init(null, AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode.PROCESS_ALL, loopstart);
-                    ffmpeg.avformat_free_context(Decoder.Format);
-                    //ffmpeg.avio_context_free(&Decoder._format->pb); //CTD
-                    Decoder.Format = null;
-                }
-                Dispose(false);
-            }
-        }
-
-        #endregion Constructors
 
         #region Destructors
 
@@ -414,7 +384,7 @@
         /// <summary>
         /// Holder of varibles for Decoder
         /// </summary>
-        private FfccVaribleGroup Decoder { get => _decoder; set => _decoder = value; }
+        protected FfccVaribleGroup Decoder { get => _decoder; set => _decoder = value; }
 
         /// <summary>
         /// Based on timer and FPS determines what the current frame is.
@@ -959,7 +929,7 @@
         /// <summary>
         /// Opens filename and init class.
         /// </summary>
-        private void Init(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH, int loopstart = -1)
+        protected void Init(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH, int loopstart = -1)
         {
             ffmpeg.av_log_set_level(ffmpeg.AV_LOG_PANIC);
             LOOPSTART = loopstart;
@@ -1001,7 +971,7 @@
         /// <summary>
         /// Sets up AVFormatContext to be able from the memory buffer.
         /// </summary>
-        private unsafe void LoadFromRAM(Buffer_Data* bd)
+        protected unsafe void LoadFromRAM(Buffer_Data* bd)
         {
             _avio_ctx = null;
 
