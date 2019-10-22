@@ -145,7 +145,6 @@ namespace OpenVIII
             EntryGroup eg = this[(ID)ic];
             eg.Trim(Textures[pal]);
         }
-
         public Color MostSaturated(Enum ic, byte pal)
         {
             EntryGroup eg = this[(ID)ic];

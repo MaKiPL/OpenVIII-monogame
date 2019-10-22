@@ -23,24 +23,46 @@ namespace OpenVIII.IGMDataItem.Gradient
                 _pos = pos ?? Rectangle.Empty,
                 Restriction = pos ?? Rectangle.Empty,
             };
-            float dark = 0.067f;
-            float fade = 0.933f;
-            int total = r.Pos.Width;
-            Color lightline = new Color(118, 118, 118, 255);
-            Color darkline = new Color(58, 58, 58, 255);
-            Color[] cfade = new Color[total];
-            int i;
-            for (i = 0; i < cfade.Length - (dark * total); i++)
-                cfade[i] = Color.Lerp(Color.Black, lightline, i / (fade * total));
-
-            for (; i < cfade.Length; i++)
-                cfade[i] = darkline;
-            r.Data = new Texture2D(Memory.graphics.GraphicsDevice, cfade.Length, 1);
+            r.Data = ThreadUnsafeOperations(r.Width);
             r.Width = r.Data.Width;
-            r.Data.SetData(cfade);
             return r;
         }
 
+        private static Texture2D common;
+
+        public static Texture2D ThreadUnsafeOperations(int width)
+        {
+            lock (locker)
+            {
+                if (common == null)
+                {
+                    if (Memory.IsMainThread)
+                    {
+                        float dark = 0.067f;
+                        float fade = 0.933f;
+                        int total = width;
+                        Color lightline = new Color(118, 118, 118, 255);
+                        Color darkline = new Color(58, 58, 58, 255);
+                        Color[] cfade = new Color[total];
+                        int i;
+                        for (i = 0; i < cfade.Length - (dark * total); i++)
+                            cfade[i] = Color.Lerp(Color.Black, lightline, i / (fade * total));
+
+                        for (; i < cfade.Length; i++)
+                            cfade[i] = darkline;
+
+                        common = new Texture2D(Memory.graphics.GraphicsDevice, cfade.Length, 1, false, SurfaceFormat.Color);
+                        common.SetData(cfade);
+                    }
+                    else throw new Exception("Must be in main thread!");
+                }
+            }
+            return common;
+        }
+
+        private static object locker = new object();
+
+        //public override int Width { get => Data.Width; }
         public override void Refresh(Damageable damageable)
         {
             base.Refresh(damageable);

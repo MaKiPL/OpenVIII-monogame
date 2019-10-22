@@ -12,9 +12,12 @@ namespace OpenVIII
 
         private class IGMData_HP : IGMData.Base
         {
+            private const int ATBWidth = 150;
+
             #region Fields
 
             private static Texture2D dot;
+            private static object locker = new object();
             private bool EventAdded = false;
 
             #endregion Fields
@@ -55,17 +58,16 @@ namespace OpenVIII
                 base.Init();
                 EventAdded = true;
                 AddModeChangeEvent(ref Damageable.BattleModeChangeEventHandler);
-                GenerateDot();
+                ThreadUnsafeOperations();
                 byte pos = GetCharPos();
                 FF8String name = null;
                 if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                     name = c.Name;
+                Rectangle atbbarpos = new Rectangle(SIZE[pos].X + 230, SIZE[pos].Y + 12, ATBWidth, 15);
 
-                Rectangle atbbarpos = new Rectangle(SIZE[pos].X + 230, SIZE[pos].Y + 12, 150, 15);
                 // TODO: make a font render that can draw right to left from a point. For Right aligning the names.
                 ITEM[pos, (byte)DepthID.Name] = new IGMDataItem.Text { Data = name, Pos = new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0) };
                 ITEM[pos, (byte)DepthID.HP] = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[pos].X + 128, SIZE[pos].Y, 0, 0), Spaces = 4, NumType = Icons.NumType.Num_8x16_1 };
-
                 ITEM[pos, (byte)DepthID.ATBBorder] = new IGMDataItem.Icon { Data = Icons.ID.Size_08x64_Bar, Pos = atbbarpos, Palette = 0 };
                 ITEM[pos, (byte)DepthID.ATBCharged] = new IGMDataItem.Texture { Data = dot, Pos = atbbarpos, Color = Color.LightYellow * .8f, Faded_Color = new Color(125, 125, 0, 255) * .8f };
                 ITEM[pos, (byte)DepthID.ATBCharged].Hide();
@@ -75,22 +77,25 @@ namespace OpenVIII
                 ((IGMDataItem.Gradient.ATB)ITEM[pos, (byte)DepthID.ATBCharging]).Refresh(Damageable);
             }
 
-            private static void GenerateDot()
+            public static Texture2D ThreadUnsafeOperations()
             {
-                if (dot == null)
+                lock (locker)
                 {
-                    if (Memory.IsMainThread)
+                    if (dot == null)
                     {
-                        dot = new Texture2D(Memory.graphics.GraphicsDevice, 4, 4);
-                        lock (dot)
+                        if (Memory.IsMainThread)
                         {
-                            Color[] tmp = new Color[dot.Height * dot.Width];
+                            Texture2D localdot = new Texture2D(Memory.graphics.GraphicsDevice, 4, 4);
+                            Color[] tmp = new Color[localdot.Height * localdot.Width];
                             for (int i = 0; i < tmp.Length; i++)
                                 tmp[i] = Color.White;
-                            dot.SetData(tmp);
+                            localdot.SetData(tmp);
+                            dot = localdot;
+                            IGMDataItem.Gradient.ATB.ThreadUnsafeOperations(ATBWidth);
                         }
+                        else throw new Exception("Must be in main thread!");
                     }
-                    else throw new Exception("Must be in main thread!");
+                    return dot;
                 }
             }
 

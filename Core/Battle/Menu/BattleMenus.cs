@@ -31,7 +31,7 @@ namespace OpenVIII
 
         private bool BoolBattleMenu() => menus?.Any(m => m.GetType().Equals(typeof(BattleMenu)) && m.Enabled) ?? false;
 
-        private bool BoolRenzokeken() => GetBattleMenus()?.Any(m => m.Enabled && m.Renzokeken.Enabled) ?? false;
+        private bool BoolRenzokeken() => GetBattleMenus()?.Any(m => m.Enabled && (m.Renzokeken?.Enabled?? false)) ?? false;
 
         private void DrawBattleAction()
         {

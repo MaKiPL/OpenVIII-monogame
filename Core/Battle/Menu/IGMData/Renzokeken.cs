@@ -7,6 +7,7 @@ namespace OpenVIII.IGMData
 {
     public class Renzokeken : IGMData.Base
     {
+        private const int Renzokeken_Gradient_Width = 192;
         #region Fields
 
         private byte _count = 0;
@@ -15,33 +16,30 @@ namespace OpenVIII.IGMData
         private Slide<Color> HitSlider = new Slide<Color>(Color.White, Color.TransparentBlack, 300, Color.Lerp);
         private Color newattack;
 
-        private Color rc;
-        private Color rcdim;
+        private static Color Renzokenken_Seperator_Color;
+        private static Color Renzokenken_Seperator_Color_Faded;
 
         #endregion Fields
 
         #region Methods
-
+        static Texture2D pixel;
         protected override void Init()
         {
             base.Init();
-            Texture2D pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
-            pixel.SetData(new Color[] { Color.White });
+            ThreadUnsafeOperations();
+            
 
             Memory.Icons[Icons.ID.Renzokeken_Seperator][0].Offset = Vector2.Zero;
-            Memory.Icons.Trim(Icons.ID.Renzokeken_Seperator, 6);
+
             EntryGroup split = Memory.Icons[Icons.ID.Renzokeken_Seperator];
             EntryGroup e = Memory.Icons[Icons.ID.Renzokeken_Seperator];
-
             Rectangle r = CONTAINER.Pos; //new Rectangle(40, 524, 880, 84);
             r.Inflate(-16, -20);
             r.X += r.X % 4;
             r.Y += r.Y % 4;
             r.Width += r.Width % 4;
             r.Height += r.Height % 4;
-            rc = Memory.Icons.MostSaturated(Icons.ID.Renzokeken_Seperator, 6);
-            rcdim = Memory.Icons.MostSaturated(Icons.ID.Renzokeken_Seperator, 2);
-            ITEM[0, 0] = new IGMDataItem.Texture { Data = pixel, Pos = r, Color = rcdim };
+            ITEM[0, 0] = new IGMDataItem.Texture { Data = pixel, Pos = r, Color = Renzokenken_Seperator_Color_Faded };
             r.Inflate(-4, -4);
             ITEM[1, 0] = new IGMDataItem.Texture { Data = pixel, Pos = r, Color = Color.Black };
             float scale = (float)r.Height / e.Height;
@@ -55,7 +53,7 @@ namespace OpenVIII.IGMData
             Rectangle tr = new Rectangle(r.X + 208 + (w / 2), r.Y + 4, 0, r.Height - 4);
 
             Memory.Icons[Icons.ID.Trigger_][0].Offset = Vector2.Zero;
-            Memory.Icons.Trim(Icons.ID.Trigger_, 2);
+
             e = Memory.Icons[Icons.ID.Trigger_];
             scale = ((float)r.Height - 8) / e.Height;
             w = (int)(e.Width * scale);
@@ -68,14 +66,13 @@ namespace OpenVIII.IGMData
             newattack = new Color(104, 80, 255);
             int delay = 500;
             const int Time = 2000;
-            Rectangle pos = new Rectangle(r.X, r.Y + 4, 0, r.Height - 8);
+            Rectangle pos = new Rectangle(r.X, r.Y + 4, Renzokeken_Gradient_Width, r.Height - 8);
             r.Inflate(-4, -4);
             for (int x = 0; x <= _hits && x <= 7; x++)
-                ITEM[2 + x, 0] = IGMDataItem.Gradient.Renzokeken.Create(pos, newattack, rc, 1f, hotspot, r, time: Time, delay * (x));
+                ITEM[2 + x, 0] = IGMDataItem.Gradient.Renzokeken.Create(pos, newattack, Renzokenken_Seperator_Color, 1f, hotspot, r, time: Time, delay * (x));
             float totalx = 0;
             for (byte i = 0; i <= 7; i++)
             {
-                Memory.Icons.Trim(Icons.ID._0_Hit_ + i, 2);
                 e = Memory.Icons[Icons.ID._0_Hit_ + i];
                 totalx += e[0].Offset.X;
             }
@@ -89,15 +86,39 @@ namespace OpenVIII.IGMData
             w = (int)(e.Width * scale);
             tr.X = xbak + trigwidtharea / 2 - w / 2;
             ITEM[Count - 5, 0] = new IGMDataItem.Icon { Data = Icons.ID._0_Hit_, Pos = tr, Scale = new Vector2(scale) };
-            Memory.Icons.Trim(Icons.ID.Perfect__, 2);
+
             e = Memory.Icons[Icons.ID.Perfect__];
             scale = ((float)r.Height) / e.Height;
             w = (int)(e.Width * scale);
             tr.X = xbak + trigwidtharea / 2 - w / 2;
             ITEM[Count - 6, 0] = new IGMDataItem.Icon { Data = Icons.ID.Perfect__, Pos = tr, Palette = 8, Scale = new Vector2(scale) };
-            
+
             Reset();
             Cursor_Status = Cursor_Status.Enabled | Cursor_Status.Static | Cursor_Status.Hidden;
+        }
+
+        private static object locker = new object();
+
+        public static void ThreadUnsafeOperations()
+        {
+            lock (locker)
+            {
+                //trim checks to see if it's ran once before.
+                //so no need to check if it's already ran.
+                //will throw exception if not in main thread.
+                for (byte i = 0; i <= 7; i++)
+                    Memory.Icons.Trim(Icons.ID._0_Hit_ + i, 2);
+                Memory.Icons.Trim(Icons.ID.Trigger_, 2);
+                Memory.Icons.Trim(Icons.ID.Perfect__, 2);
+                Memory.Icons.Trim(Icons.ID.Renzokeken_Seperator, 6);
+                if (pixel == null)
+                {
+                    pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
+                    pixel.SetData(new Color[] { Color.White });
+                }
+                Renzokenken_Seperator_Color = Memory.Icons.MostSaturated(Icons.ID.Renzokeken_Seperator, 6);
+                Renzokenken_Seperator_Color_Faded = Memory.Icons.MostSaturated(Icons.ID.Renzokeken_Seperator, 2);
+            }
         }
 
         protected override void RefreshChild()
@@ -204,7 +225,7 @@ namespace OpenVIII.IGMData
             {
                 ((IGMDataItem.Icon)ITEM[Count - 3, 0]).Palette = 6;
                 ((IGMDataItem.Icon)ITEM[Count - 2, 0]).Palette = 6;
-                ((IGMDataItem.Texture)ITEM[0, 0]).Color = rc;
+                ((IGMDataItem.Texture)ITEM[0, 0]).Color = Renzokenken_Seperator_Color;
                 ITEM[Count - 1, 0].Show();
                 ITEM[Count - 5, 0].Hide();
                 ITEM[Count - 6, 0].Hide();
@@ -213,7 +234,7 @@ namespace OpenVIII.IGMData
             {
                 ((IGMDataItem.Icon)ITEM[Count - 3, 0]).Palette = 2;
                 ((IGMDataItem.Icon)ITEM[Count - 2, 0]).Palette = 2;
-                ((IGMDataItem.Texture)ITEM[0, 0]).Color = rcdim;
+                ((IGMDataItem.Texture)ITEM[0, 0]).Color = Renzokenken_Seperator_Color_Faded;
                 if ((hotcnt >= _hits) || !done)// && ITEM[Count - 1, 0].Enabled)
                 {
                     if (_count >= _hits)
