@@ -54,10 +54,10 @@ namespace OpenVIII
 
             List<Task> tasks = new List<Task>
             {
-                Task.Run(() => Data.TryAdd(SectionName.HP, IGMData_HP.Create(new Rectangle((int)(Size.X - 389), 507, 389, 126), Damageable))),
                 Task.Run(() => Data.TryAdd(SectionName.Commands, IGMData.Commands.Create(new Rectangle(50, (int)(Size.Y - 204), 210, 192), Damageable, true))),
             };
-            //Renzokenken does some code that cannot be threaded on init.
+            //Some code that cannot be threaded on init.
+            Data.TryAdd(SectionName.HP, IGMData_HP.Create(new Rectangle((int)(Size.X - 389), 507, 389, 126), Damageable));
             Data.TryAdd(SectionName.Renzokeken, IGMData.Renzokeken.Create(new Rectangle(0, 500, (int)Size.X, 124)));
             Task.WaitAll(tasks.ToArray());
 

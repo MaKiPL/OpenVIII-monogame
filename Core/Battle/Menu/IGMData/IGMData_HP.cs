@@ -55,12 +55,7 @@ namespace OpenVIII
                 base.Init();
                 EventAdded = true;
                 AddModeChangeEvent(ref Damageable.BattleModeChangeEventHandler);
-                if (dot == null)
-                {
-                    dot = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
-                    lock (dot)
-                        dot.SetData(new Color[] { Color.White });
-                }
+                GenerateDot();
                 byte pos = GetCharPos();
                 FF8String name = null;
                 if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
@@ -78,6 +73,25 @@ namespace OpenVIII
                 ((IGMDataItem.Gradient.ATB)ITEM[pos, (byte)DepthID.ATBCharging]).Color = Color.Orange * .8f;
                 ((IGMDataItem.Gradient.ATB)ITEM[pos, (byte)DepthID.ATBCharging]).Faded_Color = Color.Orange * .8f;
                 ((IGMDataItem.Gradient.ATB)ITEM[pos, (byte)DepthID.ATBCharging]).Refresh(Damageable);
+            }
+
+            private static void GenerateDot()
+            {
+                if (dot == null)
+                {
+                    if (Memory.IsMainThread)
+                    {
+                        dot = new Texture2D(Memory.graphics.GraphicsDevice, 4, 4);
+                        lock (dot)
+                        {
+                            Color[] tmp = new Color[dot.Height * dot.Width];
+                            for (int i = 0; i < tmp.Length; i++)
+                                tmp[i] = Color.White;
+                            dot.SetData(tmp);
+                        }
+                    }
+                    else throw new Exception("Must be in main thread!");
+                }
             }
 
             protected override void ModeChangeEvent(object sender, Enum e)

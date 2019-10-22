@@ -32,7 +32,7 @@ namespace OpenVIII
 
             private ConcurrentDictionary<byte, byte> _items;
 
-            private Dictionary<Mode, Func<bool>> InputFunctions;
+            private IReadOnlyDictionary<Mode, Func<bool>> InputFunctions;
 
             #endregion Fields
 
@@ -129,6 +129,9 @@ namespace OpenVIII
             {
                 Size = new Vector2(881, 606);
                 base.Init();
+                Menu_Base[] tmp = new Menu_Base[3];
+
+
                 List<Task> tasks = new List<Task>
                 {
                     Task.Run(() => Data.TryAdd(Mode.All, IGMData.Group.Base.Create(
@@ -139,11 +142,14 @@ namespace OpenVIII
                             (Strings.Name.To_confirm),
                             Pos = new Rectangle(0,(int)Size.Y-78,(int)Size.X,78),Options= Box_Options.Center | Box_Options.Middle }))),
 
-                    Task.Run(() => Data.TryAdd(Mode.Exp,IGMData_PlayerEXPGroup.Create (IGMData_PlayerEXP.Create(0),IGMData_PlayerEXP.Create(1),IGMData_PlayerEXP.Create(2)))),
+                    Task.Run(() => tmp[0] = IGMData_PlayerEXP.Create(0)),
+                    Task.Run(() => tmp[1] = IGMData_PlayerEXP.Create(1)),
+                    Task.Run(() => tmp[2] = IGMData_PlayerEXP.Create(2)),
                     Task.Run(() => Data.TryAdd(Mode.Items,new IGMData_PartyItems(new IGMDataItem.Empty(new Rectangle(Point.Zero,Size.ToPoint()))))),
                     Task.Run(() => Data.TryAdd(Mode.AP,new IGMData_PartyAP(new IGMDataItem.Empty(new Rectangle(Point.Zero,Size.ToPoint()))))),
                 };
                 Task.WaitAll(tasks.ToArray());
+                Data.TryAdd(Mode.Exp, IGMData_PlayerEXPGroup.Create(tmp));
                 Data[Mode.Exp].CONTAINER.Pos = new Rectangle(Point.Zero, Size.ToPoint());
                 SetMode(Mode.Exp);
                 InputFunctions = new Dictionary<Mode, Func<bool>>
