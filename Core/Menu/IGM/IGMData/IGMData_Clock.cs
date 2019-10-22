@@ -4,17 +4,22 @@ namespace OpenVIII
 {
     public partial class IGM
     {
+
         #region Classes
 
         private class IGMData_Clock : IGMData.Base
         {
+            #region Fields
+
             private const int MaxGil = 99999999;
             private const int MaxHourOrMins = 99;
             private const int MaxSeedRank = 99999;
 
-            public static IGMData_Clock Create() => Create<IGMData_Clock>(1, 8, new IGMDataItem.Box { Pos = new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 } });
+            #endregion Fields
 
             #region Methods
+
+            public static IGMData_Clock Create() => Create<IGMData_Clock>(1, 8, new IGMDataItem.Box { Pos = new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 } });
 
             public override void Refresh()
             {
@@ -82,13 +87,12 @@ namespace OpenVIII
                 r.Offset(25, 81);
                 ITEM[0, 6] = new IGMDataItem.Integer { Pos = r, Palette = 2, Faded_Palette = 0, Padding = 1, Spaces = 8 };
             }
-            public override void Draw()
-            {
-                base.Draw();
-            }
+
             #endregion Methods
+
         }
 
         #endregion Classes
+
     }
 }
