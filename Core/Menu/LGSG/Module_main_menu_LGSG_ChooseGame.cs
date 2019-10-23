@@ -41,6 +41,7 @@ namespace OpenVIII
 
         public static Vector2 LastPageTarget { get; set; }
         public static Vector2 PageTarget { get; set; }
+
         public static float speed
         {
             get; set;

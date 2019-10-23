@@ -1,78 +1,21 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
+using System.Linq;
 
 namespace OpenVIII
 {
     namespace IGMData
     {
-        public class LoadBarBox : IGMData.Base
-        {
-            #region Methods
-
-            protected override void Init()
-            {
-                base.Init();
-                int height = 8;
-                int y = Height / 2 - height / 2;
-                ITEM[0, 0] = new IGMDataItem.Icon
-                {
-                    Data = Icons.ID.Bar_BG,
-                    Pos = new Rectangle((int)(0.05f * Width), y, (int)(Width * .9f), height)
-                };
-                ITEM[1, 0] = new IGMDataItem.Icon { Data = Icons.ID.Bar_Fill, Pos = ITEM[0, 0].Pos };
-            }
-
-            public LoadBarBox Create(Rectangle pos) => Create<LoadBarBox>(2, 1, container: new IGMDataItem.Box { Pos = pos, Title = Icons.ID.INFO });
-
-            #endregion Methods
-        }
-
-        public class ThreePieceHeader : IGMData.Base
-        {
-            #region Properties
-
-            protected IGMDataItem.Box HELP => (IGMDataItem.Box)ITEM[2, 0];
-
-            protected IGMDataItem.Box TOPLeft => (IGMDataItem.Box)ITEM[0, 0];
-
-            protected IGMDataItem.Box TOPRight => (IGMDataItem.Box)ITEM[1, 0];
-
-            #endregion Properties
-
-            #region Methods
-
-            protected override void Init()
-            {
-                base.Init();
-                int space = 4;
-                ITEM[0, 0] = new IGMDataItem.Box { Pos = new Rectangle(0, 0, (int)(Width * 0.82f), (Height - space) / 2) };
-                ITEM[1, 0] = new IGMDataItem.Box { Pos = new Rectangle(ITEM[0, 0].Width + space, 0, (int)(Width * 0.18f - space), ITEM[0, 0].Height) };
-                ITEM[2, 0] = new IGMDataItem.Box { Pos = new Rectangle((int)(Width * 4f), ITEM[0, 0].Height + space, (int)(Width * 0.94f), ITEM[0, 0].Height), Title = Icons.ID.HELP };
-            }
-
-            public static ThreePieceHeader Create(FF8String topleft, FF8String topright, FF8String help, Rectangle pos)
-            {
-                ThreePieceHeader r = Create<ThreePieceHeader>(3, 1, new IGMDataItem.Empty(pos));
-                r.TOPLeft.Data = topleft;
-                r.TOPRight.Data = topright;
-                r.HELP.Data = help;
-                return r;
-            }
-
-            public void Refresh(FF8String topleft, FF8String topright, FF8String help)
-            {
-                TOPLeft.Data = topleft;
-                TOPRight.Data = topright;
-                HELP.Data = help;
-                Refresh();
-            }
-
-            #endregion Methods
-        }
     }
 
     public class IGM_LGSG : Menu
     {
+        #region Fields
+
+        private Vector2 AltSize;
+
+        #endregion Fields
+
         #region Enums
 
         [Flags]
@@ -118,19 +61,44 @@ namespace OpenVIII
 
         #region Methods
 
+        public static IGM_LGSG Create() => Create<IGM_LGSG>();
+
+        public override void Draw() => base.Draw();
+
+        public override void DrawData() => Data.Where(m => m.Value != null && m.Value.Enabled && !m.Key.HasFlag(Mode.Header)).ForEach(m => m.Value.Draw());
+
+        public override void Refresh() => base.Refresh();
+
+        public override void StartDraw()
+        {
+            Matrix backupfocus = Focus;
+            GenerateFocus(AltSize, Box_Options.Top);
+            base.StartDraw();
+            Data.Where(m => m.Value != null && m.Value.Enabled && m.Key.HasFlag(Mode.Header)).ForEach(m => m.Value.Draw());
+            base.EndDraw();
+            Focus = backupfocus;
+            base.StartDraw();
+        }
+
+        public override bool Update() => base.Update();
+
         protected override void Init()
         {
+            Size = new Vector2 { X = 843, Y = 630 };
+            AltSize = new Vector2(1280, 720);
+            base.Init();
             Data[Mode.Slot | Mode.Choose] = null;
             Data[Mode.Slot | Mode.Checking] = null;
             Data[Mode.Game | Mode.Choose] = null;
             Data[Mode.Game | Mode.Checking] = null;
-            Data[Mode.Header] = null;
+            Data[Mode.Header] = IGMData.ThreePieceHeader.Create(Strings.Name.GameFolder, Strings.Name.Load, Strings.Name.LoadFF8, new Rectangle(X, Y, (int)AltSize.X, 140));
             Data[Mode.Save | Mode.Slot | Mode.Choose] = null;
             Data[Mode.Save | Mode.Slot | Mode.Checking] = null;
             Data[Mode.Save | Mode.Game | Mode.Choose] = null;
             Data[Mode.Save | Mode.Game | Mode.Checking] = null;
-            Data[Mode.Save | Mode.Header] = null;
-            base.Init();
+            Data[Mode.Save | Mode.Header] = IGMData.ThreePieceHeader.Create(Strings.Name.GameFolder, Strings.Name.Save, Strings.Name.SaveFF8, Data[Mode.Header].Pos);
+            Data[Mode.Header].Show();
+            Data[Mode.Save | Mode.Header].Hide();
         }
 
         #endregion Methods

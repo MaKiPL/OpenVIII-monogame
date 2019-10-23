@@ -8,15 +8,15 @@ namespace OpenVIII
     {
         #region Fields
 
-        private static Vector2 PageSize;
-        private static Vector2 CurrentPageLoc;
         private static Vector2 CurrentLastPageLoc;
-        private static Vector2 lastscale;
-        private static Vector2 scale;
-        private static Point ml;
-        private static Tuple<FF8String, FF8String, FF8String> LGSGHEADER;
-        private static Vector2 IGM_Size;
+        private static Vector2 CurrentPageLoc;
         private static Matrix IGM_focus;
+        private static Vector2 IGM_Size;
+        private static Vector2 lastscale;
+        private static Tuple<FF8String, FF8String, FF8String> LGSGHEADER;
+        private static Point ml;
+        private static Vector2 PageSize;
+        private static Vector2 scale;
 
         #endregion Fields
 
@@ -46,8 +46,8 @@ namespace OpenVIII
         #region Properties
 
         public static float Blink_Amount => Menu.Blink_Amount;
-        private static double PercentLoaded { get; set; } = 0f;
         public static Vector2 TextScale { get; } = new Vector2(2.545455f, 3.0375f);
+        private static double PercentLoaded { get; set; } = 0f;
 
         #endregion Properties
 
@@ -98,63 +98,6 @@ namespace OpenVIII
             Memory.SpriteBatchStartAlpha();
             DrawLGSGHeader();
             Memory.SpriteBatchEnd();
-        }
-
-        private static void UpdateLGSG()
-        {
-            Rectangle dst = new Rectangle
-            {
-                X = 220,
-                Y = 42,
-                Width = 840,
-                Height = 477,
-            };
-            IGM_Size = new Vector2 { X = 843, Y = 630 };
-            Vector2 Zoom = Memory.Scale(IGM_Size.X, IGM_Size.Y, Memory.ScaleMode.FitBoth);
-
-            IGM_focus = Matrix.CreateTranslation(-dst.X + (IGM_Size.X / -2), -dst.Y + (IGM_Size.Y / -2), 0) *
-                Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) *
-                Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
-            Memory.IsMouseVisible = true;
-            ml = InputMouse.Location.Transform(IGM_focus);
-            switch (State)
-            {
-                case MainMenuStates.LoadGameChooseSlot:
-                    UpdateLGChooseSlot();
-                    break;
-
-                case MainMenuStates.LoadGameCheckingSlot:
-                    UpdateLGCheckSlot();
-                    Memory.IsMouseVisible = false;
-                    break;
-
-                case MainMenuStates.LoadGameChooseGame:
-                    UpdateLGChooseGame();
-                    break;
-
-                case MainMenuStates.LoadGameLoading:
-                    UpdateLG_Loading();
-                    Memory.IsMouseVisible = false;
-                    break;
-
-                case MainMenuStates.SaveGameChooseSlot:
-                    UpdateSGChooseSlot();
-                    break;
-
-                case MainMenuStates.SaveGameCheckingSlot:
-                    UpdateSGCheckSlot();
-                    Memory.IsMouseVisible = false;
-                    break;
-
-                case MainMenuStates.SaveGameChooseGame:
-                    UpdateSGChooseGame();
-                    break;
-
-                case MainMenuStates.SaveGameSaving:
-                    UpdateSG_Saving();
-                    Memory.IsMouseVisible = false;
-                    break;
-            }
         }
 
         private static void DrawLGSGHeader(FF8String info, FF8String name, FF8String help) => LGSGHEADER = new Tuple<FF8String, FF8String, FF8String>(info, name, help);
@@ -241,6 +184,63 @@ namespace OpenVIII
 
             SlotLocs = new Menu.BoxReturn[2];
             BlockLocs = new Menu.BoxReturn[3];
+        }
+
+        private static void UpdateLGSG()
+        {
+            Rectangle dst = new Rectangle
+            {
+                X = 220,
+                Y = 42,
+                Width = 840,
+                Height = 477,
+            };
+            IGM_Size = new Vector2 { X = 843, Y = 630 };
+            Vector2 Zoom = Memory.Scale(IGM_Size.X, IGM_Size.Y, Memory.ScaleMode.FitBoth);
+
+            IGM_focus = Matrix.CreateTranslation(-dst.X + (IGM_Size.X / -2), -dst.Y + (IGM_Size.Y / -2), 0) *
+                Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) *
+                Matrix.CreateTranslation(vp.X / 2, vp.Y / 2, 0);
+            Memory.IsMouseVisible = true;
+            ml = InputMouse.Location.Transform(IGM_focus);
+            switch (State)
+            {
+                case MainMenuStates.LoadGameChooseSlot:
+                    UpdateLGChooseSlot();
+                    break;
+
+                case MainMenuStates.LoadGameCheckingSlot:
+                    UpdateLGCheckSlot();
+                    Memory.IsMouseVisible = false;
+                    break;
+
+                case MainMenuStates.LoadGameChooseGame:
+                    UpdateLGChooseGame();
+                    break;
+
+                case MainMenuStates.LoadGameLoading:
+                    UpdateLG_Loading();
+                    Memory.IsMouseVisible = false;
+                    break;
+
+                case MainMenuStates.SaveGameChooseSlot:
+                    UpdateSGChooseSlot();
+                    break;
+
+                case MainMenuStates.SaveGameCheckingSlot:
+                    UpdateSGCheckSlot();
+                    Memory.IsMouseVisible = false;
+                    break;
+
+                case MainMenuStates.SaveGameChooseGame:
+                    UpdateSGChooseGame();
+                    break;
+
+                case MainMenuStates.SaveGameSaving:
+                    UpdateSG_Saving();
+                    Memory.IsMouseVisible = false;
+                    break;
+            }
         }
 
         #endregion Methods

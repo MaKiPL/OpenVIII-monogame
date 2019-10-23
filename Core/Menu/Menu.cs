@@ -71,6 +71,7 @@ namespace OpenVIII
         private static object _igm_lock = new object();
         private bool _backup = false;
         private Vector2 _size;
+        private static IGM_LGSG _igm_lgsg;
 
         #endregion Fields
 
@@ -120,6 +121,11 @@ namespace OpenVIII
         /// Lobby Menu
         /// </summary>
         public static IGM_Lobby IGM_Lobby => _igm_lobby;
+
+        /// <summary>
+        /// Lobby Menu
+        /// </summary>
+        public static IGM_LGSG IGM_LGSG => _igm_lgsg;
 
         /// <summary>
         /// Adjusted mouse location used to determine if mouse is highlighting a button.
@@ -277,6 +283,8 @@ namespace OpenVIII
                     _igm_items = IGM_Items.Create();
                 if (_battlemenus == null)
                     _battlemenus = BattleMenus.Create();
+                if (_igm_lgsg == null)
+                    _igm_lgsg = IGM_LGSG.Create();
                 Fade = 0;
             }
         }
@@ -304,7 +312,7 @@ namespace OpenVIII
         public virtual void DrawData()
         {
             if (!skipdata && Enabled)
-                foreach (Menu_Base i in Data.OrderBy(x => x.Key).Select(x => x.Value))
+                foreach (Menu_Base i in Data.OrderBy(x => x.Key).Select(x => x.Value).Where(x=>x!=null && x.Enabled))
                     i?.Draw();
         }
 
@@ -373,7 +381,7 @@ namespace OpenVIII
                 if (!skipdata)
                     foreach (KeyValuePair<Enum, Menu_Base> i in Data)
                     {
-                        ret = i.Value.Update() || ret;
+                        ret = (i.Value?.Update()??false) || ret;
                     }
             }
             if (!NoInputOnUpdate)

@@ -104,7 +104,8 @@ namespace OpenVIII
                 case MainMenuStates.SaveGameCheckingSlot:
                 case MainMenuStates.SaveGameChooseGame:
                 case MainMenuStates.SaveGameSaving:
-                    DrawLGSG();
+                    //DrawLGSG();
+                    Menu.IGM_LGSG.Draw();
                     break;
 
                 case MainMenuStates.IGM:
@@ -227,7 +228,8 @@ namespace OpenVIII
                 case MainMenuStates.SaveGameChooseGame:
                 case MainMenuStates.SaveGameSaving:
                     //Menu.UpdateFade();
-                    UpdateLGSG();
+                    //UpdateLGSG();
+                    Menu.IGM_LGSG.Update();
                     break;
 
                 case MainMenuStates.IGM:
