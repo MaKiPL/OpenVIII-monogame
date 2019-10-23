@@ -34,6 +34,11 @@ namespace OpenVIII
             source = (source.ToVector2() + offset.ToVector2()).ToPoint();
             return source;
         }
+        public static Point Offset(this ref Point source, int x,int y)
+        {
+            var offset = new Point(x, y);
+            return source.Offset(offset);
+        }
 
         public static Point Offset(this ref Point source, Vector2 offset)
         {
