@@ -144,11 +144,11 @@
     <Compile Include="Battle\Menu\BattleMenus.cs" />
     <Compile Include="Battle\Menu\IGMDataItem\Gradient\ATB.cs" />
     <Compile Include="Battle\Menu\IGMDataItem\Gradient\Renzokeken.cs" />
-    <Compile Include="Battle\Menu\IGMData\IGMData_HP.cs" />
-    <Compile Include="Battle\Menu\IGMData\IGMData_PlayerEXP.cs" />
-    <Compile Include="Battle\Menu\IGMData\IGMData_PartyItems.cs" />
-    <Compile Include="Battle\Menu\IGMData\IGMData_PlayerEXPGroup.cs" />
-    <Compile Include="Battle\Menu\IGMData\IGMData_PartyAP.cs" />
+    <Compile Include="Battle\Menu\IGMData\Group\PlayerEXP.cs" />
+    <Compile Include="Battle\Menu\IGMData\NamesHPATB.cs" />
+    <Compile Include="Battle\Menu\IGMData\PartyAP.cs" />
+    <Compile Include="Battle\Menu\IGMData\PartyItems.cs" />
+    <Compile Include="Battle\Menu\IGMData\PlayerEXP.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Enemies.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Group.cs" />
     <Compile Include="Battle\Menu\IGMData\Renzokeken.cs" />

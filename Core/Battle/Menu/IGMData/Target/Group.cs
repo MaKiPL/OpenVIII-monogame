@@ -249,8 +249,9 @@ namespace OpenVIII.IGMData.Target
                 Neededvaribles(out Damageable[] d);
                 if (d.First().GetType() == typeof(Enemy) && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
+                    Saves.CharacterData squall = Memory.State[Characters.Squall_Leonhart];
                     //Renzokuken
-                    byte w = c.WeaponID;
+                    byte weaponid = squall.WeaponID;
                     int hits = 0;
                     if (c.CurrentCrisisLevel > 0)
                         hits = c.CurrentCrisisLevel < Renzokuken_hits.Length ? Renzokuken_hits[c.CurrentCrisisLevel] : Renzokuken_hits.Last();
@@ -259,9 +260,9 @@ namespace OpenVIII.IGMData.Target
                     int finisherchance = (c.CurrentCrisisLevel + 1) * 60;
                     bool willfinish = Memory.Random.Next(byte.MaxValue + 1) <= finisherchance;
                     int choosefinish = Memory.Random.Next(3 + 1);
-                    Kernel_bin.Weapons_Data wd = Kernel_bin.WeaponsData[w];
-                    Kernel_bin.Renzokeken_Finisher r = wd.Renzokuken;
-                    if (r == 0)
+                    Kernel_bin.Weapons_Data weapondata = Kernel_bin.WeaponsData[weaponid];
+                    Kernel_bin.Renzokeken_Finisher renzokekenfinisher = weapondata.Renzokuken;
+                    if (renzokekenfinisher == 0)
                         willfinish = false;
 
                     //per wiki the chance of which finisher is 25% each and the highest value finisher get the remaining of 100 percent.
@@ -277,7 +278,7 @@ namespace OpenVIII.IGMData.Target
                     {
                         List<Kernel_bin.Renzokeken_Finisher> flags = Enum.GetValues(typeof(Kernel_bin.Renzokeken_Finisher))
                             .Cast<Kernel_bin.Renzokeken_Finisher>()
-                            .Where(f => (f & r) != 0)
+                            .Where(f => (f & renzokekenfinisher) != 0)
                             .ToList();
                         Kernel_bin.Renzokeken_Finisher finisher = choosefinish >= flags.Count ? flags.Last() : flags[choosefinish];
                         Debug.WriteLine($"{Damageable.Name} hits {hits} times with {Command.Name}({Command.ID}) then uses {Kernel_bin.RenzokukenFinishersData[finisher].Name}.");

@@ -6,6 +6,14 @@ namespace OpenVIII.IGMDataItem.Gradient
 {
     public class ATB : Texture
     {
+        #region Fields
+
+        private static Texture2D common;
+
+        private static object locker = new object();
+
+        #endregion Fields
+
         #region Constructors
 
         private ATB()
@@ -27,8 +35,6 @@ namespace OpenVIII.IGMDataItem.Gradient
             r.Width = r.Data.Width;
             return r;
         }
-
-        private static Texture2D common;
 
         public static Texture2D ThreadUnsafeOperations(int width)
         {
@@ -59,8 +65,6 @@ namespace OpenVIII.IGMDataItem.Gradient
             }
             return common;
         }
-
-        private static object locker = new object();
 
         //public override int Width { get => Data.Width; }
         public override void Refresh(Damageable damageable)

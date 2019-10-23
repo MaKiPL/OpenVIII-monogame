@@ -47,9 +47,9 @@ namespace OpenVIII
 
         #endregion Properties
 
-        #region Methods
-
         //private Mode _mode = Mode.Waiting;
+
+        #region Methods
 
         //public BattleMenu(Damageable damageable) : base(damageable)
         //{
@@ -110,16 +110,16 @@ namespace OpenVIII
 
         private void InitAsync()
         {
-            IGMData_HP.ThreadUnsafeOperations();
+            IGMData.NamesHPATB.ThreadUnsafeOperations();
             IGMData.Renzokeken.ThreadUnsafeOperations();
             List<Task> tasks = new List<Task>
             {
                 Task.Run(() => Data.TryAdd(SectionName.Commands, IGMData.Commands.Create(new Rectangle(50, (int)(Size.Y - 204), 210, 192), Damageable, true))),
-                Task.Run(() => Data.TryAdd(SectionName.HP, IGMData_HP.Create(new Rectangle((int)(Size.X - 389), 507, 389, 126), Damageable))),
+                Task.Run(() => Data.TryAdd(SectionName.HP, IGMData.NamesHPATB.Create(new Rectangle((int)(Size.X - 389), 507, 389, 126), Damageable))),
                 //Task.Run(() => Data.TryAdd(SectionName.Renzokeken, IGMData.Renzokeken.Create(new Rectangle(0, 500, (int)Size.X, 124))))
             };
             //Some code that cannot be threaded on init.
-            //Data.TryAdd(SectionName.HP, IGMData_HP.Create(new Rectangle((int)(Size.X - 389), 507, 389, 126), Damageable));
+            //Data.TryAdd(SectionName.HP, IGMData.NamesHPATB.Create(new Rectangle((int)(Size.X - 389), 507, 389, 126), Damageable));
             Data.TryAdd(SectionName.Renzokeken, IGMData.Renzokeken.Create(new Rectangle(0, 500, (int)Size.X, 124)));
             if (!Task.WaitAll(tasks.ToArray(), 10000))
                 throw new TimeoutException("Task took too long!");

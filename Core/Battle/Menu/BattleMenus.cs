@@ -27,180 +27,6 @@ namespace OpenVIII
 
         #endregion Fields
 
-        #region Methods
-
-        private bool BoolBattleMenu() => menus?.Any(m => m.GetType().Equals(typeof(BattleMenu)) && m.Enabled) ?? false;
-
-        private bool BoolRenzokeken() => GetBattleMenus()?.Any(m => m.Enabled && (m.Renzokeken?.Enabled?? false)) ?? false;
-
-        private void DrawBattleAction()
-        {
-            StartDraw();
-            //Had to split up the HP and Commands drawing. So that Commands would draw over HP.
-            if (BoolRenzokeken())
-                GetOneRenzokeken().DrawData(BattleMenu.SectionName.Renzokeken);
-            else if (BoolBattleMenu())
-            {
-                GetBattleMenus().ForEach(m => m.DrawData(BattleMenu.SectionName.HP));
-                GetBattleMenus().ForEach(m => m.DrawData(BattleMenu.SectionName.Commands));
-            }
-            DrawData();
-            EndDraw();
-        }
-
-        private void DrawGameOverAction()
-        {
-        }
-
-        private void DrawStartingAction()
-        {
-        }
-
-        private void DrawVictoryAction() => Victory_Menu.Draw();
-
-        private BattleMenu GetOneRenzokeken() => GetBattleMenus()?.First(m => m.Enabled && m.Renzokeken.Enabled);
-
-        private bool InputBattleFunction()
-        {
-            bool ret = false;
-            if (BoolRenzokeken())
-            {
-                return GetOneRenzokeken().Inputs();
-            }
-            foreach (Menu m in menus.Where(m => m.GetType().Equals(typeof(BattleMenu)) && m.Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn)))
-            {
-                ret = m.Inputs() || ret;
-                if (ret) return ret;
-            }
-            if (Input2.DelayedButton(FF8TextTagKey.Cancel))
-            {
-                if (GetCurrentBattleMenu().Damageable.Switch())
-                {
-                    int cnt = 0;
-                    do
-                    {
-                        if (++_player > 2) _player = 0;
-                        if (++cnt > 6) return false;
-                    }
-                    while (menus.Count <= _player || menus[_player] == null || menus[_player].GetType() != typeof(BattleMenu) || !GetCurrentBattleMenu().Damageable.StartTurn());
-                    NewTurnSND();        
-                }
-            }
-
-            return ret;
-        }
-
-        private bool InputGameOverFunction() => false;
-
-        private bool InputStartingFunction() => false;
-
-        private bool InputVictoryFunction() => throw new NotImplementedException();
-
-        private void NewTurnSND()
-        {
-            if (((BattleMenu)menus[_player]).CrisisLevel)
-                init_debugger_Audio.PlaySound(94);
-            else
-                init_debugger_Audio.PlaySound(14);
-        }
-
-        private void ReturnBattleFunction()
-        {
-        }
-
-        private void ReturnGameOverFunction()
-        {
-        }
-
-        private void ReturnStartingFunction()
-        {
-        }
-
-        private void ReturnVictoryFunction()
-        {
-        }
-
-        private void TriggerVictory(ConcurrentDictionary<Characters, int> expextra = null)
-        {
-            int exp = 0;
-            uint ap = 0;
-            ConcurrentDictionary<byte, byte> items = new ConcurrentDictionary<byte, byte>();
-            ConcurrentDictionary<Cards.ID, byte> cards = new ConcurrentDictionary<Cards.ID, byte>();
-            foreach (Enemy e in Enemy.Party)
-            {
-                exp += e.EXP;
-                ap += e.AP;
-                Saves.Item drop = e.Drop(Memory.State.PartyHasAbility(Kernel_bin.Abilities.RareItem));
-                Cards.ID carddrop = e.CardDrop();
-                if (drop.QTY > 0 && drop.ID > 0)
-                    if (!items.TryAdd(drop.ID, drop.QTY))
-                        items[drop.ID]+= drop.QTY;
-                if (carddrop != Cards.ID.Fail && carddrop != Cards.ID.Immune)
-                    if (!cards.TryAdd(carddrop, 1))
-                        cards[carddrop]++;
-            }
-            SetMode(Mode.Victory);
-            Victory_Menu?.Refresh(exp, ap, expextra, items,cards);
-        }
-
-
-        private bool UpdateBattleFunction()
-        {
-            bool ret = false;
-            foreach (Menu m in menus?.Where(m => m.GetType().Equals(typeof(BattleMenu))))
-            {
-                ret = m.Update() || ret;
-            }
-            List<BattleMenu> bml = GetBattleMenus().ToList();
-            if (!GetCurrentBattleMenu().Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn))
-            {
-                if (_player + 1 == bml.Count)
-                    _player = 0;
-                int cnt = 3;
-                for (int i = _player; cnt >0; cnt--)
-                {
-                    if (bml[i].Damageable.StartTurn())
-                    {
-                        _player = i;
-                        NewTurnSND();
-                        break;
-                    }
-                    i++;
-                    if (i >= bml.Count)
-                        i = 0;
-                }
-            }
-            return ret;
-        }
-
-        public static BattleMenus Create() => Create<BattleMenus>();
-        private bool UpdateGameOverFunction()
-        {
-            Memory.module = MODULE.FIELD_DEBUG;
-            Memory.FieldHolder.FieldID = 75; //gover
-            init_debugger_Audio.PlayMusic(0);
-            Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.MainLobby;
-            return true;
-        }
-
-        private bool UpdateStartingFunction() => throw new NotImplementedException();
-
-        private bool UpdateVictoryFunction()
-        {
-            init_debugger_Audio.PlayMusic(1);
-            return Victory_Menu.Update();
-        }
-
-        protected override void Init()
-        {
-            NoInputOnUpdate = true;
-            Size = new Vector2 { X = 881, Y = 636 };
-            base.Init();
-            Data.ForEach(x => x.Value.Hide());
-        }
-
-        #endregion Methods
-
         #region Enums
 
         public enum Mode : byte
@@ -244,6 +70,10 @@ namespace OpenVIII
 
         #endregion Properties
 
+        #region Methods
+
+        public static BattleMenus Create() => Create<BattleMenus>();
+
         /// <summary>
         /// Save pre battle state.
         /// </summary>
@@ -263,7 +93,6 @@ namespace OpenVIII
                     DrawActions[(Mode)GetMode()]();
             }
         }
-
 
         public IEnumerable<BattleMenu> GetBattleMenus() => menus?.Where(m => m.GetType().Equals(typeof(BattleMenu))).Select(x => (BattleMenu)x);
 
@@ -305,7 +134,7 @@ namespace OpenVIII
                     tmp.Hide();
                     menus.Add(tmp);
                 }
-                menus.Add(new VictoryMenu());
+                menus.Add(VictoryMenu.Create());
                 SetMode(Mode.Battle);
                 UpdateFunctions = new Dictionary<Mode, Func<bool>>()
                 {
@@ -370,5 +199,175 @@ namespace OpenVIII
             }
             return ret;
         }
+
+        protected override void Init()
+        {
+            NoInputOnUpdate = true;
+            Size = new Vector2 { X = 881, Y = 636 };
+            base.Init();
+            Data.ForEach(x => x.Value.Hide());
+        }
+
+        private bool BoolBattleMenu() => menus?.Any(m => m.GetType().Equals(typeof(BattleMenu)) && m.Enabled) ?? false;
+
+        private bool BoolRenzokeken() => GetBattleMenus()?.Any(m => m.Enabled && (m.Renzokeken?.Enabled ?? false)) ?? false;
+
+        private void DrawBattleAction()
+        {
+            StartDraw();
+            //Had to split up the HP and Commands drawing. So that Commands would draw over HP.
+            if (BoolRenzokeken())
+                GetOneRenzokeken().DrawData(BattleMenu.SectionName.Renzokeken);
+            else if (BoolBattleMenu())
+            {
+                GetBattleMenus().ForEach(m => m.DrawData(BattleMenu.SectionName.HP));
+                GetBattleMenus().ForEach(m => m.DrawData(BattleMenu.SectionName.Commands));
+            }
+            DrawData();
+            EndDraw();
+        }
+
+        private void DrawGameOverAction()
+        {
+        }
+
+        private void DrawStartingAction()
+        {
+        }
+
+        private void DrawVictoryAction() => Victory_Menu.Draw();
+
+        private BattleMenu GetOneRenzokeken() => GetBattleMenus()?.First(m => m.Enabled && m.Renzokeken.Enabled);
+
+        private bool InputBattleFunction()
+        {
+            bool ret = false;
+            if (BoolRenzokeken())
+            {
+                return GetOneRenzokeken().Inputs();
+            }
+            foreach (Menu m in menus.Where(m => m.GetType().Equals(typeof(BattleMenu)) && m.Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn)))
+            {
+                ret = m.Inputs() || ret;
+                if (ret) return ret;
+            }
+            if (Input2.DelayedButton(FF8TextTagKey.Cancel))
+            {
+                if (GetCurrentBattleMenu().Damageable.Switch())
+                {
+                    int cnt = 0;
+                    do
+                    {
+                        if (++_player > 2) _player = 0;
+                        if (++cnt > 6) return false;
+                    }
+                    while (menus.Count <= _player || menus[_player] == null || menus[_player].GetType() != typeof(BattleMenu) || !GetCurrentBattleMenu().Damageable.StartTurn());
+                    NewTurnSND();
+                }
+            }
+
+            return ret;
+        }
+
+        private bool InputGameOverFunction() => false;
+
+        private bool InputStartingFunction() => false;
+
+        private bool InputVictoryFunction() => throw new NotImplementedException();
+
+        private void NewTurnSND()
+        {
+            if (((BattleMenu)menus[_player]).CrisisLevel)
+                init_debugger_Audio.PlaySound(94);
+            else
+                init_debugger_Audio.PlaySound(14);
+        }
+
+        private void ReturnBattleFunction()
+        {
+        }
+
+        private void ReturnGameOverFunction()
+        {
+        }
+
+        private void ReturnStartingFunction()
+        {
+        }
+
+        private void ReturnVictoryFunction()
+        {
+        }
+
+        private void TriggerVictory(ConcurrentDictionary<Characters, int> expextra = null)
+        {
+            int exp = 0;
+            uint ap = 0;
+            ConcurrentDictionary<byte, byte> items = new ConcurrentDictionary<byte, byte>();
+            ConcurrentDictionary<Cards.ID, byte> cards = new ConcurrentDictionary<Cards.ID, byte>();
+            foreach (Enemy e in Enemy.Party)
+            {
+                exp += e.EXP;
+                ap += e.AP;
+                Saves.Item drop = e.Drop(Memory.State.PartyHasAbility(Kernel_bin.Abilities.RareItem));
+                Cards.ID carddrop = e.CardDrop();
+                if (drop.QTY > 0 && drop.ID > 0)
+                    if (!items.TryAdd(drop.ID, drop.QTY))
+                        items[drop.ID] += drop.QTY;
+                if (carddrop != Cards.ID.Fail && carddrop != Cards.ID.Immune)
+                    if (!cards.TryAdd(carddrop, 1))
+                        cards[carddrop]++;
+            }
+            SetMode(Mode.Victory);
+            Victory_Menu?.Refresh(exp, ap, expextra, items, cards);
+        }
+
+        private bool UpdateBattleFunction()
+        {
+            bool ret = false;
+            foreach (Menu m in menus?.Where(m => m.GetType().Equals(typeof(BattleMenu))))
+            {
+                ret = m.Update() || ret;
+            }
+            List<BattleMenu> bml = GetBattleMenus().ToList();
+            if (!GetCurrentBattleMenu().Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn))
+            {
+                if (_player + 1 == bml.Count)
+                    _player = 0;
+                int cnt = 3;
+                for (int i = _player; cnt > 0; cnt--)
+                {
+                    if (bml[i].Damageable.StartTurn())
+                    {
+                        _player = i;
+                        NewTurnSND();
+                        break;
+                    }
+                    i++;
+                    if (i >= bml.Count)
+                        i = 0;
+                }
+            }
+            return ret;
+        }
+
+        private bool UpdateGameOverFunction()
+        {
+            Memory.module = MODULE.FIELD_DEBUG;
+            Memory.FieldHolder.FieldID = 75; //gover
+            init_debugger_Audio.PlayMusic(0);
+            Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.MainLobby;
+            return true;
+        }
+
+        private bool UpdateStartingFunction() => throw new NotImplementedException();
+
+        private bool UpdateVictoryFunction()
+        {
+            init_debugger_Audio.PlayMusic(1);
+            return Victory_Menu.Update();
+        }
+
+        #endregion Methods
     }
 }
