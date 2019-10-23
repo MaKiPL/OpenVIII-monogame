@@ -136,7 +136,7 @@ namespace OpenVIII
     }
     namespace IGMData.Pool
     {
-        public class GameChoose : IGMData.Pool.Base<Saves,Data>
+        public class GameChoose : IGMData.Pool.Base<Saves.Data, Saves.Data>
         {
             public bool Save { get; private set; }
 
@@ -173,7 +173,7 @@ namespace OpenVIII
     {
         public class GameBlock : IGMData.Base
         {
-            GameBlock Create(Rectangle pos, Data data)
+            GameBlock Create(Rectangle pos, Saves.Data data)
             {
                 var r = Create<GameBlock>(1, 30, new IGMDataItem.Box { Pos = pos });
                 return r;

@@ -209,6 +209,7 @@
     <Compile Include="Menu\IGM_Junction\IGMData\Slots\Abilities.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\Slots\Command.cs" />
     <Compile Include="Menu\Images\HSL.cs" />
+    <Compile Include="Menu\LGSG\IGMData\SlotChoose.cs" />
     <Compile Include="Menu\LGSG\IGM_LGSG.cs" />
     <Compile Include="Menu\LGSG\IGMData\LoadBarBox.cs" />
     <Compile Include="Menu\LGSG\IGMData\ThreePieceHeader.cs" />
