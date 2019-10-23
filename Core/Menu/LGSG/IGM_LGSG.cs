@@ -4,96 +4,6 @@ using System.Linq;
 
 namespace OpenVIII
 {
-    namespace IGMData
-    {
-        public class SlotChoose : IGMData.Base
-        {
-            #region Properties
-
-            public bool Save { get; protected set; } = false;
-            public IGMDataItem.Box Slot1Main { get => (IGMDataItem.Box)ITEM[0, 0]; set => ITEM[0, 0] = value; }
-
-            public IGMDataItem.Box Slot1Title { get => (IGMDataItem.Box)ITEM[0, 1]; set => ITEM[0, 1] = value; }
-
-            public IGMDataItem.Box Slot2Main { get => (IGMDataItem.Box)ITEM[1, 0]; set => ITEM[1, 0] = value; }
-
-            public IGMDataItem.Box Slot2Title { get => (IGMDataItem.Box)ITEM[1, 1]; set => ITEM[1, 1] = value; }
-
-            #endregion Properties
-
-            #region Methods
-
-            public static SlotChoose Create(Rectangle pos)
-            {
-                SlotChoose r = new SlotChoose();
-                r.Init(2, 2, new IGMDataItem.Empty(pos), 1, 2);
-                return r;
-            }
-            protected override void ModeChangeEvent(object sender, Enum e)
-            {
-                base.ModeChangeEvent(sender, e);
-                if (e.GetType() == typeof(IGM_LGSG.Mode))
-                {
-                    Save = e.HasFlag(IGM_LGSG.Mode.Save);
-                    if (e.HasFlag(IGM_LGSG.Mode.Slot) && e.HasFlag(IGM_LGSG.Mode.Choose))
-                        Show();
-                    else
-                        Hide();
-                }
-            }
-
-            public override bool Inputs() => base.Inputs();
-
-            protected override void Init()
-            {
-                base.Init();
-                Point offset = new Point(-8, -28);
-                Point size = new Point(132, 60);
-                Slot1Main = new IGMDataItem.Box { Data = Strings.Name.FF8, Pos = SIZE[0], Options = Box_Options.Buttom };
-                Slot2Main = new IGMDataItem.Box { Data = Strings.Name.FF8, Pos = SIZE[1], Options = Box_Options.Buttom };
-                Point p = SIZE[0].Location;
-                p = p.Offset(offset);
-                Slot1Title = new IGMDataItem.Box { Data = Strings.Name.Slot1, Pos = new Rectangle(p, size), Options = Box_Options.Middle | Box_Options.Center };
-                p = SIZE[1].Location;
-                p = p.Offset(offset);
-                Slot2Title = new IGMDataItem.Box { Data = Strings.Name.Slot2, Pos = new Rectangle(p, size), Options = Box_Options.Middle | Box_Options.Center };
-                Slot1Main.Draw(true);
-                Slot2Main.Draw(true);
-                CURSOR[0] = Slot1Main.Dims.Cursor;
-                CURSOR[1] = Slot2Main.Dims.Cursor;
-                Cursor_Status = Cursor_Status.Enabled;
-            }
-
-            protected override void InitShift(int i, int col, int row)
-            {
-                int SpaceBetween = 60;
-                base.InitShift(i, col, row);
-                switch (i)
-                {
-                    case 0:
-                        SIZE[i].Y -= SpaceBetween / 2;
-                        break;
-
-                    case 1:
-                    default:
-                        SIZE[i].Y += row * SpaceBetween / 2;
-                        break;
-                }
-            }
-            public override bool Inputs_CANCEL()
-            {
-                base.Inputs_CANCEL();
-                if(!Save)
-                init_debugger_Audio.StopMusic();
-                Menu.FadeIn();
-                Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.MainLobby;
-
-                return true;
-            }
-
-            #endregion Methods
-        }
-    }
 
     public class IGM_LGSG : Menu
     {
@@ -201,29 +111,73 @@ namespace OpenVIII
         }
 
         public override bool Update() => base.Update();
+
+        public const int space = 4;
         protected override void Init()
         {
             Size = new Vector2 { X = 960, Y = 720 };
             AltSize = new Vector2(1280, 720);
             const int HeaderHeight = 140;
-            Rectangle SlotsRectangle = new Rectangle(0, HeaderHeight, (int)Size.X, (int)Size.Y-HeaderHeight);
+            Rectangle SlotsRectangle = new Rectangle(0, HeaderHeight+ space, (int)Size.X, (int)Size.Y-HeaderHeight- space);
+            Rectangle LoadBarRectangle = SlotsRectangle;
+            Rectangle BlocksRectangle = SlotsRectangle;
             SlotsRectangle.Inflate(-Size.X * .32f, -Size.Y * .28f); // (307,341,346,178)
+            LoadBarRectangle.Inflate(-Size.X * .15f, -Size.Y * .35f);
 
             base.Init();
             Data[Mode.LoadSlotChoose] = IGMData.SlotChoose.Create(SlotsRectangle);
-            Data[Mode.LoadSlotChecking] = null;
-            Data[Mode.LoadGameChoose] = null;
-            Data[Mode.LoadGameChecking] = null;
-            Data[Mode.LoadHeader] = IGMData.ThreePieceHeader.Create(null, null, null, new Rectangle(base.X, base.Y, (int)AltSize.X, HeaderHeight));
-            
-            //Data[Mode.SaveSlotChoose] = IGMData.SlotChoose.Create(SlotsRectangle, true);
-            //Data[Mode.SaveSlotChecking] = null;
-            //Data[Mode.SaveGameChoose] = null;
-            //Data[Mode.SaveGameChecking] = null;
-            //Data[Mode.SaveHeader] = IGMData.ThreePieceHeader.Create(Strings.Name.GameFolder, Strings.Name.Save, Strings.Name.SaveFF8, Data[Mode.Header].Pos);
+            Data[Mode.Checking] = IGMData.LoadBarBox.Create(LoadBarRectangle);
+            Data[Mode.LoadGameChoose] = IGMData.Pool.GameChoose.Create(BlocksRectangle);
+            Data[Mode.LoadHeader] = IGMData.ThreePieceHeader.Create(new Rectangle(base.X, base.Y, (int)AltSize.X, HeaderHeight));
             Data.Where(x => x.Value != null).ForEach(x => x.Value.AddModeChangeEvent(ref ModeChangeHandler));
             SetMode(Mode.LoadSlotChoose);
         }
         #endregion Methods
+    }
+    namespace IGMData.Pool
+    {
+        public class GameChoose : IGMData.Pool.Base<Saves,Data>
+        {
+            public bool Save { get; private set; }
+
+            public static GameChoose Create(Rectangle pos)
+            {
+                var r = Create<GameChoose>(30, 1, new IGMDataItem.Empty(pos), 3, 10);
+                return r;
+            }
+            protected override void ModeChangeEvent(object sender, Enum e)
+            {
+                base.ModeChangeEvent(sender, e);
+                if (e.GetType() == typeof(IGM_LGSG.Mode))
+                {
+                    Save = e.HasFlag(IGM_LGSG.Mode.Save);
+                    if (e.HasFlag(IGM_LGSG.Mode.Game) && e.HasFlag(IGM_LGSG.Mode.Choose))
+                    {
+                        Show();
+                        Refresh();
+                    }
+                    else
+                        Hide();
+                }
+            }
+            protected override void Init()
+            {
+                base.Init();
+                RightArrow.Y = Y + Height / 2 - RightArrow.Height / 2;
+                LeftArrow.Y = Y + Height / 2 - LeftArrow.Height / 2;
+
+            }
+        }
+    }
+    namespace IGMData
+    {
+        public class GameBlock : IGMData.Base
+        {
+            GameBlock Create(Rectangle pos, Data data)
+            {
+                var r = Create<GameBlock>(1, 30, new IGMDataItem.Box { Pos = pos });
+                return r;
+            }
+        }
     }
 }

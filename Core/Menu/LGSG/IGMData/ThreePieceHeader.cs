@@ -1,12 +1,13 @@
-﻿using System;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
+using System;
 
 namespace OpenVIII.IGMData
 {
     public class ThreePieceHeader : IGMData.Base
     {
-        public bool Save { get; private set; }
         #region Properties
+
+        public bool Save { get; private set; }
 
         protected IGMDataItem.Box HELP { get => (IGMDataItem.Box)ITEM[2, 0]; set => ITEM[2, 0] = value; }
 
@@ -18,9 +19,11 @@ namespace OpenVIII.IGMData
 
         #region Methods
 
-        public static ThreePieceHeader Create(FF8String topleft, FF8String topright, FF8String help, Rectangle? pos=null)
+        public static ThreePieceHeader Create(Rectangle pos) => Create(null, null, null, pos);
+
+        public static ThreePieceHeader Create(FF8String topleft, FF8String topright, FF8String help, Rectangle pos)
         {
-            ThreePieceHeader r = Create<ThreePieceHeader>(3, 1,new IGMDataItem.Empty{ Pos = pos ?? Rectangle.Empty });
+            ThreePieceHeader r = Create<ThreePieceHeader>(3, 1, new IGMDataItem.Empty { Pos = pos });
             r.TOPLeft.Data = topleft;
             r.TOPRight.Data = topright;
             r.HELP.Data = help;
@@ -37,16 +40,14 @@ namespace OpenVIII.IGMData
             HELP.Data = help;
             Refresh();
         }
-
+        
         protected override void Init()
         {
-
             base.Init();
-            int space = 4;
-
+            int space = IGM_LGSG.space;
             int widthright = (int)(base.Width * 0.18f) - space;
             widthright = widthright - widthright % 4;
-            int widthleft = Width - widthright -space;
+            int widthleft = Width - widthright - space;
             TOPRight = new IGMDataItem.Box { Pos = new Rectangle(widthleft + space, 0, widthright, (base.Height - space) / 2) };
             TOPLeft = new IGMDataItem.Box { Pos = new Rectangle(0, 0, widthleft, TOPRight.Height), Title = Icons.ID.INFO, Options = Box_Options.Indent };
             HELP = new IGMDataItem.Box { Pos = new Rectangle((int)(Width * 0.03f), TOPLeft.Height + space, (int)(Width * 0.94f), TOPLeft.Height), Title = Icons.ID.HELP };
@@ -58,7 +59,7 @@ namespace OpenVIII.IGMData
             if (e.GetType() == typeof(IGM_LGSG.Mode))
             {
                 Save = e.HasFlag(IGM_LGSG.Mode.Save);
-                TOPRight.Data = Save ? Strings.Name.Save : Strings.Name.Load; 
+                TOPRight.Data = Save ? Strings.Name.Save : Strings.Name.Load;
 
                 if (e.HasFlag(IGM_LGSG.Mode.Slot1))
                     TOPLeft.Data = Strings.Name.GameFolderSlot1;
@@ -71,7 +72,7 @@ namespace OpenVIII.IGMData
                 {
                     HELP.Data = Save ? Strings.Name.SaveFF8 : Strings.Name.LoadFF8;
                 }
-                else if (e.HasFlag(IGM_LGSG.Mode.Slot) && e.HasFlag(IGM_LGSG.Mode.Checking) )
+                else if (e.HasFlag(IGM_LGSG.Mode.Slot) && e.HasFlag(IGM_LGSG.Mode.Checking))
                 {
                     HELP.Data = Strings.Name.CheckGameFolder;
                 }
@@ -83,9 +84,9 @@ namespace OpenVIII.IGMData
                 {
                     HELP.Data = Save ? Strings.Name.Saving : Strings.Name.Loading;
                 }
-
             }
         }
+
         #endregion Methods
     }
 }
