@@ -558,7 +558,7 @@ namespace OpenVIII.IGMData
             return r;
         }
 
-        private void InitCursor(int i, bool zero = false)
+        protected virtual void InitCursor(int i, bool zero = false)
         {
             if (zero) CURSOR[i] = Point.Zero;
             CURSOR[i].Y += (int)(SIZE[i].Y + 6 * TextScale.Y);
