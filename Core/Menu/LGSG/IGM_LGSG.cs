@@ -140,6 +140,16 @@ namespace OpenVIII
         {
             public bool Save { get; private set; }
             public byte Slot { get; private set; }
+            protected override void InitShift(int i, int col, int row)
+            {
+                base.InitShift(i, col, row);
+                SIZE[i].Inflate(-20, 0);
+            }
+            protected override void InitCursor(int i, bool zero = false)
+            {
+                //base.InitCursor(i, zero);
+                CURSOR[i] = new Point(SIZE[i].X + 20, SIZE[i].Y + SIZE[i].Height / 2 - 4);
+            }
 
             public static GameChoose Create(Rectangle pos)
             {
