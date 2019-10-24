@@ -23,8 +23,15 @@ namespace OpenVIII
         {
         }
 
-        public static Icons Load() => Load<Icons>();
+        public static Icons Load()
+        {
+            var r = Load<Icons>();
+            Memory.MainThreadOnlyActions.Enqueue(r.Trim);
+            return r;
 
+        }
+
+        private void Trim() => Trim(ID.Bar_Fill, 5);
         protected override void DefaultValues()
         {
             base.DefaultValues();

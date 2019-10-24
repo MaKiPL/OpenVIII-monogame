@@ -51,9 +51,9 @@ namespace OpenVIII.IGMData
                 Data = Icons.ID.Bar_BG,
                 Pos = SIZE[0]
             };
-            var r = ITEM[0, 0].Pos;
-            //r.Offset(0, 1 * Menu.TextScale.Y);
-            //r.Inflate(-4, 0);
+            var r = SIZE[0];
+            r.Offset(0, 0);
+            r.Inflate(-4, -4);
             TotalWidth = r.Width;
             LoadBarSlide = new Slide<float>(0, TotalWidth, 1000d, MathHelper.SmoothStep);
             r.Width = 0;
