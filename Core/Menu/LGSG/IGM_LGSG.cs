@@ -139,6 +139,7 @@ namespace OpenVIII
         public class GameChoose : IGMData.Pool.Base<Saves.Data, Saves.Data>
         {
             public bool Save { get; private set; }
+            public byte Slot { get; private set; }
 
             public static GameChoose Create(Rectangle pos)
             {
@@ -153,6 +154,12 @@ namespace OpenVIII
                     Save = e.HasFlag(IGM_LGSG.Mode.Save);
                     if (e.HasFlag(IGM_LGSG.Mode.Game) && e.HasFlag(IGM_LGSG.Mode.Choose))
                     {
+                        if(Slot != 1 && e.HasFlag(IGM_LGSG.Mode.Slot1))                        
+                            Slot = 0;                        
+                        else         
+                            Slot = 1;
+                        for (int i = 0; i < Count - ExtraCount; i++)
+                            ((GameBlock)ITEM[i, 0]).Refresh(Saves.FileList?[Slot, i]);
                         Show();
                         Refresh();
                     }
@@ -166,6 +173,9 @@ namespace OpenVIII
                 RightArrow.Y = Y + Height / 2 - RightArrow.Height / 2;
                 LeftArrow.Y = Y + Height / 2 - LeftArrow.Height / 2;
 
+                for (int i = 0; i < Count-ExtraCount; i++)                
+                    ITEM[i, 0] = GameBlock.Create(SIZE[i % Rows]);                
+
             }
         }
     }
@@ -173,10 +183,32 @@ namespace OpenVIII
     {
         public class GameBlock : IGMData.Base
         {
-            GameBlock Create(Rectangle pos, Saves.Data data)
+            public Saves.Data Data { get; private set; }
+
+            public static GameBlock Create(Rectangle pos)
             {
                 var r = Create<GameBlock>(1, 30, new IGMDataItem.Box { Pos = pos });
                 return r;
+            }
+            public override void Refresh()
+            {
+                base.Refresh();
+                if (Data != null)
+                {
+                    foreach (var i in ITEM)
+                        i?.Show();
+                }
+                else
+                {
+                    foreach (var i in ITEM)
+                        i?.Hide();
+                }
+            }
+
+            public void Refresh(Saves.Data data)
+            {
+                Data = data;
+                Refresh();
             }
         }
     }
