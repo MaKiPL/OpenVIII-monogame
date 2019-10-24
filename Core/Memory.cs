@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -297,12 +298,12 @@ namespace OpenVIII
 
         public static bool Inited { get; private set; } = false;
         public static bool IsMainThread => Thread.CurrentThread.ManagedThreadId == mainThreadID;
-        public static Queue<Action> MainThreadOnlyActions;
+        public static ConcurrentQueue<Action> MainThreadOnlyActions;
 
         public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
         {
             mainThreadID = Thread.CurrentThread.ManagedThreadId;
-            MainThreadOnlyActions = new Queue<Action>();
+            MainThreadOnlyActions = new ConcurrentQueue<Action>();
 
             FF8DIR = GameLocation.Current.DataPath;
             FF8DIRdata = Extended.GetUnixFullPath(Path.Combine(FF8DIR, "Data"));
@@ -837,8 +838,9 @@ namespace OpenVIII
 
         public static void Update()
         {
-            while (IsMainThread && MainThreadOnlyActions.Count > 0)
-            { MainThreadOnlyActions.Dequeue()?.Invoke(); }
+            Action a = null;
+            while (IsMainThread && (MainThreadOnlyActions?.TryDequeue(out a)?? false))
+            { a.Invoke(); }
             for (int i = 0; IsMainThread && i< LeftOverTask.Count; i++)
             {
                 if (LeftOverTask[i].IsCompleted)

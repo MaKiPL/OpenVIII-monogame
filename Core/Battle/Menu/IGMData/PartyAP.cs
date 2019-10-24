@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using OpenVIII.Encoding.Tags;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace OpenVIII.IGMData
@@ -15,8 +16,9 @@ namespace OpenVIII.IGMData
         private readonly FF8String str_GF_AP;
         private readonly FF8String str_Learn;
         private readonly FF8String str_Levelup;
-        private Queue<KeyValuePair<GFs, Kernel_bin.Abilities>> _abilities;
+        private ConcurrentQueue<KeyValuePair<GFs, Kernel_bin.Abilities>> _abilities;
         private uint _ap;
+        private GFs _gf;
 
         #endregion Fields
 
@@ -40,7 +42,7 @@ namespace OpenVIII.IGMData
                 DialogSelectedAbility +
                 Memory.Strings.Read(Strings.FileID.KERNEL, 30, 118);
             str_GF_AP = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 109);
-            Leveled = new Queue<GFs>();
+            Leveled = new ConcurrentQueue<GFs>();
             Init(1, 7, container, 1, 1);
         }
 
@@ -48,7 +50,7 @@ namespace OpenVIII.IGMData
 
         #region Properties
 
-        public Queue<KeyValuePair<GFs, Kernel_bin.Abilities>> Abilities { get => _abilities; set => _abilities = value; }
+        public ConcurrentQueue<KeyValuePair<GFs, Kernel_bin.Abilities>> Abilities { get => _abilities; set => _abilities = value; }
 
         public uint AP
         {
@@ -60,8 +62,8 @@ namespace OpenVIII.IGMData
             }
         }
 
-        public GFs GF { get; private set; }
-        public Queue<GFs> Leveled { get; set; }
+        public GFs GF { get => _gf; private set => _gf = value; }
+        public ConcurrentQueue<GFs> Leveled { get; set; }
 
         #endregion Properties
 
@@ -106,27 +108,31 @@ namespace OpenVIII.IGMData
 
         public void Learn()
         {
-            KeyValuePair<GFs, Kernel_bin.Abilities> Ability = Abilities.Dequeue();
-            GF = Ability.Key;
-            ((IGMData.Dialog.Small)ITEM[0, 3]).Data =
-                str_Learn.Clone()
-                .Replace(DialogSelectedGF, Memory.Strings.GetName(GF))
-                .Replace(DialogSelectedIcon, DialogSelectedIcon.Clone() + new byte[] {
+            if (Abilities.TryDequeue(out KeyValuePair<GFs, Kernel_bin.Abilities> Ability))
+            {
+                GF = Ability.Key;
+                ((IGMData.Dialog.Small)ITEM[0, 3]).Data =
+                    str_Learn.Clone()
+                    .Replace(DialogSelectedGF, Memory.Strings.GetName(GF))
+                    .Replace(DialogSelectedIcon, DialogSelectedIcon.Clone() + new byte[] {
                             (byte)((short)Kernel_bin.AllAbilities[Ability.Value].Icon & 0xFF),
                             (byte)(((short)Kernel_bin.AllAbilities[Ability.Value].Icon & 0xFF00)>>8),
                             (Kernel_bin.AllAbilities[Ability.Value].Palette)
-                })
-                .Replace(DialogSelectedAbility, Kernel_bin.AllAbilities[Ability.Value].Name);
-            skipsnd = true;
-            init_debugger_Audio.PlaySound(0x28);
+                    })
+                    .Replace(DialogSelectedAbility, Kernel_bin.AllAbilities[Ability.Value].Name);
+                skipsnd = true;
+                init_debugger_Audio.PlaySound(0x28);
+            }
         }
 
         public void Level()
         {
-            GF = Leveled.Dequeue();
-            ((IGMData.Dialog.Small)ITEM[0, 2]).Data = str_Levelup.Clone().Replace(DialogSelectedGF, Memory.Strings.GetName(GF));
-            skipsnd = true;
-            init_debugger_Audio.PlaySound(0x28);
+            if (Leveled.TryDequeue(out _gf))
+            {
+                ((IGMData.Dialog.Small)ITEM[0, 2]).Data = str_Levelup.Clone().Replace(DialogSelectedGF, Memory.Strings.GetName(GF));
+                skipsnd = true;
+                init_debugger_Audio.PlaySound(0x28);
+            }
         }
 
         public override void Refresh()

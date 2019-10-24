@@ -14,8 +14,9 @@ namespace OpenVIII.IGMData
         private readonly FF8String str_NotFound;
         private readonly FF8String str_Over100;
         private readonly FF8String str_Recieved;
-        private Queue<KeyValuePair<Cards.ID, byte>> _cards;
+        private ConcurrentQueue<KeyValuePair<Cards.ID, byte>> _cards;
         private KeyValuePair<Cards.ID, byte> card;
+        private Saves.Item _item;
 
         #endregion Fields
 
@@ -35,9 +36,9 @@ namespace OpenVIII.IGMData
 
         #region Properties
 
-        public Saves.Item Item { get; private set; }
+        public Saves.Item Item { get => _item; private set => _item = value; }
 
-        public Queue<Saves.Item> Items { get; private set; }
+        public ConcurrentQueue<Saves.Item> Items { get; private set; }
 
         #endregion Properties
 
@@ -64,7 +65,7 @@ namespace OpenVIII.IGMData
             }
             else if (Items != null && Items.Count > 0)
             {
-                if (Memory.State.EarnItem(Items.Dequeue()))
+                if (Items.TryDequeue(out Saves.Item item) && Memory.State.EarnItem(item))
                 {
                     ITEM?[0, 6]?.Show();
                     Earn();
@@ -80,7 +81,7 @@ namespace OpenVIII.IGMData
             }
             else if (_cards != null && _cards.Count > 0)
             {
-                if (Memory.State.EarnItem(_cards.Dequeue()))
+                if (_cards.TryDequeue(out KeyValuePair<Cards.ID, byte> card) && Memory.State.EarnItem(card))
                 {
                     ITEM?[0, 6]?.Show();
                     Earn();
@@ -100,9 +101,8 @@ namespace OpenVIII.IGMData
         public override void Refresh()
         {
             base.Refresh();
-            if (Items != null && Items.Count > 0)
-            {
-                Item = Items.Peek();
+            if (Items != null && Items.TryPeek(out _item))
+            {   
                 ((IGMDataItem.Box)ITEM[0, 1]).Data = Item.DATA?.Name;
                 ((IGMDataItem.Box)ITEM[0, 2]).Data = $"{Item.QTY}";
                 ((IGMDataItem.Box)ITEM[0, 3]).Data = Item.DATA?.Description;
@@ -116,11 +116,9 @@ namespace OpenVIII.IGMData
                 ITEM[0, 6].Hide();
             }
             else
-            if (_cards != null && _cards.Count > 0)
+            if (_cards != null && _cards.TryPeek(out card))
             {
-                card = _cards.Peek();
                 FF8StringReference name = Memory.Strings.Read(Strings.FileID.MNGRP, 110, (int)card.Key);
-
                 int pos = 0;
                 for (; pos < name.Length; pos++)
                     if (name.Value[pos] == 2) break;
@@ -152,7 +150,7 @@ namespace OpenVIII.IGMData
         {
             if (cards.Count > 0)
             {
-                _cards = new Queue<KeyValuePair<Cards.ID, byte>>(cards.Count);
+                _cards = new ConcurrentQueue<KeyValuePair<Cards.ID, byte>>();
                 foreach (KeyValuePair<Cards.ID, byte> e in cards)
                     _cards.Enqueue(e);
             }
@@ -163,7 +161,7 @@ namespace OpenVIII.IGMData
         {
             if (items.Count > 0)
             {
-                Items = new Queue<Saves.Item>(items.Count);
+                Items = new ConcurrentQueue<Saves.Item>();
                 foreach (KeyValuePair<byte, byte> e in items)
                     Items.Enqueue(new Saves.Item(e));
             }

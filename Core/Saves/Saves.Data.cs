@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -556,10 +557,10 @@ namespace OpenVIII
             /// <returns>&gt;=0</returns>
             public int DeadPartyMembers() => PartyData.Where(m => m != OpenVIII.Characters.Blank && Characters[m].IsDead).Count();
 
-            public Queue<GFs> EarnAP(uint ap, out Queue<KeyValuePair<GFs, Kernel_bin.Abilities>> abilities)
+            public ConcurrentQueue<GFs> EarnAP(uint ap, out ConcurrentQueue<KeyValuePair<GFs, Kernel_bin.Abilities>> abilities)
             {
-                Queue<GFs> ret = new Queue<GFs>();
-                abilities = new Queue<KeyValuePair<GFs, Kernel_bin.Abilities>>();
+                ConcurrentQueue<GFs> ret = new ConcurrentQueue<GFs>();
+                abilities = new ConcurrentQueue<KeyValuePair<GFs, Kernel_bin.Abilities>>();
                 foreach (KeyValuePair<GFs, GFData> g in GFs.Where(i => i.Value.Exists))
                 {
                     if (g.Value.EarnExp(ap, out Kernel_bin.Abilities ability))
