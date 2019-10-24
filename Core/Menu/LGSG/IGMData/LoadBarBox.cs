@@ -36,7 +36,7 @@ namespace OpenVIII.IGMData
         protected override void InitShift(int i, int col, int row)
         {
             base.InitShift(i, col, row);
-            SIZE[i].Height = (int)(Memory.Icons.GetEntry(Icons.ID.Bar_Fill).Height * Menu.TextScale.Y);
+            SIZE[i].Height = 24;
             SIZE[i].Inflate(-10, 0);
             SIZE[i].Y += Height / 2 - SIZE[i].Height / 2;
         }
@@ -52,8 +52,8 @@ namespace OpenVIII.IGMData
                 Pos = SIZE[0]
             };
             var r = ITEM[0, 0].Pos;
-            r.Offset(0, 1 * Menu.TextScale.Y);
-            r.Inflate(-4, 0);
+            //r.Offset(0, 1 * Menu.TextScale.Y);
+            //r.Inflate(-4, 0);
             TotalWidth = r.Width;
             LoadBarSlide = new Slide<float>(0, TotalWidth, 1000d, MathHelper.SmoothStep);
             r.Width = 0;
