@@ -49,6 +49,7 @@ namespace OpenVIII.IGMDataItem
             get => base.Pos; set
             {
                 original_pos = value;
+                base.Pos = original_pos;
                 changed = true;
             }
         }
