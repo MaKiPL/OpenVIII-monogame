@@ -58,7 +58,7 @@
         /// on exception this is turned to true and will force fallback to naudio when monogame isn't working.
         /// </summary>
         private static bool useNaudio = false;
-
+        private object DynamicSoundEffectLock = new object();
         private readonly unsafe AVDictionary* _dict;
         private unsafe AVIOContext* _avio_ctx;
         private unsafe byte* _avio_ctx_buffer;
@@ -106,6 +106,7 @@
 
         private Task task;
         private FfccVaribleGroup _decoder = new FfccVaribleGroup();
+        private DynamicSoundEffectInstance _dynamicSound;
 
         #endregion Fields
 
@@ -283,7 +284,14 @@
         /// <summary>
         /// Dynamic Sound Effect Interface for class allows control out of class. Mode must be in STATE_MACH
         /// </summary>
-        public DynamicSoundEffectInstance DynamicSound { get; private set; }
+        public DynamicSoundEffectInstance DynamicSound
+        {
+            get => _dynamicSound; private set
+            {
+                lock(DynamicSoundEffectLock)
+                _dynamicSound = value;
+            }
+        }
 
         /// <summary>
         /// True if file is open.
@@ -518,10 +526,14 @@
                 {
                     if (DynamicSound != null && !DynamicSound.IsDisposed && AudioEnabled)
                     {
-                        DynamicSound.Volume = volume;
-                        DynamicSound.Pitch = pitch;
-                        DynamicSound.Pan = pan;
-                        DynamicSound.Play();
+
+                        lock (DynamicSoundEffectLock)
+                        {
+                            DynamicSound.Volume = volume;
+                            DynamicSound.Pitch = pitch;
+                            DynamicSound.Pan = pan;
+                            DynamicSound.Play();
+                        }
                     }
 
                     if (SoundEffect != null && !SoundEffect.IsDisposed && AudioEnabled)
@@ -600,12 +612,24 @@
             {
                 if (DynamicSound != null && !DynamicSound.IsDisposed)
                 {
-                    if (AudioEnabled)
-                    {
-                        DynamicSound?.Stop();
-                    }
 
-                    DynamicSound.Dispose();
+                    lock (DynamicSoundEffectLock)
+                    {
+                        if (AudioEnabled)
+                        {
+                            try
+                            {
+                                    DynamicSound?.Stop();
+                            }
+                            catch (NullReferenceException)
+                            {
+
+                            }
+                        }
+
+                        DynamicSound.Dispose();
+                    }
+                    DynamicSound = null;
                 }
                 if (SoundEffectInstance != null && !SoundEffectInstance.IsDisposed)
                 {
@@ -1054,7 +1078,9 @@
                     }
                     try
                     {
-                        DynamicSound.SubmitBuffer(buffer, start, length);
+
+                        lock (DynamicSoundEffectLock)
+                            DynamicSound.SubmitBuffer(buffer, start, length);
                     }
                     catch (ArgumentException)
                     {
@@ -1064,6 +1090,7 @@
                     {
                         if (e.GetType().Name == "SharpDXException")
                         {
+                            //DynamicSound.Dispose();
                             DynamicSound = null;
                             if (!initNaudio())
                             {
