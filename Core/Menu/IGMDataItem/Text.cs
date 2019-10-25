@@ -45,7 +45,8 @@ namespace OpenVIII.IGMDataItem
                 OffsetIcon();
             }
         }
-
+        public override int Width { get => DataSize.Width; }
+        public override int Height { get => DataSize.Height; }
         public Rectangle DataSize { get; private set; }
         public byte Faded_Palette { get; set; }
 
