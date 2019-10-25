@@ -138,6 +138,7 @@ namespace OpenVIII
     {
         public class GameChoose : IGMData.Pool.Base<Saves.Data, Saves.Data>
         {
+            EventHandler<int> PageChangeEventHandler;
             public bool Save { get; private set; }
             public byte Slot { get; private set; }
             protected override void InitShift(int i, int col, int row)
@@ -168,8 +169,10 @@ namespace OpenVIII
                             Slot = 0;                        
                         else         
                             Slot = 1;
-                        for (int i = 0; i < Count - ExtraCount; i++)
-                            ((GameBlock)ITEM[i, 0]).Refresh(Saves.FileList?[Slot, i]);
+                        int total = Count - ExtraCount;
+                        
+                        for (byte i = 0; i < total; i++)
+                            ((GameBlock)ITEM[i, 0]).Refresh(i,Saves.FileList?[Slot, i]);
                         Show();
                         Refresh();
                     }
@@ -177,27 +180,47 @@ namespace OpenVIII
                         Hide();
                 }
             }
+            public override void Refresh()
+            {
+                base.Refresh();
+                PageChangeEventHandler?.Invoke(this, Page);
+            }
+
             protected override void Init()
             {
                 base.Init();
                 RightArrow.Y = Y + Height / 2 - RightArrow.Height / 2;
                 LeftArrow.Y = Y + Height / 2 - LeftArrow.Height / 2;
 
-                for (int i = 0; i < Count-ExtraCount; i++)                
-                    ITEM[i, 0] = GameBlock.Create(SIZE[i % Rows]);                
-
+                for (int i = 0; i < Count - ExtraCount; i++)
+                {
+                    ITEM[i, 0] = GameBlock.Create(SIZE[i % Rows]);
+                    ((GameBlock)ITEM[i, 0]).AddPageChangeEvent(ref PageChangeEventHandler);
+                }
             }
         }
     }
     namespace IGMData
     {
-        public class GameBlock : IGMData.Base
+        public class GameBlock : IGMData.Base, I_Data<Saves.Data>
         {
-            public Saves.Data Data { get; private set; }
+            private object _lastpage=-1;
+            private object _page=-1;
+
+            public byte ID
+            {
+                get => checked((byte)(BlockNumber?.Data ?? 0)); private set
+                {
+                    if(BlockNumber!=null)
+                    BlockNumber.Data = value;
+                }
+            }
+
+            public Saves.Data Data { get; set; }
 
             public static GameBlock Create(Rectangle pos)
             {
-                var r = Create<GameBlock>(1, 30, new IGMDataItem.Box { Pos = pos });
+                var r = Create<GameBlock>(1, 16, new IGMDataItem.Box { Pos = pos });
                 return r;
             }
             public override void Refresh()
@@ -205,6 +228,20 @@ namespace OpenVIII
                 base.Refresh();
                 if (Data != null)
                 {
+                    Face1.Data = Data.Party[0].ToFacesID();
+                    Face2.Data = Data.Party[1].ToFacesID();
+                    Face3.Data = Data.Party[2].ToFacesID();
+                    Saves.CharacterData characterData = Data[Data.Party.First(x => !x.Equals(Characters.Blank))];
+                    Name.Data = characterData.Name;
+                    LV_Num.Data = characterData.Level;
+                    Disc_Num.Data = checked((int)Data.CurrentDisk);
+                    Hours.Data = checked((int)MathHelper.Clamp(checked((float)Data.Timeplayed.TotalHours), 0, 99));
+                    if (Hours.Data < 99)
+                        Mins.Data = checked((int)MathHelper.Clamp(checked((float)Data.Timeplayed.Minutes), 0, 99));
+                    else
+                        Mins.Data = 99;
+                    Gil.Data = checked((int)Data.AmountofGil);
+                    Location.Data = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Data.LocationID);
                     foreach (var i in ITEM)
                         i?.Show();
                 }
@@ -215,10 +252,74 @@ namespace OpenVIII
                 }
             }
 
-            public void Refresh(Saves.Data data)
+            public void Refresh(byte id,Saves.Data data)
             {
+                ID = ++id;
                 Data = data;
                 Refresh();
+            }
+            protected override void InitShift(int i, int col, int row)
+            {
+                base.InitShift(i, col, row);
+                SIZE[i].Inflate(-8, -8);
+            }
+
+            IGMDataItem.Integer BlockNumber { get => (IGMDataItem.Integer)ITEM[0, 0]; set => ITEM[0,0] =value; }
+            IGMDataItem.Face Face1 { get => (IGMDataItem.Face)ITEM[0, 1]; set => ITEM[0, 1] = value; }
+            IGMDataItem.Face Face2 { get => (IGMDataItem.Face)ITEM[0, 2]; set => ITEM[0, 2] = value; }
+            IGMDataItem.Face Face3 { get => (IGMDataItem.Face)ITEM[0, 3]; set => ITEM[0, 3] = value; }
+            IGMDataItem.Text Name { get => (IGMDataItem.Text)ITEM[0, 4]; set => ITEM[0, 4] = value; }
+            IGMDataItem.Text LV { get => (IGMDataItem.Text)ITEM[0, 5]; set => ITEM[0, 5] = value; }
+            IGMDataItem.Integer LV_Num { get => (IGMDataItem.Integer)ITEM[0, 6]; set => ITEM[0, 6] = value; }
+            IGMDataItem.Icon Disc { get => (IGMDataItem.Icon)ITEM[0, 7]; set => ITEM[0, 7] = value; }
+            IGMDataItem.Integer Disc_Num { get => (IGMDataItem.Integer)ITEM[0, 8]; set => ITEM[0, 8] = value; }
+            IGMDataItem.Icon Play  { get => (IGMDataItem.Icon)ITEM[0, 9]; set => ITEM[0, 9] = value; }
+            IGMDataItem.Integer Hours { get => (IGMDataItem.Integer)ITEM[0, 10]; set => ITEM[0, 10] = value; }
+            IGMDataItem.Icon Colon { get => (IGMDataItem.Icon)ITEM[0, 11]; set => ITEM[0, 11] = value; }
+            IGMDataItem.Integer Mins { get => (IGMDataItem.Integer)ITEM[0, 12]; set => ITEM[0, 12] = value; }
+            IGMDataItem.Integer Gil { get => (IGMDataItem.Integer)ITEM[0, 13]; set => ITEM[0, 13] = value; }
+            IGMDataItem.Icon G { get => (IGMDataItem.Icon)ITEM[0, 14]; set => ITEM[0, 14] = value; }
+            IGMDataItem.Box Location { get => (IGMDataItem.Box)ITEM[0, 15]; set => ITEM[0, 15] = value; }
+
+            protected override void Init()
+            {
+                base.Init();
+                BlockNumber = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0), NumType = Icons.NumType.Num_8x16_0, Spaces = 2, Padding = 2 };
+                Face1 = new IGMDataItem.Face { Pos = new Rectangle(BlockNumber.X + 44, SIZE[0].Y, 124, SIZE[0].Height), Border = true };
+                Face2 = new IGMDataItem.Face { Pos = new Rectangle(Face1.X + Face1.Width, SIZE[0].Y, Face1.Width, SIZE[0].Height), Border = true };
+                Face3 = new IGMDataItem.Face { Pos = new Rectangle(Face2.X + Face1.Width, SIZE[0].Y, Face1.Width, SIZE[0].Height), Border = true };
+                int Face3offsetx = Face3.X + Face1.Width + 4;
+                Name = new IGMDataItem.Text { Pos = new Rectangle(Face3offsetx, SIZE[0].Y, 0, 0) };
+                LV = new IGMDataItem.Text { Data = Strings.Name.LV, Pos = new Rectangle(Name.X, SIZE[0].Y + 64, 0, 0) };
+                LV_Num = new IGMDataItem.Integer { Pos = new Rectangle(Name.X + 80, LV.Y, 0, 0), NumType = Icons.NumType.sysFntBig };
+                Disc = new IGMDataItem.Icon { Data = Icons.ID.DISC, Pos = new Rectangle(LV_Num.X + 100, LV.Y, 0, 0) };
+                Disc_Num = new IGMDataItem.Integer { Pos = new Rectangle(Disc.X + 80, LV.Y, 0, 0) };
+                int col3x = SIZE[0].X + SIZE[0].Width - 180;
+                Play = new IGMDataItem.Icon { Data = Icons.ID.PLAY, Pos = new Rectangle(col3x, SIZE[0].Y, 0, 0), Palette = 13 };
+                Hours = new IGMDataItem.Integer { Pos = new Rectangle(Play.X + 80, SIZE[0].Y, 0, 0), Spaces = 2 };
+                Colon = new IGMDataItem.Icon { Data = Icons.ID.Colon, Pos = new Rectangle(Hours.X + 40, SIZE[0].Y, 0, 0), Blink = true, Palette = 13, Faded_Palette = 2, Blink_Adjustment = .5f };
+                Mins = new IGMDataItem.Integer { Pos = new Rectangle(Colon.X + 20, SIZE[0].Y, 0, 0), Spaces = 2, Padding = 2 };
+                Gil = new IGMDataItem.Integer { Pos = new Rectangle(col3x, LV.Y, 0, 0), Palette = 2, Faded_Palette = 0, Padding = 1, Spaces = 8 };
+                G = new IGMDataItem.Icon { Data = Icons.ID.G, Pos = new Rectangle(Gil.X + 20 * Gil.Spaces, LV.Y, 0, 0), Palette = 2 };
+                const int locationheight = 72;
+                Location = new IGMDataItem.Box { Pos = new Rectangle(Face3offsetx, base.Y + base.Height - locationheight, base.Width + base.X - Face3offsetx, locationheight) };
+            }
+            public override void Draw()
+            {
+                base.Draw();
+            }
+
+            public void AddPageChangeEvent(ref EventHandler<int> pageChangeEventHandler) => pageChangeEventHandler+= PageChangeEvent;
+            const int _rows = 3;
+            int expectedpage => (ID-1) / _rows;
+            private void PageChangeEvent(object sender, int page)
+            {
+                _lastpage = _page;
+                _page = page;
+                if (expectedpage != page)
+                    Hide();
+                else
+                    Show();
             }
         }
     }
