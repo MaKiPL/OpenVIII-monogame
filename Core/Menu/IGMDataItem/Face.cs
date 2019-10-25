@@ -23,6 +23,7 @@ namespace OpenVIII.IGMDataItem
 
         #region Properties
 
+        public bool Border { get; set; } = false;
         public Faces.ID Data { get; set; } = Faces.ID.Blank;
         public byte Palette
         {
@@ -39,11 +40,11 @@ namespace OpenVIII.IGMDataItem
 
         public override void Draw()
         {
-            if (Enabled)
+            if (Enabled && Data != Faces.ID.Blank)
             {
-                Memory.Faces.Draw(Data, Pos, Vector2.UnitY, Fade);
-                if (Blink)
-                    Memory.Faces.Draw(Data, Pos, Vector2.UnitY, Fade * Blink_Amount * Blink_Adjustment);
+                Memory.Faces.Draw(Data, Pos, Vector2.UnitY, Fade * (Blink ? (Blink_Amount * Blink_Adjustment):1f));
+                if(Border)
+                    Memory.Icons.Draw(Icons.ID.MenuBorder, 2, Pos, new Vector2(1f), Fade * (Blink ? (Blink_Amount * Blink_Adjustment) : 1f));
             }
         }
 
