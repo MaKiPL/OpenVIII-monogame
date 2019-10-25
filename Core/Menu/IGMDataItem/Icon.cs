@@ -45,18 +45,22 @@ namespace OpenVIII.IGMDataItem
         {
             if (Enabled)
             {
+                Rectangle pos = Pos;
+                if (OffsetAnchor != null)
+                    pos.Offset(OffsetAnchor);
+
                 if (!Blink)
-                    Memory.Icons.Draw(Data, Palette, Pos, Scale, Fade, Color);
+                    Memory.Icons.Draw(Data, Palette, pos, Scale, Fade, Color);
                 else
                 {
                     if (Faded_Palette != Palette)
                     {
-                        Memory.Icons.Draw(Data, Palette, Pos, Scale, Fade, Color);
-                        Memory.Icons.Draw(Data, Faded_Palette, Pos, Scale, Fade * Blink_Amount * Blink_Adjustment, Color);
+                        Memory.Icons.Draw(Data, Palette, pos, Scale, Fade, Color);
+                        Memory.Icons.Draw(Data, Faded_Palette, pos, Scale, Fade * Blink_Amount * Blink_Adjustment, Color);
                     }
                     else
                     {
-                        Memory.Icons.Draw(Data, Faded_Palette, Pos, Scale, Fade * Blink_Adjustment, Color.Lerp(Color,Faded_Color,Blink_Amount));
+                        Memory.Icons.Draw(Data, Faded_Palette, pos, Scale, Fade * Blink_Adjustment, Color.Lerp(Color, Faded_Color, Blink_Amount));
                     }
                 }
             }

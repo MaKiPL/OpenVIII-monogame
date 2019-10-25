@@ -10,8 +10,8 @@ namespace OpenVIII
         {
             #region Fields
 
-            private object _lastpage = -1;
-            private object _page = -1;
+            private int _lastpage = -1;
+            private int _page = -1;
 
             #endregion Fields
 
@@ -27,8 +27,8 @@ namespace OpenVIII
                         BlockNumber.Data = value;
                 }
             }
-
-            private int _rows => 3;
+            public Slide<float> Slider;
+            public int ParentRows { get; set; } = 3;
 
             private IGMDataItem.Integer BlockNumber { get => (IGMDataItem.Integer)ITEM[0, 0]; set => ITEM[0, 0] = value; }
 
@@ -38,7 +38,7 @@ namespace OpenVIII
 
             private IGMDataItem.Integer Disc_Num { get => (IGMDataItem.Integer)ITEM[0, 8]; set => ITEM[0, 8] = value; }
 
-            private int expectedpage => (ID - 1) / _rows;
+            private int expectedpage => (ID - 1) / ParentRows;
 
             private IGMDataItem.Face Face1 { get => (IGMDataItem.Face)ITEM[0, 1]; set => ITEM[0, 1] = value; }
 
@@ -136,6 +136,14 @@ namespace OpenVIII
                 G = new IGMDataItem.Icon { Data = Icons.ID.G, Pos = new Rectangle(Gil.X + 20 * Gil.Spaces, LV.Y, 0, 0), Palette = 2 };
                 const int locationheight = 72;
                 Location = new IGMDataItem.Box { Pos = new Rectangle(Face3offsetx, base.Y + base.Height - locationheight, base.Width + base.X - Face3offsetx, locationheight) };
+
+                CONTAINER.OffsetAnchor = new OffsetAnchor();
+                foreach(var i in ITEM)
+                {
+                    if(i!=null)
+                        i.OffsetAnchor = CONTAINER.OffsetAnchor;
+                    
+                }
             }
 
             protected override void InitShift(int i, int col, int row)
@@ -146,12 +154,29 @@ namespace OpenVIII
 
             private void PageChangeEvent(object sender, int page)
             {
-                _lastpage = _page;
-                _page = page;
+
                 if (expectedpage != page)
                     Hide();
                 else
                     Show();
+
+                if(_lastpage !=-1)
+                {
+                    _lastpage = _page;
+                    _page = page;
+                }
+                else
+                    _lastpage = _page = page;
+                if(_lastpage < _page)
+                {
+                    //going left to right
+                }
+                else if(_lastpage > _page)
+                {
+                    //going right to left
+                }
+
+
             }
 
             #endregion Methods
@@ -208,6 +233,7 @@ namespace OpenVIII
                 {
                     ITEM[i, 0] = GameBlock.Create(SIZE[i % Rows]);
                     ((GameBlock)ITEM[i, 0]).AddPageChangeEvent(ref PageChangeEventHandler);
+                    ((GameBlock)ITEM[i, 0]).ParentRows = Rows;
                 }
                 Cursor_Status &= ~Cursor_Status.Horizontal;
             }

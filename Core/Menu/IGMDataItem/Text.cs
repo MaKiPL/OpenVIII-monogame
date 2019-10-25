@@ -72,6 +72,8 @@ namespace OpenVIII.IGMDataItem
             if (Enabled)
             {
                 Rectangle r = Pos;
+                if (OffsetAnchor != null)
+                    r.Offset(OffsetAnchor);
                 if (Icon != null && Icon != Icons.ID.None)
                 {
                     Rectangle r2 = r;

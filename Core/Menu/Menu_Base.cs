@@ -4,13 +4,40 @@ using System.Linq;
 
 namespace OpenVIII
 {
+    public class OffsetAnchor
+    {
+        Vector2 v=Vector2.Zero;
+        public Vector2 vPos { get => v; set => v = value; }
+        public float X { get => v.X; set => v.X = value; }
+        public float Y { get => v.Y; set => v.Y = value; }
+        public Point pPos { get => v.ToPoint(); set => v = value.ToVector2(); }
+        public static implicit operator Vector2(OffsetAnchor a) => a.v;
+        public static explicit operator Point(OffsetAnchor a) => a.v.ToPoint();
+        public static implicit operator OffsetAnchor(Vector2 a) => new OffsetAnchor(a);
+        public static implicit operator OffsetAnchor(Point a) => new OffsetAnchor(a);
+        public OffsetAnchor(Vector2 pos) => this.v = pos;
+        public OffsetAnchor(Point pos) => this.v = pos.ToVector2();
+        public OffsetAnchor() { }
+        public OffsetAnchor Offset(float x, float y)
+        {
+            v.X += x;
+            v.Y += y;
+            return this;
+        }
+        public OffsetAnchor Offset(Vector2 _v)
+        {
+            v += _v;
+            return this;
+        }
+    }
     /// <summary>
     /// Root class all menu objects can grow from.
     /// </summary>
     public abstract class Menu_Base
     {
+        public OffsetAnchor OffsetAnchor { get; set; }
         #region Fields
-        
+
         protected Rectangle _pos;
 
         #endregion Fields

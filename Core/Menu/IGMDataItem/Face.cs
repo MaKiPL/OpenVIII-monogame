@@ -42,9 +42,12 @@ namespace OpenVIII.IGMDataItem
         {
             if (Enabled && Data != Faces.ID.Blank)
             {
-                Memory.Faces.Draw(Data, Pos, Vector2.UnitY, Fade * (Blink ? (Blink_Amount * Blink_Adjustment):1f));
+                Rectangle pos = Pos;
+                if (OffsetAnchor != null)
+                    pos.Offset(OffsetAnchor);
+                Memory.Faces.Draw(Data, pos, Vector2.UnitY, Fade * (base.Blink ? (Blink_Amount * Blink_Adjustment) :1f));
                 if(Border)
-                    Memory.Icons.Draw(Icons.ID.MenuBorder, 2, Pos, new Vector2(1f), Fade * (Blink ? (Blink_Amount * Blink_Adjustment) : 1f));
+                    Memory.Icons.Draw(Icons.ID.MenuBorder, 2, pos, new Vector2(1f), Fade * (base.Blink ? (Blink_Amount * Blink_Adjustment) : 1f));
             }
         }
 
