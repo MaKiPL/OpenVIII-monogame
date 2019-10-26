@@ -10,6 +10,7 @@ namespace OpenVIII
         {
             #region Fields
 
+            public Slide<Vector2> Slider;
             private int _lastpage = -1;
             private int _page = -1;
 
@@ -27,7 +28,7 @@ namespace OpenVIII
                         BlockNumber.Data = value;
                 }
             }
-            public Slide<float> Slider;
+
             public int ParentRows { get; set; } = 3;
 
             private IGMDataItem.Integer BlockNumber { get => (IGMDataItem.Integer)ITEM[0, 0]; set => ITEM[0, 0] = value; }
@@ -52,6 +53,16 @@ namespace OpenVIII
 
             private IGMDataItem.Integer Hours { get => (IGMDataItem.Integer)ITEM[0, 10]; set => ITEM[0, 10] = value; }
 
+            private Vector2 left
+            {
+                get
+                {
+                    Vector2 p = new Point(0, 0).Transform(Menu.Focus).ToVector2();
+                    p.X -= Width;
+                    return p;
+                }
+            }
+
             private IGMDataItem.Box Location { get => (IGMDataItem.Box)ITEM[0, 15]; set => ITEM[0, 15] = value; }
 
             private IGMDataItem.Text LV { get => (IGMDataItem.Text)ITEM[0, 5]; set => ITEM[0, 5] = value; }
@@ -60,9 +71,12 @@ namespace OpenVIII
 
             private IGMDataItem.Integer Mins { get => (IGMDataItem.Integer)ITEM[0, 12]; set => ITEM[0, 12] = value; }
 
+            private bool mypage => expectedpage == _page;
             private IGMDataItem.Text Name { get => (IGMDataItem.Text)ITEM[0, 4]; set => ITEM[0, 4] = value; }
 
             private IGMDataItem.Icon Play { get => (IGMDataItem.Icon)ITEM[0, 9]; set => ITEM[0, 9] = value; }
+
+            private Vector2 right => new Point(Memory.graphics.GraphicsDevice.Viewport.Width, 0/*Memory.graphics.GraphicsDevice.Viewport.Height*/).Transform(Menu.Focus).ToVector2();
 
             #endregion Properties
 
@@ -74,7 +88,7 @@ namespace OpenVIII
                 return r;
             }
 
-            public void AddPageChangeEvent(ref EventHandler<int> pageChangeEventHandler) => pageChangeEventHandler += PageChangeEvent;
+            public void AddPageChangeEvent(ref EventHandler<Pool.GameChoose.PageInfo> pageChangeEventHandler) => pageChangeEventHandler += PageChangeEvent;
 
             public override void Draw() => base.Draw();
 
@@ -114,9 +128,29 @@ namespace OpenVIII
                 Refresh();
             }
 
+            public override bool Update()
+            {
+                base.Update();
+                if (Slider.Done)
+                {
+                    if (!mypage)
+                    {
+                        Hide();
+                        return true;
+                    }
+                    return false;
+                }
+                else
+                {
+                    CONTAINER.OffsetAnchor?.Set(Slider.Update());
+                    return true;
+                }
+            }
+
             protected override void Init()
             {
                 base.Init();
+                Slider = new Slide<Vector2>(Vector2.Zero, Vector2.Zero, 500, Vector2.SmoothStep);
                 BlockNumber = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0), NumType = Icons.NumType.Num_8x16_0, Spaces = 2, Padding = 2 };
                 Face1 = new IGMDataItem.Face { Pos = new Rectangle(BlockNumber.X + 44, SIZE[0].Y, 124, SIZE[0].Height), Border = true };
                 Face2 = new IGMDataItem.Face { Pos = new Rectangle(Face1.X + Face1.Width, SIZE[0].Y, Face1.Width, SIZE[0].Height), Border = true };
@@ -138,11 +172,10 @@ namespace OpenVIII
                 Location = new IGMDataItem.Box { Pos = new Rectangle(Face3offsetx, base.Y + base.Height - locationheight, base.Width + base.X - Face3offsetx, locationheight) };
 
                 CONTAINER.OffsetAnchor = new OffsetAnchor();
-                foreach(var i in ITEM)
+                foreach (Menu_Base i in ITEM)
                 {
-                    if(i!=null)
+                    if (i != null)
                         i.OffsetAnchor = CONTAINER.OffsetAnchor;
-                    
                 }
             }
 
@@ -152,31 +185,69 @@ namespace OpenVIII
                 SIZE[i].Inflate(-8, -8);
             }
 
-            private void PageChangeEvent(object sender, int page)
+            private void PageChangeEvent(object sender, Pool.GameChoose.PageInfo pinfo)
             {
-
-                if (expectedpage != page)
-                    Hide();
-                else
-                    Show();
-
-                if(_lastpage !=-1)
+                if (ID - 1 < 0) return;
+                if (_lastpage != -1)
                 {
                     _lastpage = _page;
-                    _page = page;
+                    _page = pinfo.PageNumber;
                 }
                 else
-                    _lastpage = _page = page;
-                if(_lastpage < _page)
                 {
-                    //going left to right
+                    _lastpage = _page = pinfo.PageNumber;
+                    if (!mypage) Hide();
+                    else Show();
                 }
-                else if(_lastpage > _page)
+                if (_lastpage != _page)
                 {
-                    //going right to left
+                    if (!pinfo.previous)
+                    {
+                        //going left to right
+                        if (mypage)
+                        {
+                            Slider.End = Vector2.Zero;
+                            if (!Enabled)
+                            {
+                                Slider.Start = right;
+                            }
+                            else
+                                Slider.Start = CONTAINER.OffsetAnchor;
+                            Slider.Restart();
+
+                            Show();
+                        }
+                        else if (Slider.End == Vector2.Zero)
+                        {
+                            Slider.End = left;
+                            Slider.Start = CONTAINER.OffsetAnchor;
+                            Slider.Restart();
+                        }
+                    }
+                    else
+                    {
+                        //going right to left
+                        if (mypage)
+                        {
+
+                            Slider.End = Vector2.Zero;
+                            if (!Enabled)
+                                Slider.Start = left;
+                            else
+                                Slider.Start = CONTAINER.OffsetAnchor;
+                            Slider.Restart();
+
+                            Show();
+                        }
+                        else if (Slider.End == Vector2.Zero)
+                        {
+                            Slider.End = right;
+                            Slider.Start = CONTAINER.OffsetAnchor;
+                            Slider.Restart();
+                        }
+                    }
                 }
-
-
+                Refresh();
             }
 
             #endregion Methods
@@ -189,13 +260,16 @@ namespace OpenVIII
         {
             #region Fields
 
-            private EventHandler<int> PageChangeEventHandler;
+            private bool first = true;
+
+            private EventHandler<PageInfo> PageChangeEventHandler;
 
             #endregion Fields
 
             #region Properties
 
             public bool Save { get; private set; }
+
             public byte Slot { get; private set; }
 
             #endregion Properties
@@ -211,11 +285,10 @@ namespace OpenVIII
             public override void Refresh()
             {
                 base.Refresh();
-                PageChangeEventHandler?.Invoke(this, Page);
                 int r = 0;
                 foreach (Menu_Base i in ITEM)
                 {
-                    if (i.Enabled)
+                    if (i.Enabled && i.GetType() == typeof(GameBlock))
                     {
                         Contents[r++] = ((GameBlock)i).Data;
                         if (r >= Contents.Length) break;
@@ -268,6 +341,15 @@ namespace OpenVIII
                         }
                         Show();
                         Refresh();
+
+                        if (first)
+                        {
+                            PageChangeEventHandler?.Invoke(this, new PageInfo(Page, false));
+                            ITEM[0, 0].Show();
+                            ITEM[1, 0].Show();
+                            ITEM[2, 0].Show();
+                            first = false;
+                        }
                     }
                     else
                         Hide();
@@ -282,6 +364,7 @@ namespace OpenVIII
                     Refresh();
                 }
                 while (Contents[0] == null && Page != 0);
+                PageChangeEventHandler?.Invoke(this, new PageInfo(Page, false));
             }
 
             protected override void PAGE_PREV()
@@ -292,9 +375,37 @@ namespace OpenVIII
                     Refresh();
                 }
                 while (Contents[0] == null && Page != 0);
+
+                PageChangeEventHandler?.Invoke(this, new PageInfo(Page, true));
             }
 
             #endregion Methods
+
+            #region Structs
+
+            public struct PageInfo
+            {
+                #region Fields
+
+                public int PageNumber;
+
+                //if false, is next
+                public bool previous;
+
+                #endregion Fields
+
+                #region Constructors
+
+                public PageInfo(int pageNumber, bool previous = false)
+                {
+                    PageNumber = pageNumber;
+                    this.previous = previous;
+                }
+
+                #endregion Constructors
+            }
+
+            #endregion Structs
         }
     }
 
