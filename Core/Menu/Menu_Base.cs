@@ -29,6 +29,8 @@ namespace OpenVIII
             v += _v;
             return this;
         }
+
+        internal void Set(Vector2 vector2) => v = vector2;
     }
     /// <summary>
     /// Root class all menu objects can grow from.
