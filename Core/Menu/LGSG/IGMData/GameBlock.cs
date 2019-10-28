@@ -39,7 +39,7 @@ namespace OpenVIII
 
             private IGMDataItem.Integer Disc_Num { get => (IGMDataItem.Integer)ITEM[0, 8]; set => ITEM[0, 8] = value; }
 
-            private int expectedpage => (ID - 1) / ParentRows;
+            public int ExpectedPageNumber => (ID - 1) / ParentRows;
 
             private IGMDataItem.Face Face1 { get => (IGMDataItem.Face)ITEM[0, 1]; set => ITEM[0, 1] = value; }
 
@@ -71,7 +71,7 @@ namespace OpenVIII
 
             private IGMDataItem.Integer Mins { get => (IGMDataItem.Integer)ITEM[0, 12]; set => ITEM[0, 12] = value; }
 
-            private bool mypage => expectedpage == _page;
+            public bool IsMyPage => ExpectedPageNumber == _page;
             private IGMDataItem.Text Name { get => (IGMDataItem.Text)ITEM[0, 4]; set => ITEM[0, 4] = value; }
 
             private IGMDataItem.Icon Play { get => (IGMDataItem.Icon)ITEM[0, 9]; set => ITEM[0, 9] = value; }
@@ -133,7 +133,7 @@ namespace OpenVIII
                 base.Update();
                 if (Slider.Done)
                 {
-                    if (!mypage)
+                    if (!IsMyPage)
                     {
                         Hide();
                         return true;
@@ -196,7 +196,7 @@ namespace OpenVIII
                 else
                 {
                     _lastpage = _page = pinfo.PageNumber;
-                    if (!mypage) Hide();
+                    if (!IsMyPage) Hide();
                     else Show();
                 }
                 if (_lastpage != _page)
@@ -204,7 +204,7 @@ namespace OpenVIII
                     if (!pinfo.previous)
                     {
                         //going left to right
-                        if (mypage)
+                        if (IsMyPage)
                         {
                             Slider.End = Vector2.Zero;
                             if (!Enabled)
@@ -227,7 +227,7 @@ namespace OpenVIII
                     else
                     {
                         //going right to left
-                        if (mypage)
+                        if (IsMyPage)
                         {
                             Slider.End = Vector2.Zero;
                             if (!Enabled)

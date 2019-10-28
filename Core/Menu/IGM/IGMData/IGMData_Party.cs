@@ -26,25 +26,25 @@ namespace OpenVIII
 
             #region Methods
 
-            public static IGMData_Party Create() => Create<IGMData_Party>();
+            public static IGMData_Party Create() => Create<IGMData_Party>(3, 12, new IGMDataItem.Empty(Rectangle.Empty), 1, 3);
 
             public override void Refresh()
             {
                 if (Memory.State.Characters != null && !skipReInit)
                 {
-                    skipReInit = true;
-                    IGMDataItem.Empty c;
+                    //skipReInit = true;
+                    //IGMDataItem.Empty c;
                     if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
                     {
-                        c = new IGMDataItem.Empty(pos: new Rectangle { Width = 580, Height = 234, X = 20, Y = 84 });
+                        CONTAINER.Pos = new Rectangle { Width = 580, Height = 234, X = 20, Y = 84 };
                         vSpace = 0;
                     }
                     else
                     {
-                        c = new IGMDataItem.Empty(pos: new Rectangle { Width = 580, Height = 462, X = 20, Y = 84 });
+                        CONTAINER.Pos = new Rectangle { Width = 580, Height = 462, X = 20, Y = 84 };
                         vSpace = 6;
                     }
-                    Init(3, 12, c, 1, 3);
+                    InitSize(true);
 
                     if (Memory.State.Characters != null)
                     {

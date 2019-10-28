@@ -83,8 +83,8 @@ namespace OpenVIII
                 int r = 0;
                 foreach (Menu_Base i in ITEM)
                 {
-                    if (i.Enabled && i.GetType() == typeof(GameBlock))
-                    {
+                    if (i!=null && i.GetType() == typeof(GameBlock) && ((GameBlock)i).ExpectedPageNumber == Page)
+                    {                        
                         Contents[r++] = ((GameBlock)i).Data;
                         if (r >= Contents.Length) break;
                     }
