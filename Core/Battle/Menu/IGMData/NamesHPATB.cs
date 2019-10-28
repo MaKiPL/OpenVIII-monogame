@@ -99,32 +99,31 @@ namespace OpenVIII.IGMData
                 }
                 bool blink = false;
                 bool charging = false;
-                if (Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn))
+                BattleMode = (Damageable.BattleMode)Damageable.GetBattleMode();
+                if (BattleMode.Equals(Damageable.BattleMode.YourTurn))
                 {
                     ((IGMDataItem.Texture)ITEM[0, (int)DepthID.ATBCharged]).Color = Color.LightYellow * .8f;
                     blink = true;
                 }
-                else if (Damageable.GetBattleMode().Equals(Damageable.BattleMode.ATB_Charged))
+                else if (BattleMode.Equals(Damageable.BattleMode.ATB_Charged))
                 {
                     ((IGMDataItem.Texture)ITEM[0, (int)DepthID.ATBCharged]).Color = Color.Yellow * .8f;
                 }
-                else if (Damageable.GetBattleMode().Equals(Damageable.BattleMode.ATB_Charging))
+                else if (BattleMode.Equals(Damageable.BattleMode.ATB_Charging))
                 {
                     charging = true;
                     ((IGMDataItem.Gradient.ATB)ITEM[0, (int)DepthID.ATBCharging]).Refresh(Damageable);
-                }
-                    ((IGMDataItem.Texture)ITEM[0, (int)DepthID.ATBCharged]).Blink = blink;
-                if (charging)
-                {
                     ITEM[0, (int)DepthID.ATBCharged].Hide();
                     ITEM[0, (int)DepthID.ATBCharging].Show();
                 }
-                else
+
+                if(!charging)
                 {
                     ITEM[0, (int)DepthID.ATBCharging].Hide();
                     ITEM[0, (int)DepthID.ATBCharged].Show();
                 }
-                    ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).Blink = blink;
+                ((IGMDataItem.Texture)ITEM[0, (int)DepthID.ATBCharged]).Blink = blink;
+                ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).Blink = blink;
                 ((IGMDataItem.Integer)ITEM[0, (byte)DepthID.HP]).Blink = blink;
 
                 base.Refresh();
@@ -174,12 +173,16 @@ namespace OpenVIII.IGMData
             ((IGMDataItem.Gradient.ATB)ITEM[0, (byte)DepthID.ATBCharging]).Faded_Color = Color.Orange * .8f;
             ((IGMDataItem.Gradient.ATB)ITEM[0, (byte)DepthID.ATBCharging]).Refresh(Damageable);
         }
-
+        Damageable.BattleMode BattleMode = Damageable.BattleMode.EndTurn;
         protected override void ModeChangeEvent(object sender, Enum e)
         {
-            base.ModeChangeEvent(sender, e);
-            if (!e.Equals(Damageable.BattleMode.EndTurn)) //because endturn triggers BattleMenu refresh.
-                Refresh();
+            if (!e.Equals(BattleMode))
+            {
+                base.ModeChangeEvent(sender, e);
+                BattleMode = (Damageable.BattleMode)e;
+                if (!e.Equals(Damageable.BattleMode.EndTurn)) //because endturn triggers BattleMenu refresh.
+                    Refresh();
+            }
         }
 
         private static List<KeyValuePair<int, Characters>> GetParty()

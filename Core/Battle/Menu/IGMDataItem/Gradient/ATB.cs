@@ -35,7 +35,7 @@ namespace OpenVIII.IGMDataItem.Gradient
             r.Width = r.Data.Width;
             return r;
         }
-
+        public override Rectangle Pos { get { return base.Pos; } set => Restriction = base.Pos = value; }
         public static Texture2D ThreadUnsafeOperations(int width)
         {
             lock (locker)
