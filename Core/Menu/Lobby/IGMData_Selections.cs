@@ -6,14 +6,79 @@ namespace OpenVIII
 {
     public partial class IGM_Lobby
     {
+        #region Classes
+
         private class IGMData_Selections : IGMData.Base
         {
-            private Dictionary<int, Action> OkayActions;
-            private Dictionary<int, Action> FadeOutActions;
-            private bool eventset = false;
+            #region Fields
 
-            static public IGMData_Selections Create() =>
+            private bool eventset = false;
+            private Dictionary<int, Action> FadeOutActions;
+            private Dictionary<int, Action> OkayActions;
+
+            #endregion Fields
+
+            #region Methods
+
+            public static IGMData_Selections Create() =>
                 Create<IGMData_Selections>(count: 3, depth: 1, container: new IGMDataItem.Empty(new Rectangle(320, 445, 250, 170)), cols: 1, rows: 3);
+
+            public override void Draw() => base.Draw();
+
+            public override bool Inputs()
+            {
+                if (!FadingOut)
+                    return base.Inputs();
+                return false;
+            }
+
+            public override bool Inputs_CANCEL() => false;
+
+            public override void Inputs_Cards()
+            {
+            }
+
+            public override void Inputs_Menu()
+            {
+            }
+
+            public override bool Inputs_OKAY()
+            {
+                if (OkayActions.TryGetValue(CURSOR_SELECT, out Action a))
+                {
+                    a();
+                    return true;
+                }
+                return false;
+            }
+
+            public void NewGameFadeOutAction()
+            {
+                /*reverse engineering notes:
+                *
+                * we should happen to reset wm2field values
+                * also the basic party of Squall is now set: SG_PARTY_FIELD1 = 0, and other members are 0xFF
+                */
+                Module_main_menu_debug.FieldPointer = 74; //RE: startup stage ID is hardcoded. Probably we would want to change it for modding
+                                                          //the module changes to 1 now
+                Module_field_debug.ResetField();
+
+                Module_movie_test.Index = 30;
+                Module_movie_test.ReturnState = MODULE.FIELD_DEBUG;
+                Memory.module = MODULE.MOVIETEST;
+                Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.MainLobby;
+                Memory.IsMouseVisible = false;
+            }
+
+            public override void Refresh()
+            {
+                if (!eventset)
+                {
+                    Menu.FadedOutHandler += FadedOutEvent;
+                    eventset = true;
+                }
+                base.Refresh();
+            }
 
             protected override void Init()
             {
@@ -36,14 +101,11 @@ namespace OpenVIII
                 };
             }
 
-            public override void Refresh()
+            private void DebugModeOkayAction()
             {
-                if (!eventset)
-                {
-                    Menu.FadedOutHandler += FadedOutEvent;
-                    eventset = true;
-                }
-                base.Refresh();
+                base.Inputs_OKAY();
+                FadeIn();
+                Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.DebugScreen;
             }
 
             private void FadedOutEvent(object sender, EventArgs e)
@@ -53,43 +115,12 @@ namespace OpenVIII
                     FadeOutActions[CURSOR_SELECT]();
             }
 
-            public void NewGameFadeOutAction()
+            private void LoadGameOkayAction()
             {
-                /*reverse engineering notes:
-                *
-                * we should happen to reset wm2field values
-                * also the basic party of Squall is now set: SG_PARTY_FIELD1 = 0, and other members are 0xFF
-                */
-                Module_main_menu_debug.FieldPointer = 74; //RE: startup stage ID is hardcoded. Probably we would want to change it for modding
-                                                          //the module changes to 1 now
-                Module_field_debug.ResetField();
-
-                Module_movie_test.Index = 30;
-                Module_movie_test.ReturnState = MODULE.FIELD_DEBUG;
-                Memory.module = MODULE.MOVIETEST;
-                Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.MainLobby;
-                Memory.IsMouseVisible = false;
+                base.Inputs_OKAY();
+                FadeIn();
+                Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.LoadGameChooseSlot;
             }
-
-            public override bool Inputs_OKAY()
-            {
-                if (OkayActions.TryGetValue(CURSOR_SELECT, out Action a))
-                {
-                    a();
-                    return true;
-                }
-                return false;
-            }
-
-            public override void Inputs_Cards()
-            {
-            }
-
-            public override void Inputs_Menu()
-            {
-            }
-
-            public override bool Inputs_CANCEL() => false;
 
             private void NewGameOkayAction()
             {
@@ -99,28 +130,9 @@ namespace OpenVIII
                 FadeOut();
             }
 
-            private void LoadGameOkayAction()
-            {
-                base.Inputs_OKAY();
-                FadeIn();
-                Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.LoadGameChooseSlot;
-            }
-
-            private void DebugModeOkayAction()
-            {
-                base.Inputs_OKAY();
-                FadeIn();
-                Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.DebugScreen;
-            }
-
-            public override bool Inputs()
-            {
-                if (!FadingOut)
-                    return base.Inputs();
-                return false;
-            }
-
-            public override void Draw() => base.Draw();
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

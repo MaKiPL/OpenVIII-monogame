@@ -42,8 +42,8 @@ namespace OpenVIII.IGMDataItem.Gradient
             {
                 if (common == null)
                 {
-                    if (Memory.IsMainThread)
-                    {
+                    //if (Memory.IsMainThread)
+                    //{
                         float dark = 0.067f;
                         float fade = 0.933f;
                         int total = width;
@@ -59,8 +59,8 @@ namespace OpenVIII.IGMDataItem.Gradient
 
                         common = new Texture2D(Memory.graphics.GraphicsDevice, cfade.Length, 1, false, SurfaceFormat.Color);
                         common.SetData(cfade);
-                    }
-                    else throw new Exception("Must be in main thread!");
+                    //}
+                    //else throw new Exception("Must be in main thread!");
                 }
             }
             return common;
@@ -70,7 +70,7 @@ namespace OpenVIII.IGMDataItem.Gradient
         public override void Refresh(Damageable damageable)
         {
             base.Refresh(damageable);
-            damageable.Refresh();
+            damageable?.Refresh();
         }
 
         public override bool Update()

@@ -17,27 +17,6 @@ namespace OpenVIII
         protected SP2()
         { }
 
-        protected virtual void DefaultValues()
-        {
-            Count = 0;
-            PaletteCount = 1;
-            EntriesPerTexture = 1;
-            Scale = null;
-            TextureStartOffset = 0;
-            IndexFilename = "";
-            Textures = null;
-            Entries = null;
-            ArchiveString = Memory.Archives.A_MENU;
-        }
-
-        public static T Load<T>() where T : SP2, new()
-        {
-            T r = new T();
-            r.DefaultValues();
-            r.Init();
-            return r;
-        }
-
         #endregion Constructors
 
         #region Enums
@@ -111,6 +90,14 @@ namespace OpenVIII
 
         #region Methods
 
+        public static T Load<T>() where T : SP2, new()
+        {
+            T r = new T();
+            r.DefaultValues();
+            r.Init();
+            return r;
+        }
+
         /// <summary>
         /// Draw Item
         /// </summary>
@@ -178,6 +165,19 @@ namespace OpenVIII
         {
             Entry eg = this[ic];
             eg.SetTrimNonGroup(Textures[pal]);
+        }
+
+        protected virtual void DefaultValues()
+        {
+            Count = 0;
+            PaletteCount = 1;
+            EntriesPerTexture = 1;
+            Scale = null;
+            TextureStartOffset = 0;
+            IndexFilename = "";
+            Textures = null;
+            Entries = null;
+            ArchiveString = Memory.Archives.A_MENU;
         }
 
         protected virtual void Init()

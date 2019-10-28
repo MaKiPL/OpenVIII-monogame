@@ -8,30 +8,15 @@ namespace OpenVIII
 
         private class IGMData_Mag_PageTitle : IGMData.Base
         {
+            #region Fields
+
+            private Mode last = 0;
+
+            #endregion Fields
+
             #region Methods
 
-            protected override void Init()
-            {
-                base.Init();
-                ITEM[0, 0] = new IGMDataItem.Icon { Data = Icons.ID.Rewind_Fast, Pos = new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0), Palette = 2, Faded_Palette = 7 };
-                ITEM[0, 1] = new IGMDataItem.Text { Pos = new Rectangle(SIZE[0].X + 20, SIZE[0].Y, 0, 0) };
-                ITEM[0, 2] = new IGMDataItem.Icon { Data = Icons.ID.Rewind, Pos = new Rectangle(SIZE[0].X + 143, SIZE[0].Y, 0, 0), Palette = 2, Faded_Palette = 7 };
-                ITEM[0, 3] = new IGMDataItem.Text { Pos = new Rectangle(SIZE[0].X + 169, SIZE[0].Y, 0, 0) };
-            }
-
-            protected override void InitShift(int i, int col, int row)
-            {
-                base.InitShift(i, col, row);
-                SIZE[0].Inflate(-19, -18);
-            }
-
-            #endregion Methods
-
-            #region Constructors
-
-            public static IGMData_Mag_PageTitle Create() => Create<IGMData_Mag_PageTitle>(1, 4, new IGMDataItem.Box { Pos = new Rectangle(0, 345, 435, 66)});
-
-            #endregion Constructors
+            public static IGMData_Mag_PageTitle Create() => Create<IGMData_Mag_PageTitle>(1, 4, new IGMDataItem.Box { Pos = new Rectangle(0, 345, 435, 66) });
 
             public override void Refresh()
             {
@@ -57,8 +42,6 @@ namespace OpenVIII
                 }
             }
 
-            private Mode last = 0;
-
             public override bool Update()
             {
                 if (IGM_Junction != null && !IGM_Junction.GetMode().Equals(last) && Enabled)
@@ -69,6 +52,23 @@ namespace OpenVIII
                 }
                 return false;
             }
+
+            protected override void Init()
+            {
+                base.Init();
+                ITEM[0, 0] = new IGMDataItem.Icon { Data = Icons.ID.Rewind_Fast, Pos = new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0), Palette = 2, Faded_Palette = 7 };
+                ITEM[0, 1] = new IGMDataItem.Text { Pos = new Rectangle(SIZE[0].X + 20, SIZE[0].Y, 0, 0) };
+                ITEM[0, 2] = new IGMDataItem.Icon { Data = Icons.ID.Rewind, Pos = new Rectangle(SIZE[0].X + 143, SIZE[0].Y, 0, 0), Palette = 2, Faded_Palette = 7 };
+                ITEM[0, 3] = new IGMDataItem.Text { Pos = new Rectangle(SIZE[0].X + 169, SIZE[0].Y, 0, 0) };
+            }
+
+            protected override void InitShift(int i, int col, int row)
+            {
+                base.InitShift(i, col, row);
+                SIZE[0].Inflate(-19, -18);
+            }
+
+            #endregion Methods
         }
 
         #endregion Classes

@@ -9,18 +9,14 @@ namespace OpenVIII
 
         private class IGMData_Abilities_AbilityPool : IGMData.Pool.Base<IReadOnlyDictionary<Kernel_bin.Abilities, Kernel_bin.Equipable_Ability>, Kernel_bin.Abilities>
         {
-            #region Constructors
+            #region Methods
 
             public static IGMData_Abilities_AbilityPool Create()
             {
-                IGMData_Abilities_AbilityPool r = Create<IGMData_Abilities_AbilityPool>(11, 1, new IGMDataItem.Box { Pos = new Rectangle(435, 150, 405, 480), Title= Icons.ID.ABILITY}, 11, Kernel_bin.EquipableAbilities.Count / 11 + (Kernel_bin.EquipableAbilities.Count % 11 > 0 ? 1 : 0));
+                IGMData_Abilities_AbilityPool r = Create<IGMData_Abilities_AbilityPool>(11, 1, new IGMDataItem.Box { Pos = new Rectangle(435, 150, 405, 480), Title = Icons.ID.ABILITY }, 11, Kernel_bin.EquipableAbilities.Count / 11 + (Kernel_bin.EquipableAbilities.Count % 11 > 0 ? 1 : 0));
                 r.Source = Kernel_bin.EquipableAbilities;
                 return r;
             }
-
-            #endregion Constructors
-
-            #region Methods
 
             public override bool Inputs_CANCEL()
             {

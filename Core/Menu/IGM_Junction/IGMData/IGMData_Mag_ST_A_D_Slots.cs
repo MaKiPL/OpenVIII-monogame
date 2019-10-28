@@ -10,70 +10,6 @@ namespace OpenVIII
         {
             #region Methods
 
-            private void ConfirmChangeEvent(object sender, Mode e) => ConfirmChange();
-
-            private void ReInitEvent(object sender, Damageable e) => Refresh(e);
-
-            private void UndoChangeEvent(object sender, Mode e) => UndoChange();
-
-            protected override void AddEventListener()
-            {
-                if (!eventAdded)
-                {
-                    IGMData.Pool.Magic.SlotConfirmListener += ConfirmChangeEvent;
-                    IGMData.Pool.Magic.SlotRefreshListener += ReInitEvent;
-                    IGMData.Pool.Magic.SlotUndoListener += UndoChangeEvent;
-                }
-                base.AddEventListener();
-            }
-
-            protected override void Init() => base.Init();
-
-            protected override void InitShift(int i, int col, int row)
-            {
-                base.InitShift(i, col, row);
-                SIZE[i].Inflate(-30, -6);
-                SIZE[i].Y -= row * 2;
-            }
-
-            protected override void PageLeft() => IGM_Junction.SetMode(Mode.Mag_Stat);
-
-            protected override void PageRight() => IGM_Junction.SetMode(Mode.Mag_EL_A);
-
-            protected override void SetCursor_select(int value)
-            {
-                if (value != GetCursor_select())
-                {
-                    base.SetCursor_select(value);
-                    CheckMode();
-                    IGMData.Pool.Magic.StatEventListener?.Invoke(this, Contents[CURSOR_SELECT]);
-                }
-            }
-
-            protected override bool Unlocked(byte pos)
-            {
-                if (unlocked != null)
-                    switch (pos)
-                    {
-                        case 0:
-                            return unlocked.Contains(Kernel_bin.Abilities.ST_Atk_J);
-
-                        case 1:
-                            return unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx1) ||
-                                unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx2) ||
-                                unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4);
-
-                        case 2:
-                            return unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx2) ||
-                                unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4);
-
-                        case 3:
-                        case 4:
-                            return unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4);
-                    }
-                return false;
-            }
-
             public static IGMData_Mag_ST_A_D_Slots Create() => Create<IGMData_Mag_ST_A_D_Slots>(5, 2, new IGMDataItem.Box { Pos = new Rectangle(0, 414, 840, 216) }, 1, 5);
 
             public override void BackupSetting() => SetPrevSetting((Saves.CharacterData)Damageable.Clone());
@@ -145,6 +81,70 @@ namespace OpenVIII
                     c.Stat_J = GetPrevSetting().CloneMagicJunction();
                 }
             }
+
+            protected override void AddEventListener()
+            {
+                if (!eventAdded)
+                {
+                    IGMData.Pool.Magic.SlotConfirmListener += ConfirmChangeEvent;
+                    IGMData.Pool.Magic.SlotRefreshListener += ReInitEvent;
+                    IGMData.Pool.Magic.SlotUndoListener += UndoChangeEvent;
+                }
+                base.AddEventListener();
+            }
+
+            protected override void Init() => base.Init();
+
+            protected override void InitShift(int i, int col, int row)
+            {
+                base.InitShift(i, col, row);
+                SIZE[i].Inflate(-30, -6);
+                SIZE[i].Y -= row * 2;
+            }
+
+            protected override void PageLeft() => IGM_Junction.SetMode(Mode.Mag_Stat);
+
+            protected override void PageRight() => IGM_Junction.SetMode(Mode.Mag_EL_A);
+
+            protected override void SetCursor_select(int value)
+            {
+                if (value != GetCursor_select())
+                {
+                    base.SetCursor_select(value);
+                    CheckMode();
+                    IGMData.Pool.Magic.StatEventListener?.Invoke(this, Contents[CURSOR_SELECT]);
+                }
+            }
+
+            protected override bool Unlocked(byte pos)
+            {
+                if (unlocked != null)
+                    switch (pos)
+                    {
+                        case 0:
+                            return unlocked.Contains(Kernel_bin.Abilities.ST_Atk_J);
+
+                        case 1:
+                            return unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx1) ||
+                                unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx2) ||
+                                unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4);
+
+                        case 2:
+                            return unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx2) ||
+                                unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4);
+
+                        case 3:
+                        case 4:
+                            return unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4);
+                    }
+                return false;
+            }
+
+            private void ConfirmChangeEvent(object sender, Mode e) => ConfirmChange();
+
+            private void ReInitEvent(object sender, Damageable e) => Refresh(e);
+
+            private void UndoChangeEvent(object sender, Mode e) => UndoChange();
 
             #endregion Methods
         }

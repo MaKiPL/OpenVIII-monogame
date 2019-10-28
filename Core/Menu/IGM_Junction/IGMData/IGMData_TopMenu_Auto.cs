@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using System.Collections.Generic;
 
 namespace OpenVIII
 {
@@ -9,13 +8,9 @@ namespace OpenVIII
 
         private class IGMData_TopMenu_Auto : IGMData.Base
         {
-            #region Constructors
-
-            static public IGMData_TopMenu_Auto Create() => Create<IGMData_TopMenu_Auto>(3, 1, new IGMDataItem.Box { Pos = new Rectangle(165, 12, 445, 54) }, 3, 1);
-
-            #endregion Constructors
-
             #region Methods
+
+            public static IGMData_TopMenu_Auto Create() => Create<IGMData_TopMenu_Auto>(3, 1, new IGMDataItem.Box { Pos = new Rectangle(165, 12, 445, 54) }, 3, 1);
 
             public override bool Inputs_CANCEL()
             {

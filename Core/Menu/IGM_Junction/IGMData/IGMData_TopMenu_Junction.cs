@@ -10,45 +10,6 @@ namespace OpenVIII
         {
             #region Methods
 
-            private void Update_String()
-            {
-                if (IGM_Junction != null && IGM_Junction.GetMode().Equals(Mode.TopMenu_Junction) && Enabled)
-                {
-                    FF8String Changed = null;
-                    switch (CURSOR_SELECT)
-                    {
-                        case 0:
-                            Changed = Strings.Description.GF;
-                            break;
-
-                        case 1:
-                            Changed = Strings.Description.Magic;
-                            break;
-                    }
-                    if (Changed != null && IGM_Junction != null)
-                        IGM_Junction.ChangeHelp(Changed);
-                }
-            }
-
-            protected override void Init()
-            {
-                base.Init();
-                ITEM[0, 0] = new IGMDataItem.Text() { Data = Strings.Name.GF, Pos = SIZE[0] };
-                ITEM[1, 0] = new IGMDataItem.Text() { Data = Strings.Name.Magic, Pos = SIZE[1] };
-                Cursor_Status |= Cursor_Status.Enabled;
-                Cursor_Status |= Cursor_Status.Horizontal;
-                Cursor_Status |= Cursor_Status.Vertical;
-
-                Hide();
-            }
-
-            protected override void InitShift(int i, int col, int row)
-            {
-                base.InitShift(i, col, row);
-                SIZE[i].Inflate(-40, -12);
-                SIZE[i].Offset(20 + (-20 * (col > 1 ? col : 0)), 0);
-            }
-
             public static IGMData_TopMenu_Junction Create() => Create<IGMData_TopMenu_Junction>(2, 1, new IGMDataItem.Box { Pos = new Rectangle(210, 12, 400, 54) }, 2, 1);
 
             public override bool Inputs_CANCEL()
@@ -86,6 +47,45 @@ namespace OpenVIII
                         Cursor_Status |= Cursor_Status.Blinking;
                 }
                 return base.Update();
+            }
+
+            protected override void Init()
+            {
+                base.Init();
+                ITEM[0, 0] = new IGMDataItem.Text() { Data = Strings.Name.GF, Pos = SIZE[0] };
+                ITEM[1, 0] = new IGMDataItem.Text() { Data = Strings.Name.Magic, Pos = SIZE[1] };
+                Cursor_Status |= Cursor_Status.Enabled;
+                Cursor_Status |= Cursor_Status.Horizontal;
+                Cursor_Status |= Cursor_Status.Vertical;
+
+                Hide();
+            }
+
+            protected override void InitShift(int i, int col, int row)
+            {
+                base.InitShift(i, col, row);
+                SIZE[i].Inflate(-40, -12);
+                SIZE[i].Offset(20 + (-20 * (col > 1 ? col : 0)), 0);
+            }
+
+            private void Update_String()
+            {
+                if (IGM_Junction != null && IGM_Junction.GetMode().Equals(Mode.TopMenu_Junction) && Enabled)
+                {
+                    FF8String Changed = null;
+                    switch (CURSOR_SELECT)
+                    {
+                        case 0:
+                            Changed = Strings.Description.GF;
+                            break;
+
+                        case 1:
+                            Changed = Strings.Description.Magic;
+                            break;
+                    }
+                    if (Changed != null && IGM_Junction != null)
+                        IGM_Junction.ChangeHelp(Changed);
+                }
             }
 
             #endregion Methods

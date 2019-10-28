@@ -7,12 +7,6 @@ namespace OpenVIII.IGMData.Group
     {
         #region Methods
 
-        protected override void Init()
-        {
-            base.Init();
-            Hide();
-        }
-
         public static new TopMenu Create(params Menu_Base[] d)
         {
             if (d[0].GetType() == typeof(IGMDataItem.Box))
@@ -36,6 +30,12 @@ namespace OpenVIII.IGMData.Group
                 }
             }
             base.Refresh();
+        }
+
+        protected override void Init()
+        {
+            base.Init();
+            Hide();
         }
 
         #endregion Methods

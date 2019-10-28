@@ -26,6 +26,19 @@ namespace OpenVIII.IGMData.Dialog
 
         #region Methods
 
+        public static T Create<T>(FF8String data, int x, int y, Icons.ID? title = null, Box_Options options = Box_Options.Default, Rectangle? bounding = null) where T : Small, new()
+        {
+            T r = Create<T>(container: new IGMDataItem.Box { Data = data, Pos = new Rectangle(x, y, 0, 0), Title = title, Options = Box_Options.Center | Box_Options.Middle });
+            r._options = options;
+            // probably won't work as static size is set in update. And this may run before it's set.
+            r._bounding = bounding ?? new Rectangle(Point.Zero, Menu.StaticSize.ToPoint());
+            r.Reposition();
+            return r;
+        }
+
+        public static Small Create(FF8String data, int x, int y, Icons.ID? title = null, Box_Options options = Box_Options.Default, Rectangle? bounding = null)
+            => Create<Small>(data, x, y, title, options, bounding);
+
         private void Reposition()
         {
             if (CONTAINER.GetType() == typeof(IGMDataItem.Box))
@@ -42,19 +55,6 @@ namespace OpenVIII.IGMData.Dialog
                 }
             }
         }
-
-        public static T Create<T>(FF8String data, int x, int y, Icons.ID? title = null, Box_Options options = Box_Options.Default, Rectangle? bounding = null) where T : Small, new()
-        {
-            T r = Create<T>(container: new IGMDataItem.Box { Data = data, Pos = new Rectangle(x, y, 0, 0), Title = title, Options = Box_Options.Center | Box_Options.Middle });
-            r._options = options;
-            // probably won't work as static size is set in update. And this may run before it's set.
-            r._bounding = bounding ?? new Rectangle(Point.Zero, Menu.StaticSize.ToPoint());
-            r.Reposition();
-            return r;
-        }
-
-        public static Small Create(FF8String data, int x, int y, Icons.ID? title = null, Box_Options options = Box_Options.Default, Rectangle? bounding = null)
-            => Create<Small>(data, x, y, title, options, bounding);
 
         #endregion Methods
     }

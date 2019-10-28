@@ -67,11 +67,11 @@ namespace OpenVIII
 
         private static IGM_Items _igm_items;
         private static IGM_Junction _igm_junction;
+        private static IGM_LGSG _igm_lgsg;
         private static IGM_Lobby _igm_lobby;
         private static object _igm_lock = new object();
         private bool _backup = false;
         private Vector2 _size;
-        private static IGM_LGSG _igm_lgsg;
 
         #endregion Fields
 
@@ -120,12 +120,12 @@ namespace OpenVIII
         /// <summary>
         /// Lobby Menu
         /// </summary>
-        public static IGM_Lobby IGM_Lobby => _igm_lobby;
+        public static IGM_LGSG IGM_LGSG => _igm_lgsg;
 
         /// <summary>
         /// Lobby Menu
         /// </summary>
-        public static IGM_LGSG IGM_LGSG => _igm_lgsg;
+        public static IGM_Lobby IGM_Lobby => _igm_lobby;
 
         /// <summary>
         /// Adjusted mouse location used to determine if mouse is highlighting a button.
@@ -162,6 +162,17 @@ namespace OpenVIII
         #endregion Properties
 
         #region Methods
+
+        //public Menu() => InitConstructor();
+        public static T Create<T>(Damageable damageable = null) where T : Menu, new()
+        {
+            T r = new T
+            {
+                Damageable = damageable,
+            };
+            r.InitConstructor();
+            return r;
+        }
 
         public static BoxReturn DrawBox(Rectangle dst, FF8String buffer = null, Icons.ID? title = null, Vector2? textScale = null, Vector2? boxScale = null, Box_Options options = Box_Options.Default)
         {
@@ -291,17 +302,6 @@ namespace OpenVIII
 
         public static void UpdateOnce() => UpdateFade(null);
 
-        //public Menu() => InitConstructor();
-        static public T Create<T>(Damageable damageable = null) where T : Menu, new()
-        {
-            T r = new T
-            {
-                Damageable = damageable,
-            };
-            r.InitConstructor();
-            return r;
-        }
-
         public override void Draw()
         {
             StartDraw();
@@ -312,7 +312,7 @@ namespace OpenVIII
         public virtual void DrawData()
         {
             if (!skipdata && Enabled)
-                foreach (Menu_Base i in Data.OrderBy(x => x.Key).Select(x => x.Value).Where(x=>x!=null && x.Enabled))
+                foreach (Menu_Base i in Data.OrderBy(x => x.Key).Select(x => x.Value).Where(x => x != null && x.Enabled))
                     i?.Draw();
         }
 
@@ -381,7 +381,7 @@ namespace OpenVIII
                 if (!skipdata)
                     foreach (KeyValuePair<Enum, Menu_Base> i in Data)
                     {
-                        ret = (i.Value?.Update()??false) || ret;
+                        ret = (i.Value?.Update() ?? false) || ret;
                     }
             }
             if (!NoInputOnUpdate)

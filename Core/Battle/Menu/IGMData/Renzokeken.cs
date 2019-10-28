@@ -31,14 +31,6 @@ namespace OpenVIII.IGMData
         {
             lock (locker)
             {
-                //trim checks to see if it's ran once before.
-                //so no need to check if it's already ran.
-                //will throw exception if not in main thread.
-                for (byte i = 0; i <= 7; i++)
-                    Memory.Icons.Trim(Icons.ID._0_Hit_ + i, 2);
-                Memory.Icons.Trim(Icons.ID.Trigger_, 2);
-                Memory.Icons.Trim(Icons.ID.Perfect__, 2);
-                Memory.Icons.Trim(Icons.ID.Renzokeken_Seperator, 6);
                 if (pixel == null)
                 {
                     pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
@@ -127,7 +119,7 @@ namespace OpenVIII.IGMData
                 if ((delayMS += Memory.gameTime.ElapsedGameTime.TotalMilliseconds) > 1000)
                 {
                     //Damageable.EndTurn(); //gets stuck if the current player isn't squall
-                    Menus.BattleMenus.GetCurrentBattleMenu().Damageable.EndTurn();
+                    Menu.BattleMenus.GetCurrentBattleMenu().Damageable.EndTurn();
                 }
             }
             if (hot)

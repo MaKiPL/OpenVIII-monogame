@@ -13,6 +13,10 @@ namespace OpenVIII
         {
         }
 
+        #endregion Constructors
+
+        #region Methods
+
         public static Faces Load() => Load<Faces>();
 
         protected override void DefaultValues()
@@ -27,6 +31,6 @@ namespace OpenVIII
             EntriesPerTexture = 16;
         }
 
-        #endregion Constructors
+        #endregion Methods
     }
 }

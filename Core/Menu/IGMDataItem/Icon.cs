@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+
 namespace OpenVIII.IGMDataItem
 {
     public class Icon : Base, I_Data<Icons.ID>, I_Palette
@@ -18,6 +19,7 @@ namespace OpenVIII.IGMDataItem
         }
 
         public Icons.ID Data { get; set; } = Icons.ID.None;
+
         public byte Faded_Palette
         {
             get => _faded_palette; set
@@ -35,7 +37,6 @@ namespace OpenVIII.IGMDataItem
                 _palette = value;
             }
         }
-
 
         #endregion Properties
 

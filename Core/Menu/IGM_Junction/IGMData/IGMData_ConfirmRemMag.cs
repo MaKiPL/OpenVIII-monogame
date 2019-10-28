@@ -8,14 +8,10 @@ namespace OpenVIII
 
         private sealed class IGMData_ConfirmRemMag : IGMData.Dialog.Confirm
         {
-            #region Constructors
-
-            public static IGMData_ConfirmRemMag Create(FF8String data, Icons.ID title, FF8String opt1, FF8String opt2, Rectangle pos) => 
-                Create<IGMData_ConfirmRemMag>(data, title, opt1, opt2, pos, 1);
-
-            #endregion Constructors
-
             #region Methods
+
+            public static IGMData_ConfirmRemMag Create(FF8String data, Icons.ID title, FF8String opt1, FF8String opt2, Rectangle pos) =>
+                Create<IGMData_ConfirmRemMag>(data, title, opt1, opt2, pos, 1);
 
             public override bool Inputs_CANCEL()
             {

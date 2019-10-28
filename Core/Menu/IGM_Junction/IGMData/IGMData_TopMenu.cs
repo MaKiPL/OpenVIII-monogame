@@ -10,25 +10,6 @@ namespace OpenVIII
         {
             #region Methods
 
-            protected override void Init()
-            {
-                base.Init();
-                ITEM[0, 0] = new IGMDataItem.Text { Data = Strings.Name.Junction, Pos = SIZE[0] };
-                ITEM[1, 0] = new IGMDataItem.Text { Data = Strings.Name.Off, Pos = SIZE[1] };
-                ITEM[2, 0] = new IGMDataItem.Text { Data = Strings.Name.Auto, Pos = SIZE[2] };
-                ITEM[3, 0] = new IGMDataItem.Text { Data = Strings.Name.Ability, Pos = SIZE[3] };
-                Cursor_Status |= Cursor_Status.Enabled;
-                Cursor_Status |= Cursor_Status.Horizontal;
-                Cursor_Status |= Cursor_Status.Vertical;
-            }
-
-            protected override void InitShift(int i, int col, int row)
-            {
-                base.InitShift(i, col, row);
-                SIZE[i].Inflate(-40, -12);
-                SIZE[i].Offset(20 + (-20 * (col > 1 ? col : 0)), 0);
-            }
-
             public static IGMData_TopMenu Create() => Create<IGMData_TopMenu>(4, 1, new IGMDataItem.Box { Pos = new Rectangle(0, 12, 610, 54) }, 4, 1);
 
             public override bool Inputs_CANCEL()
@@ -132,6 +113,25 @@ namespace OpenVIII
                         IGM_Junction.ChangeHelp(Changed);
                 }
                 return ret;
+            }
+
+            protected override void Init()
+            {
+                base.Init();
+                ITEM[0, 0] = new IGMDataItem.Text { Data = Strings.Name.Junction, Pos = SIZE[0] };
+                ITEM[1, 0] = new IGMDataItem.Text { Data = Strings.Name.Off, Pos = SIZE[1] };
+                ITEM[2, 0] = new IGMDataItem.Text { Data = Strings.Name.Auto, Pos = SIZE[2] };
+                ITEM[3, 0] = new IGMDataItem.Text { Data = Strings.Name.Ability, Pos = SIZE[3] };
+                Cursor_Status |= Cursor_Status.Enabled;
+                Cursor_Status |= Cursor_Status.Horizontal;
+                Cursor_Status |= Cursor_Status.Vertical;
+            }
+
+            protected override void InitShift(int i, int col, int row)
+            {
+                base.InitShift(i, col, row);
+                SIZE[i].Inflate(-40, -12);
+                SIZE[i].Offset(20 + (-20 * (col > 1 ? col : 0)), 0);
             }
 
             #endregion Methods

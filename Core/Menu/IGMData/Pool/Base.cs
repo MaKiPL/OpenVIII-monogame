@@ -2,31 +2,47 @@
 {
     public abstract class Base<T, T2> : IGMData.Base
     {
-        protected Base() => ExtraCount = 2;
-
         #region Constructors
 
-        public static J Create<J>(int count, int depth, Menu_Base container = null, int? rows = null, int? pages = null, Damageable damageable = null)
-            where J : Base<T, T2>, new()
-        {
-            J r = IGMData.Base.Create<J>(count, depth, container, 1, rows, damageable);
-            r.DefaultPages = pages ?? 1;
-            return r;
-        }
+        protected Base() => ExtraCount = 2;
 
         #endregion Constructors
 
         #region Properties
 
         public T2[] Contents { get; set; }
+
         public int DefaultPages { get; protected set; }
+
         public int Page { get; protected set; }
+
         public int Pages { get; private set; }
+
+        protected Menu_Base LeftArrow
+        {
+            get => ITEM[Count - 2, 0];
+            private set => SIZE[Count - 2] = ITEM[Count - 2, 0] = value;
+        }
+
+        protected Menu_Base RightArrow
+        {
+            get => ITEM[Count - 1, 0];
+            private set => SIZE[Count - 1] = ITEM[Count - 1, 0] = value;
+        }
+
         protected T Source { get; set; }
 
         #endregion Properties
 
         #region Methods
+
+        public static J Create<J>(int count, int depth, Menu_Base container = null, int? rows = null, int? pages = null, Damageable damageable = null)
+                                                                    where J : Base<T, T2>, new()
+        {
+            J r = IGMData.Base.Create<J>(count, depth, container, 1, rows, damageable);
+            r.DefaultPages = pages ?? 1;
+            return r;
+        }
 
         public override bool Inputs()
         {
@@ -73,18 +89,6 @@
             Cursor_Status |= Cursor_Status.Horizontal;
             RightArrow?.Hide();
             LeftArrow?.Hide();
-        }
-
-        protected Menu_Base RightArrow
-        {
-            get => ITEM[Count - 1, 0];
-            private set => SIZE[Count - 1] = ITEM[Count - 1, 0] = value;
-        }
-
-        protected Menu_Base LeftArrow
-        {
-            get => ITEM[Count - 2, 0];
-            private set => SIZE[Count - 2] = ITEM[Count - 2, 0] = value;
         }
 
         public override void Refresh()

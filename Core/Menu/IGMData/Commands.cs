@@ -278,77 +278,82 @@ namespace OpenVIII.IGMData
         /// </summary>
         public override void Refresh()
         {
-            if (Battle && !Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn))
+            if (Damageable != null)
             {
-                Hide();
-                return;
-            }
-            if (Memory.State.Characters != null && !skipRefresh && Damageable.GetCharacterData(out Saves.CharacterData c))
-            {
-                Show();
-                Rectangle DataSize = Rectangle.Empty;
-                base.Refresh();
-                page = 0;
-                Cursor_Status &= ~Cursor_Status.Horizontal;
-                commands[0] = Kernel_bin.BattleCommands[(c.Abilities.Contains(Kernel_bin.Abilities.Mug) ? 12 : 1)];
-                ITEM[0, 0] = new IGMDataItem.Text
+                if (Battle && !Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn))
                 {
-                    Data = commands[0].Name,
-                    Pos = SIZE[0]
-                };
-
-                for (int pos = 1; pos < Rows; pos++)
+                    Hide();
+                    return;
+                }
+                if (Memory.State.Characters != null && !skipRefresh && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
-                    Kernel_bin.Abilities cmd = c.Commands[pos - 1];
-
-                    if (cmd != Kernel_bin.Abilities.None)
+                    Show();
+                    Rectangle DataSize = Rectangle.Empty;
+                    base.Refresh();
+                    page = 0;
+                    Cursor_Status &= ~Cursor_Status.Horizontal;
+                    commands[0] = Kernel_bin.BattleCommands[(c.Abilities.Contains(Kernel_bin.Abilities.Mug) ? 12 : 1)];
+                    ITEM[0, 0] = new IGMDataItem.Text
                     {
-                        if (!Kernel_bin.Commandabilities.TryGetValue(cmd, out Kernel_bin.Command_abilities cmdval))
+                        Data = commands[0].Name,
+                        Pos = SIZE[0]
+                    };
+
+                    for (int pos = 1; pos < Rows; pos++)
+                    {
+                        Kernel_bin.Abilities cmd = c.Commands[pos - 1];
+
+                        if (cmd != Kernel_bin.Abilities.None)
                         {
-                            continue;
-                        }
+                            if (!Kernel_bin.Commandabilities.TryGetValue(cmd, out Kernel_bin.Command_abilities cmdval))
+                            {
+                                continue;
+                            }
 #if DEBUG
-                        if (!Battle) commands[pos] = cmdval.BattleCommand;
-                        else commands[pos] = Kernel_bin.BattleCommands[Cidoff++];
+                            if (!Battle) commands[pos] = cmdval.BattleCommand;
+                            else commands[pos] = Kernel_bin.BattleCommands[Cidoff++];
 #else
                         commands[pos] = cmdval.BattleCommand;
 #endif
-                        ((IGMDataItem.Text)ITEM[pos, 0]).Data = commands[pos].Name;
-                        ((IGMDataItem.Text)ITEM[pos, 0]).Pos = SIZE[pos];
-                        ITEM[pos, 0].Show();
-                        CheckBounds(ref DataSize, pos);
-                        BLANKS[pos] = false;
+                            ((IGMDataItem.Text)ITEM[pos, 0]).Data = commands[pos].Name;
+                            ((IGMDataItem.Text)ITEM[pos, 0]).Pos = SIZE[pos];
+                            ITEM[pos, 0].Show();
+                            CheckBounds(ref DataSize, pos);
+                            BLANKS[pos] = false;
+                        }
+                        else
+                        {
+                            ITEM[pos, 0]?.Hide();
+                            BLANKS[pos] = true;
+                        }
+                    }
+                    const int crisiswidth = 294;
+                    if (Battle && CrisisLevel)
+                    {
+                        CONTAINER.Width = crisiswidth;
+                        ITEM[Limit_Arrow, 0].Show();
                     }
                     else
                     {
-                        ITEM[pos, 0]?.Hide();
-                        BLANKS[pos] = true;
+                        CONTAINER.Width = nonbattleWidth;
+                        ITEM[Limit_Arrow, 0].Hide();
+                    }
+                    AutoAdjustContainerWidth(DataSize);
+                    if (Damageable != null)
+                    {
+                        Target_Group.Refresh(Damageable);
+                        MagPool.Refresh(Damageable);
+                        ItemPool.Refresh(Damageable);
                     }
                 }
-                const int crisiswidth = 294;
-                if (Battle && CrisisLevel)
-                {
-                    CONTAINER.Width = crisiswidth;
-                    ITEM[Limit_Arrow, 0].Show();
-                }
-                else
-                {
-                    CONTAINER.Width = nonbattleWidth;
-                    ITEM[Limit_Arrow, 0].Hide();
-                }
-                AutoAdjustContainerWidth(DataSize);
-                if (Damageable != null)
-                {
-                    Target_Group.Refresh(Damageable);
-                    MagPool.Refresh(Damageable);
-                    ItemPool.Refresh(Damageable);
-                }
+                skipRefresh = false;
             }
-            skipRefresh = false;
         }
 
         public override void Refresh(Damageable damageable)
         {
+            if (Damageable != damageable)
+                skipRefresh = false;
             base.Refresh(damageable);
             Target_Group.Refresh(Damageable);
             MagPool.Refresh(Damageable);

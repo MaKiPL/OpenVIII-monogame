@@ -315,6 +315,7 @@ namespace OpenVIII
             Memory.content = content;
             Memory.FieldHolder.FieldMemory = new int[1024];
 
+
             FF8StringReference.Init();
             TokenSource = new CancellationTokenSource();
             Token = TokenSource.Token;

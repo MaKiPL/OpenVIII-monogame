@@ -23,29 +23,26 @@ namespace OpenVIII
 
             #endregion Fields
 
-            #region Constructors
-
-            static public IGMData_TargetPool Create()
-            {
-                var r = Create<IGMData_TargetPool>(9, 3, new IGMDataItem.Box { Pos = new Rectangle(420, 150, 420, 360), Title = Icons.ID.TARGET }, 9, 1);
-                r.Cursor_Status &= ~Cursor_Status.Enabled;
-                return r;
-            }
-
-            #endregion Constructors
-
             #region Properties
 
-            public Item_In_Menu Item { get; private set; }
-            public byte TopMenuChoice { get; private set; }
-
             private bool All => (Item.Target & (Item_In_Menu._Target.All | Item_In_Menu._Target.All2)) != 0;
+
+            public Item_In_Menu Item { get; private set; }
+
+            public byte TopMenuChoice { get; private set; }
 
             private bool IsMe => IGM_Items.GetMode().Equals(Mode.UseItemOnTarget);
 
             #endregion Properties
 
             #region Methods
+
+            public static IGMData_TargetPool Create()
+            {
+                IGMData_TargetPool r = Create<IGMData_TargetPool>(9, 3, new IGMDataItem.Box { Pos = new Rectangle(420, 150, 420, 360), Title = Icons.ID.TARGET }, 9, 1);
+                r.Cursor_Status &= ~Cursor_Status.Enabled;
+                return r;
+            }
 
             public override void Draw()
             {
@@ -96,20 +93,6 @@ namespace OpenVIII
                 }
                 return false;
             }
-            protected override void Init()
-            {
-
-                base.Init();
-                for (int i = 0; i < Rows; i++)
-                {
-                    ITEM[i, 0] = new IGMDataItem.Text { Pos = SIZE[i] };
-                    ITEM[i, 0].Hide();
-                    ITEM[i, 1] = new IGMDataItem.Icon { Data = Icons.ID.HP2, Pos = new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 7), SIZE[i].Y, 0, 0), Palette = 13 };
-                    ITEM[i, 1].Hide();
-                    ITEM[i, 2] = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 4), SIZE[i].Y, 0, 0), Spaces = 4 };
-                    ITEM[i, 2].Hide();
-                }
-            }
 
             public override void Refresh()
             {
@@ -131,6 +114,20 @@ namespace OpenVIII
 
             public override void ResetPages()
             {
+            }
+
+            protected override void Init()
+            {
+                base.Init();
+                for (int i = 0; i < Rows; i++)
+                {
+                    ITEM[i, 0] = new IGMDataItem.Text { Pos = SIZE[i] };
+                    ITEM[i, 0].Hide();
+                    ITEM[i, 1] = new IGMDataItem.Icon { Data = Icons.ID.HP2, Pos = new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 7), SIZE[i].Y, 0, 0), Palette = 13 };
+                    ITEM[i, 1].Hide();
+                    ITEM[i, 2] = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 4), SIZE[i].Y, 0, 0), Spaces = 4 };
+                    ITEM[i, 2].Hide();
+                }
             }
 
             protected override void InitShift(int i, int col, int row)

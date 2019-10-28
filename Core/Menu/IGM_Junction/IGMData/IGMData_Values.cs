@@ -19,14 +19,10 @@ namespace OpenVIII
 
             #endregion Fields
 
-            #region Constructors
-
-            static public T Create<T>(int count, int depth, Menu_Base container = null, int? cols = null, int? rows = null) where T : IGMData_Values, new() => 
-                IGMData.Base.Create<T>(count, depth, container, cols, rows);
-
-            #endregion Constructors
-
             #region Methods
+
+            public static T Create<T>(int count, int depth, Menu_Base container = null, int? cols = null, int? rows = null) where T : IGMData_Values, new() =>
+                IGMData.Base.Create<T>(count, depth, container, cols, rows);
 
             public override void Refresh()
             {
@@ -67,7 +63,7 @@ namespace OpenVIII
                         NumType = Icons.NumType.sysFntBig,
                         Spaces = 3
                     };
-                    ITEM[pos + offset, 4] = new IGMDataItem.Text() { Data= "%", Pos= new Rectangle(SIZE[pos + offset].X + SIZE[pos + offset].Width - 20, SIZE[pos + offset].Y, 0, 0) };
+                    ITEM[pos + offset, 4] = new IGMDataItem.Text() { Data = "%", Pos = new Rectangle(SIZE[pos + offset].X + SIZE[pos + offset].Width - 20, SIZE[pos + offset].Y, 0, 0) };
                     if (oldtotal != null)
                     {
                         if (oldtotal[(T)availableFlagsarray[pos + 1]] > total[(T)availableFlagsarray[pos + 1]])
@@ -77,7 +73,6 @@ namespace OpenVIII
                             ITEM[pos + offset, 2] = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Down, Pos = new Rectangle(SIZE[pos + offset].X + SIZE[pos + offset].Width - 105, SIZE[pos + offset].Y, 0, 0), Palette = 16 };
                             ((IGMDataItem.Integer)ITEM[pos + offset, 3]).FontColor = Font.ColorID.Red;
                             ((IGMDataItem.Text)ITEM[pos + offset, 4]).FontColor = Font.ColorID.Red;
-
 
                             if (++_nag > _pos)
                                 ColorChangeEventListener?.Invoke(this, Font.ColorID.Red);
@@ -89,7 +84,6 @@ namespace OpenVIII
                             ITEM[pos + offset, 2] = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Up, Pos = new Rectangle(SIZE[pos + offset].X + SIZE[pos + offset].Width - 105, SIZE[pos + offset].Y, 0, 0), Palette = 17 };
                             ((IGMDataItem.Integer)ITEM[pos + offset, 3]).FontColor = Font.ColorID.Yellow;
                             ((IGMDataItem.Text)ITEM[pos + offset, 4]).FontColor = Font.ColorID.Yellow;
-
 
                             if (_nag <= ++_pos)
                                 ColorChangeEventListener?.Invoke(this, Font.ColorID.Yellow);

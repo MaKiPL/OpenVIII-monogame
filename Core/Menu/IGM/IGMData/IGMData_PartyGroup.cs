@@ -18,7 +18,15 @@ namespace OpenVIII
 
             #endregion Fields
 
-            #region Constructors
+            #region Properties
+
+            private IGMData_NonParty Non_Party => ((IGMData_NonParty)(((IGMData.Base)ITEM[1, 0])));
+
+            private IGMData_Party Party => ((IGMData_Party)(((IGMData.Base)ITEM[0, 0])));
+
+            #endregion Properties
+
+            #region Methods
 
             public static new IGMData_PartyGroup Create(params Menu_Base[] d)
             {
@@ -27,10 +35,6 @@ namespace OpenVIII
                 r.Cursor_Status |= Cursor_Status.Vertical;
                 return r;
             }
-
-            #endregion Constructors
-
-            #region Methods
 
             public override bool Inputs()
             {
@@ -58,10 +62,6 @@ namespace OpenVIII
                 }
                 return ret;
             }
-
-            private IGMData_Party Party => ((IGMData_Party)(((IGMData.Base)ITEM[0, 0])));
-
-            private IGMData_NonParty Non_Party => ((IGMData_NonParty)(((IGMData.Base)ITEM[1, 0])));
 
             public override void Refresh()
             {

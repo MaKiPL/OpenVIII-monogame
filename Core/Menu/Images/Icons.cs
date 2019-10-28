@@ -23,37 +23,6 @@ namespace OpenVIII
         {
         }
 
-        public static Icons Load()
-        {
-            var r = Load<Icons>();
-            Memory.MainThreadOnlyActions.Enqueue(r.Trim);
-            return r;
-
-        }
-
-        private void Trim() => Trim(ID.Bar_Fill, 5);
-        protected override void DefaultValues()
-        {
-            base.DefaultValues();
-            Color[] red = new Color[256];
-            red[15] = new Color(255, 30, 30, 255); //red
-            red[14] = new Color(140, 30, 30, 255); //dark red
-            red[13] = new Color(37, 37, 37, 255); //gray
-            Color[] yellow = new Color[256];
-            yellow[15] = new Color(222, 222, 8, 255); //yellow
-            yellow[14] = new Color(131, 131, 24, 255); //dark yellow
-            yellow[13] = new Color(41, 41, 41, 255); //gray
-
-            //FORCE_ORIGINAL = true;
-            Props = new List<TexProps>()
-            {
-                new TexProps("icon.tex",1,new BigTexProps("iconfl{0:00}.TEX",4)), //0-15 palette
-                new TexProps("icon.tex",1,red, new BigTexProps("iconfl{0:00}.TEX",4,red)),//16 palette
-                new TexProps("icon.tex",1,yellow, new BigTexProps("iconfl{0:00}.TEX",4,yellow))//17 palette
-            };
-            IndexFilename = "icon.sp1";
-        }
-
         #endregion Constructors
 
         #region Enums
@@ -75,9 +44,12 @@ namespace OpenVIII
 
         #region Properties
 
-        public new uint EntriesPerTexture => (uint)Enum.GetValues(typeof(Icons.ID)).Cast<Icons.ID>().Max();
-        public new uint PaletteCount => (uint)Textures.Count();
         public new uint Count => (uint)Entries.Count();
+
+        public new uint EntriesPerTexture => (uint)Enum.GetValues(typeof(Icons.ID)).Cast<Icons.ID>().Max();
+
+        public new uint PaletteCount => (uint)Textures.Count();
+
         private new uint TextureStartOffset => 0;
 
         #endregion Properties
@@ -89,6 +61,13 @@ namespace OpenVIII
         #endregion Indexers
 
         #region Methods
+
+        public static Icons Load()
+        {
+            Icons r = Load<Icons>();
+            Memory.MainThreadOnlyActions.Enqueue(r.Trim);
+            return r;
+        }
 
         public void Draw(int number, NumType type, int palette, string format, Vector2 location, Vector2 scale, float fade = 1f, Font.ColorID color = Font.ColorID.White, bool blink = false)
         {
@@ -147,15 +126,38 @@ namespace OpenVIII
             return null;
         }
 
+        public Color MostSaturated(Enum ic, byte pal)
+        {
+            EntryGroup eg = this[(ID)ic];
+            return eg.MostSaturated(Textures[pal], pal);
+        }
+
         public new void Trim(Enum ic, byte pal)
         {
             EntryGroup eg = this[(ID)ic];
             eg.Trim(Textures[pal]);
         }
-        public Color MostSaturated(Enum ic, byte pal)
+
+        protected override void DefaultValues()
         {
-            EntryGroup eg = this[(ID)ic];
-            return eg.MostSaturated(Textures[pal], pal);
+            base.DefaultValues();
+            Color[] red = new Color[256];
+            red[15] = new Color(255, 30, 30, 255); //red
+            red[14] = new Color(140, 30, 30, 255); //dark red
+            red[13] = new Color(37, 37, 37, 255); //gray
+            Color[] yellow = new Color[256];
+            yellow[15] = new Color(222, 222, 8, 255); //yellow
+            yellow[14] = new Color(131, 131, 24, 255); //dark yellow
+            yellow[13] = new Color(41, 41, 41, 255); //gray
+
+            //FORCE_ORIGINAL = true;
+            Props = new List<TexProps>()
+            {
+                new TexProps("icon.tex",1,new BigTexProps("iconfl{0:00}.TEX",4)), //0-15 palette
+                new TexProps("icon.tex",1,red, new BigTexProps("iconfl{0:00}.TEX",4,red)),//16 palette
+                new TexProps("icon.tex",1,yellow, new BigTexProps("iconfl{0:00}.TEX",4,yellow))//17 palette
+            };
+            IndexFilename = "icon.sp1";
         }
 
         protected override void InitEntries(ArchiveWorker aw = null)
@@ -221,6 +223,20 @@ namespace OpenVIII
                         Textures.Add(TextureHandler.Create(Props[t].Filename, tex, 1, 1, (ushort)Textures.Count, colors: Props[t].Colors));
                 }
             }
+        }
+
+        private void Trim()
+        {
+            Trim(ID.Bar_Fill, 5);
+
+            //trim checks to see if it's ran once before.
+            //so no need to check if it's already ran.
+            //will throw exception if not in main thread.
+            for (byte i = 0; i <= 7; i++)
+                Trim(ID._0_Hit_ + i, 2);
+            Trim(ID.Trigger_, 2);
+            Trim(ID.Perfect__, 2);
+            Trim(ID.Renzokeken_Seperator, 6);
         }
 
         #endregion Methods

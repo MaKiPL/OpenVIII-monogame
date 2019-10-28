@@ -12,16 +12,6 @@ namespace OpenVIII.IGMDataItem
 
         #endregion Fields
 
-        #region Methods
-
-        private void OffsetIcon()
-        {
-            if (_icon != Icons.ID.None)
-                DataSize.Offset(Memory.Icons.GetEntryGroup(_icon).Width * Scale.X, 0);
-        }
-
-        #endregion Methods
-
         #region Constructors
 
         public Text()
@@ -30,12 +20,13 @@ namespace OpenVIII.IGMDataItem
             Blink_Adjustment = 1f;
             Palette = 2;
         }
-        
+
         #endregion Constructors
 
         #region Properties
 
         public override bool Blink { get => base.Blink; set => base.Blink = value; }
+
         public FF8String Data
         {
             get => _data; set
@@ -45,12 +36,15 @@ namespace OpenVIII.IGMDataItem
                 OffsetIcon();
             }
         }
-        public override int Width { get => DataSize.Width; }
-        public override int Height { get => DataSize.Height; }
+
         public Rectangle DataSize { get; private set; }
+
         public byte Faded_Palette { get; set; }
 
         public Font.ColorID FontColor { get; set; }
+
+        public override int Height => DataSize.Height;
+
         public Icons.ID? Icon
         {
             get => _icon; set
@@ -65,7 +59,11 @@ namespace OpenVIII.IGMDataItem
             get => _palette; set => _palette = (byte)(value < Memory.Icons.PaletteCount ? value : 2);
         }
 
+        public override int Width => DataSize.Width;
+
         #endregion Properties
+
+        #region Methods
 
         public override void Draw()
         {
@@ -89,5 +87,13 @@ namespace OpenVIII.IGMDataItem
                 //    Memory.font.RenderBasicText(Data, r.Location, Scale, Fade: Fade * Blink_Amount * Blink_Adjustment, color: Faded_FontColor);
             }
         }
+
+        private void OffsetIcon()
+        {
+            if (_icon != Icons.ID.None)
+                DataSize.Offset(Memory.Icons.GetEntryGroup(_icon).Width * Scale.X, 0);
+        }
+
+        #endregion Methods
     }
 }

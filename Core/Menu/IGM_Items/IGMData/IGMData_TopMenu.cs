@@ -6,12 +6,10 @@ namespace OpenVIII
 {
     public partial class IGM_Items
     {
-
         #region Classes
 
         private class IGMData_TopMenu : IGMData.Base
         {
-
             #region Fields
 
             private FF8String[] _helpStr;
@@ -152,6 +150,5 @@ namespace OpenVIII
         }
 
         #endregion Classes
-
     }
 }

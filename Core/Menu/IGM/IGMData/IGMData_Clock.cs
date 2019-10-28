@@ -4,7 +4,6 @@ namespace OpenVIII
 {
     public partial class IGM
     {
-
         #region Classes
 
         private class IGMData_Clock : IGMData.Base
@@ -42,10 +41,10 @@ namespace OpenVIII
                         ITEM[0, 4].Hide();
                         ITEM[0, 5].Hide();
                     }
-                    for(int i=0;i<Depth;i++)
+                    for (int i = 0; i < Depth; i++)
                     {
-                        if(i != 4 && i != 5)
-                        ITEM[0, i]?.Show();
+                        if (i != 4 && i != 5)
+                            ITEM[0, i]?.Show();
                     }
                 ((IGMDataItem.Integer)ITEM[0, 6]).Data = Memory.State.AmountofGil < MaxGil ? (int)(Memory.State.AmountofGil) : MaxGil;
                 }
@@ -89,10 +88,8 @@ namespace OpenVIII
             }
 
             #endregion Methods
-
         }
 
         #endregion Classes
-
     }
 }

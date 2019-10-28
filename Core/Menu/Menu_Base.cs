@@ -4,68 +4,21 @@ using System.Linq;
 
 namespace OpenVIII
 {
-    public class OffsetAnchor
-    {
-        Vector2 v=Vector2.Zero;
-        public Vector2 vPos { get => v; set => v = value; }
-        public float X { get => v.X; set => v.X = value; }
-        public float Y { get => v.Y; set => v.Y = value; }
-        public Point pPos { get => v.ToPoint(); set => v = value.ToVector2(); }
-        public static implicit operator Vector2(OffsetAnchor a) => a.v;
-        public static explicit operator Point(OffsetAnchor a) => a.v.ToPoint();
-        public static implicit operator OffsetAnchor(Vector2 a) => new OffsetAnchor(a);
-        public static implicit operator OffsetAnchor(Point a) => new OffsetAnchor(a);
-        public OffsetAnchor(Vector2 pos) => this.v = pos;
-        public OffsetAnchor(Point pos) => this.v = pos.ToVector2();
-        public OffsetAnchor() { }
-        public OffsetAnchor Offset(float x, float y)
-        {
-            v.X += x;
-            v.Y += y;
-            return this;
-        }
-        public OffsetAnchor Offset(Vector2 _v)
-        {
-            v += _v;
-            return this;
-        }
-
-        internal void Set(Vector2 vector2) => v = vector2;
-    }
     /// <summary>
     /// Root class all menu objects can grow from.
     /// </summary>
     public abstract class Menu_Base
     {
-        public OffsetAnchor OffsetAnchor { get; set; }
         #region Fields
 
         protected Rectangle _pos;
+        private sbyte _partyPos = -1;
 
         #endregion Fields
 
-        #region Methods
-
-
-        protected abstract void Init();
-
-        protected virtual void ModeChangeEvent(object sender, Enum e)
-        {
-        }
-
-        /// <summary>
-        /// For child items.
-        /// </summary>
-        protected virtual void RefreshChild()
-        {
-        }
-
-
-        #endregion Methods
-
+        #region Properties
 
         public Menu_Base CONTAINER { get; set; }
-
         public Cursor_Status Cursor_Status { get; set; } = Cursor_Status.Disabled;
 
         /// <summary>
@@ -80,12 +33,18 @@ namespace OpenVIII
         public bool Enabled { get; private set; } = true;
 
         public virtual int Height { get => _pos.Height; set => _pos.Height = value; }
+        public OffsetAnchor OffsetAnchor { get; set; }
 
         /// <summary>
         /// Position of party member 0,1,2. If -1 at the time of setting the character wasn't in the party.
         /// </summary>
-        public sbyte PartyPos { get; protected set; }
-
+        public sbyte PartyPos
+        {
+            get => _partyPos; protected set
+            {
+                _partyPos = (sbyte)MathHelper.Clamp(value,-1,2);
+            }
+        }
         /// <summary>
         /// Where to draw this item.
         /// </summary>
@@ -96,6 +55,10 @@ namespace OpenVIII
         public virtual int X { get => _pos.X; set => _pos.X = value; }
 
         public virtual int Y { get => _pos.Y; set => _pos.Y = value; }
+
+        #endregion Properties
+
+        #region Methods
 
         public static implicit operator Rectangle(Menu_Base v) => v.Pos;
 
@@ -151,5 +114,77 @@ namespace OpenVIII
         public virtual void Show() => Enabled = true;
 
         public abstract bool Update();
+
+        protected abstract void Init();
+
+        protected virtual void ModeChangeEvent(object sender, Enum e)
+        {
+        }
+
+        /// <summary>
+        /// For child items.
+        /// </summary>
+        protected virtual void RefreshChild()
+        {
+        }
+
+        #endregion Methods
+    }
+
+    public class OffsetAnchor
+    {
+        #region Fields
+
+        private Vector2 v = Vector2.Zero;
+
+        #endregion Fields
+
+        #region Constructors
+
+        public OffsetAnchor(Vector2 pos) => this.v = pos;
+
+        public OffsetAnchor(Point pos) => this.v = pos.ToVector2();
+
+        public OffsetAnchor()
+        {
+        }
+
+        #endregion Constructors
+
+        #region Properties
+
+        public Point pPos { get => v.ToPoint(); set => v = value.ToVector2(); }
+        public Vector2 vPos { get => v; set => v = value; }
+        public float X { get => v.X; set => v.X = value; }
+        public float Y { get => v.Y; set => v.Y = value; }
+
+        #endregion Properties
+
+        #region Methods
+
+        public static explicit operator Point(OffsetAnchor a) => a.v.ToPoint();
+
+        public static implicit operator OffsetAnchor(Vector2 a) => new OffsetAnchor(a);
+
+        public static implicit operator OffsetAnchor(Point a) => new OffsetAnchor(a);
+
+        public static implicit operator Vector2(OffsetAnchor a) => a.v;
+
+        public OffsetAnchor Offset(float x, float y)
+        {
+            v.X += x;
+            v.Y += y;
+            return this;
+        }
+
+        public OffsetAnchor Offset(Vector2 _v)
+        {
+            v += _v;
+            return this;
+        }
+
+        internal void Set(Vector2 vector2) => v = vector2;
+
+        #endregion Methods
     }
 }

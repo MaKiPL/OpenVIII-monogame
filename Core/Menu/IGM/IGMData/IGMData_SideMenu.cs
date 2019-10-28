@@ -29,7 +29,7 @@ namespace OpenVIII
 
             #endregion Fields
 
-            #region Constructors
+            #region Methods
 
             public static IGMData_SideMenu Create(IReadOnlyDictionary<FF8String, FF8String> pairs)
             {
@@ -48,8 +48,8 @@ namespace OpenVIII
                     if (rectangle.Height > r.largestheight) r.largestheight = rectangle.Height;
                     r.totalwidth += rectangle.Width;
                     r.totalheight += rectangle.Height;
-                    r.avgwidth = r.totalwidth / (pos+1);
-                    r.avgheight = r.totalheight / (pos+1);
+                    r.avgwidth = r.totalwidth / (pos + 1);
+                    r.avgheight = r.totalheight / (pos + 1);
                     pos++;
                 }
                 r.Init(pairs.Count, 1, new IGMDataItem.Box { Pos = new Rectangle { Width = 226, Height = 492, X = 843 - 226 } }, 1, pairs.Count);
@@ -63,10 +63,6 @@ namespace OpenVIII
                 r.Cursor_Status |= (Cursor_Status.Enabled | Cursor_Status.Vertical | Cursor_Status.Horizontal);
                 return r;
             }
-
-            #endregion Constructors
-
-            #region Methods
 
             public override bool Inputs()
             {

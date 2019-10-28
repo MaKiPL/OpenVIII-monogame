@@ -220,12 +220,7 @@ namespace OpenVIII.IGMData
         public void InitSize(bool force = false)
         {
             int cellcount = Rows * Cols;
-            cellcount = cellcount > 1 ? cellcount : 1;
-            if (CURSOR == null || CURSOR.Length == 0 || SIZE == null || SIZE.Length == 0)
-            {
-                CURSOR = new Point[cellcount];
-                SIZE = new Rectangle[cellcount];
-            }
+            //SetSize(cellcount);
             if (((SIZE != null && SIZE.Length > 0) || force))
             {
                 if (cellcount > 1)
@@ -236,9 +231,23 @@ namespace OpenVIII.IGMData
                 {
                     SIZE[0] = new Rectangle(X, Y, Width, Height);
                     CURSOR[0] = Point.Zero;
+                    BLANKS[0] = false;
                     InitShift(0, 0, 0);
                     InitCursor(0);
                 }
+            }
+        }
+
+        private void SetSize(int cellcount)
+        {
+            cellcount = cellcount > 1 ? cellcount : 1;
+            if (CURSOR == null || CURSOR.Length == 0 ||
+                SIZE == null || SIZE.Length == 0 ||
+                BLANKS == null || BLANKS.Length == 0)
+            {
+                CURSOR = new Point[cellcount];
+                SIZE = new Rectangle[cellcount];
+                BLANKS = new bool[cellcount];
             }
         }
 
@@ -444,6 +453,7 @@ namespace OpenVIII.IGMData
             {
                 Damageable = damageable;
                 PartyPos = partypos.Value;
+                if(Memory.State?.PartyData != null)
                 Damageable = Memory.State[Memory.State.PartyData[PartyPos]];
             }
             else if (damageable != null && damageable.GetCharacterData(out Saves.CharacterData c))
@@ -493,20 +503,29 @@ namespace OpenVIII.IGMData
             }
             else
             {
-                if (SIZE == null)
-                    SIZE = new Rectangle[Count];
+                //if (SIZE == null)
+                //    SIZE = new Rectangle[Count];
                 if (ITEM == null)
                     ITEM = new Menu_Base[Count, Depth];
-                if (CURSOR == null)
-                    CURSOR = new Point[Count];
-                if (BLANKS == null)
-                    BLANKS = new bool[Count];
+                //if (CURSOR == null)
+                //    CURSOR = new Point[Count];
+                //if (BLANKS == null)
+                //    BLANKS = new bool[Count];
                 if (Descriptions == null)
                     Descriptions = new Dictionary<int, FF8String>(Count);
+
+                SetSize(Math.Max(Rows * Cols,Count));
             }
             if (!SkipSIZE)
                 InitSize();
             SkipSIZE = false;
+        }
+
+        protected virtual void InitCursor(int i, bool zero = false)
+        {
+            if (zero) CURSOR[i] = Point.Zero;
+            CURSOR[i].Y += (int)(SIZE[i].Y + 6 * TextScale.Y);
+            CURSOR[i].X += SIZE[i].X;
         }
 
         protected virtual void InitShift(int i, int col, int row)
@@ -539,6 +558,12 @@ namespace OpenVIII.IGMData
                         }
             }
         }
+        public override void Refresh()
+        {
+            if (Memory.State?.PartyData != null && Damageable == null && PartyPos != -1)
+                Damageable = Memory.State[Memory.State.PartyData[PartyPos]];
+            base.Refresh();
+        }
 
         protected virtual void SetCursor_select(int value)
         {
@@ -556,13 +581,6 @@ namespace OpenVIII.IGMData
             T r = new T();
             r.Init(damageable, partypos);
             return r;
-        }
-
-        protected virtual void InitCursor(int i, bool zero = false)
-        {
-            if (zero) CURSOR[i] = Point.Zero;
-            CURSOR[i].Y += (int)(SIZE[i].Y + 6 * TextScale.Y);
-            CURSOR[i].X += SIZE[i].X;
         }
 
         private void InitRowsSize(bool force)

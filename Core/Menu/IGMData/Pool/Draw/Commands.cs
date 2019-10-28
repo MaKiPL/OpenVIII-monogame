@@ -16,9 +16,8 @@ namespace OpenVIII.IGMData.Pool
         {
             #region Fields
 
-            private Debug_battleDat.Magic Magic;
-
             public Dictionary<int, Func<bool>> OKAY_Actions;
+            private Debug_battleDat.Magic Magic;
 
             #endregion Fields
 
@@ -35,45 +34,6 @@ namespace OpenVIII.IGMData.Pool
             #endregion Properties
 
             #region Methods
-
-            private bool Inputs_OKAY_Cast()
-            {
-                Debug.WriteLine($"{Damageable.Name} Casting {Magic.Name}({Magic.ID}) from enemy.");
-                Target_Group.ShowTargetWindows();
-                return true;
-            }
-
-            private bool Inputs_OKAY_Draw()
-            {
-                Debug.WriteLine($"{Damageable.Name} Drawing {Magic.Name}({Magic.ID}) from enemy.");
-                Damageable.EndTurn();
-                return true;
-            }
-
-            protected override void Init()
-            {
-                base.Init();
-                ITEM[_Draw, 0] = new IGMDataItem.Text { Data = Memory.Strings.Read(Strings.FileID.KERNEL, 0, 12), Pos = SIZE[_Draw] };
-                ITEM[Cast, 0] = new IGMDataItem.Text { Data = Memory.Strings.Read(Strings.FileID.KERNEL, 0, 18), Pos = SIZE[Cast] };
-                ITEM[Targets_Window, 0] = IGMData.Target.Group.Create(Damageable, false);
-                Cursor_Status = Cursor_Status.Enabled;
-                OKAY_Actions = new Dictionary<int, Func<bool>>
-            {
-                {_Draw, Inputs_OKAY_Draw },
-                {Cast, Inputs_OKAY_Cast },
-            };
-                PointerZIndex = 0;
-            }
-
-            protected override void InitShift(int i, int col, int row)
-            {
-                base.InitShift(i, col, row);
-                //SIZE[i].Inflate(-18, -20);
-                //SIZE[i].Y -= 5 * row;
-                SIZE[i].Inflate(-22, -8);
-                SIZE[i].Offset(0, 12 + (-8 * row));
-                SIZE[i].Height = (int)(12 * TextScale.Y);
-            }
 
             public static Commands Create(Rectangle pos, Damageable damageable, bool battle = false) => Create<Commands>(3, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.CHOICE }, 1, 2, damageable);
 
@@ -170,6 +130,45 @@ namespace OpenVIII.IGMData.Pool
                     Magic = magic;
                     Refresh();
                 }
+            }
+
+            protected override void Init()
+            {
+                base.Init();
+                ITEM[_Draw, 0] = new IGMDataItem.Text { Data = Memory.Strings.Read(Strings.FileID.KERNEL, 0, 12), Pos = SIZE[_Draw] };
+                ITEM[Cast, 0] = new IGMDataItem.Text { Data = Memory.Strings.Read(Strings.FileID.KERNEL, 0, 18), Pos = SIZE[Cast] };
+                ITEM[Targets_Window, 0] = IGMData.Target.Group.Create(Damageable, false);
+                Cursor_Status = Cursor_Status.Enabled;
+                OKAY_Actions = new Dictionary<int, Func<bool>>
+            {
+                {_Draw, Inputs_OKAY_Draw },
+                {Cast, Inputs_OKAY_Cast },
+            };
+                PointerZIndex = 0;
+            }
+
+            protected override void InitShift(int i, int col, int row)
+            {
+                base.InitShift(i, col, row);
+                //SIZE[i].Inflate(-18, -20);
+                //SIZE[i].Y -= 5 * row;
+                SIZE[i].Inflate(-22, -8);
+                SIZE[i].Offset(0, 12 + (-8 * row));
+                SIZE[i].Height = (int)(12 * TextScale.Y);
+            }
+
+            private bool Inputs_OKAY_Cast()
+            {
+                Debug.WriteLine($"{Damageable.Name} Casting {Magic.Name}({Magic.ID}) from enemy.");
+                Target_Group.ShowTargetWindows();
+                return true;
+            }
+
+            private bool Inputs_OKAY_Draw()
+            {
+                Debug.WriteLine($"{Damageable.Name} Drawing {Magic.Name}({Magic.ID}) from enemy.");
+                Damageable.EndTurn();
+                return true;
             }
 
             #endregion Methods

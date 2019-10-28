@@ -12,8 +12,8 @@ namespace OpenVIII
         {
             #region Fields
 
-            private const int DefaultHPBarWidth = 118;
             private const int BarHeight = 4;
+            private const int DefaultHPBarWidth = 118;
             private Texture2D _red_pixel;
 
             private bool disposedValue = false;
@@ -39,33 +39,49 @@ namespace OpenVIII
 
             #region Methods
 
-            private void Refresh(sbyte pos, Damageable damageable)
+            public static IGMData_NonParty Create() => Create<IGMData_NonParty>(6, 9, new IGMDataItem.Box { Pos = new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 } }, 2, 3);
+
+            // To detect redundant calls This code added to correctly implement the disposable pattern.
+            public void Dispose()
             {
-                Contents[pos] = damageable;
-                if (damageable != null)
+                // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+                Dispose(true);
+                // TODO: uncomment the following line if the finalizer is overridden above.
+                GC.SuppressFinalize(this);
+            }
+
+            public override void Draw()
+            {
+                if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
+                    base.Draw();
+            }
+
+            public override void Refresh()
+            {
+                if (Memory.State.Characters != null)
                 {
-                    ITEM[pos, 0] = new IGMDataItem.Text { Data = damageable.Name, Pos = SIZE[pos] };
-                    CURSOR[pos] = new Point(SIZE[pos].X, (int)(SIZE[pos].Y + (6 * TextScale.Y)));
-
-                    Rectangle r = ITEM[pos, 5].Pos;
-                    r.Height = BarHeight;
-                    r.Width = (int)(DefaultHPBarWidth * damageable.PercentFullHP());
-                    ((IGMDataItem.Texture)ITEM[pos, 5]).Pos = r;
-                    //r.Offset(0, 2);
-                    //((IGMDataItem.Texture)ITEM[pos, 7]).Pos = r;
-
-                    ((IGMDataItem.Integer)ITEM[pos, 2]).Data = damageable.Level;
-                    ((IGMDataItem.Integer)ITEM[pos, 8]).Data = damageable.CurrentHP();
-                    for (int i = 0; i < Depth; i++)
+                    sbyte pos = 0;
+                    bool ret = base.Update();
+                    if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
                     {
-                        ITEM[pos, i]?.Show();
+                        for (byte i = 0; Memory.State.Party != null && i < Memory.State.Characters.Count && SIZE != null && pos < SIZE.Length; i++)
+                        {
+                            if (!Memory.State.Party.Contains((Characters)i) && Memory.State.Characters[(Characters)i].Available)
+                            {
+                                BLANKS[pos] = false;
+                                Refresh(pos++, Memory.State[(Characters)i]);
+                            }
+                        }
+                    }
+                    for (; pos < Count; pos++)
+                    {
+                        for (int i = 0; i < Depth; i++)
+                        {
+                            BLANKS[pos] = true;
+                            ITEM[pos, i]?.Hide();
+                        }
                     }
                 }
-                else
-                    for (int i = 0; i < Depth; i++)
-                    {
-                        ITEM[pos, i]?.Hide();
-                    }
             }
 
             protected virtual void Dispose(bool disposing)
@@ -147,49 +163,33 @@ namespace OpenVIII
                 if (row >= 2) SIZE[i].Y -= 4;
             }
 
-            public static IGMData_NonParty Create() => Create<IGMData_NonParty>(6, 9, new IGMDataItem.Box { Pos = new Rectangle { Width = 580, Height = 231, X = 20, Y = 318 } }, 2, 3);
-
-            // To detect redundant calls This code added to correctly implement the disposable pattern.
-            public void Dispose()
+            private void Refresh(sbyte pos, Damageable damageable)
             {
-                // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-                Dispose(true);
-                // TODO: uncomment the following line if the finalizer is overridden above.
-                GC.SuppressFinalize(this);
-            }
-
-            public override void Draw()
-            {
-                if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
-                    base.Draw();
-            }
-
-            public override void Refresh()
-            {
-                if (Memory.State.Characters != null)
+                Contents[pos] = damageable;
+                if (damageable != null)
                 {
-                    sbyte pos = 0;
-                    bool ret = base.Update();
-                    if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
+                    ITEM[pos, 0] = new IGMDataItem.Text { Data = damageable.Name, Pos = SIZE[pos] };
+                    CURSOR[pos] = new Point(SIZE[pos].X, (int)(SIZE[pos].Y + (6 * TextScale.Y)));
+
+                    Rectangle r = ITEM[pos, 5].Pos;
+                    r.Height = BarHeight;
+                    r.Width = (int)(DefaultHPBarWidth * damageable.PercentFullHP());
+                    ((IGMDataItem.Texture)ITEM[pos, 5]).Pos = r;
+                    //r.Offset(0, 2);
+                    //((IGMDataItem.Texture)ITEM[pos, 7]).Pos = r;
+
+                    ((IGMDataItem.Integer)ITEM[pos, 2]).Data = damageable.Level;
+                    ((IGMDataItem.Integer)ITEM[pos, 8]).Data = damageable.CurrentHP();
+                    for (int i = 0; i < Depth; i++)
                     {
-                        for (byte i = 0; Memory.State.Party != null && i < Memory.State.Characters.Count && SIZE != null && pos < SIZE.Length; i++)
-                        {
-                            if (!Memory.State.Party.Contains((Characters)i) && Memory.State.Characters[(Characters)i].Available)
-                            {
-                                BLANKS[pos] = false;
-                                Refresh(pos++, Memory.State[(Characters)i]);
-                            }
-                        }
-                    }
-                    for (; pos < Count; pos++)
-                    {
-                        for (int i = 0; i < Depth; i++)
-                        {
-                            BLANKS[pos] = true;
-                            ITEM[pos, i]?.Hide();
-                        }
+                        ITEM[pos, i]?.Show();
                     }
                 }
+                else
+                    for (int i = 0; i < Depth; i++)
+                    {
+                        ITEM[pos, i]?.Hide();
+                    }
             }
 
             #endregion Methods

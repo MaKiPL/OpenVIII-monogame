@@ -6,9 +6,9 @@
 
         public class IGMData_GF_Group : IGMData.Group.Base
         {
-            #region Constructors
-
             //protected IGMData_GF_Group(params Menu_Base[] d) : base(d) { }
+
+            #region Methods
 
             public static new IGMData_GF_Group Create(params Menu_Base[] d)
             {
@@ -17,7 +17,7 @@
                 return r;
             }
 
-            #endregion Constructors
+            #endregion Methods
         }
 
         #endregion Classes

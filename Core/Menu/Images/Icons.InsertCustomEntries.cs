@@ -4,6 +4,8 @@ namespace OpenVIII
 {
     public sealed partial class Icons
     {
+        #region Methods
+
         /// <summary>
         /// Add Manual hardcoded entries / settings here.
         /// </summary>
@@ -127,7 +129,7 @@ namespace OpenVIII
                 //Offset = new Vector2(2, 2),
                 //End = new Vector2(-2, 0),
                 CustomPalette = 5
-            });            
+            });
             Entries[ID.MenuBorder] = new EntryGroup(Border_Top, Border_Left, Border_Right, Border_Bottom, Border_TopLeft, Border_TopRight, Border_BottomLeft, Border_BottomRight);
             Entries[ID.Menu_BG_256] = new EntryGroup(BG, Border_Top, Border_Left, Border_Right, Border_Bottom, Border_TopLeft, Border_TopRight, Border_BottomLeft, Border_BottomRight);
             Entries[ID.Menu_BG_368] = new EntryGroup(BG, new Entry
@@ -141,7 +143,7 @@ namespace OpenVIII
                 Fill = Vector2.UnitX,
                 Tile = Vector2.UnitY
             }, Border_Top, Border_Left, Border_Right, Border_Bottom, Border_TopLeft, Border_TopRight, Border_BottomLeft, Border_BottomRight);
-            
+
             Entries[ID.DEBUG] = new EntryGroup(
                 new Entry { X = 128, Y = 24, Width = 7, Height = 8, Offset = new Vector2(4, 0) },
                 new Entry { X = 65, Y = 8, Width = 6, Height = 8, Offset = new Vector2(7 + 4, 0) },
@@ -230,5 +232,7 @@ namespace OpenVIII
                     Entries[label_pg1 + i - 1] = new EntryGroup(Entries[label][0], P_, _[i / 10], __[i % 10]);
             }
         }
+
+        #endregion Methods
     }
 }

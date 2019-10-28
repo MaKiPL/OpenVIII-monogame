@@ -15,6 +15,10 @@ namespace OpenVIII
         {
         }
 
+        #endregion Constructors
+
+        #region Methods
+
         public static Cards Load() => Load<Cards>();
 
         protected override void DefaultValues()
@@ -41,6 +45,6 @@ namespace OpenVIII
             };
         }
 
-        #endregion Constructors
+        #endregion Methods
     }
 }

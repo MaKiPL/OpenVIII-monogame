@@ -6,62 +6,6 @@ namespace OpenVIII
 {
     public partial class IGM_Junction : Menu
     {
-        public static IGM_Junction Create() => Create<IGM_Junction>();
-
-        #region Methods
-
-        protected override void Init()
-        {
-            SetMode((Mode)0);
-            Size = new Vector2 { X = 840, Y = 630 };
-
-            Menu_Base[] tmp = new Menu_Base[9];
-            List<Task> tasks = new List<Task>
-            {
-                Task.Run(() =>tmp[0] = IGMData_Mag_Stat_Slots.Create()),
-                Task.Run(() =>tmp[1] = IGMData_Mag_PageTitle.Create()),
-                Task.Run(() =>tmp[3] = IGMData_Mag_EL_A_D_Slots.Create()),
-                Task.Run(() =>tmp[2] = IGMData.Pool.Magic.Create()),
-                Task.Run(() =>tmp[4] = IGMData_Mag_EL_A_Values.Create()),
-                Task.Run(() =>tmp[5] = IGMData_Mag_EL_D_Values.Create()),
-                Task.Run(() =>tmp[6] = IGMData_Mag_ST_A_D_Slots.Create()),
-                Task.Run(() =>tmp[7] = IGMData_Mag_ST_A_Values.Create()),
-                Task.Run(() =>tmp[8] = IGMData_Mag_ST_D_Values.Create()),
-                Task.Run(() => Data.TryAdd(SectionName.CharacterInfo, IGMData_CharacterInfo.Create())),
-                Task.Run(() => Data.TryAdd(SectionName.Commands, IGMData.Commands.Create(new Rectangle(615, 150, 210, 192)))),
-                Task.Run(() => Data.TryAdd(SectionName.Help, new IGMDataItem.HelpBox { Data = Strings.Description.Junction, Pos = new Rectangle(15, 69, 810, 78), Title = Icons.ID.HELP })),
-                Task.Run(() => Data.TryAdd(SectionName.TopMenu, IGMData_TopMenu.Create())),
-                Task.Run(() => Data.TryAdd(SectionName.Title, new IGMDataItem.Box { Data = Strings.Name.Junction, Pos = new Rectangle(615, 0, 225, 66) })),
-                Task.Run(() => Data.TryAdd(SectionName.TopMenu_Junction, IGMData_TopMenu_Junction.Create())),
-                Task.Run(() => Data.TryAdd(SectionName.TopMenu_Off, IGMData.Group.TopMenu.Create(
-                    new IGMDataItem.Box { Data = Strings.Name.Off, Pos = new Rectangle(0, 12, 169, 54), Options = Box_Options.Center | Box_Options.Middle },
-                    IGMData_TopMenu_Off.Create()
-                    ))),
-                Task.Run(() => Data.TryAdd(SectionName.TopMenu_Auto, IGMData.Group.TopMenu.Create(
-                    new IGMDataItem.Box { Data = Strings.Name.Auto, Pos = new Rectangle(0, 12, 169, 54), Options = Box_Options.Center | Box_Options.Middle },
-                    IGMData_TopMenu_Auto.Create()))),
-                Task.Run(() => Data.TryAdd(SectionName.TopMenu_Abilities, IGMData_Abilities_Group.Create(
-                IGMData.Slots.Command.Create(),
-                IGMData.Slots.Abilities.Create(),
-                IGMData_Abilities_CommandPool.Create(),
-                IGMData_Abilities_AbilityPool.Create()))),
-                Task.Run(() => Data.TryAdd(SectionName.TopMenu_GF_Group, IGMData_GF_Group.Create(
-                    IGMData_GF_Junctioned.Create(),
-                    IGMData.Pool.GF.Create(),
-                    new IGMDataItem.Box { Pos = new Rectangle(440, 345, 385, 66) }
-                    ))),
-                Task.Run(() => Data.TryAdd(SectionName.RemMag, IGMData_ConfirmRemMag.Create(data: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 280), title: Icons.ID.NOTICE, opt1: Strings.Name.Yes, opt2: Strings.Name.No, pos: new Rectangle(180, 174, 477, 216)))),
-                Task.Run(() => Data.TryAdd(SectionName.RemAll, IGMData_ConfirmRemAll.Create(data: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 279), title: Icons.ID.NOTICE, opt1: Strings.Name.Yes, opt2: Strings.Name.No, pos: new Rectangle(170, 174, 583, 216)))),
-                Task.Run(() => Data.TryAdd(SectionName.ConfirmChanges, IGMData_ConfirmChanges.Create(data: Memory.Strings.Read(Strings.FileID.MNGRP, 0, 73), title: Icons.ID.NOTICE, opt1: Strings.Name.Yes, opt2: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 268), pos: new Rectangle(280, 174, 367, 216)))),
-            };
-            Task.WaitAll(tasks.ToArray());
-
-            Data.TryAdd(SectionName.Mag_Group, IGMData_Mag_Group.Create(tmp));
-            base.Init();
-        }
-
-        #endregion Methods
-
         #region Enums
 
         public enum Mode
@@ -165,16 +109,15 @@ namespace OpenVIII
 
         #endregion Enums
 
-        #region Properties
+        #region Methods
+
+        public static IGM_Junction Create() => Create<IGM_Junction>();
+
+        public void ChangeHelp(FF8String str) => ((IGMDataItem.HelpBox)Data[SectionName.Help]).Data = str;
 
         //public static Dictionary<Items, FF8String> Descriptions { get; private set; }
         //public static Dictionary<Items, FF8String> Misc { get; private set; }
         //public static Dictionary<Items, FF8String> Titles { get; private set; }
-
-        #endregion Properties
-
-        public void ChangeHelp(FF8String str) => ((IGMDataItem.HelpBox)Data[SectionName.Help]).Data = str;
-
         public override bool Inputs()
         {
             if (GetMode().Equals(Mode.None)) SetMode(Mode.TopMenu);
@@ -246,5 +189,57 @@ namespace OpenVIII
             }
             return ret;
         }
+
+        protected override void Init()
+        {
+            SetMode((Mode)0);
+            Size = new Vector2 { X = 840, Y = 630 };
+
+            Menu_Base[] tmp = new Menu_Base[9];
+            List<Task> tasks = new List<Task>
+            {
+                Task.Run(() =>tmp[0] = IGMData_Mag_Stat_Slots.Create()),
+                Task.Run(() =>tmp[1] = IGMData_Mag_PageTitle.Create()),
+                Task.Run(() =>tmp[3] = IGMData_Mag_EL_A_D_Slots.Create()),
+                Task.Run(() =>tmp[2] = IGMData.Pool.Magic.Create()),
+                Task.Run(() =>tmp[4] = IGMData_Mag_EL_A_Values.Create()),
+                Task.Run(() =>tmp[5] = IGMData_Mag_EL_D_Values.Create()),
+                Task.Run(() =>tmp[6] = IGMData_Mag_ST_A_D_Slots.Create()),
+                Task.Run(() =>tmp[7] = IGMData_Mag_ST_A_Values.Create()),
+                Task.Run(() =>tmp[8] = IGMData_Mag_ST_D_Values.Create()),
+                Task.Run(() => Data.TryAdd(SectionName.CharacterInfo, IGMData_CharacterInfo.Create())),
+                Task.Run(() => Data.TryAdd(SectionName.Commands, IGMData.Commands.Create(new Rectangle(615, 150, 210, 192)))),
+                Task.Run(() => Data.TryAdd(SectionName.Help, new IGMDataItem.HelpBox { Data = Strings.Description.Junction, Pos = new Rectangle(15, 69, 810, 78), Title = Icons.ID.HELP })),
+                Task.Run(() => Data.TryAdd(SectionName.TopMenu, IGMData_TopMenu.Create())),
+                Task.Run(() => Data.TryAdd(SectionName.Title, new IGMDataItem.Box { Data = Strings.Name.Junction, Pos = new Rectangle(615, 0, 225, 66) })),
+                Task.Run(() => Data.TryAdd(SectionName.TopMenu_Junction, IGMData_TopMenu_Junction.Create())),
+                Task.Run(() => Data.TryAdd(SectionName.TopMenu_Off, IGMData.Group.TopMenu.Create(
+                    new IGMDataItem.Box { Data = Strings.Name.Off, Pos = new Rectangle(0, 12, 169, 54), Options = Box_Options.Center | Box_Options.Middle },
+                    IGMData_TopMenu_Off.Create()
+                    ))),
+                Task.Run(() => Data.TryAdd(SectionName.TopMenu_Auto, IGMData.Group.TopMenu.Create(
+                    new IGMDataItem.Box { Data = Strings.Name.Auto, Pos = new Rectangle(0, 12, 169, 54), Options = Box_Options.Center | Box_Options.Middle },
+                    IGMData_TopMenu_Auto.Create()))),
+                Task.Run(() => Data.TryAdd(SectionName.TopMenu_Abilities, IGMData_Abilities_Group.Create(
+                IGMData.Slots.Command.Create(),
+                IGMData.Slots.Abilities.Create(),
+                IGMData_Abilities_CommandPool.Create(),
+                IGMData_Abilities_AbilityPool.Create()))),
+                Task.Run(() => Data.TryAdd(SectionName.TopMenu_GF_Group, IGMData_GF_Group.Create(
+                    IGMData_GF_Junctioned.Create(),
+                    IGMData.Pool.GF.Create(),
+                    new IGMDataItem.Box { Pos = new Rectangle(440, 345, 385, 66) }
+                    ))),
+                Task.Run(() => Data.TryAdd(SectionName.RemMag, IGMData_ConfirmRemMag.Create(data: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 280), title: Icons.ID.NOTICE, opt1: Strings.Name.Yes, opt2: Strings.Name.No, pos: new Rectangle(180, 174, 477, 216)))),
+                Task.Run(() => Data.TryAdd(SectionName.RemAll, IGMData_ConfirmRemAll.Create(data: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 279), title: Icons.ID.NOTICE, opt1: Strings.Name.Yes, opt2: Strings.Name.No, pos: new Rectangle(170, 174, 583, 216)))),
+                Task.Run(() => Data.TryAdd(SectionName.ConfirmChanges, IGMData_ConfirmChanges.Create(data: Memory.Strings.Read(Strings.FileID.MNGRP, 0, 73), title: Icons.ID.NOTICE, opt1: Strings.Name.Yes, opt2: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 268), pos: new Rectangle(280, 174, 367, 216)))),
+            };
+            Task.WaitAll(tasks.ToArray());
+
+            Data.TryAdd(SectionName.Mag_Group, IGMData_Mag_Group.Create(tmp));
+            base.Init();
+        }
+
+        #endregion Methods
     }
 }

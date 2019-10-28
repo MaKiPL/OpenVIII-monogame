@@ -49,16 +49,18 @@ namespace OpenVIII
         #region Properties
 
         public static float vpSpace { get; private set; }
+
         private static float Fade
         {
             get => Menu.Fade; set
             {
-                if(value == 0)
+                if (value == 0)
                     Menu.FadeIn();
             }
         }
 
         private static Dictionary<Enum, Item> strLoadScreen { get; set; }
+
         public static MainMenuStates State
         {
             get => state; set
@@ -124,6 +126,11 @@ namespace OpenVIII
                     //    break;
             }
         }
+
+        private static Point ml;
+        private static Vector2 scale;
+        private static Vector2 lastscale;
+        private static Matrix IGM_focus;
 
         public static Slide<Vector2> OffsetSlide = new Slide<Vector2>(new Vector2(-1000, 0), Vector2.Zero, 1000, Vector2.SmoothStep);
         //public static Slide<float> BlinkSlide = new Slide<float>(1f, 0f, 300d, MathHelper.Lerp);
@@ -261,17 +268,11 @@ namespace OpenVIII
         /// <summary>
         /// Init
         /// </summary>
-        public static void Init()
-        {
+        public static void Init() =>
             //InitMain();
             //Menu.IGM_Lobby = new IGM_Lobby();
-            InitLoad();
-            InitDebug();
-
-            //IGM = new IGM();
-            //IGM_Junction = new IGM_Junction();
-            //IGM_Items = new IGM_Items();
-        }
+            //InitLoad();
+            InitDebug();//IGM = new IGM();//IGM_Junction = new IGM_Junction();//IGM_Items = new IGM_Items();
 
         #endregion Methods
     }

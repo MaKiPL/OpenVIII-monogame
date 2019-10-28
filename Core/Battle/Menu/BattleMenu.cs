@@ -81,11 +81,24 @@ namespace OpenVIII
             NoInputOnUpdate = true;
             Size = new Vector2 { X = 880, Y = 636 };
             base.Init();
-            Damageable.BattleModeChangeEventHandler += ModeChangeEvent;
             InitAsync();
 
-            Data.ForEach(x => x.Value.AddModeChangeEvent(ref ModeChangeHandler));
-            SetMode(Damageable.BattleMode.ATB_Charging);
+        }
+        public override void Refresh(Damageable damageable)
+        {
+            if(Damageable != damageable)            
+            {
+                if (Damageable != null)
+                    Damageable.BattleModeChangeEventHandler -= ModeChangeEvent;
+
+                base.Refresh(damageable);
+                if (Damageable != null)
+                {
+                    Damageable.BattleModeChangeEventHandler += ModeChangeEvent;
+                    SetMode(Damageable.BattleMode.ATB_Charging);
+                }
+            }
+            else base.Refresh(Damageable);
         }
 
         protected override void ModeChangeEvent(object sender, Enum e)
@@ -107,20 +120,22 @@ namespace OpenVIII
                     break;
             }
         }
-
         private void InitAsync()
         {
-            IGMData.NamesHPATB.ThreadUnsafeOperations();
-            IGMData.Renzokeken.ThreadUnsafeOperations();
+            //IGMData.NamesHPATB.ThreadUnsafeOperations(); //seems to work fine in init thread.
+
+            //Memory.MainThreadOnlyActions.Enqueue(IGMData.Renzokeken.ThreadUnsafeOperations); //only works in main thread.
+            Memory.MainThreadOnlyActions.Enqueue(() => Data.TryAdd(SectionName.Renzokeken, IGMData.Renzokeken.Create(new Rectangle(0, 500, (int)Size.X, 124))));
+            
             List<Task> tasks = new List<Task>
             {
                 Task.Run(() => Data.TryAdd(SectionName.Commands, IGMData.Commands.Create(new Rectangle(50, (int)(Size.Y - 204), 210, 192), Damageable, true))),
                 Task.Run(() => Data.TryAdd(SectionName.HP, IGMData.NamesHPATB.Create(new Rectangle((int)(Size.X - 389), 507, 389, 126), Damageable))),
-                //Task.Run(() => Data.TryAdd(SectionName.Renzokeken, IGMData.Renzokeken.Create(new Rectangle(0, 500, (int)Size.X, 124))))
+                
             };
             //Some code that cannot be threaded on init.
             //Data.TryAdd(SectionName.HP, IGMData.NamesHPATB.Create(new Rectangle((int)(Size.X - 389), 507, 389, 126), Damageable));
-            Data.TryAdd(SectionName.Renzokeken, IGMData.Renzokeken.Create(new Rectangle(0, 500, (int)Size.X, 124)));
+            //Data.TryAdd(SectionName.Renzokeken, IGMData.Renzokeken.Create(new Rectangle(0, 500, (int)Size.X, 124)));
             if (!Task.WaitAll(tasks.ToArray(), 10000))
                 throw new TimeoutException("Task took too long!");
             //var t = Task.WhenAll(tasks);

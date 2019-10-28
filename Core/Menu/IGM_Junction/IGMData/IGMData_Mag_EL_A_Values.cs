@@ -12,13 +12,6 @@ namespace OpenVIII
         {
             #region Methods
 
-            protected override void InitShift(int i, int col, int row)
-            {
-                base.InitShift(i, col, row);
-                SIZE[i].Inflate(-25, -25);
-                SIZE[i].Y -= 6 * row;
-            }
-
             public static IGMData_Mag_EL_A_Values Create() => Create<IGMData_Mag_EL_A_Values>(8, 5, new IGMDataItem.Box { Title = Icons.ID.Elemental_Attack, Pos = new Rectangle(280, 423, 545, 201) }, 2, 4);
 
             public Dictionary<Kernel_bin.Element, byte> getTotal(Saves.CharacterData source, out Enum[] availableFlagsarray)
@@ -33,6 +26,13 @@ namespace OpenVIII
                     FillData(oldtotal, total, availableFlagsarray, Icons.ID.Element_Fire, palette: 9);
                 }
                 return base.Update();
+            }
+
+            protected override void InitShift(int i, int col, int row)
+            {
+                base.InitShift(i, col, row);
+                SIZE[i].Inflate(-25, -25);
+                SIZE[i].Y -= 6 * row;
             }
 
             #endregion Methods

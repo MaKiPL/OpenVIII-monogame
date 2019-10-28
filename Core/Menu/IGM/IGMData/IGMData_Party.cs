@@ -18,12 +18,6 @@ namespace OpenVIII
 
             #endregion Fields
 
-            #region Constructors
-
-            public static IGMData_Party Create() => Create<IGMData_Party>();
-
-            #endregion Constructors
-
             #region Properties
 
             public Damageable[] Contents { get; private set; }
@@ -31,6 +25,8 @@ namespace OpenVIII
             #endregion Properties
 
             #region Methods
+
+            public static IGMData_Party Create() => Create<IGMData_Party>();
 
             public override void Refresh()
             {
@@ -93,6 +89,19 @@ namespace OpenVIII
             {
                 base.InitShift(i, col, row);
                 SIZE[i].Height -= vSpace;
+            }
+
+            private void BlankArea(sbyte pos)
+            {
+                ((IGMDataItem.Box)ITEM[pos, 0]).Data = "";
+                ((IGMDataItem.Box)ITEM[pos, 0]).Title = Icons.ID.None;
+                ((IGMDataItem.Box)ITEM[pos, 0]).Pos = SIZE[pos];
+                ((IGMDataItem.Box)ITEM[pos, 0]).Show();
+                BLANKS[pos] = true;
+                for (int i = 1; i < Depth; i++)
+                {
+                    ITEM[pos, i].Hide();
+                }
             }
 
             private void RefreshCharacter(sbyte pos, Damageable damageable)
@@ -178,19 +187,6 @@ namespace OpenVIII
                     {
                         BlankArea(pos);
                     }
-                }
-            }
-
-            private void BlankArea(sbyte pos)
-            {
-                ((IGMDataItem.Box)ITEM[pos, 0]).Data = "";
-                ((IGMDataItem.Box)ITEM[pos, 0]).Title = Icons.ID.None;
-                ((IGMDataItem.Box)ITEM[pos, 0]).Pos = SIZE[pos];
-                ((IGMDataItem.Box)ITEM[pos, 0]).Show();
-                BLANKS[pos] = true;
-                for (int i = 1; i < Depth; i++)
-                {
-                    ITEM[pos, i].Hide();
                 }
             }
 

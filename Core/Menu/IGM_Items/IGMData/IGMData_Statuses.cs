@@ -30,17 +30,60 @@ namespace OpenVIII
 
             #region Properties
 
+            private bool All => (Item.Target & (Item_In_Menu._Target.All | Item_In_Menu._Target.All2)) != 0;
             public Item_In_Menu Item { get; private set; }
 
             public Faces.ID Target { get; private set; } = Faces.ID.Blank;
 
             public byte TopMenuChoice { get; private set; }
 
-            private bool All => (Item.Target & (Item_In_Menu._Target.All | Item_In_Menu._Target.All2)) != 0;
-
             #endregion Properties
 
             #region Methods
+
+            public static IGMData_Statuses Create() => Create<IGMData_Statuses>(2, 4, new IGMDataItem.Box { Title = Icons.ID.STATUS, Pos = new Rectangle(420, 510, 420, 120) }, 1, 2);
+
+            public override void Refresh()
+            {
+                if (IGM_Items != null)
+                {
+                    if (!eventSet)
+                    {
+                        IGM_Items.ModeChangeHandler += ModeChangeEvent;
+                        IGM_Items.ChoiceChangeHandler += ChoiceChangeEvent;
+                        IGM_Items.ItemChangeHandler += ItemChangeEvent;
+                        IGM_Items.TargetChangeHandler += TargetChangeEvent;
+                        eventSet = true;
+                    }
+                    else
+                        Fill(Target); // refresh the screen.
+                }
+            }
+
+            protected override void Init()
+            {
+                Misc = new Dictionary<Items, FF8String> {
+                { Items.HP,Memory.Strings.Read(Strings.FileID.MNGRP,0,26)},
+                { Items.LV,Memory.Strings.Read(Strings.FileID.MNGRP,0,27)},
+                { Items.ForwardSlash,Memory.Strings.Read(Strings.FileID.MNGRP,0,25)},
+                };
+                base.Init();
+                Target = Faces.ID.Blank;
+            }
+
+            protected override void InitShift(int i, int col, int row)
+            {
+                base.InitShift(i, col, row);
+                SIZE[i].Inflate(-18, -20);
+                SIZE[i].Y -= 5 * row;
+                SIZE[i].Height = (int)(12 * TextScale.Y);
+            }
+
+            protected override void ModeChangeEvent(object sender, Enum e)
+            {
+                if (!e.Equals(Mode.UseItemOnTarget))
+                    TargetChangeEvent(this, Faces.ID.Blank);
+            }
 
             private void ChoiceChangeEvent(object sender, KeyValuePair<byte, FF8String> e) => TopMenuChoice = e.Key;
 
@@ -88,50 +131,6 @@ namespace OpenVIII
             private void ItemChangeEvent(object sender, KeyValuePair<Item_In_Menu, FF8String> e) => Item = e.Key;
 
             private void TargetChangeEvent(object sender, Faces.ID e) => Fill(e);
-
-            protected override void Init()
-            {
-                Misc = new Dictionary<Items, FF8String> {
-                { Items.HP,Memory.Strings.Read(Strings.FileID.MNGRP,0,26)},
-                { Items.LV,Memory.Strings.Read(Strings.FileID.MNGRP,0,27)},
-                { Items.ForwardSlash,Memory.Strings.Read(Strings.FileID.MNGRP,0,25)},
-                };
-                base.Init();
-                Target = Faces.ID.Blank;
-            }
-
-            protected override void InitShift(int i, int col, int row)
-            {
-                base.InitShift(i, col, row);
-                SIZE[i].Inflate(-18, -20);
-                SIZE[i].Y -= 5 * row;
-                SIZE[i].Height = (int)(12 * TextScale.Y);
-            }
-
-            protected override void ModeChangeEvent(object sender, Enum e)
-            {
-                if (!e.Equals(Mode.UseItemOnTarget))
-                    TargetChangeEvent(this, Faces.ID.Blank);
-            }
-
-            public static IGMData_Statuses Create() => Create<IGMData_Statuses>(2, 4, new IGMDataItem.Box { Title = Icons.ID.STATUS, Pos = new Rectangle(420, 510, 420, 120) }, 1, 2);
-
-            public override void Refresh()
-            {
-                if (IGM_Items != null)
-                {
-                    if (!eventSet)
-                    {
-                        IGM_Items.ModeChangeHandler += ModeChangeEvent;
-                        IGM_Items.ChoiceChangeHandler += ChoiceChangeEvent;
-                        IGM_Items.ItemChangeHandler += ItemChangeEvent;
-                        IGM_Items.TargetChangeHandler += TargetChangeEvent;
-                        eventSet = true;
-                    }
-                    else
-                        Fill(Target); // refresh the screen.
-                }
-            }
 
             #endregion Methods
         }

@@ -7,13 +7,37 @@ namespace OpenVIII
 {
     public partial class IGM_Lobby : Menu
     {
-        public static IGM_Lobby Create() => Create<IGM_Lobby>();
+        #region Fields
+
         private Dictionary<Enum, Menu_Base> Data0;
+
+        #endregion Fields
+
+        #region Enums
 
         public enum SectionName
         {
             BG,
             Selections,
+        }
+
+        #endregion Enums
+
+        #region Methods
+
+        public static IGM_Lobby Create() => Create<IGM_Lobby>();
+
+        public override bool Inputs() => Data[SectionName.Selections].Inputs();
+
+        public override void StartDraw()
+        {
+            Matrix backupfocus = Focus;
+            GenerateFocus(new Vector2(1280, 720), Box_Options.Top);
+            base.StartDraw();
+            Data0.Where(m => m.Value != null).ForEach(m => m.Value.Draw());
+            base.EndDraw();
+            Focus = backupfocus;
+            base.StartDraw();
         }
 
         protected override void Init()
@@ -28,17 +52,6 @@ namespace OpenVIII
             base.Init();
         }
 
-        public override void StartDraw()
-        {
-            Matrix backupfocus = Focus;
-            GenerateFocus(new Vector2(1280, 720), Box_Options.Top);
-            base.StartDraw();
-            Data0.Where(m => m.Value != null).ForEach(m => m.Value.Draw());
-            base.EndDraw();
-            Focus = backupfocus;
-            base.StartDraw();
-        }
-
-        public override bool Inputs() => Data[SectionName.Selections].Inputs();
+        #endregion Methods
     }
 }

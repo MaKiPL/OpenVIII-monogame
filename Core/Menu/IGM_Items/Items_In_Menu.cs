@@ -97,6 +97,12 @@ namespace OpenVIII
 
         #region Properties
 
+        private bool All => (Target & (_Target.All | _Target.All2)) != 0;
+
+        private Kernel_bin.Attack_Type Attack_Type => Battle?.Attack_Type ?? Kernel_bin.Attack_Type.None;
+
+        public Kernel_bin.Battle_Items_Data Battle => (Kernel_bin.BattleItemsData?.Count ?? 0) > ID ? Kernel_bin.BattleItemsData[ID] : null;
+
         /// <summary>
         /// Which persistant statuses are removed.
         /// </summary>
@@ -112,7 +118,9 @@ namespace OpenVIII
             }
         }
 
+        public FF8String Description => Battle?.Description ?? Non_Battle?.Description;
         public byte Faded_Palette => 7;
+
         /// <summary>
         /// How much healing is done
         /// </summary>
@@ -134,6 +142,7 @@ namespace OpenVIII
         }
 
         public Icons.ID Icon { get; private set; }
+
         /// <summary>
         /// Item ID
         /// </summary>
@@ -145,9 +154,12 @@ namespace OpenVIII
         public Kernel_bin.Abilities Learn => Type == _Type.GF_Learn ? (Kernel_bin.Abilities)b2 : Kernel_bin.Abilities.None;
 
         public Kernel_bin.Blue_Magic Learned_Blue_Magic => Type == _Type.Blue_Magic ? (Kernel_bin.Blue_Magic)b2 : Kernel_bin.Blue_Magic.None;
+        public FF8String Name => Battle?.Name ?? Non_Battle?.Name;
         public Kernel_bin.Non_battle_Items_Data Non_Battle => Battle == null ? Kernel_bin.NonbattleItemsData[ID - (Kernel_bin.BattleItemsData?.Count ?? 0)] : null;
         public byte Palette => 9;
+        public Kernel_bin.Stat Stat => Type == _Type.Stat ? (Kernel_bin.Stat)b3 : Kernel_bin.Stat.None;
         public byte Stat_Increase => (byte)(Type == _Type.Stat ? b2 : 0);
+
         /// <summary>
         /// Who is targeted and 0x01 seems to be a useable item in menu item. Magazine values don't
         /// seem to corrispond.
@@ -167,12 +179,6 @@ namespace OpenVIII
             private set => _type = value;
         }
 
-        private bool All => (Target & (_Target.All | _Target.All2)) != 0;
-        private Kernel_bin.Attack_Type Attack_Type => Battle?.Attack_Type ?? Kernel_bin.Attack_Type.None;
-        public Kernel_bin.Battle_Items_Data Battle => (Kernel_bin.BattleItemsData?.Count ?? 0) > ID ? Kernel_bin.BattleItemsData[ID] : null;
-        public FF8String Description => Battle?.Description ?? Non_Battle?.Description;
-        public FF8String Name => Battle?.Name ?? Non_Battle?.Name;
-        public Kernel_bin.Stat Stat => Type == _Type.Stat ? (Kernel_bin.Stat)b3 : Kernel_bin.Stat.None;
         /// <summary>
         /// Target in byte form
         /// </summary>

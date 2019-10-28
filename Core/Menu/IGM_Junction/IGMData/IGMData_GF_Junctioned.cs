@@ -13,29 +13,6 @@ namespace OpenVIII
         {
             #region Methods
 
-            protected override void Init()
-            {
-                Table_Options |= Table_Options.FillRows;
-                base.Init();
-
-                for (int pos = 0; pos < Count; pos++)
-                {
-                    ITEM[pos, 0] = new IGMDataItem.Text
-                    {
-                        Pos = SIZE[pos]
-                    };
-                    ITEM[pos, 0].Hide();
-                    BLANKS[pos] = true;
-                }
-            }
-
-            protected override void InitShift(int i, int col, int row)
-            {
-                base.InitShift(i, col, row);
-                SIZE[i].Inflate(-45, -8);
-                SIZE[i].Offset((-10 * col), -2 * row);
-            }
-
             public static IGMData_GF_Junctioned Create() => Create<IGMData_GF_Junctioned>(16, 1, new IGMDataItem.Box { Pos = new Rectangle(0, 141, 440, 282) }, 2, 8);
 
             public override void Refresh()
@@ -59,6 +36,29 @@ namespace OpenVIII
                         BLANKS[pos] = true;
                     }
                 }
+            }
+
+            protected override void Init()
+            {
+                Table_Options |= Table_Options.FillRows;
+                base.Init();
+
+                for (int pos = 0; pos < Count; pos++)
+                {
+                    ITEM[pos, 0] = new IGMDataItem.Text
+                    {
+                        Pos = SIZE[pos]
+                    };
+                    ITEM[pos, 0].Hide();
+                    BLANKS[pos] = true;
+                }
+            }
+
+            protected override void InitShift(int i, int col, int row)
+            {
+                base.InitShift(i, col, row);
+                SIZE[i].Inflate(-45, -8);
+                SIZE[i].Offset((-10 * col), -2 * row);
             }
 
             #endregion Methods

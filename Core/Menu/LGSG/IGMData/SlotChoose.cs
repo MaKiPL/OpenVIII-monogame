@@ -28,35 +28,34 @@ namespace OpenVIII
                 r.Init(2, 2, new IGMDataItem.Empty(pos), 1, 2);
                 return r;
             }
-            protected override void ModeChangeEvent(object sender, Enum e)
+
+            public override bool Inputs() => base.Inputs();
+
+            public override bool Inputs_CANCEL()
             {
-                base.ModeChangeEvent(sender, e);
-                if (e.GetType() == typeof(IGM_LGSG.Mode))
-                {
-                    Save = e.HasFlag(IGM_LGSG.Mode.Save);
-                    if (e.HasFlag(IGM_LGSG.Mode.Slot) && e.HasFlag(IGM_LGSG.Mode.Choose))
-                        Show();
-                    else
-                        Hide();
-                }
+                base.Inputs_CANCEL();
+                if (!Save)
+                    init_debugger_Audio.StopMusic();
+                Menu.FadeIn();
+                Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.MainLobby;
+
+                return true;
             }
 
             public override bool Inputs_OKAY()
             {
                 base.Inputs_OKAY();
-                var mode = IGM_LGSG.Mode.Slot |
+                IGM_LGSG.Mode mode = IGM_LGSG.Mode.Slot |
                         IGM_LGSG.Mode.Checking |
                         (Save ? IGM_LGSG.Mode.Save : IGM_LGSG.Mode.Nothing);
 
                 if (CURSOR_SELECT == 0)
                     Menu.IGM_LGSG.SetMode(mode | IGM_LGSG.Mode.Slot1);
                 else if (CURSOR_SELECT == 1)
-                    Menu.IGM_LGSG.SetMode(mode | IGM_LGSG.Mode.Slot1);
+                    Menu.IGM_LGSG.SetMode(mode | IGM_LGSG.Mode.Slot2);
 
                 return true;
             }
-
-            public override bool Inputs() => base.Inputs();
 
             protected override void Init()
             {
@@ -94,15 +93,18 @@ namespace OpenVIII
                         break;
                 }
             }
-            public override bool Inputs_CANCEL()
-            {
-                base.Inputs_CANCEL();
-                if(!Save)
-                init_debugger_Audio.StopMusic();
-                Menu.FadeIn();
-                Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.MainLobby;
 
-                return true;
+            protected override void ModeChangeEvent(object sender, Enum e)
+            {
+                base.ModeChangeEvent(sender, e);
+                if (e.GetType() == typeof(IGM_LGSG.Mode))
+                {
+                    Save = e.HasFlag(IGM_LGSG.Mode.Save);
+                    if (e.HasFlag(IGM_LGSG.Mode.Slot) && e.HasFlag(IGM_LGSG.Mode.Choose))
+                        Show();
+                    else
+                        Hide();
+                }
             }
 
             #endregion Methods

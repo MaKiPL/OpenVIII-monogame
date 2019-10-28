@@ -8,13 +8,21 @@ namespace OpenVIII
 
         private class IGMData_Abilities_Group : IGMData.Group.Base
         {
-            #region Constructors
+            #region Properties
 
-            public static new IGMData_Abilities_Group Create(params Menu_Base[] d) => Create<IGMData_Abilities_Group>(d);
+            private IGMData.Slots.Abilities Ability => ((IGMData.Slots.Abilities)ITEM[1, 0]);
 
-            #endregion Constructors
+            private IGMData_Abilities_AbilityPool AbilityPool => ((IGMData_Abilities_AbilityPool)ITEM[3, 0]);
+
+            private IGMData.Slots.Command Commands => ((IGMData.Slots.Command)ITEM[0, 0]);
+
+            private IGMData_Abilities_CommandPool CommandsPool => ((IGMData_Abilities_CommandPool)ITEM[2, 0]);
+
+            #endregion Properties
 
             #region Methods
+
+            public static new IGMData_Abilities_Group Create(params Menu_Base[] d) => Create<IGMData_Abilities_Group>(d);
 
             public override bool Inputs()
             {
@@ -47,20 +55,6 @@ namespace OpenVIII
                 return true;
             }
 
-            public override bool Inputs_OKAY()
-            {
-                base.Inputs_OKAY();
-                if (Commands != null)
-                {
-                    if (CURSOR_SELECT >= Commands.Count)
-                        IGM_Junction.SetMode(Mode.Abilities_Abilities);
-                    else
-                        IGM_Junction.SetMode(Mode.Abilities_Commands);
-                    return true;
-                }
-                return false;
-            }
-
             public override void Inputs_Menu()
             {
                 skipdata = true;
@@ -83,13 +77,19 @@ namespace OpenVIII
                 }
             }
 
-            private IGMData.Slots.Command Commands => ((IGMData.Slots.Command)ITEM[0, 0]);
-
-            private IGMData.Slots.Abilities Ability => ((IGMData.Slots.Abilities)ITEM[1, 0]);
-
-            private IGMData_Abilities_CommandPool CommandsPool => ((IGMData_Abilities_CommandPool)ITEM[2, 0]);
-
-            private IGMData_Abilities_AbilityPool AbilityPool => ((IGMData_Abilities_AbilityPool)ITEM[3, 0]);
+            public override bool Inputs_OKAY()
+            {
+                base.Inputs_OKAY();
+                if (Commands != null)
+                {
+                    if (CURSOR_SELECT >= Commands.Count)
+                        IGM_Junction.SetMode(Mode.Abilities_Abilities);
+                    else
+                        IGM_Junction.SetMode(Mode.Abilities_Commands);
+                    return true;
+                }
+                return false;
+            }
 
             public override void Refresh()
             {

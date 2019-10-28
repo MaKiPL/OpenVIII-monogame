@@ -40,7 +40,7 @@ namespace OpenVIII.IGMData
             HELP.Data = help;
             Refresh();
         }
-        
+
         protected override void Init()
         {
             base.Init();

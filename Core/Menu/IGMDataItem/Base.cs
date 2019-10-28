@@ -12,6 +12,8 @@ namespace OpenVIII.IGMDataItem
 
         private bool _blink = false;
 
+        private bool disposedValue = false;
+
         #endregion Fields
 
         #region Constructors
@@ -20,21 +22,31 @@ namespace OpenVIII.IGMDataItem
         {
             _pos = pos ?? Rectangle.Empty;
             Scale = scale ?? TextScale;
-
         }
 
         #endregion Constructors
 
+        #region Destructors
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        ~Base()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(false);
+        }
+
+        #endregion Destructors
+
         #region Properties
 
+        public static float Blink_Amount => Menu.Blink_Amount;
+        public static float Fade => Menu.Fade;
+        public static Vector2 TextScale => Menu.TextScale;
         public virtual bool Blink { get => _blink; set => _blink = value; }
         public float Blink_Adjustment { get; set; } = 1f;
         public Color Color { get; set; } = Color.White;
         public Color Faded_Color { get; set; } = Color.White;
         public Vector2 Scale { get; set; }
-        public static float Blink_Amount => Menu.Blink_Amount;
-        public static float Fade => Menu.Fade;
-        public static Vector2 TextScale => Menu.TextScale;
 
         #endregion Properties
 
@@ -44,6 +56,15 @@ namespace OpenVIII.IGMDataItem
 
         public static implicit operator Color(Base v) => v.Color;
 
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            GC.SuppressFinalize(this);
+        }
+
         //public virtual object Data { get; public set; }
         //public virtual FF8String Data { get; public set; }
         public override void Draw()
@@ -52,19 +73,6 @@ namespace OpenVIII.IGMDataItem
         public override bool Inputs() => false;
 
         public override bool Update() => false;
-
-        protected override void Init()
-        {
-            if (blank == null)
-            {
-                blank = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
-                blank.SetData(new Color[] { Color.White });
-            }
-        }
-
-        #region IDisposable Support
-
-        private bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {
@@ -86,24 +94,17 @@ namespace OpenVIII.IGMDataItem
             }
         }
 
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        ~Base()
+        protected override void Init()
         {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(false);
+            if (blank == null)
+            {
+                blank = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
+                blank.SetData(new Color[] { Color.White });
+            }
         }
-
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            GC.SuppressFinalize(this);
-        }
-
-        #endregion IDisposable Support
 
         #endregion Methods
+
+        // To detect redundant calls
     }
 }

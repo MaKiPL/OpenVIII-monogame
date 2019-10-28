@@ -21,17 +21,6 @@ namespace OpenVIII
 
             #endregion Fields
 
-            #region Constructors
-
-            static public T Create<T>(int count, int depth, Menu_Base container = null, int? cols = null, int? rows = null) where T : IGMData_Slots<C>, new()
-            {
-                var r = IGMData.Base.Create<T>(count, depth, container, cols, rows);
-                r.Contents = new Kernel_bin.Stat[r.Count];
-                return r;
-            }
-
-            #endregion Constructors
-
             #region Properties
 
             public Kernel_bin.Stat[] Contents { get; protected set; }
@@ -39,6 +28,13 @@ namespace OpenVIII
             #endregion Properties
 
             #region Methods
+
+            public static T Create<T>(int count, int depth, Menu_Base container = null, int? cols = null, int? rows = null) where T : IGMData_Slots<C>, new()
+            {
+                T r = IGMData.Base.Create<T>(count, depth, container, cols, rows);
+                r.Contents = new Kernel_bin.Stat[r.Count];
+                return r;
+            }
 
             public abstract void BackupSetting();
 
@@ -123,17 +119,6 @@ namespace OpenVIII
                 }
             }
 
-            protected override void Init()
-            {
-                base.Init();
-                for (byte pos = 0; pos < Count; pos++)
-                {
-                    ITEM[pos, 0] = new IGMDataItem.Icon { Pos = new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0) };
-                    ITEM[pos, 1] = new IGMDataItem.Text { Pos = new Rectangle(SIZE[pos].X + 60, SIZE[pos].Y, 0, 0) };
-                    BLANKS[pos] = true;
-                }
-            }
-
             protected void FillData(Icons.ID starticon, Kernel_bin.Stat statatk, Kernel_bin.Stat statdef)
             {
                 if (Damageable.GetCharacterData(out Saves.CharacterData c))
@@ -161,6 +146,17 @@ namespace OpenVIII
                             BLANKS[pos] = !unlocked;
                         }
                     }
+            }
+
+            protected override void Init()
+            {
+                base.Init();
+                for (byte pos = 0; pos < Count; pos++)
+                {
+                    ITEM[pos, 0] = new IGMDataItem.Icon { Pos = new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0) };
+                    ITEM[pos, 1] = new IGMDataItem.Text { Pos = new Rectangle(SIZE[pos].X + 60, SIZE[pos].Y, 0, 0) };
+                    BLANKS[pos] = true;
+                }
             }
 
             /// <summary>

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OpenVIII
 {
@@ -11,12 +11,6 @@ namespace OpenVIII
 
         private class IGMData_Mag_Stat_Slots : IGMData_Slots<Saves.CharacterData>
         {
-            #region Constructors
-
-            public static IGMData_Mag_Stat_Slots Create() => Create<IGMData_Mag_Stat_Slots>(10, 5, new IGMDataItem.Box { Pos = new Rectangle(0, 414, 840, 216) }, 2, 5);
-
-            #endregion Constructors
-
             #region Properties
 
             /// <summary>
@@ -38,6 +32,8 @@ namespace OpenVIII
             #endregion Properties
 
             #region Methods
+
+            public static IGMData_Mag_Stat_Slots Create() => Create<IGMData_Mag_Stat_Slots>(10, 5, new IGMDataItem.Box { Pos = new Rectangle(0, 414, 840, 216) }, 2, 5);
 
             public override void BackupSetting()
             {
@@ -78,6 +74,18 @@ namespace OpenVIII
                 }
             }
 
+            public override void Inputs_Menu()
+            {
+                skipdata = true;
+                base.Inputs_Menu();
+                skipdata = false;
+                if (Contents[CURSOR_SELECT] == Kernel_bin.Stat.None && Damageable.GetCharacterData(out Saves.CharacterData c))
+                {
+                    c.Stat_J[Contents[CURSOR_SELECT]] = 0;
+                    IGM_Junction.Refresh();
+                }
+            }
+
             public override bool Inputs_OKAY()
             {
                 if (!BLANKS[CURSOR_SELECT])
@@ -104,18 +112,6 @@ namespace OpenVIII
                 }
             }
 
-            public override void Inputs_Menu()
-            {
-                skipdata = true;
-                base.Inputs_Menu();
-                skipdata = false;
-                if (Contents[CURSOR_SELECT] == Kernel_bin.Stat.None && Damageable.GetCharacterData(out Saves.CharacterData c))
-                {
-                    c.Stat_J[Contents[CURSOR_SELECT]] = 0;
-                    IGM_Junction.Refresh();
-                }
-            }
-
             /// <summary>
             /// Things that may of changed before screen loads or junction is changed.
             /// </summary>
@@ -128,7 +124,7 @@ namespace OpenVIII
 
                     if (Memory.State.Characters != null && unlocked != null)
                     {
-                        ((IGMDataItem.Icon)ITEM[5, 0] ).Palette = 
+                        ((IGMDataItem.Icon)ITEM[5, 0]).Palette =
                             (byte)(unlocked.Contains(Kernel_bin.Abilities.ST_Atk_J) ? 2 : 7);
                         ((IGMDataItem.Icon)ITEM[5, 1]).Palette =
                             (byte)(unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx1) ||
@@ -152,7 +148,7 @@ namespace OpenVIII
                                 FF8String name = Kernel_bin.MagicData[c.Stat_J[stat]].Name;
                                 if (name == null || name.Length == 0) name = Strings.Name._;
                                 ushort currentValue = Damageable.TotalStat(stat);
-                                ushort previousValue = GetPrevSetting()?.TotalStat(stat)??currentValue;
+                                ushort previousValue = GetPrevSetting()?.TotalStat(stat) ?? currentValue;
                                 ((IGMDataItem.Text)ITEM[pos, 1]).Data = name;
                                 ((IGMDataItem.Integer)ITEM[pos, 2]).Data = currentValue;
 
@@ -172,7 +168,7 @@ namespace OpenVIII
                                 }
                                 else if (previousValue > currentValue)
                                 {
-                                    SetPalettes(pos,5,16,Icons.ID.Arrow_Down);
+                                    SetPalettes(pos, 5, 16, Icons.ID.Arrow_Down);
                                     SetFontColor(pos, Font.ColorID.Red);
                                 }
                                 else
@@ -185,21 +181,6 @@ namespace OpenVIII
                         }
                     }
                 }
-            }
-
-            private void SetPalettes(int pos, byte StatIconPalette, byte ArrowPalette=2, Icons.ID ArrowIconID = Icons.ID.None)
-            {
-                ((IGMDataItem.Icon)ITEM[pos, 0]).Palette = ((IGMDataItem.Icon)ITEM[pos, 0]).Faded_Palette = StatIconPalette;
-                ((IGMDataItem.Icon)ITEM[pos, 4]).Data = ArrowIconID;
-                ((IGMDataItem.Icon)ITEM[pos, 4]).Palette = ArrowPalette;
-            }
-
-            private void SetFontColor(int pos, Font.ColorID color)
-            {
-                ((IGMDataItem.Text)ITEM[pos, 1]).FontColor = color;
-                ((IGMDataItem.Integer)ITEM[pos, 2]).FontColor = color;
-                if (ITEM[pos, 3] != null)
-                    ((IGMDataItem.Text)ITEM[pos, 3]).FontColor = color;
             }
 
             public override void UndoChange()
@@ -230,7 +211,6 @@ namespace OpenVIII
             {
                 Contents = new Kernel_bin.Stat[Count];
                 base.Init();
-
 
                 ITEM[5, 0] = new IGMDataItem.Icon { Data = Icons.ID.Icon_Status_Attack, Pos = new Rectangle(SIZE[5].X + 200, SIZE[5].Y, 0, 0) };
                 ITEM[5, 1] = new IGMDataItem.Icon { Data = Icons.ID.Icon_Status_Defense, Pos = new Rectangle(SIZE[5].X + 240, SIZE[5].Y, 0, 0) };
@@ -280,6 +260,21 @@ namespace OpenVIII
             private void ConfirmChangeEvent(object sender, Mode e) => ConfirmChange();
 
             private void ReInitEvent(object sender, Damageable e) => Refresh(e);
+
+            private void SetFontColor(int pos, Font.ColorID color)
+            {
+                ((IGMDataItem.Text)ITEM[pos, 1]).FontColor = color;
+                ((IGMDataItem.Integer)ITEM[pos, 2]).FontColor = color;
+                if (ITEM[pos, 3] != null)
+                    ((IGMDataItem.Text)ITEM[pos, 3]).FontColor = color;
+            }
+
+            private void SetPalettes(int pos, byte StatIconPalette, byte ArrowPalette = 2, Icons.ID ArrowIconID = Icons.ID.None)
+            {
+                ((IGMDataItem.Icon)ITEM[pos, 0]).Palette = ((IGMDataItem.Icon)ITEM[pos, 0]).Faded_Palette = StatIconPalette;
+                ((IGMDataItem.Icon)ITEM[pos, 4]).Data = ArrowIconID;
+                ((IGMDataItem.Icon)ITEM[pos, 4]).Palette = ArrowPalette;
+            }
 
             private void UndoChangeEvent(object sender, Mode e) => UndoChange();
 

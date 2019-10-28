@@ -22,139 +22,22 @@ namespace OpenVIII.IGMData.Pool
 
         #region Methods
 
-        private void AddGF(ref int pos, GFs g, Font.ColorID color = Font.ColorID.White)
-        {
-            Contents[pos] = g;
-            if (g != GFs.Blank)
-            {
-                ((IGMDataItem.Text)ITEM[pos, 0]).Data = Memory.Strings.GetName(g);
-                ((IGMDataItem.Text)ITEM[pos, 0]).FontColor = color;
-                ((IGMDataItem.Integer)ITEM[pos, 2]).Data = Battle ? Source.GFs[g].CurrentHP() : Source.GFs[g].Level;
-                ShowChild(pos, g);
-            }
-            else
-            {
-                if (ITEM[pos, 0] == null)
-                    ITEM[pos, 0] = new IGMDataItem.Text { Pos = SIZE[pos], FontColor = color };
-                if (ITEM[pos, 1] == null)
-                    ITEM[pos, 1] = new IGMDataItem.Icon { Data = Icons.ID.JunctionSYM, Pos = new Rectangle(SIZE[pos].X + SIZE[pos].Width - 100, SIZE[pos].Y, 0, 0) };
-                if (ITEM[pos, 2] == null)
-                    ITEM[pos, 2] = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), Spaces = 3 };
-                HideChild(pos);
-            }
-            pos++;
-        }
-
-        private void AddGFs(ref int pos, ref int skip, System.Func<GFs, bool> predicate, Font.ColorID colorid = Font.ColorID.White, bool blank = false)
-        {
-            foreach (GFs g in UnlockedGFs.Where(predicate))
-            {
-                if (pos >= Rows) break;
-                if (skip-- <= 0)
-                {
-                    BLANKS[pos] = blank;
-                    AddGF(ref pos, g, colorid);
-                }
-            }
-        }
-
-        private void HideChild(int pos)
-        {
-            BLANKS[pos] = true;
-            ITEM[pos, 0].Hide();
-            ITEM[pos, 1].Hide();
-            ITEM[pos, 2].Hide();
-        }
-
-        private void ShowChild(int pos, GFs g = GFs.Blank)
-        {
-            BLANKS[pos] = false;
-            ITEM[pos, 0].Show();
-            if (JunctionedGFs?.ContainsKey(g) ?? false && !Battle)
-                ITEM[pos, 1].Show();
-            else
-                ITEM[pos, 1].Hide();
-            ITEM[pos, 2].Show();
-        }
-
-        private void UpdateCharacter()
-        {
-            if (!Battle && Menu.IGM_Junction != null)
-            {
-                GFs g = Contents[CURSOR_SELECT];
-                IGMDataItem.Box i =
-                    (IGMDataItem.Box)((IGM_Junction.IGMData_GF_Group)Menu.IGM_Junction.Data[IGM_Junction.SectionName.TopMenu_GF_Group]).ITEM[2, 0];
-                i.Data = JunctionedGFs.Count > 0 && JunctionedGFs.ContainsKey(g) ? Memory.Strings.GetName(JunctionedGFs[g]) : null;
-            }
-        }
-
-        protected override void Init()
-        {
-            base.Init();
-            SIZE[Rows] = SIZE[0];
-            SIZE[Rows].Y = Y;
-            ITEM[Rows, 2] = new IGMDataItem.Icon
-            {
-                Pos = new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 30, SIZE[Rows].Y, 0, 0),
-                Scale = new Vector2(2.5f)
-            };
-            for (int i = 0; i < Rows;)
-                AddGF(ref i, GFs.Blank);
-        }
-
-        protected override void InitShift(int i, int col, int row)
-        {
-            base.InitShift(i, col, row);
-            SIZE[i].Inflate(-22, -8);
-            SIZE[i].Offset(0, 12 + (-8 * row));
-        }
-
-        protected override void PAGE_NEXT()
-        {
-            do
-            {
-                base.PAGE_NEXT();
-                Refresh();
-            }
-            while (!ITEM[0, 0].Enabled && Page != 0);
-        }
-
-        protected override void PAGE_PREV()
-        {
-            do
-            {
-                base.PAGE_PREV();
-                Refresh();
-            }
-            while (!ITEM[0, 0].Enabled && Page != 0);
-        }
-    
-
-        protected override void SetCursor_select(int value)
-        {
-            if (value != GetCursor_select())
-            {
-                base.SetCursor_select(value);
-                UpdateCharacter();
-            }
-        }
-
         public static GF Create(Rectangle? pos = null, Damageable damageable = null, bool battle = false)
         {
             GF r = new GF
             {
-                Count=5,
-                Depth=3,
-                CONTAINER =  new IGMDataItem.Box
+                Count = 5,
+                Depth = 3,
+                CONTAINER = new IGMDataItem.Box
                 {
                     Pos = pos ?? new Rectangle(440, 149, 385, 193),
                     Title = Icons.ID.GF
                 },
-                Rows= 4,
+                Rows = 4,
                 DefaultPages = 4,
                 Battle = battle
             };
-            r.Init(damageable,null);
+            r.Init(damageable, null);
             r.Init();
             r.Refresh();
             r.Update();
@@ -320,6 +203,122 @@ namespace OpenVIII.IGMData.Pool
                 ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.GF_PG1 + checked((byte)Page);
                 ITEM[Count - 1, 0].Show();
                 ITEM[Count - 2, 0].Show();
+            }
+        }
+
+        protected override void Init()
+        {
+            base.Init();
+            SIZE[Rows] = SIZE[0];
+            SIZE[Rows].Y = Y;
+            ITEM[Rows, 2] = new IGMDataItem.Icon
+            {
+                Pos = new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 30, SIZE[Rows].Y, 0, 0),
+                Scale = new Vector2(2.5f)
+            };
+            for (int i = 0; i < Rows;)
+                AddGF(ref i, GFs.Blank);
+        }
+
+        protected override void InitShift(int i, int col, int row)
+        {
+            base.InitShift(i, col, row);
+            SIZE[i].Inflate(-22, -8);
+            SIZE[i].Offset(0, 12 + (-8 * row));
+        }
+
+        protected override void PAGE_NEXT()
+        {
+            do
+            {
+                base.PAGE_NEXT();
+                Refresh();
+            }
+            while (!ITEM[0, 0].Enabled && Page != 0);
+        }
+
+        protected override void PAGE_PREV()
+        {
+            do
+            {
+                base.PAGE_PREV();
+                Refresh();
+            }
+            while (!ITEM[0, 0].Enabled && Page != 0);
+        }
+
+        protected override void SetCursor_select(int value)
+        {
+            if (value != GetCursor_select())
+            {
+                base.SetCursor_select(value);
+                UpdateCharacter();
+            }
+        }
+
+        private void AddGF(ref int pos, GFs g, Font.ColorID color = Font.ColorID.White)
+        {
+            Contents[pos] = g;
+            if (g != GFs.Blank)
+            {
+                ((IGMDataItem.Text)ITEM[pos, 0]).Data = Memory.Strings.GetName(g);
+                ((IGMDataItem.Text)ITEM[pos, 0]).FontColor = color;
+                ((IGMDataItem.Integer)ITEM[pos, 2]).Data = Battle ? Source.GFs[g].CurrentHP() : Source.GFs[g].Level;
+                ShowChild(pos, g);
+            }
+            else
+            {
+                if (ITEM[pos, 0] == null)
+                    ITEM[pos, 0] = new IGMDataItem.Text { Pos = SIZE[pos], FontColor = color };
+                if (ITEM[pos, 1] == null)
+                    ITEM[pos, 1] = new IGMDataItem.Icon { Data = Icons.ID.JunctionSYM, Pos = new Rectangle(SIZE[pos].X + SIZE[pos].Width - 100, SIZE[pos].Y, 0, 0) };
+                if (ITEM[pos, 2] == null)
+                    ITEM[pos, 2] = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[pos].X + SIZE[pos].Width - 50, SIZE[pos].Y, 0, 0), Spaces = 3 };
+                HideChild(pos);
+            }
+            pos++;
+        }
+
+        private void AddGFs(ref int pos, ref int skip, System.Func<GFs, bool> predicate, Font.ColorID colorid = Font.ColorID.White, bool blank = false)
+        {
+            foreach (GFs g in UnlockedGFs.Where(predicate))
+            {
+                if (pos >= Rows) break;
+                if (skip-- <= 0)
+                {
+                    BLANKS[pos] = blank;
+                    AddGF(ref pos, g, colorid);
+                }
+            }
+        }
+
+        private void HideChild(int pos)
+        {
+            BLANKS[pos] = true;
+            ITEM[pos, 0].Hide();
+            ITEM[pos, 1].Hide();
+            ITEM[pos, 2].Hide();
+        }
+
+        private void ShowChild(int pos, GFs g = GFs.Blank)
+        {
+            BLANKS[pos] = false;
+            ITEM[pos, 0].Show();
+            if (JunctionedGFs?.ContainsKey(g) ?? false && !Battle)
+                ITEM[pos, 1].Show();
+            else
+                ITEM[pos, 1].Hide();
+            ITEM[pos, 2].Show();
+        }
+
+        private void UpdateCharacter()
+        {
+            if (!Battle && Menu.IGM_Junction != null)
+            {
+                GFs g = Contents[CURSOR_SELECT];
+                IGMDataItem.Box i =
+                    (IGMDataItem.Box)((IGM_Junction.IGMData_GF_Group)Menu.IGM_Junction.Data[IGM_Junction.SectionName.TopMenu_GF_Group]).ITEM[2, 0];
+                i.Data = JunctionedGFs.Count > 0 && JunctionedGFs.ContainsKey(g) ? Memory.Strings.GetName(JunctionedGFs[g]) : null;
             }
         }
 

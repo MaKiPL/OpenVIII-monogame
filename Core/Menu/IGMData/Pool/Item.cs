@@ -17,13 +17,145 @@ namespace OpenVIII.IGMData.Pool
 
         #region Properties
 
+        public IReadOnlyList<FF8String> HelpStr => _helpStr;
+        public IGMData.Target.Group Target_Group => (IGMData.Target.Group)(((IGMData.Base)ITEM[Targets_Window, 0]));
         private int Targets_Window => Count - 3;
 
         #endregion Properties
 
         #region Methods
 
-        private void ReInitCompletedEvent(object sender, EventArgs e) => Menu.IGM_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
+        public static Item Create(Rectangle pos, Damageable damageable = null, bool battle = false, int count = 4)
+        {
+            Item r = Create<Item>(count + 1, 3, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.ITEM }, count, 198 / count + 1, damageable);
+            r.Battle = battle;
+            if (battle)
+                r.ITEM[r.Targets_Window, 0] = IGMData.Target.Group.Create(r.Damageable);
+            return r;
+        }
+
+        public static Item Create(Damageable damageable = null) => Create(new Rectangle(5, 150, 415, 480), damageable: damageable, battle: false, count: 13);
+
+        public override void Draw() => base.Draw();
+
+        public override void HideChildren()
+        {
+            if (Enabled)
+            {
+                if (!skipdata)
+                {
+                    Target_Group.HideChildren();
+                    Target_Group.Hide();
+                }
+            }
+        }
+
+        public override bool Inputs()
+        {
+            bool ret = false;
+            if (InputITEM(Targets_Window, 0, ref ret))
+            {
+            }
+            else
+            {
+                Cursor_Status &= ~Cursor_Status.Blinking;
+                Cursor_Status |= Cursor_Status.Enabled;
+                return base.Inputs();
+            }
+            return ret;
+        }
+
+        public override bool Inputs_CANCEL()
+        {
+            if (Battle)
+            {
+                Hide();
+            }
+            else
+            {
+                Menu.IGM_Items.SetMode(IGM_Items.Mode.TopMenu);
+                base.Inputs_CANCEL();
+            }
+            return true;
+        }
+
+        public override bool Inputs_OKAY()
+        {
+            Item_In_Menu item = Contents[CURSOR_SELECT];
+            if (Battle)
+            {
+                Target_Group?.SelectTargetWindows(item);
+                Target_Group?.ShowTargetWindows();
+            }
+            if (item.Target == Item_In_Menu._Target.None)
+                return false;
+            base.Inputs_OKAY();
+            Menu.IGM_Items.SetMode(IGM_Items.Mode.UseItemOnTarget);
+            return true;
+        }
+
+        public override void Refresh()
+        {
+            if (!Battle && !eventSet && Menu.IGM_Items != null)
+            {
+                Menu.IGM_Items.ModeChangeHandler += ModeChangeEvent;
+                Menu.IGM_Items.ReInitCompletedHandler += ReInitCompletedEvent;
+                eventSet = true;
+            }
+            base.Refresh();
+            Source = Memory.State;
+            if (Source != null && Source.Items != null)
+            {
+                ((IGMDataItem.Box)CONTAINER).Title = Pages <= 1 ? (Icons.ID?)Icons.ID.ITEM : (Icons.ID?)(Icons.ID.ITEM_PG1 + (byte)Page);
+                byte pos = 0;
+                int skip = Page * Rows;
+                for (byte i = 0; pos < Rows && i < Source.Items.Count; i++)
+                {
+                    Saves.Item item = Source.Items[i];
+                    if (item.ID == 0 || item.QTY == 0) continue; // skip empty values.
+                    if (skip-- > 0) continue; //skip items that are on prev pages.
+                    Item_In_Menu itemdata = item.DATA ?? new Item_In_Menu();
+                    if (Battle && itemdata.Battle == null) continue;
+                    if (itemdata.ID == 0) continue; // skip empty values.
+                    Font.ColorID color = Font.ColorID.White;
+                    byte palette = itemdata.Palette;
+                    if (!itemdata.ValidTarget(Battle))
+                    {
+                        color = Font.ColorID.Grey;
+                        BLANKS[pos] = true;
+                        palette = itemdata.Faded_Palette;
+                    }
+                    else
+                        BLANKS[pos] = false;
+                    ((IGMDataItem.Text)(ITEM[pos, 0])).Data = itemdata.Name;
+                    ((IGMDataItem.Text)(ITEM[pos, 0])).Icon = itemdata.Icon;
+                    ((IGMDataItem.Text)(ITEM[pos, 0])).Palette = palette;
+                    ((IGMDataItem.Text)(ITEM[pos, 0])).FontColor = color;
+                    ((IGMDataItem.Integer)(ITEM[pos, 1])).Data = item.QTY;
+                    ((IGMDataItem.Integer)(ITEM[pos, 1])).Show();
+                    ((IGMDataItem.Integer)(ITEM[pos, 1])).FontColor = color;
+                    _helpStr[pos] = itemdata.Description;
+                    Contents[pos] = itemdata;
+                    pos++;
+                }
+                for (; pos < Rows; pos++)
+                {
+                    ((IGMDataItem.Integer)(ITEM[pos, 1])).Hide();
+                    if (pos == 0) return; // if page turning. this till be enough to trigger a try next page.
+                    ((IGMDataItem.Text)(ITEM[pos, 0])).Data = null;
+                    ((IGMDataItem.Integer)(ITEM[pos, 1])).Data = 0;
+                    ((IGMDataItem.Text)(ITEM[pos, 0])).Icon = Icons.ID.None;
+                    BLANKS[pos] = true;
+                }
+            }
+        }
+
+        public override void Reset()
+        {
+            HideChildren();
+            Hide();
+            base.Reset();
+        }
 
         protected override void DrawITEM(int i, int d)
         {
@@ -108,145 +240,8 @@ namespace OpenVIII.IGMData.Pool
             }
         }
 
+        private void ReInitCompletedEvent(object sender, EventArgs e) => Menu.IGM_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
+
         #endregion Methods
-
-        #region Constructors
-
-        public static Item Create(Rectangle pos, Damageable damageable = null, bool battle = false, int count = 4)
-        {
-            Item r = Create<Item>(count + 1, 3, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.ITEM }, count, 198 / count + 1, damageable);
-            r.Battle = battle;
-            if (battle)
-                r.ITEM[r.Targets_Window, 0] = IGMData.Target.Group.Create(r.Damageable);
-            return r;
-        }
-
-        public static Item Create(Damageable damageable = null) => Create(new Rectangle(5, 150, 415, 480), damageable: damageable, battle: false, count: 13);
-
-        #endregion Constructors
-
-        public IReadOnlyList<FF8String> HelpStr => _helpStr;
-        public IGMData.Target.Group Target_Group => (IGMData.Target.Group)(((IGMData.Base)ITEM[Targets_Window, 0]));
-
-        public override void Draw() => base.Draw();
-
-        public override bool Inputs()
-        {
-            bool ret = false;
-            if (InputITEM(Targets_Window, 0, ref ret))
-            {
-            }
-            else
-            {
-                Cursor_Status &= ~Cursor_Status.Blinking;
-                Cursor_Status |= Cursor_Status.Enabled;
-                return base.Inputs();
-            }
-            return ret;
-        }
-
-        public override bool Inputs_CANCEL()
-        {
-            if (Battle)
-            {
-                Hide();
-            }
-            else
-            {
-                Menu.IGM_Items.SetMode(IGM_Items.Mode.TopMenu);
-                base.Inputs_CANCEL();
-            }
-            return true;
-        }
-
-        public override bool Inputs_OKAY()
-        {
-            Item_In_Menu item = Contents[CURSOR_SELECT];
-            if (Battle)
-            {
-                Target_Group?.SelectTargetWindows(item);
-                Target_Group?.ShowTargetWindows();
-            }
-            if (item.Target == Item_In_Menu._Target.None)
-                return false;
-            base.Inputs_OKAY();
-            Menu.IGM_Items.SetMode(IGM_Items.Mode.UseItemOnTarget);
-            return true;
-        }
-
-        public override void HideChildren()
-        {
-            if (Enabled)
-            {
-                if (!skipdata)
-                {
-                    Target_Group.HideChildren();
-                    Target_Group.Hide();
-                }
-            }
-        }
-
-        public override void Refresh()
-        {
-            if (!Battle && !eventSet && Menu.IGM_Items != null)
-            {
-                Menu.IGM_Items.ModeChangeHandler += ModeChangeEvent;
-                Menu.IGM_Items.ReInitCompletedHandler += ReInitCompletedEvent;
-                eventSet = true;
-            }
-            base.Refresh();
-            Source = Memory.State;
-            if (Source != null && Source.Items != null)
-            {
-                ((IGMDataItem.Box)CONTAINER).Title = Pages <= 1 ? (Icons.ID?)Icons.ID.ITEM : (Icons.ID?)(Icons.ID.ITEM_PG1 + (byte)Page);
-                byte pos = 0;
-                int skip = Page * Rows;
-                for (byte i = 0; pos < Rows && i < Source.Items.Count; i++)
-                {
-                    Saves.Item item = Source.Items[i];
-                    if (item.ID == 0 || item.QTY == 0) continue; // skip empty values.
-                    if (skip-- > 0) continue; //skip items that are on prev pages.
-                    Item_In_Menu itemdata = item.DATA ?? new Item_In_Menu();
-                    if (Battle && itemdata.Battle == null) continue;
-                    if (itemdata.ID == 0) continue; // skip empty values.
-                    Font.ColorID color = Font.ColorID.White;
-                    byte palette = itemdata.Palette;
-                    if (!itemdata.ValidTarget(Battle))
-                    {
-                        color = Font.ColorID.Grey;
-                        BLANKS[pos] = true;
-                        palette = itemdata.Faded_Palette;
-                    }
-                    else
-                        BLANKS[pos] = false;
-                    ((IGMDataItem.Text)(ITEM[pos, 0])).Data = itemdata.Name;
-                    ((IGMDataItem.Text)(ITEM[pos, 0])).Icon = itemdata.Icon;
-                    ((IGMDataItem.Text)(ITEM[pos, 0])).Palette = palette;
-                    ((IGMDataItem.Text)(ITEM[pos, 0])).FontColor = color;
-                    ((IGMDataItem.Integer)(ITEM[pos, 1])).Data = item.QTY;
-                    ((IGMDataItem.Integer)(ITEM[pos, 1])).Show();
-                    ((IGMDataItem.Integer)(ITEM[pos, 1])).FontColor = color;
-                    _helpStr[pos] = itemdata.Description;
-                    Contents[pos] = itemdata;
-                    pos++;
-                }
-                for (; pos < Rows; pos++)
-                {
-                    ((IGMDataItem.Integer)(ITEM[pos, 1])).Hide();
-                    if (pos == 0) return; // if page turning. this till be enough to trigger a try next page.
-                    ((IGMDataItem.Text)(ITEM[pos, 0])).Data = null;
-                    ((IGMDataItem.Integer)(ITEM[pos, 1])).Data = 0;
-                    ((IGMDataItem.Text)(ITEM[pos, 0])).Icon = Icons.ID.None;
-                    BLANKS[pos] = true;
-                }
-            }
-        }
-
-        public override void Reset()
-        {
-            HideChildren();
-            Hide();
-            base.Reset();
-        }
     }
 }

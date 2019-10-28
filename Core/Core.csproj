@@ -209,12 +209,13 @@
     <Compile Include="Menu\IGM_Junction\IGMData\Slots\Abilities.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\Slots\Command.cs" />
     <Compile Include="Menu\Images\HSL.cs" />
+    <Compile Include="Menu\LGSG\IGMData\GameBlock.cs" />
+    <Compile Include="Menu\LGSG\IGMData\GameChoose.cs" />
     <Compile Include="Menu\LGSG\IGMData\SlotChoose.cs" />
     <Compile Include="Menu\LGSG\IGM_LGSG.cs" />
     <Compile Include="Menu\LGSG\IGMData\LoadBarBox.cs" />
     <Compile Include="Menu\LGSG\IGMData\ThreePieceHeader.cs" />
     <Compile Include="Menu\Lobby\IGMData_Selections.cs" />
-    <Compile Include="Menu\Menus.cs" />
     <Compile Include="Battle\Menu\VictoryMenu.cs" />
     <Compile Include="Battle\module_battle.cs" />
     <Compile Include="Battle\module_battle_Debug.cs" />
@@ -838,11 +839,6 @@
     <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Values.cs" />
     <Compile Include="Menu\IGM_Junction\IGM_Junction.cs" />
     <Compile Include="Menu\IGM_Items\Items_In_Menu.cs" />
-    <Compile Include="Menu\LGSG\Module_main_menu_LGSG.cs" />
-    <Compile Include="Menu\LGSG\Module_main_menu_LGSG_CheckingSlot.cs" />
-    <Compile Include="Menu\LGSG\Module_main_menu_LGSG_ChooseGame.cs" />
-    <Compile Include="Menu\LGSG\Module_main_menu_LGSG_ChooseSlot.cs" />
-    <Compile Include="Menu\LGSG\Module_main_menu_LGSG_ing.cs" />
     <Compile Include="Menu\Images\Magazine.cs" />
     <Compile Include="Menu\Images\Magazine.ID.cs" />
     <Compile Include="Menu\Images\Magazine.InsertCustomEntries.cs" />

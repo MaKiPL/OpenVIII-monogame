@@ -118,7 +118,8 @@ namespace OpenVIII
 
         protected override void Init()
         {
-            Size = new Vector2(881, 606);
+            NoInputOnUpdate = true;
+               Size = new Vector2(881, 606);
             base.Init();
             Menu_Base[] tmp = new Menu_Base[3];
 
