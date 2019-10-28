@@ -57,7 +57,7 @@ namespace OpenVIII
             {
                 get
                 {
-                    Vector2 p = new Point(0, 0).Transform(Menu.Focus).ToVector2();
+                    Vector2 p = ScreenTopLeft.ToVector2();
                     p.X -= Width;
                     return p;
                 }
@@ -76,7 +76,7 @@ namespace OpenVIII
 
             private IGMDataItem.Icon Play { get => (IGMDataItem.Icon)ITEM[0, 9]; set => ITEM[0, 9] = value; }
 
-            private Vector2 right => new Point(Memory.graphics.GraphicsDevice.Viewport.Width, 0/*Memory.graphics.GraphicsDevice.Viewport.Height*/).Transform(Menu.Focus).ToVector2();
+            private Vector2 right => ScreenTopRight.ToVector2();
 
             #endregion Properties
 

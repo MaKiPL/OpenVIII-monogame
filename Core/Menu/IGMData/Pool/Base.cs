@@ -47,7 +47,7 @@
         public override bool Inputs()
         {
             bool ret = false;
-            if (Pages > 1 && CONTAINER.Pos.Contains(InputMouse.Location.Transform(Menu.Focus)))
+            if (Pages > 1 && CONTAINER.Pos.Contains(MouseLocation))
             {
                 if (Input2.DelayedButton(MouseButtons.MouseWheelup))
                 {

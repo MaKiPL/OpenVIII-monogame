@@ -209,8 +209,10 @@ namespace OpenVIII
                 {
                     ret = u();
                 }
-
+                SkipFocus = true;
+                skipdata = true;
                 ret = base.Update() || ret;
+                skipdata = false;
             }
             return ret;
         }

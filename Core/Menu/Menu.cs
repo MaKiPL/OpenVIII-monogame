@@ -96,10 +96,6 @@ namespace OpenVIII
 
         public static bool FadingOut => FadeSlider.Reversed;
 
-        /// <summary>
-        /// Focus scales and centers the menu.
-        /// </summary>
-        public static Matrix Focus { get; protected set; }
 
         //_fadeout;
         /// <summary>
@@ -127,10 +123,6 @@ namespace OpenVIII
         /// </summary>
         public static IGM_Lobby IGM_Lobby => _igm_lobby;
 
-        /// <summary>
-        /// Adjusted mouse location used to determine if mouse is highlighting a button.
-        /// </summary>
-        public static Point MouseLocation => InputMouse.Location.Transform(Menu.Focus);
 
         public static Vector2 StaticSize { get; protected set; }
 
@@ -368,10 +360,11 @@ namespace OpenVIII
             if (Enabled)
                 Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: Focus);
         }
-
+        public bool SkipFocus { get; set; } = false;
         public override bool Update()
         {
             bool ret = false;
+            if(!SkipFocus)
             GenerateFocus();
             StaticSize = Size;
             if (Enabled)

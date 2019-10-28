@@ -45,7 +45,7 @@ namespace OpenVIII.IGMData
 
         #region Properties
 
-        public static Point MouseLocation => Menu.MouseLocation;
+        
         public static Vector2 TextScale => Menu.TextScale;
         public byte Cols { get; protected set; } = 1;
 

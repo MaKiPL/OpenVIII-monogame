@@ -69,7 +69,7 @@ namespace OpenVIII
             public override bool Inputs()
             {
                 bool ret = false;
-                if (CONTAINER.Pos.Contains(InputMouse.Location.Transform(Menu.Focus)))
+                if (CONTAINER.Pos.Contains(MouseLocation))
                 {
                     if (Input2.DelayedButton(MouseButtons.MouseWheelup))
                     {

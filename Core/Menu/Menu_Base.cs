@@ -100,6 +100,18 @@ namespace OpenVIII
             }
             Refresh();
         }
+        /// <summary>
+        /// Focus scales and centers the menu.
+        /// </summary>
+        public static Matrix Focus { get; protected set; }
+        /// <summary>
+        /// Adjusted mouse location used to determine if mouse is highlighting a button.
+        /// </summary>
+        public static Point MouseLocation => InputMouse.Location.Transform(Focus);
+        public static Point ScreenTopLeft => new Point(0, 0).Transform(Focus);
+        public static Point ScreenTopRight => new Point(Memory.graphics.GraphicsDevice.Viewport.Width, 0).Transform(Focus);
+        public static Point ScreenBottomRight => new Point(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height).Transform(Focus);
+        public static Point ScreenBottomLeft => new Point(0, Memory.graphics.GraphicsDevice.Viewport.Height).Transform(Focus);
 
         public virtual void RemoveModeChangeEvent(ref EventHandler<Enum> eventHandler) => eventHandler -= ModeChangeEvent;
 
