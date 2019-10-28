@@ -1584,6 +1584,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
         /// </param>
         /// <param name="ms_">if null then stage file either this memory stream</param>
         /// <param name="br_">sub-component of ms</param>
+        /// <remarks See also = BS_Camera_ReadAnimation - 00503AC0></remarks>
         /// <returns></returns>
         private static uint ReadAnimation(uint cameraAnimOffset, MemoryStream ms_ = null, BinaryReader br_ = null)
         {
@@ -1621,9 +1622,9 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
 
                 case 3:
                     battleCamera.cam.startingFOV = current_position;
+                    ms_.Seek(2, SeekOrigin.Current); //skipping WORD, because we already rolled back one WORD above this switch
                     current_position = br_.ReadUInt16();
                     battleCamera.cam.endingFOV = current_position;
-                    ms_.Seek(2, SeekOrigin.Current); //skipping WORD, because we already rolled back one WORD above this switch
                     break;
             }
             switch ((battleCamera.cam.control_word >> 8) & 3)
