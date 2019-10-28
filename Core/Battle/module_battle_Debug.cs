@@ -47,6 +47,10 @@ namespace OpenVIII
         private const int BATTLEMODULE_DRAWGEOMETRY = 2; //draw geometry also supports updateCamera
         private const int BATTLEMODULE_ACTIVE = 3;
         private const double FPS = 1000.0d / 15d; //Natively the game we are rewritting works in 15 FPS per second
+        /// <summary>
+        /// controls the amount of battlecamera.time incrementation- lower value means longer camera animation
+        /// </summary>
+        private const int BATTLECAMERA_FRAMETIME = 3;
 
         /// <summary>
         /// This is helper struct that works along with VertexPosition to provide Clut, texture page
@@ -345,7 +349,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                     CloseStageStreams();
                 }
             }
-            else battleCamera.cam.startingTime += 4;
+            else battleCamera.cam.startingTime += Module_battle_debug.BATTLECAMERA_FRAMETIME;
         }
 
         private static void ReopenStageStreams()
@@ -1681,6 +1685,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
 
                 case 1:
                     {
+                        goto case 0;
                         if (current_position >= 0)
                         {
                             local14 = (short)(ms_.Position + 5 * 2); //current_position + 5; but current_position is WORD, so multiply by two
