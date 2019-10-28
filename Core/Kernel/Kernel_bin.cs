@@ -168,20 +168,23 @@ namespace OpenVIII
                     GF_abilities.count);
                 foreach (Abilities ability in (Abilities[])(Enum.GetValues(typeof(Abilities))))
                 {
-                    if (Menuabilities.ContainsKey(ability))
-                        s_allAbilities[ability] = Menuabilities[ability];
-                    else if (Statpercentabilities.ContainsKey(ability))
-                        s_allAbilities[ability] = Statpercentabilities[ability];
-                    else if (Junctionabilities.ContainsKey(ability))
-                        s_allAbilities[ability] = Junctionabilities[ability];
-                    else if (Commandabilities.ContainsKey(ability))
-                        s_allAbilities[ability] = Commandabilities[ability];
-                    else if (Characterabilities.ContainsKey(ability))
-                        s_allAbilities[ability] = Characterabilities[ability];
-                    else if (Partyabilities.ContainsKey(ability))
-                        s_allAbilities[ability] = Partyabilities[ability];
-                    else if (Characterabilities.ContainsKey(ability))
-                        s_allAbilities[ability] = GFabilities[ability];
+                    combine(Menuabilities);
+                    combine(Statpercentabilities);
+                    combine(Junctionabilities);
+                    combine(Commandabilities);
+                    combine(Characterabilities);
+                    combine(Partyabilities);
+                    combine(GFabilities);
+                    bool combine<T>(IReadOnlyDictionary<Abilities, T> dict)
+                        where T:Ability
+                        {
+                        if (dict.TryGetValue(ability, out T a))
+                        {
+                            s_allAbilities.Add(ability, a);
+                            return true;
+                        }
+                        return false;
+                    }
                 }
 
                 s_equipableAbilities = new Dictionary<Abilities, Equipable_Ability>(

@@ -15,21 +15,19 @@ namespace OpenVIII.IGMData
         private readonly FF8String str_Over100;
         private readonly FF8String str_Recieved;
         private ConcurrentQueue<KeyValuePair<Cards.ID, byte>> _cards;
-        private KeyValuePair<Cards.ID, byte> card;
         private Saves.Item _item;
+        private KeyValuePair<Cards.ID, byte> card;
 
         #endregion Fields
 
         #region Constructors
 
-        public PartyItems(Menu_Base container) : base()
+        public PartyItems() : base()
         {
             str_NotFound = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 28);
             str_Over100 = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 24);
             str_Recieved = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 6);
             DialogSelectedItem = new byte[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.SelectedItem };
-
-            Init(1, 7, container, 1, 1);
         }
 
         #endregion Constructors
@@ -43,6 +41,8 @@ namespace OpenVIII.IGMData
         #endregion Properties
 
         #region Methods
+
+        public static PartyItems Create(Rectangle pos) => Create<PartyItems>(1, 7, new IGMDataItem.Empty { Pos = pos }, 1, 1);
 
         public void Earn()
         {
@@ -102,7 +102,7 @@ namespace OpenVIII.IGMData
         {
             base.Refresh();
             if (Items != null && Items.TryPeek(out _item))
-            {   
+            {
                 ((IGMDataItem.Box)ITEM[0, 1]).Data = Item.DATA?.Name;
                 ((IGMDataItem.Box)ITEM[0, 2]).Data = $"{Item.QTY}";
                 ((IGMDataItem.Box)ITEM[0, 3]).Data = Item.DATA?.Description;

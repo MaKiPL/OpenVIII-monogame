@@ -15,7 +15,8 @@ namespace OpenVIII
 
         ~BattleMenu()
         {
-            Damageable.BattleModeChangeEventHandler -= ModeChangeEvent;
+            if (Damageable!=null)
+                Damageable.BattleModeChangeEventHandler -= ModeChangeEvent;
         }
 
         #endregion Destructors

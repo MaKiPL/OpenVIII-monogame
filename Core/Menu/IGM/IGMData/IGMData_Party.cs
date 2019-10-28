@@ -149,7 +149,7 @@ namespace OpenVIII
 
                         for (int i = 0; i <= 6; i++)
                             ITEM[pos, i].Show();
-                        if ((Memory.State.TeamLaguna || Memory.State.SmallTeam) && Damageable.GetCharacterData(out Saves.CharacterData c))
+                        if ((Memory.State.TeamLaguna || Memory.State.SmallTeam) && damageable.GetCharacterData(out Saves.CharacterData c))
                         {
                             BLANKS[pos] = false;
                             r = dims.Font;

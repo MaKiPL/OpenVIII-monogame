@@ -23,8 +23,13 @@ namespace OpenVIII.IGMData
         #endregion Fields
 
         #region Constructors
-
-        public PartyAP(Menu_Base container) : base()
+        static public PartyAP Create(Rectangle pos)
+        {
+            var r = new PartyAP();
+            r.Init(1, 7, new IGMDataItem.Empty {Pos = pos }, 1, 1);
+            return r;
+        }
+        PartyAP()
         {
             DialogSelectedGF = new byte[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.SelectedGF };
             DialogSelectedNum = new byte[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.Number };
@@ -43,9 +48,7 @@ namespace OpenVIII.IGMData
                 Memory.Strings.Read(Strings.FileID.KERNEL, 30, 118);
             str_GF_AP = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 109);
             Leveled = new ConcurrentQueue<GFs>();
-            Init(1, 7, container, 1, 1);
         }
-
         #endregion Constructors
 
         #region Properties
@@ -102,6 +105,9 @@ namespace OpenVIII.IGMData
                     Refresh();
                     return true;
                 }
+                ITEM[0, 1].Show();
+                ITEM[0, 2].Hide();
+                ITEM[0, 3].Hide();
             }
             return false;
         }

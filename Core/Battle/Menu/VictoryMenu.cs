@@ -50,7 +50,13 @@ namespace OpenVIII
             }
             if (!ret && Input2.Button(FF8TextTagKey.Confirm))
             {
-                SetMode(((Mode)GetMode()) + 1);
+                do
+                {
+                    SetMode(((Mode)GetMode()) + 1);
+                }
+                while (
+                (GetMode().Equals(Mode.Items) && _items.Count + _cards.Count == 0) ||
+                (GetMode().Equals(Mode.AP) && _ap == 0));
             }
             return true;
         }
@@ -67,10 +73,14 @@ namespace OpenVIII
 
         public void Refresh(int exp, uint ap, ConcurrentDictionary<Characters, int> expextra, ConcurrentDictionary<byte, byte> items, ConcurrentDictionary<Cards.ID, byte> cards)
         {
+            SetMode(Mode.Exp);
+
             _expextra = expextra;
             _exp = exp;
+            ((IGMData.Group.PlayerEXP)Data[Mode.Exp]).NoEarnExp = true;
             ((IGMData.Group.PlayerEXP)Data[Mode.Exp]).EXP = _exp;
             ((IGMData.Group.PlayerEXP)Data[Mode.Exp]).EXPExtra = _expextra;
+            ((IGMData.Group.PlayerEXP)Data[Mode.Exp]).NoEarnExp = false;
             _ap = ap;
             ((IGMData.PartyAP)Data[Mode.AP]).AP = _ap;
             _items = items;
@@ -119,7 +129,7 @@ namespace OpenVIII
         protected override void Init()
         {
             NoInputOnUpdate = true;
-               Size = new Vector2(881, 606);
+            Size = new Vector2(881, 606);
             base.Init();
             Menu_Base[] tmp = new Menu_Base[3];
 
@@ -136,8 +146,8 @@ namespace OpenVIII
                     Task.Run(() => tmp[0] = IGMData.PlayerEXP.Create(0)),
                     Task.Run(() => tmp[1] = IGMData.PlayerEXP.Create(1)),
                     Task.Run(() => tmp[2] = IGMData.PlayerEXP.Create(2)),
-                    Task.Run(() => Data.TryAdd(Mode.Items,new IGMData.PartyItems(new IGMDataItem.Empty(new Rectangle(Point.Zero,Size.ToPoint()))))),
-                    Task.Run(() => Data.TryAdd(Mode.AP,new IGMData.PartyAP(new IGMDataItem.Empty(new Rectangle(Point.Zero,Size.ToPoint()))))),
+                    Task.Run(() => Data.TryAdd(Mode.Items, IGMData.PartyItems.Create(new Rectangle(Point.Zero,Size.ToPoint())))),
+                    Task.Run(() => Data.TryAdd(Mode.AP, IGMData.PartyAP.Create(new Rectangle(Point.Zero,Size.ToPoint())))),
                 };
             Task.WaitAll(tasks.ToArray());
             Data.TryAdd(Mode.Exp, IGMData.Group.PlayerEXP.Create(tmp));

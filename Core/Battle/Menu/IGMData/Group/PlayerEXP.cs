@@ -83,6 +83,7 @@ namespace OpenVIII.IGMData.Group
         }
 
         public ConcurrentDictionary<Characters, int> EXPExtra { get; set; }
+        public bool NoEarnExp { get; internal set; } = false;
 
         private bool remainEXP => (_exp > 0 || EXPExtra != null && EXPExtra.Count > 0);
 
@@ -198,6 +199,7 @@ namespace OpenVIII.IGMData.Group
                 int tmpexp = EXP;
                 if (EXPExtra != null && i.Damageable.GetCharacterData(out Saves.CharacterData c) && EXPExtra.TryGetValue(c.ID, out int bonus))
                     tmpexp += bonus;
+                ((IGMData.PlayerEXP)i).NoEarnExp = NoEarnExp;
                 ((IGMData.PlayerEXP)i).EXP = tmpexp;
             }
             header.Width = Width;

@@ -31,7 +31,7 @@ namespace OpenVIII.IGMData
                     if (_exp == 0 || !Damageable.IsGameOver)
                     {
                         if (value < 0) value = 0;
-                        if (_exp != 0 && Damageable.GetCharacterData(out Saves.CharacterData c))
+                        if (_exp != 0 && Damageable.GetCharacterData(out Saves.CharacterData c) && !NoEarnExp)
                             c.Experience += (uint)Math.Abs((MathHelper.Distance(_exp, value)));
                         _exp = value;
                     }
@@ -40,6 +40,8 @@ namespace OpenVIII.IGMData
                 }
             }
         }
+
+        public bool NoEarnExp { get; internal set; }
 
         #endregion Properties
 
@@ -55,20 +57,47 @@ namespace OpenVIII.IGMData
 
         public override bool Update()
         {
-            if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c) && ((IGMDataItem.Integer)ITEM[0, 4]).Data != _exp)
+            if (Enabled && Memory.State?.Characters !=null)
             {
-                ((IGMDataItem.Integer)ITEM[0, 4]).Data = _exp;
-                ((IGMDataItem.Integer)ITEM[0, 6]).Data = checked((int)c.Experience);
-                ((IGMDataItem.Integer)ITEM[0, 8]).Data = c.ExperienceToNextLevel;
-                byte lvl = Damageable.Level;
-                if (lvl != _lvl)
+                if (Memory.State.Characters.TryGetValue(Memory.State.PartyData[PartyPos], out Saves.CharacterData c))
+                { }
+                base.Update();
+                if ((Damageable = c) != null)
                 {
+
+                    for (int i = 0; i < Count; i++)
+                    {
+                        for (int k = 0; k < 10 && k < Depth; k++)
+                        {
+                            ITEM[i, k]?.Show();
+                        }
+                    }
+                    if (((IGMDataItem.Integer)ITEM[0, 4]).Data != _exp)
+                    {
+
+                        ITEM[0, 11].Hide();
+                        ((IGMDataItem.Text)ITEM[0, 0]).Data = c.Name;
+                        ((IGMDataItem.Integer)ITEM[0, 4]).Data = _exp;
+                        ((IGMDataItem.Integer)ITEM[0, 6]).Data = checked((int)c.Experience);
+                        ((IGMDataItem.Integer)ITEM[0, 8]).Data = c.ExperienceToNextLevel;
+                        byte lvl = Damageable.Level;
+
+                        if (lvl != _lvl && _lvl != 0 && !NoEarnExp)
+                        {
+                            //trigger level up message and sound effect
+                            init_debugger_Audio.PlaySound(0x28);
+                            ITEM[0, 10].Show();
+                        }
                     ((IGMDataItem.Integer)ITEM[0, 2]).Data = _lvl = lvl;
-                    //trigger level up message and sound effect
-                    init_debugger_Audio.PlaySound(0x28);
-                    ITEM[0, 10].Show();
+                    }
                 }
-                return base.Update();
+                else
+                {
+                    foreach (var i in ITEM)
+                        if (i != null)
+                            i.Hide();
+                }
+                return true;
             }
             return false;
         }

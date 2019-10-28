@@ -169,7 +169,7 @@ namespace OpenVIII
                 {
                     //{Mode.Starting, InputStartingFunction},
                     {Mode.Battle, InputBattleFunction},
-                    //{Mode.Victory, InputVictoryFunction},
+                    {Mode.Victory, InputVictoryFunction},
                     //{Mode.GameOver, InputGameOverFunction},
                 };
                 if(ReturnAction==null)
@@ -298,7 +298,7 @@ namespace OpenVIII
 
         private bool InputStartingFunction() => false;
 
-        private bool InputVictoryFunction() => throw new NotImplementedException();
+        private bool InputVictoryFunction() => Victory_Menu?.Inputs()?? false;
 
         private void NewTurnSND()
         {

@@ -79,7 +79,8 @@ namespace OpenVIII
             /// <summary>
             /// Total exp to the next level up
             /// </summary>
-            public ushort EXPtoNextLevel => Level >= 100 ? (ushort)0 : (ushort)(Experience - (Level * JunctionableGFsData.EXPperLevel));
+            public ushort EXPtoNextLevel => Level >= 100 ? (ushort)0 :
+                (ushort)Math.Abs((Level * JunctionableGFsData.EXPperLevel) - Experience);
 
             /// <summary>
             /// Enum ID for this GF
@@ -162,7 +163,7 @@ namespace OpenVIII
 
             public override byte EVA => 0;
 
-            public override int EXP => 0;
+            public override int EXP => checked((int)Experience);
 
             public override byte HIT => 0;
 
@@ -207,7 +208,7 @@ namespace OpenVIII
                     if (EXPtoNextLevel <= ap && Level < 100)
                         ret = true;
                     Experience += ap;
-                    if (Kernel_bin.AllAbilities.ContainsKey(Learning))
+                    if (!Learning.Equals(Kernel_bin.Abilities.None) && Kernel_bin.AllAbilities.ContainsKey(Learning))
                     {
                         byte ap_tolearn = Kernel_bin.AllAbilities[Learning].AP;
                         if (JunctionableGFsData.Ability.TryGetIndexByKey(Learning, out int ind) && TestGFCanLearn(Learning, false))

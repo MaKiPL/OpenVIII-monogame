@@ -5,7 +5,7 @@
         #region Fields
 
         private double maxtime = 3000;
-        private double timeelapsed = 0;
+        private double timeshow = 0;
 
         #endregion Fields
 
@@ -15,19 +15,20 @@
 
         public override void Show()
         {
-            timeelapsed = 0;
+            timeshow = Memory.gameTime.TotalGameTime.TotalMilliseconds;
             base.Show();
         }
 
         public override bool Update()
         {
-            if (timeelapsed < maxtime)
+            if (Enabled)
             {
-                timeelapsed += Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
-                return base.Update();
+                base.Update();
+                if (Memory.gameTime.TotalGameTime.TotalMilliseconds - timeshow < maxtime)                
+                    return true;                
+                else
+                    Hide();
             }
-            else
-            { Hide(); }
             return false;
         }
 

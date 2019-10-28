@@ -560,8 +560,8 @@ namespace OpenVIII.IGMData
         }
         public override void Refresh()
         {
-            if (Memory.State?.PartyData != null && Damageable == null && PartyPos != -1)
-                Damageable = Memory.State[Memory.State.PartyData[PartyPos]];
+            if (Memory.State?.PartyData != null && Damageable == null && PartyPos != -1 && Memory.State.Characters.TryGetValue(Memory.State.PartyData[PartyPos], out Saves.CharacterData c))
+                Damageable = c;
             base.Refresh();
         }
 
