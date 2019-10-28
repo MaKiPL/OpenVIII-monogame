@@ -22,6 +22,15 @@ namespace OpenVIII.IGMDataItem.Gradient
 
         #endregion Constructors
 
+        #region Properties
+
+        ///Restriction controls the bounds of the drawing. And Pos is where it will draw.
+        ///So if one is set and the other is not than you see no bar.
+        public override Rectangle Pos { get => base.Pos; set => Restriction = base.Pos = value; }
+
+
+        #endregion Properties
+
         #region Methods
 
         public static ATB Create(Rectangle? pos = null)
@@ -35,7 +44,7 @@ namespace OpenVIII.IGMDataItem.Gradient
             r.Width = r.Data.Width;
             return r;
         }
-        public override Rectangle Pos { get { return base.Pos; } set => Restriction = base.Pos = value; }
+
         public static Texture2D ThreadUnsafeOperations(int width)
         {
             lock (locker)
@@ -44,21 +53,21 @@ namespace OpenVIII.IGMDataItem.Gradient
                 {
                     //if (Memory.IsMainThread)
                     //{
-                        float dark = 0.067f;
-                        float fade = 0.933f;
-                        int total = width;
-                        Color lightline = new Color(118, 118, 118, 255);
-                        Color darkline = new Color(58, 58, 58, 255);
-                        Color[] cfade = new Color[total];
-                        int i;
-                        for (i = 0; i < cfade.Length - (dark * total); i++)
-                            cfade[i] = Color.Lerp(Color.Black, lightline, i / (fade * total));
+                    float dark = 0.067f;
+                    float fade = 0.933f;
+                    int total = width;
+                    Color lightline = new Color(118, 118, 118, 255);
+                    Color darkline = new Color(58, 58, 58, 255);
+                    Color[] cfade = new Color[total];
+                    int i;
+                    for (i = 0; i < cfade.Length - (dark * total); i++)
+                        cfade[i] = Color.Lerp(Color.Black, lightline, i / (fade * total));
 
-                        for (; i < cfade.Length; i++)
-                            cfade[i] = darkline;
+                    for (; i < cfade.Length; i++)
+                        cfade[i] = darkline;
 
-                        common = new Texture2D(Memory.graphics.GraphicsDevice, cfade.Length, 1, false, SurfaceFormat.Color);
-                        common.SetData(cfade);
+                    common = new Texture2D(Memory.graphics.GraphicsDevice, cfade.Length, 1, false, SurfaceFormat.Color);
+                    common.SetData(cfade);
                     //}
                     //else throw new Exception("Must be in main thread!");
                 }
