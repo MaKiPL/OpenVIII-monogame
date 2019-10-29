@@ -91,11 +91,17 @@ namespace OpenVIII.IGMData.Target
         protected override void InitShift(int i, int col, int row)
         {
             base.InitShift(i, col, row);
-            SIZE[i].Inflate(-18, -20);
+            SIZE[i].Inflate(-8, -20);
+            SIZE[i].Offset(2 + (-4*col), 0);
             SIZE[i].Y -= 7 * row + 2;
             //SIZE[i].Inflate(-22, -8);
             //SIZE[i].Offset(0, 12 + (-8 * row));
             SIZE[i].Height = (int)(12 * TextScale.Y);
+        }
+        protected override void InitCursor(int i, int col, int row, bool zero = false)
+        {
+            base.InitCursor(i, col, row, zero);
+            CURSOR[i].X += 8;
         }
 
         #endregion Methods

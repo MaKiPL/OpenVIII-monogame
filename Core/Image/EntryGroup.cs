@@ -9,8 +9,8 @@ namespace OpenVIII
 {
     public class EntryGroup : IEnumerator, IEnumerable
     {
-        private const int minx = -200;
-        private const int miny = -100;
+        private const int minx = -1000;
+        private const int miny = -360;
 
         #region Fields
 
@@ -215,7 +215,8 @@ namespace OpenVIII
             inscale = Abs(inscale);
             inputdst.Width = Math.Abs(inputdst.Width);
             inputdst.Height = Math.Abs(inputdst.Height);
-            if (inputdst.Right < minx || inputdst.Bottom < miny) return;
+            if (inputdst.Right < minx || inputdst.Bottom < miny)
+                return;
 
             Vector2 autoscale = new Vector2((float)inputdst.Width / totalSize.X, (float)inputdst.Height / totalSize.Y);
             Vector2 scale;

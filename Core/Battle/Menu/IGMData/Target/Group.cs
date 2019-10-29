@@ -39,12 +39,12 @@ namespace OpenVIII.IGMData.Target
 
         public static Group Create(Damageable damageable, bool makesubs = true)
         {
-            const int X1 = 25;
-            const int Width1 = 380;
+            const int X1 = 32;
+            const int Width1 = 400;
             const int Height = 140;
             const int X2 = X1 + Width1;
-            const int Width2 = 210;
-            const int Y = 630 - Height;
+            const int Width2 = 180;
+            const int Y = 632 - Height;
 
             Group r = Create<Group>(
                 IGMData.Target.Enemies.Create(new Rectangle(X1, Y, Width1, Height)),

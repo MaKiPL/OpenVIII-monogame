@@ -83,7 +83,7 @@ namespace OpenVIII
 
         public override void Draw() => base.Draw();
 
-        public override void DrawData() => Data.Where(m => m.Value != null && m.Value.Enabled && !m.Key.HasFlag(Mode.Header)).ForEach(m => m.Value.Draw());
+        //public override void DrawData() => Data.Where(m => m.Value != null && m.Value.Enabled && !m.Key.HasFlag(Mode.Header)).ForEach(m => m.Value.Draw());
 
         public override bool Inputs()
         {
@@ -101,23 +101,23 @@ namespace OpenVIII
 
         public override void Refresh() => base.Refresh();
 
-        public override void StartDraw()
-        {
-            Matrix backupfocus = Focus;
-            GenerateFocus(AltSize, Box_Options.Top);
-            base.StartDraw();
-            Data.Where(m => m.Value != null && m.Value.Enabled && m.Key.HasFlag(Mode.Header)).ForEach(m => m.Value.Draw());
-            base.EndDraw();
-            Focus = backupfocus;
-            base.StartDraw();
-        }
+        //public override void StartDraw()
+        //{
+        //    Matrix backupfocus = Focus;
+        //    GenerateFocus(AltSize, Box_Options.Top);
+        //    base.StartDraw();
+        //    Data.Where(m => m.Value != null && m.Value.Enabled && m.Key.HasFlag(Mode.Header)).ForEach(m => m.Value.Draw());
+        //    base.EndDraw();
+        //    Focus = backupfocus;
+        //    base.StartDraw();
+        //}
 
         public override bool Update() => base.Update();
 
         protected override void Init()
         {
             Size = new Vector2 { X = 960, Y = 720 };
-            AltSize = new Vector2(1280, 720);
+            //AltSize = new Vector2(1280, 720);
             const int HeaderHeight = 140;
             Rectangle SlotsRectangle = new Rectangle(0, HeaderHeight + space, (int)Size.X, (int)Size.Y - HeaderHeight - space);
             Rectangle LoadBarRectangle = SlotsRectangle;
@@ -129,7 +129,7 @@ namespace OpenVIII
             Data[Mode.LoadSlotChoose] = IGMData.SlotChoose.Create(SlotsRectangle);
             Data[Mode.Checking] = IGMData.LoadBarBox.Create(LoadBarRectangle);
             Data[Mode.LoadGameChoose] = IGMData.Pool.GameChoose.Create(BlocksRectangle);
-            Data[Mode.LoadHeader] = IGMData.ThreePieceHeader.Create(new Rectangle(base.X, base.Y, (int)AltSize.X, HeaderHeight));
+            Data[Mode.LoadHeader] = IGMData.ThreePieceHeader.Create(new Rectangle(base.X, base.Y, (int)Size.X, HeaderHeight));
             Data.Where(x => x.Value != null).ForEach(x => x.Value.AddModeChangeEvent(ref ModeChangeHandler));
             SetMode(Mode.LoadSlotChoose);
         }

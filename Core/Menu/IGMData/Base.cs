@@ -233,7 +233,7 @@ namespace OpenVIII.IGMData
                     CURSOR[0] = Point.Zero;
                     BLANKS[0] = false;
                     InitShift(0, 0, 0);
-                    InitCursor(0);
+                    InitCursor(0,0,0);
                 }
             }
         }
@@ -521,7 +521,7 @@ namespace OpenVIII.IGMData
             SkipSIZE = false;
         }
 
-        protected virtual void InitCursor(int i, bool zero = false)
+        protected virtual void InitCursor(int i, int col, int row, bool zero = false)
         {
             if (zero) CURSOR[i] = Point.Zero;
             CURSOR[i].Y += (int)(SIZE[i].Y + 6 * TextScale.Y);
@@ -603,7 +603,7 @@ namespace OpenVIII.IGMData
                     }
                     CURSOR[i] = Point.Zero;
                     InitShift(i, col, row);
-                    InitCursor(i);
+                    InitCursor(i,col,row);
                 }
             }
         }

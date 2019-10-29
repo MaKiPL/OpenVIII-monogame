@@ -106,7 +106,7 @@ namespace OpenVIII
                 Cursor_Status &= ~Cursor_Status.Horizontal;
             }
 
-            protected override void InitCursor(int i, bool zero = false) =>
+            protected override void InitCursor(int i,int col, int row, bool zero = false) =>
                 //base.InitCursor(i, zero);
                 CURSOR[i] = new Point(SIZE[i].X + 20, SIZE[i].Y + SIZE[i].Height / 2 - 4);
 
