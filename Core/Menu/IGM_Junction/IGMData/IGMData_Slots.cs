@@ -13,13 +13,21 @@ namespace OpenVIII
         {
             #region Fields
 
-            public static event EventHandler<C> PrevSettingUpdateEventListener;
             protected bool eventAdded = false;
+
             protected List<Kernel_bin.Abilities> unlocked;
+
             private C _prevSetting;
+
             private Font.ColorID? colorid = null;
 
             #endregion Fields
+
+            #region Events
+
+            public static event EventHandler<C> PrevSettingUpdateEventListener;
+
+            #endregion Events
 
             #region Properties
 
@@ -93,6 +101,14 @@ namespace OpenVIII
                 return ret;
             }
 
+            /// <summary>
+            /// please overload with a if statement to check for mode you want or else this will run
+            /// the checkmode method everytime a mode change happens.
+            /// </summary>
+            /// <param name="sender"></param>
+            /// <param name="e"></param>
+            public override void ModeChangeEvent(object sender, Enum e) => Refresh();
+
             public override void Refresh()
             {
                 if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
@@ -158,14 +174,6 @@ namespace OpenVIII
                     BLANKS[pos] = true;
                 }
             }
-
-            /// <summary>
-            /// please overload with a if statement to check for mode you want or else this will run
-            /// the checkmode method everytime a mode change happens.
-            /// </summary>
-            /// <param name="sender"></param>
-            /// <param name="e"></param>
-            public override void ModeChangeEvent(object sender, Enum e) => Refresh();
 
             protected abstract void PageLeft();
 

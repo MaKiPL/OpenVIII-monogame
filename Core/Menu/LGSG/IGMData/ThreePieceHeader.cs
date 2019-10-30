@@ -33,48 +33,6 @@ namespace OpenVIII.IGMData
             return r;
         }
 
-        public void Refresh(FF8String topleft, FF8String topright, FF8String help)
-        {
-            TOPLeft.Data = topleft;
-            TOPRight.Data = topright;
-            HELP.Data = help;
-            Refresh();
-        }
-
-        protected override void Init()
-        {
-            SkipSIZE = true;
-            base.Init();
-            
-            TOPRight = new IGMDataItem.Box { };
-            TOPLeft = new IGMDataItem.Box { Title = Icons.ID.INFO, Options = Box_Options.Indent };
-            HELP = new IGMDataItem.Box { Title = Icons.ID.HELP };
-        }
-        bool UpdateSize()
-        {
-            if (CONTAINER.X != ScreenTopLeft.X || TOPRight.Pos.Equals(Rectangle.Empty))
-            {
-                CONTAINER.X = ScreenTopLeft.X;
-                CONTAINER.Width = ScreenTopRight.X - ScreenTopLeft.X;
-                InitSize(true);
-                int space = IGM_LGSG.space;
-                int widthright = (int)(base.Width * 0.18f) - space;
-                widthright = widthright - widthright % 4;
-                int widthleft = Width - widthright - space;
-                TOPRight.Pos = new Rectangle(widthleft + space+X, 0, widthright, (base.Height - space) / 2);
-                TOPLeft.Pos = new Rectangle(X, 0, widthleft, TOPRight.Height);
-                HELP.Pos = new Rectangle((int)(Width * 0.03f)+X, TOPLeft.Height + space, (int)(Width * 0.94f), TOPLeft.Height);
-                return true;
-            }
-            return false;
-        }
-        public override bool Update()
-        {
-            var r = base.Update();
-            r = r || UpdateSize();
-            return r;
-        }
-
         public override void ModeChangeEvent(object sender, Enum e)
         {
             base.ModeChangeEvent(sender, e);
@@ -107,6 +65,50 @@ namespace OpenVIII.IGMData
                     HELP.Data = Save ? Strings.Name.Saving : Strings.Name.Loading;
                 }
             }
+        }
+
+        public void Refresh(FF8String topleft, FF8String topright, FF8String help)
+        {
+            TOPLeft.Data = topleft;
+            TOPRight.Data = topright;
+            HELP.Data = help;
+            Refresh();
+        }
+
+        public override bool Update()
+        {
+            bool r = base.Update();
+            r = r || UpdateSize();
+            return r;
+        }
+
+        protected override void Init()
+        {
+            SkipSIZE = true;
+            base.Init();
+
+            TOPRight = new IGMDataItem.Box { };
+            TOPLeft = new IGMDataItem.Box { Title = Icons.ID.INFO, Options = Box_Options.Indent };
+            HELP = new IGMDataItem.Box { Title = Icons.ID.HELP };
+        }
+
+        private bool UpdateSize()
+        {
+            if (CONTAINER.X != ScreenTopLeft.X || TOPRight.Pos.Equals(Rectangle.Empty))
+            {
+                CONTAINER.X = ScreenTopLeft.X;
+                CONTAINER.Width = ScreenTopRight.X - ScreenTopLeft.X;
+                InitSize(true);
+                int space = IGM_LGSG.space;
+                int widthright = (int)(base.Width * 0.18f) - space;
+                widthright = widthright - widthright % 4;
+                int widthleft = Width - widthright - space;
+                TOPRight.Pos = new Rectangle(widthleft + space + X, 0, widthright, (base.Height - space) / 2);
+                TOPLeft.Pos = new Rectangle(X, 0, widthleft, TOPRight.Height);
+                HELP.Pos = new Rectangle((int)(Width * 0.03f) + X, TOPLeft.Height + space, (int)(Width * 0.94f), TOPLeft.Height);
+                return true;
+            }
+            return false;
         }
 
         #endregion Methods

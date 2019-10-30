@@ -9,16 +9,19 @@ namespace OpenVIII
     {
         #region Fields
 
-        public event EventHandler<KeyValuePair<byte, FF8String>> ChoiceChangeHandler;
+        protected Dictionary<Mode, Func<bool>> InputsDict;
 
+        #endregion Fields
+
+        #region Events
+
+        public event EventHandler<KeyValuePair<byte, FF8String>> ChoiceChangeHandler;
 
         public event EventHandler ReInitCompletedHandler;
 
         public event EventHandler<Faces.ID> TargetChangeHandler;
 
-        protected Dictionary<Mode, Func<bool>> InputsDict;
-
-        #endregion Fields
+        #endregion Events
 
         #region Enums
 
@@ -49,6 +52,14 @@ namespace OpenVIII
         }
 
         #endregion Enums
+
+        #region Properties
+
+        public IGMData.Pool.Item ItemPool => ((IGMData.Pool.Item)((IGMData.Group.Base)Data[SectionName.UseItemGroup])[1, 0]);
+
+        private IGMDataItem.HelpBox help => (IGMDataItem.HelpBox)Data[SectionName.Help];
+
+        #endregion Properties
 
         #region Methods
 
@@ -92,8 +103,7 @@ namespace OpenVIII
                 };
             SetMode(Mode.SelectItem);
         }
-        IGMDataItem.HelpBox help => (IGMDataItem.HelpBox)Data[SectionName.Help];
-        public IGMData.Pool.Item ItemPool => ((IGMData.Pool.Item)((IGMData.Group.Base)Data[SectionName.UseItemGroup])[1, 0]);
+
         #endregion Methods
     }
 }

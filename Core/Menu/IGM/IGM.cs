@@ -9,11 +9,15 @@ namespace OpenVIII
     {
         #region Fields
 
-        public event EventHandler<KeyValuePair<Items, FF8String>> ChoiceChangeHandler;
-
         protected Dictionary<Mode, Func<bool>> InputDict;
 
         #endregion Fields
+
+        #region Events
+
+        public event EventHandler<KeyValuePair<Items, FF8String>> ChoiceChangeHandler;
+
+        #endregion Events
 
         #region Enums
 

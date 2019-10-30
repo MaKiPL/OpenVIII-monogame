@@ -20,6 +20,8 @@ namespace OpenVIII
 
             public Saves.Data Data { get; set; }
 
+            public int ExpectedPageNumber => (ID - 1) / ParentRows;
+
             public byte ID
             {
                 get => checked((byte)(BlockNumber?.Data ?? 0)); private set
@@ -29,6 +31,7 @@ namespace OpenVIII
                 }
             }
 
+            public bool IsMyPage => ExpectedPageNumber == _page;
             public int ParentRows { get; set; } = 3;
 
             private IGMDataItem.Integer BlockNumber { get => (IGMDataItem.Integer)ITEM[0, 0]; set => ITEM[0, 0] = value; }
@@ -38,9 +41,6 @@ namespace OpenVIII
             private IGMDataItem.Icon Disc { get => (IGMDataItem.Icon)ITEM[0, 7]; set => ITEM[0, 7] = value; }
 
             private IGMDataItem.Integer Disc_Num { get => (IGMDataItem.Integer)ITEM[0, 8]; set => ITEM[0, 8] = value; }
-
-            public int ExpectedPageNumber => (ID - 1) / ParentRows;
-
             private IGMDataItem.Face Face1 { get => (IGMDataItem.Face)ITEM[0, 1]; set => ITEM[0, 1] = value; }
 
             private IGMDataItem.Face Face2 { get => (IGMDataItem.Face)ITEM[0, 2]; set => ITEM[0, 2] = value; }
@@ -70,8 +70,6 @@ namespace OpenVIII
             private IGMDataItem.Integer LV_Num { get => (IGMDataItem.Integer)ITEM[0, 6]; set => ITEM[0, 6] = value; }
 
             private IGMDataItem.Integer Mins { get => (IGMDataItem.Integer)ITEM[0, 12]; set => ITEM[0, 12] = value; }
-
-            public bool IsMyPage => ExpectedPageNumber == _page;
             private IGMDataItem.Text Name { get => (IGMDataItem.Text)ITEM[0, 4]; set => ITEM[0, 4] = value; }
 
             private IGMDataItem.Icon Play { get => (IGMDataItem.Icon)ITEM[0, 9]; set => ITEM[0, 9] = value; }

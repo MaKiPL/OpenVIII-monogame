@@ -58,6 +58,23 @@ namespace OpenVIII.IGMData
             }
         }
 
+        public override void ModeChangeEvent(object sender, Enum e)
+        {
+            base.ModeChangeEvent(sender, e);
+            if (e.GetType() == typeof(IGM_LGSG.Mode))
+            {
+                Save = e.HasFlag(IGM_LGSG.Mode.Save);
+                Slot = e.HasFlag(IGM_LGSG.Mode.Slot);
+                if (e.HasFlag(IGM_LGSG.Mode.Checking))
+                {
+                    Show();
+                    Refresh();
+                }
+                else
+                    Hide();
+            }
+        }
+
         public override void Refresh()
         {
             if (Enabled)
@@ -113,23 +130,6 @@ namespace OpenVIII.IGMData
             SIZE[i].Height = 28;
             SIZE[i].Inflate(-10, 0);
             SIZE[i].Y += Height / 2 - SIZE[i].Height / 2;
-        }
-
-        public override void ModeChangeEvent(object sender, Enum e)
-        {
-            base.ModeChangeEvent(sender, e);
-            if (e.GetType() == typeof(IGM_LGSG.Mode))
-            {
-                Save = e.HasFlag(IGM_LGSG.Mode.Save);
-                Slot = e.HasFlag(IGM_LGSG.Mode.Slot);
-                if (e.HasFlag(IGM_LGSG.Mode.Checking))
-                {
-                    Show();
-                    Refresh();
-                }
-                else
-                    Hide();
-            }
         }
 
         #endregion Methods

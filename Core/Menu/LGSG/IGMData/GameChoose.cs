@@ -12,9 +12,13 @@ namespace OpenVIII
 
             private bool first = true;
 
+            #endregion Fields
+
+            #region Events
+
             private event EventHandler<PageInfo> PageChangeEventHandler;
 
-            #endregion Fields
+            #endregion Events
 
             #region Properties
 
@@ -77,45 +81,6 @@ namespace OpenVIII
                 return false;
             }
 
-            public override void Refresh()
-            {
-                base.Refresh();
-                int r = 0;
-                foreach (Menu_Base i in ITEM)
-                {
-                    if (i!=null && i.GetType() == typeof(GameBlock) && ((GameBlock)i).ExpectedPageNumber == Page)
-                    {                        
-                        Contents[r++] = ((GameBlock)i).Data;
-                        if (r >= Contents.Length) break;
-                    }
-                }
-            }
-
-            protected override void Init()
-            {
-                base.Init();
-                RightArrow.Y = Y + Height / 2 - RightArrow.Height / 2;
-                LeftArrow.Y = Y + Height / 2 - LeftArrow.Height / 2;
-
-                for (int i = 0; i < Count - ExtraCount; i++)
-                {
-                    ITEM[i, 0] = GameBlock.Create(SIZE[i % Rows]);
-                    ((GameBlock)ITEM[i, 0]).AddPageChangeEvent(ref PageChangeEventHandler);
-                    ((GameBlock)ITEM[i, 0]).ParentRows = Rows;
-                }
-                Cursor_Status &= ~Cursor_Status.Horizontal;
-            }
-
-            protected override void InitCursor(int i,int col, int row, bool zero = false) =>
-                //base.InitCursor(i, zero);
-                CURSOR[i] = new Point(SIZE[i].X + 20, SIZE[i].Y + SIZE[i].Height / 2 - 4);
-
-            protected override void InitShift(int i, int col, int row)
-            {
-                base.InitShift(i, col, row);
-                SIZE[i].Inflate(-20, 0);
-            }
-
             public override void ModeChangeEvent(object sender, Enum e)
             {
                 base.ModeChangeEvent(sender, e);
@@ -153,6 +118,45 @@ namespace OpenVIII
                     else
                         Hide();
                 }
+            }
+
+            public override void Refresh()
+            {
+                base.Refresh();
+                int r = 0;
+                foreach (Menu_Base i in ITEM)
+                {
+                    if (i != null && i.GetType() == typeof(GameBlock) && ((GameBlock)i).ExpectedPageNumber == Page)
+                    {
+                        Contents[r++] = ((GameBlock)i).Data;
+                        if (r >= Contents.Length) break;
+                    }
+                }
+            }
+
+            protected override void Init()
+            {
+                base.Init();
+                RightArrow.Y = Y + Height / 2 - RightArrow.Height / 2;
+                LeftArrow.Y = Y + Height / 2 - LeftArrow.Height / 2;
+
+                for (int i = 0; i < Count - ExtraCount; i++)
+                {
+                    ITEM[i, 0] = GameBlock.Create(SIZE[i % Rows]);
+                    ((GameBlock)ITEM[i, 0]).AddPageChangeEvent(ref PageChangeEventHandler);
+                    ((GameBlock)ITEM[i, 0]).ParentRows = Rows;
+                }
+                Cursor_Status &= ~Cursor_Status.Horizontal;
+            }
+
+            protected override void InitCursor(int i, int col, int row, bool zero = false) =>
+                //base.InitCursor(i, zero);
+                CURSOR[i] = new Point(SIZE[i].X + 20, SIZE[i].Y + SIZE[i].Height / 2 - 4);
+
+            protected override void InitShift(int i, int col, int row)
+            {
+                base.InitShift(i, col, row);
+                SIZE[i].Inflate(-20, 0);
             }
 
             protected override void PAGE_NEXT()

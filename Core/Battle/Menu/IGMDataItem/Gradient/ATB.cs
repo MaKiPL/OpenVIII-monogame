@@ -28,7 +28,6 @@ namespace OpenVIII.IGMDataItem.Gradient
         ///So if one is set and the other is not than you see no bar.
         public override Rectangle Pos { get => base.Pos; set => Restriction = base.Pos = value; }
 
-
         #endregion Properties
 
         #region Methods

@@ -9,19 +9,16 @@ namespace OpenVIII.IGMData.Pool
     {
         #region Fields
 
-        public static event EventHandler<IGM_Junction.Mode> SlotConfirmListener;
-        public static event EventHandler<Damageable> SlotRefreshListener;
-        public static event EventHandler<IGM_Junction.Mode> SlotUndoListener;
-        public static event EventHandler<Kernel_bin.Stat> StatEventListener;
-        public static void ChangeStat(Kernel_bin.Stat stat)
-        {
-            StatEventListener?.Invoke(null,stat);
-        }
         private const Font.ColorID @default = Font.ColorID.White;
+
         private const Font.ColorID junctioned = Font.ColorID.Grey;
+
         private const Font.ColorID nostat = Font.ColorID.Dark_Grey;
+
         private bool Battle = false;
+
         private bool eventAdded = false;
+
         private bool skipRefresh = false;
 
         #endregion Fields
@@ -37,28 +34,50 @@ namespace OpenVIII.IGMData.Pool
                     Menu.IGM_Junction.ModeChangeHandler -= ModeChangeEvent;
                     StatEventListener -= StatChangeEvent;
                 }
-                else if(Damageable != null)
-                Damageable.BattleModeChangeEventHandler -= ModeChangeEvent;
+                else if (Damageable != null)
+                    Damageable.BattleModeChangeEventHandler -= ModeChangeEvent;
             }
         }
 
         #endregion Destructors
 
+        #region Events
+
+        public static event EventHandler<IGM_Junction.Mode> SlotConfirmListener;
+
+        public static event EventHandler<Damageable> SlotRefreshListener;
+
+        public static event EventHandler<IGM_Junction.Mode> SlotUndoListener;
+
+        public static event EventHandler<Kernel_bin.Stat> StatEventListener;
+
+        #endregion Events
+
         #region Properties
 
         public Damageable LastCharacter { get; private set; }
+
         public IGM_Junction.Mode LastMode { get; private set; }
+
         public int LastPage { get; private set; }
+
         public Kernel_bin.Stat LastStat { get; private set; }
+
         public IEnumerable<Kernel_bin.Magic_Data> Sort { get; private set; }
+
         public IGM_Junction.Mode SortMode { get; private set; }
+
         public Kernel_bin.Stat Stat { get; private set; }
+
         public IGMData.Target.Group Target_Group => (IGMData.Target.Group)(((IGMData.Base)ITEM[Targets_Window, 0]));
+
         private int Targets_Window => Rows;
 
         #endregion Properties
 
         #region Methods
+
+        public static void ChangeStat(Kernel_bin.Stat stat) => StatEventListener?.Invoke(null, stat);
 
         public static Magic Create(Rectangle pos, Damageable damageable, bool battle = false)
         {
@@ -298,6 +317,14 @@ namespace OpenVIII.IGMData.Pool
             return false;
         }
 
+        public override void ModeChangeEvent(object sender, Enum e)
+        {
+            if (e.GetType() == typeof(IGM_Junction.Mode))
+                UpdateOnEvent(sender, (IGM_Junction.Mode)e);
+            else if (e.GetType() == typeof(Damageable.BattleMode))
+                UpdateOnEvent(sender, null);
+        }
+
         //public IGMData Values { get; private set; } = null;
         public override void Refresh()
         {
@@ -314,16 +341,16 @@ namespace OpenVIII.IGMData.Pool
                     {
                         Damageable.BattleModeChangeEventHandler += ModeChangeEvent; eventAdded = true;
                     }
-                    
                 }
                 base.Refresh();
                 UpdateTitle();
             }
             else skipRefresh = false;
         }
+
         public override void Refresh(Damageable damageable)
         {
-            if(Battle && eventAdded && damageable != Damageable)
+            if (Battle && eventAdded && damageable != Damageable)
             {
                 eventAdded = false;
                 if (Damageable != null)
@@ -389,14 +416,6 @@ namespace OpenVIII.IGMData.Pool
             SIZE[i].Inflate(-22, -8);
             SIZE[i].Offset(0, 12 + (-8 * row));
             SIZE[i].Height = (int)(12 * TextScale.Y);
-        }
-
-        public override void ModeChangeEvent(object sender, Enum e)
-        {
-            if (e.GetType() == typeof(IGM_Junction.Mode))
-                UpdateOnEvent(sender, (IGM_Junction.Mode)e);
-            else if (e.GetType() == typeof(Damageable.BattleMode))
-                UpdateOnEvent(sender, null);
         }
 
         protected override void PAGE_NEXT()

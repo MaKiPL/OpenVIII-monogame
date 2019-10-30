@@ -57,14 +57,13 @@ namespace OpenVIII.IGMData
 
         public override bool Update()
         {
-            if (Enabled && Memory.State?.Characters !=null)
+            if (Enabled && Memory.State?.Characters != null)
             {
                 if (Memory.State.Characters.TryGetValue(Memory.State.PartyData[PartyPos], out Saves.CharacterData c))
                 { }
                 base.Update();
                 if ((Damageable = c) != null)
                 {
-
                     for (int i = 0; i < Count; i++)
                     {
                         for (int k = 0; k < 10 && k < Depth; k++)
@@ -74,7 +73,6 @@ namespace OpenVIII.IGMData
                     }
                     if (((IGMDataItem.Integer)ITEM[0, 4]).Data != _exp)
                     {
-
                         ITEM[0, 11].Hide();
                         ((IGMDataItem.Text)ITEM[0, 0]).Data = c.Name;
                         ((IGMDataItem.Integer)ITEM[0, 4]).Data = _exp;
@@ -93,7 +91,7 @@ namespace OpenVIII.IGMData
                 }
                 else
                 {
-                    foreach (var i in ITEM)
+                    foreach (Menu_Base i in ITEM)
                         if (i != null)
                             i.Hide();
                 }

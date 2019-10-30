@@ -112,6 +112,12 @@ namespace OpenVIII
                 }
             }
 
+            public override void ModeChangeEvent(object sender, Enum e)
+            {
+                if (e.Equals(Mode.Mag_Stat))
+                    base.ModeChangeEvent(sender, e);
+            }
+
             /// <summary>
             /// Things that may of changed before screen loads or junction is changed.
             /// </summary>
@@ -236,12 +242,6 @@ namespace OpenVIII
                 base.InitShift(i, col, row);
                 SIZE[i].Inflate(-22, -8);
                 SIZE[i].Offset(0, 4 + (-2 * row));
-            }
-
-            public override void ModeChangeEvent(object sender, Enum e)
-            {
-                if (e.Equals(Mode.Mag_Stat))
-                    base.ModeChangeEvent(sender, e);
             }
 
             protected override void PageLeft() => IGM_Junction.SetMode(Mode.Mag_EL_A);

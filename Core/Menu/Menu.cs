@@ -21,8 +21,6 @@ namespace OpenVIII
 
         public ConcurrentDictionary<Enum, Menu_Base> Data;
 
-        public event EventHandler<Enum> ModeChangeHandler;
-
         protected Enum _mode;
 
         protected bool skipdata;
@@ -40,6 +38,7 @@ namespace OpenVIII
         private const int _blinkoutspeed = 900;
 
         private const float _fadedin = 1f;
+
         private const float _fadedout = 0f;
 
         /// <summary>
@@ -66,14 +65,26 @@ namespace OpenVIII
         private static IGM _igm;
 
         private static IGM_Items _igm_items;
+
         private static IGM_Junction _igm_junction;
+
         private static IGM_LGSG _igm_lgsg;
+
         private static IGM_Lobby _igm_lobby;
+
         private static object _igm_lock = new object();
+
         private bool _backup = false;
+
         private Vector2 _size;
 
         #endregion Fields
+
+        #region Events
+
+        public event EventHandler<Enum> ModeChangeHandler;
+
+        #endregion Events
 
         #region Properties
 
@@ -95,7 +106,6 @@ namespace OpenVIII
         public static float Fade { get; private set; } = _fadedin;
 
         public static bool FadingOut => FadeSlider.Reversed;
-
 
         //_fadeout;
         /// <summary>
@@ -123,7 +133,6 @@ namespace OpenVIII
         /// </summary>
         public static IGM_Lobby IGM_Lobby => _igm_lobby;
 
-
         public static Vector2 StaticSize { get; protected set; }
 
         /// <summary>
@@ -140,6 +149,8 @@ namespace OpenVIII
         /// Size of the menu. If kept in a 4:3 region it won't scale down till after losing enough width.
         /// </summary>
         public Vector2 Size { get => _size; protected set => _size = value; }
+
+        public bool SkipFocus { get; set; } = false;
 
         /// <summary>
         /// Viewport dimensions
@@ -360,12 +371,12 @@ namespace OpenVIII
             if (Enabled)
                 Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp, tm: Focus);
         }
-        public bool SkipFocus { get; set; } = false;
+
         public override bool Update()
         {
             bool ret = false;
-            if(!SkipFocus)
-            GenerateFocus();
+            if (!SkipFocus)
+                GenerateFocus();
             StaticSize = Size;
             if (Enabled)
             {

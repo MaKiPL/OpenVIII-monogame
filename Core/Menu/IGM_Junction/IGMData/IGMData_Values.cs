@@ -13,11 +13,17 @@ namespace OpenVIII
         {
             #region Fields
 
-            public static event EventHandler<Font.ColorID> ColorChangeEventListener;
             protected Saves.CharacterData prevSetting;
+
             private bool eventAdded = false;
 
             #endregion Fields
+
+            #region Events
+
+            public static event EventHandler<Font.ColorID> ColorChangeEventListener;
+
+            #endregion Events
 
             #region Methods
 

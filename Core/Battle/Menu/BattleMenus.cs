@@ -97,7 +97,6 @@ namespace OpenVIII
         public IEnumerable<BattleMenu> GetBattleMenus() => Data?.Where(m => m.Value.GetType().Equals(typeof(BattleMenu)) && m.Value.Damageable != null).Select(x => (BattleMenu)x.Value);
 
         public BattleMenu GetCurrentBattleMenu() => (BattleMenu)Data?[PossibleValidPlayer()];
-        private SectionName PossibleValidPlayer() => SectionName.Party1 + MathHelper.Clamp(_player, 0, 2);
 
         public override bool Inputs()
         {
@@ -122,12 +121,6 @@ namespace OpenVIII
                 ReturnTo();
             return ret;
         }
-        public override bool SetMode(Enum mode)
-        {
-            if(!(base.GetMode()?.Equals(mode) ??false))
-            return base.SetMode(mode);
-            return false;
-        }
 
         public override void Refresh()
         {
@@ -148,32 +141,32 @@ namespace OpenVIII
                     ((BattleMenu)Data[SectionName.Party1 + i]).Hide();
                 }
                 SetMode(Mode.Battle);
-                if(UpdateFunctions==null)
-                UpdateFunctions = new Dictionary<Mode, Func<bool>>()
+                if (UpdateFunctions == null)
+                    UpdateFunctions = new Dictionary<Mode, Func<bool>>()
                 {
                     {Mode.Starting, UpdateStartingFunction},
                     {Mode.Battle, UpdateBattleFunction},
                     {Mode.Victory, UpdateVictoryFunction},
                     {Mode.GameOver, UpdateGameOverFunction},
                 };
-                if(DrawActions==null)
-                DrawActions = new Dictionary<Mode, Action>()
+                if (DrawActions == null)
+                    DrawActions = new Dictionary<Mode, Action>()
                 {
                     {Mode.Starting, DrawStartingAction},
                     {Mode.Battle, DrawBattleAction},
                     {Mode.Victory, DrawVictoryAction},
                     {Mode.GameOver, DrawGameOverAction},
                 };
-                if(InputFunctions==null)
-                InputFunctions = new Dictionary<Mode, Func<bool>>()
+                if (InputFunctions == null)
+                    InputFunctions = new Dictionary<Mode, Func<bool>>()
                 {
                     //{Mode.Starting, InputStartingFunction},
                     {Mode.Battle, InputBattleFunction},
                     {Mode.Victory, InputVictoryFunction},
                     //{Mode.GameOver, InputGameOverFunction},
                 };
-                if(ReturnAction==null)
-                ReturnAction = new Dictionary<Mode, Action>()
+                if (ReturnAction == null)
+                    ReturnAction = new Dictionary<Mode, Action>()
                 {
                     {Mode.Starting, ReturnStartingFunction},
                     {Mode.Battle, ReturnBattleFunction},
@@ -198,6 +191,13 @@ namespace OpenVIII
                 init_debugger_Audio.PlayMusic(lastmusic);
             else
                 init_debugger_Audio.StopMusic();
+        }
+
+        public override bool SetMode(Enum mode)
+        {
+            if (!(base.GetMode()?.Equals(mode) ?? false))
+                return base.SetMode(mode);
+            return false;
         }
 
         public override bool Update()
@@ -282,10 +282,10 @@ namespace OpenVIII
                         if (++_player > 2) _player = 0;
                         if (++cnt > 6) return false;
                     }
-                    while (Data.Count <= _player || 
-                    Data[PossibleValidPlayer()] == null || 
-                    Data[PossibleValidPlayer()].GetType() != typeof(BattleMenu) || 
-                    Data[PossibleValidPlayer()].Damageable == null || 
+                    while (Data.Count <= _player ||
+                    Data[PossibleValidPlayer()] == null ||
+                    Data[PossibleValidPlayer()].GetType() != typeof(BattleMenu) ||
+                    Data[PossibleValidPlayer()].Damageable == null ||
                     !GetCurrentBattleMenu().Damageable.StartTurn());
                     NewTurnSND();
                 }
@@ -298,7 +298,7 @@ namespace OpenVIII
 
         private bool InputStartingFunction() => false;
 
-        private bool InputVictoryFunction() => Victory_Menu?.Inputs()?? false;
+        private bool InputVictoryFunction() => Victory_Menu?.Inputs() ?? false;
 
         private void NewTurnSND()
         {
@@ -307,6 +307,8 @@ namespace OpenVIII
             else
                 init_debugger_Audio.PlaySound(14);
         }
+
+        private SectionName PossibleValidPlayer() => SectionName.Party1 + MathHelper.Clamp(_player, 0, 2);
 
         private void ReturnBattleFunction()
         {

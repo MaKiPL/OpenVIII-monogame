@@ -7,6 +7,7 @@ namespace OpenVIII.IGMData
     public class Commands : Base, IDisposable
     {
         #region Fields
+
         private bool disposedValue = false;
         private bool EventAdded;
 
@@ -317,9 +318,6 @@ namespace OpenVIII.IGMData
             ItemPool.Refresh(Damageable);
         }
 
-
-
-
         /// <summary>
         /// Things fixed at startup.
         /// </summary>
@@ -415,6 +413,7 @@ namespace OpenVIII.IGMData
         }
 
         #endregion Methods
+
         ~Commands()
         {
             Dispose(false);

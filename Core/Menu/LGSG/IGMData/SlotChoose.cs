@@ -57,6 +57,19 @@ namespace OpenVIII
                 return true;
             }
 
+            public override void ModeChangeEvent(object sender, Enum e)
+            {
+                base.ModeChangeEvent(sender, e);
+                if (e.GetType() == typeof(IGM_LGSG.Mode))
+                {
+                    Save = e.HasFlag(IGM_LGSG.Mode.Save);
+                    if (e.HasFlag(IGM_LGSG.Mode.Slot) && e.HasFlag(IGM_LGSG.Mode.Choose))
+                        Show();
+                    else
+                        Hide();
+                }
+            }
+
             protected override void Init()
             {
                 base.Init();
@@ -91,19 +104,6 @@ namespace OpenVIII
                     default:
                         SIZE[i].Y += row * SpaceBetween / 2;
                         break;
-                }
-            }
-
-            public override void ModeChangeEvent(object sender, Enum e)
-            {
-                base.ModeChangeEvent(sender, e);
-                if (e.GetType() == typeof(IGM_LGSG.Mode))
-                {
-                    Save = e.HasFlag(IGM_LGSG.Mode.Save);
-                    if (e.HasFlag(IGM_LGSG.Mode.Slot) && e.HasFlag(IGM_LGSG.Mode.Choose))
-                        Show();
-                    else
-                        Hide();
                 }
             }
 

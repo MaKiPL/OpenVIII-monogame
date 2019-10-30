@@ -24,8 +24,8 @@
             if (Enabled)
             {
                 base.Update();
-                if (Memory.gameTime.TotalGameTime.TotalMilliseconds - timeshow < maxtime)                
-                    return true;                
+                if (Memory.gameTime.TotalGameTime.TotalMilliseconds - timeshow < maxtime)
+                    return true;
                 else
                     Hide();
             }

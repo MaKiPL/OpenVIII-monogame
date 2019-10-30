@@ -14,6 +14,7 @@ namespace OpenVIII.IGMData
 
         private static Texture2D dot;
         private static object locker = new object();
+        private Damageable.BattleMode BattleMode = Damageable.BattleMode.EndTurn;
         private bool EventAdded = false;
 
         #endregion Fields
@@ -24,7 +25,6 @@ namespace OpenVIII.IGMData
         {
             if (EventAdded)
                 Damageable.BattleModeChangeEventHandler -= ModeChangeEvent;
-
         }
 
         #endregion Destructors
@@ -65,6 +65,17 @@ namespace OpenVIII.IGMData
                     //else throw new Exception("Must be in main thread!");
                 }
                 return dot;
+            }
+        }
+
+        public override void ModeChangeEvent(object sender, Enum e)
+        {
+            if (!e.Equals(BattleMode))
+            {
+                base.ModeChangeEvent(sender, e);
+                BattleMode = (Damageable.BattleMode)e;
+                if (!e.Equals(Damageable.BattleMode.EndTurn)) //because endturn triggers BattleMenu refresh.
+                    Refresh();
             }
         }
 
@@ -118,7 +129,7 @@ namespace OpenVIII.IGMData
                     ITEM[0, (int)DepthID.ATBCharging].Show();
                 }
 
-                if(!charging)
+                if (!charging)
                 {
                     ITEM[0, (int)DepthID.ATBCharging].Hide();
                     ITEM[0, (int)DepthID.ATBCharged].Show();
@@ -173,17 +184,6 @@ namespace OpenVIII.IGMData
             ((IGMDataItem.Gradient.ATB)ITEM[0, (byte)DepthID.ATBCharging]).Color = Color.Orange * .8f;
             ((IGMDataItem.Gradient.ATB)ITEM[0, (byte)DepthID.ATBCharging]).Faded_Color = Color.Orange * .8f;
             ((IGMDataItem.Gradient.ATB)ITEM[0, (byte)DepthID.ATBCharging]).Refresh(Damageable);
-        }
-        Damageable.BattleMode BattleMode = Damageable.BattleMode.EndTurn;
-        public override void ModeChangeEvent(object sender, Enum e)
-        {
-            if (!e.Equals(BattleMode))
-            {
-                base.ModeChangeEvent(sender, e);
-                BattleMode = (Damageable.BattleMode)e;
-                if (!e.Equals(Damageable.BattleMode.EndTurn)) //because endturn triggers BattleMenu refresh.
-                    Refresh();
-            }
         }
 
         private static List<KeyValuePair<int, Characters>> GetParty()

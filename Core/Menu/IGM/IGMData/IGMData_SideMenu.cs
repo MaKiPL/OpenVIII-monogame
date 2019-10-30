@@ -105,6 +105,14 @@ namespace OpenVIII
                 return false;
             }
 
+            public override void ModeChangeEvent(object sender, Enum e)
+            {
+                if (!e.Equals(Mode.ChooseItem))
+                {
+                    Cursor_Status |= Cursor_Status.Blinking;
+                }
+            }
+
             public override void Refresh()
             {
                 if (!eventSet && IGM != null)
@@ -123,14 +131,6 @@ namespace OpenVIII
                 SIZE[i].Y += SIZE[i].Height / 2 - largestheight / 2 + 5;
                 //SIZE[i].Width = largestwidth;
                 SIZE[i].Height = largestheight;
-            }
-
-            public override void ModeChangeEvent(object sender, Enum e)
-            {
-                if (!e.Equals(Mode.ChooseItem))
-                {
-                    Cursor_Status |= Cursor_Status.Blinking;
-                }
             }
 
             protected override void SetCursor_select(int value)

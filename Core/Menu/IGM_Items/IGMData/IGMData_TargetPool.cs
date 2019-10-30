@@ -94,6 +94,14 @@ namespace OpenVIII
                 return false;
             }
 
+            public override void ModeChangeEvent(object sender, Enum e)
+            {
+                if (!IsMe)
+                    Cursor_Status &= ~Cursor_Status.Enabled;
+                else
+                    IGM_Items.TargetChangeHandler?.Invoke(this, Contents[CURSOR_SELECT]);
+            }
+
             public override void Refresh()
             {
                 if (!eventSet && IGM_Items != null)
@@ -137,14 +145,6 @@ namespace OpenVIII
                 SIZE[i].Y -= 3 * row;
                 //SIZE[i].X += 2;
                 SIZE[i].Height = (int)(12 * TextScale.Y);
-            }
-
-            public override void ModeChangeEvent(object sender, Enum e)
-            {
-                if (!IsMe)
-                    Cursor_Status &= ~Cursor_Status.Enabled;
-                else
-                    IGM_Items.TargetChangeHandler?.Invoke(this, Contents[CURSOR_SELECT]);
             }
 
             protected override void PAGE_NEXT()

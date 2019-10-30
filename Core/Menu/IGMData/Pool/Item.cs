@@ -15,6 +15,12 @@ namespace OpenVIII.IGMData.Pool
 
         #endregion Fields
 
+        #region Events
+
+        public event EventHandler<KeyValuePair<Item_In_Menu, FF8String>> ItemChangeHandler;
+
+        #endregion Events
+
         #region Properties
 
         public IReadOnlyList<FF8String> HelpStr => _helpStr;
@@ -92,6 +98,22 @@ namespace OpenVIII.IGMData.Pool
             base.Inputs_OKAY();
             Menu.IGM_Items.SetMode(IGM_Items.Mode.UseItemOnTarget);
             return true;
+        }
+
+        public override void ModeChangeEvent(object sender, Enum e)
+        {
+            if (e.Equals(IGM_Items.Mode.SelectItem) || Battle)
+            {
+                Cursor_Status |= Cursor_Status.Enabled;
+            }
+            else if (e.Equals(IGM_Items.Mode.UseItemOnTarget))
+            {
+                Cursor_Status |= Cursor_Status.Blinking;
+            }
+            else
+            {
+                Cursor_Status &= ~Cursor_Status.Enabled;
+            }
         }
 
         public override void Refresh()
@@ -188,23 +210,6 @@ namespace OpenVIII.IGMData.Pool
             SIZE[i].Y = Y + 18 + row * ((Height - 16) / Rows);
         }
 
-        public override void ModeChangeEvent(object sender, Enum e)
-        {
-            if (e.Equals(IGM_Items.Mode.SelectItem) || Battle)
-            {
-                Cursor_Status |= Cursor_Status.Enabled;
-            }
-            else if (e.Equals(IGM_Items.Mode.UseItemOnTarget))
-            {
-                Cursor_Status |= Cursor_Status.Blinking;
-            }
-            else
-            {
-                Cursor_Status &= ~Cursor_Status.Enabled;
-            }
-        }
-
-        public event EventHandler<KeyValuePair<Item_In_Menu, FF8String>> ItemChangeHandler;
         protected override void PAGE_NEXT()
         {
             int cnt = Pages;

@@ -18,6 +18,20 @@ namespace OpenVIII
 
         #region Properties
 
+        /// <summary>
+        /// Focus scales and centers the menu.
+        /// </summary>
+        public static Matrix Focus { get; protected set; }
+
+        /// <summary>
+        /// Adjusted mouse location used to determine if mouse is highlighting a button.
+        /// </summary>
+        public static Point MouseLocation => InputMouse.Location.Transform(Focus);
+
+        public static Point ScreenBottomLeft => new Point(0, Memory.graphics.GraphicsDevice.Viewport.Height).Transform(Focus);
+        public static Point ScreenBottomRight => new Point(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height).Transform(Focus);
+        public static Point ScreenTopLeft => new Point(0, 0).Transform(Focus);
+        public static Point ScreenTopRight => new Point(Memory.graphics.GraphicsDevice.Viewport.Width, 0).Transform(Focus);
         public Menu_Base CONTAINER { get; set; }
         public Cursor_Status Cursor_Status { get; set; } = Cursor_Status.Disabled;
 
@@ -40,11 +54,9 @@ namespace OpenVIII
         /// </summary>
         public sbyte PartyPos
         {
-            get => _partyPos; protected set
-            {
-                _partyPos = (sbyte)MathHelper.Clamp(value,-1,2);
-            }
+            get => _partyPos; protected set => _partyPos = (sbyte)MathHelper.Clamp(value, -1, 2);
         }
+
         /// <summary>
         /// Where to draw this item.
         /// </summary>
@@ -62,8 +74,6 @@ namespace OpenVIII
 
         public static implicit operator Rectangle(Menu_Base v) => v.Pos;
 
-        
-
         public abstract void Draw();
 
         /// <summary>
@@ -76,6 +86,10 @@ namespace OpenVIII
         }
 
         public abstract bool Inputs();
+
+        public virtual void ModeChangeEvent(object sender, Enum e)
+        {
+        }
 
         /// <summary>
         /// Things that change rarely. Like a party member changes or Laguna dream happens.
@@ -100,20 +114,7 @@ namespace OpenVIII
             }
             Refresh();
         }
-        /// <summary>
-        /// Focus scales and centers the menu.
-        /// </summary>
-        public static Matrix Focus { get; protected set; }
-        /// <summary>
-        /// Adjusted mouse location used to determine if mouse is highlighting a button.
-        /// </summary>
-        public static Point MouseLocation => InputMouse.Location.Transform(Focus);
-        public static Point ScreenTopLeft => new Point(0, 0).Transform(Focus);
-        public static Point ScreenTopRight => new Point(Memory.graphics.GraphicsDevice.Viewport.Width, 0).Transform(Focus);
-        public static Point ScreenBottomRight => new Point(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height).Transform(Focus);
-        public static Point ScreenBottomLeft => new Point(0, Memory.graphics.GraphicsDevice.Viewport.Height).Transform(Focus);
 
-        
         /// <summary>
         /// Plan is to use this to reset values to a default state if done.
         /// </summary>
@@ -127,10 +128,6 @@ namespace OpenVIII
         public abstract bool Update();
 
         protected abstract void Init();
-
-        public virtual void ModeChangeEvent(object sender, Enum e)
-        {
-        }
 
         /// <summary>
         /// For child items.

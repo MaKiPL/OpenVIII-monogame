@@ -63,6 +63,14 @@ namespace OpenVIII
                 return ret;
             }
 
+            public override void ModeChangeEvent(object sender, Enum e)
+            {
+                if (!e.Equals(Mode.ChooseChar))
+                {
+                    Cursor_Status &= ~Cursor_Status.Enabled;
+                }
+            }
+
             public override void Refresh()
             {
                 if (!eventSet && IGM != null)
@@ -96,14 +104,6 @@ namespace OpenVIII
                         Contents[i] = contents[pos];
                         pos++;
                     }
-                }
-            }
-
-            public override void ModeChangeEvent(object sender, Enum e)
-            {
-                if (!e.Equals(Mode.ChooseChar))
-                {
-                    Cursor_Status &= ~Cursor_Status.Enabled;
                 }
             }
 

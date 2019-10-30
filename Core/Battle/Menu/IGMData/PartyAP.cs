@@ -23,13 +23,8 @@ namespace OpenVIII.IGMData
         #endregion Fields
 
         #region Constructors
-        static public PartyAP Create(Rectangle pos)
-        {
-            var r = new PartyAP();
-            r.Init(1, 7, new IGMDataItem.Empty {Pos = pos }, 1, 1);
-            return r;
-        }
-        PartyAP()
+
+        private PartyAP()
         {
             DialogSelectedGF = new byte[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.SelectedGF };
             DialogSelectedNum = new byte[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.Number };
@@ -49,6 +44,7 @@ namespace OpenVIII.IGMData
             str_GF_AP = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 109);
             Leveled = new ConcurrentQueue<GFs>();
         }
+
         #endregion Constructors
 
         #region Properties
@@ -66,11 +62,19 @@ namespace OpenVIII.IGMData
         }
 
         public GFs GF { get => _gf; private set => _gf = value; }
+
         public ConcurrentQueue<GFs> Leveled { get; set; }
 
         #endregion Properties
 
         #region Methods
+
+        public static PartyAP Create(Rectangle pos)
+        {
+            PartyAP r = new PartyAP();
+            r.Init(1, 7, new IGMDataItem.Empty { Pos = pos }, 1, 1);
+            return r;
+        }
 
         public void Earn()
         {

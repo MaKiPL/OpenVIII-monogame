@@ -43,6 +43,12 @@ namespace OpenVIII
 
             public static IGMData_Statuses Create() => Create<IGMData_Statuses>(2, 4, new IGMDataItem.Box { Title = Icons.ID.STATUS, Pos = new Rectangle(420, 510, 420, 120) }, 1, 2);
 
+            public override void ModeChangeEvent(object sender, Enum e)
+            {
+                if (!e.Equals(Mode.UseItemOnTarget))
+                    TargetChangeEvent(this, Faces.ID.Blank);
+            }
+
             public override void Refresh()
             {
                 if (IGM_Items != null)
@@ -77,12 +83,6 @@ namespace OpenVIII
                 SIZE[i].Inflate(-18, -20);
                 SIZE[i].Y -= 5 * row;
                 SIZE[i].Height = (int)(12 * TextScale.Y);
-            }
-
-            public override void ModeChangeEvent(object sender, Enum e)
-            {
-                if (!e.Equals(Mode.UseItemOnTarget))
-                    TargetChangeEvent(this, Faces.ID.Blank);
             }
 
             private void ChoiceChangeEvent(object sender, KeyValuePair<byte, FF8String> e) => TopMenuChoice = e.Key;

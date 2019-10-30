@@ -61,6 +61,14 @@ namespace OpenVIII
                 return false;
             }
 
+            public override void ModeChangeEvent(object sender, Enum e)
+            {
+                if (!e.Equals(Mode.TopMenu))
+                    Cursor_Status |= Cursor_Status.Blinking;
+                else
+                    IGM_Items.ChoiceChangeHandler?.Invoke(this, new KeyValuePair<byte, FF8String>((byte)CURSOR_SELECT, HelpStr[CURSOR_SELECT]));
+            }
+
             public override void Refresh()
             {
                 if (!eventSet && IGM_Items != null)
@@ -77,14 +85,6 @@ namespace OpenVIII
                 SIZE[i].X += SIZE[i].Width / 2 - widths[i] / 2;
                 SIZE[i].Width = widths[i];
                 SIZE[i].Height = largestheight;
-            }
-
-            public override void ModeChangeEvent(object sender, Enum e)
-            {
-                if (!e.Equals(Mode.TopMenu))
-                    Cursor_Status |= Cursor_Status.Blinking;
-                else
-                    IGM_Items.ChoiceChangeHandler?.Invoke(this, new KeyValuePair<byte, FF8String>((byte)CURSOR_SELECT, HelpStr[CURSOR_SELECT]));
             }
 
             protected override void SetCursor_select(int value)
