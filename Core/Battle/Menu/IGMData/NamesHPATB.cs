@@ -11,7 +11,7 @@ namespace OpenVIII.IGMData
         #region Fields
 
         private const int ATBWidth = 150;
-
+        private const float ATBalpha = .8f;
         private static Texture2D dot;
         private static object locker = new object();
         private Damageable.BattleMode BattleMode = Damageable.BattleMode.EndTurn;
@@ -35,8 +35,25 @@ namespace OpenVIII.IGMData
         {
             Name,
             HP,
+            /// <summary>
+            /// 
+            /// </summary>
+            GFBox,            
+            /// <summary>
+            /// ATB charging orange red or dark blue (haste/slowed)
+            /// </summary>
             ATBCharging,
+            /// <summary>
+            /// ATB charged blink yellow
+            /// </summary>
             ATBCharged,
+            /// <summary>
+            /// blue white gradient that decreases as the gf is charging.
+            /// </summary>
+            GFCharging,
+            /// <summary>
+            /// border around ATB bar
+            /// </summary>
             ATBBorder
         }
 
@@ -114,12 +131,12 @@ namespace OpenVIII.IGMData
                 BattleMode = (Damageable.BattleMode)Damageable.GetBattleMode();
                 if (BattleMode.Equals(Damageable.BattleMode.YourTurn))
                 {
-                    ((IGMDataItem.Texture)ITEM[0, (int)DepthID.ATBCharged]).Color = Color.LightYellow * .8f;
+                    ((IGMDataItem.Texture)ITEM[0, (int)DepthID.ATBCharged]).Color = Color.LightYellow * ATBalpha;
                     blink = true;
                 }
                 else if (BattleMode.Equals(Damageable.BattleMode.ATB_Charged))
                 {
-                    ((IGMDataItem.Texture)ITEM[0, (int)DepthID.ATBCharged]).Color = Color.Yellow * .8f;
+                    ((IGMDataItem.Texture)ITEM[0, (int)DepthID.ATBCharged]).Color = Color.Yellow * ATBalpha;
                 }
                 else if (BattleMode.Equals(Damageable.BattleMode.ATB_Charging))
                 {
@@ -177,12 +194,14 @@ namespace OpenVIII.IGMData
             Rectangle atbbarpos = new Rectangle(SIZE[0].X + 230, SIZE[0].Y + 12, ATBWidth, 15);
             ITEM[0, (byte)DepthID.Name] = new IGMDataItem.Text { };
             ITEM[0, (byte)DepthID.HP] = new IGMDataItem.Integer { Spaces = 4, NumType = Icons.NumType.Num_8x16_1 };
+            ITEM[0, (byte)DepthID.GFBox] = new IGMDataItem.Box { }; //X=366 Y-102 396 45
+            ITEM[0, (byte)DepthID.GFBox].Hide();
             ITEM[0, (byte)DepthID.ATBBorder] = new IGMDataItem.Icon { Data = Icons.ID.Size_08x64_Bar, Palette = 0 };
-            ITEM[0, (byte)DepthID.ATBCharged] = new IGMDataItem.Texture { Data = dot, Color = Color.LightYellow * .8f, Faded_Color = new Color(125, 125, 0, 255) * .8f };
+            ITEM[0, (byte)DepthID.ATBCharged] = new IGMDataItem.Texture { Data = dot, Color = Color.LightYellow * ATBalpha, Faded_Color = new Color(125, 125, 0, 255) * ATBalpha };
             ITEM[0, (byte)DepthID.ATBCharged].Hide();
             ITEM[0, (int)DepthID.ATBCharging] = IGMDataItem.Gradient.ATB.Create(atbbarpos);
-            ((IGMDataItem.Gradient.ATB)ITEM[0, (byte)DepthID.ATBCharging]).Color = Color.Orange * .8f;
-            ((IGMDataItem.Gradient.ATB)ITEM[0, (byte)DepthID.ATBCharging]).Faded_Color = Color.Orange * .8f;
+            ((IGMDataItem.Gradient.ATB)ITEM[0, (byte)DepthID.ATBCharging]).Color = Color.Orange * ATBalpha;
+            ((IGMDataItem.Gradient.ATB)ITEM[0, (byte)DepthID.ATBCharging]).Faded_Color = Color.Orange * ATBalpha;
             ((IGMDataItem.Gradient.ATB)ITEM[0, (byte)DepthID.ATBCharging]).Refresh(Damageable);
         }
 
