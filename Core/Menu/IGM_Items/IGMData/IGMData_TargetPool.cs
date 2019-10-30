@@ -100,7 +100,7 @@ namespace OpenVIII
                 {
                     IGM_Items.ModeChangeHandler += ModeChangeEvent;
                     IGM_Items.ChoiceChangeHandler += ChoiceChangeEvent;
-                    IGM_Items.ItemChangeHandler += ItemTypeChangeEvent;
+                    IGM_Items.ItemPool.ItemChangeHandler += ItemTypeChangeEvent;
                     eventSet = true;
                 }
                 ////List won't populate unless theres a valid item set.
@@ -139,7 +139,7 @@ namespace OpenVIII
                 SIZE[i].Height = (int)(12 * TextScale.Y);
             }
 
-            protected override void ModeChangeEvent(object sender, Enum e)
+            public override void ModeChangeEvent(object sender, Enum e)
             {
                 if (!IsMe)
                     Cursor_Status &= ~Cursor_Status.Enabled;

@@ -79,7 +79,7 @@ namespace OpenVIII
                 SIZE[i].Height = largestheight;
             }
 
-            protected override void ModeChangeEvent(object sender, Enum e)
+            public override void ModeChangeEvent(object sender, Enum e)
             {
                 if (!e.Equals(Mode.TopMenu))
                     Cursor_Status |= Cursor_Status.Blinking;

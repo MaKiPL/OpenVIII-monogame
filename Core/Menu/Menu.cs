@@ -21,7 +21,7 @@ namespace OpenVIII
 
         public ConcurrentDictionary<Enum, Menu_Base> Data;
 
-        public EventHandler<Enum> ModeChangeHandler;
+        public event EventHandler<Enum> ModeChangeHandler;
 
         protected Enum _mode;
 

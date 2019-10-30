@@ -9,9 +9,8 @@ namespace OpenVIII
     {
         #region Fields
 
-        public EventHandler<KeyValuePair<Items, FF8String>> ChoiceChangeHandler;
+        public event EventHandler<KeyValuePair<Items, FF8String>> ChoiceChangeHandler;
 
-        //public EventHandler<Mode> ModeChangeHandler;
         protected Dictionary<Mode, Func<bool>> InputDict;
 
         #endregion Fields

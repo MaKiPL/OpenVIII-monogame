@@ -9,10 +9,14 @@ namespace OpenVIII.IGMData.Pool
     {
         #region Fields
 
-        public static EventHandler<IGM_Junction.Mode> SlotConfirmListener;
-        public static EventHandler<Damageable> SlotRefreshListener;
-        public static EventHandler<IGM_Junction.Mode> SlotUndoListener;
-        public static EventHandler<Kernel_bin.Stat> StatEventListener;
+        public static event EventHandler<IGM_Junction.Mode> SlotConfirmListener;
+        public static event EventHandler<Damageable> SlotRefreshListener;
+        public static event EventHandler<IGM_Junction.Mode> SlotUndoListener;
+        public static event EventHandler<Kernel_bin.Stat> StatEventListener;
+        public static void ChangeStat(Kernel_bin.Stat stat)
+        {
+            StatEventListener?.Invoke(null,stat);
+        }
         private const Font.ColorID @default = Font.ColorID.White;
         private const Font.ColorID junctioned = Font.ColorID.Grey;
         private const Font.ColorID nostat = Font.ColorID.Dark_Grey;
@@ -387,7 +391,7 @@ namespace OpenVIII.IGMData.Pool
             SIZE[i].Height = (int)(12 * TextScale.Y);
         }
 
-        protected override void ModeChangeEvent(object sender, Enum e)
+        public override void ModeChangeEvent(object sender, Enum e)
         {
             if (e.GetType() == typeof(IGM_Junction.Mode))
                 UpdateOnEvent(sender, (IGM_Junction.Mode)e);

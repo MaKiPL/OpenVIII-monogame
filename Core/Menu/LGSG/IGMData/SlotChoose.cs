@@ -94,7 +94,7 @@ namespace OpenVIII
                 }
             }
 
-            protected override void ModeChangeEvent(object sender, Enum e)
+            public override void ModeChangeEvent(object sender, Enum e)
             {
                 base.ModeChangeEvent(sender, e);
                 if (e.GetType() == typeof(IGM_LGSG.Mode))

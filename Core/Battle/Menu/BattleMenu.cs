@@ -102,7 +102,7 @@ namespace OpenVIII
             else base.Refresh(Damageable);
         }
 
-        protected override void ModeChangeEvent(object sender, Enum e)
+        public override void ModeChangeEvent(object sender, Enum e)
         {
             switch (e)
             {

@@ -9,13 +9,12 @@ namespace OpenVIII
     {
         #region Fields
 
-        public EventHandler<KeyValuePair<byte, FF8String>> ChoiceChangeHandler;
+        public event EventHandler<KeyValuePair<byte, FF8String>> ChoiceChangeHandler;
 
-        public EventHandler<KeyValuePair<Item_In_Menu, FF8String>> ItemChangeHandler;
 
-        public EventHandler ReInitCompletedHandler;
+        public event EventHandler ReInitCompletedHandler;
 
-        public EventHandler<Faces.ID> TargetChangeHandler;
+        public event EventHandler<Faces.ID> TargetChangeHandler;
 
         protected Dictionary<Mode, Func<bool>> InputsDict;
 
@@ -83,10 +82,9 @@ namespace OpenVIII
                 Task.Run(() => Data.TryAdd(SectionName.UseItemGroup, IGMData.Group.Base.Create(IGMData_Statuses.Create(),IGMData.Pool.Item.Create(),IGMData_TargetPool.Create())))
             };
             Task.WaitAll(tasks.ToArray());
-            IGMDataItem.HelpBox help = (IGMDataItem.HelpBox)Data[SectionName.Help];
-            help.AddTextChangeEvent(ref ChoiceChangeHandler);
-            help.AddTextChangeEvent(ref ItemChangeHandler);
-            help.AddModeChangeEvent(ref ModeChangeHandler);
+            ChoiceChangeHandler = help.TextChangeEvent;
+            ItemPool.ItemChangeHandler += help.TextChangeEvent;
+            ModeChangeHandler += help.ModeChangeEvent;
             InputsDict = new Dictionary<Mode, Func<bool>>() {
                 {Mode.TopMenu, Data[SectionName.TopMenu].Inputs},
                 {Mode.SelectItem, ((IGMData.Base)((IGMData.Group.Base)Data[SectionName.UseItemGroup]).ITEM[1,0]).Inputs},
@@ -94,7 +92,8 @@ namespace OpenVIII
                 };
             SetMode(Mode.SelectItem);
         }
-
+        IGMDataItem.HelpBox help => (IGMDataItem.HelpBox)Data[SectionName.Help];
+        public IGMData.Pool.Item ItemPool => ((IGMData.Pool.Item)((IGMData.Group.Base)Data[SectionName.UseItemGroup])[1, 0]);
         #endregion Methods
     }
 }

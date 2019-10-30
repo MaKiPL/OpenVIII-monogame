@@ -70,6 +70,28 @@ namespace OpenVIII
             }
             return false;
         }
+        public void SetSummon(Saves.GFData gfdata)
+        {
+            SummonedGF = gfdata;
+            if(SummonedGF != null)
+            {
+                SetBattleMode(BattleMode.GF_Charging);
+            }
+        }
+
+        /// <summary>
+        /// Summon GF
+        /// </summary>
+        /// <param name="gf"></param>
+        public void SetSummon(GFs gf)
+        {
+            Saves.GFData gfdata = null;
+            if (Memory.State?.GFs?.TryGetValue(gf,out gfdata)?? false)
+            {
+                // found a gf.
+            }
+            SetSummon(gfdata);
+        }
 
         public virtual bool StartTurn()
         {
@@ -325,7 +347,7 @@ namespace OpenVIII
 
         public virtual Enum GetBattleMode() => _battlemode ?? BattleMode.ATB_Charging;
 
-        public EventHandler<Enum> BattleModeChangeEventHandler;
+        public event EventHandler<Enum> BattleModeChangeEventHandler;
 
         public virtual bool SetBattleMode(Enum mode)
         {
@@ -572,6 +594,7 @@ namespace OpenVIII
         public abstract byte STR { get; }
 
         public abstract byte VIT { get; }
+        public Saves.GFData SummonedGF { get; private set; }
 
         #endregion Properties
 

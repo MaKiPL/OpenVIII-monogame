@@ -188,7 +188,7 @@ namespace OpenVIII.IGMData.Pool
             SIZE[i].Y = Y + 18 + row * ((Height - 16) / Rows);
         }
 
-        protected override void ModeChangeEvent(object sender, Enum e)
+        public override void ModeChangeEvent(object sender, Enum e)
         {
             if (e.Equals(IGM_Items.Mode.SelectItem) || Battle)
             {
@@ -204,6 +204,7 @@ namespace OpenVIII.IGMData.Pool
             }
         }
 
+        public event EventHandler<KeyValuePair<Item_In_Menu, FF8String>> ItemChangeHandler;
         protected override void PAGE_NEXT()
         {
             int cnt = Pages;
@@ -214,7 +215,7 @@ namespace OpenVIII.IGMData.Pool
                 skipsnd = true;
             }
             while (cnt-- > 0 && !((IGMDataItem.Integer)(ITEM[0, 1])).Enabled);
-            Menu.IGM_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
+            ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
         }
 
         protected override void PAGE_PREV()
@@ -228,7 +229,7 @@ namespace OpenVIII.IGMData.Pool
                 skipsnd = true;
             }
             while (cnt-- > 0 && !((IGMDataItem.Integer)(ITEM[0, 1])).Enabled);
-            Menu.IGM_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
+            ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
         }
 
         protected override void SetCursor_select(int value)
@@ -236,11 +237,11 @@ namespace OpenVIII.IGMData.Pool
             if (value != GetCursor_select())
             {
                 base.SetCursor_select(value);
-                Menu.IGM_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[value], HelpStr[value]));
+                ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[value], HelpStr[value]));
             }
         }
 
-        private void ReInitCompletedEvent(object sender, EventArgs e) => Menu.IGM_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
+        private void ReInitCompletedEvent(object sender, EventArgs e) => ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
 
         #endregion Methods
     }

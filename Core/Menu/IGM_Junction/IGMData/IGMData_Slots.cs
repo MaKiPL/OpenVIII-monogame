@@ -13,7 +13,7 @@ namespace OpenVIII
         {
             #region Fields
 
-            public static EventHandler<C> PrevSettingUpdateEventListener;
+            public static event EventHandler<C> PrevSettingUpdateEventListener;
             protected bool eventAdded = false;
             protected List<Kernel_bin.Abilities> unlocked;
             private C _prevSetting;
@@ -165,7 +165,7 @@ namespace OpenVIII
             /// </summary>
             /// <param name="sender"></param>
             /// <param name="e"></param>
-            protected override void ModeChangeEvent(object sender, Enum e) => Refresh();
+            public override void ModeChangeEvent(object sender, Enum e) => Refresh();
 
             protected abstract void PageLeft();
 

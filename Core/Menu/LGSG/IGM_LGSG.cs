@@ -130,7 +130,7 @@ namespace OpenVIII
             Data[Mode.Checking] = IGMData.LoadBarBox.Create(LoadBarRectangle);
             Data[Mode.LoadGameChoose] = IGMData.Pool.GameChoose.Create(BlocksRectangle);
             Data[Mode.LoadHeader] = IGMData.ThreePieceHeader.Create(new Rectangle(base.X, base.Y, (int)Size.X, HeaderHeight));
-            Data.Where(x => x.Value != null).ForEach(x => x.Value.AddModeChangeEvent(ref ModeChangeHandler));
+            Data.Where(x => x.Value != null).ForEach(x => ModeChangeHandler += x.Value.ModeChangeEvent);
             SetMode(Mode.LoadSlotChoose);
         }
 

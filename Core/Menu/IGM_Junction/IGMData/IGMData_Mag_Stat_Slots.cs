@@ -238,7 +238,7 @@ namespace OpenVIII
                 SIZE[i].Offset(0, 4 + (-2 * row));
             }
 
-            protected override void ModeChangeEvent(object sender, Enum e)
+            public override void ModeChangeEvent(object sender, Enum e)
             {
                 if (e.Equals(Mode.Mag_Stat))
                     base.ModeChangeEvent(sender, e);
@@ -253,7 +253,7 @@ namespace OpenVIII
                 if (value != GetCursor_select())
                 {
                     base.SetCursor_select(value);
-                    IGMData.Pool.Magic.StatEventListener?.Invoke(this, Contents[CURSOR_SELECT]);
+                    IGMData.Pool.Magic.ChangeStat(Contents[CURSOR_SELECT]);
                 }
             }
 

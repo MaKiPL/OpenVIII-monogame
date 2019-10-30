@@ -51,7 +51,7 @@ namespace OpenVIII
                     {
                         IGM_Items.ModeChangeHandler += ModeChangeEvent;
                         IGM_Items.ChoiceChangeHandler += ChoiceChangeEvent;
-                        IGM_Items.ItemChangeHandler += ItemChangeEvent;
+                        IGM_Items.ItemPool.ItemChangeHandler += ItemChangeEvent;
                         IGM_Items.TargetChangeHandler += TargetChangeEvent;
                         eventSet = true;
                     }
@@ -79,7 +79,7 @@ namespace OpenVIII
                 SIZE[i].Height = (int)(12 * TextScale.Y);
             }
 
-            protected override void ModeChangeEvent(object sender, Enum e)
+            public override void ModeChangeEvent(object sender, Enum e)
             {
                 if (!e.Equals(Mode.UseItemOnTarget))
                     TargetChangeEvent(this, Faces.ID.Blank);

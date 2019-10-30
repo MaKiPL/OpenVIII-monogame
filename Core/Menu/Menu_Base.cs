@@ -24,7 +24,7 @@ namespace OpenVIII
         /// <summary>
         /// Characters/Enemies/GF
         /// </summary>
-        public Damageable Damageable { get; protected set; }
+        public virtual Damageable Damageable { get; protected set; }
 
         /// <summary>
         /// If enabled the menu is Visible and all functionality works. Else everything is hidden and
@@ -62,7 +62,7 @@ namespace OpenVIII
 
         public static implicit operator Rectangle(Menu_Base v) => v.Pos;
 
-        public virtual void AddModeChangeEvent(ref EventHandler<Enum> eventHandler) => eventHandler += ModeChangeEvent;
+        
 
         public abstract void Draw();
 
@@ -113,8 +113,7 @@ namespace OpenVIII
         public static Point ScreenBottomRight => new Point(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height).Transform(Focus);
         public static Point ScreenBottomLeft => new Point(0, Memory.graphics.GraphicsDevice.Viewport.Height).Transform(Focus);
 
-        public virtual void RemoveModeChangeEvent(ref EventHandler<Enum> eventHandler) => eventHandler -= ModeChangeEvent;
-
+        
         /// <summary>
         /// Plan is to use this to reset values to a default state if done.
         /// </summary>
@@ -129,7 +128,7 @@ namespace OpenVIII
 
         protected abstract void Init();
 
-        protected virtual void ModeChangeEvent(object sender, Enum e)
+        public virtual void ModeChangeEvent(object sender, Enum e)
         {
         }
 

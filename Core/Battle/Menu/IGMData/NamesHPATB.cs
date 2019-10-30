@@ -23,7 +23,8 @@ namespace OpenVIII.IGMData
         ~NamesHPATB()
         {
             if (EventAdded)
-                RemoveModeChangeEvent(ref Damageable.BattleModeChangeEventHandler);
+                Damageable.BattleModeChangeEventHandler -= ModeChangeEvent;
+
         }
 
         #endregion Destructors
@@ -73,7 +74,7 @@ namespace OpenVIII.IGMData
             {
                 EventAdded = false;
                 if (Damageable != null)
-                    RemoveModeChangeEvent(ref Damageable.BattleModeChangeEventHandler);
+                    Damageable.BattleModeChangeEventHandler -= ModeChangeEvent;
             }
             base.Refresh(damageable);
         }
@@ -95,7 +96,7 @@ namespace OpenVIII.IGMData
                 if (EventAdded == false)
                 {
                     EventAdded = true;
-                    AddModeChangeEvent(ref Damageable.BattleModeChangeEventHandler);
+                    Damageable.BattleModeChangeEventHandler += ModeChangeEvent;
                 }
                 bool blink = false;
                 bool charging = false;
@@ -174,7 +175,7 @@ namespace OpenVIII.IGMData
             ((IGMDataItem.Gradient.ATB)ITEM[0, (byte)DepthID.ATBCharging]).Refresh(Damageable);
         }
         Damageable.BattleMode BattleMode = Damageable.BattleMode.EndTurn;
-        protected override void ModeChangeEvent(object sender, Enum e)
+        public override void ModeChangeEvent(object sender, Enum e)
         {
             if (!e.Equals(BattleMode))
             {

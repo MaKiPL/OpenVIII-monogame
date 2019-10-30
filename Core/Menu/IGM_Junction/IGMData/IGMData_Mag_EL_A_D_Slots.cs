@@ -117,7 +117,7 @@ namespace OpenVIII
                 {
                     base.SetCursor_select(value);
                     CheckMode();
-                    IGMData.Pool.Magic.StatEventListener?.Invoke(this, Contents[CURSOR_SELECT]);
+                    IGMData.Pool.Magic.ChangeStat(Contents[CURSOR_SELECT]);
                 }
             }
 

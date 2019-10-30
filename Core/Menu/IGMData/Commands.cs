@@ -7,6 +7,8 @@ namespace OpenVIII.IGMData
     public class Commands : Base, IDisposable
     {
         #region Fields
+        private bool disposedValue = false;
+        private bool EventAdded;
 
         private bool _crisisLevel;
         private Kernel_bin.Battle_Commands[] commands;
@@ -19,6 +21,12 @@ namespace OpenVIII.IGMData
 
         #region Properties
 
+        public bool Battle { get; set; } = false;
+        public bool CrisisLevel { get => _crisisLevel; set => _crisisLevel = value; }
+        public IGMData.Pool.Item GFPool => (IGMData.Pool.Item)(((Base)ITEM[GF_Pool, 0]));
+        public IGMData.Pool.Item ItemPool => (IGMData.Pool.Item)(((Base)ITEM[Item_Pool, 0]));
+        public IGMData.Pool.Magic MagPool => (IGMData.Pool.Magic)(((Base)ITEM[Mag_Pool, 0]));
+        public IGMData.Target.Group Target_Group => (IGMData.Target.Group)(((Base)ITEM[Targets_Window, 0]));
         private int Item_Pool => Count - 2;
 
         private int GF_Pool => Count - 6;
@@ -30,71 +38,46 @@ namespace OpenVIII.IGMData
 
         private int Targets_Window => Count - 1;
 
+        //base.Inputs_CANCEL();
+        private static int Cidoff
+        {
+            get => s_cidoff; set
+            {
+                if (value >= Kernel_bin.BattleCommands.Count)
+                    value = 0;
+                else if (value < 0)
+                    value = Kernel_bin.BattleCommands.Count - 1;
+                s_cidoff = value;
+            }
+        }
+
         #endregion Properties
 
         #region Methods
 
-        /// <summary>
-        /// Things fixed at startup.
-        /// </summary>
-        protected override void Init()
+        // To detect redundant calls
+        protected virtual void Dispose(bool disposing)
         {
-            base.Init();
-            BLANKS[Limit_Arrow] = true;
-            for (int pos = 0; pos < Rows; pos++)
-                ITEM[pos, 0] = new IGMDataItem.Text
-                {
-                    Pos = SIZE[pos]
-                };
-            ITEM[GF_Pool, 0] = Pool.GF.Create(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
-            ITEM[GF_Pool, 0].Hide();
-            ITEM[Blue_Pool, 0] = Pool.BlueMagic.Create(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
-            ITEM[Blue_Pool, 0].Hide();
-            ITEM[Mag_Pool, 0] = Pool.Magic.Create(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
-            ITEM[Mag_Pool, 0].Hide();
-            ITEM[Item_Pool, 0] = Pool.Item.Create(new Rectangle(X + 50, Y - 22, 400, 194), Damageable, true);
-            ITEM[Item_Pool, 0].Hide();
-            ITEM[Limit_Arrow, 0] = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Right, Pos = new Rectangle(SIZE[0].X + Width - 55, SIZE[0].Y, 0, 0), Palette = 2, Faded_Palette = 7, Blink = true };
-            ITEM[Limit_Arrow, 0].Hide();
-            ITEM[Targets_Window, 0] = IGMData.Target.Group.Create(Damageable);
-            commands = new Kernel_bin.Battle_Commands[Rows];
-            PointerZIndex = Limit_Arrow;
-            nonbattleWidth = Width;
-        }
-
-        //public override void Reset()
-        //{
-        //    ITEM[Targets_Window, 0].HideChildren();
-        //    ITEM[Mag_Pool, 0].HideChildren();
-        //    ITEM[Item_Pool, 0].HideChildren();
-        //    ITEM[Targets_Window, 0].Hide();
-        //    ITEM[Mag_Pool, 0].Hide();
-        //    ITEM[Item_Pool, 0].Hide();
-        //    base.Reset();
-        //}
-        protected override void InitShift(int i, int col, int row)
-        {
-            base.InitShift(i, col, row);
-            SIZE[i].Inflate(-22, -8);
-            SIZE[i].Offset(0, 12 + (-8 * row));
-        }
-
-        protected override void ModeChangeEvent(object sender, Enum e)
-        {
-            base.ModeChangeEvent(sender, e);
-            if (e.GetType() == typeof(Damageable.BattleMode))
+            if (!disposedValue)
             {
-                if (Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn) && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (disposing)
                 {
-                    CrisisLevel = c.GenerateCrisisLevel() >= 0;
-                    Show();
-                    Refresh();
+                    // TODO: dispose managed state (managed objects).
                 }
-                else Hide();
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+                UnsubscribeEvents();
+                GC.SuppressFinalize(this);
             }
         }
 
-        #endregion Methods
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose() =>
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
 
         public static Commands Create(Rectangle pos, Damageable damageable = null, bool battle = false)
         {
@@ -108,15 +91,6 @@ namespace OpenVIII.IGMData
             r.Init(10, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.COMMAND }, 1, 4);
             return r;
         }
-
-        public bool Battle { get; set; } = false;
-
-        public bool CrisisLevel { get => _crisisLevel; set => _crisisLevel = value; }
-
-        public IGMData.Pool.Item GFPool => (IGMData.Pool.Item)(((Base)ITEM[GF_Pool, 0]));
-        public IGMData.Pool.Item ItemPool => (IGMData.Pool.Item)(((Base)ITEM[Item_Pool, 0]));
-        public IGMData.Pool.Magic MagPool => (IGMData.Pool.Magic)(((Base)ITEM[Mag_Pool, 0]));
-        public IGMData.Target.Group Target_Group => (IGMData.Target.Group)(((Base)ITEM[Targets_Window, 0]));
 
         public override bool Inputs()
         {
@@ -140,7 +114,7 @@ namespace OpenVIII.IGMData
             return ret;
         }
 
-        public override bool Inputs_CANCEL() => false;//base.Inputs_CANCEL();
+        public override bool Inputs_CANCEL() => false;
 
         public override void Inputs_Left()
         {
@@ -261,18 +235,6 @@ namespace OpenVIII.IGMData
             }
         }
 
-        private static int Cidoff
-        {
-            get => s_cidoff; set
-            {
-                if (value >= Kernel_bin.BattleCommands.Count)
-                    value = 0;
-                else if (value < 0)
-                    value = Kernel_bin.BattleCommands.Count - 1;
-                s_cidoff = value;
-            }
-        }
-
         /// <summary>
         /// Things that may of changed before screen loads or junction is changed.
         /// </summary>
@@ -280,11 +242,6 @@ namespace OpenVIII.IGMData
         {
             if (Damageable != null)
             {
-                if (Battle && !Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn))
-                {
-                    Hide();
-                    return;
-                }
                 if (Memory.State.Characters != null && !skipRefresh && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     Show();
@@ -360,42 +317,107 @@ namespace OpenVIII.IGMData
             ItemPool.Refresh(Damageable);
         }
 
-        public override void AddModeChangeEvent(ref EventHandler<Enum> eventHandler)
+
+
+
+        /// <summary>
+        /// Things fixed at startup.
+        /// </summary>
+        protected override void Init()
         {
-            base.AddModeChangeEvent(ref eventHandler);
-            (((Base)ITEM[Item_Pool, 0])).AddModeChangeEvent(ref eventHandler);
-            (((Base)ITEM[Mag_Pool, 0])).AddModeChangeEvent(ref eventHandler);
+            base.Init();
+            BLANKS[Limit_Arrow] = true;
+            for (int pos = 0; pos < Rows; pos++)
+                ITEM[pos, 0] = new IGMDataItem.Text
+                {
+                    Pos = SIZE[pos]
+                };
+            ITEM[GF_Pool, 0] = Pool.GF.Create(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
+            ITEM[GF_Pool, 0].Hide();
+            ITEM[Blue_Pool, 0] = Pool.BlueMagic.Create(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
+            ITEM[Blue_Pool, 0].Hide();
+            ITEM[Mag_Pool, 0] = Pool.Magic.Create(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
+            ITEM[Mag_Pool, 0].Hide();
+            ITEM[Item_Pool, 0] = Pool.Item.Create(new Rectangle(X + 50, Y - 22, 400, 194), Damageable, true);
+            ITEM[Item_Pool, 0].Hide();
+            ITEM[Limit_Arrow, 0] = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Right, Pos = new Rectangle(SIZE[0].X + Width - 55, SIZE[0].Y, 0, 0), Palette = 2, Faded_Palette = 7, Blink = true };
+            ITEM[Limit_Arrow, 0].Hide();
+            ITEM[Targets_Window, 0] = IGMData.Target.Group.Create(Damageable);
+            commands = new Kernel_bin.Battle_Commands[Rows];
+            PointerZIndex = Limit_Arrow;
+            nonbattleWidth = Width;
         }
 
-        #region IDisposable Support
-
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
+        protected override void InitShift(int i, int col, int row)
         {
-            if (!disposedValue)
+            base.InitShift(i, col, row);
+            SIZE[i].Inflate(-22, -8);
+            SIZE[i].Offset(0, 12 + (-8 * row));
+        }
+
+        private Damageable.BattleMode BattleMode = Damageable.BattleMode.EndTurn;
+
+        public override void ModeChangeEvent(object sender, Enum e)
+        {
+            base.ModeChangeEvent(sender, e);
+            if (e.GetType() == typeof(Damageable.BattleMode) && !BattleMode.Equals(e))
             {
-                if (disposing)
+                BattleMode = (Damageable.BattleMode)e;
+                if (Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn) && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
-                    // TODO: dispose managed state (managed objects).
+                    CrisisLevel = c.GenerateCrisisLevel() >= 0;
+                    Show();
+                    Refresh();
                 }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-
-                disposedValue = true;
+                else Hide();
             }
         }
 
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        // ~Commands() { // Do not change this code. Put cleanup code in Dispose(bool disposing)
-        // above. Dispose(false); }
+        public override Damageable Damageable
+        {
+            get => base.Damageable;
+            protected set
+            {
+                if (value != base.Damageable)
+                {
+                    if (Battle)
+                    {
+                        UnsubscribeEvents();
+                        base.Damageable = value;
+                        SubscribeEvents();
+                    }
+                    else
+                        base.Damageable = value;
+                }
+            }
+        }
 
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose() =>
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);// TODO: uncomment the following line if the finalizer is overridden above.// GC.SuppressFinalize(this);
+        private void SubscribeEvents()
+        {
+            if (Damageable != null && !EventAdded)
+            {
+                Damageable.BattleModeChangeEventHandler += ModeChangeEvent;
+                Damageable.BattleModeChangeEventHandler += (((Base)ITEM[Item_Pool, 0])).ModeChangeEvent;
+                Damageable.BattleModeChangeEventHandler += (((Base)ITEM[Mag_Pool, 0])).ModeChangeEvent;
+                EventAdded = true;
+            }
+        }
 
-        #endregion IDisposable Support
+        private void UnsubscribeEvents()
+        {
+            if (Damageable != null && EventAdded)
+            {
+                Damageable.BattleModeChangeEventHandler -= ModeChangeEvent;
+                Damageable.BattleModeChangeEventHandler -= (((Base)ITEM[Item_Pool, 0])).ModeChangeEvent;
+                Damageable.BattleModeChangeEventHandler -= (((Base)ITEM[Mag_Pool, 0])).ModeChangeEvent;
+                EventAdded = false;
+            }
+        }
+
+        #endregion Methods
+        ~Commands()
+        {
+            Dispose(false);
+        }
     }
 }

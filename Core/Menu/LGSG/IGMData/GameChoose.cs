@@ -12,7 +12,7 @@ namespace OpenVIII
 
             private bool first = true;
 
-            private EventHandler<PageInfo> PageChangeEventHandler;
+            private event EventHandler<PageInfo> PageChangeEventHandler;
 
             #endregion Fields
 
@@ -116,7 +116,7 @@ namespace OpenVIII
                 SIZE[i].Inflate(-20, 0);
             }
 
-            protected override void ModeChangeEvent(object sender, Enum e)
+            public override void ModeChangeEvent(object sender, Enum e)
             {
                 base.ModeChangeEvent(sender, e);
                 if (e.GetType() == typeof(IGM_LGSG.Mode))

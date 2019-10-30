@@ -58,19 +58,23 @@ namespace OpenVIII.IGMData.Pool
 
         public override bool Inputs_OKAY()
         {
-            skipsnd = true;
-            init_debugger_Audio.PlaySound(31);
-            base.Inputs_OKAY();
-            GFs select = Contents[CURSOR_SELECT];
-            Characters characterid = Damageable.GetCharacterData(out Saves.CharacterData characterdata) && JunctionedGFs.ContainsKey(select) ?
-                JunctionedGFs[select] : characterdata?.ID ?? Characters.Blank;
-            if (characterid != Characters.Blank)
+            if (Battle)
             {
-                if (Battle)
-                {
-                    Hide();
-                }
-                else
+                base.Inputs_OKAY();
+                Damageable.SetSummon(Contents[CURSOR_SELECT]);
+                Hide();
+                return true;
+            }
+            else
+            {
+                skipsnd = true;
+                init_debugger_Audio.PlaySound(31);
+                base.Inputs_OKAY();
+                GFs select = Contents[CURSOR_SELECT];
+                Characters characterid = Damageable.GetCharacterData(out Saves.CharacterData characterdata) && JunctionedGFs.ContainsKey(select) ?
+                    JunctionedGFs[select] : characterdata?.ID ?? Characters.Blank;
+
+                if (characterid != Characters.Blank)
                 {
                     if (characterid != characterdata.ID)
                     {
