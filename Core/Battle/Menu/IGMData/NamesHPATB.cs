@@ -54,14 +54,15 @@ namespace OpenVIII.IGMData
             /// <summary>
             /// border around ATB bar
             /// </summary>
-            ATBBorder
+            ATBBorder,
+            Max
         }
 
         #endregion Enums
 
         #region Methods
 
-        public static NamesHPATB Create(Rectangle pos, Damageable damageable) => Create<NamesHPATB>(1, 5, new IGMDataItem.Empty(pos), 1, 3, damageable);
+        public static NamesHPATB Create(Rectangle pos, Damageable damageable) => Create<NamesHPATB>(1, (int)DepthID.Max, new IGMDataItem.Empty(pos), 1, 3, damageable);
 
         public static Texture2D ThreadUnsafeOperations()
         {
