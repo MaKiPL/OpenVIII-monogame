@@ -97,7 +97,7 @@ namespace OpenVIII
             //0x20 - ???
             //0x40 - ???
             //0x80 - ???
-            public Persistant_Statuses Statuses0 { get; private set; }
+            public Persistent_Statuses Statuses0 { get; private set; }
 
             //0x0010	1 byte Status 5
 
@@ -145,7 +145,7 @@ namespace OpenVIII
                 //0x000D	1 byte Status 2
                 //0x000E	1 byte Status 3
                 //0x000F	1 byte Status 4
-                Statuses0 = (Persistant_Statuses)br.ReadUInt16();
+                Statuses0 = (Persistent_Statuses)br.ReadUInt16();
                 //0x0010	1 byte Status 5
                 //0x0011	1 byte Unknown
                 Power_Mod = br.ReadByte();

@@ -26,7 +26,7 @@ namespace OpenVIII
             public bool DMGorHEAL { get; private set; }
 
             public Battle_Only_Statuses Statuses1 { get; private set; }
-            public Persistant_Statuses Statuses0 { get; private set; }
+            public Persistent_Statuses Statuses0 { get; private set; }
             private StatFlags StatFlags { get; set; }
             public byte HP { get; private set; }
 
@@ -57,7 +57,7 @@ namespace OpenVIII
                 //0x10 - 100 %
                 Statuses1 = (Battle_Only_Statuses)br.ReadUInt32();
                 //0x0004  4 bytes status_1; //statuses 8-39
-                Statuses0 = (Persistant_Statuses)br.ReadUInt16();
+                Statuses0 = (Persistent_Statuses)br.ReadUInt16();
                 //0x0008  2 bytes status_0; //statuses 0-7
 
                 StatFlags = (StatFlags)br.ReadByte();

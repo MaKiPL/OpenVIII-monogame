@@ -33,7 +33,7 @@ namespace OpenVIII
             public byte Element_Percent { get; private set; }
             public byte Status_Attack { get; private set; }
             public List<IReadOnlyList<FF8TextTagKey>> Button_Combo { get; private set; }
-            public Persistant_Statuses Statuses0 { get; private set; }
+            public Persistent_Statuses Statuses0 { get; private set; }
             public Battle_Only_Statuses Statuses1 { get; private set; }
 
             public void Read(BinaryReader br, int i)
@@ -75,7 +75,7 @@ namespace OpenVIII
                 //0x0014  2 bytes Sequence Button 3
                 //0x0016  2 bytes Sequence Button 4
                 //0x0018  2 bytes Sequence Button 5
-                Statuses0 = (Persistant_Statuses)br.ReadUInt16();
+                Statuses0 = (Persistent_Statuses)br.ReadUInt16();
                 //0x001A  2 bytes status_0; //statuses 0-7
                 Statuses1 = (Battle_Only_Statuses)br.ReadUInt32();
                 //0x001C  4 bytes status_1; //statuses 8-39

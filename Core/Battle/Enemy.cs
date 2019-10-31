@@ -84,7 +84,7 @@ namespace OpenVIII
             r._CurrentHP = startinghp ?? r.MaxHP();
             if ((r.info.bitSwitch & Debug_battleDat.Information.Flag1.Zombie) != 0)
             {
-                r.Statuses0 |= Kernel_bin.Persistant_Statuses.Zombie;
+                r.Statuses0 |= Kernel_bin.Persistent_Statuses.Zombie;
             }
             if ((r.info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Protect) != 0)
             {
@@ -323,36 +323,36 @@ namespace OpenVIII
         /// <param name="s">status effect</param>
         /// <returns>percent of resistance</returns>
         /// <see cref="https://finalfantasy.fandom.com/wiki/G-Soldier#Stats"/>
-        public override sbyte StatusResistance(Kernel_bin.Persistant_Statuses s)
+        public override sbyte StatusResistance(Kernel_bin.Persistent_Statuses s)
         {
             byte r = 100;
             switch (s)
             {
-                case Kernel_bin.Persistant_Statuses.Death:
+                case Kernel_bin.Persistent_Statuses.Death:
                     r = info.deathResistanceMental;
                     break;
 
-                case Kernel_bin.Persistant_Statuses.Poison:
+                case Kernel_bin.Persistent_Statuses.Poison:
                     r = info.poisonResistanceMental;
                     break;
 
-                case Kernel_bin.Persistant_Statuses.Petrify:
+                case Kernel_bin.Persistent_Statuses.Petrify:
                     r = info.petrifyResistanceMental;
                     break;
 
-                case Kernel_bin.Persistant_Statuses.Darkness:
+                case Kernel_bin.Persistent_Statuses.Darkness:
                     r = info.darknessResistanceMental;
                     break;
 
-                case Kernel_bin.Persistant_Statuses.Silence:
+                case Kernel_bin.Persistent_Statuses.Silence:
                     r = info.silenceResistanceMental;
                     break;
 
-                case Kernel_bin.Persistant_Statuses.Berserk:
+                case Kernel_bin.Persistent_Statuses.Berserk:
                     r = info.berserkResistanceMental;
                     break;
 
-                case Kernel_bin.Persistant_Statuses.Zombie:
+                case Kernel_bin.Persistent_Statuses.Zombie:
                     r = info.zombieResistanceMental;
                     break;
             }

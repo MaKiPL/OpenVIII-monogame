@@ -5,13 +5,13 @@ namespace OpenVIII
 {
     public interface IStatusEffects
     {
-        Kernel_bin.Persistant_Statuses Statuses0 { get; set; }
+        Kernel_bin.Persistent_Statuses Statuses0 { get; set; }
         Kernel_bin.Battle_Only_Statuses Statuses1 { get; set; }
-        bool DealStatus(Kernel_bin.Persistant_Statuses? statuses0, Kernel_bin.Battle_Only_Statuses? statuses1, Kernel_bin.Attack_Type type, Kernel_bin.Attack_Flags? flags);
-        IReadOnlyDictionary<Kernel_bin.Attack_Type, Func<Kernel_bin.Persistant_Statuses, Kernel_bin.Battle_Only_Statuses, Kernel_bin.Attack_Flags, int>> StatusesActions { get; }
+        bool DealStatus(Kernel_bin.Persistent_Statuses? statuses0, Kernel_bin.Battle_Only_Statuses? statuses1, Kernel_bin.Attack_Type type, Kernel_bin.Attack_Flags? flags);
+        IReadOnlyDictionary<Kernel_bin.Attack_Type, Func<Kernel_bin.Persistent_Statuses, Kernel_bin.Battle_Only_Statuses, Kernel_bin.Attack_Flags, int>> StatusesActions { get; }
         bool StatusImmune { get; }
         sbyte StatusResistance(Kernel_bin.Battle_Only_Statuses s);
-        sbyte StatusResistance(Kernel_bin.Persistant_Statuses s);
+        sbyte StatusResistance(Kernel_bin.Persistent_Statuses s);
     }
     public interface IElemental
     {

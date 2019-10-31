@@ -501,7 +501,7 @@ namespace OpenVIII
                 NumberofKOs = br.ReadUInt16();//0x92
                 Exists = (Exists)br.ReadByte();//0x94
                 Unknown3 = br.ReadByte();//0x95
-                Statuses0 = (Kernel_bin.Persistant_Statuses)br.ReadByte();//0x96
+                Statuses0 = (Kernel_bin.Persistent_Statuses)br.ReadByte();//0x96
                 Unknown4 = br.ReadByte();//0x97
             }
 
@@ -525,7 +525,7 @@ namespace OpenVIII
 
             public override sbyte StatusResistance(Kernel_bin.Battle_Only_Statuses s) => throw new NotImplementedException();
 
-            public override sbyte StatusResistance(Kernel_bin.Persistant_Statuses s) => throw new NotImplementedException();
+            public override sbyte StatusResistance(Kernel_bin.Persistent_Statuses s) => throw new NotImplementedException();
 
             public override string ToString() => Name.Length > 0 ? Name.ToString() : base.ToString();
 

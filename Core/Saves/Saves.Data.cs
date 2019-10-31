@@ -549,7 +549,7 @@ namespace OpenVIII
             /// How many dead characters there are.
             /// </summary>
             /// <returns>&gt;=0</returns>
-            public int DeadCharacters() => Characters.Where(m => m.Value.Available && m.Value.CurrentHP() == 0 || (m.Value.Statuses0 & Kernel_bin.Persistant_Statuses.Death) != 0).Count();
+            public int DeadCharacters() => Characters.Where(m => m.Value.Available && m.Value.CurrentHP() == 0 || (m.Value.Statuses0 & Kernel_bin.Persistent_Statuses.Death) != 0).Count();
 
             /// <summary>
             /// How many dead party members there are.
