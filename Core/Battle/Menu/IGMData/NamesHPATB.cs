@@ -144,7 +144,7 @@ namespace OpenVIII.IGMData
                     ((IGMDataItem.Integer)ITEM[0, (byte)DepthID.HP]).DataSize);
                 ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Y -= 4;
                 ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).Y = ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Y;
-                ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).Height = ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Height;
+                ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).Height = ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Height = SIZE[pos].Height;
                 ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).X = 
                     ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).X - 
                     (((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Width *3)/ 8;

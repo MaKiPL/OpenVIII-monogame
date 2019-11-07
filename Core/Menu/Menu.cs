@@ -232,7 +232,7 @@ namespace OpenVIII
                 if ((options & Box_Options.Buttom) != 0)
                     dst.Offset(0, (dst.Height - 48));
                 else if ((options & Box_Options.Middle) != 0)
-                    dst.Offset(0, dst.Height / 2 - font.Height / 2+4);
+                    dst.Offset(0, dst.Height / 2 - font.Height / 2+2);
                 else
                     dst.Offset(0, 21);
 
