@@ -67,24 +67,28 @@ namespace OpenVIII.IGMDataItem
 
         public override void Draw()
         {
+            Draw(false);
+        }
+        public void Draw(bool skipdraw)
+        {
             if (Enabled)
             {
                 Rectangle r = Pos;
                 if (OffsetAnchor != null)
                     r.Offset(OffsetAnchor);
+
+                Rectangle r2 = r;
                 if (Icon != null && Icon != Icons.ID.None)
                 {
-                    Rectangle r2 = r;
                     r2.Size = Point.Zero;
+                    if(!skipdraw)
                     Memory.Icons.Draw(Icon, Palette, r2, new Vector2(Scale.X), Fade);
 
                     if (Blink)
                         Memory.Icons.Draw(Icon, Faded_Palette, r2, new Vector2(Scale.X), Fade * Blink_Amount * Blink_Adjustment);
                     r.Offset(Memory.Icons.GetEntryGroup(Icon).Width * Scale.X, 0);
                 }
-                DataSize = Memory.font.RenderBasicText(Data, r.Location, Scale, Fade: Fade, color: FontColor, blink: Blink);
-                //if (Blink)
-                //    Memory.font.RenderBasicText(Data, r.Location, Scale, Fade: Fade * Blink_Amount * Blink_Adjustment, color: Faded_FontColor);
+                DataSize = Rectangle.Union(r2, Memory.font.RenderBasicText(Data, r.Location, Scale, Fade: Fade, color: FontColor, blink: Blink,skipdraw: skipdraw));
             }
         }
 

@@ -245,7 +245,15 @@ namespace OpenVIII.IGMData
             {
                 if (Memory.State.Characters != null && !skipRefresh && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
-                    Show();
+                    if (Battle && (Damageable.IsGameOver || !Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn)))
+                    {
+                        Hide();
+                        return;
+                    }
+                    else
+                        Show();
+                    if (Battle)
+                        CrisisLevel = c.GenerateCrisisLevel() >= 0;
                     Rectangle DataSize = Rectangle.Empty;
                     base.Refresh();
                     page = 0;
@@ -330,7 +338,7 @@ namespace OpenVIII.IGMData
                 {
                     Pos = SIZE[pos]
                 };
-            ITEM[GF_Pool, 0] = Pool.GF.Create(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
+            ITEM[GF_Pool, 0] = Pool.GF.Create(new Rectangle(X + 50, Y - 20, 320, 192), Damageable, true);
             ITEM[GF_Pool, 0].Hide();
             ITEM[Blue_Pool, 0] = Pool.BlueMagic.Create(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
             ITEM[Blue_Pool, 0].Hide();
@@ -361,13 +369,7 @@ namespace OpenVIII.IGMData
             if (e.GetType() == typeof(Damageable.BattleMode) && !BattleMode.Equals(e))
             {
                 BattleMode = (Damageable.BattleMode)e;
-                if (Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn) && Damageable.GetCharacterData(out Saves.CharacterData c))
-                {
-                    CrisisLevel = c.GenerateCrisisLevel() >= 0;
-                    Show();
-                    Refresh();
-                }
-                else Hide();
+                Refresh();
             }
         }
 

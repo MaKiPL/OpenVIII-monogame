@@ -139,6 +139,7 @@ namespace OpenVIII
             //Data.TryAdd(SectionName.Renzokeken, IGMData.Renzokeken.Create(new Rectangle(0, 500, (int)Size.X, 124)));
             if (!Task.WaitAll(tasks.ToArray(), 10000))
                 throw new TimeoutException("Task took too long!");
+            //Data[SectionName.Commands].Hide();
             //var t = Task.WhenAll(tasks);
             //try
             //{

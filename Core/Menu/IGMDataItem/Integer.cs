@@ -75,18 +75,21 @@ namespace OpenVIII.IGMDataItem
             }
         }
 
+        public Rectangle DataSize { get; private set; }
+
         #endregion Properties
 
         #region Methods
-
         public override void Draw()
+        {
+            Draw(false);
+        }
+        public void Draw(bool skipdraw)
         {
             if (Enabled)
             {
-                Memory.Icons.Draw(Data, NumType, Palette, $"D{_padding}", Pos.Location.ToVector2() +
-                    (OffsetAnchor ?? Vector2.Zero), Scale, Fade, FontColor, Blink);
-                //if (Blink)
-                //    Memory.Icons.Draw(Data, NumType, Faded_Palette, $"D{_padding}", Pos.Location.ToVector2(), Scale, Fade * Blink_Amount * Blink_Adjustment, Faded_FontColor);
+                DataSize = Memory.Icons.Draw(Data, NumType, Palette, $"D{_padding}", Pos.Location.ToVector2() +
+                    (OffsetAnchor ?? Vector2.Zero), Scale, Fade, FontColor, Blink,skipdraw);
             }
         }
 

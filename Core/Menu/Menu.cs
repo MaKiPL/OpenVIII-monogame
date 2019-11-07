@@ -224,6 +224,8 @@ namespace OpenVIII
                     dst.Offset(70 * textScale.Value.X, 0);
                 else if ((options & Box_Options.Center) != 0)
                     dst.Offset(dst.Width / 2 - font.Width / 2, 0);
+                else if ((options & Box_Options.Right) != 0)
+                    dst.Offset(dst.Width - font.Width - 5 * textScale.Value.X, 0);
                 else
                     dst.Offset(25 * textScale.Value.X, 0);
 

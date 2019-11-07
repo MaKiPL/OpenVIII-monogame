@@ -33,12 +33,22 @@ namespace OpenVIII.IGMData
 
         private enum DepthID : byte
         {
+            /// <summary>
+            /// Name
+            /// </summary>
             Name,
+            /// <summary>
+            /// HP
+            /// </summary>
             HP,
             /// <summary>
-            /// 
+            /// Box with GF HP
             /// </summary>
-            GFBox,            
+            GFHPBox,
+            /// <summary>
+            /// Box with GF name
+            /// </summary>
+            GFNameBox,            
             /// <summary>
             /// ATB charging orange red or dark blue (haste/slowed)
             /// </summary>
@@ -55,6 +65,9 @@ namespace OpenVIII.IGMData
             /// border around ATB bar
             /// </summary>
             ATBBorder,
+            /// <summary>
+            /// Max?
+            /// </summary>
             Max
         }
 
@@ -122,7 +135,26 @@ namespace OpenVIII.IGMData
                 ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).Data = c.Name;
                 ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).Pos = new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0);
                 ((IGMDataItem.Integer)ITEM[0, (byte)DepthID.HP]).Pos = new Rectangle(SIZE[pos].X + 128, SIZE[pos].Y, 0, 0);
-                if (EventAdded == false)
+
+                ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).Draw(true);
+                ((IGMDataItem.Integer)ITEM[0, (byte)DepthID.HP]).Draw(true);
+
+                ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Pos = Rectangle.Union(
+                    ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).DataSize,
+                    ((IGMDataItem.Integer)ITEM[0, (byte)DepthID.HP]).DataSize);
+                ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Y -= 4;
+                ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).Y = ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Y;
+                ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).Height = ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Height;
+                ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).X = 
+                    ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).X - 
+                    (((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Width *3)/ 8;
+                ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).Width = (((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Width *7)/ 8;
+                if (Damageable.SummonedGF != null)
+                { 
+                    ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).Data = Damageable.SummonedGF.Name;
+                    ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Data = $"{Damageable.SummonedGF.CurrentHP()}";
+                }
+                    if (EventAdded == false)
                 {
                     EventAdded = true;
                     Damageable.BattleModeChangeEventHandler += ModeChangeEvent;
@@ -130,6 +162,12 @@ namespace OpenVIII.IGMData
                 bool blink = false;
                 bool charging = false;
                 BattleMode = (Damageable.BattleMode)Damageable.GetBattleMode();
+
+
+                ITEM[0, (byte)DepthID.HP].Show();
+                ITEM[0, (byte)DepthID.Name].Show();
+                ITEM[0, (byte)DepthID.GFNameBox].Hide();
+                ITEM[0, (byte)DepthID.GFHPBox].Hide();
                 if (BattleMode.Equals(Damageable.BattleMode.YourTurn))
                 {
                     ((IGMDataItem.Texture)ITEM[0, (int)DepthID.ATBCharged]).Color = Color.LightYellow * ATBalpha;
@@ -145,6 +183,13 @@ namespace OpenVIII.IGMData
                     ((IGMDataItem.Gradient.ATB)ITEM[0, (int)DepthID.ATBCharging]).Refresh(Damageable);
                     ITEM[0, (int)DepthID.ATBCharged].Hide();
                     ITEM[0, (int)DepthID.ATBCharging].Show();
+                }
+                else if (BattleMode.Equals(Damageable.BattleMode.GF_Charging))
+                {
+                    ITEM[0, (byte)DepthID.HP].Hide();
+                    ITEM[0, (byte)DepthID.Name].Hide();
+                    ITEM[0, (byte)DepthID.GFNameBox].Show();
+                    ITEM[0, (byte)DepthID.GFHPBox].Show();
                 }
 
                 if (!charging)
@@ -195,8 +240,10 @@ namespace OpenVIII.IGMData
             Rectangle atbbarpos = new Rectangle(SIZE[0].X + 230, SIZE[0].Y + 12, ATBWidth, 15);
             ITEM[0, (byte)DepthID.Name] = new IGMDataItem.Text { };
             ITEM[0, (byte)DepthID.HP] = new IGMDataItem.Integer { Spaces = 4, NumType = Icons.NumType.Num_8x16_1 };
-            ITEM[0, (byte)DepthID.GFBox] = new IGMDataItem.Box { }; //X=366 Y-102 396 45
-            ITEM[0, (byte)DepthID.GFBox].Hide();
+            ITEM[0, (byte)DepthID.GFHPBox] = new IGMDataItem.Box { Options = Box_Options.Right | Box_Options.Middle };
+            ITEM[0, (byte)DepthID.GFHPBox].Hide();
+            ITEM[0, (byte)DepthID.GFNameBox] = new IGMDataItem.Box { Options = Box_Options.Center | Box_Options.Middle };
+            ITEM[0, (byte)DepthID.GFNameBox].Hide();
             ITEM[0, (byte)DepthID.ATBBorder] = new IGMDataItem.Icon { Data = Icons.ID.Size_08x64_Bar, Palette = 0 };
             ITEM[0, (byte)DepthID.ATBCharged] = new IGMDataItem.Texture { Data = dot, Color = Color.LightYellow * ATBalpha, Faded_Color = new Color(125, 125, 0, 255) * ATBalpha };
             ITEM[0, (byte)DepthID.ATBCharged].Hide();

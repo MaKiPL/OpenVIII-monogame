@@ -14,6 +14,7 @@ namespace OpenVIII
         #region Fields
 
         private new Dictionary<ID, EntryGroup> Entries = null;
+        private Rectangle _dataSize;
 
         #endregion Fields
 
@@ -52,6 +53,8 @@ namespace OpenVIII
 
         private new uint TextureStartOffset => 0;
 
+        public Rectangle DataSize { get => _dataSize; private set => _dataSize = value; }
+
         #endregion Properties
 
         #region Indexers
@@ -69,22 +72,22 @@ namespace OpenVIII
             return r;
         }
 
-        public void Draw(int number, NumType type, int palette, string format, Vector2 location, Vector2 scale, float fade = 1f, Font.ColorID color = Font.ColorID.White, bool blink = false)
+        public Rectangle Draw(int number, NumType type, int palette, string format, Vector2 location, Vector2 scale, float fade = 1f, Font.ColorID color = Font.ColorID.White, bool blink = false, bool skipdraw = false)
         {
             if (type == NumType.sysfnt)
             {
-                Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.sysfnt, Fade: fade, color: color, blink: blink);
-                return;
+                DataSize = Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.sysfnt, Fade: fade, color: color, blink: blink, skipdraw: skipdraw);
+                return DataSize;
             }
             else if (type == NumType.sysFntBig)
             {
-                Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.sysFntBig, Fade: fade, color: color, blink: blink);
-                return;
+                DataSize = Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.sysFntBig, Fade: fade, color: color, blink: blink, skipdraw: skipdraw);
+                return DataSize;
             }
             else if (type == NumType.menuFont)
             {
-                Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.menuFont, Fade: fade, color: color, blink: blink);
-                return;
+                DataSize = Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.menuFont, Fade: fade, color: color, blink: blink, skipdraw: skipdraw);
+                return DataSize;
             }
             ID[] numberstarts = { ID.Num_8x8_0_0, ID.Num_8x8_1_0, ID.Num_8x8_2_0, ID.Num_8x16_0_0, ID.Num_8x16_1_0, ID.Num_16x16_0_0 };
             List<ID>[] nums = new List<ID>[numberstarts.Length];
@@ -100,11 +103,19 @@ namespace OpenVIII
             }
             IEnumerable<int> intList = number.ToString(format).Select(digit => int.Parse(digit.ToString()));
             Rectangle dst = new Rectangle { Location = location.ToPoint() };
+            DataSize = dst;
             foreach (int i in intList)
             {
-                Draw(nums[(int)type][i], palette, dst, scale, fade, blink ? Color.Lerp(Font.ColorID2Color[color], Font.ColorID2Blink[color], Menu.Blink_Amount) : Font.ColorID2Color[color]);
-                dst.Offset(Entries[nums[(int)type][i]].GetRectangle.Width * scale.X, 0);
+                if(!skipdraw)
+                    Draw(nums[(int)type][i], palette, dst, scale, fade, blink ? Color.Lerp(Font.ColorID2Color[color], Font.ColorID2Blink[color], Menu.Blink_Amount) : Font.ColorID2Color[color]);
+                float width = Entries[nums[(int)type][i]].GetRectangle.Width * scale.X;
+                float height = Entries[nums[(int)type][i]].GetRectangle.Height * scale.Y;
+                dst.Offset(width, 0);
+                _dataSize.Width += (int)width;
+                if(_dataSize.Height < (int)height)
+                    _dataSize.Height = (int)height;
             }
+            return DataSize;
         }
 
         public void Draw(Enum id, int palette, Rectangle dst, Vector2 scale, float fade = 1f, Color? color = null)

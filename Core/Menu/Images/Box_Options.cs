@@ -12,5 +12,6 @@ namespace OpenVIII
         Center = 0x8,
         Middle = 0x10,
         Top = 0x20,
+        Right = 0x40,
     }
 }
