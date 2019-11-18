@@ -22,7 +22,7 @@ namespace OpenVIII
         private static float camDistance = 10.0f;
         private static float renderCamDistance = 1200f;
         private static Vector3 camPosition, camTarget;
-        private static Vector3 playerPosition = new Vector3(-100f, 0f, -100f);//new Vector3(-9105f, 30f, -4466);
+        private static Vector3 playerPosition = new Vector3(-9105f, 30f, -4466);
         private static Vector3 lastPlayerPosition = playerPosition;
         public static BasicEffect effect;
         public static AlphaTestEffect ate;
@@ -623,7 +623,7 @@ namespace OpenVIII
 
 #if DEBUG
             if (Input2.Button(Keys.OemPlus))
-                DEBUGshit += 4f;
+                DEBUGshit += 0.01f;
             if (Input2.Button(Keys.OemMinus))
                 DEBUGshit -= 4f;
 
@@ -1366,6 +1366,7 @@ namespace OpenVIII
         private static void DrawPlanetMiniMap()
         {
             List<VertexPositionTexture> vpt = new List<VertexPositionTexture>();
+            Vector2 planetTextureSize = wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap, 0).ClassicSize;
 
             Vector3 planetCamPos = new Vector3(2070.894f, 42.12873f, -143.303f);
             Vector3 planetCamTarget = new Vector3(2071.009f, 41.65208f, -133.3036f);
@@ -1375,10 +1376,12 @@ namespace OpenVIII
              Vector3.Up);
             ate.View = viewMatrix;
 
+            //UV
+            //v4 = charaPosa = (v4 + 0x20000) / 0x400; v4 is squallX
+            //v17 v17 = (*(_DWORD *)(v3 + 4) + 0x18000) / 0x400; = v3+4 is squallY
 
 
-            List<Vector2> vpc = new List<Vector2>();
-            for(int i = 0; i<wm_planetMinimap_indicesB_tris.Length; i++)
+            for (int i = 0; i<wm_planetMinimap_indicesB_tris.Length; i++) //triangles are ABC, so we can just iterate one-by-one
             {
                 byte offsetPointer = wm_planetMinimap_indicesB_tris[i];
                 if (offsetPointer == 0xFF)
@@ -1389,23 +1392,57 @@ namespace OpenVIII
                 sbyte vertX = (sbyte)wm_planetMinimap_vertices[offsetPointer];
                 sbyte vertY = (sbyte)wm_planetMinimap_vertices[offsetPointer+1];
 
-                Vector3 vec = new Vector3(vertX+2000f, vertY, 0);
-                vpt.Add(new VertexPositionTexture(vec, new Vector2(0, 1)));
+                //uv
+                short u = (sbyte)wm_planetMinimap_uvsOffsets[offsetPointer];
+                short v = (sbyte)wm_planetMinimap_uvsOffsets[offsetPointer + 1];
+
+                var testU = playerPosition.X / -16384.0f + u / 100.0f;
+                var testV = playerPosition.Z / -12288.0f + v / 100.0f;
+
+
+                Vector3 vec = new Vector3(-vertX+2000f, -vertY, 0);
+                vpt.Add(new VertexPositionTexture(vec, new Vector2(testU, testV)));
             }
 
-            //for (int i = 0; i < wm_planetMinimap_indicesB_tris.Length; i++)
-            //{
-            //    byte offsetPointer = wm_planetMinimap_indicesA_quad[i];
-            //    if (offsetPointer == 0xFF)
-            //        continue;
+            for (int i = 0; i < wm_planetMinimap_indicesA_quad.Length; i+=4) //ABD ACD -> we have to retriangulate it
+            {
+                Vector3 A=Vector3.Zero, B=Vector3.Zero, C=Vector3.Zero, D=Vector3.Zero;
+                Vector2 uvA = Vector2.Zero; Vector2 uvB = Vector2.Zero; Vector2 uvC = Vector2.Zero; Vector2 uvD = Vector2.Zero;
 
-            //    offsetPointer *= 2;
+                for(int n = 0; n<4; n++)
+                {
+                    byte offsetPointer = wm_planetMinimap_indicesA_quad[i + n];
+                    offsetPointer *= 2;
+                    sbyte vertX = (sbyte)wm_planetMinimap_vertices[offsetPointer];
+                    sbyte vertY = (sbyte)wm_planetMinimap_vertices[offsetPointer + 1];
 
-            //    sbyte vertX = (sbyte)wm_planetMinimap_vertices[offsetPointer];
-            //    sbyte vertY = (sbyte)wm_planetMinimap_vertices[offsetPointer + 1];
-            //    vpc.Add(new Vector2(vertX + x, vertY + y));
+                    //uv
+                    short u = (sbyte)wm_planetMinimap_uvsOffsets[offsetPointer];
+                    short v = (sbyte)wm_planetMinimap_uvsOffsets[offsetPointer + 1];
 
-            //}
+                    var testU = playerPosition.X / -16384.0f + u / 100.0f;
+                    var testV = playerPosition.Z / -12288.0f + v / 100.0f;
+
+                    Vector3 vec = new Vector3(-vertX+2000f, -vertY, 0);
+                    Vector2 vecUV = new Vector2(testU, testV);
+                    if (n == 0)
+                    { A = vec; uvA = vecUV; }
+                    if (n == 1)
+                    { B = vec; uvB = vecUV; }
+                    if (n == 2)
+                    { C = vec; uvC = vecUV; }
+                    if (n == 3)
+                    { D = vec; uvD = vecUV; }
+                }
+                vpt.Add(new VertexPositionTexture(A, uvA));
+                vpt.Add(new VertexPositionTexture(B, uvB));
+                vpt.Add(new VertexPositionTexture(D, uvD));
+
+                vpt.Add(new VertexPositionTexture(A, uvA));
+                vpt.Add(new VertexPositionTexture(C, uvC));
+                vpt.Add(new VertexPositionTexture(D, uvD));
+
+            }
 
             foreach (EffectPass pass in ate.CurrentTechnique.Passes)
             {
@@ -1414,6 +1451,23 @@ namespace OpenVIII
                 ate.GraphicsDevice.DepthStencilState = DepthStencilState.None;
                 Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpt.ToArray(), 0, vpt.Count/3);
             }
+
+            Rectangle src = new Rectangle(Point.Zero, wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0).Size.ToPoint());
+            Scale = Memory.Scale(src.Width, src.Height, Memory.ScaleMode.FitBoth);
+            src.Height = (int)((src.Width * Scale.X) / 30);
+            src.Width = (int)((src.Height * Scale.Y) / 30);
+            Rectangle dst = new Rectangle(
+                (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 1.34f),
+                (int)((float)Memory.graphics.GraphicsDevice.Viewport.Height / 1.4f),
+                src.Width,
+                src.Height);
+
+            //Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
+            Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
+            wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0).Draw(dst, Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
+            Memory.SpriteBatchEnd();
+
+
             ate.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
             //restore matrices
