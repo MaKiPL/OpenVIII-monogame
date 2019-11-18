@@ -22,7 +22,7 @@ namespace OpenVIII
         private static float camDistance = 10.0f;
         private static float renderCamDistance = 1200f;
         private static Vector3 camPosition, camTarget;
-        private static Vector3 playerPosition = new Vector3(-9105f, 30f, -4466);
+        private static Vector3 playerPosition = new Vector3(-1f, 0f, -1f);//new Vector3(-9105f, 30f, -4466);
         private static Vector3 lastPlayerPosition = playerPosition;
         public static BasicEffect effect;
         public static AlphaTestEffect ate;
@@ -230,6 +230,18 @@ namespace OpenVIII
             fps_camera = new FPS_Camera();
             //init renderer
             effect = new BasicEffect(Memory.graphics.GraphicsDevice);
+            effect.EnableDefaultLighting();
+            effect.TextureEnabled = true;
+            effect.DirectionalLight0.Enabled = true;
+            effect.DirectionalLight1.Enabled = false;
+            effect.DirectionalLight2.Enabled = false;
+            effect.DirectionalLight0.Direction = new Vector3(
+               -0.349999f,
+                0.499999f,
+                -0.650000f
+                );
+            effect.DirectionalLight0.SpecularColor = new Vector3(0.8500003f, 0.8500003f, 0.8500003f);
+            effect.DirectionalLight0.DiffuseColor = new Vector3(1.54999f, 1.54999f, 1.54999f);
             camTarget = new Vector3(0, 0f, 0f);
             camPosition = new Vector3(-9100.781f, 108.0096f, -4438.435f);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
@@ -622,11 +634,6 @@ namespace OpenVIII
             lastPlayerPosition = playerPosition;
 
 #if DEBUG
-            if (Input2.Button(Keys.OemPlus))
-                DEBUGshit += 0.01f;
-            if (Input2.Button(Keys.OemMinus))
-                DEBUGshit -= 4f;
-
             if (Input2.Button(Keys.NumPad9))
                 DEBUGshit += 0.1f;
             if (Input2.Button(Keys.NumPad6))
@@ -971,7 +978,10 @@ namespace OpenVIII
             ate.Projection = projectionMatrix;
             ate.View = viewMatrix;
             ate.World = worldMatrix;
-
+            effect.Projection = projectionMatrix;
+            effect.View = viewMatrix;
+            effect.World = worldMatrix;
+            
             if (bUseCustomShaderTest)
             {
                 worldShaderModel.Parameters["Projection"].SetValue(ate.Projection);
@@ -980,7 +990,12 @@ namespace OpenVIII
                 worldShaderModel.Parameters["camWorld"].SetValue(camPosition);
             }
 
+
             segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1);
+            if (segmentPosition.Y == 24)
+                segmentPosition.Y = 23;
+            if (segmentPosition.X == 32)
+                segmentPosition.X = 31;
 
             //let's get segments ids for cube
             /*
@@ -1015,6 +1030,8 @@ namespace OpenVIII
                 DrawSegment(0, -2);
                 DrawSegment(-1, -2);
                 DrawSegment(+1, -2);
+                if (segmentPosition.X == 31 && segmentPosition.Y == 0) //fix for the bahamuth underwater place was not visible at specific situations
+                    DrawSegment(+2, -2);
             }
             if (degrees < 270 || degrees > 90)
             {
@@ -1366,19 +1383,14 @@ namespace OpenVIII
         private static void DrawPlanetMiniMap()
         {
             List<VertexPositionTexture> vpt = new List<VertexPositionTexture>();
-            Vector2 planetTextureSize = wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap, 0).ClassicSize;
 
-            Vector3 planetCamPos = new Vector3(2070.894f, 42.12873f, -143.303f);
-            Vector3 planetCamTarget = new Vector3(2071.009f, 41.65208f, -133.3036f);
+            Vector3 planetCamPos = new Vector3(2098.347f, 32.68309f, -244.1487f);
+            Vector3 planetCamTarget = new Vector3(2099.964f, 34.26089f, -234.208243f);
 
             //2000,0,0 - target
             viewMatrix = Matrix.CreateLookAt(planetCamPos, planetCamTarget,
              Vector3.Up);
-            ate.View = viewMatrix;
-
-            //UV
-            //v4 = charaPosa = (v4 + 0x20000) / 0x400; v4 is squallX
-            //v17 v17 = (*(_DWORD *)(v3 + 4) + 0x18000) / 0x400; = v3+4 is squallY
+            effect.View = viewMatrix;
 
 
             for (int i = 0; i<wm_planetMinimap_indicesB_tris.Length; i++) //triangles are ABC, so we can just iterate one-by-one
@@ -1396,12 +1408,12 @@ namespace OpenVIII
                 short u = (sbyte)wm_planetMinimap_uvsOffsets[offsetPointer];
                 short v = (sbyte)wm_planetMinimap_uvsOffsets[offsetPointer + 1];
 
-                var testU = playerPosition.X / -16384.0f + u / 100.0f;
-                var testV = playerPosition.Z / -12288.0f + v / 100.0f;
+                var UVu = playerPosition.X / -16384.0f + u / 100.0f;
+                var UVv = playerPosition.Z / -12288.0f + v / 100.0f;
 
 
                 Vector3 vec = new Vector3(-vertX+2000f, -vertY, 0);
-                vpt.Add(new VertexPositionTexture(vec, new Vector2(testU, testV)));
+                vpt.Add(new VertexPositionTexture(vec, new Vector2(UVu, UVv)));
             }
 
             for (int i = 0; i < wm_planetMinimap_indicesA_quad.Length; i+=4) //ABD ACD -> we have to retriangulate it
@@ -1420,11 +1432,11 @@ namespace OpenVIII
                     short u = (sbyte)wm_planetMinimap_uvsOffsets[offsetPointer];
                     short v = (sbyte)wm_planetMinimap_uvsOffsets[offsetPointer + 1];
 
-                    var testU = playerPosition.X / -16384.0f + u / 100.0f;
-                    var testV = playerPosition.Z / -12288.0f + v / 100.0f;
+                    var UVu = playerPosition.X / -16384.0f + u / 100.0f;
+                    var UVv = playerPosition.Z / -12288.0f + v / 100.0f;
 
                     Vector3 vec = new Vector3(-vertX+2000f, -vertY, 0);
-                    Vector2 vecUV = new Vector2(testU, testV);
+                    Vector2 vecUV = new Vector2(UVu, UVv);
                     if (n == 0)
                     { A = vec; uvA = vecUV; }
                     if (n == 1)
@@ -1444,11 +1456,11 @@ namespace OpenVIII
 
             }
 
-            foreach (EffectPass pass in ate.CurrentTechnique.Passes)
+            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
             {
-                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap, 0);
+                effect.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap, 0);
                 pass.Apply();
-                ate.GraphicsDevice.DepthStencilState = DepthStencilState.None;
+                effect.GraphicsDevice.DepthStencilState = DepthStencilState.None;
                 Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpt.ToArray(), 0, vpt.Count/3);
             }
 
@@ -1457,8 +1469,8 @@ namespace OpenVIII
             src.Height = (int)((src.Width * Scale.X) / 30);
             src.Width = (int)((src.Height * Scale.Y) / 30);
             Rectangle dst = new Rectangle(
-                (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 1.34f),
-                (int)((float)Memory.graphics.GraphicsDevice.Viewport.Height / 1.4f),
+                (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 1.24f),
+                (int)((float)Memory.graphics.GraphicsDevice.Viewport.Height / 1.3f),
                 src.Width,
                 src.Height);
 
@@ -1468,12 +1480,12 @@ namespace OpenVIII
             Memory.SpriteBatchEnd();
 
 
-            ate.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            effect.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
             //restore matrices
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                 Vector3.Up);
-            ate.View = viewMatrix;
+            effect.View = viewMatrix;
 
         }
 
@@ -1516,23 +1528,6 @@ namespace OpenVIII
             Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
             wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0).Draw(dst, Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
             Memory.SpriteBatchEnd();
-
-            //float topX = Memory.graphics.GraphicsDevice.Viewport.Width * .6f; //6
-            //float topY = Memory.graphics.GraphicsDevice.Viewport.Height * .6f;
-
-            //float bc = Math.Abs(camPosition.X / 16384.0f);
-            //topX += Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f * bc;
-            //bc = Math.Abs(camPosition.Z / 12288f);
-            //topY += Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f * bc;
-
-            ////Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, Memory.blendState_BasicAdd);
-            //Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
-            //wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap, 1).Draw(new Rectangle((int)(Memory.graphics.GraphicsDevice.Viewport.Width * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f)), Color.White * .7f);
-            //Memory.spriteBatch.End();
-
-            //Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
-            //wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0).Draw(new Rectangle((int)topX, (int)topY, (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 32.0f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 32.0f)), Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
-            //Memory.SpriteBatchEnd();
         }
 
         private static void DrawSegment(int xTranslation, int yTranslation)
