@@ -7,44 +7,6 @@ Open source VIII engine implementation in C#
 
 Check our website to find screenshots and more info at: https://makipl.github.io/OpenVIII/
 
-Progress:
-Current state- DEBUG ONLY; pre-prototype, may contain DIRTY code and file reverse engineering work in progress with a lot of trash. 
-
-## PROGRESS IN-DEV PROTOTYPES (may be different due to bugs/ insufficient testing)
-
-MODULE OVERTURE
-
-⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛ 100%
-
-MODULE MAIN MENU
-
-⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛ 100%
-
-MODULE IN-GAME MENU
-
-⬛⬛⬛⬛⬛⬛⬛⬜⬜⬜ 75%
-
-MODULE BATTLE
-
-⬛⬛⬛⬛⬛⬜⬜⬜⬜⬜ 55% 
-
-MODULE TRIPLE TRIAD
-
-⬛⬛⬜⬜⬜⬜⬜⬜⬜⬜ 20%   
-
-MODULE FIELD
-
-⬛⬛⬛⬛⬛⬜⬜⬜⬜⬜ 50% 
-
-MODULE FMV
-
-⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛ 100% 
-
-MODULE WORLD MAP
-
-⬛⬛⬛⬛⬛⬛⬜⬜⬜⬜ 65%
-
-
 ## Getting started (Windows)
 
 Requirements: MonoGame + Visual Studio
@@ -113,7 +75,7 @@ Requirements: MonoGame + Visual Studio
 
 ## Development guidelines
 
-1. Project is an in-dev prototype, therefore you can make new pull requests directly to main branch. 
+1. This project is currently in active development, therefore you can make new pull requests directly to main branch. 
 
 2. ??
 
