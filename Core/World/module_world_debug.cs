@@ -22,7 +22,7 @@ namespace OpenVIII
         private static float camDistance = 10.0f;
         private static float renderCamDistance = 1200f;
         private static Vector3 camPosition, camTarget;
-        private static Vector3 playerPosition = new Vector3(-1f, 0f, -1f);//new Vector3(-9105f, 30f, -4466);
+        private static Vector3 playerPosition = new Vector3(-9105f, 30f, -4466);
         private static Vector3 lastPlayerPosition = playerPosition;
         public static BasicEffect effect;
         public static AlphaTestEffect ate;
