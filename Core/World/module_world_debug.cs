@@ -22,7 +22,7 @@ namespace OpenVIII
         private static float camDistance = 10.0f;
         private static float renderCamDistance = 1200f;
         private static Vector3 camPosition, camTarget;
-        private static Vector3 playerPosition = new Vector3(-9105f, 30f, -4466);
+        private static Vector3 playerPosition = new Vector3(-100f, 0f, -100f);//new Vector3(-9105f, 30f, -4466);
         private static Vector3 lastPlayerPosition = playerPosition;
         public static BasicEffect effect;
         public static AlphaTestEffect ate;
@@ -1365,13 +1365,18 @@ namespace OpenVIII
 
         private static void DrawPlanetMiniMap()
         {
+            List<VertexPositionTexture> vpt = new List<VertexPositionTexture>();
 
-            //========DEBUG START
-            //it draws 2D globe on screen- we now have to just project it into 3D
-            int y = 0xb4;
-            int x = 0x104*2;
+            Vector3 planetCamPos = new Vector3(2070.894f, 42.12873f, -143.303f);
+            Vector3 planetCamTarget = new Vector3(2071.009f, 41.65208f, -133.3036f);
 
-            Memory.SpriteBatchStartStencil();
+            //2000,0,0 - target
+            viewMatrix = Matrix.CreateLookAt(planetCamPos, planetCamTarget,
+             Vector3.Up);
+            ate.View = viewMatrix;
+
+
+
             List<Vector2> vpc = new List<Vector2>();
             for(int i = 0; i<wm_planetMinimap_indicesB_tris.Length; i++)
             {
@@ -1383,29 +1388,39 @@ namespace OpenVIII
 
                 sbyte vertX = (sbyte)wm_planetMinimap_vertices[offsetPointer];
                 sbyte vertY = (sbyte)wm_planetMinimap_vertices[offsetPointer+1];
-                vpc.Add(new Vector2(vertX + x, vertY + y));
 
+                Vector3 vec = new Vector3(vertX+2000f, vertY, 0);
+                vpt.Add(new VertexPositionTexture(vec, new Vector2(0, 1)));
             }
 
-            for (int i = 0; i < wm_planetMinimap_indicesB_tris.Length; i++)
+            //for (int i = 0; i < wm_planetMinimap_indicesB_tris.Length; i++)
+            //{
+            //    byte offsetPointer = wm_planetMinimap_indicesA_quad[i];
+            //    if (offsetPointer == 0xFF)
+            //        continue;
+
+            //    offsetPointer *= 2;
+
+            //    sbyte vertX = (sbyte)wm_planetMinimap_vertices[offsetPointer];
+            //    sbyte vertY = (sbyte)wm_planetMinimap_vertices[offsetPointer + 1];
+            //    vpc.Add(new Vector2(vertX + x, vertY + y));
+
+            //}
+
+            foreach (EffectPass pass in ate.CurrentTechnique.Passes)
             {
-                byte offsetPointer = wm_planetMinimap_indicesA_quad[i];
-                if (offsetPointer == 0xFF)
-                    continue;
-
-                offsetPointer *= 2;
-
-                sbyte vertX = (sbyte)wm_planetMinimap_vertices[offsetPointer];
-                sbyte vertY = (sbyte)wm_planetMinimap_vertices[offsetPointer + 1];
-                vpc.Add(new Vector2(vertX + x, vertY + y));
-
+                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap, 0);
+                pass.Apply();
+                ate.GraphicsDevice.DepthStencilState = DepthStencilState.None;
+                Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpt.ToArray(), 0, vpt.Count/3);
             }
+            ate.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
-            for (int n = 0; n<vpc.Count; n++)
-                Memory.spriteBatch.Draw(wmset.GetWorldMapWaterTexture(), vpc[n], new Rectangle(0, 0, 2, 2), Color.White);
-            Memory.SpriteBatchEnd();
+            //restore matrices
+            viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
+                Vector3.Up);
+            ate.View = viewMatrix;
 
-            //=========DEBUG END
         }
 
         private static void DrawRectangleMiniMap()
