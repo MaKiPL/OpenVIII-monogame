@@ -1365,8 +1365,47 @@ namespace OpenVIII
 
         private static void DrawPlanetMiniMap()
         {
+
+            //========DEBUG START
+            //it draws 2D globe on screen- we now have to just project it into 3D
             int y = 0xb4;
-            int x = 0x104;
+            int x = 0x104*2;
+
+            Memory.SpriteBatchStartStencil();
+            List<Vector2> vpc = new List<Vector2>();
+            for(int i = 0; i<wm_planetMinimap_indicesB_tris.Length; i++)
+            {
+                byte offsetPointer = wm_planetMinimap_indicesB_tris[i];
+                if (offsetPointer == 0xFF)
+                    continue;
+
+                offsetPointer *= 2;
+
+                sbyte vertX = (sbyte)wm_planetMinimap_vertices[offsetPointer];
+                sbyte vertY = (sbyte)wm_planetMinimap_vertices[offsetPointer+1];
+                vpc.Add(new Vector2(vertX + x, vertY + y));
+
+            }
+
+            for (int i = 0; i < wm_planetMinimap_indicesB_tris.Length; i++)
+            {
+                byte offsetPointer = wm_planetMinimap_indicesA_quad[i];
+                if (offsetPointer == 0xFF)
+                    continue;
+
+                offsetPointer *= 2;
+
+                sbyte vertX = (sbyte)wm_planetMinimap_vertices[offsetPointer];
+                sbyte vertY = (sbyte)wm_planetMinimap_vertices[offsetPointer + 1];
+                vpc.Add(new Vector2(vertX + x, vertY + y));
+
+            }
+
+            for (int n = 0; n<vpc.Count; n++)
+                Memory.spriteBatch.Draw(wmset.GetWorldMapWaterTexture(), vpc[n], new Rectangle(0, 0, 2, 2), Color.White);
+            Memory.SpriteBatchEnd();
+
+            //=========DEBUG END
         }
 
         private static void DrawRectangleMiniMap()
