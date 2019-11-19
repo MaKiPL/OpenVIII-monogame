@@ -127,6 +127,7 @@ namespace OpenVIII
 
         public static void DumpTexture(Texture2D tex, string s)
         {
+            if (Directory.Exists(Path.GetDirectoryName(s)))
             using (System.IO.FileStream fs = new System.IO.FileStream(s, System.IO.FileMode.Create, System.IO.FileAccess.Write))
                 tex.SaveAsPng(fs, tex.Width, tex.Height);
         }

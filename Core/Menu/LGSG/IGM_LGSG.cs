@@ -81,7 +81,6 @@ namespace OpenVIII
 
         public static IGM_LGSG Create() => Create<IGM_LGSG>();
 
-        public override void Draw() => base.Draw();
 
         //public override void DrawData() => Data.Where(m => m.Value != null && m.Value.Enabled && !m.Key.HasFlag(Mode.Header)).ForEach(m => m.Value.Draw());
 

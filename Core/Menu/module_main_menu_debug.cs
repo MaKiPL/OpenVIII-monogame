@@ -91,7 +91,8 @@ namespace OpenVIII
                     break;
 
                 case MainMenuStates.DebugScreen:
-                    DrawDebugLobby();
+                    //DrawDebugLobby();
+                    Menu.Debug_Menu.Draw();
                     break;
 
                 //case MainMenuStates.NewGameChoosed:
@@ -204,20 +205,22 @@ namespace OpenVIII
                     //    forceupdate = true;
                     //}
 
-                    Menu.IGM_Lobby.Update();
+                    forceupdate = Menu.IGM_Lobby.Update();
                     break;
 
                 case MainMenuStates.DebugScreen:
                     //Menu.UpdateFade();
                     Memory.IsMouseVisible = true;
-                    if (UpdateDebugLobby() || /*(lastfade != fade) ||*/ Offset != Vector2.Zero)
-                    {
-                        forceupdate = true;
-                    }
-                    if (!OffsetSlide.Done)
-                    {
-                        Offset = OffsetSlide.Update();
-                    }
+                    //if (UpdateDebugLobby() || /*(lastfade != fade) ||*/ Offset != Vector2.Zero)
+                    //{
+                    //    forceupdate = true;
+                    //}
+
+                    forceupdate = Menu.Debug_Menu.Update();
+                    //if (!OffsetSlide.Done)
+                    //{
+                    //    Offset = OffsetSlide.Update();
+                    //}
 
                     break;
 
@@ -265,14 +268,14 @@ namespace OpenVIII
             //if(forceupdate)
         }
 
-        /// <summary>
-        /// Init
-        /// </summary>
-        public static void Init() =>
-            //InitMain();
-            //Menu.IGM_Lobby = new IGM_Lobby();
-            //InitLoad();
-            InitDebug();//IGM = new IGM();//IGM_Junction = new IGM_Junction();//IGM_Items = new IGM_Items();
+        ///// <summary>
+        ///// Init
+        ///// </summary>
+        //public static void Init() =>
+        //    //InitMain();
+        //    //Menu.IGM_Lobby = new IGM_Lobby();
+        //    //InitLoad();
+        //    InitDebug();//IGM = new IGM();//IGM_Junction = new IGM_Junction();//IGM_Items = new IGM_Items();
 
         #endregion Methods
     }

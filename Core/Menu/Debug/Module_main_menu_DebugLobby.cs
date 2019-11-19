@@ -9,6 +9,7 @@ namespace OpenVIII
 {
     public static partial class Module_main_menu_debug
     {
+
         #region Fields
 
         private static int debug_choosedBS, debug_choosedAudio, debug_fieldPointer, debug_moviePointer;
@@ -497,5 +498,6 @@ namespace OpenVIII
         }
 
         #endregion Methods
+
     }
 }

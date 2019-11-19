@@ -177,6 +177,7 @@
     <Compile Include="Input\Inputs_FF8Steam.cs" />
     <Compile Include="Input\Inputs_OpenVIII.cs" />
     <Compile Include="Input\MouseLockMode.cs" />
+    <Compile Include="Menu\Debug\Debug_Menu.cs" />
     <Compile Include="Menu\IGMDataItem\Base.cs" />
     <Compile Include="Menu\IGMDataItem\Box.cs" />
     <Compile Include="Menu\IGMDataItem\Empty.cs" />
@@ -230,6 +231,7 @@
     <Compile Include="Menu\Images\Box_Options.cs" />
     <Compile Include="Menu\Lobby\IGM_Lobby.cs" />
     <Compile Include="Menu\Menu_Base.cs" />
+    <Compile Include="OpenVIII\IGMData\DebugChoose.cs" />
     <Compile Include="Saves\ATBTimer.cs" />
     <Compile Include="Saves\Damageable.cs" />
     <Compile Include="Saves\ICharacterData.cs" />

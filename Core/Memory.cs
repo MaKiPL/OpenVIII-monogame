@@ -280,10 +280,10 @@ namespace OpenVIII
                 Task.WaitAll(tasks.ToArray());
                 if (graphics?.GraphicsDevice != null) // all below require graphics to work. to load textures graphics device needed.
                 {
-                    // requires font, faces, and icons. currently cards only used in debug menu. will
-                    // have support for cards when added to menu.
-                    if (!token.IsCancellationRequested)
-                        Module_main_menu_debug.Init();
+                    //// requires font, faces, and icons. currently cards only used in debug menu. will
+                    //// have support for cards when added to menu.
+                    //if (!token.IsCancellationRequested)
+                    //    Module_main_menu_debug.Init();
 
                     // requires font, faces, and icons. currently cards only used in debug menu. will
                     // have support for cards when added to menu.

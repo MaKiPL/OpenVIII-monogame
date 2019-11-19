@@ -77,6 +77,7 @@ namespace OpenVIII
         private bool _backup = false;
 
         private Vector2 _size;
+        private static Debug_Menu _debug_menu;
 
         #endregion Fields
 
@@ -132,6 +133,11 @@ namespace OpenVIII
         /// Lobby Menu
         /// </summary>
         public static IGM_Lobby IGM_Lobby => _igm_lobby;
+
+        /// <summary>
+        /// Debug Menu
+        /// </summary>
+        public static Debug_Menu Debug_Menu => _debug_menu;
 
         public static Vector2 StaticSize { get; protected set; }
 
@@ -301,6 +307,8 @@ namespace OpenVIII
                     _battlemenus = BattleMenus.Create();
                 if (_igm_lgsg == null)
                     _igm_lgsg = IGM_LGSG.Create();
+                if (_debug_menu == null)
+                    _debug_menu = Debug_Menu.Create();
                 Fade = 0;
             }
         }
