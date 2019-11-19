@@ -560,16 +560,20 @@ namespace OpenVIII
             public ConcurrentQueue<GFs> EarnAP(uint ap, out ConcurrentQueue<KeyValuePair<GFs, Kernel_bin.Abilities>> abilities)
             {
                 ConcurrentQueue<GFs> ret = new ConcurrentQueue<GFs>();
-                abilities = new ConcurrentQueue<KeyValuePair<GFs, Kernel_bin.Abilities>>();
-                foreach (KeyValuePair<GFs, GFData> g in GFs.Where(i => i.Value.Exists))
+                abilities = null;
+                if (GFs != null)
                 {
-                    if (g.Value.EarnExp(ap, out Kernel_bin.Abilities ability))
+                    abilities = new ConcurrentQueue<KeyValuePair<GFs, Kernel_bin.Abilities>>();
+                    foreach (KeyValuePair<GFs, GFData> g in GFs.Where(i => i.Value != null && i.Value.Exists))
                     {
-                        if (ability != Kernel_bin.Abilities.None)
+                        if (g.Value.EarnExp(ap, out Kernel_bin.Abilities ability))
                         {
-                            abilities.Enqueue(new KeyValuePair<GFs, Kernel_bin.Abilities>(g.Key, ability));
+                            if (ability != Kernel_bin.Abilities.None)
+                            {
+                                abilities.Enqueue(new KeyValuePair<GFs, Kernel_bin.Abilities>(g.Key, ability));
+                            }
+                            ret.Enqueue(g.Key);
                         }
-                        ret.Enqueue(g.Key);
                     }
                 }
                 return ret;
@@ -635,6 +639,7 @@ namespace OpenVIII
 
             public bool PartyHasAbility(Kernel_bin.Abilities a)
             {
+                if(PartyData != null)
                 foreach (Characters c in PartyData)
                 {
                     if (Characters.TryGetValue(c, out CharacterData cd) && cd.Abilities.Contains(a))

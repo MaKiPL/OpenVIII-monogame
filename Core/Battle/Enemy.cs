@@ -41,7 +41,10 @@ namespace OpenVIII
         {
             //from Ifrit's help file
             byte level = Level;
-            return @in * (5 * (level - inLevel) / inLevel + 4);
+            if (inLevel == 0)
+                return 0;
+            else
+                return @in * (5 * (level - inLevel) / inLevel + 4);
         }
 
         private T hml<T>(T h, T m, T l)

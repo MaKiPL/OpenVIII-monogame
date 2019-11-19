@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace OpenVIII.IGMData
 {
@@ -35,6 +36,8 @@ namespace OpenVIII.IGMData
         private Dictionary<Ditems, Func<FF8String>> dynamicDebugStrings;
 
         private Dictionary<Ditems, Func<bool>> inputsOKAY;
+        private Dictionary<Ditems, Func<bool>> inputsLeft;
+        private Dictionary<Ditems, Func<bool>> inputsRight;
 
         #endregion Fields
 
@@ -67,12 +70,13 @@ namespace OpenVIII.IGMData
 
         #region Methods
 
-        public static DebugChoose Create(Rectangle pos) => Create<DebugChoose>((int)Ditems.Count, 1, new IGMDataItem.Box { Pos = pos }, 1, (int)Ditems.Count);
+        public static DebugChoose Create(Rectangle pos) => Create<DebugChoose>((int)Ditems.Count, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.DEBUG }, 1, (int)Ditems.Count);
 
         public override bool Inputs()
         {
-            Cursor_Status |= Cursor_Status.Enabled;
+            Cursor_Status |= Cursor_Status.Enabled; //Cursor_Status |= Cursor_Status.Horizontal;
             Cursor_Status &= ~Cursor_Status.Blinking;
+
             return base.Inputs();
         }
 
@@ -92,6 +96,24 @@ namespace OpenVIII.IGMData
                 return f.Invoke() && base.Inputs_OKAY();
             }
             return false;
+        }
+
+        public override void Inputs_Left()
+        {
+            if (inputsLeft.TryGetValue((Ditems)CURSOR_SELECT, out Func<bool> f) && f.Invoke())
+            {
+                base.Inputs_Left();
+                Refresh();
+            }
+        }
+
+        public override void Inputs_Right()
+        {
+            if (inputsRight.TryGetValue((Ditems)CURSOR_SELECT, out Func<bool> f) && f.Invoke())
+            {
+                base.Inputs_Right();
+                Refresh();
+            }
         }
 
         public override void Refresh()
@@ -158,33 +180,117 @@ namespace OpenVIII.IGMData
                 }  },
                 { Ditems.Sounds, ()=> {
                     init_debugger_Audio.PlaySound(debug_choosedAudio);
+                    skipsnd = true;
                     return true;
                 }  },
                 { Ditems.World, ()=> {
+                    Menu.FadeIn();
                     Memory.module = MODULE.WORLD_DEBUG;
                     Memory.IsMouseVisible = false;
                     return true;
                 }  },
                 { Ditems.Faces, ()=> {
+                    Menu.FadeIn();
                     Memory.module = MODULE.FACE_TEST;
                     Module_face_test.Show();
                     return true;
                 }  },
                 { Ditems.Icons, ()=> {
+                    Menu.FadeIn();
                     Memory.module = MODULE.ICON_TEST;
                     Module_icon_test.Show();
                     return true;
                 }  },
                 { Ditems.Cards, ()=> {
+                    Menu.FadeIn();
                     Memory.module = MODULE.CARD_TEST;
                     Module_card_test.Show();
-                    return false;
+                    return true;
                 }  },
             };
+
+            inputsLeft = new Dictionary<Ditems, Func<bool>>()
+            {
+                { Ditems.Battle, ()=> {
+                    if(Memory.battle_encounter >0)
+                        Memory.battle_encounter--;
+                    else
+                        Memory.battle_encounter = Memory.encounters.Length - 1;
+                    return true;
+                } },
+                { Ditems.Field, ()=> {
+                    if( Memory.FieldHolder.FieldID>0)
+                         Memory.FieldHolder.FieldID--;
+                    else
+                        Memory.FieldHolder.FieldID = checked((ushort)(Memory.FieldHolder.fields.Length - 1));
+                    return true;
+                }  },
+                { Ditems.Movie, ()=> {
+                    if(Module_movie_test.Index>0)
+                        Module_movie_test.Index--;
+                    else
+                        Module_movie_test.Index = Module_movie_test.Movies.Count - 1;
+                    return true;
+                }  },
+                { Ditems.Music, ()=> {
+                    if(Memory.MusicIndex >0)
+                        Memory.MusicIndex --;
+                    else
+                        Memory.MusicIndex = Memory.dicMusic.Keys.Max();
+                    return true;
+                }  },
+                { Ditems.Sounds, ()=> {
+                    if (debug_choosedAudio > 0)
+                        debug_choosedAudio--;
+                    else
+                        debug_choosedAudio = init_debugger_Audio.soundEntriesCount-1;
+                    return true;
+                }  }
+            };
+
+            inputsRight = new Dictionary<Ditems, Func<bool>>()
+            {
+                { Ditems.Battle, ()=> {
+                    if(Memory.battle_encounter < Memory.encounters.Length - 1)
+                        Memory.battle_encounter++;
+                    else
+                        Memory.battle_encounter = 0;
+                    return true;
+                } },
+                { Ditems.Field, ()=> {
+                    if( Memory.FieldHolder.FieldID<checked((ushort)(Memory.FieldHolder.fields.Length - 1)))
+                         Memory.FieldHolder.FieldID++;
+                    else
+                        Memory.FieldHolder.FieldID = 0;
+                    return true;
+                }  },
+                { Ditems.Movie, ()=> {
+                    if(Module_movie_test.Index<Module_movie_test.Movies.Count - 1)
+                        Module_movie_test.Index++;
+                    else
+                        Module_movie_test.Index = 0;
+                    return true;
+                }  },
+                { Ditems.Music, ()=> {
+                    if(Memory.MusicIndex <Memory.dicMusic.Keys.Max())
+                        Memory.MusicIndex ++;
+                    else
+                        Memory.MusicIndex = 0;
+                    return true;
+                }  },
+                { Ditems.Sounds, ()=> {
+                    if (debug_choosedAudio < init_debugger_Audio.soundEntriesCount-1)
+                        debug_choosedAudio++;
+                    else
+                        debug_choosedAudio = 0;
+                    return true;
+                }  }
+            };
+
             dynamicDebugStrings = new Dictionary<Ditems, Func<FF8String>>
             {
                 { Ditems.Battle, ()=> {return strDebugLobby[Ditems.Battle].Clone().Append(Memory.battle_encounter.ToString("D4")); } },
-                { Ditems.Field, ()=> {return strDebugLobby[Ditems.Field].Clone().Append(Memory.FieldHolder.FieldID.ToString("D4")); } },
+                { Ditems.Field, ()=> {return strDebugLobby[Ditems.Field].Clone().Append(Memory.FieldHolder.FieldID.ToString("D3")); } },
                 { Ditems.Movie, ()=> {return strDebugLobby[Ditems.Movie].Clone().Append(Path.GetFileNameWithoutExtension(Module_movie_test.Movies[Module_movie_test.Index])); } },
                 { Ditems.Music, ()=> {return strDebugLobby[Ditems.Music].Clone().Append(Path.GetFileNameWithoutExtension(Memory.dicMusic[Memory.MusicIndex][0])); } },
                 { Ditems.Sounds, ()=> {return strDebugLobby[Ditems.Sounds].Clone().Append(debug_choosedAudio.ToString("D4")); } }
@@ -195,7 +301,7 @@ namespace OpenVIII.IGMData
         {
             base.InitShift(i, col, row);
             SIZE[i].Inflate(-22, -8);
-            //SIZE[i].Offset(0, 12 + (-8 * row));
+            SIZE[i].Offset(0, 12 + (-8 * row));
         }
 
         #endregion Methods
