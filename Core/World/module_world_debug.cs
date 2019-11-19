@@ -229,6 +229,18 @@ namespace OpenVIII
             fps_camera = new FPS_Camera();
             //init renderer
             effect = new BasicEffect(Memory.graphics.GraphicsDevice);
+            effect.EnableDefaultLighting();
+            effect.TextureEnabled = true;
+            effect.DirectionalLight0.Enabled = true;
+            effect.DirectionalLight1.Enabled = false;
+            effect.DirectionalLight2.Enabled = false;
+            effect.DirectionalLight0.Direction = new Vector3(
+               -0.349999f,
+                0.499999f,
+                -0.650000f
+                );
+            effect.DirectionalLight0.SpecularColor = new Vector3(0.8500003f, 0.8500003f, 0.8500003f);
+            effect.DirectionalLight0.DiffuseColor = new Vector3(1.54999f, 1.54999f, 1.54999f);
             camTarget = new Vector3(0, 0f, 0f);
             camPosition = new Vector3(-9100.781f, 108.0096f, -4438.435f);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
@@ -625,11 +637,6 @@ namespace OpenVIII
             lastPlayerPosition = playerPosition;
 
 #if DEBUG
-            if (Input2.Button(Keys.OemPlus))
-                DEBUGshit += 4f;
-            if (Input2.Button(Keys.OemMinus))
-                DEBUGshit -= 4f;
-
             if (Input2.Button(Keys.NumPad9))
                 DEBUGshit += 0.1f;
             if (Input2.Button(Keys.NumPad6))
@@ -973,7 +980,10 @@ namespace OpenVIII
             ate.Projection = projectionMatrix;
             ate.View = viewMatrix;
             ate.World = worldMatrix;
-
+            effect.Projection = projectionMatrix;
+            effect.View = viewMatrix;
+            effect.World = worldMatrix;
+            
             if (bUseCustomShaderTest)
             {
                 worldShaderModel.Parameters["Projection"].SetValue(ate.Projection);
@@ -982,7 +992,12 @@ namespace OpenVIII
                 worldShaderModel.Parameters["camWorld"].SetValue(camPosition);
             }
 
+
             segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1);
+            if (segmentPosition.Y == 24)
+                segmentPosition.Y = 23;
+            if (segmentPosition.X == 32)
+                segmentPosition.X = 31;
 
             //let's get segments ids for cube
             /*
@@ -1017,6 +1032,8 @@ namespace OpenVIII
                 DrawSegment(0, -2);
                 DrawSegment(-1, -2);
                 DrawSegment(+1, -2);
+                if (segmentPosition.X == 31 && segmentPosition.Y == 0) //fix for the bahamuth underwater place was not visible at specific situations
+                    DrawSegment(+2, -2);
             }
             if (degrees < 270 || degrees > 90)
             {
@@ -1040,6 +1057,7 @@ namespace OpenVIII
                     break;
 
                 case MiniMapState.planet:
+                    DrawPlanetMiniMap();
                     break;
 
                 case MiniMapState.rectangle:
@@ -1340,6 +1358,139 @@ namespace OpenVIII
             Memory.spriteBatch.End();
         }
 
+        //exe hardcode at FF82000:00C76BE8
+        private static byte[] wm_planetMinimap_indicesA_quad = new byte[]
+        {
+            0x0f,0x10,0x17,0x18,0x07,0x08,0x0e,0x0f,0x08,0x09,0x0f,0x10,0x09,0x0a,0x10,0x11,0x0e,0x0f,0x16,0x17,0x10,0x11,0x18,0x19,0x16,0x17,0x1d,0x1e,0x17,0x18,0x1e,0x1f,0x18,0x19,0x1f,0x20,0x02,0x03,0x07,0x08,0x03,0x04,0x08,0x09,0x04,0x05,0x09,0x0a,0x06,0x07,0x0d,0x0e,0x0d,0x0e,0x15,0x16,0x15,0x16,0x1c,0x1d,0x0a,0x0b,0x11,0x12,0x11,0x12,0x19,0x1a,0x19,0x1a,0x20,0x21,0x1d,0x1e,0x22,0x23,0x1e,0x1f,0x23,0x24,0x1f,0x20,0x24,0x25,0x00,0x01,0x03,0x04,0x0c,0x0d,0x14,0x15,0x12,0x13,0x1a,0x1b,0x23,0x24,0x26,0x27
+        };
+
+        //exe hardcode at FF82000:00C76C4C
+        private static byte[] wm_planetMinimap_indicesB_tris = new byte[]
+        {
+            0x00,0x02,0x03,0xff,0x01,0x04,0x05,0xff,0x06,0x0c,0x0d,0xff,0x0b,0x12,0x13,0xff,0x14,0x15,0x1c,0xff,0x1a,0x1b,0x21,0xff,0x22,0x23,0x26,0xff,0x24,0x25,0x27,0xff,0x02,0x06,0x07,0xff,0x05,0x0a,0x0b,0xff,0x1c,0x1d,0x22,0xff,0x20,0x21,0x25,0xff
+        };
+
+        //exe hardcode at FF82000:00C76C7C
+        private static byte[] wm_planetMinimap_vertices = new byte[]
+        {
+            0xf8,0xdb,0x08,0xdb,0xe8,0xe2,0xf8,0xe2,0x08,0xe2,0x18,0xe2,0xe0,0xea,0xe8,0xea,0xf8,0xea,0x08,0xea,0x18,0xea,0x20,0xea,0xd8,0xf9,0xe0,0xf9,0xe8,0xf9,0xf8,0xf9,0x08,0xf9,0x18,0xf9,0x20,0xf9,0x28,0xf9,0xd8,0x07,0xe0,0x07,0xe8,0x07,0xf8,0x07,0x08,0x07,0x18,0x07,0x20,0x07,0x28,0x07,0xe0,0x16,0xe8,0x16,0xf8,0x16,0x08,0x16,0x18,0x16,0x20,0x16,0xe8,0x1e,0xf8,0x1e,0x08,0x1e,0x18,0x1e,0xf8,0x25,0x08,0x25
+        };
+
+        //exe hardcode at FF82000:00C76CCC
+        private static byte[] wm_planetMinimap_uvsOffsets = new byte[]
+        {
+            0xfc,0xe0,0x04,0xe0,0xf0,0xe8,0xfc,0xe8,0x04,0xe8,0x10,0xe8,0xe8,0xf0,0xf0,0xf0,0xfc,0xf0,0x04,0xf0,0x10,0xf0,0x18,0xf0,0xe0,0xfc,0xe8,0xfc,0xf0,0xfc,0xfc,0xfc,0x04,0xfc,0x10,0xfc,0x18,0xfc,0x20,0xfc,0xe0,0x04,0xe8,0x04,0xf0,0x04,0xfc,0x04,0x04,0x04,0x10,0x04,0x18,0x04,0x20,0x04,0xe8,0x10,0xf0,0x10,0xfc,0x10,0x04,0x10,0x10,0x10,0x18,0x10,0xf0,0x18,0xfc,0x18,0x04,0x18,0x10,0x18,0xfc,0x20,0x04,0x20,0x00,0x00,0x00,0x00
+        };
+
+        private static void DrawPlanetMiniMap()
+        {
+            List<VertexPositionTexture> vpt = new List<VertexPositionTexture>();
+
+            Vector3 planetCamPos = new Vector3(2098.347f, 32.68309f, -244.1487f);
+            Vector3 planetCamTarget = new Vector3(2099.964f, 34.26089f, -234.208243f);
+
+            //2000,0,0 - target
+            viewMatrix = Matrix.CreateLookAt(planetCamPos, planetCamTarget,
+             Vector3.Up);
+            effect.View = viewMatrix;
+
+
+            for (int i = 0; i<wm_planetMinimap_indicesB_tris.Length; i++) //triangles are ABC, so we can just iterate one-by-one
+            {
+                byte offsetPointer = wm_planetMinimap_indicesB_tris[i];
+                if (offsetPointer == 0xFF)
+                    continue;
+
+                offsetPointer *= 2;
+
+                sbyte vertX = (sbyte)wm_planetMinimap_vertices[offsetPointer];
+                sbyte vertY = (sbyte)wm_planetMinimap_vertices[offsetPointer+1];
+
+                //uv
+                short u = (sbyte)wm_planetMinimap_uvsOffsets[offsetPointer];
+                short v = (sbyte)wm_planetMinimap_uvsOffsets[offsetPointer + 1];
+
+                var UVu = playerPosition.X / -16384.0f + u / 100.0f;
+                var UVv = playerPosition.Z / -12288.0f + v / 100.0f;
+
+
+                Vector3 vec = new Vector3(-vertX+2000f, -vertY, 0);
+                vpt.Add(new VertexPositionTexture(vec, new Vector2(UVu, UVv)));
+            }
+
+            for (int i = 0; i < wm_planetMinimap_indicesA_quad.Length; i+=4) //ABD ACD -> we have to retriangulate it
+            {
+                Vector3 A=Vector3.Zero, B=Vector3.Zero, C=Vector3.Zero, D=Vector3.Zero;
+                Vector2 uvA = Vector2.Zero; Vector2 uvB = Vector2.Zero; Vector2 uvC = Vector2.Zero; Vector2 uvD = Vector2.Zero;
+
+                for(int n = 0; n<4; n++)
+                {
+                    byte offsetPointer = wm_planetMinimap_indicesA_quad[i + n];
+                    offsetPointer *= 2;
+                    sbyte vertX = (sbyte)wm_planetMinimap_vertices[offsetPointer];
+                    sbyte vertY = (sbyte)wm_planetMinimap_vertices[offsetPointer + 1];
+
+                    //uv
+                    short u = (sbyte)wm_planetMinimap_uvsOffsets[offsetPointer];
+                    short v = (sbyte)wm_planetMinimap_uvsOffsets[offsetPointer + 1];
+
+                    var UVu = playerPosition.X / -16384.0f + u / 100.0f;
+                    var UVv = playerPosition.Z / -12288.0f + v / 100.0f;
+
+                    Vector3 vec = new Vector3(-vertX+2000f, -vertY, 0);
+                    Vector2 vecUV = new Vector2(UVu, UVv);
+                    if (n == 0)
+                    { A = vec; uvA = vecUV; }
+                    if (n == 1)
+                    { B = vec; uvB = vecUV; }
+                    if (n == 2)
+                    { C = vec; uvC = vecUV; }
+                    if (n == 3)
+                    { D = vec; uvD = vecUV; }
+                }
+                vpt.Add(new VertexPositionTexture(A, uvA));
+                vpt.Add(new VertexPositionTexture(B, uvB));
+                vpt.Add(new VertexPositionTexture(D, uvD));
+
+                vpt.Add(new VertexPositionTexture(A, uvA));
+                vpt.Add(new VertexPositionTexture(C, uvC));
+                vpt.Add(new VertexPositionTexture(D, uvD));
+
+            }
+
+            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+            {
+                effect.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap, 0);
+                pass.Apply();
+                effect.GraphicsDevice.DepthStencilState = DepthStencilState.None;
+                Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpt.ToArray(), 0, vpt.Count/3);
+            }
+
+            Rectangle src = new Rectangle(Point.Zero, wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0).Size.ToPoint());
+            Scale = Memory.Scale(src.Width, src.Height, Memory.ScaleMode.FitBoth);
+            src.Height = (int)((src.Width * Scale.X) / 30);
+            src.Width = (int)((src.Height * Scale.Y) / 30);
+            Rectangle dst = new Rectangle(
+                (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 1.24f),
+                (int)((float)Memory.graphics.GraphicsDevice.Viewport.Height / 1.3f),
+                src.Width,
+                src.Height);
+
+            //Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
+            Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
+            wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0).Draw(dst, Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
+            Memory.SpriteBatchEnd();
+
+
+            effect.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+
+            //restore matrices
+            viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
+                Vector3.Up);
+            effect.View = viewMatrix;
+
+        }
+
         private static void DrawRectangleMiniMap()
         {
             Rectangle src = new Rectangle(Point.Zero, wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap, 1).Size.ToPoint());
@@ -1379,23 +1530,6 @@ namespace OpenVIII
             Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
             wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0).Draw(dst, Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
             Memory.SpriteBatchEnd();
-
-            //float topX = Memory.graphics.GraphicsDevice.Viewport.Width * .6f; //6
-            //float topY = Memory.graphics.GraphicsDevice.Viewport.Height * .6f;
-
-            //float bc = Math.Abs(camPosition.X / 16384.0f);
-            //topX += Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f * bc;
-            //bc = Math.Abs(camPosition.Z / 12288f);
-            //topY += Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f * bc;
-
-            ////Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, Memory.blendState_BasicAdd);
-            //Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
-            //wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap, 1).Draw(new Rectangle((int)(Memory.graphics.GraphicsDevice.Viewport.Width * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height * 0.60f), (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f)), Color.White * .7f);
-            //Memory.spriteBatch.End();
-
-            //Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
-            //wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0).Draw(new Rectangle((int)topX, (int)topY, (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 32.0f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 32.0f)), Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
-            //Memory.SpriteBatchEnd();
         }
 
         private static void DrawSegment(int xTranslation, int yTranslation)

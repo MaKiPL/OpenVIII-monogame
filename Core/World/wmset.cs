@@ -149,7 +149,13 @@ namespace OpenVIII.Core.World
         }
 
         public byte GetWorldRegionByBlock(int blockId) => regionsBuffer[blockId];
-        public byte GetWorldRegionBySegmentPosition(int x, int y) => regionsBuffer[y * 32 + x]; // I had got an exception here. For out of range.
+        public byte GetWorldRegionBySegmentPosition(int x, int y)
+        {
+            int regionIndex = y * 32 + x;
+            if (regionIndex >= 768 || regionIndex < 0)
+                return 255;
+            else return regionsBuffer[y * 32 + x]; // I had got an exception here. For out of range. //Ok- fixed
+        }
         #endregion
 
         #region Section 4 - Encounter pointer
