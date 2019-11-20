@@ -10,8 +10,8 @@ namespace OpenVIII.IGMData
     {
         #region Fields
 
-        private const int ATBWidth = 150;
         private const float ATBalpha = .8f;
+        private const int ATBWidth = 150;
         private static Texture2D dot;
         private static object locker = new object();
         private Damageable.BattleMode BattleMode = Damageable.BattleMode.EndTurn;
@@ -37,34 +37,42 @@ namespace OpenVIII.IGMData
             /// Name
             /// </summary>
             Name,
+
             /// <summary>
             /// HP
             /// </summary>
             HP,
+
             /// <summary>
             /// Box with GF HP
             /// </summary>
             GFHPBox,
+
             /// <summary>
             /// Box with GF name
             /// </summary>
-            GFNameBox,            
+            GFNameBox,
+
             /// <summary>
             /// ATB charging orange red or dark blue (haste/slowed)
             /// </summary>
             ATBCharging,
+
             /// <summary>
             /// ATB charged blink yellow
             /// </summary>
             ATBCharged,
+
             /// <summary>
             /// blue white gradient that decreases as the gf is charging.
             /// </summary>
             GFCharging,
+
             /// <summary>
             /// border around ATB bar
             /// </summary>
             ATBBorder,
+
             /// <summary>
             /// Max?
             /// </summary>
@@ -145,16 +153,16 @@ namespace OpenVIII.IGMData
                 ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Y -= 4;
                 ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).Y = ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Y;
                 ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).Height = ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Height = SIZE[pos].Height;
-                ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).X = 
-                    ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).X - 
-                    (((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Width *3)/ 8;
-                ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).Width = (((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Width *7)/ 8;
+                ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).X =
+                    ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).X -
+                    (((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Width * 3) / 8;
+                ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).Width = (((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Width * 7) / 8;
                 if (Damageable.SummonedGF != null)
-                { 
+                {
                     ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).Data = Damageable.SummonedGF.Name;
                     ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Data = $"{Damageable.SummonedGF.CurrentHP()}";
                 }
-                    if (EventAdded == false)
+                if (EventAdded == false)
                 {
                     EventAdded = true;
                     Damageable.BattleModeChangeEventHandler += ModeChangeEvent;
@@ -162,7 +170,6 @@ namespace OpenVIII.IGMData
                 bool blink = false;
                 bool charging = false;
                 BattleMode = (Damageable.BattleMode)Damageable.GetBattleMode();
-
 
                 ITEM[0, (byte)DepthID.HP].Show();
                 ITEM[0, (byte)DepthID.Name].Show();

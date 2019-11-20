@@ -87,7 +87,7 @@ namespace OpenVIII
 
         public override void Draw()
         {
-            if (GetMode() != null&& DrawActions !=null)
+            if (GetMode() != null && DrawActions != null)
             {
                 if (DrawActions.ContainsKey((Mode)GetMode()))
                     DrawActions[(Mode)GetMode()]();
