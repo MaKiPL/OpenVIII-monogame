@@ -247,7 +247,7 @@ namespace OpenVIII
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                                MathHelper.ToRadians(60),
                                Memory.graphics.GraphicsDevice.DisplayMode.AspectRatio,
-                1f, 1000f);
+                1f, 10000f);
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          new Vector3(0f, 1f, 0f));// Y up
             //worldMatrix = Matrix.CreateWorld(camTarget, Vector3.
@@ -277,7 +277,7 @@ namespace OpenVIII
                 FogEnabled = true,
                 FogColor = Color.CornflowerBlue.ToVector3(),
                 FogStart = 9.75f,
-                FogEnd = 1000.00f
+                FogEnd = renderCamDistance
             };
 
             ReadWorldMapFiles();
@@ -969,7 +969,7 @@ namespace OpenVIII
         {
             Memory.spriteBatch.GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            DrawBackgroundClouds();
+            
 
             Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
             Memory.graphics.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
@@ -1041,6 +1041,7 @@ namespace OpenVIII
             }
 
             TeleportPlayerWarp();
+            DrawBackgroundClouds();
 
             foreach (worldCharacterInstance charaInstance in worldCharacterInstances)
                 DrawCharacter(charaInstance);
@@ -1346,14 +1347,84 @@ namespace OpenVIII
                 playerPosition.Z = 0;
         }
 
-        /// <summary>
-        /// [WIP] Draws clouds in the background
-        /// </summary>
+        #region wm background static geometry supplier
+        static Vector3[] wm_backgroundCylinderVerts = new Vector3[]
+        {
+new Vector3(41.8239f, 0.0000f, -3.9575f), new Vector3(36.2066f, 0.0000f, -24.9213f), new Vector3(20.8601f, 0.0000f, -40.2678f), 
+new Vector3(-0.1036f, 0.0000f, -45.8850f),new Vector3(-21.0674f, 0.0000f, -40.2678f),new Vector3(-36.4139f, 0.0000f, -24.9213f),
+new Vector3(-42.0311f, 0.0000f, -3.9576f),new Vector3(-36.4139f, 0.0000f, 17.0062f),new Vector3(-21.0674f, 0.0000f, 32.3527f),
+new Vector3(-0.1036f, 0.0000f, 37.9699f),new Vector3(20.8601f, 0.0000f, 32.3527f),new Vector3(36.2066f, 0.0000f, 17.0062f),
+new Vector3(41.8239f, 13.4218f, -3.9575f),new Vector3(36.2066f, 13.4218f, -24.9213f),new Vector3(20.8601f, 13.4218f, -40.2678f),
+new Vector3(-0.1036f, 13.4218f, -45.8850f),new Vector3(-21.0674f, 13.4218f, -40.2678f),new Vector3(-36.4139f, 13.4218f, -24.9213f),
+new Vector3(-42.0311f, 13.4218f, -3.9576f),new Vector3(-36.4139f, 13.4218f, 17.0062f),new Vector3(-21.0674f, 13.4218f, 32.3527f),
+new Vector3(-0.1036f, 13.4218f, 37.9699f),new Vector3(20.8601f, 13.4218f, 32.3527f),new Vector3(36.2066f, 13.4218f, 17.0062f)
+        };
+
+        static Vector2[] wm_backgroundCylinderVt = new Vector2[]
+        {
+new Vector2(2.5197f, -0.0005f),new Vector2(2.7717f, -0.0005f),new Vector2(3.0236f, -0.0005f),
+new Vector2(0.2524f, -0.0005f),new Vector2(0.5043f, -0.0005f),new Vector2(0.7563f, -0.0005f),new Vector2(1.0082f, -0.0005f),
+new Vector2(1.2601f, -0.0005f),new Vector2(1.5120f, -0.0005f),new Vector2(1.7640f, -0.0005f),new Vector2(2.0159f, -0.0005f),
+new Vector2(2.2678f, -0.0005f),new Vector2(2.5197f, -0.9995f),new Vector2(2.7717f, -0.9995f),new Vector2(3.0236f, -0.9995f),
+new Vector2(0.2524f, -0.9995f),new Vector2(0.5043f, -0.9995f),new Vector2(0.7563f, -0.9995f),new Vector2(1.0082f, -0.9995f),
+new Vector2(1.2601f, -0.9995f),new Vector2(1.5120f, -0.9995f),new Vector2(1.7640f, -0.9995f),new Vector2(2.0159f, -0.9995f),
+new Vector2(2.2678f, -0.9995f),new Vector2(0.0005f, -0.0005f),new Vector2(0.0005f, -0.9995f)
+        };
+        static VertexPositionTexture[] wm_backgroundCloudsCylinderMesh = new VertexPositionTexture[]
+        {
+new VertexPositionTexture(wm_backgroundCylinderVerts[0], wm_backgroundCylinderVt[0]),   new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderVt[12]), new VertexPositionTexture(wm_backgroundCylinderVerts[13], wm_backgroundCylinderVt[13]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[13], wm_backgroundCylinderVt[13]), new VertexPositionTexture(wm_backgroundCylinderVerts[1], wm_backgroundCylinderVt[1]),   new VertexPositionTexture(wm_backgroundCylinderVerts[0], wm_backgroundCylinderVt[0]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[1], wm_backgroundCylinderVt[1]),   new VertexPositionTexture(wm_backgroundCylinderVerts[13], wm_backgroundCylinderVt[13]), new VertexPositionTexture(wm_backgroundCylinderVerts[14], wm_backgroundCylinderVt[14]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[14], wm_backgroundCylinderVt[14]), new VertexPositionTexture(wm_backgroundCylinderVerts[2], wm_backgroundCylinderVt[2]),   new VertexPositionTexture(wm_backgroundCylinderVerts[1], wm_backgroundCylinderVt[1]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[2], wm_backgroundCylinderVt[24]),  new VertexPositionTexture(wm_backgroundCylinderVerts[14], wm_backgroundCylinderVt[25]), new VertexPositionTexture(wm_backgroundCylinderVerts[15], wm_backgroundCylinderVt[15]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[15], wm_backgroundCylinderVt[15]), new VertexPositionTexture(wm_backgroundCylinderVerts[3], wm_backgroundCylinderVt[3]),   new VertexPositionTexture(wm_backgroundCylinderVerts[2], wm_backgroundCylinderVt[24]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[3], wm_backgroundCylinderVt[3]),   new VertexPositionTexture(wm_backgroundCylinderVerts[15], wm_backgroundCylinderVt[15]), new VertexPositionTexture(wm_backgroundCylinderVerts[16], wm_backgroundCylinderVt[16]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[16], wm_backgroundCylinderVt[16]), new VertexPositionTexture(wm_backgroundCylinderVerts[4], wm_backgroundCylinderVt[4]),   new VertexPositionTexture(wm_backgroundCylinderVerts[3], wm_backgroundCylinderVt[3]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[4], wm_backgroundCylinderVt[4]),   new VertexPositionTexture(wm_backgroundCylinderVerts[16], wm_backgroundCylinderVt[16]), new VertexPositionTexture(wm_backgroundCylinderVerts[17], wm_backgroundCylinderVt[17]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[17], wm_backgroundCylinderVt[17]), new VertexPositionTexture(wm_backgroundCylinderVerts[5], wm_backgroundCylinderVt[5]),   new VertexPositionTexture(wm_backgroundCylinderVerts[4], wm_backgroundCylinderVt[4]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[5], wm_backgroundCylinderVt[5]),   new VertexPositionTexture(wm_backgroundCylinderVerts[17], wm_backgroundCylinderVt[17]), new VertexPositionTexture(wm_backgroundCylinderVerts[18], wm_backgroundCylinderVt[18]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[18], wm_backgroundCylinderVt[18]), new VertexPositionTexture(wm_backgroundCylinderVerts[6], wm_backgroundCylinderVt[6]),   new VertexPositionTexture(wm_backgroundCylinderVerts[5], wm_backgroundCylinderVt[5]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[6], wm_backgroundCylinderVt[6]),   new VertexPositionTexture(wm_backgroundCylinderVerts[18], wm_backgroundCylinderVt[18]), new VertexPositionTexture(wm_backgroundCylinderVerts[19], wm_backgroundCylinderVt[19]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[19], wm_backgroundCylinderVt[19]), new VertexPositionTexture(wm_backgroundCylinderVerts[7], wm_backgroundCylinderVt[7]),   new VertexPositionTexture(wm_backgroundCylinderVerts[6], wm_backgroundCylinderVt[6]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[7], wm_backgroundCylinderVt[7]),   new VertexPositionTexture(wm_backgroundCylinderVerts[19], wm_backgroundCylinderVt[19]), new VertexPositionTexture(wm_backgroundCylinderVerts[20], wm_backgroundCylinderVt[20]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[20], wm_backgroundCylinderVt[20]), new VertexPositionTexture(wm_backgroundCylinderVerts[8], wm_backgroundCylinderVt[8]),   new VertexPositionTexture(wm_backgroundCylinderVerts[7], wm_backgroundCylinderVt[7]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[8], wm_backgroundCylinderVt[8]),   new VertexPositionTexture(wm_backgroundCylinderVerts[20], wm_backgroundCylinderVt[20]), new VertexPositionTexture(wm_backgroundCylinderVerts[21], wm_backgroundCylinderVt[21]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[21], wm_backgroundCylinderVt[21]), new VertexPositionTexture(wm_backgroundCylinderVerts[9], wm_backgroundCylinderVt[9]),   new VertexPositionTexture(wm_backgroundCylinderVerts[8], wm_backgroundCylinderVt[8]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[9], wm_backgroundCylinderVt[9]),   new VertexPositionTexture(wm_backgroundCylinderVerts[21], wm_backgroundCylinderVt[21]), new VertexPositionTexture(wm_backgroundCylinderVerts[22], wm_backgroundCylinderVt[22]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[22], wm_backgroundCylinderVt[22]), new VertexPositionTexture(wm_backgroundCylinderVerts[10], wm_backgroundCylinderVt[10]), new VertexPositionTexture(wm_backgroundCylinderVerts[9], wm_backgroundCylinderVt[9]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[10], wm_backgroundCylinderVt[10]), new VertexPositionTexture(wm_backgroundCylinderVerts[22], wm_backgroundCylinderVt[22]), new VertexPositionTexture(wm_backgroundCylinderVerts[23], wm_backgroundCylinderVt[23]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[23], wm_backgroundCylinderVt[23]), new VertexPositionTexture(wm_backgroundCylinderVerts[11], wm_backgroundCylinderVt[11]), new VertexPositionTexture(wm_backgroundCylinderVerts[10], wm_backgroundCylinderVt[10]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[11], wm_backgroundCylinderVt[11]), new VertexPositionTexture(wm_backgroundCylinderVerts[23], wm_backgroundCylinderVt[23]), new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderVt[12]),
+new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderVt[12]), new VertexPositionTexture(wm_backgroundCylinderVerts[0], wm_backgroundCylinderVt[0]),   new VertexPositionTexture(wm_backgroundCylinderVerts[11], wm_backgroundCylinderVt[11])
+        };
+        #endregion
+        static VertexPositionTexture[] wm_backgroundCloudsLocalCylinderMeshTranslated = null;
         private static void DrawBackgroundClouds()
         {
-            Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
-            wmset.GetWorldMapTexture(wmset.Section38_textures.clouds, 0).Draw(new Rectangle(0, 0, (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 2.8f), (int)(Memory.graphics.GraphicsDevice.Viewport.Height / 2.8f)), Color.White * .1f);
-            Memory.spriteBatch.End();
+            if (bHasMoved || wm_backgroundCloudsLocalCylinderMeshTranslated==null)
+            {
+                wm_backgroundCloudsLocalCylinderMeshTranslated = wm_backgroundCloudsCylinderMesh.Clone() as VertexPositionTexture[];
+                for (int i = 0; i < wm_backgroundCloudsCylinderMesh.Length; i++)
+                {
+                    Vector3 pos = wm_backgroundCloudsCylinderMesh[i].Position;
+                    pos = Vector3.Transform(pos,
+                        Matrix.CreateScale(27f));
+                    pos = Vector3.Transform(pos,
+                        Matrix.CreateTranslation(new Vector3(playerPosition.X, -160, playerPosition.Z)));
+                    wm_backgroundCloudsLocalCylinderMeshTranslated[i].Position = pos;
+                }
+            }
+            
+            
+            ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.clouds, 0);
+            foreach (EffectPass pass in ate.CurrentTechnique.Passes)
+            {
+                ate.FogEnd = 1500;
+                ate.DiffuseColor = Vector3.One * 1.4f;
+                pass.Apply();
+                Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, wm_backgroundCloudsLocalCylinderMeshTranslated, 0, wm_backgroundCloudsLocalCylinderMeshTranslated.Length / 3);
+                ate.FogEnd = renderCamDistance;
+            }
         }
 
         //exe hardcode at FF82000:00C76BE8
