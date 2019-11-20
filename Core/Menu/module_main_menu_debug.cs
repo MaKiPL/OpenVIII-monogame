@@ -182,7 +182,7 @@ namespace OpenVIII
             vp = new Vector2(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height);
 
             vpSpace = vp_per.Y * 0.09f;
-            DFontPos = new Vector2(vp_per.X * .10f, vp_per.Y * .05f) + Offset;
+            //DFontPos = new Vector2(vp_per.X * .10f, vp_per.Y * .05f) + Offset;
 
             IGM_focus = Matrix.CreateTranslation((vp_per.X / -2), (vp_per.Y / -2), 0) *
                 Matrix.CreateScale(new Vector3(scale.X, scale.Y, 1)) *

@@ -82,13 +82,19 @@ namespace OpenVIII
             if (Input2.DelayedButton(FF8TextTagKey.Left) )
             {
                 init_debugger_Audio.PlaySound(0);
-                Module_main_menu_debug.FieldPointer--;
+                if (Memory.FieldHolder.FieldID > 0)
+                    Memory.FieldHolder.FieldID--;
+                else
+                    Memory.FieldHolder.FieldID = checked((ushort)(Memory.FieldHolder.fields.Length - 1));
                 ResetField();
             }
             if (Input2.DelayedButton(FF8TextTagKey.Right) )
             {
                 init_debugger_Audio.PlaySound(0);
-                Module_main_menu_debug.FieldPointer++;
+                if (Memory.FieldHolder.FieldID < checked((ushort)(Memory.FieldHolder.fields.Length - 1)))
+                    Memory.FieldHolder.FieldID++;
+                else
+                    Memory.FieldHolder.FieldID = 0;
                 ResetField();
             }
 #endif

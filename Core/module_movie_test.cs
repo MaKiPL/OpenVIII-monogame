@@ -97,13 +97,19 @@ namespace OpenVIII
             if (Input2.DelayedButton(FF8TextTagKey.Left))
             {
                 init_debugger_Audio.PlaySound(0);
-                Module_main_menu_debug.MoviePointer--;
+                if (Module_movie_test.Index > 0)
+                    Module_movie_test.Index--;
+                else
+                    Module_movie_test.Index = Module_movie_test.Movies.Count - 1;
                 Reset();
             }
             if (Input2.DelayedButton(FF8TextTagKey.Right))
             {
                 init_debugger_Audio.PlaySound(0);
-                Module_main_menu_debug.MoviePointer++;
+                if (Module_movie_test.Index < Module_movie_test.Movies.Count - 1)
+                    Module_movie_test.Index++;
+                else
+                    Module_movie_test.Index = 0;
                 Reset();
             }
 #endif

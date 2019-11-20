@@ -65,10 +65,8 @@ namespace OpenVIII.IGMDataItem
 
         #region Methods
 
-        public override void Draw()
-        {
-            Draw(false);
-        }
+        public override void Draw() => Draw(false);
+
         public void Draw(bool skipdraw)
         {
             if (Enabled)
@@ -81,14 +79,14 @@ namespace OpenVIII.IGMDataItem
                 if (Icon != null && Icon != Icons.ID.None)
                 {
                     r2.Size = Point.Zero;
-                    if(!skipdraw)
-                    Memory.Icons.Draw(Icon, Palette, r2, new Vector2(Scale.X), Fade);
+                    if (!skipdraw)
+                        Memory.Icons.Draw(Icon, Palette, r2, new Vector2(Scale.X), Fade);
 
                     if (Blink)
                         Memory.Icons.Draw(Icon, Faded_Palette, r2, new Vector2(Scale.X), Fade * Blink_Amount * Blink_Adjustment);
                     r.Offset(Memory.Icons.GetEntryGroup(Icon).Width * Scale.X, 0);
                 }
-                DataSize = Rectangle.Union(r2, Memory.font.RenderBasicText(Data, r.Location, Scale, Fade: Fade, color: FontColor, blink: Blink,skipdraw: skipdraw));
+                DataSize = Rectangle.Union(r2, Memory.font.RenderBasicText(Data, r.Location, Scale, Fade: Fade, color: FontColor, blink: Blink, skipdraw: skipdraw));
             }
         }
 

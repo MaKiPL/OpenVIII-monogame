@@ -852,7 +852,6 @@
     <Compile Include="Menu\Cursor_Status.cs" />
     <Compile Include="Menu\Item.cs" />
     <Compile Include="Menu\Table_Options.cs" />
-    <Compile Include="Menu\Debug\Module_main_menu_DebugLobby.cs" />
     <Compile Include="PointEx.cs" />
     <Compile Include="Strings\Name.cs" />
     <Compile Include="Strings\Stringfile.cs" />

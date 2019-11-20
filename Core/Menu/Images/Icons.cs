@@ -13,8 +13,8 @@ namespace OpenVIII
     {
         #region Fields
 
-        private new Dictionary<ID, EntryGroup> Entries = null;
         private Rectangle _dataSize;
+        private new Dictionary<ID, EntryGroup> Entries = null;
 
         #endregion Fields
 
@@ -47,13 +47,12 @@ namespace OpenVIII
 
         public new uint Count => (uint)Entries.Count();
 
+        public Rectangle DataSize { get => _dataSize; private set => _dataSize = value; }
         public new uint EntriesPerTexture => (uint)Enum.GetValues(typeof(Icons.ID)).Cast<Icons.ID>().Max();
 
         public new uint PaletteCount => (uint)Textures.Count();
 
         private new uint TextureStartOffset => 0;
-
-        public Rectangle DataSize { get => _dataSize; private set => _dataSize = value; }
 
         #endregion Properties
 
@@ -106,13 +105,13 @@ namespace OpenVIII
             DataSize = dst;
             foreach (int i in intList)
             {
-                if(!skipdraw)
+                if (!skipdraw)
                     Draw(nums[(int)type][i], palette, dst, scale, fade, blink ? Color.Lerp(Font.ColorID2Color[color], Font.ColorID2Blink[color], Menu.Blink_Amount) : Font.ColorID2Color[color]);
                 float width = Entries[nums[(int)type][i]].GetRectangle.Width * scale.X;
                 float height = Entries[nums[(int)type][i]].GetRectangle.Height * scale.Y;
                 dst.Offset(width, 0);
                 _dataSize.Width += (int)width;
-                if(_dataSize.Height < (int)height)
+                if (_dataSize.Height < (int)height)
                     _dataSize.Height = (int)height;
             }
             return DataSize;

@@ -30,6 +30,7 @@ namespace OpenVIII.IGMDataItem
             }
         }
 
+        public Rectangle DataSize { get; private set; }
         public int Digits => Data.ToString().Length;
         public Font.ColorID Faded_FontColor { get; set; }
         public byte Faded_Palette { get; set; } = 2;
@@ -75,21 +76,18 @@ namespace OpenVIII.IGMDataItem
             }
         }
 
-        public Rectangle DataSize { get; private set; }
-
         #endregion Properties
 
         #region Methods
-        public override void Draw()
-        {
-            Draw(false);
-        }
+
+        public override void Draw() => Draw(false);
+
         public void Draw(bool skipdraw)
         {
             if (Enabled)
             {
                 DataSize = Memory.Icons.Draw(Data, NumType, Palette, $"D{_padding}", Pos.Location.ToVector2() +
-                    (OffsetAnchor ?? Vector2.Zero), Scale, Fade, FontColor, Blink,skipdraw);
+                    (OffsetAnchor ?? Vector2.Zero), Scale, Fade, FontColor, Blink, skipdraw);
             }
         }
 

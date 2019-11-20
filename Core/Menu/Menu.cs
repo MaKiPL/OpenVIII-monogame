@@ -60,6 +60,8 @@ namespace OpenVIII
 
         private static BattleMenus _battlemenus;
 
+        private static Debug_Menu _debug_menu;
+
         //private static bool _blinkstate;
         //private static bool _fadeout = false;
         private static IGM _igm;
@@ -77,7 +79,6 @@ namespace OpenVIII
         private bool _backup = false;
 
         private Vector2 _size;
-        private static Debug_Menu _debug_menu;
 
         #endregion Fields
 
@@ -100,6 +101,11 @@ namespace OpenVIII
         /// Blink works like Fade except it goes up to 1f then to 0f and back.
         /// </summary>
         public static float Blink_Amount { get; private set; } = _fadedin;
+
+        /// <summary>
+        /// Debug Menu
+        /// </summary>
+        public static Debug_Menu Debug_Menu => _debug_menu;
 
         /// <summary>
         /// Fade by default scales from 0f to 1f. Unless FadeOut then it goes from 1f to 0f.
@@ -133,11 +139,6 @@ namespace OpenVIII
         /// Lobby Menu
         /// </summary>
         public static IGM_Lobby IGM_Lobby => _igm_lobby;
-
-        /// <summary>
-        /// Debug Menu
-        /// </summary>
-        public static Debug_Menu Debug_Menu => _debug_menu;
 
         public static Vector2 StaticSize { get; protected set; }
 
@@ -238,7 +239,7 @@ namespace OpenVIII
                 if ((options & Box_Options.Buttom) != 0)
                     dst.Offset(0, (dst.Height - 48));
                 else if ((options & Box_Options.Middle) != 0)
-                    dst.Offset(0, dst.Height / 2 - font.Height / 2+2);
+                    dst.Offset(0, dst.Height / 2 - font.Height / 2 + 2);
                 else
                     dst.Offset(0, 21);
 
