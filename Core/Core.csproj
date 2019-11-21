@@ -143,6 +143,7 @@
     <Compile Include="Battle\Menu\BattleMenu.cs" />
     <Compile Include="Battle\Menu\BattleMenus.cs" />
     <Compile Include="Battle\Menu\IGMDataItem\Gradient\ATB.cs" />
+    <Compile Include="Battle\Menu\IGMDataItem\Gradient\GF.cs" />
     <Compile Include="Battle\Menu\IGMDataItem\Gradient\Renzokeken.cs" />
     <Compile Include="Battle\Menu\IGMData\Group\PlayerEXP.cs" />
     <Compile Include="Battle\Menu\IGMData\NamesHPATB.cs" />
