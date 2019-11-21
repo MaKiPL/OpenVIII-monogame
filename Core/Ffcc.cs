@@ -107,6 +107,8 @@
         private Task task;
         private FfccVaribleGroup _decoder = new FfccVaribleGroup();
         private DynamicSoundEffectInstance _dynamicSound;
+        private int _loopend;
+        private int _looplength;
 
         #endregion Fields
 
@@ -917,6 +919,7 @@
             return true;
 
         //end of file, check for loop and end.
+        //TODO: add LOOPEND and LOOPLENGTH support https://github.com/FFT-Hackers/vgmstream/commit/b332e5cf5cc9e3469cbbab226836083d8377ce61
         EOF:
             Loop();
             frame = *Decoder.Frame;
@@ -944,9 +947,30 @@
                     key += (char)tag->key[i];
                 }
 
-                Metadata[key.ToUpper()] = val;
-                if (key == "LOOPSTART" && int.TryParse(val, out _loopstart))
-                { }
+                Metadata[key.Trim().ToUpper()] = val;
+                Debug.WriteLine($"{key} = {val}");
+                if (key.Trim().IndexOf("LOOPSTART", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    if (!int.TryParse(val, out _loopstart))
+                    {
+                        _loopstart = 0;
+                        Debug.WriteLine($"Failed Parse {key} = {val}");
+                    }
+                }
+                else if (key.Trim().IndexOf("LOOPEND", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    if (int.TryParse(val, out _loopend))
+                        _looplength = _loopend - _loopstart;
+                    else
+                        Debug.WriteLine($"Failed Parse {key} = {val}");
+                }   
+                else if (key.Trim().IndexOf("LOOPLENGTH", StringComparison.OrdinalIgnoreCase) >=0)
+                {
+                    if (int.TryParse(val, out _looplength))
+                        _loopend = _loopend + _loopstart;
+                    else
+                        Debug.WriteLine($"Failed Parse {key} = {val}");
+                }
             }
         }
 
