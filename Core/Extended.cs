@@ -388,5 +388,49 @@ namespace OpenVIII
 
         public static float ClampOverload(float a, float min, float max)
             => a < min ? max - Math.Abs(a) : a > max ? a - max : a;
+
+        public static bool bRequestedBackBuffer = false;
+        public static bool bBackBufferAvailable = false;
+
+        private static Texture2D backBufferTexture;
+
+        public static Texture2D BackBufferTexture
+        {
+            get
+            {
+                if (bBackBufferAvailable)
+                {
+                    bBackBufferAvailable = false;
+                    return backBufferTexture;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            set
+            {
+                backBufferTexture = value;
+            }
+        }
+
+        /// <summary>
+        /// Makes a request AFTER base.draw() to dump the backBuffer- after that the callback happens to 
+        /// postBackBufferDelegate, so make sure to set this parameter to method you want
+        /// </summary>
+        /// <param name="callbackMethod"></param>
+        public static void RequestBackBuffer()
+        {
+            bBackBufferAvailable = false;
+            bRequestedBackBuffer = true;
+        }
+
+        public delegate void PostBackBufferDelegate();
+        public static PostBackBufferDelegate postBackBufferDelegate = EmptyPostBackBufferDelegate;
+
+        public static void EmptyPostBackBufferDelegate()
+        {
+            ;
+        }
     }
 }

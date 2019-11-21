@@ -61,6 +61,7 @@ namespace OpenVIII
 
         private static byte[] wmx;
         private static float DEBUGshit = 1f;
+        private static int debugEncounter = -1;
         private const int WM_SEG_SIZE = 0x9000; //World map segment size in file
         private const int WM_SEGMENTS_COUNT = 835;
 
@@ -611,6 +612,7 @@ namespace OpenVIII
             //we now have 8 encounters-> 4 casual; 2 mid and 2 rare
 
             //TODO random + enc.half/none junction + warping to battle
+            var state = Memory.State;
         }
 
         /// <summary>
@@ -715,6 +717,11 @@ namespace OpenVIII
                     }
                     playerPosition = lastPlayerPosition + diffvect;
                 }
+            }
+            if(Input2.Button(Keys.F3))
+            {
+                Extended.postBackBufferDelegate = BattleSwirl.Init;
+                Extended.RequestBackBuffer();
             }
         }
 
@@ -1083,6 +1090,7 @@ namespace OpenVIII
                 $"selWalk: =0b{Convert.ToString(bSelectedWalkable, 2).PadLeft(8, '0')} of charaRay={countofDebugFaces.X}, skyRay={countofDebugFaces.Y}\n" +
                 $"selWalk2: ={(activeCollidePolygon.HasValue ? activeCollidePolygon.Value.ToString() : "N/A")}\n" +
                 $"debugshit: ={DEBUGshit}\n" +
+                $"encounter: ={debugEncounter}- Press F3 to force battle\n" +
                 $"Press 9 to enable debug FPS camera: ={(worldState == _worldState._1active ? "orbit camera" : "FPS debug camera")}\n" +
                 $"FPS camera degrees: ={degrees}°\n" +
                 $"1000/deltaTime milliseconds: {$"{1000 / totalMilliseconds:000.000}"}\n" +
