@@ -175,6 +175,10 @@ namespace OpenVIII.IGMData
                 ITEM[0, (byte)DepthID.Name].Show();
                 ITEM[0, (byte)DepthID.GFNameBox].Hide();
                 ITEM[0, (byte)DepthID.GFHPBox].Hide();
+
+                ITEM[0, (int)DepthID.ATBCharged].Hide();
+                ITEM[0, (int)DepthID.GFCharging].Hide();
+                ITEM[0, (int)DepthID.ATBCharging].Hide();
                 if (BattleMode.Equals(Damageable.BattleMode.YourTurn))
                 {
                     ((IGMDataItem.Texture)ITEM[0, (int)DepthID.ATBCharged]).Color = Color.LightYellow * ATBalpha;
@@ -188,20 +192,21 @@ namespace OpenVIII.IGMData
                 {
                     charging = true;
                     ((IGMDataItem.Gradient.ATB)ITEM[0, (int)DepthID.ATBCharging]).Refresh(Damageable);
-                    ITEM[0, (int)DepthID.ATBCharged].Hide();
                     ITEM[0, (int)DepthID.ATBCharging].Show();
                 }
                 else if (BattleMode.Equals(Damageable.BattleMode.GF_Charging))
                 {
+                    charging = true;
                     ITEM[0, (byte)DepthID.HP].Hide();
                     ITEM[0, (byte)DepthID.Name].Hide();
                     ITEM[0, (byte)DepthID.GFNameBox].Show();
                     ITEM[0, (byte)DepthID.GFHPBox].Show();
-                }
+                    ITEM[0, (int)DepthID.GFCharging].Show();
+                    ITEM[0, (int)DepthID.GFCharging].Refresh(Damageable.SummonedGF);
 
+                }
                 if (!charging)
                 {
-                    ITEM[0, (int)DepthID.ATBCharging].Hide();
                     ITEM[0, (int)DepthID.ATBCharged].Show();
                 }
                 ((IGMDataItem.Texture)ITEM[0, (int)DepthID.ATBCharged]).Blink = blink;
@@ -255,6 +260,7 @@ namespace OpenVIII.IGMData
             ITEM[0, (byte)DepthID.ATBCharged] = new IGMDataItem.Texture { Data = dot, Color = Color.LightYellow * ATBalpha, Faded_Color = new Color(125, 125, 0, 255) * ATBalpha };
             ITEM[0, (byte)DepthID.ATBCharged].Hide();
             ITEM[0, (int)DepthID.ATBCharging] = IGMDataItem.Gradient.ATB.Create(atbbarpos);
+            ITEM[0, (int)DepthID.GFCharging] = IGMDataItem.Gradient.GF.Create(atbbarpos);
             ((IGMDataItem.Gradient.ATB)ITEM[0, (byte)DepthID.ATBCharging]).Color = Color.Orange * ATBalpha;
             ((IGMDataItem.Gradient.ATB)ITEM[0, (byte)DepthID.ATBCharging]).Faded_Color = Color.Orange * ATBalpha;
             ((IGMDataItem.Gradient.ATB)ITEM[0, (byte)DepthID.ATBCharging]).Refresh(Damageable);
