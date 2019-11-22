@@ -8,15 +8,21 @@ using System.Threading.Tasks;
 
 namespace OpenVIII
 {
+    /// <summary>
+    /// it's currently in mess, but I will clean it after I got everything working and comment things
+    /// </summary>
     public static class BattleSwirl
     {
         static Texture2D backBufferTexture;
         private static bool bInitialized = false;
         private static bool bFirstClear = true;
         private static int swirlMode = 0;
+        private static int swirlStage = 0;
 
         private static double sequenceTimer = 0.0;
         private static double activeFrameTimer = 0.0;
+
+        static Texture2D blackLines;
 
         public static void Init()
         {
@@ -26,9 +32,31 @@ namespace OpenVIII
             backBufferTexture = Extended.BackBufferTexture;
             bInitialized = true;
             bFirstClear = true;
+            swirlStage = 0;
             sequenceTimer = 0.0;
             activeFrameTimer = 0.0;
             scaleModifier = 1.0f; //maybe create this swirl as non-static class?
+            translateModifier = 0.0f;
+
+            //let's now generate the black lines screen cleaning buffer
+            Random random = new Random();
+            blackLines = new Texture2D(Memory.graphics.GraphicsDevice, 1,
+                                                 Memory.graphics.GraphicsDevice.Viewport.Height, false,
+                                                 SurfaceFormat.Color);
+            Color[] colors = new Color[blackLines.Height];
+            for(int i = 0; i<blackLines.Height; i++)
+            {
+                int lineBuffer = random.Next(0, 120);
+                colors[i] = new Color(Color.Black, lineBuffer);
+            }
+            blackLines.SetData(colors);
+        }
+
+        //because of the backBuffer;
+        public static void ContinueStage()
+        {
+            backBufferTexture = Extended.BackBufferTexture;
+            swirlStage++;
         }
 
         //private static void BossSwirl()
@@ -48,45 +76,82 @@ namespace OpenVIII
             sequenceTimer += Memory.gameTime.ElapsedGameTime.TotalMilliseconds/1000.0;
             activeFrameTimer += Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
             //Memory.graphics.GraphicsDevice.Clear(Color.Black);
-            Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
-            Memory.font.RenderBasicText(
-                $"sequence: ={sequenceTimer}", 30, 20, 1f, 2f, lineSpacing: 5);
-            //Memory.spriteBatch.Draw(backBufferTexture, new Rectangle(0, 0, backBufferTexture.Width, backBufferTexture.Height), Color.White*0.2f);
             if (activeFrameTimer > 1000.0 / 500.0)
             {
                 activeFrameTimer = 0.0;
-                scaleModifier += 0.003f;
             switch (swirlMode)
             {
                 case 0:
-                    NormalSwirlDraw();
+                        if (swirlStage == 0)
+                            NormalSwirlDraw_stage1();
+                        else
+                            NormalSwirlDraw_stage2();
                     break;
                 case 1:
                     BossSwirlDraw();
                     break;
             };
             }
-            Memory.SpriteBatchEnd();
         }
 
 
         static float scaleModifier = 1f;
+        static float translateModifier = 0f;
 
-        private static void NormalSwirlDraw()
+        private static void NormalSwirlDraw_stage1()
         {
             if (sequenceTimer < 0.50) //frame repeat by scaling on un-cleaned buffer
             {
+            scaleModifier += 0.003f;
+            Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
                 Vector2 resolution = new Vector2(backBufferTexture.Width, backBufferTexture.Height);
                 var transformedScale = Vector2.Transform(resolution, Matrix.CreateScale(scaleModifier));
                 Memory.spriteBatch.Draw(backBufferTexture, new Rectangle((int)(transformedScale.X - resolution.X) / -3
-                    , (int)(transformedScale.Y - resolution.Y) / -3
+                    ,0 /*(int)(transformedScale.Y - resolution.Y) / -3*/
                     , (int)transformedScale.X, (int)transformedScale.Y),
                     Color.White * 0.15f);
+                Memory.spriteBatch.End();
             }
-            if(sequenceTimer > 0.50) //black lines going from left (grayscale 255 transition mask-just like in RPG Maker) [but there's no texture?]
+            if(sequenceTimer > 0.50) //black lines going from left (grayscale 127 transition mask-just like in RPG Maker)
             {
-                
+                Extended.postBackBufferDelegate = ContinueStage;
+                Extended.RequestBackBuffer();
             }
+        }
+
+        //wip
+        private static void NormalSwirlDraw_stage2()
+        {
+            //it's a bit more complicated- tbh I didn't reverse fully the algorithm, but I know the buffer is generated for screenY 
+            //the buffer is int32, but normally it's capped to 120. The buffer is generate before the swirl with FFSwirlInitModule
+            //now it works like this- the texture is drawn from left to right by 'clearing' the screen. 
+            //value of 00 means instant black, while any bigger value means obviously 'slower' clearing
+
+
+
+
+            //actually it looks like the delay of line clearing; probably this value is time. So the texture is cleared by delay <------------
+
+
+
+
+
+
+            //int x = (int)(Memory.graphics.GraphicsDevice.Viewport.Width * translateModifier);
+            int x = (int)translateModifier;
+            translateModifier += 1f;
+            //translateModifier += 0.002f;
+            Memory.graphics.GraphicsDevice.Clear(Color.Black);
+            Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque);
+            Memory.spriteBatch.Draw(backBufferTexture, 
+                new Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
+                Color.White * 1f);
+
+            Memory.spriteBatch.Draw(blackLines, new Rectangle(x
+                , 0
+                , 1, Memory.graphics.GraphicsDevice.Viewport.Height),
+                Color.White * 1f);
+            Memory.spriteBatch.End();
         }
 
         private static void BossSwirlDraw()
