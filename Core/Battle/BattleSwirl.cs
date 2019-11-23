@@ -39,17 +39,22 @@ namespace OpenVIII
             translateModifier = 0.0f;
 
             //let's now generate the black lines screen cleaning buffer
-            Random random = new Random();
-            blackLines = new Texture2D(Memory.graphics.GraphicsDevice, 1,
+            blackLines = new Texture2D(Memory.graphics.GraphicsDevice, 0xFF + 120, //ok, so 0xff to fade alpha and 120 for maximum delay
                                                  Memory.graphics.GraphicsDevice.Viewport.Height, false,
                                                  SurfaceFormat.Color);
-            Color[] colors = new Color[blackLines.Height];
-            for(int i = 0; i<blackLines.Height; i++)
+           Color[] colors = new Color[blackLines.Height*blackLines.Width];
+            for (int i = 0; i < blackLines.Height; i++)
             {
-                int lineBuffer = random.Next(0, 120);
-                colors[i] = new Color(Color.Black, lineBuffer);
+                //we are incrementing by line- full width is 0xff+120
+                int lineBuffer = Memory.Random.Next(0, 120); //generate the delay
+                int scanAlpha = 255;
+                for(int n=0; n<blackLines.Width-lineBuffer; n++) //fill with black
+                    colors[i*blackLines.Width+n] = new Color(Color.Black, 0xFF);
+                for (int n = lineBuffer; n < blackLines.Width; n++) //fill with fading black
+                    colors[i * blackLines.Width + n] = new Color(0, 0, 0, scanAlpha--); //debug for red
             }
             blackLines.SetData(colors);
+            Extended.DumpTexture(blackLines, @"D:\out.png");
         }
 
         //because of the backBuffer;
@@ -119,39 +124,26 @@ namespace OpenVIII
             }
         }
 
-        //wip
+        //wip - there's actually no need to do the second stage- clean this afterward
         private static void NormalSwirlDraw_stage2()
         {
-            //it's a bit more complicated- tbh I didn't reverse fully the algorithm, but I know the buffer is generated for screenY 
-            //the buffer is int32, but normally it's capped to 120. The buffer is generate before the swirl with FFSwirlInitModule
-            //now it works like this- the texture is drawn from left to right by 'clearing' the screen. 
-            //value of 00 means instant black, while any bigger value means obviously 'slower' clearing
-
-
-
-
-            //actually it looks like the delay of line clearing; probably this value is time. So the texture is cleared by delay <------------
-
-
-
-
-
-
             //int x = (int)(Memory.graphics.GraphicsDevice.Viewport.Width * translateModifier);
             int x = (int)translateModifier;
-            translateModifier += 1f;
+            translateModifier += 2f;
             //translateModifier += 0.002f;
-            Memory.graphics.GraphicsDevice.Clear(Color.Black);
-            Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque);
-            Memory.spriteBatch.Draw(backBufferTexture, 
-                new Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
-                Color.White * 1f);
+            //Memory.graphics.GraphicsDevice.Clear(Color.Black);
+            Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
+            //Memory.spriteBatch.Draw(backBufferTexture, 
+            //    new Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
+            //    Color.White * 1f);
 
-            Memory.spriteBatch.Draw(blackLines, new Rectangle(x
+            Memory.spriteBatch.Draw(blackLines, new Rectangle(x-Memory.graphics.GraphicsDevice.Viewport.Width
                 , 0
-                , 1, Memory.graphics.GraphicsDevice.Viewport.Height),
+                , Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
                 Color.White * 1f);
             Memory.spriteBatch.End();
+            if (x > Memory.graphics.GraphicsDevice.Viewport.Width+blackLines.Width+0xff)
+                Memory.module = MODULE.BATTLE_DEBUG;
         }
 
         private static void BossSwirlDraw()
