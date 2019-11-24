@@ -16,6 +16,7 @@ namespace OpenVIII
     public enum MODULE : int
     {
         BATTLE = 3,
+        BATTLE_SWIRL = 4,
         FIELD = 5,
         FIELD_DEBUG = -5,
         BATTLE_DEBUG = -3,
