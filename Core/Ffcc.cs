@@ -1154,7 +1154,7 @@
                 }
 
                 long max = Decoder.Stream->duration;
-                if (max < 0)
+                if (max <= LOOPSTART)
                 {
                     max = LOOPSTART + 1000;
                 }
