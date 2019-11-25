@@ -57,7 +57,7 @@ namespace OpenVIII.IGMData
 
         public override bool Update()
         {
-            if (Enabled && Memory.State?.Characters != null)
+            if (Enabled && Memory.State?.Characters != null && Memory.State.Characters.Count>0 && Memory.State.PartyData != null)
             {
                 if (Memory.State.Characters.TryGetValue(Memory.State.PartyData[PartyPos], out Saves.CharacterData c))
                 { }

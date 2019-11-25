@@ -18,7 +18,7 @@ namespace OpenVIII
             public ulong BattlesWon; //[20]Battles won. (Fun fact: this affects the basketball shot in Trabia.)
             public byte[] byte2425; //[24-25]unused in fields
             public ushort EscapedBattles; //[26]Battles escaped.
-            public Dictionary<Characters, ushort> EnemiesKilled;
+            public Dictionary<Characters, ushort> EnemiesKilled = new Dictionary<Characters, ushort>((int)Characters.Edea_Kramer + 1);
 
             //ushort ushort28; //[28]Enemies killed by Squall
             //ushort ushort30; //[30]Enemies killed by Zell
@@ -29,7 +29,7 @@ namespace OpenVIII
             //ushort ushort40; //[40]Enemies killed by Seifer
             //ushort ushort42; //[42]Enemies killed by Edea
 
-            public Dictionary<Characters, ushort> DeathCounter;
+            public Dictionary<Characters, ushort> DeathCounter = new Dictionary<Characters, ushort>((int)Characters.Edea_Kramer + 1);
 
             //ushort ushort44; //[44]Squall death count
             //ushort ushort46; //[46]Zell death count
@@ -251,12 +251,20 @@ namespace OpenVIII
             public byte byte690; //[690]not investigated
             public byte byte691; //[691]not investigated
             public byte[] byte692719; //[692-719]unused in fields
-            public Dictionary<Characters, Costume> Costumes;
+            /// <summary>
+            /// public byte byte720; //[720]Squall's costume (0=normal, 1=student, 2=SeeD, 3=Bandage on forehead)
+            /// public byte byte721; //[721]Zell's Costume (0=normal, 1=student, 2=SeeD)
+            /// public byte byte722; //[722]Selphie's costume (0=normal, 1=student, 2=SeeD)
+            /// public byte byte723; //[723]Quistis' Costume (0=normal, 1=SeeD)
+            /// </summary>
+            public Dictionary<Characters, Costume> Costumes = new Dictionary<Characters, Costume> {
+                    { Characters.Squall_Leonhart, 0 },
+                    { Characters.Zell_Dincht, 0 },
+                    { Characters.Selphie_Tilmitt, 0 },
+                    { Characters.Quistis_Trepe, 0 },
+                };
 
-            //public byte byte720; //[720]Squall's costume (0=normal, 1=student, 2=SeeD, 3=Bandage on forehead)
-            //public byte byte721; //[721]Zell's Costume (0=normal, 1=student, 2=SeeD)
-            //public byte byte722; //[722]Selphie's costume (0=normal, 1=student, 2=SeeD)
-            //public byte byte723; //[723]Quistis' Costume (0=normal, 1=SeeD)
+
             public ushort ushort724; //[724]Dollet mission time
 
             public ushort ushort726; //[726]not investigated
@@ -299,8 +307,7 @@ namespace OpenVIII
                 byte1819 = br.ReadBytes(2); //[18-19]unused in fields
                 BattlesWon = br.ReadUInt32(); //[20]Battles won. (Fun fact: this affects the basketball shot in Trabia.)
                 byte2425 = br.ReadBytes(2); //[24-25]unused in fields
-                EscapedBattles = br.ReadUInt16(); //[26]Battles escaped.
-                EnemiesKilled = new Dictionary<Characters, ushort>((int)Characters.Edea_Kramer + 1);
+                EscapedBattles = br.ReadUInt16(); //[26]Battles escaped. 
                 for (int i = 0; i < (int)Characters.Edea_Kramer + 1; i++)
                     EnemiesKilled.Add((Characters)i, br.ReadUInt16());
                 //ushort28 = br.ReadUInt16(); //[28]Enemies killed by Squall
@@ -312,7 +319,6 @@ namespace OpenVIII
                 //ushort40 = br.ReadUInt16(); //[40]Enemies killed by Seifer
                 //ushort42 = br.ReadUInt16(); //[42]Enemies killed by Edea
 
-                DeathCounter = new Dictionary<Characters, ushort>((int)Characters.Edea_Kramer + 1);
                 for (int i = 0; i < (int)Characters.Edea_Kramer + 1; i++)
                     DeathCounter.Add((Characters)i, br.ReadUInt16());
 
@@ -540,12 +546,10 @@ namespace OpenVIII
                 byte690 = br.ReadByte(); //[690]not investigated
                 byte691 = br.ReadByte(); //[691]not investigated
                 byte692719 = br.ReadBytes(28); //[692-719]unused in fields
-                Costumes = new Dictionary<Characters, Costume> {
-                    { Characters.Squall_Leonhart, (Costume) br.ReadByte() },
-                    { Characters.Zell_Dincht, (Costume) br.ReadByte() },
-                    { Characters.Selphie_Tilmitt, (Costume) br.ReadByte() },
-                    { Characters.Quistis_Trepe, (Costume) br.ReadByte() },
-                };
+                Costumes[Characters.Squall_Leonhart] = (Costume)br.ReadByte();
+                Costumes[Characters.Zell_Dincht] = (Costume)br.ReadByte();
+                Costumes[Characters.Selphie_Tilmitt] = (Costume)br.ReadByte();
+                Costumes[Characters.Quistis_Trepe] = (Costume)br.ReadByte();
                 //byte720 = br.ReadByte(); //[720]Squall's costume (0=normal, 1=student, 2=SeeD, 3=Bandage on forehead)
                 //byte721 = br.ReadByte(); //[721]Zell's Costume (0=normal, 1=student, 2=SeeD)
                 //byte722 = br.ReadByte(); //[722]Selphie's costume (0=normal, 1=student, 2=SeeD)

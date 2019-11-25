@@ -17,7 +17,7 @@ namespace OpenVIII
             /// </summary>
             public override void Refresh()
             {
-                if (Memory.State.Characters != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Memory.State.Characters != null && Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     base.Refresh();
                     ((IGMDataItem.Face)ITEM[0, 0]).Data = c.ID.ToFacesID();

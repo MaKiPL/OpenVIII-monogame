@@ -124,7 +124,7 @@ namespace OpenVIII
 
         public override void Refresh()
         {
-            if (Memory.State?.Characters != null)
+            if (Memory.State?.Characters != null  && Memory.State.Characters.Count > 0 && Memory.State.Party!=null)
             {
                 IEnumerable<KeyValuePair<int, Characters>> party = Memory.State.Party.Select((element, index) => new { element, index }).ToDictionary(m => m.index, m => m.element).Where(m => !m.Value.Equals(Characters.Blank));
                 int count = party.Count();

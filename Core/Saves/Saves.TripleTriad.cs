@@ -19,7 +19,7 @@ namespace OpenVIII
             private const int NumberOfCards = 77;
             private const int NumberOfUniqueCards = 33;
 
-            public OrderedDictionary<Cards.ID, TTCardInfo> cards;
+            public OrderedDictionary<Cards.ID, TTCardInfo> cards = new OrderedDictionary<Cards.ID, TTCardInfo>(NumberOfCards);
 
             /// <summary>
             /// I'm not sure what this is for.
@@ -67,6 +67,7 @@ namespace OpenVIII
                 tt.cards = new OrderedDictionary<Cards.ID, TTCardInfo>(cards.Count);
                 foreach (KeyValuePair<Cards.ID, TTCardInfo> i in cards)
                     tt.cards.TryAdd(i.Key, i.Value.Clone());
+                if (cards_rare != null)
                 tt.cards_rare = (byte[])cards_rare.Clone();
                 return tt;
             }
@@ -74,7 +75,6 @@ namespace OpenVIII
             public void Read(BinaryReader br)
             {
                 //cards = br.ReadBytes(77);
-                cards = new OrderedDictionary<Cards.ID, TTCardInfo>(NumberOfCards);
                 for (byte i = 0; i < NumberOfCards; i++)
                 {
                     cards.TryAdd((Cards.ID)i, new TTCardInfo(br.ReadByte()));

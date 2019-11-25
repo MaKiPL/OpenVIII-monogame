@@ -238,6 +238,7 @@
     <Compile Include="Saves\Damageable.cs" />
     <Compile Include="Saves\ICharacterData.cs" />
     <Compile Include="Saves\IDamageable.cs" />
+    <Compile Include="Saves\Saves.Configuration.cs" />
     <Compile Include="Saves\TTCardInfo.cs" />
     <Compile Include="Slide.cs" />
     <Compile Include="Strings\Description.cs" />

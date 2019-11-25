@@ -41,7 +41,7 @@ namespace OpenVIII.IGMData.Target
 
         public override void Refresh()
         {
-            if (Memory.State?.Characters != null)
+            if (Memory.State?.Characters != null && Memory.State?.Party != null)
             {
                 List<KeyValuePair<int, Characters>> party = Memory.State.Party.Select((element, index) => new { element, index }).ToDictionary(m => m.index, m => m.element).Where(m => !m.Value.Equals(Characters.Blank)).ToList();
                 byte pos = 0;

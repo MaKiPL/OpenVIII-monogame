@@ -95,7 +95,6 @@ namespace OpenVIII
             }
             Task.WaitAll(tasks.ToArray());
         }
-
         private static void Read(string file, out Data d)
         {
             Debug.WriteLine("Task={0}, Thread={1}, File={2}",

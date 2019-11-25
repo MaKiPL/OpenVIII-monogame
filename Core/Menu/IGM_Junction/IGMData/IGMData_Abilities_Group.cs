@@ -109,7 +109,7 @@ namespace OpenVIII
                 void test(IGMData.Base t, ref int i)
                 {
                     int pos = 0;
-                    for (; pos < t.Count && i < total_Count; i++)
+                    for (; t != null && pos < t.Count && i < total_Count; i++)
                     {
                         SIZE[i] = t.SIZE[pos];
                         CURSOR[i] = t.CURSOR[pos];

@@ -73,7 +73,7 @@ namespace OpenVIII
 
             public override void Refresh()
             {
-                if (Memory.State.Characters != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Memory.State.Characters != null && Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     Font.ColorID color = (c.JunctionnedGFs == Saves.GFflags.None) ? Font.ColorID.Grey : Font.ColorID.White;
                     for (int i = 1; i <= 3; i++)

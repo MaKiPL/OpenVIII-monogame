@@ -262,6 +262,7 @@ namespace OpenVIII
                 //loads all savegames from steam2013 or cd2000 or steam2019 directories. first come first serve.
                 //TODO allow chosing of which save folder to use.
                 tasks.Add(Task.Run(Saves.Init, token));
+                //tasks.Add(Task.Run(() => InitState = Saves.Data.LoadInitOut(), token));
                 tasks.Add(Task.Run(InitStrings, token));
                 if (graphics?.GraphicsDevice != null) // all below require graphics to work. to load textures graphics device needed.
                 {
@@ -279,6 +280,8 @@ namespace OpenVIII
                     tasks.Add(Task.Run(() => { Magazines = Magazine.Load(); }, token));
                 }
                 Task.WaitAll(tasks.ToArray());
+                InitState = Saves.Data.LoadInitOut();
+                State = InitState.Clone();
                 if (graphics?.GraphicsDevice != null) // all below require graphics to work. to load textures graphics device needed.
                 {
                     //// requires font, faces, and icons. currently cards only used in debug menu. will
@@ -345,6 +348,7 @@ namespace OpenVIII
         public static CancellationToken Token { get; private set; }
         public static Items_In_Menu MItems { get; private set; }
         public static Magazine Magazines { get; private set; }
+        public static Saves.Data InitState { get; private set; }
 
         #region battleProvider
 
