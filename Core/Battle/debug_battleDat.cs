@@ -678,7 +678,7 @@ namespace OpenVIII
                         ReadSection3(datFile.pSections[2], br, fileName);
                         ReadSection2(datFile.pSections[1], br, fileName);
                         //ReadSection4(datFile.pSections[3]);
-                        //ReadSection5(datFile.pSections[4]);
+                        ReadSection5(datFile.pSections[4],br, fileName);
                         //ReadSection6(datFile.pSections[5]);
                         ReadSection7(datFile.pSections[6], br, fileName);
                         //ReadSection8(datFile.pSections[7]);
@@ -715,6 +715,23 @@ namespace OpenVIII
                         break;
                 }
             }
+        }
+
+        private void ReadSection5(uint v, BinaryReader br, string fileName)
+        {
+            br.BaseStream.Seek(v, SeekOrigin.Begin);
+            uint endpoint = datFile.pSections[5];
+            uint[] offsets = new uint[br.ReadUInt16()];
+            for (ushort i = 0; i < offsets.Length; i++)
+            {
+
+                ushort v1 = br.ReadUInt16();
+                if (v1 == 0)
+                    continue;
+                offsets[i] = v1 + v;
+            }
+            var t = offsets.Where(x=>x>0).Distinct().OrderBy(x => x);
+
         }
 
         public int GetId => id;
