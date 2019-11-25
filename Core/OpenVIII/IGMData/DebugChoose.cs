@@ -291,7 +291,12 @@ namespace OpenVIII.IGMData
             {
                 { Ditems.Battle, ()=> {return strDebugLobby[Ditems.Battle].Clone().Append(Memory.battle_encounter.ToString("D4")); } },
                 { Ditems.Field, ()=> {return strDebugLobby[Ditems.Field].Clone().Append(Memory.FieldHolder.FieldID.ToString("D3")); } },
-                { Ditems.Movie, ()=> {return strDebugLobby[Ditems.Movie].Clone().Append(Path.GetFileNameWithoutExtension(Module_movie_test.Movies[Module_movie_test.Index])); } },
+                { Ditems.Movie, ()=> {
+                    if (Module_movie_test.Movies.Count<=Module_movie_test.Index)
+                        Module_movie_test.Index=0;
+                    if(Module_movie_test.Movies.Count ==0)
+                        return "";
+                    return strDebugLobby[Ditems.Movie].Clone().Append(Path.GetFileNameWithoutExtension(Module_movie_test.Movies[Module_movie_test.Index])); } },
                 { Ditems.Music, ()=> {return strDebugLobby[Ditems.Music].Clone().Append(Path.GetFileNameWithoutExtension(Memory.dicMusic[Memory.MusicIndex][0])); } },
                 { Ditems.Sounds, ()=> {return strDebugLobby[Ditems.Sounds].Clone().Append(debug_choosedAudio.ToString("D4")); } }
             };
