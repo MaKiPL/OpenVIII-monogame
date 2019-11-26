@@ -155,6 +155,7 @@ namespace OpenVIII.IGMData
                 { Ditems.Battle, ()=> {
                     Menu.FadeIn();
                     Module_battle_debug.ResetState();
+                    Menu.BattleMenus.CameFrom();
                     Memory.module = MODULE.BATTLE_DEBUG;
                     Memory.IsMouseVisible = false;
                     return true;
