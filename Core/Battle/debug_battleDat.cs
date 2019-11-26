@@ -636,18 +636,25 @@ namespace OpenVIII
             if (string.IsNullOrEmpty(fileName))
                 return;
             string path = null;
+            string searchstring = "";
             if (et != default)
             {
-                IEnumerable<string> test = aw.GetListOfFiles().Where(x => x.IndexOf($"d{fileId.ToString("x")}{et}", StringComparison.OrdinalIgnoreCase) >= 0);
+                searchstring= $"d{fileId.ToString("x")}{et}";
+                IEnumerable<string> test = aw.GetListOfFiles().Where(x => x.IndexOf(searchstring, StringComparison.OrdinalIgnoreCase) >= 0);
                 path = test.FirstOrDefault(x => x.ToLower().Contains(fileName));
-                if (string.IsNullOrWhiteSpace(path))
+                if (string.IsNullOrWhiteSpace(path)&&test.Count()>0)
                     path = test.First();
             }
             else path = aw.GetListOfFiles().First(x => x.ToLower().Contains(fileName));
-            buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, path);
-
+            if (!string.IsNullOrWhiteSpace(path))
+                buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, path);
+            if (buffer == null || buffer.Length < 0)
+            {
+                Debug.WriteLine($"Search String: {searchstring} Not Found skipping {entityType}; So resulting file buffer is null.");
+                return;
+            }
 #if _WINDOWS && DEBUG
-            try
+                try
             {
                 string targetdir = @"d:\";
                 if (Directory.Exists(targetdir))
@@ -662,7 +669,7 @@ namespace OpenVIII
             {
             }
 #endif
-
+            
             using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
             {
                 datFile = new DatFile { cSections = br.ReadUInt32() };
