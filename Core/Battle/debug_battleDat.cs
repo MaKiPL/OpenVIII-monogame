@@ -747,6 +747,7 @@ namespace OpenVIII
             //4 + nbAKAOs * 2 Varies* nbAKAOs    AKAOs
 
             // nothing final in here just was trying to dump data to see what was there.
+            // http://wiki.ffrtt.ru/index.php?title=FF7/Field/Script/Opcodes/F2_AKAO related?
             br.BaseStream.Seek(start, SeekOrigin.Begin);
             uint[] offsets = new uint[br.ReadUInt16()];
             for (ushort i = 0; i < offsets.Length; i++)
