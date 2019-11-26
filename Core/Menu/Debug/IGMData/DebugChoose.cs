@@ -157,6 +157,8 @@ namespace OpenVIII.IGMData
                     Module_battle_debug.ResetState();
                     Menu.BattleMenus.CameFrom();
                     Memory.module = MODULE.BATTLE_DEBUG;
+                    //Extended.postBackBufferDelegate = BattleSwirl.Init;
+                    //Extended.RequestBackBuffer();
                     Memory.IsMouseVisible = false;
                     return true;
                 } },
