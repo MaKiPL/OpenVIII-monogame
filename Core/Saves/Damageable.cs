@@ -618,9 +618,9 @@ namespace OpenVIII
 
         public abstract short ElementalResistance(Kernel_bin.Element @in);
 
-        public virtual bool EndTurn()
+        public virtual bool EndTurn(bool force = false)
         {
-            if (
+            if ( force ||
                 GetBattleMode().Equals(BattleMode.YourTurn) ||
                 GetBattleMode().Equals(BattleMode.GF_Charging)
                )
@@ -694,7 +694,7 @@ namespace OpenVIII
 
         public virtual ushort ReviveHP() => (ushort)(MaxHP() / 8);
 
-        public virtual bool SetBattleMode(Enum mode)
+        protected virtual bool SetBattleMode(Enum mode)
         {
             if (!(_battlemode?.Equals(mode) ?? false))
             {
@@ -711,6 +711,7 @@ namespace OpenVIII
             if (SummonedGF != null)
             {
                 SetBattleMode(BattleMode.GF_Charging);
+                SummonedGF.EndTurn(true);
             }
         }
 
@@ -778,9 +779,9 @@ namespace OpenVIII
 
         public abstract ushort TotalStat(Kernel_bin.Stat s);
 
-        public virtual bool Update()
+        public virtual bool Update(bool force = false)
         {
-            if (GetBattleMode().Equals(BattleMode.ATB_Charging))
+            if (GetBattleMode().Equals(BattleMode.ATB_Charging) || force)
             {
                 ATBTimer.Update();
                 if (ATBTimer.Done && ATBCharged())
@@ -789,7 +790,17 @@ namespace OpenVIII
                 }
                 return true;
             }
-            return false;
+            else if (GetBattleMode().Equals(BattleMode.GF_Charging))
+            {
+                SummonedGF.Update();
+                if(SummonedGF.IsGameOver || (SummonedGF.ATBTimer.Done && EndTurn()))
+                {
+                    //Summon GF end turn.
+                    //SetSummon(null);
+                }
+                return true;
+            }
+                    return false;
         }
 
         protected virtual void Init()

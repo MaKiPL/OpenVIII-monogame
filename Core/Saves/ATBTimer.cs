@@ -1,4 +1,6 @@
-﻿namespace OpenVIII
+﻿using System;
+
+namespace OpenVIII
 {
     public class ATBTimer
     {
@@ -11,7 +13,7 @@
         {
             get
             {
-                float percent = ATBBarPos / Damageable.ATBBarSize;
+                float percent = Math.Abs(ATBBarPos / Damageable.ATBBarSize);
                 return percent > 1f ? 1f : percent;
             }
         }

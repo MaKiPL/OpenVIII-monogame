@@ -112,7 +112,7 @@ namespace OpenVIII
 
         public override void Reset() => base.Reset();
 
-        public override bool SetMode(Enum mode) => Damageable.SetBattleMode(mode);
+        //public override bool SetMode(Enum mode) => Damageable.SetBattleMode(mode);
 
         protected override void Init()
         {
