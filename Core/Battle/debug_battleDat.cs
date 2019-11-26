@@ -765,10 +765,11 @@ namespace OpenVIII
             {
                 uint offset = sortedoffsets[i];
                 uint localend = end;
-                if(i+1 < offsets.Length)
+                if(i+1 < sortedoffsets.Count)
                     localend = sortedoffsets[i+1];
                 br.BaseStream.Seek(offset, SeekOrigin.Begin);
-                dataatoffsets.Add(offset, br.ReadBytes(checked((int)(localend - offset))));
+                if(offset<localend)
+                    dataatoffsets.Add(offset, br.ReadBytes(checked((int)(localend - offset))));
             }
         }
 
