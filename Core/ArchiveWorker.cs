@@ -107,7 +107,7 @@ namespace OpenVIII
         /// <returns></returns>
         public byte[] GetBinaryFile(string fileName, bool cache = false)
         {
-            if (fileName.Length < 1)
+            if (string.IsNullOrWhiteSpace(fileName))
                 throw new FileNotFoundException("NO FILENAME");
 
             int loc = FindFile(ref fileName, new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)); //File.OpenRead(_path.FL));
