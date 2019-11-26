@@ -178,7 +178,7 @@ namespace OpenVIII
         /// Max bar value
         /// </summary>
         /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
-        public static int ATBBarSize = (int)Memory.CurrentBattleSpeed * 4000;
+        public virtual int ATBBarSize => (int)Memory.CurrentBattleSpeed * 4000;
 
         #endregion Fields
 
@@ -606,7 +606,7 @@ namespace OpenVIII
         /// <param name="spd"></param>
         /// <returns></returns>
         /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
-        public static int ATBBarStart(int spd)
+        public int ATBBarStart(int spd)
         {
             int i = ((spd / 4) + Memory.Random.Next(128) - 34) * (int)Memory.CurrentBattleSpeed * 40;
             if (i > 0 && i < ATBBarSize)
@@ -624,7 +624,7 @@ namespace OpenVIII
         /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
         public static int BarIncrement(int spd, SpeedMod speedMod = SpeedMod.Normal) => (spd + 30) * ((byte)speedMod / 2);
 
-        public static float TicksToFillBar(int start, int spd, SpeedMod speedMod = SpeedMod.Normal)
+        public float TicksToFillBar(int start, int spd, SpeedMod speedMod = SpeedMod.Normal)
         {
             int top = (ATBBarSize - start);
             int bot = BarIncrement(spd, speedMod);
@@ -633,7 +633,7 @@ namespace OpenVIII
             return (top / bot);
         }
 
-        public static float TimeToFillBar(int start, int spd, SpeedMod speedMod = SpeedMod.Normal)
+        public float TimeToFillBar(int start, int spd, SpeedMod speedMod = SpeedMod.Normal)
         {
             float tickspersec = 60f;
             return TicksToFillBar(start, spd, speedMod) / tickspersec;

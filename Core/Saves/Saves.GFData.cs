@@ -75,6 +75,18 @@ namespace OpenVIII
             #endregion Constructors
 
             #region Properties
+            /// <summary>
+            /// GF version is compatibility duration.
+            /// </summary>
+            /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
+            public override int ATBBarSize
+            {
+                get
+                {
+                    int Compability = 6000 - 5 * ShownCompability;
+                    return (int)(Compability * (int)Memory.CurrentBattleSpeed * 0.9143 / 32);
+                }
+            }
 
             /// <summary>
             /// Total exp to the next level up
@@ -178,6 +190,17 @@ namespace OpenVIII
             /// Kernel bin data on this GF
             /// </summary>
             private Kernel_bin.Junctionable_GFs_Data JunctionableGFsData => Kernel_bin.JunctionableGFsData[ID];
+
+            public int ShownCompability {
+                get {
+                    if (Memory.State.JunctionedGFs().TryGetValue(ID, out Characters c) &&
+                        Memory.State[c].CompatibilitywithGFs.TryGetValue(ID, out ushort value))
+                    {
+                        return value;
+                    }
+                    return 0;
+                }
+            }
 
             #endregion Properties
 
