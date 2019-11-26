@@ -698,12 +698,11 @@ namespace OpenVIII
                         ReadSection1(datFile.pSections[0], br, fileName);
                         ReadSection3(datFile.pSections[2], br, fileName);
                         ReadSection2(datFile.pSections[1], br, fileName);
-
-                        //ReadSection5(datFile.pSections[3], datFile.pSections[4], br, fileName);
-                        //ReadSection5(datFile.pSections[4], datFile.pSections[5], br, fileName);
-                        //ReadSection5(datFile.pSections[6], checked((uint)br.BaseStream.Length), br, fileName);
                         if (fileId == 7 && entityType == EntityType.Character)
+                        {
                             ReadSection11(datFile.pSections[8], br, fileName);
+                            ReadSection5(datFile.pSections[5], datFile.pSections[6], br, fileName);
+                        }
                         else
                             ReadSection11(datFile.pSections[5], br, fileName);
                         break;
