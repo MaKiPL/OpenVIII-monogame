@@ -10,131 +10,33 @@ namespace OpenVIII
     /// </summary>
     public abstract class Damageable : IDamageable
     {
-        public float ATBPercent => ATBTimer.Percent;
+        #region Fields
 
+        protected ushort _CurrentHP;
+        private Enum _battlemode;
+        private Dictionary<Kernel_bin.Attack_Type, Func<int, Kernel_bin.Attack_Flags, int>> _damageActions;
+        private Kernel_bin.Persistent_Statuses _statuses0;
+        private Kernel_bin.Battle_Only_Statuses _statuses1;
+        private Dictionary<Kernel_bin.Attack_Type, Func<Kernel_bin.Persistent_Statuses, Kernel_bin.Battle_Only_Statuses, Kernel_bin.Attack_Flags, int>> _statusesActions;
         private ATBTimer ATBTimer;
+
+        #endregion Fields
+
+        #region Constructors
 
         protected Damageable()
         {
         }
 
-        protected virtual void Init()
-        {
-            SetBattleMode(BattleMode.ATB_Charging);
-            ATBTimer = new ATBTimer(this);
-        }
+        #endregion Constructors
 
-        public virtual bool Update()
-        {
-            if (GetBattleMode().Equals(BattleMode.ATB_Charging))
-            {
-                ATBTimer.Update();
-                if (ATBTimer.Done && ATBCharged())
-                {
-                    //Your turn is ready.
-                }
-                return true;
-            }
-            return false;
-        }
+        #region Events
 
-        public virtual void Reset()
-        {
-            ATBTimer.Reset();
-            Statuses1 = 0;
-        }
+        public event EventHandler<Enum> BattleModeChangeEventHandler;
 
-        public virtual void Refresh() => ATBTimer.Refresh(this);
+        #endregion Events
 
-        public virtual bool ATBCharged()
-        {
-            if (GetBattleMode().Equals(BattleMode.ATB_Charging))
-            {
-                SetBattleMode(BattleMode.ATB_Charged);
-                return true;
-            }
-            return false;
-        }
-
-        public virtual bool EndTurn()
-        {
-            if (
-                GetBattleMode().Equals(BattleMode.YourTurn) ||
-                GetBattleMode().Equals(BattleMode.GF_Charging)
-               )
-            {
-                SetBattleMode(BattleMode.EndTurn); // trigger any end of turn clean up.
-                SetBattleMode(BattleMode.ATB_Charging); //start charging next turn.
-                Refresh();
-                return true;
-            }
-            return false;
-        }
-        public void SetSummon(Saves.GFData gfdata)
-        {
-            SummonedGF = gfdata;
-            if(SummonedGF != null)
-            {
-                SetBattleMode(BattleMode.GF_Charging);
-            }
-        }
-
-        /// <summary>
-        /// Summon GF
-        /// </summary>
-        /// <param name="gf"></param>
-        public void SetSummon(GFs gf)
-        {
-            Saves.GFData gfdata = null;
-            if (Memory.State?.GFs?.TryGetValue(gf,out gfdata)?? false)
-            {
-                // found a gf.
-            }
-            SetSummon(gfdata);
-        }
-
-        public virtual bool StartTurn()
-        {
-            if (
-                GetBattleMode().Equals(BattleMode.ATB_Charged)
-               )
-            {
-                SetBattleMode(BattleMode.YourTurn); //it's your turn.
-                Refresh();
-                return true;
-            }
-            return false;
-        }
-
-        public virtual bool Switch()
-        {
-            if (GetBattleMode().Equals(BattleMode.YourTurn))
-            {
-                SetBattleMode(BattleMode.ATB_Charged);
-                return true;
-            }
-            return false;
-        }
-
-        public virtual bool ChargeGF()
-        {
-            if (GetBattleMode().Equals(BattleMode.YourTurn) && (this.GetType().Equals(typeof(Saves.CharacterData))))
-            {
-                SetBattleMode(BattleMode.ATB_Charged);
-                return true;
-            }
-            return false;
-        }
-
-        public virtual bool GFDiedWhileCharging()
-        {
-            if (GetBattleMode().Equals(BattleMode.GF_Charging))
-            {
-                SetBattleMode(BattleMode.YourTurn);
-                return true;
-            }
-            return false;
-        }
+        #region Enums
 
         public enum BattleMode : byte
         {
@@ -165,24 +67,17 @@ namespace OpenVIII
             EndTurn,
         }
 
-        #region Fields
+        #endregion Enums
 
-        private Dictionary<Kernel_bin.Attack_Type, Func<int, Kernel_bin.Attack_Flags, int>> _damageActions;
-        private Kernel_bin.Persistent_Statuses _statuses0;
-        private Kernel_bin.Battle_Only_Statuses _statuses1;
-        private Dictionary<Kernel_bin.Attack_Type, Func<Kernel_bin.Persistent_Statuses, Kernel_bin.Battle_Only_Statuses, Kernel_bin.Attack_Flags, int>> _statusesActions;
-
-        protected ushort _CurrentHP;
+        #region Properties
 
         /// <summary>
         /// Max bar value
         /// </summary>
         /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
-        public static int ATBBarSize = (int)Memory.CurrentBattleSpeed * 4000;
+        public virtual int ATBBarSize => (int)Memory.CurrentBattleSpeed * 4000;
 
-        #endregion Fields
-
-        #region Properties
+        public float ATBPercent => ATBTimer.Percent;
 
         public IReadOnlyDictionary<Kernel_bin.Attack_Type, Func<int, Kernel_bin.Attack_Flags, int>> DamageActions
         {
@@ -341,23 +236,6 @@ namespace OpenVIII
 
                 int Damage_White_WindQuistis_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
             }
-        }
-
-        private Enum _battlemode;
-
-        public virtual Enum GetBattleMode() => _battlemode ?? BattleMode.ATB_Charging;
-
-        public event EventHandler<Enum> BattleModeChangeEventHandler;
-
-        public virtual bool SetBattleMode(Enum mode)
-        {
-            if (!(_battlemode?.Equals(mode) ?? false))
-            {
-                _battlemode = mode;
-                BattleModeChangeEventHandler?.Invoke(this, mode);
-                return true;
-            }
-            return false;
         }
 
         public abstract byte EVA { get; }
@@ -593,27 +471,13 @@ namespace OpenVIII
 
         public abstract byte STR { get; }
 
-        public abstract byte VIT { get; }
         public Saves.GFData SummonedGF { get; private set; }
+
+        public abstract byte VIT { get; }
 
         #endregion Properties
 
         #region Methods
-
-        /// <summary>
-        /// Starting value
-        /// </summary>
-        /// <param name="spd"></param>
-        /// <returns></returns>
-        /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
-        public static int ATBBarStart(int spd)
-        {
-            int i = ((spd / 4) + Memory.Random.Next(128) - 34) * (int)Memory.CurrentBattleSpeed * 40;
-            if (i > 0 && i < ATBBarSize)
-                return i;
-            else if (i < 0) return 0;
-            else return ATBBarSize;
-        }
 
         /// <summary>
         /// Per tick increment
@@ -624,29 +488,47 @@ namespace OpenVIII
         /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
         public static int BarIncrement(int spd, SpeedMod speedMod = SpeedMod.Normal) => (spd + 30) * ((byte)speedMod / 2);
 
-        public static float TicksToFillBar(int start, int spd, SpeedMod speedMod = SpeedMod.Normal)
+        public static T Load<T>(BinaryReader br, Enum @enum) where T : Damageable, new()
         {
-            int top = (ATBBarSize - start);
-            int bot = BarIncrement(spd, speedMod);
-            if (bot == 0)
-                return float.MinValue;
-            return (top / bot);
-        }
-
-        public static float TimeToFillBar(int start, int spd, SpeedMod speedMod = SpeedMod.Normal)
-        {
-            float tickspersec = 60f;
-            return TicksToFillBar(start, spd, speedMod) / tickspersec;
+            T r = new T();
+            r.Init();
+            r.ReadData(br, @enum);
+            return r;
         }
 
         /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
         public static int TimeToFillBarGF(int spd) => 200 * (int)Memory.CurrentBattleSpeed / (3 * (spd + 30));
+
+        /// <summary>
+        /// Starting value
+        /// </summary>
+        /// <param name="spd"></param>
+        /// <returns></returns>
+        /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
+        public int ATBBarStart(int spd)
+        {
+            int i = ((spd / 4) + Memory.Random.Next(128) - 34) * (int)Memory.CurrentBattleSpeed * 40;
+            if (i > 0 && i < ATBBarSize)
+                return i;
+            else if (i < 0) return 0;
+            else return ATBBarSize;
+        }
 
         public int ATBBarStart()
         {
             if (IsGameOver)
                 return 0;
             return ATBBarStart(SPD);
+        }
+
+        public virtual bool ATBCharged()
+        {
+            if (GetBattleMode().Equals(BattleMode.ATB_Charging))
+            {
+                SetBattleMode(BattleMode.ATB_Charged);
+                return true;
+            }
+            return false;
         }
 
         public int BarIncrement() => BarIncrement(SPD, GetSpeedMod());
@@ -672,6 +554,16 @@ namespace OpenVIII
             if (lasthp == _CurrentHP) return false;
             Debug.WriteLine($"{this}: Dealt {dmg}, previous hp: {lasthp}, current hp: {_CurrentHP}");
             return true;
+        }
+
+        public virtual bool ChargeGF()
+        {
+            if (GetBattleMode().Equals(BattleMode.YourTurn) && (this.GetType().Equals(typeof(Saves.CharacterData))))
+            {
+                SetBattleMode(BattleMode.ATB_Charged);
+                return true;
+            }
+            return false;
         }
 
         public abstract Damageable Clone();
@@ -726,14 +618,22 @@ namespace OpenVIII
 
         public abstract short ElementalResistance(Kernel_bin.Element @in);
 
-        public bool GetCharacterData(out Saves.CharacterData character)
-        => GetCast(out character);
+        public virtual bool EndTurn()
+        {
+            if (
+                GetBattleMode().Equals(BattleMode.YourTurn) ||
+                GetBattleMode().Equals(BattleMode.GF_Charging)
+               )
+            {
+                SetBattleMode(BattleMode.EndTurn); // trigger any end of turn clean up.
+                SetBattleMode(BattleMode.ATB_Charging); //start charging next turn.
+                Refresh();
+                return true;
+            }
+            return false;
+        }
 
-        public bool GetEnemy(out Enemy enemy)
-        => GetCast(out enemy);
-
-        public bool GetGFData(out Saves.GFData gf)
-        => GetCast(out gf);
+        public virtual Enum GetBattleMode() => _battlemode ?? BattleMode.ATB_Charging;
 
         public bool GetCast<T>(out T cast) where T : Damageable
         {
@@ -745,14 +645,16 @@ namespace OpenVIII
             cast = null;
             return false;
         }
-        public static T Load<T>(BinaryReader br, Enum @enum) where T : Damageable, new()
-        {
-            T r = new T();
-            r.Init();
-            r.ReadData(br,@enum);
-            return r;
-        }
-        protected abstract void ReadData(BinaryReader br, Enum @enum);
+
+        public bool GetCharacterData(out Saves.CharacterData character)
+        => GetCast(out character);
+
+        public bool GetEnemy(out Enemy enemy)
+        => GetCast(out enemy);
+
+        public bool GetGFData(out Saves.GFData gf)
+        => GetCast(out gf);
+
         public SpeedMod GetSpeedMod()
         {
             if ((Statuses1 & Kernel_bin.Battle_Only_Statuses.Haste) != 0)
@@ -764,6 +666,16 @@ namespace OpenVIII
             return SpeedMod.Normal;
         }
 
+        public virtual bool GFDiedWhileCharging()
+        {
+            if (GetBattleMode().Equals(BattleMode.GF_Charging))
+            {
+                SetBattleMode(BattleMode.YourTurn);
+                return true;
+            }
+            return false;
+        }
+
         /// <summary>
         /// Overload this: To get correct MaxHP value
         /// </summary>
@@ -772,19 +684,121 @@ namespace OpenVIII
 
         public virtual float PercentFullHP() => (float)CurrentHP() / MaxHP();
 
+        public virtual void Refresh() => ATBTimer.Refresh(this);
+
+        public virtual void Reset()
+        {
+            ATBTimer.Reset();
+            Statuses1 = 0;
+        }
+
         public virtual ushort ReviveHP() => (ushort)(MaxHP() / 8);
+
+        public virtual bool SetBattleMode(Enum mode)
+        {
+            if (!(_battlemode?.Equals(mode) ?? false))
+            {
+                _battlemode = mode;
+                BattleModeChangeEventHandler?.Invoke(this, mode);
+                return true;
+            }
+            return false;
+        }
+
+        public void SetSummon(Saves.GFData gfdata)
+        {
+            SummonedGF = gfdata;
+            if (SummonedGF != null)
+            {
+                SetBattleMode(BattleMode.GF_Charging);
+            }
+        }
+
+        /// <summary>
+        /// Summon GF
+        /// </summary>
+        /// <param name="gf"></param>
+        public void SetSummon(GFs gf)
+        {
+            Saves.GFData gfdata = null;
+            if (Memory.State?.GFs?.TryGetValue(gf, out gfdata) ?? false)
+            {
+                // found a gf.
+            }
+            SetSummon(gfdata);
+        }
+
+        public virtual bool StartTurn()
+        {
+            if (
+                GetBattleMode().Equals(BattleMode.ATB_Charged)
+               )
+            {
+                SetBattleMode(BattleMode.YourTurn); //it's your turn.
+                Refresh();
+                return true;
+            }
+            return false;
+        }
 
         public abstract sbyte StatusResistance(Kernel_bin.Battle_Only_Statuses s);
 
         public abstract sbyte StatusResistance(Kernel_bin.Persistent_Statuses s);
 
+        public virtual bool Switch()
+        {
+            if (GetBattleMode().Equals(BattleMode.YourTurn))
+            {
+                SetBattleMode(BattleMode.ATB_Charged);
+                return true;
+            }
+            return false;
+        }
+
+        public float TicksToFillBar(int start, int spd, SpeedMod speedMod = SpeedMod.Normal)
+        {
+            int top = (ATBBarSize - start);
+            int bot = BarIncrement(spd, speedMod);
+            if (bot == 0)
+                return float.MinValue;
+            return (top / bot);
+        }
+
         public float TicksToFillBar() => TicksToFillBar(ATBBarStart(), SPD, GetSpeedMod());
+
+        public float TimeToFillBar(int start, int spd, SpeedMod speedMod = SpeedMod.Normal)
+        {
+            float tickspersec = 60f;
+            return TicksToFillBar(start, spd, speedMod) / tickspersec;
+        }
 
         public float TimeToFillBar() => TimeToFillBar(ATBBarStart(), SPD, GetSpeedMod());
 
         public int TimeToFillBarGF() => TimeToFillBarGF(SPD);
 
         public abstract ushort TotalStat(Kernel_bin.Stat s);
+
+        public virtual bool Update()
+        {
+            if (GetBattleMode().Equals(BattleMode.ATB_Charging))
+            {
+                ATBTimer.Update();
+                if (ATBTimer.Done && ATBCharged())
+                {
+                    //Your turn is ready.
+                }
+                return true;
+            }
+            return false;
+        }
+
+        protected virtual void Init()
+        {
+            SetBattleMode(BattleMode.ATB_Charging);
+            ATBTimer = new ATBTimer(this);
+        }
+
+        protected abstract void ReadData(BinaryReader br, Enum @enum);
 
         #endregion Methods
     }
